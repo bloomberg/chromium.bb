@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -17,6 +18,25 @@
 #include "url/gurl.h"
 
 namespace {
+
+// Do not change the values here, as they are used for UMA histograms.
+enum ReasonStatTypes {
+  DURABLE = 0,
+  NOTIFICATIONS,
+  ENGAGEMENT,
+  NOTIFICATIONS_AND_ENGAGEMENT,
+  DURABLE_AND_ENGAGEMENT,
+  NOTIFICATIONS_AND_DURABLE,
+  NOTIFICATIONS_AND_DURABLE_AND_ENGAGEMENT,
+  REASON_UNKNOWN,
+  REASON_BOUNDARY
+};
+
+struct ImportantReason {
+  bool engagement = false;
+  bool notifications = false;
+  bool durable = false;
+};
 
 std::vector<std::pair<GURL, double>> GetSortedTopEngagementOrigins(
     const SiteEngagementService* site_engagement_service,
@@ -140,6 +160,106 @@ std::vector<std::string> ImportantSitesUtil::GetImportantRegisterableDomains(
   FillTopRegisterableDomains(sorted_engagement_origins, max_results,
                              &final_list, optional_example_origins);
   return final_list;
+}
+
+void ImportantSitesUtil::RecordMetricsForBlacklistedSites(
+    Profile* profile,
+    std::vector<std::string> blacklisted_sites) {
+  SiteEngagementService* site_engagement_service =
+      SiteEngagementService::Get(profile);
+
+  std::map<std::string, ImportantReason> reason_map;
+
+  std::map<GURL, double> engagement_map =
+      site_engagement_service->GetScoreMap();
+
+  // Site engagement.
+  for (const auto& url_score_pair : engagement_map) {
+    if (url_score_pair.second <
+        SiteEngagementScore::GetMediumEngagementBoundary()) {
+      continue;
+    }
+    const std::string& host = url_score_pair.first.host();
+    for (const std::string& blacklisted_site : blacklisted_sites) {
+      if (host.find(blacklisted_site) != std::string::npos) {
+        reason_map[blacklisted_site].engagement |= true;
+        break;
+      }
+    }
+  }
+
+  // Durable.
+  ContentSettingsForOneType content_settings_list;
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+      content_settings::ResourceIdentifier(), &content_settings_list);
+  for (const ContentSettingPatternSource& site : content_settings_list) {
+    if (site.setting != CONTENT_SETTING_ALLOW)
+      continue;
+    GURL origin(site.primary_pattern.ToString());
+    if (!origin.is_valid())
+      continue;
+    const std::string& host = origin.host();
+    for (const std::string& blacklisted_site : blacklisted_sites) {
+      if (host.find(blacklisted_site) != std::string::npos) {
+        reason_map[blacklisted_site].durable |= true;
+        break;
+      }
+    }
+  }
+
+  // Notifications.
+  content_settings_list.clear();
+  HostContentSettingsMapFactory::GetForProfile(profile)->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      content_settings::ResourceIdentifier(), &content_settings_list);
+  for (const ContentSettingPatternSource& site : content_settings_list) {
+    if (site.setting != CONTENT_SETTING_ALLOW)
+      continue;
+    GURL origin(site.primary_pattern.ToString());
+    if (!origin.is_valid())
+      continue;
+    const std::string& host = origin.host();
+    for (const std::string& blacklisted_site : blacklisted_sites) {
+      if (host.find(blacklisted_site) != std::string::npos) {
+        reason_map[blacklisted_site].notifications |= true;
+        break;
+      }
+    }
+  }
+
+  // Note: we don't plan on adding new metrics here, this is just for the finch
+  // experiment to give us initial data on what signals actually mattered.
+  for (const auto& reason_pair : reason_map) {
+    const ImportantReason& reason = reason_pair.second;
+    if (reason.notifications && reason.durable && reason.engagement) {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                NOTIFICATIONS_AND_DURABLE_AND_ENGAGEMENT,
+                                REASON_BOUNDARY);
+    } else if (reason.notifications && reason.durable) {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                NOTIFICATIONS_AND_DURABLE, REASON_BOUNDARY);
+    } else if (reason.notifications && reason.engagement) {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                NOTIFICATIONS_AND_ENGAGEMENT, REASON_BOUNDARY);
+    } else if (reason.durable && reason.engagement) {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                DURABLE_AND_ENGAGEMENT, REASON_BOUNDARY);
+    } else if (reason.notifications) {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                NOTIFICATIONS, REASON_BOUNDARY);
+    } else if (reason.durable) {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                DURABLE, REASON_BOUNDARY);
+    } else if (reason.engagement) {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                ENGAGEMENT, REASON_BOUNDARY);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Storage.BlacklistedImportantSites.Reason",
+                                REASON_UNKNOWN, REASON_BOUNDARY);
+
+    }
+  }
 }
 
 void ImportantSitesUtil::MarkOriginAsImportantForTesting(Profile* profile,

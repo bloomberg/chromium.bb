@@ -28,6 +28,10 @@ class ImportantSitesUtil {
       size_t max_results,
       std::vector<GURL>* optional_example_origins);
 
+  static void RecordMetricsForBlacklistedSites(
+      Profile* profile,
+      std::vector<std::string> blacklisted_sites);
+
   // This marks the given origin as important so we can test features that rely
   // on important sites.
   static void MarkOriginAsImportantForTesting(Profile* profile,
