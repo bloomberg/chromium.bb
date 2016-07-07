@@ -328,7 +328,7 @@
 	Notify when a key event was sent. Key events should not be used
 	for normal text input operations, which should be done with
 	commit_string, delete_surrounding_text, etc. The key event follows
-	the wl_keyboard key event convention. Sym is a XKB keysym, state a
+	the wl_keyboard key event convention. Sym is an XKB keysym, state a
 	wl_keyboard key_state. Modifiers are a mask for effective modifiers
 	(where the modifier indices are set by the modifiers_map event)
       </description>
