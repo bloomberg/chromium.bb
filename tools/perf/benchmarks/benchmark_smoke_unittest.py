@@ -19,10 +19,10 @@ from telemetry.internal.browser import browser_finder
 from telemetry.testing import options_for_unittests
 from telemetry.testing import progress_reporter
 
-
 from benchmarks import image_decoding
 from benchmarks import indexeddb_perf
 from benchmarks import jetstream
+from benchmarks import kraken
 from benchmarks import memory
 from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
@@ -90,7 +90,8 @@ _BLACK_LIST_TEST_MODULES = {
     speedometer,  # Takes 101 seconds.
     jetstream,  # Take 206 seconds.
     text_selection,  # Always fails on cq bot.
-    memory  # Flaky on bots, crbug.com/513767.
+    memory,  # Flaky on bots, crbug.com/513767.
+    kraken,  # Flaky on Android, crbug.com/626174.
 }
 
 
