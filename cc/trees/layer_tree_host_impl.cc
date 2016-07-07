@@ -277,6 +277,13 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   // It is released before shutdown.
   DCHECK(!output_surface_);
 
+  DCHECK(!renderer_);
+  DCHECK(!resource_provider_);
+  DCHECK(!resource_pool_);
+  DCHECK(!tile_task_manager_);
+  DCHECK(!single_thread_synchronous_task_graph_runner_);
+  DCHECK(!image_decode_controller_);
+
   if (input_handler_client_) {
     input_handler_client_->WillShutdown();
     input_handler_client_ = NULL;
@@ -298,10 +305,6 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
 
   animation_host_->ClearTimelines();
   animation_host_->SetMutatorHostClient(nullptr);
-
-  CleanUpTileManagerAndUIResources();
-  renderer_ = nullptr;
-  resource_provider_ = nullptr;
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
