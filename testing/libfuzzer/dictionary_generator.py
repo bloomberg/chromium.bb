@@ -36,7 +36,12 @@ def DecodeHTML(html_data):
 
 def EscapeDictionaryElement(element):
   """Escape all unprintable and control characters in an element."""
-  return element.encode('string_escape').replace('"', '\"')
+  element_escaped = element.encode('string_escape')
+  # Remove escaping for single quote because it breaks libFuzzer.
+  element_escaped = element_escaped.replace('\\\'', '\'')
+  # Add escaping for double quote.
+  element_escaped = element_escaped.replace('"', '\\"')
+  return element_escaped
 
 
 def ExtractWordsFromBinary(filepath, min_length=MIN_STRING_LENGTH):
