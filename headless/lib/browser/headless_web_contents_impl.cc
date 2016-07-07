@@ -27,6 +27,14 @@
 
 namespace headless {
 
+// static
+HeadlessWebContentsImpl* HeadlessWebContentsImpl::From(
+    HeadlessWebContents* web_contents) {
+  // This downcast is safe because there is only one implementation of
+  // HeadlessWebContents.
+  return static_cast<HeadlessWebContentsImpl*>(web_contents);
+}
+
 class WebContentsObserverAdapter : public content::WebContentsObserver {
  public:
   WebContentsObserverAdapter(content::WebContents* web_contents,
@@ -114,6 +122,7 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
     HeadlessBrowserImpl* browser)
     : web_contents_delegate_(new HeadlessWebContentsImpl::Delegate(browser)),
       web_contents_(web_contents),
+      agent_host_(content::DevToolsAgentHost::GetOrCreateFor(web_contents)),
       browser_(browser) {
   web_contents_->SetDelegate(web_contents_delegate_.get());
 }
@@ -137,6 +146,10 @@ void HeadlessWebContentsImpl::Close() {
   browser_->DestroyWebContents(this);
 }
 
+std::string HeadlessWebContentsImpl::GetDevtoolsAgentHostId() {
+  return agent_host_->GetId();
+}
+
 void HeadlessWebContentsImpl::AddObserver(Observer* observer) {
   DCHECK(observer_map_.find(observer) == observer_map_.end());
   observer_map_[observer] = base::WrapUnique(
@@ -154,8 +167,6 @@ HeadlessDevToolsTarget* HeadlessWebContentsImpl::GetDevToolsTarget() {
 }
 
 void HeadlessWebContentsImpl::AttachClient(HeadlessDevToolsClient* client) {
-  if (!agent_host_)
-    agent_host_ = content::DevToolsAgentHost::GetOrCreateFor(web_contents());
   HeadlessDevToolsClientImpl::From(client)->AttachToHost(agent_host_.get());
 }
 

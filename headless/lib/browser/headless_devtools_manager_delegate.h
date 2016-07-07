@@ -1,0 +1,56 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_MANAGER_DELEGATE_H_
+#define HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_MANAGER_DELEGATE_H_
+
+#include "content/public/browser/devtools_manager_delegate.h"
+
+#include <map>
+#include <memory>
+#include <string>
+
+#include "base/values.h"
+
+namespace headless {
+class HeadlessBrowserImpl;
+class HeadlessBrowserContext;
+class HeadlessWebContentsImpl;
+
+class HeadlessDevToolsManagerDelegate
+    : public content::DevToolsManagerDelegate {
+ public:
+  explicit HeadlessDevToolsManagerDelegate(HeadlessBrowserImpl* browser);
+  ~HeadlessDevToolsManagerDelegate() override;
+
+  // DevToolsManagerDelegate implementation:
+  void Inspect(content::BrowserContext* browser_context,
+               content::DevToolsAgentHost* agent_host) override {}
+  void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
+                                 bool attached) override{};
+  base::DictionaryValue* HandleCommand(content::DevToolsAgentHost* agent_host,
+                                       base::DictionaryValue* command) override;
+
+ private:
+  std::unique_ptr<base::Value> CreateTarget(
+      const base::DictionaryValue* params);
+  std::unique_ptr<base::Value> CloseTarget(const base::DictionaryValue* params);
+  std::unique_ptr<base::Value> CreateBrowserContext(
+      const base::DictionaryValue* params);
+  std::unique_ptr<base::Value> DisposeBrowserContext(
+      const base::DictionaryValue* params);
+
+  HeadlessBrowserImpl* browser_;  // Not owned.
+  std::map<std::string, std::unique_ptr<HeadlessBrowserContext>>
+      browser_context_map_;
+
+  using CommandMemberFnPtr = std::unique_ptr<base::Value> (
+      HeadlessDevToolsManagerDelegate::*)(const base::DictionaryValue* params);
+
+  std::map<std::string, CommandMemberFnPtr> command_map_;
+};
+
+}  // namespace headless
+
+#endif  // HEADLESS_LIB_BROWSER_HEADLESS_DEVTOOLS_MANAGER_DELEGATE_H_

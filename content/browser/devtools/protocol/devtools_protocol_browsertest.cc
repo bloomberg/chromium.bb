@@ -587,4 +587,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, JavaScriptDialogNotifications) {
   dialog_manager.Handle();
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserNewPage) {
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  EXPECT_EQ(1u, shell()->windows().size());
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetString("initialUrl", "about:blank");
+  SendCommand("Browser.newPage", std::move(params), true);
+  EXPECT_EQ(2u, shell()->windows().size());
+}
+
 }  // namespace content

@@ -33,6 +33,16 @@ class BrowserHandler : public DevToolsAgentHostClient {
   void SetClient(std::unique_ptr<Client> client);
 
   using TargetInfos = std::vector<scoped_refptr<devtools::browser::TargetInfo>>;
+
+  Response CreateBrowserContext(std::string* out_context_id);
+  Response DisposeBrowserContext(const std::string& context_id,
+                                 bool* out_success);
+  Response CreateTarget(const std::string& initial_url,
+                        const int* width,
+                        const int* height,
+                        const std::string* context_id,
+                        std::string* out_targetId);
+  Response CloseTarget(const std::string& targetId, bool* out_success);
   Response GetTargets(TargetInfos* infos);
   Response Attach(const std::string& targetId);
   Response Detach(const std::string& targetId);

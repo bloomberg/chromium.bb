@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/values.h"
 #include "components/devtools_discovery/devtools_target_descriptor.h"
 
 namespace devtools_discovery {
@@ -38,6 +39,10 @@ class DevToolsDiscoveryManager {
   // Caller takes ownership of created descriptors.
   DevToolsTargetDescriptor::List GetDescriptors();
   std::unique_ptr<DevToolsTargetDescriptor> CreateNew(const GURL& url);
+
+  // Handles Browser.newPage only.
+  std::unique_ptr<base::DictionaryValue> HandleNewTargetCommand(
+      base::DictionaryValue* command_dict);
 
  private:
   friend struct base::DefaultSingletonTraits<DevToolsDiscoveryManager>;

@@ -35,6 +35,8 @@ class HeadlessWebContentsImpl : public HeadlessWebContents,
  public:
   ~HeadlessWebContentsImpl() override;
 
+  static HeadlessWebContentsImpl* From(HeadlessWebContents* web_contents);
+
   static std::unique_ptr<HeadlessWebContentsImpl> Create(
       HeadlessWebContents::Builder* builder,
       aura::Window* parent_window,
@@ -58,6 +60,8 @@ class HeadlessWebContentsImpl : public HeadlessWebContents,
   bool OpenURL(const GURL& url);
 
   void Close() override;
+
+  std::string GetDevtoolsAgentHostId();
 
  private:
   // Takes ownership of |web_contents|.

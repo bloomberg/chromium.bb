@@ -11,6 +11,7 @@ namespace headless {
 
 class HeadlessBrowserImpl;
 class HeadlessBrowserMainParts;
+class HeadlessDevToolsManagerDelegate;
 
 class HeadlessContentBrowserClient : public content::ContentBrowserClient {
  public:
@@ -20,6 +21,8 @@ class HeadlessContentBrowserClient : public content::ContentBrowserClient {
   // content::ContentBrowserClient implementation:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams&) override;
+
+  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
  private:
   HeadlessBrowserImpl* browser_;  // Not owned.

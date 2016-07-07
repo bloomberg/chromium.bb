@@ -4188,6 +4188,10 @@
         "hidden": true,
         "types": [
             {
+                "id": "BrowserContextID",
+                "type": "string"
+            },
+            {
                 "id": "TargetID",
                 "type": "string"
             },
@@ -4203,6 +4207,50 @@
             }
         ],
         "commands": [
+            {
+                "name": "createBrowserContext",
+                "description": "Creates a new empty BrowserContext. Similar to an incognito profile but you can have more than one.",
+                "returns": [
+                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The id of the context created." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "disposeBrowserContext",
+                "description": "Deletes a BrowserContext, will fail of any open page uses it.",
+                "parameters": [
+                    { "name": "browserContextId", "$ref": "BrowserContextID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "createTarget",
+                "description": "Creates a new page.",
+                "parameters": [
+                    { "name": "initialUrl", "type": "string", "description": "The initial URL the page will be navigated to." },
+                    { "name": "width", "type": "integer", "description": "Window width (headless chrome only).", "optional": true },
+                    { "name": "height", "type": "integer", "description": "Window height (headless chrome only).", "optional": true },
+                    { "name": "browserContextId", "$ref": "BrowserContextID", "description": "The browser context to create the page in (headless chrome only).", "optional": true }
+                ],
+                "returns": [
+                    { "name": "targetId", "$ref": "TargetID", "description": "The id of the page opened." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "closeTarget",
+                "description": "Closes the target. If the target is a page that gets closed too.",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
             {
                 "name": "getTargets",
                 "returns": [

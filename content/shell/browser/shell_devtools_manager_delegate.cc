@@ -229,8 +229,11 @@ ShellDevToolsManagerDelegate::~ShellDevToolsManagerDelegate() {
 
 base::DictionaryValue* ShellDevToolsManagerDelegate::HandleCommand(
     DevToolsAgentHost* agent_host,
-    base::DictionaryValue* command) {
-  return NULL;
+    base::DictionaryValue* command_dict) {
+  std::unique_ptr<base::DictionaryValue> result =
+      devtools_discovery::DevToolsDiscoveryManager::GetInstance()
+          ->HandleNewTargetCommand(command_dict);
+  return result.release();  // Caller takes ownership.
 }
 
 }  // namespace content

@@ -105,10 +105,10 @@ void HeadlessBrowserImpl::Shutdown() {
 
 std::vector<HeadlessWebContents*> HeadlessBrowserImpl::GetAllWebContents() {
   std::vector<HeadlessWebContents*> result;
-  result.reserve(web_contents_.size());
+  result.reserve(web_contents_map_.size());
 
-  for (const auto& web_contents_pair : web_contents_) {
-    result.push_back(web_contents_pair.first);
+  for (const auto& web_contents_pair : web_contents_map_) {
+    result.push_back(web_contents_pair.second.get());
   }
 
   return result;
@@ -144,15 +144,24 @@ HeadlessWebContentsImpl* HeadlessBrowserImpl::RegisterWebContents(
     std::unique_ptr<HeadlessWebContentsImpl> web_contents) {
   DCHECK(web_contents);
   HeadlessWebContentsImpl* unowned_web_contents = web_contents.get();
-  web_contents_[unowned_web_contents] = std::move(web_contents);
+  web_contents_map_[unowned_web_contents->GetDevtoolsAgentHostId()] =
+      std::move(web_contents);
   return unowned_web_contents;
 }
 
 void HeadlessBrowserImpl::DestroyWebContents(
     HeadlessWebContentsImpl* web_contents) {
-  auto it = web_contents_.find(web_contents);
-  DCHECK(it != web_contents_.end());
-  web_contents_.erase(it);
+  auto it = web_contents_map_.find(web_contents->GetDevtoolsAgentHostId());
+  DCHECK(it != web_contents_map_.end());
+  web_contents_map_.erase(it);
+}
+
+HeadlessWebContents* HeadlessBrowserImpl::GetWebContentsForDevtoolsAgentHostId(
+    const std::string& devtools_agent_host_id) {
+  auto it = web_contents_map_.find(devtools_agent_host_id);
+  if (it == web_contents_map_.end())
+    return nullptr;
+  return it->second.get();
 }
 
 void HeadlessBrowserImpl::SetOptionsForTesting(

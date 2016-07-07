@@ -6,12 +6,15 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_network_protocol_handler.h"
+#include "components/devtools_discovery/devtools_discovery_manager.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/devtools_agent_host.h"
 #endif  // !defined(OS_ANDROID)
+
+using devtools_discovery::DevToolsDiscoveryManager;
 
 ChromeDevToolsManagerDelegate::ChromeDevToolsManagerDelegate()
     : network_protocol_handler_(new DevToolsNetworkProtocolHandler()) {
@@ -44,6 +47,11 @@ void ChromeDevToolsManagerDelegate::Inspect(
 base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(
     content::DevToolsAgentHost* agent_host,
     base::DictionaryValue* command_dict) {
+  std::unique_ptr<base::DictionaryValue> result =
+      DevToolsDiscoveryManager::GetInstance()->HandleNewTargetCommand(
+          command_dict);
+  if (result)
+    return result.release();  // Caller takes ownership.
   return network_protocol_handler_->HandleCommand(agent_host, command_dict);
 }
 

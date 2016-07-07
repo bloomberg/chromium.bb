@@ -43,6 +43,39 @@ static std::string GetTypeString(DevToolsAgentHost* agent_host) {
   }
 }
 
+Response BrowserHandler::CreateBrowserContext(std::string* out_context_id) {
+  // For layering reasons this needs to be handled by
+  // DevToolsManagerDelegate::HandleCommand.
+  return Response::ServerError("Not supported");
+}
+
+Response BrowserHandler::DisposeBrowserContext(const std::string& context_id,
+                                               bool* out_success) {
+  // For layering reasons this needs to be handled by
+  // DevToolsManagerDelegate::HandleCommand.
+  return Response::ServerError("Not supported");
+}
+
+Response BrowserHandler::CreateTarget(const std::string& initial_url,
+                                      const int* width,
+                                      const int* height,
+                                      const std::string* context_id,
+                                      std::string* out_target_id) {
+  // For layering reasons this needs to be handled by
+  // DevToolsManagerDelegate::HandleCommand.
+  return Response::ServerError("Not supported");
+}
+
+Response BrowserHandler::CloseTarget(const std::string& target_id,
+                                     bool* out_success) {
+  scoped_refptr<DevToolsAgentHost> agent_host =
+      DevToolsAgentHost::GetForId(target_id);
+  if (!agent_host)
+    return Response::ServerError("No target with given id found");
+  *out_success = agent_host->Close();
+  return Response::OK();
+}
+
 Response BrowserHandler::GetTargets(TargetInfos* infos) {
   DevToolsAgentHost::List agents = DevToolsAgentHost::GetOrCreateAll();
   for (DevToolsAgentHost::List::iterator it = agents.begin();

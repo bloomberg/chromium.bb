@@ -62,4 +62,31 @@ DevToolsDiscoveryManager::GetDescriptorsFromProviders() {
   return result;
 }
 
+std::unique_ptr<base::DictionaryValue>
+DevToolsDiscoveryManager::HandleNewTargetCommand(
+    base::DictionaryValue* command_dict) {
+  int id;
+  std::string method;
+  std::string initial_url;
+  const base::DictionaryValue* params_dict = nullptr;
+  if (command_dict->GetInteger("id", &id) &&
+      command_dict->GetString("method", &method) &&
+      method == "Browser.newPage" &&
+      command_dict->GetDictionary("params", &params_dict) &&
+      params_dict->GetString("initialUrl", &initial_url)) {
+    std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor> descriptor =
+        CreateNew(GURL(initial_url));
+    if (!descriptor)
+      return nullptr;
+    std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+    result->SetInteger("id", id);
+    std::unique_ptr<base::DictionaryValue> cmd_result(
+        new base::DictionaryValue());
+    cmd_result->SetString("pageId", descriptor->GetId());
+    result->Set("result", std::move(cmd_result));
+    return result;
+  }
+  return nullptr;
+}
+
 }  // namespace devtools_discovery

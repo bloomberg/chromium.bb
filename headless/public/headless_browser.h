@@ -48,6 +48,11 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
   virtual std::vector<HeadlessWebContents*> GetAllWebContents() = 0;
 
+  // Returns the HeadlessWebContents associated with the
+  // |devtools_agent_host_id| if any.  Otherwise returns null.
+  virtual HeadlessWebContents* GetWebContentsForDevtoolsAgentHostId(
+      const std::string& devtools_agent_host_id) = 0;
+
   // Returns a task runner for submitting work to the browser main thread.
   virtual scoped_refptr<base::SingleThreadTaskRunner> BrowserMainThread()
       const = 0;

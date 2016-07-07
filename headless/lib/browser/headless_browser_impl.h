@@ -46,6 +46,8 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   void Shutdown() override;
 
   std::vector<HeadlessWebContents*> GetAllWebContents() override;
+  HeadlessWebContents* GetWebContentsForDevtoolsAgentHostId(
+      const std::string& devtools_agent_host_id) override;
 
   void set_browser_main_parts(HeadlessBrowserMainParts* browser_main_parts);
   HeadlessBrowserMainParts* browser_main_parts() const;
@@ -73,8 +75,8 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
 
-  std::unordered_map<HeadlessWebContents*, std::unique_ptr<HeadlessWebContents>>
-      web_contents_;
+  std::unordered_map<std::string, std::unique_ptr<HeadlessWebContents>>
+      web_contents_map_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserImpl);
