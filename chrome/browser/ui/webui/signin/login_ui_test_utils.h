@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "components/signin/core/browser/signin_metrics.h"
 
 class Browser;
@@ -58,6 +59,11 @@ bool SignInWithUI(Browser* browser,
 bool SignInWithUI(Browser* browser,
                   const std::string& email,
                   const std::string& password);
+
+// Waits for sync confirmation dialog to get displayed, then executes javascript
+// to click on confirm button. Returns false if dialog wasn't dismissed before
+// |timeout|.
+bool DismissSyncConfirmationDialog(Browser* browser, base::TimeDelta timeout);
 
 }  // namespace login_ui_test_utils
 

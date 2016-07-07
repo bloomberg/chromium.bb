@@ -48,6 +48,10 @@ class SigninViewControllerDelegate : public content::WebContentsDelegate {
   // content::WebContentsDelegate:
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
+  // WebContents is used for executing javascript in the context of a modal sync
+  // confirmation dialog.
+  content::WebContents* web_contents_for_testing() { return web_contents_; }
+
  protected:
   SigninViewControllerDelegate(SigninViewController* signin_view_controller,
                                content::WebContents* web_contents);

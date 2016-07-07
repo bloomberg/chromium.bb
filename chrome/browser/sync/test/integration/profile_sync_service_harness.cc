@@ -192,6 +192,14 @@ bool ProfileSyncServiceHarness::SetupSync(
   // Notify ProfileSyncService that we are done with configuration.
   FinishSyncSetup();
 
+  if ((signin_type_ == SigninType::UI_SIGNIN) &&
+      !login_ui_test_utils::DismissSyncConfirmationDialog(
+          chrome::FindBrowserWithProfile(profile_),
+          base::TimeDelta::FromSeconds(30))) {
+    LOG(ERROR) << "Failed to dismiss sync confirmation dialog.";
+    return false;
+  }
+
   // Set an implicit passphrase for encryption if an explicit one hasn't already
   // been set. If an explicit passphrase has been set, immediately return false,
   // since a decryption passphrase is required.
