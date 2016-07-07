@@ -454,10 +454,12 @@ bool TestRunnerForSpecificView::IsCommandEnabled(const std::string& command) {
 }
 
 bool TestRunnerForSpecificView::HasCustomPageSizeStyle(int page_index) {
+  // TODO(dcheng): This class has many implicit assumptions that the frames it
+  // operates on are always local.
   WebFrame* frame = web_view()->mainFrame();
-  if (!frame)
+  if (!frame || frame->isWebRemoteFrame())
     return false;
-  return frame->hasCustomPageSizeStyle(page_index);
+  return frame->toWebLocalFrame()->hasCustomPageSizeStyle(page_index);
 }
 
 void TestRunnerForSpecificView::ForceRedSelectionColors() {

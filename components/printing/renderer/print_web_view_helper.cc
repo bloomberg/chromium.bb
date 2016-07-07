@@ -120,7 +120,7 @@ bool PrintMsg_Print_Params_IsValid(const PrintMsg_Print_Params& params) {
 }
 
 PrintMsg_Print_Params GetCssPrintParams(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     int page_index,
     const PrintMsg_Print_Params& page_params) {
   PrintMsg_Print_Params page_css_params = page_params;
@@ -318,7 +318,7 @@ bool IsPrintToPdfRequested(const base::DictionaryValue& job_settings) {
   return print_to_pdf;
 }
 
-bool PrintingFrameHasPageSizeStyle(blink::WebFrame* frame,
+bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,
                                    int total_page_count) {
   if (!frame)
     return false;
@@ -423,7 +423,7 @@ blink::WebPrintScalingOption GetPrintScalingOption(
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
 PrintMsg_Print_Params CalculatePrintParamsForCss(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     int page_index,
     const PrintMsg_Print_Params& page_params,
     bool ignore_css_margins,
@@ -1498,7 +1498,7 @@ void PrintWebViewHelper::FinishFramePrinting() {
 
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::ComputePageLayoutInPointsForCss(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     int page_index,
     const PrintMsg_Print_Params& page_params,
     bool ignore_css_margins,
@@ -1744,7 +1744,7 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 #if !defined(OS_MACOSX)
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     PdfMetafileSkia* metafile,
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_area_in_dpi) {

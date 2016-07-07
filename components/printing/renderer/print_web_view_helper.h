@@ -45,6 +45,7 @@ class DictionaryValue;
 
 namespace blink {
 class WebFrame;
+class WebLocalFrame;
 class WebView;
 }
 
@@ -261,7 +262,7 @@ class PrintWebViewHelper
 #if defined(ENABLE_BASIC_PRINTING)
   void OnFramePreparedForPrintPages();
   void PrintPages();
-  bool PrintPagesNative(blink::WebFrame* frame, int page_count);
+  bool PrintPagesNative(blink::WebLocalFrame* frame, int page_count);
   void FinishFramePrinting();
   // Render the frame for printing.
   bool RenderPagesForPrint(blink::WebLocalFrame* frame,
@@ -271,10 +272,10 @@ class PrintWebViewHelper
   // Prints the page listed in |params|.
 #if defined(OS_MACOSX)
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         blink::WebFrame* frame);
+                         blink::WebLocalFrame* frame);
 #else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         blink::WebFrame* frame,
+                         blink::WebLocalFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
                          gfx::Rect* content_area_in_dpi);
@@ -284,7 +285,7 @@ class PrintWebViewHelper
 #if defined(OS_MACOSX)
   void RenderPage(const PrintMsg_Print_Params& params,
                   int page_number,
-                  blink::WebFrame* frame,
+                  blink::WebLocalFrame* frame,
                   bool is_preview,
                   PdfMetafileSkia* metafile,
                   gfx::Size* page_size,
@@ -309,7 +310,7 @@ class PrintWebViewHelper
 
   // Helper method to get page layout in points and fit to page if needed.
   static void ComputePageLayoutInPointsForCss(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       int page_index,
       const PrintMsg_Print_Params& default_params,
       bool ignore_css_margins,

@@ -145,6 +145,30 @@ public:
     virtual bool getPrintPresetOptionsForPlugin(const WebNode&, WebPrintPresetOptions*) = 0;
 
 
+    // CSS3 Paged Media ----------------------------------------------------
+
+    // Returns true if page box (margin boxes and page borders) is visible.
+    virtual bool isPageBoxVisible(int pageIndex) = 0;
+
+    // Returns true if the page style has custom size information.
+    virtual bool hasCustomPageSizeStyle(int pageIndex) = 0;
+
+    // Returns the preferred page size and margins in pixels, assuming 96
+    // pixels per inch. pageSize, marginTop, marginRight, marginBottom,
+    // marginLeft must be initialized to the default values that are used if
+    // auto is specified.
+    virtual void pageSizeAndMarginsInPixels(int pageIndex,
+        WebSize& pageSize,
+        int& marginTop,
+        int& marginRight,
+        int& marginBottom,
+        int& marginLeft) = 0;
+
+    // Returns the value for a page property that is only defined when printing.
+    // printBegin must have been called before this method.
+    virtual WebString pageProperty(const WebString& propertyName, int pageIndex) = 0;
+
+
     // Scripting --------------------------------------------------------------
     // Executes script in the context of the current page and returns the value
     // that the script evaluated to with callback. Script execution can be

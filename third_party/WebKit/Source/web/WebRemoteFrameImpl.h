@@ -114,16 +114,6 @@ public:
     float getPrintPageShrink(int page) override;
     void printEnd() override;
     bool isPrintScalingDisabledForPlugin(const WebNode&) override;
-    bool hasCustomPageSizeStyle(int pageIndex) override;
-    bool isPageBoxVisible(int pageIndex) override;
-    void pageSizeAndMarginsInPixels(
-        int pageIndex,
-        WebSize& pageSize,
-        int& marginTop,
-        int& marginRight,
-        int& marginBottom,
-        int& marginLeft) override;
-    WebString pageProperty(const WebString& propertyName, int pageIndex) override;
     void printPagesWithBoundaries(WebCanvas*, const WebSize&) override;
     void dispatchMessageEventWithOriginCheck(
         const WebSecurityOrigin& intendedTargetOrigin,

@@ -503,35 +503,6 @@ bool WebRemoteFrameImpl::isPrintScalingDisabledForPlugin(const WebNode&)
     return false;
 }
 
-bool WebRemoteFrameImpl::hasCustomPageSizeStyle(int pageIndex)
-{
-    NOTREACHED();
-    return false;
-}
-
-bool WebRemoteFrameImpl::isPageBoxVisible(int pageIndex)
-{
-    NOTREACHED();
-    return false;
-}
-
-void WebRemoteFrameImpl::pageSizeAndMarginsInPixels(
-    int pageIndex,
-    WebSize& pageSize,
-    int& marginTop,
-    int& marginRight,
-    int& marginBottom,
-    int& marginLeft)
-{
-    NOTREACHED();
-}
-
-WebString WebRemoteFrameImpl::pageProperty(const WebString& propertyName, int pageIndex)
-{
-    NOTREACHED();
-    return WebString();
-}
-
 void WebRemoteFrameImpl::printPagesWithBoundaries(WebCanvas*, const WebSize&)
 {
     NOTREACHED();
