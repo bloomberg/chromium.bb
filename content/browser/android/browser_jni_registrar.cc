@@ -26,7 +26,6 @@
 #include "content/browser/android/web_contents_observer_proxy.h"
 #include "content/browser/device_sensors/sensor_manager_android.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
-#include "content/browser/gamepad/gamepad_platform_data_fetcher_android.h"
 #include "content/browser/geolocation/location_api_adapter_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/session/media_session_delegate_android.h"
@@ -60,8 +59,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ContentViewRenderView",
      content::ContentViewRenderView::RegisterContentViewRenderView},
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
-    {"GamepadList", content::GamepadPlatformDataFetcherAndroid::
-                        RegisterGamepadPlatformDataFetcherAndroid},
     {"HandleViewResources",
      content::CompositedTouchHandleDrawable::RegisterHandleViewResources},
     {"InterstitialPageDelegateAndroid",

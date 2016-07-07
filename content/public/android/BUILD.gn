@@ -35,6 +35,7 @@ android_library("content_java") {
     "//device/battery:mojo_bindings_java",
     "//device/battery/android:battery_monitor_android",
     "//device/bluetooth:java",
+    "//device/gamepad:java",
     "//device/power_save_blocker:java",
     "//device/usb:java",
     "//device/vibration:mojo_bindings_java",
@@ -163,9 +164,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/input/CursorAnchorInfoController.java",
     "java/src/org/chromium/content/browser/input/DateTimeChooserAndroid.java",
     "java/src/org/chromium/content/browser/input/FloatingPastePopupMenu.java",
-    "java/src/org/chromium/content/browser/input/GamepadDevice.java",
-    "java/src/org/chromium/content/browser/input/GamepadList.java",
-    "java/src/org/chromium/content/browser/input/GamepadMappings.java",
     "java/src/org/chromium/content/browser/input/HandleViewResources.java",
     "java/src/org/chromium/content/browser/input/ImeAdapter.java",
     "java/src/org/chromium/content/browser/input/ImeUtils.java",
@@ -267,7 +265,6 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/browser/android/gesture_event_type.h",
     "//content/browser/device_sensors/device_sensors_consts.h",
     "//content/browser/device_sensors/sensor_manager_android.h",
-    "//content/browser/gamepad/gamepad_standard_mappings.h",
     "//content/public/browser/invalidate_type.h",
     "//content/public/browser/navigation_controller.h",
     "//content/public/browser/readback_types.h",
@@ -390,7 +387,6 @@ android_library("content_javatests") {
 # GYP: //content/content_tests.gypi:content_junit_tests
 junit_binary("content_junit_tests") {
   java_files = [
-    "junit/src/org/chromium/content/browser/input/GamepadMappingsTest.java",
     "junit/src/org/chromium/content/browser/input/RangeTest.java",
     "junit/src/org/chromium/content/browser/input/TextInputStateTest.java",
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionTest.java",

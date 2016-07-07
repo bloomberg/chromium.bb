@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
-#include "content/browser/gamepad/gamepad_consumer.h"
-#include "content/browser/gamepad/gamepad_data_fetcher.h"
-#include "content/browser/gamepad/gamepad_provider.h"
+#include "content/browser/gamepad/gamepad_shared_buffer_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "device/gamepad/gamepad_consumer.h"
+#include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/gamepad_provider.h"
 
 namespace content {
 
@@ -27,8 +29,10 @@ GamepadService::GamepadService()
   SetInstance(this);
 }
 
-GamepadService::GamepadService(std::unique_ptr<GamepadDataFetcher> fetcher)
-    : provider_(new GamepadProvider(std::move(fetcher))),
+GamepadService::GamepadService(
+    std::unique_ptr<device::GamepadDataFetcher> fetcher)
+    : provider_(new device::GamepadProvider(
+        base::MakeUnique<GamepadSharedBufferImpl>(), this, std::move(fetcher))),
       num_active_consumers_(0),
       gesture_callback_pending_(false) {
   SetInstance(this);
@@ -53,11 +57,12 @@ GamepadService* GamepadService::GetInstance() {
   return g_gamepad_service;
 }
 
-void GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
+void GamepadService::ConsumerBecameActive(device::GamepadConsumer* consumer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!provider_)
-    provider_.reset(new GamepadProvider);
+    provider_.reset(new device::GamepadProvider(
+        base::MakeUnique<GamepadSharedBufferImpl>(), this));
 
   std::pair<ConsumerSet::iterator, bool> insert_result =
       consumers_.insert(consumer);
@@ -74,7 +79,7 @@ void GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
     provider_->Resume();
 }
 
-void GamepadService::ConsumerBecameInactive(GamepadConsumer* consumer) {
+void GamepadService::ConsumerBecameInactive(device::GamepadConsumer* consumer) {
   DCHECK(provider_);
   DCHECK(num_active_consumers_ > 0);
   DCHECK(consumers_.count(consumer) > 0);
@@ -85,7 +90,7 @@ void GamepadService::ConsumerBecameInactive(GamepadConsumer* consumer) {
     provider_->Pause();
 }
 
-void GamepadService::RemoveConsumer(GamepadConsumer* consumer) {
+void GamepadService::RemoveConsumer(device::GamepadConsumer* consumer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   ConsumerSet::iterator it = consumers_.find(consumer);
@@ -102,6 +107,20 @@ void GamepadService::RegisterForUserGesture(const base::Closure& closure) {
 
 void GamepadService::Terminate() {
   provider_.reset();
+}
+
+void GamepadService::OnGamepadConnectionChange(bool connected,
+                                               int index,
+                                               const blink::WebGamepad& pad) {
+  if (connected) {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&GamepadService::OnGamepadConnected,
+                                       base::Unretained(this), index, pad));
+  } else {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&GamepadService::OnGamepadDisconnected,
+                                       base::Unretained(this), index, pad));
+  }
 }
 
 void GamepadService::OnGamepadConnected(

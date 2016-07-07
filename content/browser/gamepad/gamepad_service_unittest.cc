@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "content/browser/gamepad/gamepad_consumer.h"
-#include "content/browser/gamepad/gamepad_test_helpers.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "device/gamepad/gamepad_consumer.h"
+#include "device/gamepad/gamepad_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -23,7 +23,7 @@ static const int kNumberOfGamepads = blink::WebGamepads::itemsLengthCap;
 
 using blink::WebGamepads;
 
-class ConnectionListener : public GamepadConsumer {
+class ConnectionListener : public device::GamepadConsumer {
  public:
   ConnectionListener() {
     ClearCounters();
@@ -69,7 +69,7 @@ class GamepadServiceTest : public testing::Test {
   void SetUp() override;
 
  private:
-  MockGamepadDataFetcher* fetcher_;
+  device::MockGamepadDataFetcher* fetcher_;
   GamepadService* service_;
   std::unique_ptr<ConnectionListener> connection_listener_;
   TestBrowserThreadBundle browser_thread_;
@@ -93,8 +93,9 @@ GamepadServiceTest::~GamepadServiceTest() {
 }
 
 void GamepadServiceTest::SetUp() {
-  fetcher_ = new MockGamepadDataFetcher(test_data_);
-  service_ = new GamepadService(std::unique_ptr<GamepadDataFetcher>(fetcher_));
+  fetcher_ = new device::MockGamepadDataFetcher(test_data_);
+  service_ = new GamepadService(
+      std::unique_ptr<device::GamepadDataFetcher>(fetcher_));
   connection_listener_.reset((new ConnectionListener));
   service_->ConsumerBecameActive(connection_listener_.get());
 }

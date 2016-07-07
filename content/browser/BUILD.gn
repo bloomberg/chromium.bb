@@ -58,6 +58,7 @@ source_set("browser") {
     "//crypto",
     "//device/battery",
     "//device/bluetooth",
+    "//device/gamepad",
     "//device/power_save_blocker",
     "//device/vibration",
     "//gin",
@@ -157,10 +158,6 @@ source_set("browser") {
     sources -= [ "renderer_host/web_input_event_aurawin.cc" ]
   }
 
-  if (!is_win && !is_mac && !is_android && (!is_linux || !use_udev)) {
-    sources += [ "gamepad/gamepad_platform_data_fetcher.cc" ]
-  }
-
   if (enable_basic_printing || enable_print_preview) {
     deps += [ "//printing" ]
   }
@@ -248,10 +245,6 @@ source_set("browser") {
       "//device/udev_linux",
       "//media/capture",
     ]
-  } else {
-    if (is_linux) {
-      sources -= [ "gamepad/gamepad_platform_data_fetcher_linux.cc" ]
-    }
   }
 
   if (enable_plugins) {

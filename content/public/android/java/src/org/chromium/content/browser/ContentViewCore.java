@@ -66,7 +66,6 @@ import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBri
 import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
 import org.chromium.content.browser.input.AnimationIntervalProvider;
 import org.chromium.content.browser.input.FloatingPastePopupMenu;
-import org.chromium.content.browser.input.GamepadList;
 import org.chromium.content.browser.input.ImeAdapter;
 import org.chromium.content.browser.input.InputMethodManagerWrapper;
 import org.chromium.content.browser.input.JoystickScrollProvider;
@@ -84,6 +83,7 @@ import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.device.gamepad.GamepadList;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;

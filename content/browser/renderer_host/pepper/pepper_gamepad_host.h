@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/gamepad/gamepad_consumer.h"
 #include "content/common/content_export.h"
+#include "device/gamepad/gamepad_consumer.h"
 #include "ppapi/host/resource_host.h"
 
 namespace ppapi {
@@ -27,7 +27,7 @@ class GamepadService;
 
 class CONTENT_EXPORT PepperGamepadHost :
     public ppapi::host::ResourceHost,
-    public GamepadConsumer {
+    public device::GamepadConsumer {
  public:
   PepperGamepadHost(BrowserPpapiHost* host,
                     PP_Instance instance,

@@ -7,7 +7,6 @@
 #include "base/metrics/histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/gamepad_hardware_buffer.h"
-#include "content/common/gamepad_user_gesture.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "ipc/ipc_sync_message_filter.h"

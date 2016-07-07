@@ -331,8 +331,6 @@
       'common/gamepad_messages.h',
       'common/gamepad_param_traits.cc',
       'common/gamepad_param_traits.h',
-      'common/gamepad_user_gesture.cc',
-      'common/gamepad_user_gesture.h',
       'common/generic_shared_memory_id_generator.cc',
       'common/generic_shared_memory_id_generator.h',
       'common/gin_java_bridge_messages.h',

@@ -670,6 +670,8 @@ test("content_unittests") {
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
+    "//device/gamepad",
+    "//device/gamepad:test_helpers",
     "//gin",
     "//gpu",
     "//gpu:test_support",

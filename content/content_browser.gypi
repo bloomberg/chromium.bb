@@ -18,6 +18,7 @@
     '../device/battery/battery.gyp:device_battery',
     '../device/battery/battery.gyp:device_battery_mojo_bindings',
     '../device/bluetooth/bluetooth.gyp:device_bluetooth',
+    '../device/gamepad/gamepad.gyp:device_gamepad',
     '../device/usb/usb.gyp:device_usb',
     '../device/power_save_blocker/power_save_blocker.gyp:device_power_save_blocker',
     '../device/vibration/vibration.gyp:device_vibration',
@@ -802,31 +803,10 @@
       'browser/frame_host/render_widget_host_view_child_frame.h',
       'browser/frame_host/render_widget_host_view_guest.cc',
       'browser/frame_host/render_widget_host_view_guest.h',
-      'browser/gamepad/gamepad_consumer.h',
-      'browser/gamepad/gamepad_data_fetcher.cc',
-      'browser/gamepad/gamepad_data_fetcher.h',
-      'browser/gamepad/gamepad_platform_data_fetcher.h',
-      'browser/gamepad/gamepad_platform_data_fetcher_android.cc',
-      'browser/gamepad/gamepad_platform_data_fetcher_android.h',
-      'browser/gamepad/gamepad_platform_data_fetcher_linux.cc',
-      'browser/gamepad/gamepad_platform_data_fetcher_linux.h',
-      'browser/gamepad/gamepad_platform_data_fetcher_mac.h',
-      'browser/gamepad/gamepad_platform_data_fetcher_mac.mm',
-      'browser/gamepad/gamepad_platform_data_fetcher_win.cc',
-      'browser/gamepad/gamepad_platform_data_fetcher_win.h',
-      'browser/gamepad/gamepad_provider.cc',
-      'browser/gamepad/gamepad_provider.h',
       'browser/gamepad/gamepad_service.cc',
       'browser/gamepad/gamepad_service.h',
-      'browser/gamepad/gamepad_standard_mappings.cc',
-      'browser/gamepad/gamepad_standard_mappings.h',
-      'browser/gamepad/gamepad_standard_mappings_linux.cc',
-      'browser/gamepad/gamepad_standard_mappings_mac.mm',
-      'browser/gamepad/gamepad_standard_mappings_win.cc',
-      'browser/gamepad/raw_input_data_fetcher_win.cc',
-      'browser/gamepad/raw_input_data_fetcher_win.h',
-      'browser/gamepad/xbox_data_fetcher_mac.cc',
-      'browser/gamepad/xbox_data_fetcher_mac.h',
+      'browser/gamepad/gamepad_shared_buffer_impl.cc',
+      'browser/gamepad/gamepad_shared_buffer_impl.h',
       'browser/geolocation/empty_wifi_data_provider.cc',
       'browser/geolocation/empty_wifi_data_provider.h',
       'browser/geolocation/geolocation_provider_impl.cc',
@@ -1869,11 +1849,6 @@
         'browser/file_descriptor_info_impl.h',
       ]
     }],
-    ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {
-      'sources': [
-        'browser/gamepad/gamepad_platform_data_fetcher.cc',
-      ]
-    }],
     ['debug_devtools==1', {
       'defines': [
         'DEBUG_DEVTOOLS=1',
@@ -1999,10 +1974,6 @@
         '../device/udev_linux/udev.gyp:udev_linux',
         '../media/capture/capture.gyp:capture',
       ],
-    }, {
-      'sources!': [
-        'browser/gamepad/gamepad_platform_data_fetcher_linux.cc',
-      ],
     }],
     ['OS=="linux" and use_aura==1', {
       'dependencies': [
@@ -2089,11 +2060,6 @@
       'sources!': [
         'browser/device_sensors/data_fetcher_shared_memory_default.cc',
         'browser/geolocation/wifi_data_provider_linux.cc',
-      ],
-    }],
-    ['os_bsd==1', {
-      'sources/': [
-        ['exclude', '^browser/gamepad/gamepad_platform_data_fetcher_linux\\.cc$'],
       ],
     }],
     ['use_aura==1', {

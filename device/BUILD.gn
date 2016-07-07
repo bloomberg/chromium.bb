@@ -59,6 +59,7 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_adapter_observer.h",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
+    "gamepad/gamepad_provider_unittest.cc",
     "nfc/nfc_chromeos_unittest.cc",
     "nfc/nfc_ndef_record_unittest.cc",
     "test/run_all_unittests.cc",
@@ -71,6 +72,8 @@ test("device_unittests") {
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
+    "//device/gamepad",
+    "//device/gamepad:test_helpers",
     "//device/nfc",
     "//device/power_save_blocker",
     "//device/vr",
@@ -235,5 +238,15 @@ if (is_android) {
       "//components/location/android:location_java",
       "//device/bluetooth:java",
     ]
+  }
+
+  junit_binary("device_junit_tests") {
+    java_files = [ "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java" ]
+    deps = [
+      "//base:base_java",
+      "//base:base_java_test_support",
+      "//device/gamepad:java",
+    ]
+    srcjar_deps = [ "//device/gamepad:java_enums_srcjar" ]
   }
 }

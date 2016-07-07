@@ -8,17 +8,22 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
-#include "content/browser/gamepad/gamepad_consumer.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "device/gamepad/gamepad_consumer.h"
+
+namespace device {
+
+class GamepadService;
+
+}
 
 namespace content {
 
-class GamepadService;
 class RenderProcessHost;
 
 class GamepadBrowserMessageFilter :
     public BrowserMessageFilter,
-    public GamepadConsumer {
+    public device::GamepadConsumer {
  public:
   GamepadBrowserMessageFilter();
 
