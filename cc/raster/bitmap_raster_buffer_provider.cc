@@ -103,9 +103,13 @@ ResourceFormat BitmapRasterBufferProvider::GetResourceFormat(
   return resource_provider_->best_texture_format();
 }
 
-bool BitmapRasterBufferProvider::GetResourceRequiresSwizzle(
+bool BitmapRasterBufferProvider::IsResourceSwizzleRequired(
     bool must_support_alpha) const {
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+}
+
+bool BitmapRasterBufferProvider::IsPartialRasterSupported() const {
+  return true;
 }
 
 void BitmapRasterBufferProvider::Shutdown() {}

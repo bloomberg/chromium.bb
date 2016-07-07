@@ -293,6 +293,8 @@ class CC_EXPORT TileManager {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   ScheduledTasksStateAsValue() const;
 
+  bool UsePartialRaster() const;
+
   TileManagerClient* client_;
   base::SequencedTaskRunner* task_runner_;
   ResourcePool* resource_pool_;

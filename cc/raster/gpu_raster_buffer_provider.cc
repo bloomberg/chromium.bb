@@ -188,10 +188,14 @@ ResourceFormat GpuRasterBufferProvider::GetResourceFormat(
   return resource_provider_->best_render_buffer_format();
 }
 
-bool GpuRasterBufferProvider::GetResourceRequiresSwizzle(
+bool GpuRasterBufferProvider::IsResourceSwizzleRequired(
     bool must_support_alpha) const {
   // This doesn't require a swizzle because we rasterize to the correct format.
   return false;
+}
+
+bool GpuRasterBufferProvider::IsPartialRasterSupported() const {
+  return true;
 }
 
 void GpuRasterBufferProvider::Shutdown() {

@@ -932,7 +932,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   // Get the resource.
   uint64_t resource_content_id = 0;
   Resource* resource = nullptr;
-  if (use_partial_raster_ && tile->invalidated_id()) {
+  if (UsePartialRaster() && tile->invalidated_id()) {
     // TODO(danakj): For resources that are in use, we should still grab them
     // and copy from them instead of rastering everything. crbug.com/492754
     resource =
@@ -1229,8 +1229,7 @@ ResourceFormat TileManager::DetermineResourceFormat(const Tile* tile) const {
 }
 
 bool TileManager::DetermineResourceRequiresSwizzle(const Tile* tile) const {
-  return raster_buffer_provider_->GetResourceRequiresSwizzle(
-      !tile->is_opaque());
+  return raster_buffer_provider_->IsResourceSwizzleRequired(!tile->is_opaque());
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
@@ -1244,6 +1243,11 @@ TileManager::ScheduledTasksStateAsValue() const {
                     signals_.all_tile_tasks_completed);
   state->EndDictionary();
   return std::move(state);
+}
+
+bool TileManager::UsePartialRaster() const {
+  return use_partial_raster_ &&
+         raster_buffer_provider_->IsPartialRasterSupported();
 }
 
 // Utility function that can be used to create a "Task set finished" task that

@@ -148,9 +148,13 @@ ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
   return resource_provider_->best_texture_format();
 }
 
-bool OneCopyRasterBufferProvider::GetResourceRequiresSwizzle(
+bool OneCopyRasterBufferProvider::IsResourceSwizzleRequired(
     bool must_support_alpha) const {
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+}
+
+bool OneCopyRasterBufferProvider::IsPartialRasterSupported() const {
+  return true;
 }
 
 void OneCopyRasterBufferProvider::Shutdown() {

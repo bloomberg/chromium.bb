@@ -190,10 +190,6 @@ bool IsZeroCopyUploadEnabled() {
 }
 
 bool IsPartialRasterEnabled() {
-  // Zero copy currently doesn't take advantage of partial raster.
-  if (IsZeroCopyUploadEnabled())
-    return false;
-
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
   return !command_line.HasSwitch(switches::kDisablePartialRaster);
 }

@@ -28,9 +28,13 @@ ResourceFormat FakeRasterBufferProviderImpl::GetResourceFormat(
   return ResourceFormat::RGBA_8888;
 }
 
-bool FakeRasterBufferProviderImpl::GetResourceRequiresSwizzle(
+bool FakeRasterBufferProviderImpl::IsResourceSwizzleRequired(
     bool must_support_alpha) const {
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
+}
+
+bool FakeRasterBufferProviderImpl::IsPartialRasterSupported() const {
+  return true;
 }
 
 void FakeRasterBufferProviderImpl::Shutdown() {}
