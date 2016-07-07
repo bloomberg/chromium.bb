@@ -11,7 +11,6 @@ tests:
   - .2#h *ick5s6
   - typeform:
       italic: '+          '
-    xfail: true
 
 - - story stories
   - /or_2y /or_2ies
@@ -22,7 +21,6 @@ tests:
   - '#bd %d 2 _2#cd'
   - typeform:
       underline: '             + '
-    xfail: true
 
 - - bright blue ball
   - ~2b"r ~2blue ~2ball
@@ -130,7 +128,6 @@ tests:
   - .1#aici-#aide
   - typeform:
       italic: +++++++++
-    xfail: true
 
 - - briefly
   - brief.1ly
