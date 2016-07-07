@@ -27,6 +27,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "url/gurl.h"
@@ -41,6 +42,10 @@ constexpr int kArcIntentHelperVersionWithFullActivityName = 5;
 
 constexpr base::FilePath::CharType kArcDownloadPath[] =
     FILE_PATH_LITERAL("/sdcard/Download");
+constexpr base::FilePath::CharType kRemovableMediaPath[] =
+    FILE_PATH_LITERAL("/media/removable");
+constexpr char kArcRemovableMediaProviderUrl[] =
+    "content://org.chromium.arc.removablemediaprovider/";
 constexpr char kAppIdSeparator = '/';
 constexpr char kPngDataUrlPrefix[] = "data:image/png;base64,";
 
@@ -146,6 +151,15 @@ bool ConvertToArcUrl(const base::FilePath& path, GURL* arc_url) {
   base::FilePath result_path(kArcDownloadPath);
   if (primary_downloads.AppendRelativePath(path, &result_path)) {
     *arc_url = net::FilePathToFileURL(result_path);
+    return true;
+  }
+
+  // Convert paths under /media/removable.
+  base::FilePath relative_path;
+  if (base::FilePath(kRemovableMediaPath)
+          .AppendRelativePath(path, &relative_path)) {
+    *arc_url = GURL(kArcRemovableMediaProviderUrl)
+                   .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));
     return true;
   }
 
