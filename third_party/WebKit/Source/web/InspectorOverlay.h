@@ -120,6 +120,8 @@ private:
     void drawPausedInDebuggerMessage();
     void drawViewSize();
 
+    float windowToViewportScale() const;
+
     Page* overlayPage();
     LocalFrame* overlayMainFrame();
     void reset(const IntSize& viewportSize, const IntPoint& documentScrollOffset);

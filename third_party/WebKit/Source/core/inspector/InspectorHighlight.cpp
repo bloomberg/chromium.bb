@@ -12,6 +12,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "platform/HostWindow.h"
 #include "platform/graphics/Path.h"
 
 namespace blink {
@@ -27,9 +28,11 @@ public:
 
     std::unique_ptr<protocol::ListValue> release() { return std::move(m_path); }
 
-    void appendPath(const Path& path)
+    void appendPath(const Path& path, float scale)
     {
-        path.apply(this, &PathBuilder::appendPathElement);
+        Path transformPath(path);
+        transformPath.transform(AffineTransform().scale(scale));
+        transformPath.apply(this, &PathBuilder::appendPathElement);
     }
 
 protected:
@@ -90,10 +93,10 @@ public:
         , m_layoutObject(layoutObject)
         , m_shapeOutsideInfo(shapeOutsideInfo) { }
 
-    static std::unique_ptr<protocol::ListValue> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path)
+    static std::unique_ptr<protocol::ListValue> buildPath(FrameView& view, LayoutObject& layoutObject, const ShapeOutsideInfo& shapeOutsideInfo, const Path& path, float scale)
     {
         ShapePathBuilder builder(view, layoutObject, shapeOutsideInfo);
-        builder.appendPath(path);
+        builder.appendPath(path, scale);
         return builder.release();
     }
 
@@ -213,11 +216,12 @@ std::unique_ptr<protocol::DictionaryValue> buildElementInfo(Element* element)
 
 } // namespace
 
-InspectorHighlight::InspectorHighlight()
+InspectorHighlight::InspectorHighlight(float scale)
     : m_highlightPaths(protocol::ListValue::create())
     , m_showRulers(false)
     , m_showExtensionLines(false)
     , m_displayAsMaterial(false)
+    , m_scale(scale)
 {
 }
 
@@ -234,6 +238,7 @@ InspectorHighlight::InspectorHighlight(Node* node, const InspectorHighlightConfi
     , m_showRulers(highlightConfig.showRulers)
     , m_showExtensionLines(highlightConfig.showExtensionLines)
     , m_displayAsMaterial(highlightConfig.displayAsMaterial)
+    , m_scale(1.f / node->document().view()->getHostWindow()->windowToViewportScalar(1.f))
 {
     appendPathsForShapeOutside(node, highlightConfig);
     appendNodeHighlight(node, highlightConfig);
@@ -249,7 +254,7 @@ void InspectorHighlight::appendQuad(const FloatQuad& quad, const Color& fillColo
 {
     Path path = quadToPath(quad);
     PathBuilder builder;
-    builder.appendPath(path);
+    builder.appendPath(path, m_scale);
     appendPath(builder.release(), fillColor, outlineColor, name);
 }
 
@@ -288,9 +293,9 @@ void InspectorHighlight::appendPathsForShapeOutside(Node* node, const InspectorH
         return;
     }
 
-    appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.shape), config.shape, Color::transparent);
+    appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.shape, m_scale), config.shape, Color::transparent);
     if (paths.marginShape.length())
-        appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.marginShape), config.shapeMargin, Color::transparent);
+        appendPath(ShapePathBuilder::buildPath(*node->document().view(), *node->layoutObject(), *shapeOutsideInfo, paths.marginShape, m_scale), config.shapeMargin, Color::transparent);
 }
 
 void InspectorHighlight::appendNodeHighlight(Node* node, const InspectorHighlightConfig& highlightConfig)
@@ -362,8 +367,8 @@ bool InspectorHighlight::getBoxModel(Node* node, std::unique_ptr<protocol::DOM::
     if (const ShapeOutsideInfo* shapeOutsideInfo = shapeOutsideInfoForNode(node, &paths, &boundsQuad)) {
         (*model)->setShapeOutside(protocol::DOM::ShapeOutsideInfo::create()
             .setBounds(buildArrayForQuad(boundsQuad))
-            .setShape(protocol::Array<protocol::Value>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape).get(), &errors))
-            .setMarginShape(protocol::Array<protocol::Value>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape).get(), &errors))
+            .setShape(protocol::Array<protocol::Value>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.shape, 1.f).get(), &errors))
+            .setMarginShape(protocol::Array<protocol::Value>::parse(ShapePathBuilder::buildPath(*view, *layoutObject, *shapeOutsideInfo, paths.marginShape, 1.f).get(), &errors))
             .build());
     }
 

@@ -46,7 +46,7 @@ class CORE_EXPORT InspectorHighlight {
     STACK_ALLOCATED();
 public:
     InspectorHighlight(Node*, const InspectorHighlightConfig&, bool appendElementInfo);
-    InspectorHighlight();
+    explicit InspectorHighlight(float scale);
     ~InspectorHighlight();
 
     static bool getBoxModel(Node*, std::unique_ptr<protocol::DOM::BoxModel>*);
@@ -67,6 +67,7 @@ private:
     bool m_showRulers;
     bool m_showExtensionLines;
     bool m_displayAsMaterial;
+    float m_scale;
 };
 
 } // namespace blink
