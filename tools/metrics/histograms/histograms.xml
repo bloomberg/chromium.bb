@@ -98383,9 +98383,6 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="PageLoadMetricsClients.Reload" separator="."
     ordering="prefix">
-  <obsolete>
-    Deprecated in favor of LoadType.Reload.
-  </obsolete>
   <suffix name="Clients.Reload"
       label="PageLoadMetrics from a page that is reloaded"/>
   <affected-histogram
