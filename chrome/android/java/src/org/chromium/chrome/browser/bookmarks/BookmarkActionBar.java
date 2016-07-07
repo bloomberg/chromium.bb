@@ -268,6 +268,15 @@ public class BookmarkActionBar extends Toolbar implements BookmarkUIObserver,
                     selectedBookmarks.size() == 1);
             getMenu().findItem(R.id.selection_open_in_incognito_tab_id)
                     .setVisible(PrefServiceBridge.getInstance().isIncognitoModeEnabled());
+            // It does not make sense to open a folder in new tab.
+            for (BookmarkId bookmark : selectedBookmarks) {
+                BookmarkItem item = mDelegate.getModel().getBookmarkById(bookmark);
+                if (item != null && item.isFolder()) {
+                    getMenu().findItem(R.id.selection_open_in_new_tab_id).setVisible(false);
+                    getMenu().findItem(R.id.selection_open_in_incognito_tab_id).setVisible(false);
+                    break;
+                }
+            }
             // Partner bookmarks can't move, so if the selection includes a partner bookmark,
             // disable the move button.
             for (BookmarkId bookmark : selectedBookmarks) {
