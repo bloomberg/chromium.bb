@@ -188,20 +188,25 @@ cr.define('print_preview', function() {
       var html;
       var label;
       if (numPages != numSheets) {
-        html = loadTimeData.getStringF('printPreviewSummaryFormatLong',
-                                       '<b>' + numSheets + '</b>',
-                                       '<b>' + summaryLabel + '</b>',
-                                       numPages,
-                                       pagesLabel);
+        html = loadTimeData.getStringF(
+            'printPreviewSummaryFormatLong',
+            '<b>' + numSheets.toLocaleString() + '</b>',
+            '<b>' + summaryLabel + '</b>',
+            numPages.toLocaleString(),
+            pagesLabel);
         label = loadTimeData.getStringF('printPreviewSummaryFormatLong',
-                                        numSheets, summaryLabel,
-                                        numPages, pagesLabel);
+                                        numSheets.toLocaleString(),
+                                        summaryLabel,
+                                        numPages.toLocaleString(),
+                                        pagesLabel);
       } else {
-        html = loadTimeData.getStringF('printPreviewSummaryFormatShort',
-                                       '<b>' + numSheets + '</b>',
-                                       '<b>' + summaryLabel + '</b>');
+        html = loadTimeData.getStringF(
+            'printPreviewSummaryFormatShort',
+            '<b>' + numSheets.toLocaleString() + '</b>',
+            '<b>' + summaryLabel + '</b>');
         label = loadTimeData.getStringF('printPreviewSummaryFormatShort',
-                                        numSheets, summaryLabel);
+                                        numSheets.toLocaleString(),
+                                        summaryLabel);
       }
 
       // Removing extra spaces from within the string.
