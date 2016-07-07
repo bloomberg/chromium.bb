@@ -574,7 +574,7 @@ class ReportStage(generic_stages.BuilderStage,
       commands.UploadArchivedFile(
           archive_path, [archive.upload_url], os.path.basename(index),
           debug=self._run.debug, acl=self.acl)
-      return dict((b, archive.download_url + '/index.html') for b in boards)
+      return dict((b, archive.download_url) for b in boards)
 
   def GetReportMetadata(self, config=None, stage=None, final_status=None,
                         completion_instance=None):
