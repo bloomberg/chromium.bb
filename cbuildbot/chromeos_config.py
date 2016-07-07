@@ -652,6 +652,7 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'elm-paladin',
         'elm-cheets-paladin',
+        'gru-paladin',
         'lakitu_next-paladin',
 
         # Experimental Canaries

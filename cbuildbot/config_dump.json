@@ -10208,6 +10208,7 @@
     },
     "gru-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "gru"
         ],
