@@ -345,9 +345,11 @@ public:
         , m_rootLayer(rootLayer) {}
 
     int compositorIdForTransformNode(const TransformPaintPropertyNode*);
+    int compositorIdForClipNode(const ClipPaintPropertyNode*);
 
 private:
     cc::TransformTree& transformTree() { return m_propertyTrees.transform_tree; }
+    cc::ClipTree& clipTree() { return m_propertyTrees.clip_tree; }
 
     // Property trees which should be updated by the manager.
     cc::PropertyTrees& m_propertyTrees;
@@ -356,8 +358,9 @@ private:
     // have any actual children, but at present must exist in the tree.
     cc::Layer* m_rootLayer;
 
-    // Map from Blink-side transform nodes to cc transform node indices.
+    // Maps from Blink-side property tree nodes to cc property node indices.
     HashMap<const TransformPaintPropertyNode*, int> m_transformNodeMap;
+    HashMap<const ClipPaintPropertyNode*, int> m_clipNodeMap;
 };
 
 int PropertyTreeManager::compositorIdForTransformNode(const TransformPaintPropertyNode* transformNode)
@@ -399,6 +402,43 @@ int PropertyTreeManager::compositorIdForTransformNode(const TransformPaintProper
     return id;
 }
 
+int PropertyTreeManager::compositorIdForClipNode(const ClipPaintPropertyNode* clipNode)
+{
+    if (!clipNode)
+        return kSecondaryRootNodeId;
+
+    auto it = m_clipNodeMap.find(clipNode);
+    if (it != m_clipNodeMap.end())
+        return it->value;
+
+    scoped_refptr<cc::Layer> dummyLayer = cc::Layer::Create();
+    int parentId = compositorIdForClipNode(clipNode->parent());
+    int id = clipTree().Insert(cc::ClipNode(), parentId);
+
+    cc::ClipNode& compositorNode = *clipTree().Node(id);
+    compositorNode.owner_id = dummyLayer->id();
+
+    // TODO(jbroman): Don't discard rounded corners.
+    compositorNode.data.clip = clipNode->clipRect().rect();
+    compositorNode.data.transform_id = compositorIdForTransformNode(clipNode->localTransformSpace());
+    compositorNode.data.target_id = kRealRootNodeId;
+    compositorNode.data.applies_local_clip = true;
+    compositorNode.data.layers_are_clipped = true;
+    compositorNode.data.layers_are_clipped_when_surfaces_disabled = true;
+
+    m_rootLayer->AddChild(dummyLayer);
+    dummyLayer->SetTransformTreeIndex(compositorNode.data.transform_id);
+    dummyLayer->SetClipTreeIndex(id);
+    dummyLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
+    dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
+    dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
+
+    auto result = m_clipNodeMap.set(clipNode, id);
+    DCHECK(result.isNewEntry);
+    clipTree().set_needs_update(true);
+    return id;
+}
+
 } // namespace
 
 void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintArtifact)
@@ -421,12 +461,14 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
         scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
 
         int transformId = propertyTreeManager.compositorIdForTransformNode(paintChunk.properties.transform.get());
+        int clipId = propertyTreeManager.compositorIdForClipNode(paintChunk.properties.clip.get());
+
         layer->set_offset_to_transform_parent(layerOffset);
 
         m_rootLayer->AddChild(layer);
         layer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
         layer->SetTransformTreeIndex(transformId);
-        layer->SetClipTreeIndex(kSecondaryRootNodeId);
+        layer->SetClipTreeIndex(clipId);
         layer->SetEffectTreeIndex(kSecondaryRootNodeId);
         layer->SetScrollTreeIndex(kRealRootNodeId);
 
