@@ -173,6 +173,7 @@ GpuChildThread::GpuChildThread(
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
+                          .UseMojoChannel(true)
                           .AddStartupFilter(new GpuMemoryBufferMessageFilter(
                               gpu_memory_buffer_factory))
                           .Build()),
