@@ -112,9 +112,11 @@ TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip)
     // the opposite direction to enclosing, and in the y direction, the edges
     // are exactly on a half-pixel boundary. The numbers chosen map nicely to
     // both float and LayoutUnit, to make equality checking reliable.
+    //
+    // The final cull rect should be the enclosing int rect of this rect.
     FloatRect rect(20.75, -5.5, 5.375, 10);
-    EXPECT_EQ(rect, drawAndGetCullRect(rootPaintController(), layoutView(), rect));
-    EXPECT_EQ(rect, drawAndGetCullRect(rootPaintController(), layoutView(), LayoutRect(rect)));
+    EXPECT_EQ(enclosingIntRect(rect), drawAndGetCullRect(rootPaintController(), layoutView(), rect));
+    EXPECT_EQ(enclosingIntRect(rect), drawAndGetCullRect(rootPaintController(), layoutView(), LayoutRect(rect)));
 }
 
 #if 0 // TODO(wangxianzhu): Rewrite this test for slimmingPaintInvalidation.
