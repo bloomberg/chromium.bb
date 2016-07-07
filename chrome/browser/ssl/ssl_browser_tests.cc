@@ -1045,13 +1045,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndGoForward) {
 // Visit a HTTP page which request WSS connection to a server providing invalid
 // certificate. Close the page while WSS connection waits for SSLManager's
 // response from UI thread.
-// Disabled on Windows because it was flaking on XP Tests (1). crbug.com/165258
-#if defined(OS_WIN)
-#define MAYBE_TestWSSInvalidCertAndClose DISABLED_TestWSSInvalidCertAndClose
-#else
-#define MAYBE_TestWSSInvalidCertAndClose TestWSSInvalidCertAndClose
-#endif
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestWSSInvalidCertAndClose) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndClose) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(wss_server_expired_.Start());
 
