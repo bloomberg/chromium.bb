@@ -211,6 +211,11 @@ TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   // rendering. https://crbug.com/594343.
   if (base::mac::IsOSMavericks())
     return;
+
+  // This functionality is disabled on Yosemite because it is suspected of
+  // causing performance regressions on old hardware. https://crbug.com/606850.
+  if (base::mac::IsOSYosemite())
+    return;
 #endif
 
   const gfx::Size image_size(256, 256);

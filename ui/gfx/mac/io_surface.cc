@@ -21,7 +21,7 @@ namespace gfx {
 namespace {
 
 const base::Feature kIOSurfaceClearYosemite{"IOSurfaceClearYosemite",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
