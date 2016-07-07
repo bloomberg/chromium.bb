@@ -1754,7 +1754,7 @@ LONG_STRING_CONST(
       "vendor_id": "0x1002",
       "device_id": ["0x68b8"],
       "features": [
-        "disable_webgl_multisampling_color_mask_usage"
+        "disable_multisampling_color_mask_usage"
       ]
     },
     {

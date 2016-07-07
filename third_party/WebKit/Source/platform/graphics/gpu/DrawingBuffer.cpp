@@ -799,7 +799,7 @@ void DrawingBuffer::commit()
         // multisampled renderbuffers and the alpha channel can be overwritten.
         // Clear the alpha channel of |m_fbo|.
         if (defaultBufferRequiresAlphaChannelToBePreserved()
-            && contextProvider()->getCapabilities().disable_webgl_multisampling_color_mask_usage) {
+            && contextProvider()->getCapabilities().disable_multisampling_color_mask_usage) {
             m_gl->ClearColor(0, 0, 0, 1);
             m_gl->ColorMask(false, false, false, true);
             m_gl->Clear(GL_COLOR_BUFFER_BIT);
