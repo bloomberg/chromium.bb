@@ -73,7 +73,8 @@ function test(useAddEventListener) {
     });
 }
 
-PermissionsHelper.setPermission('midi-sysex', 'granted').then(function() {
+Promise.all([PermissionsHelper.setPermission('midi', 'granted'),
+             PermissionsHelper.setPermission('midi-sysex', 'granted')]).then(function() {
   test(false).then(test.bind(null, true)).then(finishJSTest, finishJSTest);
 });
 

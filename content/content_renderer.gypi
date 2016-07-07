@@ -331,8 +331,6 @@
       'renderer/media/media_stream_source.h',
       'renderer/media/media_stream_track.cc',
       'renderer/media/media_stream_track.h',
-      'renderer/media/midi_dispatcher.cc',
-      'renderer/media/midi_dispatcher.h',
       'renderer/media/midi_message_filter.cc',
       'renderer/media/midi_message_filter.h',
       'renderer/media/render_media_client.cc',

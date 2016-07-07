@@ -13,7 +13,8 @@ shouldBeDefined("navigator.requestMIDIAccess");
 
 window.jsTestIsAsync = true;
 
-PermissionsHelper.setPermission('midi-sysex', 'granted').then(function() {
+Promise.all([PermissionsHelper.setPermission('midi', 'granted'),
+             PermissionsHelper.setPermission('midi-sysex', 'granted')]).then(function() {
     return navigator.requestMIDIAccess({sysex: true});
 }).then(function(a) {
     output = a.outputs.values().next().value;

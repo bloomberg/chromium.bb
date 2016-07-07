@@ -35,7 +35,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "modules/webmidi/MIDIAccessInitializer.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
-#include "modules/webmidi/MIDIController.h"
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIInputMap.h"
 #include "modules/webmidi/MIDIOutput.h"
