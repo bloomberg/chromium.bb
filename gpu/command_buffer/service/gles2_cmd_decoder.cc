@@ -2371,13 +2371,28 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
        enforce_internal_framebuffer));
   if (!resolve_and_bind_)
     return;
-
-  // TODO(erikchen): On old AMD GPUs on macOS, glColorMask doesn't work
-  // correctly for multisampled renderbuffers and the alpha channel can be
-  // overwritten. Add a workaround to clear the alpha channel before resolving.
-  // https://crbug.com/602484.
   ScopedGLErrorSuppressor suppressor(
       "ScopedResolvedFrameBufferBinder::ctor", decoder_->GetErrorState());
+
+  // On old AMD GPUs on macOS, glColorMask doesn't work correctly for
+  // multisampled renderbuffers and the alpha channel can be overwritten. This
+  // workaround clears the alpha channel before resolving.
+  bool alpha_channel_needs_clear =
+      decoder_->should_use_native_gmb_for_backbuffer_ &&
+      !decoder_->offscreen_buffer_should_have_alpha_ &&
+      decoder_->ChromiumImageNeedsRGBEmulation() &&
+      decoder_->feature_info_->workarounds()
+          .disable_multisampling_color_mask_usage;
+  if (alpha_channel_needs_clear) {
+    glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT,
+                         decoder_->offscreen_target_frame_buffer_->id());
+    decoder_->state_.SetDeviceColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
+    decoder->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    decoder_->RestoreClearState();
+  }
+
   glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT,
                        decoder_->offscreen_target_frame_buffer_->id());
   GLuint targetid;
