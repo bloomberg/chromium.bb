@@ -1377,6 +1377,10 @@ crbug.com/621892 css3/filters/effect-hue-rotate-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-saturate-hw.html [ Pass Failure ]
 crbug.com/621892 css3/filters/effect-sepia-hw.html [ Pass Failure ]
 
+crbug.com/612278 svg/as-background-image/background-repeat.html [ NeedsRebaseline ]
+crbug.com/612278 ietestcenter/css3/bordersbackgrounds/background-size-aspect-ratio.htm [ NeedsRebaseline ]
+crbug.com/612278 fast/backgrounds/background-repeat-with-background-color.html [ NeedsRebaseline ]
+
 crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrupted-scroll.html [ Pass Failure ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]

@@ -354,13 +354,14 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     LayoutUnit computedXPosition = roundedMinimumValueForLength(fillLayer.xPosition(), availableWidth);
     if (backgroundRepeatX == RoundFill && positioningAreaSize.width() > LayoutUnit() && fillTileSize.width() > LayoutUnit()) {
         int nrTiles = std::max(1, roundToInt(positioningAreaSize.width() / fillTileSize.width()));
-
-        fillTileSize.setWidth(positioningAreaSize.width() / nrTiles);
+        LayoutUnit roundedWidth = positioningAreaSize.width() / nrTiles;
 
         // Maintain aspect ratio if background-size: auto is set
         if (fillLayer.size().size.height().isAuto() && backgroundRepeatY != RoundFill) {
-            fillTileSize.setHeight(fillTileSize.height() * positioningAreaSize.width() / (nrTiles * fillTileSize.width()));
+            fillTileSize.setHeight(fillTileSize.height() * roundedWidth / fillTileSize.width());
         }
+        fillTileSize.setWidth(roundedWidth);
+
         setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
         setPhaseX(tileSize().width()
             ? LayoutUnit(roundf(tileSize().width() - fmodf((computedXPosition + left), tileSize().width())))
@@ -371,13 +372,13 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
     LayoutUnit computedYPosition = roundedMinimumValueForLength(fillLayer.yPosition(), availableHeight);
     if (backgroundRepeatY == RoundFill && positioningAreaSize.height() > LayoutUnit() && fillTileSize.height() > LayoutUnit()) {
         int nrTiles = std::max(1, roundToInt(positioningAreaSize.height() / fillTileSize.height()));
-
-        fillTileSize.setHeight(positioningAreaSize.height() / nrTiles);
-
+        LayoutUnit roundedHeight = positioningAreaSize.height() / nrTiles;
         // Maintain aspect ratio if background-size: auto is set
         if (fillLayer.size().size.width().isAuto() && backgroundRepeatX != RoundFill) {
-            fillTileSize.setWidth(fillTileSize.width() * positioningAreaSize.height() / (nrTiles * fillTileSize.height()));
+            fillTileSize.setWidth(fillTileSize.width() * roundedHeight / fillTileSize.height());
         }
+        fillTileSize.setHeight(roundedHeight);
+
         setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
         setPhaseY(tileSize().height()
             ? LayoutUnit(roundf(tileSize().height() - fmodf((computedYPosition + top), tileSize().height())))
