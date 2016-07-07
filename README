@@ -9,7 +9,7 @@ clients that demonstrate certain aspects of the protocol to more
 complete clients and a simplistic toolkit.  There is also a quite
 capable terminal emulator (weston-terminal) and an toy/example desktop
 shell.  Finally, weston also provides integration with the Xorg server
-and can pull X clients into the Wayland desktop and act as a X window
+and can pull X clients into the Wayland desktop and act as an X window
 manager.
 
 Refer to http://wayland.freedesktop.org/building.html for building
