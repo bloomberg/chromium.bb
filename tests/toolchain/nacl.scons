@@ -105,14 +105,14 @@ if env.Bit('bitcode') or env.Bit('nacl_clang'):
   # inline case is currently broken:
   # https://code.google.com/p/nativeclient/issues/detail?id=4170
                      is_broken=should_inline)
-  AddIntrinsicTest(env, 'llvm_math_intrinsics.c', '0',
+  AddIntrinsicTest(env, 'llvm_math_intrinsics.cc', '0',
                    golden_file=env.File('llvm_math_intrinsics.stdout'))
   # Also test the math functions with -ffast-math, so we are a tiny bit more
   # confident that sin() or __builtin_sin() doesn't get turned into
   # something like llvm.sin.f64.
   fastmath_env = env.Clone()
   fastmath_env.Append(CCFLAGS=['-ffast-math'])
-  AddIntrinsicTest(fastmath_env, 'llvm_math_intrinsics.c', '0',
+  AddIntrinsicTest(fastmath_env, 'llvm_math_intrinsics.cc', '0',
                    golden_file=env.File('llvm_math_intrinsics.stdout'),
                    test_suffix='_fast_math')
 
