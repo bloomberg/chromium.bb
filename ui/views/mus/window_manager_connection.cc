@@ -10,6 +10,7 @@
 #include "base/threading/thread_local.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
+#include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_property.h"
@@ -105,6 +106,9 @@ WindowManagerConnection::WindowManagerConnection(
     const shell::Identity& identity)
     : connector_(connector), identity_(identity) {
   lazy_tls_ptr.Pointer()->Set(this);
+
+  ui::GpuService::Initialize(connector);
+
   client_.reset(new ui::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
 
@@ -126,6 +130,7 @@ WindowManagerConnection::~WindowManagerConnection() {
   // we are still valid.
   client_.reset();
   ui::Clipboard::DestroyClipboardForCurrentThread();
+  ui::GpuService::Terminate();
   lazy_tls_ptr.Pointer()->Set(nullptr);
 
   if (ViewsDelegate::GetInstance()) {

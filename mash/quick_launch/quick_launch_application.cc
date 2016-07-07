@@ -16,7 +16,6 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
-#include "services/ui/common/gpu_service.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -168,7 +167,6 @@ void QuickLaunchApplication::OnStart(shell::Connector* connector,
                                      const shell::Identity& identity,
                                      uint32_t id) {
   connector_ = connector;
-  ui::GpuService::Initialize(connector);
   tracing_.Initialize(connector, identity.name());
 
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));

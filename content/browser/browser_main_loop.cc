@@ -192,11 +192,6 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-#include "services/ui/common/gpu_service.h"  // nogncheck
-#endif
-
-
 // One of the linux specific headers defines this as a macro.
 #ifdef DestroyAll
 #undef DestroyAll
@@ -1177,17 +1172,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           ->task_runner()));
 
   mojo_shell_context_.reset(new MojoShellContext);
-  if (shell::ShellIsRemote()) {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-    // TODO(rockot): Remove the blocking wait for init.
-    // http://crbug.com/594852.
-    auto connection = MojoShellConnection::GetForProcess();
-    if (connection) {
-      WaitForMojoShellInitialize();
-      ui::GpuService::Initialize(connection->GetConnector());
-    }
+  // TODO(rockot): Remove the blocking wait for init.
+  // http://crbug.com/594852.
+  if (shell::ShellIsRemote() && MojoShellConnection::GetForProcess())
+    WaitForMojoShellInitialize();
 #endif
-  }
 
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());

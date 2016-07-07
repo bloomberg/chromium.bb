@@ -32,7 +32,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "services/catalog/public/cpp/resource_loader.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "ui/aura/env.h"
@@ -309,8 +308,6 @@ SysUIApplication::~SysUIApplication() {}
 void SysUIApplication::OnStart(::shell::Connector* connector,
                                const ::shell::Identity& identity,
                                uint32_t id) {
-  ui::GpuService::Initialize(connector);
-
   ash_init_.reset(new AshInit());
   ash_init_->Initialize(connector, identity);
 
