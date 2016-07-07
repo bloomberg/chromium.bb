@@ -6,9 +6,12 @@
 
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/gpu_export.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/param_traits_macros.h"
+#include "ui/gfx/ipc/geometry/gfx_param_traits.h"
+#include "ui/gl/gpu_preference.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT GPU_EXPORT
@@ -18,6 +21,9 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     gpu::CommandBufferNamespace,
     gpu::CommandBufferNamespace::INVALID,
     gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(gl::GpuPreference, gl::GpuPreferenceLast)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::gles2::ContextType,
+                          gpu::gles2::CONTEXT_TYPE_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities::ShaderPrecision)
   IPC_STRUCT_TRAITS_MEMBER(min_range)
@@ -119,4 +125,22 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(gpu::gles2::ContextCreationAttribHelper)
+  IPC_STRUCT_TRAITS_MEMBER(offscreen_framebuffer_size)
+  IPC_STRUCT_TRAITS_MEMBER(gpu_preference)
+  IPC_STRUCT_TRAITS_MEMBER(alpha_size)
+  IPC_STRUCT_TRAITS_MEMBER(blue_size)
+  IPC_STRUCT_TRAITS_MEMBER(green_size)
+  IPC_STRUCT_TRAITS_MEMBER(red_size)
+  IPC_STRUCT_TRAITS_MEMBER(depth_size)
+  IPC_STRUCT_TRAITS_MEMBER(stencil_size)
+  IPC_STRUCT_TRAITS_MEMBER(samples)
+  IPC_STRUCT_TRAITS_MEMBER(sample_buffers)
+  IPC_STRUCT_TRAITS_MEMBER(buffer_preserved)
+  IPC_STRUCT_TRAITS_MEMBER(bind_generates_resource)
+  IPC_STRUCT_TRAITS_MEMBER(fail_if_major_perf_caveat)
+  IPC_STRUCT_TRAITS_MEMBER(lose_context_when_out_of_memory)
+  IPC_STRUCT_TRAITS_MEMBER(context_type)
 IPC_STRUCT_TRAITS_END()

@@ -1,25 +1,25 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
-  'variables': {
+ 'variables': {
     'chromium_code': 1,
+    # nacl_win64_target is for building the trusted Win64 NaCl broker.
+    'nacl_win64_target': 0,
   },
   'includes': [
     '../../build/common_untrusted.gypi',
-    'command_buffer.gypi',
   ],
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
         {
-          'target_name': 'gles2_utils_nacl',
+          'target_name': 'gfx_geometry_nacl',
           'type': 'none',
           'variables': {
-            'gles2_utils_target': 1,
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libgles2_utils_nacl.a',
+            'nlib_target': 'libgfx_geometry_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -29,8 +29,9 @@
           'dependencies': [
             '../../base/base_nacl.gyp:base_nacl',
             '../../base/base_nacl.gyp:base_nacl_nonsfi',
-            '../../ui/gfx/gfx_nacl.gyp:gfx_geometry_nacl',
-            '../../third_party/khronos/khronos.gyp:khronos_headers',
+          ],
+          'includes': [
+            'gfx_geometry.gypi',
           ],
         },
       ],

@@ -57,7 +57,7 @@ PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
 PP_Resource PPB_Graphics3D_Impl::CreateRaw(
     PP_Instance instance,
     PP_Resource share_context,
-    const int32_t* attrib_list,
+    const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
     gpu::Capabilities* capabilities,
     base::SharedMemoryHandle* shared_state_handle,
     gpu::CommandBufferId* command_buffer_id) {
@@ -70,7 +70,7 @@ PP_Resource PPB_Graphics3D_Impl::CreateRaw(
   }
   scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
       new PPB_Graphics3D_Impl(instance));
-  if (!graphics_3d->InitRaw(share_api, attrib_list, capabilities,
+  if (!graphics_3d->InitRaw(share_api, attrib_helper, capabilities,
                             shared_state_handle, command_buffer_id))
     return 0;
   return graphics_3d->GetReference();
@@ -190,11 +190,12 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token) {
   return PP_OK_COMPLETIONPENDING;
 }
 
-bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
-                                  const int32_t* attrib_list,
-                                  gpu::Capabilities* capabilities,
-                                  base::SharedMemoryHandle* shared_state_handle,
-                                  gpu::CommandBufferId* command_buffer_id) {
+bool PPB_Graphics3D_Impl::InitRaw(
+    PPB_Graphics3D_API* share_context,
+    const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
+    gpu::Capabilities* capabilities,
+    base::SharedMemoryHandle* shared_state_handle,
+    gpu::CommandBufferId* command_buffer_id) {
   PepperPluginInstanceImpl* plugin_instance =
       HostGlobals::Get()->GetInstance(pp_instance());
   if (!plugin_instance)
@@ -225,41 +226,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   if (!channel)
     return false;
 
-  gpu::gles2::ContextCreationAttribHelper attrib_helper;
-  std::vector<int32_t> attribs;
-  attrib_helper.gpu_preference = gl::PreferDiscreteGpu;
-  // TODO(alokp): Change CommandBufferProxyImpl::Create()
-  // interface to accept width and height in the attrib_list so that
-  // we do not need to filter for width and height here.
-  if (attrib_list) {
-    for (const int32_t* attr = attrib_list; attr[0] != PP_GRAPHICS3DATTRIB_NONE;
-         attr += 2) {
-      switch (attr[0]) {
-        case PP_GRAPHICS3DATTRIB_WIDTH:
-          attrib_helper.offscreen_framebuffer_size.set_width(attr[1]);
-          break;
-        case PP_GRAPHICS3DATTRIB_HEIGHT:
-          attrib_helper.offscreen_framebuffer_size.set_height(attr[1]);
-          break;
-        case PP_GRAPHICS3DATTRIB_GPU_PREFERENCE:
-          attrib_helper.gpu_preference =
-              (attr[1] == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
-                  ? gl::PreferIntegratedGpu
-                  : gl::PreferDiscreteGpu;
-          break;
-        case PP_GRAPHICS3DATTRIB_ALPHA_SIZE:
-          has_alpha_ = attr[1] > 0;
-        // fall-through
-        default:
-          attribs.push_back(attr[0]);
-          attribs.push_back(attr[1]);
-          break;
-      }
-    }
-    attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
-  }
-  if (!attrib_helper.Parse(attribs))
-    return false;
+  has_alpha_ = attrib_helper.alpha_size > 0;
 
   gpu::CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
