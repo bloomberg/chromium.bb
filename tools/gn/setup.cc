@@ -514,7 +514,7 @@ bool Setup::FillSourceDir(const base::CommandLine& cmdline) {
       if (dotfile_name_.empty()) {
         Err(Location(), "Could not load dotfile.",
             "The file \"" + FilePathToUTF8(dot_file_path) +
-            "\" cound't be loaded.").PrintToStdout();
+            "\" couldn't be loaded.").PrintToStdout();
         return false;
       }
     }
@@ -624,7 +624,7 @@ bool Setup::RunConfigFile() {
   dotfile_input_file_.reset(new InputFile(SourceFile("//.gn")));
   if (!dotfile_input_file_->Load(dotfile_name_)) {
     Err(Location(), "Could not load dotfile.",
-        "The file \"" + FilePathToUTF8(dotfile_name_) + "\" cound't be loaded")
+        "The file \"" + FilePathToUTF8(dotfile_name_) + "\" couldn't be loaded")
         .PrintToStdout();
     return false;
   }
