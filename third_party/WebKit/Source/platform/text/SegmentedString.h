@@ -211,7 +211,11 @@ public:
     void close();
 
     void append(const SegmentedString&);
-    void prepend(const SegmentedString&);
+    enum class PrependType {
+        NewInput = 0,
+        Unconsume = 1,
+    };
+    void prepend(const SegmentedString&, PrependType);
 
     bool excludeLineNumbers() const { return m_currentString.excludeLineNumbers(); }
     void setExcludeLineNumbers();
@@ -323,7 +327,7 @@ private:
     };
 
     void append(const SegmentedSubstring&);
-    void prepend(const SegmentedSubstring&);
+    void prepend(const SegmentedSubstring&, PrependType);
 
     void advance8();
     void advance16();
@@ -399,7 +403,7 @@ private:
         LookAheadResult result = DidNotMatch;
         if (consumedString.startsWith(string, caseSensitivity))
             result = DidMatch;
-        prepend(SegmentedString(consumedString));
+        prepend(SegmentedString(consumedString), PrependType::Unconsume);
         return result;
     }
 

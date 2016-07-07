@@ -90,8 +90,10 @@ void BackgroundHTMLInputStream::rewindTo(HTMLInputCheckpoint checkpointIndex, co
         m_current.append(SegmentedString(m_segments[i]));
     }
 
-    if (!unparsedInput.isEmpty())
-        m_current.prepend(SegmentedString(unparsedInput));
+    if (!unparsedInput.isEmpty()) {
+        m_current.prepend(SegmentedString(unparsedInput),
+            SegmentedString::PrependType::NewInput);
+    }
 
     if (isClosed && !m_current.isClosed())
         m_current.close();

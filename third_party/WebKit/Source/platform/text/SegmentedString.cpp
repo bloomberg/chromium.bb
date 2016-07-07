@@ -87,22 +87,21 @@ void SegmentedString::push(UChar c)
         return;
     }
 
-    prepend(SegmentedString(String(&c, 1)));
+    prepend(SegmentedString(String(&c, 1)), PrependType::Unconsume);
 }
 
-void SegmentedString::prepend(const SegmentedSubstring& s)
+void SegmentedString::prepend(const SegmentedSubstring& s, PrependType type)
 {
     ASSERT(!s.numberOfCharactersConsumed());
     if (!s.length())
         return;
 
-    // FIXME: We're assuming that the prepend were originally consumed by
-    //        this SegmentedString. We're also ASSERTing that s is a fresh
-    //        SegmentedSubstring. These assumptions are sufficient for our
-    //        current use, but we might need to handle the more elaborate
-    //        cases in the future.
+    // FIXME: We're also ASSERTing that s is a fresh SegmentedSubstring.
+    //        The assumption is sufficient for our current use, but we might
+    //        need to handle the more elaborate cases in the future.
     m_numberOfCharactersConsumedPriorToCurrentString += m_currentString.numberOfCharactersConsumed();
-    m_numberOfCharactersConsumedPriorToCurrentString -= s.length();
+    if (type == PrependType::Unconsume)
+        m_numberOfCharactersConsumedPriorToCurrentString -= s.length();
     if (!m_currentString.length()) {
         m_currentString = s;
         updateAdvanceFunctionPointers();
@@ -136,15 +135,15 @@ void SegmentedString::append(const SegmentedString& s)
     m_currentChar = m_currentString.length() ? m_currentString.getCurrentChar() : 0;
 }
 
-void SegmentedString::prepend(const SegmentedString& s)
+void SegmentedString::prepend(const SegmentedString& s, PrependType type)
 {
     if (s.isComposite()) {
         Deque<SegmentedSubstring>::const_reverse_iterator it = s.m_substrings.rbegin();
         Deque<SegmentedSubstring>::const_reverse_iterator e = s.m_substrings.rend();
         for (; it != e; ++it)
-            prepend(*it);
+            prepend(*it, type);
     }
-    prepend(s.m_currentString);
+    prepend(s.m_currentString, type);
     m_currentChar = m_currentString.length() ? m_currentString.getCurrentChar() : 0;
 }
 

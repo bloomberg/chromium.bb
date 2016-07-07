@@ -97,7 +97,8 @@ static void unconsumeCharacters(SegmentedString& source, ConsumedCharacterBuffer
         source.push(consumedCharacters[1]);
         source.push(consumedCharacters[0]);
     } else
-        source.prepend(SegmentedString(String(consumedCharacters)));
+        source.prepend(SegmentedString(String(consumedCharacters)),
+            SegmentedString::PrependType::Unconsume);
 }
 
 static bool consumeNamedEntity(SegmentedString& source, DecodedHTMLEntity& decodedEntity, bool& notEnoughCharacters, UChar additionalAllowedCharacter, UChar& cc)
