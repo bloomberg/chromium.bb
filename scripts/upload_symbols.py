@@ -597,6 +597,11 @@ def UploadSymbols(sym_paths, upload_url, product_name, dedupe_namespace=None,
   with osutils.TempDir(prefix='upload_symbols.') as tempdir:
     symbols = FindSymbolFiles(tempdir, sym_paths)
 
+    # Sort all of our symbols so the largest ones (probably the most important)
+    # are processed first.
+    symbols = list(symbols)
+    symbols.sort(key=lambda s: s.FileSize(), reverse=True)
+
     if upload_limit is not None:
       # Restrict symbols processed to the limit.
       symbols = itertools.islice(symbols, None, upload_limit)
