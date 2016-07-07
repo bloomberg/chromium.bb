@@ -80,7 +80,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '0949e1bef9d6b25ee44eb69a54e0cc6f8a677375',
+  'nacl_revision': '4623c4f8a10b85cc3c97f7ecb2f7cb48a1da665e',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype-android
   # and whatever else without interference from each other.
