@@ -83,6 +83,8 @@ TAGS
 /gnulib/arg-nonnull.h
 /gnulib/c++defs.h
 /gnulib/dirent.h
+/gnulib/errno.h
+/gnulib/getopt.h
 /gnulib/m4/absolute-header.m4
 /gnulib/m4/ld-output-def.m4
 /gnulib/stddef.h
@@ -193,6 +195,8 @@ TAGS
 # /tools/gnulib
 /tools/gnulib/arg-nonnull.h
 /tools/gnulib/c++defs.h
+/tools/gnulib/errno.h
+/tools/gnulib/getopt.h
 /tools/gnulib/stddef.h
 /tools/gnulib/stdio.h
 /tools/gnulib/stdlib.h
