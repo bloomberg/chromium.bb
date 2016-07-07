@@ -50,8 +50,6 @@ public:
     Element* element() const { return m_element; }
 
     enum LegacyTypeSupport { DisallowLegacyTypeInTypeAttribute, AllowLegacyTypeInTypeAttribute };
-    static bool isValidScriptTypeAndLanguage(const String& typeAttributeValue, const String& languageAttributeValue, LegacyTypeSupport supportLegacyTypes);
-
     bool prepareScript(const TextPosition& scriptStartPosition = TextPosition::minimumPosition(), LegacyTypeSupport = DisallowLegacyTypeInTypeAttribute);
 
     String scriptCharset() const { return m_characterEncoding; }
