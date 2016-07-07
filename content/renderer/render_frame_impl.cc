@@ -107,6 +107,7 @@
 #include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_renderer_factory_impl.h"
+#include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/media/user_media_client_impl.h"
@@ -1072,6 +1073,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       handling_select_range_(false),
       notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
+      midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
       media_session_manager_(NULL),
@@ -4325,6 +4327,12 @@ blink::WebEncryptedMediaClient* RenderFrameImpl::encryptedMediaClient() {
         GetCdmFactory(), GetMediaPermission()));
   }
   return web_encrypted_media_client_.get();
+}
+
+blink::WebMIDIClient* RenderFrameImpl::webMIDIClient() {
+  if (!midi_dispatcher_)
+    midi_dispatcher_ = new MidiDispatcher(this);
+  return midi_dispatcher_;
 }
 
 blink::WebString RenderFrameImpl::userAgentOverride() {

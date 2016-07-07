@@ -221,6 +221,7 @@
 #include "web/FindInPageCoordinates.h"
 #include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
+#include "web/MIDIClientProxy.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
 #include "web/NotificationPermissionClientImpl.h"
 #include "web/RemoteFrameOwner.h"
@@ -1467,6 +1468,7 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame)
 
     provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());
     provideUserMediaTo(*m_frame, &m_userMediaClientImpl);
+    provideMIDITo(*m_frame, MIDIClientProxy::create(m_client ? m_client->webMIDIClient() : nullptr));
     provideIndexedDBClientTo(*m_frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(*m_frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(*m_frame, NavigatorContentUtilsClientImpl::create(this));

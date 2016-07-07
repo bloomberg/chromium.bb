@@ -59,9 +59,7 @@ var acceptSysex = function (next) {
     });
 }
 
-PermissionsHelper.setPermission('midi', 'granted').then(function() {
-    rejectSysex(acceptSysex);
-});
+rejectSysex(acceptSysex);
 
 </script>
 </body>

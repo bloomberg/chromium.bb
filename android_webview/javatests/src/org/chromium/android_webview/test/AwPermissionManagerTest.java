@@ -22,9 +22,9 @@ import java.util.concurrent.Callable;
 public class AwPermissionManagerTest extends AwTestBase {
 
     private static final String REQUEST_DUPLICATE = "<html> <script>"
-            + "navigator.requestMIDIAccess().then(function() {"
+            + "navigator.requestMIDIAccess({sysex: true}).then(function() {"
             + "});"
-            + "navigator.requestMIDIAccess().then(function() {"
+            + "navigator.requestMIDIAccess({sysex: true}).then(function() {"
             + "  window.document.title = 'second-granted';"
             + "});"
             + "</script><body>"
