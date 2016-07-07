@@ -21,7 +21,15 @@ const char kGoogleDomain[] = "google.com";
 // sp.nom.br is an eTLD, so this is a regular valid registrable domain, just
 // like google.com.
 const char kLongETLDDomain[] = "website.sp.nom.br";
-// An IP address can be a registerable domain.
+// This domain will also not be found in registries, and since it has only
+// one component, it will not be recognized as a valid registrable domain.
+const char kInternalHostname[] = "fileserver";
+// This domain will not be found in registries. It will be assumed that
+// it belongs to an unknown registry, and since it has two components,
+// they will be treated as the second level domain and TLD. Most importantly,
+// it will NOT be treated as a subdomain of "fileserver".
+const char kUnknownRegistryDomain[] = "second-level-domain.fileserver";
+// IP addresses are supported.
 const char kIPAddress[] = "192.168.1.1";
 
 struct TestCase {
@@ -116,10 +124,12 @@ TEST(RegistrableDomainFilterBuilderTest, GURLWhitelist) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   TestCase test_cases[] = {
-      // We matche any URL on the specified domains.
+      // We match any URL on the specified domains.
       {"http://www.google.com/foo/bar", true},
       {"https://www.sub.google.com/foo/bar", true},
       {"https://sub.google.com", true},
@@ -128,6 +138,16 @@ TEST(RegistrableDomainFilterBuilderTest, GURLWhitelist) {
       {"https://www.website.sp.nom.br", true},
       {"http://192.168.1.1", true},
       {"http://192.168.1.1:80", true},
+
+      // Internal hostnames do not have subdomains.
+      {"http://fileserver", true },
+      {"http://fileserver/foo/bar", true },
+      {"http://website.fileserver/foo/bar", false },
+
+      // This is a valid registrable domain with the TLD "fileserver", which
+      // is unrelated to the internal hostname "fileserver".
+      {"http://second-level-domain.fileserver/foo", true},
+      {"http://www.second-level-domain.fileserver/index.html", true},
 
       // Different domains.
       {"https://www.youtube.com", false},
@@ -148,10 +168,12 @@ TEST(RegistrableDomainFilterBuilderTest, GURLBlacklist) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   TestCase test_cases[] = {
-      // We matches any URL that are not on the specified domains.
+      // We match any URL that are not on the specified domains.
       {"http://www.google.com/foo/bar", false},
       {"https://www.sub.google.com/foo/bar", false},
       {"https://sub.google.com", false},
@@ -160,6 +182,16 @@ TEST(RegistrableDomainFilterBuilderTest, GURLBlacklist) {
       {"https://www.website.sp.nom.br", false},
       {"http://192.168.1.1", false},
       {"http://192.168.1.1:80", false},
+
+      // Internal hostnames do not have subdomains.
+      {"http://fileserver", false },
+      {"http://fileserver/foo/bar", false },
+      {"http://website.fileserver/foo/bar", true },
+
+      // This is a valid registrable domain with the TLD "fileserver", which
+      // is unrelated to the internal hostname "fileserver".
+      {"http://second-level-domain.fileserver/foo", false},
+      {"http://www.second-level-domain.fileserver/index.html", false},
 
       // Different domains.
       {"https://www.youtube.com", true},
@@ -180,6 +212,8 @@ TEST(RegistrableDomainFilterBuilderTest, WhitelistContentSettings) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const ContentSettingsPattern&)> filter =
       builder.BuildWebsiteSettingsPatternMatchesFilter();
 
@@ -212,6 +246,18 @@ TEST(RegistrableDomainFilterBuilderTest, WhitelistContentSettings) {
       {"https://sp.nom.br", false},
       {"http://192.168.1.2", false},
 
+      // Internal hostnames do not have subdomains.
+      {"http://fileserver", true },
+      {"http://[*.]fileserver", false },
+      {"http://website.fileserver", false },
+
+      // This is a valid registrable domain with the TLD "fileserver", which
+      // is unrelated to the internal hostname "fileserver".
+      {"http://second-level-domain.fileserver", true},
+      {"http://[*.]second-level-domain.fileserver", true},
+      {"http://www.second-level-domain.fileserver", true},
+      {"http://[*.]www.second-level-domain.fileserver", true},
+
       // These patterns are more general than our registerable domain filter,
       // as they apply to more sites. So we don't match them. The content
       // settings categories that we'll be seeing from browsing_data_remover
@@ -230,6 +276,8 @@ TEST(RegistrableDomainFilterBuilderTest, BlacklistContentSettings) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const ContentSettingsPattern&)> filter =
       builder.BuildWebsiteSettingsPatternMatchesFilter();
 
@@ -262,6 +310,18 @@ TEST(RegistrableDomainFilterBuilderTest, BlacklistContentSettings) {
       {"https://sp.nom.br", true},
       {"http://192.168.1.2", true},
 
+      // Internal hostnames do not have subdomains.
+      {"fileserver", false },
+      {"http://[*.]fileserver", true },
+      {"website.fileserver", true },
+
+      // This is a valid registrable domain with the TLD "fileserver", which
+      // is unrelated to the internal hostname "fileserver".
+      {"http://second-level-domain.fileserver", false},
+      {"http://[*.]second-level-domain.fileserver", false},
+      {"http://www.second-level-domain.fileserver", false},
+      {"http://[*.]www.second-level-domain.fileserver", false},
+
       // These patterns are more general than our registerable domain filter,
       // as they apply to more sites. So we don't match them. The content
       // settings categories that we'll be seeing from browsing_data_remover
@@ -280,6 +340,8 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesCookiesWhitelist) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const net::CanonicalCookie&)> filter =
       builder.BuildCookieFilter();
 
@@ -306,7 +368,18 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesCookiesWhitelist) {
 
       // Different hosts in general.
       {"https://www.chrome.com", false},
-      {"http://192.168.2.1", false}};
+      {"http://192.168.2.1", false},
+
+      // Internal hostnames do not have subdomains.
+      {"https://fileserver", true },
+      {"http://fileserver/foo/bar", true },
+      {"http://website.fileserver", false },
+
+      // This is a valid registrable domain with the TLD "fileserver", which
+      // is unrelated to the internal hostname "fileserver".
+      {"http://second-level-domain.fileserver", true},
+      {"https://subdomain.second-level-domain.fileserver", true},
+  };
 
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);
@@ -318,6 +391,8 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesCookiesBlacklist) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const net::CanonicalCookie&)> filter =
       builder.BuildCookieFilter();
 
@@ -344,7 +419,18 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesCookiesBlacklist) {
 
       // Different hosts in general.
       {"https://www.chrome.com", true},
-      {"http://192.168.2.1", true}};
+      {"http://192.168.2.1", true},
+
+      // Internal hostnames do not have subdomains.
+      {"https://fileserver", false },
+      {"http://fileserver/foo/bar", false },
+      {"http://website.fileserver", true },
+
+      // This is a valid registrable domain with the TLD "fileserver", which
+      // is unrelated to the internal hostname "fileserver".
+      {"http://second-level-domain.fileserver", false},
+      {"https://subdomain.second-level-domain.fileserver", false},
+  };
 
   for (TestCase test_case : test_cases)
     RunTestCase(test_case, filter);
@@ -356,20 +442,25 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesChannelIDsWhitelist) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const std::string&)> filter =
       builder.BuildChannelIDFilter();
 
   TestCase test_cases[] = {
-      // Channel ID server identifiers can be top-level domains...
+      // Channel ID server identifiers can be second level domains, ...
       {"google.com", true},
       {"website.sp.nom.br", true},
+      {"second-level-domain.fileserver", true},
 
-      // or IP addresses.
+      // ... IP addresses, or internal hostnames.
       {"192.168.1.1", true},
+      {"fileserver", true},
 
       // Channel IDs not in the whitelist are not matched.
       {"example.com", false},
       {"192.168.1.2", false},
+      {"website.fileserver", false},
   };
 
   for (TestCase test_case : test_cases)
@@ -382,20 +473,25 @@ TEST(RegistrableDomainFilterBuilderTest, MatchesChannelIDsBlacklist) {
   builder.AddRegisterableDomain(std::string(kGoogleDomain));
   builder.AddRegisterableDomain(std::string(kLongETLDDomain));
   builder.AddRegisterableDomain(std::string(kIPAddress));
+  builder.AddRegisterableDomain(std::string(kUnknownRegistryDomain));
+  builder.AddRegisterableDomain(std::string(kInternalHostname));
   base::Callback<bool(const std::string&)> filter =
       builder.BuildChannelIDFilter();
 
   TestCase test_cases[] = {
-      // Channel ID server identifiers can be top-level domains...
+      // Channel ID server identifiers can be second level domains, ...
       {"google.com", false},
       {"website.sp.nom.br", false},
+      {"second-level-domain.fileserver", false},
 
-      // or IP addresses.
+      // ...IP addresses, or internal hostnames.
       {"192.168.1.1", false},
+      {"fileserver", false},
 
       // Channel IDs that are not blacklisted are matched.
       {"example.com", true},
       {"192.168.1.2", true},
+      {"website.fileserver", true},
   };
 
   for (TestCase test_case : test_cases)

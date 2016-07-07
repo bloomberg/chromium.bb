@@ -16,6 +16,27 @@ using net::registry_controlled_domains::GetDomainAndRegistry;
 using net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES;
 using Relation = ContentSettingsPattern::Relation;
 
+namespace {
+
+// Whether this is a registrable domain.
+bool IsRegistrableDomain(const std::string& domain) {
+  return GetDomainAndRegistry(domain, INCLUDE_PRIVATE_REGISTRIES) == domain;
+}
+
+// Whether this is a subdomain of a registrable domain.
+bool IsSubdomainOfARegistrableDomain(const std::string& domain) {
+  std::string registrable_domain =
+      GetDomainAndRegistry(domain, INCLUDE_PRIVATE_REGISTRIES);
+  return registrable_domain != domain && registrable_domain != "";
+}
+
+// Note that for every domain, exactly one of the following holds:
+// 1. IsRegistrableDomain(domain)                  - e.g. google.com
+// 2. IsSubdomainOfARegistrableDomain(domain)      - e.g. www.google.com
+// 3. GetDomainAndRegistry(domain, _) == ""        - e.g. localhost, 127.0.0.1
+
+}  // namespace
+
 RegistrableDomainFilterBuilder::RegistrableDomainFilterBuilder(Mode mode)
     : BrowsingDataFilterBuilder(mode) {
 }
@@ -24,11 +45,9 @@ RegistrableDomainFilterBuilder::~RegistrableDomainFilterBuilder() {}
 
 void RegistrableDomainFilterBuilder::AddRegisterableDomain(
     const std::string& domain) {
-  // We check that the domain we're given is actually a eTLD+1, or an IP
-  // address.
-  DCHECK(GetDomainAndRegistry("www." + domain, INCLUDE_PRIVATE_REGISTRIES) ==
-             domain ||
-         GURL("http://" + domain).HostIsIPAddress());
+  // We check that the domain we're given is actually a eTLD+1, an IP address,
+  // or an internal hostname.
+  DCHECK(!IsSubdomainOfARegistrableDomain(domain));
   domain_list_.insert(domain);
 }
 
@@ -46,16 +65,16 @@ RegistrableDomainFilterBuilder
       new std::vector<ContentSettingsPattern>();
   patterns_from_domains->reserve(domain_list_.size());
 
-  std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
-      ContentSettingsPattern::CreateBuilder(/* use_legacy_validate */ false));
   for (const std::string& domain : domain_list_) {
+    std::unique_ptr<ContentSettingsPattern::BuilderInterface> builder(
+        ContentSettingsPattern::CreateBuilder(/* use_legacy_validate */ false));
     builder->WithSchemeWildcard()
         ->WithPortWildcard()
         ->WithPathWildcard()
         ->WithHost(domain);
-    if (!GURL("http://" + domain).HostIsIPAddress()) {
+    if (IsRegistrableDomain(domain))
       builder->WithDomainWildcard();
-    }
+
     patterns_from_domains->push_back(builder->Build());
   }
 
@@ -99,10 +118,10 @@ bool RegistrableDomainFilterBuilder::MatchesURL(
     const GURL& url) {
   std::string url_registerable_domain =
       GetDomainAndRegistry(url, INCLUDE_PRIVATE_REGISTRIES);
-  return (registerable_domains->find(url_registerable_domain) !=
-              registerable_domains->end() ||
-          (url.HostIsIPAddress() && (registerable_domains->find(url.host()) !=
-                                     registerable_domains->end()))) ==
+  return (registerable_domains->find(
+              url_registerable_domain != "" ? url_registerable_domain
+                                            : url.host()) !=
+          registerable_domains->end()) ==
          (mode == WHITELIST);
 }
 
@@ -132,7 +151,7 @@ bool RegistrableDomainFilterBuilder::MatchesCookieForRegisterableDomainsAndIPs(
     cookie_domain = cookie_domain.substr(1);
   std::string parsed_cookie_domain =
       GetDomainAndRegistry(cookie_domain, INCLUDE_PRIVATE_REGISTRIES);
-  // This means we're an IP address.
+  // This means we're an IP address or an internal hostname.
   if (parsed_cookie_domain.empty())
     parsed_cookie_domain = cookie_domain;
   return (mode == WHITELIST) == (domains_and_ips->find(parsed_cookie_domain) !=
