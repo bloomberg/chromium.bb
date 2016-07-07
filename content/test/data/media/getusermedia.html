@@ -461,16 +461,8 @@
     var detectorFunction = function() {
       var width = videoElement.videoWidth;
       var height = videoElement.videoHeight;
-      if (width == 0 || height == 0) {
-        if (++attempt > maxAttempts) {
-          clearInterval(detectorInterval);
-          failTest("VideoElement width or height set to 0.");
-        }
-        else {
-          // We have zero size now; give a chance to shape up.
-          return;
-        }
-      }
+      if (width == 0 || height == 0)
+        failTest("VideoElement width and height set to 0.");
 
       canvas.width = width;
       canvas.height = height;
