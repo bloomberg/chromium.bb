@@ -1685,6 +1685,8 @@
       'browser/android/tracing_controller_android.h',
       'browser/android/web_contents_observer_proxy.cc',
       'browser/android/web_contents_observer_proxy.h',
+      'browser/media/capture/screen_capture_device_android.cc',
+      'browser/media/capture/screen_capture_device_android.h',
       'browser/renderer_host/compositor_impl_android.cc',
       'browser/renderer_host/compositor_impl_android.h',
       'browser/renderer_host/ime_adapter_android.cc',

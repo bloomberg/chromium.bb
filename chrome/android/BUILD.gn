@@ -156,6 +156,7 @@ android_library("chrome_java") {
     "//components/web_restrictions:web_restrictions_java",
     "//content/public/android:content_java",
     "//media/base/android:media_java",
+    "//media/capture/content/android:screen_capture_java",
     "//media/capture/video/android:capture_java",
     "//media/midi:midi_java",
     "//mojo/public/java:bindings",

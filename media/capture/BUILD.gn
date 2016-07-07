@@ -97,10 +97,15 @@ component("capture") {
 
   if (is_android) {
     public_deps += [
+      "content/android",
+      "content/android:screen_capture_java",
       "video/android",
       "video/android:capture_java",
     ]
-    deps += [ "video/android:capture_jni_headers" ]
+    deps += [
+      "content/android:screen_capture_jni_headers",
+      "video/android:capture_jni_headers",
+    ]
   }
 
   if (is_mac) {

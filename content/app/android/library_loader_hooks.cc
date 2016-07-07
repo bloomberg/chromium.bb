@@ -29,6 +29,7 @@
 #include "device/power_save_blocker/power_save_blocker_jni_registrar.h"
 #include "device/usb/android/usb_jni_registrar.h"
 #include "media/base/android/media_jni_registrar.h"
+#include "media/capture/content/android/screen_capture_jni_registrar.h"
 #include "media/capture/video/android/capture_jni_registrar.h"
 #include "media/midi/midi_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
@@ -91,6 +92,9 @@ bool EnsureJniRegistered(JNIEnv* env) {
       return false;
 
     if (!media::midi::RegisterJni(env))
+      return false;
+
+    if (!media::RegisterScreenCaptureJni(env))
       return false;
 
     if (!ui::RegisterUIAndroidJni(env))
