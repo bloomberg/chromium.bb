@@ -297,8 +297,6 @@
           'mac/launch_services_util.h',
           'mac/launchd.cc',
           'mac/launchd.h',
-          'mac/libdispatch_task_runner.cc',
-          'mac/libdispatch_task_runner.h',
           'mac/mac_logging.h',
           'mac/mac_logging.mm',
           'mac/mac_util.h',

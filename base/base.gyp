@@ -450,7 +450,6 @@
         'mac/call_with_eh_frame_unittest.mm',
         'mac/dispatch_source_mach_unittest.cc',
         'mac/foundation_util_unittest.mm',
-        'mac/libdispatch_task_runner_unittest.cc',
         'mac/mac_util_unittest.mm',
         'mac/mach_port_broker_unittest.cc',
         'mac/objc_property_releaser_unittest.mm',
