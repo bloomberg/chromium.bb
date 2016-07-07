@@ -92,8 +92,7 @@ bool SVGFESpecularLightingElement::setFilterEffectAttribute(FilterEffect* effect
     if (attrName == SVGNames::limitingConeAngleAttr)
         return lightSource->setLimitingConeAngle(lightElement->limitingConeAngle()->currentValue()->value());
 
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 void SVGFESpecularLightingElement::svgAttributeChanged(const QualifiedName& attrName)

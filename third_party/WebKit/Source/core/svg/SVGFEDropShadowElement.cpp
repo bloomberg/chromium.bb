@@ -73,9 +73,7 @@ bool SVGFEDropShadowElement::setFilterEffectAttribute(FilterEffect* effect, cons
         dropShadow->setShadowOpacity(svgStyle.floodOpacity());
         return true;
     }
-
-    NOTREACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 void SVGFEDropShadowElement::svgAttributeChanged(const QualifiedName& attrName)

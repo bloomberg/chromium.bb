@@ -50,6 +50,8 @@ void LayoutSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, cons
         if (newStyle.lightingColor() != oldStyle->svgStyle().lightingColor())
             toLayoutSVGResourceFilter(filter)->primitiveAttributeChanged(this, SVGNames::lighting_colorAttr);
     }
+    if (newStyle.colorInterpolationFilters() != oldStyle->svgStyle().colorInterpolationFilters())
+        toLayoutSVGResourceFilter(filter)->primitiveAttributeChanged(this, SVGNames::color_interpolation_filtersAttr);
 }
 
 } // namespace blink

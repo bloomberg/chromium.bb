@@ -113,8 +113,7 @@ bool SVGFEBlendElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
     if (attrName == SVGNames::modeAttr)
         return blend->setBlendMode(toWebBlendMode(m_mode->currentValue()->enumValue()));
 
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 void SVGFEBlendElement::svgAttributeChanged(const QualifiedName& attrName)

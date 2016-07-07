@@ -25,6 +25,7 @@
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/LayoutSVGResourceFilterPrimitive.h"
 #include "core/svg/SVGLength.h"
+#include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/filters/FilterEffect.h"
 
 namespace blink {
@@ -62,11 +63,16 @@ DEFINE_TRACE(SVGFilterPrimitiveStandardAttributes)
     SVGElement::trace(visitor);
 }
 
-bool SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(FilterEffect*, const QualifiedName&)
+bool SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(FilterEffect* effect, const QualifiedName& attrName)
 {
-    // When all filters support this method, it will be changed to a pure virtual method.
-    ASSERT_NOT_REACHED();
-    return false;
+    DCHECK(attrName == SVGNames::color_interpolation_filtersAttr);
+    DCHECK(layoutObject());
+    EColorInterpolation colorInterpolation = layoutObject()->styleRef().svgStyle().colorInterpolationFilters();
+    ColorSpace resolvedColorSpace = SVGFilterBuilder::resolveColorSpace(colorInterpolation);
+    if (resolvedColorSpace == effect->operatingColorSpace())
+        return false;
+    effect->setOperatingColorSpace(resolvedColorSpace);
+    return true;
 }
 
 void SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(const QualifiedName& attrName)

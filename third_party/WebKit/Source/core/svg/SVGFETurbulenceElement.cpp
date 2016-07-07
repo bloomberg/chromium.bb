@@ -89,8 +89,7 @@ bool SVGFETurbulenceElement::setFilterEffectAttribute(FilterEffect* effect, cons
     if (attrName == SVGNames::numOctavesAttr)
         return turbulence->setNumOctaves(m_numOctaves->currentValue()->value());
 
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 void SVGFETurbulenceElement::svgAttributeChanged(const QualifiedName& attrName)

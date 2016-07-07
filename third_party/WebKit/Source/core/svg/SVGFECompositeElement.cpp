@@ -93,8 +93,7 @@ bool SVGFECompositeElement::setFilterEffectAttribute(FilterEffect* effect, const
     if (attrName == SVGNames::k4Attr)
         return composite->setK4(m_k4->currentValue()->value());
 
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 

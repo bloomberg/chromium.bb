@@ -46,8 +46,7 @@ bool SVGFEFloodElement::setFilterEffectAttribute(FilterEffect* effect, const Qua
     if (attrName == SVGNames::flood_opacityAttr)
         return flood->setFloodOpacity(style.svgStyle().floodOpacity());
 
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 FilterEffect* SVGFEFloodElement::build(SVGFilterBuilder*, Filter* filter)

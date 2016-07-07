@@ -74,8 +74,7 @@ bool SVGFEDisplacementMapElement::setFilterEffectAttribute(FilterEffect* effect,
     if (attrName == SVGNames::scaleAttr)
         return displacementMap->setScale(m_scale->currentValue()->value());
 
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 void SVGFEDisplacementMapElement::svgAttributeChanged(const QualifiedName& attrName)

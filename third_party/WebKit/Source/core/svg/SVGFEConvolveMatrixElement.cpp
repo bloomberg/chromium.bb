@@ -151,9 +151,7 @@ bool SVGFEConvolveMatrixElement::setFilterEffectAttribute(FilterEffect* effect, 
         return convolveMatrix->setTargetOffset(targetPoint());
     if (attrName == SVGNames::preserveAlphaAttr)
         return convolveMatrix->setPreserveAlpha(m_preserveAlpha->currentValue()->value());
-
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrName)

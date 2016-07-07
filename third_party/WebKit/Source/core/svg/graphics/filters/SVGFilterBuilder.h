@@ -21,6 +21,7 @@
 #ifndef SVGFilterBuilder_h
 #define SVGFilterBuilder_h
 
+#include "core/style/SVGComputedStyleDefs.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
@@ -87,6 +88,8 @@ public:
 
     FilterEffect* getEffectById(const AtomicString& id) const;
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }
+
+    static ColorSpace resolveColorSpace(EColorInterpolation);
 
 private:
     void add(const AtomicString& id, FilterEffect*);

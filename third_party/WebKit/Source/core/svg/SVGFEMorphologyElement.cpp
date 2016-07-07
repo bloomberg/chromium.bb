@@ -68,9 +68,7 @@ bool SVGFEMorphologyElement::setFilterEffectAttribute(FilterEffect* effect, cons
         bool isRadiusYChanged = morphology->setRadiusY(radiusY()->currentValue()->value());
         return isRadiusXChanged || isRadiusYChanged;
     }
-
-    ASSERT_NOT_REACHED();
-    return false;
+    return SVGFilterPrimitiveStandardAttributes::setFilterEffectAttribute(effect, attrName);
 }
 
 void SVGFEMorphologyElement::svgAttributeChanged(const QualifiedName& attrName)
