@@ -22,7 +22,8 @@ namespace scheduler {
 class SchedulerTqmDelegate;
 
 // Common scheduler functionality for default tasks.
-class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
+class SCHEDULER_EXPORT SchedulerHelper
+    : public TaskQueueManager::Observer {
  public:
   // Category strings must have application lifetime (statics or
   // literals). They may not include " chars.
@@ -56,6 +57,11 @@ class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   // called on the thread this class was created on.
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
   void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
+
+  void SetTaskTimeTracker(TaskTimeTracker* task_time_tracker) {
+    if (task_queue_manager_)
+      task_queue_manager_->SetTaskTimeTracker(task_time_tracker);
+  }
 
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task runners will be

@@ -45875,6 +45875,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="RendererScheduler.ExpectedTaskQueueingDuration" units="ms">
+  <owner>tdresser@chromium.org</owner>
+  <summary>
+    The estimated queueing duration which would be observed for additional high
+    priority tasks posted to the RendererScheduler. Recorded for each 1000 ms
+    window.
+  </summary>
+</histogram>
+
 <histogram name="RendererScheduler.TaskQueueManager.DelayedTaskLateness"
     units="ms">
   <owner>alexclarke@chromium.org</owner>

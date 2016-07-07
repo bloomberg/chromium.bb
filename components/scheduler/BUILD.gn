@@ -13,6 +13,8 @@ component("scheduler") {
     "base/lazy_now.h",
     "base/pollable_thread_safe_flag.cc",
     "base/pollable_thread_safe_flag.h",
+    "base/queueing_time_estimator.cc",
+    "base/queueing_time_estimator.h",
     "base/real_time_domain.cc",
     "base/real_time_domain.h",
     "base/task_queue.h",
@@ -23,6 +25,7 @@ component("scheduler") {
     "base/task_queue_manager_delegate.h",
     "base/task_queue_selector.cc",
     "base/task_queue_selector.h",
+    "base/task_time_tracker.h",
     "base/time_domain.cc",
     "base/time_domain.h",
     "base/virtual_time_domain.cc",
@@ -119,12 +122,14 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "base/queueing_time_estimator_unittest.cc",
     "base/task_queue_manager_delegate_for_test.cc",
     "base/task_queue_manager_delegate_for_test.h",
     "base/task_queue_manager_unittest.cc",
     "base/task_queue_selector_unittest.cc",
-    "base/test_always_fail_time_source.cc",
-    "base/test_always_fail_time_source.h",
+    "base/test_count_uses_time_source.cc",
+    "base/test_count_uses_time_source.h",
+    "base/test_task_time_tracker.h",
     "base/test_time_source.cc",
     "base/test_time_source.h",
     "base/time_domain_unittest.cc",

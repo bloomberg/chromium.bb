@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "components/scheduler/base/pollable_thread_safe_flag.h"
+#include "components/scheduler/base/queueing_time_estimator.h"
+#include "components/scheduler/base/task_time_tracker.h"
 #include "components/scheduler/child/idle_helper.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/renderer/deadline_task_runner.h"
@@ -36,7 +38,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     : public RendererScheduler,
       public IdleHelper::Delegate,
       public SchedulerHelper::Observer,
-      public RenderWidgetSignals::Observer {
+      public RenderWidgetSignals::Observer,
+      public TaskTimeTracker,
+      public QueueingTimeEstimator::Client {
  public:
   // Keep RendererScheduler::UseCaseToString in sync with this enum.
   enum class UseCase {
@@ -125,6 +129,13 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void OnUnregisterTaskQueue(const scoped_refptr<TaskQueue>& queue) override;
   void OnTriedToExecuteBlockedTask(const TaskQueue& queue,
                                    const base::PendingTask& task) override;
+
+  // TaskTimeTracker implementation:
+  void ReportTaskTime(base::TimeTicks start_time,
+                      base::TimeTicks end_time) override;
+
+  // QueueingTimeEstimator::Client implementation:
+  void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time) override;
 
   // Returns a task runner where tasks run at the highest possible priority.
   scoped_refptr<TaskQueue> ControlTaskRunner();
@@ -352,12 +363,14 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   // (the accessors) for the following data members.
 
   struct MainThreadOnly {
-    MainThreadOnly(const scoped_refptr<TaskQueue>& compositor_task_runner,
+    MainThreadOnly(RendererSchedulerImpl* renderer_scheduler_impl,
+                   const scoped_refptr<TaskQueue>& compositor_task_runner,
                    base::TickClock* time_source);
     ~MainThreadOnly();
 
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
+    QueueingTimeEstimator queueing_time_estimator;
     IdleTimeEstimator idle_time_estimator;
     UseCase current_use_case;
     Policy current_policy;

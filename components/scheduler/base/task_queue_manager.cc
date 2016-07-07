@@ -14,6 +14,7 @@
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate.h"
 #include "components/scheduler/base/task_queue_selector.h"
+#include "components/scheduler/base/task_time_tracker.h"
 #include "components/scheduler/base/work_queue.h"
 #include "components/scheduler/base/work_queue_sets.h"
 
@@ -44,6 +45,7 @@ TaskQueueManager::TaskQueueManager(
       task_was_run_on_quiescence_monitored_queue_(false),
       work_batch_size_(1),
       task_count_(0),
+      task_time_tracker_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category),
@@ -128,12 +130,17 @@ void TaskQueueManager::UnregisterTaskQueue(
 
 void TaskQueueManager::UpdateWorkQueues(
     bool should_trigger_wakeup,
-    const internal::TaskQueueImpl::Task* previous_task) {
+    const internal::TaskQueueImpl::Task* previous_task,
+    LazyNow lazy_now) {
   TRACE_EVENT0(disabled_by_default_tracing_category_,
                "TaskQueueManager::UpdateWorkQueues");
 
   for (TimeDomain* time_domain : time_domains_) {
-    time_domain->UpdateWorkQueues(should_trigger_wakeup, previous_task);
+    LazyNow lazy_now_in_domain = time_domain == real_time_domain_.get()
+                                     ? lazy_now
+                                     : time_domain->CreateLazyNow();
+    time_domain->UpdateWorkQueues(should_trigger_wakeup, previous_task,
+                                  lazy_now_in_domain);
   }
 }
 
@@ -187,11 +194,18 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   if (!delegate_->IsNested())
     queues_to_delete_.clear();
 
+  LazyNow lazy_now(real_time_domain()->CreateLazyNow());
+  base::TimeTicks task_start_time;
+
+  if (!delegate_->IsNested() && task_time_tracker_)
+    task_start_time = lazy_now.Now();
+
   // Pass false and nullptr to UpdateWorkQueues here to prevent waking up a
   // pump-after-wakeup queue.
-  UpdateWorkQueues(false, nullptr);
+  UpdateWorkQueues(false, nullptr, lazy_now);
 
   internal::TaskQueueImpl::Task previous_task;
+
   for (int i = 0; i < work_batch_size_; i++) {
     internal::WorkQueue* work_queue;
     if (!SelectWorkQueueToService(&work_queue)) {
@@ -200,6 +214,7 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
 
     bool should_trigger_wakeup = work_queue->task_queue()->wakeup_policy() ==
                                  TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES;
+
     switch (ProcessTaskFromWorkQueue(work_queue, &previous_task)) {
       case ProcessTaskResult::DEFERRED:
         // If a task was deferred, try again with another task. Note that this
@@ -211,9 +226,18 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
       case ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED:
         return;  // The TaskQueueManager got deleted, we must bail out.
     }
+
+    lazy_now = real_time_domain()->CreateLazyNow();
+    if (!delegate_->IsNested() && task_time_tracker_) {
+      // Only report top level task durations.
+      base::TimeTicks task_end_time = lazy_now.Now();
+      task_time_tracker_->ReportTaskTime(task_start_time, task_end_time);
+      task_start_time = task_end_time;
+    }
+
     work_queue = nullptr; // The queue may have been unregistered.
 
-    UpdateWorkQueues(should_trigger_wakeup, &previous_task);
+    UpdateWorkQueues(should_trigger_wakeup, &previous_task, lazy_now);
 
     // Only run a single task per batch in nested run loops so that we can
     // properly exit the nested loop when someone calls RunLoop::Quit().

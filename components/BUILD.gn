@@ -483,6 +483,7 @@ if (!is_ios) {
       "scheduler/base/task_queue_manager_delegate_for_test.cc",
       "scheduler/base/task_queue_manager_delegate_for_test.h",
       "scheduler/base/task_queue_manager_perftest.cc",
+      "scheduler/base/test_task_time_tracker.h",
       "visitedlink/test/visitedlink_perftest.cc",
     ]
 

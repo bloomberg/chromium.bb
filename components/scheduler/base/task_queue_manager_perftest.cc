@@ -13,6 +13,7 @@
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "components/scheduler/base/task_queue_selector.h"
+#include "components/scheduler/base/test_task_time_tracker.h"
 #include "components/scheduler/base/work_queue_sets.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -41,6 +42,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
             message_loop_->task_runner(),
             base::WrapUnique(new base::DefaultTickClock())),
         "fake.category", "fake.category", "fake.category.debug"));
+    manager_->SetTaskTimeTracker(&test_task_time_tracker_);
     for (size_t i = 0; i < num_queues; i++)
       queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));
   }
@@ -111,6 +113,9 @@ class TaskQueueManagerPerfTest : public testing::Test {
   std::unique_ptr<TaskQueueManager> manager_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> queues_;
+  // TODO(alexclarke): parameterize so we can measure with and without a
+  // TaskTimeTracker.
+  TestTaskTimeTracker test_task_time_tracker_;
 };
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {

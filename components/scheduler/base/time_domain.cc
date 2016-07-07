@@ -110,9 +110,9 @@ void TimeDomain::UnregisterAsUpdatableTaskQueue(
 
 void TimeDomain::UpdateWorkQueues(
     bool should_trigger_wakeup,
-    const internal::TaskQueueImpl::Task* previous_task) {
+    const internal::TaskQueueImpl::Task* previous_task,
+    LazyNow lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  LazyNow lazy_now(CreateLazyNow());
 
   // Move any ready delayed tasks into the Incoming queues.
   WakeupReadyDelayedQueues(&lazy_now, should_trigger_wakeup, previous_task);

@@ -104,7 +104,8 @@ class SCHEDULER_EXPORT TimeDomain {
 
   // Updates active queues associated with this TimeDomain.
   void UpdateWorkQueues(bool should_trigger_wakeup,
-                        const internal::TaskQueueImpl::Task* previous_task);
+                        const internal::TaskQueueImpl::Task* previous_task,
+                        LazyNow lazy_now);
 
   // Called by the TaskQueueManager when the TimeDomain is registered.
   virtual void OnRegisterWithTaskQueueManager(

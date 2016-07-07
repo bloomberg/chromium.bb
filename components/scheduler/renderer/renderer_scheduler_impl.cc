@@ -8,6 +8,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
@@ -22,7 +23,7 @@ namespace scheduler {
 namespace {
 // The run time of loading tasks is strongly bimodal.  The vast majority are
 // very cheap, but there are usually a handful of very expensive tasks (e.g ~1
-// second on a mobile device) so we take a very pesimistic view when estimating
+// second on a mobile device) so we take a very pessimistic view when estimating
 // the cost of loading tasks.
 const int kLoadingTaskEstimationSampleCount = 1000;
 const double kLoadingTaskEstimationPercentile = 99;
@@ -49,14 +50,14 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                    base::TimeDelta()),
       render_widget_scheduler_signals_(this),
       control_task_runner_(helper_.ControlTaskRunner()),
-      compositor_task_runner_(
-          helper_.NewTaskQueue(TaskQueue::Spec("compositor_tq")
-                                   .SetShouldMonitorQuiescence(true))),
+      compositor_task_runner_(helper_.NewTaskQueue(
+          TaskQueue::Spec("compositor_tq").SetShouldMonitorQuiescence(true))),
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
           helper_.ControlTaskRunner()),
-      main_thread_only_(compositor_task_runner_,
+      main_thread_only_(this,
+                        compositor_task_runner_,
                         helper_.scheduler_tqm_delegate().get()),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
@@ -78,6 +79,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       this);
 
   helper_.SetObserver(this);
+  helper_.SetTaskTimeTracker(this);
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
@@ -101,6 +103,7 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
 }
 
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
+    RendererSchedulerImpl* renderer_scheduler_impl,
     const scoped_refptr<TaskQueue>& compositor_task_runner,
     base::TickClock* time_source)
     : loading_task_cost_estimator(time_source,
@@ -109,6 +112,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       timer_task_cost_estimator(time_source,
                                 kTimerTaskEstimationSampleCount,
                                 kTimerTaskEstimationPercentile),
+      queueing_time_estimator(renderer_scheduler_impl,
+                              base::TimeDelta::FromSeconds(1)),
       idle_time_estimator(compositor_task_runner,
                           time_source,
                           kShortIdlePeriodDurationSampleCount,
@@ -1381,6 +1386,21 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
         "https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail"
         " and https://crbug.com/574343#c40 for more information.");
   }
+}
+
+void RendererSchedulerImpl::ReportTaskTime(base::TimeTicks start_time,
+                                           base::TimeTicks end_time) {
+  MainThreadOnly().queueing_time_estimator.OnToplevelTaskCompleted(start_time,
+                                                                   end_time);
+}
+
+void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
+    base::TimeDelta queueing_time) {
+  UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
+                      queueing_time);
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "estimated_queueing_time_for_window",
+                 queueing_time.InMillisecondsF());
 }
 
 // static

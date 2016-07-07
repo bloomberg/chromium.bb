@@ -32,8 +32,8 @@ SchedulerHelper::SchedulerHelper(
               .SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP)
               .SetWakeupPolicy(TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
               .SetShouldNotifyObservers(false))),
-      default_task_runner_(NewTaskQueue(TaskQueue::Spec("default_tq")
-                                            .SetShouldMonitorQuiescence(true))),
+      default_task_runner_(NewTaskQueue(
+          TaskQueue::Spec("default_tq").SetShouldMonitorQuiescence(true))),
       observer_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(

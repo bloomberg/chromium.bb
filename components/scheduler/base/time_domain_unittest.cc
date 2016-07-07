@@ -164,12 +164,14 @@ TEST_F(TimeDomainTest, UpdateWorkQueues) {
   ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
   EXPECT_EQ(delayed_runtime, next_run_time);
 
-  time_domain_->UpdateWorkQueues(false, nullptr);
+  LazyNow lazy_now = time_domain_->CreateLazyNow();
+  time_domain_->UpdateWorkQueues(false, nullptr, lazy_now);
   ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
   EXPECT_EQ(delayed_runtime, next_run_time);
 
   time_domain_->SetNow(delayed_runtime);
-  time_domain_->UpdateWorkQueues(false, nullptr);
+  lazy_now = time_domain_->CreateLazyNow();
+  time_domain_->UpdateWorkQueues(false, nullptr, lazy_now);
   ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 

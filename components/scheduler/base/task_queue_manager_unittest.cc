@@ -23,7 +23,8 @@
 #include "components/scheduler/base/task_queue_impl.h"
 #include "components/scheduler/base/task_queue_manager_delegate_for_test.h"
 #include "components/scheduler/base/task_queue_selector.h"
-#include "components/scheduler/base/test_always_fail_time_source.h"
+#include "components/scheduler/base/test_count_uses_time_source.h"
+#include "components/scheduler/base/test_task_time_tracker.h"
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/base/work_queue.h"
@@ -59,6 +60,7 @@ class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
 
 class TaskQueueManagerTest : public testing::Test {
  public:
+  TaskQueueManagerTest() {}
   void DeleteTaskQueueManager() { manager_.reset(); }
 
  protected:
@@ -69,9 +71,11 @@ class TaskQueueManagerTest : public testing::Test {
     main_task_runner_ = TaskQueueManagerDelegateForTest::Create(
         test_task_runner_.get(),
         base::WrapUnique(new TestTimeSource(now_src_.get())));
-    manager_ = base::WrapUnique(
-        new TaskQueueManager(main_task_runner_, "test.scheduler",
-                             "test.scheduler", "test.scheduler.debug"));
+
+    manager_ = base::WrapUnique(new TaskQueueManager(
+        main_task_runner_, "test.scheduler", "test.scheduler",
+        "test.scheduler.debug"));
+    manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -87,10 +91,13 @@ class TaskQueueManagerTest : public testing::Test {
   void InitializeWithRealMessageLoop(size_t num_queues) {
     now_src_.reset(new base::SimpleTestTickClock());
     message_loop_.reset(new base::MessageLoop());
+    // A null clock triggers some assertions.
+    now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     manager_ = base::WrapUnique(new TaskQueueManager(
         MessageLoopTaskRunner::Create(
             base::WrapUnique(new TestTimeSource(now_src_.get()))),
         "test.scheduler", "test.scheduler", "test.scheduler.debug"));
+    manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -102,6 +109,7 @@ class TaskQueueManagerTest : public testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> test_task_runner_;
   std::unique_ptr<TaskQueueManager> manager_;
   std::vector<scoped_refptr<internal::TaskQueueImpl>> runners_;
+  TestTaskTimeTracker test_task_time_tracker_;
 };
 
 void PostFromNestedRunloop(base::MessageLoop* message_loop,
@@ -120,12 +128,20 @@ void PostFromNestedRunloop(base::MessageLoop* message_loop,
 
 void NopTask() {}
 
-TEST_F(TaskQueueManagerTest, NowNotCalledWhenThereAreNoDelayedTasks) {
+TEST_F(TaskQueueManagerTest,
+       NowCalledMinimumNumberOfTimesToComputeTaskDurations) {
   message_loop_.reset(new base::MessageLoop());
+  // This memory is managed by the TaskQueueManager, but we need to hold a
+  // pointer to this object to read out how many times Now was called.
+  TestCountUsesTimeSource* test_count_uses_time_source =
+      new TestCountUsesTimeSource();
+
   manager_ = base::WrapUnique(new TaskQueueManager(
       MessageLoopTaskRunner::Create(
-          base::WrapUnique(new TestAlwaysFailTimeSource())),
+          base::WrapUnique(test_count_uses_time_source)),
       "test.scheduler", "test.scheduler", "test.scheduler.debug"));
+  manager_->SetWorkBatchSize(6);
+  manager_->SetTaskTimeTracker(&test_task_time_tracker_);
 
   for (size_t i = 0; i < 3; i++)
     runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -138,6 +154,44 @@ TEST_F(TaskQueueManagerTest, NowNotCalledWhenThereAreNoDelayedTasks) {
   runners_[2]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
   message_loop_->RunUntilIdle();
+  // We need to call Now for the beginning of the first task, and then the end
+  // of every task after. We reuse the end time of one task for the start time
+  // of the next task. In this case, there were 6 tasks, so we expect 7 calls to
+  // Now.
+  EXPECT_EQ(7, test_count_uses_time_source->now_calls_count());
+}
+
+TEST_F(TaskQueueManagerTest,
+       NowNotCalledForNestedTasks) {
+  message_loop_.reset(new base::MessageLoop());
+  // This memory is managed by the TaskQueueManager, but we need to hold a
+  // pointer to this object to read out how many times Now was called.
+  TestCountUsesTimeSource* test_count_uses_time_source =
+      new TestCountUsesTimeSource();
+
+  manager_ = base::WrapUnique(new TaskQueueManager(
+      MessageLoopTaskRunner::Create(
+          base::WrapUnique(test_count_uses_time_source)),
+      "test.scheduler", "test.scheduler", "test.scheduler.debug"));
+  manager_->SetTaskTimeTracker(&test_task_time_tracker_);
+
+  runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
+
+  std::vector<std::pair<base::Closure, bool>> tasks_to_post_from_nested_loop;
+  for (int i = 0; i <= 6; ++i) {
+    tasks_to_post_from_nested_loop.push_back(
+        std::make_pair(base::Bind(&NopTask), true));
+  }
+
+  runners_[0]->PostTask(
+      FROM_HERE, base::Bind(&PostFromNestedRunloop, message_loop_.get(),
+                            base::RetainedRef(runners_[0]),
+                            base::Unretained(&tasks_to_post_from_nested_loop)));
+
+  message_loop_->RunUntilIdle();
+  // We need to call Now twice, to measure the start and end of the outermost
+  // task. We shouldn't call it for any of the nested tasks.
+  EXPECT_EQ(2, test_count_uses_time_source->now_calls_count());
 }
 
 void NullTask() {}

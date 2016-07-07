@@ -38,6 +38,7 @@ class LazyNow;
 class RealTimeDomain;
 class TimeDomain;
 class TaskQueueManagerDelegate;
+class TaskTimeTracker;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -81,6 +82,13 @@ class SCHEDULER_EXPORT TaskQueueManager
   // back to the main message loop -- at the cost of potentially delaying other
   // tasks posted to the main loop. The batch size is 1 by default.
   void SetWorkBatchSize(int work_batch_size);
+
+  // When given a non-null TaskTimeTracker, the TaskQueueManager calls its
+  // ReportTaskTime method for every top level task. The task_time_tracker must
+  // outlive this object, or be removed via SetTaskTimeTracker(nullptr).
+  void SetTaskTimeTracker(TaskTimeTracker* task_time_tracker) {
+    task_time_tracker_ = task_time_tracker;
+  }
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.
@@ -167,7 +175,8 @@ class SCHEDULER_EXPORT TaskQueueManager
   // run and |should_trigger_wakeup|. Call with an empty |previous_task| if no
   // task was just run.
   void UpdateWorkQueues(bool should_trigger_wakeup,
-                        const internal::TaskQueueImpl::Task* previous_task);
+                        const internal::TaskQueueImpl::Task* previous_task,
+                        LazyNow lazy_now);
 
   // Chooses the next work queue to service. Returns true if |out_queue|
   // indicates the queue from which the next task should be run, false to
@@ -226,7 +235,7 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   bool task_was_run_on_quiescence_monitored_queue_;
 
-  // To reduce locking overhead we track pending calls to DoWork seperatly for
+  // To reduce locking overhead we track pending calls to DoWork separately for
   // the main thread and other threads.
   std::set<base::TimeTicks> main_thread_pending_wakeups_;
 
@@ -238,6 +247,8 @@ class SCHEDULER_EXPORT TaskQueueManager
   size_t task_count_;
 
   base::ObserverList<base::MessageLoop::TaskObserver> task_observers_;
+
+  TaskTimeTracker* task_time_tracker_;  // NOT OWNED
 
   const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;

@@ -8,6 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/task_queue_manager.h"
+#include "components/scheduler/base/test_task_time_tracker.h"
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,9 +30,11 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
-    manager_ = base::WrapUnique(
-        new TaskQueueManager(main_task_runner_, "test.scheduler",
-                             "test.scheduler", "test.scheduler.debug"));
+
+    manager_ = base::WrapUnique(new TaskQueueManager(
+        main_task_runner_, "test.scheduler", "test.scheduler",
+        "test.scheduler.debug"));
+    manager_->SetTaskTimeTracker(&test_task_time_tracker_);
     task_runner_ =
         manager_->NewTaskQueue(TaskQueue::Spec("test_task_queue"));
     initial_time_= clock_->NowTicks();
@@ -54,6 +57,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
   std::unique_ptr<TaskQueueManager> manager_;
   scoped_refptr<TaskQueue> task_runner_;
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> auto_advancing_time_domain_;
+  TestTaskTimeTracker test_task_time_tracker_;
 };
 
 namespace {

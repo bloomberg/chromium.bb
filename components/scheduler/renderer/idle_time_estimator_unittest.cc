@@ -8,6 +8,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/task_queue_manager.h"
+#include "components/scheduler/base/test_task_time_tracker.h"
 #include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,10 +43,10 @@ class IdleTimeEstimatorTest : public testing::Test {
     mock_task_runner_ = make_scoped_refptr(
         new cc::OrderedSimpleTaskRunner(clock_.get(), false));
     main_task_runner_ = SchedulerTqmDelegateForTest::Create(
-        mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
-    manager_ = base::WrapUnique(
-        new TaskQueueManager(main_task_runner_, "test.scheduler",
-                             "test.scheduler", "test.scheduler.debug"));
+        mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
+    manager_ = base::MakeUnique<TaskQueueManager>(
+        main_task_runner_, "test.scheduler", "test.scheduler",
+        "test.scheduler.debug");
     compositor_task_runner_ =
         manager_->NewTaskQueue(TaskQueue::Spec("compositor_tq"));
     estimator_.reset(new IdleTimeEstimatorForTest(
@@ -92,6 +93,7 @@ class IdleTimeEstimatorTest : public testing::Test {
   scoped_refptr<TaskQueue> compositor_task_runner_;
   std::unique_ptr<IdleTimeEstimatorForTest> estimator_;
   const base::TimeDelta frame_length_;
+  TestTaskTimeTracker test_task_time_tracker_;
 };
 
 TEST_F(IdleTimeEstimatorTest, InitialTimeEstimateWithNoData) {
