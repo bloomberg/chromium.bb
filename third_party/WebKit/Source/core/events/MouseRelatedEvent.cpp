@@ -132,6 +132,22 @@ void MouseRelatedEvent::receivedTarget()
     m_hasCachedRelativePosition = false;
 }
 
+static const LayoutObject* findTargetLayoutObject(Node*& targetNode)
+{
+    LayoutObject* layoutObject = targetNode->layoutObject();
+    if (!layoutObject || !layoutObject->isSVG())
+        return layoutObject;
+    // If this is an SVG node, compute the offset to the padding box of the
+    // outermost SVG root (== the closest ancestor that has a CSS layout box.)
+    while (!layoutObject->isSVGRoot())
+        layoutObject = layoutObject->parent();
+    // Update the target node to point to the SVG root.
+    targetNode = layoutObject->node();
+    DCHECK(!targetNode
+        || (targetNode->isSVGElement() && toSVGElement(*targetNode).isOutermostSVGSVGElement()));
+    return layoutObject;
+}
+
 void MouseRelatedEvent::computeRelativePosition()
 {
     Node* targetNode = target() ? target()->toNode() : nullptr;
@@ -146,13 +162,13 @@ void MouseRelatedEvent::computeRelativePosition()
     targetNode->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Adjust offsetLocation to be relative to the target's padding box.
-    if (LayoutObject* r = targetNode->layoutObject()) {
-        FloatPoint localPos = r->absoluteToLocal(FloatPoint(absoluteLocation()), UseTransforms);
+    if (const LayoutObject* layoutObject = findTargetLayoutObject(targetNode)) {
+        FloatPoint localPos = layoutObject->absoluteToLocal(FloatPoint(absoluteLocation()), UseTransforms);
 
         // Adding this here to address crbug.com/570666. Basically we'd like to
         // find the local coordinates relative to the padding box not the border box.
-        if (r->isBoxModelObject()) {
-            LayoutBoxModelObject* layoutBox = toLayoutBoxModelObject(r);
+        if (layoutObject->isBoxModelObject()) {
+            const LayoutBoxModelObject* layoutBox = toLayoutBoxModelObject(layoutObject);
             localPos.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
         }
 
