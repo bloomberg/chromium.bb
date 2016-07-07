@@ -43,6 +43,20 @@ VaapiDrmPicture::~VaapiDrmPicture() {
   }
 }
 
+static unsigned BufferFormatToInternalFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::BGRA_8888:
+      return GL_BGRA_EXT;
+
+    case gfx::BufferFormat::YVU_420:
+      return GL_RGB_YCRCB_420_CHROMIUM;
+
+    default:
+      NOTREACHED();
+      return GL_BGRA_EXT;
+  }
+}
+
 bool VaapiDrmPicture::Initialize() {
   DCHECK(pixmap_);
 
@@ -61,9 +75,13 @@ bool VaapiDrmPicture::Initialize() {
 
     gl::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
                                            texture_id_);
+
+    gfx::BufferFormat format = pixmap_->GetBufferFormat();
+
     scoped_refptr<gl::GLImageOzoneNativePixmap> image(
-        new gl::GLImageOzoneNativePixmap(size_, GL_BGRA_EXT));
-    if (!image->Initialize(pixmap_.get(), pixmap_->GetBufferFormat())) {
+        new gl::GLImageOzoneNativePixmap(size_,
+                                         BufferFormatToInternalFormat(format)));
+    if (!image->Initialize(pixmap_.get(), format)) {
       LOG(ERROR) << "Failed to create GLImage";
       return false;
     }
