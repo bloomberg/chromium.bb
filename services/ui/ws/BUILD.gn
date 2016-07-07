@@ -132,14 +132,17 @@ source_set("lib") {
   ]
 
   if (use_ozone) {
-    sources -= [
-      "platform_screen_impl.cc",
-      "platform_screen_impl.h",
-    ]
-    sources += [
-      "platform_screen_impl_ozone.cc",
-      "platform_screen_impl_ozone.h",
-    ]
+    if (is_chromeos) {
+      sources -= [
+        "platform_screen_impl.cc",
+        "platform_screen_impl.h",
+      ]
+      sources += [
+        "platform_screen_impl_ozone.cc",
+        "platform_screen_impl_ozone.h",
+      ]
+    }
+
     public_deps += [ "//ui/ozone:ozone" ]
   }
 }

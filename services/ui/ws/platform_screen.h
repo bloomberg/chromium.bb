@@ -20,6 +20,9 @@ namespace ws {
 // attached physical displays.
 class PlatformScreen {
  public:
+  using ConfiguredDisplayCallback =
+      base::Callback<void(int64_t, const gfx::Rect&)>;
+
   virtual ~PlatformScreen() {}
 
   // Creates a PlatformScreen instance.
@@ -27,9 +30,6 @@ class PlatformScreen {
 
   // Initializes platform specific screen resources.
   virtual void Init() = 0;
-
-  using ConfiguredDisplayCallback =
-      base::Callback<void(int64_t, const gfx::Rect&)>;
 
   // ConfigurePhysicalDisplay() configures a single physical display and returns
   // its id and bounds for it via |callback|.

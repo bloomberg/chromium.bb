@@ -4,13 +4,14 @@
 
 #include "services/ui/ws/platform_screen_impl_ozone.h"
 
-#include "base/bind.h"
-#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ui {
@@ -18,7 +19,7 @@ namespace ui {
 namespace ws {
 namespace {
 
-// TODO(rjkroege): Remove this code once ozone oxygen has the same
+// TODO(rjkroege): Remove this code once ozone headless has the same
 // display creation semantics as ozone drm.
 // Some ozone platforms do not configure physical displays and so do not
 // callback into this class via the implementation of NativeDisplayObserver.
@@ -30,96 +31,65 @@ void FixedSizeScreenConfiguration(
   callback.Run(1, gfx::Rect(1024, 768));
 }
 
-void GetDisplaysFinished(const std::vector<ui::DisplaySnapshot*>& displays) {
-  // We don't really care about list of displays, we just want the snapshots
-  // held by DrmDisplayManager to be updated. This only only happens when we
-  // call NativeDisplayDelegate::GetDisplays(). Although, this would be a good
-  // place to have PlatformScreen cache the snapshots if need be.
-}
+// Needed for DisplayConfigurator::ForceInitialConfigure.
+const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
 }  // namespace
 
 // static
 std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
-  return base::WrapUnique(new PlatformScreenImplOzone);
+  return base::MakeUnique<PlatformScreenImplOzone>();
 }
 
-PlatformScreenImplOzone::PlatformScreenImplOzone() : weak_ptr_factory_(this) {}
+PlatformScreenImplOzone::PlatformScreenImplOzone() {}
 
-PlatformScreenImplOzone::~PlatformScreenImplOzone() {}
+PlatformScreenImplOzone::~PlatformScreenImplOzone() {
+  display_configurator_.RemoveObserver(this);
+}
 
 void PlatformScreenImplOzone::Init() {
-  native_display_delegate_ =
-      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate();
-  native_display_delegate_->AddObserver(this);
-  native_display_delegate_->Initialize();
+  display_configurator_.AddObserver(this);
+  display_configurator_.Init(
+      ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate(), false);
 }
 
 void PlatformScreenImplOzone::ConfigurePhysicalDisplay(
     const PlatformScreen::ConfiguredDisplayCallback& callback) {
-#if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    // Kick off the configuration of the physical displays comprising the
-    // |PlatformScreenImplOzone|
-
-    DCHECK(native_display_delegate_) << "DefaultDisplayManager::"
-                                        "OnConfigurationChanged requires a "
-                                        "native_display_delegate_ to work.";
-
-    native_display_delegate_->GetDisplays(
-        base::Bind(&PlatformScreenImplOzone::OnDisplaysAquired,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
-
-    return;
+    callback_ = callback;
+    display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
+  } else {
+    // PostTask()ed to maximize control flow similarity with the ChromeOS case.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&FixedSizeScreenConfiguration, callback));
   }
-#endif  // defined(OS_CHROMEOS)
-  // PostTask()ed to maximize control flow similarity with the ChromeOS case.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&FixedSizeScreenConfiguration, callback));
 }
 
-void PlatformScreenImplOzone::OnConfigurationChanged() {}
+void PlatformScreenImplOzone::OnDisplayModeChanged(
+    const ui::DisplayConfigurator::DisplayStateList& displays) {
+  // TODO(kylechar): Remove checks when multiple display support is added.
+  CHECK(displays.size() == 1) << "Mus only supports one 1 display";
+  CHECK(!callback_.is_null());
 
-// The display subsystem calls |OnDisplaysAquired| to deliver |displays|
-// describing the attached displays.
-void PlatformScreenImplOzone::OnDisplaysAquired(
-    const ConfiguredDisplayCallback& callback,
-    const std::vector<ui::DisplaySnapshot*>& displays) {
-  DCHECK(native_display_delegate_) << "DefaultDisplayManager::"
-                                      "OnConfigurationChanged requires a "
-                                      "native_display_delegate_ to work.";
-  CHECK(displays.size() == 1) << "Mus only supports one 1 display\n";
   gfx::Point origin;
   for (auto display : displays) {
-    if (!display->native_mode()) {
-      LOG(ERROR) << "Display " << display->display_id()
-                 << " doesn't have a native mode";
-      continue;
-    }
-    // Setup each native display. This places a task on the DRM thread's
-    // runqueue that configures the window size correctly before the call to
-    // Configure.
-    native_display_delegate_->Configure(
-        *display, display->native_mode(), origin,
-        base::Bind(&PlatformScreenImplOzone::OnDisplayConfigured,
-                   weak_ptr_factory_.GetWeakPtr(), callback,
-                   display->display_id(),
-                   gfx::Rect(origin, display->native_mode()->size())));
-    origin.Offset(display->native_mode()->size().width(), 0);
+    const ui::DisplayMode* current_mode = display->current_mode();
+    gfx::Rect bounds(origin, current_mode->size());
+
+    callback_.Run(display->display_id(), bounds);
+
+    // Move the origin so that next display is to the right of current display.
+    origin.Offset(current_mode->size().width(), 0);
   }
+
+  callback_.Reset();
 }
 
-void PlatformScreenImplOzone::OnDisplayConfigured(
-    const ConfiguredDisplayCallback& callback,
-    int64_t id,
-    const gfx::Rect& bounds,
-    bool success) {
-  if (success) {
-    native_display_delegate_->GetDisplays(base::Bind(&GetDisplaysFinished));
-    callback.Run(id, bounds);
-  } else {
-    LOG(FATAL) << "Failed to configure display at " << bounds.ToString();
-  }
+void PlatformScreenImplOzone::OnDisplayModeChangeFailed(
+    const ui::DisplayConfigurator::DisplayStateList& displays,
+    MultipleDisplayState failed_new_state) {
+  LOG(ERROR) << "OnDisplayModeChangeFailed from DisplayConfigurator";
+  callback_.Reset();
 }
 
 }  // namespace ws
