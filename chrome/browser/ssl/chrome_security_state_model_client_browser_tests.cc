@@ -111,6 +111,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
   EXPECT_EQ(0u, expired_explanation.unauthenticated_explanations.size());
   ASSERT_EQ(1u, expired_explanation.broken_explanations.size());
   EXPECT_FALSE(expired_explanation.pkp_bypassed);
+  EXPECT_TRUE(expired_explanation.info_explanations.empty());
 
   // Check that the summary and description are as expected.
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_CERTIFICATE_CHAIN_ERROR),
@@ -644,6 +645,7 @@ IN_PROC_BROWSER_TEST_F(PKPModelClientTest, PKPBypass) {
   const content::SecurityStyleExplanations& explanation =
       observer.latest_explanations();
   EXPECT_TRUE(explanation.pkp_bypassed);
+  EXPECT_FALSE(explanation.info_explanations.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(PKPModelClientTest, PKPEnforced) {
@@ -796,6 +798,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
   EXPECT_EQ(0u, observer.latest_explanations().secure_explanations.size());
   EXPECT_FALSE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
 
@@ -818,6 +821,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
                           VALID_CERTIFICATE, browser());
   EXPECT_TRUE(mixed_content_explanation.scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_TRUE(mixed_content_explanation.displayed_insecure_content);
   EXPECT_FALSE(mixed_content_explanation.ran_insecure_content);
   EXPECT_EQ(content::SECURITY_STYLE_UNAUTHENTICATED,
@@ -838,6 +842,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
                           INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 
@@ -854,6 +859,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
                           VALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 
@@ -867,6 +873,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
                           INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 
@@ -884,6 +891,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest, SecurityStyleChangedObserver) {
                           INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 }
@@ -917,6 +925,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
                           VALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 
@@ -942,6 +951,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
                           INVALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 
@@ -961,6 +971,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStyleChangedTest,
                           VALID_CERTIFICATE, browser());
   EXPECT_TRUE(observer.latest_explanations().scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
+  EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_insecure_content);
   EXPECT_FALSE(observer.latest_explanations().ran_insecure_content);
 }

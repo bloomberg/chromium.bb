@@ -105,6 +105,8 @@ void SecurityHandler::SecurityStyleChanged(
   AddExplanations(kSecurityStateSecure,
                   security_style_explanations.secure_explanations,
                   &explanations);
+  AddExplanations(kSecurityStateInfo,
+                  security_style_explanations.info_explanations, &explanations);
 
   scoped_refptr<MixedContentStatus> mixed_content_status =
       MixedContentStatus::Create()

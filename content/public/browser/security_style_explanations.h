@@ -23,7 +23,7 @@ namespace content {
 // SecurityStyleExplanation is a single security property of a page (for
 // example, an expired certificate, a valid certificate, or the presence
 // of a deprecated crypto algorithm). A single site may have multiple
-// different explanations of "secure", "warning", and "broken" severity
+// different explanations of "secure", "warning", "broken", and "info" severity
 // levels.
 struct SecurityStyleExplanations {
   CONTENT_EXPORT SecurityStyleExplanations();
@@ -49,9 +49,12 @@ struct SecurityStyleExplanations {
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
 
+  // Explanations corresponding to each security level. The embedder should
+  // display explanations in the order: broken, unauthenticated, secure, info.
   std::vector<SecurityStyleExplanation> secure_explanations;
   std::vector<SecurityStyleExplanation> unauthenticated_explanations;
   std::vector<SecurityStyleExplanation> broken_explanations;
+  std::vector<SecurityStyleExplanation> info_explanations;
 };
 
 }  // namespace content

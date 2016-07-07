@@ -114,7 +114,6 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
   if (!security_info.scheme_is_cryptographic) {
     return security_style;
   }
-  security_style_explanations->pkp_bypassed = security_info.pkp_bypassed;
 
   if (security_info.sha1_deprecation_status ==
       SecurityStateModel::DEPRECATED_SHA1_MAJOR) {
@@ -179,6 +178,14 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
             l10n_util::GetStringUTF8(IDS_SECURE_PROTOCOL_AND_CIPHERSUITE),
             l10n_util::GetStringUTF8(
                 IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION)));
+  }
+
+  security_style_explanations->pkp_bypassed = security_info.pkp_bypassed;
+  if (security_info.pkp_bypassed) {
+    security_style_explanations->info_explanations.push_back(
+        content::SecurityStyleExplanation(
+            "Public-Key Pinning Bypassed",
+            "Public-key pinning was bypassed by a local root certificate."));
   }
 
   return security_style;
