@@ -43,7 +43,7 @@ RenderWidgetHostViewMus::RenderWidgetHostViewMus(ui::Window* parent_window,
   // Connect to the renderer, pass it a WindowTreeClient interface request
   // and embed that client inside our mus window.
   mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
-  host_->GetProcess()->GetChildConnection()->GetInterface(&factory);
+  host_->GetProcess()->GetRemoteInterfaces()->GetInterface(&factory);
 
   ui::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(

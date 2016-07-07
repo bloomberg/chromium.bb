@@ -18,10 +18,13 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/establish_channel_params.h"
 #include "content/common/gpu_host_messages.h"
+#include "content/common/process_control.mojom.h"
 #include "content/gpu/gpu_process_control_impl.h"
 #include "content/gpu/gpu_watchdog_thread.h"
+#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -36,6 +39,10 @@
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_service.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/cpp/connection.h"
+#include "services/shell/public/cpp/interface_factory.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -140,6 +147,41 @@ ChildThreadImpl::Options GetOptions(
   return builder.Build();
 }
 
+// Connection filter for incoming connections from other shell clients.
+class GpuConnectionFilter
+    : public ConnectionFilter,
+      public shell::InterfaceFactory<mojom::ProcessControl> {
+ public:
+  GpuConnectionFilter() {}
+  ~GpuConnectionFilter() override {}
+
+ private:
+  // ConnectionFilter:
+  bool OnConnect(shell::Connection* connection,
+                 shell::Connector* connector) override {
+    connection->AddInterface<mojom::ProcessControl>(this);
+    return true;
+  }
+
+  // shell::InterfaceFactory<mojom::ProcessControl>:
+  void Create(shell::Connection* connection,
+              mojom::ProcessControlRequest request) override {
+    process_control_bindings_.AddBinding(&process_control_, std::move(request));
+  }
+
+  // Process control for Mojo application hosting.
+  //
+  // TODO(rockot): Remove this. To host mojo:media in the gpu process, we should
+  // simply package mojo:media in exe:content_gpu and use the ShellClientFactory
+  // idiom.
+  GpuProcessControlImpl process_control_;
+
+  // Bindings to the mojom::ProcessControl impl.
+  mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuConnectionFilter);
+};
+
 }  // namespace
 
 // static
@@ -218,8 +260,14 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
     media::SetMediaClientAndroid(GetContentClient()->GetMediaClientAndroid());
 #endif
 
-  // Only set once per process instance.
-  process_control_.reset(new GpuProcessControlImpl());
+  if (GetContentClient()->gpu()) {  // NULL in tests.
+    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
+        GetInterfaceRegistry());
+  }
+
+  // We don't want to process any incoming interface requests until
+  // OnInitialize() is invoked.
+  GetInterfaceRegistry()->PauseBinding();
 
   if (GetContentClient()->gpu())  // NULL in tests.
     GetContentClient()->gpu()->Initialize(this);
@@ -228,6 +276,10 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
 void GpuChildThread::OnFieldTrialGroupFinalized(const std::string& trial_name,
                                                 const std::string& group_name) {
   Send(new GpuHostMsg_FieldTrialActivated(trial_name));
+}
+
+void GpuChildThread::AddConnectionFilters(MojoShellConnection* connection) {
+  connection->AddConnectionFilter(base::MakeUnique<GpuConnectionFilter>());
 }
 
 bool GpuChildThread::Send(IPC::Message* msg) {
@@ -290,37 +342,6 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-bool GpuChildThread::OnConnect(shell::Connection* connection) {
-  // Use of base::Unretained(this) is safe here because |service_registry()|
-  // will be destroyed before GpuChildThread is destructed.
-  connection->GetInterfaceRegistry()->AddInterface(base::Bind(
-      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
-
-  if (GetContentClient()->gpu()) {  // NULL in tests.
-    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
-        connection->GetInterfaceRegistry());
-  }
-
-  // We don't want to process any incoming interface requests until
-  // OnInitialize().
-  if (!gpu_channel_manager_) {
-    connection->GetInterfaceRegistry()->PauseBinding();
-    resume_interface_bindings_callback_ = base::Bind(
-        &shell::InterfaceRegistry::ResumeBinding,
-        connection->GetInterfaceRegistry()->GetWeakPtr());
-  }
-
-  return true;
-}
-
-shell::InterfaceRegistry* GpuChildThread::GetInterfaceRegistryForConnection() {
-  return nullptr;
-}
-
-shell::InterfaceProvider* GpuChildThread::GetInterfaceProviderForConnection() {
-  return nullptr;
-}
-
 void GpuChildThread::SetActiveURL(const GURL& url) {
   GetContentClient()->SetActiveURL(url);
 }
@@ -364,8 +385,7 @@ void GpuChildThread::StoreShaderToDisk(int32_t client_id,
 }
 
 void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
-  if (!resume_interface_bindings_callback_.is_null())
-    base::ResetAndReturn(&resume_interface_bindings_callback_).Run();
+  GetInterfaceRegistry()->ResumeBinding();
 
   gpu_preferences_ = gpu_preferences;
 
@@ -581,14 +601,6 @@ void GpuChildThread::OnLoseAllContexts() {
     gpu_channel_manager_->DestroyAllChannels();
     media_service_->DestroyAllChannels();
   }
-}
-
-void GpuChildThread::BindProcessControlRequest(
-    mojo::InterfaceRequest<mojom::ProcessControl> request) {
-  DVLOG(1) << "GPU: Binding ProcessControl request";
-  DCHECK(process_control_);
-  process_control_bindings_.AddBinding(process_control_.get(),
-                                       std::move(request));
 }
 
 }  // namespace content

@@ -36,8 +36,8 @@ std::string ContentBrowserClient::GetShellUserIdForBrowserContext(
 
 void ContentBrowserClient::RegisterInProcessMojoApplications(
     StaticMojoApplicationMap* apps) {
-  content::MojoShellConnection::GetForProcess()->MergeService(
-      base::WrapUnique(new Navigation));
+  content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
+      base::MakeUnique<Navigation>());
 }
 
 }  // namespace navigation

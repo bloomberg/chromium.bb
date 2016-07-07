@@ -169,6 +169,8 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/runner/common/switches.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -600,6 +602,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #endif  // defined(OS_MACOSX)
 #endif  // USE_ATTACHMENT_BROKER
 
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
   shell::Connector* connector =
       BrowserContext::GetShellConnectorFor(browser_context_);
   // Some embedders may not initialize Mojo or the shell connector for a browser
@@ -612,15 +616,14 @@ RenderProcessHostImpl::RenderProcessHostImpl(
     if (!MojoShellConnection::GetForProcess()) {
       shell::mojom::ServiceRequest request = mojo::GetProxy(&test_service_);
       MojoShellConnection::SetForProcess(MojoShellConnection::Create(
-          std::move(request)));
+          std::move(request), io_task_runner));
     }
     connector = MojoShellConnection::GetForProcess()->GetConnector();
   }
   mojo_child_connection_.reset(new MojoChildConnection(
       kRendererMojoApplicationName,
-      base::StringPrintf("%d_%d", id_, instance_id_++),
-      child_token_,
-      connector));
+      base::StringPrintf("%d_%d", id_, instance_id_++), child_token_, connector,
+      io_task_runner));
 }
 
 // static
@@ -760,8 +763,7 @@ bool RenderProcessHostImpl::Init() {
     in_process_renderer_.reset(
         g_renderer_main_thread_factory(InProcessChildThreadParams(
             channel_id,
-            BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
-                ->task_runner(),
+            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
             mojo_channel_token_,
             mojo_child_connection_->service_token())));
 
@@ -1121,16 +1123,11 @@ void RenderProcessHostImpl::NotifyTimezoneChange(const std::string& zone_id) {
 }
 
 shell::InterfaceRegistry* RenderProcessHostImpl::GetInterfaceRegistry() {
-  return GetChildConnection()->GetInterfaceRegistry();
+  return mojo_child_connection_->GetInterfaceRegistry();
 }
 
 shell::InterfaceProvider* RenderProcessHostImpl::GetRemoteInterfaces() {
-  return GetChildConnection()->GetRemoteInterfaces();
-}
-
-shell::Connection* RenderProcessHostImpl::GetChildConnection() {
-  DCHECK(mojo_child_connection_);
-  return mojo_child_connection_->connection();
+  return mojo_child_connection_->GetRemoteInterfaces();
 }
 
 std::unique_ptr<base::SharedPersistentMemoryAllocator>
@@ -2432,9 +2429,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
     connector = MojoShellConnection::GetForProcess()->GetConnector();
   mojo_child_connection_.reset(new MojoChildConnection(
       kRendererMojoApplicationName,
-      base::StringPrintf("%d_%d", id_, instance_id_++),
-      child_token_,
-      connector));
+      base::StringPrintf("%d_%d", id_, instance_id_++), child_token_, connector,
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
   within_process_died_observer_ = true;
   NotificationService::current()->Notify(

@@ -39,20 +39,29 @@ void InterfaceRegistry::RemoveInterface(const std::string& name) {
 }
 
 void InterfaceRegistry::PauseBinding() {
-  DCHECK(!pending_request_.is_pending());
-  DCHECK(binding_.is_bound());
-  pending_request_ = binding_.Unbind();
+  DCHECK(!is_paused_);
+  is_paused_ = true;
 }
 
 void InterfaceRegistry::ResumeBinding() {
-  DCHECK(pending_request_.is_pending());
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(pending_request_));
+  DCHECK(is_paused_);
+  is_paused_ = false;
+
+  while (!pending_interface_requests_.empty()) {
+    auto& request = pending_interface_requests_.front();
+    GetInterface(request.first, std::move(request.second));
+    pending_interface_requests_.pop();
+  }
 }
 
 // mojom::InterfaceProvider:
 void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                                      mojo::ScopedMessagePipeHandle handle) {
+  if (is_paused_) {
+    pending_interface_requests_.emplace(interface_name, std::move(handle));
+    return;
+  }
+
   auto iter = name_to_binder_.find(interface_name);
   if (iter != name_to_binder_.end()) {
     iter->second->BindInterface(connection_, interface_name, std::move(handle));
@@ -61,6 +70,8 @@ void InterfaceRegistry::GetInterface(const mojo::String& interface_name,
                << "interface: " << interface_name << " connection_name:"
                << connection_->GetConnectionName() << " remote_name:"
                << connection_->GetRemoteIdentity().name();
+  } else if (!default_binder_.is_null()) {
+    default_binder_.Run(interface_name, std::move(handle));
   }
 }
 

@@ -558,10 +558,9 @@ bool GpuProcessHost::Init() {
 
   DCHECK(!mojo_child_connection_);
   mojo_child_connection_.reset(new MojoChildConnection(
-      kGpuMojoApplicationName,
-      "",
-      child_token_,
-      MojoShellContext::GetConnectorForIOThread()));
+      kGpuMojoApplicationName, "", child_token_,
+      MojoShellContext::GetConnectorForIOThread(),
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
 
   gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
   if (in_process_) {
@@ -932,11 +931,11 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
 }
 
 shell::InterfaceRegistry* GpuProcessHost::GetInterfaceRegistry() {
-  return mojo_child_connection_->connection()->GetInterfaceRegistry();
+  return mojo_child_connection_->GetInterfaceRegistry();
 }
 
 shell::InterfaceProvider* GpuProcessHost::GetRemoteInterfaces() {
-  return mojo_child_connection_->connection()->GetRemoteInterfaces();
+  return mojo_child_connection_->GetRemoteInterfaces();
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {

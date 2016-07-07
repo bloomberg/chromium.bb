@@ -283,8 +283,8 @@ static void SetUpGLibLogHandler() {
 void WaitForMojoShellInitialize() {
   // TODO(rockot): Remove this. http://crbug.com/594852.
   base::RunLoop wait_loop;
-  MojoShellConnection::GetForProcess()->GetShellConnection()->
-      set_initialize_handler(wait_loop.QuitClosure());
+  MojoShellConnection::GetForProcess()->SetInitializeHandler(
+      wait_loop.QuitClosure());
   wait_loop.Run();
 }
 #endif  // defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)

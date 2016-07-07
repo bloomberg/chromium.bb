@@ -19,11 +19,12 @@ Connector::ConnectParams::ConnectParams(const std::string& name)
 Connector::ConnectParams::~ConnectParams() {}
 
 ConnectorImpl::ConnectorImpl(mojom::ConnectorPtrInfo unbound_state)
-    : unbound_state_(std::move(unbound_state)) {}
+    : unbound_state_(std::move(unbound_state)) {
+  thread_checker_.DetachFromThread();
+}
 
 ConnectorImpl::ConnectorImpl(mojom::ConnectorPtr connector)
     : connector_(std::move(connector)) {
-  thread_checker_.reset(new base::ThreadChecker);
   connector_.set_connection_error_handler(
       base::Bind(&ConnectorImpl::OnConnectionError, base::Unretained(this)));
 }
@@ -31,7 +32,7 @@ ConnectorImpl::ConnectorImpl(mojom::ConnectorPtr connector)
 ConnectorImpl::~ConnectorImpl() {}
 
 void ConnectorImpl::OnConnectionError() {
-  DCHECK(thread_checker_->CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   connector_.reset();
 }
 
@@ -41,23 +42,12 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(const std::string& name) {
 }
 
 std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
-  // Bind this object to the current thread the first time it is used to
-  // connect.
-  if (!connector_.is_bound()) {
-    if (!unbound_state_.is_valid()) {
-      // It's possible to get here when the link to the shell has been severed
-      // (and so the connector pipe has been closed) but the app has chosen not
-      // to quit.
-      return nullptr;
-    }
-    connector_.Bind(std::move(unbound_state_));
-    connector_.set_connection_error_handler(
-        base::Bind(&ConnectorImpl::OnConnectionError, base::Unretained(this)));
-    thread_checker_.reset(new base::ThreadChecker);
-  }
-  DCHECK(thread_checker_->CalledOnValidThread());
+  if (!BindIfNecessary())
+    return nullptr;
 
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(params);
+
   // We allow all interfaces on outgoing connections since we are presumably in
   // a position to know who we're talking to.
   CapabilityRequest request;
@@ -112,9 +102,41 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
 }
 
 std::unique_ptr<Connector> ConnectorImpl::Clone() {
+  if (!BindIfNecessary())
+    return nullptr;
+
   mojom::ConnectorPtr connector;
-  connector_->Clone(GetProxy(&connector));
-  return base::WrapUnique(new ConnectorImpl(connector.PassInterface()));
+  mojom::ConnectorRequest request = GetProxy(&connector);
+  connector_->Clone(std::move(request));
+  return base::MakeUnique<ConnectorImpl>(connector.PassInterface());
+}
+
+bool ConnectorImpl::BindIfNecessary() {
+  // Bind this object to the current thread the first time it is used to
+  // connect.
+  if (!connector_.is_bound()) {
+    if (!unbound_state_.is_valid()) {
+      // It's possible to get here when the link to the shell has been severed
+      // (and so the connector pipe has been closed) but the app has chosen not
+      // to quit.
+      return false;
+    }
+
+    // Bind the ThreadChecker to this thread.
+    DCHECK(thread_checker_.CalledOnValidThread());
+
+    connector_.Bind(std::move(unbound_state_));
+    connector_.set_connection_error_handler(
+        base::Bind(&ConnectorImpl::OnConnectionError, base::Unretained(this)));
+  }
+
+  return true;
+}
+
+std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {
+  mojom::ConnectorPtr proxy;
+  *request = mojo::GetProxy(&proxy);
+  return base::MakeUnique<ConnectorImpl>(proxy.PassInterface());
 }
 
 }  // namespace shell
