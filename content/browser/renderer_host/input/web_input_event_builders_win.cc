@@ -62,8 +62,6 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(HWND hwnd,
     result.text[0] = result.windowsKeyCode;
     result.unmodifiedText[0] = result.windowsKeyCode;
   }
-  result.setKeyIdentifierFromWindowsKeyCode();
-
   result.modifiers =
       ui::EventFlagsToWebEventModifiers(ui::GetModifiersFromKeyState());
   // NOTE: There doesn't seem to be a way to query the mouse button state in

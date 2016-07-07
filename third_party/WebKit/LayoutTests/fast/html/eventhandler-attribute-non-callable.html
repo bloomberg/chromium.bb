@@ -17,7 +17,7 @@ function callback() {
 
 function dispatchKeyEvent()
 {
-    var event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, view: null, keyIdentifier: 'Enter' });
+    var event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, view: null, key: 'Enter' });
     div.dispatchEvent(event);
 }
 

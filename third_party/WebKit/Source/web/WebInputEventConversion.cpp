@@ -372,7 +372,6 @@ PlatformKeyboardEventBuilder::PlatformKeyboardEventBuilder(const WebKeyboardEven
     m_type = toPlatformKeyboardEventType(e.type);
     m_text = String(e.text);
     m_unmodifiedText = String(e.unmodifiedText);
-    m_keyIdentifier = String(e.keyIdentifier);
     m_nativeVirtualKeyCode = e.nativeKeyCode;
     m_isSystemKey = e.isSystemKey;
     // TODO: BUG482880 Fix this initialization to lazy initialization.
@@ -397,7 +396,6 @@ void PlatformKeyboardEventBuilder::setKeyType(EventType type)
         m_text = String();
         m_unmodifiedText = String();
     } else {
-        m_keyIdentifier = String();
         m_windowsVirtualKeyCode = 0;
     }
 }
@@ -673,7 +671,6 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
         text[i] = event.keyEvent()->text()[i];
         unmodifiedText[i] = event.keyEvent()->unmodifiedText()[i];
     }
-    memcpy(keyIdentifier, event.keyIdentifier().ascii().data(), event.keyIdentifier().length());
 }
 
 WebInputEvent::Type toWebKeyboardEventType(PlatformEvent::EventType type)

@@ -1944,7 +1944,6 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace)
         WebKeyboardEvent keyEvent;
         keyEvent.domKey = Platform::current()->domKeyEnumFromString("\b");
         keyEvent.windowsKeyCode = VKEY_BACK;
-        keyEvent.setKeyIdentifierFromWindowsKeyCode();
         keyEvent.type = WebInputEvent::RawKeyDown;
         webView->handleInputEvent(keyEvent);
 
@@ -2128,7 +2127,6 @@ static void openDateTimeChooser(WebView* webView, HTMLInputElement* inputElement
     keyEvent.domKey = Platform::current()->domKeyEnumFromString(" ");
     keyEvent.windowsKeyCode = VKEY_SPACE;
     keyEvent.type = WebInputEvent::RawKeyDown;
-    keyEvent.setKeyIdentifierFromWindowsKeyCode();
     webView->handleInputEvent(keyEvent);
 
     keyEvent.type = WebInputEvent::KeyUp;
@@ -2757,7 +2755,6 @@ TEST_F(WebViewTest, FirstUserGestureObservedKeyEvent)
     keyEvent.domKey = Platform::current()->domKeyEnumFromString(" ");
     keyEvent.windowsKeyCode = VKEY_SPACE;
     keyEvent.type = WebInputEvent::RawKeyDown;
-    keyEvent.setKeyIdentifierFromWindowsKeyCode();
     webView->handleInputEvent(keyEvent);
     keyEvent.type = WebInputEvent::KeyUp;
     webView->handleInputEvent(keyEvent);

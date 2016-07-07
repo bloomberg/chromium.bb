@@ -107,7 +107,6 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
   }
   result.text[0] = result.unmodifiedText[0];
   result.isSystemKey = is_system_key;
-  result.setKeyIdentifierFromWindowsKeyCode();
 
   return result;
 }

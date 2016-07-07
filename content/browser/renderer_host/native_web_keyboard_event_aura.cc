@@ -56,7 +56,6 @@ NativeWebKeyboardEvent::NativeWebKeyboardEvent(const ui::KeyEvent& key_event,
   windowsKeyCode = character;
   text[0] = character;
   unmodifiedText[0] = character;
-  setKeyIdentifierFromWindowsKeyCode();
 }
 
 NativeWebKeyboardEvent& NativeWebKeyboardEvent::operator=(

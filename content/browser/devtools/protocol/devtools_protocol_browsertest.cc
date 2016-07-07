@@ -223,24 +223,26 @@ class SyntheticKeyEventTest : public DevToolsProtocolTest {
   void SendKeyEvent(const std::string& type,
                     int modifier,
                     int windowsKeyCode,
-                    int nativeKeyCode) {
+                    int nativeKeyCode,
+                    const std::string& key) {
     std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
     params->SetString("type", type);
     params->SetInteger("modifiers", modifier);
     params->SetInteger("windowsVirtualKeyCode", windowsKeyCode);
     params->SetInteger("nativeVirtualKeyCode", nativeKeyCode);
+    params->SetString("key", key);
     SendCommand("Input.dispatchKeyEvent", std::move(params));
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKeyIdentifier) {
+IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKey) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
   Attach();
   ASSERT_TRUE(content::ExecuteScript(
       shell()->web_contents()->GetRenderViewHost(),
       "function handleKeyEvent(event) {"
         "domAutomationController.setAutomationId(0);"
-        "domAutomationController.send(event.keyIdentifier);"
+        "domAutomationController.send(event.key);"
       "}"
       "document.body.addEventListener('keydown', handleKeyEvent);"
       "document.body.addEventListener('keyup', handleKeyEvent);"));
@@ -248,23 +250,23 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyEventSynthesizeKeyIdentifier) {
   DOMMessageQueue dom_message_queue;
 
   // Send enter (keycode 13).
-  SendKeyEvent("rawKeyDown", 0, 13, 13);
-  SendKeyEvent("keyUp", 0, 13, 13);
+  SendKeyEvent("rawKeyDown", 0, 13, 13, "Enter");
+  SendKeyEvent("keyUp", 0, 13, 13, "Enter");
 
-  std::string key_identifier;
-  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
-  EXPECT_EQ("\"Enter\"", key_identifier);
-  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
-  EXPECT_EQ("\"Enter\"", key_identifier);
+  std::string key;
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key));
+  EXPECT_EQ("\"Enter\"", key);
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key));
+  EXPECT_EQ("\"Enter\"", key);
 
   // Send escape (keycode 27).
-  SendKeyEvent("rawKeyDown", 0, 27, 27);
-  SendKeyEvent("keyUp", 0, 27, 27);
+  SendKeyEvent("rawKeyDown", 0, 27, 27, "Escape");
+  SendKeyEvent("keyUp", 0, 27, 27, "Escape");
 
-  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
-  EXPECT_EQ("\"U+001B\"", key_identifier);
-  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key_identifier));
-  EXPECT_EQ("\"U+001B\"", key_identifier);
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key));
+  EXPECT_EQ("\"Escape\"", key);
+  ASSERT_TRUE(dom_message_queue.WaitForMessage(&key));
+  EXPECT_EQ("\"Escape\"", key);
 }
 
 class CaptureScreenshotTest : public DevToolsProtocolTest {

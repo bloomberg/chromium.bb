@@ -1653,8 +1653,6 @@ void EventSender::KeyDown(const std::string& code_str,
     event_down.unmodifiedText[0] = text;
   }
 
-  event_down.setKeyIdentifierFromWindowsKeyCode();
-
   if (event_down.modifiers != 0)
     event_down.isSystemKey = IsSystemKeyEvent(event_down);
 
@@ -1710,11 +1708,6 @@ void EventSender::KeyDown(const std::string& code_str,
   if (generate_char) {
     WebKeyboardEvent event_char = event_up;
     event_char.type = WebInputEvent::Char;
-    // keyIdentifier is an empty string, unless the Enter key was pressed.
-    // This behavior is not standard (keyIdentifier itself is not even a
-    // standard any more), but it matches the actual behavior in Blink.
-    if (code != ui::VKEY_RETURN)
-      event_char.keyIdentifier[0] = '\0';
     HandleInputEventOnViewOrPopup(event_char);
   }
 

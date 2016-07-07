@@ -18,8 +18,8 @@ function logEvent(e) {
      info += e.data;
    } else if (type == "keydown" || type == "keypress" || type == "keyup") {
      info += [e.ctrlKey, e.altKey, e.shiftKey, e.metaKey] +
-         ' - ' + e.keyIdentifier +
-         ' - ' + e.keyCode +
+         ' -' + e.key +
+         '- ' + e.keyCode +
          ' - ' + e.charCode;
    }
    info += '. Value: "' + target.value + '".';
@@ -27,7 +27,7 @@ function logEvent(e) {
 }
 
 log("target - type - " + ["ctrlKey", "altKey", "shiftKey", "metaKey"]
-       + ' - ' + "keyIdentifier"
+       + ' - ' + "key"
        + ' - ' + "keyCode"
        + ' - ' + "charCode");
 

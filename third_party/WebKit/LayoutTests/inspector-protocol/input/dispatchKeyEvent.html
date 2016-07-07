@@ -21,8 +21,8 @@ function logEvent(event)
         log("shiftKey");
     if (event.keyCode)
         log("keyCode: " + event.keyCode);
-    if (event.keyIdentifier)
-        log("keyIdentifier: " + event.keyIdentifier);
+    if (event.key)
+        log("key: " + event.key);
     if (event.charCode)
         log("charCode: " + event.charCode);
     if (event.text)
@@ -36,7 +36,7 @@ function test()
         {
             "type": "rawKeyDown",
             "windowsVirtualKeyCode": 65, // VK_A
-            "keyIdentifier": "U+0041"
+            "key": "A"
         },
         {
             "type": "char",
@@ -47,7 +47,7 @@ function test()
         {
             "type": "keyUp",
             "windowsVirtualKeyCode": 65,
-            "keyIdentifier": "U+0041"
+            "key": "A"
         },
         {
             "type": "char",

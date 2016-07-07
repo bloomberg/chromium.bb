@@ -2022,7 +2022,6 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   if (hasMarkedText_ || oldHasMarkedText || textToBeInserted_.length() > 1) {
     NativeWebKeyboardEvent fakeEvent = event;
     fakeEvent.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
-    fakeEvent.setKeyIdentifierFromWindowsKeyCode();
     fakeEvent.skip_in_browser = true;
     widgetHost->ForwardKeyboardEvent(fakeEvent);
     // If this key event was handled by the input method, but

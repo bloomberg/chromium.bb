@@ -1,8 +1,7 @@
-CONSOLE WARNING: line 24: 'KeyboardEvent.keyIdentifier' is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5316065118650368 for more details.
 -----Event-----
 type: keydown
 keyCode: 65
-keyIdentifier: U+0041
+key: A
 
 -----Event-----
 type: keypress
@@ -13,7 +12,7 @@ charCode: 65
 -----Event-----
 type: keyup
 keyCode: 65
-keyIdentifier: U+0041
+key: A
 
 -----Event-----
 type: keypress

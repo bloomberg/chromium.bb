@@ -25,8 +25,8 @@ function eventInfo(event, where) {
     else if (event.type == "keydown" || event.type == "keypress" || event.type == "keyup") 
         return (where ? "(" + where + ") " : "") + target.tagName + " - " + event.type
             + ' - ' + [event.ctrlKey, event.altKey, event.shiftKey, event.metaKey]
-            + ' - ' + event.keyIdentifier
-            + ' - ' + event.keyCode
+            + ' -' + event.key
+            + '- ' + event.keyCode
             + ' - ' + event.charCode
             + '. Value: "' + target.value + '".';
     else if (event.type == "mousedown" || event.type == "click" || event.type == "mouseup")
@@ -38,7 +38,7 @@ function eventInfo(event, where) {
     }
 }
 log("target - type - " + ["ctrlKey", "altKey", "shiftKey", "metaKey"]
-        + ' - ' + "keyIdentifier"
+        + ' - ' + "key"
         + ' - ' + "keyCode"
         + ' - ' + "charCode");
 

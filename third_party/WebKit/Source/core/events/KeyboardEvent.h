@@ -56,11 +56,10 @@ public:
 
     static KeyboardEvent* create(ScriptState*, const AtomicString& type, const KeyboardEventInit&);
 
-    static KeyboardEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view,
-        const String& keyIdentifier, const String& code, const String& key, unsigned location,
+    static KeyboardEvent* create(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, const String& code, const String& key, unsigned location,
         PlatformEvent::Modifiers modifiers, double platformTimeStamp)
     {
-        return new KeyboardEvent(type, canBubble, cancelable, view, keyIdentifier, code, key, location,
+        return new KeyboardEvent(type, canBubble, cancelable, view, code, key, location,
             modifiers, platformTimeStamp);
     }
 
@@ -70,7 +69,6 @@ public:
         const String& keyIdentifier, unsigned location,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
-    const String& keyIdentifier() const { return m_keyIdentifier; }
     const String& code() const { return m_code; }
     const String& key() const { return m_key; }
 
@@ -93,13 +91,12 @@ private:
     KeyboardEvent(const PlatformKeyboardEvent&, AbstractView*);
     KeyboardEvent(const AtomicString&, const KeyboardEventInit&);
     KeyboardEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView*,
-        const String& keyIdentifier, const String& code, const String& key, unsigned location,
+        const String& code, const String& key, unsigned location,
         PlatformEvent::Modifiers, double platformTimeStamp);
 
     void initLocationModifiers(unsigned location);
 
     std::unique_ptr<PlatformKeyboardEvent> m_keyEvent;
-    String m_keyIdentifier;
     String m_code;
     String m_key;
     unsigned m_location;

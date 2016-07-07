@@ -54,7 +54,7 @@ namespace blink {
 
 KeyboardEvent* createKeyboardEventWithLocation(KeyboardEvent::KeyLocationCode location)
 {
-    return KeyboardEvent::create("keydown", true, true, 0, "", "", "", location, PlatformEvent::NoModifiers, 0);
+    return KeyboardEvent::create("keydown", true, true, 0, "", "", location, PlatformEvent::NoModifiers, 0);
 }
 
 int getModifiersForKeyLocationCode(KeyboardEvent::KeyLocationCode location)

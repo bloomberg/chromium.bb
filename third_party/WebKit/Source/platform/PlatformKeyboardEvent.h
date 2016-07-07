@@ -44,11 +44,10 @@ public:
     {
     }
 
-    PlatformKeyboardEvent(EventType type, const String& text, const String& unmodifiedText, const String& keyIdentifier, const String& code, const String& key, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isSystemKey, Modifiers modifiers, double timestamp)
+    PlatformKeyboardEvent(EventType type, const String& text, const String& unmodifiedText, const String& code, const String& key, int windowsVirtualKeyCode, int nativeVirtualKeyCode, bool isSystemKey, Modifiers modifiers, double timestamp)
         : PlatformEvent(type, modifiers, timestamp)
         , m_text(text)
         , m_unmodifiedText(unmodifiedText)
-        , m_keyIdentifier(keyIdentifier)
         , m_code(code)
         , m_key(key)
         , m_windowsVirtualKeyCode(windowsVirtualKeyCode)
@@ -71,8 +70,6 @@ public:
     // (except for Shift); useful for shortcut (accelerator) key handling.
     // Otherwise, same as text().
     String unmodifiedText() const { return m_unmodifiedText; }
-
-    String keyIdentifier() const { return m_keyIdentifier; }
 
     String code() const { return m_code; }
     String key() const { return m_key; }
@@ -97,7 +94,6 @@ public:
 protected:
     String m_text;
     String m_unmodifiedText;
-    String m_keyIdentifier;
     String m_code;
     String m_key;
     int m_windowsVirtualKeyCode;

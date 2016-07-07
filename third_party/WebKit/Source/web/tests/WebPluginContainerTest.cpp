@@ -374,7 +374,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
 #if OS(MACOSX)
     modifierKey = static_cast<PlatformEvent::Modifiers>(PlatformEvent::MetaKey | PlatformEvent::NumLockOn | PlatformEvent::IsLeft);
 #endif
-    PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "67", "", "", 67, 0, false, modifierKey, 0.0);
+    PlatformKeyboardEvent platformKeyboardEventC(PlatformEvent::RawKeyDown, "", "", "", "", 67, 0, false, modifierKey, 0.0);
     KeyboardEvent* keyEventC = KeyboardEvent::create(platformKeyboardEventC, 0);
     toWebPluginContainerImpl(pluginContainerOneElement.pluginContainer())->handleEvent(keyEventC);
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
@@ -383,7 +383,7 @@ TEST_F(WebPluginContainerTest, CopyInsertKeyboardEventsTest)
     Platform::current()->clipboard()->writePlainText(WebString(""));
     EXPECT_EQ(WebString(""), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));
 
-    PlatformKeyboardEvent platformKeyboardEventInsert(PlatformEvent::RawKeyDown, "", "", "45", "", "", 45, 0, false, modifierKey, 0.0);
+    PlatformKeyboardEvent platformKeyboardEventInsert(PlatformEvent::RawKeyDown, "", "", "", "", 45, 0, false, modifierKey, 0.0);
     KeyboardEvent* keyEventInsert = KeyboardEvent::create(platformKeyboardEventInsert, 0);
     toWebPluginContainerImpl(pluginContainerOneElement.pluginContainer())->handleEvent(keyEventInsert);
     EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(WebClipboard::Buffer()));

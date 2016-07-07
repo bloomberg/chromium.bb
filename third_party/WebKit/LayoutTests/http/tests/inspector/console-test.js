@@ -25,7 +25,6 @@ InspectorTest.evaluateInConsole = function(code, callback, dontForceMainContext)
     consoleView._prompt.setText(code);
     var event = new KeyboardEvent("keydown", {
         key: "Enter",
-        keyIdentifier: "Enter",
         bubbles: true,
         cancelable: true
     });

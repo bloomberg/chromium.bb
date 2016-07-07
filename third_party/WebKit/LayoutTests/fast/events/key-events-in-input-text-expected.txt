@@ -1,19 +1,18 @@
-CONSOLE WARNING: line 28: 'KeyboardEvent.keyIdentifier' is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5316065118650368 for more details.
 To test manually, press keys and compare results to other browsers.
 
   
-target - type - ctrlKey,altKey,shiftKey,metaKey - keyIdentifier - keyCode - charCode
+target - type - ctrlKey,altKey,shiftKey,metaKey - key - keyCode - charCode
 Space:
-INPUT - keydown - false,false,false,false - U+0020 - 32 - 0. Value: "".
+INPUT - keydown - false,false,false,false - - 32 - 0. Value: "".
 INPUT - keypress - false,false,false,false - - 32 - 32. Value: "".
 INPUT - textInput - . Value: "".
-INPUT - keyup - false,false,false,false - U+0020 - 32 - 0. Value: " ".
+INPUT - keyup - false,false,false,false - - 32 - 0. Value: " ".
 Backspace:
-INPUT - keydown - false,false,false,false - U+0008 - 8 - 0. Value: " ".
-INPUT - keyup - false,false,false,false - U+0008 - 8 - 0. Value: "".
+INPUT - keydown - false,false,false,false -Backspace- 8 - 0. Value: " ".
+INPUT - keyup - false,false,false,false -Backspace- 8 - 0. Value: "".
 Left Arrow:
-INPUT - keydown - false,false,false,false - Left - 37 - 0. Value: "".
-INPUT - keyup - false,false,false,false - Left - 37 - 0. Value: "".
+INPUT - keydown - false,false,false,false -ArrowLeft- 37 - 0. Value: "".
+INPUT - keyup - false,false,false,false -ArrowLeft- 37 - 0. Value: "".
 Tab:
-INPUT - keydown - false,false,false,false - U+0009 - 9 - 0. Value: "".
+INPUT - keydown - false,false,false,false -Tab- 9 - 0. Value: "".
 

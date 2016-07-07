@@ -254,7 +254,6 @@ void TextInputController::SetComposition(const std::string& text) {
   key_down.type = blink::WebInputEvent::RawKeyDown;
   key_down.modifiers = 0;
   key_down.windowsKeyCode = 0xE5;  // VKEY_PROCESSKEY
-  key_down.setKeyIdentifierFromWindowsKeyCode();
   view()->handleInputEvent(key_down);
 
   std::vector<blink::WebCompositionUnderline> underlines;

@@ -380,7 +380,6 @@ WebKeyboardEvent* BuildKeyEvent(const InputEventData& event) {
   key_event->timeStampSeconds = event.event_time_stamp;
   key_event->modifiers = event.event_modifiers;
   key_event->windowsKeyCode = event.key_code;
-  key_event->setKeyIdentifierFromWindowsKeyCode();
   return key_event;
 }
 
@@ -697,8 +696,6 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
         key_down_event->text[0] = text;
         key_down_event->unmodifiedText[0] = text;
       }
-      // Convert the key code to a string identifier.
-      key_down_event->setKeyIdentifierFromWindowsKeyCode();
 
       *key_up_event = *web_char_event = *key_down_event;
 
@@ -706,7 +703,6 @@ std::vector<std::unique_ptr<WebInputEvent>> CreateSimulatedWebInputEvents(
 
       if (generate_char) {
         web_char_event->type = WebInputEvent::Char;
-        web_char_event->keyIdentifier[0] = '\0';
         events.push_back(std::move(original_event));
       }
 

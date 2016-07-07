@@ -364,9 +364,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
         return String::format("EME requires that contentType strings accepted by requestMediaKeySystemAccess() include codecs. Non-standard support for contentType strings without codecs will be removed in %s. Please specify the desired codec(s) as part of the contentType.", milestoneString(54));
 
-    case UseCounter::V8KeyboardEvent_KeyIdentifier_AttributeGetter:
-        return willBeRemoved("'KeyboardEvent.keyIdentifier'", 54, "5316065118650368");
-
     case UseCounter::During_Microtask_SyncXHR:
         return willBeRemoved("Invoking 'send()' on a sync XHR during microtask execution", 54, "5647113010544640");
 

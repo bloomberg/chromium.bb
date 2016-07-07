@@ -226,7 +226,6 @@ void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
   event->domCode = static_cast<int>(code);
   event->nativeKeyCode = ui::KeycodeConverter::DomCodeToNativeKeycode(code);
   event->windowsKeyCode = key_code;
-  event->setKeyIdentifierFromWindowsKeyCode();
   event->type = type;
   event->modifiers = modifiers;
   event->isSystemKey = false;

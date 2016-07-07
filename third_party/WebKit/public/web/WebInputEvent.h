@@ -265,11 +265,6 @@ public:
     // them PODs.
     static const size_t textLengthCap = 4;
 
-    // http://www.w3.org/TR/DOM-Level-3-Events/keyset.html lists the
-    // identifiers.  The longest is 18 characters, so we round up to the
-    // next multiple of 4.
-    static const size_t keyIdentifierLengthCap = 20;
-
     // |windowsKeyCode| is the Windows key code associated with this key
     // event.  Sometimes it's direct from the event (i.e. on Windows),
     // sometimes it's via a mapping function.  If you want a list, see
@@ -314,9 +309,6 @@ public:
     WebUChar text[textLengthCap];
     WebUChar unmodifiedText[textLengthCap];
 
-    // This is a string identifying the key pressed.
-    char keyIdentifier[keyIdentifierLengthCap];
-
     WebKeyboardEvent()
         : WebInputEvent(sizeof(WebKeyboardEvent))
         , windowsKeyCode(0)
@@ -326,12 +318,7 @@ public:
     {
         memset(&text, 0, sizeof(text));
         memset(&unmodifiedText, 0, sizeof(unmodifiedText));
-        memset(&keyIdentifier, 0, sizeof(keyIdentifier));
     }
-
-    // Sets keyIdentifier based on the value of windowsKeyCode.  This is
-    // handy for generating synthetic keyboard events.
-    BLINK_COMMON_EXPORT void setKeyIdentifierFromWindowsKeyCode();
 };
 
 // WebMouseEvent --------------------------------------------------------------

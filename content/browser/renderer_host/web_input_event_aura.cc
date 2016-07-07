@@ -116,8 +116,6 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   webkit_event.unmodifiedText[0] = event.GetUnmodifiedText();
   webkit_event.text[0] = event.GetText();
 
-  webkit_event.setKeyIdentifierFromWindowsKeyCode();
-
   return webkit_event;
 }
 

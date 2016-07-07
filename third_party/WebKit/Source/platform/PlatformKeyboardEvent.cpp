@@ -56,7 +56,6 @@ void PlatformKeyboardEvent::disambiguateKeyDownEvent(EventType type)
         m_text = String();
         m_unmodifiedText = String();
     } else {
-        m_keyIdentifier = String();
         m_windowsVirtualKeyCode = 0;
 #if OS(MACOSX)
         if (m_text.length() == 1 && (m_text[0U] >= 0xF700 && m_text[0U] <= 0xF7FF)) {

@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 1: 'KeyboardEvent.keyIdentifier' is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5316065118650368 for more details.
 This tests the init functions for all the event DOM classes that have them.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -18,8 +17,6 @@ PASS testInitEvent('Keyboard', '"a", false, false, window, "b", 1001, false, fal
 PASS testInitEvent('Keyboard', '"a", false, true, window, "b", 1001, false, false, false, false, false').cancelable is true
 PASS testInitEvent('Keyboard', '"a", false, true, window, "b", 1001, false, false, false, false, false').view is window
 PASS testInitEvent('Keyboard', '"a", false, true, null, "b", 1001, false, false, false, false, false').view is null
-PASS testInitEvent('Keyboard', '"a", false, true, window, "b", 1001, false, false, false, false, false').keyIdentifier is 'b'
-PASS testInitEvent('Keyboard', '"a", false, true, window, null, 1001, false, false, false, false, false').keyIdentifier is 'null'
 PASS testInitEvent('Keyboard', '"a", false, true, window, "b", 1001, false, false, false, false, false').location is 1001
 PASS testInitEvent('Keyboard', '"a", false, true, window, "b", 1001, false, false, false, false, false').ctrlKey is false
 PASS testInitEvent('Keyboard', '"a", false, true, window, "b", 1001, true, false, false, false, false').ctrlKey is true

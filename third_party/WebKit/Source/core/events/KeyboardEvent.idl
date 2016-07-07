@@ -57,7 +57,4 @@
     readonly attribute long charCode;
     readonly attribute long keyCode;
     readonly attribute long which;
-
-    // Non-standard APIs
-    [DeprecateAs=V8KeyboardEvent_KeyIdentifier_AttributeGetter] readonly attribute DOMString keyIdentifier;
 };

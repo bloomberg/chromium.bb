@@ -23,8 +23,8 @@ function eventInfo(event, where) {
     else if (event.type == "keydown" || event.type == "keypress" || event.type == "keyup") 
         return (where ? "(" + where + ") " : "") + target.tagName + " - " + event.type
             + ' - ' + [event.ctrlKey, event.altKey, event.shiftKey, event.metaKey]
-            + ' - ' + event.keyIdentifier
-            + ' - ' + event.keyCode
+            + ' -' + event.key
+            + '- ' + event.keyCode
             + ' - ' + event.charCode;
     else if (event.type == "mousedown" || event.type == "click" || event.type == "mouseup")
         return (where ? "(" + where + ") " : "") + target.tagName + " - " + event.type;
@@ -34,7 +34,7 @@ function eventInfo(event, where) {
     }
 }
 log("target - type - " + ["ctrlKey", "altKey", "shiftKey", "metaKey"]
-        + ' - ' + "keyIdentifier"
+        + ' - ' + "key"
         + ' - ' + "keyCode"
         + ' - ' + "charCode");
 
@@ -48,7 +48,7 @@ if (window.testRunner) {
     log("Space:");
     eventSender.keyDown(" ", []);
     log("Enter:");
-    eventSender.keyDown("\r", []);
+    eventSender.keyDown("Enter", []);
     log("A:");
     eventSender.keyDown("A", []);
 }

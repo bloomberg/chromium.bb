@@ -132,8 +132,6 @@ std::unique_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
       ui::KeycodeConverter::DomCodeToNativeKeycode(event.code());
   web_event->text[0] = event.GetText();
   web_event->unmodifiedText[0] = event.GetUnmodifiedText();
-
-  web_event->setKeyIdentifierFromWindowsKeyCode();
   return std::move(web_event);
 }
 

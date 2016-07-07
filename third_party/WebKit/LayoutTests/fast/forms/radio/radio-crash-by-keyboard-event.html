@@ -6,7 +6,7 @@
 test(function() {
     var radio = document.createElement('input');
     radio.type = 'radio';
-    radio.dispatchEvent(new KeyboardEvent('keydown', { keyIdentifier: 'Down' } ));
+    radio.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' } ));
 }, 'Sending a keydown event to detached radio button should not crash.');
 </script>
 </body>

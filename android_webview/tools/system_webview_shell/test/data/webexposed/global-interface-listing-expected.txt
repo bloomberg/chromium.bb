@@ -2722,7 +2722,6 @@ interface KeyboardEvent : UIEvent
     getter code
     getter ctrlKey
     getter keyCode
-    getter keyIdentifier
     getter location
     getter metaKey
     getter repeat

@@ -1,7 +1,6 @@
-CONSOLE WARNING: line 23: 'KeyboardEvent.keyIdentifier' is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5316065118650368 for more details.
   
 This tests that DOMKeyboardEvents are created correctly in the JavaScript API.
 
-keydown - key: U+0009@DOM_KEY_LOCATION_STANDARD (keyCode/charCode: 9/0) modifiers: false,false,false,false
+keydown - key: Tab@DOM_KEY_LOCATION_STANDARD (keyCode/charCode: 9/0) modifiers: false,false,false,false
 
-keyup - key: U+0009@DOM_KEY_LOCATION_STANDARD (keyCode/charCode: 9/0) modifiers: false,false,true,false
+keyup - key: Tab@DOM_KEY_LOCATION_STANDARD (keyCode/charCode: 9/0) modifiers: false,false,true,false

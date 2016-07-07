@@ -20,7 +20,7 @@ function keyLocationToText(location)
 
 function keyevent(event) {
     var p = document.createElement("p");
-    p.appendChild(document.createTextNode(event.type + " - key: " + event.keyIdentifier + "@" + keyLocationToText(event.location) + " (keyCode/charCode: " + event.keyCode + "/" + event.charCode + ")" + " modifiers: " + event.ctrlKey + "," + event.altKey + "," + event.shiftKey + "," + event.metaKey));
+    p.appendChild(document.createTextNode(event.type + " - key: " + event.key + "@" + keyLocationToText(event.location) + " (keyCode/charCode: " + event.keyCode + "/" + event.charCode + ")" + " modifiers: " + event.ctrlKey + "," + event.altKey + "," + event.shiftKey + "," + event.metaKey));
     document.getElementById("result").appendChild(p);
 }
 

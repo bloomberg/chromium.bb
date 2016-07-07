@@ -34,17 +34,18 @@ function test()
             InspectorTest.sendCommand("Input.dispatchKeyEvent", {
                 "type": "rawKeyDown",
                 "windowsVirtualKeyCode": dec,
-                "keyIdentifier": hex
+                "key": text[i]
             });
             InspectorTest.sendCommand("Input.dispatchKeyEvent", {
                 "type": "char",
                 "text": text[i],
+                "key": text[i],
                 "unmodifiedText": text[i]
             });
             InspectorTest.sendCommand("Input.dispatchKeyEvent", {
                 "type": "keyUp",
                 "windowsVirtualKeyCode": dec,
-                "keyIdentifier": hex
+                "key": text[i]
             });
         }
     }
@@ -54,16 +55,11 @@ function test()
         InspectorTest.sendCommand("Input.dispatchKeyEvent", {
             "type": "rawKeyDown",
             "windowsVirtualKeyCode": 9,
-            "keyIdentifier": "U+0009",
             "key": "Tab",
-        });
-        InspectorTest.sendCommand("Input.dispatchKeyEvent", {
-            "type": "char"
         });
         InspectorTest.sendCommand("Input.dispatchKeyEvent", {
             "type": "keyUp",
             "windowsVirtualKeyCode": 9,
-            "keyIdentifier": "U+0009",
             "key": "Tab",
         });
     }

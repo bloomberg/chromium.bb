@@ -23,13 +23,12 @@ namespace {
 void ApppendEventDetails(const WebKeyboardEvent& event, std::string* result) {
   StringAppendF(result,
                 "{\n WinCode: %d\n NativeCode: %d\n IsSystem: %d\n"
-                " Text: %s\n UnmodifiedText: %s\n KeyIdentifier: %s\n}",
+                " Text: %s\n UnmodifiedText: %s\n}",
                 event.windowsKeyCode,
                 event.nativeKeyCode,
                 event.isSystemKey,
                 reinterpret_cast<const char*>(event.text),
-                reinterpret_cast<const char*>(event.unmodifiedText),
-                reinterpret_cast<const char*>(event.keyIdentifier));
+                reinterpret_cast<const char*>(event.unmodifiedText));
 }
 
 void ApppendEventDetails(const WebMouseEvent& event, std::string* result) {

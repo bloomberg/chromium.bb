@@ -316,7 +316,7 @@ function extension_testGlobalShortcuts(nextTest)
         testPanel.onShown.removeListener(onPanelShown);
         output("Panel shown, now toggling console...");
         panelWindow.addEventListener("resize", onPanelResized);
-        dispatchKeydownEvent({ key: "Escape", keyIdentifier: "U+001B" });
+        dispatchKeydownEvent({ key: "Escape" });
     }
     function onPanelResized()
     {

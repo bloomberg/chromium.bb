@@ -198,17 +198,6 @@ Response InputHandler::DispatchKeyEvent(
   if (is_system_key)
     event.isSystemKey = *is_system_key;
 
-  if (key_identifier) {
-    if (key_identifier->size() >
-        blink::WebKeyboardEvent::keyIdentifierLengthCap) {
-      return Response::InvalidParams("Invalid 'keyIdentifier' parameter");
-    }
-    for (size_t i = 0; i < key_identifier->size(); ++i)
-      event.keyIdentifier[i] = (*key_identifier)[i];
-  } else if (event.type != blink::WebInputEvent::Char) {
-    event.setKeyIdentifierFromWindowsKeyCode();
-  }
-
   if (code) {
     event.domCode = static_cast<int>(
         ui::KeycodeConverter::CodeStringToDomCode(*code));

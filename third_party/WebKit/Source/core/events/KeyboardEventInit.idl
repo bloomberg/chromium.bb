@@ -10,7 +10,4 @@ dictionary KeyboardEventInit : EventModifierInit {
     unsigned long location = 0;
     boolean repeat = false;
     // TODO(foolip): boolean isComposing = false;
-
-    // Non-standard APIs
-    DOMString keyIdentifier = "";
 };

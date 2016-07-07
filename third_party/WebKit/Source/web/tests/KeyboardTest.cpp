@@ -68,7 +68,6 @@ public:
         keyboardEvent->modifiers = modifiers;
         keyboardEvent->type = WebInputEvent::KeyDown;
         keyboardEvent->text[0] = keyCode;
-        keyboardEvent->setKeyIdentifierFromWindowsKeyCode();
     }
 
     // Like interpretKeyEvent, but with pressing down OSModifier+|keyCode|.

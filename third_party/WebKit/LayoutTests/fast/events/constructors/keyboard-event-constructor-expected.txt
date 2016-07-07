@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 1: 'KeyboardEvent.keyIdentifier' is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5316065118650368 for more details.
 This tests the constructor for the KeyboardEvent DOM class.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -8,7 +7,6 @@ PASS new KeyboardEvent('eventType').bubbles is false
 PASS new KeyboardEvent('eventType').cancelable is false
 PASS new KeyboardEvent('eventType').view is null
 PASS new KeyboardEvent('eventType').detail is 0
-PASS new KeyboardEvent('eventType').keyIdentifier is ""
 PASS new KeyboardEvent('eventType').location is 0
 PASS new KeyboardEvent('eventType').ctrlKey is false
 PASS new KeyboardEvent('eventType').altKey is false
@@ -36,19 +34,6 @@ PASS new KeyboardEvent('eventType', { view: {valueOf: function () { return windo
 PASS new KeyboardEvent('eventType', { get view() { return window; } }).view is window
 PASS new KeyboardEvent('eventType', { get view() { return 123; } }).view threw exception TypeError: Failed to construct 'KeyboardEvent': member view is not of type Window..
 PASS new KeyboardEvent('eventType', { get view() { throw 'KeyboardEvent Error'; } }) threw exception KeyboardEvent Error.
-PASS new KeyboardEvent('eventType', { keyIdentifier: 'koakuma' }).keyIdentifier is "koakuma"
-PASS new KeyboardEvent('eventType', { keyIdentifier: '' }).keyIdentifier is ""
-PASS new KeyboardEvent('eventType', { keyIdentifier: undefined }).keyIdentifier is ""
-PASS new KeyboardEvent('eventType', { keyIdentifier: null }).keyIdentifier is "null"
-PASS new KeyboardEvent('eventType', { keyIdentifier: false }).keyIdentifier is "false"
-PASS new KeyboardEvent('eventType', { keyIdentifier: true }).keyIdentifier is "true"
-PASS new KeyboardEvent('eventType', { keyIdentifier: 12345 }).keyIdentifier is "12345"
-PASS new KeyboardEvent('eventType', { keyIdentifier: 18446744073709551615 }).keyIdentifier is "18446744073709552000"
-PASS new KeyboardEvent('eventType', { keyIdentifier: NaN }).keyIdentifier is "NaN"
-PASS new KeyboardEvent('eventType', { keyIdentifier: [] }).keyIdentifier is ""
-PASS new KeyboardEvent('eventType', { keyIdentifier: [1, 2, 3] }).keyIdentifier is "1,2,3"
-PASS new KeyboardEvent('eventType', { keyIdentifier: {koakuma: 12345} }).keyIdentifier is "[object Object]"
-PASS new KeyboardEvent('eventType', { keyIdentifier: {valueOf: function () { return 'koakuma'; } } }).keyIdentifier is "[object Object]"
 PASS new KeyboardEvent('eventType', { code: 'koakuma' }).code is "koakuma"
 PASS new KeyboardEvent('eventType', { code: '' }).code is ""
 PASS new KeyboardEvent('eventType', { code: undefined }).code is ""
@@ -127,19 +112,18 @@ PASS new KeyboardEvent('eventType', { modifierNumLock: false }).getModifierState
 PASS new KeyboardEvent('eventType', { modifierNumLock: true }).getModifierState('NumLock'); is true
 PASS new KeyboardEvent('eventType', { modifierSymbol: false }).getModifierState('Symbol'); is false
 PASS new KeyboardEvent('eventType', { modifierSymbol: true }).getModifierState('Symbol'); is true
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).bubbles is true
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).cancelable is true
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).view is window
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).detail is 111
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).keyIdentifier is "chocolate"
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).code is "chocode"
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).key is "chokey"
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).location is 222
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).ctrlKey is true
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).altKey is true
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).shiftKey is true
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).metaKey is true
-PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, keyIdentifier: 'chocolate', code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).repeat is true
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).bubbles is true
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).cancelable is true
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).view is window
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).detail is 111
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).code is "chocode"
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).key is "chokey"
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).location is 222
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).ctrlKey is true
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).altKey is true
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).shiftKey is true
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).metaKey is true
+PASS new KeyboardEvent('eventType', { bubbles: true, cancelable: true, view: window, detail: 111, code: 'chocode', key: 'chokey', location: 222, ctrlKey: true, altKey: true, shiftKey: true, metaKey: true, repeat: true }).repeat is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
