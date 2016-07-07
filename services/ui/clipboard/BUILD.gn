@@ -37,7 +37,7 @@ test("mus_clipboard_unittests") {
   deps = [
     "//base",
     "//mojo/common",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/cpp/test:run_all_shelltests",
     "//services/ui/public/interfaces",

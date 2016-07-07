@@ -19,7 +19,7 @@ source_set("shutdown") {
     ":shutdown_service",
     "//base",
     "//base/test:test_config",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
   ]

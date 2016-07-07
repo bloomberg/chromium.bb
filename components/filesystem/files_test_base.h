@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 
 namespace filesystem {
 
@@ -37,12 +37,12 @@ base::Callback<void(T1, T2, T3)> Capture(T1* t1, T2* t2, T3* t3) {
   return base::Bind(&DoCaptures<T1, T2, T3>, t1, t2, t3);
 }
 
-class FilesTestBase : public shell::test::ShellTest {
+class FilesTestBase : public shell::test::ServiceTest {
  public:
   FilesTestBase();
   ~FilesTestBase() override;
 
-  // Overridden from shell::test::ShellTest:
+  // Overridden from shell::test::ServiceTest:
   void SetUp() override;
 
  protected:

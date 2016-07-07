@@ -180,7 +180,7 @@ source_set("unittests") {
     "//base",
     "//base/test:test_config",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",
     "//services/ui/public/cpp/tests:test_support",

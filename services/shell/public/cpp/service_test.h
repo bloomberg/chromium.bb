@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SHELL_PUBLIC_CPP_SHELL_TEST_H_
-#define SERVICES_SHELL_PUBLIC_CPP_SHELL_TEST_H_
+#ifndef SERVICES_SHELL_PUBLIC_CPP_SERVICE_TEST_H_
+#define SERVICES_SHELL_PUBLIC_CPP_SERVICE_TEST_H_
 
 #include <memory>
 
@@ -23,16 +23,16 @@ class BackgroundShell;
 
 namespace test {
 
-class ShellTest;
+class ServiceTest;
 
-// A default implementation of Service for use in ShellTests. Tests wishing
+// A default implementation of Service for use in ServiceTests. Tests wishing
 // to customize this should subclass this class instead of Service,
-// otherwise they will have to call ShellTest::OnStartCalled() to forward
+// otherwise they will have to call ServiceTest::OnStartCalled() to forward
 // metadata from OnStart() to the test.
-class ShellTestClient : public Service {
+class ServiceTestClient : public Service {
  public:
-  explicit ShellTestClient(ShellTest* test);
-  ~ShellTestClient() override;
+  explicit ServiceTestClient(ServiceTest* test);
+  ~ServiceTestClient() override;
 
  protected:
   void OnStart(Connector* connector,
@@ -40,20 +40,20 @@ class ShellTestClient : public Service {
                uint32_t id) override;
 
  private:
-  ShellTest* test_;
+  ServiceTest* test_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellTestClient);
+  DISALLOW_COPY_AND_ASSIGN(ServiceTestClient);
 };
 
-class ShellTest : public testing::Test {
+class ServiceTest : public testing::Test {
  public:
-  ShellTest();
+  ServiceTest();
   // Initialize passing the name to use as the identity for the test itself.
   // Once set via this constructor, it cannot be changed later by calling
   // InitTestName(). The test executable must provide a manifest in the
   // appropriate location that specifies this name also.
-  explicit ShellTest(const std::string& test_name);
-  ~ShellTest() override;
+  explicit ServiceTest(const std::string& test_name);
+  ~ServiceTest() override;
 
  protected:
   // See constructor. Can only be called once.
@@ -61,7 +61,7 @@ class ShellTest : public testing::Test {
 
   Connector* connector() { return connector_; }
 
-  // Instance information received from the Shell during OnStart().
+  // Instance information received from the Service Manager during OnStart().
   const std::string& test_name() const { return initialize_name_; }
   const std::string& test_userid() const { return initialize_userid_; }
   uint32_t test_instance_id() const { return initialize_instance_id_; }
@@ -85,7 +85,7 @@ class ShellTest : public testing::Test {
   void TearDown() override;
 
  private:
-  friend ShellTestClient;
+  friend ServiceTestClient;
 
   std::unique_ptr<Service> service_;
 
@@ -103,10 +103,10 @@ class ShellTest : public testing::Test {
 
   base::Closure initialize_called_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceTest);
 };
 
 }  // namespace test
 }  // namespace shell
 
-#endif  // SERVICES_SHELL_PUBLIC_CPP_SHELL_TEST_H_
+#endif  // SERVICES_SHELL_PUBLIC_CPP_SERVICE_TEST_H_

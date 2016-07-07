@@ -16,7 +16,7 @@ source_set("connect") {
     ":interfaces",
     "//base",
     "//base/test:test_support",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
   ]

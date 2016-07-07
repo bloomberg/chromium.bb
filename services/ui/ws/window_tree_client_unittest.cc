@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/ui/public/cpp/tests/window_server_shelltest_base.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
@@ -490,7 +490,7 @@ class WindowTreeClientFactory
 
 }  // namespace
 
-class WindowTreeClientTest : public WindowServerShellTestBase {
+class WindowTreeClientTest : public WindowServerServiceTestBase {
  public:
   WindowTreeClientTest()
       : client_id_1_(0), client_id_2_(0), root_window_id_(0) {}
@@ -582,7 +582,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     return client;
   }
 
-  // WindowServerShellTestBase:
+  // WindowServerServiceTestBase:
   bool OnConnect(shell::Connection* connection) override {
     connection->AddInterface(client_factory_.get());
     return true;
@@ -591,7 +591,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
   void SetUp() override {
     client_factory_.reset(new WindowTreeClientFactory());
 
-    WindowServerShellTestBase::SetUp();
+    WindowServerServiceTestBase::SetUp();
 
     mojom::WindowTreeHostFactoryPtr factory;
     connector()->ConnectToInterface("mojo:ui", &factory);
@@ -621,12 +621,12 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
 
   void TearDown() override {
     // Destroy these before the message loop is destroyed (happens in
-    // WindowServerShellTestBase::TearDown).
+    // WindowServerServiceTestBase::TearDown).
     wt_client1_.reset();
     wt_client2_.reset();
     wt_client3_.reset();
     client_factory_.reset();
-    WindowServerShellTestBase::TearDown();
+    WindowServerServiceTestBase::TearDown();
   }
 
   std::unique_ptr<TestWindowTreeClient> wt_client1_;

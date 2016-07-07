@@ -43,7 +43,7 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "services/shell/public/cpp/connect.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 
 // TODO(dalecurtis): The mojo renderer is in another process, so we have no way
 // currently to get hashes for video and audio samples.  This also means that
@@ -700,14 +700,14 @@ class MockMediaSource {
 //               preferably by eliminating multiple inheritance here which is
 //               banned by Google C++ style.
 #if defined(MOJO_RENDERER) && defined(ENABLE_MOJO_PIPELINE_INTEGRATION_TEST)
-class PipelineIntegrationTestHost : public shell::test::ShellTest,
+class PipelineIntegrationTestHost : public shell::test::ServiceTest,
                                     public PipelineIntegrationTestBase {
  public:
   PipelineIntegrationTestHost()
-      : shell::test::ShellTest("exe:media_pipeline_integration_shelltests") {}
+      : shell::test::ServiceTest("exe:media_pipeline_integration_shelltests") {}
 
   void SetUp() override {
-    ShellTest::SetUp();
+    ServiceTest::SetUp();
     InitializeMediaLibrary();
   }
 

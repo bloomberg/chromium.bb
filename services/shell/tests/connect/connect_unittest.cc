@@ -15,7 +15,7 @@
 #include "base/test/test_suite.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/names.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/tests/connect/connect_test.mojom.h"
 
@@ -68,11 +68,11 @@ void QuitLoop(base::RunLoop* loop) {
 
 }  // namespace
 
-class ConnectTest : public test::ShellTest,
+class ConnectTest : public test::ServiceTest,
                     public InterfaceFactory<test::mojom::ExposedInterface>,
                     public test::mojom::ExposedInterface {
  public:
-  ConnectTest() : ShellTest("mojo:connect_unittests") {}
+  ConnectTest() : ServiceTest("mojo:connect_unittests") {}
   ~ConnectTest() override {}
 
  protected:
@@ -108,9 +108,9 @@ class ConnectTest : public test::ShellTest,
   }
 
  private:
-  // test::ShellTest:
+  // test::ServiceTest:
   void SetUp() override {
-    test::ShellTest::SetUp();
+    test::ServiceTest::SetUp();
     // We need to connect to the package first to force the shell to read the
     // package app's manifest and register aliases for the applications it
     // provides.

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/ui/common/switches.h"
 #include "ui/gl/gl_switches.h"
 
@@ -20,21 +20,21 @@ namespace {
 
 const char kTestAppName[] = "mojo:mus_ws_unittests_app";
 
-class WindowServerShellTestClient : public shell::test::ShellTestClient {
+class WindowServerServiceTestClient : public shell::test::ServiceTestClient {
  public:
-  explicit WindowServerShellTestClient(WindowServerShellTestBase* test)
-      : ShellTestClient(test), test_(test) {}
-  ~WindowServerShellTestClient() override {}
+  explicit WindowServerServiceTestClient(WindowServerServiceTestBase* test)
+      : ServiceTestClient(test), test_(test) {}
+  ~WindowServerServiceTestClient() override {}
 
  private:
-  // shell::test::ShellTestClient:
+  // shell::test::ServiceTestClient:
   bool OnConnect(shell::Connection* connection) override {
     return test_->OnConnect(connection);
   }
 
-  WindowServerShellTestBase* test_;
+  WindowServerServiceTestBase* test_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowServerShellTestClient);
+  DISALLOW_COPY_AND_ASSIGN(WindowServerServiceTestClient);
 };
 
 void EnsureCommandLineSwitch(const std::string& name) {
@@ -45,17 +45,17 @@ void EnsureCommandLineSwitch(const std::string& name) {
 
 }  // namespace
 
-WindowServerShellTestBase::WindowServerShellTestBase()
-    : ShellTest(kTestAppName) {
+WindowServerServiceTestBase::WindowServerServiceTestBase()
+    : ServiceTest(kTestAppName) {
   EnsureCommandLineSwitch(switches::kUseTestConfig);
   EnsureCommandLineSwitch(::switches::kOverrideUseGLWithOSMesaForTests);
 }
 
-WindowServerShellTestBase::~WindowServerShellTestBase() {}
+WindowServerServiceTestBase::~WindowServerServiceTestBase() {}
 
 std::unique_ptr<shell::Service>
-WindowServerShellTestBase::CreateService() {
-  return base::WrapUnique(new WindowServerShellTestClient(this));
+WindowServerServiceTestBase::CreateService() {
+  return base::WrapUnique(new WindowServerServiceTestClient(this));
 }
 
 }  // namespace ui

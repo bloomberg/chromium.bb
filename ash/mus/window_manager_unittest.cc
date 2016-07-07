@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
@@ -34,9 +34,9 @@ class WindowTreeClientDelegate : public ::ui::WindowTreeClientDelegate {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientDelegate);
 };
 
-class WindowManagerTest : public shell::test::ShellTest {
+class WindowManagerTest : public shell::test::ServiceTest {
  public:
-  WindowManagerTest() : shell::test::ShellTest("exe:mash_unittests") {}
+  WindowManagerTest() : shell::test::ServiceTest("exe:mash_unittests") {}
   ~WindowManagerTest() override {}
 
  private:

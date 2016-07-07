@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -13,32 +13,33 @@
 namespace shell {
 namespace test {
 
-ShellTestClient::ShellTestClient(ShellTest* test) : test_(test) {}
-ShellTestClient::~ShellTestClient() {}
+ServiceTestClient::ServiceTestClient(ServiceTest* test) : test_(test) {}
+ServiceTestClient::~ServiceTestClient() {}
 
-void ShellTestClient::OnStart(Connector* connector, const Identity& identity,
+void ServiceTestClient::OnStart(Connector* connector, const Identity& identity,
                               uint32_t id) {
   test_->OnStartCalled(connector, identity.name(), identity.user_id(), id);
 }
 
-ShellTest::ShellTest() {}
-ShellTest::ShellTest(const std::string& test_name) : test_name_(test_name) {}
-ShellTest::~ShellTest() {}
+ServiceTest::ServiceTest() {}
+ServiceTest::ServiceTest(const std::string& test_name)
+    : test_name_(test_name) {}
+ServiceTest::~ServiceTest() {}
 
-void ShellTest::InitTestName(const std::string& test_name) {
+void ServiceTest::InitTestName(const std::string& test_name) {
   DCHECK(test_name_.empty());
   test_name_ = test_name;
 }
 
-std::unique_ptr<Service> ShellTest::CreateService() {
-  return base::WrapUnique(new ShellTestClient(this));
+std::unique_ptr<Service> ServiceTest::CreateService() {
+  return base::WrapUnique(new ServiceTestClient(this));
 }
 
-std::unique_ptr<base::MessageLoop> ShellTest::CreateMessageLoop() {
+std::unique_ptr<base::MessageLoop> ServiceTest::CreateMessageLoop() {
   return base::WrapUnique(new base::MessageLoop);
 }
 
-void ShellTest::OnStartCalled(Connector* connector,
+void ServiceTest::OnStartCalled(Connector* connector,
                               const std::string& name,
                               const std::string& user_id,
                               uint32_t id) {
@@ -49,7 +50,7 @@ void ShellTest::OnStartCalled(Connector* connector,
   initialize_called_.Run();
 }
 
-void ShellTest::SetUp() {
+void ServiceTest::SetUp() {
   service_ = CreateService();
   message_loop_ = CreateMessageLoop();
   background_shell_.reset(new shell::BackgroundShell);
@@ -70,7 +71,7 @@ void ShellTest::SetUp() {
   run_loop.Run();
 }
 
-void ShellTest::TearDown() {
+void ServiceTest::TearDown() {
   shell_connection_.reset();
   background_shell_.reset();
   message_loop_.reset();

@@ -160,7 +160,7 @@ test("media_mojo_shell_unittests") {
     "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/interfaces",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp/test:run_all_shelltests",
     "//testing/gmock",
     "//testing/gtest",

@@ -76,7 +76,7 @@ test("filesystem_service_unittests") {
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/cpp/test:run_all_shelltests",
   ]

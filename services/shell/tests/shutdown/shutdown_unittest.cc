@@ -4,15 +4,15 @@
 
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/shell/tests/shutdown/shutdown_unittest.mojom.h"
 
 namespace shell {
 namespace {
 
-class ShutdownTest : public test::ShellTest {
+class ShutdownTest : public test::ServiceTest {
  public:
-  ShutdownTest() : test::ShellTest("mojo:shutdown_unittest") {}
+  ShutdownTest() : test::ServiceTest("mojo:shutdown_unittest") {}
   ~ShutdownTest() override {}
 
  private:

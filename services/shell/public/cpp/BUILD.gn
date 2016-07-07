@@ -68,11 +68,11 @@ if (!is_ios) {
     ]
   }
 
-  source_set("shell_test_support") {
+  source_set("service_test_support") {
     testonly = true
     sources = [
-      "lib/shell_test.cc",
-      "shell_test.h",
+      "lib/service_test.cc",
+      "service_test.h",
     ]
 
     public_deps = [

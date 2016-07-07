@@ -82,7 +82,7 @@ test("navigation_unittests") {
     "//base/test:test_support",
     "//services/navigation/public/interfaces",
     "//services/shell/public/cpp",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp/test:run_all_shelltests",
     "//testing/gtest",
   ]

@@ -8,21 +8,21 @@
 #include "base/run_loop.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 
 namespace navigation {
 
-class NavigationTest : public shell::test::ShellTest,
+class NavigationTest : public shell::test::ServiceTest,
                        public mojom::ViewClient {
  public:
   NavigationTest()
-      : shell::test::ShellTest("exe:navigation_unittests"),
+      : shell::test::ServiceTest("exe:navigation_unittests"),
         binding_(this) {}
   ~NavigationTest() override {}
 
  protected:
    void SetUp() override {
-     shell::test::ShellTest::SetUp();
+     shell::test::ServiceTest::SetUp();
      window_manager_connection_ = connector()->Connect("mojo:test_wm");
    }
 

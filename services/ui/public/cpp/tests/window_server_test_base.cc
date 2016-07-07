@@ -65,7 +65,7 @@ bool WindowServerTestBase::QuitRunLoop() {
 }
 
 void WindowServerTestBase::SetUp() {
-  WindowServerShellTestBase::SetUp();
+  WindowServerServiceTestBase::SetUp();
 
   CreateWindowTreeHost(connector(), this, &host_, this);
 

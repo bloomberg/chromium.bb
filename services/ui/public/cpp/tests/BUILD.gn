@@ -40,7 +40,7 @@ source_set("test_support") {
   deps = [
     "//base",
     "//base/test:test_config",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp:sources",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp",

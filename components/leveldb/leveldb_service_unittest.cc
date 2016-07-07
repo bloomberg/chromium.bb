@@ -10,8 +10,8 @@
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/shell/public/cpp/shell_connection.h"
-#include "services/shell/public/cpp/shell_test.h"
 
 using filesystem::mojom::FileError;
 
@@ -35,15 +35,15 @@ base::Callback<void(T1, T2)> Capture(T1* t1, T2* t2) {
   return base::Bind(&DoCaptures<T1, T2>, t1, t2);
 }
 
-class LevelDBServiceTest : public shell::test::ShellTest {
+class LevelDBServiceTest : public shell::test::ServiceTest {
  public:
-  LevelDBServiceTest() : ShellTest("exe:leveldb_service_unittests") {}
+  LevelDBServiceTest() : ServiceTest("exe:leveldb_service_unittests") {}
   ~LevelDBServiceTest() override {}
 
  protected:
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
-    ShellTest::SetUp();
+    ServiceTest::SetUp();
     connector()->ConnectToInterface("mojo:filesystem", &files_);
     connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
   }
@@ -51,7 +51,7 @@ class LevelDBServiceTest : public shell::test::ShellTest {
   void TearDown() override {
     leveldb_.reset();
     files_.reset();
-    ShellTest::TearDown();
+    ServiceTest::TearDown();
   }
 
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,

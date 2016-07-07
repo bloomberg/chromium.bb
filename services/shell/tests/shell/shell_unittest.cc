@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/tests/shell/shell_unittest.mojom.h"
 
@@ -25,21 +25,21 @@ namespace shell {
 
 namespace {
 
-class ShellTestClient
-    : public test::ShellTestClient,
+class ServiceTestClient
+    : public test::ServiceTestClient,
       public InterfaceFactory<test::mojom::CreateInstanceTest>,
       public test::mojom::CreateInstanceTest {
  public:
-  explicit ShellTestClient(test::ShellTest* test)
-      : test::ShellTestClient(test),
+  explicit ServiceTestClient(test::ServiceTest* test)
+      : test::ServiceTestClient(test),
         target_id_(shell::mojom::kInvalidInstanceID),
         binding_(this) {}
-  ~ShellTestClient() override {}
+  ~ServiceTestClient() override {}
 
   uint32_t target_id() const { return target_id_; }
 
  private:
-  // test::ShellTestClient:
+  // test::ServiceTestClient:
   bool OnConnect(Connection* connection) override {
     connection->AddInterface<test::mojom::CreateInstanceTest>(this);
     return true;
@@ -62,19 +62,19 @@ class ShellTestClient
 
   mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellTestClient);
+  DISALLOW_COPY_AND_ASSIGN(ServiceTestClient);
 };
 
 }  // namespace
 
-class ShellTest : public test::ShellTest,
+class ServiceTest : public test::ServiceTest,
                   public mojom::ServiceManagerListener {
  public:
-  ShellTest()
-      : test::ShellTest("mojo:shell_unittest"),
+  ServiceTest()
+      : test::ServiceTest("mojo:shell_unittest"),
         service_(nullptr),
         binding_(this) {}
-  ~ShellTest() override {}
+  ~ServiceTest() override {}
 
   void OnDriverQuit() {
     base::MessageLoop::current()->QuitNow();
@@ -122,9 +122,9 @@ class ShellTest : public test::ShellTest,
   }
 
  private:
-  // test::ShellTest:
+  // test::ServiceTest:
   std::unique_ptr<Service> CreateService() override {
-    service_ = new ShellTestClient(this);
+    service_ = new ServiceTestClient(this);
     return base::WrapUnique(service_);
   }
 
@@ -159,16 +159,16 @@ class ShellTest : public test::ShellTest,
     }
   }
 
-  ShellTestClient* service_;
+  ServiceTestClient* service_;
   mojo::Binding<mojom::ServiceManagerListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellTest);
+  DISALLOW_COPY_AND_ASSIGN(ServiceTest);
 };
 
-TEST_F(ShellTest, CreateInstance) {
+TEST_F(ServiceTest, CreateInstance) {
   AddListenerAndWaitForApplications();
 
   // 1. Launch a process. (Actually, have the runner launch a process that
@@ -209,7 +209,7 @@ TEST_F(ShellTest, CreateInstance) {
   }
 
   driver.set_connection_error_handler(
-      base::Bind(&ShellTest::OnDriverQuit,
+      base::Bind(&ServiceTest::OnDriverQuit,
                  base::Unretained(this)));
   driver->QuitDriver();
   base::RunLoop().Run();

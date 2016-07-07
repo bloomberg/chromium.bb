@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "mojo/common/common_type_converters.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/shell/public/cpp/shell_connection.h"
-#include "services/shell/public/cpp/shell_test.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 
 using mojo::Array;
@@ -28,14 +28,14 @@ const char* kHtmlData = "<html>data</html>";
 
 }  // namespace
 
-class ClipboardAppTest : public shell::test::ShellTest {
+class ClipboardAppTest : public shell::test::ServiceTest {
  public:
-  ClipboardAppTest() : ShellTest("exe:mus_clipboard_unittests") {}
+  ClipboardAppTest() : ServiceTest("exe:mus_clipboard_unittests") {}
   ~ClipboardAppTest() override {}
 
-  // Overridden from shell::test::ShellTest:
+  // Overridden from shell::test::ServiceTest:
   void SetUp() override {
-    ShellTest::SetUp();
+    ServiceTest::SetUp();
 
     connector()->ConnectToInterface("mojo:ui", &clipboard_);
     ASSERT_TRUE(clipboard_);

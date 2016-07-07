@@ -7,23 +7,23 @@
 
 #include "base/macros.h"
 #include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 
 namespace ui {
 
-// Base class for all window manager shelltests to perform some common setup.
-class WindowServerShellTestBase : public shell::test::ShellTest {
+// Base class for all window manager ServiceTests to perform some common setup.
+class WindowServerServiceTestBase : public shell::test::ServiceTest {
  public:
-  WindowServerShellTestBase();
-  ~WindowServerShellTestBase() override;
+  WindowServerServiceTestBase();
+  ~WindowServerServiceTestBase() override;
 
   virtual bool OnConnect(shell::Connection* connection) = 0;
 
  private:
-  // shell::test::ShellTest:
+  // shell::test::ServiceTest:
   std::unique_ptr<shell::Service> CreateService() override;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowServerShellTestBase);
+  DISALLOW_COPY_AND_ASSIGN(WindowServerServiceTestBase);
 };
 
 }  // namespace ui

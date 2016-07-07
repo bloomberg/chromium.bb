@@ -22,7 +22,7 @@ namespace ui {
 // has been invoked. window_manager() can be used to access the WindowServer
 // established as part of SetUp().
 class WindowServerTestBase
-    : public WindowServerShellTestBase,
+    : public WindowServerServiceTestBase,
       public WindowTreeClientDelegate,
       public WindowManagerDelegate,
       public shell::InterfaceFactory<mojom::WindowTreeClient> {
@@ -62,7 +62,7 @@ class WindowServerTestBase
   // testing::Test:
   void SetUp() override;
 
-  // WindowServerShellTestBase:
+  // WindowServerServiceTestBase:
   bool OnConnect(shell::Connection* connection) override;
 
   // WindowTreeClientDelegate:

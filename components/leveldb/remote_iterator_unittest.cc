@@ -8,8 +8,8 @@
 #include "components/leveldb/public/cpp/remote_iterator.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/shell/public/cpp/shell_connection.h"
-#include "services/shell/public/cpp/shell_test.h"
 
 namespace leveldb {
 namespace {
@@ -22,15 +22,15 @@ base::Callback<void(T1)> Capture(T1* t1) {
   return base::Bind(&DoCapture<T1>, t1);
 }
 
-class RemoteIteratorTest : public shell::test::ShellTest {
+class RemoteIteratorTest : public shell::test::ServiceTest {
  public:
-  RemoteIteratorTest() : ShellTest("exe:leveldb_service_unittests") {}
+  RemoteIteratorTest() : ServiceTest("exe:leveldb_service_unittests") {}
   ~RemoteIteratorTest() override {}
 
  protected:
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
-    ShellTest::SetUp();
+    ServiceTest::SetUp();
     connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
 
     mojom::DatabaseError error;
@@ -53,7 +53,7 @@ class RemoteIteratorTest : public shell::test::ShellTest {
 
   void TearDown() override {
     leveldb_.reset();
-    ShellTest::TearDown();
+    ServiceTest::TearDown();
   }
 
   mojom::LevelDBServicePtr& leveldb() { return leveldb_; }

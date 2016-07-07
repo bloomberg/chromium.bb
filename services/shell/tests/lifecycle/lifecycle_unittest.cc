@@ -11,7 +11,7 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/cpp/shell_test.h"
+#include "services/shell/public/cpp/service_test.h"
 #include "services/shell/public/interfaces/service_manager.mojom.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
 #include "services/shell/tests/util.h"
@@ -126,21 +126,21 @@ class InstanceState : public mojom::ServiceManagerListener {
 
 }  // namespace
 
-class LifecycleTest : public test::ShellTest {
+class LifecycleTest : public test::ServiceTest {
  public:
-  LifecycleTest() : ShellTest(kTestName) {}
+  LifecycleTest() : ServiceTest(kTestName) {}
   ~LifecycleTest() override {}
 
  protected:
-  // test::ShellTest:
+  // test::ServiceTest:
   void SetUp() override {
-    test::ShellTest::SetUp();
+    test::ServiceTest::SetUp();
     InitPackage();
     instances_ = TrackInstances();
   }
   void TearDown() override {
     instances_.reset();
-    test::ShellTest::TearDown();
+    test::ServiceTest::TearDown();
   }
 
   bool CanRunCrashTest() {

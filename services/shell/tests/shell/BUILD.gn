@@ -18,7 +18,7 @@ source_set("shell") {
     "//base",
     "//base/test:test_config",
     "//mojo/common:common_base",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
   ]

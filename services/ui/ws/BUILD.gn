@@ -222,7 +222,7 @@ test("mus_ws_unittests") {
     "//base/test:test_support",
     "//cc:cc",
     "//mojo/public/cpp/bindings:bindings",
-    "//services/shell/public/cpp:shell_test_support",
+    "//services/shell/public/cpp:service_test_support",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/cpp/test:run_all_shelltests",
     "//services/shell/public/interfaces",
