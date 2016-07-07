@@ -246,6 +246,18 @@ generate_tests(assert_throws, [
     ['Empty supported payment method identifiers should throw TypeError.', null, function() {
         new PaymentRequest([{'supportedMethods': []}], buildDetails())
     }],
+    ['Duplicate supported payment method identifiers should throw TypeError.', null, function() {
+        new PaymentRequest([{'supportedMethods': ['foo', 'foo']}], buildDetails(), {})
+    }],
+    ['Duplicate supported payment method identifiers should throw TypeError.', null, function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}], buildDetails(), {})
+    }],
+    ['Duplicate supported payment method identifiers in modifiers should throw TypeError.', null, function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo', 'foo']}]})
+    }],
+    ['Duplicate supported payment method identifiers in modifiers should throw TypeError.', null, function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo']}, {'supportedMethods': ['foo']}]})
+    }],
     ['Empty details should throw', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {})
     }],

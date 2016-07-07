@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/ServiceRegistry.h"
+#include "wtf/HashSet.h"
 #include <utility>
 
 namespace mojo {
@@ -224,10 +225,18 @@ void validatePaymentDetailsModifiers(const HeapVector<PaymentDetailsModifier>& m
         return;
     }
 
+    HashSet<String> uniqueMethods;
     for (const auto& modifier : modifiers) {
         if (modifier.supportedMethods().isEmpty()) {
             exceptionState.throwTypeError("Must specify at least one payment method identifier");
             return;
+        }
+        for (const auto& method : modifier.supportedMethods()) {
+            if (uniqueMethods.contains(method)) {
+                exceptionState.throwTypeError("Duplicate payment method identifiers are not allowed");
+                return;
+            }
+            uniqueMethods.add(method);
         }
 
         if (modifier.hasTotal()) {
@@ -289,10 +298,18 @@ void validateAndConvertPaymentMethodData(const HeapVector<PaymentMethodData>& pa
         return;
     }
 
+    HashSet<String> uniqueMethods;
     for (const auto& pmd : paymentMethodData) {
         if (pmd.supportedMethods().isEmpty()) {
             exceptionState.throwTypeError("Must specify at least one payment method identifier");
             return;
+        }
+        for (const auto& method : pmd.supportedMethods()) {
+            if (uniqueMethods.contains(method)) {
+                exceptionState.throwTypeError("Duplicate payment method identifiers are not allowed");
+                return;
+            }
+            uniqueMethods.add(method);
         }
 
         String stringifiedData = "";
