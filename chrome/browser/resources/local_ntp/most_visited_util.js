@@ -284,7 +284,7 @@ function fillMostVisited(location, fill) {
     data = apiHandle.getMostVisitedItemData(params.rid);
     if (!data)
       return;
-    data.tileSource: NTPLoggingTileSource.CLIENT;
+    data.tileSource = NTPLoggingTileSource.CLIENT;
   }
 
   if (isFinite(params.dummy) && parseInt(params.dummy, 10)) {
