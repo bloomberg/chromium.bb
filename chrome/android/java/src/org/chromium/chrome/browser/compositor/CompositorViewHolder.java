@@ -19,6 +19,7 @@ import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
 import android.support.v4.widget.ExploreByTouchHelper;
 import android.util.AttributeSet;
 import android.util.Pair;
+import android.view.DragEvent;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -384,6 +385,23 @@ public class CompositorViewHolder extends CoordinatorLayout
         return super.dispatchHoverEvent(e);
     }
 
+    @Override
+    public boolean dispatchDragEvent(DragEvent e) {
+        ContentViewCore contentViewCore = mTabVisible.getContentViewCore();
+        if (contentViewCore == null) return false;
+
+        if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
+        contentViewCore.setCurrentTouchEventOffsets(-mCacheViewport.left, -mCacheViewport.top);
+        boolean ret = super.dispatchDragEvent(e);
+
+        int action = e.getAction();
+        if (action == DragEvent.ACTION_DRAG_EXITED || action == DragEvent.ACTION_DRAG_ENDED
+                || action == DragEvent.ACTION_DROP) {
+            contentViewCore.setCurrentTouchEventOffsets(0.f, 0.f);
+        }
+        return ret;
+    }
+
     /**
      * @return The {@link LayoutManager} associated with this view.
      */
@@ -483,11 +501,11 @@ public class CompositorViewHolder extends CoordinatorLayout
         if (actionMasked == MotionEvent.ACTION_DOWN
                 || actionMasked == MotionEvent.ACTION_HOVER_ENTER) {
             if (mLayoutManager != null) mLayoutManager.getViewportPixel(mCacheViewport);
-            contentViewCore.setCurrentMotionEventOffsets(-mCacheViewport.left, -mCacheViewport.top);
+            contentViewCore.setCurrentTouchEventOffsets(-mCacheViewport.left, -mCacheViewport.top);
         } else if (canClear && (actionMasked == MotionEvent.ACTION_UP
                                        || actionMasked == MotionEvent.ACTION_CANCEL
                                        || actionMasked == MotionEvent.ACTION_HOVER_EXIT)) {
-            contentViewCore.setCurrentMotionEventOffsets(0.f, 0.f);
+            contentViewCore.setCurrentTouchEventOffsets(0.f, 0.f);
         }
     }
 
@@ -902,7 +920,7 @@ public class CompositorViewHolder extends CoordinatorLayout
      * @param contentViewCore The {@link ContentViewCore} to initialize.
      */
     private void initializeContentViewCore(ContentViewCore contentViewCore) {
-        contentViewCore.setCurrentMotionEventOffsets(0.f, 0.f);
+        contentViewCore.setCurrentTouchEventOffsets(0.f, 0.f);
         contentViewCore.setTopControlsHeight(
                 getTopControlsHeightPixels(), contentViewCore.doTopControlsShrinkBlinkSize());
 

@@ -198,7 +198,7 @@ void WebContentsViewAndroid::StartDragging(
 }
 
 void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
-  NOTIMPLEMENTED();
+  // Intentional no-op because Android does not have cursor.
 }
 
 void WebContentsViewAndroid::OnDragEntered(

@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -143,6 +144,11 @@ public class ContentView extends FrameLayout
         } else {
             return super.dispatchKeyEvent(event);
         }
+    }
+
+    @Override
+    public boolean onDragEvent(DragEvent event) {
+        return mContentViewCore.onDragEvent(event);
     }
 
     @Override

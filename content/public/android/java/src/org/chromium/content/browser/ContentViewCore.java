@@ -1793,12 +1793,13 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     /**
-     * Sets the current amount to offset incoming touch events by.  This is used to handle content
-     * moving and not lining up properly with the android input system.
+     * Sets the current amount to offset incoming touch events by (including MotionEvent and
+     * DragEvent). This is used to handle content moving and not lining up properly with the
+     * android input system.
      * @param dx The X offset in pixels to shift touch events.
      * @param dy The Y offset in pixels to shift touch events.
      */
-    public void setCurrentMotionEventOffsets(float dx, float dy) {
+    public void setCurrentTouchEventOffsets(float dx, float dy) {
         mCurrentTouchOffsetX = dx;
         mCurrentTouchOffsetY = dy;
     }
@@ -3312,17 +3313,19 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             }
         }
 
-        float scale = (float) DeviceDisplayInfo.create(mContainerView.getContext()).getDIPScale();
         int[] locationOnScreen = new int[2];
         mContainerView.getLocationOnScreen(locationOnScreen);
 
-        int x = (int) (event.getX() / scale);
-        int y = (int) (event.getY() / scale);
-        int screenX = (int) ((event.getX() + locationOnScreen[0]) / scale);
-        int screenY = (int) ((event.getY() + locationOnScreen[1]) / scale);
+        float xPix = event.getX() + mRenderCoordinates.getScrollXPixInt() + mCurrentTouchOffsetX;
+        float yPix = event.getY() + mRenderCoordinates.getScrollYPixInt() + mCurrentTouchOffsetY;
 
-        nativeOnDragEvent(mNativeContentViewCore, event.getAction(), x, y, screenX, screenY,
-                mimeTypes, content.toString());
+        int xCss = (int) mRenderCoordinates.fromPixToLocalCss(xPix);
+        int yCss = (int) mRenderCoordinates.fromPixToLocalCss(yPix);
+        int screenXCss = (int) mRenderCoordinates.fromPixToLocalCss(xPix + locationOnScreen[0]);
+        int screenYCss = (int) mRenderCoordinates.fromPixToLocalCss(yPix + locationOnScreen[1]);
+
+        nativeOnDragEvent(mNativeContentViewCore, event.getAction(), xCss, yCss, screenXCss,
+                screenYCss, mimeTypes, content.toString());
         return true;
     }
 
