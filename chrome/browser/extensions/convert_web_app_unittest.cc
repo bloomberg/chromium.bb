@@ -80,7 +80,9 @@ base::Time GetTestTime(int year, int month, int day, int hour, int minute,
   exploded.minute = minute;
   exploded.second = second;
   exploded.millisecond = millisecond;
-  return base::Time::FromUTCExploded(exploded);
+  base::Time out_time;
+  EXPECT_TRUE(base::Time::FromUTCExploded(exploded, &out_time));
+  return out_time;
 }
 
 }  // namespace

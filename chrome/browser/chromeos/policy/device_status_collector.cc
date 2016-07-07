@@ -103,7 +103,10 @@ const char kCPUTempFilePattern[] = "temp*_input";
 int64_t TimestampToDayKey(Time timestamp) {
   Time::Exploded exploded;
   timestamp.LocalMidnight().LocalExplode(&exploded);
-  return (Time::FromUTCExploded(exploded) - Time::UnixEpoch()).InMilliseconds();
+  Time out_time;
+  bool conversion_success = Time::FromUTCExploded(exploded, &out_time);
+  DCHECK(conversion_success);
+  return (out_time - Time::UnixEpoch()).InMilliseconds();
 }
 
 // Helper function (invoked via blocking pool) to fetch information about

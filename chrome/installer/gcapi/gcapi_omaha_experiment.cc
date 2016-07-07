@@ -18,9 +18,12 @@ namespace {
 
 // Returns the number of weeks since 2/3/2003.
 int GetCurrentRlzWeek(const base::Time& current_time) {
-  base::Time::Exploded february_third_2003_exploded =
+  const base::Time::Exploded february_third_2003_exploded =
       {2003, 2, 1, 3, 0, 0, 0, 0};
-  base::Time f = base::Time::FromUTCExploded(february_third_2003_exploded);
+  base::Time f;
+  bool conversion_success =
+      base::Time::FromUTCExploded(february_third_2003_exploded, &f);
+  DCHECK(conversion_success);
   base::TimeDelta delta = current_time - f;
   return delta.InDays() / 7;
 }

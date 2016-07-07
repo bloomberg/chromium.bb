@@ -100,8 +100,9 @@ class TestFolder {
 
   double GetVariantTimestamp() const {
     DCHECK(!folder_dir_.path().empty());
-    base::Time variant_epoch = base::Time::FromLocalExploded(
-        picasa::kPmpVariantTimeEpoch);
+    base::Time variant_epoch;
+    EXPECT_TRUE(base::Time::FromLocalExploded(picasa::kPmpVariantTimeEpoch,
+                                              &variant_epoch));
 
     int64_t microseconds_since_epoch =
         (folder_info_.timestamp - variant_epoch).InMicroseconds();
@@ -387,10 +388,12 @@ class PicasaFileUtilTest : public testing::Test {
 
 TEST_F(PicasaFileUtilTest, DateFormat) {
   base::Time::Exploded exploded_shortmonth = { 2013, 4, 0, 16, 0, 0, 0, 0 };
-  base::Time shortmonth = base::Time::FromLocalExploded(exploded_shortmonth);
+  base::Time shortmonth;
+  EXPECT_TRUE(base::Time::FromLocalExploded(exploded_shortmonth, &shortmonth));
 
   base::Time::Exploded exploded_shortday = { 2013, 11, 0, 3, 0, 0, 0, 0 };
-  base::Time shortday = base::Time::FromLocalExploded(exploded_shortday);
+  base::Time shortday;
+  EXPECT_TRUE(base::Time::FromLocalExploded(exploded_shortday, &shortday));
 
   EXPECT_EQ("2013-04-16", DateToPathString(shortmonth));
   EXPECT_EQ("2013-11-03", DateToPathString(shortday));
@@ -400,7 +403,8 @@ TEST_F(PicasaFileUtilTest, NameDeduplication) {
   ScopedVector<TestFolder> test_folders;
   std::vector<std::string> expected_names;
 
-  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+  base::Time test_date;
+  EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
   base::Time test_date_2 = test_date - base::TimeDelta::FromDays(1);
 
   std::string test_date_string = DateToPathString(test_date);
@@ -472,7 +476,8 @@ TEST_F(PicasaFileUtilTest, NonexistentFolder) {
 
 TEST_F(PicasaFileUtilTest, FolderContentsTrivial) {
   ScopedVector<TestFolder> test_folders;
-  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+  base::Time test_date;
+  EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
   test_folders.push_back(
       new TestFolder("folder-1-empty", test_date, "uid-empty", 0, 0));
@@ -489,7 +494,8 @@ TEST_F(PicasaFileUtilTest, FolderContentsTrivial) {
 
 TEST_F(PicasaFileUtilTest, FolderWithManyFiles) {
   ScopedVector<TestFolder> test_folders;
-  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+  base::Time test_date;
+  EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
   test_folders.push_back(
       new TestFolder("folder-many-files", test_date, "uid-both", 50, 50));
@@ -500,7 +506,8 @@ TEST_F(PicasaFileUtilTest, FolderWithManyFiles) {
 
 TEST_F(PicasaFileUtilTest, ManyFolders) {
   ScopedVector<TestFolder> test_folders;
-  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+  base::Time test_date;
+  EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
   for (unsigned int i = 0; i < 50; ++i) {
     base::Time date = test_date - base::TimeDelta::FromDays(i);
@@ -517,7 +524,8 @@ TEST_F(PicasaFileUtilTest, ManyFolders) {
 
 TEST_F(PicasaFileUtilTest, AlbumExistence) {
   ScopedVector<TestFolder> test_folders;
-  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+  base::Time test_date;
+  EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
   std::vector<AlbumInfo> albums;
   AlbumInfo info;
@@ -539,7 +547,8 @@ TEST_F(PicasaFileUtilTest, AlbumExistence) {
 
 TEST_F(PicasaFileUtilTest, AlbumContents) {
   ScopedVector<TestFolder> test_folders;
-  base::Time test_date = base::Time::FromLocalExploded(test_date_exploded);
+  base::Time test_date;
+  EXPECT_TRUE(base::Time::FromLocalExploded(test_date_exploded, &test_date));
 
   std::vector<AlbumInfo> albums;
   AlbumInfo info;

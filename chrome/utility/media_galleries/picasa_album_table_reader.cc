@@ -24,7 +24,12 @@ base::Time TimeFromMicrosoftVariantTime(double variant_time) {
   base::TimeDelta variant_delta = base::TimeDelta::FromMicroseconds(
       static_cast<int64_t>(variant_time * base::Time::kMicrosecondsPerDay));
 
-  return base::Time::FromLocalExploded(kPmpVariantTimeEpoch) + variant_delta;
+  base::Time out_time;
+  bool conversion_success =
+      base::Time::FromLocalExploded(kPmpVariantTimeEpoch, &out_time);
+  DCHECK(conversion_success);
+
+  return out_time + variant_delta;
 }
 
 }  // namespace

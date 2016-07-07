@@ -181,9 +181,12 @@ void WebRtcLogsDOMHandler::UpdateUI() {
       double seconds_since_epoch;
       if (base::StringToDouble(i->local_id, &seconds_since_epoch)) {
         base::Time capture_time = base::Time::FromDoubleT(seconds_since_epoch);
-        base::Time::Exploded lower_limit = {2012, 1, 0, 1, 0, 0, 0, 0};
-        if (capture_time > base::Time::FromUTCExploded(lower_limit) &&
-            capture_time < base::Time::Now()) {
+        const base::Time::Exploded lower_limit = {2012, 1, 0, 1, 0, 0, 0, 0};
+        base::Time out_time;
+        bool conversion_success =
+            base::Time::FromUTCExploded(lower_limit, &out_time);
+        DCHECK(conversion_success);
+        if (capture_time > out_time && capture_time < base::Time::Now()) {
           value_w = base::TimeFormatFriendlyDateAndTime(capture_time);
         }
       }

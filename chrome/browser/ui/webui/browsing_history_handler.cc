@@ -905,7 +905,10 @@ void BrowsingHistoryHandler::SetQueryTimeInMonths(
   exploded.day_of_month = 1;
 
   if (offset == 0) {
-    options->begin_time = base::Time::FromLocalExploded(exploded);
+    if (!base::Time::FromLocalExploded(exploded, &options->begin_time)) {
+      // TODO(maksims): implement errors handling here.
+      NOTIMPLEMENTED();
+    }
 
     // Set the end time of this first search to null (which will
     // show results from the future, should the user's clock have
@@ -919,12 +922,18 @@ void BrowsingHistoryHandler::SetQueryTimeInMonths(
     exploded.month -= offset - 1;
     // Set the correct year.
     NormalizeMonths(&exploded);
-    options->end_time = base::Time::FromLocalExploded(exploded);
+    if (!base::Time::FromLocalExploded(exploded, &options->begin_time)) {
+      // TODO(maksims): implement errors handling here.
+      NOTIMPLEMENTED();
+    }
 
     exploded.month -= 1;
     // Set the correct year
     NormalizeMonths(&exploded);
-    options->begin_time = base::Time::FromLocalExploded(exploded);
+    if (!base::Time::FromLocalExploded(exploded, &options->begin_time)) {
+      // TODO(maksims): implement errors handling here.
+      NOTIMPLEMENTED();
+    }
   }
 }
 

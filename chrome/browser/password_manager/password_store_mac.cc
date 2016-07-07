@@ -279,8 +279,7 @@ GURL URLFromComponents(bool is_secure, const std::string& host, int port,
 }
 
 // Converts a Keychain time string to a Time object, returning true if
-// time_string_bytes was parsable. If the return value is false, the value of
-// |time| is unchanged.
+// time_string_bytes was parsable.
 bool TimeFromKeychainTimeString(const char* time_string_bytes,
                                 unsigned int byte_length,
                                 base::Time* time) {
@@ -298,11 +297,7 @@ bool TimeFromKeychainTimeString(const char* time_string_bytes,
                            &exploded_time.minute, &exploded_time.second);
   free(time_string);
 
-  if (assignments == 6) {
-    *time = base::Time::FromUTCExploded(exploded_time);
-    return true;
-  }
-  return false;
+  return assignments == 6 && base::Time::FromUTCExploded(exploded_time, time);
 }
 
 // Returns the PasswordForm Scheme corresponding to |auth_type|.

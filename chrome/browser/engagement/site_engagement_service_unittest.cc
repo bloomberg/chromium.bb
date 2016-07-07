@@ -85,7 +85,10 @@ base::Time GetReferenceTime() {
   exploded_reference_time.second = 0;
   exploded_reference_time.millisecond = 0;
 
-  return base::Time::FromLocalExploded(exploded_reference_time);
+  base::Time out_time;
+  EXPECT_TRUE(
+      base::Time::FromLocalExploded(exploded_reference_time, &out_time));
+  return out_time;
 }
 
 std::unique_ptr<KeyedService> BuildTestHistoryService(
