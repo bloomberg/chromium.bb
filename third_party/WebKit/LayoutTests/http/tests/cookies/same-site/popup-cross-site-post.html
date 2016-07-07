@@ -15,13 +15,21 @@ if (window.location.hostname == "127.0.0.1") {
     window.location.hostname = TEST_HOST;
 } else {
     async_test(t => {
+        triggeredReload = false;
         window.addEventListener("message", t.step_func_done(e => {
             assert_equals(e.data.http[STRICT_DOM], undefined, "strict");
             assert_equals(e.data.http[LAX_DOM], undefined, "lax");
             assert_equals(e.data.http[NORMAL_DOM], "1", "normal");
             // TODO(mkwst): This should exclude the samesite cookies.
             assert_equals(e.data.document, STRICT_DOM + "=1; " + LAX_DOM + "=1; " + NORMAL_DOM + "=1");
-            e.source.close();
+
+            if (triggeredReload) {
+              e.source.close();
+              t.done();
+            } else {
+              triggeredReload = true;
+              e.source.postMessage("reload", "*");
+            }
         }));
 
         var f = document.createElement('form');

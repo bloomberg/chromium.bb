@@ -28,6 +28,7 @@
 #include "core/dom/Document.h"
 #include "core/html/forms/FormController.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
@@ -75,6 +76,11 @@ const String& HistoryItem::target() const
     return m_target;
 }
 
+PassRefPtr<SecurityOrigin> HistoryItem::requestorOrigin() const
+{
+    return SecurityOrigin::createFromString(m_requestorOrigin);
+}
+
 void HistoryItem::setURLString(const String& urlString)
 {
     if (m_urlString != urlString)
@@ -90,6 +96,11 @@ void HistoryItem::setReferrer(const Referrer& referrer)
 {
     // This should be a RELEASE_ASSERT.
     m_referrer = SecurityPolicy::generateReferrer(referrer.referrerPolicy, url(), referrer.referrer);
+}
+
+void HistoryItem::setRequestorOrigin(PassRefPtr<SecurityOrigin> origin)
+{
+    m_requestorOrigin = origin->toString();
 }
 
 void HistoryItem::setTarget(const String& target)

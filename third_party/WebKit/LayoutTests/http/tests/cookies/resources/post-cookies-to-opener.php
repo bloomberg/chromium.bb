@@ -8,4 +8,9 @@ window.opener.postMessage({
     'http': from_http,
     'document': document.cookie
 }, "*");
+
+window.addEventListener("message", e => {
+  if (e.data == "reload")
+    window.location.reload();
+});
 </script>

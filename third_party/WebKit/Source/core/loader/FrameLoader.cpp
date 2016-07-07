@@ -124,6 +124,7 @@ ResourceRequest FrameLoader::resourceRequestFromHistoryItem(HistoryItem* item, W
     RefPtr<EncodedFormData> formData = item->formData();
     ResourceRequest request(item->url());
     request.setHTTPReferrer(item->referrer());
+    request.setRequestorOrigin(item->requestorOrigin());
     request.setCachePolicy(cachePolicy);
     if (formData) {
         request.setHTTPMethod(HTTPNames::POST);
@@ -374,6 +375,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     m_currentItem->setDocumentState(m_frame->document()->formElementsState());
     m_currentItem->setTarget(m_frame->tree().uniqueName());
     m_currentItem->setReferrer(SecurityPolicy::generateReferrer(m_documentLoader->request().getReferrerPolicy(), m_currentItem->url(), m_documentLoader->request().httpReferrer()));
+    m_currentItem->setRequestorOrigin(m_documentLoader->request().requestorOrigin());
     m_currentItem->setFormInfoFromRequest(m_documentLoader->request());
 
     // Don't propagate state from the old item to the new item if there isn't an old item (obviously),
