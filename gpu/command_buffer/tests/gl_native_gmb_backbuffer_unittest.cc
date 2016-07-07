@@ -50,10 +50,9 @@ TEST_F(GLNativeGMBTest, TestNativeGMBBackbufferWithDifferentConfigurations) {
       gl.Initialize(options);
       gl.MakeCurrent();
 
-      glResizeCHROMIUM(10, 10, 1, true);
+      // Clear the back buffer and check that it has the right values.
       glClearColor(0.0f, 0.25f, 0.5f, 0.7f);
       glClear(GL_COLOR_BUFFER_BIT);
-
       uint8_t pixel[4];
       memset(pixel, 0, 4);
       glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
@@ -63,6 +62,19 @@ TEST_F(GLNativeGMBTest, TestNativeGMBBackbufferWithDifferentConfigurations) {
       uint8_t alpha = has_alpha ? 178 : 255;
       EXPECT_NEAR(alpha, pixel[3], 2);
 
+      // Resize, then clear the back buffer and check its contents.
+      glResizeCHROMIUM(10, 10, 1, true);
+      glClearColor(0.5f, 0.6f, 0.7f, 0.8f);
+      glClear(GL_COLOR_BUFFER_BIT);
+      memset(pixel, 0, 4);
+      glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &pixel);
+      EXPECT_NEAR(128u, pixel[0], 2);
+      EXPECT_NEAR(153u, pixel[1], 2);
+      EXPECT_NEAR(178u, pixel[2], 2);
+      uint8_t alpha2 = has_alpha ? 204 : 255;
+      EXPECT_NEAR(alpha2, pixel[3], 2);
+
+      // Swap buffers, then clear the back buffer and check its contents.
       ::gles2::GetGLContext()->SwapBuffers();
       glClearColor(0.1f, 0.2f, 0.3f, 0.4f);
       glClear(GL_COLOR_BUFFER_BIT);
@@ -71,8 +83,8 @@ TEST_F(GLNativeGMBTest, TestNativeGMBBackbufferWithDifferentConfigurations) {
       EXPECT_NEAR(25u, pixel[0], 2);
       EXPECT_NEAR(51u, pixel[1], 2);
       EXPECT_NEAR(76u, pixel[2], 2);
-      uint8_t alpha2 = has_alpha ? 102 : 255;
-      EXPECT_NEAR(alpha2, pixel[3], 2);
+      uint8_t alpha3 = has_alpha ? 102 : 255;
+      EXPECT_NEAR(alpha3, pixel[3], 2);
 
       gl.Destroy();
     }
