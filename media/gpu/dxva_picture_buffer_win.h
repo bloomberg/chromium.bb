@@ -163,6 +163,10 @@ class EGLStreamCopyPictureBuffer : public DXVAPictureBuffer {
  private:
   EGLStreamKHR stream_;
 
+  // True if the copy has been completed and it has not been set for reuse
+  // yet.
+  bool frame_in_consumer_ = false;
+
   // This ID3D11Texture2D interface pointer is used to hold a reference to the
   // MFT decoder texture during the course of a copy operation. This reference
   // is released when the copy completes.
