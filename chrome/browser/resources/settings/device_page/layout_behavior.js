@@ -80,10 +80,14 @@ var LayoutBehavior = {
     var closestId = this.findClosest_(id, newBounds);
 
     // Find the closest edge.
-    var layoutPosition = this.getLayoutPositionForBounds_(newBounds, closestId);
+    var closestBounds = this.getCalculatedDisplayBounds(closestId);
+    var layoutPosition =
+        this.getLayoutPositionForBounds_(newBounds, closestBounds);
 
     // Snap to the closest edge.
-    this.snapBounds_(closestId, layoutPosition, newBounds);
+    var snapPos = this.snapBounds_(newBounds, closestId, layoutPosition);
+    newBounds.left = snapPos.x;
+    newBounds.top = snapPos.y;
 
     // Calculate the new bounds and delta.
     var oldBounds = this.dragBounds_ || this.getCalculatedDisplayBounds(id);
@@ -122,13 +126,50 @@ var LayoutBehavior = {
         !this.dragLayoutPosition_) {
       return;
     }
+
     var layout = this.displayLayoutMap_.get(id);
-    if (!layout)
-      return;
-    // Note: This updates layout in this.displayLayoutMap_ which is also the
-    // entry in this.layouts.
-    this.updateOffsetAndPosition_(
-        this.dragBounds_, this.dragLayoutPosition_, layout);
+
+    var orphanIds;
+    if (!layout || layout.parentId == '') {
+      // Primary display. Set the calculated position to |dragBounds_|.
+      this.setCalculatedDisplayBounds_(id, this.dragBounds_);
+
+      // We cannot re-parent the primary display, so instead make all other
+      // displays orphans and clear their calculated bounds.
+      orphanIds = this.findChildren_(id, true /* recurse */);
+      for (let o in orphanIds)
+        this.calculatedBoundsMap_.delete(o);
+
+      // Re-parent |dragParentId_|. It will be forced to parent to the dragged
+      // display since it is the only non-orphan.
+      this.reparentOrphan_(this.dragParentId_, orphanIds);
+      orphanIds.splice(orphanIds.indexOf(this.dragParentId_), 1);
+    } else {
+      // All immediate children of |layout| will need to be re-parented.
+      orphanIds = this.findChildren_(id, false /* do not recurse */);
+      for (let o in orphanIds)
+        this.calculatedBoundsMap_.delete(o);
+
+      // When re-parenting to a descendant, also parent any immediate child to
+      // drag display's current parent.
+      var topLayout = this.displayLayoutMap_.get(this.dragParentId_);
+      while (topLayout && topLayout.parentId != '') {
+        if (topLayout.parentId == id) {
+          topLayout.parentId = layout.parentId;
+          break;
+        }
+        topLayout = this.displayLayoutMap_.get(topLayout.parentId);
+      }
+
+      // Re-parent the dragged display.
+      layout.parentId = this.dragParentId_;
+      this.updateOffsetAndPosition_(
+          this.dragBounds_, this.dragLayoutPosition_, layout);
+    }
+
+    // Update any orphaned children. This may cause the dragged display to
+    // be re-attached if it was attached to a child.
+    this.updateOrphans_(orphanIds);
 
     // Send the updated layouts.
     chrome.system.display.setDisplayLayout(this.layouts, function() {
@@ -163,7 +204,101 @@ var LayoutBehavior = {
   },
 
   /**
-   * Recursively calculate the absolute bounds of a display.
+   * Re-parents all entries in |orphanIds| and any children.
+   * @param {!Array<string>} orphanIds The list of ids affected by the move.
+   * @private
+   */
+  updateOrphans_: function(orphanIds) {
+    var orphans = orphanIds.slice();
+    for (let orphan of orphanIds) {
+      var newOrphans = this.findChildren_(orphan, true /* recurse */);
+      // If the dragged display was re-parented to one of its children,
+      // there may be duplicates so merge the lists.
+      for (let o of newOrphans) {
+        if (!orphans.includes(o))
+          orphans.push(o);
+      }
+    }
+
+    // Remove each orphan from the list as it is re-parented so that
+    // subsequent orphans can be parented to it.
+    while (orphans.length) {
+      var orphanId = orphans.shift();
+      this.reparentOrphan_(orphanId, orphans);
+    }
+  },
+
+  /**
+   * Re-parents the orphan to a layout that is not a member of
+   * |otherOrphanIds|.
+   * @param {string} orphanId The id of the orphan to re-parent.
+   * @param {Array<string>} otherOrphanIds The list of ids of other orphans
+   *     to ignore when re-parenting.
+   * @private
+   */
+  reparentOrphan_: function(orphanId, otherOrphanIds) {
+    var layout = this.displayLayoutMap_.get(orphanId);
+    assert(layout);
+    if (orphanId == this.dragId_ && layout.parentId != '') {
+      this.setCalculatedDisplayBounds_(orphanId, this.dragBounds_);
+      return;
+    }
+    var bounds = this.getCalculatedDisplayBounds(orphanId);
+
+    // Find the closest parent.
+    var newParentId = this.findClosest_(orphanId, bounds, otherOrphanIds);
+    assert(newParentId != '');
+    layout.parentId = newParentId;
+
+    // Find the closest edge.
+    var parentBounds = this.getCalculatedDisplayBounds(newParentId);
+    var layoutPosition = this.getLayoutPositionForBounds_(bounds, parentBounds);
+
+    // Move from the nearest corner to the desired location and get the delta.
+    var cornerBounds = this.getCornerBounds_(bounds, parentBounds);
+    var desiredPos = this.snapBounds_(bounds, newParentId, layoutPosition);
+    var deltaPos = {
+      x: desiredPos.x - cornerBounds.left,
+      y: desiredPos.y - cornerBounds.top
+    };
+
+    // Check for collisions.
+    this.collideAndModifyDelta_(orphanId, cornerBounds, deltaPos);
+    var desiredBounds = {
+      left: cornerBounds.left + deltaPos.x,
+      top: cornerBounds.top + deltaPos.y,
+      width: bounds.width,
+      height: bounds.height
+    };
+
+    this.updateOffsetAndPosition_(desiredBounds, layoutPosition, layout);
+  },
+
+  /**
+   * @param {string} parentId
+   * @param {boolean} recurse Include descendants of children.
+   * @return {!Array<string>}
+   * @private
+   */
+  findChildren_: function(parentId, recurse) {
+    var children = [];
+    for (let childId of this.displayLayoutMap_.keys()) {
+      if (childId == parentId)
+        continue;
+      if (this.displayLayoutMap_.get(childId).parentId == parentId) {
+        // Insert immediate children at the front of the array.
+        children.unshift(childId);
+        if (recurse) {
+          // Descendants get added to the end of the list.
+          children = children.concat(this.findChildren_(childId, true));
+        }
+      }
+    }
+    return children;
+  },
+
+  /**
+   * Recursively calculates the absolute bounds of a display.
    * Caches the display bounds so that parent bounds are only calculated once.
    * @param {string} id
    * @param {number} width
@@ -262,22 +397,21 @@ var LayoutBehavior = {
   /**
    * Calculates the LayoutPosition for |bounds| relative to |parentId|.
    * @param {!chrome.system.display.Bounds} bounds
-   * @param {string} parentId
+   * @param {!chrome.system.display.Bounds} parentBounds
    * @return {!chrome.system.display.LayoutPosition}
    */
-  getLayoutPositionForBounds_: function(bounds, parentId) {
+  getLayoutPositionForBounds_: function(bounds, parentBounds) {
     // Translate bounds from top-left to center.
     var x = bounds.left + bounds.width / 2;
     var y = bounds.top + bounds.height / 2;
 
     // Determine the distance from the new bounds to both of the near edges.
-    var parentBounds = this.getCalculatedDisplayBounds(parentId);
     var left = parentBounds.left;
     var top = parentBounds.top;
     var width = parentBounds.width;
     var height = parentBounds.height;
 
-    // Signed deltas to the center of the div.
+    // Signed deltas to the center.
     var dx = x - (left + width / 2);
     var dy = y - (top + height / 2);
 
@@ -299,13 +433,14 @@ var LayoutBehavior = {
   },
 
   /**
-   * Modifes |bounds| to the position closest to it along the edge of |parentId|
-   * specified by |layoutPosition|.
+   * Modifies |bounds| to the position closest to it along the edge of
+   * |parentId| specified by |layoutPosition|.
+   * @param {!chrome.system.display.Bounds} bounds
    * @param {string} parentId
    * @param {!chrome.system.display.LayoutPosition} layoutPosition
-   * @param {!chrome.system.display.Bounds} bounds
+   * @return {!{x: number, y: number}}
    */
-  snapBounds_: function(parentId, layoutPosition, bounds) {
+  snapBounds_: function(bounds, parentId, layoutPosition) {
     var parentBounds = this.getCalculatedDisplayBounds(parentId);
 
     var x;
@@ -326,8 +461,7 @@ var LayoutBehavior = {
       y = this.snapToY_(bounds, parentBounds);
     }
 
-    bounds.left = x;
-    bounds.top = y;
+    return {x: x, y: y};
   },
 
   /**
@@ -507,6 +641,32 @@ var LayoutBehavior = {
 
     // Update the calculated bounds to match the new offset.
     this.calculateBounds_(layout.id, bounds.width, bounds.height);
+  },
+
+  /**
+   * Returns |bounds| translated to touch the closest corner of |parentBounds|.
+   * @param {!chrome.system.display.Bounds} bounds
+   * @param {!chrome.system.display.Bounds} parentBounds
+   * @return {!chrome.system.display.Bounds}
+   * @private
+   */
+  getCornerBounds_: function(bounds, parentBounds) {
+    var x;
+    if (bounds.left > parentBounds.left + parentBounds.width / 2)
+      x = parentBounds.left + parentBounds.width;
+    else
+      x = parentBounds.left - bounds.width;
+    var y;
+    if (bounds.top > parentBounds.top + parentBounds.height / 2)
+      y = parentBounds.top + parentBounds.height;
+    else
+      y = parentBounds.top - bounds.height;
+    return {
+      left: x,
+      top: y,
+      width: bounds.width,
+      height: bounds.height,
+    };
   },
 
   /**
