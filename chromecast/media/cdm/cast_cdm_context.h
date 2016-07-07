@@ -11,51 +11,37 @@
 #include "chromecast/public/media/cast_key_status.h"
 #include "media/base/cdm_context.h"
 
-namespace media {
-class Decryptor;
-}
-
 namespace chromecast {
 namespace media {
 
-class CastCdm;
 class DecryptContextImpl;
 
-// This class exposes only what's needed by CastRenderer.
+// CdmContext implementation + some extra APIs needed by CastRenderer.
 class CastCdmContext : public ::media::CdmContext {
  public:
-  explicit CastCdmContext(CastCdm* cast_cdm);
-  ~CastCdmContext() override;
-
   // ::media::CdmContext implementation.
   ::media::Decryptor* GetDecryptor() override;
   int GetCdmId() const override;
 
   // Register a player with this CDM. |new_key_cb| will be called when a new
   // key is available. |cdm_unset_cb| will be called when the CDM is destroyed.
-  int RegisterPlayer(const base::Closure& new_key_cb,
-                     const base::Closure& cdm_unset_cb);
+  virtual int RegisterPlayer(const base::Closure& new_key_cb,
+                             const base::Closure& cdm_unset_cb) = 0;
 
   // Unregiester a player with this CDM. |registration_id| should be the id
   // returned by RegisterPlayer().
-  void UnregisterPlayer(int registration_id);
+  virtual void UnregisterPlayer(int registration_id) = 0;
 
   // Returns the decryption context needed to decrypt frames encrypted with
   // |key_id|. Returns null if |key_id| is not available.
-  std::unique_ptr<DecryptContextImpl> GetDecryptContext(
-      const std::string& key_id);
+  virtual std::unique_ptr<DecryptContextImpl> GetDecryptContext(
+      const std::string& key_id) = 0;
 
   // Notifies that key status has changed (e.g. if expiry is detected by
   // hardware decoder).
-  void SetKeyStatus(const std::string& key_id,
-                    CastKeyStatus key_status,
-                    uint32_t system_code);
-
- private:
-  // The CastCdm object which owns |this|.
-  CastCdm* const cast_cdm_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastCdmContext);
+  virtual void SetKeyStatus(const std::string& key_id,
+                            CastKeyStatus key_status,
+                            uint32_t system_code) = 0;
 };
 
 }  // namespace media

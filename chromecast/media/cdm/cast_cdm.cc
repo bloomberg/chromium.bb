@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromecast/media/base/decrypt_context_impl.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/decryptor.h"
@@ -18,10 +19,48 @@
 
 namespace chromecast {
 namespace media {
+namespace {
+
+class CastCdmContextImpl : public CastCdmContext {
+ public:
+  explicit CastCdmContextImpl(CastCdm* cast_cdm) : cast_cdm_(cast_cdm) {
+    DCHECK(cast_cdm_);
+  }
+  ~CastCdmContextImpl() override {}
+
+  // CastCdmContext implementation:
+  int RegisterPlayer(const base::Closure& new_key_cb,
+                     const base::Closure& cdm_unset_cb) override  {
+    return cast_cdm_->RegisterPlayer(new_key_cb, cdm_unset_cb);
+  }
+
+  void UnregisterPlayer(int registration_id) override {
+    cast_cdm_->UnregisterPlayer(registration_id);
+  }
+
+  std::unique_ptr<DecryptContextImpl> GetDecryptContext(
+      const std::string& key_id) override {
+    return cast_cdm_->GetDecryptContext(key_id);
+  }
+
+  void SetKeyStatus(const std::string& key_id,
+                    CastKeyStatus key_status,
+                    uint32_t system_code) override {
+    cast_cdm_->SetKeyStatus(key_id, key_status, system_code);
+  }
+
+ private:
+  // The CastCdm object which owns |this|.
+  CastCdm* const cast_cdm_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastCdmContextImpl);
+};
+
+}  // namespace
 
 CastCdm::CastCdm(MediaResourceTracker* media_resource_tracker)
     : media_resource_tracker_(media_resource_tracker),
-      cast_cdm_context_(new CastCdmContext(this)) {
+      cast_cdm_context_(new CastCdmContextImpl(this)) {
   DCHECK(media_resource_tracker);
   thread_checker_.DetachFromThread();
 }
