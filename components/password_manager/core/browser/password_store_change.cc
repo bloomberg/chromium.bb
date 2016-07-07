@@ -9,7 +9,7 @@ namespace password_manager {
 std::ostream& operator<<(std::ostream& os,
                          const PasswordStoreChange& password_store_change) {
   return os << "type: " << password_store_change.type()
-            << "password form: " << password_store_change.form();
+            << ", password form: " << password_store_change.form();
 }
 
 }  // namespace password_manager
