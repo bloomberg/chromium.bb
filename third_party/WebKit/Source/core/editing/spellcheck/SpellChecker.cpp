@@ -864,14 +864,14 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
 
     VisiblePosition oldStart(oldSelection.visibleStart());
     VisibleSelection oldAdjacentWords = VisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
-    if (oldAdjacentWords != newAdjacentWords) {
-        if (isContinuousSpellCheckingEnabled()) {
-            VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
-            markMisspellingsAndBadGrammar(oldAdjacentWords, true, selectedSentence);
-        } else {
-            markMisspellingsAndBadGrammar(oldAdjacentWords, false, oldAdjacentWords);
-        }
+    if (oldAdjacentWords == newAdjacentWords)
+        return;
+    if (isContinuousSpellCheckingEnabled()) {
+        VisibleSelection selectedSentence = VisibleSelection(startOfSentence(oldStart), endOfSentence(oldStart));
+        markMisspellingsAndBadGrammar(oldAdjacentWords, true, selectedSentence);
+        return;
     }
+    markMisspellingsAndBadGrammar(oldAdjacentWords, false, oldAdjacentWords);
 }
 
 static Node* findFirstMarkable(Node* node)
