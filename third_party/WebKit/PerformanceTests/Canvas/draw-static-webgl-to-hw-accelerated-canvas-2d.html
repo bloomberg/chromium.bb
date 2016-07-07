@@ -45,7 +45,7 @@ function doRun() {
 function ensureComplete() {
     // Using destCanvas2D as a source image is just to flush out the content when
     // accelerated 2D canvas is in use. 
-    dummyCtx2D.drawImage(destCanvas2D, 0, 0, 1, 1, 0, 0, 1, 1);
+    dummyCtx2D.drawImage(canvas2D, 0, 0, 1, 1, 0, 0, 1, 1);
 }
 
 window.onload = function () {
