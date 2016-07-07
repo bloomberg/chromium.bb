@@ -26,7 +26,7 @@ def CreateV8TimelineBasedMeasurementOptions():
   category_filter.AddIncludedCategory('blink.console')
   category_filter.AddDisabledByDefault('disabled-by-default-v8.compile')
   options = timeline_based_measurement.Options(category_filter)
-  options.SetTimelineBasedMetric('executionMetric')
+  options.SetTimelineBasedMetrics(['executionMetric'])
   return options
 
 
@@ -105,7 +105,7 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options(category_filter)
     # TODO(ulan): Add frame time discrepancy once it is ported to TBMv2,
     # see crbug.com/606841.
-    options.SetTimelineBasedMetric('v8AndMemoryMetrics')
+    options.SetTimelineBasedMetrics(['v8AndMemoryMetrics'])
     return options
 
   @classmethod
@@ -214,7 +214,7 @@ class _V8MemoryAndCodeSizeBenchmark(perf_benchmark.PerfBenchmark):
     memory_dump_config = chrome_trace_config.MemoryDumpConfig()
     memory_dump_config.AddTrigger('light', 20)
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
-    options.SetTimelineBasedMetric('memoryMetric')
+    options.SetTimelineBasedMetrics(['memoryMetric'])
     return options
 
   page_set = page_sets.Top10MobileMemoryPageSet

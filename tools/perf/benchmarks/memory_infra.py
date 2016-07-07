@@ -41,7 +41,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     tbm_options = timeline_based_measurement.Options(
         overhead_level=trace_memory)
     tbm_options.config.enable_android_graphics_memtrack = True
-    tbm_options.SetTimelineBasedMetric('memoryMetric')
+    tbm_options.SetTimelineBasedMetrics(['memoryMetric'])
     return tbm_options
 
 
@@ -181,7 +181,7 @@ class _MemoryV8Benchmark(_MemoryInfra):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         ','.join(['-*'] + v8_categories + memory_categories))
     options = timeline_based_measurement.Options(category_filter)
-    options.SetTimelineBasedMetric('v8AndMemoryMetrics')
+    options.SetTimelineBasedMetrics(['v8AndMemoryMetrics'])
     return options
 
   @classmethod

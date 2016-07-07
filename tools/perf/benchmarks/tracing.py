@@ -19,7 +19,7 @@ class TracingWithDebugOverhead(perf_benchmark.PerfBenchmark):
   def CreateTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options(
         timeline_based_measurement.DEBUG_OVERHEAD_LEVEL)
-    options.SetTimelineBasedMetric('tracingMetric')
+    options.SetTimelineBasedMetrics(['tracingMetric'])
     return options
 
   @classmethod
@@ -43,7 +43,7 @@ class TracingWithBackgroundMemoryInfra(perf_benchmark.PerfBenchmark):
     memory_dump_config = chrome_trace_config.MemoryDumpConfig()
     memory_dump_config.AddTrigger('background', 200)
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
-    options.SetTimelineBasedMetric('tracingMetric')
+    options.SetTimelineBasedMetrics(['tracingMetric'])
     return options
 
   @classmethod
