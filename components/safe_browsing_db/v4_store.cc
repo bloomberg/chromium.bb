@@ -67,8 +67,8 @@ std::string V4Store::DebugString() const {
   std::string state_base64;
   base::Base64Encode(state_, &state_base64);
 
-  return base::StringPrintf("path: %s; state: %s", store_path_.value().c_str(),
-                            state_base64.c_str());
+  return base::StringPrintf("path: %" PRIsFP "; state: %s",
+                            store_path_.value().c_str(), state_base64.c_str());
 }
 
 bool V4Store::Reset() {
