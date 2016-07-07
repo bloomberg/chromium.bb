@@ -457,4 +457,15 @@ TEST_F(FeatureListTest, InitializeInstance) {
   EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
 }
 
+TEST_F(FeatureListTest, UninitializedInstance_IsEnabledReturnsFalse) {
+  ClearFeatureListInstance();
+  // This test case simulates the calling pattern found in code which does not
+  // explicitly initialize the features list.
+  // All IsEnabled() calls should return the default value in this scenario.
+  EXPECT_EQ(nullptr, FeatureList::GetInstance());
+  EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  EXPECT_EQ(nullptr, FeatureList::GetInstance());
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
+}
+
 }  // namespace base
