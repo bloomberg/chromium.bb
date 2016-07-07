@@ -408,6 +408,16 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--override-use-gl-with-osmesa-for-tests",
+          "--run-in-mash",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/mash.browser_tests.filter",
+          "--use-test-config"
+        ],
+        "name": "mash_browser_tests",
+        "test": "browser_tests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 5
