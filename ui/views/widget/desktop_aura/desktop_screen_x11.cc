@@ -17,6 +17,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/display/display.h"
+#include "ui/display/display_finder.h"
 #include "ui/display/screen.h"
 #include "ui/display/util/display_util.h"
 #include "ui/display/util/x11/edid_parser_x11.h"
@@ -196,13 +197,14 @@ display::Display DesktopScreenX11::GetDisplayNearestWindow(
 
 display::Display DesktopScreenX11::GetDisplayNearestPoint(
     const gfx::Point& point) const {
+  if (displays_.size() <= 1)
+    return GetPrimaryDisplay();
   for (std::vector<display::Display>::const_iterator it = displays_.begin();
        it != displays_.end(); ++it) {
     if (it->bounds().Contains(point))
       return *it;
   }
-
-  return GetPrimaryDisplay();
+  return *FindDisplayNearestPoint(displays_, point);
 }
 
 display::Display DesktopScreenX11::GetDisplayMatching(

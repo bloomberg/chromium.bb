@@ -77,6 +77,21 @@ Display GetDisplayForScreen(NSScreen* screen) {
   return display;
 }
 
+// Returns the minimum Manhattan distance from |point| to corners of |screen|
+// frame.
+CGFloat GetMinimumDistanceToCorner(const NSPoint& point, NSScreen* screen) {
+  NSRect frame = [screen frame];
+  CGFloat distance =
+      fabs(point.x - NSMinX(frame)) + fabs(point.y - NSMinY(frame));
+  distance = std::min(
+      distance, fabs(point.x - NSMaxX(frame)) + fabs(point.y - NSMinY(frame)));
+  distance = std::min(
+      distance, fabs(point.x - NSMinX(frame)) + fabs(point.y - NSMaxY(frame)));
+  distance = std::min(
+      distance, fabs(point.x - NSMaxX(frame)) + fabs(point.y - NSMaxY(frame)));
+  return distance;
+}
+
 class ScreenMac : public Screen {
  public:
   ScreenMac() {
@@ -127,16 +142,28 @@ class ScreenMac : public Screen {
   }
 
   Display GetDisplayNearestPoint(const gfx::Point& point) const override {
-    NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
-
     NSArray* screens = [NSScreen screens];
+    if ([screens count] <= 1)
+      return GetPrimaryDisplay();
+
+    NSPoint ns_point = NSPointFromCGPoint(point.ToCGPoint());
     NSScreen* primary = [screens objectAtIndex:0];
     ns_point.y = NSMaxY([primary frame]) - ns_point.y;
     for (NSScreen* screen in screens) {
       if (NSMouseInRect(ns_point, [screen frame], NO))
         return GetDisplayForScreen(screen);
     }
-    return GetPrimaryDisplay();
+
+    NSScreen* nearest_screen = primary;
+    CGFloat min_distance = CGFLOAT_MAX;
+    for (NSScreen* screen in screens) {
+      CGFloat distance = GetMinimumDistanceToCorner(ns_point, screen);
+      if (distance < min_distance) {
+        min_distance = distance;
+        nearest_screen = screen;
+      }
+    }
+    return GetDisplayForScreen(nearest_screen);
   }
 
   // Returns the display that most closely intersects the provided bounds.

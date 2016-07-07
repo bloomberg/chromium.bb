@@ -227,8 +227,16 @@ TEST_F(DesktopScreenX11Test, GetDisplayNearestPoint) {
             screen()->GetDisplayNearestPoint(gfx::Point(650, 10)).id());
   EXPECT_EQ(kFirstDisplay,
             screen()->GetDisplayNearestPoint(gfx::Point(10, 10)).id());
-  EXPECT_EQ(kFirstDisplay,
+  EXPECT_EQ(kSecondDisplay,
             screen()->GetDisplayNearestPoint(gfx::Point(10000, 10000)).id());
+  EXPECT_EQ(kFirstDisplay,
+            screen()->GetDisplayNearestPoint(gfx::Point(639, -10)).id());
+  EXPECT_EQ(kSecondDisplay,
+            screen()->GetDisplayNearestPoint(gfx::Point(641, -20)).id());
+  EXPECT_EQ(kSecondDisplay,
+            screen()->GetDisplayNearestPoint(gfx::Point(600, 760)).id());
+  EXPECT_EQ(kFirstDisplay,
+            screen()->GetDisplayNearestPoint(gfx::Point(-1000, 760)).id());
 }
 
 TEST_F(DesktopScreenX11Test, GetDisplayMatchingBasic) {
