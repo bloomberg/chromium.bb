@@ -59,6 +59,11 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   void BindRequest(mojom::AutofillAgentRequest request);
 
+ protected:
+  // blink::WebAutofillClient:
+  void didAssociateFormControls(
+      const blink::WebVector<blink::WebNode>& nodes) override;
+
  private:
   // Functor used as a simplified comparison function for FormData. Only
   // compares forms at a high level (notably name, origin, action).
@@ -156,8 +161,6 @@ class AutofillAgent : public content::RenderFrameObserver,
       const blink::WebInputElement& element,
       const blink::WebKeyboardEvent& event) override;
   void setIgnoreTextChanges(bool ignore) override;
-  void didAssociateFormControls(
-      const blink::WebVector<blink::WebNode>& nodes) override;
   void openTextDataListChooser(const blink::WebInputElement& element) override;
   void dataListOptionsChanged(const blink::WebInputElement& element) override;
   void firstUserGestureObserved() override;

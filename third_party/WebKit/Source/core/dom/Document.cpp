@@ -5726,8 +5726,9 @@ void Document::didAssociateFormControl(Element* element)
     if (!frame() || !frame()->page())
         return;
     m_associatedFormControls.add(element);
+    // We add a slight delay because this could be called rapidly.
     if (!m_didAssociateFormControlsTimer.isActive())
-        m_didAssociateFormControlsTimer.startOneShot(0, BLINK_FROM_HERE);
+        m_didAssociateFormControlsTimer.startOneShot(0.3, BLINK_FROM_HERE);
 }
 
 void Document::removeFormAssociation(Element* element)

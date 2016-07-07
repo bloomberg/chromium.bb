@@ -42,6 +42,7 @@ class ChromeRenderViewTest : public content::RenderViewTest {
 
   void EnableUserGestureSimulationForAutofill();
   void DisableUserGestureSimulationForAutofill();
+  void WaitForAutofillDidAssociateFormControl();
 
 #if defined(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::DispatcherDelegate>

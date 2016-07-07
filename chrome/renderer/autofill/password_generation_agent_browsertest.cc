@@ -503,7 +503,7 @@ TEST_F(PasswordGenerationAgentTest, DynamicFormTest) {
       "form.appendChild(first_password);"
       "form.appendChild(second_password);"
       "document.body.appendChild(form);");
-  ProcessPendingMessages();
+  WaitForAutofillDidAssociateFormControl();
 
   // This needs to come after the DOM has been modified.
   SetAccountCreationFormsDetectedMessage(password_generation_,

@@ -134,8 +134,8 @@ TEST_F(AutofillRendererTest, SendForms) {
       "newForm.appendChild(newLastname);"
       "newForm.appendChild(newEmail);"
       "document.body.appendChild(newForm);");
-  base::RunLoop().RunUntilIdle();
 
+  WaitForAutofillDidAssociateFormControl();
   message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(nullptr, message);
@@ -212,8 +212,8 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
   render_thread_->sink().ClearMessages();
 
   ExecuteJavaScriptForTests("AddFields()");
-  base::RunLoop().RunUntilIdle();
 
+  WaitForAutofillDidAssociateFormControl();
   message = render_thread_->sink().GetFirstMessageMatching(
       AutofillHostMsg_FormsSeen::ID);
   ASSERT_NE(nullptr, message);
