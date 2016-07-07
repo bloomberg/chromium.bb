@@ -928,4 +928,5 @@ fuzzer_test("renderer_fuzzer") {
     ":test_support",
     "//content/shell:content_shell_lib",
   ]
+  dict = "data/fuzzer_dictionaries/renderer_fuzzer.dict"
 }

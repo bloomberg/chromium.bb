@@ -132,6 +132,7 @@ fuzzer_test("url_parse_fuzzer") {
     "//base:i18n",
     "//url:url",
   ]
+  dict = "dicts/generated/url_parse_fuzzer.dict"
 }
 
 fuzzer_test("usrsctp_fuzzer") {
@@ -189,7 +190,7 @@ fuzzer_test("sqlite3_prepare_v2_fuzzer") {
   deps = [
     "//third_party/sqlite",
   ]
-  dict = "dicts/sql.dict"
+  dict = "dicts/generated/sqlite3_prepare_v2_fuzzer.dict"
 }
 
 fuzzer_test("libxml_xml_read_memory_fuzzer") {
@@ -199,7 +200,7 @@ fuzzer_test("libxml_xml_read_memory_fuzzer") {
   deps = [
     "//third_party/libxml:libxml",
   ]
-  dict = "dicts/xml.dict"
+  dict = "dicts/generated/libxml_xml_read_memory_fuzzer.dict"
 }
 
 fuzzer_test("libpng_read_fuzzer") {
@@ -218,7 +219,7 @@ fuzzer_test("v8_script_parser_fuzzer") {
   deps = [
     "//v8:parser_fuzzer",
   ]
-  dict = "dicts/js.dict"
+  dict = "dicts/generated/v8_script_parser_fuzzer.dict"
   seed_corpus = "//v8/test/mjsunit/regress/"
 }
 
