@@ -64,9 +64,6 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """
 
   def SetExtraBrowserOptions(self, options):
-    # TODO(petrcermak): Remove this and switch to log-on-retry
-    # (http://crbug.com/623058).
-    options.logging_verbosity = options.NON_VERBOSE_LOGGING
     options.AppendExtraBrowserArgs([
         # TODO(perezju): Temporary workaround to disable periodic memory dumps.
         # See: http://crbug.com/513692
@@ -113,7 +110,6 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop' or (
         possible_browser.browser_type == 'reference' and
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
-
 
 @benchmark.Enabled('android-webview')
 class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
