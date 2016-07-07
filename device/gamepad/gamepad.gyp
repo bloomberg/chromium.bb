@@ -51,6 +51,11 @@
         ['OS=="win"', {
           'msvs_disabled_warnings': [4267, ],
         }],
+        ['OS=="linux" and use_udev==1', {
+          'dependencies': [
+            '../udev_linux/udev.gyp:udev_linux',
+          ]
+        }],
         ['OS!="win" and OS!="mac" and OS!="android" and (OS!="linux" or use_udev==0)', {
           'sources': [
             'gamepad_platform_data_fetcher.cc',
