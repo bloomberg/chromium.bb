@@ -915,8 +915,6 @@ private:
 
     bool m_needsScrollbarsUpdate;
     bool m_suppressAdjustViewSize;
-    bool m_inPluginUpdate;
-    bool m_inForcedLayoutByChildEmbeddedReplacedContent;
     bool m_allowsLayoutInvalidationAfterLayoutClean;
 
     // For testing.

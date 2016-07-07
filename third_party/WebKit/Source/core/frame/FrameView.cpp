@@ -167,9 +167,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_scrollAnchor(this)
     , m_needsScrollbarsUpdate(false)
     , m_suppressAdjustViewSize(false)
-    , m_inPluginUpdate(false)
-    , m_inForcedLayoutByChildEmbeddedReplacedContent(false)
-    , m_allowsLayoutInvalidationAfterLayoutClean(false)
+    , m_allowsLayoutInvalidationAfterLayoutClean(true)
 {
     ASSERT(m_frame);
     init();
@@ -774,7 +772,6 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the LayoutSVGRoot size has changed dynamically (eg. via <script>).
     FrameView* frameView = ownerLayoutObject->frame()->view();
-    TemporaryChange<bool> t(frameView->m_inForcedLayoutByChildEmbeddedReplacedContent, true);
 
     // Mark the owner layoutObject as needing layout.
     ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
@@ -940,8 +937,6 @@ void FrameView::layout()
 
     TRACE_EVENT0("blink,benchmark", "FrameView::layout");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "Layout");
-
-    TemporaryChange<bool> allowsLayoutInvalidation(m_allowsLayoutInvalidationAfterLayoutClean, true);
 
     if (m_autoSizeInfo)
         m_autoSizeInfo->autoSizeIfNeeded();
@@ -1231,9 +1226,6 @@ void FrameView::updateWidgetGeometries()
             if (widget->isFrameView()) {
                 FrameView* frameView = toFrameView(widget);
                 bool didNeedLayout = frameView->needsLayout();
-                // LayoutPart::updateWidgetGeometry() may invalidate and update layout of the sub-FrameView. This is
-                // allowed, but layout should be clean after updateWidgetGeometry unless the FrameView is throttled.
-                TemporaryChange<bool> allowLayoutInvalidation(frameView->m_allowsLayoutInvalidationAfterLayoutClean, true);
                 part->updateWidgetGeometry();
                 if (!didNeedLayout && !frameView->shouldThrottleRendering())
                     frameView->checkDoesNotNeedLayout();
@@ -1827,36 +1819,14 @@ void FrameView::layoutOrthogonalWritingModeRoots()
 
 void FrameView::checkLayoutInvalidationIsAllowed() const
 {
-    CHECK(!m_inPluginUpdate);
+    if (m_allowsLayoutInvalidationAfterLayoutClean)
+        return;
 
     if (!m_frame->document())
         return;
 
-    // TODO(crbug.com/442939): These are hacks to support embedded SVG. This is called from
-    // FrameView::forceLayoutParentViewIfNeeded() and the dirty layout will be cleaned up immediately.
-    // This is for the parent view of the view containing the embedded SVG.
-    if (m_inForcedLayoutByChildEmbeddedReplacedContent)
-        return;
-    // This is for the view containing the embedded SVG.
-    if (embeddedReplacedContent()) {
-        if (const LayoutObject* ownerLayoutObject = m_frame->ownerLayoutObject()) {
-            if (LocalFrame* frame = ownerLayoutObject->frame()) {
-                if (frame->view()->m_inForcedLayoutByChildEmbeddedReplacedContent)
-                    return;
-            }
-        }
-    }
-
-    CHECK(lifecycle().stateAllowsLayoutInvalidation());
-
-    if (m_allowsLayoutInvalidationAfterLayoutClean)
-        return;
-
     // If we are updating all lifecycle phases beyond LayoutClean, we don't expect dirty layout after LayoutClean.
-    if (FrameView* rootFrameView = m_frame->localFrameRoot()->view()) {
-        if (rootFrameView->m_currentUpdateLifecyclePhasesTargetState > DocumentLifecycle::LayoutClean)
-            CHECK(lifecycle().state() < DocumentLifecycle::LayoutClean);
-    }
+    CHECK(lifecycle().state() < DocumentLifecycle::LayoutClean);
 }
 
 void FrameView::scheduleRelayout()
@@ -2555,6 +2525,11 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
     }
 
     if (LayoutViewItem view = layoutViewItem()) {
+        forAllNonThrottledFrameViews([](FrameView& frameView) {
+            frameView.checkDoesNotNeedLayout();
+            frameView.m_allowsLayoutInvalidationAfterLayoutClean = false;
+        });
+
         {
             TRACE_EVENT1("devtools.timeline", "UpdateLayerTree", "data", InspectorUpdateLayerTreeEvent::data(m_frame.get()));
 
@@ -2563,7 +2538,7 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
             view.compositor()->updateIfNeededRecursive();
             scrollContentsIfNeededRecursive();
 
-            ASSERT(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+            DCHECK(lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
             if (targetState >= DocumentLifecycle::PrePaintClean) {
                 if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
@@ -2588,10 +2563,15 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
             if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
                 pushPaintArtifactToCompositor();
 
-            ASSERT(!view.hasPendingSelection());
-            ASSERT((m_frame->document()->printing() && lifecycle().state() == DocumentLifecycle::PaintInvalidationClean)
+            DCHECK(!view.hasPendingSelection());
+            DCHECK((m_frame->document()->printing() && lifecycle().state() == DocumentLifecycle::PaintInvalidationClean)
                 || lifecycle().state() == DocumentLifecycle::PaintClean);
         }
+
+        forAllNonThrottledFrameViews([](FrameView& frameView) {
+            frameView.checkDoesNotNeedLayout();
+            frameView.m_allowsLayoutInvalidationAfterLayoutClean = true;
+        });
     }
 
     updateViewportIntersectionsForSubtree(targetState);
@@ -2716,6 +2696,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     m_frame->document()->updateStyleAndLayoutTree();
 
     CHECK(!shouldThrottleRendering());
+    CHECK(m_frame->document()->isActive());
+    CHECK(!m_nestedLayoutCount);
 
     if (needsLayout())
         layout();
@@ -2727,15 +2709,12 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
     // TODO(leviw): This currently runs the entire lifecycle on plugin WebViews. We
     // should have a way to only run these other Documents to the same lifecycle stage
     // as this frame.
-    {
-        TemporaryChange<bool> t(m_inPluginUpdate, true);
-        const ChildrenWidgetSet* viewChildren = children();
-        for (const Member<Widget>& child : *viewChildren) {
-            if ((*child).isPluginContainer())
-                toPluginView(child.get())->updateAllLifecyclePhases();
-        }
-        checkDoesNotNeedLayout();
+    const ChildrenWidgetSet* viewChildren = children();
+    for (const Member<Widget>& child : *viewChildren) {
+        if ((*child).isPluginContainer())
+            toPluginView(child.get())->updateAllLifecyclePhases();
     }
+    checkDoesNotNeedLayout();
 
     // FIXME: Calling layout() shouldn't trigger script execution or have any
     // observable effects on the frame tree but we're not quite there yet.
