@@ -1,124 +1,73 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<title>Test video looping.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video autoplay></video>
+<script>
+// Test looping by:
+// Play to end with "loop" set to true.
+// When "seeked" event fires, verify that time has jumped back and movie is playing.
+// Set "loop" to false and play again.
+// Verify that "ended" event fires.
+async_test(function(t) {
+    var video = document.querySelector("video");
+    // Test setting/removing the attribute.
+    assert_equals(video.getAttribute("loop"), null);
+    assert_false(video.loop);
 
-        <script>
-            var seekCount = 0;
-            var playCount = 0;
+    video.loop = true;
+    assert_true(video.loop);
+    assert_not_equals(video.getAttribute("loop"), null);
 
-            function play()
-            {
-                if (video.readyState < HTMLMediaElement.HAVE_METADATA) {
-                    setTimeout(play, 100);
-                    return;
-                }
+    video.removeAttribute("loop");
+    assert_false(video.loop);
 
-                if (++playCount > 1)
-                    return;
+    video.onplay = t.step_func(function() {
+        video.onplay = null;
+        assert_false(video.paused);
 
-                consoleWrite("<br><em>++ seek to near the end, wait for 'seeked' event to announce loop.</em>");
-                testExpected("video.paused", false);
-
-                // Pause playback so the movie can't possibly loop before the seeked event fires
-                run("video.pause()");
-                waitForEvent("seeked", seeked);
-                run("video.currentTime = video.duration - 0.4");
-                consoleWrite("");
+        // Pause playback so the movie can't possibly loop before the seeked event fires.
+        video.pause();
+        // seek to near the end, wait for "seeked" event to announce loop.
+        var seekCount = 0;
+        video.onseeked = t.step_func(function() {
+            switch (++seekCount) {
+            case 1:
+                // first seek completed, beginning playback.
+                assert_true(video.paused);
+                assert_false(video.ended);
+                video.play();
+                break;
+            case 2:
+                // second seek completed because video looped, toggle "loop" and seek to near end again.
+                assert_false(video.paused);
+                assert_false(video.ended);
+                video.pause();
+                assert_greater_than_equal(video.currentTime, 0);
+                assert_less_than(video.currentTime, video.duration);
+                video.loop = false;
+                video.currentTime = video.duration - 0.4;
+                break;
+            case 3:
+                // third seek completed, beginning playback for the last time.
+                assert_true(video.paused);
+                assert_false(video.ended);
+                video.play();
+                break;
             }
+        });
 
-            function seeked()
-            {
-                switch (++seekCount)
-                {
-                    case 1:
-                        consoleWrite("<br><em>++ first seek completed, beginning playback.</em>");
-                        testExpected("video.paused", true);
-                        testExpected("video.ended", false);
-                        run("video.play()");
-                        consoleWrite("");
-                        break;
-                    case 2:
-                        consoleWrite("<br><em>++ second seek completed because video looped, toggle 'loop' and seek to near end again.</em>");
-                        testExpected("video.paused", false);
-                        testExpected("video.ended", false);
-                        run("video.pause()");
+        video.currentTime = video.duration - 0.4;
+    });
 
-                        testExpected("mediaElement.currentTime", 0, '>=');
+    video.onended = t.step_func_done(function() {
+        assert_true(video.ended);
+        assert_equals(video.currentTime, video.duration);
+    });
 
-                        // don't use "testExpected()" so we won't log the actual duration as the floating point result may differ with different engines
-                        reportExpected(mediaElement.currentTime < mediaElement.duration, "mediaElement.currentTime", "<", "mediaElement.duration", mediaElement.currentTime);
-                        run("video.loop = false");
-                        run("video.currentTime = video.duration - 0.4");
-                        consoleWrite("");
-                        break;
-                    case 3:
-                        consoleWrite("<br><em>++ third seek completed, beginning playback for the last time.</em>");
-                        testExpected("video.paused", true);
-                        testExpected("video.ended", false);
-                        run("video.play()");
-                        consoleWrite("");
-                        break;
-                    default:
-                        failTest("Video should have only seeked three times.");
-                        break;
-
-                }
-            }
-
-            function ended()
-            {
-                consoleWrite("<br><em>++ played to end and stopped.</em>");
-                testExpected("video.ended", true);
-
-                // don't use "testExpected()" so we won't log the actual duration as the floating point result may differ with different engines
-                reportExpected(mediaElement.currentTime == mediaElement.duration, "mediaElement.currentTime", "==", "mediaElement.duration", mediaElement.currentTime);
-
-                consoleWrite("");
-                endTest();
-            }
-
-            function start()
-            {
-                findMediaElement();
-
-                consoleWrite("<em>++ Test setting/removing the attribute.</em>");
-                testExpected("video.getAttribute('loop')", null);
-                testExpected("video.loop", false);
-
-                run("video.loop = true");
-                testExpected("video.loop", true);
-                testExpected("video.getAttribute('loop')", null, "!=");
-
-                run("video.removeAttribute('loop')");
-                testExpected("video.loop", false);
-
-                waitForEvent('pause');
-                waitForEvent('play', play);
-                waitForEvent("ended", ended);
-
-                consoleWrite("<br><em>++ Set 'loop' to true and begin playing.</em>");
-                var mediaFile = findMediaFile("video", "content/test");
-                run("video.loop = true");
-                video.src = mediaFile;
-                consoleWrite("");
-            }
-        </script>
-
-    </head>
-    <body>
-        <video controls autoplay ></video>
-        <p><b>Test looping by:</b>
-        <ol>
-            <li>Play to end with 'loop' set to true.</li>
-            <li>When 'seeked' event fires, verify that time has jumped back and movie is playing.</li>
-            <li>Set 'loop' to false and play again.</li>
-            <li>Verify that 'ended' event fires.</li>
-        </ol>
-        </p>
-        <script>start()</script>
-    </body>
-</html>
+    // Set "loop" to true and begin playing.
+    video.loop = true;
+    video.src = findMediaFile("video", "content/test");
+});
+</script>

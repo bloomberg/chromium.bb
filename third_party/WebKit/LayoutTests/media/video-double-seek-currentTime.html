@@ -1,84 +1,32 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            var seekCount = 0;
-            var expectedSeek = 0;
-            var video;
+<title>Test double seek currentTime.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+// Seek to same time twice and make sure "seeking" is fired twice and that
+// "seeked" is fired only once with the "currentTime" being the time set.
+async_test(function(t) {
+    var timeToTest = 1.5;
+    var video = document.querySelector("video");
 
-            function seeking(e)
-            {
-                consoleWrite("seeking " + e.target.currentTime.toFixed(2));
+    var watcher = new EventWatcher(t, video, ["loadedmetadata", "seeking", "seeked"]);
+    watcher.wait_for("loadedmetadata").then(t.step_func(function() {
+        video.currentTime = 1.0;
+        return watcher.wait_for("seeking");
+    })).then(t.step_func(function() {
+        video.currentTime = timeToTest;
+        return watcher.wait_for("seeking");
+    })).then(t.step_func(function() {
+        video.currentTime = timeToTest;
+        return watcher.wait_for("seeking");
+    })).then(t.step_func(function() {
+        return watcher.wait_for("seeked");
+    })).then(t.step_func_done(function() {
+        assert_equals(video.currentTime, timeToTest);
+    }));
 
-                doNextSeek(e.target);
-            }
-
-            function seeked(e)
-            {
-                consoleWrite("seeked " + e.target.currentTime.toFixed(2));
-
-                video = e.target;
-                var now = e.target.currentTime.toFixed(2);
-                var expected = expectedSeek.toFixed(2);
-                if (now != expected) {
-                    failTest("Expected " + expectedSeek + " got " + now);
-                    return;
-                }
-                endTest();
-            }
-
-            function doNextSeek(video)
-            {
-                consoleWrite("doNextSeek() " + seekCount);
-
-                var newSeekPoint = -1;
-                switch (seekCount) {
-                case 0:
-                    newSeekPoint = 1;
-                    break;
-                case 1:
-                    newSeekPoint = 1.5;
-                    break;
-                case 2:
-                    newSeekPoint = 1.5;
-                    break;
-                };
-
-                if (newSeekPoint >= 0) {
-                    consoleWrite('doNextSeek() seeking to ' + newSeekPoint.toFixed(2));
-                    expectedSeek = newSeekPoint;
-                    video.currentTime = newSeekPoint;
-                }
-                seekCount++;
-            }
-
-            function loadedmetadata(e)
-            {
-                consoleWrite("loadedmetadata()");
-                doNextSeek(e.target);
-            }
-
-            function onWindowLoad(e)
-            {
-                video = document.getElementById('video');
-
-                video.src = findMediaFile("video", "content/test");
-                video.addEventListener('seeking', seeking);
-                video.addEventListener('seeked', seeked);
-                video.addEventListener('loadedmetadata', loadedmetadata);
-                video.load();
-            }
-
-            window.addEventListener('load', onWindowLoad, false);
-        </script>
-    </head>
-    <body>
-        <video controls id="video"></video>
-        <p>Test currentTime values when setting from seeking event.</p>
-        <br/>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+});
+</script>

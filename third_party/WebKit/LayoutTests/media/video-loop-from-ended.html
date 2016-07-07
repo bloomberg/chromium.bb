@@ -1,89 +1,55 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
+<title>Test looping edge case to verify http://crbug.com/364442.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+// Seek towards end of video (for faster testing).
+// Play video to end with "loop" set to false.
+// Once ended, set "loop" to true. Call play.
+// Verify that "seeked" event fires, seeking back to the beginning.
+// Pause video and end test.
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-        <script>
-            function start()
-            {
-                findMediaElement();
-                var mediaFile = findMediaFile("video", "content/test");
-                video.src = mediaFile;
+    video.onloadedmetadata = t.step_func(function() {
+        // Video is initially paused and "loop" unset.
+        assert_true(video.paused);
+        assert_false(video.loop);
+        // Seek to just before the end of the video and play.
+        video.currentTime = video.duration - 0.5;
+        video.onended = t.step_func(function() {
+            // Verify played to end and stopped.
+            assert_true(video.ended);
+            assert_true(video.paused);
+            assert_equals(video.currentTime, video.duration);
 
-                consoleWrite("<br><em>++ Video is initially paused and 'loop' unset.</em>");
-                testExpected("video.paused", true)
-                testExpected("video.loop", false);
+            // With playback ended, set "loop" attribute. This will cause ended == false.
+            // looping video cannot be "ended", only paused.
+            assert_false(video.loop);
+            video.loop = true;
+            assert_true(video.loop);
+            assert_false(video.ended);
+            assert_true(video.paused);
 
-                seekThenPlayWhenReady();
-            }
+            video.onseeked = t.step_func_done(function() {
+                // Observed seek. Verify current time decreased and still playing.
+                assert_true(video.loop)
+                assert_false(video.paused);
+                assert_false(video.ended);
+                assert_less_than(video.currentTime, video.duration);
+                // Pausing now that test is over to prevent additional unwanted looping.
+                video.pause();
+            });
 
-            function seekThenPlayWhenReady() {
-                if (video.readyState < HTMLMediaElement.HAVE_METADATA) {
-                    setTimeout(seekThenPlayWhenReady, 100);
-                    return;
-                }
+            // Play video with "loop" set. Expect seek back to start.
+            video.play();
+        });
 
-                consoleWrite("<br><em>++ Seek to just before the end of the video and play.</em>");
-                run("video.currentTime = video.duration - .5");
-                waitForEvent("play");
-                waitForEvent("ended", ended);
-                run("video.play()");
-                consoleWrite("");
-            }
+        video.play();
+    });
 
-            function ended()
-            {
-                consoleWrite("<br><em>++ Verify played to end and stopped.</em>");
-                testExpected("video.ended", true);
-                testExpected("video.paused", true);
-                // Using reportExpected to avoid logging floating point value which may differ across engines.
-                reportExpected(video.currentTime == video.duration, "video.currentTime", "==", "video.duration", video.currentTime);
-
-                consoleWrite("<br><em>++ With playback ended, set 'loop' attribute. This will cause ended == false; looping video cannot be 'ended', only paused.</em>");
-                testExpected("video.loop", false);
-                run("video.loop = true");
-                testExpected("video.loop", true);
-                testExpected("video.ended", false);
-                testExpected("video.paused", true);
-
-                consoleWrite("<br><em>++ Play video with 'loop' set. Expect seek back to start.<em>");
-                waitForEvent("seeked", seeked);
-                run("video.play()");
-                consoleWrite("");
-            }
-
-            function seeked()
-            {
-                consoleWrite("<br><em>++ Observed seek. Verify current time decreased and still playing.</em>");
-                testExpected("video.loop", true);
-                testExpected("video.paused", false);
-                testExpected("video.ended", false);
-                // Using reportExpected to avoid logging floating point value which may differ across engines.
-                reportExpected(video.currentTime < video.duration, "video.currentTime", "<", "video.duration", video.currentTime);
-
-                consoleWrite("<br><em>++ Pausing now that test is over to prevent additional unwanted looping.</em>");
-                run("video.pause()");
-                consoleWrite("");
-                endTest();
-            }
-        </script>
-
-    </head>
-    <body>
-        <video controls></video>
-        <p><b>Test looping edge case to verify http://crbug.com/364442. Steps:</b>
-        <ol>
-            <li>Seek toward end of video (for faster testing).</li>
-            <li>Play video to end with 'loop' set to false.</li>
-            <li>Once ended, set 'loop' to true.</li>
-            <li>Call play.</li>
-            <li>Verify that 'seeked' event fires, seeking back to the beginning.</li>
-            <li>Pause video and end test.</li>
-        </ol>
-        </p>
-        <script>start()</script>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+});
+</script>
