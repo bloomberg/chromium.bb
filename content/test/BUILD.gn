@@ -794,6 +794,7 @@ test("content_unittests") {
   }
   if (is_win) {
     deps += [ "//third_party/iaccessible2" ]
+    libs = [ "dwrite.lib" ]
   }
   if (is_mac) {
     # These flags are needed to run the test on Mac.

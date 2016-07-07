@@ -81,6 +81,10 @@ source_set("child") {
     deps += [ "//third_party/android_tools:cpu_features" ]
   }
 
+  if (is_win) {
+    libs = [ "dwrite.lib" ]
+  }
+
   if (enable_plugins) {
     deps += [
       "//ppapi/proxy",

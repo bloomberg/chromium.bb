@@ -30,8 +30,6 @@ namespace gfx {
 
 namespace {
 
-IDWriteFactory* g_factory = nullptr;
-
 // Queries the registry to get a mapping from font filenames to font names.
 void QueryFontsFromRegistry(std::map<std::string, std::string>* map) {
   const wchar_t* kFonts =
@@ -357,11 +355,10 @@ bool GetFallbackFont(const Font& font,
   DCHECK_GE(wcslen(text), static_cast<size_t>(text_length));
   text_length = std::min(wcslen(text), static_cast<size_t>(text_length));
 
-  if (g_factory == nullptr) {
-    gfx::win::CreateDWriteFactory(&g_factory);
-  }
+  base::win::ScopedComPtr<IDWriteFactory> factory;
+  gfx::win::CreateDWriteFactory(factory.Receive());
   base::win::ScopedComPtr<IDWriteFactory2> factory2;
-  g_factory->QueryInterface(factory2.Receive());
+  factory.QueryInterface(factory2.Receive());
   if (!factory2) {
     // IDWriteFactory2 is not available before Win8.1
     return GetUniscribeFallbackFont(font, text, text_length, result);

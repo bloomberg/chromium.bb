@@ -243,6 +243,15 @@
             '../gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],
+        ['OS=="win"', {
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'dwrite.lib',
+              ]
+            }
+          }
+        }],
       ]
     },
     {

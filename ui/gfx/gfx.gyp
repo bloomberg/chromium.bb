@@ -417,6 +417,13 @@
           # C4324 is structure was padded due to __declspec(align()), which is
           # uninteresting.
           'msvs_disabled_warnings': [ 4267, 4324 ],
+          'msvs_settings': {
+            'VCLinkerTool': {
+              'AdditionalDependencies': [
+                'dwrite.lib',
+              ]
+            }
+          }
         }],
         ['OS=="mac"', {
           'link_settings': {
