@@ -1676,6 +1676,9 @@ if (enable_java_templates) {
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
+      if (defined(invoker.alternative_locale_resource_dep)) {
+        deps += [ invoker.alternative_locale_resource_dep ]
+      }
     }
     _srcjar_deps += [ ":$process_resources_target" ]
 
