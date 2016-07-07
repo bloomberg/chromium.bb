@@ -58,7 +58,7 @@ bool VideoCaptureDeviceAndroid::Init() {
 void VideoCaptureDeviceAndroid::AllocateAndStart(
     const VideoCaptureParams& params,
     std::unique_ptr<Client> client) {
-  DVLOG(1) << "VideoCaptureDeviceAndroid::AllocateAndStart";
+  DVLOG(1) << __FUNCTION__;
   {
     base::AutoLock lock(lock_);
     if (state_ != kIdle)
@@ -113,7 +113,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
 }
 
 void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
-  DVLOG(1) << "VideoCaptureDeviceAndroid::StopAndDeAllocate";
+  DVLOG(1) << __FUNCTION__;
   {
     base::AutoLock lock(lock_);
     if (state_ != kCapturing && state_ != kError)
@@ -137,8 +137,8 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
   Java_VideoCapture_deallocate(env, j_capture_.obj());
 }
 
-void VideoCaptureDeviceAndroid::TakePhoto(
-    ScopedResultCallback<TakePhotoCallback> callback) {
+void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
+  DVLOG(1) << __FUNCTION__;
   {
     base::AutoLock lock(lock_);
     if (state_ != kCapturing)
@@ -148,8 +148,8 @@ void VideoCaptureDeviceAndroid::TakePhoto(
   JNIEnv* env = AttachCurrentThread();
 
   // Make copy on the heap so we can pass the pointer through JNI.
-  std::unique_ptr<ScopedResultCallback<TakePhotoCallback>> heap_callback(
-      new ScopedResultCallback<TakePhotoCallback>(std::move(callback)));
+  std::unique_ptr<TakePhotoCallback> heap_callback(
+      new TakePhotoCallback(std::move(callback)));
   const intptr_t callback_id = reinterpret_cast<intptr_t>(heap_callback.get());
   if (!Java_VideoCapture_takePhoto(env, j_capture_.obj(), callback_id))
     return;
@@ -161,7 +161,7 @@ void VideoCaptureDeviceAndroid::TakePhoto(
 }
 
 void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
-    ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) {
+    GetPhotoCapabilitiesCallback callback) {
   JNIEnv* env = AttachCurrentThread();
 
   PhotoCapabilities caps(
@@ -178,13 +178,22 @@ void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
   callback.Run(std::move(photo_capabilities));
 }
 
+void VideoCaptureDeviceAndroid::SetPhotoOptions(
+    mojom::PhotoSettingsPtr settings,
+    SetPhotoOptionsCallback callback) {
+  JNIEnv* env = AttachCurrentThread();
+  if (settings->has_zoom)
+    Java_VideoCapture_setZoom(env, j_capture_.obj(), settings->zoom);
+  callback.Run(true);
+}
+
 void VideoCaptureDeviceAndroid::OnFrameAvailable(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jbyteArray>& data,
     jint length,
     jint rotation) {
-  DVLOG(3) << "VideoCaptureDeviceAndroid::OnFrameAvailable: length =" << length;
+  DVLOG(3) << __FUNCTION__ << " length =" << length;
 
   base::AutoLock lock(lock_);
   if (state_ != kCapturing || !client_.get())
@@ -235,13 +244,14 @@ void VideoCaptureDeviceAndroid::OnPhotoTaken(
 
   base::AutoLock lock(photo_callbacks_lock_);
 
-  ScopedResultCallback<TakePhotoCallback>* const cb =
-      reinterpret_cast<ScopedResultCallback<TakePhotoCallback>*>(callback_id);
+  TakePhotoCallback* const cb =
+      reinterpret_cast<TakePhotoCallback*>(callback_id);
   // Search for the pointer |cb| in the list of |photo_callbacks_|.
-  const auto reference_it = std::find_if(
-      photo_callbacks_.begin(), photo_callbacks_.end(),
-      [cb](const std::unique_ptr<ScopedResultCallback<TakePhotoCallback>>&
-               callback) { return callback.get() == cb; });
+  const auto reference_it =
+      std::find_if(photo_callbacks_.begin(), photo_callbacks_.end(),
+                   [cb](const std::unique_ptr<TakePhotoCallback>& callback) {
+                     return callback.get() == cb;
+                   });
   if (reference_it == photo_callbacks_.end()) {
     NOTREACHED() << "|callback_id| not found.";
     return;

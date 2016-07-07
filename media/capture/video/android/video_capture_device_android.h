@@ -56,9 +56,10 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
-  void GetPhotoCapabilities(
-      ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) override;
-  void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback) override;
+  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
+  void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                       SetPhotoOptionsCallback callback) override;
+  void TakePhoto(TakePhotoCallback callback) override;
 
   // Implement org.chromium.media.VideoCapture.nativeOnFrameAvailable.
   void OnFrameAvailable(JNIEnv* env,
@@ -101,8 +102,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
 
   // List of |photo_callbacks_| in flight, being served in Java side.
   base::Lock photo_callbacks_lock_;
-  std::list<std::unique_ptr<ScopedResultCallback<TakePhotoCallback>>>
-      photo_callbacks_;
+  std::list<std::unique_ptr<TakePhotoCallback>> photo_callbacks_;
 
   Name device_name_;
   VideoCaptureFormat capture_format_;

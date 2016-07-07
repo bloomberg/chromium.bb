@@ -832,8 +832,7 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
 
 void VideoCaptureManager::GetPhotoCapabilities(
     int session_id,
-    media::ScopedResultCallback<
-        VideoCaptureDevice::GetPhotoCapabilitiesCallback> callback) {
+    VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VideoCaptureDevice* device = GetVideoCaptureDeviceBySessionId(session_id);
   if (!device)
@@ -846,10 +845,23 @@ void VideoCaptureManager::GetPhotoCapabilities(
                             base::Unretained(device), base::Passed(&callback)));
 }
 
+void VideoCaptureManager::SetPhotoOptions(
+    int session_id,
+    media::mojom::PhotoSettingsPtr settings,
+    VideoCaptureDevice::SetPhotoOptionsCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  VideoCaptureDevice* device = GetVideoCaptureDeviceBySessionId(session_id);
+  if (!device)
+    return;
+  device_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VideoCaptureDevice::SetPhotoOptions, base::Unretained(device),
+                 base::Passed(&settings), base::Passed(&callback)));
+}
+
 void VideoCaptureManager::TakePhoto(
     int session_id,
-    media::ScopedResultCallback<VideoCaptureDevice::TakePhotoCallback>
-        callback) {
+    VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VideoCaptureDevice* device = GetVideoCaptureDeviceBySessionId(session_id);
   if (!device)

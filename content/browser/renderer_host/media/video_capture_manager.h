@@ -160,11 +160,12 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   void GetPhotoCapabilities(
       int session_id,
-      media::ScopedResultCallback<
-          VideoCaptureDevice::GetPhotoCapabilitiesCallback> callback);
+      VideoCaptureDevice::GetPhotoCapabilitiesCallback callback);
+  void SetPhotoOptions(int session_id,
+                       media::mojom::PhotoSettingsPtr settings,
+                       VideoCaptureDevice::SetPhotoOptionsCallback callback);
   void TakePhoto(int session_id,
-                 media::ScopedResultCallback<
-                     VideoCaptureDevice::TakePhotoCallback> callback);
+                 VideoCaptureDevice::TakePhotoCallback callback);
 #if defined(OS_ANDROID)
   // Some devices had troubles when stopped and restarted quickly, so the device
   // is only stopped when Chrome is sent to background and not when, e.g., a tab

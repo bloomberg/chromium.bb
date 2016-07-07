@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/string.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -28,14 +29,15 @@ static const float kPacmanAngularVelocity = 600;
 // Beep every 500 ms.
 static const int kBeepInterval = 500;
 
-static const int kMinZoom = 1;
-static const int kMaxZoom = 2;
+static const uint32_t kMinZoom = 100;
+static const uint32_t kMaxZoom = 400;
 
 void DrawPacman(bool use_argb,
                 uint8_t* const data,
                 base::TimeDelta elapsed_time,
                 float frame_rate,
-                const gfx::Size& frame_size) {
+                const gfx::Size& frame_size,
+                uint32_t zoom) {
   // |kN32_SkColorType| stands for the appropriate RGBA/BGRA format.
   const SkColorType colorspace =
       use_argb ? kN32_SkColorType : kAlpha_8_SkColorType;
@@ -47,6 +49,12 @@ void DrawPacman(bool use_argb,
   SkPaint paint;
   paint.setStyle(SkPaint::kFill_Style);
   SkCanvas canvas(bitmap);
+
+  const SkScalar unscaled_zoom = zoom / 100.f;
+  SkMatrix matrix;
+  matrix.setScale(unscaled_zoom, unscaled_zoom, frame_size.width() / 2,
+                  frame_size.height() / 2);
+  canvas.setMatrix(matrix);
 
   // Equalize Alpha_8 that has light green background while RGBA has white.
   if (use_argb) {
@@ -82,16 +90,16 @@ void DrawPacman(bool use_argb,
 
 // Creates a PNG-encoded frame and sends it back to |callback|. The other
 // parameters are used to replicate the PacMan rendering.
-void DoTakeFakePhoto(
-    ScopedResultCallback<VideoCaptureDevice::TakePhotoCallback> callback,
-    const VideoCaptureFormat& capture_format,
-    base::TimeDelta elapsed_time,
-    float fake_capture_rate) {
+void DoTakeFakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
+                     const VideoCaptureFormat& capture_format,
+                     base::TimeDelta elapsed_time,
+                     float fake_capture_rate,
+                     uint32_t zoom) {
   std::unique_ptr<uint8_t[]> buffer(new uint8_t[VideoFrame::AllocationSize(
       PIXEL_FORMAT_ARGB, capture_format.frame_size)]);
 
   DrawPacman(true /* use_argb */, buffer.get(), elapsed_time, fake_capture_rate,
-             capture_format.frame_size);
+             capture_format.frame_size, zoom);
 
   std::vector<uint8_t> encoded_data;
   const bool result = gfx::PNGCodec::Encode(
@@ -108,6 +116,7 @@ FakeVideoCaptureDevice::FakeVideoCaptureDevice(BufferOwnership buffer_ownership,
                                                float fake_capture_rate)
     : buffer_ownership_(buffer_ownership),
       fake_capture_rate_(fake_capture_rate),
+      current_zoom_(kMinZoom),
       weak_factory_(this) {}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
@@ -170,22 +179,28 @@ void FakeVideoCaptureDevice::StopAndDeAllocate() {
 }
 
 void FakeVideoCaptureDevice::GetPhotoCapabilities(
-    ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) {
+    GetPhotoCapabilitiesCallback callback) {
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
   photo_capabilities->zoom = mojom::Range::New();
-  photo_capabilities->zoom->current = kMinZoom;
+  photo_capabilities->zoom->current = current_zoom_;
   photo_capabilities->zoom->max = kMaxZoom;
   photo_capabilities->zoom->min = kMinZoom;
   callback.Run(std::move(photo_capabilities));
 }
 
-void FakeVideoCaptureDevice::TakePhoto(
-    ScopedResultCallback<TakePhotoCallback> callback) {
+void FakeVideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                                             SetPhotoOptionsCallback callback) {
+  if (settings->has_zoom)
+    current_zoom_ = std::max(kMinZoom, std::min(settings->zoom, kMaxZoom));
+  callback.Run(true);
+}
+
+void FakeVideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DoTakeFakePhoto, base::Passed(&callback), capture_format_,
-                 elapsed_time_, fake_capture_rate_));
+                 elapsed_time_, fake_capture_rate_, current_zoom_));
 }
 
 void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
@@ -195,7 +210,7 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
   memset(fake_frame_.get(), 0, frame_size);
 
   DrawPacman(false /* use_argb */, fake_frame_.get(), elapsed_time_,
-             fake_capture_rate_, capture_format_.frame_size);
+             fake_capture_rate_, capture_format_.frame_size, current_zoom_);
 
   // Give the captured frame to the client.
   base::TimeTicks now = base::TimeTicks::Now();
@@ -227,7 +242,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     // need to use |fake_frame_| to draw onto.
     memset(fake_frame_.get(), 0, capture_format_.ImageAllocationSize());
     DrawPacman(false /* use_argb */, fake_frame_.get(), elapsed_time_,
-               fake_capture_rate_, capture_format_.frame_size);
+               fake_capture_rate_, capture_format_.frame_size, current_zoom_);
 
     // Copy data from |fake_frame_| into the reserved planes of GpuMemoryBuffer.
     size_t offset = 0;
@@ -245,7 +260,7 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     uint8_t* data_ptr = static_cast<uint8_t*>(capture_buffer->data());
     memset(data_ptr, 0, capture_buffer->mapped_size());
     DrawPacman(true /* use_argb */, data_ptr, elapsed_time_, fake_capture_rate_,
-               capture_format_.frame_size);
+               capture_format_.frame_size, current_zoom_);
   }
 
   // Give the captured frame to the client.

@@ -37,9 +37,10 @@ class CAPTURE_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
-  void GetPhotoCapabilities(
-      ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) override;
-  void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback) override;
+  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
+  void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                       SetPhotoOptionsCallback callback) override;
+  void TakePhoto(TakePhotoCallback callback) override;
 
  private:
   void CaptureUsingOwnBuffers(base::TimeTicks expected_execution_time);
@@ -64,6 +65,8 @@ class CAPTURE_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   // Time since the fake video started rendering frames.
   base::TimeDelta elapsed_time_;
   VideoCaptureFormat capture_format_;
+
+  uint32_t current_zoom_;
 
   // The system time when we receive the first frame.
   base::TimeTicks first_ref_time_;

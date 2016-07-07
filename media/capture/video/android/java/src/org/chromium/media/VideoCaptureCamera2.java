@@ -7,6 +7,7 @@ package org.chromium.media;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.ImageFormat;
+import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -231,6 +232,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private CaptureRequest mPreviewRequest;
 
     private CameraState mCameraState = CameraState.STOPPED;
+    private final float mMaxZoom;
+    private Rect mCropRect = new Rect();
 
     // Service function to grab CameraCharacteristics and handle exceptions.
     private static CameraCharacteristics getCameraCharacteristics(Context appContext, int id) {
@@ -289,6 +292,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         previewRequestBuilder.set(CaptureRequest.CONTROL_VIDEO_STABILIZATION_MODE,
                 CameraMetadata.CONTROL_VIDEO_STABILIZATION_MODE_ON);
         // SENSOR_EXPOSURE_TIME ?
+        if (!mCropRect.isEmpty()) {
+            previewRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
+        }
 
         List<Surface> surfaceList = new ArrayList<Surface>(1);
         surfaceList.add(imageReader.getSurface());
@@ -450,6 +456,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     VideoCaptureCamera2(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         super(context, id, nativeVideoCaptureDeviceAndroid);
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(context, id);
+        mMaxZoom =
+                cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
     }
 
     @Override
@@ -546,24 +555,49 @@ public class VideoCaptureCamera2 extends VideoCapture {
         if (mCameraDevice == null) return false;
         mCameraDevice.close();
         changeCameraStateAndNotify(CameraState.STOPPED);
+        mCropRect = new Rect();
         return true;
     }
 
     public PhotoCapabilities getPhotoCapabilities() {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
 
-        // The Max zoom is returned as x100 by the API to avoid using floating point.
-        final int maxZoom = Math.round(
-                cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM)
-                * 100);
+        // The Min and Max zoom are returned as x100 by the API to avoid using floating point. There
+        // is no min-zoom per se, so clamp it to always 100 (TODO(mcasas): make const member).
+        final int minZoom = 100;
+        final int maxZoom = Math.round(mMaxZoom * 100);
 
         // Width Ratio x100 is used as measure of current zoom.
         final int currentZoom = 100 * mPreviewRequest.get(CaptureRequest.SCALER_CROP_REGION).width()
                 / cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
                           .width();
 
-        // There is no min-zoom per se, so clamp it to always 100.
-        return new PhotoCapabilities(maxZoom, 100, currentZoom);
+        return new PhotoCapabilities(maxZoom, minZoom, currentZoom);
+    }
+
+    @Override
+    public void setZoom(int zoom) {
+        final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
+        final Rect canvas =
+                cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
+
+        final float normalizedZoom = Math.max(100, Math.min(zoom, mMaxZoom * 100)) / 100;
+        final float cropFactor = (normalizedZoom - 1) / (2 * normalizedZoom);
+
+        mCropRect = new Rect(Math.round(canvas.width() * cropFactor),
+                Math.round(canvas.height() * cropFactor),
+                Math.round(canvas.width() * (1 - cropFactor)),
+                Math.round(canvas.height() * (1 - cropFactor)));
+        Log.d(TAG, "zoom level " + normalizedZoom + ", rectangle: " + mCropRect.toString());
+
+        final Handler mainHandler = new Handler(mContext.getMainLooper());
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mPreviewSession.close(); // Asynchronously kill the CaptureSession.
+                createPreviewObjects();
+            }
+        });
     }
 
     @Override
@@ -598,6 +632,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
         }
         photoRequestBuilder.addTarget(imageReader.getSurface());
         photoRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getCameraRotation());
+        if (!mCropRect.isEmpty()) {
+            photoRequestBuilder.set(CaptureRequest.SCALER_CROP_REGION, mCropRect);
+        }
 
         final CaptureRequest photoRequest = photoRequestBuilder.build();
         final CrPhotoSessionListener sessionListener =

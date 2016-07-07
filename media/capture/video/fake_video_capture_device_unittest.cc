@@ -143,9 +143,13 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
   }
   MOCK_METHOD0(OnCorrectGetPhotoCapabilities, void(void));
   MOCK_METHOD1(OnGetPhotoCapabilitiesFailure,
-               void(const VideoCaptureDevice::GetPhotoCapabilitiesCallback&));
+               void(const base::Callback<void(mojom::PhotoCapabilitiesPtr)>&));
 
   const mojom::PhotoCapabilities* capabilities() { return capabilities_.get(); }
+
+  MOCK_METHOD1(OnCorrectSetPhotoOptions, void(bool));
+  MOCK_METHOD1(OnSetPhotoOptionsFailure,
+               void(const base::Callback<void(bool)>&));
 
   // GMock doesn't support move-only arguments, so we use this forward method.
   void DoOnPhotoTaken(mojo::String mime_type, mojo::Array<uint8_t> data) {
@@ -160,8 +164,9 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
     OnCorrectPhotoTaken();
   }
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
-  MOCK_METHOD1(OnTakePhotoFailure,
-               void(const VideoCaptureDevice::TakePhotoCallback&));
+  MOCK_METHOD1(
+      OnTakePhotoFailure,
+      void(const base::Callback<void(mojo::String, mojo::Array<uint8_t>)>&));
 
  private:
   friend class base::RefCounted<ImageCaptureClient>;
@@ -291,7 +296,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetDeviceSupportedFormats) {
   }
 }
 
-TEST_F(FakeVideoCaptureDeviceTest, GetCapabilities) {
+TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   std::unique_ptr<VideoCaptureDevice> device(new FakeVideoCaptureDevice(
       FakeVideoCaptureDevice::BufferOwnership::OWN_BUFFERS, 30.0));
   ASSERT_TRUE(device);
@@ -301,27 +306,57 @@ TEST_F(FakeVideoCaptureDeviceTest, GetCapabilities) {
   capture_params.requested_format.frame_rate = 30.0;
   device->AllocateAndStart(capture_params, std::move(client_));
 
-  ScopedResultCallback<VideoCaptureDevice::GetPhotoCapabilitiesCallback>
-      scoped_callback(
-          base::Bind(&ImageCaptureClient::DoOnGetPhotoCapabilities,
-                     image_capture_client_),
-          base::Bind(&ImageCaptureClient::OnGetPhotoCapabilitiesFailure,
-                     image_capture_client_));
+  VideoCaptureDevice::GetPhotoCapabilitiesCallback scoped_get_callback(
+      base::Bind(&ImageCaptureClient::DoOnGetPhotoCapabilities,
+                 image_capture_client_),
+      base::Bind(&ImageCaptureClient::OnGetPhotoCapabilitiesFailure,
+                 image_capture_client_));
 
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoCapabilities())
       .Times(1);
-  device->GetPhotoCapabilities(std::move(scoped_callback));
-
+  device->GetPhotoCapabilities(std::move(scoped_get_callback));
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
 
-  const mojom::PhotoCapabilities* capabilities =
-      image_capture_client_->capabilities();
+  auto* capabilities = image_capture_client_->capabilities();
   ASSERT_TRUE(capabilities);
-  EXPECT_EQ(1u, capabilities->zoom->min);
-  EXPECT_EQ(2u, capabilities->zoom->max);
+  EXPECT_EQ(100u, capabilities->zoom->min);
+  EXPECT_EQ(400u, capabilities->zoom->max);
   EXPECT_GE(capabilities->zoom->current, capabilities->zoom->min);
   EXPECT_GE(capabilities->zoom->max, capabilities->zoom->current);
+
+  // Set options: zoom to the maximum value.
+  const unsigned int max_zoom_value = capabilities->zoom->max;
+  VideoCaptureDevice::SetPhotoOptionsCallback scoped_set_callback(
+      base::Bind(&ImageCaptureClient::OnCorrectSetPhotoOptions,
+                 image_capture_client_),
+      base::Bind(&ImageCaptureClient::OnSetPhotoOptionsFailure,
+                 image_capture_client_));
+
+  mojom::PhotoSettingsPtr settings = mojom::PhotoSettings::New();
+  settings->zoom = max_zoom_value;
+  settings->has_zoom = true;
+
+  EXPECT_CALL(*image_capture_client_.get(), OnCorrectSetPhotoOptions(true))
+      .Times(1);
+  device->SetPhotoOptions(std::move(settings), std::move(scoped_set_callback));
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+
+  // Retrieve Capabilities again and check against the set values.
+  VideoCaptureDevice::GetPhotoCapabilitiesCallback scoped_get_callback2(
+      base::Bind(&ImageCaptureClient::DoOnGetPhotoCapabilities,
+                 image_capture_client_),
+      base::Bind(&ImageCaptureClient::OnGetPhotoCapabilitiesFailure,
+                 image_capture_client_));
+
+  EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoCapabilities())
+      .Times(1);
+  device->GetPhotoCapabilities(std::move(scoped_get_callback2));
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+  EXPECT_EQ(max_zoom_value,
+            image_capture_client_->capabilities()->zoom->current);
 
   device->StopAndDeAllocate();
 }
@@ -336,7 +371,7 @@ TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
   capture_params.requested_format.frame_rate = 30.0;
   device->AllocateAndStart(capture_params, std::move(client_));
 
-  ScopedResultCallback<VideoCaptureDevice::TakePhotoCallback> scoped_callback(
+  VideoCaptureDevice::TakePhotoCallback scoped_callback(
       base::Bind(&ImageCaptureClient::DoOnPhotoTaken, image_capture_client_),
       base::Bind(&ImageCaptureClient::OnTakePhotoFailure,
                  image_capture_client_));

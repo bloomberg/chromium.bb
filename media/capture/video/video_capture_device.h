@@ -314,16 +314,20 @@ class CAPTURE_EXPORT VideoCaptureDevice {
 
   // Retrieve the photo capabilities of the device (e.g. zoom levels etc).
   using GetPhotoCapabilitiesCallback =
-      base::Callback<void(mojom::PhotoCapabilitiesPtr)>;
-  virtual void GetPhotoCapabilities(
-      ScopedResultCallback<GetPhotoCapabilitiesCallback> callback);
+      ScopedResultCallback<base::Callback<void(mojom::PhotoCapabilitiesPtr)>>;
+  virtual void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback);
+
+  using SetPhotoOptionsCallback =
+      ScopedResultCallback<base::Callback<void(bool)>>;
+  virtual void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                               SetPhotoOptionsCallback callback);
 
   // Asynchronously takes a photo, possibly reconfiguring the capture objects
   // and/or interrupting the capture flow. Runs |callback| on the thread
   // where TakePhoto() is called, if the photo was successfully taken.
-  using TakePhotoCallback =
-      base::Callback<void(mojo::String, mojo::Array<uint8_t>)>;
-  virtual void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback);
+  using TakePhotoCallback = ScopedResultCallback<
+      base::Callback<void(mojo::String, mojo::Array<uint8_t>)>>;
+  virtual void TakePhoto(TakePhotoCallback callback);
 
   // Gets the power line frequency, either from the params if specified by the
   // user or from the current system time zone.

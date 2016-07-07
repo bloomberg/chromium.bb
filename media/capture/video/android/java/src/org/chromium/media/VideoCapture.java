@@ -52,6 +52,9 @@ public abstract class VideoCapture {
     public abstract PhotoCapabilities getPhotoCapabilities();
 
     @CalledByNative
+    public abstract void setZoom(int zoom);
+
+    @CalledByNative
     public abstract boolean takePhoto(final long callbackId);
 
     @CalledByNative

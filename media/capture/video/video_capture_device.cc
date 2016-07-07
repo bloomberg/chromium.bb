@@ -142,10 +142,12 @@ VideoCaptureDevice::~VideoCaptureDevice() {
 }
 
 void VideoCaptureDevice::GetPhotoCapabilities(
-    ScopedResultCallback<GetPhotoCapabilitiesCallback> callback) {}
+    GetPhotoCapabilitiesCallback callback) {}
 
-void VideoCaptureDevice::TakePhoto(
-    ScopedResultCallback<TakePhotoCallback> callback) {}
+void VideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
+                                         SetPhotoOptionsCallback callback) {}
+
+void VideoCaptureDevice::TakePhoto(TakePhotoCallback callback) {}
 
 PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation()
     const {
