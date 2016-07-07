@@ -56,6 +56,11 @@
             'gamepad_platform_data_fetcher.cc',
           ]
         }],
+        ['use_udev == 1', {
+          'dependencies': [
+            '<(DEPTH)/device/udev_linux/udev.gyp:udev_linux',
+          ],
+        }],
       ],
     },
     {
