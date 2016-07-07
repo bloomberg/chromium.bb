@@ -233,9 +233,9 @@ ASH_EXPORT extern const size_t kActionsAllowedAtLockScreenLength;
 ASH_EXPORT extern const AcceleratorAction kActionsAllowedAtModalWindow[];
 ASH_EXPORT extern const size_t kActionsAllowedAtModalWindowLength;
 
-// Actions which will not be repeated while holding an accelerator key.
-ASH_EXPORT extern const AcceleratorAction kNonrepeatableActions[];
-ASH_EXPORT extern const size_t kNonrepeatableActionsLength;
+// Actions which may be repeated by holding an accelerator key.
+ASH_EXPORT extern const AcceleratorAction kRepeatableActions[];
+ASH_EXPORT extern const size_t kRepeatableActionsLength;
 
 // Actions allowed in app mode or pinned mode.
 ASH_EXPORT extern const AcceleratorAction

@@ -403,36 +403,25 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
 const size_t kActionsAllowedAtModalWindowLength =
     arraysize(kActionsAllowedAtModalWindow);
 
-const AcceleratorAction kNonrepeatableActions[] = {
-    // TODO(mazda): Add other actions which should not be repeated.
-    CYCLE_BACKWARD_MRU,
-    CYCLE_FORWARD_MRU,
-    EXIT,
-    NEXT_IME,
-    PREVIOUS_IME,
-    OPEN_FEEDBACK_PAGE,
-    PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
-    ROTATE_SCREEN,
-    ROTATE_WINDOW,
-    SCALE_UI_UP,
-    SCALE_UI_DOWN,
-    SCALE_UI_RESET,
-    TAKE_WINDOW_SCREENSHOT,
-    TAKE_PARTIAL_SCREENSHOT,
-    TAKE_SCREENSHOT,
-    TOGGLE_FULLSCREEN,
-    TOGGLE_MAXIMIZED,
-    TOGGLE_OVERVIEW,
-    WINDOW_MINIMIZE,
+const AcceleratorAction kRepeatableActions[] = {
+    FOCUS_NEXT_PANE,
+    FOCUS_PREVIOUS_PANE,
+    MAGNIFY_SCREEN_ZOOM_IN,
+    MAGNIFY_SCREEN_ZOOM_OUT,
+    MEDIA_NEXT_TRACK,
+    MEDIA_PREV_TRACK,
+    RESTORE_TAB,
 #if defined(OS_CHROMEOS)
-    DEBUG_TOGGLE_TOUCH_PAD,
-    DEBUG_TOGGLE_TOUCH_SCREEN,
-    LOCK_SCREEN,
-    SUSPEND,
-#endif
+    BRIGHTNESS_DOWN,
+    BRIGHTNESS_UP,
+    KEYBOARD_BRIGHTNESS_DOWN,
+    KEYBOARD_BRIGHTNESS_UP,
+    VOLUME_DOWN,
+    VOLUME_UP,
+#endif  // defined(OS_CHROMEOS)
 };
 
-const size_t kNonrepeatableActionsLength = arraysize(kNonrepeatableActions);
+const size_t kRepeatableActionsLength = arraysize(kRepeatableActions);
 
 const AcceleratorAction kActionsAllowedInAppModeOrPinnedMode[] = {
     DEBUG_PRINT_LAYER_HIERARCHY,

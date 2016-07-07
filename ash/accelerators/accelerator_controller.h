@@ -205,8 +205,8 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   std::set<int> preferred_actions_;
   // Reserved actions. See accelerator_table.h for details.
   std::set<int> reserved_actions_;
-  // Actions which will not be repeated while holding the accelerator key.
-  std::set<int> nonrepeatable_actions_;
+  // Actions which will be repeated while holding the accelerator key.
+  std::set<int> repeatable_actions_;
   // Actions allowed in app mode.
   std::set<int> actions_allowed_in_app_mode_;
   // Actions allowed in pinned mode.

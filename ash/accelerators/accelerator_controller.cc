@@ -903,8 +903,8 @@ void AcceleratorController::Init() {
     preferred_actions_.insert(kPreferredActions[i]);
   for (size_t i = 0; i < kReservedActionsLength; ++i)
     reserved_actions_.insert(kReservedActions[i]);
-  for (size_t i = 0; i < kNonrepeatableActionsLength; ++i)
-    nonrepeatable_actions_.insert(kNonrepeatableActions[i]);
+  for (size_t i = 0; i < kRepeatableActionsLength; ++i)
+    repeatable_actions_.insert(kRepeatableActions[i]);
   for (size_t i = 0; i < kActionsAllowedInAppModeOrPinnedModeLength; ++i) {
     actions_allowed_in_app_mode_.insert(
         kActionsAllowedInAppModeOrPinnedMode[i]);
@@ -970,10 +970,8 @@ void AcceleratorController::RegisterDeprecatedAccelerators() {
 bool AcceleratorController::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
-  if (nonrepeatable_actions_.find(action) != nonrepeatable_actions_.end() &&
-      accelerator.IsRepeat()) {
+  if (accelerator.IsRepeat() && !repeatable_actions_.count(action))
     return false;
-  }
 
   AcceleratorProcessingRestriction restriction =
       GetAcceleratorProcessingRestriction(action);

@@ -18,16 +18,15 @@ class Widget;
 
 namespace ash {
 
-// In order to avoid accidental exits when the user presses the exit
-// shortcut by mistake, we require the user press it twice within a
-// period of time. During that time we show a popup informing the
-// user of this.
+// In order to avoid accidental exits when the user presses the exit shortcut by
+// mistake, we require that the user press it twice within a short period of
+// time. During that time we show a popup informing the user of this.
 //
 // Notes:
 //
-// The corresponding accelerator must be non-repeatable (see
-// kNonrepeatableActions in accelerator_table.cc). Otherwise the "Double Press
-// Exit" will be activated just by holding it down, i.e. probably every time.
+// The corresponding accelerator must not be repeatable (see kRepeatableActions
+// in accelerator_table.cc). Otherwise, the "Double Press Exit" will be
+// activated just by holding it down, i.e. probably every time.
 //
 // State Transition Diagrams:
 //

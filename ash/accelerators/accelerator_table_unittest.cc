@@ -66,12 +66,11 @@ TEST(AcceleratorTableTest, CheckDuplicatedActionsAllowedAtModalWindow) {
   }
 }
 
-TEST(AcceleratorTableTest, CheckDuplicatedNonrepeatableActions) {
+TEST(AcceleratorTableTest, CheckDuplicatedRepeatableActions) {
   std::set<AcceleratorAction> actions;
-  for (size_t i = 0; i < kNonrepeatableActionsLength; ++i) {
-    EXPECT_TRUE(actions.insert(kNonrepeatableActions[i]).second)
-        << "Duplicated action: " << kNonrepeatableActions[i]
-        << " at index: " << i;
+  for (size_t i = 0; i < kRepeatableActionsLength; ++i) {
+    EXPECT_TRUE(actions.insert(kRepeatableActions[i]).second)
+        << "Duplicated action: " << kRepeatableActions[i] << " at index: " << i;
   }
 }
 
