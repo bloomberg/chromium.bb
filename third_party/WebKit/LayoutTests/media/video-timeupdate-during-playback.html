@@ -1,58 +1,25 @@
-<html>
-<body>
+<!DOCTYPE html>
+<title>Test "timeupdate" events are posted while playing but not while paused.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
 
-    <video controls></video>
+    video.onplaying = t.step_func(function() {
+        video.ontimeupdate = t.step_func(function() {
+            video.pause();
+        });
+    });
 
-    <p>
-    Test 'timeupdate' events are posted while playing but not while paused.
-    </p>
-    <script src=media-file.js></script>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <script>
-        setSrcByTagName("video", findMediaFile("video", "content/test"));
+    video.onpause = t.step_func(function() {
+        video.ontimeupdate = t.unreached_func();
+        setTimeout(t.step_func_done(), 250);
+    });
 
-        var timeupdateEventCount = 0;
-        var countWhilePlaying = 0;
-
-        function someTimeLater()
-        {
-            if (countWhilePlaying != timeupdateEventCount)
-                failTest("'timeupdate' events posted after pausing");
-            endTest();
-        }
-
-        function pause()
-        {
-            countWhilePlaying = timeupdateEventCount;
-            setTimeout(someTimeLater, 400) ;
-            consoleWrite("");
-        }
-
-        function playing()
-        {
-            setTimeout(function () { run("video.pause()"); }, 500) ;
-            consoleWrite("");
-        }
-
-        mediaElement.addEventListener("timeupdate", function () { ++timeupdateEventCount; });
-
-        waitForEvent('error');
-        waitForEvent("loadstart");
-        waitForEvent("waiting");
-        waitForEvent("ratechange");
-        waitForEvent("durationchange");
-        waitForEvent("loadedmetadata");
-        waitForEvent("loadeddata");
-        waitForEvent("canplay");
-        waitForEvent("pause", pause);
-        waitForEvent("play");
-        waitForEvent("playing", playing);
-
-        run("video.play()");
-        consoleWrite("");
-    </script>
-
-</body>
-</html>
+    video.play();
+});
+</script>
