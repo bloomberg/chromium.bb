@@ -4,10 +4,14 @@
 
 #include "ash/common/system/tray/tray_notification_view.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/image_button.h"
@@ -15,6 +19,28 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace ash {
+
+namespace {
+
+// Maps a non-MD PNG resource id to its corresponding MD vector icon id.
+// TODO(tdanderson): Remove this once material design is enabled by
+// default. See crbug.com/614453.
+gfx::VectorIconId ResourceIdToVectorIconId(int resource_id) {
+  gfx::VectorIconId vector_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+  switch (resource_id) {
+    case IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK:
+      return gfx::VectorIconId::SYSTEM_MENU_ACCESSIBILITY;
+    case IDR_AURA_UBER_TRAY_SMS:
+      return gfx::VectorIconId::SYSTEM_MENU_SMS;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  return vector_id;
+}
+
+}  // namespace
 
 TrayNotificationView::TrayNotificationView(SystemTrayItem* owner, int icon_id)
     : owner_(owner), icon_id_(icon_id), icon_(NULL), autoclose_delay_(0) {}
@@ -36,8 +62,13 @@ void TrayNotificationView::InitView(views::View* contents) {
 
   icon_ = new views::ImageView;
   if (icon_id_ != 0) {
-    icon_->SetImage(
-        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));
+    if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+      icon_->SetImage(CreateVectorIcon(ResourceIdToVectorIconId(icon_id_),
+                                       kMenuIconSize, kMenuIconColor));
+    } else {
+      icon_->SetImage(
+          ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id_));
+    }
   }
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
@@ -75,24 +106,9 @@ void TrayNotificationView::InitView(views::View* contents) {
   layout->AddPaddingRow(0, kTrayPopupPaddingBetweenItems);
 }
 
-void TrayNotificationView::SetIconImage(const gfx::ImageSkia& image) {
-  icon_->SetImage(image);
-  SchedulePaint();
-}
-
 void TrayNotificationView::UpdateView(views::View* new_contents) {
   RemoveAllChildViews(true);
   InitView(new_contents);
-  Layout();
-  PreferredSizeChanged();
-  SchedulePaint();
-}
-
-void TrayNotificationView::UpdateViewAndImage(views::View* new_contents,
-                                              const gfx::ImageSkia& image) {
-  RemoveAllChildViews(true);
-  InitView(new_contents);
-  icon_->SetImage(image);
   Layout();
   PreferredSizeChanged();
   SchedulePaint();

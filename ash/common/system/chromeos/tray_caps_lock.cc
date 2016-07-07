@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/tray_caps_lock.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -17,6 +18,8 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -42,11 +45,16 @@ class CapsLockDefaultView : public ActionableView {
                                           kTrayPopupPaddingHorizontal, 0,
                                           kTrayPopupPaddingBetweenItems));
 
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     FixedSizedImageView* image =
         new FixedSizedImageView(0, kTrayPopupItemHeight);
-    image->SetImage(
-        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).ToImageSkia());
+    if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+      image->SetImage(CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_CAPS_LOCK,
+                                       kMenuIconSize, kMenuIconColor));
+    } else {
+      ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+      image->SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK)
+                          .ToImageSkia());
+    }
     AddChildView(image);
 
     text_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -189,8 +197,13 @@ views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* image = new views::ImageView;
-  image->SetImage(
-      bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).ToImageSkia());
+  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+    image->SetImage(CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_CAPS_LOCK,
+                                     kMenuIconSize, kMenuIconColor));
+  } else {
+    image->SetImage(
+        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAPS_LOCK_DARK).ToImageSkia());
+  }
 
   detailed_->AddChildView(image);
 

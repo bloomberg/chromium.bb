@@ -29,23 +29,15 @@ class SystemTrayItem;
 class TrayNotificationView : public views::SlideOutView,
                              public views::ButtonListener {
  public:
-  // If icon_id is 0, no icon image will be set. SetIconImage can be called
-  // to later set the icon image.
+  // If icon_id is 0, no icon image will be set.
   TrayNotificationView(SystemTrayItem* owner, int icon_id);
   ~TrayNotificationView() override;
 
   // InitView must be called once with the contents to be displayed.
   void InitView(views::View* contents);
 
-  // Sets/updates the icon image.
-  void SetIconImage(const gfx::ImageSkia& image);
-
   // Replaces the contents view.
   void UpdateView(views::View* new_contents);
-
-  // Replaces the contents view and updates the icon image.
-  void UpdateViewAndImage(views::View* new_contents,
-                          const gfx::ImageSkia& image);
 
   // Autoclose timer operations.
   void StartAutoCloseTimer(int seconds);

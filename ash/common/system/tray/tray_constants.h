@@ -73,6 +73,16 @@ extern const int kTrayNotificationContentsWidth;
 
 extern const int kMessageCenterBubblePadding;
 
+// The size and foreground color of the icons appearing in the material design
+// system tray.
+extern const int kTrayIconSize;
+extern const SkColor kTrayIconColor;
+
+// The size and foreground color of the icons appearing in the material design
+// system menu.
+extern const int kMenuIconSize;
+extern const SkColor kMenuIconColor;
+
 enum TrayConstant {
   // A legacy height value used in non-MD calculations for applying additional
   // borders on tray items.

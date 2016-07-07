@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 
+#include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
@@ -15,6 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace ash {
 
@@ -74,23 +78,28 @@ void RotationLockDefaultView::OnMaximizeModeEnded() {
 }
 
 void RotationLockDefaultView::UpdateImage() {
-  base::string16 label;
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  if (Shell::GetInstance()
-          ->screen_orientation_controller()
-          ->rotation_locked()) {
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED_DARK)
-                 .ToImageSkia());
-    label = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED);
-    SetLabel(label);
-    SetAccessibleName(label);
+  const bool rotation_locked =
+      Shell::GetInstance()->screen_orientation_controller()->rotation_locked();
+  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+    const gfx::VectorIconId icon_id =
+        rotation_locked ? gfx::VectorIconId::SYSTEM_MENU_ROTATION_LOCK_LOCKED
+                        : gfx::VectorIconId::SYSTEM_MENU_ROTATION_LOCK_AUTO;
+    gfx::ImageSkia image_md =
+        CreateVectorIcon(icon_id, kMenuIconSize, kMenuIconColor);
+    SetImage(&image_md);
   } else {
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_AUTO_ROTATION_DARK)
-                 .ToImageSkia());
-    label = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO);
-    SetLabel(label);
-    SetAccessibleName(label);
+    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
+    const int resource_id = rotation_locked
+                                ? IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED_DARK
+                                : IDR_AURA_UBER_TRAY_AUTO_ROTATION_DARK;
+    SetImage(bundle.GetImageNamed(resource_id).ToImageSkia());
   }
+
+  base::string16 label = l10n_util::GetStringUTF16(
+      rotation_locked ? IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LOCKED
+                      : IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO);
+  SetLabel(label);
+  SetAccessibleName(label);
 }
 
 }  // namespace tray

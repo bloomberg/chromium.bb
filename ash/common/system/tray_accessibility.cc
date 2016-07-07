@@ -6,6 +6,7 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -22,6 +23,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -74,8 +77,15 @@ class DefaultAccessibilityView : public TrayItemMore {
   explicit DefaultAccessibilityView(SystemTrayItem* owner)
       : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
-                 .ToImageSkia());
+    if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+      gfx::ImageSkia image_md =
+          CreateVectorIcon(gfx::VectorIconId::SYSTEM_MENU_ACCESSIBILITY,
+                           kMenuIconSize, kMenuIconColor);
+      SetImage(&image_md);
+    } else {
+      SetImage(bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
+                   .ToImageSkia());
+    }
     base::string16 label =
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ACCESSIBILITY);
     SetLabel(label);

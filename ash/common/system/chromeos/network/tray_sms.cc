@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/network/tray_sms.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -21,6 +22,8 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -56,8 +59,14 @@ namespace ash {
 class TraySms::SmsDefaultView : public TrayItemMore {
  public:
   explicit SmsDefaultView(TraySms* owner) : TrayItemMore(owner, true) {
-    SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-        IDR_AURA_UBER_TRAY_SMS));
+    if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+      gfx::ImageSkia image_md = CreateVectorIcon(
+          gfx::VectorIconId::SYSTEM_MENU_SMS, kMenuIconSize, kMenuIconColor);
+      SetImage(&image_md);
+    } else {
+      SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_AURA_UBER_TRAY_SMS));
+    }
     Update();
   }
 

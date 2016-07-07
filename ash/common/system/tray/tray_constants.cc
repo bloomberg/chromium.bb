@@ -79,6 +79,11 @@ const int kTrayNotificationContentsWidth =
 
 const int kMessageCenterBubblePadding = 4;
 
+const int kTrayIconSize = 16;
+const SkColor kTrayIconColor = SK_ColorWHITE;
+const int kMenuIconSize = 20;
+const SkColor kMenuIconColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
+
 int GetTrayConstant(TrayConstant constant) {
   const int kTrayItemHeightLegacy[] = {38, 38, kTrayItemSize};
   const int kTraySpacing[] = {4, 4, 8};

@@ -4,6 +4,7 @@
 
 #include "ash/common/system/chromeos/tray_tracing.h"
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -15,6 +16,8 @@
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -31,8 +34,15 @@ class DefaultTracingView : public ActionableView {
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     image_ = new FixedSizedImageView(0, kTrayPopupItemHeight);
-    image_->SetImage(
-        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_TRACING).ToImageSkia());
+    if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+      // TODO(tdanderson): Update the icon used for tracing or remove it from
+      // the system menu. See crbug.com/625691.
+      image_->SetImage(CreateVectorIcon(gfx::VectorIconId::CODE, kMenuIconSize,
+                                        kMenuIconColor));
+    } else {
+      image_->SetImage(
+          bundle.GetImageNamed(IDR_AURA_UBER_TRAY_TRACING).ToImageSkia());
+    }
     AddChildView(image_);
 
     label_ = new views::Label();

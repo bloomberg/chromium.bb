@@ -23,9 +23,6 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
 
   views::View* tray_view();
 
-  // Changes the icon of the tray-view to the specified resource.
-  void SetImageFromResourceId(int resource_id);
-
  protected:
   virtual bool GetInitialVisibility() = 0;
 
@@ -38,6 +35,9 @@ class ASH_EXPORT TrayImageItem : public SystemTrayItem {
   void DestroyDetailedView() override;
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
   void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
+
+  // Changes the icon of the tray-view to the specified resource.
+  void SetImageFromResourceId(int resource_id);
 
  private:
   // Set the alignment of the image depending on the shelf alignment.

@@ -18,22 +18,25 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
+namespace ash {
 namespace {
 
-int DecideResource(ash::UpdateInfo::UpdateSeverity severity, bool dark) {
+// TODO(tdanderson): The material design update icon needs to be colored
+// programmatically. See crbug.com/625692.
+int DecideResource(UpdateInfo::UpdateSeverity severity, bool dark) {
   switch (severity) {
-    case ash::UpdateInfo::UPDATE_NORMAL:
+    case UpdateInfo::UPDATE_NORMAL:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK : IDR_AURA_UBER_TRAY_UPDATE;
 
-    case ash::UpdateInfo::UPDATE_LOW_GREEN:
+    case UpdateInfo::UPDATE_LOW_GREEN:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_GREEN
                   : IDR_AURA_UBER_TRAY_UPDATE_GREEN;
 
-    case ash::UpdateInfo::UPDATE_HIGH_ORANGE:
+    case UpdateInfo::UPDATE_HIGH_ORANGE:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_ORANGE
                   : IDR_AURA_UBER_TRAY_UPDATE_ORANGE;
 
-    case ash::UpdateInfo::UPDATE_SEVERE_RED:
+    case UpdateInfo::UPDATE_SEVERE_RED:
       return dark ? IDR_AURA_UBER_TRAY_UPDATE_DARK_RED
                   : IDR_AURA_UBER_TRAY_UPDATE_RED;
   }
@@ -42,16 +45,15 @@ int DecideResource(ash::UpdateInfo::UpdateSeverity severity, bool dark) {
   return 0;
 }
 
-class UpdateView : public ash::ActionableView {
+class UpdateView : public ActionableView {
  public:
-  explicit UpdateView(const ash::UpdateInfo& info) {
+  explicit UpdateView(const UpdateInfo& info) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                          ash::kTrayPopupPaddingHorizontal, 0,
-                                          ash::kTrayPopupPaddingBetweenItems));
+                                          kTrayPopupPaddingHorizontal, 0,
+                                          kTrayPopupPaddingBetweenItems));
 
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    views::ImageView* image =
-        new ash::FixedSizedImageView(0, ash::kTrayPopupItemHeight);
+    views::ImageView* image = new FixedSizedImageView(0, kTrayPopupItemHeight);
     image->SetImage(bundle.GetImageNamed(DecideResource(info.severity, true))
                         .ToImageSkia());
 
@@ -71,15 +73,14 @@ class UpdateView : public ash::ActionableView {
  private:
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override {
-    ash::WmShell::Get()->system_tray_delegate()->RequestRestartForUpdate();
+    WmShell::Get()->system_tray_delegate()->RequestRestartForUpdate();
     return true;
   }
 
   DISALLOW_COPY_AND_ASSIGN(UpdateView);
 };
-}
 
-namespace ash {
+}  // namespace
 
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
     : TrayImageItem(system_tray, IDR_AURA_UBER_TRAY_UPDATE) {
