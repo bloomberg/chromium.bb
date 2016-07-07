@@ -23,7 +23,6 @@
       'autofill/core/browser/address_field_unittest.cc',
       'autofill/core/browser/address_i18n_unittest.cc',
       'autofill/core/browser/address_unittest.cc',
-      'autofill/core/browser/address_rewriter_unittest.cc',
       'autofill/core/browser/autocomplete_history_manager_unittest.cc',
       'autofill/core/browser/autofill_country_unittest.cc',
       'autofill/core/browser/autofill_data_model_unittest.cc',

@@ -200,6 +200,12 @@ class AutofillProfileComparator {
   bool HaveMergeableAddresses(const AutofillProfile& p1,
                               const AutofillProfile& p2) const;
 
+  // Returns true if |state1| and |state2| both represent the same state in
+  // |country_code|.
+  bool IsMatchingState(const base::string16& country_code,
+                       const base::string16& state1,
+                       const base::string16& state2) const;
+
  private:
   l10n::CaseInsensitiveCompare case_insensitive_compare_;
   std::unique_ptr<icu::Transliterator> transliterator_;

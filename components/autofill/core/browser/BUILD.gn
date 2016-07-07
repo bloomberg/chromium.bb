@@ -13,9 +13,6 @@ source_set("browser") {
     "address_field.h",
     "address_i18n.cc",
     "address_i18n.h",
-    "address_rewriter.cc",
-    "address_rewriter.h",
-    "address_rewriter_rules.cc",
     "autocomplete_history_manager.cc",
     "autocomplete_history_manager.h",
     "autofill-inl.h",
@@ -282,7 +279,6 @@ source_set("unit_tests") {
   sources = [
     "address_field_unittest.cc",
     "address_i18n_unittest.cc",
-    "address_rewriter_unittest.cc",
     "address_unittest.cc",
     "autocomplete_history_manager_unittest.cc",
     "autofill_country_unittest.cc",
