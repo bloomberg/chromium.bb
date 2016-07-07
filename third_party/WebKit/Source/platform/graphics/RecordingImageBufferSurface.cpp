@@ -72,7 +72,7 @@ bool RecordingImageBufferSurface::writePixels(const SkImageInfo& origInfo, const
 void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
 {
     ASSERT(m_fallbackFactory);
-    DCHECK(reason != FallbackReasonUnknown);
+    CHECK(reason != FallbackReasonUnknown);
 
     if (m_fallbackSurface) {
         ASSERT(!m_currentFrame);
