@@ -1134,7 +1134,7 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event)
 #endif
 
     bool isUnmodifiedMenuKey = !(event.modifiers & WebInputEvent::InputModifiers) && event.windowsKeyCode == VKEY_APPS;
-    bool isShiftF10 = event.modifiers == WebInputEvent::ShiftKey && event.windowsKeyCode == VKEY_F10;
+    bool isShiftF10 = (event.modifiers & WebInputEvent::InputModifiers) == WebInputEvent::ShiftKey && event.windowsKeyCode == VKEY_F10;
     if ((isUnmodifiedMenuKey || isShiftF10) && event.type == contextMenuTriggeringEventType) {
         sendContextMenuEvent(event);
         return WebInputEventResult::HandledSystem;
