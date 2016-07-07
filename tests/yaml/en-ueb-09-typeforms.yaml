@@ -156,7 +156,7 @@ tests:
       italic: '    +++++++++               ++++'
 
 - - '... referred to as sea waves or (from the Japanese) tsunami.'
-  - 444 ref}r$ to z ~1sea ~1waves or "<f ! ,japanese"> .1~1tsunami4
+  - 444 ref}r$ to z ~1sea ~1waves or "<f ! ,japanese"> ~1.1tsunami4
   - typeform:
       bold: '                   +++++++++                        ++++++++'
       italic: '                                                    ++++++++'
@@ -275,7 +275,7 @@ tests:
   #   9.8.1 page 101
 
 - - 'The object of the following sentence is underlined: Lucy Maud Montgomery wrote Anne of Green Gables.'
-  - ',! object ( ! foll{+ s5t;e is "ul9$3 ,lucy ,maud ,montgom}y wrote .7_7,anne ( ,gre5 ,gables4_''.'''
+  - ',! object ( ! foll{+ s5t;e is "ul9$3 ,lucy ,maud ,montgom}y wrote _7.7,anne ( ,gre5 ,gables4.''_'''
   - typeform:
       italic:    '                                                                               +++++++++++++++++++++'
       underline: '                                                                               +++++++++++++++++++++'
