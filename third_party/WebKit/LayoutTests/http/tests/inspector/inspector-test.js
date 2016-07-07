@@ -962,9 +962,9 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.WorkerAgent = target.workerAgent();
 
         InspectorTest.consoleModel = target.consoleModel;
-        InspectorTest.networkManager = target.networkManager;
+        InspectorTest.networkManager = WebInspector.NetworkManager.fromTarget(target);
         InspectorTest.resourceTreeModel = target.resourceTreeModel;
-        InspectorTest.networkLog = target.networkLog;
+        InspectorTest.networkLog = WebInspector.NetworkLog.fromTarget(target);
         InspectorTest.debuggerModel = WebInspector.DebuggerModel.fromTarget(target);
         InspectorTest.runtimeModel = target.runtimeModel;
         InspectorTest.domModel = WebInspector.DOMModel.fromTarget(target);

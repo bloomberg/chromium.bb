@@ -48,6 +48,8 @@ InspectorTest.DebuggerModelMock.prototype = {
         return this._target;
     },
 
+    _targetDisposed: function() { },
+
     debuggerEnabled: function()
     {
         return true;
