@@ -2952,6 +2952,23 @@ bool GLES2DecoderImpl::Initialize(
   lose_context_when_out_of_memory_ =
       attrib_helper.lose_context_when_out_of_memory;
 
+  // If the failIfMajorPerformanceCaveat context creation attribute was true
+  // and we are using a software renderer, fail.
+  if (attrib_helper.fail_if_major_perf_caveat &&
+      feature_info_->feature_flags().is_swiftshader) {
+    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
+    Destroy(true);
+    return false;
+  }
+
+  if (!group_->Initialize(this, attrib_helper.context_type,
+                          disallowed_features)) {
+    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
+    Destroy(true);
+    return false;
+  }
+  CHECK_GL_ERROR();
+
   should_use_native_gmb_for_backbuffer_ =
       attrib_helper.should_use_native_gmb_for_backbuffer;
   if (should_use_native_gmb_for_backbuffer_) {
@@ -2971,28 +2988,10 @@ bool GLES2DecoderImpl::Initialize(
     }
 
     if (!supported) {
-      group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
       Destroy(true);
       return false;
     }
   }
-
-  // If the failIfMajorPerformanceCaveat context creation attribute was true
-  // and we are using a software renderer, fail.
-  if (attrib_helper.fail_if_major_perf_caveat &&
-      feature_info_->feature_flags().is_swiftshader) {
-    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
-    Destroy(true);
-    return false;
-  }
-
-  if (!group_->Initialize(this, attrib_helper.context_type,
-                          disallowed_features)) {
-    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
-    Destroy(true);
-    return false;
-  }
-  CHECK_GL_ERROR();
 
   bool needs_emulation = feature_info_->gl_version_info().IsLowerThanGL(4, 2);
   transform_feedback_manager_.reset(new TransformFeedbackManager(

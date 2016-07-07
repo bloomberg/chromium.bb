@@ -82,8 +82,6 @@ class GLManager : private GpuControl {
     bool backbuffer_alpha;
     // The ImageFactory to use to generate images for the backbuffer.
     gpu::ImageFactory* image_factory;
-    // Enable the feature |arb_texture_rectangle|.
-    bool enable_arb_texture_rectangle;
   };
   GLManager();
   ~GLManager() override;
