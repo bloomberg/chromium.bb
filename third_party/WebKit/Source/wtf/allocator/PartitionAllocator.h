@@ -155,6 +155,7 @@ public: \
         ASSERT(location); \
         return location; \
     } \
+    void* operator new(size_t, void* location) { return location; } \
 private: \
 typedef int __thisIsHereToForceASemicolonAfterThisMacro
 

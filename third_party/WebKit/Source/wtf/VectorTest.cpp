@@ -27,6 +27,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/HashSet.h"
+#include "wtf/Optional.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -686,6 +687,15 @@ TEST(VectorTest, InitializerList)
     EXPECT_EQ(1, vector3[0]);
     EXPECT_EQ(2, vector3[1]);
     EXPECT_EQ(3, vector3[2]);
+}
+
+TEST(VectorTest, Optional)
+{
+    Optional<Vector<int>> vector;
+    EXPECT_FALSE(vector);
+    vector.emplace(3);
+    EXPECT_TRUE(vector);
+    EXPECT_EQ(3u, vector->size());
 }
 
 static_assert(VectorTraits<int>::canCopyWithMemcpy, "int should be copied with memcopy.");
