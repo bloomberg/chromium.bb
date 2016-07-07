@@ -1184,7 +1184,9 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     sk_bitmap.setImmutable();
     sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
   } else {
-    NOTREACHED() << "Image not valid";
+    // TODO(enne): fix race condition of shared bitmap manager going away
+    // that can cause this to happen.  This will cause the read lock
+    // to not be valid.
   }
 }
 
