@@ -106,7 +106,6 @@ ImageOrientation status=test
 ImageRenderingPixelated status=stable
 IndexedDBExperimental status=experimental
 InertTopControls status=experimental
-InputDeviceCapabilities status=stable
 InputEvent status=experimental
 InputModeAttribute status=experimental
 InputMultipleFieldsUI status=stable

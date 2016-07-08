@@ -7,5 +7,5 @@
 dictionary UIEventInit : EventInit {
     Window? view = null;
     long detail = 0;
-    [RuntimeEnabled=InputDeviceCapabilities] InputDeviceCapabilities? sourceCapabilities = null; 
+    InputDeviceCapabilities? sourceCapabilities = null;
 };

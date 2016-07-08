@@ -24,7 +24,7 @@
 ] interface UIEvent : Event {
     readonly attribute Window? view;
     readonly attribute long detail;
-    [RuntimeEnabled=InputDeviceCapabilities] readonly attribute InputDeviceCapabilities? sourceCapabilities;
+    readonly attribute InputDeviceCapabilities? sourceCapabilities;
 
     // https://w3c.github.io/uievents/#idl-interface-UIEvent-initializers
     // TODO(foolip): None of the initUIEvent() arguments should be optional.
