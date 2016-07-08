@@ -182,13 +182,6 @@ def attribute_context(interface, attribute):
     if not has_custom_setter(attribute) and has_setter(interface, attribute):
         setter_context(interface, attribute, context)
 
-    # [OriginTrialEnabled]
-    # TODO(iclelland): Allow origin trials on static interfaces
-    # (crbug.com/614352)
-    if context['origin_trial_feature_name'] and context['on_interface']:
-        raise Exception('[OriginTrialEnabled] cannot be specified on static '
-                        'attributes: %s.%s' % (interface.name, attribute.name))
-
     return context
 
 

@@ -381,11 +381,9 @@ void {{v8_class_or_partial}}::install{{origin_trial_feature_name}}(ScriptState* 
     v8::Local<v8::Signature> signature = v8::Signature::New(scriptState->isolate(), interfaceTemplate);
     ALLOW_UNUSED_LOCAL(signature);
     {% endif %}
-    {% if constants | for_origin_trial_feature(origin_trial_feature_name) or
-          methods | method_for_origin_trial_feature(origin_trial_feature_name, is_partial) %}
     V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
     v8::Local<v8::Function> interface = perContextData->constructorForType(&{{v8_class}}::wrapperTypeInfo);
-    {% endif %}
+    ALLOW_UNUSED_LOCAL(interface);
     {% for attribute in attributes | for_origin_trial_feature(origin_trial_feature_name) | unique_by('name') | sort %}
     {% if attribute.is_data_type_property %}
     const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = \
@@ -394,7 +392,7 @@ void {{v8_class_or_partial}}::install{{origin_trial_feature_name}}(ScriptState* 
     {% else %}
     const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = \
         {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAccessor(scriptState->isolate(), scriptState->world(), instance, prototype, v8::Local<v8::Function>(), signature, accessor{{attribute.name}}Configuration);
+    V8DOMConfiguration::installAccessor(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, accessor{{attribute.name}}Configuration);
     {% endif %}
     {% endfor %}
     {# Origin-Trial-enabled constants #}

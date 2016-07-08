@@ -101,5 +101,11 @@ test(() => {
     assert_true(window.internals.frobulateMethodPartial(), 'Method should return boolean value');
   }, 'Method should exist on partial interface and return value');
 
+test(() => {
+    var internalsInterface = window.internals.constructor;
+    assert_exists(internalsInterface, 'frobulateStatic');
+    assert_true(internalsInterface.frobulateStatic, 'Static attribute should return boolean value');
+  }, 'Static attribute should exist on partial interface and return value');
+
 fetch_tests_from_worker(new Worker('resources/enabled-worker.js'));
 };

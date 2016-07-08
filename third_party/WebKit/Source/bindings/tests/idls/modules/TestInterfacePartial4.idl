@@ -12,8 +12,7 @@
     const unsigned short PARTIAL4_UNSIGNED_SHORT = 4;
 
     attribute long partial4LongAttribute;
-    // TODO(chasej): Uncomment when static attributes are supported for origin trials (crbug.com/614352)
-    //static attribute long partial4StaticLongAttribute;
+    static attribute long partial4StaticLongAttribute;
 
     // TODO(chasej): Uncomment when methods are supported for origin trials (crbug.com/621641)
     void partial4VoidMethod();
