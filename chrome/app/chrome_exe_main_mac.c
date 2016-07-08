@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,8 +34,7 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
   uint32_t exec_path_size = 0;
   int rv = _NSGetExecutablePath(NULL, &exec_path_size);
   if (rv != -1) {
-    fprintf(stderr,
-            "_NSGetExecutablePath: get [length|path] failed.\n");
+    fprintf(stderr, "_NSGetExecutablePath: get length failed\n");
     abort();
   }
 
@@ -47,24 +46,23 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
 
   rv = _NSGetExecutablePath(exec_path, &exec_path_size);
   if (rv != 0) {
-    fprintf(stderr,
-            "_NSGetExecutablePath(): get [%d|path] failed.\n", exec_path_size);
+    fprintf(stderr, "_NSGetExecutablePath: get path failed\n");
     abort();
   }
 
   // Slice off the last part of the main executable path, and append the
   // version framework information.
-  char* parent_dir = dirname(exec_path);
+  const char* parent_dir = dirname(exec_path);
   if (!parent_dir) {
     fprintf(stderr, "dirname %s: %s\n", exec_path, strerror(errno));
     abort();
   }
   free(exec_path);
 
-  size_t parent_path_len = strlen(parent_dir);
-  size_t rel_path_len = strlen(rel_path);
+  const size_t parent_path_len = strlen(parent_dir);
+  const size_t rel_path_len = strlen(rel_path);
   // 2 accounts for a trailing NUL byte and the '/' in the middle of the paths.
-  size_t framework_path_size = parent_path_len + rel_path_len + 2;
+  const size_t framework_path_size = parent_path_len + rel_path_len + 2;
   char* framework_path = malloc(framework_path_size);
   if (!framework_path) {
     fprintf(stderr, "malloc %zu: %s\n", framework_path_size, strerror(errno));
@@ -79,7 +77,7 @@ __attribute__((visibility("default"))) int main(int argc, char* argv[]) {
   }
   free(framework_path);
 
-  ChromeMainPtr chrome_main = dlsym(library, "ChromeMain");
+  const ChromeMainPtr chrome_main = dlsym(library, "ChromeMain");
   if (!chrome_main) {
     fprintf(stderr, "dlsym ChromeMain: %s\n", dlerror());
     abort();
