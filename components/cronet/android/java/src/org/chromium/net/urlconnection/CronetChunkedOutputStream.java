@@ -82,11 +82,8 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
 
     @Override
     public void close() throws IOException {
-        if (!mLastChunk) {
-            // Write last chunk.
-            mLastChunk = true;
-            mMessageLoop.loop();
-        }
+        // Last chunk is written.
+        mLastChunk = true;
         mClosed = true;
     }
 
@@ -137,9 +134,11 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
                 byteBuffer.put(mBuffer);
                 // Reuse this buffer.
                 mBuffer.clear();
-                // Quit message loop so embedder can write more data.
-                mMessageLoop.quit();
                 uploadDataSink.onReadSucceeded(mLastChunk);
+                if (!mLastChunk) {
+                    // Quit message loop so embedder can write more data.
+                    mMessageLoop.quit();
+                }
             }
         }
 
