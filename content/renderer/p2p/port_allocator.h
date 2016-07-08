@@ -45,6 +45,9 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
                    const GURL& origin);
   ~P2PPortAllocator() override;
 
+  // Will also initialize the network manager passed into the constructor.
+  void Initialize() override;
+
  private:
   std::unique_ptr<rtc::NetworkManager> network_manager_;
   scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;

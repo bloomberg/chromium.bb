@@ -27,6 +27,9 @@ P2PPortAllocator::P2PPortAllocator(
       socket_dispatcher_(socket_dispatcher),
       config_(config),
       origin_(origin) {
+  DCHECK(socket_dispatcher);
+  DCHECK(network_manager_);
+  DCHECK(socket_factory);
   uint32_t flags = 0;
   if (!config_.enable_multiple_routes) {
     flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
@@ -50,5 +53,10 @@ P2PPortAllocator::P2PPortAllocator(
 }
 
 P2PPortAllocator::~P2PPortAllocator() {}
+
+void P2PPortAllocator::Initialize() {
+  BasicPortAllocator::Initialize();
+  network_manager_->Initialize();
+}
 
 }  // namespace content

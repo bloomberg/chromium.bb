@@ -34,22 +34,6 @@ FilteringNetworkManager::FilteringNetworkManager(
   }
 }
 
-void FilteringNetworkManager::CheckPermission() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!started_permission_check_);
-
-  started_permission_check_ = true;
-  pending_permission_checks_ = 2;
-
-  // Request for media permission asynchronously.
-  media_permission_->HasPermission(
-      media::MediaPermission::AUDIO_CAPTURE, requesting_origin_,
-      base::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
-  media_permission_->HasPermission(
-      media::MediaPermission::VIDEO_CAPTURE, requesting_origin_,
-      base::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
-}
-
 FilteringNetworkManager::~FilteringNetworkManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This helps to catch the case if permission never comes back.
@@ -59,6 +43,12 @@ FilteringNetworkManager::~FilteringNetworkManager() {
 
 base::WeakPtr<FilteringNetworkManager> FilteringNetworkManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
+}
+
+void FilteringNetworkManager::Initialize() {
+  rtc::NetworkManagerBase::Initialize();
+  if (media_permission_)
+    CheckPermission();
 }
 
 void FilteringNetworkManager::StartUpdating() {
@@ -99,6 +89,22 @@ bool FilteringNetworkManager::GetDefaultLocalAddress(
     int family,
     rtc::IPAddress* ipaddress) const {
   return network_manager_->GetDefaultLocalAddress(family, ipaddress);
+}
+
+void FilteringNetworkManager::CheckPermission() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!started_permission_check_);
+
+  started_permission_check_ = true;
+  pending_permission_checks_ = 2;
+
+  // Request for media permission asynchronously.
+  media_permission_->HasPermission(
+      media::MediaPermission::AUDIO_CAPTURE, requesting_origin_,
+      base::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
+  media_permission_->HasPermission(
+      media::MediaPermission::VIDEO_CAPTURE, requesting_origin_,
+      base::Bind(&FilteringNetworkManager::OnPermissionStatus, GetWeakPtr()));
 }
 
 void FilteringNetworkManager::OnPermissionStatus(bool granted) {

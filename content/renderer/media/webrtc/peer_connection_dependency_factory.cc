@@ -386,14 +386,6 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
     FilteringNetworkManager* filtering_network_manager =
         new FilteringNetworkManager(network_manager_, requesting_origin,
                                     media_permission);
-    if (media_permission) {
-      // Start permission check earlier to reduce any impact to call set up
-      // time. It's safe to use Unretained here since both destructor and
-      // Initialize can only be called on the worker thread.
-      chrome_worker_thread_.task_runner()->PostTask(
-          FROM_HERE, base::Bind(&FilteringNetworkManager::CheckPermission,
-                                base::Unretained(filtering_network_manager)));
-    }
     network_manager.reset(filtering_network_manager);
   } else {
     network_manager.reset(new EmptyNetworkManager(network_manager_));

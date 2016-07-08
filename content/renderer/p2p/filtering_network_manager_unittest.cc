@@ -138,7 +138,7 @@ class FilteringNetworkManagerTest : public testing::Test,
       FilteringNetworkManager* filtering_network_manager =
           new FilteringNetworkManager(mock_network_manager_.get(), GURL(),
                                       media_permission_.get());
-      filtering_network_manager->CheckPermission();
+      filtering_network_manager->Initialize();
       network_manager_.reset(filtering_network_manager);
     } else {
       network_manager_.reset(
