@@ -377,10 +377,10 @@ IsNull(const Functor&) {
 // This stores all the state passed into Bind().
 template <typename Functor, typename... BoundArgs>
 struct BindState final : BindStateBase {
-  template <typename... ForwardBoundArgs>
-  explicit BindState(Functor functor, ForwardBoundArgs&&... bound_args)
+  template <typename ForwardFunctor, typename... ForwardBoundArgs>
+  explicit BindState(ForwardFunctor&& functor, ForwardBoundArgs&&... bound_args)
       : BindStateBase(&Destroy),
-        functor_(std::move(functor)),
+      functor_(std::forward<ForwardFunctor>(functor)),
         bound_args_(std::forward<ForwardBoundArgs>(bound_args)...) {
     DCHECK(!IsNull(functor_));
   }
