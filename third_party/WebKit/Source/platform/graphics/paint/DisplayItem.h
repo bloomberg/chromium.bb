@@ -120,7 +120,8 @@ public:
         CachedDrawingLast = CachedDrawingFirst + DrawingLast - DrawingFirst,
 
         ForeignLayerFirst,
-        ForeignLayerPlugin = ForeignLayerFirst,
+        ForeignLayerCanvas = ForeignLayerFirst,
+        ForeignLayerPlugin,
         ForeignLayerVideo,
         ForeignLayerLast = ForeignLayerVideo,
 

@@ -8,10 +8,9 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/loader/EmptyClients.h"
+#include "core/paint/StubChromeClientForSPv2.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/graphics/compositing/PaintArtifactCompositor.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
@@ -23,27 +22,6 @@
 
 namespace blink {
 namespace {
-
-class StubChromeClient : public EmptyChromeClient {
-public:
-    StubChromeClient(WebLayerTreeViewImplForTesting::LayerListPolicy layerListPolicy)
-        : m_layerTreeView(layerListPolicy)
-    {
-        m_layerTreeView.setRootLayer(*m_paintArtifactCompositor.getWebLayer());
-    }
-
-    bool hasLayer(const WebLayer& layer) { return m_layerTreeView.hasLayer(layer); }
-
-    // ChromeClient
-    void didPaint(const PaintArtifact& artifact)
-    {
-        m_paintArtifactCompositor.update(artifact);
-    }
-
-private:
-    WebLayerTreeViewImplForTesting m_layerTreeView;
-    PaintArtifactCompositor m_paintArtifactCompositor;
-};
 
 class StubWebMediaPlayer : public WebMediaPlayer {
 public:
@@ -112,7 +90,7 @@ protected:
     void SetUp() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        m_chromeClient = new StubChromeClient(GetParam());
+        m_chromeClient = new StubChromeClientForSPv2(GetParam());
         m_frameLoaderClient = new StubFrameLoaderClient;
         Page::PageClients clients;
         fillWithEmptyClients(clients);
@@ -134,7 +112,7 @@ protected:
 
 private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
-    Persistent<StubChromeClient> m_chromeClient;
+    Persistent<StubChromeClientForSPv2> m_chromeClient;
     Persistent<StubFrameLoaderClient> m_frameLoaderClient;
     std::unique_ptr<DummyPageHolder> m_pageHolder;
 };

@@ -261,6 +261,7 @@ private:
 
     friend class Canvas2DLayerBridgeTest;
     friend class CanvasRenderingContext2DTest;
+    friend class HTMLCanvasPainterTestForSPv2;
 
     uint32_t m_lastImageId;
 
