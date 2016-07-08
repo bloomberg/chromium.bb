@@ -44,7 +44,7 @@ Otherwise: Writes command-line file.
     def read_flags(device):
       try:
         return device.ReadFile(args.device_path, as_root=as_root).rstrip()
-      except device_errors.AdbCommandFailedError:
+      except device_errors.CommandFailedError:
         return ''  # File might not exist.
 
     descriptions = all_devices.pMap(lambda d: d.build_description).pGet(None)
