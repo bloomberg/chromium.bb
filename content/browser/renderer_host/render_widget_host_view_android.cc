@@ -1908,7 +1908,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
                                                 output_size_in_pixel.height(),
                                                 color_type,
                                                 kOpaque_SkAlphaType))) {
-    scoped_callback_runner.Reset(
+    scoped_callback_runner.ReplaceClosure(
         base::Bind(callback, SkBitmap(), READBACK_BITMAP_ALLOCATION_FAILURE));
     return;
   }

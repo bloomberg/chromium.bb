@@ -44,7 +44,7 @@ TEST(ModuleListTest, TestCase) {
   ASSERT_GT(module_list->size(), original_list_size);
 
   // Unload the module.
-  release_new_dll.Reset();
+  release_new_dll.RunAndReset();
 
   // Reset module_list here. That should typically be the last ref on
   // msvidc32.dll, so it will be unloaded now.
