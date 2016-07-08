@@ -31,7 +31,7 @@ namespace {
 // chance device authorization response is never received from the browser side.
 // In this case we will time out, to avoid renderer hang forever waiting for
 // device authorization (http://crbug/615589). This will result in "no audio".
-const int64_t kMaxAuthorizationTimeoutMs = 900;
+const int64_t kMaxAuthorizationTimeoutMs = 1000;
 #else
 const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
 #endif  // defined(OS_WIN)
