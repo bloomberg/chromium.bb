@@ -9,6 +9,7 @@
 #include "base/at_exit.h"
 #include "base/atomicops.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -234,6 +235,7 @@ CronetEnvironment::~CronetEnvironment() {
 
 void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
+  base::FeatureList::InitializeInstance(std::string(), std::string());
   // TODO(mef): Use net:UrlRequestContextBuilder instead of manual build.
   main_context_.reset(new net::URLRequestContext);
   main_context_->set_net_log(net_log_.get());

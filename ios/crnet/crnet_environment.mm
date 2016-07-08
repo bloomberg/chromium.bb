@@ -11,12 +11,14 @@
 #include "base/at_exit.h"
 #include "base/atomicops.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/icu_util.h"
 #include "base/json/json_writer.h"
 #include "base/mac/bind_objc_block.h"
+#include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "base/macros.h"
@@ -152,6 +154,10 @@ void CrNetEnvironment::Initialize() {
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
 
+  // Change the framework bundle to the bundle that contain CrNet framework.
+  // By default the framework bundle is set equal to the main (app) bundle.
+  NSBundle* frameworkBundle = [NSBundle bundleForClass:CrNet.class];
+  base::mac::SetOverrideFrameworkBundle(frameworkBundle);
 #if !BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
   CHECK(base::i18n::InitializeICU());
 #endif
@@ -352,12 +358,14 @@ void CrNetEnvironment::ConfigureSdchOnNetworkThread() {
 
 void CrNetEnvironment::InitializeOnNetworkThread() {
   DCHECK(network_io_thread_->task_runner()->BelongsToCurrentThread());
+  base::FeatureList::InitializeInstance(std::string(), std::string());
 
   ConfigureSdchOnNetworkThread();
 
+  // Use the framework bundle to search for resources.
+  NSBundle* frameworkBundle = base::mac::FrameworkBundle();
   NSString* bundlePath =
-      [[NSBundle mainBundle] pathForResource:@"crnet_resources"
-                                      ofType:@"bundle"];
+      [frameworkBundle pathForResource:@"crnet_resources" ofType:@"bundle"];
   NSBundle* bundle = [NSBundle bundleWithPath:bundlePath];
   NSString* acceptableLanguages = NSLocalizedStringWithDefaultValue(
       @"IDS_ACCEPT_LANGUAGES",
@@ -422,6 +430,9 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   net::HttpNetworkSession::Params params;
   params.host_resolver = main_context_->host_resolver();
   params.cert_verifier = main_context_->cert_verifier();
+  params.cert_transparency_verifier =
+      main_context_->cert_transparency_verifier();
+  params.ct_policy_enforcer = main_context_->ct_policy_enforcer();
   params.channel_id_service = main_context_->channel_id_service();
   params.transport_security_state = main_context_->transport_security_state();
   params.proxy_service = main_context_->proxy_service();
