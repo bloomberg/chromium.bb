@@ -1137,6 +1137,12 @@ cr.define('login', function() {
         currentElement.classList.toggle('pin-enabled', visible);
         currentElement.classList.toggle('pin-disabled', !visible);
       }
+
+      // Set the focus to the input element after showing/hiding pin keyboard.
+      if (visible)
+        this.pinKeyboard.focus();
+      else
+        this.mainInput.focus();
     },
 
     setUserPodIconType: function(userTypeClass) {

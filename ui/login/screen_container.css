@@ -23,8 +23,7 @@
 
 .pin-container.pin-enabled {
   opacity: 1;
-  transition: opacity 200ms ease-in-out 180ms,
-              visibility 200ms ease-in-out 180ms;
+  transition: opacity 200ms ease-in-out 180ms;
   visibility: visible;
 }
 
