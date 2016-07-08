@@ -1048,8 +1048,8 @@
 
 ```
   This target type allows you to run a script a single time to produce
-  or more output files. If you want to run a script once for each of a
-  set of input files, see "gn help action_foreach".
+  one or more output files. If you want to run a script once for each of
+  a set of input files, see "gn help action_foreach".
 
 ```
 
