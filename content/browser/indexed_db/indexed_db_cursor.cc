@@ -167,7 +167,7 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
       break;
   }
 
-  if (!found_keys.size()) {
+  if (found_keys.empty()) {
     callbacks->OnSuccess(nullptr);
     return;
   }

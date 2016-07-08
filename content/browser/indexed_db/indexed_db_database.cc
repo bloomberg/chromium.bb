@@ -1944,7 +1944,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
 
   // TODO(jsbell): Add a test for the pending_open_calls_ cases below.
   if (!ConnectionCount() && pending_open_calls_.empty() &&
-      !pending_delete_calls_.size()) {
+      pending_delete_calls_.empty()) {
     DCHECK(transactions_.empty());
     backing_store_ = NULL;
     factory_->ReleaseDatabase(identifier_, forced);

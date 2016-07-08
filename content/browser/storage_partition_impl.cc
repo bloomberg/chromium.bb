@@ -708,7 +708,7 @@ StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread(
   // and SessionStorage. This loop wipes out most HTML5 storage for the given
   // origins.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!origins.size()) {
+  if (origins.empty()) {
     callback.Run();
     return;
   }

@@ -41,7 +41,7 @@ class RegistryTestMockFactory : public MockIndexedDBFactory {
   }
 
   bool CheckNoOriginsInUse() const {
-    return !duplicate_calls_ && !origins_.size();
+    return !duplicate_calls_ && origins_.empty();
   }
 
   bool CheckSingleOriginInUse(const url::Origin& origin) const {

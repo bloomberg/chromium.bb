@@ -422,27 +422,24 @@ void SharedWorkerServiceImpl::OnSharedWorkerMessageFilterClosing(
     SharedWorkerMessageFilter* filter) {
   ScopedWorkerDependencyChecker checker(this);
   std::vector<ProcessRouteIdPair> remove_list;
-  for (WorkerHostMap::iterator iter = worker_hosts_.begin();
-       iter != worker_hosts_.end();
-       ++iter) {
-    iter->second->FilterShutdown(filter);
-    if (iter->first.first == filter->render_process_id())
-      remove_list.push_back(iter->first);
+  for (auto it : worker_hosts_) {
+    it.second->FilterShutdown(filter);
+    if (it.first.first == filter->render_process_id())
+      remove_list.push_back(it.first);
   }
-  for (size_t i = 0; i < remove_list.size(); ++i) {
+  for (ProcessRouteIdPair& to_remove : remove_list) {
     std::unique_ptr<SharedWorkerHost> host =
-        worker_hosts_.take_and_erase(remove_list[i]);
+        worker_hosts_.take_and_erase(to_remove);
   }
 
   std::vector<int> remove_pending_instance_list;
-  for (PendingInstanceMap::iterator iter = pending_instances_.begin();
-       iter != pending_instances_.end(); ++iter) {
-    iter->second->RemoveRequest(filter->render_process_id());
-    if (!iter->second->requests()->size())
-      remove_pending_instance_list.push_back(iter->first);
+  for (auto it : pending_instances_) {
+    it.second->RemoveRequest(filter->render_process_id());
+    if (it.second->requests()->empty())
+      remove_pending_instance_list.push_back(it.first);
   }
-  for (size_t i = 0; i < remove_pending_instance_list.size(); ++i)
-    pending_instances_.take_and_erase(remove_pending_instance_list[i]);
+  for (int to_remove : remove_pending_instance_list)
+    pending_instances_.take_and_erase(to_remove);
 }
 
 void SharedWorkerServiceImpl::NotifyWorkerDestroyed(int worker_process_id,

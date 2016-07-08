@@ -13,8 +13,8 @@ namespace content {
 IndexedDBTransactionCoordinator::IndexedDBTransactionCoordinator() {}
 
 IndexedDBTransactionCoordinator::~IndexedDBTransactionCoordinator() {
-  DCHECK(!queued_transactions_.size());
-  DCHECK(!started_transactions_.size());
+  DCHECK(queued_transactions_.empty());
+  DCHECK(started_transactions_.empty());
 }
 
 void IndexedDBTransactionCoordinator::DidCreateTransaction(

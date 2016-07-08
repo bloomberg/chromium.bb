@@ -20,7 +20,7 @@ namespace {
 
 class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
  public:
-  HeaderVisitor(ServiceWorkerHeaderMap* headers) : headers_(headers) {}
+  explicit HeaderVisitor(ServiceWorkerHeaderMap* headers) : headers_(headers) {}
   virtual ~HeaderVisitor() {}
 
   void visitHeader(const blink::WebString& name,
@@ -35,7 +35,7 @@ class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
   }
 
  private:
-  ServiceWorkerHeaderMap* headers_;
+  ServiceWorkerHeaderMap* const headers_;
 };
 
 std::unique_ptr<HeaderVisitor> MakeHeaderVisitor(
@@ -49,7 +49,7 @@ void GetServiceWorkerHeaderMapFromWebRequest(
     const blink::WebServiceWorkerRequest& web_request,
     ServiceWorkerHeaderMap* headers) {
   DCHECK(headers);
-  DCHECK(!headers->size());
+  DCHECK(headers->empty());
   web_request.visitHTTPHeaderFields(MakeHeaderVisitor(headers).get());
 }
 
@@ -57,7 +57,7 @@ void GetServiceWorkerHeaderMapFromWebResponse(
     const blink::WebServiceWorkerResponse& web_response,
     ServiceWorkerHeaderMap* headers) {
   DCHECK(headers);
-  DCHECK(!headers->size());
+  DCHECK(headers->empty());
   web_response.visitHTTPHeaderFields(MakeHeaderVisitor(headers).get());
 }
 

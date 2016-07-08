@@ -233,23 +233,18 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
   std::vector<PP_FileType> file_types;
   if (error == base::File::FILE_OK && fs_host_.get()) {
     std::string dir_path = path_;
-    if (dir_path.empty() || dir_path[dir_path.size() - 1] != '/')
+    if (dir_path.empty() || dir_path.back() != '/')
       dir_path += '/';
 
-    for (storage::FileSystemOperation::FileEntryList::const_iterator it =
-             accumulated_file_list->begin();
-         it != accumulated_file_list->end();
-         ++it) {
-      if (it->is_directory)
-        file_types.push_back(PP_FILETYPE_DIRECTORY);
-      else
-        file_types.push_back(PP_FILETYPE_REGULAR);
+    for (const auto& it : *accumulated_file_list) {
+      file_types.push_back(it.is_directory ? PP_FILETYPE_DIRECTORY
+                                           : PP_FILETYPE_REGULAR);
 
       ppapi::FileRefCreateInfo info;
       info.file_system_type = fs_type_;
       info.file_system_plugin_resource = fs_host_->pp_resource();
       std::string path =
-          dir_path + storage::FilePathToString(base::FilePath(it->name));
+          dir_path + storage::FilePathToString(base::FilePath(it.name));
       info.internal_path = path;
       info.display_name = ppapi::GetNameForInternalFilePath(path);
       infos.push_back(info);

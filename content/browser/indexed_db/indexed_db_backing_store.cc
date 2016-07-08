@@ -1396,7 +1396,7 @@ static leveldb::Status DeleteBlobsInRange(
     StringPiece key_piece(it->Key());
     std::string user_key =
         BlobEntryKey::ReencodeToObjectStoreDataKey(&key_piece);
-    if (!user_key.size()) {
+    if (user_key.empty()) {
       INTERNAL_CONSISTENCY_ERROR_UNTESTED(GET_IDBDATABASE_METADATA);
       return InternalInconsistencyStatus();
     }
@@ -1936,7 +1936,7 @@ leveldb::Status IndexedDBBackingStore::PutRecord(
                                        handles);
   if (!s.ok())
     return s;
-  DCHECK(!handles->size());
+  DCHECK(handles->empty());
 
   const std::string exists_entry_key =
       ExistsEntryKey::Encode(database_id, object_store_id, key);
@@ -2180,7 +2180,7 @@ leveldb::Status IndexedDBBackingStore::KeyExistsInObjectStore(
   }
   if (!*found)
     return leveldb::Status::OK();
-  if (!data.size()) {
+  if (data.empty()) {
     INTERNAL_READ_ERROR_UNTESTED(KEY_EXISTS_IN_OBJECT_STORE);
     return InternalInconsistencyStatus();
   }
@@ -3044,7 +3044,7 @@ leveldb::Status IndexedDBBackingStore::GetPrimaryKeyViaIndex(
   }
   if (!found)
     return s;
-  if (!found_encoded_primary_key.size()) {
+  if (found_encoded_primary_key.empty()) {
     INTERNAL_READ_ERROR_UNTESTED(GET_PRIMARY_KEY_VIA_INDEX);
     return InvalidDBKeyStatus();
   }
@@ -3606,7 +3606,7 @@ bool IndexKeyCursorImpl::LoadCurrentRow(leveldb::Status* s) {
     transaction_->transaction()->Remove(iterator_->Key());
     return false;
   }
-  if (!result.size()) {
+  if (result.empty()) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
@@ -3723,7 +3723,7 @@ bool IndexCursorImpl::LoadCurrentRow(leveldb::Status* s) {
     transaction_->transaction()->Remove(iterator_->Key());
     return false;
   }
-  if (!result.size()) {
+  if (result.empty()) {
     INTERNAL_READ_ERROR_UNTESTED(LOAD_CURRENT_ROW);
     return false;
   }
@@ -4165,7 +4165,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
     return s;
   }
 
-  DCHECK(!new_files_to_write.size() ||
+  DCHECK(new_files_to_write.empty() ||
          KeyPrefix::IsValidDatabaseId(database_id_));
   if (!CollectBlobFilesToRemove()) {
     INTERNAL_WRITE_ERROR_UNTESTED(TRANSACTION_COMMIT_METHOD);
@@ -4444,7 +4444,7 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
   DCHECK_EQ(record->object_store_id(), object_store_id);
   record->SetBlobInfo(blob_info);
   record->SetHandles(handles);
-  DCHECK(!handles || !handles->size());
+  DCHECK(!handles || handles->empty());
 }
 
 IndexedDBBackingStore::Transaction::WriteDescriptor::WriteDescriptor(

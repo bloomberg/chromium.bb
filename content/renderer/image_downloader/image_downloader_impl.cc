@@ -78,7 +78,7 @@ void FilterAndResizeImagesForMaximalSize(
   images->clear();
   original_image_sizes->clear();
 
-  if (!unfiltered.size())
+  if (unfiltered.empty())
     return;
 
   if (max_image_size == 0)

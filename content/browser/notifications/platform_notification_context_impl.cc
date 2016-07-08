@@ -69,7 +69,7 @@ void PlatformNotificationContextImpl::Initialize() {
     // persistent notification ids are stable. For M44 we need to support the
     // case where there may be no notifications after a Chrome restart.
     if (notification_synchronization_supported &&
-        !displayed_notifications.size()) {
+        displayed_notifications.empty()) {
       prune_database_on_open_ = true;
     }
   }

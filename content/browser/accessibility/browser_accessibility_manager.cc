@@ -517,9 +517,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
 
 bool BrowserAccessibilityManager::NativeViewHasFocus() {
   BrowserAccessibilityDelegate* delegate = GetDelegateFromRootManager();
-  if (delegate)
-    return delegate->AccessibilityViewHasFocus();
-  return false;
+  return delegate && delegate->AccessibilityViewHasFocus();
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus() {
@@ -530,7 +528,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus() {
 
   BrowserAccessibilityManager* focused_manager = nullptr;
   if (focused_tree_id)
-    focused_manager =BrowserAccessibilityManager::FromID(focused_tree_id);
+    focused_manager = BrowserAccessibilityManager::FromID(focused_tree_id);
 
   // BrowserAccessibilityManager::FromID(focused_tree_id) may return nullptr
   // if the tree is not created or has been destroyed.
@@ -853,8 +851,7 @@ base::string16 BrowserAccessibilityManager::GetTextForRange(
     text += text_only_objects[i]->GetText();
   }
 
-  const BrowserAccessibility* end_text_object =
-      text_only_objects[text_only_objects.size() - 1];
+  const BrowserAccessibility* end_text_object = text_only_objects.back();
   if (end_offset <= static_cast<int>(end_text_object->GetText().length())) {
     text += end_text_object->GetText().substr(0, end_offset);
   } else {

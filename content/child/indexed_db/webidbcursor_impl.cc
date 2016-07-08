@@ -186,7 +186,7 @@ void WebIDBCursorImpl::ResetPrefetchCache() {
   continue_count_ = 0;
   prefetch_amount_ = kMinPrefetchAmount;
 
-  if (!prefetch_keys_.size()) {
+  if (prefetch_keys_.empty()) {
     // No prefetch cache, so no need to reset the cursor in the back-end.
     return;
   }

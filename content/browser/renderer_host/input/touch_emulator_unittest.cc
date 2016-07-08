@@ -219,7 +219,7 @@ class TouchEmulatorTest : public testing::Test,
 
     if (ack) {
       // Can't send ack if there are some pending acks.
-      DCHECK(!touch_events_to_ack_.size());
+      DCHECK(touch_events_to_ack_.empty());
 
       // Touch event is forwarded, ack should not be handled by emulator.
       EXPECT_FALSE(emulator()->HandleTouchEventAck(

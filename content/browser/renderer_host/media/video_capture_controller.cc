@@ -179,7 +179,7 @@ void VideoCaptureController::AddClient(
   }
 
   // If this is the first client added to the controller, cache the parameters.
-  if (!controller_clients_.size())
+  if (controller_clients_.empty())
     video_capture_format_ = params.requested_format;
 
   // Signal error in case device is already in error state.

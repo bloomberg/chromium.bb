@@ -39,10 +39,10 @@ const PepperPluginInfo* PepperPluginRegistry::GetInfoForPlugin(
   // PluginService.
   PepperPluginInfo plugin;
   if (!MakePepperPluginInfo(info, &plugin))
-    return NULL;
+    return nullptr;
 
   plugin_list_.push_back(plugin);
-  return &plugin_list_[plugin_list_.size() - 1];
+  return &plugin_list_.back();
 }
 
 PluginModule* PepperPluginRegistry::GetLiveModule(const base::FilePath& path) {

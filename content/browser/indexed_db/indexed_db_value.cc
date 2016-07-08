@@ -13,7 +13,7 @@ IndexedDBValue::IndexedDBValue(
     const std::string& input_bits,
     const std::vector<IndexedDBBlobInfo>& input_blob_info)
     : bits(input_bits), blob_info(input_blob_info) {
-  DCHECK(!input_blob_info.size() || input_bits.size());
+  DCHECK(input_blob_info.empty() || input_bits.size());
 }
 IndexedDBValue::IndexedDBValue(const IndexedDBValue& other) = default;
 IndexedDBValue::~IndexedDBValue() = default;

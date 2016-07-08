@@ -961,7 +961,7 @@ void RenderWidgetHostViewAndroid::ReturnResources(
     return;
   std::copy(resources.begin(), resources.end(),
             std::back_inserter(surface_returned_resources_));
-  if (!ack_callbacks_.size())
+  if (ack_callbacks_.empty())
     SendReturnedDelegatedResources(last_output_surface_id_);
 }
 

@@ -334,15 +334,10 @@ void PluginServiceImpl::RegisterPepperPlugins() {
 // There should generally be very few plugins so a brute-force search is fine.
 PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
     const base::FilePath& plugin_path) {
-  PepperPluginInfo* info = NULL;
   for (size_t i = 0; i < ppapi_plugins_.size(); ++i) {
-    if (ppapi_plugins_[i].path == plugin_path) {
-      info = &ppapi_plugins_[i];
-      break;
-    }
+    if (ppapi_plugins_[i].path == plugin_path)
+      return &ppapi_plugins_[i];
   }
-  if (info)
-    return info;
   // We did not find the plugin in our list. But wait! the plugin can also
   // be a latecomer, as it happens with pepper flash. This information
   // can be obtained from the PluginList singleton and we can use it to
@@ -350,12 +345,12 @@ PepperPluginInfo* PluginServiceImpl::GetRegisteredPpapiPluginInfo(
   // in the renderer side in PepperPluginRegistry.
   WebPluginInfo webplugin_info;
   if (!GetPluginInfoByPath(plugin_path, &webplugin_info))
-    return NULL;
+    return nullptr;
   PepperPluginInfo new_pepper_info;
   if (!MakePepperPluginInfo(webplugin_info, &new_pepper_info))
-    return NULL;
+    return nullptr;
   ppapi_plugins_.push_back(new_pepper_info);
-  return &ppapi_plugins_[ppapi_plugins_.size() - 1];
+  return &ppapi_plugins_.back();
 }
 
 void PluginServiceImpl::SetFilter(PluginServiceFilter* filter) {

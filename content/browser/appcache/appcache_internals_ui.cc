@@ -265,7 +265,7 @@ void AppCacheInternalsUI::Proxy::RequestFileDetails(
 }
 
 void AppCacheInternalsUI::Proxy::HandleFileDetailsRequest() {
-  if (preparing_response_ || !response_enquiries_.size() || !appcache_service_)
+  if (preparing_response_ || response_enquiries_.empty() || !appcache_service_)
     return;
   preparing_response_ = true;
   appcache_service_->storage()->LoadResponseInfo(

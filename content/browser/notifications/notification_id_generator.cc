@@ -105,7 +105,7 @@ std::string NotificationIdGenerator::GenerateForNonPersistentNotification(
   // tag is being used. Tags still identify uniqueness for the given origin.
 
   stream << base::IntToString(!tag.empty());
-  if (!tag.size()) {
+  if (tag.empty()) {
     stream << base::IntToString(render_process_id_);
     stream << kSeparator;
 
