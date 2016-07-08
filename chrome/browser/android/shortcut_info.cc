@@ -35,6 +35,9 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   if (manifest.start_url.is_valid())
     url = manifest.start_url;
 
+  if (manifest.scope.is_valid())
+    scope = manifest.scope;
+
   // Set the display based on the manifest value, if any.
   if (manifest.display != blink::WebDisplayModeUndefined)
     display = manifest.display;

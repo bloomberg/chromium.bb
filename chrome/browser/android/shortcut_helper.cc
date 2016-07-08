@@ -72,6 +72,8 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       base::android::ConvertUTF8ToJavaString(env, webapp_id);
   ScopedJavaLocalRef<jstring> java_url =
       base::android::ConvertUTF8ToJavaString(env, info.url.spec());
+  ScopedJavaLocalRef<jstring> java_scope_url =
+      base::android::ConvertUTF8ToJavaString(env, info.scope.spec());
   ScopedJavaLocalRef<jstring> java_user_title =
       base::android::ConvertUTF16ToJavaString(env, info.user_title);
   ScopedJavaLocalRef<jstring> java_name =
@@ -102,6 +104,7 @@ void ShortcutHelper::AddShortcutInBackgroundWithSkBitmap(
       env,
       java_webapp_id.obj(),
       java_url.obj(),
+      java_scope_url.obj(),
       java_user_title.obj(),
       java_name.obj(),
       java_short_name.obj(),

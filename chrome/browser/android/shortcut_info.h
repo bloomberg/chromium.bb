@@ -42,6 +42,7 @@ struct ShortcutInfo {
 
   GURL manifest_url;
   GURL url;
+  GURL scope;
   base::string16 user_title;
   base::string16 name;
   base::string16 short_name;
