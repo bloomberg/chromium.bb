@@ -85,18 +85,8 @@ Polymer({
     toolbar.count = 0;
   },
 
-  /**
-   * Listens for call to delete all selected items and loops through all items
-   * to determine which ones are selected and deletes these.
-   */
   deleteSelected: function() {
-    if (!loadTimeData.getBoolean('allowDeletingHistory'))
-      return;
-
-    // TODO(hsampson): add a popup to check whether the user definitely
-    // wants to delete the selected items.
-    /** @type {HistoryListContainerElement} */ (this.$['history'])
-        .deleteSelected();
+    this.$.history.deleteSelectedWithPrompt();
   },
 
   /**

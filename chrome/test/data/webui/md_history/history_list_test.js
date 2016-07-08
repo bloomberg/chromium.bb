@@ -196,6 +196,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('delete items end to end', function(done) {
+        var listContainer = app.$.history;
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
         flush().then(function() {
@@ -216,11 +217,17 @@ cr.define('md_history.history_list_test', function() {
                            '2016-03-13');
               assertEquals(element.historyData_[4].dateRelativeDay,
                            '2016-03-11');
+              assertFalse(listContainer.$.dialog.opened);
               done();
             });
           });
 
           MockInteractions.tap(app.$.toolbar.$$('#delete-button'));
+
+          // Confirmation dialog should appear.
+          assertTrue(listContainer.$.dialog.opened);
+
+          MockInteractions.tap(listContainer.$$('.action-button'));
         });
       });
 

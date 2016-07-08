@@ -101,13 +101,8 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("clearAllHistory",
                              IDS_HISTORY_OPEN_CLEAR_BROWSING_DATA_DIALOG);
 
-  auto availability = IncognitoModePrefs::GetAvailability(profile->GetPrefs());
-  base::string16 delete_warning = availability == IncognitoModePrefs::ENABLED ?
-      l10n_util::GetStringFUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
-                                 base::UTF8ToUTF16(kIncognitoModeShortcut)) :
-      l10n_util::GetStringUTF16(
-          IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING_NO_INCOGNITO);
-  source->AddString("deleteWarning", delete_warning);
+  source->AddString("deleteWarning",
+                    HistoryUI::GetDeleteWarningString(profile));
 
   source->AddLocalizedString("removeBookmark", IDS_HISTORY_REMOVE_BOOKMARK);
   source->AddLocalizedString("actionMenuDescription",
@@ -203,4 +198,15 @@ base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_HISTORY_FAVICON, scale_factor);
+}
+
+// static
+base::string16 HistoryUI::GetDeleteWarningString(Profile* profile) {
+  auto availability = IncognitoModePrefs::GetAvailability(profile->GetPrefs());
+  return availability == IncognitoModePrefs::ENABLED
+             ? l10n_util::GetStringFUTF16(
+                   IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
+                   base::UTF8ToUTF16(kIncognitoModeShortcut))
+             : l10n_util::GetStringUTF16(
+                   IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING_NO_INCOGNITO);
 }

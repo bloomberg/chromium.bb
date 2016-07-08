@@ -189,7 +189,9 @@ Polymer({
 
   /**
    * Performs a request to the backend to delete all selected items. If
-   * successful, removes them from the view.
+   * successful, removes them from the view. Does not prompt the user before
+   * deleting -- see <history-list-container> for a version of this method which
+   * does prompt.
    */
   deleteSelected: function() {
     var toBeRemoved = this.historyData_.filter(function(item) {

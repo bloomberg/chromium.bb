@@ -1,11 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://history/grouped_list.html">
 <link rel="import" href="chrome://history/history_list.html">
 
 <dom-module id="history-list-container">
   <template>
-    <style>
+    <style include="cr-shared-style">
       :host {
         display: block;
         height: 100%;
@@ -15,6 +17,10 @@
       #content,
       #content > * {
         height: 100%;
+      }
+
+      #dialog .body {
+        white-space: pre-wrap;
       }
     </style>
     <iron-pages id="content" attr-for-selected="id"
@@ -29,8 +35,21 @@
             searched-term="[[queryResult.info.term]]">
         </history-grouped-list>
       </template>
-      </template>
     </iron-pages>
+
+    <cr-dialog id="dialog">
+      <div class="title">$i18n{removeSelected}</div>
+      <div class="body">$i18n{deleteWarning}</div>
+      <div class="button-container">
+        <paper-button class="cancel-button" on-tap="onDialogCancelTap_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button class="action-button" on-tap="onDialogConfirmTap_"
+            autofocus>
+          $i18n{deleteConfirm}
+        </paper-button>
+      </div>
+    </cr-dialog>
   </template>
   <script src="chrome://history/list_container.js"></script>
 </dom-module>

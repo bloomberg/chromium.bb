@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/browsing_history_handler.h"
 #include "chrome/browser/ui/webui/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/history_login_handler.h"
+#include "chrome/browser/ui/webui/history_ui.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/people_handler.h"
 #include "chrome/common/chrome_features.h"
@@ -43,6 +44,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                              IDS_CLEAR_BROWSING_DATA_TITLE);
   source->AddLocalizedString("clearSearch", IDS_MD_HISTORY_CLEAR_SEARCH);
   source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
+  source->AddLocalizedString("deleteConfirm",
+                             IDS_HISTORY_DELETE_PRIOR_VISITS_CONFIRM_BUTTON);
   source->AddLocalizedString("foundSearchResults",
                              IDS_HISTORY_FOUND_SEARCH_RESULTS);
   source->AddLocalizedString("historyInterval", IDS_HISTORY_INTERVAL);
@@ -68,6 +71,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("rangePrevious", IDS_HISTORY_RANGE_PREVIOUS);
   source->AddLocalizedString("removeBookmark", IDS_HISTORY_REMOVE_BOOKMARK);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
+  source->AddLocalizedString("removeSelected",
+                             IDS_HISTORY_REMOVE_SELECTED_ITEMS);
   source->AddLocalizedString("searchPrompt", IDS_MD_HISTORY_SEARCH_PROMPT);
   source->AddLocalizedString("searchResult", IDS_HISTORY_SEARCH_RESULT);
   source->AddLocalizedString("searchResults", IDS_HISTORY_SEARCH_RESULTS);
@@ -76,6 +81,9 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("signInPromoDesc",
                              IDS_MD_HISTORY_SIGN_IN_PROMO_DESC);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
+
+  source->AddString("deleteWarning",
+                    HistoryUI::GetDeleteWarningString(profile));
 
   bool allow_deleting_history =
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);

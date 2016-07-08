@@ -9,6 +9,8 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
+class Profile;
+
 namespace base {
 class RefCountedMemory;
 }
@@ -20,6 +22,10 @@ class HistoryUI : public content::WebUIController {
 
   static base::RefCountedMemory* GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor);
+
+  // Returns a localized string warning about deleting history. Takes into
+  // account whether or not incognito mode is available.
+  static base::string16 GetDeleteWarningString(Profile* profile);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryUI);

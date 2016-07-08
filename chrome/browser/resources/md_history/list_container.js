@@ -83,9 +83,15 @@ Polymer({
         .unselectAllItems(count);
   },
 
-  deleteSelected: function() {
-    /** @type {HistoryListElement} */ (this.$['infinite-list'])
-        .deleteSelected();
+  /**
+   * Delete all the currently selected history items. Will prompt the user with
+   * a dialog to confirm that the deletion should be performed.
+   */
+  deleteSelectedWithPrompt: function() {
+    if (!loadTimeData.getBoolean('allowDeletingHistory'))
+      return;
+
+    this.$.dialog.open();
   },
 
   /**
@@ -131,4 +137,15 @@ Polymer({
       }
     }
   },
+
+  /** @private */
+  onDialogConfirmTap_: function() {
+    this.$['infinite-list'].deleteSelected();
+    this.$.dialog.close();
+  },
+
+  /** @private */
+  onDialogCancelTap_: function() {
+    this.$.dialog.close();
+  }
 });
