@@ -15,10 +15,19 @@
 
 namespace media {
 
+namespace {
+
+void LogDXVAError(int line) {
+  LOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
+}
+
+}  // namespace
+
 #define RETURN_ON_FAILURE(result, log, ret) \
   do {                                      \
     if (!(result)) {                        \
       DLOG(ERROR) << log;                   \
+      LogDXVAError(__LINE__);               \
       return ret;                           \
     }                                       \
   } while (0)

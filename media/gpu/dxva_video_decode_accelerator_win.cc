@@ -218,6 +218,11 @@ class MediaBufferScopedPointer {
   DISALLOW_COPY_AND_ASSIGN(MediaBufferScopedPointer);
 };
 
+void LogDXVAError(int line) {
+  LOG(ERROR) << "Error in dxva_video_decode_accelerator_win.cc on line "
+             << line;
+}
+
 }  // namespace
 
 namespace media {
@@ -234,6 +239,7 @@ CreateDXGIDeviceManager
   do {                                      \
     if (!(result)) {                        \
       DLOG(ERROR) << log;                   \
+      LogDXVAError(__LINE__);               \
       return ret;                           \
     }                                       \
   } while (0)
@@ -246,6 +252,7 @@ CreateDXGIDeviceManager
   do {                                                             \
     if (!(result)) {                                               \
       DVLOG(1) << log;                                             \
+      LogDXVAError(__LINE__);                                      \
       StopOnError(error_code);                                     \
       return ret;                                                  \
     }                                                              \
