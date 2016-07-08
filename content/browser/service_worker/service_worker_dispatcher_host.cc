@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -83,6 +84,52 @@ bool CanGetRegistration(const GURL& document_url,
   return document_url.GetOrigin() == given_document_url.GetOrigin() &&
          OriginCanAccessServiceWorkers(document_url) &&
          OriginCanAccessServiceWorkers(given_document_url);
+}
+
+std::string GetIPCMessageTypeAsString(uint32_t type) {
+  switch (type) {
+    case ServiceWorkerHostMsg_InstallEventFinished::ID:
+      return "ServiceWorkerHostMsg_InstallEventFinished";
+    case ServiceWorkerHostMsg_ActivateEventFinished::ID:
+      return "ServiceWorkerHostMsg_ActivateEventFinished";
+    case ServiceWorkerHostMsg_ExtendableMessageEventFinished::ID:
+      return "ServiceWorkerHostMsg_ExtendableMessageEventFinished";
+    case ServiceWorkerHostMsg_FetchEventResponse::ID:
+      return "ServiceWorkerHostMsg_FetchEventResponse";
+    case ServiceWorkerHostMsg_FetchEventFinished::ID:
+      return "ServiceWorkerHostMsg_FetchEventFinished";
+    case ServiceWorkerHostMsg_NotificationClickEventFinished::ID:
+      return "ServiceWorkerHostMsg_NotificationClickEventFinished";
+    case ServiceWorkerHostMsg_NotificationCloseEventFinished::ID:
+      return "ServiceWorkerHostMsg_NotificationCloseEventFinished";
+    case ServiceWorkerHostMsg_PushEventFinished::ID:
+      return "ServiceWorkerHostMsg_PushEventFinished";
+    case ServiceWorkerHostMsg_Pong::ID:
+      return "ServiceWorkerHostMsg_Pong";
+    case ServiceWorkerHostMsg_GetClient::ID:
+      return "ServiceWorkerHostMsg_GetClient";
+    case ServiceWorkerHostMsg_GetClients::ID:
+      return "ServiceWorkerHostMsg_GetClients";
+    case ServiceWorkerHostMsg_PostMessageToClient::ID:
+      return "ServiceWorkerHostMsg_PostMessageToClient";
+    case ServiceWorkerHostMsg_SetCachedMetadata::ID:
+      return "ServiceWorkerHostMsg_SetCachedMetadata";
+    case ServiceWorkerHostMsg_ClearCachedMetadata::ID:
+      return "ServiceWorkerHostMsg_ClearCachedMetadata";
+    case ServiceWorkerHostMsg_OpenWindow::ID:
+      return "ServiceWorkerHostMsg_OpenWindow";
+    case ServiceWorkerHostMsg_FocusClient::ID:
+      return "ServiceWorkerHostMsg_FocusClient";
+    case ServiceWorkerHostMsg_NavigateClient::ID:
+      return "ServiceWorkerHostMsg_NavigateClient";
+    case ServiceWorkerHostMsg_SkipWaiting::ID:
+      return "ServiceWorkerHostMsg_SkipWaiting";
+    case ServiceWorkerHostMsg_ClaimClients::ID:
+      return "ServiceWorkerHostMsg_ClaimClients";
+    case ServiceWorkerHostMsg_RegisterForeignFetchScopes::ID:
+      return "ServiceWorkerHostMsg_RegisterForeignFetchScopes";
+  }
+  return "Unknown";
 }
 
 }  // namespace
@@ -207,8 +254,18 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
   if (!handled && GetContext()) {
     handled = GetContext()->embedded_worker_registry()->OnMessageReceived(
         message, render_process_id_);
-    if (!handled)
+    if (!handled) {
+      // Temporary debugging for https://crbug.com/625040
+      EmbeddedWorkerInstance* worker =
+          GetContext()->embedded_worker_registry()->GetWorkerForMessage(
+              render_process_id_, message.routing_id());
+      base::debug::ScopedCrashKey("swdh_not_handled_message_type",
+                                  GetIPCMessageTypeAsString(message.type()));
+      base::debug::ScopedCrashKey(
+          "swdh_not_handled_worker_status",
+          EmbeddedWorkerInstance::StatusToString(worker->status()));
       bad_message::ReceivedBadMessage(this, bad_message::SWDH_NOT_HANDLED);
+    }
   }
 
   return handled;

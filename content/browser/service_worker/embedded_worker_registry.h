@@ -111,6 +111,9 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   friend class base::RefCounted<EmbeddedWorkerRegistry>;
   friend class EmbeddedWorkerInstance;
   friend class EmbeddedWorkerInstanceTest;
+  // TODO(falken): For temporary debugging. Remove when https://crbug.com/625040
+  // is fixed.
+  friend class ServiceWorkerDispatcherHost;
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest,
                            RemoveWorkerInSharedProcess);
 

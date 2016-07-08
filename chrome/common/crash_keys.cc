@@ -202,6 +202,10 @@ size_t RegisterChromeCrashKeys() {
 
     // Temporary for https://crbug.com/616149.
     { "existing_extension_pref_value_type", crash_keys::kSmallSize },
+
+    // Temporary for https://crbug.com/625040
+    { "swdh_not_handled_message_type", crash_keys::kMediumSize },
+    { "swdh_not_handled_worker_status", crash_keys::kMediumSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
