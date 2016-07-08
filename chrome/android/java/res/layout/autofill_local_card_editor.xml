@@ -3,18 +3,17 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<!-- EditText views in FloatLabelLayout require both hint and contentDescription to be set
+     to work correctly for accessibility because FloatLabelLayout sometimes clear hint. -->
+<!--suppress ContentDescription -->
 <merge
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- Name -->
     <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/credit_card_name_label"
-        android:labelFor="@+id/credit_card_name_edit"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/pref_autofill_content_spacing">
-
+        android:layout_height="wrap_content">
         <EditText
             android:id="@+id/credit_card_name_edit"
             android:layout_width="match_parent"
@@ -22,17 +21,12 @@
             android:imeOptions="flagNoExtractUi"
             android:inputType="textCapWords"
             android:hint="@string/autofill_credit_card_editor_name" />
-
     </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
 
-    <!-- Credit card number -->
     <org.chromium.chrome.browser.widget.CompatibilityTextInputLayout
         android:id="@+id/credit_card_number_label"
-        android:labelFor="@+id/credit_card_number_edit"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/pref_autofill_content_spacing">
-
+        android:layout_height="wrap_content">
         <EditText
             android:id="@+id/credit_card_number_edit"
             android:layout_width="match_parent"
@@ -41,17 +35,15 @@
             android:inputType="phone"
             android:digits="0123456789- "
             android:hint="@string/autofill_credit_card_editor_number" />
-
     </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>
 
-    <!-- Expiration date -->
     <TextView
         android:id="@+id/credit_card_expiration_label"
-        android:labelFor="@+id/credit_card_expiration_month"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
         android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
+        android:focusable="true"
         android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
         android:text="@string/autofill_credit_card_editor_expiration_date" />
 
@@ -59,20 +51,18 @@
         android:id="@+id/credit_card_expiration_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/pref_autofill_field_top_margin"
-        android:layout_marginBottom="@dimen/pref_autofill_content_spacing"
         android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
         android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
         android:orientation="horizontal"
+        android:paddingTop="8dp"
         android:baselineAligned="false">
 
         <LinearLayout
-            android:id="@+id/credit_card_expiration_month"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginEnd="@dimen/payments_section_large_spacing"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginEnd="@dimen/payments_section_large_spacing">
 
             <android.support.v7.widget.AppCompatSpinner
                 android:id="@+id/autofill_credit_card_editor_month_spinner"
@@ -88,14 +78,11 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
-
-            <android.support.v7.widget.AppCompatSpinner
-                android:id="@+id/autofill_credit_card_editor_year_spinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <View style="@style/PreferenceSpinnerUnderlineView"  />
-
+              <android.support.v7.widget.AppCompatSpinner
+                  android:id="@+id/autofill_credit_card_editor_year_spinner"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content" />
+              <View style="@style/PreferenceSpinnerUnderlineView" />
         </LinearLayout>
     </LinearLayout>
 

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -28,7 +30,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -212,7 +213,15 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((Spinner) mUI.getEditorView().findViewById(R.id.spinner)).setSelection(selection);
+                ViewGroup contents = (ViewGroup) mUI.getEditorView().findViewById(R.id.contents);
+                assertNotNull(contents);
+                for (int i = 0; i < contents.getChildCount(); i++) {
+                    View view = contents.getChildAt(i);
+                    if (view instanceof Spinner) {
+                        ((Spinner) view).setSelection(selection);
+                        return;
+                    }
+                }
             }
         });
         helper.waitForCallback(callCount);
@@ -225,9 +234,13 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                List<EditorTextField> fields = mUI.getEditorView().getEditorTextFields();
-                for (int i = 0; i < values.length; i++) {
-                    fields.get(i).getEditText().setText(values[i]);
+                ViewGroup contents = (ViewGroup) mUI.getEditorView().findViewById(R.id.contents);
+                assertNotNull(contents);
+                for (int i = 0, j = 0; i < contents.getChildCount() && j < values.length; i++) {
+                    View view = contents.getChildAt(i);
+                    if (view instanceof EditorTextField) {
+                        ((EditorTextField) view).getEditText().setText(values[j++]);
+                    }
                 }
             }
         });

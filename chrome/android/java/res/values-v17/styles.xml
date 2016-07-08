@@ -97,7 +97,7 @@
         <item name="floatLabelTextAppearance">@style/PreferenceFloatLabelTextAppearance</item>
         <item name="floatLabelPaddingLeft">@dimen/pref_autofill_field_horizontal_padding</item>
         <item name="floatLabelPaddingRight">@dimen/pref_autofill_field_horizontal_padding</item>
-        <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_margin</item>
+        <item name="floatLabelPaddingTop">@dimen/pref_autofill_field_top_padding</item>
     </style>
     <style name="PreferenceTextAppearanceMedium">
         <item name="android:textSize">18sp</item>
@@ -133,8 +133,8 @@
         
         <!-- Additional padding is applied to each of the controls inside the layout, making this
              a 16dp padding overall. -->
-        <item name="android:paddingStart">@dimen/pref_autofill_content_spacing</item>
-        <item name="android:paddingEnd">@dimen/pref_autofill_content_spacing</item>
+        <item name="android:paddingStart">@dimen/pref_autofill_content_padding</item>
+        <item name="android:paddingEnd">@dimen/pref_autofill_content_padding</item>
     </style>
     <style name="PreferenceLayoutBase">
         <item name="android:background">?android:attr/activatedBackgroundIndicator</item>

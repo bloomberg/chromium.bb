@@ -26,7 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
@@ -59,14 +58,10 @@ public class EditorView extends AlwaysDismissedDialog
     private final Handler mHandler;
     private final AsyncTask<Void, Void, PhoneNumberFormattingTextWatcher> mPhoneFormatterTask;
     private final TextView.OnEditorActionListener mEditorActionListener;
-    private final int mHalfRowMargin;
-    private final List<EditorTextField> mEditorTextFields;
 
     private ViewGroup mLayout;
     private EditorModel mEditorModel;
     private Button mDoneButton;
-    private ViewGroup mDataView;
-    private View mFooter;
     @Nullable private AutoCompleteTextView mPhoneInput;
 
     /**
@@ -103,10 +98,6 @@ public class EditorView extends AlwaysDismissedDialog
                 return false;
             }
         };
-
-        mHalfRowMargin = activity.getResources().getDimensionPixelSize(
-                R.dimen.payments_section_large_spacing);
-        mEditorTextFields = new ArrayList<>();
     }
 
     /** Launches the Autofill help page on top of the current Context. */
@@ -166,19 +157,21 @@ public class EditorView extends AlwaysDismissedDialog
      */
     private boolean validateForm() {
         final List<EditorTextField> invalidViews = getViewsWithInvalidInformation();
+        if (invalidViews.isEmpty()) return true;
 
         // Focus the first field that's invalid.
-        if (!invalidViews.isEmpty() && !invalidViews.contains(getCurrentFocus())) {
-            focusInputField(invalidViews.get(0));
-        }
+        if (!invalidViews.contains(getCurrentFocus())) focusInputField(invalidViews.get(0));
 
         // Iterate over all the fields to update what errors are displayed, which is necessary to
         // to clear existing errors on any newly valid fields.
-        for (int i = 0; i < mEditorTextFields.size(); i++) {
-            EditorTextField fieldView = mEditorTextFields.get(i);
+        ViewGroup dataView = (ViewGroup) mLayout.findViewById(R.id.contents);
+        for (int i = 0; i < dataView.getChildCount(); i++) {
+            if (!(dataView.getChildAt(i) instanceof EditorTextField)) continue;
+            EditorTextField fieldView = (EditorTextField) dataView.getChildAt(i);
             fieldView.updateDisplayedError(invalidViews.contains(fieldView));
         }
-        return invalidViews.isEmpty();
+
+        return false;
     }
 
     @Override
@@ -217,88 +210,47 @@ public class EditorView extends AlwaysDismissedDialog
     /**
      * Create the visual representation of the EditorModel.
      *
-     * This would be more optimal as a RelativeLayout, but because it's dynamically generated, it's
-     * much more human-parsable with inefficient LinearLayouts for half-width controls sharing rows.
+     * Fields are added to the layout at position |getChildCount() - 1| to account for the
+     * additional TextView that says "* indicates required field" at the bottom of the layout.
+     *
+     * TODO(rouslan): Put views side by side if !fieldModel.isFullLine();
      */
     private void prepareEditor() {
-        // Ensure the layout is empty.
-        mDataView = (ViewGroup) mLayout.findViewById(R.id.contents);
-        mDataView.removeAllViews();
-        mEditorTextFields.clear();
-
-        // Add Views for each of the {@link EditorFields}.
+        final ViewGroup dataView = (ViewGroup) mLayout.findViewById(R.id.contents);
         for (int i = 0; i < mEditorModel.getFields().size(); i++) {
-            EditorFieldModel fieldModel = mEditorModel.getFields().get(i);
-            EditorFieldModel nextFieldModel = null;
+            final EditorFieldModel fieldModel = mEditorModel.getFields().get(i);
 
-            boolean isLastField = i == mEditorModel.getFields().size() - 1;
-            boolean useFullLine = fieldModel.isFullLine();
-            if (!isLastField && !useFullLine) {
-                // If the next field isn't full, stretch it out.
-                nextFieldModel = mEditorModel.getFields().get(i + 1);
-                if (nextFieldModel.isFullLine()) useFullLine = true;
-            }
+            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN) {
+                EditorDropdownField dropdownView = new EditorDropdownField(mContext, fieldModel,
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                removeTextChangedListenerFromPhoneInputField();
+                                // Do not remove the "* indicates required field" label at the
+                                // bottom.
+                                dataView.removeViews(0, dataView.getChildCount() - 1);
+                                prepareEditor();
+                                if (mObserverForTest != null) {
+                                    mObserverForTest.onPaymentRequestReadyToEdit();
+                                }
+                            }
+                        });
 
-            if (useFullLine) {
-                addFieldViewToEditor(mDataView, fieldModel);
+                dataView.addView(dropdownView.getLabel(), dataView.getChildCount() - 1);
+                dataView.addView(dropdownView.getDropdown(), dataView.getChildCount() - 1);
             } else {
-                // Create a LinearLayout to put it and the next view side by side.
-                LinearLayout rowLayout = new LinearLayout(mContext);
-                mDataView.addView(rowLayout);
+                EditorTextField inputLayout = new EditorTextField(mLayout.getContext(), fieldModel,
+                        mEditorActionListener, getPhoneFormatter(), mObserverForTest);
 
-                View firstView = addFieldViewToEditor(rowLayout, fieldModel);
-                View lastView = addFieldViewToEditor(rowLayout, nextFieldModel);
-
-                LinearLayout.LayoutParams firstParams =
-                        (LinearLayout.LayoutParams) firstView.getLayoutParams();
-                LinearLayout.LayoutParams lastParams =
-                        (LinearLayout.LayoutParams) lastView.getLayoutParams();
-
-                firstParams.width = 0;
-                firstParams.weight = 1;
-                firstParams.setMarginEnd(mHalfRowMargin);
-                lastParams.width = 0;
-                lastParams.weight = 1;
-                i = i + 1;
-            }
-        }
-
-        // Add the footer.
-        mDataView.addView(mFooter);
-    }
-
-    private View addFieldViewToEditor(ViewGroup parent, EditorFieldModel fieldModel) {
-        View childView = null;
-
-        if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN) {
-            Runnable prepareEditorRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    // The fields may have changed.
-                    prepareEditor();
-                    if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
+                final AutoCompleteTextView input = inputLayout.getEditText();
+                if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
+                    assert mPhoneInput == null;
+                    mPhoneInput = input;
                 }
-            };
-            EditorDropdownField dropdownView =
-                    new EditorDropdownField(mContext, fieldModel, prepareEditorRunnable);
 
-            childView = dropdownView.getLayout();
-        } else {
-            EditorTextField inputLayout = new EditorTextField(mLayout.getContext(), fieldModel,
-                    mEditorActionListener, getPhoneFormatter(), mObserverForTest);
-            mEditorTextFields.add(inputLayout);
-
-            final AutoCompleteTextView input = inputLayout.getEditText();
-            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
-                assert mPhoneInput == null;
-                mPhoneInput = input;
+                dataView.addView(inputLayout, dataView.getChildCount() - 1);
             }
-
-            childView = inputLayout;
         }
-
-        parent.addView(childView);
-        return childView;
     }
 
     /**
@@ -313,10 +265,6 @@ public class EditorView extends AlwaysDismissedDialog
         mLayout = (LinearLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.payment_request_editor, null);
         setContentView(mLayout);
-
-        mFooter = LayoutInflater.from(mContext).inflate(
-                R.layout.payment_request_editor_footer, null, false);
-
         prepareToolbar();
         prepareButtons();
         prepareEditor();
@@ -341,12 +289,6 @@ public class EditorView extends AlwaysDismissedDialog
         if (mObserverForTest != null) mObserverForTest.onPaymentRequestEditorDismissed();
     }
 
-    /** @return All the EditorTextFields that exist in the EditorView. */
-    @VisibleForTesting
-    public List<EditorTextField> getEditorTextFields() {
-        return mEditorTextFields;
-    }
-
     private void removeTextChangedListenerFromPhoneInputField() {
         if (mPhoneInput != null) mPhoneInput.removeTextChangedListener(getPhoneFormatter());
         mPhoneInput = null;
@@ -363,9 +305,14 @@ public class EditorView extends AlwaysDismissedDialog
     }
 
     private List<EditorTextField> getViewsWithInvalidInformation() {
+        ViewGroup container = (ViewGroup) findViewById(R.id.contents);
+
         List<EditorTextField> invalidViews = new ArrayList<>();
-        for (int i = 0; i < mEditorTextFields.size(); i++) {
-            EditorTextField fieldView = mEditorTextFields.get(i);
+        for (int i = 0; i < container.getChildCount(); i++) {
+            View layout = container.getChildAt(i);
+            if (!(layout instanceof EditorTextField)) continue;
+
+            EditorTextField fieldView = (EditorTextField) layout;
             if (!fieldView.getFieldModel().isValid()) invalidViews.add(fieldView);
         }
         return invalidViews;

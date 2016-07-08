@@ -31,9 +31,20 @@
             android:id="@+id/contents"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingStart="@dimen/pref_autofill_content_spacing"
-            android:paddingEnd="@dimen/pref_autofill_content_spacing"
-            android:orientation="vertical" />
+            android:paddingStart="@dimen/payments_section_large_spacing"
+            android:paddingEnd="@dimen/payments_section_large_spacing"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:textColor="@color/descriptive_text_color"
+                android:textSize="12sp"
+                android:text="@string/payments_required_field_message" />
+
+        </LinearLayout>
 
     </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
 

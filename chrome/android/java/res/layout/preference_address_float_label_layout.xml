@@ -7,9 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/float_label_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginBottom="@dimen/pref_autofill_content_spacing">
-
+    android:layout_height="wrap_content" >
     <EditText
         android:id="@+id/address_edit_text"
         android:layout_width="fill_parent"
@@ -17,5 +15,4 @@
         android:singleLine="true"
         android:imeOptions="flagNoExtractUi"
         android:inputType="textPostalAddress|textCapWords" />
-
 </org.chromium.chrome.browser.widget.CompatibilityTextInputLayout>

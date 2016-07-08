@@ -14,7 +14,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -59,10 +58,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
         mEmailText = (EditText) v.findViewById(R.id.email_address_edit);
         mEmailLabel = (CompatibilityTextInputLayout) v.findViewById(R.id.email_address_label);
         mWidgetRoot = (ViewGroup) v.findViewById(R.id.autofill_profile_widget_root);
-        mCountriesDropdown = (Spinner) v.findViewById(R.id.spinner);
-
-        TextView countriesLabel = (TextView) v.findViewById(R.id.spinner_label);
-        countriesLabel.setText(v.getContext().getString(R.string.autofill_profile_editor_country));
+        mCountriesDropdown = (Spinner) v.findViewById(R.id.countries);
 
         mAutofillProfileBridge = new AutofillProfileBridge();
 
@@ -212,6 +208,7 @@ public class AutofillProfileEditor extends AutofillEditorBase {
             fieldFloatLabel.setHint(field.label);
 
             EditText fieldEditText = fieldFloatLabel.getEditText();
+            fieldEditText.setContentDescription(field.label);
             fieldEditText.addTextChangedListener(this);
             if (field.id == AddressField.STREET_ADDRESS) {
                 fieldEditText.setSingleLine(false);
