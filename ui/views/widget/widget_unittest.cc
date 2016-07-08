@@ -935,11 +935,7 @@ TEST_F(WidgetObserverTest, WidgetBoundsChangedNative) {
 
   // Move, but don't change the size.
   widget->SetBounds(gfx::Rect(110, 110, 170, 100));
-  // Currently fails on Mus. http://crbug.com/622575.
-  if (IsMus())
-    EXPECT_FALSE(widget_bounds_changed());
-  else
-    EXPECT_TRUE(widget_bounds_changed());
+  EXPECT_TRUE(widget_bounds_changed());
   reset();
 
   // Moving to the same place does nothing.

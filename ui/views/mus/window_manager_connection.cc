@@ -101,6 +101,10 @@ void WindowManagerConnection::RemovePointerWatcher(PointerWatcher* watcher) {
   }
 }
 
+const std::set<ui::Window*>& WindowManagerConnection::GetRoots() const {
+  return client_->GetRoots();
+}
+
 WindowManagerConnection::WindowManagerConnection(
     shell::Connector* connector,
     const shell::Identity& identity)

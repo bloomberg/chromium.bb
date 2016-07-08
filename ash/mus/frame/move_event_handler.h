@@ -36,6 +36,25 @@ class MoveEventHandler : public ui::EventHandler, public aura::WindowObserver {
                    aura::Window* aura_window);
   ~MoveEventHandler() override;
 
+  // Retrieves the MoveEventHandler for an existing WmWindow.
+  static MoveEventHandler* GetForWindow(WmWindow* wm_window);
+
+  // Attempts to start a drag if one is not already in progress. This passes
+  // the call to the underlying WmToplevelWindowEventHandler. After the drag
+  // completes, |end_closure| will be called to return whether the drag was
+  // successfully completed.
+  void AttemptToStartDrag(
+      const gfx::Point& point_in_parent,
+      int window_component,
+      aura::client::WindowMoveSource source,
+      const base::Callback<void(bool success)>& end_closure);
+
+  // Returns whether we're in a drag.
+  bool IsDragInProgress();
+
+  // Reverts a manually started drag started with AttemptToStartDrag().
+  void RevertDrag();
+
  private:
   // Removes observer and EventHandler installed on |root_window_|.
   void Detach();

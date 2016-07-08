@@ -220,6 +220,9 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   // Overridden from aura::WindowTreeHostObserver:
+  void OnHostResized(const aura::WindowTreeHost* host) override;
+  void OnHostMoved(const aura::WindowTreeHost* host,
+                   const gfx::Point& new_origin) override;
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
   // Overridden from ui::InputEventHandler:
@@ -263,6 +266,11 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   // Functions with the same name require the ui::WindowObserver to be in
   // a separate class.
   std::unique_ptr<MusWindowObserver> mus_window_observer_;
+
+  // This is misnamed; The native widget interface offers something called
+  // "native window properties" which are properties which it stores locally,
+  // and this is used to unsafely pass void* pointers around chrome.
+  std::map<std::string, void*> native_window_properties_;
 
   // Aura configuration.
   std::unique_ptr<SurfaceContextFactory> context_factory_;

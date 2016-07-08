@@ -67,6 +67,8 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   void AddPointerWatcher(PointerWatcher* watcher);
   void RemovePointerWatcher(PointerWatcher* watcher);
 
+  const std::set<ui::Window*>& GetRoots() const;
+
  private:
   friend class WindowManagerConnectionTest;
 

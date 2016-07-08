@@ -7,10 +7,22 @@
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
+#include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
+
+MUS_DECLARE_WINDOW_PROPERTY_TYPE(ash::mus::MoveEventHandler*)
+
+namespace {
+
+// Key used for storing identifier sent to clients for windows.
+MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(ash::mus::MoveEventHandler*,
+                                     kWmMoveEventHandler,
+                                     nullptr);
+
+}  // namespace
 
 namespace ash {
 namespace mus {
@@ -39,6 +51,12 @@ namespace {
   }
 }
 
+void OnMoveLoopCompleted(const base::Callback<void(bool success)>& end_closure,
+                         wm::WmToplevelWindowEventHandler::DragResult result) {
+  end_closure.Run(result ==
+                  wm::WmToplevelWindowEventHandler::DragResult::SUCCESS);
+}
+
 }  // namespace
 
 MoveEventHandler::MoveEventHandler(
@@ -51,10 +69,36 @@ MoveEventHandler::MoveEventHandler(
       toplevel_window_event_handler_(wm_window_->GetShell()) {
   root_window_->AddObserver(this);
   root_window_->AddPreTargetHandler(this);
+
+  mus_window->SetLocalProperty(kWmMoveEventHandler, this);
 }
 
 MoveEventHandler::~MoveEventHandler() {
   Detach();
+}
+
+// static
+MoveEventHandler* MoveEventHandler::GetForWindow(WmWindow* wm_window) {
+  return WmWindowMus::GetMusWindow(wm_window)->GetLocalProperty(
+      kWmMoveEventHandler);
+}
+
+void MoveEventHandler::AttemptToStartDrag(
+    const gfx::Point& point_in_parent,
+    int window_component,
+    aura::client::WindowMoveSource source,
+    const base::Callback<void(bool success)>& end_closure) {
+  toplevel_window_event_handler_.AttemptToStartDrag(
+      wm_window_, point_in_parent, window_component, source,
+      base::Bind(&OnMoveLoopCompleted, end_closure));
+}
+
+bool MoveEventHandler::IsDragInProgress() {
+  return toplevel_window_event_handler_.is_drag_in_progress();
+}
+
+void MoveEventHandler::RevertDrag() {
+  toplevel_window_event_handler_.RevertDrag();
 }
 
 void MoveEventHandler::Detach() {

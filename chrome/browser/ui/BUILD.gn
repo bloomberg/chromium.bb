@@ -323,6 +323,13 @@ split_static_library("ui") {
           "//services/ui/public/cpp",
           "//services/ui/public/interfaces",
         ]
+
+        # TODO(erg): These files hard depend on mus, and thus can't be in a gyp
+        # build. When gyp goes away, merge this back into the sources list.
+        sources += [
+          "views/tabs/window_finder_mus.cc",
+          "views/tabs/window_finder_mus.h",
+        ]
       }
       if (enable_extensions) {
         sources += rebase_path(
