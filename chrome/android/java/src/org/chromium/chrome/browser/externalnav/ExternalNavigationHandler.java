@@ -327,6 +327,9 @@ public class ExternalNavigationHandler {
                     intent.addCategory(Intent.CATEGORY_BROWSABLE);
                     intent.setPackage("com.android.vending");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    if (params.getReferrerUrl() != null) {
+                        intent.putExtra(Intent.EXTRA_REFERRER, Uri.parse(params.getReferrerUrl()));
+                    }
                     mDelegate.startActivity(intent);
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 } catch (ActivityNotFoundException ex) {

@@ -258,13 +258,17 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         mDelegate.setCanResolveActivity(false);
 
         checkUrl(INTENT_APP_NOT_INSTALLED_WITH_MARKET_REFERRER)
+                .withReferrer(KEEP_URL)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
+
 
         assertNotNull(mDelegate.startActivityIntent);
         Uri uri = mDelegate.startActivityIntent.getData();
         assertEquals("market", uri.getScheme());
         assertEquals(Uri.decode(ENCODED_MARKET_REFERRER), uri.getQueryParameter("referrer"));
+        assertEquals(Uri.parse(KEEP_URL),
+                mDelegate.startActivityIntent.getParcelableExtra(Intent.EXTRA_REFERRER));
     }
 
 
