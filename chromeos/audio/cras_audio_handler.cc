@@ -611,6 +611,18 @@ void CrasAudioHandler::OutputNodeVolumeChanged(uint64_t node_id, int volume) {
   // volume.
   output_volume_ = volume;
   audio_pref_handler_->SetVolumeGainValue(*device, volume);
+
+  if (initializing_audio_state_) {
+    // Reset the flag after the first OutputNodeVolumeChanged, just in case
+    // cras didn't respond to the initial SetOutputNodeVolume request.
+    initializing_audio_state_ = false;
+    // Do not notify the observers for volume changed event if CrasAudioHandler
+    // is initializing its state, i.e., the volume change event is not from
+    // user action, no need to notify UI to pop uo the volume slider bar.
+    if (init_node_id_ == node_id && init_volume_ ==  volume)
+      return;
+  }
+
   FOR_EACH_OBSERVER(AudioObserver, observers_,
                     OnOutputNodeVolumeChanged(node_id, volume));
 }
@@ -716,6 +728,11 @@ void CrasAudioHandler::SetupAudioOutputState() {
   output_volume_ = audio_pref_handler_->GetOutputVolumeValue(device);
 
   SetOutputMuteInternal(output_mute_on_);
+
+  if (initializing_audio_state_) {
+    init_node_id_ = active_output_node_id_;
+    init_volume_ = output_volume_;
+  }
   SetOutputNodeVolume(active_output_node_id_, output_volume_);
 }
 
@@ -743,6 +760,7 @@ void CrasAudioHandler::SetupAdditionalActiveAudioNodeState(uint64_t node_id) {
 }
 
 void CrasAudioHandler::InitializeAudioState() {
+  initializing_audio_state_ = true;
   ApplyAudioPolicy();
 
   // Defer querying cras for GetNodes until cras service becomes available.
