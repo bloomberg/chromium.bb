@@ -250,16 +250,6 @@
       'audio_modem/audio_recorder_unittest.cc',
       'audio_modem/modem_unittest.cc',
     ],
-    'copresence_unittest_sources': [
-      'copresence/copresence_state_unittest.cc',
-      'copresence/handlers/audio/audio_directive_handler_unittest.cc',
-      'copresence/handlers/audio/audio_directive_list_unittest.cc',
-      'copresence/handlers/directive_handler_unittest.cc',
-      'copresence/handlers/gcm_handler_unittest.cc',
-      'copresence/rpc/http_post_unittest.cc',
-      'copresence/rpc/rpc_handler_unittest.cc',
-      'copresence/timed_map_unittest.cc',
-    ],
     'data_use_measurement_unittest_sources': [
       'data_use_measurement/content/data_use_measurement_unittest.cc',
     ],
@@ -1531,7 +1521,6 @@
         ['OS != "ios" and OS != "android"', {
           'sources': [
             '<@(audio_modem_unittest_sources)',
-            '<@(copresence_unittest_sources)',
             '<@(feedback_unittest_sources)',
             '<@(proximity_auth_unittest_sources)',
             '<@(webusb_detector_unittest_sources)',
@@ -1551,8 +1540,6 @@
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'components.gyp:audio_modem',
             'components.gyp:audio_modem_test_support',
-            'components.gyp:copresence',
-            'components.gyp:copresence_test_support',
             'components.gyp:cryptauth',
             'components.gyp:cryptauth_proto',
             'components.gyp:cryptauth_test_support',

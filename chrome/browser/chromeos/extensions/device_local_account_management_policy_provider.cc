@@ -160,9 +160,6 @@ const char* const kSafeManifestEntries[] = {
     // TBD
     // emk::kCommands,
 
-    // TBD, doc missing
-    // emk::kCopresence,
-
     // TBD, looks unsafe
     // emk::kEventRules,
 
@@ -294,9 +291,6 @@ const char* const kSafePermissionStrings[] = {
 
     // Potentially risky: Could be used to spoof system UI.
     // "contextMenus",
-
-    // Dev channel only.  Not evaluated.
-    // "copresence",
 
     // Placing a document on the scanner implies user consent.
     "documentScan",

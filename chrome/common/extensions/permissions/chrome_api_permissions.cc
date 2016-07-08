@@ -72,7 +72,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       {APIPermission::kContentSettings, "contentSettings"},
       {APIPermission::kContextMenus, "contextMenus"},
       {APIPermission::kCookie, "cookies"},
-      {APIPermission::kCopresence, "copresence"},
       {APIPermission::kCopresencePrivate, "copresencePrivate"},
       {APIPermission::kCryptotokenPrivate, "cryptotokenPrivate"},
       {APIPermission::kDataReductionProxy, "dataReductionProxy",

@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

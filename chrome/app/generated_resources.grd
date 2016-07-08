@@ -3811,9 +3811,6 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSION_PROMPT_WARNING_CLIPBOARD" desc="Permission string for access to clipboard.">
           Read data you copy and paste
         </message>
-        <message name="IDS_EXTENSION_PROMPT_WARNING_COPRESENCE" desc="Permission string for access to bookmarks.">
-          Communicate with nearby devices
-        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_DEBUGGER" desc="Permission string for access to debugger.">
           Access the page debugger backend
         </message>
@@ -14167,52 +14164,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         </message>
         <message name="IDS_NOTIFICATIONS_BACKGROUND_SERVICE_NAME" desc="The name of the Notifications service that can run in the background">
           Notifications
-        </message>
-      </if>
-
-      <!-- Copresence settings/debug strings -->
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_COPRESENCE_TITLE" desc="Title for the chrome://copresence page.">
-          Google Copresence Info
-        </message>
-
-        <message name="IDS_COPRESENCE_DIRECTIVES_TITLE" desc="Title for the table of currently active copresence directives (transmit this, receive that).">
-          Active Directives
-        </message>
-        <message name="IDS_COPRESENCE_DIRECTIVE_TYPE" desc="Title for the column in the directives table indicating whether the directive is 'transmit' or 'receive'.">
-          Type
-        </message>
-        <message name="IDS_COPRESENCE_TOKEN_MEDIUM" desc="Title for the column in the directives and tokens tables indicating how tokens are being transmitted. Currently one of 'ultrasound' or 'sound'.">
-          Medium
-        </message>
-        <message name="IDS_COPRESENCE_DURATION" desc="Title for the column in the directives table indicating how long the directive is active, e.g. '10 minutes'.">
-          Duration
-        </message>
-
-        <message name="IDS_COPRESENCE_TRANSMITTED_TOKENS_TITLE" desc="Title for the table of copresence tokens recently transmitted.">
-          Tokens Transmitted
-        </message>
-        <message name="IDS_COPRESENCE_RECEIVED_TOKENS_TITLE" desc="Title for the table of copresence tokens recently received.">
-          Tokens Received
-        </message>
-        <message name="IDS_COPRESENCE_TOKEN_ID" desc="Title for the column in a tokens table listing the token id (base64 encoded).">
-          Token ID
-        </message>
-        <message name="IDS_COPRESENCE_TOKEN_STATUS" desc="Title for the column in a tokens table indicating the status of a token: e.g. 'transmitted', 'received', 'expired', etc.">
-          Status
-        </message>
-        <message name="IDS_COPRESENCE_TOKEN_TRANSMIT_TIME" desc="Title for the column in the transmitted tokens table indicating when the token was first transmitted, e.g. '12:34 PM'.">
-          Time First Transmitted
-        </message>
-        <message name="IDS_COPRESENCE_TOKEN_RECEIVE_TIME" desc="Title for the column in the received tokens table indicating when the token was last received, e.g. '12:34 AM'.">
-          Time Last Received
-        </message>
-
-        <message name="IDS_COPRESENCE_CLEAR_STATE" desc="Label for the button that deletes all copresence state in the current profile.">
-          Clear Copresence State
-        </message>
-        <message name="IDS_COPRESENCE_CONFIRM_DELETE" desc="Message explaining which state will be deleted and the effect it will have.">
-          Attempts to connect to nearby devices will be cancelled. All local copresence data will be cleared, and apps using copresence may stop working. Are you sure?
         </message>
       </if>
 

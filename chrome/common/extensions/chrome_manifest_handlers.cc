@@ -18,7 +18,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "chrome/common/extensions/manifest_handlers/content_scripts_handler.h"
-#include "chrome/common/extensions/manifest_handlers/copresence_manifest.h"
 #include "chrome/common/extensions/manifest_handlers/extension_action_handler.h"
 #include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "chrome/common/extensions/manifest_handlers/minimum_chrome_version_checker.h"
@@ -47,7 +46,6 @@ void RegisterChromeManifestHandlers() {
   (new AutomationHandler)->Register();
   (new CommandsHandler)->Register();
   (new ContentScriptsHandler)->Register();
-  (new CopresenceManifestHandler)->Register();
   (new DevToolsPageHandler)->Register();
   (new ExtensionActionHandler)->Register();
   (new HomepageURLHandler)->Register();

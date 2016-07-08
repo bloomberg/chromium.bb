@@ -72939,8 +72939,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="64" label="CONTEXT_MENUS_INTERNAL_ON_CLICKED"/>
   <int value="65" label="CONTEXT_MENUS_ON_CLICKED"/>
   <int value="66" label="COOKIES_ON_CHANGED"/>
-  <int value="67" label="COPRESENCE_ON_MESSAGES_RECEIVED"/>
-  <int value="68" label="COPRESENCE_ON_STATUS_UPDATED"/>
+  <int value="67" label="DELETED_COPRESENCE_ON_MESSAGES_RECEIVED"/>
+  <int value="68" label="DELETED_COPRESENCE_ON_STATUS_UPDATED"/>
   <int value="69" label="COPRESENCE_PRIVATE_ON_CONFIG_AUDIO"/>
   <int value="70" label="COPRESENCE_PRIVATE_ON_DECODE_SAMPLES_REQUEST"/>
   <int value="71" label="COPRESENCE_PRIVATE_ON_ENCODE_TOKEN_REQUEST"/>
@@ -74188,8 +74188,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="865" label="COPRESENCEPRIVATE_SENDSAMPLES"/>
   <int value="866" label="COPRESENCEPRIVATE_SENDDETECT"/>
   <int value="867" label="COPRESENCEPRIVATE_SENDINITIALIZED"/>
-  <int value="868" label="COPRESENCE_EXECUTE"/>
-  <int value="869" label="COPRESENCE_SETAPIKEY"/>
+  <int value="868" label="DELETED_COPRESENCE_EXECUTE"/>
+  <int value="869" label="DELETED_COPRESENCE_SETAPIKEY"/>
   <int value="870" label="FILESYSTEM_OBSERVEDIRECTORY"/>
   <int value="871" label="FILESYSTEM_UNOBSERVEENTRY"/>
   <int value="872" label="FILESYSTEM_GETOBSERVEDENTRIES"/>
@@ -74231,7 +74231,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="907" label="USB_GETUSERSELECTEDDEVICES"/>
   <int value="908" label="INPUTMETHODPRIVATE_GETINPUTMETHODCONFIG"/>
   <int value="909" label="WALLPAPERPRIVATE_GETSYNCSETTING"/>
-  <int value="910" label="COPRESENCE_SETAUTHTOKEN"/>
+  <int value="910" label="DELETED_COPRESENCE_SETAUTHTOKEN"/>
   <int value="911" label="CAST_CHANNEL_SETAUTHORITYKEYS"/>
   <int value="912" label="HOTWORDPRIVATE_STARTTRAINING"/>
   <int value="913" label="HOTWORDPRIVATE_FINALIZESPEAKERMODEL"/>
@@ -74473,7 +74473,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1140" label="QUICKUNLOCKPRIVATE_SETMODES"/>
   <int value="1141" label="QUICKUNLOCKPRIVATE_GETACTIVEMODES"/>
   <int value="1142" label="QUICKUNLOCKPRIVATE_GETAVAILABLEMODES"/>
-  <int value="1143" label="WEBSTOREPRIVATE_ISEXTENSIONPENDINGAPPROVAL"/>
+  <int value="1143" label="WEBSTOREPRIVATE_ISPENDINGCUSTODIANAPPROVAL"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

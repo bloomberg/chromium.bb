@@ -1389,7 +1389,7 @@ test("browser_tests") {
       sources +=
           [ "../browser/copresence/chrome_whispernet_client_browsertest.cc" ]
       deps += [
-        "//components/copresence",
+        "//components/audio_modem",
         "//third_party/libaddressinput",
       ]
     }

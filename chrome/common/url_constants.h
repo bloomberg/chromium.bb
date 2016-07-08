@@ -125,11 +125,6 @@ extern const char kChromeUIMetroFlowURL[];
 extern const char kChromeUITabModalConfirmDialogURL[];
 #endif
 
-#if !defined(OS_ANDROID)
-extern const char kChromeUICopresenceURL[];
-extern const char kChromeUICopresenceHost[];
-#endif
-
 #if defined(ENABLE_WEBRTC)
 extern const char kChromeUIWebRtcLogsURL[];
 #endif

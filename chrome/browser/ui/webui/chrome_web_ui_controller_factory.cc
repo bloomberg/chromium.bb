@@ -109,7 +109,6 @@
 #else
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/signin/easy_unlock_service_factory.h"
-#include "chrome/browser/ui/webui/copresence_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
@@ -515,8 +514,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       !profile->IsOffTheRecord())
     return &NewWebUI<SnippetsInternalsUI>;
 #else
-  if (url.host() == chrome::kChromeUICopresenceHost)
-    return &NewWebUI<CopresenceUI>;
   if (url.SchemeIs(content::kChromeDevToolsScheme))
     return &NewWebUI<DevToolsUI>;
 

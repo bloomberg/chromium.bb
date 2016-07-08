@@ -427,8 +427,6 @@ extern const char kEasyUnlockPairing[];
 extern const char kEasyUnlockProximityRequired[];
 
 #if defined(ENABLE_EXTENSIONS)
-extern const char kCopresenceAuthenticatedDeviceId[];
-extern const char kCopresenceAnonymousDeviceId[];
 extern const char kToolbarIconSurfacingBubbleAcknowledged[];
 extern const char kToolbarIconSurfacingBubbleLastShowTime[];
 extern const char kToolbarMigratedComponentActionStatus[];

@@ -29,7 +29,6 @@ const char kContentCapabilities[] = "content_capabilities";
 const char kContentScripts[] = "content_scripts";
 const char kContentSecurityPolicy[] = "content_security_policy";
 const char kConvertedFromUserScript[] = "converted_from_user_script";
-const char kCopresence[] = "copresence";
 const char kCss[] = "css";
 const char kCtrlKey[] = "ctrlKey";
 const char kCurrentLocale[] = "current_locale";
@@ -344,9 +343,6 @@ const char kInvalidContentScriptsList[] =
     "Invalid value for 'content_scripts'.";
 const char kInvalidContentSecurityPolicy[] =
     "Invalid value for 'content_security_policy'.";
-const char kInvalidCopresenceConfig[] = "Invalid value for 'copresence'.";
-const char kInvalidCopresenceApiKey[] =
-    "copresence.api_key must not be empty.";
 const char kInvalidCSPInsecureValue[] =
     "Ignored insecure CSP value \"*\" in directive '*'.";
 const char kInvalidCSPMissingSecureSrc[] =

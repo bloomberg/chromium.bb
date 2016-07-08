@@ -264,7 +264,6 @@ test("components_unittests") {
   if (!is_android && !is_ios) {
     deps += [
       "//components/audio_modem:unit_tests",
-      "//components/copresence:unit_tests",
       "//components/feedback:unit_tests",
       "//components/proximity_auth:unit_tests",
       "//components/storage_monitor:unit_tests",

@@ -113,7 +113,6 @@
 #include "chrome/browser/apps/shortcut_manager.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -491,7 +490,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ToolbarActionsBar::RegisterProfilePrefs(registry);
   extensions::ActivityLog::RegisterProfilePrefs(registry);
   extensions::ComponentMigrationHelper::RegisterPrefs(registry);
-  extensions::CopresenceService::RegisterProfilePrefs(registry);
   extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
   extensions::launch_util::RegisterProfilePrefs(registry);
   extensions::RuntimeAPI::RegisterPrefs(registry);

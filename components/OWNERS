@@ -42,8 +42,6 @@ per-file constrained_window.gypi=file://components/constrained_window/OWNERS
 
 per-file content_settings.gypi=file://components/content_settings/OWNERS
 
-per-file copresence.gypi=file://components/copresence/OWNERS
-
 per-file crash.gypi=file://components/crash/OWNERS
 per-file crash_strings.grdp=file://components/crash/OWNERS
 

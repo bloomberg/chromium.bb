@@ -2666,7 +2666,7 @@
             'browser/copresence/chrome_whispernet_client_browsertest.cc',
           ],
           'dependencies': [
-            '../components/components.gyp:copresence',
+            '../components/components.gyp:audio_modem',
             # build time dependency.
             '../v8/samples/samples.gyp:v8_shell#host',
           ],

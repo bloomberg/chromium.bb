@@ -1241,13 +1241,6 @@ const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 const char kEasyUnlockProximityRequired[] = "easy_unlock.proximity_required";
 
 #if defined(ENABLE_EXTENSIONS)
-// These device IDs are used by the copresence component, to uniquely identify
-// this device to the server. For privacy, authenticated and unauthenticated
-// calls are made using different device IDs.
-const char kCopresenceAuthenticatedDeviceId[] =
-    "apps.copresence.auth_device_id";
-const char kCopresenceAnonymousDeviceId[] = "apps.copresence.unauth_device_id";
-
 // Used to indicate whether or not the toolbar redesign bubble has been shown
 // and acknowledged, and the last time the bubble was shown.
 const char kToolbarIconSurfacingBubbleAcknowledged[] =

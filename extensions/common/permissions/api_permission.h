@@ -79,7 +79,7 @@ class APIPermission {
     kContentSettings,
     kContextMenus,
     kCookie,
-    kCopresence,
+    kDeletedCopresence,
     kCopresencePrivate,
     kCryptotokenPrivate,
     kDataReductionProxy,

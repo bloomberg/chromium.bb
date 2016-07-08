@@ -171,8 +171,6 @@
       'common/extensions/manifest_handlers/automation.h',
       'common/extensions/manifest_handlers/content_scripts_handler.cc',
       'common/extensions/manifest_handlers/content_scripts_handler.h',
-      'common/extensions/manifest_handlers/copresence_manifest.cc',
-      'common/extensions/manifest_handlers/copresence_manifest.h',
       'common/extensions/manifest_handlers/extension_action_handler.cc',
       'common/extensions/manifest_handlers/extension_action_handler.h',
       'common/extensions/manifest_handlers/linked_app_icons.cc',
