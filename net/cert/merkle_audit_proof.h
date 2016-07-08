@@ -25,13 +25,9 @@ NET_EXPORT uint64_t CalculateAuditPathLength(uint64_t leaf_index,
 // Audit proof for a Merkle tree leaf, as defined in section 2.1.1. of RFC6962.
 struct NET_EXPORT MerkleAuditProof {
   MerkleAuditProof();
-  MerkleAuditProof(const std::string& log_id,
-                   uint64_t leaf_index,
+  MerkleAuditProof(uint64_t leaf_index,
                    const std::vector<std::string>& audit_path);
   ~MerkleAuditProof();
-
-  // The origin of this proof.
-  std::string log_id;
 
   // Index of the tree leaf in the log.
   uint64_t leaf_index = 0;
