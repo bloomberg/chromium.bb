@@ -18,9 +18,11 @@
 #include "cc/proto/begin_main_frame_and_commit_state.pb.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree_builder.h"
+#include "cc/trees/scroll_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/transform.h"
@@ -219,11 +221,10 @@ static inline void ClearIsDrawnRenderSurfaceLayerListMember(
     ScrollTree* scroll_tree) {
   for (LayerImpl* layer : *layer_list) {
     if (layer->is_drawn_render_surface_layer_list_member()) {
-      DCHECK_GT(scroll_tree->Node(layer->scroll_tree_index())
-                    ->data.num_drawn_descendants,
-                0);
-      scroll_tree->Node(layer->scroll_tree_index())
-          ->data.num_drawn_descendants--;
+      DCHECK_GT(
+          scroll_tree->Node(layer->scroll_tree_index())->num_drawn_descendants,
+          0);
+      scroll_tree->Node(layer->scroll_tree_index())->num_drawn_descendants--;
     }
     layer->set_is_drawn_render_surface_layer_list_member(false);
   }
@@ -303,14 +304,14 @@ static void ComputeLayerScrollsDrawnDescendants(LayerTreeImpl* layer_tree_impl,
                                                 ScrollTree* scroll_tree) {
   for (int i = static_cast<int>(scroll_tree->size()) - 1; i > 0; --i) {
     ScrollNode* node = scroll_tree->Node(i);
-    scroll_tree->parent(node)->data.num_drawn_descendants +=
-        node->data.num_drawn_descendants;
+    scroll_tree->parent(node)->num_drawn_descendants +=
+        node->num_drawn_descendants;
   }
   for (LayerImpl* layer : *layer_tree_impl) {
     bool scrolls_drawn_descendant = false;
     if (layer->scrollable()) {
       ScrollNode* node = scroll_tree->Node(layer->scroll_tree_index());
-      if (node->data.num_drawn_descendants > 0)
+      if (node->num_drawn_descendants > 0)
         scrolls_drawn_descendant = true;
     }
     layer->set_scrolls_drawn_descendant(scrolls_drawn_descendant);
@@ -324,7 +325,7 @@ static void ComputeInitialRenderSurfaceLayerList(
     bool can_render_to_separate_surface) {
   ScrollTree* scroll_tree = &property_trees->scroll_tree;
   for (int i = 0; i < static_cast<int>(scroll_tree->size()); ++i)
-    scroll_tree->Node(i)->data.num_drawn_descendants = 0;
+    scroll_tree->Node(i)->num_drawn_descendants = 0;
 
   // Add all non-skipped surfaces to the initial render surface layer list. Add
   // all non-skipped layers to the layer list of their target surface, and
@@ -338,8 +339,7 @@ static void ComputeInitialRenderSurfaceLayerList(
     layer->set_is_drawn_render_surface_layer_list_member(false);
 
     bool layer_is_drawn =
-        property_trees->effect_tree.Node(layer->effect_tree_index())
-            ->data.is_drawn;
+        property_trees->effect_tree.Node(layer->effect_tree_index())->is_drawn;
     bool is_root = layer_tree_impl->IsRootLayer(layer);
     bool skip_layer =
         !is_root && draw_property_utils::LayerShouldBeSkipped(
@@ -399,7 +399,7 @@ static void ComputeInitialRenderSurfaceLayerList(
       continue;
 
     layer->set_is_drawn_render_surface_layer_list_member(true);
-    scroll_tree->Node(layer->scroll_tree_index())->data.num_drawn_descendants++;
+    scroll_tree->Node(layer->scroll_tree_index())->num_drawn_descendants++;
     layer->render_target()->layer_list().push_back(layer);
 
     // The layer contributes its drawable content rect to its render target.

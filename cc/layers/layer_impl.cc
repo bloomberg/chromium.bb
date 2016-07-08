@@ -30,11 +30,15 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/proxy.h"
+#include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/quad_f.h"
@@ -378,7 +382,7 @@ bool LayerImpl::IsAffectedByPageScale() const {
   TransformTree& transform_tree =
       layer_tree_impl()->property_trees()->transform_tree;
   return transform_tree.Node(transform_tree_index())
-      ->data.in_subtree_of_page_scale_layer;
+      ->in_subtree_of_page_scale_layer;
 }
 
 gfx::Vector2dF LayerImpl::FixedContainerSizeDelta() const {
@@ -444,14 +448,14 @@ bool LayerImpl::LayerPropertyChanged() const {
   TransformNode* transform_node =
       layer_tree_impl()->property_trees()->transform_tree.Node(
           transform_tree_index());
-  if (transform_node && transform_node->data.transform_changed)
+  if (transform_node && transform_node->transform_changed)
     return true;
   if (effect_tree_index() == -1)
     return false;
   EffectNode* effect_node =
       layer_tree_impl()->property_trees()->effect_tree.Node(
           effect_tree_index());
-  if (effect_node && effect_node->data.effect_changed)
+  if (effect_node && effect_node->effect_changed)
     return true;
   return false;
 }
@@ -490,7 +494,7 @@ int LayerImpl::num_copy_requests_in_target_subtree() {
   return layer_tree_impl()
       ->property_trees()
       ->effect_tree.Node(effect_tree_index())
-      ->data.num_copy_requests_in_subtree;
+      ->num_copy_requests_in_subtree;
 }
 
 void LayerImpl::UpdatePropertyTreeTransform() {
@@ -505,10 +509,10 @@ void LayerImpl::UpdatePropertyTreeTransform() {
     // thread.
     TransformNode* node = property_trees->transform_tree.Node(
         property_trees->transform_id_to_index_map[id()]);
-    if (node->data.local != transform_) {
-      node->data.local = transform_;
-      node->data.needs_local_transform_update = true;
-      node->data.transform_changed = true;
+    if (node->local != transform_) {
+      node->local = transform_;
+      node->needs_local_transform_update = true;
+      node->transform_changed = true;
       property_trees->changed = true;
       property_trees->transform_tree.set_needs_update(true);
       // TODO(ajuma): The current criteria for creating clip nodes means that
@@ -536,13 +540,12 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
     // activation (and, in that case, the LayerImpl will no longer own a
     // TransformNode, unless it has non-animation-related reasons for owning a
     // node).
-    if (node->data.has_potential_animation != is_animated) {
-      node->data.has_potential_animation = is_animated;
+    if (node->has_potential_animation != is_animated) {
+      node->has_potential_animation = is_animated;
       if (is_animated) {
-        node->data.has_only_translation_animations =
-            HasOnlyTranslationTransforms();
+        node->has_only_translation_animations = HasOnlyTranslationTransforms();
       } else {
-        node->data.has_only_translation_animations = true;
+        node->has_only_translation_animations = true;
       }
 
       property_trees->transform_tree.set_needs_update(true);
@@ -561,10 +564,10 @@ void LayerImpl::UpdatePropertyTreeOpacity(float opacity) {
     // started, but might have finished since then on the compositor thread.
     EffectNode* node = property_trees->effect_tree.Node(
         property_trees->effect_id_to_index_map[id()]);
-    if (node->data.opacity == opacity)
+    if (node->opacity == opacity)
       return;
-    node->data.opacity = opacity;
-    node->data.effect_changed = true;
+    node->opacity = opacity;
+    node->effect_changed = true;
     property_trees->changed = true;
     property_trees->effect_tree.set_needs_update(true);
   }
@@ -593,7 +596,7 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
     EffectNode* node = effect_tree.Node(effect_tree_index_);
     DCHECK(layer_tree_impl()->property_trees()->IsInIdToIndexMap(
         PropertyTrees::TreeType::EFFECT, id()));
-    node->data.effect_changed = true;
+    node->effect_changed = true;
     layer_tree_impl()->property_trees()->changed = true;
     effect_tree.set_needs_update(true);
   }
@@ -639,7 +642,7 @@ void LayerImpl::OnTransformIsCurrentlyAnimatingChanged(
     return;
   TransformNode* node = property_trees->transform_tree.Node(
       property_trees->transform_id_to_index_map[id()]);
-  node->data.is_currently_animating = is_currently_animating;
+  node->is_currently_animating = is_currently_animating;
 }
 
 void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(
@@ -657,7 +660,7 @@ void LayerImpl::OnOpacityIsCurrentlyAnimatingChanged(
   EffectNode* node = property_trees->effect_tree.Node(
       property_trees->effect_id_to_index_map[id()]);
 
-  node->data.is_currently_animating_opacity = is_currently_animating;
+  node->is_currently_animating_opacity = is_currently_animating;
 }
 
 void LayerImpl::OnOpacityIsPotentiallyAnimatingChanged(
@@ -668,7 +671,7 @@ void LayerImpl::OnOpacityIsPotentiallyAnimatingChanged(
     return;
   EffectNode* node = property_trees->effect_tree.Node(
       property_trees->effect_id_to_index_map[id()]);
-  node->data.has_potential_opacity_animation = has_potential_animation;
+  node->has_potential_opacity_animation = has_potential_animation;
   property_trees->effect_tree.set_needs_update(true);
 }
 
@@ -721,8 +724,8 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
     if (clip_node) {
       DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::CLIP,
                                               id()));
-      clip_node->data.clip = gfx::RectF(
-          gfx::PointF() + offset_to_transform_parent(), gfx::SizeF(bounds()));
+      clip_node->clip = gfx::RectF(gfx::PointF() + offset_to_transform_parent(),
+                                   gfx::SizeF(bounds()));
       property_trees->clip_tree.set_needs_update(true);
     }
     property_trees->full_tree_damaged = true;
@@ -791,7 +794,7 @@ float LayerImpl::Opacity() const {
     return 1.f;
   EffectNode* node = property_trees->effect_tree.Node(
       property_trees->effect_id_to_index_map[id()]);
-  return node->data.opacity;
+  return node->opacity;
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
@@ -924,9 +927,9 @@ void LayerImpl::UpdatePropertyTreeScrollOffset() {
       layer_tree_impl()->property_trees()->transform_tree;
   TransformNode* node = transform_tree.Node(transform_tree_index_);
   gfx::ScrollOffset current_offset = CurrentScrollOffset();
-  if (node->data.scroll_offset != current_offset) {
-    node->data.scroll_offset = current_offset;
-    node->data.needs_local_transform_update = true;
+  if (node->scroll_offset != current_offset) {
+    node->scroll_offset = current_offset;
+    node->needs_local_transform_update = true;
     transform_tree.set_needs_update(true);
   }
 }
@@ -1108,12 +1111,12 @@ bool LayerImpl::CanUseLCDText() const {
   if (layer_tree_impl()
           ->property_trees()
           ->effect_tree.Node(effect_tree_index())
-          ->data.screen_space_opacity != 1.f)
+          ->screen_space_opacity != 1.f)
     return false;
   if (!layer_tree_impl()
            ->property_trees()
            ->transform_tree.Node(transform_tree_index())
-           ->data.node_and_ancestors_have_only_integer_translation)
+           ->node_and_ancestors_have_only_integer_translation)
     return false;
   if (static_cast<int>(offset_to_transform_parent().x()) !=
       offset_to_transform_parent().x())
@@ -1145,10 +1148,10 @@ RenderSurfaceImpl* LayerImpl::render_target() {
   EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(effect_tree_index_);
 
-  if (node->data.render_surface)
-    return node->data.render_surface;
+  if (node->render_surface)
+    return node->render_surface;
   else
-    return effect_tree.Node(node->data.target_id)->data.render_surface;
+    return effect_tree.Node(node->target_id)->render_surface;
 }
 
 const RenderSurfaceImpl* LayerImpl::render_target() const {
@@ -1156,16 +1159,16 @@ const RenderSurfaceImpl* LayerImpl::render_target() const {
       layer_tree_impl_->property_trees()->effect_tree;
   const EffectNode* node = effect_tree.Node(effect_tree_index_);
 
-  if (node->data.render_surface)
-    return node->data.render_surface;
+  if (node->render_surface)
+    return node->render_surface;
   else
-    return effect_tree.Node(node->data.target_id)->data.render_surface;
+    return effect_tree.Node(node->target_id)->render_surface;
 }
 
 bool LayerImpl::IsHidden() const {
   EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(effect_tree_index_);
-  return node->data.screen_space_opacity == 0.f;
+  return node->screen_space_opacity == 0.f;
 }
 
 bool LayerImpl::InsideReplica() const {
@@ -1175,9 +1178,9 @@ bool LayerImpl::InsideReplica() const {
   EffectNode* node = effect_tree.Node(effect_tree_index_);
 
   while (node->id > 0) {
-    if (node->data.replica_layer_id != -1)
+    if (node->replica_layer_id != -1)
       return true;
-    node = effect_tree.Node(node->data.target_id);
+    node = effect_tree.Node(node->target_id);
   }
 
   return false;

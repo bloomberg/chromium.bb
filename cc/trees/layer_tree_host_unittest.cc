@@ -49,9 +49,11 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/transform_node.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -979,11 +981,11 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
     EffectNode* node = effect_tree.Node(root_->effect_tree_index());
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        node->data.opacity = 0.5f;
-        node->data.is_currently_animating_opacity = true;
+        node->opacity = 0.5f;
+        node->is_currently_animating_opacity = true;
         break;
       case 2:
-        node->data.is_currently_animating_opacity = false;
+        node->is_currently_animating_opacity = false;
         break;
     }
   }
@@ -998,12 +1000,12 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_EQ(node->data.opacity, 0.75f);
+        EXPECT_EQ(node->opacity, 0.75f);
         impl->sync_tree()->root_layer_for_testing()->OnOpacityAnimated(0.75f);
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        EXPECT_EQ(node->data.opacity, 0.5f);
+        EXPECT_EQ(node->opacity, 0.5f);
         EndTest();
         break;
     }
@@ -1035,14 +1037,14 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
     rotate10.Rotate(10.f);
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        node->data.local = rotate10;
-        node->data.is_currently_animating = true;
+        node->local = rotate10;
+        node->is_currently_animating = true;
         break;
       case 2:
-        node->data.is_currently_animating = true;
+        node->is_currently_animating = true;
         break;
       case 3:
-        node->data.is_currently_animating = false;
+        node->is_currently_animating = false;
         break;
     }
   }
@@ -1063,19 +1065,19 @@ class LayerTreeHostTestTransformTreeSync : public LayerTreeHostTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        EXPECT_EQ(node->data.local, rotate20);
+        EXPECT_EQ(node->local, rotate20);
         impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
             rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        EXPECT_EQ(node->data.local, rotate20);
+        EXPECT_EQ(node->local, rotate20);
         impl->sync_tree()->root_layer_for_testing()->OnTransformAnimated(
             rotate20);
         PostSetNeedsCommitToMainThread();
         break;
       case 3:
-        EXPECT_EQ(node->data.local, rotate10);
+        EXPECT_EQ(node->local, rotate10);
         EndTest();
     }
   }

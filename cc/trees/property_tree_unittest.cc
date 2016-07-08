@@ -7,14 +7,21 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/proto/property_tree.pb.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/effect_node.h"
+#include "cc/trees/scroll_node.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 namespace {
 
-TEST(PropertyTreeSerializationTest, TransformNodeDataSerialization) {
-  TransformNodeData original;
+TEST(PropertyTreeSerializationTest, TransformNodeSerialization) {
+  TransformNode original;
+  original.id = 3;
+  original.parent_id = 2;
+  original.owner_id = 4;
   original.pre_local.Translate3d(1.f, 2.f, 3.f);
   original.local.Translate3d(3.f, 1.f, 5.f);
   original.post_local.Translate3d(1.f, 8.f, 3.f);
@@ -45,20 +52,6 @@ TEST(PropertyTreeSerializationTest, TransformNodeDataSerialization) {
 
   proto::TreeNode proto;
   original.ToProtobuf(&proto);
-  TransformNodeData result;
-  result.FromProtobuf(proto);
-
-  EXPECT_EQ(original, result);
-}
-
-TEST(PropertyTreeSerializationTest, TransformNodeSerialization) {
-  TransformNode original;
-  original.id = 3;
-  original.parent_id = 2;
-  original.owner_id = 4;
-
-  proto::TreeNode proto;
-  original.ToProtobuf(&proto);
   TransformNode result;
   result.FromProtobuf(proto);
 
@@ -75,14 +68,14 @@ TEST(PropertyTreeSerializationTest, TransformTreeSerialization) {
   original.SetContentTargetId(root.id, 4);
   TransformNode second;
   second.owner_id = 2;
-  second.data.local.Translate3d(2.f, 2.f, 0.f);
-  second.data.source_node_id = 0;
+  second.local.Translate3d(2.f, 2.f, 0.f);
+  second.source_node_id = 0;
   second.id = original.Insert(second, 0);
   original.SetTargetId(second.id, 0);
   TransformNode third;
   third.owner_id = 3;
-  third.data.scrolls = true;
-  third.data.source_node_id = 1;
+  third.scrolls = true;
+  third.source_node_id = 1;
   third.id = original.Insert(third, 1);
   original.SetTargetId(third.id, 0);
 
@@ -109,8 +102,11 @@ TEST(PropertyTreeSerializationTest, TransformTreeSerialization) {
   EXPECT_EQ(original, result);
 }
 
-TEST(PropertyTreeSerializationTest, ClipNodeDataSerialization) {
-  ClipNodeData original;
+TEST(PropertyTreeSerializationTest, ClipNodeSerialization) {
+  ClipNode original;
+  original.id = 3;
+  original.parent_id = 2;
+  original.owner_id = 4;
   original.clip = gfx::RectF(0.5f, 0.5f);
   original.combined_clip_in_target_space = gfx::RectF(0.6f, 0.6f);
   original.clip_in_target_space = gfx::RectF(0.7f, 0.7f);
@@ -125,20 +121,6 @@ TEST(PropertyTreeSerializationTest, ClipNodeDataSerialization) {
 
   proto::TreeNode proto;
   original.ToProtobuf(&proto);
-  ClipNodeData result;
-  result.FromProtobuf(proto);
-
-  EXPECT_EQ(original, result);
-}
-
-TEST(PropertyTreeSerializationTest, ClipNodeSerialization) {
-  ClipNode original;
-  original.id = 3;
-  original.parent_id = 2;
-  original.owner_id = 4;
-
-  proto::TreeNode proto;
-  original.ToProtobuf(&proto);
   ClipNode result;
   result.FromProtobuf(proto);
 
@@ -149,16 +131,16 @@ TEST(PropertyTreeSerializationTest, ClipTreeSerialization) {
   ClipTree original;
   ClipNode& root = *original.Node(0);
   root.owner_id = 1;
-  root.data.transform_id = 2;
-  root.data.target_id = 1;
+  root.transform_id = 2;
+  root.target_id = 1;
   ClipNode second;
   second.owner_id = 2;
-  second.data.transform_id = 4;
-  second.data.applies_local_clip = true;
+  second.transform_id = 4;
+  second.applies_local_clip = true;
   ClipNode third;
   third.owner_id = 3;
-  third.data.target_id = 3;
-  third.data.target_is_clipped = false;
+  third.target_id = 3;
+  third.target_is_clipped = false;
 
   original.Insert(second, 0);
   original.Insert(third, 1);
@@ -176,8 +158,11 @@ TEST(PropertyTreeSerializationTest, ClipTreeSerialization) {
   EXPECT_EQ(original, result);
 }
 
-TEST(PropertyTreeSerializationTest, EffectNodeDataSerialization) {
-  EffectNodeData original;
+TEST(PropertyTreeSerializationTest, EffectNodeSerialization) {
+  EffectNode original;
+  original.id = 3;
+  original.parent_id = 2;
+  original.owner_id = 4;
   original.opacity = 0.5f;
   original.screen_space_opacity = 0.6f;
   original.has_render_surface = false;
@@ -187,20 +172,6 @@ TEST(PropertyTreeSerializationTest, EffectNodeDataSerialization) {
   original.replica_layer_id = 10;
   original.replica_mask_layer_id = 9;
   original.sublayer_scale = gfx::Vector2dF(0.5f, 0.5f);
-
-  proto::TreeNode proto;
-  original.ToProtobuf(&proto);
-  EffectNodeData result;
-  result.FromProtobuf(proto);
-
-  EXPECT_EQ(original, result);
-}
-
-TEST(PropertyTreeSerializationTest, EffectNodeSerialization) {
-  EffectNode original;
-  original.id = 3;
-  original.parent_id = 2;
-  original.owner_id = 4;
 
   proto::TreeNode proto;
   original.ToProtobuf(&proto);
@@ -214,19 +185,19 @@ TEST(PropertyTreeSerializationTest, EffectTreeSerialization) {
   EffectTree original;
   EffectNode& root = *original.Node(0);
   root.owner_id = 5;
-  root.data.transform_id = 2;
-  root.data.clip_id = 1;
+  root.transform_id = 2;
+  root.clip_id = 1;
   EffectNode second;
   second.owner_id = 6;
-  second.data.transform_id = 4;
-  second.data.opacity = true;
-  second.data.mask_layer_id = 32;
+  second.transform_id = 4;
+  second.opacity = true;
+  second.mask_layer_id = 32;
   EffectNode third;
   third.owner_id = 7;
-  third.data.clip_id = 3;
-  third.data.replica_layer_id = 44;
-  third.data.replica_mask_layer_id = 45;
-  third.data.has_render_surface = false;
+  third.clip_id = 3;
+  third.replica_layer_id = 44;
+  third.replica_mask_layer_id = 45;
+  third.has_render_surface = false;
 
   original.Insert(second, 0);
   original.Insert(third, 1);
@@ -247,8 +218,11 @@ TEST(PropertyTreeSerializationTest, EffectTreeSerialization) {
   EXPECT_EQ(original, result);
 }
 
-TEST(PropertyTreeSerializationTest, ScrollNodeDataSerialization) {
-  ScrollNodeData original;
+TEST(PropertyTreeSerializationTest, ScrollNodeSerialization) {
+  ScrollNode original;
+  original.id = 3;
+  original.parent_id = 2;
+  original.owner_id = 4;
   original.scrollable = true;
   original.main_thread_scrolling_reasons =
       MainThreadScrollingReason::kScrollbarScrolling;
@@ -258,20 +232,6 @@ TEST(PropertyTreeSerializationTest, ScrollNodeDataSerialization) {
   original.max_scroll_offset_affected_by_page_scale = true;
   original.is_inner_viewport_scroll_layer = true;
   original.is_outer_viewport_scroll_layer = false;
-
-  proto::TreeNode proto;
-  original.ToProtobuf(&proto);
-  ScrollNodeData result;
-  result.FromProtobuf(proto);
-
-  EXPECT_EQ(original, result);
-}
-
-TEST(PropertyTreeSerializationTest, ScrollNodeSerialization) {
-  ScrollNode original;
-  original.id = 3;
-  original.parent_id = 2;
-  original.owner_id = 4;
 
   proto::TreeNode proto;
   original.ToProtobuf(&proto);
@@ -287,11 +247,11 @@ TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
   ScrollTree& original = property_trees.scroll_tree;
   ScrollNode second;
   second.owner_id = 10;
-  second.data.scrollable = true;
-  second.data.bounds = gfx::Size(15, 15);
+  second.scrollable = true;
+  second.bounds = gfx::Size(15, 15);
   ScrollNode third;
   third.owner_id = 20;
-  third.data.contains_non_fast_scrollable_region = true;
+  third.contains_non_fast_scrollable_region = true;
 
   original.Insert(second, 0);
   original.Insert(third, 1);
@@ -435,7 +395,7 @@ class PropertyTreeTestComputeTransformRoot : public PropertyTreeTest {
     TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
     root.id = 0;
-    root.data.local.Translate(2, 2);
+    root.local.Translate(2, 2);
     tree.SetTargetId(root.id, 0);
     SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(0);
@@ -470,13 +430,13 @@ class PropertyTreeTestComputeTransformChild : public PropertyTreeTest {
     PropertyTrees property_trees;
     TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
-    root.data.local.Translate(2, 2);
+    root.local.Translate(2, 2);
     tree.SetTargetId(root.id, 0);
     tree.UpdateTransforms(0);
 
     TransformNode child;
-    child.data.local.Translate(3, 3);
-    child.data.source_node_id = 0;
+    child.local.Translate(3, 3);
+    child.source_node_id = 0;
     child.id = tree.Insert(child, 0);
     tree.SetTargetId(child.id, 0);
 
@@ -523,19 +483,19 @@ class PropertyTreeTestComputeTransformSibling : public PropertyTreeTest {
     PropertyTrees property_trees;
     TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
-    root.data.local.Translate(2, 2);
+    root.local.Translate(2, 2);
     tree.SetTargetId(root.id, 0);
     tree.UpdateTransforms(0);
 
     TransformNode child;
-    child.data.local.Translate(3, 3);
-    child.data.source_node_id = 0;
+    child.local.Translate(3, 3);
+    child.source_node_id = 0;
     child.id = tree.Insert(child, 0);
     tree.SetTargetId(child.id, 0);
 
     TransformNode sibling;
-    sibling.data.local.Translate(7, 7);
-    sibling.data.source_node_id = 0;
+    sibling.local.Translate(7, 7);
+    sibling.source_node_id = 0;
     sibling.id = tree.Insert(sibling, 0);
     tree.SetTargetId(sibling.id, 0);
 
@@ -580,25 +540,25 @@ class PropertyTreeTestComputeTransformSiblingSingularAncestor
     PropertyTrees property_trees;
     TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
-    root.data.local.Translate(2, 2);
+    root.local.Translate(2, 2);
     tree.SetTargetId(root.id, 0);
     tree.UpdateTransforms(0);
 
     TransformNode singular;
-    singular.data.local.matrix().set(2, 2, 0.0);
-    singular.data.source_node_id = 0;
+    singular.local.matrix().set(2, 2, 0.0);
+    singular.source_node_id = 0;
     singular.id = tree.Insert(singular, 0);
     tree.SetTargetId(singular.id, 0);
 
     TransformNode child;
-    child.data.local.Translate(3, 3);
-    child.data.source_node_id = 1;
+    child.local.Translate(3, 3);
+    child.source_node_id = 1;
     child.id = tree.Insert(child, 1);
     tree.SetTargetId(child.id, 0);
 
     TransformNode sibling;
-    sibling.data.local.Translate(7, 7);
-    sibling.data.source_node_id = 1;
+    sibling.local.Translate(7, 7);
+    sibling.source_node_id = 1;
     sibling.id = tree.Insert(sibling, 1);
     tree.SetTargetId(sibling.id, 0);
 
@@ -637,31 +597,31 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     int grand_parent = tree.Insert(TransformNode(), 0);
     tree.SetContentTargetId(grand_parent, grand_parent);
     tree.SetTargetId(grand_parent, grand_parent);
-    tree.Node(grand_parent)->data.source_node_id = 0;
+    tree.Node(grand_parent)->source_node_id = 0;
 
     gfx::Transform rotation_about_x;
     rotation_about_x.RotateAboutXAxis(15);
 
     int parent = tree.Insert(TransformNode(), grand_parent);
-    tree.Node(parent)->data.needs_sublayer_scale = true;
+    tree.Node(parent)->needs_sublayer_scale = true;
     tree.SetTargetId(parent, grand_parent);
     tree.SetContentTargetId(parent, parent);
-    tree.Node(parent)->data.source_node_id = grand_parent;
-    tree.Node(parent)->data.local = rotation_about_x;
+    tree.Node(parent)->source_node_id = grand_parent;
+    tree.Node(parent)->local = rotation_about_x;
 
     int child = tree.Insert(TransformNode(), parent);
     tree.SetTargetId(child, parent);
     tree.SetContentTargetId(child, parent);
-    tree.Node(child)->data.source_node_id = parent;
-    tree.Node(child)->data.flattens_inherited_transform = true;
-    tree.Node(child)->data.local = rotation_about_x;
+    tree.Node(child)->source_node_id = parent;
+    tree.Node(child)->flattens_inherited_transform = true;
+    tree.Node(child)->local = rotation_about_x;
 
     int grand_child = tree.Insert(TransformNode(), child);
     tree.SetTargetId(grand_child, parent);
     tree.SetContentTargetId(grand_child, parent);
-    tree.Node(grand_child)->data.source_node_id = child;
-    tree.Node(grand_child)->data.flattens_inherited_transform = true;
-    tree.Node(grand_child)->data.local = rotation_about_x;
+    tree.Node(grand_child)->source_node_id = child;
+    tree.Node(grand_child)->flattens_inherited_transform = true;
+    tree.Node(grand_child)->local = rotation_about_x;
 
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
@@ -691,7 +651,7 @@ class PropertyTreeTestTransformsWithFlattening : public PropertyTreeTest {
     EXPECT_TRANSFORMATION_MATRIX_EQ(rotation_about_x, grand_child_to_child);
 
     // Remove flattening at grand_child, and recompute transforms.
-    tree.Node(grand_child)->data.flattens_inherited_transform = false;
+    tree.Node(grand_child)->flattens_inherited_transform = false;
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
@@ -718,13 +678,13 @@ class PropertyTreeTestMultiplicationOrder : public PropertyTreeTest {
     PropertyTrees property_trees;
     TransformTree& tree = property_trees.transform_tree;
     TransformNode& root = *tree.Node(0);
-    root.data.local.Translate(2, 2);
+    root.local.Translate(2, 2);
     tree.SetTargetId(root.id, 0);
     tree.UpdateTransforms(0);
 
     TransformNode child;
-    child.data.local.Scale(2, 2);
-    child.data.source_node_id = 0;
+    child.local.Scale(2, 2);
+    child.source_node_id = 0;
     child.id = tree.Insert(child, 0);
     tree.SetTargetId(child.id, 0);
 
@@ -764,8 +724,8 @@ class PropertyTreeTestComputeTransformWithUninvertibleTransform
     tree.UpdateTransforms(0);
 
     TransformNode child;
-    child.data.local.Scale(0, 0);
-    child.data.source_node_id = 0;
+    child.local.Scale(0, 0);
+    child.source_node_id = 0;
     child.id = tree.Insert(child, 0);
     tree.SetTargetId(child.id, 0);
 
@@ -804,40 +764,40 @@ class PropertyTreeTestComputeTransformWithSublayerScale
     tree.UpdateTransforms(0);
 
     TransformNode grand_parent;
-    grand_parent.data.local.Scale(2.f, 2.f);
-    grand_parent.data.source_node_id = 0;
-    grand_parent.data.needs_sublayer_scale = true;
+    grand_parent.local.Scale(2.f, 2.f);
+    grand_parent.source_node_id = 0;
+    grand_parent.needs_sublayer_scale = true;
     int grand_parent_id = tree.Insert(grand_parent, 0);
     tree.SetTargetId(grand_parent_id, 0);
     tree.UpdateTransforms(grand_parent_id);
 
     TransformNode parent;
-    parent.data.local.Translate(15.f, 15.f);
-    parent.data.source_node_id = grand_parent_id;
+    parent.local.Translate(15.f, 15.f);
+    parent.source_node_id = grand_parent_id;
     int parent_id = tree.Insert(parent, grand_parent_id);
     tree.SetTargetId(parent_id, grand_parent_id);
     tree.UpdateTransforms(parent_id);
 
     TransformNode child;
-    child.data.local.Scale(3.f, 3.f);
-    child.data.source_node_id = parent_id;
+    child.local.Scale(3.f, 3.f);
+    child.source_node_id = parent_id;
     int child_id = tree.Insert(child, parent_id);
     tree.SetTargetId(child_id, grand_parent_id);
     tree.UpdateTransforms(child_id);
 
     TransformNode grand_child;
-    grand_child.data.local.Scale(5.f, 5.f);
-    grand_child.data.source_node_id = child_id;
-    grand_child.data.needs_sublayer_scale = true;
+    grand_child.local.Scale(5.f, 5.f);
+    grand_child.source_node_id = child_id;
+    grand_child.needs_sublayer_scale = true;
     int grand_child_id = tree.Insert(grand_child, child_id);
     tree.SetTargetId(grand_child_id, grand_parent_id);
     SetupTransformTreeForTest(&tree);
     tree.UpdateTransforms(grand_child_id);
 
     EXPECT_EQ(gfx::Vector2dF(2.f, 2.f),
-              tree.Node(grand_parent_id)->data.sublayer_scale);
+              tree.Node(grand_parent_id)->sublayer_scale);
     EXPECT_EQ(gfx::Vector2dF(30.f, 30.f),
-              tree.Node(grand_child_id)->data.sublayer_scale);
+              tree.Node(grand_child_id)->sublayer_scale);
 
     // Compute transform from grand_parent to grand_child.
     gfx::Transform expected_transform_without_sublayer_scale;
@@ -922,25 +882,25 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     tree.UpdateTransforms(0);
 
     TransformNode grand_parent;
-    grand_parent.data.local.Scale(2.f, 0.f);
-    grand_parent.data.source_node_id = 0;
-    grand_parent.data.needs_sublayer_scale = true;
+    grand_parent.local.Scale(2.f, 0.f);
+    grand_parent.source_node_id = 0;
+    grand_parent.needs_sublayer_scale = true;
     int grand_parent_id = tree.Insert(grand_parent, 0);
     tree.SetTargetId(grand_parent_id, 0);
     tree.SetContentTargetId(grand_parent_id, grand_parent_id);
     tree.UpdateTransforms(grand_parent_id);
 
     TransformNode parent;
-    parent.data.local.Translate(1.f, 1.f);
-    parent.data.source_node_id = grand_parent_id;
+    parent.local.Translate(1.f, 1.f);
+    parent.source_node_id = grand_parent_id;
     int parent_id = tree.Insert(parent, grand_parent_id);
     tree.SetTargetId(parent_id, grand_parent_id);
     tree.SetContentTargetId(parent_id, grand_parent_id);
     tree.UpdateTransforms(parent_id);
 
     TransformNode child;
-    child.data.local.Translate(3.f, 4.f);
-    child.data.source_node_id = parent_id;
+    child.local.Translate(3.f, 4.f);
+    child.source_node_id = parent_id;
     int child_id = tree.Insert(child, parent_id);
     tree.SetTargetId(child_id, grand_parent_id);
     tree.SetContentTargetId(child_id, grand_parent_id);
@@ -955,9 +915,9 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
 
-    tree.Node(grand_parent_id)->data.local.MakeIdentity();
-    tree.Node(grand_parent_id)->data.local.Scale(0.f, 2.f);
-    tree.Node(grand_parent_id)->data.needs_local_transform_update = true;
+    tree.Node(grand_parent_id)->local.MakeIdentity();
+    tree.Node(grand_parent_id)->local.Scale(0.f, 2.f);
+    tree.Node(grand_parent_id)->needs_local_transform_update = true;
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
 
@@ -967,9 +927,9 @@ class PropertyTreeTestComputeTransformToTargetWithZeroSublayerScale
     EXPECT_TRUE(success);
     EXPECT_TRANSFORMATION_MATRIX_EQ(expected_transform, transform);
 
-    tree.Node(grand_parent_id)->data.local.MakeIdentity();
-    tree.Node(grand_parent_id)->data.local.Scale(0.f, 0.f);
-    tree.Node(grand_parent_id)->data.needs_local_transform_update = true;
+    tree.Node(grand_parent_id)->local.MakeIdentity();
+    tree.Node(grand_parent_id)->local.Scale(0.f, 0.f);
+    tree.Node(grand_parent_id)->needs_local_transform_update = true;
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
 
@@ -997,8 +957,8 @@ class PropertyTreeTestFlatteningWhenDestinationHasOnlyFlatAncestors
     int parent = tree.Insert(TransformNode(), 0);
     tree.SetContentTargetId(parent, parent);
     tree.SetTargetId(parent, parent);
-    tree.Node(parent)->data.source_node_id = 0;
-    tree.Node(parent)->data.local.Translate(2, 2);
+    tree.Node(parent)->source_node_id = 0;
+    tree.Node(parent)->local.Translate(2, 2);
 
     gfx::Transform rotation_about_x;
     rotation_about_x.RotateAboutXAxis(15);
@@ -1006,14 +966,14 @@ class PropertyTreeTestFlatteningWhenDestinationHasOnlyFlatAncestors
     int child = tree.Insert(TransformNode(), parent);
     tree.SetContentTargetId(child, child);
     tree.SetTargetId(child, child);
-    tree.Node(child)->data.source_node_id = parent;
-    tree.Node(child)->data.local = rotation_about_x;
+    tree.Node(child)->source_node_id = parent;
+    tree.Node(child)->local = rotation_about_x;
 
     int grand_child = tree.Insert(TransformNode(), child);
     tree.SetContentTargetId(grand_child, grand_child);
     tree.SetTargetId(grand_child, grand_child);
-    tree.Node(grand_child)->data.source_node_id = child;
-    tree.Node(grand_child)->data.flattens_inherited_transform = true;
+    tree.Node(grand_child)->source_node_id = child;
+    tree.Node(grand_child)->flattens_inherited_transform = true;
 
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
@@ -1045,18 +1005,18 @@ class PropertyTreeTestScreenSpaceOpacityUpdateTest : public PropertyTreeTest {
     int child = tree.Insert(EffectNode(), parent);
     SetupEffectTreeForTest(&tree);
 
-    EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 1.f);
-    tree.Node(parent)->data.opacity = 0.5f;
+    EXPECT_EQ(tree.Node(child)->screen_space_opacity, 1.f);
+    tree.Node(parent)->opacity = 0.5f;
     tree.set_needs_update(true);
     SetupEffectTreeForTest(&tree);
     draw_property_utils::ComputeEffects(&tree);
-    EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.5f);
+    EXPECT_EQ(tree.Node(child)->screen_space_opacity, 0.5f);
 
-    tree.Node(child)->data.opacity = 0.5f;
+    tree.Node(child)->opacity = 0.5f;
     tree.set_needs_update(true);
     SetupEffectTreeForTest(&tree);
     draw_property_utils::ComputeEffects(&tree);
-    EXPECT_EQ(tree.Node(child)->data.screen_space_opacity, 0.25f);
+    EXPECT_EQ(tree.Node(child)->screen_space_opacity, 0.25f);
   }
 };
 
@@ -1073,38 +1033,38 @@ class PropertyTreeTestNonIntegerTranslationTest : public PropertyTreeTest {
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.SetTargetId(parent, parent);
-    tree.Node(parent)->data.local.Translate(1.5f, 1.5f);
+    tree.Node(parent)->local.Translate(1.5f, 1.5f);
 
     int child = tree.Insert(TransformNode(), parent);
     tree.SetTargetId(child, parent);
-    tree.Node(child)->data.local.Translate(1, 1);
+    tree.Node(child)->local.Translate(1, 1);
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
-    EXPECT_FALSE(tree.Node(parent)
-                     ->data.node_and_ancestors_have_only_integer_translation);
-    EXPECT_FALSE(tree.Node(child)
-                     ->data.node_and_ancestors_have_only_integer_translation);
+    EXPECT_FALSE(
+        tree.Node(parent)->node_and_ancestors_have_only_integer_translation);
+    EXPECT_FALSE(
+        tree.Node(child)->node_and_ancestors_have_only_integer_translation);
 
-    tree.Node(parent)->data.local.Translate(0.5f, 0.5f);
-    tree.Node(child)->data.local.Translate(0.5f, 0.5f);
+    tree.Node(parent)->local.Translate(0.5f, 0.5f);
+    tree.Node(child)->local.Translate(0.5f, 0.5f);
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
-    EXPECT_TRUE(tree.Node(parent)
-                    ->data.node_and_ancestors_have_only_integer_translation);
-    EXPECT_FALSE(tree.Node(child)
-                     ->data.node_and_ancestors_have_only_integer_translation);
+    EXPECT_TRUE(
+        tree.Node(parent)->node_and_ancestors_have_only_integer_translation);
+    EXPECT_FALSE(
+        tree.Node(child)->node_and_ancestors_have_only_integer_translation);
 
-    tree.Node(child)->data.local.Translate(0.5f, 0.5f);
+    tree.Node(child)->local.Translate(0.5f, 0.5f);
     tree.SetTargetId(child, child);
     tree.set_needs_update(true);
     SetupTransformTreeForTest(&tree);
     draw_property_utils::ComputeTransforms(&tree);
-    EXPECT_TRUE(tree.Node(parent)
-                    ->data.node_and_ancestors_have_only_integer_translation);
-    EXPECT_TRUE(tree.Node(child)
-                    ->data.node_and_ancestors_have_only_integer_translation);
+    EXPECT_TRUE(
+        tree.Node(parent)->node_and_ancestors_have_only_integer_translation);
+    EXPECT_TRUE(
+        tree.Node(child)->node_and_ancestors_have_only_integer_translation);
   }
 };
 
@@ -1121,14 +1081,14 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
 
     int parent = tree.Insert(TransformNode(), 0);
     tree.SetTargetId(parent, parent);
-    tree.Node(parent)->data.scrolls = true;
+    tree.Node(parent)->scrolls = true;
 
     int child = tree.Insert(TransformNode(), parent);
     TransformNode* child_node = tree.Node(child);
     tree.SetTargetId(child, parent);
-    child_node->data.scrolls = true;
-    child_node->data.local.Scale3d(6.0f, 6.0f, 0.0f);
-    child_node->data.local.Translate(1.3f, 1.3f);
+    child_node->scrolls = true;
+    child_node->local.Scale3d(6.0f, 6.0f, 0.0f);
+    child_node->local.Translate(1.3f, 1.3f);
     tree.set_needs_update(true);
 
     SetupTransformTreeForTest(&tree);
@@ -1139,10 +1099,10 @@ class PropertyTreeTestSingularTransformSnapTest : public PropertyTreeTest {
     // The following checks are to ensure that snapping is skipped because of
     // singular transform (and not because of other reasons which also cause
     // snapping to be skipped).
-    EXPECT_TRUE(child_node->data.scrolls);
+    EXPECT_TRUE(child_node->scrolls);
     EXPECT_TRUE(tree.ToTarget(child).IsScaleOrTranslation());
-    EXPECT_FALSE(child_node->data.to_screen_is_potentially_animated);
-    EXPECT_FALSE(child_node->data.ancestors_are_invertible);
+    EXPECT_FALSE(child_node->to_screen_is_potentially_animated);
+    EXPECT_FALSE(child_node->ancestors_are_invertible);
 
     gfx::Transform rounded = tree.ToTarget(child);
     rounded.RoundTranslationComponents();

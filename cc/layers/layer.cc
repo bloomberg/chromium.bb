@@ -31,8 +31,10 @@
 #include "cc/proto/layer.pb.h"
 #include "cc/proto/skia_conversions.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/transform_node.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -499,8 +501,8 @@ void Layer::SetOpacity(float opacity) {
     if (effect_id_to_index != property_trees->effect_id_to_index_map.end()) {
       EffectNode* node =
           property_trees->effect_tree.Node(effect_id_to_index->second);
-      node->data.opacity = opacity;
-      node->data.effect_changed = true;
+      node->opacity = opacity;
+      node->effect_changed = true;
       property_trees->effect_tree.set_needs_update(true);
       SetNeedsCommitNoRebuild();
       return;
@@ -614,10 +616,9 @@ void Layer::SetPosition(const gfx::PointF& position) {
               property_trees->transform_id_to_index_map[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
-    transform_node->data.update_post_local_transform(position,
-                                                     transform_origin());
-    transform_node->data.needs_local_transform_update = true;
-    transform_node->data.transform_changed = true;
+    transform_node->update_post_local_transform(position, transform_origin());
+    transform_node->needs_local_transform_update = true;
+    transform_node->transform_changed = true;
     layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
     SetNeedsCommitNoRebuild();
     return;
@@ -669,9 +670,9 @@ void Layer::SetTransform(const gfx::Transform& transform) {
           property_trees->transform_tree.Node(transform_tree_index());
       bool preserves_2d_axis_alignment =
           Are2dAxisAligned(inputs_.transform, transform);
-      transform_node->data.local = transform;
-      transform_node->data.needs_local_transform_update = true;
-      transform_node->data.transform_changed = true;
+      transform_node->local = transform;
+      transform_node->needs_local_transform_update = true;
+      transform_node->transform_changed = true;
       layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
       if (preserves_2d_axis_alignment)
         SetNeedsCommitNoRebuild();
@@ -704,11 +705,10 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
               property_trees->transform_id_to_index_map[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
-    transform_node->data.update_pre_local_transform(transform_origin);
-    transform_node->data.update_post_local_transform(position(),
-                                                     transform_origin);
-    transform_node->data.needs_local_transform_update = true;
-    transform_node->data.transform_changed = true;
+    transform_node->update_pre_local_transform(transform_origin);
+    transform_node->update_post_local_transform(position(), transform_origin);
+    transform_node->needs_local_transform_update = true;
+    transform_node->transform_changed = true;
     layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
     SetNeedsCommitNoRebuild();
     return;
@@ -835,8 +835,8 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
               property_trees->transform_id_to_index_map[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
-    transform_node->data.scroll_offset = CurrentScrollOffset();
-    transform_node->data.needs_local_transform_update = true;
+    transform_node->scroll_offset = CurrentScrollOffset();
+    transform_node->needs_local_transform_update = true;
     property_trees->transform_tree.set_needs_update(true);
     SetNeedsCommitNoRebuild();
     return;
@@ -868,8 +868,8 @@ void Layer::SetScrollOffsetFromImplSide(
               property_trees->transform_id_to_index_map[id()]);
     TransformNode* transform_node =
         property_trees->transform_tree.Node(transform_tree_index());
-    transform_node->data.scroll_offset = CurrentScrollOffset();
-    transform_node->data.needs_local_transform_update = true;
+    transform_node->scroll_offset = CurrentScrollOffset();
+    transform_node->needs_local_transform_update = true;
     property_trees->transform_tree.set_needs_update(true);
     needs_rebuild = false;
   }
@@ -1666,7 +1666,7 @@ void Layer::OnOpacityAnimated(float opacity) {
       DCHECK_EQ(effect_tree_index(),
                 property_trees->effect_id_to_index_map[id()]);
       EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
-      node->data.opacity = opacity;
+      node->opacity = opacity;
       property_trees->effect_tree.set_needs_update(true);
     }
   }
@@ -1687,9 +1687,9 @@ void Layer::OnTransformAnimated(const gfx::Transform& transform) {
                 property_trees->transform_id_to_index_map[id()]);
       TransformNode* node =
           property_trees->transform_tree.Node(transform_tree_index());
-      node->data.local = transform;
-      node->data.needs_local_transform_update = true;
-      node->data.has_potential_animation = true;
+      node->local = transform;
+      node->needs_local_transform_update = true;
+      node->has_potential_animation = true;
       property_trees->transform_tree.set_needs_update(true);
     }
   }
@@ -1712,7 +1712,7 @@ void Layer::OnTransformIsCurrentlyAnimatingChanged(
             property_trees->transform_id_to_index_map[id()]);
   TransformNode* node =
       property_trees->transform_tree.Node(transform_tree_index());
-  node->data.is_currently_animating = is_currently_animating;
+  node->is_currently_animating = is_currently_animating;
 }
 
 void Layer::OnTransformIsPotentiallyAnimatingChanged(
@@ -1728,11 +1728,11 @@ void Layer::OnTransformIsPotentiallyAnimatingChanged(
   TransformNode* node =
       property_trees->transform_tree.Node(transform_tree_index());
 
-  node->data.has_potential_animation = has_potential_animation;
+  node->has_potential_animation = has_potential_animation;
   if (has_potential_animation) {
-    node->data.has_only_translation_animations = HasOnlyTranslationTransforms();
+    node->has_only_translation_animations = HasOnlyTranslationTransforms();
   } else {
-    node->data.has_only_translation_animations = true;
+    node->has_only_translation_animations = true;
   }
   property_trees->transform_tree.set_needs_update(true);
 }
@@ -1744,7 +1744,7 @@ void Layer::OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating) {
     return;
   DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
   EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
-  node->data.is_currently_animating_opacity = is_currently_animating;
+  node->is_currently_animating_opacity = is_currently_animating;
 }
 
 void Layer::OnOpacityIsPotentiallyAnimatingChanged(
@@ -1755,7 +1755,7 @@ void Layer::OnOpacityIsPotentiallyAnimatingChanged(
     return;
   DCHECK_EQ(effect_tree_index(), property_trees->effect_id_to_index_map[id()]);
   EffectNode* node = property_trees->effect_tree.Node(effect_tree_index());
-  node->data.has_potential_opacity_animation =
+  node->has_potential_opacity_animation =
       has_potential_animation || OpacityCanAnimateOnImplThread();
   property_trees->effect_tree.set_needs_update(true);
 }
@@ -1862,7 +1862,7 @@ int Layer::num_copy_requests_in_target_subtree() {
   return layer_tree_host()
       ->property_trees()
       ->effect_tree.Node(effect_tree_index())
-      ->data.num_copy_requests_in_subtree;
+      ->num_copy_requests_in_subtree;
 }
 
 gfx::Transform Layer::screen_space_transform() const {

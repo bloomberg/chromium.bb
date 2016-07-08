@@ -25,6 +25,7 @@
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/transform_node.h"
 
 namespace cc {
 namespace {
@@ -1686,7 +1687,7 @@ class LayerTreeHostAnimationTestChangeAnimationPlayer
     translate.Translate(5, 5);
     switch (host_impl->sync_tree()->source_frame_number()) {
       case 2:
-        EXPECT_TRANSFORMATION_MATRIX_EQ(node->data.local, translate);
+        EXPECT_TRANSFORMATION_MATRIX_EQ(node->local, translate);
         EndTest();
         break;
       default:

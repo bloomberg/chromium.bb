@@ -62,8 +62,10 @@
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/transform_node.h"
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2940,7 +2942,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
         host_impl_->active_tree()->property_trees()->effect_tree.Node(
             active_scrollbar_layer->effect_tree_index());
     EXPECT_FLOAT_EQ(active_scrollbar_layer->Opacity(),
-                    active_tree_node->data.opacity);
+                    active_tree_node->opacity);
 
     host_impl_->ScrollbarAnimationControllerForId(scroll->id())
         ->DidMouseMoveNear(0);
@@ -2964,14 +2966,14 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     host_impl_->pending_tree()
         ->property_trees()
         ->always_use_active_tree_opacity_effect_ids.push_back(400);
-    EXPECT_FLOAT_EQ(1.f, active_tree_node->data.opacity);
+    EXPECT_FLOAT_EQ(1.f, active_tree_node->opacity);
     EXPECT_FLOAT_EQ(1.f, active_scrollbar_layer->Opacity());
-    EXPECT_FLOAT_EQ(0.f, pending_tree_node->data.opacity);
+    EXPECT_FLOAT_EQ(0.f, pending_tree_node->opacity);
     host_impl_->ActivateSyncTree();
     active_tree_node =
         host_impl_->active_tree()->property_trees()->effect_tree.Node(
             active_scrollbar_layer->effect_tree_index());
-    EXPECT_FLOAT_EQ(1.f, active_tree_node->data.opacity);
+    EXPECT_FLOAT_EQ(1.f, active_tree_node->opacity);
     EXPECT_FLOAT_EQ(1.f, active_scrollbar_layer->Opacity());
   }
 };
@@ -9854,7 +9856,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
   TransformNode* node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           test_layer->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
 
   gfx::Transform external_transform;
   external_transform.Translate(10, 10);
@@ -9870,7 +9872,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
                      resourceless_software_draw);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       test_layer->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
 
   // Clear the external transform.
   external_transform = gfx::Transform();
@@ -9881,7 +9883,7 @@ TEST_F(LayerTreeHostImplTest, ExternalTransformAffectsSublayerScaleFactor) {
                      resourceless_software_draw);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       test_layer->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
@@ -10897,27 +10899,27 @@ TEST_F(LayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
   // SetPageScaleOnActiveTree also updates the factors in property trees.
-  EXPECT_EQ(active_tree_node->data.post_local_scale_factor, 2.f);
+  EXPECT_EQ(active_tree_node->post_local_scale_factor, 2.f);
   EXPECT_EQ(host_impl_->active_tree()->current_page_scale_factor(), 2.f);
 
   TransformNode* pending_tree_node =
       host_impl_->pending_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
-  EXPECT_EQ(pending_tree_node->data.post_local_scale_factor, 1.f);
+  EXPECT_EQ(pending_tree_node->post_local_scale_factor, 1.f);
   EXPECT_EQ(host_impl_->pending_tree()->current_page_scale_factor(), 2.f);
 
   host_impl_->pending_tree()->UpdateDrawProperties(false);
   pending_tree_node =
       host_impl_->pending_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
-  EXPECT_EQ(pending_tree_node->data.post_local_scale_factor, 2.f);
+  EXPECT_EQ(pending_tree_node->post_local_scale_factor, 2.f);
 
   host_impl_->ActivateSyncTree();
   host_impl_->active_tree()->UpdateDrawProperties(false);
   active_tree_node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           page_scale_layer->transform_tree_index());
-  EXPECT_EQ(active_tree_node->data.post_local_scale_factor, 2.f);
+  EXPECT_EQ(active_tree_node->post_local_scale_factor, 2.f);
 }
 
 TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
@@ -10940,7 +10942,7 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   TransformNode* node =
       host_impl_->active_tree()->property_trees()->transform_tree.Node(
           in_subtree_of_page_scale_layer->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
 
   host_impl_->active_tree()->SetPageScaleOnActiveTree(2.f);
 
@@ -10949,7 +10951,7 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   in_subtree_of_page_scale_layer = host_impl_->active_tree()->LayerById(100);
   node = host_impl_->active_tree()->property_trees()->transform_tree.Node(
       in_subtree_of_page_scale_layer->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
 }
 
 TEST_F(LayerTreeHostImplTest, JitterTest) {

@@ -21,6 +21,7 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
@@ -45,9 +46,9 @@ RenderSurfaceImpl* RenderSurfaceImpl::render_target() {
   EffectTree& effect_tree =
       owning_layer_->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(EffectTreeIndex());
-  EffectNode* target_node = effect_tree.Node(node->data.target_id);
+  EffectNode* target_node = effect_tree.Node(node->target_id);
   if (target_node->id != 0)
-    return target_node->data.render_surface;
+    return target_node->render_surface;
   else
     return this;
 }
@@ -56,9 +57,9 @@ const RenderSurfaceImpl* RenderSurfaceImpl::render_target() const {
   const EffectTree& effect_tree =
       owning_layer_->layer_tree_impl()->property_trees()->effect_tree;
   const EffectNode* node = effect_tree.Node(EffectTreeIndex());
-  const EffectNode* target_node = effect_tree.Node(node->data.target_id);
+  const EffectNode* target_node = effect_tree.Node(node->target_id);
   if (target_node->id != 0)
-    return target_node->data.render_surface;
+    return target_node->render_surface;
   else
     return this;
 }
@@ -125,43 +126,43 @@ int RenderSurfaceImpl::OwningLayerId() const {
 }
 
 bool RenderSurfaceImpl::HasReplica() const {
-  return OwningEffectNode()->data.replica_layer_id != -1;
+  return OwningEffectNode()->replica_layer_id != -1;
 }
 
 const LayerImpl* RenderSurfaceImpl::ReplicaLayer() const {
-  int replica_layer_id = OwningEffectNode()->data.replica_layer_id;
+  int replica_layer_id = OwningEffectNode()->replica_layer_id;
   return owning_layer_->layer_tree_impl()->LayerById(replica_layer_id);
 }
 
 LayerImpl* RenderSurfaceImpl::ReplicaLayer() {
-  int replica_layer_id = OwningEffectNode()->data.replica_layer_id;
+  int replica_layer_id = OwningEffectNode()->replica_layer_id;
   return owning_layer_->layer_tree_impl()->LayerById(replica_layer_id);
 }
 
 LayerImpl* RenderSurfaceImpl::MaskLayer() {
-  int mask_layer_id = OwningEffectNode()->data.mask_layer_id;
+  int mask_layer_id = OwningEffectNode()->mask_layer_id;
   return owning_layer_->layer_tree_impl()->LayerById(mask_layer_id);
 }
 
 bool RenderSurfaceImpl::HasMask() const {
-  return OwningEffectNode()->data.mask_layer_id != -1;
+  return OwningEffectNode()->mask_layer_id != -1;
 }
 
 LayerImpl* RenderSurfaceImpl::ReplicaMaskLayer() {
-  int replica_mask_layer_id = OwningEffectNode()->data.replica_mask_layer_id;
+  int replica_mask_layer_id = OwningEffectNode()->replica_mask_layer_id;
   return owning_layer_->layer_tree_impl()->LayerById(replica_mask_layer_id);
 }
 
 bool RenderSurfaceImpl::HasReplicaMask() const {
-  return OwningEffectNode()->data.replica_mask_layer_id != -1;
+  return OwningEffectNode()->replica_mask_layer_id != -1;
 }
 
 const FilterOperations& RenderSurfaceImpl::BackgroundFilters() const {
-  return OwningEffectNode()->data.background_filters;
+  return OwningEffectNode()->background_filters;
 }
 
 bool RenderSurfaceImpl::HasCopyRequest() const {
-  return OwningEffectNode()->data.has_copy_request;
+  return OwningEffectNode()->has_copy_request;
 }
 
 int RenderSurfaceImpl::TransformTreeIndex() const {

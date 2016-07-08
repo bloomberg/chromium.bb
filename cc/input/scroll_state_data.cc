@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/input/scroll_state_data.h"
+#include "cc/trees/scroll_node.h"
 
 namespace cc {
 
@@ -39,7 +40,7 @@ void ScrollStateData::set_current_native_scrolling_node(
 
 ElementId ScrollStateData::current_native_scrolling_element() const {
   if (current_native_scrolling_node_)
-    return current_native_scrolling_node_->data.element_id;
+    return current_native_scrolling_node_->element_id;
   return current_native_scrolling_element_;
 }
 

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_node.h"
 
 namespace cc {
 

@@ -14,6 +14,7 @@
 #include "cc/test/layer_tree_host_common_test.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -447,7 +448,7 @@ TEST_F(LayerTreeImplTest, HitTestingClipNodeDifferentTransformAndTargetIds) {
 
   ClipTree& clip_tree = host_impl().active_tree()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(result_layer->clip_tree_index());
-  EXPECT_NE(clip_node->data.transform_id, clip_node->data.target_id);
+  EXPECT_NE(clip_node->transform_id, clip_node->target_id);
 }
 
 TEST_F(LayerTreeImplTest, HitTestingSiblings) {

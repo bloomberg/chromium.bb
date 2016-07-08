@@ -31,6 +31,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/single_thread_proxy.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -1153,41 +1154,41 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   root->SetPosition(arbitrary_point_f);
   TransformNode* node = layer_tree_host_->property_trees()->transform_tree.Node(
       root->transform_tree_index());
-  EXPECT_TRUE(node->data.transform_changed);
+  EXPECT_TRUE(node->transform_changed);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
       layer_tree_host_->property_trees()->ResetAllChangeTracking());
-  EXPECT_FALSE(node->data.transform_changed);
+  EXPECT_FALSE(node->transform_changed);
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   child->SetPosition(arbitrary_point_f);
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       child->transform_tree_index());
-  EXPECT_TRUE(node->data.transform_changed);
+  EXPECT_TRUE(node->transform_changed);
   // child2 is not in the subtree of child, but its scroll parent is. So, its
   // to_screen will be effected by change in position of child2.
   layer_tree_host_->property_trees()->transform_tree.UpdateTransforms(
       child2->transform_tree_index());
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       child2->transform_tree_index());
-  EXPECT_TRUE(node->data.transform_changed);
+  EXPECT_TRUE(node->transform_changed);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       child->PushPropertiesTo(child_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
       layer_tree_host_->property_trees()->ResetAllChangeTracking());
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       child->transform_tree_index());
-  EXPECT_FALSE(node->data.transform_changed);
+  EXPECT_FALSE(node->transform_changed);
 
   gfx::Point3F arbitrary_point_3f = gfx::Point3F(0.125f, 0.25f, 0.f);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   root->SetTransformOrigin(arbitrary_point_3f);
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       root->transform_tree_index());
-  EXPECT_TRUE(node->data.transform_changed);
+  EXPECT_TRUE(node->transform_changed);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
@@ -1201,7 +1202,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   root->SetTransform(arbitrary_transform);
   node = layer_tree_host_->property_trees()->transform_tree.Node(
       root->transform_tree_index());
-  EXPECT_TRUE(node->data.transform_changed);
+  EXPECT_TRUE(node->transform_changed);
 }
 
 TEST_F(LayerTest, AddAndRemoveChild) {

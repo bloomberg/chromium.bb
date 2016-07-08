@@ -21,6 +21,7 @@
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
@@ -101,25 +102,25 @@ void ExpectTreesAreIdentical(Layer* root_layer,
       SCOPED_TRACE("mask_layer");
       int mask_layer_id = layer->mask_layer()->id();
       EXPECT_TRUE(tree_impl->LayerById(mask_layer_id));
-      EXPECT_EQ(mask_layer_id,
-                effect_tree.Node(layer_impl->effect_tree_index())
-                    ->data.mask_layer_id);
+      EXPECT_EQ(
+          mask_layer_id,
+          effect_tree.Node(layer_impl->effect_tree_index())->mask_layer_id);
     }
 
     if (layer->replica_layer()) {
       SCOPED_TRACE("replica_layer");
       int replica_layer_id = layer->replica_layer()->id();
       EXPECT_TRUE(tree_impl->LayerById(layer->replica_layer()->id()));
-      EXPECT_EQ(replica_layer_id,
-                effect_tree.Node(layer_impl->effect_tree_index())
-                    ->data.replica_layer_id);
+      EXPECT_EQ(
+          replica_layer_id,
+          effect_tree.Node(layer_impl->effect_tree_index())->replica_layer_id);
       if (layer->replica_layer()->mask_layer()) {
         SCOPED_TRACE("replica_mask_layer");
         int replica_mask_layer_id = layer->replica_layer()->mask_layer()->id();
         EXPECT_TRUE(tree_impl->LayerById(replica_mask_layer_id));
         EXPECT_EQ(replica_mask_layer_id,
                   effect_tree.Node(layer_impl->effect_tree_index())
-                      ->data.replica_mask_layer_id);
+                      ->replica_mask_layer_id);
       }
     }
 

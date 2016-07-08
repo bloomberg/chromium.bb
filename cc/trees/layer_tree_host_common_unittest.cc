@@ -40,10 +40,14 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_host_common_test.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
+#include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkOffsetImageFilter.h"
@@ -189,7 +193,7 @@ TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
   const int transform_tree_size = parent->layer_tree_impl()
                                       ->property_trees()
                                       ->transform_tree.next_available_id();
-  EXPECT_LT(node->data.transform_id, transform_tree_size);
+  EXPECT_LT(node->transform_id, transform_tree_size);
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForSingleLayer) {
@@ -1373,7 +1377,7 @@ TEST_F(LayerTreeHostCommonTest,
   EffectTree& effect_tree =
       parent->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = effect_tree.Node(render_surface1->effect_tree_index());
-  EXPECT_TRUE(node->data.is_drawn);
+  EXPECT_TRUE(node->is_drawn);
 
   // When parent is transparent, the layer should not be drawn.
   parent->OnOpacityAnimated(0.f);
@@ -1388,7 +1392,7 @@ TEST_F(LayerTreeHostCommonTest,
   }
 
   node = effect_tree.Node(render_surface1->effect_tree_index());
-  EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_FALSE(node->is_drawn);
   EXPECT_EQ(gfx::Rect(), render_surface1->visible_layer_rect());
 }
 
@@ -1706,9 +1710,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
   EXPECT_TRUE(parent->test_properties()->should_flatten_transform);
   EXPECT_TRUE(child->test_properties()->should_flatten_transform);
   EXPECT_FALSE(grand_child->test_properties()->should_flatten_transform);
-
-  gfx::Transform expected_child_draw_transform = identity_matrix;
-  gfx::Transform expected_grand_child_draw_transform = identity_matrix;
 
   gfx::Transform flattened_rotation_about_y = rotation_about_y_axis;
   flattened_rotation_about_y.FlattenTo2d();
@@ -3675,7 +3676,7 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_FALSE(root->layer_tree_impl()
                    ->property_trees()
                    ->transform_tree.Node(grand_child->transform_tree_index())
-                   ->data.ancestors_are_invertible);
+                   ->ancestors_are_invertible);
 
   // CalcDrawProps skips a subtree when a layer's screen space transform is
   // uninvertible
@@ -3748,7 +3749,7 @@ TEST_F(LayerTreeHostCommonTest,
       host_impl.active_tree()
           ->property_trees()
           ->transform_tree.Node(grand_child_ptr->transform_tree_index())
-          ->data.ancestors_are_invertible);
+          ->ancestors_are_invertible);
 
   // Since |grand_child| has an uninvertible screen space transform, it is
   // skipped so
@@ -4993,7 +4994,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
 
   gfx::Transform expected_duplicate_child_draw_transform =
       child->DrawTransform();
-  EXPECT_TRANSFORMATION_MATRIX_EQ(child->DrawTransform(),
+  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_duplicate_child_draw_transform,
                                   duplicate_child_non_owner->DrawTransform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       child->ScreenSpaceTransform(),
@@ -5207,7 +5208,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   EffectTree& tree =
       root_layer->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(child_ptr->effect_tree_index());
-  EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_FALSE(node->is_drawn);
 
   // A layer should be drawn and it should contribute to drawn surface when
   // it has animating opacity even if it has opacity 0.
@@ -5223,7 +5224,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   child_ptr = root_layer->layer_tree_impl()->LayerById(2);
   tree = root_layer->layer_tree_impl()->property_trees()->effect_tree;
   node = tree.Node(child_ptr->effect_tree_index());
-  EXPECT_TRUE(node->data.is_drawn);
+  EXPECT_TRUE(node->is_drawn);
   EXPECT_TRUE(tree.ContributesToDrawnSurface(child_ptr->effect_tree_index()));
 
   // But if the opacity of the layer remains 0 after activation, it should not
@@ -5239,7 +5240,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
   ExecuteCalculateDrawProperties(active_root);
 
   node = active_effect_tree.Node(active_child->effect_tree_index());
-  EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_FALSE(node->is_drawn);
   EXPECT_FALSE(active_effect_tree.ContributesToDrawnSurface(
       active_child->effect_tree_index()));
 }
@@ -5723,15 +5724,15 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   EffectTree& tree =
       root_layer->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(copy_grand_parent_layer->effect_tree_index());
-  EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_FALSE(node->is_drawn);
   node = tree.Node(copy_parent_layer->effect_tree_index());
-  EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_FALSE(node->is_drawn);
   node = tree.Node(copy_layer->effect_tree_index());
-  EXPECT_TRUE(node->data.is_drawn);
+  EXPECT_TRUE(node->is_drawn);
   node = tree.Node(copy_child_layer->effect_tree_index());
-  EXPECT_TRUE(node->data.is_drawn);
+  EXPECT_TRUE(node->is_drawn);
   node = tree.Node(copy_grand_child_layer->effect_tree_index());
-  EXPECT_FALSE(node->data.is_drawn);
+  EXPECT_FALSE(node->is_drawn);
 
   // Though copy_layer is drawn, it shouldn't contribute to drawn surface as its
   // actually hidden.
@@ -6650,24 +6651,24 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {
   const EffectTree& tree =
       root->layer_tree_impl()->property_trees()->effect_tree;
   EXPECT_TRUE(tree.Node(render_surface1->effect_tree_index())
-                  ->data.hidden_by_backface_visibility);
+                  ->hidden_by_backface_visibility);
   EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
-                  ->data.hidden_by_backface_visibility);
+                  ->hidden_by_backface_visibility);
 
   back_facing->OnTransformAnimated(identity_transform);
   render_surface2->OnTransformAnimated(rotate_about_y);
   ExecuteCalculateDrawProperties(root);
   EXPECT_FALSE(tree.Node(render_surface1->effect_tree_index())
-                   ->data.hidden_by_backface_visibility);
+                   ->hidden_by_backface_visibility);
   EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
-                  ->data.hidden_by_backface_visibility);
+                  ->hidden_by_backface_visibility);
 
   render_surface1->OnTransformAnimated(rotate_about_y);
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRUE(tree.Node(render_surface1->effect_tree_index())
-                  ->data.hidden_by_backface_visibility);
+                  ->hidden_by_backface_visibility);
   EXPECT_TRUE(tree.Node(render_surface2->effect_tree_index())
-                  ->data.hidden_by_backface_visibility);
+                  ->hidden_by_backface_visibility);
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
@@ -9332,7 +9333,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
 
   ClipTree& clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
   ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
-  EXPECT_FALSE(clip_node->data.applies_local_clip);
+  EXPECT_FALSE(clip_node->applies_local_clip);
   EXPECT_EQ(gfx::Rect(20, 20), test_layer->visible_layer_rect());
 }
 
@@ -9980,13 +9981,13 @@ TEST_F(LayerTreeHostCommonTest,
   TransformTree& tree =
       root->layer_tree_impl()->property_trees()->transform_tree;
   TransformNode* node = tree.Node(render_surface1->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
 
   node = tree.Node(between_targets->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(1.f, 1.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(1.f, 1.f));
 
   node = tree.Node(render_surface2->transform_tree_index());
-  EXPECT_EQ(node->data.sublayer_scale, gfx::Vector2dF(2.f, 2.f));
+  EXPECT_EQ(node->sublayer_scale, gfx::Vector2dF(2.f, 2.f));
 
   EXPECT_EQ(gfx::Rect(15, 15), test_layer->visible_layer_rect());
 }
@@ -10126,20 +10127,20 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
 
   EffectTree& tree = root->layer_tree_host()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(animated->effect_tree_index());
-  EXPECT_FALSE(node->data.is_currently_animating_opacity);
-  EXPECT_TRUE(node->data.has_potential_opacity_animation);
+  EXPECT_FALSE(node->is_currently_animating_opacity);
+  EXPECT_TRUE(node->has_potential_opacity_animation);
 
   animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
   root->layer_tree_host()->AnimateLayers(
       base::TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::max()));
   node = tree.Node(animated->effect_tree_index());
-  EXPECT_TRUE(node->data.is_currently_animating_opacity);
-  EXPECT_TRUE(node->data.has_potential_opacity_animation);
+  EXPECT_TRUE(node->is_currently_animating_opacity);
+  EXPECT_TRUE(node->has_potential_opacity_animation);
 
   player->AbortAnimations(TargetProperty::OPACITY, false /*needs_completion*/);
   node = tree.Node(animated->effect_tree_index());
-  EXPECT_FALSE(node->data.is_currently_animating_opacity);
-  EXPECT_FALSE(node->data.has_potential_opacity_animation);
+  EXPECT_FALSE(node->is_currently_animating_opacity);
+  EXPECT_FALSE(node->has_potential_opacity_animation);
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
@@ -10190,21 +10191,21 @@ TEST_F(LayerTreeHostCommonTest, TransformAnimationsTrackingTest) {
   TransformTree& tree =
       root->layer_tree_host()->property_trees()->transform_tree;
   TransformNode* node = tree.Node(animated->transform_tree_index());
-  EXPECT_FALSE(node->data.is_currently_animating);
-  EXPECT_TRUE(node->data.has_potential_animation);
+  EXPECT_FALSE(node->is_currently_animating);
+  EXPECT_TRUE(node->has_potential_animation);
 
   animation_ptr->set_time_offset(base::TimeDelta::FromMilliseconds(0));
   root->layer_tree_host()->AnimateLayers(
       base::TimeTicks::FromInternalValue(std::numeric_limits<int64_t>::max()));
   node = tree.Node(animated->transform_tree_index());
-  EXPECT_TRUE(node->data.is_currently_animating);
-  EXPECT_TRUE(node->data.has_potential_animation);
+  EXPECT_TRUE(node->is_currently_animating);
+  EXPECT_TRUE(node->has_potential_animation);
 
   player->AbortAnimations(TargetProperty::TRANSFORM,
                           false /*needs_completion*/);
   node = tree.Node(animated->transform_tree_index());
-  EXPECT_FALSE(node->data.is_currently_animating);
-  EXPECT_FALSE(node->data.has_potential_animation);
+  EXPECT_FALSE(node->is_currently_animating);
+  EXPECT_FALSE(node->has_potential_animation);
 }
 
 TEST_F(LayerTreeHostCommonTest, SerializeScrollUpdateInfo) {
@@ -10341,82 +10342,81 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   property_tree_root->id = kRootPropertyTreeNodeId;
   property_tree_root->parent_id = kInvalidPropertyTreeNodeId;
   property_tree_root->owner_id = kInvalidPropertyTreeNodeId;
-  property_tree_root->data.scrollable = false;
-  property_tree_root->data.main_thread_scrolling_reasons =
+  property_tree_root->scrollable = false;
+  property_tree_root->main_thread_scrolling_reasons =
       MainThreadScrollingReason::kNotScrollingOnMain;
-  property_tree_root->data.contains_non_fast_scrollable_region = false;
-  property_tree_root->data.transform_id = kRootPropertyTreeNodeId;
+  property_tree_root->contains_non_fast_scrollable_region = false;
+  property_tree_root->transform_id = kRootPropertyTreeNodeId;
 
   // The node owned by root1
   ScrollNode scroll_root1;
   scroll_root1.id = 1;
   scroll_root1.owner_id = root1->id();
-  scroll_root1.data.user_scrollable_horizontal = true;
-  scroll_root1.data.user_scrollable_vertical = true;
-  scroll_root1.data.transform_id = root1->transform_tree_index();
+  scroll_root1.user_scrollable_horizontal = true;
+  scroll_root1.user_scrollable_vertical = true;
+  scroll_root1.transform_id = root1->transform_tree_index();
   expected_scroll_tree.Insert(scroll_root1, 0);
 
   // The node owned by parent2
   ScrollNode scroll_parent2;
   scroll_parent2.id = 2;
   scroll_parent2.owner_id = parent2->id();
-  scroll_parent2.data.scrollable = true;
-  scroll_parent2.data.main_thread_scrolling_reasons =
+  scroll_parent2.scrollable = true;
+  scroll_parent2.main_thread_scrolling_reasons =
       parent2->main_thread_scrolling_reasons();
-  scroll_parent2.data.scroll_clip_layer_bounds = root1->bounds();
-  scroll_parent2.data.bounds = parent2->bounds();
-  scroll_parent2.data.max_scroll_offset_affected_by_page_scale = true;
-  scroll_parent2.data.is_inner_viewport_scroll_layer = true;
-  scroll_parent2.data.user_scrollable_horizontal = true;
-  scroll_parent2.data.user_scrollable_vertical = true;
-  scroll_parent2.data.transform_id = parent2->transform_tree_index();
+  scroll_parent2.scroll_clip_layer_bounds = root1->bounds();
+  scroll_parent2.bounds = parent2->bounds();
+  scroll_parent2.max_scroll_offset_affected_by_page_scale = true;
+  scroll_parent2.is_inner_viewport_scroll_layer = true;
+  scroll_parent2.user_scrollable_horizontal = true;
+  scroll_parent2.user_scrollable_vertical = true;
+  scroll_parent2.transform_id = parent2->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent2, 1);
 
   // The node owned by child6
   ScrollNode scroll_child6;
   scroll_child6.id = 3;
   scroll_child6.owner_id = child6->id();
-  scroll_child6.data.main_thread_scrolling_reasons =
+  scroll_child6.main_thread_scrolling_reasons =
       child6->main_thread_scrolling_reasons();
-  scroll_child6.data.should_flatten = true;
-  scroll_child6.data.user_scrollable_horizontal = true;
-  scroll_child6.data.user_scrollable_vertical = true;
-  scroll_child6.data.transform_id = child6->transform_tree_index();
+  scroll_child6.should_flatten = true;
+  scroll_child6.user_scrollable_horizontal = true;
+  scroll_child6.user_scrollable_vertical = true;
+  scroll_child6.transform_id = child6->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child6, 2);
 
   // The node owned by child7, child7 also owns a transform node
   ScrollNode scroll_child7;
   scroll_child7.id = 4;
   scroll_child7.owner_id = child7->id();
-  scroll_child7.data.scrollable = true;
-  scroll_child7.data.scroll_clip_layer_bounds = parent3->bounds();
-  scroll_child7.data.bounds = child7->bounds();
-  scroll_child7.data.user_scrollable_horizontal = true;
-  scroll_child7.data.user_scrollable_vertical = true;
-  scroll_child7.data.transform_id = child7->transform_tree_index();
+  scroll_child7.scrollable = true;
+  scroll_child7.scroll_clip_layer_bounds = parent3->bounds();
+  scroll_child7.bounds = child7->bounds();
+  scroll_child7.user_scrollable_horizontal = true;
+  scroll_child7.user_scrollable_vertical = true;
+  scroll_child7.transform_id = child7->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child7, 1);
 
   // The node owned by grand_child11, grand_child11 also owns a transform node
   ScrollNode scroll_grand_child11;
   scroll_grand_child11.id = 5;
   scroll_grand_child11.owner_id = grand_child11->id();
-  scroll_grand_child11.data.scrollable = true;
-  scroll_grand_child11.data.user_scrollable_horizontal = true;
-  scroll_grand_child11.data.user_scrollable_vertical = true;
-  scroll_grand_child11.data.transform_id =
-      grand_child11->transform_tree_index();
+  scroll_grand_child11.scrollable = true;
+  scroll_grand_child11.user_scrollable_horizontal = true;
+  scroll_grand_child11.user_scrollable_vertical = true;
+  scroll_grand_child11.transform_id = grand_child11->transform_tree_index();
   expected_scroll_tree.Insert(scroll_grand_child11, 4);
 
   // The node owned by parent5
   ScrollNode scroll_parent5;
   scroll_parent5.id = 8;
   scroll_parent5.owner_id = parent5->id();
-  scroll_parent5.data.contains_non_fast_scrollable_region = true;
-  scroll_parent5.data.bounds = gfx::Size(10, 10);
-  scroll_parent5.data.should_flatten = true;
-  scroll_parent5.data.user_scrollable_horizontal = true;
-  scroll_parent5.data.user_scrollable_vertical = true;
-  scroll_parent5.data.transform_id = parent5->transform_tree_index();
+  scroll_parent5.contains_non_fast_scrollable_region = true;
+  scroll_parent5.bounds = gfx::Size(10, 10);
+  scroll_parent5.should_flatten = true;
+  scroll_parent5.user_scrollable_horizontal = true;
+  scroll_parent5.user_scrollable_vertical = true;
+  scroll_parent5.transform_id = parent5->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent5, 1);
 
   expected_scroll_tree.SetScrollOffset(parent2->id(), gfx::ScrollOffset(0, 0));

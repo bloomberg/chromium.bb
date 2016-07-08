@@ -14,7 +14,6 @@
 #include "cc/animation/element_id.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/synced_property.h"
-#include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -28,22 +27,21 @@ class TracedValue;
 namespace cc {
 
 namespace proto {
-class ClipNodeData;
-class EffectNodeData;
 class PropertyTree;
 class PropertyTrees;
 class ScrollNodeData;
-class TransformNodeData;
-class TransformCachedNodeData;
-class TransformTreeData;
 class TreeNode;
 }  // namespace proto
 
 class CopyOutputRequest;
 class LayerTreeImpl;
-class RenderSurfaceImpl;
 class ScrollState;
+struct ClipNode;
+struct EffectNode;
 struct ScrollAndScaleSet;
+struct ScrollNode;
+struct TransformNode;
+struct TransformCachedNodeData;
 
 // ------------------------------*IMPORTANT*---------------------------------
 // Each class declared here has a corresponding proto defined in
@@ -54,290 +52,6 @@ struct ScrollAndScaleSet;
 
 typedef SyncedProperty<AdditionGroup<gfx::ScrollOffset>> SyncedScrollOffset;
 
-template <typename T>
-struct CC_EXPORT TreeNode {
-  TreeNode() : id(-1), parent_id(-1), owner_id(-1), data() {}
-  int id;
-  int parent_id;
-  int owner_id;
-  T data;
-
-  bool operator==(const TreeNode<T>& other) const;
-
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
-
-  void AsValueInto(base::trace_event::TracedValue* value) const;
-};
-
-struct CC_EXPORT TransformNodeData {
-  TransformNodeData();
-  TransformNodeData(const TransformNodeData& other);
-  ~TransformNodeData();
-
-  // The local transform information is combined to form to_parent (ignoring
-  // snapping) as follows:
-  //
-  //   to_parent = M_post_local * T_scroll * M_local * M_pre_local.
-  //
-  // The pre/post may seem odd when read LTR, but we multiply our points from
-  // the right, so the pre_local matrix affects the result "first". This lines
-  // up with the notions of pre/post used in skia and gfx::Transform.
-  //
-  // TODO(vollick): The values labeled with "will be moved..." take up a lot of
-  // space, but are only necessary for animated or scrolled nodes (otherwise
-  // we'll just use the baked to_parent). These values will be ultimately stored
-  // directly on the transform/scroll display list items when that's possible,
-  // or potentially in a scroll tree.
-  //
-  // TODO(vollick): will be moved when accelerated effects are implemented.
-  gfx::Transform pre_local;
-  gfx::Transform local;
-  gfx::Transform post_local;
-
-  gfx::Transform to_parent;
-
-  // This is the node with respect to which source_offset is defined. This will
-  // not be needed once layerization moves to cc, but is needed in order to
-  // efficiently update the transform tree for changes to position in the layer
-  // tree.
-  int source_node_id;
-
-  // This id determines which 3d rendering context the node is in. 0 is a
-  // special value and indicates that the node is not in any 3d rendering
-  // context.
-  int sorting_context_id;
-
-  // TODO(vollick): will be moved when accelerated effects are implemented.
-  bool needs_local_transform_update : 1;
-
-  bool node_and_ancestors_are_animated_or_invertible : 1;
-
-  bool is_invertible : 1;
-  bool ancestors_are_invertible : 1;
-
-  bool has_potential_animation : 1;
-  bool is_currently_animating : 1;
-  bool to_screen_is_potentially_animated : 1;
-  bool has_only_translation_animations : 1;
-
-  // Flattening, when needed, is only applied to a node's inherited transform,
-  // never to its local transform.
-  bool flattens_inherited_transform : 1;
-
-  // This is true if the to_parent transform at every node on the path to the
-  // root is flat.
-  bool node_and_ancestors_are_flat : 1;
-
-  // This is needed to know if a layer can use lcd text.
-  bool node_and_ancestors_have_only_integer_translation : 1;
-
-  bool scrolls : 1;
-
-  bool needs_sublayer_scale : 1;
-
-  // These are used to position nodes wrt the right or bottom of the inner or
-  // outer viewport.
-  bool affected_by_inner_viewport_bounds_delta_x : 1;
-  bool affected_by_inner_viewport_bounds_delta_y : 1;
-  bool affected_by_outer_viewport_bounds_delta_x : 1;
-  bool affected_by_outer_viewport_bounds_delta_y : 1;
-
-  // Layer scale factor is used as a fallback when we either cannot adjust
-  // raster scale or if the raster scale cannot be extracted from the screen
-  // space transform. For layers in the subtree of the page scale layer, the
-  // layer scale factor should include the page scale factor.
-  bool in_subtree_of_page_scale_layer : 1;
-
-  // We need to track changes to to_screen transform to compute the damage rect.
-  bool transform_changed : 1;
-
-  // TODO(vollick): will be moved when accelerated effects are implemented.
-  float post_local_scale_factor;
-
-  gfx::Vector2dF sublayer_scale;
-
-  // TODO(vollick): will be moved when accelerated effects are implemented.
-  gfx::ScrollOffset scroll_offset;
-
-  // We scroll snap where possible, but this means fixed-pos elements must be
-  // adjusted.  This value stores the snapped amount for this purpose.
-  gfx::Vector2dF scroll_snap;
-
-  // TODO(vollick): will be moved when accelerated effects are implemented.
-  gfx::Vector2dF source_offset;
-  gfx::Vector2dF source_to_parent;
-
-  bool operator==(const TransformNodeData& other) const;
-
-  void set_to_parent(const gfx::Transform& transform) {
-    to_parent = transform;
-    is_invertible = to_parent.IsInvertible();
-  }
-
-  void update_pre_local_transform(const gfx::Point3F& transform_origin);
-
-  void update_post_local_transform(const gfx::PointF& position,
-                                   const gfx::Point3F& transform_origin);
-
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
-
-  void AsValueInto(base::trace_event::TracedValue* value) const;
-};
-
-// TODO(sunxd): move this into PropertyTrees::cached_data_.
-struct CC_EXPORT TransformCachedNodeData {
-  TransformCachedNodeData();
-  TransformCachedNodeData(const TransformCachedNodeData& other);
-  ~TransformCachedNodeData();
-
-  gfx::Transform from_target;
-  gfx::Transform to_target;
-  gfx::Transform from_screen;
-  gfx::Transform to_screen;
-  int target_id;
-  // This id is used for all content that draws into a render surface associated
-  // with this transform node.
-  int content_target_id;
-
-  bool operator==(const TransformCachedNodeData& other) const;
-
-  void ToProtobuf(proto::TransformCachedNodeData* proto) const;
-  void FromProtobuf(const proto::TransformCachedNodeData& proto);
-};
-
-typedef TreeNode<TransformNodeData> TransformNode;
-
-struct CC_EXPORT ClipNodeData {
-  ClipNodeData();
-  ClipNodeData(const ClipNodeData& other);
-
-  // The clip rect that this node contributes, expressed in the space of its
-  // transform node.
-  gfx::RectF clip;
-
-  // Clip nodes are uses for two reasons. First, they are used for determining
-  // which parts of each layer are visible. Second, they are used for
-  // determining whether a clip needs to be applied when drawing a layer, and if
-  // so, the rect that needs to be used. These can be different since not all
-  // clips need to be applied directly to each layer. For example, a layer is
-  // implicitly clipped by the bounds of its target render surface and by clips
-  // applied to this surface. |combined_clip_in_target_space| is used for
-  // computing visible rects, and |clip_in_target_space| is used for computing
-  // clips applied at draw time. Both rects are expressed in the space of the
-  // target transform node, and may include clips contributed by ancestors.
-  gfx::RectF combined_clip_in_target_space;
-  gfx::RectF clip_in_target_space;
-
-  // The id of the transform node that defines the clip node's local space.
-  int transform_id;
-
-  // The id of the transform node that defines the clip node's target space.
-  int target_id;
-
-  // Whether this node contributes a new clip (that is, whether |clip| needs to
-  // be applied), rather than only inheriting ancestor clips.
-  bool applies_local_clip : 1;
-
-  // When true, |clip_in_target_space| does not include clips from ancestor
-  // nodes.
-  bool layer_clipping_uses_only_local_clip : 1;
-
-  // True if target surface needs to be drawn with a clip applied.
-  bool target_is_clipped : 1;
-
-  // True if layers with this clip tree node need to be drawn with a clip
-  // applied.
-  bool layers_are_clipped : 1;
-  bool layers_are_clipped_when_surfaces_disabled : 1;
-
-  // Nodes that correspond to unclipped surfaces disregard ancestor clips.
-  bool resets_clip : 1;
-
-  bool operator==(const ClipNodeData& other) const;
-
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
-  void AsValueInto(base::trace_event::TracedValue* value) const;
-};
-
-typedef TreeNode<ClipNodeData> ClipNode;
-
-struct CC_EXPORT EffectNodeData {
-  EffectNodeData();
-  EffectNodeData(const EffectNodeData& other);
-
-  float opacity;
-  float screen_space_opacity;
-
-  FilterOperations background_filters;
-
-  gfx::Vector2dF sublayer_scale;
-
-  bool has_render_surface;
-  RenderSurfaceImpl* render_surface;
-  bool has_copy_request;
-  bool hidden_by_backface_visibility;
-  bool double_sided;
-  bool is_drawn;
-  // TODO(jaydasika) : Delete this after implementation of
-  // SetHideLayerAndSubtree is cleaned up. (crbug.com/595843)
-  bool subtree_hidden;
-  bool has_potential_opacity_animation;
-  bool is_currently_animating_opacity;
-  // We need to track changes to effects on the compositor to compute damage
-  // rect.
-  bool effect_changed;
-  int num_copy_requests_in_subtree;
-  bool has_unclipped_descendants;
-  int transform_id;
-  int clip_id;
-  // Effect node id of which this effect contributes to.
-  int target_id;
-  int mask_layer_id;
-  int replica_layer_id;
-  int replica_mask_layer_id;
-
-  bool operator==(const EffectNodeData& other) const;
-
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
-  void AsValueInto(base::trace_event::TracedValue* value) const;
-};
-
-typedef TreeNode<EffectNodeData> EffectNode;
-
-struct CC_EXPORT ScrollNodeData {
-  ScrollNodeData();
-  ScrollNodeData(const ScrollNodeData& other);
-
-  bool scrollable;
-  uint32_t main_thread_scrolling_reasons;
-  bool contains_non_fast_scrollable_region;
-  gfx::Size scroll_clip_layer_bounds;
-  gfx::Size bounds;
-  bool max_scroll_offset_affected_by_page_scale;
-  bool is_inner_viewport_scroll_layer;
-  bool is_outer_viewport_scroll_layer;
-  gfx::Vector2dF offset_to_transform_parent;
-  bool should_flatten;
-  bool user_scrollable_horizontal;
-  bool user_scrollable_vertical;
-  ElementId element_id;
-  int transform_id;
-  // Number of drawn layers pointing to this node or any of its descendants.
-  int num_drawn_descendants;
-
-  bool operator==(const ScrollNodeData& other) const;
-
-  void ToProtobuf(proto::TreeNode* proto) const;
-  void FromProtobuf(const proto::TreeNode& proto);
-  void AsValueInto(base::trace_event::TracedValue* value) const;
-};
-
-typedef TreeNode<ScrollNodeData> ScrollNode;
-
 class PropertyTrees;
 
 template <typename T>
@@ -345,7 +59,13 @@ class CC_EXPORT PropertyTree {
  public:
   PropertyTree();
   PropertyTree(const PropertyTree& other) = delete;
+
+  // These C++ special member functions cannot be implicit inline because
+  // they are exported by CC_EXPORT. They will be instantiated in every
+  // compilation units that included this header, and compilation can fail
+  // because T may be incomplete.
   ~PropertyTree();
+  PropertyTree<T>& operator=(const PropertyTree<T>&);
 
   bool operator==(const PropertyTree<T>& other) const;
 
@@ -402,7 +122,14 @@ class CC_EXPORT PropertyTree {
 class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
  public:
   TransformTree();
+
+  // These C++ special member functions cannot be implicit inline because
+  // they are exported by CC_EXPORT. They will be instantiated in every
+  // compilation units that included this header, and compilation can fail
+  // because TransformCachedNodeData may be incomplete.
+  TransformTree(const TransformTree&) = delete;
   ~TransformTree();
+  TransformTree& operator=(const TransformTree&);
 
   bool operator==(const TransformTree& other) const;
 

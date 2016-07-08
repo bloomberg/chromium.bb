@@ -27,9 +27,11 @@
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion_tracker.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -543,7 +545,7 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   layer_tree_host_->UpdateLayers();
   EffectNode* node = layer_tree_host_->property_trees()->effect_tree.Node(
       scrollbar_layer->effect_tree_index());
-  EXPECT_EQ(node->data.opacity, 0.f);
+  EXPECT_EQ(node->opacity, 0.f);
 
   // This tests that the initial opacity(0) of the scrollbar gets pushed onto
   // the pending tree and then onto the active tree.
@@ -555,12 +557,12 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   EXPECT_TRUE(layer_tree_impl->IsPendingTree());
   node = layer_tree_impl->property_trees()->effect_tree.Node(
       scrollbar_layer->effect_tree_index());
-  EXPECT_EQ(node->data.opacity, 0.f);
+  EXPECT_EQ(node->opacity, 0.f);
   host_impl->ActivateSyncTree();
   layer_tree_impl = host_impl->active_tree();
   node = layer_tree_impl->property_trees()->effect_tree.Node(
       scrollbar_layer->effect_tree_index());
-  EXPECT_EQ(node->data.opacity, 0.f);
+  EXPECT_EQ(node->opacity, 0.f);
 
   // This tests that activation does not change the opacity of scrollbar layer.
   LayerImpl* scrollbar_layer_impl =
@@ -572,12 +574,12 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerOpacity) {
   EXPECT_TRUE(layer_tree_impl->IsPendingTree());
   node = layer_tree_impl->property_trees()->effect_tree.Node(
       scrollbar_layer->effect_tree_index());
-  EXPECT_EQ(node->data.opacity, 0.f);
+  EXPECT_EQ(node->opacity, 0.f);
   host_impl->ActivateSyncTree();
   layer_tree_impl = host_impl->active_tree();
   node = layer_tree_impl->property_trees()->effect_tree.Node(
       scrollbar_layer->effect_tree_index());
-  EXPECT_EQ(node->data.opacity, 0.25f);
+  EXPECT_EQ(node->opacity, 0.25f);
 }
 
 TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
@@ -621,7 +623,7 @@ TEST_F(ScrollbarLayerTest, ScrollbarLayerPushProperties) {
   EffectNode* node =
       host_impl->active_tree()->property_trees()->effect_tree.Node(
           scrollbar_layer->effect_tree_index());
-  EXPECT_EQ(node->data.opacity, 1.f);
+  EXPECT_EQ(node->opacity, 1.f);
 }
 
 class ScrollbarLayerSolidColorThumbTest : public testing::Test {

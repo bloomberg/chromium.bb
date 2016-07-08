@@ -11,8 +11,11 @@
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/drawing_display_item.h"
 #include "cc/playback/transform_display_item.h"
+#include "cc/trees/clip_node.h"
+#include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/property_tree.h"
+#include "cc/trees/transform_node.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/DisplayItem.h"
@@ -236,7 +239,7 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
     transformTree.clear();
     cc::TransformNode& transformNode = *transformTree.Node(transformTree.Insert(cc::TransformNode(), kRealRootNodeId));
     DCHECK_EQ(transformNode.id, kSecondaryRootNodeId);
-    transformNode.data.source_node_id = transformNode.parent_id;
+    transformNode.source_node_id = transformNode.parent_id;
     transformTree.SetTargetId(transformNode.id, kRealRootNodeId);
     transformTree.SetContentTargetId(transformNode.id, kRealRootNodeId);
 
@@ -253,8 +256,8 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
     cc::EffectNode& effectNode = *effectTree.Node(effectTree.Insert(cc::EffectNode(), kRealRootNodeId));
     DCHECK_EQ(effectNode.id, kSecondaryRootNodeId);
     effectNode.owner_id = ownerId;
-    effectNode.data.clip_id = clipNode.id;
-    effectNode.data.has_render_surface = true;
+    effectNode.clip_id = clipNode.id;
+    effectNode.has_render_surface = true;
 
     cc::ScrollTree& scrollTree = propertyTrees->scroll_tree;
     scrollTree.clear();
@@ -379,15 +382,15 @@ int PropertyTreeManager::compositorIdForTransformNode(const TransformPaintProper
     cc::TransformNode& compositorNode = *transformTree().Node(id);
     transformTree().SetTargetId(id, kRealRootNodeId);
     transformTree().SetContentTargetId(id, kRealRootNodeId);
-    compositorNode.data.source_node_id = parentId;
+    compositorNode.source_node_id = parentId;
 
     FloatPoint3D origin = transformNode->origin();
-    compositorNode.data.pre_local.matrix().setTranslate(
+    compositorNode.pre_local.matrix().setTranslate(
         -origin.x(), -origin.y(), -origin.z());
-    compositorNode.data.local.matrix() = TransformationMatrix::toSkMatrix44(transformNode->matrix());
-    compositorNode.data.post_local.matrix().setTranslate(
+    compositorNode.local.matrix() = TransformationMatrix::toSkMatrix44(transformNode->matrix());
+    compositorNode.post_local.matrix().setTranslate(
         origin.x(), origin.y(), origin.z());
-    compositorNode.data.needs_local_transform_update = true;
+    compositorNode.needs_local_transform_update = true;
 
     m_rootLayer->AddChild(dummyLayer);
     dummyLayer->SetTransformTreeIndex(id);
@@ -419,15 +422,15 @@ int PropertyTreeManager::compositorIdForClipNode(const ClipPaintPropertyNode* cl
     compositorNode.owner_id = dummyLayer->id();
 
     // TODO(jbroman): Don't discard rounded corners.
-    compositorNode.data.clip = clipNode->clipRect().rect();
-    compositorNode.data.transform_id = compositorIdForTransformNode(clipNode->localTransformSpace());
-    compositorNode.data.target_id = kRealRootNodeId;
-    compositorNode.data.applies_local_clip = true;
-    compositorNode.data.layers_are_clipped = true;
-    compositorNode.data.layers_are_clipped_when_surfaces_disabled = true;
+    compositorNode.clip = clipNode->clipRect().rect();
+    compositorNode.transform_id = compositorIdForTransformNode(clipNode->localTransformSpace());
+    compositorNode.target_id = kRealRootNodeId;
+    compositorNode.applies_local_clip = true;
+    compositorNode.layers_are_clipped = true;
+    compositorNode.layers_are_clipped_when_surfaces_disabled = true;
 
     m_rootLayer->AddChild(dummyLayer);
-    dummyLayer->SetTransformTreeIndex(compositorNode.data.transform_id);
+    dummyLayer->SetTransformTreeIndex(compositorNode.transform_id);
     dummyLayer->SetClipTreeIndex(id);
     dummyLayer->SetEffectTreeIndex(kSecondaryRootNodeId);
     dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
