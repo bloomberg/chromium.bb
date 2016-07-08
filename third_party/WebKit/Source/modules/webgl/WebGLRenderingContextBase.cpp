@@ -5498,10 +5498,6 @@ bool WebGLRenderingContextBase::validateShaderSource(const String& string)
     for (size_t i = 0; i < string.length(); ++i) {
         // line-continuation character \ is supported in WebGL 2.0.
         if (isWebGL2OrHigher() && string[i] == '\\') {
-            if (i + 1 >= string.length() || (string[i + 1] != '\n' && string[i + 1] != '\r')) {
-                synthesizeGLError(GL_INVALID_VALUE, "shaderSource", "line-continuation character is not immediately preceding a new-line");
-                return false;
-            }
             continue;
         }
         if (!validateCharacter(string[i])) {
