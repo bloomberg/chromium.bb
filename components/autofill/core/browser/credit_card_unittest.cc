@@ -167,6 +167,79 @@ TEST(CreditCardTest, AssignmentOperator) {
   EXPECT_TRUE(a == b);
 }
 
+TEST(CreditCardTest, SetExpirationYearFromString) {
+  static const struct {
+    std::string expiration_year;
+    int expected_year;
+  } kTestCases[] = {
+      // Valid values.
+      {"2040", 2040},
+      {"45", 2045},
+      {"045", 2045},
+      {"9", 2009},
+
+      // Unrecognized year values.
+      {"052045", 0},
+      {"123", 0},
+      {"y2045", 0},
+  };
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    CreditCard card(base::GenerateGUID(), "some origin");
+    card.SetExpirationYearFromString(
+        ASCIIToUTF16(kTestCases[i].expiration_year));
+
+    EXPECT_EQ(kTestCases[i].expected_year, card.expiration_year())
+        << kTestCases[i].expiration_year << " " << kTestCases[i].expected_year;
+  }
+}
+
+TEST(CreditCardTest, SetExpirationDateFromString) {
+  static const struct {
+    std::string expiration_date;
+    int expected_month;
+    int expected_year;
+  } kTestCases[] = {{"10", 0, 0},       // Too small.
+                    {"1020451", 0, 0},  // Too long.
+
+                    // No separators.
+                    {"105", 0, 0},  // Too ambiguous.
+                    {"0545", 5, 2045},
+                    {"52045", 0, 0},  // Too ambiguous.
+                    {"052045", 5, 2045},
+
+                    // "/" separator.
+                    {"05/45", 5, 2045},
+                    {"5/2045", 5, 2045},
+                    {"05/2045", 5, 2045},
+
+                    // "-" separator.
+                    {"05-45", 5, 2045},
+                    {"5-2045", 5, 2045},
+                    {"05-2045", 5, 2045},
+
+                    // "|" separator.
+                    {"05|45", 5, 2045},
+                    {"5|2045", 5, 2045},
+                    {"05|2045", 5, 2045},
+
+                    // Invalid values.
+                    {"13/2016", 0, 2016},
+                    {"16/13", 0, 2013},
+                    {"May-2015", 0, 0},
+                    {"05-/2045", 0, 0},
+                    {"05_2045", 0, 0}};
+
+  for (size_t i = 0; i < arraysize(kTestCases); ++i) {
+    CreditCard card(base::GenerateGUID(), "some origin");
+    card.SetExpirationDateFromString(
+        ASCIIToUTF16(kTestCases[i].expiration_date));
+
+    EXPECT_EQ(kTestCases[i].expected_month, card.expiration_month());
+    EXPECT_EQ(kTestCases[i].expected_year, card.expiration_year());
+  }
+}
+
 TEST(CreditCardTest, Copy) {
   CreditCard a(base::GenerateGUID(), "https://www.example.com");
   test::SetCreditCardInfo(&a, "John Dillinger", "123456789012", "01", "2010");
@@ -465,7 +538,7 @@ TEST(CreditCardTest, IsValid) {
 
   // Invalid because card number is not complete
   card.SetRawInfo(CREDIT_CARD_EXP_MONTH, ASCIIToUTF16("12"));
-  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("9999"));
+  card.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, ASCIIToUTF16("2999"));
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("41111"));
   EXPECT_FALSE(card.IsValid());
 
@@ -727,7 +800,7 @@ TEST(CreditCardTest, LastFourDigits) {
 TEST(CreditCardTest, CanBuildFromCardNumberAndExpirationDate) {
   base::string16 card_number = base::ASCIIToUTF16("test");
   int month = 1;
-  int year = 3000;
+  int year = 2999;
   CreditCard card(card_number, month, year);
   EXPECT_EQ(card_number, card.number());
   EXPECT_EQ(month, card.expiration_month());

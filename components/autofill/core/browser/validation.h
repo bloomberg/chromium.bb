@@ -15,9 +15,6 @@ namespace autofill {
 
 // Returns true if |year| and |month| describe a date later than |now|.
 // |year| must have 4 digits.
-bool IsValidCreditCardExpirationDate(const base::string16& year,
-                                     const base::string16& month,
-                                     const base::Time& now);
 bool IsValidCreditCardExpirationDate(int year,
                                      int month,
                                      const base::Time& now);

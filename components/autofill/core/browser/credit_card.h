@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_model.h"
@@ -204,6 +205,9 @@ class CreditCard : public AutofillDataModel {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationDateFromString);
+  FRIEND_TEST_ALL_PREFIXES(CreditCardTest, SetExpirationYearFromString);
+
   // FormGroup:
   void GetSupportedTypes(ServerFieldTypeSet* supported_types) const override;
 
@@ -222,8 +226,14 @@ class CreditCard : public AutofillDataModel {
   bool SetExpirationMonthFromString(const base::string16& text,
                                     const std::string& app_locale);
 
-  // Sets |expiration_year_| to the integer conversion of |text|.
+  // Sets |expiration_year_| to the integer conversion of |text|. Will handle
+  // 4-digit year or 2-digit year (eventually converted to 4-digit year).
   void SetExpirationYearFromString(const base::string16& text);
+
+  // Sets |expiration_year_| and |expiration_month_| to the integer conversion
+  // of |text|. Will handle mmyy, mmyyyy, mm-yyyy and mm-yy as well as single
+  // digit months, with various separators.
+  void SetExpirationDateFromString(const base::string16& text);
 
   // See enum definition above.
   RecordType record_type_;

@@ -17,26 +17,6 @@
 
 namespace autofill {
 
-bool IsValidCreditCardExpirationDate(const base::string16& year,
-                                     const base::string16& month,
-                                     const base::Time& now) {
-  base::string16 year_cleaned, month_cleaned;
-  base::TrimWhitespace(year, base::TRIM_ALL, &year_cleaned);
-  base::TrimWhitespace(month, base::TRIM_ALL, &month_cleaned);
-  if (year_cleaned.length() != 4)
-    return false;
-
-  int cc_year;
-  if (!base::StringToInt(year_cleaned, &cc_year))
-    return false;
-
-  int cc_month;
-  if (!base::StringToInt(month_cleaned, &cc_month))
-    return false;
-
-  return IsValidCreditCardExpirationDate(cc_year, cc_month, now);
-}
-
 bool IsValidCreditCardExpirationDate(int year,
                                      int month,
                                      const base::Time& now) {

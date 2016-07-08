@@ -55,23 +55,10 @@ const char* const kInvalidNumbers[] = {
   "3056 9309 0259 04aa", /* non-digit characters */
 };
 const char kCurrentDate[]="1 May 2013";
-const ExpirationDate kValidCreditCardExpirationDate[] = {
-  { "2013", "5" },  // Valid month in current year.
-  { "2014", "1" },  // Any month in next year.
-  { "2014", "12" },  // Edge condition.
-  { "2014", " 1" },  // Whitespace in month.
-  { " 2014", "1" },  // Whitespace in year.
-};
 const IntExpirationDate kValidCreditCardIntExpirationDate[] = {
   { 2013, 5 },  // Valid month in current year.
   { 2014, 1 },  // Any month in next year.
   { 2014, 12 },  // Edge condition.
-};
-const ExpirationDate kInvalidCreditCardExpirationDate[] = {
-  { "2013", "04" },  // Previous month in current year.
-  { "2012", "12" },  // Any month in previous year.
-  { "2015", "13" },  // Not a real month.
-  { "2015", "00" },  // Zero is legal in the CC class but is not a valid date.
 };
 const IntExpirationDate kInvalidCreditCardIntExpirationDate[] = {
   { 2013, 4 },  // Previous month in current year.
@@ -115,28 +102,6 @@ TEST(AutofillValidation, IsValidCreditCardNumber) {
   for (size_t i = 0; i < arraysize(kInvalidNumbers); ++i) {
     SCOPED_TRACE(kInvalidNumbers[i]);
     EXPECT_FALSE(IsValidCreditCardNumber(ASCIIToUTF16(kInvalidNumbers[i])));
-  }
-}
-
-TEST(AutofillValidation, IsValidCreditCardExpirationDate) {
-  base::Time now;
-  ASSERT_TRUE(base::Time::FromString(kCurrentDate, &now));
-
-  for (size_t i = 0; i < arraysize(kValidCreditCardExpirationDate); ++i) {
-    const ExpirationDate& data = kValidCreditCardExpirationDate[i];
-    SCOPED_TRACE(data.year);
-    SCOPED_TRACE(data.month);
-    EXPECT_TRUE(IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
-                                                ASCIIToUTF16(data.month),
-                                                now));
-  }
-  for (size_t i = 0; i < arraysize(kInvalidCreditCardExpirationDate); ++i) {
-    const ExpirationDate& data = kInvalidCreditCardExpirationDate[i];
-    SCOPED_TRACE(data.year);
-    SCOPED_TRACE(data.month);
-    EXPECT_TRUE(!IsValidCreditCardExpirationDate(ASCIIToUTF16(data.year),
-                                                 ASCIIToUTF16(data.month),
-                                                 now));
   }
 }
 

@@ -35,6 +35,8 @@
 #include "third_party/icu/source/i18n/unicode/dtfmtsym.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 const base::char16 kMidlineEllipsis[] = { 0x22ef, 0 };
@@ -118,7 +120,7 @@ CreditCard::~CreditCard() {}
 // static
 const base::string16 CreditCard::StripSeparators(const base::string16& number) {
   base::string16 stripped;
-  base::RemoveChars(number, base::ASCIIToUTF16("- "), &stripped);
+  base::RemoveChars(number, ASCIIToUTF16("- "), &stripped);
   return stripped;
 }
 
@@ -290,7 +292,7 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
       base::string16 month = ExpirationMonthAsString();
       base::string16 year = Expiration2DigitYearAsString();
       if (!month.empty() && !year.empty())
-        return month + base::ASCIIToUTF16("/") + year;
+        return month + ASCIIToUTF16("/") + year;
       return base::string16();
     }
 
@@ -298,7 +300,7 @@ base::string16 CreditCard::GetRawInfo(ServerFieldType type) const {
       base::string16 month = ExpirationMonthAsString();
       base::string16 year = Expiration4DigitYearAsString();
       if (!month.empty() && !year.empty())
-        return month + base::ASCIIToUTF16("/") + year;
+        return month + ASCIIToUTF16("/") + year;
       return base::string16();
     }
 
@@ -331,7 +333,7 @@ void CreditCard::SetRawInfo(ServerFieldType type,
       break;
 
     case CREDIT_CARD_EXP_2_DIGIT_YEAR:
-      // This is a read-only attribute.
+      SetExpirationYearFromString(value);
       break;
 
     case CREDIT_CARD_EXP_4_DIGIT_YEAR:
@@ -339,11 +341,11 @@ void CreditCard::SetRawInfo(ServerFieldType type,
       break;
 
     case CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
-      // This is a read-only attribute.
+      SetExpirationDateFromString(value);
       break;
 
     case CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
-      // This is a read-only attribute.
+      SetExpirationDateFromString(value);
       break;
 
     case CREDIT_CARD_TYPE:
@@ -431,7 +433,7 @@ const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
     return std::make_pair(obfuscated_cc_number, base::string16());
 
   base::string16 formatted_date(ExpirationMonthAsString());
-  formatted_date.append(base::ASCIIToUTF16("/"));
+  formatted_date.append(ASCIIToUTF16("/"));
   formatted_date.append(Expiration4DigitYearAsString());
 
   base::string16 separator =
@@ -445,8 +447,7 @@ void CreditCard::SetInfoForMonthInputType(const base::string16& value) {
     return;
 
   std::vector<base::StringPiece16> year_month = base::SplitStringPiece(
-      value, base::ASCIIToUTF16("-"),
-      base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      value, ASCIIToUTF16("-"), base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   DCHECK_EQ(2u, year_month.size());
   int num = 0;
   bool converted = false;
@@ -465,9 +466,20 @@ void CreditCard::SetExpirationMonth(int expiration_month) {
 }
 
 void CreditCard::SetExpirationYear(int expiration_year) {
-  if (expiration_year != 0 &&
-      (expiration_year < 2006 || expiration_year > 10000))
+  // If |expiration_year| is beyond this millenium, or more than 2 digits but
+  // before the current millenium (e.g. "545", "1995"), return. What is left are
+  // values like "45" or "2018".
+  if (expiration_year > 2999 ||
+      (expiration_year > 99 && expiration_year < 2000))
     return;
+
+  // Will normalize 2-digit years to the 4-digit version.
+  if (expiration_year > 0 && expiration_year < 100) {
+    base::Time::Exploded now_exploded;
+    base::Time::Now().LocalExplode(&now_exploded);
+    expiration_year += (now_exploded.year / 100) * 100;
+  }
+
   expiration_year_ = expiration_year;
 }
 
@@ -677,7 +689,7 @@ base::string16 CreditCard::ExpirationMonthAsString() const {
   if (expiration_month_ >= 10)
     return month;
 
-  base::string16 zero = base::ASCIIToUTF16("0");
+  base::string16 zero = ASCIIToUTF16("0");
   zero.append(month);
   return zero;
 }
@@ -719,6 +731,52 @@ void CreditCard::SetExpirationYearFromString(const base::string16& text) {
     return;
 
   SetExpirationYear(year);
+}
+
+void CreditCard::SetExpirationDateFromString(const base::string16& text) {
+  // Check that |text| fits the supported patterns: mmyy, mmyyyy, m-yy,
+  // mm-yy, m-yyyy and mm-yyyy. Note that myy and myyyy matched by this pattern
+  // but are not supported (ambiguous). Separators: -, / and |.
+  if (!MatchesPattern(text, base::UTF8ToUTF16("^[0-9]{1,2}[-/|]?[0-9]{2,4}$")))
+    return;
+
+  base::string16 month;
+  base::string16 year;
+
+  // Check for a separator.
+  base::string16 found_separator;
+  const std::vector<base::string16> kSeparators{
+      ASCIIToUTF16("-"), ASCIIToUTF16("/"), ASCIIToUTF16("|")};
+  for (const base::string16& separator : kSeparators) {
+    if (text.find(separator) != base::string16::npos) {
+      found_separator = separator;
+      break;
+    }
+  }
+
+  if (!found_separator.empty()) {
+    std::vector<base::string16> month_year = base::SplitString(
+        text, found_separator, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    DCHECK_EQ(2u, month_year.size());
+    month = month_year[0];
+    year = month_year[1];
+  } else if (text.size() % 2 == 0) {
+    // If there are no separators, the supported formats are mmyy and mmyyyy.
+    month = text.substr(0, 2);
+    year = text.substr(2);
+  } else {
+    // Odd number of digits with no separator is too ambiguous.
+    return;
+  }
+
+  int num = 0;
+  bool converted = false;
+  converted = base::StringToInt(month, &num);
+  DCHECK(converted);
+  SetExpirationMonth(num);
+  converted = base::StringToInt(year, &num);
+  DCHECK(converted);
+  SetExpirationYear(num);
 }
 
 void CreditCard::SetNumber(const base::string16& number) {
@@ -773,10 +831,10 @@ bool CreditCard::ConvertMonth(const base::string16& month,
   // Some abbreviations have . at the end (e.g., "janv." in French). We don't
   // care about matching that.
   base::string16 trimmed_month;
-  base::TrimString(month, base::ASCIIToUTF16("."), &trimmed_month);
+  base::TrimString(month, ASCIIToUTF16("."), &trimmed_month);
   for (int32_t i = 0; i < num_months; ++i) {
     base::string16 icu_month(months[i].getBuffer(), months[i].length());
-    base::TrimString(icu_month, base::ASCIIToUTF16("."), &icu_month);
+    base::TrimString(icu_month, ASCIIToUTF16("."), &icu_month);
     if (compare.StringsEqual(icu_month, trimmed_month)) {
       *num = i + 1;  // Adjust from 0-indexed to 1-indexed.
       return true;
