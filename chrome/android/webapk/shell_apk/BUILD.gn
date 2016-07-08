@@ -83,7 +83,6 @@ android_apk("webapk") {
     ":dex_loader_java",
     ":shell_apk_resources",
     "//chrome/android/webapk/libs/common:common_java",
-    "//chrome/android/webapk/libs/runtime_library:runtime_library_java",
   ]
   if (!is_java_debug) {
     proguard_enabled = true
