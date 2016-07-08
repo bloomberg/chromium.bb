@@ -194,7 +194,7 @@ public:
 
     // Focus ---------------------------------------------------------------
 
-    virtual WebFrame* focusedFrame() = 0;
+    virtual WebLocalFrame* focusedFrame() = 0;
     virtual void setFocusedFrame(WebFrame*) = 0;
 
     // Sets the provided frame as focused and fires blur/focus events on any

@@ -16,14 +16,14 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 #include "third_party/WebKit/public/web/WebTextDecorationType.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebString;
 using blink::WebTextCheckingCompletion;
 using blink::WebTextCheckingResult;
@@ -112,7 +112,7 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
 
 void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if defined(USE_BROWSER_SPELLCHECKER)
-  WebFrame* frame = render_view()->GetWebView()->focusedFrame();
+  WebLocalFrame* frame = render_view()->GetWebView()->focusedFrame();
   WebElement element = frame->document().isNull() ? WebElement() :
       frame->document().focusedElement();
   bool enabled = !element.isNull() && element.isEditable();
@@ -290,7 +290,12 @@ void SpellCheckProvider::EnableSpellcheck(bool enable) {
   if (!render_view()->GetWebView())
     return;
 
-  WebFrame* frame = render_view()->GetWebView()->focusedFrame();
+  WebLocalFrame* frame = render_view()->GetWebView()->focusedFrame();
+  // TODO(yabinh): The null check should be unnecessary.
+  // See crbug.com/625068
+  if (!frame)
+    return;
+
   frame->enableContinuousSpellChecking(enable);
   if (!enable)
     frame->removeSpellingMarkers();

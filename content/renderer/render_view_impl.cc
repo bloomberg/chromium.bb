@@ -1661,9 +1661,7 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
   if (edit_commands_.empty())
     return false;
 
-  WebFrame* frame = webview()->focusedFrame();
-  if (!frame)
-    return false;
+  WebLocalFrame* frame = webview()->focusedFrame();
 
   EditCommands::iterator it = edit_commands_.begin();
   EditCommands::iterator end = edit_commands_.end();
@@ -2751,12 +2749,11 @@ void RenderViewImpl::OnImeSetComposition(
   if (replacement_range.IsValid() && webview()) {
     // Select the text in |replacement_range|, it will then be replaced by
     // text added by the call to RenderWidget::OnImeSetComposition().
-    if (WebLocalFrame* frame = webview()->focusedFrame()->toWebLocalFrame()) {
-      WebRange webrange = WebRange::fromDocumentRange(
-          frame, replacement_range.start(), replacement_range.length());
-      if (!webrange.isNull())
-        frame->selectRange(webrange);
-    }
+    WebLocalFrame* frame = webview()->focusedFrame();
+    WebRange webrange = WebRange::fromDocumentRange(
+        frame, replacement_range.start(), replacement_range.length());
+    if (!webrange.isNull())
+      frame->selectRange(webrange);
   }
   RenderWidget::OnImeSetComposition(text,
                                     underlines,
@@ -2780,12 +2777,11 @@ void RenderViewImpl::OnImeConfirmComposition(
   if (replacement_range.IsValid() && webview()) {
     // Select the text in |replacement_range|, it will then be replaced by
     // text added by the call to RenderWidget::OnImeConfirmComposition().
-    if (WebLocalFrame* frame = webview()->focusedFrame()->toWebLocalFrame()) {
-      WebRange webrange = WebRange::fromDocumentRange(
-          frame, replacement_range.start(), replacement_range.length());
-      if (!webrange.isNull())
-        frame->selectRange(webrange);
-    }
+    WebLocalFrame* frame = webview()->focusedFrame();
+    WebRange webrange = WebRange::fromDocumentRange(
+        frame, replacement_range.start(), replacement_range.length());
+    if (!webrange.isNull())
+      frame->selectRange(webrange);
   }
   RenderWidget::OnImeConfirmComposition(text,
                                         replacement_range,
@@ -2853,9 +2849,7 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   if (character_count == 0)
     return;
 
-  blink::WebFrame* frame = webview()->focusedFrame();
-  if (!frame)
-    return;
+  blink::WebLocalFrame* frame = webview()->focusedFrame();
 
   bounds_in_window->reserve(character_count);
   blink::WebRect webrect;

@@ -939,7 +939,7 @@ TEST_P(ParameterizedVisualViewportTest, DISABLED_TestWebFrameRangeAccountsForVis
     // the range and its end). Do a sanity check that the expected text is
     // selected
     mainFrame->executeScript(WebScriptSource("selectRange();"));
-    EXPECT_EQ("ir", mainFrame->selectionAsText().utf8());
+    EXPECT_EQ("ir", mainFrame->toWebLocalFrame()->selectionAsText().utf8());
 
     webViewImpl()->selectionBounds(baseRect, extentRect);
     WebPoint initialPoint(baseRect.x, baseRect.y);
@@ -950,8 +950,8 @@ TEST_P(ParameterizedVisualViewportTest, DISABLED_TestWebFrameRangeAccountsForVis
     // the right and down one line.
     VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
     visualViewport.move(FloatPoint(60, 25));
-    mainFrame->moveRangeSelection(initialPoint, endPoint);
-    EXPECT_EQ("t ", mainFrame->selectionAsText().utf8());
+    mainFrame->toWebLocalFrame()->moveRangeSelection(initialPoint, endPoint);
+    EXPECT_EQ("t ", mainFrame->toWebLocalFrame()->selectionAsText().utf8());
 }
 
 // Test that the scrollFocusedEditableElementIntoRect method works with the visual viewport.

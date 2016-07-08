@@ -1055,7 +1055,7 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
     WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "input_field_populated.html");
-    WebFrame* frame = webView->mainFrame();
+    WebLocalFrame* frame = webView->mainFrame()->toWebLocalFrame();
 
     webView->setInitialFocus(false);
     frame->setEditableSelectionOffsets(4, 10);

@@ -2896,9 +2896,15 @@ WebFrame* WebViewImpl::findFrameByName(
     return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
 }
 
-WebFrame* WebViewImpl::focusedFrame()
+WebLocalFrame* WebViewImpl::focusedFrame()
 {
-    return WebFrame::fromFrame(focusedCoreFrame());
+    Frame* frame = focusedCoreFrame();
+    // TODO(yabinh): focusedCoreFrame() should always return a local frame, and
+    // the following check should be unnecessary.
+    // See crbug.com/625068
+    if (!frame || !frame->isLocalFrame())
+        return nullptr;
+    return WebLocalFrameImpl::fromFrame(toLocalFrame(frame));
 }
 
 void WebViewImpl::setFocusedFrame(WebFrame* frame)

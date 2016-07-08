@@ -960,8 +960,7 @@ bool PrintWebViewHelper::GetPrintFrame(blink::WebLocalFrame** frame) {
 
   // If the user has selected text in the currently focused frame we print
   // only that frame (this makes print selection work for multiple frames).
-  blink::WebLocalFrame* focusedFrame =
-      webView->focusedFrame()->toWebLocalFrame();
+  blink::WebLocalFrame* focusedFrame = webView->focusedFrame();
   *frame = focusedFrame->hasSelection()
                ? focusedFrame
                : webView->mainFrame()->toWebLocalFrame();

@@ -673,7 +673,11 @@ bool TestRunnerForSpecificView::FindString(
 }
 
 std::string TestRunnerForSpecificView::SelectionAsMarkup() {
-  return web_view()->mainFrame()->selectionAsMarkup().utf8();
+  if (!web_view()->mainFrame()->toWebLocalFrame()) {
+    CHECK(false) << "This function cannot be called if the main frame is not a "
+                    "local frame.";
+  }
+  return web_view()->mainFrame()->toWebLocalFrame()->selectionAsMarkup().utf8();
 }
 
 void TestRunnerForSpecificView::SetViewSourceForFrame(const std::string& name,

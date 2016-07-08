@@ -166,8 +166,14 @@ void TextInputController::UnmarkText() {
 }
 
 void TextInputController::DoCommand(const std::string& text) {
-  if (view()->mainFrame())
-    view()->mainFrame()->executeCommand(blink::WebString::fromUTF8(text));
+  if (view()->mainFrame()) {
+    if (!view()->mainFrame()->toWebLocalFrame()) {
+      CHECK(false) << "This function cannot be called if the main frame is not"
+                      "a local frame.";
+    }
+    view()->mainFrame()->toWebLocalFrame()->executeCommand(
+        blink::WebString::fromUTF8(text));
+  }
 }
 
 void TextInputController::SetMarkedText(const std::string& text,
@@ -199,14 +205,27 @@ void TextInputController::SetMarkedText(const std::string& text,
 }
 
 bool TextInputController::HasMarkedText() {
-  return view()->mainFrame() && view()->mainFrame()->hasMarkedText();
+  if (!view()->mainFrame())
+    return false;
+
+  if (!view()->mainFrame()->toWebLocalFrame()) {
+    CHECK(false) << "This function cannot be called if the main frame is not"
+                    "a local frame.";
+  }
+
+  return view()->mainFrame()->toWebLocalFrame()->hasMarkedText();
 }
 
 std::vector<int> TextInputController::MarkedRange() {
   if (!view()->mainFrame())
     return std::vector<int>();
 
-  blink::WebRange range = view()->mainFrame()->markedRange();
+  if (!view()->mainFrame()->toWebLocalFrame()) {
+    CHECK(false) << "This function cannot be called if the main frame is not"
+                    "a local frame.";
+  }
+
+  blink::WebRange range = view()->mainFrame()->toWebLocalFrame()->markedRange();
   std::vector<int> int_array(2);
   int_array[0] = range.startOffset();
   int_array[1] = range.endOffset();
@@ -218,7 +237,13 @@ std::vector<int> TextInputController::SelectedRange() {
   if (!view()->mainFrame())
     return std::vector<int>();
 
-  blink::WebRange range = view()->mainFrame()->selectionRange();
+  if (!view()->mainFrame()->toWebLocalFrame()) {
+    CHECK(false) << "This function cannot be called if the main frame is not"
+                    "a local frame.";
+  }
+
+  blink::WebRange range =
+      view()->mainFrame()->toWebLocalFrame()->selectionRange();
   if (range.isNull())
     return std::vector<int>();
   std::vector<int> int_array(2);

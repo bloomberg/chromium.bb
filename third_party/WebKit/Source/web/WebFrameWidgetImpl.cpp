@@ -911,11 +911,11 @@ WebInputEventResult WebFrameWidgetImpl::keyEventDefault(const WebKeyboardEvent& 
             switch (event.windowsKeyCode) {
 #if !OS(MACOSX)
             case 'A':
-                WebFrame::fromFrame(focusedCoreFrame())->executeCommand(WebString::fromUTF8("SelectAll"));
+                WebFrame::fromFrame(focusedCoreFrame())->toWebLocalFrame()->executeCommand(WebString::fromUTF8("SelectAll"));
                 return WebInputEventResult::HandledSystem;
             case VKEY_INSERT:
             case 'C':
-                WebFrame::fromFrame(focusedCoreFrame())->executeCommand(WebString::fromUTF8("Copy"));
+                WebFrame::fromFrame(focusedCoreFrame())->toWebLocalFrame()->executeCommand(WebString::fromUTF8("Copy"));
                 return WebInputEventResult::HandledSystem;
 #endif
             // Match FF behavior in the sense that Ctrl+home/end are the only Ctrl
