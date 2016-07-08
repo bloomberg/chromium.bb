@@ -192,6 +192,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int idle_connection_timeout_seconds,
       bool migrate_sessions_on_network_change,
       bool migrate_sessions_early,
+      bool race_cert_verification,
       const QuicTagVector& connection_options,
       bool enable_token_binding);
   ~QuicStreamFactory() override;
@@ -364,6 +365,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
  private:
   class Job;
+  class CertVerifierJob;
   friend class test::QuicStreamFactoryPeer;
   FRIEND_TEST_ALL_PREFIXES(HttpStreamFactoryTest, QuicLossyProxyMarkedAsBad);
 
@@ -381,6 +383,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::map<QuicServerId, RequestSet> ServerIDRequestsMap;
   typedef std::deque<enum QuicChromiumClientSession::QuicDisabledReason>
       DisabledReasonsQueue;
+  typedef std::map<QuicServerId, std::unique_ptr<CertVerifierJob>>
+      CertVerifierJobMap;
 
   enum FactoryStatus {
     OPEN,     // New streams may be created.
@@ -400,8 +404,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   bool OnResolution(const QuicSessionKey& key, const AddressList& address_list);
   void OnJobComplete(Job* job, int rv);
+  void OnCertVerifyJobComplete(CertVerifierJob* job, int rv);
   bool HasActiveSession(const QuicServerId& server_id) const;
   bool HasActiveJob(const QuicServerId& server_id) const;
+  bool HasActiveCertVerifierJob(const QuicServerId& server_id) const;
   int CreateSession(const QuicSessionKey& key,
                     int cert_verify_flags,
                     std::unique_ptr<QuicServerInfo> quic_server_info,
@@ -422,6 +428,13 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool WasQuicRecentlyBroken(const QuicServerId& server_id) const;
 
   bool CryptoConfigCacheIsEmpty(const QuicServerId& server_id);
+
+  // Starts an asynchronous job for cert verification if
+  // |race_cert_verification_| is enabled and if there are cached certs for the
+  // given |server_id|.
+  void StartCertVerifyJob(const QuicServerId& server_id,
+                          int cert_verify_flags,
+                          const BoundNetLog& net_log);
 
   // Initializes the cached state associated with |server_id| in
   // |crypto_config_| with the information in |server_info|. Populates
@@ -489,6 +502,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   JobMap active_jobs_;
   ServerIDRequestsMap job_requests_map_;
   RequestMap active_requests_;
+
+  CertVerifierJobMap active_cert_verifier_jobs_;
 
   QuicVersionVector supported_versions_;
 
@@ -571,6 +586,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if early migration should be attempted when the connection
   // experiences poor connectivity.
   const bool migrate_sessions_early_;
+
+  // Set if cert verification is to be raced with host resolution.
+  bool race_cert_verification_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so

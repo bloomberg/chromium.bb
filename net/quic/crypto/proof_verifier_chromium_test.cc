@@ -587,5 +587,34 @@ TEST_F(ProofVerifierChromiumTest, PKPAndCTBothTested) {
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
 }
 
+// Tests that the VerifyCertChain verifies certificates.
+TEST_F(ProofVerifierChromiumTest, VerifyCertChain) {
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.cert_status = 0;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyCertChain(
+      kTestHostname, certs_, verify_context_.get(), &error_details_, &details_,
+      callback.get());
+  ASSERT_EQ(QUIC_SUCCESS, status);
+
+  ASSERT_TRUE(details_.get());
+  ProofVerifyDetailsChromium* verify_details =
+      static_cast<ProofVerifyDetailsChromium*>(details_.get());
+  EXPECT_EQ(0u, verify_details->cert_verify_result.cert_status);
+}
+
 }  // namespace test
 }  // namespace net
