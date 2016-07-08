@@ -49,6 +49,7 @@ public class EditorTextField extends CompatibilityTextInputLayout {
         LayoutInflater.from(context).inflate(R.layout.payments_request_editor_textview, this, true);
         mInput = (AutoCompleteTextView) findViewById(R.id.text_view);
         mInput.setText(fieldModel.getValue());
+        mInput.setContentDescription(label);
         mInput.setOnEditorActionListener(actionlistener);
 
         // Validate the field when the user de-focuses it.

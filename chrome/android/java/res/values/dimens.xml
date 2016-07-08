@@ -367,9 +367,9 @@
          pref_autofill_field_horizontal_padding exists because TextInputLayouts have an internal
          padding set.
     -->
-    <dimen name="pref_autofill_content_padding">12dp</dimen>
+    <dimen name="pref_autofill_content_spacing">12dp</dimen>
     <dimen name="pref_autofill_field_horizontal_padding">4dp</dimen>
-    <dimen name="pref_autofill_field_top_padding">10dp</dimen>
+    <dimen name="pref_autofill_field_top_margin">8dp</dimen>
 
     <!-- Dialog dimensions.
          https://www.google.com/design/spec/components/dialogs.html#dialogs-simple-dialogs -->

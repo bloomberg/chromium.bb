@@ -9,6 +9,8 @@ import android.os.Build;
 import android.support.design.widget.TextInputLayout;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.view.View;
+import android.widget.EditText;
 
 import javax.annotation.Nullable;
 
@@ -52,4 +54,14 @@ public class CompatibilityTextInputLayout extends TextInputLayout {
         if (TextUtils.isEmpty(error)) setErrorEnabled(false);
     }
 
+    @Override
+    public void onFinishInflate() {
+        super.onFinishInflate();
+
+        if (getChildCount() == 1) {
+            // If there is a child to this TextInputLayout, automatically set the hint.
+            View child = getChildAt(0);
+            if (child instanceof EditText && child.getId() > NO_ID) setLabelFor(child.getId());
+        }
+    }
 }

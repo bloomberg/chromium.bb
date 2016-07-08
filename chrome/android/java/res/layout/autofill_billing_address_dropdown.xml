@@ -7,10 +7,10 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/pref_autofill_field_top_padding"
+        android:layout_marginTop="@dimen/pref_autofill_field_top_margin"
         android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
         android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
-        android:focusable="true"
+        android:labelFor="@+id/autofill_credit_card_editor_billing_address_spinner"
         android:textAppearance="@style/PreferenceFloatLabelTextAppearance"
         android:text="@string/autofill_credit_card_editor_billing_address" />
 
@@ -18,9 +18,11 @@
         android:id="@+id/autofill_credit_card_editor_billing_address_spinner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/pref_autofill_field_top_padding"
+        android:layout_marginTop="@dimen/pref_autofill_field_top_margin"
         android:layout_marginStart="@dimen/pref_autofill_field_horizontal_padding"
         android:layout_marginEnd="@dimen/pref_autofill_field_horizontal_padding"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
         android:textDirection="locale" />
 
     <View style="@style/PreferenceSpinnerUnderlineView"
