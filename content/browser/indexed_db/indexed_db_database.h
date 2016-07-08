@@ -125,6 +125,10 @@ class CONTENT_EXPORT IndexedDBDatabase
   // Called by transactions to report failure committing to the backing store.
   void TransactionCommitFailed(const leveldb::Status& status);
 
+  void AddPendingObserver(int64_t transaction_id, int32_t observer_id);
+  void RemovePendingObservers(IndexedDBConnection* connection,
+                              const std::vector<int32_t>& pending_observer_ids);
+
   void Get(int64_t transaction_id,
            int64_t object_store_id,
            int64_t index_id,

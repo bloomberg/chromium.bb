@@ -11,4 +11,5 @@ callback IDBObserverCallback = void (IDBObserverChanges changes);
    RuntimeEnabled=IDBObserver
 ] interface IDBObserver {
     [RaisesException] void observe(IDBDatabase db, IDBTransaction tx);
+    [RaisesException] void unobserve(IDBDatabase db);
 };

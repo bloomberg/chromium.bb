@@ -370,6 +370,7 @@ interface IDBObjectStore
 interface IDBObserver
     method constructor
     method observe
+    method unobserve
 interface IDBObserverChangesRecord
     getter key
     getter type

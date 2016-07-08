@@ -64,16 +64,14 @@ class IndexedDBTestTransaction : public IndexedDBTransaction {
  public:
   IndexedDBTestTransaction(
       int64_t id,
-      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+      base::WeakPtr<IndexedDBConnection> connection,
       const std::set<int64_t>& scope,
       blink::WebIDBTransactionMode mode,
-      IndexedDBDatabase* db,
       IndexedDBBackingStore::Transaction* backing_store_transaction)
       : IndexedDBTransaction(id,
-                             callbacks,
+                             std::move(connection),
                              scope,
                              mode,
-                             db,
                              backing_store_transaction) {}
 
  protected:
@@ -267,12 +265,11 @@ MockBrowserTestIndexedDBClassFactory::CreateIndexedDBDatabase(
 IndexedDBTransaction*
 MockBrowserTestIndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
-    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+    base::WeakPtr<IndexedDBConnection> connection,
     const std::set<int64_t>& scope,
     blink::WebIDBTransactionMode mode,
-    IndexedDBDatabase* db,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
-  return new IndexedDBTestTransaction(id, callbacks, scope, mode, db,
+  return new IndexedDBTestTransaction(id, std::move(connection), scope, mode,
                                       backing_store_transaction);
 }
 

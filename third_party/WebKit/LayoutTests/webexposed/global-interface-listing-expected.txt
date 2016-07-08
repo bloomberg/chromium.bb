@@ -3474,6 +3474,7 @@ interface IDBObserver
     attribute @@toStringTag
     method constructor
     method observe
+    method unobserve
 interface IDBObserverChanges
     attribute @@toStringTag
     getter database

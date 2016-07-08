@@ -11,6 +11,7 @@
 #include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -238,9 +239,11 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
         IndexedDBDatabaseMetadata::DEFAULT_VERSION));
     EXPECT_EQ(IndexedDBDatabaseMetadata::NO_VERSION, db_->metadata().version);
 
+    connection_ = base::WrapUnique(new IndexedDBConnection(db_, callbacks_));
     transaction_ = IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
-        transaction_id, callbacks_, std::set<int64_t>() /*scope*/,
-        blink::WebIDBTransactionModeVersionChange, db_.get(),
+        transaction_id, connection_->GetWeakPtr(),
+        std::set<int64_t>() /*scope*/,
+        blink::WebIDBTransactionModeVersionChange,
         new IndexedDBFakeBackingStore::FakeTransaction(commit_success_));
     db_->TransactionCreated(transaction_.get());
 
@@ -258,6 +261,7 @@ class IndexedDBDatabaseOperationTest : public testing::Test {
   scoped_refptr<MockIndexedDBCallbacks> request_;
   scoped_refptr<MockIndexedDBDatabaseCallbacks> callbacks_;
   scoped_refptr<IndexedDBTransaction> transaction_;
+  std::unique_ptr<IndexedDBConnection> connection_;
 
   leveldb::Status commit_success_;
 

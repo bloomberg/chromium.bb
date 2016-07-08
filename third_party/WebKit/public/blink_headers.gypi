@@ -252,6 +252,7 @@
       "platform/modules/indexeddb/WebIDBKeyPath.h",
       "platform/modules/indexeddb/WebIDBKeyRange.h",
       "platform/modules/indexeddb/WebIDBMetadata.h",
+      "platform/modules/indexeddb/WebIDBObserver.h",
       "platform/modules/indexeddb/WebIDBTypes.h",
       "platform/modules/indexeddb/WebIDBValue.h",
       "platform/modules/installedapp/WebInstalledAppClient.h",

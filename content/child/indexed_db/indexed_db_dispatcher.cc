@@ -30,6 +30,7 @@ using blink::WebIDBDatabaseCallbacks;
 using blink::WebIDBDatabaseError;
 using blink::WebIDBKey;
 using blink::WebIDBMetadata;
+using blink::WebIDBObserver;
 using blink::WebIDBValue;
 using blink::WebString;
 using blink::WebVector;
@@ -165,6 +166,32 @@ void IndexedDBDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 bool IndexedDBDispatcher::Send(IPC::Message* msg) {
   return thread_safe_sender_->Send(msg);
+}
+
+int32_t IndexedDBDispatcher::AddIDBObserver(
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    std::unique_ptr<WebIDBObserver> observer) {
+  int32_t observer_id = observers_.Add(observer.release());
+  Send(new IndexedDBHostMsg_DatabaseObserve(ipc_database_id, transaction_id,
+                                            observer_id));
+  return observer_id;
+}
+
+void IndexedDBDispatcher::RemoveIDBObserversFromDatabase(
+    int32_t ipc_database_id,
+    const std::vector<int32_t>& observer_ids_to_remove) {
+  for (int32_t id_to_remove : observer_ids_to_remove) {
+    observers_.Remove(id_to_remove);
+  }
+  Send(new IndexedDBHostMsg_DatabaseUnobserve(ipc_database_id,
+                                              observer_ids_to_remove));
+}
+
+void IndexedDBDispatcher::RemoveIDBObservers(
+    const std::set<int32_t>& observer_ids_to_remove) {
+  for (int32_t id : observer_ids_to_remove)
+    observers_.Remove(id);
 }
 
 void IndexedDBDispatcher::RequestIDBCursorAdvance(

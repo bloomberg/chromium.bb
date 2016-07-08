@@ -1223,6 +1223,8 @@
       'indexeddb/WebIDBCallbacksImpl.h',
       'indexeddb/WebIDBDatabaseCallbacksImpl.cpp',
       'indexeddb/WebIDBDatabaseCallbacksImpl.h',
+      'indexeddb/WebIDBObserverImpl.cpp',
+      'indexeddb/WebIDBObserverImpl.h',
       'installedapp/InstalledAppController.cpp',
       'installedapp/InstalledAppController.h',
       'installedapp/NavigatorInstalledApp.cpp',

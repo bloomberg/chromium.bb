@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "content/child/thread_safe_sender.h"
@@ -29,6 +30,7 @@ using blink::WebIDBMetadata;
 using blink::WebIDBKey;
 using blink::WebIDBKeyPath;
 using blink::WebIDBKeyRange;
+using blink::WebIDBObserver;
 using blink::WebString;
 using blink::WebVector;
 
@@ -90,6 +92,7 @@ void WebIDBDatabaseImpl::createTransaction(
 void WebIDBDatabaseImpl::close() {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RemoveIDBObservers(observer_ids_);
   dispatcher->RequestIDBDatabaseClose(ipc_database_id_,
                                       ipc_database_callbacks_id_);
 }
@@ -98,6 +101,33 @@ void WebIDBDatabaseImpl::versionChangeIgnored() {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->NotifyIDBDatabaseVersionChangeIgnored(ipc_database_id_);
+}
+
+int32_t WebIDBDatabaseImpl::addObserver(
+    std::unique_ptr<WebIDBObserver> observer,
+    long long transaction_id) {
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+
+  int32_t observer_id = dispatcher->AddIDBObserver(
+      ipc_database_id_, transaction_id, std::move(observer));
+  observer_ids_.insert(observer_id);
+  return observer_id;
+}
+
+bool WebIDBDatabaseImpl::containsObserverId(int32_t id) const {
+  return ContainsValue(observer_ids_, id);
+}
+
+void WebIDBDatabaseImpl::removeObservers(
+    const std::vector<int32_t>& observer_ids_to_remove) {
+  for (int32_t id : observer_ids_to_remove)
+    observer_ids_.erase(id);
+
+  IndexedDBDispatcher* dispatcher =
+      IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+  dispatcher->RemoveIDBObserversFromDatabase(ipc_database_id_,
+                                             observer_ids_to_remove);
 }
 
 void WebIDBDatabaseImpl::get(long long transaction_id,

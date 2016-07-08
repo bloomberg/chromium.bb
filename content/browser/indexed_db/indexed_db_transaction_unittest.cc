@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_fake_backing_store.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_factory.h"
@@ -86,12 +87,11 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
+  std::unique_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id,
-      new MockIndexedDBDatabaseCallbacks(),
-      scope,
+      id, connection->GetWeakPtr(), scope,
       blink::WebIDBTransactionModeReadWrite,
-      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
   db_->TransactionCreated(transaction.get());
 
@@ -130,12 +130,10 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
+  std::unique_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id,
-      new MockIndexedDBDatabaseCallbacks(),
-      scope,
-      blink::WebIDBTransactionModeReadOnly,
-      db_.get(),
+      id, connection->GetWeakPtr(), scope, blink::WebIDBTransactionModeReadOnly,
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
   db_->TransactionCreated(transaction.get());
 
@@ -162,12 +160,10 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
+  std::unique_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id,
-      new MockIndexedDBDatabaseCallbacks(),
-      scope,
-      GetParam(),
-      db_.get(),
+      id, connection->GetWeakPtr(), scope, GetParam(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
@@ -224,12 +220,11 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
+  std::unique_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id,
-      new MockIndexedDBDatabaseCallbacks(),
-      scope,
+      id, connection->GetWeakPtr(), scope,
       blink::WebIDBTransactionModeVersionChange,
-      db_.get(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
@@ -285,12 +280,10 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
+  std::unique_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id,
-      new MockIndexedDBDatabaseCallbacks(),
-      scope,
-      GetParam(),
-      db_.get(),
+      id, connection->GetWeakPtr(), scope, GetParam(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
   db_->TransactionCreated(transaction.get());
 
@@ -315,12 +308,10 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   const int64_t id = 0;
   const std::set<int64_t> scope;
   const leveldb::Status commit_success = leveldb::Status::OK();
+  std::unique_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
   scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id,
-      new MockIndexedDBDatabaseCallbacks(),
-      scope,
-      GetParam(),
-      db_.get(),
+      id, connection->GetWeakPtr(), scope, GetParam(),
       new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
   db_->TransactionCreated(transaction.get());
 
@@ -360,6 +351,49 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_EQ(transaction->diagnostics().tasks_completed,
             transaction->diagnostics().tasks_scheduled);
+}
+
+TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
+  const int64_t id = 0;
+  const std::set<int64_t> scope;
+  const leveldb::Status commit_success = leveldb::Status::OK();
+  std::unique_ptr<IndexedDBConnection> connection(
+      new IndexedDBConnection(db_, new MockIndexedDBDatabaseCallbacks()));
+  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
+      id, connection->GetWeakPtr(), scope,
+      blink::WebIDBTransactionModeReadWrite,
+      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+  db_->TransactionCreated(transaction.get());
+
+  EXPECT_EQ(0UL, transaction->pending_observers_.size());
+  EXPECT_EQ(0UL, connection->active_observers().size());
+
+  // Add observers to pending observer list.
+  const int32_t observer_id1 = 1, observer_id2 = 2;
+  transaction->AddPendingObserver(observer_id1);
+  transaction->AddPendingObserver(observer_id2);
+  EXPECT_EQ(2UL, transaction->pending_observers_.size());
+  EXPECT_EQ(0UL, connection->active_observers().size());
+
+  // Before commit, observer would be in pending list of transaction.
+  std::vector<int32_t> observer_to_remove1 = {observer_id1};
+  connection->RemoveObservers(observer_to_remove1);
+  EXPECT_EQ(1UL, transaction->pending_observers_.size());
+  EXPECT_EQ(0UL, connection->active_observers().size());
+
+  // After commit, observer moved to connection's active observer.
+  transaction->Commit();
+  EXPECT_EQ(0UL, transaction->pending_observers_.size());
+  EXPECT_EQ(1UL, connection->active_observers().size());
+
+  // Observer does not exist, so no change to active_observers.
+  connection->RemoveObservers(observer_to_remove1);
+  EXPECT_EQ(1UL, connection->active_observers().size());
+
+  // Observer removed from connection's active observer.
+  std::vector<int32_t> observer_to_remove2 = {observer_id2};
+  connection->RemoveObservers(observer_to_remove2);
+  EXPECT_EQ(0UL, connection->active_observers().size());
 }
 
 static const blink::WebIDBTransactionMode kTestModes[] = {

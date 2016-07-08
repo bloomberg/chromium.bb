@@ -917,6 +917,8 @@
       'browser/indexed_db/indexed_db_leveldb_coding.h',
       'browser/indexed_db/indexed_db_metadata.cc',
       'browser/indexed_db/indexed_db_metadata.h',
+      'browser/indexed_db/indexed_db_observer.cc',
+      'browser/indexed_db/indexed_db_observer.h',
       'browser/indexed_db/indexed_db_pending_connection.cc',
       'browser/indexed_db/indexed_db_pending_connection.h',
       'browser/indexed_db/indexed_db_quota_client.cc',

@@ -541,6 +541,26 @@ void IndexedDBDatabase::Abort(int64_t transaction_id,
     transaction->Abort(error);
 }
 
+void IndexedDBDatabase::AddPendingObserver(int64_t transaction_id,
+                                           int32_t observer_id) {
+  IndexedDBTransaction* transaction = GetTransaction(transaction_id);
+  if (!transaction)
+    return;
+  transaction->AddPendingObserver(observer_id);
+}
+
+void IndexedDBDatabase::RemovePendingObservers(
+    IndexedDBConnection* connection,
+    const std::vector<int32_t>& pending_observer_ids) {
+  TransactionMap::iterator it;
+  for (it = transactions_.begin(); it != transactions_.end(); it++) {
+    // Avoid call to RemovePendingObservers for transactions on other
+    // connections.
+    if (it->second->connection() == connection)
+      it->second->RemovePendingObservers(pending_observer_ids);
+  }
+}
+
 void IndexedDBDatabase::GetAll(int64_t transaction_id,
                                int64_t object_store_id,
                                int64_t index_id,
@@ -1665,9 +1685,9 @@ void IndexedDBDatabase::CreateTransaction(
   // The transaction will add itself to this database's coordinator, which
   // manages the lifetime of the object.
   TransactionCreated(IndexedDBClassFactory::Get()->CreateIndexedDBTransaction(
-      transaction_id, connection->callbacks(),
+      transaction_id, connection->GetWeakPtr(),
       std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()), mode,
-      this, new IndexedDBBackingStore::Transaction(backing_store_.get())));
+      new IndexedDBBackingStore::Transaction(backing_store_.get())));
 }
 
 void IndexedDBDatabase::TransactionCreated(IndexedDBTransaction* transaction) {
@@ -1905,7 +1925,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   {
     TransactionMap transactions(transactions_);
     for (const auto& it : transactions) {
-      if (it.second->connection() == connection->callbacks())
+      if (it.second->callbacks() == connection->callbacks())
         it.second->Abort(
             IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
                                    "Connection is closing."));

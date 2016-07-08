@@ -485,6 +485,17 @@ IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_FactoryDeleteDatabase,
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_AckReceivedBlobs,
                      std::vector<std::string>) /* uuids */
 
+// WebIDBDatabase::observe() message.
+IPC_MESSAGE_CONTROL3(IndexedDBHostMsg_DatabaseObserve,
+                     int32_t, /* ipc_database_id */
+                     int64_t, /* transaction_id */
+                     int32_t) /* observer_id */
+
+// WebIDBDatabase::unobserve() message.
+IPC_MESSAGE_CONTROL2(IndexedDBHostMsg_DatabaseUnobserve,
+                     int32_t,              /* ipc_database_id */
+                     std::vector<int32_t>) /* list of observer_id */
+
 // WebIDBDatabase::createObjectStore() message.
 IPC_MESSAGE_CONTROL1(IndexedDBHostMsg_DatabaseCreateObjectStore,
                      IndexedDBHostMsg_DatabaseCreateObjectStore_Params)

@@ -6,23 +6,29 @@
 #define IDBObserver_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBTransaction.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include <set>
 
 namespace blink {
 
+class ExceptionState;
+class IDBDatabase;
 class IDBObserverCallback;
 class IDBObserverInit;
+class IDBTransaction;
 
-class IDBObserver final : public GarbageCollected<IDBObserver>, public ScriptWrappable {
+class MODULES_EXPORT IDBObserver final : public GarbageCollectedFinalized<IDBObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
     static IDBObserver* create(IDBObserverCallback&, const IDBObserverInit&);
 
+    ~IDBObserver();
     // API methods
     void observe(IDBDatabase*, IDBTransaction*, ExceptionState&);
+    void unobserve(IDBDatabase*, ExceptionState&);
+    void removeObserver(int32_t id);
 
     DECLARE_TRACE();
 
@@ -33,6 +39,7 @@ private:
     bool m_transaction;
     bool m_values;
     bool m_noRecords;
+    std::set<int32_t> m_observerIds;
 };
 
 } // namespace blink

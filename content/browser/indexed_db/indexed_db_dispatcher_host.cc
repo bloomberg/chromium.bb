@@ -520,6 +520,8 @@ bool IndexedDBDispatcherHost::DatabaseDispatcherHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseVersionChangeIgnored,
                         OnVersionChangeIgnored)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseDestroyed, OnDestroyed)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseObserve, OnObserve)
+    IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseUnobserve, OnUnobserve)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGet, OnGet)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabaseGetAll, OnGetAll)
     IPC_MESSAGE_HANDLER(IndexedDBHostMsg_DatabasePut, OnPutWrapper)
@@ -627,6 +629,31 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDestroyed(
                                        connection);
   database_origin_map_.erase(ipc_object_id);
   parent_->DestroyObject(&map_, ipc_object_id);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnObserve(
+    int32_t ipc_database_id,
+    int64_t transaction_id,
+    int32_t observer_id) {
+  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
+  IndexedDBConnection* connection =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
+  if (!connection || !connection->IsConnected())
+    return;
+  connection->database()->AddPendingObserver(
+      parent_->HostTransactionId(transaction_id), observer_id);
+}
+
+void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnUnobserve(
+    int32_t ipc_database_id,
+    const std::vector<int32_t>& observer_ids_to_remove) {
+  DCHECK(parent_->context()->TaskRunner()->RunsTasksOnCurrentThread());
+  DCHECK(!observer_ids_to_remove.empty());
+  IndexedDBConnection* connection =
+      parent_->GetOrTerminateProcess(&map_, ipc_database_id);
+  if (!connection || !connection->IsConnected())
+    return;
+  connection->RemoveObservers(observer_ids_to_remove);
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnGet(

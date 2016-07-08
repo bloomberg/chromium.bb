@@ -37,12 +37,11 @@ IndexedDBDatabase* IndexedDBClassFactory::CreateIndexedDBDatabase(
 
 IndexedDBTransaction* IndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
-    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+    base::WeakPtr<IndexedDBConnection> connection,
     const std::set<int64_t>& scope,
     blink::WebIDBTransactionMode mode,
-    IndexedDBDatabase* db,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
-  return new IndexedDBTransaction(id, callbacks, scope, mode, db,
+  return new IndexedDBTransaction(id, std::move(connection), scope, mode,
                                   backing_store_transaction);
 }
 

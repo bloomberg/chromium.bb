@@ -7,13 +7,16 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_observer.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
@@ -66,10 +69,9 @@ IndexedDBTransaction::Operation IndexedDBTransaction::TaskStack::pop() {
 
 IndexedDBTransaction::IndexedDBTransaction(
     int64_t id,
-    scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+    base::WeakPtr<IndexedDBConnection> connection,
     const std::set<int64_t>& object_store_ids,
     blink::WebIDBTransactionMode mode,
-    IndexedDBDatabase* database,
     IndexedDBBackingStore::Transaction* backing_store_transaction)
     : id_(id),
       object_store_ids_(object_store_ids),
@@ -77,12 +79,14 @@ IndexedDBTransaction::IndexedDBTransaction(
       used_(false),
       state_(CREATED),
       commit_pending_(false),
-      callbacks_(callbacks),
-      database_(database),
+      connection_(std::move(connection)),
       transaction_(backing_store_transaction),
       backing_store_transaction_begun_(false),
       should_process_queue_(false),
       pending_preemptive_events_(0) {
+  callbacks_ = connection_->callbacks();
+  database_ = connection_->database();
+
   database_->transaction_coordinator().DidCreateTransaction(this);
 
   diagnostics_.tasks_scheduled = 0;
@@ -98,6 +102,7 @@ IndexedDBTransaction::~IndexedDBTransaction() {
   DCHECK_EQ(pending_preemptive_events_, 0);
   DCHECK(task_queue_.empty());
   DCHECK(abort_task_stack_.empty());
+  DCHECK(pending_observers_.empty());
 }
 
 void IndexedDBTransaction::ScheduleTask(blink::WebIDBTaskType type,
@@ -191,6 +196,8 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   database_->TransactionFinished(this, false);
 
   database_ = NULL;
+  connection_ = nullptr;
+  pending_observers_.clear();
 }
 
 bool IndexedDBTransaction::IsTaskQueueEmpty() const {
@@ -339,6 +346,9 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
   database_->transaction_coordinator().DidFinishTransaction(this);
 
   if (committed) {
+    // TODO (palakj) : Send Observations to observers
+    if (!pending_observers_.empty() && connection_)
+      connection_->ActivatePendingObservers(std::move(pending_observers_));
     abort_task_stack_.clear();
     {
       IDB_TRACE1(
@@ -443,6 +453,22 @@ void IndexedDBTransaction::CloseOpenCursors() {
   for (auto* cursor : open_cursors_)
     cursor->Close();
   open_cursors_.clear();
+}
+
+void IndexedDBTransaction::AddPendingObserver(int32_t observer_id) {
+  pending_observers_.push_back(
+      base::WrapUnique(new IndexedDBObserver(observer_id)));
+}
+
+void IndexedDBTransaction::RemovePendingObservers(
+    const std::vector<int32_t>& pending_observer_ids) {
+  const auto& it = std::remove_if(
+      pending_observers_.begin(), pending_observers_.end(),
+      [&pending_observer_ids](const std::unique_ptr<IndexedDBObserver>& o) {
+        return ContainsValue(pending_observer_ids, o->id());
+      });
+  if (it != pending_observers_.end())
+    pending_observers_.erase(it, pending_observers_.end());
 }
 
 }  // namespace content

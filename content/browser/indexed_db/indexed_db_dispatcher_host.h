@@ -174,6 +174,12 @@ class IndexedDBDispatcherHost : public BrowserMessageFilter {
     void OnVersionChangeIgnored(int32_t ipc_database_id);
     void OnDestroyed(int32_t ipc_database_id);
 
+    void OnObserve(int32_t ipc_database_id,
+                   int64_t transaction_id,
+                   int32_t observer_id);
+    void OnUnobserve(int32_t ipc_database_id,
+                     const std::vector<int32_t>& observer_ids_to_remove);
+
     void OnGet(const IndexedDBHostMsg_DatabaseGet_Params& params);
     void OnGetAll(const IndexedDBHostMsg_DatabaseGetAll_Params& params);
     // OnPutWrapper starts on the IO thread so that it can grab BlobDataHandles

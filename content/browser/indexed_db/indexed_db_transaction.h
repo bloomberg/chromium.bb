@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
@@ -27,6 +28,7 @@ namespace content {
 class BlobWriteCallbackImpl;
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
+class IndexedDBObserver;
 
 class CONTENT_EXPORT IndexedDBTransaction
     : public NON_EXPORTED_BASE(base::RefCounted<IndexedDBTransaction>) {
@@ -63,13 +65,18 @@ class CONTENT_EXPORT IndexedDBTransaction
     pending_preemptive_events_--;
     DCHECK_GE(pending_preemptive_events_, 0);
   }
+  void AddPendingObserver(int32_t observer_id);
+  // Delete pending observers with ID's listed in |pending_observer_ids|.
+  void RemovePendingObservers(const std::vector<int32_t>& pending_observer_ids);
+
   IndexedDBBackingStore::Transaction* BackingStoreTransaction() {
     return transaction_.get();
   }
   int64_t id() const { return id_; }
 
   IndexedDBDatabase* database() const { return database_.get(); }
-  IndexedDBDatabaseCallbacks* connection() const { return callbacks_.get(); }
+  IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
+  IndexedDBConnection* connection() const { return connection_.get(); }
 
   State state() const { return state_; }
   bool IsTimeoutTimerRunning() const { return timeout_timer_.IsRunning(); }
@@ -88,10 +95,9 @@ class CONTENT_EXPORT IndexedDBTransaction
   // IndexedDBClassFactory.
   IndexedDBTransaction(
       int64_t id,
-      scoped_refptr<IndexedDBDatabaseCallbacks> callbacks,
+      base::WeakPtr<IndexedDBConnection> connection,
       const std::set<int64_t>& object_store_ids,
       blink::WebIDBTransactionMode mode,
-      IndexedDBDatabase* db,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
   virtual ~IndexedDBTransaction();
 
@@ -111,6 +117,7 @@ class CONTENT_EXPORT IndexedDBTransaction
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode,
                            ScheduleNormalTask);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, Timeout);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, IndexedDBObserver);
 
   void RunTasksIfStarted();
 
@@ -130,8 +137,12 @@ class CONTENT_EXPORT IndexedDBTransaction
   bool used_;
   State state_;
   bool commit_pending_;
+  base::WeakPtr<IndexedDBConnection> connection_;
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   scoped_refptr<IndexedDBDatabase> database_;
+
+  // Observers in pending queue do not listen to changes until activated.
+  std::vector<std::unique_ptr<IndexedDBObserver>> pending_observers_;
 
   class TaskQueue {
    public:
