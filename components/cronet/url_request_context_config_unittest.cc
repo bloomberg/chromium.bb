@@ -47,7 +47,6 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       "\"idle_connection_timeout_seconds\":300,"
       "\"close_sessions_on_ip_change\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
-      "\"race_cert_verification\":true,"
       "\"AsyncDNS\":{\"enable\":true}}",
       // Data reduction proxy key.
       "",
@@ -103,9 +102,6 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
 
   EXPECT_TRUE(params->quic_close_sessions_on_ip_change);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change);
-
-  // Check race_cert_verification.
-  EXPECT_TRUE(params->quic_race_cert_verification);
 
   // Check AsyncDNS resolver is enabled.
   EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());

@@ -82,16 +82,6 @@ class RecordingProofVerifier : public ProofVerifier {
     return QUIC_SUCCESS;
   }
 
-  QuicAsyncStatus VerifyCertChain(
-      const std::string& hostname,
-      const std::vector<std::string>& certs,
-      const ProofVerifyContext* verify_context,
-      std::string* error_details,
-      std::unique_ptr<ProofVerifyDetails>* verify_details,
-      ProofVerifierCallback* callback) override {
-    return QUIC_SUCCESS;
-  }
-
   const string& common_name() const { return common_name_; }
 
   const string& cert_sct() const { return cert_sct_; }

@@ -179,8 +179,6 @@ class NET_EXPORT HttpNetworkSession
     bool quic_migrate_sessions_early;
     // If true, bidirectional streams over QUIC will be disabled.
     bool quic_disable_bidirectional_streams;
-    // If true, race cert verification with host resolution.
-    bool quic_race_cert_verification;
 
     ProxyDelegate* proxy_delegate;
     // Enable support for Token Binding.

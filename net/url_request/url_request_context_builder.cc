@@ -194,8 +194,7 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       quic_close_sessions_on_ip_change(false),
       quic_migrate_sessions_on_network_change(false),
       quic_migrate_sessions_early(false),
-      quic_disable_bidirectional_streams(false),
-      quic_race_cert_verification(false) {}
+      quic_disable_bidirectional_streams(false) {}
 
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
@@ -446,8 +445,6 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_migrate_sessions_early;
   network_session_params.quic_disable_bidirectional_streams =
       http_network_session_params_.quic_disable_bidirectional_streams;
-  network_session_params.quic_race_cert_verification =
-      http_network_session_params_.quic_race_cert_verification;
   if (proxy_delegate_) {
     network_session_params.proxy_delegate = proxy_delegate_.get();
     storage->set_proxy_delegate(std::move(proxy_delegate_));

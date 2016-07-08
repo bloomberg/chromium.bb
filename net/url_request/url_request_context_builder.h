@@ -106,7 +106,6 @@ class NET_EXPORT URLRequestContextBuilder {
     bool quic_migrate_sessions_on_network_change;
     bool quic_migrate_sessions_early;
     bool quic_disable_bidirectional_streams;
-    bool quic_race_cert_verification;
   };
 
   URLRequestContextBuilder();
@@ -283,11 +282,6 @@ class NET_EXPORT URLRequestContextBuilder {
       bool quic_disable_bidirectional_streams) {
     http_network_session_params_.quic_disable_bidirectional_streams =
         quic_disable_bidirectional_streams;
-  }
-
-  void set_quic_race_cert_verification(bool quic_race_cert_verification) {
-    http_network_session_params_.quic_race_cert_verification =
-        quic_race_cert_verification;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {
