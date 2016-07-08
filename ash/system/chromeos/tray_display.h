@@ -12,25 +12,21 @@
 #include "ash/ash_export.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/system/tray/system_tray_item.h"
-#include "ash/display/window_tree_host_manager.h"
+#include "ash/common/wm_display_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/views/view.h"
 
 namespace ash {
+
 class DisplayView;
 
-namespace test {
-class AshTestBase;
-}
-
-class ASH_EXPORT TrayDisplay : public SystemTrayItem,
-                               public WindowTreeHostManager::Observer {
+class ASH_EXPORT TrayDisplay : public SystemTrayItem, public WmDisplayObserver {
  public:
   explicit TrayDisplay(SystemTray* system_tray);
   ~TrayDisplay() override;
 
-  // Overridden from WindowTreeHostManagerObserver:
+  // Overridden from WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
  private:

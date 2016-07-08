@@ -18,7 +18,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/bind.h"
@@ -299,12 +298,12 @@ class DisplayView : public ActionableView {
 
 TrayDisplay::TrayDisplay(SystemTray* system_tray)
     : SystemTrayItem(system_tray), default_(NULL) {
-  Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
+  WmShell::Get()->AddDisplayObserver(this);
   UpdateDisplayInfo(NULL);
 }
 
 TrayDisplay::~TrayDisplay() {
-  Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+  WmShell::Get()->RemoveDisplayObserver(this);
 }
 
 void TrayDisplay::UpdateDisplayInfo(TrayDisplay::DisplayInfoMap* old_info) {

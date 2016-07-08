@@ -6,7 +6,6 @@
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/display/display_manager.h"
-#include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -126,8 +125,7 @@ TrayDisplay* TrayDisplayTest::GetTrayDisplay() {
 }
 
 void TrayDisplayTest::CheckUpdate() {
-  SystemTray* current =
-      Shell::GetPrimaryRootWindowController()->GetSystemTray();
+  SystemTray* current = GetPrimarySystemTray();
   if (tray_ != current) {
     tray_ = current;
     tray_display_ = new TrayDisplay(tray_);
