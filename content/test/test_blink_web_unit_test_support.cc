@@ -121,7 +121,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
 
   blink::initialize(this);
   blink::setLayoutTestMode(true);
-  blink::WebRuntimeFeatures::enableApplicationCache(true);
   blink::WebRuntimeFeatures::enableDatabase(true);
   blink::WebRuntimeFeatures::enableNotifications(true);
   blink::WebRuntimeFeatures::enableTouch(true);

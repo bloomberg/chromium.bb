@@ -60,11 +60,6 @@ void WebRuntimeFeatures::enableTestOnlyFeatures(bool enable)
     RuntimeEnabledFeatures::setTestFeaturesEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableApplicationCache(bool enable)
-{
-    RuntimeEnabledFeatures::setApplicationCacheEnabled(enable);
-}
-
 void WebRuntimeFeatures::enableAudioOutputDevices(bool enable)
 {
     RuntimeEnabledFeatures::setAudioOutputDevicesEnabled(enable);

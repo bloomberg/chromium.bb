@@ -29,7 +29,6 @@
 
 AppBanner status=stable
 AlwaysUseComplexText status=stable
-ApplicationCache status=stable
 AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
 BackgroundSync status=stable

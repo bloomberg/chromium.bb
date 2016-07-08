@@ -67,7 +67,6 @@ public:
     BLINK_EXPORT static void enableOriginTrials(bool);
     BLINK_EXPORT static bool isOriginTrialsEnabled();
 
-    BLINK_EXPORT static void enableApplicationCache(bool);
     BLINK_EXPORT static void enableAudioOutputDevices(bool);
     BLINK_EXPORT static void enableCanvas2dImageChromium(bool);
     BLINK_EXPORT static void enableCredentialManagerAPI(bool);

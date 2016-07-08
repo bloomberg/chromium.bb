@@ -69,7 +69,7 @@
 
     // the user agent
     [LogActivity=GetterOnly] readonly attribute Navigator navigator;
-    [RuntimeEnabled=ApplicationCache, LogActivity=GetterOnly] readonly attribute ApplicationCache applicationCache;
+    [LogActivity=GetterOnly] readonly attribute ApplicationCache applicationCache;
 
     // user prompts
     [Measure, CallWith=ScriptState] void alert();
