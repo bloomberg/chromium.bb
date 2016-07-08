@@ -34,6 +34,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -72,6 +73,8 @@ public class AccountManagementFragment extends PreferenceFragment
         implements SignOutDialogListener, ProfileDownloader.Observer,
                 SyncStateChangedListener, SignInStateObserver,
                 ConfirmManagedSyncDataDialog.Listener {
+    private static final String TAG = "AcctManagementPref";
+
     public static final String SIGN_OUT_DIALOG_TAG = "sign_out_dialog_tag";
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
@@ -411,6 +414,10 @@ public class AccountManagementFragment extends PreferenceFragment
         // this when we figure that out.
         Intent intent = new Intent(Settings.ACTION_SYNC_SETTINGS);
         intent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[] {"com.google"});
+        if (intent.resolveActivity(activity.getPackageManager()) == null) {
+            Log.w(TAG, "Unable to resolve activity for: %s", intent);
+            return;
+        }
         activity.startActivity(intent);
     }
 
