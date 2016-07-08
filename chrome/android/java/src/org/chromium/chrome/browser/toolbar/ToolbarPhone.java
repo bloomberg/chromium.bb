@@ -76,6 +76,9 @@ public class ToolbarPhone extends ToolbarLayout
         implements Invalidator.Client, OnClickListener, OnLongClickListener,
                 NewTabPage.OnSearchBoxScrollListener {
 
+    /** The amount of time transitioning from one theme color to another should take in ms. */
+    public static final long THEME_COLOR_TRANSITION_DURATION = 250;
+
     public static final int URL_FOCUS_CHANGE_ANIMATION_DURATION_MS = 250;
     private static final int URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP = 10;
     private static final int URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS = 100;
@@ -88,8 +91,6 @@ public class ToolbarPhone extends ToolbarLayout
     private static final int TAB_SWITCHER_MODE_POST_EXIT_ANIMATION_DURATION_MS = 100;
 
     private static final float UNINITIALIZED_PERCENT = -1f;
-
-    private static final int BRAND_COLOR_TRANSITION_DURATION_MS = 250;
 
     private static final String TAG = "ToolbarPhone";
 
@@ -1873,7 +1874,7 @@ public class ToolbarPhone extends ToolbarLayout
                 shouldUseOpaque ? 255 : LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
         final boolean shouldAnimateAlpha = initialAlpha != finalAlpha;
         mBrandColorTransitionAnimation = ValueAnimator.ofFloat(0, 1)
-                .setDuration(BRAND_COLOR_TRANSITION_DURATION_MS);
+                .setDuration(THEME_COLOR_TRANSITION_DURATION);
         mBrandColorTransitionAnimation.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         mBrandColorTransitionAnimation.addUpdateListener(new AnimatorUpdateListener() {
             @Override

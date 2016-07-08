@@ -935,8 +935,15 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
                 mLayoutAnimations = null;
                 onAnimationFinished();
             }
-            requestUpdate();
         }
+
+        // LayoutTabs may be running their own animations; make sure they are done.
+        for (int i = 0; mLayoutTabs != null && i < mLayoutTabs.length; i++) {
+            finished &= mLayoutTabs[i].onUpdateAnimation(time);
+        }
+
+        if (!finished) requestUpdate();
+
         return finished;
     }
 

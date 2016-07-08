@@ -84,7 +84,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         }
     }
 
-    private static final int BRAND_COLOR_TRANSITION_DURATION_MS = 250;
     private static final int TITLE_ANIM_DELAY_MS = 800;
     private static final int STATE_DOMAIN_ONLY = 0;
     private static final int STATE_TITLE_ONLY = 1;
@@ -530,7 +529,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         if (background.getColor() == finalColor) return;
 
         mBrandColorTransitionAnimation = ValueAnimator.ofFloat(0, 1)
-                .setDuration(BRAND_COLOR_TRANSITION_DURATION_MS);
+                .setDuration(ToolbarPhone.THEME_COLOR_TRANSITION_DURATION);
         mBrandColorTransitionAnimation.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         mBrandColorTransitionAnimation.addUpdateListener(new AnimatorUpdateListener() {
             @Override
