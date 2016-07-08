@@ -15,6 +15,8 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 #include "ui/views/resources/grit/views_resources.h"
@@ -32,6 +34,10 @@ Checkbox::Checkbox(const base::string16& label)
 
   if (UseMd()) {
     set_request_focus_on_press(false);
+    SetInkDropMode(InkDropMode::ON);
+    set_has_ink_drop_action_on_click(true);
+    // The "small" size is 21dp, the large size is 1.33 * 21dp = 28dp.
+    set_ink_drop_size(gfx::Size(21, 21));
   } else {
     std::unique_ptr<LabelButtonBorder> button_border(new LabelButtonBorder());
     // Inset the trailing side by a couple pixels for the focus border.
@@ -150,6 +156,19 @@ void Checkbox::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   LabelButton::OnNativeThemeChanged(theme);
   if (UseMd())
     UpdateImage();
+}
+
+std::unique_ptr<InkDropRipple> Checkbox::CreateInkDropRipple() const {
+  return CreateDefaultInkDropRipple(image()->bounds().CenterPoint());
+}
+
+std::unique_ptr<InkDropHighlight> Checkbox::CreateInkDropHighlight() const {
+  return nullptr;
+}
+
+SkColor Checkbox::GetInkDropBaseColor() const {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_UnfocusedBorderColor);
 }
 
 gfx::ImageSkia Checkbox::GetImage(ButtonState for_state) const {

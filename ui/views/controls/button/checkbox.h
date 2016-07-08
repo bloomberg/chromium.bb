@@ -16,6 +16,9 @@ class SkPaint;
 
 namespace views {
 
+class InkDropHover;
+class InkDropRipple;
+
 // A native themed class representing a checkbox.  This class does not use
 // platform specific objects to replicate the native platforms looks and feel.
 class VIEWS_EXPORT Checkbox : public LabelButton {
@@ -45,6 +48,9 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   void OnFocus() override;
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const override;
+  SkColor GetInkDropBaseColor() const override;
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
 
   // Set the image shown for each button state depending on whether it is
