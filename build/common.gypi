@@ -5703,6 +5703,7 @@
           'VCCLCompilerTool': {
             'AdditionalOptions': ['/MP'],
             'MinimalRebuild': 'false',
+            'BufferSecurityCheck': 'true',
             'EnableFunctionLevelLinking': 'true',
             'RuntimeTypeInfo': 'false',
             'WarningLevel': '4',
@@ -5775,14 +5776,6 @@
             }],
           ],
           'conditions': [
-            ['clang==0', {
-              'VCCLCompilerTool': {
-                 # TODO(thakis): Enable this with clang too,
-                 # https://crbug.com/598767
-                 'BufferSecurityCheck': 'true',
-              },
-            }],
-
             # Building with Clang on Windows is a work in progress and very
             # experimental. See crbug.com/82385.
             # Keep this in sync with the similar blocks in build/config/compiler/BUILD.gn
