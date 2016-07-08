@@ -28,6 +28,7 @@
 #include "core/layout/LayoutImageResourceStyleImage.h"
 
 #include "core/fetch/ImageResource.h"
+#include "core/layout/LayoutReplaced.h"
 #include "core/style/StyleFetchedImage.h"
 
 namespace blink {
@@ -66,6 +67,12 @@ PassRefPtr<Image> LayoutImageResourceStyleImage::image(const IntSize& size, floa
     if (m_styleImage->isPendingImage())
         return nullptr;
     return m_styleImage->image(*m_layoutObject, size, zoom);
+}
+
+LayoutSize LayoutImageResourceStyleImage::imageSize(float multiplier) const
+{
+    // TODO(davve): Find out the correct default object size in this context.
+    return m_styleImage->imageSize(*m_layoutObject, multiplier, LayoutSize(LayoutReplaced::defaultWidth, LayoutReplaced::defaultHeight));
 }
 
 DEFINE_TRACE(LayoutImageResourceStyleImage)

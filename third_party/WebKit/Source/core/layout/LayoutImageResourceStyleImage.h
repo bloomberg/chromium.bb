@@ -50,13 +50,7 @@ public:
     bool errorOccurred() const override { return m_styleImage->errorOccurred(); }
 
     bool imageHasRelativeSize() const override { return m_styleImage->imageHasRelativeSize(); }
-
-    LayoutSize imageSize(float multiplier) const override
-    {
-        // TODO(davve): Find out the default object size, if any, in this context.
-        return m_styleImage->imageSize(*m_layoutObject, multiplier, LayoutSize());
-    }
-
+    LayoutSize imageSize(float multiplier) const override;
     WrappedImagePtr imagePtr() const override { return m_styleImage->data(); }
 
     DECLARE_VIRTUAL_TRACE();

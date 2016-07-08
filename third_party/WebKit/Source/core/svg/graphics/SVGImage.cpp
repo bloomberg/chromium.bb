@@ -556,7 +556,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
             AtomicString("UTF-8"), KURL(), ForceSynchronousLoad)));
 
         // Set the concrete object size before a container size is available.
-        m_intrinsicSize = roundedIntSize(concreteObjectSize(FloatSize(300, 150)));
+        m_intrinsicSize = roundedIntSize(concreteObjectSize(FloatSize(LayoutReplaced::defaultWidth, LayoutReplaced::defaultHeight)));
     }
 
     return m_page;
