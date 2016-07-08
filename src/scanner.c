@@ -576,8 +576,17 @@ free_interface(struct interface *interface)
 	free(interface);
 }
 
-/* convert string to unsigned integer,
- * in the case of error, return -1 */
+/* Convert string to unsigned integer
+ *
+ * Parses a non-negative base-10 number from the given string.  If the
+ * specified string is blank, contains non-numerical characters, is out
+ * of range, or results in a negative number, -1 is returned to indicate
+ * an error.
+ *
+ * Upon error, this routine does not modify or set errno.
+ *
+ * \returns -1 on error, or a non-negative integer on success
+ */
 static int
 strtouint(const char *str)
 {
