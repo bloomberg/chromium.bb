@@ -252,6 +252,14 @@
             "group_name": "Enabled"
         }
     ],
+    "PassiveDocumentEventListeners": [
+        {
+            "enable_features": [
+                "PassiveDocumentEventListeners"
+            ],
+            "group_name": "Enabled"
+        }
+    ],
     "PasswordBranding": [
         {
             "group_name": "SmartLockBrandingSavePromptOnly"
