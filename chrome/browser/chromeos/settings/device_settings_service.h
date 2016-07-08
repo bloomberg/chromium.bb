@@ -105,15 +105,12 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   // and stops any pending operations.
   void UnsetSessionManager();
 
-  SessionManagerClient* session_manager_client() const {
-    return session_manager_client_;
-  }
-
-  // Returns the currently active device settings. Returns NULL if the device
-  // settings have not been retrieved from session_manager yet.
   const enterprise_management::PolicyData* policy_data() {
     return policy_data_.get();
   }
+
+  // Returns the currently active device settings. Returns nullptr if the device
+  // settings have not been retrieved from session_manager yet.
   const enterprise_management::ChromeDeviceSettingsProto*
       device_settings() const {
     return device_settings_.get();
