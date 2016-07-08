@@ -169,7 +169,7 @@ class ITunesDataProviderTest : public InProcessBrowserTest {
                        base::Unretained(this))));
     data_provider()->RefreshData(base::Bind(&ITunesDataProviderTest::StartTest,
                                             base::Unretained(this)));
-  };
+  }
 
   void OnLibraryChanged() {
     DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
@@ -402,10 +402,10 @@ class ITunesDataProviderUniqueNameTest : public ITunesDataProviderTest {
   DISALLOW_COPY_AND_ASSIGN(ITunesDataProviderUniqueNameTest);
 };
 
+// Albums and tracks that aren't the same, but become the same after
+// replacing bad characters are not handled properly, but that case should
+// never happen in practice.
 class ITunesDataProviderEscapeTest : public ITunesDataProviderTest {
- // Albums and tracks that aren't the same, but become the same after
- // replacing bad characters are not handled properly, but that case should
- // never happen in practice.
  public:
   ITunesDataProviderEscapeTest() {}
 

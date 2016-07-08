@@ -279,17 +279,15 @@ Product* InstallerState::AddProductInDirectory(
   }
 
   if (target_path_.empty()) {
-    if (product_dir == NULL)
-      target_path_ = GetDefaultProductInstallPath(the_product.distribution());
-    else
-      target_path_ = *product_dir;
+    target_path_ = product_dir ? *product_dir : GetDefaultProductInstallPath(
+                                                    the_product.distribution());
   }
 
   if (state_key_.empty())
     state_key_ = the_product.distribution()->GetStateKey();
 
   products_.push_back(product->release());
-  return products_[products_.size() - 1];
+  return products_.back();
 }
 
 Product* InstallerState::AddProduct(std::unique_ptr<Product>* product) {

@@ -65,7 +65,7 @@ void BookmarkModelObserverForCocoa::BookmarkAllUserNodesRemoved(
 void BookmarkModelObserverForCocoa::BookmarkNodeChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
-  if (!nodes_.size() || nodes_.find(node) != nodes_.end())
+  if (nodes_.empty() || nodes_.find(node) != nodes_.end())
     Notify();
 }
 

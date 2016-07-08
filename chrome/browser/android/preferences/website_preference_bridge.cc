@@ -623,8 +623,8 @@ class LocalStorageInfoReadyCallback {
       }
       // Remove the trailing backslash so the origin is matched correctly in
       // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
-      DCHECK(origin_str[origin_str.size() - 1] == '/');
-      origin_str = origin_str.substr(0, origin_str.size() - 1);
+      DCHECK_EQ('/', origin_str.back());
+      origin_str.pop_back();
       ScopedJavaLocalRef<jstring> origin =
           ConvertUTF8ToJavaString(env_, origin_str);
       Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(

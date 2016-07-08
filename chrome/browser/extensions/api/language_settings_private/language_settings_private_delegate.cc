@@ -182,7 +182,7 @@ void LanguageSettingsPrivateDelegate::RefreshDictionaries(
 
   const ScopedVector<SpellcheckHunspellDictionary>& dictionaries(
       service->GetHunspellDictionaries());
-  for (const auto& dictionary: dictionaries) {
+  for (const auto& dictionary : dictionaries) {
     hunspell_dictionaries_.push_back(dictionary->AsWeakPtr());
     if (should_listen)
       dictionary->AddObserver(this);

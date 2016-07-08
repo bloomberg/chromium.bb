@@ -197,9 +197,7 @@ void DevToolsWindowCreationObserver::DevToolsWindowCreated(
 }
 
 DevToolsWindow* DevToolsWindowCreationObserver::devtools_window() {
-  if (devtools_windows_.empty())
-    return nullptr;
-  return devtools_windows_[devtools_windows_.size() - 1];
+  return !devtools_windows_.empty() ? devtools_windows_.back() : nullptr;
 }
 
 void DevToolsWindowCreationObserver::CloseAllSync() {

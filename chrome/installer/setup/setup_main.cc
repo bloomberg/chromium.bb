@@ -699,7 +699,7 @@ installer::InstallStatus UninstallProducts(
   if (installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES)) {
     // Chrome Binaries should be last; if something else is cancelled, they
     // should stay.
-    DCHECK(products[products.size() - 1]->is_chrome_binaries());
+    DCHECK(products.back()->is_chrome_binaries());
   }
 
   installer::InstallStatus install_status = installer::UNINSTALL_SUCCESSFUL;

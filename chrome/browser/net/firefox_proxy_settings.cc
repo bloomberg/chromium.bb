@@ -113,8 +113,7 @@ bool ParsePrefFile(const base::FilePath& pref_file,
     }
 
     // Value could be a string.
-    if (value.size() >= 2U &&
-        value[0] == '"' && value[value.size() - 1] == '"') {
+    if (value.size() >= 2U && value[0] == '"' && value.back() == '"') {
       value = value.substr(1, value.size() - 2);
       // ValueString only accept valid UTF-8.  Simply ignore that entry if it is
       // not UTF-8.

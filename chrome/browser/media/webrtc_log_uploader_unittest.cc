@@ -131,8 +131,8 @@ class WebRtcLogUploaderTest : public testing::Test {
     EXPECT_GT(lines.size(), 1u);
     if (lines.size() < 2)
       return std::vector<std::string>();
-    EXPECT_TRUE(lines[lines.size() - 1].empty());
-    if (!lines[lines.size() - 1].empty())
+    EXPECT_TRUE(lines.back().empty());
+    if (!lines.back().empty())
       return std::vector<std::string>();
     lines.pop_back();
     return lines;

@@ -642,7 +642,7 @@ bool FileManagerPrivateInternalStartCopyFunction::RunAsync() {
 
   // |parent| may have a trailing slash if it is a root directory.
   std::string destination_url_string = params->parent_url;
-  if (destination_url_string[destination_url_string.size() - 1] != '/')
+  if (destination_url_string.back() != '/')
     destination_url_string += '/';
   destination_url_string += net::EscapePath(params->new_name);
 

@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(Add)) {
   // Assert that the second client has the correct new URL.
   history::URLRows urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(initial_count + 1, urls.size());
-  ASSERT_EQ(new_url, urls[urls.size() - 1].url());
+  ASSERT_EQ(new_url, urls.back().url());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, AddExpired) {
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
   // Assert that the second client has the correct new URL.
   history::URLRows urls = GetTypedUrlsFromClient(1);
   ASSERT_EQ(initial_count + 1, urls.size());
-  ASSERT_EQ(new_url, urls[urls.size() - 1].url());
+  ASSERT_EQ(new_url, urls.back().url());
 
   // Delete from first client, and wait for them to sync.
   DeleteUrlFromHistory(0, new_url);

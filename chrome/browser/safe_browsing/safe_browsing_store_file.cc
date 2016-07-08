@@ -407,17 +407,17 @@ class StateInternal {
     container_merge(&add_prefixes_,
                     beg.add_prefixes_iter_,
                     end.add_prefixes_iter_,
-                    SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+                    SBAddPrefixLess<SBAddPrefix, SBAddPrefix>);
 
     container_merge(&sub_prefixes_,
                     beg.sub_prefixes_iter_,
                     end.sub_prefixes_iter_,
-                    SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+                    SBAddPrefixLess<SBSubPrefix, SBSubPrefix>);
 
     container_merge(&add_full_hashes_,
                     beg.add_hashes_iter_,
                     end.add_hashes_iter_,
-                    SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+                    SBAddPrefixHashLess<SBAddFullHash, SBAddFullHash>);
 
     container_merge(&sub_full_hashes_,
                     beg.sub_hashes_iter_,
@@ -433,13 +433,13 @@ class StateInternal {
   // operations.
   void SortData() {
     std::sort(add_prefixes_.begin(), add_prefixes_.end(),
-              SBAddPrefixLess<SBAddPrefix,SBAddPrefix>);
+              SBAddPrefixLess<SBAddPrefix, SBAddPrefix>);
     std::sort(sub_prefixes_.begin(), sub_prefixes_.end(),
-              SBAddPrefixLess<SBSubPrefix,SBSubPrefix>);
+              SBAddPrefixLess<SBSubPrefix, SBSubPrefix>);
     std::sort(add_full_hashes_.begin(), add_full_hashes_.end(),
-              SBAddPrefixHashLess<SBAddFullHash,SBAddFullHash>);
+              SBAddPrefixHashLess<SBAddFullHash, SBAddFullHash>);
     std::sort(sub_full_hashes_.begin(), sub_full_hashes_.end(),
-              SBAddPrefixHashLess<SBSubFullHash,SBSubFullHash>);
+              SBAddPrefixHashLess<SBSubFullHash, SBSubFullHash>);
   }
 
   // Iterator from the beginning of the state's data.

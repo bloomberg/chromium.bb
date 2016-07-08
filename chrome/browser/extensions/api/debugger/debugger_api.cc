@@ -109,7 +109,8 @@ class ExtensionDevToolsInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetButtons() const override;
   bool Cancel() override;
 
-  std::string client_name_;
+ private:
+  const base::string16 client_name_;
   base::Closure dismissed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionDevToolsInfoBarDelegate);
@@ -119,7 +120,7 @@ ExtensionDevToolsInfoBarDelegate::ExtensionDevToolsInfoBarDelegate(
     const base::Closure& dismissed_callback,
     const std::string& client_name)
     : ConfirmInfoBarDelegate(),
-      client_name_(client_name),
+      client_name_(base::UTF8ToUTF16(client_name)),
       dismissed_callback_(dismissed_callback) {}
 
 ExtensionDevToolsInfoBarDelegate::~ExtensionDevToolsInfoBarDelegate() {
@@ -147,8 +148,7 @@ void ExtensionDevToolsInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 ExtensionDevToolsInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(IDS_DEV_TOOLS_INFOBAR_LABEL,
-                                    base::UTF8ToUTF16(client_name_));
+  return l10n_util::GetStringFUTF16(IDS_DEV_TOOLS_INFOBAR_LABEL, client_name_);
 }
 
 int ExtensionDevToolsInfoBarDelegate::GetButtons() const {
@@ -236,7 +236,7 @@ void ExtensionDevToolsInfoBar::Remove(
 
 void ExtensionDevToolsInfoBar::InfoBarDismissed() {
   std::map<ExtensionDevToolsClientHost*, base::Closure> copy = callbacks_;
-  for (const auto& pair: copy)
+  for (const auto& pair : copy)
     pair.second.Run();
 }
 

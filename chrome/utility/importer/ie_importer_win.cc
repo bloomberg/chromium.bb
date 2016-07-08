@@ -627,9 +627,9 @@ void IEImporter::ImportPasswordsIE6() {
         ac.key.erase(i);
         ac.is_url = (ac.key.find(L"://") != base::string16::npos);
         ac_list.push_back(ac);
-        ac_list[ac_list.size() - 1].data = base::SplitString(
-            data, base::string16(1, '\0'),
-            base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+        ac_list.back().data =
+            base::SplitString(data, base::string16(1, '\0'),
+                              base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       }
       CoTaskMemFree(buffer);
     }

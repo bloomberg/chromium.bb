@@ -229,7 +229,7 @@ class MockBackend : public PasswordStoreX::NativeBackend {
  private:
   void erase(size_t index) {
     if (index < all_forms_.size() - 1)
-      all_forms_[index] = all_forms_[all_forms_.size() - 1];
+      all_forms_[index] = all_forms_.back();
     all_forms_.pop_back();
   }
 
