@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"  // For CHECK macros.
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -62,10 +63,11 @@ std::string WebViewIdToWindowHandle(const std::string& web_view_id) {
 
 bool WindowHandleToWebViewId(const std::string& window_handle,
                              std::string* web_view_id) {
-  if (window_handle.find(kWindowHandlePrefix) != 0u)
+  if (!base::StartsWith(window_handle, kWindowHandlePrefix,
+                        base::CompareCase::SENSITIVE)) {
     return false;
-  *web_view_id = window_handle.substr(
-      std::string(kWindowHandlePrefix).length());
+  }
+  *web_view_id = window_handle.substr(sizeof(kWindowHandlePrefix) - 1);
   return true;
 }
 

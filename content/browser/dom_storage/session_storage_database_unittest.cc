@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,7 +114,7 @@ void SessionStorageDatabaseTest::ResetDatabase() {
 bool SessionStorageDatabaseTest::IsNamespaceKey(const std::string& key,
                                                 std::string* namespace_id) {
   std::string namespace_prefix = SessionStorageDatabase::NamespacePrefix();
-  if (key.find(namespace_prefix) != 0)
+  if (!base::StartsWith(key, namespace_prefix, base::CompareCase::SENSITIVE))
     return false;
   if (key == namespace_prefix)
     return false;
@@ -134,7 +135,7 @@ bool SessionStorageDatabaseTest::IsNamespaceOriginKey(
     const std::string& key,
     std::string* namespace_id) {
   std::string namespace_prefix = SessionStorageDatabase::NamespacePrefix();
-  if (key.find(namespace_prefix) != 0)
+  if (!base::StartsWith(key, namespace_prefix, base::CompareCase::SENSITIVE))
     return false;
   size_t second_dash = key.find('-', namespace_prefix.length());
   if (second_dash == std::string::npos || second_dash == key.length() - 1)
@@ -152,7 +153,7 @@ bool SessionStorageDatabaseTest::IsNamespaceOriginKey(
 bool SessionStorageDatabaseTest::IsMapRefCountKey(const std::string& key,
                                                   int64_t* map_id) {
   std::string map_prefix = "map-";
-  if (key.find(map_prefix) != 0)
+  if (!base::StartsWith(key, map_prefix, base::CompareCase::SENSITIVE))
     return false;
   size_t second_dash = key.find('-', map_prefix.length());
   if (second_dash != key.length() - 1)
@@ -169,7 +170,7 @@ bool SessionStorageDatabaseTest::IsMapRefCountKey(const std::string& key,
 bool SessionStorageDatabaseTest::IsMapValueKey(const std::string& key,
                                                int64_t* map_id) {
   std::string map_prefix = "map-";
-  if (key.find(map_prefix) != 0)
+  if (!base::StartsWith(key, map_prefix, base::CompareCase::SENSITIVE))
     return false;
   size_t second_dash = key.find('-', map_prefix.length());
   if (second_dash == std::string::npos || second_dash == key.length() - 1)

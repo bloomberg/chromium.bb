@@ -2558,8 +2558,10 @@ static std::unique_ptr<net::test_server::HttpResponse>
 EchoReferrerRequestHandler(const net::test_server::HttpRequest& request) {
   const std::string kReferrerHeader = "Referer";  // SIC
 
-  if (request.relative_url.find("/echoreferrer") != 0)
+  if (!base::StartsWith(request.relative_url, "/echoreferrer",
+                        base::CompareCase::SENSITIVE)) {
     return std::unique_ptr<net::test_server::HttpResponse>();
+  }
 
   std::unique_ptr<net::test_server::BasicHttpResponse> response(
       new net::test_server::BasicHttpResponse());
