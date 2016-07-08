@@ -496,8 +496,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
-    self.Fail('deqp/data/gles3/shaders/functions.html',
-        ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
     self.Fail('deqp/functional/gles3/fbodepthbuffer.html',
@@ -506,24 +504,23 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Behavior difference between GL compatibility profile and ES3.
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=617410)
-
-    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
-        ['linux', 'amd', 'intel'], bug=483282)
-    self.Fail('deqp/functional/gles3/clipping.html',
-        ['linux', 'amd', 'intel'], bug=483282)
-
-    self.Flaky('deqp/functional/gles3/texturespecification/' +
-        'random_teximage2d_2d.html',
-        ['linux'], bug=618447)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_cube.html',
         ['linux'], bug=483282)
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['linux'], bug=624506)
 
+    self.Fail('deqp/data/gles3/shaders/functions.html',
+        ['linux', 'amd', 'intel'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
+        ['linux', 'amd', 'intel'], bug=483282)
+    self.Fail('deqp/functional/gles3/clipping.html',
+        ['linux', 'amd', 'intel'], bug=483282)
+    self.Flaky('deqp/functional/gles3/texturespecification/' +
+        'random_teximage2d_2d.html',
+        ['linux', 'amd', 'intel'], bug=618447)
+
     # Linux NVIDIA only.
-    self.Fail('conformance2/glsl3/array-complex-indexing.html',
-        ['linux', 'nvidia', 'no_angle'], bug=606498)
     self.Fail('deqp/functional/gles3/uniformapi/random.html',
         ['linux', 'nvidia'], bug=621178)
 
