@@ -328,7 +328,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorBase):
 
     def generate_code_internal(self, definitions, definition_name):
         if not definition_name in definitions.dictionaries:
-            raise ValueError('%s is not an IDL dictionary')
+            raise ValueError('%s is not an IDL dictionary' % definition_name)
         interfaces_info = self.info_provider.interfaces_info
         dictionary = definitions.dictionaries[definition_name]
         interface_info = interfaces_info[definition_name]
