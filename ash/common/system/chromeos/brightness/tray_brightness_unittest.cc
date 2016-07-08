@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/brightness/tray_brightness.h"
+#include "ash/common/system/chromeos/brightness/tray_brightness.h"
 
 #include <memory>
 
@@ -10,7 +10,6 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ui/views/view.h"

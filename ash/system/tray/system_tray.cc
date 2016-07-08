@@ -46,6 +46,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/audio/tray_audio_chromeos.h"
 #include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
+#include "ash/common/system/chromeos/brightness/tray_brightness.h"
 #include "ash/common/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/common/system/chromeos/network/tray_network.h"
 #include "ash/common/system/chromeos/network/tray_sms.h"
@@ -60,7 +61,6 @@
 #include "ash/common/system/chromeos/tray_caps_lock.h"
 #include "ash/common/system/chromeos/tray_tracing.h"
 #include "ash/common/system/ime/tray_ime_chromeos.h"
-#include "ash/system/chromeos/brightness/tray_brightness.h"
 #include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
 #include "ash/system/chromeos/rotation/tray_rotation_lock.h"
 #include "ash/system/chromeos/tray_display.h"

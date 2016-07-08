@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
+#include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
 
 #include "base/metrics/user_metrics.h"
 #include "chromeos/dbus/dbus_thread_manager.h"

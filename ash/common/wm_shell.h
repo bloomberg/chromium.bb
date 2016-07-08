@@ -15,10 +15,6 @@
 #include "ash/common/metrics/user_metrics_action.h"
 #include "base/observer_list.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace views {
 class PointerWatcher;
 }
@@ -26,8 +22,10 @@ class PointerWatcher;
 namespace ash {
 
 class AccessibilityDelegate;
+class BrightnessControlDelegate;
 class DisplayInfo;
 class FocusCycler;
+class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class MaximizeModeController;
 class MruWindowTracker;
@@ -41,7 +39,6 @@ class WindowResizer;
 class WindowSelectorController;
 class WmActivationObserver;
 class WmDisplayObserver;
-class WmRootWindowController;
 class WmWindow;
 
 namespace wm {
@@ -64,7 +61,15 @@ class ASH_EXPORT WmShell {
 
   ShellDelegate* delegate() { return delegate_.get(); }
 
+  BrightnessControlDelegate* brightness_control_delegate() {
+    return brightness_control_delegate_.get();
+  }
+
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
+
+  KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
+    return keyboard_brightness_control_delegate_.get();
+  }
 
   KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
 
@@ -234,13 +239,18 @@ class ASH_EXPORT WmShell {
   void DeleteMruWindowTracker();
 
  private:
+  friend class AcceleratorControllerTest;
   friend class Shell;
 
   static WmShell* instance_;
 
   base::ObserverList<ShellObserver> shell_observers_;
   std::unique_ptr<ShellDelegate> delegate_;
+
+  std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<KeyboardBrightnessControlDelegate>
+      keyboard_brightness_control_delegate_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaDelegate> media_delegate_;

@@ -8,8 +8,10 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/ash_switches.h"
+#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/brightness_control_delegate.h"
+#include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/volume_control_delegate.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
@@ -19,21 +21,16 @@
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/ime_control_delegate.h"
-#include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/system/brightness_control_delegate.h"
-#include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_session_state_animator.h"
 #include "ash/test/test_shelf_delegate.h"
-#include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -264,6 +261,16 @@ class AcceleratorControllerTest : public test::AshTestBase {
         PanelLayoutManager::Get(WmWindowAura::Get(window));
     manager->Relayout();
     return window;
+  }
+
+  void SetBrightnessControlDelegate(
+      std::unique_ptr<BrightnessControlDelegate> delegate) {
+    WmShell::Get()->brightness_control_delegate_ = std::move(delegate);
+  }
+
+  void SetKeyboardBrightnessControlDelegate(
+      std::unique_ptr<KeyboardBrightnessControlDelegate> delegate) {
+    WmShell::Get()->keyboard_brightness_control_delegate_ = std::move(delegate);
   }
 
  private:
@@ -859,7 +866,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   {
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate;
-    GetController()->SetBrightnessControlDelegate(
+    SetBrightnessControlDelegate(
         std::unique_ptr<BrightnessControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
     EXPECT_TRUE(ProcessInController(brightness_down));
@@ -881,7 +888,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
     EXPECT_TRUE(ProcessInController(alt_brightness_up));
     DummyKeyboardBrightnessControlDelegate* delegate =
         new DummyKeyboardBrightnessControlDelegate;
-    GetController()->SetKeyboardBrightnessControlDelegate(
+    SetKeyboardBrightnessControlDelegate(
         std::unique_ptr<KeyboardBrightnessControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_keyboard_brightness_down_count());
     EXPECT_TRUE(ProcessInController(alt_brightness_down));
@@ -1237,7 +1244,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
   {
     DummyBrightnessControlDelegate* delegate =
         new DummyBrightnessControlDelegate;
-    GetController()->SetBrightnessControlDelegate(
+    SetBrightnessControlDelegate(
         std::unique_ptr<BrightnessControlDelegate>(delegate));
     EXPECT_EQ(0, delegate->handle_brightness_down_count());
     EXPECT_TRUE(ProcessInController(brightness_down));

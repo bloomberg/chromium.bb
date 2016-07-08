@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/brightness/tray_brightness.h"
+#include "ash/common/system/chromeos/brightness/tray_brightness.h"
 
 #include <algorithm>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/common/ash_constants.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/system/brightness_control_delegate.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -151,10 +149,11 @@ void BrightnessView::SliderValueChanged(views::Slider* sender,
   DCHECK_EQ(sender, slider_);
   if (reason != views::VALUE_CHANGED_BY_USER)
     return;
-  AcceleratorController* ac = Shell::GetInstance()->accelerator_controller();
-  if (ac->brightness_control_delegate()) {
+  BrightnessControlDelegate* brightness_control_delegate =
+      WmShell::Get()->brightness_control_delegate();
+  if (brightness_control_delegate) {
     double percent = std::max(value * 100.0, kMinBrightnessPercent);
-    ac->brightness_control_delegate()->SetBrightnessPercent(percent, true);
+    brightness_control_delegate->SetBrightnessPercent(percent, true);
   }
 }
 
@@ -192,13 +191,12 @@ TrayBrightness::~TrayBrightness() {
 }
 
 void TrayBrightness::GetInitialBrightness() {
-  BrightnessControlDelegate* delegate = Shell::GetInstance()
-                                            ->accelerator_controller()
-                                            ->brightness_control_delegate();
+  BrightnessControlDelegate* brightness_control_delegate =
+      WmShell::Get()->brightness_control_delegate();
   // Worrisome, but happens in unit tests, so don't log anything.
-  if (!delegate)
+  if (!brightness_control_delegate)
     return;
-  delegate->GetBrightnessPercent(
+  brightness_control_delegate->GetBrightnessPercent(
       base::Bind(&TrayBrightness::HandleInitialBrightness,
                  weak_ptr_factory_.GetWeakPtr()));
 }

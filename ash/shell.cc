@@ -134,7 +134,6 @@
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
-#include "ash/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
 #include "ash/touch/touch_transformer_controller.h"
@@ -1073,11 +1072,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
 #if defined(OS_CHROMEOS)
-  // Set accelerator controller delegates.
-  accelerator_controller_->SetBrightnessControlDelegate(
-      std::unique_ptr<BrightnessControlDelegate>(
-          new system::BrightnessControllerChromeos));
-
   power_event_observer_.reset(new PowerEventObserver());
   user_activity_notifier_.reset(
       new ui::UserActivityPowerManagerNotifier(user_activity_detector_.get()));

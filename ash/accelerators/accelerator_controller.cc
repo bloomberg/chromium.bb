@@ -21,6 +21,8 @@
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/brightness_control_delegate.h"
+#include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
@@ -48,8 +50,6 @@
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/brightness_control_delegate.h"
-#include "ash/system/keyboard_brightness/keyboard_brightness_control_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/touch/touch_hud_debug.h"
@@ -81,7 +81,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/display/display_configuration_controller.h"
-#include "ash/system/chromeos/keyboard_brightness_controller.h"
 #include "base/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -554,18 +553,6 @@ void HandleUnpin() {
 }
 
 #if defined(OS_CHROMEOS)
-void HandleBrightnessDown(BrightnessControlDelegate* delegate,
-                          const ui::Accelerator& accelerator) {
-  if (delegate)
-    delegate->HandleBrightnessDown(accelerator);
-}
-
-void HandleBrightnessUp(BrightnessControlDelegate* delegate,
-                        const ui::Accelerator& accelerator) {
-  if (delegate)
-    delegate->HandleBrightnessUp(accelerator);
-}
-
 bool CanHandleDisableCapsLock(const ui::Accelerator& previous_accelerator) {
   ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
   if (previous_accelerator.type() == ui::ET_KEY_RELEASED ||
@@ -588,18 +575,6 @@ void HandleDisableCapsLock() {
   chromeos::input_method::InputMethodManager* ime =
       chromeos::input_method::InputMethodManager::Get();
   ime->GetImeKeyboard()->SetCapsLockEnabled(false);
-}
-
-void HandleKeyboardBrightnessDown(KeyboardBrightnessControlDelegate* delegate,
-                                  const ui::Accelerator& accelerator) {
-  if (delegate)
-    delegate->HandleKeyboardBrightnessDown(accelerator);
-}
-
-void HandleKeyboardBrightnessUp(KeyboardBrightnessControlDelegate* delegate,
-                                const ui::Accelerator& accelerator) {
-  if (delegate)
-    delegate->HandleKeyboardBrightnessUp(accelerator);
 }
 
 bool CanHandleLock() {
@@ -807,11 +782,6 @@ AcceleratorController::GetCurrentAcceleratorRestriction() {
   return GetAcceleratorProcessingRestriction(-1);
 }
 
-void AcceleratorController::SetBrightnessControlDelegate(
-    std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate) {
-  brightness_control_delegate_ = std::move(brightness_control_delegate);
-}
-
 void AcceleratorController::SetImeControlDelegate(
     std::unique_ptr<ImeControlDelegate> ime_control_delegate) {
   ime_control_delegate_ = std::move(ime_control_delegate);
@@ -928,11 +898,6 @@ void AcceleratorController::Init() {
     for (size_t i = 0; i < kDebugAcceleratorDataLength; ++i)
       reserved_actions_.insert(kDebugAcceleratorData[i].action);
   }
-
-#if defined(OS_CHROMEOS)
-  keyboard_brightness_control_delegate_.reset(
-      new KeyboardBrightnessController());
-#endif
 }
 
 void AcceleratorController::RegisterAccelerators(
@@ -1280,12 +1245,20 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       HandleUnpin();
       break;
 #if defined(OS_CHROMEOS)
-    case BRIGHTNESS_DOWN:
-      HandleBrightnessDown(brightness_control_delegate_.get(), accelerator);
+    case BRIGHTNESS_DOWN: {
+      BrightnessControlDelegate* delegate =
+          WmShell::Get()->brightness_control_delegate();
+      if (delegate)
+        delegate->HandleBrightnessDown(accelerator);
       break;
-    case BRIGHTNESS_UP:
-      HandleBrightnessUp(brightness_control_delegate_.get(), accelerator);
+    }
+    case BRIGHTNESS_UP: {
+      BrightnessControlDelegate* delegate =
+          WmShell::Get()->brightness_control_delegate();
+      if (delegate)
+        delegate->HandleBrightnessUp(accelerator);
       break;
+    }
     case DEBUG_ADD_REMOVE_DISPLAY:
     case DEBUG_SHOW_TOAST:
     case DEBUG_TOGGLE_TOUCH_PAD:
@@ -1300,14 +1273,20 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DISABLE_GPU_WATCHDOG:
       Shell::GetInstance()->gpu_support()->DisableGpuWatchdog();
       break;
-    case KEYBOARD_BRIGHTNESS_DOWN:
-      HandleKeyboardBrightnessDown(keyboard_brightness_control_delegate_.get(),
-                                   accelerator);
+    case KEYBOARD_BRIGHTNESS_DOWN: {
+      KeyboardBrightnessControlDelegate* delegate =
+          WmShell::Get()->keyboard_brightness_control_delegate();
+      if (delegate)
+        delegate->HandleKeyboardBrightnessDown(accelerator);
       break;
-    case KEYBOARD_BRIGHTNESS_UP:
-      HandleKeyboardBrightnessUp(keyboard_brightness_control_delegate_.get(),
-                                 accelerator);
+    }
+    case KEYBOARD_BRIGHTNESS_UP: {
+      KeyboardBrightnessControlDelegate* delegate =
+          WmShell::Get()->keyboard_brightness_control_delegate();
+      if (delegate)
+        delegate->HandleKeyboardBrightnessUp(accelerator);
       break;
+    }
     case LOCK_PRESSED:
     case LOCK_RELEASED:
       Shell::GetInstance()->power_button_controller()->OnLockButtonEvent(
@@ -1433,13 +1412,6 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
   return RESTRICTION_NONE;
-}
-
-void AcceleratorController::SetKeyboardBrightnessControlDelegate(
-    std::unique_ptr<KeyboardBrightnessControlDelegate>
-        keyboard_brightness_control_delegate) {
-  keyboard_brightness_control_delegate_ =
-      std::move(keyboard_brightness_control_delegate);
 }
 
 }  // namespace ash

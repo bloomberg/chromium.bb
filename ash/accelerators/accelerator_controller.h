@@ -27,10 +27,8 @@ class AcceleratorManager;
 namespace ash {
 
 struct AcceleratorData;
-class BrightnessControlDelegate;
 class ExitWarningHandler;
 class ImeControlDelegate;
-class KeyboardBrightnessControlDelegate;
 class ScreenshotDelegate;
 class VolumeControlDelegate;
 
@@ -101,15 +99,10 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   // Returns the restriction for the current context.
   AcceleratorProcessingRestriction GetCurrentAcceleratorRestriction();
 
-  void SetBrightnessControlDelegate(
-      std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate);
   void SetImeControlDelegate(
       std::unique_ptr<ImeControlDelegate> ime_control_delegate);
   void SetScreenshotDelegate(
       std::unique_ptr<ScreenshotDelegate> screenshot_delegate);
-  BrightnessControlDelegate* brightness_control_delegate() const {
-    return brightness_control_delegate_.get();
-  }
   ScreenshotDelegate* screenshot_delegate() {
     return screenshot_delegate_.get();
   }
@@ -166,21 +159,12 @@ class ASH_EXPORT AcceleratorController : public ui::AcceleratorTarget {
   AcceleratorProcessingRestriction GetAcceleratorProcessingRestriction(
       int action);
 
-  void SetKeyboardBrightnessControlDelegate(
-      std::unique_ptr<KeyboardBrightnessControlDelegate>
-          keyboard_brightness_control_delegate);
-
   std::unique_ptr<ui::AcceleratorManager> accelerator_manager_;
 
   // A tracker for the current and previous accelerators.
   std::unique_ptr<ui::AcceleratorHistory> accelerator_history_;
 
-  // TODO(derat): BrightnessControlDelegate is also used by the system tray;
-  // move it outside of this class.
-  std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<ImeControlDelegate> ime_control_delegate_;
-  std::unique_ptr<KeyboardBrightnessControlDelegate>
-      keyboard_brightness_control_delegate_;
   std::unique_ptr<ScreenshotDelegate> screenshot_delegate_;
 
   // Handles the exit accelerator which requires a double press to exit and

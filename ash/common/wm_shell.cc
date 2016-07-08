@@ -8,7 +8,8 @@
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_window_ids.h"
-#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
+#include "ash/common/system/brightness_control_delegate.h"
+#include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -17,6 +18,12 @@
 #include "ash/common/wm_window.h"
 #include "base/bind.h"
 #include "base/logging.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
+#include "ash/common/system/chromeos/keyboard_brightness_controller.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
+#endif
 
 namespace ash {
 
@@ -58,7 +65,12 @@ WmShell::WmShell(ShellDelegate* delegate)
     : delegate_(delegate),
       focus_cycler_(new FocusCycler),
       system_tray_notifier_(new SystemTrayNotifier),
-      window_selector_controller_(new WindowSelectorController()) {}
+      window_selector_controller_(new WindowSelectorController) {
+#if defined(OS_CHROMEOS)
+  brightness_control_delegate_.reset(new system::BrightnessControllerChromeos);
+  keyboard_brightness_control_delegate_.reset(new KeyboardBrightnessController);
+#endif
+}
 
 WmShell::~WmShell() {}
 

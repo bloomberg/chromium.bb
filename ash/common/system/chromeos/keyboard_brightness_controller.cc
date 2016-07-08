@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/keyboard_brightness_controller.h"
+#include "ash/common/system/chromeos/keyboard_brightness_controller.h"
 
 #include "ash/common/wm_shell.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
