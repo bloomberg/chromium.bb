@@ -102,7 +102,7 @@ MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
     mv.redirects.push_back(mv.url);
   } else {
     mv.redirects = redirects;
-    if (mv.redirects[mv.redirects.size() - 1] != mv.url) {
+    if (mv.redirects.back() != mv.url) {
       // The last url must be the target url.
       mv.redirects.push_back(mv.url);
     }

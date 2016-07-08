@@ -513,30 +513,26 @@ URLMatcherCondition URLMatcherConditionFactory::CreateCondition(
   PatternSingletons::const_iterator iter =
       pattern_singletons->find(&search_pattern);
 
-  if (iter != pattern_singletons->end()) {
+  if (iter != pattern_singletons->end())
     return URLMatcherCondition(criterion, *iter);
-  } else {
-    StringPattern* new_pattern =
-        new StringPattern(pattern, id_counter_++);
-    pattern_singletons->insert(new_pattern);
-    return URLMatcherCondition(criterion, new_pattern);
-  }
+
+  StringPattern* new_pattern = new StringPattern(pattern, id_counter_++);
+  pattern_singletons->insert(new_pattern);
+  return URLMatcherCondition(criterion, new_pattern);
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeHostSuffix(
     const std::string& suffix) const {
-  if (!suffix.empty() && suffix[suffix.size() - 1] == '.')
-    return suffix;
-  else
-    return suffix + ".";
+  if (suffix.empty())
+    return ".";
+  return suffix.back() == '.' ? suffix : suffix + ".";
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeHostPrefix(
     const std::string& prefix) const {
-  if (!prefix.empty() && prefix[0] == '.')
-    return prefix;
-  else
-    return "." + prefix;
+  if (prefix.empty())
+    return ".";
+  return prefix[0] == '.' ? prefix : "." + prefix;
 }
 
 std::string URLMatcherConditionFactory::CanonicalizeHostname(

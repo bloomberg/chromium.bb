@@ -258,10 +258,8 @@ class GLHelperTest : public testing::Test {
     }
 
     // Check the output size matches the destination of the last stage
-    EXPECT_EQ(scaler_stages[scaler_stages.size() - 1].dst_size.width(),
-              dst_size.width());
-    EXPECT_EQ(scaler_stages[scaler_stages.size() - 1].dst_size.height(),
-              dst_size.height());
+    EXPECT_EQ(scaler_stages.back().dst_size.width(), dst_size.width());
+    EXPECT_EQ(scaler_stages.back().dst_size.height(), dst_size.height());
 
     // Used to verify that up-scales are not attempted after some
     // other scale.

@@ -403,8 +403,7 @@ void UrlToFullHashes(const GURL& url,
       // We may have /foo as path-prefix in the whitelist which should
       // also match with /foo/bar and /foo?bar.  Hence, for every path
       // that ends in '/' we also add the path without the slash.
-      if (include_whitelist_hashes && path.size() > 1 &&
-          path[path.size() - 1] == '/') {
+      if (include_whitelist_hashes && path.size() > 1 && path.back() == '/') {
         full_hashes->push_back(SBFullHashForString(
             host + path.substr(0, path.size() - 1)));
       }

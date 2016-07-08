@@ -59,7 +59,7 @@ bool StartsWithActionPrefix(base::StringPiece header_value,
                             base::StringPiece action_prefix) {
   DCHECK(!action_prefix.empty());
   // A valid action does not include a trailing '='.
-  DCHECK(action_prefix[action_prefix.size() - 1] != kActionValueDelimiter);
+  DCHECK(action_prefix.back() != kActionValueDelimiter);
 
   return header_value.size() > action_prefix.size() + 1 &&
          header_value[action_prefix.size()] == kActionValueDelimiter &&

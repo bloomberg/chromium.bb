@@ -138,22 +138,21 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreMostRecentEntry(
     LiveTabContext* context) {
   if (entries_.empty())
     return std::vector<LiveTab*>();
-
   return RestoreEntryById(context, entries_.front()->id, UNKNOWN);
 }
 
 TabRestoreService::Tab* TabRestoreServiceHelper::RemoveTabEntryById(
     SessionID::id_type id) {
-  Entries::iterator i = GetEntryIteratorById(id);
-  if (i == entries_.end())
-    return NULL;
+  Entries::iterator it = GetEntryIteratorById(id);
+  if (it == entries_.end())
+    return nullptr;
 
-  Entry* entry = *i;
+  Entry* entry = *it;
   if (entry->type != TabRestoreService::TAB)
-    return NULL;
+    return nullptr;
 
   Tab* tab = static_cast<Tab*>(entry);
-  entries_.erase(i);
+  entries_.erase(it);
   return tab;
 }
 
@@ -162,9 +161,10 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
     SessionID::id_type id,
     WindowOpenDisposition disposition) {
   Entries::iterator entry_iterator = GetEntryIteratorById(id);
-  if (entry_iterator == entries_.end())
+  if (entry_iterator == entries_.end()) {
     // Don't hoark here, we allow an invalid id.
     return std::vector<LiveTab*>();
+  }
 
   if (observer_)
     observer_->OnRestoreEntryById(id, entry_iterator);
@@ -186,7 +186,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
   std::vector<LiveTab*> live_tabs;
   if (entry->type == TabRestoreService::TAB) {
     Tab* tab = static_cast<Tab*>(entry);
-    LiveTab* restored_tab = NULL;
+    LiveTab* restored_tab = nullptr;
     context = RestoreTab(*tab, context, disposition, &restored_tab);
     live_tabs.push_back(restored_tab);
     context->ShowBrowserWindow();
@@ -225,28 +225,27 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
       for (std::vector<Tab>::iterator tab_i = window->tabs.begin();
            tab_i != window->tabs.end(); ++tab_i) {
         const Tab& tab = *tab_i;
-        if (tab.id == id) {
-          LiveTab* restored_tab = NULL;
-          context = RestoreTab(tab, context, disposition, &restored_tab);
-          live_tabs.push_back(restored_tab);
-          window->tabs.erase(tab_i);
-          // If restoring the tab leaves the window with nothing else, delete it
-          // as well.
-          if (!window->tabs.size()) {
-            entries_.erase(entry_iterator);
-            delete entry;
-          } else {
-            // Update the browser ID of the rest of the tabs in the window so if
-            // any one is restored, it goes into the same window as the tab
-            // being restored now.
-            UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID().id());
-            for (std::vector<Tab>::iterator tab_j = window->tabs.begin();
-                 tab_j != window->tabs.end(); ++tab_j) {
-              (*tab_j).browser_id = context->GetSessionID().id();
-            }
-          }
-          break;
+        if (tab.id != id)
+          continue;
+
+        LiveTab* restored_tab = nullptr;
+        context = RestoreTab(tab, context, disposition, &restored_tab);
+        live_tabs.push_back(restored_tab);
+        window->tabs.erase(tab_i);
+        // If restoring the tab leaves the window with nothing else, delete it
+        // as well.
+        if (window->tabs.empty()) {
+          entries_.erase(entry_iterator);
+          delete entry;
+        } else {
+          // Update the browser ID of the rest of the tabs in the window so if
+          // any one is restored, it goes into the same window as the tab
+          // being restored now.
+          UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID().id());
+          for (Tab& tab_j : window->tabs)
+            tab_j.browser_id = context->GetSessionID().id();
         }
+        break;
       }
     }
     context->ShowBrowserWindow();

@@ -51,14 +51,9 @@ bool AndroidURLsSQLHandler::Insert(HistoryAndBookmarkRow* row) {
 
 bool AndroidURLsSQLHandler::Delete(const TableIDRows& ids_set) {
   std::vector<URLID> ids;
-  for (TableIDRows::const_iterator id = ids_set.begin();
-       id != ids_set.end(); ++id)
-    ids.push_back(id->url_id);
-
-  if (!ids.size())
-    return true;
-
-  return android_urls_db_->DeleteAndroidURLRows(ids);
+  for (const auto& id : ids_set)
+    ids.push_back(id.url_id);
+  return ids.empty() || android_urls_db_->DeleteAndroidURLRows(ids);
 }
 
 }  // namespace history.

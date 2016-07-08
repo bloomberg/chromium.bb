@@ -120,10 +120,8 @@ void GetDataListSuggestions(const WebInputElement& element,
     std::vector<base::string16> parts = base::SplitString(
         prefix, base::ASCIIToUTF16(","), base::TRIM_WHITESPACE,
         base::SPLIT_WANT_ALL);
-    if (!parts.empty()) {
-      base::TrimWhitespace(parts[parts.size() - 1], base::TRIM_LEADING,
-                           &prefix);
-    }
+    if (!parts.empty())
+      base::TrimWhitespace(parts.back(), base::TRIM_LEADING, &prefix);
   }
 
   // Prefix filtering.
@@ -500,7 +498,7 @@ void AutofillAgent::AcceptDataListSuggestion(
       }
     }
     last_part.append(suggested_value);
-    parts[parts.size() - 1] = last_part;
+    parts.back() = last_part;
 
     new_value = base::JoinString(parts, base::ASCIIToUTF16(","));
   }

@@ -448,10 +448,7 @@ bool FormStructure::EncodeQueryRequest(
     encoded_signatures->push_back(signature);
   }
 
-  if (!encoded_signatures->size())
-    return false;
-
-  return true;
+  return !encoded_signatures->empty();
 }
 
 // static

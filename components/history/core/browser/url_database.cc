@@ -528,8 +528,7 @@ void URLDatabase::GetMostRecentKeywordSearchTerms(
   base::string16 lower_prefix = base::i18n::ToLower(prefix);
   // This magic gives us a prefix search.
   base::string16 next_prefix = lower_prefix;
-  next_prefix[next_prefix.size() - 1] =
-      next_prefix[next_prefix.size() - 1] + 1;
+  next_prefix.back() = next_prefix.back() + 1;
   statement.BindInt64(0, keyword_id);
   statement.BindString16(1, lower_prefix);
   statement.BindString16(2, next_prefix);

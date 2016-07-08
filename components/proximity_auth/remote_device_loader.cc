@@ -88,7 +88,7 @@ void RemoteDeviceLoader::OnPSKDerived(
       user_id_, unlock_key.friendly_device_name(), unlock_key.public_key(),
       bluetooth_type, bluetooth_address, psk, std::string()));
 
-  if (!remaining_unlock_keys_.size())
+  if (remaining_unlock_keys_.empty())
     callback_.Run(remote_devices_);
 }
 

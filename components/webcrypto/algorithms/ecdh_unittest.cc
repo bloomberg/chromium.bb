@@ -219,7 +219,7 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyHmac19Bits) {
             ExportKey(blink::WebCryptoKeyFormatRaw, derived_key, &raw_key));
   EXPECT_EQ(3u, raw_key.size());
   // The last 7 bits of the key should be zero.
-  EXPECT_EQ(0, raw_key[raw_key.size() - 1] & 0x1f);
+  EXPECT_EQ(0, raw_key.back() & 0x1f);
 }
 
 // Derive an HMAC key with no specified length (just the hash of SHA-256).

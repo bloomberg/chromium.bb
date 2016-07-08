@@ -215,39 +215,36 @@ void SyncedSessionTracker::DeleteForeignTab(const std::string& session_tag,
 
 bool SyncedSessionTracker::DeleteOldSessionWindowIfNecessary(
     const SessionWindowWrapper& window_wrapper) {
-  if (!window_wrapper.owned) {
-    DVLOG(1) << "Deleting closed window "
-             << window_wrapper.window_ptr->window_id.id();
-    // Clear the tabs first, since we don't want the destructor to destroy
-    // them. Their deletion will be handled by DeleteOldSessionTabIfNecessary.
-    window_wrapper.window_ptr->tabs.clear();
-    delete window_wrapper.window_ptr;
-    return true;
-  }
-  return false;
+  if (window_wrapper.owned)
+    return false;
+
+  DVLOG(1) << "Deleting closed window "
+           << window_wrapper.window_ptr->window_id.id();
+  // Clear the tabs first, since we don't want the destructor to destroy
+  // them. Their deletion will be handled by DeleteOldSessionTabIfNecessary.
+  window_wrapper.window_ptr->tabs.clear();
+  delete window_wrapper.window_ptr;
+  return true;
 }
 
 bool SyncedSessionTracker::DeleteOldSessionTabIfNecessary(
     const SessionTabWrapper& tab_wrapper) {
-  if (!tab_wrapper.owned) {
-    if (VLOG_IS_ON(1)) {
-      sessions::SessionTab* tab_ptr = tab_wrapper.tab_ptr;
-      std::string title;
-      if (tab_ptr->navigations.size() > 0) {
-        title =
-            " (" +
-            base::UTF16ToUTF8(
-                tab_ptr->navigations[tab_ptr->navigations.size() - 1].title()) +
-            ")";
-      }
-      DVLOG(1) << "Deleting closed tab " << tab_ptr->tab_id.id() << title
-               << " from window " << tab_ptr->window_id.id();
+  if (tab_wrapper.owned)
+    return false;
+
+  if (VLOG_IS_ON(1)) {
+    sessions::SessionTab* tab_ptr = tab_wrapper.tab_ptr;
+    std::string title;
+    if (!tab_ptr->navigations.empty()) {
+      title =
+          " (" + base::UTF16ToUTF8(tab_ptr->navigations.back().title()) + ")";
     }
-    unmapped_tabs_.erase(tab_wrapper.tab_ptr);
-    delete tab_wrapper.tab_ptr;
-    return true;
+    DVLOG(1) << "Deleting closed tab " << tab_ptr->tab_id.id() << title
+             << " from window " << tab_ptr->window_id.id();
   }
-  return false;
+  unmapped_tabs_.erase(tab_wrapper.tab_ptr);
+  delete tab_wrapper.tab_ptr;
+  return true;
 }
 
 void SyncedSessionTracker::CleanupSession(const std::string& session_tag) {
@@ -400,15 +397,12 @@ sessions::SessionTab* SyncedSessionTracker::GetTabImpl(
       std::string title;
       if (tab_ptr->navigations.size() > 0) {
         title =
-            " (" +
-            base::UTF16ToUTF8(
-                tab_ptr->navigations[tab_ptr->navigations.size() - 1].title()) +
-            ")";
+            " (" + base::UTF16ToUTF8(tab_ptr->navigations.back().title()) + ")";
       }
       DVLOG(1) << "Getting "
                << (session_tag == local_session_tag_ ? "local session"
                                                      : session_tag)
-               << "'s seen tab " << tab_id << " at " << tab_ptr << title;
+               << "'s seen tab " << tab_id << " at " << tab_ptr << " " << title;
     }
   } else {
     tab_ptr = new sessions::SessionTab();

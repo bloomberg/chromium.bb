@@ -31,7 +31,7 @@ const base::FilePath::CharType kEncryptionDirectoryName[] =
 
 std::string GCMEncryptionProvider::ToDecryptionResultDetailsString(
     DecryptionResult result) {
-  switch(result) {
+  switch (result) {
     case DECRYPTION_RESULT_UNENCRYPTED:
       return "Message was not encrypted";
     case DECRYPTION_RESULT_DECRYPTED:

@@ -47,7 +47,7 @@ void TruncateToBitLength(size_t length_bits, std::vector<uint8_t>* bytes) {
 
   // Zero any "unused bits" in the final byte.
   if (remainder_bits)
-    (*bytes)[bytes->size() - 1] &= ~((0xFF) >> remainder_bits);
+    bytes->back() &= ~((0xFF) >> remainder_bits);
 }
 
 Status CheckKeyCreationUsages(blink::WebCryptoKeyUsageMask all_possible_usages,
