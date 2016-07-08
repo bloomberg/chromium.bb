@@ -1645,15 +1645,15 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
     for (i = 0; i < REFS_PER_FRAME; ++i) {
       RefBuffer *const ref_buf = &cm->frame_refs[i];
-#if CONFIG_VP9_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       av1_setup_scale_factors_for_frame(
           &ref_buf->sf, ref_buf->buf->y_crop_width, ref_buf->buf->y_crop_height,
           cm->width, cm->height, cm->use_highbitdepth);
-#else   // CONFIG_VP9_HIGHBITDEPTH
+#else   // CONFIG_AOM_HIGHBITDEPTH
       av1_setup_scale_factors_for_frame(
           &ref_buf->sf, ref_buf->buf->y_crop_width, ref_buf->buf->y_crop_height,
           cm->width, cm->height);
-#endif  // CONFIG_VP9_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
 
     // Generate next_ref_frame_map.
