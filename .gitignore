@@ -35,7 +35,7 @@
 /examples/simple_decoder
 /examples/simple_encoder
 /examples/twopass_encoder
-/examples/aomcx_set_ref
+/examples/aom_cx_set_ref
 /examples/av1_lossless_encoder
 /examples/av1_spatial_scalable_encoder
 /examples/aom_temporal_scalable_patterns
@@ -50,7 +50,7 @@
 /test_intra_pred_speed
 /test_libaom
 /aom_api1_migration.dox
-/vp[89x]_rtcd.h
+/av1_rtcd.h
 /aom.pc
 /aom_config.c
 /aom_config.h
