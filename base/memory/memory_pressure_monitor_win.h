@@ -63,6 +63,7 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
 
   // Get the current memory pressure level. This can be called from any thread.
   MemoryPressureLevel GetCurrentPressureLevel() const override;
+  void SetDispatchCallback(const DispatchCallback& callback) override;
 
   // Returns the moderate pressure level free memory threshold, in MB.
   int moderate_threshold_mb() const { return moderate_threshold_mb_; }
@@ -131,6 +132,8 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
 
   // Ensures that this object is used from a single thread.
   base::ThreadChecker thread_checker_;
+
+  DispatchCallback dispatch_callback_;
 
   // Weak pointer factory to ourself used for scheduling calls to
   // CheckMemoryPressure/CheckMemoryPressureAndRecordStatistics via |timer_|.

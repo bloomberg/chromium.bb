@@ -82,6 +82,8 @@ MemoryPressureMonitor::MemoryPressureMonitor()
       current_memory_pressure_level_(
           MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       moderate_pressure_repeat_count_(0),
+      dispatch_callback_(
+          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)),
       weak_ptr_factory_(this) {
   InferThresholds();
   StartObserving();
@@ -94,6 +96,8 @@ MemoryPressureMonitor::MemoryPressureMonitor(int moderate_threshold_mb,
       current_memory_pressure_level_(
           MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       moderate_pressure_repeat_count_(0),
+      dispatch_callback_(
+          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)),
       weak_ptr_factory_(this) {
   DCHECK_GE(moderate_threshold_mb_, critical_threshold_mb_);
   DCHECK_LE(0, critical_threshold_mb_);
@@ -198,7 +202,7 @@ void MemoryPressureMonitor::CheckMemoryPressure() {
   // happen for moderate and critical pressure levels.
   DCHECK_NE(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE,
             current_memory_pressure_level_);
-  MemoryPressureListener::NotifyMemoryPressure(current_memory_pressure_level_);
+  dispatch_callback_.Run(current_memory_pressure_level_);
 }
 
 void MemoryPressureMonitor::CheckMemoryPressureAndRecordStatistics() {
@@ -248,6 +252,11 @@ bool MemoryPressureMonitor::GetSystemMemoryStatus(
   if (!::GlobalMemoryStatusEx(mem_status))
     return false;
   return true;
+}
+
+void MemoryPressureMonitor::SetDispatchCallback(
+    const DispatchCallback& callback) {
+  dispatch_callback_ = callback;
 }
 
 }  // namespace win

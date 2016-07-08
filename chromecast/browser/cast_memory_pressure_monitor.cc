@@ -46,6 +46,8 @@ int GetSystemReservedKb() {
 CastMemoryPressureMonitor::CastMemoryPressureMonitor()
     : current_level_(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE),
       system_reserved_kb_(GetSystemReservedKb()),
+      dispatch_callback_(
+          base::Bind(&base::MemoryPressureListener::NotifyMemoryPressure)),
       weak_ptr_factory_(this) {
   PollPressureLevel();
 }
@@ -111,7 +113,7 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
 void CastMemoryPressureMonitor::UpdateMemoryPressureLevel(
     MemoryPressureLevel new_level) {
   if (new_level != base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE)
-    base::MemoryPressureListener::NotifyMemoryPressure(new_level);
+    dispatch_callback_.Run(new_level);
 
   if (new_level == current_level_)
     return;
@@ -119,6 +121,11 @@ void CastMemoryPressureMonitor::UpdateMemoryPressureLevel(
   current_level_ = new_level;
   metrics::CastMetricsHelper::GetInstance()->RecordApplicationEventWithValue(
       "Memory.Pressure.LevelChange", new_level);
+}
+
+void CastMemoryPressureMonitor::SetDispatchCallback(
+    const DispatchCallback& callback) {
+  dispatch_callback_ = callback;
 }
 
 }  // namespace chromecast

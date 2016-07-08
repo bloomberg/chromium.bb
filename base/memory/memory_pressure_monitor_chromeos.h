@@ -60,6 +60,7 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // Get the current memory pressure level.
   MemoryPressureListener::MemoryPressureLevel GetCurrentPressureLevel() const
       override;
+  void SetDispatchCallback(const DispatchCallback& callback) override;
 
   // Returns a type-casted version of the current memory pressure monitor. A
   // simple wrapper to base::MemoryPressureMonitor::Get.
@@ -106,6 +107,8 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
 
   // File descriptor used to detect low memory condition.
   ScopedFD low_mem_file_;
+
+  DispatchCallback dispatch_callback_;
 
   base::WeakPtrFactory<MemoryPressureMonitor> weak_ptr_factory_;
 

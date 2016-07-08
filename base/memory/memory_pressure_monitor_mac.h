@@ -28,14 +28,20 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   // Returns the currently-observed memory pressure.
   MemoryPressureLevel GetCurrentPressureLevel() const override;
 
+  void SetDispatchCallback(const DispatchCallback& callback) override;
+
  private:
   friend TestMemoryPressureMonitor;
 
   static MemoryPressureLevel
       MemoryPressureLevelForMacMemoryPressure(int mac_memory_pressure);
-  static void NotifyMemoryPressureChanged(dispatch_source_s* event_source);
+  static void NotifyMemoryPressureChanged(
+      dispatch_source_s* event_source,
+      const DispatchCallback& dispatch_callback);
 
   ScopedDispatchObject<dispatch_source_t> memory_level_event_source_;
+
+  DispatchCallback dispatch_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureMonitor);
 };

@@ -113,6 +113,8 @@ MemoryPressureMonitor::MemoryPressureMonitor(
       critical_pressure_threshold_percent_(
           GetCriticalMemoryThresholdInPercent(thresholds)),
       low_mem_file_(HANDLE_EINTR(::open(kLowMemFile, O_RDONLY))),
+      dispatch_callback_(
+          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)),
       weak_ptr_factory_(this) {
   StartObserving();
   LOG_IF(ERROR,
@@ -230,7 +232,7 @@ void MemoryPressureMonitor::CheckMemoryPressure() {
     return;
   }
   moderate_pressure_repeat_count_ = 0;
-  MemoryPressureListener::NotifyMemoryPressure(current_memory_pressure_level_);
+  dispatch_callback_.Run(current_memory_pressure_level_);
 }
 
 // Gets the used ChromeOS memory in percent.
@@ -269,6 +271,11 @@ int MemoryPressureMonitor::GetUsedMemoryInPercent() {
   DCHECK(available_memory < total_memory);
   int percentage = ((total_memory - available_memory) * 100) / total_memory;
   return percentage;
+}
+
+void MemoryPressureMonitor::SetDispatchCallback(
+    const DispatchCallback& callback) {
+  dispatch_callback_ = callback;
 }
 
 }  // namespace chromeos

@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <sys/sysctl.h>
 
+#include "base/bind.h"
+#include "base/logging.h"
 #include "base/mac/mac_util.h"
 
 // Redeclare for partial 10.9 availability.
@@ -32,11 +34,12 @@ MemoryPressureMonitor::MemoryPressureLevelForMacMemoryPressure(
 }
 
 void MemoryPressureMonitor::NotifyMemoryPressureChanged(
-    dispatch_source_s* event_source) {
+    dispatch_source_s* event_source,
+    const MemoryPressureMonitor::DispatchCallback& dispatch_callback) {
   int mac_memory_pressure = dispatch_source_get_data(event_source);
   MemoryPressureListener::MemoryPressureLevel memory_pressure_level =
       MemoryPressureLevelForMacMemoryPressure(mac_memory_pressure);
-  MemoryPressureListener::NotifyMemoryPressure(memory_pressure_level);
+  dispatch_callback.Run(memory_pressure_level);
 }
 
 MemoryPressureMonitor::MemoryPressureMonitor()
@@ -47,9 +50,12 @@ MemoryPressureMonitor::MemoryPressureMonitor()
           DISPATCH_SOURCE_TYPE_MEMORYPRESSURE,
           0,
           DISPATCH_MEMORYPRESSURE_WARN | DISPATCH_MEMORYPRESSURE_CRITICAL,
-          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))) {
+          dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0))),
+      dispatch_callback_(
+          base::Bind(&MemoryPressureListener::NotifyMemoryPressure)) {
   dispatch_source_set_event_handler(memory_level_event_source_, ^{
-    NotifyMemoryPressureChanged(memory_level_event_source_.get());
+    NotifyMemoryPressureChanged(memory_level_event_source_.get(),
+                                dispatch_callback_);
   });
   dispatch_resume(memory_level_event_source_);
 }
@@ -65,6 +71,11 @@ MemoryPressureMonitor::GetCurrentPressureLevel() const {
   sysctlbyname("kern.memorystatus_vm_pressure_level", &mac_memory_pressure,
                &length, nullptr, 0);
   return MemoryPressureLevelForMacMemoryPressure(mac_memory_pressure);
+}
+
+void MemoryPressureMonitor::SetDispatchCallback(
+    const DispatchCallback& callback) {
+  dispatch_callback_ = callback;
 }
 
 }  // namespace mac
