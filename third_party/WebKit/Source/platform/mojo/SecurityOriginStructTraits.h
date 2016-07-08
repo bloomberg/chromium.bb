@@ -23,7 +23,7 @@ struct StructTraits<url::mojom::blink::Origin, RefPtr<::blink::SecurityOrigin>> 
     }
     static uint16_t port(const RefPtr<::blink::SecurityOrigin>& origin)
     {
-        return origin->port();
+        return origin->effectivePort();
     }
     static bool unique(const RefPtr<::blink::SecurityOrigin>& origin)
     {
