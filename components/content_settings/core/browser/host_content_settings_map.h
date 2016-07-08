@@ -280,6 +280,7 @@ class HostContentSettingsMap : public content_settings::Observer,
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
+  friend class HostContentSettingsMapTest_MigrateDomainScopedSettings_Test;
   friend class HostContentSettingsMapTest_MigrateKeygenSettings_Test;
 
   friend class content_settings::TestUtils;
@@ -310,6 +311,14 @@ class HostContentSettingsMap : public content_settings::Observer,
   // TODO(lshang): Remove this when clients have migrated (~M53). We should
   // leave in some code to remove old-format settings for a long time.
   void MigrateKeygenSettings();
+
+  // Migrate old domain scoped ALLOW settings to be origin scoped for
+  // ContentSettingsTypes which are domain scoped. Only narrow down ALLOW
+  // domain settings to origins so that this will not cause privacy/security
+  // issues.
+  // TODO(lshang): https://crbug.com/621398 Remove this when clients have
+  // migrated (~M56).
+  void MigrateDomainScopedSettings();
 
   // Collect UMA data about the number of exceptions.
   void RecordNumberOfExceptions();

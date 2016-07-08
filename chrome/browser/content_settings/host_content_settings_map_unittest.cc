@@ -1351,6 +1351,119 @@ TEST_F(HostContentSettingsMapTest, MigrateKeygenSettings) {
                 host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
 }
 
+TEST_F(HostContentSettingsMapTest, MigrateDomainScopedSettings) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  // Set old formatted http settings.
+  GURL http_host("http://example.com/");
+  GURL http_host_narrower("http://a.example.com/");
+
+  // Change default setting to BLOCK.
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_COOKIES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      host_content_settings_map->GetContentSetting(
+          http_host, http_host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  // Patterns generated for cookies used to be domain scoped.
+  host_content_settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURL(http_host),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_COOKIES,
+      std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          http_host, http_host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  // Settings also apply to subdomains.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                http_host_narrower, http_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+
+  ContentSettingsForOneType settings;
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+  // |host_content_settings_map| contains default setting and a domain scoped
+  // setting.
+  EXPECT_EQ(2U, settings.size());
+  EXPECT_TRUE(settings[0].primary_pattern.ToString() == "[*.]example.com");
+  EXPECT_TRUE(settings[1].primary_pattern.ToString() == "*");
+
+  // Set old formatted https settings.
+  GURL https_host("https://example.com/");
+  GURL https_host_narrower("https://a.example.com/");
+
+  // Change default setting to BLOCK.
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(
+      CONTENT_SETTING_BLOCK,
+      host_content_settings_map->GetContentSetting(
+          https_host, https_host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  // Patterns generated for popups used to be domain scoped.
+  host_content_settings_map->SetContentSettingCustomScope(
+      ContentSettingsPattern::FromURL(https_host),
+      ContentSettingsPattern::Wildcard(), CONTENT_SETTINGS_TYPE_POPUPS,
+      std::string(), CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          https_host, https_host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  // Settings also apply to subdomains.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                https_host_narrower, https_host_narrower,
+                CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+
+  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS,
+                                                   std::string(), &settings);
+  // |host_content_settings_map| contains default setting and a domain scoped
+  // setting.
+  EXPECT_EQ(2U, settings.size());
+  EXPECT_TRUE(settings[0].primary_pattern.ToString() ==
+              "https://[*.]example.com:443");
+  EXPECT_TRUE(settings[1].primary_pattern.ToString() == "*");
+
+  host_content_settings_map->MigrateDomainScopedSettings();
+
+  // After migration, settings only affect origins.
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          http_host, http_host, CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                http_host_narrower, http_host_narrower,
+                CONTENT_SETTINGS_TYPE_COOKIES, std::string()));
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_COOKIES, std::string(), &settings);
+  // |host_content_settings_map| contains default setting and a origin scoped
+  // setting.
+  EXPECT_EQ(2U, settings.size());
+  EXPECT_TRUE(settings[0].primary_pattern.ToString() ==
+              "http://example.com:80");
+  EXPECT_TRUE(settings[1].primary_pattern.ToString() == "*");
+
+  EXPECT_EQ(
+      CONTENT_SETTING_ALLOW,
+      host_content_settings_map->GetContentSetting(
+          https_host, https_host, CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                https_host_narrower, https_host_narrower,
+                CONTENT_SETTINGS_TYPE_POPUPS, std::string()));
+  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS,
+                                                   std::string(), &settings);
+  // |host_content_settings_map| contains default setting and a origin scoped
+  // setting.
+  EXPECT_EQ(2U, settings.size());
+  EXPECT_TRUE(settings[0].primary_pattern.ToString() ==
+              "https://example.com:443");
+  EXPECT_TRUE(settings[1].primary_pattern.ToString() == "*");
+}
+
 TEST_F(HostContentSettingsMapTest, InvalidPattern) {
   // This is a regression test for crbug.com/618529, which fixed a memory leak
   // when a website setting was set under a URL that mapped to an invalid

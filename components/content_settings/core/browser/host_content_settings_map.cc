@@ -497,6 +497,73 @@ void HostContentSettingsMap::MigrateKeygenSettings() {
   }
 }
 
+void HostContentSettingsMap::MigrateDomainScopedSettings() {
+  const ContentSettingsType kDomainScopedTypes[] = {
+      CONTENT_SETTINGS_TYPE_COOKIES,
+      CONTENT_SETTINGS_TYPE_IMAGES,
+      CONTENT_SETTINGS_TYPE_PLUGINS,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+      CONTENT_SETTINGS_TYPE_POPUPS};
+  for (const ContentSettingsType& type : kDomainScopedTypes) {
+    if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(type))
+      continue;
+    ContentSettingsForOneType settings;
+    GetSettingsForOneType(type, std::string(), &settings);
+
+    for (const ContentSettingPatternSource& setting_entry : settings) {
+      // Migrate user preference settings only.
+      if (setting_entry.source != "preference")
+        continue;
+      // Migrate ALLOW settings only.
+      if (setting_entry.setting != CONTENT_SETTING_ALLOW)
+        continue;
+      // Skip default settings.
+      if (setting_entry.primary_pattern == ContentSettingsPattern::Wildcard())
+        continue;
+
+      if (setting_entry.secondary_pattern !=
+          ContentSettingsPattern::Wildcard()) {
+        NOTREACHED();
+        continue;
+      }
+
+      ContentSettingsPattern origin_pattern;
+      if (!ContentSettingsPattern::MigrateFromDomainToOrigin(
+              setting_entry.primary_pattern, &origin_pattern)) {
+        continue;
+      }
+
+      if (!origin_pattern.IsValid())
+        continue;
+
+      GURL origin(origin_pattern.ToString());
+      DCHECK(origin.is_valid());
+
+      // Ensure that the current resolved content setting for this origin is
+      // allowed. Otherwise we may be overriding some narrower setting which is
+      // set to block.
+      ContentSetting origin_setting =
+          GetContentSetting(origin, origin, type, std::string());
+
+      // Remove the domain scoped pattern. If |origin_setting| is not
+      // CONTENT_SETTING_ALLOW it implies there is some narrower pattern in
+      // effect, so it's still safe to remove the domain-scoped pattern.
+      SetContentSettingCustomScope(setting_entry.primary_pattern,
+                                   setting_entry.secondary_pattern, type,
+                                   std::string(), CONTENT_SETTING_DEFAULT);
+
+      // If the current resolved content setting is allowed it's safe to set the
+      // origin-scoped pattern.
+      if (origin_setting == CONTENT_SETTING_ALLOW)
+        SetContentSettingCustomScope(
+            ContentSettingsPattern::FromURLNoWildcard(origin),
+            ContentSettingsPattern::Wildcard(), type, std::string(),
+            CONTENT_SETTING_ALLOW);
+    }
+  }
+}
+
 void HostContentSettingsMap::RecordNumberOfExceptions() {
   for (const content_settings::WebsiteSettingsInfo* info :
        *content_settings::WebsiteSettingsRegistry::GetInstance()) {
