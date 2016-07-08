@@ -199,9 +199,16 @@ bool TextCheckingParagraph::isEmpty() const
 EphemeralRange TextCheckingParagraph::offsetAsRange() const
 {
     DCHECK(m_checkingRange.isNotNull());
-    if (m_offsetAsRange.isNull())
-        m_offsetAsRange = EphemeralRange(paragraphRange().startPosition(), checkingRange().startPosition());
-
+    if (m_offsetAsRange.isNotNull())
+        return m_offsetAsRange;
+    const Position& paragraphStart = paragraphRange().startPosition();
+    const Position& checkingStart = checkingRange().startPosition();
+    if (paragraphStart <= checkingStart) {
+        m_offsetAsRange = EphemeralRange(paragraphStart, checkingStart);
+        return m_offsetAsRange;
+    }
+    // editing/pasteboard/paste-table-001.html and more reach here.
+    m_offsetAsRange = EphemeralRange(checkingStart, paragraphStart);
     return m_offsetAsRange;
 }
 

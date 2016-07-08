@@ -27,6 +27,7 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const PositionTemplate<
     DCHECK_EQ(m_startPosition.document(), m_endPosition.document());
     DCHECK(m_startPosition.inShadowIncludingDocument());
     DCHECK(m_endPosition.inShadowIncludingDocument());
+    DCHECK_LE(m_startPosition, m_endPosition);
 }
 
 template <typename Strategy>

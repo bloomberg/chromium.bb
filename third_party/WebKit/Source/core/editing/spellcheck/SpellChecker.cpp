@@ -679,6 +679,7 @@ void SpellChecker::markMisspellingsAndBadGrammar(const VisibleSelection& spellin
 
 void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionAtWordBoundary)
 {
+    DCHECK(frame().selection().isAvailable());
     TRACE_EVENT0("blink", "SpellChecker::updateMarkersForWordsAffectedByEditing");
     if (!isSpellCheckingEnabledFor(frame().selection().selection()))
         return;
@@ -735,6 +736,17 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     if (startOfFirstWord.isNull() || endOfFirstWord.isNull() || startOfLastWord.isNull() || endOfLastWord.isNull())
         return;
 
+    const Position& removeMarkerStart = startOfFirstWord.deepEquivalent();
+    const Position& removeMarkerEnd = endOfLastWord.deepEquivalent();
+    if (removeMarkerStart > removeMarkerEnd) {
+        // editing/inserting/insert-br-008.html and more reach here.
+        // TODO(yosin): To avoid |DCHECK(removeMarkerStart <= removeMarkerEnd)|
+        // in |EphemeralRange| constructor, we have this if-statement. Once we
+        // fix |startOfWord()| and |endOfWord()|, we should remove this
+        // if-statement.
+        return;
+    }
+
     // Now we remove markers on everything between startOfFirstWord and endOfLastWord.
     // However, if an autocorrection change a single word to multiple words, we want to remove correction mark from all the
     // resulted words even we only edit one of them. For example, assuming autocorrection changes "avantgarde" to "avant
@@ -743,7 +755,7 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     // of marker that contains the word in question, and remove marker on that whole range.
     Document* document = frame().document();
     DCHECK(document);
-    const EphemeralRange wordRange(startOfFirstWord.deepEquivalent(), endOfLastWord.deepEquivalent());
+    const EphemeralRange wordRange(removeMarkerStart, removeMarkerEnd);
     document->markers().removeMarkers(wordRange, DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }
 
