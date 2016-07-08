@@ -1006,7 +1006,7 @@ wl_display_connect(const char *name)
 	if (connection) {
 		int prev_errno = errno;
 		errno = 0;
-		fd = strtol(connection, &end, 0);
+		fd = strtol(connection, &end, 10);
 		if (errno != 0 || connection == end || *end != '\0')
 			return NULL;
 		errno = prev_errno;
