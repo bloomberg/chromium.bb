@@ -185,7 +185,6 @@ bool InjectedScript::wrapPropertyInArray(ErrorString* errorString, v8::Local<v8:
     function.appendArgument(array);
     function.appendArgument(property);
     function.appendArgument(groupName);
-    function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(forceValueType);
     function.appendArgument(generatePreview);
     bool hadException = false;
@@ -198,7 +197,6 @@ bool InjectedScript::wrapObjectsInArray(ErrorString* errorString, v8::Local<v8::
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "wrapObjectsInArray");
     function.appendArgument(array);
     function.appendArgument(groupName);
-    function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(forceValueType);
     function.appendArgument(generatePreview);
     bool hadException = false;
@@ -211,7 +209,6 @@ v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* errorString, v8
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "wrapObject");
     function.appendArgument(value);
     function.appendArgument(groupName);
-    function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(forceValueType);
     function.appendArgument(generatePreview);
     bool hadException = false;
@@ -225,7 +222,6 @@ std::unique_ptr<protocol::Runtime::RemoteObject> InjectedScript::wrapTable(v8::L
 {
     v8::HandleScope handles(m_context->isolate());
     V8FunctionCall function(m_context->debugger(), m_context->context(), v8Value(), "wrapTable");
-    function.appendArgument(canAccessInspectedWindow());
     function.appendArgument(table);
     if (columns.IsEmpty())
         function.appendArgument(false);
@@ -267,14 +263,6 @@ void InjectedScript::setCustomObjectFormatterEnabled(bool enabled)
     bool hadException = false;
     function.call(hadException);
     DCHECK(!hadException);
-}
-
-bool InjectedScript::canAccessInspectedWindow() const
-{
-    v8::Local<v8::Context> callingContext = m_context->isolate()->GetCallingContext();
-    if (callingContext.IsEmpty())
-        return true;
-    return m_context->debugger()->client()->callingContextCanAccessContext(callingContext, m_context->context());
 }
 
 v8::Local<v8::Value> InjectedScript::v8Value() const

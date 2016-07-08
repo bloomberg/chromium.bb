@@ -95,7 +95,7 @@ v8::Local<v8::Object> JavaScriptCallFrame::details() const
     v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
     v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "details")));
-    return v8::Local<v8::Object>::Cast(func->Call(m_isolate->GetCurrentContext(), callFrame, 0, nullptr).ToLocalChecked());
+    return v8::Local<v8::Object>::Cast(func->Call(m_debuggerContext.Get(m_isolate), callFrame, 0, nullptr).ToLocalChecked());
 }
 
 v8::MaybeLocal<v8::Value> JavaScriptCallFrame::evaluate(v8::Local<v8::Value> expression)
@@ -103,7 +103,7 @@ v8::MaybeLocal<v8::Value> JavaScriptCallFrame::evaluate(v8::Local<v8::Value> exp
     v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kRunMicrotasks);
     v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
     v8::Local<v8::Function> evalFunction = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "evaluate")));
-    return evalFunction->Call(m_isolate->GetCurrentContext(), callFrame, 1, &expression);
+    return evalFunction->Call(m_debuggerContext.Get(m_isolate), callFrame, 1, &expression);
 }
 
 v8::MaybeLocal<v8::Value> JavaScriptCallFrame::restart()
@@ -112,7 +112,7 @@ v8::MaybeLocal<v8::Value> JavaScriptCallFrame::restart()
     v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
     v8::Local<v8::Function> restartFunction = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "restart")));
     v8::Debug::SetLiveEditEnabled(m_isolate, true);
-    v8::MaybeLocal<v8::Value> result = restartFunction->Call(m_isolate->GetCurrentContext(), callFrame, 0, nullptr);
+    v8::MaybeLocal<v8::Value> result = restartFunction->Call(m_debuggerContext.Get(m_isolate), callFrame, 0, nullptr);
     v8::Debug::SetLiveEditEnabled(m_isolate, false);
     return result;
 }
@@ -127,7 +127,7 @@ v8::MaybeLocal<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber,
         variableName,
         newValue
     };
-    return setVariableValueFunction->Call(m_isolate->GetCurrentContext(), callFrame, PROTOCOL_ARRAY_LENGTH(argv), argv);
+    return setVariableValueFunction->Call(m_debuggerContext.Get(m_isolate), callFrame, PROTOCOL_ARRAY_LENGTH(argv), argv);
 }
 
 } // namespace blink

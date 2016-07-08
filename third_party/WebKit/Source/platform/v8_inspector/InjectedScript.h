@@ -159,7 +159,6 @@ public:
 
 private:
     InjectedScript(InspectedContext*, v8::Local<v8::Object>, std::unique_ptr<InjectedScriptNative>);
-    bool canAccessInspectedWindow() const;
     v8::Local<v8::Value> v8Value() const;
     v8::MaybeLocal<v8::Value> wrapValue(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType, bool generatePreview) const;
     v8::Local<v8::Object> commandLineAPI();

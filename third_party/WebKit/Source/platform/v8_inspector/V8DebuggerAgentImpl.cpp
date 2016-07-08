@@ -958,17 +958,12 @@ std::unique_ptr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorSt
     if (m_pausedContext.IsEmpty() || !m_pausedCallFrames.size())
         return Array<CallFrame>::create();
     ErrorString ignored;
-    InjectedScript* topFrameInjectedScript = m_session->findInjectedScript(&ignored, V8DebuggerImpl::contextId(m_pausedContext.Get(m_isolate)));
-    if (!topFrameInjectedScript) {
-        // Context has been reported as removed while on pause.
-        return Array<CallFrame>::create();
-    }
-
     v8::HandleScope handles(m_isolate);
-    v8::Local<v8::Context> context = topFrameInjectedScript->context()->context();
-    v8::Context::Scope contextScope(context);
+    v8::Local<v8::Context> debuggerContext = v8::Debug::GetDebugContext(m_isolate);
+    v8::Context::Scope contextScope(debuggerContext);
 
     v8::Local<v8::Array> objects = v8::Array::New(m_isolate);
+
     for (size_t frameOrdinal = 0; frameOrdinal < m_pausedCallFrames.size(); ++frameOrdinal) {
         const std::unique_ptr<JavaScriptCallFrame>& currentCallFrame = m_pausedCallFrames[frameOrdinal];
 
@@ -978,34 +973,42 @@ std::unique_ptr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorSt
 
         int contextId = currentCallFrame->contextId();
         InjectedScript* injectedScript = contextId ? m_session->findInjectedScript(&ignored, contextId) : nullptr;
-        if (!injectedScript)
-            injectedScript = topFrameInjectedScript;
 
-        String16 callFrameId = RemoteCallFrameId::serialize(injectedScript->context()->contextId(), frameOrdinal);
-        if (hasInternalError(errorString, !details->Set(context, toV8StringInternalized(m_isolate, "callFrameId"), toV8String(m_isolate, callFrameId)).FromMaybe(false)))
+        String16 callFrameId = RemoteCallFrameId::serialize(contextId, frameOrdinal);
+        if (hasInternalError(errorString, !details->Set(debuggerContext, toV8StringInternalized(m_isolate, "callFrameId"), toV8String(m_isolate, callFrameId)).FromMaybe(false)))
             return Array<CallFrame>::create();
 
-        v8::Local<v8::Value> scopeChain;
-        if (hasInternalError(errorString, !details->Get(context, toV8StringInternalized(m_isolate, "scopeChain")).ToLocal(&scopeChain) || !scopeChain->IsArray()))
-            return Array<CallFrame>::create();
-        v8::Local<v8::Array> scopeChainArray = scopeChain.As<v8::Array>();
-        if (!injectedScript->wrapPropertyInArray(errorString, scopeChainArray, toV8StringInternalized(m_isolate, "object"), V8InspectorSession::backtraceObjectGroup))
-            return Array<CallFrame>::create();
-
-        if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "this"), V8InspectorSession::backtraceObjectGroup))
-            return Array<CallFrame>::create();
-
-        if (details->Has(context, toV8StringInternalized(m_isolate, "returnValue")).FromMaybe(false)) {
-            if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "returnValue"), V8InspectorSession::backtraceObjectGroup))
+        if (injectedScript) {
+            v8::Local<v8::Value> scopeChain;
+            if (hasInternalError(errorString, !details->Get(debuggerContext, toV8StringInternalized(m_isolate, "scopeChain")).ToLocal(&scopeChain) || !scopeChain->IsArray()))
+                return Array<CallFrame>::create();
+            v8::Local<v8::Array> scopeChainArray = scopeChain.As<v8::Array>();
+            if (!injectedScript->wrapPropertyInArray(errorString, scopeChainArray, toV8StringInternalized(m_isolate, "object"), V8InspectorSession::backtraceObjectGroup))
+                return Array<CallFrame>::create();
+            if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "this"), V8InspectorSession::backtraceObjectGroup))
+                return Array<CallFrame>::create();
+            if (details->Has(debuggerContext, toV8StringInternalized(m_isolate, "returnValue")).FromMaybe(false)) {
+                if (!injectedScript->wrapObjectProperty(errorString, details, toV8StringInternalized(m_isolate, "returnValue"), V8InspectorSession::backtraceObjectGroup))
+                    return Array<CallFrame>::create();
+            }
+        } else {
+            if (hasInternalError(errorString, !details->Set(debuggerContext, toV8StringInternalized(m_isolate, "scopeChain"), v8::Array::New(m_isolate, 0)).FromMaybe(false)))
+                return Array<CallFrame>::create();
+            v8::Local<v8::Object> remoteObject = v8::Object::New(m_isolate);
+            if (hasInternalError(errorString, !remoteObject->Set(debuggerContext, toV8StringInternalized(m_isolate, "type"), toV8StringInternalized(m_isolate, "undefined")).FromMaybe(false)))
+                return Array<CallFrame>::create();
+            if (hasInternalError(errorString, !details->Set(debuggerContext, toV8StringInternalized(m_isolate, "this"), remoteObject).FromMaybe(false)))
+                return Array<CallFrame>::create();
+            if (hasInternalError(errorString, !details->Delete(debuggerContext, toV8StringInternalized(m_isolate, "returnValue")).FromMaybe(false)))
                 return Array<CallFrame>::create();
         }
 
-        if (hasInternalError(errorString, !objects->Set(context, frameOrdinal, details).FromMaybe(false)))
+        if (hasInternalError(errorString, !objects->Set(debuggerContext, frameOrdinal, details).FromMaybe(false)))
             return Array<CallFrame>::create();
     }
 
     protocol::ErrorSupport errorSupport;
-    std::unique_ptr<Array<CallFrame>> callFrames = Array<CallFrame>::parse(toProtocolValue(context, objects).get(), &errorSupport);
+    std::unique_ptr<Array<CallFrame>> callFrames = Array<CallFrame>::parse(toProtocolValue(debuggerContext, objects).get(), &errorSupport);
     if (hasInternalError(errorString, !callFrames))
         return Array<CallFrame>::create();
     return callFrames;

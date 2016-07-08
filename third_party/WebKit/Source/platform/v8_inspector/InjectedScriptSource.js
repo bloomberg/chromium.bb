@@ -222,72 +222,49 @@ InjectedScript.prototype = {
     /**
      * @param {*} object
      * @param {string} groupName
-     * @param {boolean} canAccessInspectedGlobalObject
      * @param {boolean} forceValueType
      * @param {boolean} generatePreview
      * @return {!RuntimeAgent.RemoteObject}
      */
-    wrapObject: function(object, groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview)
+    wrapObject: function(object, groupName, forceValueType, generatePreview)
     {
-        if (canAccessInspectedGlobalObject)
-            return this._wrapObject(object, groupName, forceValueType, generatePreview);
-        return this._fallbackWrapper(object);
+        return this._wrapObject(object, groupName, forceValueType, generatePreview);
     },
 
     /**
      * @param {!Array<!Object>} array
      * @param {string} property
      * @param {string} groupName
-     * @param {boolean} canAccessInspectedGlobalObject
      * @param {boolean} forceValueType
      * @param {boolean} generatePreview
      */
-    wrapPropertyInArray: function(array, property, groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview)
+    wrapPropertyInArray: function(array, property, groupName, forceValueType, generatePreview)
     {
         for (var i = 0; i < array.length; ++i) {
             if (typeof array[i] === "object" && property in array[i])
-                array[i][property] = this.wrapObject(array[i][property], groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview);
+                array[i][property] = this.wrapObject(array[i][property], groupName, forceValueType, generatePreview);
         }
     },
 
     /**
      * @param {!Array<*>} array
      * @param {string} groupName
-     * @param {boolean} canAccessInspectedGlobalObject
      * @param {boolean} forceValueType
      * @param {boolean} generatePreview
      */
-    wrapObjectsInArray: function(array, groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview)
+    wrapObjectsInArray: function(array, groupName, forceValueType, generatePreview)
     {
         for (var i = 0; i < array.length; ++i)
-            array[i] = this.wrapObject(array[i], groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview);
+            array[i] = this.wrapObject(array[i], groupName, forceValueType, generatePreview);
     },
 
     /**
-     * @param {*} object
-     * @return {!RuntimeAgent.RemoteObject}
-     */
-    _fallbackWrapper: function(object)
-    {
-        var result = { __proto__: null };
-        result.type = typeof object;
-        if (this.isPrimitiveValue(object))
-            result.value = object;
-        else
-            result.description = toString(object);
-        return /** @type {!RuntimeAgent.RemoteObject} */ (result);
-    },
-
-    /**
-     * @param {boolean} canAccessInspectedGlobalObject
      * @param {!Object} table
      * @param {!Array.<string>|string|boolean} columns
      * @return {!RuntimeAgent.RemoteObject}
      */
-    wrapTable: function(canAccessInspectedGlobalObject, table, columns)
+    wrapTable: function(table, columns)
     {
-        if (!canAccessInspectedGlobalObject)
-            return this._fallbackWrapper(table);
         var columnNames = null;
         if (typeof columns === "string")
             columns = [columns];
