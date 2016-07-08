@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/address_rewriter.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/state_names.h"
@@ -27,7 +28,6 @@ namespace autofill {
 namespace {
 
 const base::char16 kSpace[] = {L' ', L'\0'};
-const base::char16 kUS[] = {L'U', L'S', L'\0'};
 
 bool ContainsNewline(base::StringPiece16 text) {
   return text.find('\n') != base::StringPiece16::npos;
@@ -364,6 +364,8 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
                      app_locale_);
   }
 
+  AddressRewriter rewriter = AddressRewriter::ForCountryCode(country_code);
+
   // One of the cities is empty or one of the cities has a subset of tokens from
   // the other. Pick the city name with more tokens; this is usually the most
   // explicit one.
@@ -375,9 +377,11 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
   } else if (city2.empty()) {
     address->SetInfo(kCity, city1, app_locale_);
   } else {
-    // Prefer the one with more tokens.
-    CompareTokensResult result = CompareTokens(NormalizeForComparison(city1),
-                                               NormalizeForComparison(city2));
+    // Prefer the one with more tokens, making sure to apply address
+    // normalization and rewriting before doing the comparison.
+    CompareTokensResult result =
+        CompareTokens(rewriter.Rewrite(NormalizeForComparison(city1)),
+                      rewriter.Rewrite(NormalizeForComparison(city2)));
     switch (result) {
       case SAME_TOKENS:
         // They have the same set of unique tokens. Let's pick the more recently
@@ -422,9 +426,11 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
       address->SetInfo(kStreetAddress, address2, app_locale_);
     } else {
       // Prefer the one with more tokens if they're both single-line or both
-      // multi-line addresses.
-      CompareTokensResult result = CompareTokens(
-          NormalizeForComparison(address1), NormalizeForComparison(address2));
+      // multi-line addresses, making sure to apply address normalization and
+      // rewriting before doing the comparison.
+      CompareTokensResult result =
+          CompareTokens(rewriter.Rewrite(NormalizeForComparison(address1)),
+                        rewriter.Rewrite(NormalizeForComparison(address2)));
       switch (result) {
         case SAME_TOKENS:
           // They have the same set of unique tokens. Let's pick the one that's
@@ -689,6 +695,9 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
     return false;
   }
 
+  AddressRewriter rewriter =
+      AddressRewriter::ForCountryCode(country1.empty() ? country2 : country1);
+
   // State
   // ------
   // Heuristic: States are mergeable if one is a (possibly empty) bag of words
@@ -700,11 +709,10 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
   // state values (like "Select one", or "CA - California").
   const AutofillType kState(ADDRESS_HOME_STATE);
   const base::string16& state1 =
-      NormalizeForComparison(p1.GetInfo(kState, app_locale_));
+      rewriter.Rewrite(NormalizeForComparison(p1.GetInfo(kState, app_locale_)));
   const base::string16& state2 =
-      NormalizeForComparison(p2.GetInfo(kState, app_locale_));
-  if (!IsMatchingState(GetNonEmptyOf(p1, p2, kCountryCode), state1, state2) &&
-      CompareTokens(state1, state2) == DIFFERENT_TOKENS) {
+      rewriter.Rewrite(NormalizeForComparison(p2.GetInfo(kState, app_locale_)));
+  if (CompareTokens(state1, state2) == DIFFERENT_TOKENS) {
     return false;
   }
 
@@ -716,10 +724,10 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
   // TODO(rogerm): If the match is between non-empty zip codes then we can infer
   // that the two city strings are intended to have the same meaning. This
   // handles the cases where we have a city vs one of its suburbs.
-  const base::string16& city1 = NormalizeForComparison(
-      p1.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_));
-  const base::string16& city2 = NormalizeForComparison(
-      p2.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_));
+  const base::string16& city1 = rewriter.Rewrite(NormalizeForComparison(
+      p1.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_)));
+  const base::string16& city2 = rewriter.Rewrite(NormalizeForComparison(
+      p2.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale_)));
   if (CompareTokens(city1, city2) == DIFFERENT_TOKENS) {
     return false;
   }
@@ -728,36 +736,15 @@ bool AutofillProfileComparator::HaveMergeableAddresses(
   // --------
   // Heuristic: Street addresses are mergeable if one is a (possibly empty) bag
   // of words subset of the other.
-  const base::string16& address1 = NormalizeForComparison(
-      p1.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_));
-  const base::string16& address2 = NormalizeForComparison(
-      p2.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_));
+  const base::string16& address1 = rewriter.Rewrite(NormalizeForComparison(
+      p1.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_)));
+  const base::string16& address2 = rewriter.Rewrite(NormalizeForComparison(
+      p2.GetInfo(AutofillType(ADDRESS_HOME_STREET_ADDRESS), app_locale_)));
   if (CompareTokens(address1, address2) == DIFFERENT_TOKENS) {
     return false;
   }
 
   return true;
-}
-
-bool AutofillProfileComparator::IsMatchingState(
-    const base::string16& country_code,
-    const base::string16& state1,
-    const base::string16& state2) const {
-  if (state1 == state2)
-    return true;
-
-  if (country_code != kUS)
-    return false;
-
-  // TODO(rogerm): Generalize this to all locals using string equivalence rules.
-  base::string16 name, abbreviation;
-  autofill::state_names::GetNameAndAbbreviation(state1, &name, &abbreviation);
-  if (abbreviation.empty()) {
-    // state1 wasn't recognized. There's no need to compare it to state2
-    return false;
-  }
-
-  return state2 == name || state2 == abbreviation;
 }
 
 }  // namespace autofill

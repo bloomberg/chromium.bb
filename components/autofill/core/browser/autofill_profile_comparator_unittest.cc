@@ -840,3 +840,22 @@ TEST_F(AutofillProfileComparatorTest, MergeAddresses) {
 
   MergeAddressesAndExpect(p1, p2, expected);
 }
+
+TEST_F(AutofillProfileComparatorTest, MergeAddressesWithRewrite) {
+  AutofillProfile empty;
+  AutofillProfile p1 = CreateProfileWithAddress(
+      "6543 CH BACON", "APP 3", "MONTRÉAL", "QUÉBEC", "HHH999", "ca");
+  AutofillProfile p2 = CreateProfileWithAddress(
+      "6543, Bacon Rd", "", "Montreal", "QC", "hhh 999", "CA");
+  p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
+
+  Address expected;
+  expected.SetRawInfo(ADDRESS_HOME_LINE1, UTF8ToUTF16("6543 CH BACON"));
+  expected.SetRawInfo(ADDRESS_HOME_LINE2, UTF8ToUTF16("APP 3"));
+  expected.SetRawInfo(ADDRESS_HOME_CITY, UTF8ToUTF16("Montreal"));
+  expected.SetRawInfo(ADDRESS_HOME_STATE, UTF8ToUTF16("QC"));
+  expected.SetRawInfo(ADDRESS_HOME_ZIP, UTF8ToUTF16("hhh 999"));
+  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, UTF8ToUTF16("CA"));
+
+  MergeAddressesAndExpect(p1, p2, expected);
+}
