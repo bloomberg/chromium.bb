@@ -682,8 +682,8 @@ public class ChromeApplication extends ContentApplication {
         return mPrintingController;
     }
 
-    public AppLinkHandler createAppLinkHandler() {
-        return new AppLinkHandler();
+    public InstantAppsHandler createInstantAppsHandler() {
+        return new InstantAppsHandler();
     }
 
     /**

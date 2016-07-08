@@ -23,10 +23,10 @@ import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.AppLinkHandler;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.InstantAppsHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -218,7 +218,7 @@ public class FeatureUtilities {
      */
     public static void cacheNativeFlags(ChromeApplication application) {
         cacheHerbFlavor();
-        AppLinkHandler.getInstance(application).cacheAppLinkEnabled(
+        InstantAppsHandler.getInstance(application).cacheInstantAppsEnabled(
                 application.getApplicationContext());
     }
 

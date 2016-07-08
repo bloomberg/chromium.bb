@@ -25,10 +25,10 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppLinkHandler;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.InstantAppsHandler;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.UrlConstants;
@@ -180,7 +180,9 @@ public class ChromeLauncherActivity extends Activity
             return;
         }
 
-        if (AppLinkHandler.getInstance((ChromeApplication) getApplication()).handleIncomingIntent(
+        // Check if we should launch an Instant App to handle the intent.
+        ChromeApplication application = (ChromeApplication) getApplication();
+        if (InstantAppsHandler.getInstance(application).handleIncomingIntent(
                 this, intent, mIsCustomTabIntent)) {
             finish();
             return;
