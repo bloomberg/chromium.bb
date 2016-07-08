@@ -92,6 +92,7 @@ protected:
     void setSandboxFlags(SandboxFlags);
 
     bool loadOrRedirectSubframe(const KURL&, const AtomicString& frameName, bool replaceCurrentItem);
+    bool isKeyboardFocusable() const override;
 
 private:
     // Intentionally private to prevent redundant checks when the type is
@@ -99,7 +100,6 @@ private:
     bool isLocal() const override { return true; }
     bool isRemote() const override { return false; }
 
-    bool isKeyboardFocusable() const override;
     bool isFrameOwnerElement() const final { return true; }
 
     virtual ReferrerPolicy referrerPolicyAttribute() { return ReferrerPolicyDefault; }

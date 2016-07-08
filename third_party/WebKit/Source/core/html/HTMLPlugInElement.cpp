@@ -375,9 +375,9 @@ LayoutPart* HTMLPlugInElement::layoutPartForJSBindings() const
 
 bool HTMLPlugInElement::isKeyboardFocusable() const
 {
-    if (!document().isActive())
-        return false;
-    return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->supportsKeyboardFocus();
+    if (HTMLFrameOwnerElement::isKeyboardFocusable())
+        return true;
+    return document().isActive() && pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->supportsKeyboardFocus();
 }
 
 bool HTMLPlugInElement::hasCustomFocusLogic() const
