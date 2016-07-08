@@ -688,6 +688,12 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowPrompt) {
 
 // Tests that geolocation dialog is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressGeolocation) {
+  // TODO(crbug.com/626688): The geolocation APIs require HTTPS on iOS 10.  Find
+  // a way to trigger a geolocation prompt from this test.
+  if (base::ios::IsRunningOnIOS10OrLater()) {
+    return;
+  }
+
   [[web_delegate_mock() expect]
       webControllerDidSuppressDialog:web_controller()];
   [web_controller() setShouldSuppressDialogs:YES];
