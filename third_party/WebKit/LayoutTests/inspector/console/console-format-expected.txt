@@ -305,6 +305,12 @@ console-format.html:8 [Array[10]]
     __proto__: Array[0]
 globals[21]
 ["test", "test2", undefined × 2, "test4", undefined × 5]
+    0: "test"
+    1: "test2"
+    4: "test4"
+    foo: Object
+    length: 10
+    __proto__: Array[0]
 console-format.html:7 Object {}
     __proto__: Object
 console-format.html:8 [Object]
@@ -323,7 +329,10 @@ console-format.html:8 [Array[1]]
     length: 1
     __proto__: Array[0]
 globals[23]
-[anonymous()]
+[function]
+    0: ()
+    length: 1
+    __proto__: Array[0]
 console-format.html:7 Object {bar: "bar"}
     bar: "bar"
     __proto__: Object
@@ -471,6 +480,15 @@ console-format.html:8 [Uint16Array[3]]
     __proto__: Array[0]
 globals[34]
 [1, 2, 3]
+    0: 1
+    1: 2
+    2: 3
+    buffer: (...)
+    byteLength: (...)
+    byteOffset: (...)
+    length: (...)
+    Symbol(Symbol.toStringTag): (...)
+    __proto__: TypedArray
 console-format.html:7 #text
 console-format.html:8 [text]
     0: text
