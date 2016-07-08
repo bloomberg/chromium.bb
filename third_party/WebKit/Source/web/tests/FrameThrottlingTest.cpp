@@ -633,8 +633,8 @@ TEST_F(FrameThrottlingTest, ThrottledTopLevelEventHandlerIgnored)
     mainResource.complete("<iframe id=frame sandbox=allow-scripts src=iframe.html></iframe>");
     frameResource.complete(
         "<script>"
-        "window.addEventListener('touchstart', function(){});"
-        "document.addEventListener('touchstart', function(){});"
+        "window.addEventListener('touchstart', function(){}, {passive: false});"
+        "document.addEventListener('touchstart', function(){}, {passive: false});"
         "</script>");
     auto* frameElement = toHTMLIFrameElement(document().getElementById("frame"));
     frameElement->setAttribute(styleAttr, "transform: translateY(480px)");

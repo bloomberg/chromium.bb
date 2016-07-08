@@ -27,14 +27,14 @@ function runGlobalTest(name, element) {
   // With a global handler, no other handlers should matter
   var elements = [document.getElementById('description'), element, document.getElementById('tests')];
   for (var i = 0; i < elements.length; i++)
-    elements[i].addEventListener('touchmove', listener, false);
+    elements[i].addEventListener('touchmove', listener, {passive: false});
 
   if (window.internals)
     internals.forceCompositingUpdate(document);
   logRects(name, true);
 
   for (var i = 0; i < elements.length; i++)
-    elements[i].removeEventListener('touchmove', listener, false);
+    elements[i].removeEventListener('touchmove', listener, {passive: false});
 }
 
 function runOverlayTest() {

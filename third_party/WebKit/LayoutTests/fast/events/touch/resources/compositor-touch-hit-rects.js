@@ -28,7 +28,7 @@ function sortRects(a, b) {
 var preRunHandlerForTest = {};
 
 function testElement(element) {
-    element.addEventListener('touchstart', listener, false);
+    element.addEventListener('touchstart', listener, {passive: false});
 
     // Run any test-specific handler AFTER adding the touch event listener
     // (which itself causes rects to be recomputed).

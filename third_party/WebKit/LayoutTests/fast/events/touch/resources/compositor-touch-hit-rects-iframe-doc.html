@@ -24,7 +24,7 @@ html {
 
   function handler() {};
   frameElement.addHandlers = function() {
-    document.addEventListener('touchstart', handler, false);
+    document.addEventListener('touchstart', handler, {passive: false});
   }
   frameElement.removeHandlers = function() {
     document.removeEventListener('touchstart', handler, false);

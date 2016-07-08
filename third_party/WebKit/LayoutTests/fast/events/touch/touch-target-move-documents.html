@@ -32,7 +32,7 @@ var targets = [target, document, dummyDoc];
 var events = ['touchstart', 'touchmove', 'touchend'];
 for (var i = 0; i < events.length; i++) {
   for (var j = 0; j < targets.length; j++) {
-    targets[j].addEventListener(events[i], logEvent);
+    targets[j].addEventListener(events[i], logEvent, {passive: false});
   }
 }
 

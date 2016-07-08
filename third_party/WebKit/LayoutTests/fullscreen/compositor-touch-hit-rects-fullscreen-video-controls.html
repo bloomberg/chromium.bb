@@ -18,7 +18,7 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 window.onload = function () {
-    document.addEventListener('touchstart', function() { });
+    document.addEventListener('touchstart', function() { }, {passive: false});
 
     consoleWrite("Should have single rect on document before fullscreen");
     window.internals.forceCompositingUpdate(document);

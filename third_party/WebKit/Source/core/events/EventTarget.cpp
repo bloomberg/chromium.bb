@@ -67,10 +67,15 @@ Settings* windowSettings(LocalDOMWindow* executingWindow)
     return nullptr;
 }
 
-bool isScrollBlockingEvent(const AtomicString& eventType)
+bool isTouchScrollBlockingEvent(const AtomicString& eventType)
 {
     return eventType == EventTypeNames::touchstart
-        || eventType == EventTypeNames::touchmove
+        || eventType == EventTypeNames::touchmove;
+}
+
+bool isScrollBlockingEvent(const AtomicString& eventType)
+{
+    return isTouchScrollBlockingEvent(eventType)
         || eventType == EventTypeNames::mousewheel
         || eventType == EventTypeNames::wheel;
 }
@@ -199,7 +204,7 @@ void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventTyp
         }
     }
 
-    if (RuntimeEnabledFeatures::passiveDocumentEventListenersEnabled()) {
+    if (RuntimeEnabledFeatures::passiveDocumentEventListenersEnabled() && isTouchScrollBlockingEvent(eventType)) {
         if (!options.hasPassive()) {
             if (Node* node = toNode()) {
                 if (node->isDocumentNode() || node->document().documentElement() == node || node->document().body() == node) {

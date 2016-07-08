@@ -3,9 +3,9 @@
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
 <script>
 
-window.addEventListener("touchstart", logEvent);
+window.addEventListener("touchstart", logEvent, {passive: false});
+window.addEventListener("touchmove", logEvent, {passive: false});
 window.addEventListener("touchend", logEvent);
-window.addEventListener("touchmove", logEvent);
 window.addEventListener("touchcancel", logEvent);
 
 function logEvent(event)
