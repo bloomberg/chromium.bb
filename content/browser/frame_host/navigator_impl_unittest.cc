@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -21,6 +22,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -832,8 +834,15 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = node->navigation_request();
   ASSERT_TRUE(main_request != NULL);
-  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
-            main_request->common_params().navigation_type);
+  // TODO(toyoshim): Modify following checks once the feature is enabled.
+  if (base::FeatureList::IsEnabled(
+          features::kNonValidatingReloadOnNormalReload)) {
+    EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE,
+              main_request->common_params().navigation_type);
+  } else {
+    EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
+              main_request->common_params().navigation_type);
+  }
   main_test_rfh()->PrepareForCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 

@@ -43,6 +43,18 @@ class ReloadCacheControlBrowserTest : public ContentBrowserTest {
   ~ReloadCacheControlBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
+    // TODO(toyoshim): Tests in this file depend on current reload behavior,
+    // and should be modified when we enable the new reload behavior.
+    base::FeatureList::ClearInstanceForTesting();
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(
+        std::string(), features::kNonValidatingReloadOnNormalReload.name);
+    base::FeatureList::SetInstance(std::move(feature_list));
+
+    SetUpTestServerOnMainThread();
+  }
+
+  void SetUpTestServerOnMainThread() {
     // ContentBrowserTest creates embedded_test_server instance with
     // a registered HandleFileRequest for "content/test/data".
     // Because the handler is registered as the first handler, MonitorHandler
@@ -83,7 +95,7 @@ class ReloadCacheControlWithAnExperimentBrowserTest
         features::kNonValidatingReloadOnNormalReload.name, std::string());
     base::FeatureList::SetInstance(std::move(feature_list));
 
-    ReloadCacheControlBrowserTest::SetUpOnMainThread();
+    SetUpTestServerOnMainThread();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ReloadCacheControlWithAnExperimentBrowserTest);

@@ -65,8 +65,7 @@ const base::Feature kNewMediaPlaybackUi{"NewMediaPlaybackUi",
 // Non-validating reload for desktop.
 // See https://crbug.com/591245
 const base::Feature kNonValidatingReloadOnNormalReload{
-    "NonValidatingReloadOnNormalReload",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "NonValidatingReloadOnNormalReload", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Non-validating reload on reload-to-refresh-content (e.g. pull-to-refresh).
 // See https://crbug.com/591245
