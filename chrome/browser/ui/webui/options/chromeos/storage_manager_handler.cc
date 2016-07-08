@@ -11,6 +11,16 @@
 #include "base/files/file_util.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_appcache_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_cache_storage_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_channel_id_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_database_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -23,6 +33,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -50,8 +61,10 @@ const int64_t kSpaceLowBytes = 1 * 1024 * 1024 * 1024;
 }  // namespace
 
 StorageManagerHandler::StorageManagerHandler()
-    : browser_cache_size_(0),
-      browser_site_data_size_(0),
+    : browser_cache_size_(-1),
+      has_browser_cache_size_(false),
+      browser_site_data_size_(-1),
+      has_browser_site_data_size_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -258,6 +271,8 @@ void StorageManagerHandler::OnGetDriveCacheSize(int64_t size) {
 }
 
 void StorageManagerHandler::UpdateBrowsingDataSize() {
+  has_browser_cache_size_ = false;
+  has_browser_site_data_size_ = false;
   Profile* const profile = Profile::FromWebUI(web_ui());
   // Fetch the size of http cache in browsing data.
   // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
@@ -268,20 +283,54 @@ void StorageManagerHandler::UpdateBrowsingDataSize() {
           base::Bind(&StorageManagerHandler::OnGetBrowsingDataSize,
                      weak_ptr_factory_.GetWeakPtr(), false));
 
-  // TODO(fukino): fetch the size of site data in browsing data.
+  // Fetch the size of site data in browsing data.
+  if (!site_data_size_collector_.get()) {
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetDefaultStoragePartition(profile);
+    site_data_size_collector_.reset(new SiteDataSizeCollector(
+        storage_partition->GetPath(),
+        new BrowsingDataCookieHelper(profile->GetRequestContext()),
+        new BrowsingDataDatabaseHelper(profile),
+        new BrowsingDataLocalStorageHelper(profile),
+        new BrowsingDataAppCacheHelper(profile),
+        new BrowsingDataIndexedDBHelper(
+            storage_partition->GetIndexedDBContext()),
+        BrowsingDataFileSystemHelper::Create(
+            storage_partition->GetFileSystemContext()),
+        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
+        new BrowsingDataServiceWorkerHelper(
+            storage_partition->GetServiceWorkerContext()),
+        new BrowsingDataCacheStorageHelper(
+            storage_partition->GetCacheStorageContext()),
+        BrowsingDataFlashLSOHelper::Create(profile)));
+  }
+  site_data_size_collector_->Fetch(
+      base::Bind(&StorageManagerHandler::OnGetBrowsingDataSize,
+                 weak_ptr_factory_.GetWeakPtr(), true));
 }
 
 void StorageManagerHandler::OnGetBrowsingDataSize(bool is_site_data,
                                                   int64_t size) {
-  if (is_site_data)
+  if (is_site_data) {
+    has_browser_site_data_size_ = true;
     browser_site_data_size_ = size;
-  else
+  } else {
+    has_browser_cache_size_ = true;
     browser_cache_size_ = size;
-
-  web_ui()->CallJavascriptFunctionUnsafe(
-     "options.StorageManager.setBrowsingDataSize",
-     base::StringValue(ui::FormatBytes(static_cast<int64_t>(
-         browser_cache_size_ + browser_site_data_size_))));
+  }
+  if (has_browser_cache_size_ && has_browser_site_data_size_) {
+    base::string16 size_string;
+    if (browser_cache_size_ >= 0 && browser_site_data_size_ >= 0) {
+      size_string = ui::FormatBytes(
+          browser_site_data_size_ + browser_cache_size_);
+    } else {
+      size_string = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
+    }
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "options.StorageManager.setBrowsingDataSize",
+        base::StringValue(size_string));
+  }
 }
 
 void StorageManagerHandler::UpdateOtherUsersSize() {
@@ -303,15 +352,18 @@ void StorageManagerHandler::UpdateOtherUsersSize() {
 void StorageManagerHandler::OnGetOtherUserSize(bool success, int64_t size) {
   user_sizes_.push_back(success ? size : -1);
   if (user_sizes_.size() == other_users_.size()) {
-    base::StringValue other_users_size(l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN));
+    base::string16 size_string;
     // If all the requests succeed, shows the total bytes in the UI.
     if (std::count(user_sizes_.begin(), user_sizes_.end(), -1) == 0) {
-      other_users_size = base::StringValue(ui::FormatBytes(
-          std::accumulate(user_sizes_.begin(), user_sizes_.end(), 0LL)));
+      size_string = ui::FormatBytes(
+          std::accumulate(user_sizes_.begin(), user_sizes_.end(), 0LL));
+    } else {
+      size_string = l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
     }
     web_ui()->CallJavascriptFunctionUnsafe(
-       "options.StorageManager.setOtherUsersSize", other_users_size);
+        "options.StorageManager.setOtherUsersSize",
+        base::StringValue(size_string));
   }
 }
 
@@ -341,16 +393,18 @@ void StorageManagerHandler::UpdateArcSize() {
 
 void StorageManagerHandler::OnGetArcSize(bool succeeded,
                                          arc::mojom::ApplicationsSizePtr size) {
-  base::StringValue arc_size(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN));
+  base::string16 size_string;
   if (succeeded) {
     uint64_t total_bytes = size->total_code_bytes +
                            size->total_data_bytes +
                            size->total_cache_bytes;
-    arc_size = base::StringValue(ui::FormatBytes(total_bytes));
+    size_string = ui::FormatBytes(total_bytes);
+  } else {
+    size_string = l10n_util::GetStringUTF16(
+        IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
   }
   web_ui()->CallJavascriptFunctionUnsafe("options.StorageManager.setArcSize",
-                                         arc_size);
+                                         base::StringValue(size_string));
 }
 
 void StorageManagerHandler::OnClearDriveCacheDone(bool success) {

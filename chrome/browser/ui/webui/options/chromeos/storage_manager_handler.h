@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/browsing_data/site_data_size_collector.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
@@ -88,8 +90,14 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   // Total size of cache data in browsing data.
   int64_t browser_cache_size_;
 
+  // True if we have already received the size of http cache.
+  bool has_browser_cache_size_;
+
   // Total size of site data in browsing data.
   int64_t browser_site_data_size_;
+
+  // True if we have already received the size of site data.
+  bool has_browser_site_data_size_;
 
   // The list of other users whose directory sizes will be accumulated as the
   // size of "Other users".
@@ -97,6 +105,9 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
 
   // Fetched sizes of user directories.
   std::vector<int64_t> user_sizes_;
+
+  // Helper to compute the total size of all types of site date.
+  std::unique_ptr<SiteDataSizeCollector> site_data_size_collector_;
 
   base::WeakPtrFactory<StorageManagerHandler> weak_ptr_factory_;
 
