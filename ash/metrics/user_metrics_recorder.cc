@@ -409,6 +409,9 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Network_Detailed"));
       break;
+    case UMA_STATUS_AREA_DETAILED_SMS_VIEW:
+      base::RecordAction(base::UserMetricsAction("StatusArea_SMS_Detailed"));
+      break;
     case UMA_STATUS_AREA_DETAILED_VPN_VIEW:
       base::RecordAction(base::UserMetricsAction("StatusArea_VPN_Detailed"));
       break;
@@ -502,6 +505,14 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_STATUS_AREA_SIGN_OUT:
       base::RecordAction(base::UserMetricsAction("StatusArea_SignOut"));
+      break;
+    case UMA_STATUS_AREA_SMS_DETAILED_DISMISS_MSG:
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_SMS_Detailed_DismissMsg"));
+      break;
+    case UMA_STATUS_AREA_SMS_NOTIFICATION_DISMISS_MSG:
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_SMS_Notification_DismissMsg"));
       break;
     case UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED:
       base::RecordAction(base::UserMetricsAction("StatusArea_VPN_AddBuiltIn"));

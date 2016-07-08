@@ -13907,6 +13907,34 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_SMS_Detailed">
+  <owner>tbuckley@chromium.org</owner>
+  <owner>bruthig@chromium.org</owner>
+  <description>
+    Counts the number of times the user has opened the &quot;SMS messages &quot;
+    detailed view in the system menu.
+  </description>
+</action>
+
+<action name="StatusArea_SMS_Detailed_DismissMsg">
+  <owner>tbuckley@chromium.org</owner>
+  <owner>bruthig@chromium.org</owner>
+  <description>
+    Counts the number of times the user has dismissed an SMS message from the
+    SMS message detailed view in the system menu.
+  </description>
+</action>
+
+<action name="StatusArea_SMS_Notification_DismissMsg">
+  <owner>tbuckley@chromium.org</owner>
+  <owner>bruthig@chromium.org</owner>
+  <description>
+    Counts the number of times the user has dismissed an SMS message
+    notification. Note these notifications are managed by the system menu and
+    not the general notification center.
+  </description>
+</action>
+
 <action name="StatusArea_SignOut">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

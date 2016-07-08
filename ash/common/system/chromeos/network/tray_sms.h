@@ -43,8 +43,9 @@ class TraySms : public SystemTrayItem,
   // retrieve the numebr and text from the message.
   bool GetLatestMessage(size_t* index, std::string* number, std::string* text);
 
-  // Removes message at |index| from message list.
-  void RemoveMessage(size_t index);
+  // Removes message at |index| from message list. Returns true if |index| was
+  // valid and a message was removed.
+  bool RemoveMessage(size_t index);
 
   // Called when sms messages have changed (through
   // chromeos::NetworkSmsHandler::Observer).
