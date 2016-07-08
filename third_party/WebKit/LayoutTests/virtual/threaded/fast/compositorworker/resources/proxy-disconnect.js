@@ -16,7 +16,8 @@ function awaitProxyInit(proxy) {
     function check() {
       if (proxy.initialized)
         resolve(proxy);
-      requestAnimationFrame(check);
+      else
+        requestAnimationFrame(check);
     }
     requestAnimationFrame(check);
   });
