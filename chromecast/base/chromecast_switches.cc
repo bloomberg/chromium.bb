@@ -78,6 +78,11 @@ const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
 // purely on free memory will be used.
 const char kMemPressureSystemReservedKb[] = "mem-pressure-system-reserved-kb";
 
+// Used to pass initial screen resolution to GPU process.  This allows us to set
+// screen size correctly (so no need to resize when first window is created).
+const char kCastInitialScreenWidth[] = "cast-initial-screen-width";
+const char kCastInitialScreenHeight[] = "cast-initial-screen-height";
+
 }  // namespace switches
 
 namespace chromecast {

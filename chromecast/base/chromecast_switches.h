@@ -50,6 +50,10 @@ extern const char kAlsaFixedOutputSampleRate[];
 // Memory pressure switches
 extern const char kMemPressureSystemReservedKb[];
 
+// GPU switches
+extern const char kCastInitialScreenWidth[];
+extern const char kCastInitialScreenHeight[];
+
 }  // namespace switches
 
 namespace chromecast {

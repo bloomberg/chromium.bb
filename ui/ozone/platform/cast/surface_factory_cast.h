@@ -66,7 +66,6 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   bool have_display_type_;
   void* window_;
   gfx::Size display_size_;
-  gfx::Size new_display_size_;
   std::unique_ptr<chromecast::CastEglPlatform> egl_platform_;
 
   // Overlays scheduled in current and previous frames:

@@ -10,8 +10,11 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "chromecast/base/chromecast_switches.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/graphics_types.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -34,13 +37,20 @@ chromecast::Size FromGfxSize(const gfx::Size& size) {
   return chromecast::Size(size.width(), size.height());
 }
 
-// Initial display size to create, needed before first window is created.
-gfx::Size GetInitialDisplaySize() {
-  return gfx::Size(1280, 720);
-}
-
-// Hard lower bound on display resolution
-gfx::Size GetMinDisplaySize() {
+// Display resolution, set in browser process and passed by switches.
+gfx::Size GetDisplaySize() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  int width, height;
+  if (base::StringToInt(
+          cmd_line->GetSwitchValueASCII(switches::kCastInitialScreenWidth),
+          &width) &&
+      base::StringToInt(
+          cmd_line->GetSwitchValueASCII(switches::kCastInitialScreenHeight),
+          &height)) {
+    return gfx::Size(width, height);
+  }
+  LOG(WARNING) << "Unable to get initial screen resolution from command line,"
+               << "using default 720p";
   return gfx::Size(1280, 720);
 }
 
@@ -79,8 +89,7 @@ SurfaceFactoryCast::SurfaceFactoryCast(
       display_type_(0),
       have_display_type_(false),
       window_(0),
-      display_size_(GetInitialDisplaySize()),
-      new_display_size_(GetInitialDisplaySize()),
+      display_size_(GetDisplaySize()),
       egl_platform_(std::move(egl_platform)),
       overlay_count_(0),
       previous_frame_overlay_count_(0) {}
@@ -175,10 +184,6 @@ void SurfaceFactoryCast::CreateDisplayTypeAndWindowIfNeeded() {
   if (state_ == kUninitialized) {
     InitializeHardware();
   }
-  if (new_display_size_ != display_size_) {
-    DestroyDisplayTypeAndWindow();
-    display_size_ = new_display_size_;
-  }
   DCHECK_EQ(state_, kInitialized);
   if (!have_display_type_) {
     chromecast::Size create_size = FromGfxSize(display_size_);
@@ -203,12 +208,8 @@ intptr_t SurfaceFactoryCast::GetNativeWindow() {
 }
 
 bool SurfaceFactoryCast::ResizeDisplay(gfx::Size size) {
-  // set size to at least 1280x720 even if passed 1x1
-  size.SetToMax(GetMinDisplaySize());
-  if (have_display_type_ && size != display_size_) {
-    DestroyDisplayTypeAndWindow();
-  }
-  display_size_ = size;
+  DCHECK_EQ(size.width(), display_size_.width());
+  DCHECK_EQ(size.height(), display_size_.height());
   return true;
 }
 
@@ -230,8 +231,9 @@ void SurfaceFactoryCast::DestroyDisplayTypeAndWindow() {
 
 std::unique_ptr<SurfaceOzoneEGL> SurfaceFactoryCast::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
-  new_display_size_ = gfx::Size(widget >> 16, widget & 0xFFFF);
-  new_display_size_.SetToMax(GetMinDisplaySize());
+  // Verify requested widget dimensions match our current display size.
+  DCHECK_EQ(widget >> 16, display_size_.width());
+  DCHECK_EQ(widget & 0xffff, display_size_.height());
   return base::WrapUnique<SurfaceOzoneEGL>(new SurfaceOzoneEglCast(this));
 }
 

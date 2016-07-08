@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_constants.h"
@@ -51,6 +52,8 @@
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
@@ -115,6 +118,20 @@ CastContentBrowserClient::~CastContentBrowserClient() {
 
 void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line) {
+  std::string process_type =
+      command_line->GetSwitchValueNative(switches::kProcessType);
+  if (process_type == switches::kGpuProcess) {
+    gfx::Size res =
+        display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel();
+    if (!command_line->HasSwitch(switches::kCastInitialScreenWidth)) {
+      command_line->AppendSwitchASCII(switches::kCastInitialScreenWidth,
+                                      base::IntToString(res.width()));
+    }
+    if (!command_line->HasSwitch(switches::kCastInitialScreenHeight)) {
+      command_line->AppendSwitchASCII(switches::kCastInitialScreenHeight,
+                                      base::IntToString(res.height()));
+    }
+  }
 }
 
 void CastContentBrowserClient::PreCreateThreads() {
