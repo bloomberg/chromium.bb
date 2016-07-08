@@ -19,7 +19,13 @@ class AssemblyProgram;
 
 class DisassemblerWin32X86 : public DisassemblerWin32 {
  public:
-  DisassemblerWin32X86(const void* start, size_t length);
+  // Returns true if a valid executable is detected using only quick checks.
+  static bool QuickDetect(const uint8_t* start, size_t length) {
+    return DisassemblerWin32::QuickDetect(start, length,
+                                          kImageNtOptionalHdr32Magic);
+  }
+
+  DisassemblerWin32X86(const uint8_t* start, size_t length);
   ~DisassemblerWin32X86() override = default;
 
   // Disassembler interfaces.

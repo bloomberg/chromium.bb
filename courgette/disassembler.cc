@@ -33,9 +33,9 @@ RVA Disassembler::RvaVisitor_Rel32::Get() const {
   return *it_ + 4 + Read32LittleEndian(translator_.RVAToPointer(*it_));
 }
 
-Disassembler::Disassembler(const void* start, size_t length)
+Disassembler::Disassembler(const uint8_t* start, size_t length)
     : failure_reason_("uninitialized") {
-  start_ = reinterpret_cast<const uint8_t*>(start);
+  start_ = start;
   length_ = length;
   end_ = start_ + length_;
 };

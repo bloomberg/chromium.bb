@@ -43,14 +43,13 @@ RVA DisassemblerElf32::Elf32RvaVisitor_Rel32::Get() const {
   return (*it_)->rva() + (*it_)->relative_target();
 }
 
-DisassemblerElf32::DisassemblerElf32(const void* start, size_t length)
+DisassemblerElf32::DisassemblerElf32(const uint8_t* start, size_t length)
     : Disassembler(start, length),
       header_(nullptr),
       section_header_table_size_(0),
       program_header_table_(nullptr),
       program_header_table_size_(0),
-      default_string_section_(nullptr) {
-}
+      default_string_section_(nullptr) {}
 
 RVA DisassemblerElf32::FileOffsetToRVA(FileOffset offset) const {
   // File offsets can be 64-bit values, but we are dealing with 32-bit
@@ -214,6 +213,32 @@ CheckBool DisassemblerElf32::IsValidTargetRVA(RVA rva) const {
   }
 
   return false;
+}
+
+// static
+bool DisassemblerElf32::QuickDetect(const uint8_t* start,
+                                    size_t length,
+                                    e_machine_values elf_em) {
+  if (length < sizeof(Elf32_Ehdr))
+    return false;
+
+  const Elf32_Ehdr* header = reinterpret_cast<const Elf32_Ehdr*>(start);
+
+  // Have magic for ELF header?
+  if (header->e_ident[0] != 0x7f || header->e_ident[1] != 'E' ||
+      header->e_ident[2] != 'L' || header->e_ident[3] != 'F')
+    return false;
+
+  if (header->e_type != ET_EXEC && header->e_type != ET_DYN)
+    return false;
+  if (header->e_machine != elf_em)
+    return false;
+  if (header->e_version != 1)
+    return false;
+  if (header->e_shentsize != sizeof(Elf32_Shdr))
+    return false;
+
+  return true;
 }
 
 bool DisassemblerElf32::UpdateLength() {

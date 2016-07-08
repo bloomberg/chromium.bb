@@ -19,7 +19,7 @@
 
 namespace courgette {
 
-DisassemblerWin32::DisassemblerWin32(const void* start, size_t length)
+DisassemblerWin32::DisassemblerWin32(const uint8_t* start, size_t length)
     : Disassembler(start, length) {}
 
 RVA DisassemblerWin32::FileOffsetToRVA(FileOffset file_offset) const {
@@ -336,6 +336,36 @@ std::string DisassemblerWin32::SectionName(const Section* section) {
   memcpy(name, section->name, 8);
   name[8] = '\0';  // Ensure termination.
   return name;
+}
+
+// static
+bool DisassemblerWin32::QuickDetect(const uint8_t* start,
+                                    size_t length,
+                                    uint16_t magic) {
+  if (length < kOffsetOfFileAddressOfNewExeHeader + 4 /* size */)
+    return false;
+
+  // Have 'MZ' magic for a DOS header?
+  if (start[0] != 'M' || start[1] != 'Z')
+    return false;
+
+  FileOffset file_offset = static_cast<FileOffset>(
+      ReadU32(start, kOffsetOfFileAddressOfNewExeHeader));
+  if (file_offset >= length || file_offset % 8 != 0)
+    return false;
+  const uint8_t* const pe_header = start + file_offset;
+  const size_t kMinPEHeaderSize = 4 /*signature*/ + kSizeOfCoffHeader;
+  if (pe_header <= start || pe_header + kMinPEHeaderSize >= start + length)
+    return false;
+
+  const uint8_t* optional_header = pe_header + 4 + kSizeOfCoffHeader;
+  // Check we can read the magic.
+  if (optional_header + 2 >= start + length)
+    return false;
+  if (magic != ReadU16(optional_header, 0))
+    return false;
+
+  return true;
 }
 
 RvaVisitor* DisassemblerWin32::CreateAbs32TargetRvaVisitor() {

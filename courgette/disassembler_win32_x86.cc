@@ -17,7 +17,7 @@
 
 namespace courgette {
 
-DisassemblerWin32X86::DisassemblerWin32X86(const void* start, size_t length)
+DisassemblerWin32X86::DisassemblerWin32X86(const uint8_t* start, size_t length)
     : DisassemblerWin32(start, length) {}
 
 RVA DisassemblerWin32X86::PointerToTargetRVA(const uint8_t* p) const {

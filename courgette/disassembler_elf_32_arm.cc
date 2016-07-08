@@ -304,9 +304,8 @@ CheckBool DisassemblerElf32ARM::TypedRVAARM::EmitInstruction(
   return program->EmitRel32ARM(c_op(), label, arm_op_, op_size());
 }
 
-DisassemblerElf32ARM::DisassemblerElf32ARM(const void* start, size_t length)
-    : DisassemblerElf32(start, length) {
-}
+DisassemblerElf32ARM::DisassemblerElf32ARM(const uint8_t* start, size_t length)
+    : DisassemblerElf32(start, length) {}
 
 // Convert an ELF relocation struction into an RVA.
 CheckBool DisassemblerElf32ARM::RelToRVA(Elf32_Rel rel, RVA* result) const {

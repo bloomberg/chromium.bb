@@ -92,7 +92,7 @@ class Disassembler : public AddressTranslator {
   const uint8_t* end() const { return end_; }
 
  protected:
-  Disassembler(const void* start, size_t length);
+  Disassembler(const uint8_t* start, size_t length);
 
   bool Good();
   bool Bad(const char *reason);

@@ -94,7 +94,7 @@ class DisassemblerElf32 : public Disassembler {
   };
 
  public:
-  DisassemblerElf32(const void* start, size_t length);
+  DisassemblerElf32(const uint8_t* start, size_t length);
 
   ~DisassemblerElf32() override { }
 
@@ -121,6 +121,13 @@ class DisassemblerElf32 : public Disassembler {
   }
 
  protected:
+  // Returns 'true' if an valid executable is detected using only quick checks.
+  // Derived classes should inject |elf_em| corresponding to their architecture,
+  // which will be checked against the detected one.
+  static bool QuickDetect(const uint8_t* start,
+                          size_t length,
+                          e_machine_values elf_em);
+
   bool UpdateLength();
 
   // Misc Section Helpers

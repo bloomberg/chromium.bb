@@ -6,6 +6,7 @@
 #define COURGETTE_PROGRAM_DETECTOR_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <memory>
 
@@ -23,10 +24,20 @@ class AssemblyProgram;
 // On failure:
 //   Fills in |type| with UNKNOWN, |detected_length| with 0, and returns
 //   C_INPUT_NOT_RECOGNIZED.
-Status DetectExecutableType(const void* buffer,
+Status DetectExecutableType(const uint8_t* buffer,
                             size_t length,
                             ExecutableType* type,
                             size_t* detected_length);
+
+// Same as above, takes void* instead.
+// TODO(etiennep): Propagate "const uint8_t*" upwards.
+inline Status DetectExecutableType(const void* buffer,
+                                   size_t length,
+                                   ExecutableType* type,
+                                   size_t* detected_length) {
+  return DetectExecutableType(reinterpret_cast<const uint8_t*>(buffer), length,
+                              type, detected_length);
+}
 
 // Attempts to detect the type of executable, and parse it with the appropriate
 // tools.
@@ -35,9 +46,19 @@ Status DetectExecutableType(const void* buffer,
 //   C_OK.
 // On failure:
 //   Returns an error status and assigns |*output| to null.
-Status ParseDetectedExecutable(const void* buffer,
+Status ParseDetectedExecutable(const uint8_t* buffer,
                                size_t length,
                                std::unique_ptr<AssemblyProgram>* output);
+
+// Same as above, takes void* instead.
+// TODO(etiennep): Propagate "const uint8_t*" upwards.
+inline Status ParseDetectedExecutable(
+    const void* buffer,
+    size_t length,
+    std::unique_ptr<AssemblyProgram>* output) {
+  return ParseDetectedExecutable(reinterpret_cast<const uint8_t*>(buffer),
+                                 length, output);
+}
 
 }  // namespace courgette
 

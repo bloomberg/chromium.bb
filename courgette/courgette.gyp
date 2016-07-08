@@ -125,6 +125,7 @@
         'image_utils_unittest.cc',
         'label_manager_unittest.cc',
         'memory_allocator_unittest.cc',
+        'program_detector_unittest.cc',
         'rel32_finder_unittest.cc',
         'streams_unittest.cc',
         'typedrva_unittest.cc',

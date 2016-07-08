@@ -24,7 +24,8 @@ void DisassemblerWin32X86Test::TestExe() const {
   std::string file1 = FileContents("setup1.exe");
 
   std::unique_ptr<courgette::DisassemblerWin32X86> disassembler(
-      new courgette::DisassemblerWin32X86(file1.c_str(), file1.length()));
+      new courgette::DisassemblerWin32X86(
+          reinterpret_cast<const uint8_t*>(file1.c_str()), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
   EXPECT_TRUE(can_parse_header);
@@ -65,7 +66,8 @@ void DisassemblerWin32X86Test::TestExe64ShouldFail() const {
   std::string file1 = FileContents("pe-64.exe");
 
   std::unique_ptr<courgette::DisassemblerWin32X86> disassembler(
-      new courgette::DisassemblerWin32X86(file1.c_str(), file1.length()));
+      new courgette::DisassemblerWin32X86(
+          reinterpret_cast<const uint8_t*>(file1.c_str()), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
   EXPECT_FALSE(can_parse_header);
@@ -80,7 +82,8 @@ void DisassemblerWin32X86Test::TestResourceDll() const {
   std::string file1 = FileContents("en-US.dll");
 
   std::unique_ptr<courgette::DisassemblerWin32X86> disassembler(
-      new courgette::DisassemblerWin32X86(file1.c_str(), file1.length()));
+      new courgette::DisassemblerWin32X86(
+          reinterpret_cast<const uint8_t*>(file1.c_str()), file1.length()));
 
   bool can_parse_header = disassembler->ParseHeader();
   EXPECT_FALSE(can_parse_header);

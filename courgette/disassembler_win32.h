@@ -49,12 +49,17 @@ class DisassemblerWin32 : public Disassembler {
   static std::string SectionName(const Section* section);
 
  protected:
+  // Returns true if a valid executable is detected using only quick checks.
+  // Derived classes should inject |magic| corresponding to their architecture,
+  // which will be checked against the detected one.
+  static bool QuickDetect(const uint8_t* start, size_t length, uint16_t magic);
+
   // Disassembler interfaces.
   RvaVisitor* CreateAbs32TargetRvaVisitor() override;
   RvaVisitor* CreateRel32TargetRvaVisitor() override;
   void RemoveUnusedRel32Locations(AssemblyProgram* program) override;
 
-  DisassemblerWin32(const void* start, size_t length);
+  DisassemblerWin32(const uint8_t* start, size_t length);
 
   CheckBool ParseFile(AssemblyProgram* target) WARN_UNUSED_RESULT;
   bool ParseAbs32Relocs();
