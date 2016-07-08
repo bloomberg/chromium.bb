@@ -394,7 +394,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo,
 {
 	struct drm_fb *fb = gbm_bo_get_user_data(bo);
 	uint32_t width, height;
-	uint32_t handles[4], pitches[4], offsets[4];
+	uint32_t handles[4] = { 0 }, pitches[4] = { 0 }, offsets[4] = { 0 };
 	int ret;
 
 	if (fb)
