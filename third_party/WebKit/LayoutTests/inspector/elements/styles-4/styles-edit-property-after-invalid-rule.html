@@ -19,17 +19,17 @@
 function test()
 {
       InspectorTest.selectNodeAndWaitForStyles("container", step1);
-    
+
       function step1()
       {
           InspectorTest.addResult("Initial value");
           InspectorTest.dumpSelectedElementStyles(true, false, true);
-    
+
           var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("padding");
           treeItem.applyStyleText("padding: 20px", false);
           InspectorTest.waitForStyles("container", step2);
       }
-    
+
       function step2()
       {
           InspectorTest.addResult("After changing property");
