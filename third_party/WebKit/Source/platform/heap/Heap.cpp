@@ -117,6 +117,7 @@ void ProcessHeap::init()
     s_isLowEndDevice = base::SysInfo::IsLowEndDevice();
 
     GCInfoTable::init();
+    CallbackStackMemoryPool::instance().initialize();
 }
 
 void ProcessHeap::resetHeapCounters()
@@ -135,6 +136,7 @@ void ProcessHeap::shutdown()
         RELEASE_ASSERT(ThreadHeap::allHeaps().isEmpty());
     }
 
+    CallbackStackMemoryPool::instance().shutdown();
     GCInfoTable::shutdown();
     ASSERT(ProcessHeap::totalAllocatedSpace() == 0);
     s_shutdownComplete = true;
@@ -225,10 +227,10 @@ ThreadHeap::ThreadHeap()
     , m_safePointBarrier(wrapUnique(new SafePointBarrier()))
     , m_freePagePool(wrapUnique(new FreePagePool))
     , m_orphanedPagePool(wrapUnique(new OrphanedPagePool))
-    , m_markingStack(wrapUnique(new CallbackStack()))
-    , m_postMarkingCallbackStack(wrapUnique(new CallbackStack()))
-    , m_globalWeakCallbackStack(wrapUnique(new CallbackStack()))
-    , m_ephemeronStack(wrapUnique(new CallbackStack(CallbackStack::kMinimalBlockSize)))
+    , m_markingStack(CallbackStack::create())
+    , m_postMarkingCallbackStack(CallbackStack::create())
+    , m_globalWeakCallbackStack(CallbackStack::create())
+    , m_ephemeronStack(CallbackStack::create())
 {
     if (ThreadState::current()->isMainThread())
         s_mainThreadHeap = this;
@@ -437,6 +439,14 @@ bool ThreadHeap::weakTableRegistered(const void* table)
 }
 #endif
 
+void ThreadHeap::commitCallbackStacks()
+{
+    m_markingStack->commit();
+    m_postMarkingCallbackStack->commit();
+    m_globalWeakCallbackStack->commit();
+    m_ephemeronStack->commit();
+}
+
 void ThreadHeap::decommitCallbackStacks()
 {
     m_markingStack->decommit();
@@ -515,6 +525,7 @@ void ThreadHeap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType 
     // finalization that happens when the visitorScope is torn down).
     ThreadState::NoAllocationScope noAllocationScope(state);
 
+    state->heap().commitCallbackStacks();
     state->heap().preGC();
 
     StackFrameDepthScope stackDepthScope;
@@ -586,6 +597,7 @@ void ThreadHeap::collectGarbageForTerminatingThread(ThreadState* state)
 
         ThreadState::NoAllocationScope noAllocationScope(state);
 
+        state->heap().commitCallbackStacks();
         state->preGC();
 
         // 1. Trace the thread local persistent roots. For thread local GCs we

@@ -651,7 +651,7 @@ private:
     bool m_shouldFlushHeapDoesNotContainCache;
     GCState m_gcState;
 
-    CallbackStack* m_threadLocalWeakCallbackStack;
+    std::unique_ptr<CallbackStack> m_threadLocalWeakCallbackStack;
 
     // Pre-finalizers are called in the reverse order in which they are
     // registered by the constructors (including constructors of Mixin objects)

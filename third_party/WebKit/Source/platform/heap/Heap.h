@@ -396,6 +396,7 @@ private:
     static int arenaIndexForObjectSize(size_t);
     static bool isNormalArenaIndex(int);
 
+    void commitCallbackStacks();
     void decommitCallbackStacks();
 
     RecursiveMutex m_threadAttachMutex;

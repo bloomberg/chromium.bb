@@ -98,6 +98,7 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
     , m_gcMixinMarker(nullptr)
     , m_shouldFlushHeapDoesNotContainCache(false)
     , m_gcState(NoGCScheduled)
+    , m_threadLocalWeakCallbackStack(CallbackStack::create())
     , m_isolate(nullptr)
     , m_traceDOMWrappers(nullptr)
     , m_invalidateDeadObjectsInWrappersMarkingDeque(nullptr)
@@ -135,18 +136,11 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
 
     m_likelyToBePromptlyFreed = wrapArrayUnique(new int[likelyToBePromptlyFreedArraySize]);
     clearArenaAges();
-
-    // There is little use of weak references and collections off the main thread;
-    // use a much lower initial block reservation.
-    size_t initialBlockSize = isMainThread() ? CallbackStack::kDefaultBlockSize : CallbackStack::kMinimalBlockSize;
-    m_threadLocalWeakCallbackStack = new CallbackStack(initialBlockSize);
 }
 
 ThreadState::~ThreadState()
 {
     ASSERT(checkThread());
-    delete m_threadLocalWeakCallbackStack;
-    m_threadLocalWeakCallbackStack = nullptr;
     for (int i = 0; i < BlinkGC::NumberOfArenas; ++i)
         delete m_arenas[i];
 
@@ -963,7 +957,8 @@ void ThreadState::preGC()
     // should only process callbacks that's found to be reachable by
     // the latest GC, when it eventually gets to next perform
     // thread-local weak processing.
-    m_threadLocalWeakCallbackStack->clear();
+    m_threadLocalWeakCallbackStack->decommit();
+    m_threadLocalWeakCallbackStack->commit();
 }
 
 void ThreadState::postGC(BlinkGC::GCType gcType)
