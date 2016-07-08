@@ -155,6 +155,23 @@ PrintPreviewWebUITest.prototype = {
   },
 
   /**
+   * Repeated setup steps for the advanced settings tests.
+   * Disables accessiblity errors, sets initial settings, and verifies
+   * advanced options section is visible after expanding more settings.
+   */
+  setupAdvancedSettingsTest: function(device) {
+    // Need to disable this since overlay animation will not fully complete.
+    this.accessibilityIssuesAreErrors = false;
+    this.setInitialSettings();
+    this.setLocalDestinations();
+    this.setCapabilities(device);
+    this.expandMoreSettings();
+
+    // Check that the advanced options settings section is visible.
+    checkSectionVisible($('advanced-options-settings'), true);
+  },
+
+  /**
    * Generate a real C++ class; don't typedef.
    * @type {?string}
    * @override
@@ -957,3 +974,129 @@ TEST_F('PrintPreviewWebUITest', 'TestCustomPaperNames', function() {
 
   this.waitForAnimationToEnd('more-settings');
 });
+
+function getCddTemplateWithAdvancedSettings(printerId) {
+  return {
+    printerId: printerId,
+    capabilities: {
+      version: '1.0',
+      printer: {
+        supported_content_type: [{content_type: 'application/pdf'}],
+        vendor_capability:
+        [
+          {display_name: 'Print Area',
+            id: 'Print Area',
+            type: 'SELECT',
+            select_cap: {
+              option: [
+                {display_name: 'A4', value: 4, is_default: true},
+                {display_name: 'A6', value: 6},
+                {display_name: 'A7', value: 7}
+              ]
+            }
+          }
+        ],
+        collate: {},
+        color: {
+          option: [
+            {type: 'STANDARD_COLOR', is_default: true},
+            {type: 'STANDARD_MONOCHROME'}
+          ]
+        },
+        copies: {},
+        duplex: {
+          option: [
+            {type: 'NO_DUPLEX', is_default: true},
+            {type: 'LONG_EDGE'},
+            {type: 'SHORT_EDGE'}
+          ]
+        },
+        page_orientation: {
+          option: [
+            {type: 'PORTRAIT', is_default: true},
+            {type: 'LANDSCAPE'},
+            {type: 'AUTO'}
+          ]
+        },
+        media_size: {
+          option: [
+            { name: 'NA_LETTER',
+              width_microns: 215900,
+              height_microns: 279400,
+              is_default: true
+            }
+          ]
+        },
+      }
+    }
+  };
+}
+
+// Simulates a click of the advanced options settings button to bring up the
+// advanced settings overlay.
+function openAdvancedSettings() {
+  // Check for button and click to view advanced settings section.
+  var advancedOptionsSettingsButton =
+      $('advanced-options-settings').
+      querySelector('.advanced-options-settings-button');
+  checkElementDisplayed(advancedOptionsSettingsButton, true);
+  // Button is disabled during testing due to test version of
+  // testPluginCompatibility() being set to always return false. Enable button
+  // to send click event.
+  advancedOptionsSettingsButton.disabled = false;
+  advancedOptionsSettingsButton.click();
+}
+
+// Test advanced settings with 1 capability (should not display settings search
+// box).
+TEST_F('PrintPreviewWebUITest', 'TestAdvancedSettings1Option', function() {
+  var device = getCddTemplateWithAdvancedSettings("FooDevice");
+  this.setupAdvancedSettingsTest(device);
+
+  // Open the advanced settings overlay.
+  openAdvancedSettings();
+
+  // Check that advanced settings close button is now visible,
+  // but not the search box (only 1 capability).
+  var advancedSettingsCloseButton = $('advanced-settings').
+        querySelector('.close-button');
+  checkElementDisplayed(advancedSettingsCloseButton, true);
+  checkElementDisplayed($('advanced-settings').
+       querySelector('.search-box-area'), false);
+
+  this.waitForAnimationToEnd('more-settings');
+});
+
+
+// Test advanced settings with 2 capabilities (should have settings search box).
+TEST_F('PrintPreviewWebUITest', 'TestAdvancedSettings2Options', function() {
+  var device = getCddTemplateWithAdvancedSettings("FooDevice");
+   // Add new capability.
+  device.capabilities.printer.vendor_capability.push({
+      display_name: 'Paper Type',
+      id: 'Paper Type',
+      type: 'SELECT',
+      select_cap: {
+          option: [
+              {display_name: 'Standard', value: 0, is_default: true},
+              {display_name: 'Recycled', value: 1},
+              {display_name: 'Special', value: 2}
+          ]
+      }
+  });
+  this.setupAdvancedSettingsTest(device);
+
+  // Open the advanced settings overlay.
+  openAdvancedSettings();
+
+  // Check advanced settings is visible and that the search box now
+  // appears.
+  var advancedSettingsCloseButton = $('advanced-settings').
+      querySelector('.close-button');
+  checkElementDisplayed(advancedSettingsCloseButton, true);
+  checkElementDisplayed($('advanced-settings').
+      querySelector('.search-box-area'), true);
+
+  this.waitForAnimationToEnd('more-settings');
+});
+

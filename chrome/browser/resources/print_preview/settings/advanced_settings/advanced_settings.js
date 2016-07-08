@@ -193,6 +193,13 @@ cr.define('print_preview', function() {
         this.items_.push(item);
       }.bind(this));
 
+      if (this.items_.length <= 1) {
+        setIsVisible(this.getChildElement('.search-box-area'), false);
+      } else {
+        setIsVisible(this.getChildElement('.search-box-area'), true);
+        this.searchBox_.focus();
+      }
+
       extraPadding = document.createElement('div');
       extraPadding.classList.add(AdvancedSettings.Classes_.EXTRA_PADDING);
       extraPadding.hidden = true;
