@@ -5,6 +5,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
@@ -26,6 +27,9 @@ NSMutableDictionary* BuildDefaultNotificationResponse() {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
   return [NSMutableDictionary
@@ -38,6 +42,13 @@ NSMutableDictionary* BuildDefaultNotificationResponse() {
 TEST(NotificationPlatformBridgeMacTest, TestNotificationValidResponse) {
   NSDictionary* response = BuildDefaultNotificationResponse();
   EXPECT_TRUE(NotificationPlatformBridgeMac::VerifyNotificationData(response));
+}
+
+TEST(NotificationPlatformBridgeMacTest, TestNotificationUnknownType) {
+  NSMutableDictionary* response = BuildDefaultNotificationResponse();
+  [response setValue:[NSNumber numberWithInt:210581]
+              forKey:notification_constants::kNotificationType];
+  EXPECT_FALSE(NotificationPlatformBridgeMac::VerifyNotificationData(response));
 }
 
 TEST(NotificationPlatformBridgeMacTest, TestNotificationUnknownOperation) {

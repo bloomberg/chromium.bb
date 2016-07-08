@@ -43,6 +43,8 @@ enum NotificationOperation {
       objectForKey:notification_constants::kNotificationIncognito]);
   NSNumber* incognito = [[notification userInfo]
       objectForKey:notification_constants::kNotificationIncognito];
+  NSNumber* notificationType = [[notification userInfo]
+      objectForKey:notification_constants::kNotificationType];
 
   // Initialize operation and button index for the case where the
   // notification itself was clicked.
@@ -88,8 +90,9 @@ enum NotificationOperation {
     notification_constants::kNotificationId : notificationId,
     notification_constants::kNotificationProfileId : profileId,
     notification_constants::kNotificationIncognito : incognito,
-    notification_constants::kNotificationOperation :
-        [NSNumber numberWithInt:operation],
+    notification_constants::kNotificationType : notificationType,
+    notification_constants::
+    kNotificationOperation : [NSNumber numberWithInt:operation],
     notification_constants::
     kNotificationButtonIndex : [NSNumber numberWithInt:buttonIndex],
   };

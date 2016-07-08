@@ -13,6 +13,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
 namespace user_prefs {
@@ -60,7 +61,8 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       jboolean by_user);
 
   // NotificationPlatformBridge implementation.
-  void Display(const std::string& notification_id,
+  void Display(NotificationCommon::Type notification_type,
+               const std::string& notification_id,
                const std::string& profile_id,
                bool incognito,
                const Notification& notification) override;

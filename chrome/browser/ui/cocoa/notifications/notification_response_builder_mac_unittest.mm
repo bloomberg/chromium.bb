@@ -5,6 +5,7 @@
 #import <AppKit/AppKit.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
@@ -21,6 +22,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationClick) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
   NSDictionary* response =
@@ -45,6 +49,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 
@@ -78,6 +85,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 
@@ -113,6 +123,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 
@@ -150,6 +163,9 @@ TEST(NotificationResponseBuilderMacTest,
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 

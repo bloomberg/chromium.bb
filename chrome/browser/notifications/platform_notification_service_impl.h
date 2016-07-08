@@ -47,16 +47,6 @@ class PlatformNotificationServiceImpl
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
 
-  // Load the profile corresponding to |profile_id| and perform the
-  // |operation| on the given notification once it has been loaded.
-  void ProcessPersistentNotificationOperation(
-      NotificationCommon::Operation operation,
-      const std::string& profile_id,
-      bool incognito,
-      const GURL& origin,
-      int64_t persistent_notification_id,
-      int action_index);
-
   // To be called when a persistent notification has been clicked on. The
   // Service Worker associated with the registration will be started if
   // needed, on which the event will be fired. Must be called on the UI thread.

@@ -141,7 +141,8 @@ public class NotificationPlatformBridgeIntentTest
 
         intent.putExtra(NotificationConstants.EXTRA_PERSISTENT_NOTIFICATION_ID, persistentId);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID, "Default");
-        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, "example.com");
+        intent.putExtra(
+                NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, "https://example.com");
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_TAG, "tag");
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_MESSAGE_CENTER_DISPLAY_SERVICE_H_
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 
 class Notification;
@@ -21,9 +22,11 @@ class MessageCenterDisplayService : public NotificationDisplayService {
   ~MessageCenterDisplayService() override;
 
   // NotificationDisplayService implementation.
-  void Display(const std::string& notification_id,
+  void Display(NotificationCommon::Type notification_type,
+               const std::string& notification_id,
                const Notification& notification) override;
-  void Close(const std::string& notification_id) override;
+  void Close(NotificationCommon::Type notification_type,
+             const std::string& notification_id) override;
   bool GetDisplayed(std::set<std::string>* notifications) const override;
   bool SupportsNotificationCenter() const override;
 

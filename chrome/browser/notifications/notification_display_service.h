@@ -7,7 +7,9 @@
 
 #include <set>
 #include <string>
+
 #include "base/macros.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Notification;
@@ -27,11 +29,13 @@ class NotificationDisplayService : public KeyedService {
   ~NotificationDisplayService() override {}
 
   // Displays the |notification| identified by |notification_id|.
-  virtual void Display(const std::string& notification_id,
+  virtual void Display(NotificationCommon::Type notification_type,
+                       const std::string& notification_id,
                        const Notification& notification) = 0;
 
   // Closes the notification identified by |notification_id|.
-  virtual void Close(const std::string& notification_id) = 0;
+  virtual void Close(NotificationCommon::Type notification_type,
+                     const std::string& notification_id) = 0;
 
   // Returns whether the implementation can retrieve a list of currently visible
   // notifications and stores them in |*notification_ids| when possible.

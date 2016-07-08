@@ -18,10 +18,12 @@ Notification StubNotificationPlatformBridge::GetNotificationAt(
   return notifications_[profile_id][index];
 }
 
-void StubNotificationPlatformBridge::Display(const std::string& notification_id,
-                                             const std::string& profile_id,
-                                             bool incognito,
-                                             const Notification& notification) {
+void StubNotificationPlatformBridge::Display(
+    NotificationCommon::Type notification_type,
+    const std::string& notification_id,
+    const std::string& profile_id,
+    bool incognito,
+    const Notification& notification) {
   notifications_[profile_id].push_back(notification);
 }
 

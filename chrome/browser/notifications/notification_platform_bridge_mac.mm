@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/native_notification_display_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -47,6 +48,32 @@
 // - Sound names can be implemented by setting soundName in NSUserNotification
 //   NSUserNotificationDefaultSoundName gives you the platform default.
 
+namespace {
+
+// Callback to run once the profile has been loaded in order to perform a
+// given |operation| in a notification.
+void ProfileLoadedCallback(NotificationCommon::Operation operation,
+                           NotificationCommon::Type notification_type,
+                           const std::string& origin,
+                           const std::string& notification_id,
+                           int action_index,
+                           Profile* profile) {
+  if (!profile) {
+    // TODO(miguelg): Add UMA for this condition.
+    // Perhaps propagate this through PersistentNotificationStatus.
+    LOG(WARNING) << "Profile not loaded correctly";
+    return;
+  }
+
+  NotificationDisplayService* display_service =
+      NotificationDisplayServiceFactory::GetForProfile(profile);
+
+  static_cast<NativeNotificationDisplayService*>(display_service)
+      ->ProcessNotificationOperation(operation, notification_type, origin,
+                                     notification_id, action_index);
+}
+
+}  // namespace
 
 // static
 NotificationPlatformBridge* NotificationPlatformBridge::Create() {
@@ -77,10 +104,12 @@ NotificationPlatformBridgeMac::~NotificationPlatformBridgeMac() {
   [notification_center_ removeAllDeliveredNotifications];
 }
 
-void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
-                                            const std::string& profile_id,
-                                            bool incognito,
-                                            const Notification& notification) {
+void NotificationPlatformBridgeMac::Display(
+    NotificationCommon::Type notification_type,
+    const std::string& notification_id,
+    const std::string& profile_id,
+    bool incognito,
+    const Notification& notification) {
   base::scoped_nsobject<NotificationBuilder> builder(
       [[NotificationBuilder alloc] init]);
 
@@ -137,6 +166,7 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
   [builder setNotificationId:base::SysUTF8ToNSString(notification_id)];
   [builder setProfileId:base::SysUTF8ToNSString(profile_id)];
   [builder setIncognito:incognito];
+  [builder setNotificationType:[NSNumber numberWithInteger:notification_type]];
 
   NSUserNotification* toast = [builder buildUserNotification];
   [notification_center_ deliverNotification:toast];
@@ -154,6 +184,7 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
 
     NSString* persistent_profile_id = [toast.userInfo
         objectForKey:notification_constants::kNotificationProfileId];
+
     if ([toast_id isEqualToString:candidate_id] &&
         [persistent_profile_id isEqualToString:current_profile_id]) {
       [notification_center_ removeDeliveredNotification:toast];
@@ -192,7 +223,8 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
       ![response objectForKey:notification_constants::kNotificationOperation] ||
       ![response objectForKey:notification_constants::kNotificationId] ||
       ![response objectForKey:notification_constants::kNotificationProfileId] ||
-      ![response objectForKey:notification_constants::kNotificationIncognito]) {
+      ![response objectForKey:notification_constants::kNotificationIncognito] ||
+      ![response objectForKey:notification_constants::kNotificationType]) {
     LOG(ERROR) << "Missing required key";
     return false;
   }
@@ -205,6 +237,8 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
       [response objectForKey:notification_constants::kNotificationId];
   NSString* profile_id =
       [response objectForKey:notification_constants::kNotificationProfileId];
+  NSNumber* notification_type =
+      [response objectForKey:notification_constants::kNotificationType];
 
   if (button_index.intValue < -1 ||
       button_index.intValue >=
@@ -226,7 +260,13 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
   }
 
   if (profile_id.length <= 0) {
-    LOG(ERROR) << "Profile Id is empty";
+    LOG(ERROR) << "ProfileId not provided";
+    return false;
+  }
+
+  if (notification_type.unsignedIntValue > NotificationCommon::TYPE_MAX) {
+    LOG(ERROR) << notification_type.unsignedIntValue
+               << " Does not correspond to a valid operation.";
     return false;
   }
 
@@ -264,24 +304,24 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
       [response objectForKey:notification_constants::kNotificationId];
   std::string persistentNotificationId =
       base::SysNSStringToUTF8(notificationId);
-  int64_t persistentId;
-  if (!base::StringToInt64(persistentNotificationId, &persistentId)) {
-    LOG(ERROR) << "Unable to convert notification ID: "
-               << persistentNotificationId << " to integer.";
-    return;
-  }
   std::string profileId = base::SysNSStringToUTF8(
       [response objectForKey:notification_constants::kNotificationProfileId]);
   NSNumber* isIncognito =
       [response objectForKey:notification_constants::kNotificationIncognito];
+  NSNumber* notificationType =
+      [response objectForKey:notification_constants::kNotificationType];
 
-  GURL origin(notificationOrigin);
+  ProfileManager* profileManager = g_browser_process->profile_manager();
+  DCHECK(profileManager);
 
-  PlatformNotificationServiceImpl::GetInstance()
-      ->ProcessPersistentNotificationOperation(
-          static_cast<NotificationCommon::Operation>(operation.intValue),
-          profileId, [isIncognito boolValue], origin, persistentId,
-          buttonIndex.intValue);
+  profileManager->LoadProfile(
+      profileId, [isIncognito boolValue],
+      base::Bind(
+          &ProfileLoadedCallback, static_cast<NotificationCommon::Operation>(
+                                      operation.unsignedIntValue),
+          static_cast<NotificationCommon::Type>(
+              notificationType.unsignedIntValue),
+          notificationOrigin, persistentNotificationId, buttonIndex.intValue));
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter*)center

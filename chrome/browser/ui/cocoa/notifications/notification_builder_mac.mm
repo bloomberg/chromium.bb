@@ -114,6 +114,11 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
                         forKey:notification_constants::kNotificationIncognito];
 }
 
+- (void)setNotificationType:(NSNumber*)notificationType {
+  [notificationData_ setObject:notificationType
+                        forKey:notification_constants::kNotificationType];
+}
+
 - (NSUserNotification*)buildUserNotification {
   base::scoped_nsobject<NSUserNotification> toast(
       [[NSUserNotification alloc] init]);
@@ -205,12 +210,15 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
       objectForKey:notification_constants::kNotificationIncognito]);
   NSNumber* incognito = [notificationData_
       objectForKey:notification_constants::kNotificationIncognito];
+  NSNumber* type = [notificationData_
+      objectForKey:notification_constants::kNotificationType];
 
   toast.get().userInfo = @{
     notification_constants::kNotificationOrigin : origin,
     notification_constants::kNotificationId : notificationId,
     notification_constants::kNotificationProfileId : profileId,
     notification_constants::kNotificationIncognito : incognito,
+    notification_constants::kNotificationType : type,
   };
 
   return toast.autorelease();

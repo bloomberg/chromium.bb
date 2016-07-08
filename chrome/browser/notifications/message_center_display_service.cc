@@ -15,12 +15,19 @@ MessageCenterDisplayService::MessageCenterDisplayService(
 
 MessageCenterDisplayService::~MessageCenterDisplayService() {}
 
-void MessageCenterDisplayService::Display(const std::string& notification_id,
-                                          const Notification& notification) {
+void MessageCenterDisplayService::Display(
+    NotificationCommon::Type notification_type,
+    const std::string& notification_id,
+    const Notification& notification) {
+  // TODO(miguelg): MCDS should stop relying on the |notification|'s delegate
+  // for Close/Click operations once the Notification object becomes a mojom
+  // type.
   ui_manager_->Add(notification, profile_);
 }
 
-void MessageCenterDisplayService::Close(const std::string& notification_id) {
+void MessageCenterDisplayService::Close(
+    NotificationCommon::Type notification_type,
+    const std::string& notification_id) {
   ui_manager_->CancelById(notification_id,
                           NotificationUIManager::GetProfileID(profile_));
 }

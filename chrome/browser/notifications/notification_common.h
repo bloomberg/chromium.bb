@@ -20,6 +20,13 @@ class NotificationCommon {
     OPERATION_MAX = SETTINGS
   };
 
+  // Possible kinds of notifications
+  enum Type {
+    PERSISTENT = 0,
+    NON_PERSISTENT = 1,
+    TYPE_MAX = NON_PERSISTENT
+  };
+
   // Open the Notification settings screen when clicking the right button.
   // TODO(miguelg) have it take a Profile instead once NotificationObjectProxy
   // is updated.

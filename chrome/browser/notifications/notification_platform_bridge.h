@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/notification_common.h"
 
 class Notification;
 
@@ -23,7 +24,8 @@ class NotificationPlatformBridge {
   virtual ~NotificationPlatformBridge() {}
 
   // Shows a toast on screen using the data passed in |notification|.
-  virtual void Display(const std::string& notification_id,
+  virtual void Display(NotificationCommon::Type notification_type,
+                       const std::string& notification_id,
                        const std::string& profile_id,
                        bool is_incognito,
                        const Notification& notification) = 0;

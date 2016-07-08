@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
 // Implementation of NotificationPlatformBridge used for tests.
@@ -22,7 +23,8 @@ class StubNotificationPlatformBridge : public NotificationPlatformBridge {
   Notification GetNotificationAt(std::string profile_id, size_t index);
 
   // NotificationPlatformBridge implementation.
-  void Display(const std::string& notification_id,
+  void Display(NotificationCommon::Type notification_type,
+               const std::string& notification_id,
                const std::string& profile_id,
                bool incognito,
                const Notification& notification) override;

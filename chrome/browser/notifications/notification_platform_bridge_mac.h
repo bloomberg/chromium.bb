@@ -11,10 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 
 class Notification;
 @class NotificationCenterDelegate;
+@class NSDictionary;
 @class NSUserNotificationCenter;
 class PrefService;
 
@@ -27,7 +29,8 @@ class NotificationPlatformBridgeMac : public NotificationPlatformBridge {
   ~NotificationPlatformBridgeMac() override;
 
   // NotificationPlatformBridge implementation.
-  void Display(const std::string& notification_id,
+  void Display(NotificationCommon::Type notification_type,
+               const std::string& notification_id,
                const std::string& profile_id,
                bool incognito,
                const Notification& notification) override;

@@ -13,7 +13,7 @@ extern NSString* const kNotificationOrigin;
 extern NSString* const kNotificationId;
 extern NSString* const kNotificationProfileId;
 extern NSString* const kNotificationIncognito;
-
+extern NSString* const kNotificationType;
 extern NSString* const kNotificationOperation;
 extern NSString* const kNotificationButtonIndex;
 

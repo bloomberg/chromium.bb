@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,6 +23,8 @@ TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder setNotificationType:
+               [NSNumber numberWithInt:NotificationCommon::NON_PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
   EXPECT_EQ("Title", base::SysNSStringToUTF8([notification title]));
@@ -47,6 +50,9 @@ TEST(NotificationBuilderMacTest, TestNotificationOneButton) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 
@@ -78,6 +84,9 @@ TEST(NotificationBuilderMacTest, TestNotificationTwoButtons) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
 
@@ -108,6 +117,9 @@ TEST(NotificationBuilderMacTest, TestUserInfo) {
   [builder setOrigin:@"https://www.miguel.com"];
   [builder setNotificationId:@"Notification1"];
   [builder setIncognito:true];
+  [builder
+      setNotificationType:[NSNumber
+                              numberWithInt:NotificationCommon::PERSISTENT]];
 
   NSUserNotification* notification = [builder buildUserNotification];
   EXPECT_EQ("Title", base::SysNSStringToUTF8([notification title]));
@@ -138,6 +150,10 @@ TEST(NotificationBuilderMacTest, TestBuildDictionary) {
     [sourceBuilder setNotificationId:@"notificationId"];
     [sourceBuilder setProfileId:@"profileId"];
     [sourceBuilder setIncognito:false];
+    [sourceBuilder
+        setNotificationType:
+            [NSNumber numberWithInt:NotificationCommon::NON_PERSISTENT]];
+
     notificationData = [sourceBuilder buildDictionary];
   }
   base::scoped_nsobject<NotificationBuilder> finalBuilder(
