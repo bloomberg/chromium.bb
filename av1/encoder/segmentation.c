@@ -233,6 +233,7 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
 
 #if CONFIG_MISC_FIXES
   (void)xd;
+  av1_zero(cm->counts.seg);
 #else
   // Set default state for the segment tree probabilities and the
   // temporal coding probabilities
