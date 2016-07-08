@@ -1,4 +1,9 @@
 AXWebArea AXRoleDescription='HTML content'
 ++AXTextField AXRoleDescription='text field' AXValue='Single line.'
+++++AXStaticText AXRoleDescription='text' AXValue='Single line.'
 ++AXTextArea AXRoleDescription='text entry area' AXValue='Multiple
 lines.'
+++++AXStaticText AXRoleDescription='text' AXValue='Multiple'
+++++AXUnknown AXRoleDescription='unknown' AXTitle='
+'
+++++AXStaticText AXRoleDescription='text' AXValue='lines.'

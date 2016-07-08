@@ -340,8 +340,8 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData text_field;
   text_field.id = 2;
   text_field.role = ui::AX_ROLE_TEXT_FIELD;
-  text_field.state = ui::AX_STATE_EDITABLE;
-  text_field.AddStringAttribute(ui::AX_ATTR_VALUE, text_value);
+  text_field.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field.SetValue(text_value);
   std::vector<int32_t> line_start_offsets;
   line_start_offsets.push_back(15);
   text_field.AddIntListAttribute(
@@ -353,15 +353,15 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData static_text1;
   static_text1.id = 3;
   static_text1.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text1.state = ui::AX_STATE_EDITABLE;
-  static_text1.AddStringAttribute(ui::AX_ATTR_NAME, line1);
+  static_text1.state = 1 << ui::AX_STATE_EDITABLE;
+  static_text1.SetName(line1);
   static_text1.child_ids.push_back(4);
 
   ui::AXNodeData inline_box1;
   inline_box1.id = 4;
   inline_box1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  inline_box1.state = ui::AX_STATE_EDITABLE;
-  inline_box1.AddStringAttribute(ui::AX_ATTR_NAME, line1);
+  inline_box1.state = 1 << ui::AX_STATE_EDITABLE;
+  inline_box1.SetName(line1);
   std::vector<int32_t> word_start_offsets1;
   word_start_offsets1.push_back(0);
   word_start_offsets1.push_back(4);
@@ -372,21 +372,21 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   ui::AXNodeData line_break;
   line_break.id = 5;
   line_break.role = ui::AX_ROLE_LINE_BREAK;
-  line_break.state = ui::AX_STATE_EDITABLE;
-  line_break.AddStringAttribute(ui::AX_ATTR_NAME, "\n");
+  line_break.state = 1 << ui::AX_STATE_EDITABLE;
+  line_break.SetName("\n");
 
   ui::AXNodeData static_text2;
   static_text2.id = 6;
   static_text2.role = ui::AX_ROLE_STATIC_TEXT;
-  static_text2.state = ui::AX_STATE_EDITABLE;
-  static_text2.AddStringAttribute(ui::AX_ATTR_NAME, line2);
+  static_text2.state = 1 << ui::AX_STATE_EDITABLE;
+  static_text2.SetName(line2);
   static_text2.child_ids.push_back(7);
 
   ui::AXNodeData inline_box2;
   inline_box2.id = 7;
   inline_box2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
-  inline_box2.state = ui::AX_STATE_EDITABLE;
-  inline_box2.AddStringAttribute(ui::AX_ATTR_NAME, line2);
+  inline_box2.state = 1 << ui::AX_STATE_EDITABLE;
+  inline_box2.SetName(line2);
   std::vector<int32_t> word_start_offsets2;
   word_start_offsets2.push_back(0);
   word_start_offsets2.push_back(5);
@@ -410,7 +410,6 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
   BrowserAccessibilityWin* text_field_obj =
       ToBrowserAccessibilityWin(root_obj->PlatformGetChild(0));
   ASSERT_NE(nullptr, text_field_obj);
-  ASSERT_EQ(0U, text_field_obj->PlatformChildCount());
 
   long text_len;
   EXPECT_EQ(S_OK, text_field_obj->get_nCharacters(&text_len));
@@ -2004,7 +2003,7 @@ TEST_F(BrowserAccessibilityTest, TestMisspellingsInSimpleTextFields) {
   BrowserAccessibilityWin* ax_combo_box =
       ToBrowserAccessibilityWin(ax_root->PlatformGetChild(0));
   ASSERT_NE(nullptr, ax_combo_box);
-  ASSERT_EQ(0U, ax_combo_box->PlatformChildCount());
+  ASSERT_EQ(1U, ax_combo_box->PlatformChildCount());
 
   HRESULT hr;
   LONG start_offset, end_offset;

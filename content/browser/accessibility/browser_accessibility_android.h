@@ -123,7 +123,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   BrowserAccessibilityAndroid();
 
-  bool HasOnlyStaticTextChildren() const;
+  bool HasOnlyTextChildren() const;
   bool HasOnlyTextAndImageChildren() const;
   bool IsIframe() const;
 

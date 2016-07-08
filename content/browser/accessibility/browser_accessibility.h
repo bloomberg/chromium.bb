@@ -331,7 +331,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   virtual bool IsClickable() const;
   bool IsControl() const;
   bool IsMenuRelated() const;
-  bool IsRangeControl() const;
+  bool IsNativeTextControl() const;
   bool IsSimpleTextControl() const;
   // Indicates if this object is at the root of a rich edit text control.
   bool IsRichTextControl() const;

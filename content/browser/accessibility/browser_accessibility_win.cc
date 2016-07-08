@@ -699,7 +699,6 @@ STDMETHODIMP BrowserAccessibilityWin::role(LONG* role) {
     return E_INVALIDARG;
 
   *role = ia2_role();
-
   return S_OK;
 }
 
@@ -3326,7 +3325,7 @@ void BrowserAccessibilityWin::ComputeStylesIfNeeded() {
     return;
 
   std::map<int, std::vector<base::string16>> attributes_map;
-  if (PlatformIsLeaf()) {
+  if (PlatformIsLeaf() || IsSimpleTextControl()) {
     attributes_map[0] = ComputeTextAttributes();
     std::map<int, std::vector<base::string16>> spelling_attributes =
         GetSpellingAttributes();
@@ -3338,11 +3337,15 @@ void BrowserAccessibilityWin::ComputeStylesIfNeeded() {
       } else {
         std::vector<base::string16>& existing_attributes =
             attributes_iterator->second;
+
+        // There might be a spelling attribute already in the list of text
+        // attributes, originating from "aria-invalid".
         auto existing_spelling_attribute =
             std::find(existing_attributes.begin(), existing_attributes.end(),
                       L"invalid:false");
         if (existing_spelling_attribute != existing_attributes.end())
           existing_attributes.erase(existing_spelling_attribute);
+
         existing_attributes.insert(existing_attributes.end(),
                                    spelling_attribute.second.begin(),
                                    spelling_attribute.second.end());
@@ -3559,16 +3562,17 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 }
 
 void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
+  if (IsSimpleTextControl()) {
+    win_attributes_->hypertext = value();
+    return;
+  }
+
   if (!PlatformChildCount()) {
-    if (IsSimpleTextControl()) {
-      win_attributes_->hypertext = value();
-    } else if (IsRichTextControl()) {
+    if (IsRichTextControl()) {
       // We don't want to expose any associated label in IA2 Hypertext.
       return;
-    } else {
-      win_attributes_->hypertext = name();
     }
-
+    win_attributes_->hypertext = name();
     return;
   }
 
@@ -3889,13 +3893,6 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::NewReference() {
 std::map<int, std::vector<base::string16>>
 BrowserAccessibilityWin::GetSpellingAttributes() const {
   std::map<int, std::vector<base::string16>> spelling_attributes;
-
-  // It doesn't make sense to expose spelling error information on anything
-  // other than a leaf object, because non-leaf objects do not expose text
-  // directly.
-  if (!PlatformIsLeaf())
-    return spelling_attributes;
-
   if (IsTextOnlyObject()) {
     const std::vector<int32_t>& marker_types =
         GetIntListAttribute(ui::AX_ATTR_MARKER_TYPES);
@@ -3917,7 +3914,6 @@ BrowserAccessibilityWin::GetSpellingAttributes() const {
       spelling_attributes[end_offset] = end_attributes;
     }
   }
-
   if (IsSimpleTextControl()) {
     int start_offset = 0;
     for (const BrowserAccessibility* static_text =
@@ -3936,7 +3932,6 @@ BrowserAccessibilityWin::GetSpellingAttributes() const {
       }
     }
   }
-
   return spelling_attributes;
 }
 

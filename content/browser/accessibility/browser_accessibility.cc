@@ -70,7 +70,10 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
   // implementation details, but we want to expose them as leaves to platform
   // accessibility APIs because screen readers might be confused if they find
   // any children.
-  if (IsSimpleTextControl() || IsTextOnlyObject())
+  // Note that if a combo box, search box or text field are not native, they
+  // might present a menu of choices using aria-owns which should not be hidden
+  // from tree.
+  if (IsNativeTextControl() || IsTextOnlyObject())
     return true;
 
   // Roles whose children are only presentational according to the ARIA and
@@ -1062,6 +1065,20 @@ bool BrowserAccessibility::IsMenuRelated() const {
     default:
       return false;
   }
+}
+
+bool BrowserAccessibility::IsNativeTextControl() const {
+  const std::string& html_tag = GetStringAttribute(ui::AX_ATTR_HTML_TAG);
+  if (html_tag == "input") {
+    std::string input_type;
+    if (!GetHtmlAttribute("type", &input_type))
+      return true;
+    return input_type.empty() || input_type == "email" ||
+           input_type == "password" || input_type == "search" ||
+           input_type == "tel" || input_type == "text" || input_type == "url" ||
+           input_type == "number";
+  }
+  return html_tag == "textarea";
 }
 
 bool BrowserAccessibility::IsSimpleTextControl() const {

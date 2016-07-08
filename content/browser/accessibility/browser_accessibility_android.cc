@@ -125,7 +125,7 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
       return true;
 
     // Nodes with only static text as children can drop their children.
-    if (HasOnlyStaticTextChildren())
+    if (HasOnlyTextChildren())
       return true;
   }
 
@@ -359,7 +359,7 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
       GetIntAttribute(ui::AX_ATTR_NAME_FROM) == ui::AX_NAME_FROM_CONTENTS) {
     // This is an approximation of "PlatformChildCount() > 0" because we can't
     // call PlatformChildCount from here.
-    if (InternalChildCount() > 0 && !HasOnlyStaticTextChildren())
+    if (InternalChildCount() > 0 && !HasOnlyTextChildren())
       return base::string16();
   }
 
@@ -406,9 +406,8 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
 
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
-  if (text.empty() &&
-      (HasOnlyStaticTextChildren() ||
-       (IsFocusable() && HasOnlyTextAndImageChildren()))) {
+  if (text.empty() && (HasOnlyTextChildren() ||
+                       (IsFocusable() && HasOnlyTextAndImageChildren()))) {
     for (uint32_t i = 0; i < InternalChildCount(); i++) {
       BrowserAccessibility* child = InternalGetChild(i);
       text += static_cast<BrowserAccessibilityAndroid*>(child)->GetText();
@@ -1336,12 +1335,12 @@ bool BrowserAccessibilityAndroid::HasFocusableChild() const {
   return false;
 }
 
-bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
+bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
   // This is called from PlatformIsLeaf, so don't call PlatformChildCount
   // from within this!
   for (uint32_t i = 0; i < InternalChildCount(); i++) {
     BrowserAccessibility* child = InternalGetChild(i);
-    if (child->GetRole() != ui::AX_ROLE_STATIC_TEXT)
+    if (!child->IsTextOnlyObject())
       return false;
   }
   return true;
