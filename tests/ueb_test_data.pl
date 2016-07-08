@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-@data = glob("$ENV{UEB_TEST_DATA_PATH}/*");
+@data = glob("$ENV{UEB_TEST_DATA_PATH}/*.txt");
 $result = 0;
 
 foreach $file (@data)
