@@ -161,6 +161,7 @@ class TestRunResults(object):
     """
     assert isinstance(result, BaseTestResult)
     with self._results_lock:
+      self._results.discard(result)
       self._results.add(result)
 
   def AddResults(self, results):

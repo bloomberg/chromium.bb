@@ -123,38 +123,54 @@ class LocalDeviceTestRun(test_run.TestRun):
 
       logging.info('Finished running tests on this device.')
 
+    class TestsTerminated(Exception):
+      pass
+
     def stop_tests(_signum, _frame):
+      logging.critical('Received SIGTERM. Stopping test execution.')
       exit_now.set()
+      raise TestsTerminated()
 
-    with signal_handler.AddSignalHandler(signal.SIGTERM, stop_tests):
-      tries = 0
-      results = []
-      while tries < self._env.max_tries and tests:
-        logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
-        logging.info('Will run %d tests on %d devices: %s',
-                     len(tests), len(self._env.devices),
-                     ', '.join(str(d) for d in self._env.devices))
-        for t in tests:
-          logging.debug('  %s', t)
+    try:
+      with signal_handler.AddSignalHandler(signal.SIGTERM, stop_tests):
+        tries = 0
+        results = []
+        while tries < self._env.max_tries and tests:
+          logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
+          logging.info('Will run %d tests on %d devices: %s',
+                       len(tests), len(self._env.devices),
+                       ', '.join(str(d) for d in self._env.devices))
+          for t in tests:
+            logging.debug('  %s', t)
 
-        try_results = base_test_result.TestRunResults()
-        if self._ShouldShard():
-          tc = test_collection.TestCollection(self._CreateShards(tests))
-          self._env.parallel_devices.pMap(
-              run_tests_on_device, tc, try_results).pGet(None)
-        else:
-          self._env.parallel_devices.pMap(
-              run_tests_on_device, tests, try_results).pGet(None)
+          try_results = base_test_result.TestRunResults()
+          test_names = (self._GetUniqueTestName(t) for t in tests)
+          try_results.AddResults(
+              base_test_result.BaseTestResult(
+                  t, base_test_result.ResultType.UNKNOWN)
+              for t in test_names if not t.endswith('*'))
 
-        results.append(try_results)
-        tries += 1
-        tests = self._GetTestsToRetry(tests, try_results)
+          try:
+            if self._ShouldShard():
+              tc = test_collection.TestCollection(self._CreateShards(tests))
+              self._env.parallel_devices.pMap(
+                  run_tests_on_device, tc, try_results).pGet(None)
+            else:
+              self._env.parallel_devices.pMap(
+                  run_tests_on_device, tests, try_results).pGet(None)
+          finally:
+            results.append(try_results)
 
-        logging.info('FINISHED TRY #%d/%d', tries, self._env.max_tries)
-        if tests:
-          logging.info('%d failed tests remain.', len(tests))
-        else:
-          logging.info('All tests completed.')
+          tries += 1
+          tests = self._GetTestsToRetry(tests, try_results)
+
+          logging.info('FINISHED TRY #%d/%d', tries, self._env.max_tries)
+          if tests:
+            logging.info('%d failed tests remain.', len(tests))
+          else:
+            logging.info('All tests completed.')
+    except TestsTerminated:
+      pass
 
     return results
 
