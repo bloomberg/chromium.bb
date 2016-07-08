@@ -10,15 +10,12 @@ var iframeElement;
 
 if (window.testRunner) {
     var s = document.createElement('style');
-    s.innerHTML += ".running h1, .running pre, .running div#console, .running p { display:none }";
     s.innerHTML += "h1, pre, div#console, p { opacity: 0 }";
     s.innerHTML += "body { overflow: hidden }";
     document.head.appendChild(s);
-    document.head.parentNode.classList.add("running");
 }
 
 function afterTest() {
-    document.head.parentNode.classList.remove("running");
     finishJSTest();
 }
 
