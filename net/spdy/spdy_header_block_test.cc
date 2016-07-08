@@ -76,24 +76,24 @@ TEST(SpdyHeaderBlockTest, KeyMemoryReclaimedOnLookup) {
 
 // This test verifies that headers can be set in a variety of ways.
 TEST(SpdyHeaderBlockTest, AddHeaders) {
-  SpdyHeaderBlock block1;
-  block1["foo"] = string(300, 'x');
-  block1["bar"] = "baz";
-  block1.ReplaceOrAppendHeader("qux", "qux1");
-  block1["qux"] = "qux2";
-  block1.insert(make_pair("key", "value"));
+  SpdyHeaderBlock block;
+  block["foo"] = string(300, 'x');
+  block["bar"] = "baz";
+  block.ReplaceOrAppendHeader("qux", "qux1");
+  block["qux"] = "qux2";
+  block.insert(std::make_pair("key", "value"));
 
-  EXPECT_EQ(Pair("foo", string(300, 'x')), *block1.find("foo"));
-  EXPECT_EQ("baz", block1["bar"]);
-  EXPECT_EQ("baz", block1.GetHeader("bar"));
+  EXPECT_EQ(Pair("foo", string(300, 'x')), *block.find("foo"));
+  EXPECT_EQ("baz", block["bar"]);
+  EXPECT_EQ("baz", block.GetHeader("bar"));
   string qux("qux");
-  EXPECT_EQ("qux2", block1[qux]);
-  EXPECT_EQ("qux2", block1.GetHeader(qux));
-  EXPECT_EQ(Pair("key", "value"), *block1.find("key"));
+  EXPECT_EQ("qux2", block[qux]);
+  EXPECT_EQ("qux2", block.GetHeader(qux));
+  EXPECT_EQ(Pair("key", "value"), *block.find("key"));
 
-  block1.erase("key");
-  EXPECT_EQ(block1.end(), block1.find("key"));
-  EXPECT_EQ("", block1.GetHeader("key"));
+  block.erase("key");
+  EXPECT_EQ(block.end(), block.find("key"));
+  EXPECT_EQ("", block.GetHeader("key"));
 }
 
 // This test verifies that SpdyHeaderBlock can be copied using Clone().
@@ -139,6 +139,29 @@ TEST(SpdyHeaderBlockTest, Equality) {
 
   block2["baz"] = "qux";
   EXPECT_NE(block1, block2);
+}
+
+// Test that certain methods do not crash on moved-from instances.
+TEST(SpdyHeaderBlockTest, MovedFromIsValid) {
+  SpdyHeaderBlock block1;
+  block1["foo"] = "bar";
+
+  SpdyHeaderBlock block2(std::move(block1));
+  EXPECT_THAT(block2, ElementsAre(Pair("foo", "bar")));
+
+  block1.ReplaceOrAppendHeader("baz", "qux");
+
+  SpdyHeaderBlock block3(std::move(block1));
+
+  block1["foo"] = "bar";
+
+  SpdyHeaderBlock block4(std::move(block1));
+
+  block1.clear();
+  EXPECT_TRUE(block1.empty());
+
+  block1["foo"] = "bar";
+  EXPECT_THAT(block1, ElementsAre(Pair("foo", "bar")));
 }
 
 }  // namespace test
