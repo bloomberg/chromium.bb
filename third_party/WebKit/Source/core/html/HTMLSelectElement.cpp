@@ -1988,6 +1988,9 @@ HTMLOptionElement* HTMLSelectElement::optionToBeShown() const
         return toHTMLOptionElement(listItems()[m_indexToSelectOnCancel]);
     if (m_suggestedOption)
         return m_suggestedOption;
+    // TODO(tkent): We should not call optionToBeShown() in multiple() case.
+    if (multiple())
+        return selectedOption();
     DCHECK_EQ(selectedOption(), m_lastOnChangeOption);
     return m_lastOnChangeOption;
 }
