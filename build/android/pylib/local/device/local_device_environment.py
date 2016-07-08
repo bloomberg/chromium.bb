@@ -55,6 +55,9 @@ class LocalDeviceEnvironment(environment.Environment):
         logging.warning('No target devices specified. Falling back to '
                         'running on all available devices.')
         device_arg = 'default'
+      else:
+        logging.info(
+            'Read device list %s from target devices file.', str(device_arg))
     elif self._device_serial:
       device_arg = self._device_serial
 
