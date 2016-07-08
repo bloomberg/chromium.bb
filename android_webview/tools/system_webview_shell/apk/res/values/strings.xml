@@ -13,6 +13,7 @@
     <string name="title_activity_layout_test">WebView Layout Test</string>
     <string name="title_activity_thread_test">WebView Thread Test</string>
     <string name="title_activity_page_cycler">WebView Page Cycler Test</string>
+    <string name="title_activity_create_destroy">WebView Create Destroy</string>
     <string name="menu_reset_webview">Destroy and create new WebView</string>
     <string name="menu_clear_cache">Clear cache</string>
     <string name="menu_about">About WebView</string>

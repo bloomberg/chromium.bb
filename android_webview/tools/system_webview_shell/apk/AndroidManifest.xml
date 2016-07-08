@@ -58,6 +58,12 @@
             android:exported="true">
         </activity>
         <activity
+            android:name="org.chromium.webview_shell.WebViewCreateDestroyActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_activity_create_destroy"
+            android:exported="true">
+        </activity>
+        <activity
             android:name="org.chromium.webview_shell.WebViewBrowserActivity"
             android:label="@string/title_activity_browser"
             android:exported="true"
