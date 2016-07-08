@@ -29,9 +29,10 @@
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
 
+using media::cast::AudioSenderConfig;
 using media::cast::CastEnvironment;
 using media::cast::CastSender;
-using media::cast::FrameSenderConfig;
+using media::cast::VideoSenderConfig;
 
 static base::LazyInstance<CastThreads> g_cast_threads =
     LAZY_INSTANCE_INITIALIZER;
@@ -115,7 +116,7 @@ CastSessionDelegate::~CastSessionDelegate() {
 }
 
 void CastSessionDelegate::StartAudio(
-    const FrameSenderConfig& config,
+    const AudioSenderConfig& config,
     const AudioFrameInputAvailableCallback& callback,
     const ErrorCallback& error_callback) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
@@ -133,7 +134,7 @@ void CastSessionDelegate::StartAudio(
 }
 
 void CastSessionDelegate::StartVideo(
-    const FrameSenderConfig& config,
+    const VideoSenderConfig& config,
     const VideoFrameInputAvailableCallback& callback,
     const ErrorCallback& error_callback,
     const media::cast::CreateVideoEncodeAcceleratorCallback& create_vea_cb,

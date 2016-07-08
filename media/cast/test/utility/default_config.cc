@@ -55,41 +55,38 @@ FrameReceiverConfig GetDefaultVideoReceiverConfig() {
   return config;
 }
 
-FrameSenderConfig GetDefaultAudioSenderConfig() {
+AudioSenderConfig GetDefaultAudioSenderConfig() {
   FrameReceiverConfig recv_config = GetDefaultAudioReceiverConfig();
-  FrameSenderConfig config;
-  config.sender_ssrc = recv_config.sender_ssrc;
+  AudioSenderConfig config;
+  config.ssrc = recv_config.sender_ssrc;
   config.receiver_ssrc = recv_config.receiver_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
-  config.rtp_timebase = recv_config.rtp_timebase;
+  config.frequency = recv_config.rtp_timebase;
   config.channels = recv_config.channels;
-  config.max_bitrate = config.min_bitrate = config.start_bitrate =
-      kDefaultAudioEncoderBitrate;
-  config.max_frame_rate = recv_config.target_frame_rate;
+  config.bitrate = kDefaultAudioEncoderBitrate;
   config.codec = recv_config.codec;
+  config.max_playout_delay =
+      base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs);
   return config;
 }
 
-FrameSenderConfig GetDefaultVideoSenderConfig() {
+VideoSenderConfig GetDefaultVideoSenderConfig() {
   FrameReceiverConfig recv_config = GetDefaultVideoReceiverConfig();
-  FrameSenderConfig config;
-  config.sender_ssrc = recv_config.sender_ssrc;
+  VideoSenderConfig config;
+  config.ssrc = recv_config.sender_ssrc;
   config.receiver_ssrc = recv_config.receiver_ssrc;
   config.rtp_payload_type = recv_config.rtp_payload_type;
   config.use_external_encoder = false;
-  config.rtp_timebase = recv_config.rtp_timebase;
-  config.max_bitrate = kDefaultMaxVideoBitrate;
-  config.min_bitrate = kDefaultMinVideoBitrate;
-  config.start_bitrate = config.max_bitrate;
+  config.max_bitrate = 4000000;
+  config.min_bitrate = 2000000;
+  config.start_bitrate = 4000000;
   config.max_frame_rate = recv_config.target_frame_rate;
+  config.max_number_of_video_buffers_used = 1;
   config.codec = recv_config.codec;
-  config.video_codec_params.max_qp = kDefaultMaxQp;
-  config.video_codec_params.min_qp = kDefaultMinQp;
-  config.video_codec_params.max_cpu_saver_qp = kDefaultMaxCpuSaverQp;
-  config.video_codec_params.max_number_of_video_buffers_used =
-      kDefaultNumberOfVideoBuffers;
-  config.video_codec_params.number_of_encode_threads = 2;
+  config.number_of_encode_threads = 2;
+  config.max_playout_delay =
+      base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs);
   return config;
 }
 

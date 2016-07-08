@@ -4,43 +4,79 @@
 
 #include "media/cast/cast_config.h"
 
+namespace {
+
+const float kDefaultCongestionControlBackOff = 0.875f;
+
+enum {
+  // Minimum and Maximum VP8 quantizer in default configuration.
+  kDefaultMaxQp = 63,
+  kDefaultMinQp = 4,
+
+  kDefaultMaxCpuSaverQp = 25,
+
+  // Number of video buffers in default configuration (applies only to certain
+  // external codecs).
+  kDefaultNumberOfVideoBuffers = 1,
+};
+
+}  // namespace
+
 namespace media {
 namespace cast {
 
-VideoCodecParams::VideoCodecParams()
-    : max_qp(kDefaultMaxQp),
-      min_qp(kDefaultMinQp),
-      max_cpu_saver_qp(kDefaultMaxCpuSaverQp),
-      max_number_of_video_buffers_used(kDefaultNumberOfVideoBuffers),
-      number_of_encode_threads(1) {}
+// TODO(miu): Revisit code factoring of these structs.  There are a number of
+// common elements between them all, so it might be reasonable to only have one
+// or two structs; or, at least a common base class.
 
-VideoCodecParams::VideoCodecParams(const VideoCodecParams& other) = default;
-
-VideoCodecParams::~VideoCodecParams() {}
+// TODO(miu): Make sure all POD members are initialized by ctors.  Policy
+// decision: Reasonable defaults or use invalid placeholder values to expose
+// unset members?
 
 // TODO(miu): Provide IsValidConfig() functions?
 
-FrameSenderConfig::FrameSenderConfig()
-    : sender_ssrc(0),
+// TODO(miu): Throughout the code, there is a lot of copy-and-paste of the same
+// calculations based on these config values.  So, why don't we add methods to
+// these classes to centralize the logic?
+
+VideoSenderConfig::VideoSenderConfig()
+    : ssrc(0),
       receiver_ssrc(0),
-      min_playout_delay(
-          base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
       max_playout_delay(
           base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
-      animated_playout_delay(min_playout_delay),
       rtp_payload_type(RtpPayloadType::UNKNOWN),
       use_external_encoder(false),
-      rtp_timebase(0),
-      channels(0),
-      max_bitrate(0),
-      min_bitrate(0),
-      start_bitrate(0),
+      congestion_control_back_off(kDefaultCongestionControlBackOff),
+      max_bitrate(kDefaultMaxVideoKbps * 1000),
+      min_bitrate(kDefaultMinVideoKbps * 1000),
+      start_bitrate(kDefaultMaxVideoKbps * 1000),
+      max_qp(kDefaultMaxQp),
+      min_qp(kDefaultMinQp),
+      max_cpu_saver_qp(kDefaultMaxCpuSaverQp),
       max_frame_rate(kDefaultMaxFrameRate),
-      codec(CODEC_UNKNOWN) {}
+      max_number_of_video_buffers_used(kDefaultNumberOfVideoBuffers),
+      codec(CODEC_VIDEO_VP8),
+      number_of_encode_threads(1) {}
 
-FrameSenderConfig::FrameSenderConfig(const FrameSenderConfig& other) = default;
+VideoSenderConfig::VideoSenderConfig(const VideoSenderConfig& other) = default;
 
-FrameSenderConfig::~FrameSenderConfig() {}
+VideoSenderConfig::~VideoSenderConfig() {}
+
+AudioSenderConfig::AudioSenderConfig()
+    : ssrc(0),
+      receiver_ssrc(0),
+      max_playout_delay(
+          base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs)),
+      rtp_payload_type(RtpPayloadType::UNKNOWN),
+      use_external_encoder(false),
+      frequency(0),
+      channels(0),
+      bitrate(kDefaultAudioEncoderBitrate),
+      codec(CODEC_AUDIO_OPUS) {}
+
+AudioSenderConfig::AudioSenderConfig(const AudioSenderConfig& other) = default;
+
+AudioSenderConfig::~AudioSenderConfig() {}
 
 FrameReceiverConfig::FrameReceiverConfig()
     : receiver_ssrc(0),

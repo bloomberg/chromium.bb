@@ -27,13 +27,14 @@ class CastSenderImpl : public CastSender {
   CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
                  CastTransport* const transport_sender);
 
-  void InitializeAudio(const FrameSenderConfig& audio_config,
+  void InitializeAudio(const AudioSenderConfig& audio_config,
                        const StatusChangeCallback& status_change_cb) final;
   void InitializeVideo(
-      const FrameSenderConfig& video_config,
+      const VideoSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
-      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb) final;
+      const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb)
+      final;
 
   void SetTargetPlayoutDelay(base::TimeDelta new_target_playout_delay) final;
 

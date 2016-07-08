@@ -103,9 +103,9 @@ class AudioSenderTest : public ::testing::Test {
                             task_runner_, task_runner_, task_runner_);
     audio_config_.codec = CODEC_AUDIO_OPUS;
     audio_config_.use_external_encoder = false;
-    audio_config_.rtp_timebase = kDefaultAudioSamplingRate;
+    audio_config_.frequency = kDefaultAudioSamplingRate;
     audio_config_.channels = 2;
-    audio_config_.max_bitrate = kDefaultAudioEncoderBitrate;
+    audio_config_.bitrate = kDefaultAudioEncoderBitrate;
     audio_config_.rtp_payload_type = RtpPayloadType::AUDIO_OPUS;
 
     transport_ = new TestPacketSender();
@@ -131,13 +131,13 @@ class AudioSenderTest : public ::testing::Test {
   scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   std::unique_ptr<AudioSender> audio_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
-  FrameSenderConfig audio_config_;
+  AudioSenderConfig audio_config_;
 };
 
 TEST_F(AudioSenderTest, Encode20ms) {
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
   std::unique_ptr<AudioBus> bus(
-      TestAudioBusFactory(audio_config_.channels, audio_config_.rtp_timebase,
+      TestAudioBusFactory(audio_config_.channels, audio_config_.frequency,
                           TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
           .NextAudioBus(kDuration));
 
@@ -150,7 +150,7 @@ TEST_F(AudioSenderTest, Encode20ms) {
 TEST_F(AudioSenderTest, RtcpTimer) {
   const base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(20);
   std::unique_ptr<AudioBus> bus(
-      TestAudioBusFactory(audio_config_.channels, audio_config_.rtp_timebase,
+      TestAudioBusFactory(audio_config_.channels, audio_config_.frequency,
                           TestAudioBusFactory::kMiddleANoteFreq, 0.5f)
           .NextAudioBus(kDuration));
 

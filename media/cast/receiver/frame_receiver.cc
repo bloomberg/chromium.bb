@@ -48,15 +48,14 @@ FrameReceiver::FrameReceiver(
       rtp_timebase_(config.rtp_timebase),
       target_playout_delay_(
           base::TimeDelta::FromMilliseconds(config.rtp_max_delay_ms)),
-      expected_frame_duration_(
-          base::TimeDelta::FromSecondsD(1.0 / config.target_frame_rate)),
+      expected_frame_duration_(base::TimeDelta::FromSeconds(1) /
+                               config.target_frame_rate),
       reports_are_scheduled_(false),
       framer_(cast_environment->Clock(),
               this,
               config.sender_ssrc,
               true,
-              static_cast<int>(
-                  config.rtp_max_delay_ms * config.target_frame_rate / 1000)),
+              config.rtp_max_delay_ms * config.target_frame_rate / 1000),
       rtcp_(cast_environment_->Clock(),
             config.receiver_ssrc,
             config.sender_ssrc),

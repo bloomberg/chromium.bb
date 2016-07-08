@@ -31,8 +31,8 @@ const int kStartingWidth = 360;
 const int kStartingHeight = 240;
 const int kFrameRate = 10;
 
-FrameSenderConfig GetVideoSenderConfigForTest() {
-  FrameSenderConfig config = GetDefaultVideoSenderConfig();
+VideoSenderConfig GetVideoSenderConfigForTest() {
+  VideoSenderConfig config = GetDefaultVideoSenderConfig();
   config.max_frame_rate = kFrameRate;
   return config;
 }

@@ -53,7 +53,7 @@ CastSession::~CastSession() {
   CHECK(io_task_runner_->DeleteSoon(FROM_HERE, delegate_.release()));
 }
 
-void CastSession::StartAudio(const media::cast::FrameSenderConfig& config,
+void CastSession::StartAudio(const media::cast::AudioSenderConfig& config,
                              const AudioFrameInputAvailableCallback& callback,
                              const ErrorCallback& error_callback) {
   DCHECK(content::RenderThread::Get());
@@ -67,7 +67,7 @@ void CastSession::StartAudio(const media::cast::FrameSenderConfig& config,
                  media::BindToCurrentLoop(error_callback)));
 }
 
-void CastSession::StartVideo(const media::cast::FrameSenderConfig& config,
+void CastSession::StartVideo(const media::cast::VideoSenderConfig& config,
                              const VideoFrameInputAvailableCallback& callback,
                              const ErrorCallback& error_callback) {
   DCHECK(content::RenderThread::Get());

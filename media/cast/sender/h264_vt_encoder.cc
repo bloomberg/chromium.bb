@@ -147,13 +147,13 @@ class H264VideoToolboxEncoder::VideoFrameFactoryImpl::Proxy
 
 // static
 bool H264VideoToolboxEncoder::IsSupported(
-    const FrameSenderConfig& video_config) {
+    const VideoSenderConfig& video_config) {
   return video_config.codec == CODEC_VIDEO_H264 && VideoToolboxGlue::Get();
 }
 
 H264VideoToolboxEncoder::H264VideoToolboxEncoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
-    const FrameSenderConfig& video_config,
+    const VideoSenderConfig& video_config,
     const StatusChangeCallback& status_change_cb)
     : cast_environment_(cast_environment),
       videotoolbox_glue_(VideoToolboxGlue::Get()),
@@ -322,7 +322,7 @@ void H264VideoToolboxEncoder::ConfigureCompressionSession() {
       (video_config_.min_bitrate + video_config_.max_bitrate) / 2);
   session_property_setter.Set(
       videotoolbox_glue_->kVTCompressionPropertyKey_ExpectedFrameRate(),
-      static_cast<int>(video_config_.max_frame_rate + 0.5));
+      video_config_.max_frame_rate);
   // Keep these attachment settings in-sync with those in Initialize().
   session_property_setter.Set(
       videotoolbox_glue_->kVTCompressionPropertyKey_ColorPrimaries(),
@@ -333,10 +333,10 @@ void H264VideoToolboxEncoder::ConfigureCompressionSession() {
   session_property_setter.Set(
       videotoolbox_glue_->kVTCompressionPropertyKey_YCbCrMatrix(),
       kCVImageBufferYCbCrMatrix_ITU_R_709_2);
-  if (video_config_.video_codec_params.max_number_of_video_buffers_used > 0) {
+  if (video_config_.max_number_of_video_buffers_used > 0) {
     session_property_setter.Set(
         videotoolbox_glue_->kVTCompressionPropertyKey_MaxFrameDelayCount(),
-        video_config_.video_codec_params.max_number_of_video_buffers_used);
+        video_config_.max_number_of_video_buffers_used);
   }
 }
 

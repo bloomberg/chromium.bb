@@ -31,21 +31,19 @@ chrome.test.runTests([
                     pass(function(stream, audioId, videoId, udpId) {
         var audioParams = rtpStream.getSupportedParams(audioId)[0];
         var videoParams = rtpStream.getSupportedParams(videoId)[0];
+        rtpStream.onError.addListener(
+            pass(function(audioId, videoId, id, msg) {
+          chrome.test.assertEq(videoId, id);
+          rtpStream.destroy(audioId);
+          rtpStream.destroy(videoId);
+          udpTransport.destroy(udpId);
+          console.log(msg);
+        }.bind(null, audioId, videoId)));
         // Specify invalid value to trigger error.
         videoParams.payload.codecName = "Animated WebP";
         udpTransport.setDestination(udpId,
                                     {address: "127.0.0.1", port: 2344});
-        try {
-          rtpStream.start(videoId, videoParams);
-          chrome.test.fail();
-        } catch (e) {
-          rtpStream.stop(audioId);
-          rtpStream.stop(videoId);
-          rtpStream.destroy(audioId);
-          rtpStream.destroy(videoId);
-          udpTransport.destroy(udpId);
-          chrome.test.succeed();
-        }
+        rtpStream.start(videoId, videoParams);
       }.bind(null, stream)));
     }));
   },

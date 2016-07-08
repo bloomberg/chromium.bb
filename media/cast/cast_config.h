@@ -46,60 +46,20 @@ enum SuggestedDefaults {
 
   // Suggested minimum and maximum video bitrates for general-purpose use (up to
   // 1080p, 30 FPS).
-  kDefaultMinVideoBitrate = 300000,
-  kDefaultMaxVideoBitrate = 5000000,
-
-  // Minimum and Maximum VP8 quantizer in default configuration.
-  kDefaultMaxQp = 63,
-  kDefaultMinQp = 4,
-
-  kDefaultMaxCpuSaverQp = 25,
-
-  // Number of video buffers in default configuration (applies only to certain
-  // external codecs).
-  kDefaultNumberOfVideoBuffers = 1,
+  kDefaultMinVideoKbps = 300,
+  kDefaultMaxVideoKbps = 5000,
 };
 
-// These parameters are only for video encoders.
-struct VideoCodecParams {
-  VideoCodecParams();
-  VideoCodecParams(const VideoCodecParams& other);
-  ~VideoCodecParams();
+// TODO(miu): Merge AudioSenderConfig and VideoSenderConfig and make their
+// naming/documentation consistent with FrameReceiverConfig.
+// http://crbug.com/530839
+struct AudioSenderConfig {
+  AudioSenderConfig();
+  AudioSenderConfig(const AudioSenderConfig& other);
+  ~AudioSenderConfig();
 
-  int max_qp;
-  int min_qp;
-
-  // The maximum |min_quantizer| set to the encoder when CPU is constrained.
-  // This is a trade-off between higher resolution with lower encoding quality
-  // and lower resolution with higher encoding quality. The set value indicates
-  // the maximum quantizer that the encoder might produce better quality video
-  // at this resolution than lowering resolution with similar CPU usage and
-  // smaller quantizer. The set value has to be between |min_qp| and |max_qp|.
-  // Suggested value range: [4, 30]. It is only used by software VP8 codec.
-  int max_cpu_saver_qp;
-
-  // This field is used differently by various encoders.
-  //
-  // It defaults to 1.
-  //
-  // For VP8, this field is ignored.
-  //
-  // For H.264 on Mac or iOS, it controls the max number of frames the encoder
-  // may hold before emitting a frame. A larger window may allow higher encoding
-  // efficiency at the cost of latency and memory. Set to 0 to let the encoder
-  // choose a suitable value for the platform and other encoding settings.
-  int max_number_of_video_buffers_used;
-
-  int number_of_encode_threads;
-};
-
-struct FrameSenderConfig {
-  FrameSenderConfig();
-  FrameSenderConfig(const FrameSenderConfig& other);
-  ~FrameSenderConfig();
-
-  // The sender's SSRC identifier.
-  uint32_t sender_ssrc;
+  // Identifier referring to the sender, used by the receiver.
+  uint32_t ssrc;
 
   // The receiver's SSRC identifier.
   uint32_t receiver_ssrc;
@@ -119,28 +79,10 @@ struct FrameSenderConfig {
   // RTP payload type enum: Specifies the type/encoding of frame data.
   RtpPayloadType rtp_payload_type;
 
-  // If true, use an external HW encoder rather than the built-in
-  // software-based one.
   bool use_external_encoder;
-
-  // RTP timebase: The number of RTP units advanced per one second.  For audio,
-  // this is the sampling rate.  For video, by convention, this is 90 kHz.
-  int rtp_timebase;
-
-  // Number of channels.  For audio, this is normally 2.  For video, this must
-  // be 1 as Cast does not have support for stereoscopic video.
+  int frequency;
   int channels;
-
-  // For now, only fixed bitrate is used for audio encoding. So for audio,
-  // |max_bitrate| is used, and the other two will be overriden if they are not
-  // equal to |max_bitrate|.
-  int max_bitrate;
-  int min_bitrate;
-  int start_bitrate;
-
-  double max_frame_rate;
-
-  // Codec used for the compression of signal data.
+  int bitrate;  // Set to <= 0 for "auto variable bitrate" (libopus knows best).
   Codec codec;
 
   // The AES crypto key and initialization vector.  Each of these strings
@@ -148,9 +90,72 @@ struct FrameSenderConfig {
   // strings, crypto is not being used.
   std::string aes_key;
   std::string aes_iv_mask;
+};
 
-  // These are codec specific parameters for video streams only.
-  VideoCodecParams video_codec_params;
+struct VideoSenderConfig {
+  VideoSenderConfig();
+  VideoSenderConfig(const VideoSenderConfig& other);
+  ~VideoSenderConfig();
+
+  // Identifier referring to the sender, used by the receiver.
+  uint32_t ssrc;
+
+  // The receiver's SSRC identifier.
+  uint32_t receiver_ssrc;
+
+  // The total amount of time between a frame's capture/recording on the sender
+  // and its playback on the receiver (i.e., shown to a user).  This should be
+  // set to a value large enough to give the system sufficient time to encode,
+  // transmit/retransmit, receive, decode, and render; given its run-time
+  // environment (sender/receiver hardware performance, network conditions,
+  // etc.).
+  base::TimeDelta min_playout_delay;
+  base::TimeDelta max_playout_delay;
+
+  // Starting playout delay when streaming animated content.
+  base::TimeDelta animated_playout_delay;
+
+  // RTP payload type enum: Specifies the type/encoding of frame data.
+  RtpPayloadType rtp_payload_type;
+
+  bool use_external_encoder;
+
+  float congestion_control_back_off;
+  int max_bitrate;
+  int min_bitrate;
+  int start_bitrate;
+  int max_qp;
+  int min_qp;
+
+  // The maximum |min_quantizer| set to the encoder when CPU is constrained.
+  // This is a trade-off between higher resolution with lower encoding quality
+  // and lower resolution with higher encoding quality. The set value indicates
+  // the maximum quantizer that the encoder might produce better quality video
+  // at this resolution than lowering resolution with similar CPU usage and
+  // smaller quantizer. The set value has to be between |min_qp| and |max_qp|.
+  // Suggested value range: [4, 30].
+  int max_cpu_saver_qp;
+
+  int max_frame_rate;  // TODO(miu): Should be double, not int.
+
+  // This field is used differently by various encoders. It defaults to 1.
+  //
+  // For VP8, this field is ignored.
+  //
+  // For H.264 on Mac or iOS, it controls the max number of frames the encoder
+  // may hold before emitting a frame. A larger window may allow higher encoding
+  // efficiency at the cost of latency and memory. Set to 0 to let the encoder
+  // choose a suitable value for the platform and other encoding settings.
+  int max_number_of_video_buffers_used;
+
+  Codec codec;
+  int number_of_encode_threads;
+
+  // The AES crypto key and initialization vector.  Each of these strings
+  // contains the data in binary form, of size kAesKeySize.  If they are empty
+  // strings, crypto is not being used.
+  std::string aes_key;
+  std::string aes_iv_mask;
 };
 
 // TODO(miu): Naming and minor type changes are badly needed in a later CL.
@@ -187,7 +192,7 @@ struct FrameReceiverConfig {
   // The target frame rate.  For audio, this is normally 100 (i.e., frames have
   // a duration of 10ms each).  For video, this is normally 30, but any frame
   // rate is supported.
-  double target_frame_rate;
+  int target_frame_rate;
 
   // Codec used for the compression of signal data.
   // TODO(miu): Merge the AudioCodec and VideoCodec enums into one so this union
