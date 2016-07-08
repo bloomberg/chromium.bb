@@ -50,7 +50,11 @@ __attribute__((visibility("default")))
 
 // Installs CrNet. Once installed, CrNet intercepts and handles all
 // NSURLConnection and NSURLRequests issued by the app, including UIWebView page
-// loads.
+// loads. It is recommended to call this method on the application main thread.
+// If the method is called on any thread other than the main one, the method
+// will internally try to execute synchronously using the main GCD queue.
+// Please make sure that the main thread is not blocked by a job
+// that calls this method; otherwise, a deadlock can occur.
 + (void)install;
 
 // Installs CrNet into an NSURLSession, passed in by the caller. Note that this

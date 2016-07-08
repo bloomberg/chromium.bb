@@ -32,7 +32,11 @@ CRONET_EXPORT
 // captures. This method only has any effect before |start| is called.
 + (void)setSslKeyLogFileName:(NSString*)sslKeyLogFileName;
 
-// Starts CronetEngine.
+// Starts CronetEngine. It is recommended to call this method on the application
+// main thread. If the method is called on any thread other than the main one,
+// the method will internally try to execute synchronously using the main GCD
+// queue. Please make sure that the main thread is not blocked by a job
+// that calls this method; otherwise, a deadlock can occur.
 + (void)start;
 
 // Starts net-internals logging to a file named |fileName| in the application

@@ -59,7 +59,13 @@ static RequestFilterBlock g_request_filter_block = nil;
 + (void)install {
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
+    if (![NSThread isMainThread]) {
+      dispatch_sync(dispatch_get_main_queue(), ^(void) {
+        [self installInternal];
+      });
+    } else {
       [self installInternal];
+    }
   });
 }
 
