@@ -60,7 +60,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     ServiceWorkerRequestTestResources(
         ServiceWorkerControlleeRequestHandlerTest* test,
         const GURL& url,
-        ResourceType type)
+        ResourceType type,
+        FetchRequestMode fetch_type = FETCH_REQUEST_MODE_NO_CORS)
         : test_(test),
           request_(test->url_request_context_.CreateRequest(
               url,
@@ -70,7 +71,7 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
               test->context()->AsWeakPtr(),
               test->provider_host_,
               base::WeakPtr<storage::BlobStorageContext>(),
-              FETCH_REQUEST_MODE_NO_CORS,
+              fetch_type,
               FETCH_CREDENTIALS_MODE_OMIT,
               FetchRedirectMode::FOLLOW_MODE,
               type,
@@ -171,6 +172,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 
   // Store an activated worker.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->set_has_fetch_handler(true);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -199,6 +201,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
+  version_->set_has_fetch_handler(true);
   registration_->SetWaitingVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -232,6 +235,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // Create an installing registration.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  version_->set_has_fetch_handler(true);
   registration_->SetInstallingVersion(version_);
   context()->storage()->NotifyInstallingRegistration(registration_.get());
 
@@ -257,6 +261,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->set_has_fetch_handler(true);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -282,6 +287,55 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sw_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
+}
+
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->set_has_fetch_handler(false);
+  registration_->SetActiveVersion(version_);
+  context()->storage()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+
+  ServiceWorkerRequestTestResources main_test_resources(
+      this, GURL("https://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+  ServiceWorkerURLRequestJob* main_job = main_test_resources.MaybeCreateJob();
+
+  EXPECT_FALSE(main_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(main_job->ShouldForwardToServiceWorker());
+  EXPECT_FALSE(version_->HasControllee());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(main_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(main_job->ShouldForwardToServiceWorker());
+  EXPECT_TRUE(version_->HasControllee());
+  EXPECT_EQ(version_, provider_host_->controlling_version());
+
+  ServiceWorkerRequestTestResources sub_test_resources(
+      this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_IMAGE);
+  ServiceWorkerURLRequestJob* sub_job = sub_test_resources.MaybeCreateJob();
+
+  // This job shouldn't be created because this worker doesn't have fetch
+  // handler.
+  EXPECT_EQ(nullptr, sub_job);
+
+  // CORS request should be returned to renderer for CORS checking.
+  ServiceWorkerRequestTestResources sub_test_resources_cors(
+      this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_SCRIPT,
+      FETCH_REQUEST_MODE_CORS);
+  ServiceWorkerURLRequestJob* sub_cors_job =
+      sub_test_resources_cors.MaybeCreateJob();
+
+  EXPECT_TRUE(sub_cors_job);
+  EXPECT_FALSE(sub_cors_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(sub_cors_job->ShouldForwardToServiceWorker());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(sub_cors_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(sub_cors_job->ShouldForwardToServiceWorker());
 }
 
 }  // namespace content
