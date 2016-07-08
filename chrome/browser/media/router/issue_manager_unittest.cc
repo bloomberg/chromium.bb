@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/media/router/issue_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -25,6 +26,7 @@ class IssueManagerUnitTest : public ::testing::Test {
   IssueManagerUnitTest() {}
   ~IssueManagerUnitTest() override {}
 
+  content::TestBrowserThreadBundle thread_bundle_;
   IssueManager manager_;
 
  private:

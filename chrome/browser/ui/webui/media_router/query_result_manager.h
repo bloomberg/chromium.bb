@@ -13,7 +13,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
@@ -47,8 +46,7 @@ struct SinksQueryResult;
 //   [Updates will be received by observer via OnResultsUpdated()]
 //   ...
 //   [When info on MediaSource is needed, i.e. when requesting route for a mode]
-//   CastModeSet cast_modes;
-//   result_manager.GetSupportedCastModes(&cast_modes);
+//   CastModeSet cast_modes = result_manager.GetSupportedCastModes();
 //   [Logic to select a MediaCastMode from the set]
 //   MediaSource source = result_manager.GetSourceForCastMode(
 //       MediaCastMode::TAB_MIRROR);
@@ -56,7 +54,7 @@ struct SinksQueryResult;
 //     ...
 //   }
 //
-// Not thread-safe.  Must be used on a single thread.
+// Not thread-safe.  Must be used on the UI thread.
 class QueryResultManager {
  public:
   class Observer {
@@ -92,9 +90,8 @@ class QueryResultManager {
   // Stops notifying observers for |cast_mode|.
   void StopSinksQuery(MediaCastMode cast_mode);
 
-  // Gets the set of cast modes that are being actively queried. |cast_mode_set|
-  // should be empty.
-  void GetSupportedCastModes(CastModeSet* cast_modes) const;
+  // Gets the set of cast modes that are being actively queried.
+  CastModeSet GetSupportedCastModes() const;
 
   // Returns the MediaSource registered for |cast_mode|.  Returns an empty
   // MediaSource if there is none.
@@ -140,9 +137,7 @@ class QueryResultManager {
   base::ObserverList<Observer> observers_;
 
   // Not owned by this object.
-  MediaRouter* router_;
-
-  base::ThreadChecker thread_checker_;
+  MediaRouter* const router_;
 
   DISALLOW_COPY_AND_ASSIGN(QueryResultManager);
 };

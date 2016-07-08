@@ -12,14 +12,13 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/issues_observer.h"
 
 namespace media_router {
 
 // IssueManager keeps track of current issues related to casting
-// connectivity and quality.
+// connectivity and quality. It lives on the UI thread.
 // TODO(apacible): Determine what other issues will be handled here.
 class IssueManager {
  public:
@@ -71,8 +70,6 @@ class IssueManager {
 
   // The ID of the current top issue.
   Issue::Id top_issue_id_;
-
-  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(IssueManager);
 };

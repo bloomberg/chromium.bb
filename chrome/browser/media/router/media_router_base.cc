@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace media_router {
 
@@ -51,7 +52,7 @@ std::unique_ptr<PresentationConnectionStateSubscription>
 MediaRouterBase::AddPresentationConnectionStateChangedCallback(
     const MediaRoute::Id& route_id,
     const content::PresentationConnectionStateChangedCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   auto* callbacks = presentation_connection_state_callbacks_.get(route_id);
   if (!callbacks) {

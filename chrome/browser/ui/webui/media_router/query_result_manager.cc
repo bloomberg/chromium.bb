@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace media_router {
 
@@ -48,9 +49,9 @@ class QueryResultManager::CastModeMediaSinksObserver
   MediaCastMode cast_mode() const { return cast_mode_; }
 
  private:
-  MediaCastMode cast_mode_;
+  const MediaCastMode cast_mode_;
   std::vector<MediaSink::Id> latest_sink_ids_;
-  QueryResultManager* result_manager_;
+  QueryResultManager* const result_manager_;
 };
 
 QueryResultManager::QueryResultManager(MediaRouter* router) : router_(router) {
@@ -58,17 +59,17 @@ QueryResultManager::QueryResultManager(MediaRouter* router) : router_(router) {
 }
 
 QueryResultManager::~QueryResultManager() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void QueryResultManager::AddObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
   observers_.AddObserver(observer);
 }
 
 void QueryResultManager::RemoveObserver(Observer* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
   observers_.RemoveObserver(observer);
 }
@@ -76,7 +77,7 @@ void QueryResultManager::RemoveObserver(Observer* observer) {
 void QueryResultManager::StartSinksQuery(MediaCastMode cast_mode,
                                          const MediaSource& source,
                                          const GURL& origin) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (source.Empty()) {
     LOG(WARNING) << "StartSinksQuery called with empty source for "
                  << cast_mode;
@@ -97,7 +98,7 @@ void QueryResultManager::StartSinksQuery(MediaCastMode cast_mode,
 }
 
 void QueryResultManager::StopSinksQuery(MediaCastMode cast_mode) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   RemoveObserverForCastMode(cast_mode);
   SetSourceForCastMode(cast_mode, MediaSource());
   UpdateWithSinksQueryResult(cast_mode, std::vector<MediaSink>());
@@ -106,7 +107,7 @@ void QueryResultManager::StopSinksQuery(MediaCastMode cast_mode) {
 
 void QueryResultManager::SetSourceForCastMode(
       MediaCastMode cast_mode, const MediaSource& source) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   cast_mode_sources_[cast_mode] = source;
 }
 
@@ -151,17 +152,16 @@ void QueryResultManager::UpdateWithSinksQueryResult(
   }
 }
 
-void QueryResultManager::GetSupportedCastModes(CastModeSet* cast_modes) const {
-  DCHECK(cast_modes);
-  cast_modes->clear();
-  for (const auto& observer_pair : sinks_observers_) {
-    cast_modes->insert(observer_pair.first);
-  }
+CastModeSet QueryResultManager::GetSupportedCastModes() const {
+  CastModeSet modes;
+  for (const auto& observer_pair : sinks_observers_)
+    modes.insert(observer_pair.first);
+  return modes;
 }
 
 MediaSource QueryResultManager::GetSourceForCastMode(
       MediaCastMode cast_mode) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto source_it = cast_mode_sources_.find(cast_mode);
   return source_it == cast_mode_sources_.end() ?
     MediaSource() : source_it->second;

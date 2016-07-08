@@ -26,6 +26,7 @@
 #include "chrome/browser/media/router/mojo/media_router_type_converters.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/browser/process_manager.h"
 
 #define DVLOG_WITH_INSTANCE(level) \
@@ -89,6 +90,7 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
       availability_(interfaces::MediaRouter::SinkAvailability::UNAVAILABLE),
       current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
       weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(event_page_tracker_);
 #if defined(OS_WIN)
   CanFirewallUseLocalPorts(
@@ -98,7 +100,7 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
 }
 
 MediaRouterMojoImpl::~MediaRouterMojoImpl() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 // static
@@ -116,7 +118,7 @@ void MediaRouterMojoImpl::BindToRequest(
 void MediaRouterMojoImpl::BindToMojoRequest(
     mojo::InterfaceRequest<interfaces::MediaRouter> request,
     const extensions::Extension& extension) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   binding_.reset(
       new mojo::Binding<interfaces::MediaRouter>(this, std::move(request)));
@@ -131,7 +133,7 @@ void MediaRouterMojoImpl::BindToMojoRequest(
 }
 
 void MediaRouterMojoImpl::OnConnectionError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   media_route_provider_.reset();
   binding_.reset();
@@ -152,7 +154,7 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
     interfaces::MediaRouteProviderPtr media_route_provider_ptr,
     const interfaces::MediaRouter::RegisterMediaRouteProviderCallback&
         callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(OS_WIN)
   // The MRPM may have been upgraded or otherwise reload such that we could be
   // seeing an MRPM that doesn't know mDNS is enabled, even if we've told a
@@ -191,7 +193,7 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
 }
 
 void MediaRouterMojoImpl::OnIssue(const interfaces::IssuePtr issue) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnIssue " << issue->title;
   const Issue& issue_converted = issue.To<Issue>();
   issue_manager_.AddIssue(issue_converted);
@@ -201,7 +203,7 @@ void MediaRouterMojoImpl::OnSinksReceived(
     const mojo::String& media_source,
     mojo::Array<interfaces::MediaSinkPtr> sinks,
     mojo::Array<mojo::String> origins) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
   auto it = sinks_queries_.find(media_source);
   if (it == sinks_queries_.end()) {
@@ -245,7 +247,7 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
     mojo::Array<interfaces::MediaRoutePtr> routes,
     const mojo::String& media_source,
     mojo::Array<mojo::String> joinable_route_ids) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DVLOG_WITH_INSTANCE(1) << "OnRoutesUpdated";
   auto it = routes_queries_.find(media_source);
@@ -309,7 +311,7 @@ void MediaRouterMojoImpl::CreateRoute(
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool off_the_record) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
@@ -337,7 +339,7 @@ void MediaRouterMojoImpl::JoinRoute(
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool off_the_record) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::unique_ptr<RouteRequestResult> error_result;
   if (!origin.is_valid()) {
@@ -372,7 +374,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool off_the_record) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
@@ -392,7 +394,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
 }
 
 void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(2) << "TerminateRoute " << route_id;
   SetWakeReason(MediaRouteProviderWakeReason::TERMINATE_ROUTE);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoTerminateRoute,
@@ -400,7 +402,7 @@ void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
 }
 
 void MediaRouterMojoImpl::DetachRoute(const MediaRoute::Id& route_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SetWakeReason(MediaRouteProviderWakeReason::DETACH_ROUTE);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoDetachRoute,
@@ -411,7 +413,7 @@ void MediaRouterMojoImpl::SendRouteMessage(
     const MediaRoute::Id& route_id,
     const std::string& message,
     const SendRouteMessageCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SetWakeReason(MediaRouteProviderWakeReason::SEND_SESSION_MESSAGE);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionMessage,
@@ -422,7 +424,7 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
     std::unique_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SetWakeReason(MediaRouteProviderWakeReason::SEND_SESSION_BINARY_MESSAGE);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSendSessionBinaryMessage,
@@ -431,12 +433,12 @@ void MediaRouterMojoImpl::SendRouteBinaryMessage(
 }
 
 void MediaRouterMojoImpl::AddIssue(const Issue& issue) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   issue_manager_.AddIssue(issue);
 }
 
 void MediaRouterMojoImpl::ClearIssue(const Issue::Id& issue_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   issue_manager_.ClearIssue(issue_id);
 }
 
@@ -456,7 +458,7 @@ void MediaRouterMojoImpl::SearchSinks(
     const std::string& search_input,
     const std::string& domain,
     const MediaSinkSearchResponseCallback& sink_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SetWakeReason(MediaRouteProviderWakeReason::SEARCH_SINKS);
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoSearchSinks,
@@ -466,7 +468,7 @@ void MediaRouterMojoImpl::SearchSinks(
 
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Create an observer list for the media source and add |observer|
   // to it. Fail if |observer| is already registered.
@@ -502,7 +504,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
 
 void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     MediaSinksObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const MediaSource::Id& source_id = observer->source().id();
   auto* sinks_query = sinks_queries_.get(source_id);
@@ -534,7 +536,7 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
 
 void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
     MediaRoutesObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const MediaSource::Id source_id = observer->source_id();
   auto* routes_query = routes_queries_.get(source_id);
   if (!routes_query) {
@@ -571,18 +573,18 @@ void MediaRouterMojoImpl::UnregisterMediaRoutesObserver(
 }
 
 void MediaRouterMojoImpl::RegisterIssuesObserver(IssuesObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   issue_manager_.RegisterObserver(observer);
 }
 
 void MediaRouterMojoImpl::UnregisterIssuesObserver(IssuesObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   issue_manager_.UnregisterObserver(observer);
 }
 
 void MediaRouterMojoImpl::RegisterPresentationSessionMessagesObserver(
     PresentationSessionMessagesObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
   const MediaRoute::Id& route_id = observer->route_id();
   auto* observer_list = messages_observers_.get(route_id);
@@ -603,7 +605,7 @@ void MediaRouterMojoImpl::RegisterPresentationSessionMessagesObserver(
 
 void MediaRouterMojoImpl::UnregisterPresentationSessionMessagesObserver(
     PresentationSessionMessagesObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(observer);
 
   const MediaRoute::Id& route_id = observer->route_id();
@@ -956,7 +958,7 @@ void MediaRouterMojoImpl::AttemptWakeEventPage() {
 }
 
 void MediaRouterMojoImpl::ExecutePendingRequests() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(media_route_provider_);
   DCHECK(event_page_tracker_);
   DCHECK(!media_route_provider_extension_id_.empty());

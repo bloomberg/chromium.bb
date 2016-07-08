@@ -31,6 +31,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/version_info/version_info.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
@@ -134,7 +135,7 @@ class RouteResponseCallbackHandler {
 };
 
 class SinkResponseCallbackHandler {
-public:
+ public:
   MOCK_METHOD1(Invoke, void(const std::string& sink_id));
 };
 
@@ -1288,9 +1289,6 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
   void TearDown() override {
     media_router_.reset();
     profile_.reset();
-    // Explicitly delete the TestingBrowserProcess before |message_loop_|.
-    // This allows it to do cleanup before |message_loop_| goes away.
-    TestingBrowserProcess::DeleteInstance();
   }
 
   // Constructs bindings so that |media_router_| delegates calls to
@@ -1340,6 +1338,7 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
                                         expected_count);
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<MediaRouterMojoImpl> media_router_;
   RegisterMediaRouteProviderHandler provide_handler_;
   TestProcessManager* process_manager_;
@@ -1349,7 +1348,6 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
 
  private:
   std::unique_ptr<TestingProfile> profile_;
-  base::MessageLoop message_loop_;
   interfaces::MediaRouteProviderPtr media_route_provider_proxy_;
   std::unique_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
   base::HistogramTester histogram_tester_;

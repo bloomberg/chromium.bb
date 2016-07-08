@@ -339,7 +339,7 @@ void MediaRouterUI::OnDefaultPresentationRemoved() {
 
 void MediaRouterUI::UpdateCastModes() {
   // Gets updated cast modes from |query_result_manager_| and forwards it to UI.
-  query_result_manager_->GetSupportedCastModes(&cast_modes_);
+  cast_modes_ = query_result_manager_->GetSupportedCastModes();
   if (ui_initialized_) {
     handler_->UpdateCastModes(cast_modes_, GetPresentationRequestSourceName());
   }

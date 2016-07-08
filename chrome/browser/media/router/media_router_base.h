@@ -12,7 +12,6 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_routes_observer.h"
@@ -63,8 +62,6 @@ class MediaRouterBase : public MediaRouter {
       MediaRoute::Id,
       std::unique_ptr<PresentationConnectionStateChangedCallbacks>>
       presentation_connection_state_callbacks_;
-
-  base::ThreadChecker thread_checker_;
 
  private:
   friend class MediaRouterFactory;

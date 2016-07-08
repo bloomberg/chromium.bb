@@ -71,12 +71,12 @@ MediaRouterDialogController::MediaRouterDialogController(
 }
 
 MediaRouterDialogController::~MediaRouterDialogController() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
     std::unique_ptr<CreatePresentationConnectionRequest> request) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Check if the media router dialog exists for |initiator| and return if so.
   if (IsShowingMediaRouterDialog())
@@ -89,14 +89,14 @@ bool MediaRouterDialogController::ShowMediaRouterDialogForPresentation(
   // Show the initiator holding the existing media router dialog.
   ActivateInitiatorWebContents();
 
-  media_router::MediaRouterMetrics::RecordMediaRouterDialogOrigin(
+  MediaRouterMetrics::RecordMediaRouterDialogOrigin(
       MediaRouterDialogOpenOrigin::PAGE);
 
   return true;
 }
 
 bool MediaRouterDialogController::ShowMediaRouterDialog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Don't create dialog if it already exists.
   bool dialog_needs_creation = !IsShowingMediaRouterDialog();
@@ -111,7 +111,7 @@ bool MediaRouterDialogController::ShowMediaRouterDialog() {
 }
 
 void MediaRouterDialogController::HideMediaRouterDialog() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CloseMediaRouterDialog();
   Reset();
 }

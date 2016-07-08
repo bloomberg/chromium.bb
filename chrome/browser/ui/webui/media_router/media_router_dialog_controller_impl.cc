@@ -40,15 +40,13 @@ using content::WebContents;
 using content::WebUIMessageHandler;
 using ui::WebDialogDelegate;
 
-namespace {
-const int kMaxHeight = 2000;
-const int kMinHeight = 80;
-const int kWidth = 340;
-}
-
 namespace media_router {
 
 namespace {
+
+constexpr const int kMaxHeight = 2000;
+constexpr const int kMinHeight = 80;
+constexpr const int kWidth = 340;
 
 // WebDialogDelegate that specifies what the Media Router dialog
 // will look like.
@@ -169,7 +167,7 @@ MediaRouterDialogControllerImpl::~MediaRouterDialogControllerImpl() {
 }
 
 WebContents* MediaRouterDialogControllerImpl::GetMediaRouterDialog() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return dialog_observer_.get() ? dialog_observer_->web_contents() : nullptr;
 }
 
@@ -280,7 +278,7 @@ void MediaRouterDialogControllerImpl::Reset() {
 
 void MediaRouterDialogControllerImpl::OnDialogNavigated(
     const content::LoadCommittedDetails& details) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   WebContents* media_router_dialog = GetMediaRouterDialog();
   CHECK(media_router_dialog);
   ui::PageTransition transition_type = details.entry->GetTransitionType();
@@ -301,7 +299,7 @@ void MediaRouterDialogControllerImpl::OnDialogNavigated(
 
 void MediaRouterDialogControllerImpl::PopulateDialog(
     content::WebContents* media_router_dialog) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(media_router_dialog);
   if (!initiator() || !media_router_dialog->GetWebUI()) {
     Reset();

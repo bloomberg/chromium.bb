@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -82,8 +81,6 @@ class MediaRouterDialogController {
   virtual void CreateMediaRouterDialog() = 0;
   // Closes the media router dialog if it exists.
   virtual void CloseMediaRouterDialog() = 0;
-
-  base::ThreadChecker thread_checker_;
 
  private:
   class InitiatorWebContentsObserver;

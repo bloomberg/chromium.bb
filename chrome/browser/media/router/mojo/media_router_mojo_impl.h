@@ -45,6 +45,7 @@ enum class MediaRouteProviderWakeReason;
 
 // MediaRouter implementation that delegates calls to the component extension.
 // Also handles the suspension and wakeup of the component extension.
+// Lives on the UI thread.
 class MediaRouterMojoImpl : public MediaRouterBase,
                             public interfaces::MediaRouter {
  public:

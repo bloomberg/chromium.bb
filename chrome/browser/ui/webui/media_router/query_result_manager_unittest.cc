@@ -11,6 +11,7 @@
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/ui/webui/media_router/query_result_manager.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,6 +49,7 @@ class QueryResultManagerTest : public ::testing::Test {
     query_result_manager_.StartSinksQuery(cast_mode, source, GURL(kOrigin));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   MockMediaRouter mock_router_;
   QueryResultManager query_result_manager_;
   MockObserver mock_observer_;
@@ -60,7 +62,7 @@ MATCHER_P(VectorEquals, expected, "") {
   if (expected.size() != arg.size()) {
     return false;
   }
-  for (int i = 0; i < static_cast<int>(expected.size()); i++) {
+  for (size_t i = 0; i < expected.size(); ++i) {
     if (!expected[i].Equals(arg[i])) {
       return false;
     }
@@ -88,9 +90,7 @@ TEST_F(QueryResultManagerTest, Observers) {
 
 TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   GURL origin(kOrigin);
-  CastModeSet cast_modes;
-
-  query_result_manager_.GetSupportedCastModes(&cast_modes);
+  CastModeSet cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_TRUE(cast_modes.empty());
   MediaSource actual_source =
       query_result_manager_.GetSourceForCastMode(MediaCastMode::DEFAULT);
@@ -101,7 +101,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
       .WillOnce(Return(true));
   query_result_manager_.StartSinksQuery(MediaCastMode::DEFAULT, source, origin);
 
-  query_result_manager_.GetSupportedCastModes(&cast_modes);
+  cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
   EXPECT_TRUE(ContainsKey(cast_modes, MediaCastMode::DEFAULT));
   actual_source = query_result_manager_.GetSourceForCastMode(
@@ -116,7 +116,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   query_result_manager_.StartSinksQuery(MediaCastMode::DEFAULT, another_source,
                                         origin);
 
-  query_result_manager_.GetSupportedCastModes(&cast_modes);
+  cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
   EXPECT_TRUE(ContainsKey(cast_modes, MediaCastMode::DEFAULT));
   actual_source = query_result_manager_.GetSourceForCastMode(
@@ -126,7 +126,7 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
   query_result_manager_.StopSinksQuery(MediaCastMode::DEFAULT);
 
-  query_result_manager_.GetSupportedCastModes(&cast_modes);
+  cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_TRUE(cast_modes.empty());
   actual_source = query_result_manager_.GetSourceForCastMode(
       MediaCastMode::DEFAULT);
