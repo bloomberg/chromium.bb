@@ -445,7 +445,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // BrowserCompositorMacClient implementation.
   NSView* BrowserCompositorMacGetNSView() const override;
-  bool BrowserCompositorMacIsVisible() const override;
   SkColor BrowserCompositorMacGetGutterColor(SkColor color) const override;
   void BrowserCompositorMacSendCompositorSwapAck(
       int output_surface_id,

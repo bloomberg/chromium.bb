@@ -25,7 +25,6 @@ class RecyclableCompositorMac;
 class BrowserCompositorMacClient {
  public:
   virtual NSView* BrowserCompositorMacGetNSView() const = 0;
-  virtual bool BrowserCompositorMacIsVisible() const = 0;
   virtual SkColor BrowserCompositorMacGetGutterColor(SkColor color) const = 0;
   virtual void BrowserCompositorMacSendCompositorSwapAck(
       int output_surface_id,

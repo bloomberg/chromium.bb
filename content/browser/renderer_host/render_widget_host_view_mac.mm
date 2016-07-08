@@ -408,10 +408,6 @@ NSView* RenderWidgetHostViewMac::BrowserCompositorMacGetNSView() const {
   return cocoa_view_;
 }
 
-bool RenderWidgetHostViewMac::BrowserCompositorMacIsVisible() const {
-  return !render_widget_host_->is_hidden();
-}
-
 SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor(
     SkColor color) const {
   // When making an element on the page fullscreen the element's background
@@ -1305,14 +1301,6 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(uint32_t output_surface_id,
   page_at_minimum_scale_ =
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
   if (frame.delegated_frame_data) {
-    // TODO(ccameron): This would not be needed if BrowserCompostiorMac were to
-    // correctly subscribe to the show and hide notifications for
-    // RenderWidgetHostImpl. We do not correctly subscribe to these
-    // notifications because we want to set the hide property property only
-    // after all notifications (the thumbnailer in particular) have all
-    // completed.
-    browser_compositor_->SetRenderWidgetHostIsHidden(
-        render_widget_host_->is_hidden());
     browser_compositor_->SwapCompositorFrame(output_surface_id,
                                              std::move(frame));
     SendVSyncParametersToRenderer();

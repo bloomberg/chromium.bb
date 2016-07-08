@@ -391,10 +391,7 @@ ui::Layer* BrowserCompositorMac::DelegatedFrameHostGetLayer() const {
 }
 
 bool BrowserCompositorMac::DelegatedFrameHostIsVisible() const {
-  // TODO(ccameron): This should return the same value as
-  // |render_widget_host_is_hidden_|, rather than going back to the
-  // RenderWidgetHostImpl.
-  return client_->BrowserCompositorMacIsVisible();
+  return state_ == HasAttachedCompositor;
 }
 
 SkColor BrowserCompositorMac::DelegatedFrameHostGetGutterColor(
