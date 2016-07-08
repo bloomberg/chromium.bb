@@ -1503,7 +1503,7 @@ Place the cursor after the replaced text
 continue loop
 @end enumerate
 
-@node The correct Opcode, Miscellaneous Opcodes
+@node The correct Opcode
 @section The correct Opcode
 
 @table @code
