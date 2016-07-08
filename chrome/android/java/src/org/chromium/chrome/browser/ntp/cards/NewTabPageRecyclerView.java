@@ -27,11 +27,6 @@ public class NewTabPageRecyclerView extends RecyclerView {
     private static final String TAG = "NtpCards";
 
     /**
-     * Minimum height of the bottom spacing item.
-     */
-    private static final int MIN_BOTTOM_SPACING = 0;
-
-    /**
      * Positions of key items in the RecyclerView.
      */
     private static final int ABOVE_THE_FOLD_ITEM_POSITION = 0;
@@ -41,6 +36,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
     private final GestureDetector mGestureDetector;
     private final LinearLayoutManager mLayoutManager;
     private final int mToolbarHeight;
+    private final int mMinBottomSpacing;
 
     /**
      * Total height of the items being dismissed.  Tracked to allow the bottom space to compensate
@@ -72,6 +68,8 @@ public class NewTabPageRecyclerView extends RecyclerView {
         Resources res = context.getResources();
         mToolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+        mMinBottomSpacing =
+                res.getDimensionPixelSize(R.dimen.ntp_min_bottom_spacing_recycler_view);
     }
 
     public boolean isFirstItemVisible() {
@@ -160,7 +158,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
         int firstVisiblePos = mLayoutManager.findFirstVisibleItemPosition();
 
         // We have enough items to fill the view, since the snap point item is not even visible.
-        if (firstVisiblePos > ARTICLES_HEADER_ITEM_POSITION) return MIN_BOTTOM_SPACING;
+        if (firstVisiblePos > ARTICLES_HEADER_ITEM_POSITION) return mMinBottomSpacing;
 
         // The spacing item is the last item, the last content item is directly above that.
         int lastContentItemPosition = getAdapter().getItemCount() - 2;
@@ -190,7 +188,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
             bottomSpacing -= contentHeight - mCompensationHeight;
         }
 
-        return Math.max(MIN_BOTTOM_SPACING, bottomSpacing);
+        return Math.max(mMinBottomSpacing, bottomSpacing);
     }
 
     /**

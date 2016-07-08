@@ -11,4 +11,5 @@
     android:layout_height="match_parent"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    android:contentDescription="@string/accessibility_new_tab_page" />
+    android:contentDescription="@string/accessibility_new_tab_page"
+    android:theme="@style/NewTabPageRecyclerView" />

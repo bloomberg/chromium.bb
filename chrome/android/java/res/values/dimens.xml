@@ -287,6 +287,7 @@
     <dimen name="ntp_list_item_min_height">48dp</dimen>
     <dimen name="ntp_list_item_text_size">16sp</dimen>
     <dimen name="ntp_shadow_height">9dp</dimen>
+    <dimen name="ntp_min_bottom_spacing_recycler_view">32dp</dimen>
     <dimen name="snippets_thumbnail_size">72dp</dimen>
     <dimen name="snippets_padding_and_peeking_card_height">16dp</dimen>
     <dimen name="snippets_card_9_patch_adjustment">2dp</dimen>
