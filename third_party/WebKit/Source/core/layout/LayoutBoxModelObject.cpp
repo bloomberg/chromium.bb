@@ -635,7 +635,7 @@ void LayoutBoxModelObject::updateStickyPositionConstraints() const
     LayoutBox* scrollAncestor = layer()->ancestorOverflowLayer()->isRootLayer() ? nullptr : toLayoutBox(layer()->ancestorOverflowLayer()->layoutObject());
 
     LayoutRect containerContentRect = containingBlock->layoutOverflowRect();
-    LayoutUnit maxContainerWidth = containingBlock->containingBlockLogicalWidthForContent();
+    LayoutUnit maxContainerWidth = containingBlock->isLayoutView() ? containingBlock->logicalWidth() : containingBlock->containingBlockLogicalWidthForContent();
     // Sticky positioned element ignore any override logical width on the containing block (as they don't call
     // containingBlockLogicalWidthForContent). It's unclear whether this is totally fine.
     // Compute the container-relative area within which the sticky element is allowed to move.
