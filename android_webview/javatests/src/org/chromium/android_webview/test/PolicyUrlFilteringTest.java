@@ -73,11 +73,11 @@ public class PolicyUrlFilteringTest extends AwTestBase {
             }
         });
 
-        navigateAndCheckOutcome(mFooTestUrl, 0);
+        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after*/);
 
         setFilteringPolicy(testProvider, new String[] {"localhost"}, new String[] {});
 
-        navigateAndCheckOutcome(mFooTestUrl, 1);
+        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 1 /* error count after */);
         assertEquals(ErrorCodeConversionHelper.ERROR_CONNECT,
                 mContentsClient.getOnReceivedErrorHelper().getErrorCode());
     }
@@ -89,10 +89,10 @@ public class PolicyUrlFilteringTest extends AwTestBase {
             @Policies.Item(key = sBlacklistPolicyName, stringArray = {"*"}),
             @Policies.Item(key = sWhitelistPolicyName, stringArray = {sFooWhitelistFilter})})
     public void testWhitelistedUrl() throws Throwable {
-        navigateAndCheckOutcome(mFooTestUrl, 0);
+        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
 
         // Make sure it goes through the blacklist
-        navigateAndCheckOutcome(mBarTestUrl, 1);
+        navigateAndCheckOutcome(mBarTestUrl, 0 /* error count before */, 1 /* error count after */);
         assertEquals(ErrorCodeConversionHelper.ERROR_CONNECT,
                 mContentsClient.getOnReceivedErrorHelper().getErrorCode());
     }
@@ -103,7 +103,7 @@ public class PolicyUrlFilteringTest extends AwTestBase {
     @Policies.Add({
             @Policies.Item(key = sBlacklistPolicyName, string = "shouldBeAJsonArrayNotAString")})
     public void testBadPolicyValue() throws Exception {
-        navigateAndCheckOutcome(mFooTestUrl, 0);
+        navigateAndCheckOutcome(mFooTestUrl, 0 /* error count before */, 0 /* error count after */);
         // At the moment this test is written, a failure is a crash, a success is no crash.
     }
 
@@ -111,14 +111,26 @@ public class PolicyUrlFilteringTest extends AwTestBase {
      * Synchronously loads the provided URL and checks that the number or reported errors for the
      * current context is the expected one.
      */
-    private void navigateAndCheckOutcome(String url, int expectedErrorCount) throws Exception {
+    private void navigateAndCheckOutcome(String url, int startingErrorCount, int expectedErrorCount)
+            throws Exception {
+        if (expectedErrorCount < startingErrorCount) {
+            throw new IllegalArgumentException(
+                    "The navigation error count can't decrease over time");
+        }
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
                 mContentsClient.getOnPageFinishedHelper();
 
+        assertEquals(startingErrorCount, onReceivedErrorHelper.getCallCount());
+
         loadUrlSync(mAwContents, onPageFinishedHelper, url);
         assertEquals(url, onPageFinishedHelper.getUrl());
+
+        if (expectedErrorCount > startingErrorCount) {
+            onReceivedErrorHelper.waitForCallback(
+                    startingErrorCount, expectedErrorCount - startingErrorCount);
+        }
         assertEquals(expectedErrorCount, onReceivedErrorHelper.getCallCount());
     }
 
