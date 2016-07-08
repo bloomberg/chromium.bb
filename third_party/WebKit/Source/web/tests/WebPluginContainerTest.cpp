@@ -505,14 +505,13 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement)
     WebPluginContainerImpl* pluginContainerImpl = toWebPluginContainerImpl(pluginElement.pluginContainer());
 
     DCHECK(pluginContainerImpl);
-    pluginContainerImpl->setFrameRect(IntRect(0, 0, 300, 300));
 
     IntRect windowRect, clipRect, unobscuredRect;
     Vector<IntRect> cutOutRects;
     calculateGeometry(pluginContainerImpl, windowRect, clipRect, unobscuredRect, cutOutRects);
-    EXPECT_RECT_EQ(IntRect(10, 210, 300, 300), windowRect);
-    EXPECT_RECT_EQ(IntRect(0, 0, 240, 90), clipRect);
-    EXPECT_RECT_EQ(IntRect(0, 0, 240, 160), unobscuredRect);
+    EXPECT_RECT_EQ(IntRect(20, 220, 40, 40), windowRect);
+    EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), clipRect);
+    EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), unobscuredRect);
 
     // Cause the plugin's frame to be detached.
     webViewHelper.reset();
@@ -540,11 +539,9 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin)
     Vector<IntRect> cutOutRects;
 
     calculateGeometry(pluginContainerImpl, windowRect, clipRect, unobscuredRect, cutOutRects);
-    // TODO(chrishtr): these values should not be -1, they should be 0. They are -1 because WebPluginContainerImpl currently uses an IntRect for
-    // frameRect() to determine the position of the plugin, which results in a loss of precision if it is actually subpixel positioned.
     EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), windowRect);
-    EXPECT_RECT_EQ(IntRect(-1, -1, 41, 41), clipRect);
-    EXPECT_RECT_EQ(IntRect(-1, -1, 41, 41), unobscuredRect);
+    EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), clipRect);
+    EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), unobscuredRect);
 
     // Cause the plugin's frame to be detached.
     webViewHelper.reset();

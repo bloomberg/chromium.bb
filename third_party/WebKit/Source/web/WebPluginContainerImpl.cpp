@@ -903,10 +903,9 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
 
     LayoutBox* box = toLayoutBox(ownerElement->layoutObject());
 
-    // Plugin frameRects are in absolute space within their frame.
-    FloatRect frameRectInOwnerElementSpace = box->absoluteToLocalQuad(FloatRect(frameRect()), UseTransforms).boundingBox();
-
-    LayoutRect unclippedAbsoluteRect(frameRectInOwnerElementSpace);
+    // Note: frameRect() for this plugin is equal to contentBoxRect, mapped to the containing view space, and rounded off.
+    // See LayoutPart.cpp::updateWidgetGeometryInternal. To remove the lossy effect of rounding off, use contentBoxRect directly.
+    LayoutRect unclippedAbsoluteRect(box->contentBoxRect());
     box->mapToVisualRectInAncestorSpace(rootView, unclippedAbsoluteRect);
 
     // The frameRect is already in absolute space of the local frame to the plugin.
@@ -922,11 +921,10 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     LayoutRect unclippedLayoutLocalRect = layoutClippedLocalRect;
     layoutClippedLocalRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
 
-    // TODO(chrishtr): intentionally ignore transform, because the positioning of frameRect() does also. This is probably wrong.
-    unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedLayoutLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
+    unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedLayoutLocalRect), TraverseDocumentBoundaries | UseTransforms).enclosingBoundingBox();
     // As a performance optimization, map the clipped rect separately if is different than the unclipped rect.
     if (layoutClippedLocalRect != unclippedLayoutLocalRect)
-        clippedLocalRect = box->absoluteToLocalQuad(FloatRect(layoutClippedLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
+        clippedLocalRect = box->absoluteToLocalQuad(FloatRect(layoutClippedLocalRect), TraverseDocumentBoundaries | UseTransforms).enclosingBoundingBox();
     else
         clippedLocalRect = unclippedIntLocalRect;
 }
