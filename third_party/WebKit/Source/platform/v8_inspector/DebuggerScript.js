@@ -92,9 +92,9 @@ DebuggerScript.getFunctionScopes = function(fun)
 
 /**
  * @param {Object} object
- * @return {?GeneratorObjectDetails}
+ * @return {?RawLocation}
  */
-DebuggerScript.getGeneratorObjectDetails = function(object)
+DebuggerScript.getGeneratorObjectLocation = function(object)
 {
     var mirror = MakeMirror(object, true /* transient */);
     if (!mirror.isGenerator())
@@ -103,21 +103,16 @@ DebuggerScript.getGeneratorObjectDetails = function(object)
     var funcMirror = generatorMirror.func();
     if (!funcMirror.resolved())
         return null;
-    var result = {
-        "function": funcMirror.value(),
-        "functionName": funcMirror.debugName(),
-        "status": generatorMirror.status()
-    };
-    var script = funcMirror.script();
     var location = generatorMirror.sourceLocation() || funcMirror.sourceLocation();
+    var script = funcMirror.script();
     if (script && location) {
-        result["location"] = {
-            "scriptId": String(script.id()),
-            "lineNumber": location.line,
-            "columnNumber": location.column
+        return {
+            scriptId: "" + script.id(),
+            lineNumber: location.line,
+            columnNumber: location.column
         };
     }
-    return result;
+    return null;
 }
 
 /**

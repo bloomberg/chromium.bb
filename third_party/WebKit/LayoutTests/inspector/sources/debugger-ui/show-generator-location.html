@@ -35,7 +35,19 @@ function test()
 
         function didEvaluate(remote)
         {
-            panel._showGeneratorLocation(remote);
+            remote.getOwnPropertiesPromise().then(revealLocation.bind(null, remote));
+        }
+
+        function revealLocation(remote, properties)
+        {
+            var loc;
+            for (var prop of properties.internalProperties) {
+                if (prop.name === "[[GeneratorLocation]]") {
+                    loc = prop.value.value;
+                    break;
+                }
+            }
+            WebInspector.Revealer.reveal(remote.debuggerModel().createRawLocationByScriptId(loc.scriptId, loc.lineNumber, loc.columnNumber));
         }
 
         function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)

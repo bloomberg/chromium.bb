@@ -212,6 +212,15 @@ InjectedScript.prototype = {
 
     /**
      * @param {*} object
+     * @return {boolean}
+     */
+    _shouldPassByValue: function(object)
+    {
+        return typeof object === "object" && InjectedScriptHost.subtype(object) === "internal#location";
+    },
+
+    /**
+     * @param {*} object
      * @param {string} groupName
      * @param {boolean} canAccessInspectedGlobalObject
      * @param {boolean} forceValueType
@@ -713,6 +722,13 @@ InjectedScript.RemoteObject = function(object, objectGroupName, doNotBind, force
             }
         }
 
+        return;
+    }
+
+    if (injectedScript._shouldPassByValue(object)) {
+        this.value = object;
+        this.subtype = injectedScript._subtype(object);
+        this.description = injectedScript._describeIncludingPrimitives(object);
         return;
     }
 

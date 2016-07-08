@@ -59,6 +59,11 @@ v8::Local<v8::Private> V8InjectedScriptHost::internalEntryPrivate(v8::Isolate* i
     return v8::Private::ForApi(isolate, toV8StringInternalized(isolate, "V8InjectedScriptHost#internalEntry"));
 }
 
+v8::Local<v8::Private> V8InjectedScriptHost::internalLocationPrivate(v8::Isolate* isolate)
+{
+    return v8::Private::ForApi(isolate, toV8StringInternalized(isolate, "V8InjectedScriptHost#internalLocation"));
+}
+
 void V8InjectedScriptHost::internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1 || !info[0]->IsObject())
@@ -135,6 +140,10 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
         v8::Local<v8::Object> obj = value.As<v8::Object>();
         if (obj->HasPrivate(isolate->GetCurrentContext(), internalEntryPrivate(isolate)).FromMaybe(false)) {
             info.GetReturnValue().Set(toV8StringInternalized(isolate, "internal#entry"));
+            return;
+        }
+        if (obj->HasPrivate(isolate->GetCurrentContext(), internalLocationPrivate(isolate)).FromMaybe(false)) {
+            info.GetReturnValue().Set(toV8StringInternalized(isolate, "internal#location"));
             return;
         }
     }

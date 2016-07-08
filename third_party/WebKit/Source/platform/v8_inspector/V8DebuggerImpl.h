@@ -106,7 +106,6 @@ public:
 
     v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>);
     v8::MaybeLocal<v8::Array> internalProperties(v8::Local<v8::Context>, v8::Local<v8::Value>);
-    v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&);
 
     v8::Isolate* isolate() const { return m_isolate; }
     V8DebuggerClient* client() { return m_client; }
@@ -176,6 +175,7 @@ private:
     using ContextsByGroupMap = protocol::HashMap<int, std::unique_ptr<ContextByIdMap>>;
 
     v8::Local<v8::Value> collectionEntries(v8::Local<v8::Context>, v8::Local<v8::Object>);
+    v8::Local<v8::Value> generatorObjectLocation(v8::Local<v8::Object>);
 
     v8::Isolate* m_isolate;
     V8DebuggerClient* m_client;

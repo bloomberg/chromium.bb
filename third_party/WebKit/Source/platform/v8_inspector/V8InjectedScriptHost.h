@@ -23,6 +23,7 @@ public:
     static v8::Local<v8::Object> create(v8::Local<v8::Context>, V8DebuggerImpl*);
 
     static v8::Local<v8::Private> internalEntryPrivate(v8::Isolate*);
+    static v8::Local<v8::Private> internalLocationPrivate(v8::Isolate*);
 
 private:
     static void internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);

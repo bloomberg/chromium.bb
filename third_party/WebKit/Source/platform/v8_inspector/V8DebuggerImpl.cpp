@@ -668,17 +668,14 @@ v8::MaybeLocal<v8::Array> V8DebuggerImpl::internalProperties(v8::Local<v8::Conte
             properties->Set(properties->Length(), entries);
         }
     }
-    return properties;
-}
-
-v8::Local<v8::Value> V8DebuggerImpl::generatorObjectDetails(v8::Local<v8::Object>& object)
-{
-    if (!enabled()) {
-        NOTREACHED();
-        return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
+    if (value->IsGeneratorObject()) {
+        v8::Local<v8::Value> location = generatorObjectLocation(v8::Local<v8::Object>::Cast(value));
+        if (location->IsObject()) {
+            properties->Set(properties->Length(), v8InternalizedString("[[GeneratorLocation]]"));
+            properties->Set(properties->Length(), location);
+        }
     }
-    v8::Local<v8::Value> argv[] = { object };
-    return callDebuggerMethod("getGeneratorObjectDetails", 1, argv).ToLocalChecked();
+    return properties;
 }
 
 v8::Local<v8::Value> V8DebuggerImpl::collectionEntries(v8::Local<v8::Context> context, v8::Local<v8::Object> object)
@@ -702,6 +699,22 @@ v8::Local<v8::Value> V8DebuggerImpl::collectionEntries(v8::Local<v8::Context> co
     if (!entries->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
         return v8::Undefined(m_isolate);
     return entries;
+}
+
+v8::Local<v8::Value> V8DebuggerImpl::generatorObjectLocation(v8::Local<v8::Object> object)
+{
+    if (!enabled()) {
+        NOTREACHED();
+        return v8::Null(m_isolate);
+    }
+    v8::Local<v8::Value> argv[] = { object };
+    v8::Local<v8::Value> location = callDebuggerMethod("getGeneratorObjectLocation", 1, argv).ToLocalChecked();
+    if (!location->IsObject())
+        return v8::Null(m_isolate);
+    v8::Local<v8::Context> context = m_debuggerContext.Get(m_isolate);
+    if (!location.As<v8::Object>()->SetPrivate(context, V8InjectedScriptHost::internalLocationPrivate(m_isolate), v8::True(m_isolate)).FromMaybe(false))
+        return v8::Null(m_isolate);
+    return location;
 }
 
 bool V8DebuggerImpl::isPaused()

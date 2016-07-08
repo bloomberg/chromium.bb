@@ -42,15 +42,6 @@ forward(anonymousGenIter, 3);
 
 function test()
 {
-    function dumpGeneratorObjectDetails(details)
-    {
-        InspectorTest.addResult("functionName: \"" + details.functionName + "\"");
-        InspectorTest.addResult("lineNumber: " + (details.location.lineNumber + 1));
-        InspectorTest.addResult("columnNumber: " + details.location.columnNumber);
-        InspectorTest.addResult("scriptId is valid: " + !!details.location.scriptId);
-        InspectorTest.addResult("status: " + details.status);
-    }
-
     function performStandardTestCase(pageExpression, next)
     {
         InspectorTest.evaluateInPage(pageExpression, didEvaluate);
@@ -58,14 +49,26 @@ function test()
         function didEvaluate(remote)
         {
             InspectorTest.addResult(pageExpression + ": type = " + remote.type + ", subtype = " + remote.subtype);
-            InspectorTest.DebuggerAgent.getGeneratorObjectDetails(remote.objectId, didGetDetails);
+            remote.getOwnPropertiesPromise().then(dumpInternalProperties);
         }
 
-        function didGetDetails(error, response)
+        function dumpInternalProperties(properties)
         {
-            InspectorTest.assertTrue(!error, "FAIL: " + error);
-            dumpGeneratorObjectDetails(response);
+            InspectorTest.assertTrue(properties && properties.internalProperties, "FAIL: no properties");
+            for (var prop of properties.internalProperties) {
+                if (prop.name !== "[[GeneratorLocation]]")
+                    InspectorTest.addResult(prop.name + " = " + prop.value.description);
+                else
+                    dumpLocation(prop.value.value);
+            }
             next();
+        }
+
+        function dumpLocation(location)
+        {
+            InspectorTest.addResult("lineNumber = " + location.lineNumber);
+            InspectorTest.addResult("columnNumber = " + location.columnNumber);
+            InspectorTest.addResult("script is valid: " + (location.scriptId ? "yes" : "no"));
         }
     }
 

@@ -19,14 +19,6 @@ var Scope;
 var RawLocation;
 
 /** @typedef {{
-        function: function(),
-        functionName: string,
-        status: string,
-        location: (!RawLocation|undefined)
-    }} */
-var GeneratorObjectDetails;
-
-/** @typedef {{
         id: number,
         name: string,
         sourceURL: (string|undefined),

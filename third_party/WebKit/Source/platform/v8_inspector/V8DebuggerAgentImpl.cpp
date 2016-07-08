@@ -27,7 +27,6 @@ using blink::protocol::Debugger::BreakpointId;
 using blink::protocol::Debugger::CallFrame;
 using blink::protocol::Runtime::ExceptionDetails;
 using blink::protocol::Debugger::FunctionDetails;
-using blink::protocol::Debugger::GeneratorObjectDetails;
 using blink::protocol::Runtime::ScriptId;
 using blink::protocol::Runtime::StackTrace;
 using blink::protocol::Runtime::RemoteObject;
@@ -631,34 +630,6 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
     }
 
     *details = std::move(functionDetails);
-}
-
-void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, const String16& objectId, std::unique_ptr<GeneratorObjectDetails>* outDetails)
-{
-    if (!checkEnabled(errorString))
-        return;
-    InjectedScript::ObjectScope scope(errorString, m_debugger, m_session->contextGroupId(), objectId);
-    if (!scope.initialize())
-        return;
-    if (!scope.object()->IsObject()) {
-        *errorString = "Value with given id is not an Object";
-        return;
-    }
-    v8::Local<v8::Object> object = scope.object().As<v8::Object>();
-
-    v8::Local<v8::Object> detailsObject;
-    v8::Local<v8::Value> detailsValue = debugger().generatorObjectDetails(object);
-    if (hasInternalError(errorString, !detailsValue->IsObject() || !detailsValue->ToObject(scope.context()).ToLocal(&detailsObject)))
-        return;
-
-    if (!scope.injectedScript()->wrapObjectProperty(errorString, detailsObject, toV8StringInternalized(m_isolate, "function"), scope.objectGroupName()))
-        return;
-
-    protocol::ErrorSupport errors;
-    std::unique_ptr<GeneratorObjectDetails> protocolDetails = GeneratorObjectDetails::parse(toProtocolValue(scope.context(), detailsObject).get(), &errors);
-    if (hasInternalError(errorString, !protocolDetails))
-        return;
-    *outDetails = std::move(protocolDetails);
 }
 
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)

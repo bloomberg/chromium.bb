@@ -95,9 +95,6 @@ public:
     void getFunctionDetails(ErrorString*,
         const String16& functionId,
         std::unique_ptr<protocol::Debugger::FunctionDetails>*) override;
-    void getGeneratorObjectDetails(ErrorString*,
-        const String16& objectId,
-        std::unique_ptr<protocol::Debugger::GeneratorObjectDetails>*) override;
     void pause(ErrorString*) override;
     void resume(ErrorString*) override;
     void stepOver(ErrorString*) override;
