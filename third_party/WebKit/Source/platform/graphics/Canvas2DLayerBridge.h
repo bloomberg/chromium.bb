@@ -154,7 +154,7 @@ private:
     // All information associated with a CHROMIUM image.
     struct ImageInfo {
         ImageInfo() {}
-        ImageInfo(GLuint imageId, GLuint textureId, GLint gpuMemoryBufferId);
+        ImageInfo(GLuint imageId, GLuint textureId);
 
         // Whether this structure holds references to a CHROMIUM image.
         bool empty();
@@ -164,9 +164,6 @@ private:
 
         // The id of the texture bound to the CHROMIUM image.
         GLuint m_textureId = 0;
-
-        // The id of the GpuMemoryBuffer backing the texture and CHROMIUM image.
-        GLint m_gpuMemoryBufferId = -1;
     };
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
 

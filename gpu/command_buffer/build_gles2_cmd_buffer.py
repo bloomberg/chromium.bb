@@ -2673,16 +2673,6 @@ _FUNCTION_INFO = {
     'chromium': True,
     'trace_level': 1,
   },
-  'GetImageivCHROMIUM': {
-    'type': 'Manual',
-    'cmd_args': 'GLuint image_id, GLenum param, GLint* data',
-    'client_test': False,
-    'gen_cmd': False,
-    'expectation': False,
-    'extension': "CHROMIUM_gpu_memory_buffer_image",
-    'chromium': True,
-    'trace_level': 1,
-  },
   'DescheduleUntilFinishedCHROMIUM': {
     'type': 'Custom',
     'decoder_func': 'DoDescheduleUntilFinishedCHROMIUM',

@@ -68,7 +68,6 @@ class Context : public base::RefCountedThreadSafe<Context>,
                                      size_t height,
                                      unsigned internalformat,
                                      unsigned usage) override;
-  int32_t GetImageGpuMemoryBufferId(unsigned image_id) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   void EnsureWorkVisible() override;

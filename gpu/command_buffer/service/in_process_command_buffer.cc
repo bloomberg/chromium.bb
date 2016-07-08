@@ -684,9 +684,6 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
   DCHECK(gpu::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
       internalformat, gpu_memory_buffer->GetFormat()));
 
-  DCHECK(image_gmb_ids_map_.find(new_id) == image_gmb_ids_map_.end());
-  image_gmb_ids_map_[new_id] = gpu_memory_buffer->GetId().id;
-
   // This handle is owned by the GPU thread and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // queuing of the CreateImage task below.
@@ -791,10 +788,6 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 void InProcessCommandBuffer::DestroyImage(int32_t id) {
   CheckSequencedThread();
 
-  auto it = image_gmb_ids_map_.find(id);
-  if (it != image_gmb_ids_map_.end())
-    image_gmb_ids_map_.erase(it);
-
   QueueTask(base::Bind(&InProcessCommandBuffer::DestroyImageOnGpuThread,
                        base::Unretained(this),
                        id));
@@ -831,14 +824,6 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
     return -1;
 
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
-}
-
-int32_t InProcessCommandBuffer::GetImageGpuMemoryBufferId(unsigned image_id) {
-  CheckSequencedThread();
-  auto it = image_gmb_ids_map_.find(image_id);
-  if (it != image_gmb_ids_map_.end())
-    return it->second;
-  return -1;
 }
 
 void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {

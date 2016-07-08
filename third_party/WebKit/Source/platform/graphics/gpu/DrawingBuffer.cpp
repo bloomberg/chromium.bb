@@ -308,7 +308,6 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     frontColorBufferMailbox->mailbox.allowOverlay = frontColorBufferMailbox->textureInfo.imageId != 0;
     frontColorBufferMailbox->mailbox.textureTarget = frontColorBufferMailbox->textureInfo.parameters.target;
     frontColorBufferMailbox->mailbox.textureSize = WebSize(m_size.width(), m_size.height());
-    frontColorBufferMailbox->mailbox.gpuMemoryBufferId = frontColorBufferMailbox->textureInfo.gpuMemoryBufferId;
     setBufferClearNeeded(true);
 
     // set m_parentDrawingBuffer to make sure 'this' stays alive as long as it has live mailboxes
@@ -974,7 +973,6 @@ void DrawingBuffer::deleteChromiumImageForTexture(TextureInfo* info)
         m_gl->ReleaseTexImage2DCHROMIUM(info->parameters.target, info->imageId);
         m_gl->DestroyImageCHROMIUM(info->imageId);
         info->imageId = 0;
-        info->gpuMemoryBufferId = -1;
     }
 }
 
@@ -1006,19 +1004,14 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const I
 
     TextureParameters parameters = chromiumImageTextureParameters();
     GLuint imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), parameters.creationInternalColorFormat, GC3D_SCANOUT_CHROMIUM);
-    GLint gpuMemoryBufferId = -1;
     GLuint textureId = createColorTexture(parameters);
-
     if (imageId) {
         m_gl->BindTexImage2DCHROMIUM(parameters.target, imageId);
-        m_gl->GetImageivCHROMIUM(imageId, GC3D_GPU_MEMORY_BUFFER_ID, &gpuMemoryBufferId);
-        DCHECK_NE(-1, gpuMemoryBufferId);
     }
 
     TextureInfo info;
     info.textureId = textureId;
     info.imageId = imageId;
-    info.gpuMemoryBufferId = gpuMemoryBufferId;
     info.parameters = parameters;
     clearChromiumImageAlpha(info);
     return info;
@@ -1058,16 +1051,8 @@ void DrawingBuffer::resizeTextureMemory(TextureInfo* info, const IntSize& size)
     if (info->imageId) {
         m_gl->BindTexture(info->parameters.target, info->textureId);
         m_gl->BindTexImage2DCHROMIUM(info->parameters.target, info->imageId);
-
-        GLint gpuMemoryBufferId = -1;
-        m_gl->GetImageivCHROMIUM(info->imageId, GC3D_GPU_MEMORY_BUFFER_ID, &gpuMemoryBufferId);
-        DCHECK_NE(-1, gpuMemoryBufferId);
-        info->gpuMemoryBufferId = gpuMemoryBufferId;
-
         clearChromiumImageAlpha(*info);
     } else {
-        info->gpuMemoryBufferId = -1;
-
         // At this point, the texture still exists, but has no allocated
         // storage. This is intentional, and mimics the behavior of a texImage2D
         // failure.

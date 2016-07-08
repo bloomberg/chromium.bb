@@ -181,11 +181,6 @@ int32_t Context::CreateGpuMemoryBufferImage(size_t width,
   return -1;
 }
 
-int32_t Context::GetImageGpuMemoryBufferId(unsigned image_id) {
-  NOTIMPLEMENTED();
-  return -1;
-}
-
 void Context::SignalQuery(uint32_t query, const base::Closure& callback) {
   NOTIMPLEMENTED();
 }

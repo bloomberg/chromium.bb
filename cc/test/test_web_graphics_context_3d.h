@@ -268,7 +268,6 @@ class TestWebGraphicsContext3D {
                                                     GLsizei height,
                                                     GLenum internalformat,
                                                     GLenum usage);
-  virtual void getImageivCHROMIUM(GLuint image_id, GLenum param, GLint* data);
 
   virtual GLuint64 insertFenceSync();
   virtual void genSyncToken(GLuint64 fence_sync, GLbyte* sync_token);

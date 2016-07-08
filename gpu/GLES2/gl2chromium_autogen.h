@@ -290,7 +290,6 @@
 #define glDestroyImageCHROMIUM GLES2_GET_FUN(DestroyImageCHROMIUM)
 #define glCreateGpuMemoryBufferImageCHROMIUM \
   GLES2_GET_FUN(CreateGpuMemoryBufferImageCHROMIUM)
-#define glGetImageivCHROMIUM GLES2_GET_FUN(GetImageivCHROMIUM)
 #define glDescheduleUntilFinishedCHROMIUM \
   GLES2_GET_FUN(DescheduleUntilFinishedCHROMIUM)
 #define glGetTranslatedShaderSourceANGLE \

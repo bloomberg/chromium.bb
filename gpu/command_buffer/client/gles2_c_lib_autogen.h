@@ -1316,11 +1316,6 @@ GLES2CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
   return gles2::GetGLContext()->CreateGpuMemoryBufferImageCHROMIUM(
       width, height, internalformat, usage);
 }
-void GL_APIENTRY GLES2GetImageivCHROMIUM(GLuint image_id,
-                                         GLenum param,
-                                         GLint* data) {
-  gles2::GetGLContext()->GetImageivCHROMIUM(image_id, param, data);
-}
 void GL_APIENTRY GLES2DescheduleUntilFinishedCHROMIUM() {
   gles2::GetGLContext()->DescheduleUntilFinishedCHROMIUM();
 }
@@ -2703,10 +2698,6 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glCreateGpuMemoryBufferImageCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glCreateGpuMemoryBufferImageCHROMIUM),
-    },
-    {
-        "glGetImageivCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glGetImageivCHROMIUM),
     },
     {
         "glDescheduleUntilFinishedCHROMIUM",
