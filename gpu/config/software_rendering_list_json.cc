@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.3",
+  "version": "11.4",
   "entries": [
     {
       "id": 1,
@@ -254,8 +254,12 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
       },
       "exceptions": [
         {
-          "gl_vendor": "Vivante Corporation", 
+          "gl_vendor": "Vivante Corporation",
           "gl_renderer": "Vivante GC1000"
+        },
+        {
+          "gl_vendor": "ARM",
+          "gl_renderer": "Mali-4.*"
         }
       ],
       "features": [
