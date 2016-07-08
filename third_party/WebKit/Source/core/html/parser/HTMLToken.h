@@ -94,7 +94,7 @@ public:
             // Check Range instance that is actively being parsed.
             inline void checkValidStart() const
             {
-                DCHECK(start != kInvalidOffset);
+                DCHECK_NE(start, kInvalidOffset);
                 DCHECK_GE(start, 0);
             }
 
@@ -102,7 +102,7 @@ public:
             inline void checkValid() const
             {
                 checkValidStart();
-                DCHECK(end != kInvalidOffset);
+                DCHECK_NE(end, kInvalidOffset);
                 DCHECK_GE(end, 0);
                 DCHECK_LE(start, end);
             }
