@@ -8,9 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "components/ntp_snippets/content_suggestion.h"
-#include "components/ntp_snippets/content_suggestion_category.h"
-#include "components/ntp_snippets/content_suggestions_provider_type.h"
+
 #include "components/ntp_snippets/proto/ntp_snippets.pb.h"
 
 namespace {
@@ -243,19 +241,6 @@ SnippetProto NTPSnippet::ToProto() const {
       source_proto->set_amp_url(source.amp_url.spec());
   }
 
-  return result;
-}
-
-std::unique_ptr<ContentSuggestion> NTPSnippet::ToContentSuggestion() const {
-  std::unique_ptr<ContentSuggestion> result(new ContentSuggestion(
-      id_, ContentSuggestionsProviderType::ARTICLES,
-      ContentSuggestionCategory::ARTICLE, best_source().url));
-  result->set_amp_url(best_source().amp_url);
-  result->set_title(title_);
-  result->set_snippet_text(snippet_);
-  result->set_publish_date(publish_date_);
-  result->set_publisher_name(best_source().publisher_name);
-  result->set_score(score_);
   return result;
 }
 

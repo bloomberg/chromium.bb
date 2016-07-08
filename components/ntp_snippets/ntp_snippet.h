@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/ntp_snippets/content_suggestion.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -125,8 +124,6 @@ class NTPSnippet {
 
   bool is_discarded() const { return is_discarded_; }
   void set_discarded(bool discarded) { is_discarded_ = discarded; }
-
-  std::unique_ptr<ContentSuggestion> ToContentSuggestion() const;
 
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);

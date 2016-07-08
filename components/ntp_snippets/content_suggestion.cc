@@ -6,12 +6,12 @@
 
 namespace ntp_snippets {
 
-ContentSuggestion::ContentSuggestion(
-    const std::string& id,
-    const ContentSuggestionsProviderType provider,
-    const ContentSuggestionCategory category,
-    const GURL& url)
-    : id_(id), provider_(provider), category_(category), url_(url), score_(0) {}
+ContentSuggestion::ContentSuggestion(const std::string& id, const GURL& url)
+    : id_(id), url_(url), score_(0) {}
+
+ContentSuggestion::ContentSuggestion(ContentSuggestion&&) = default;
+
+ContentSuggestion& ContentSuggestion::operator=(ContentSuggestion&&) = default;
 
 ContentSuggestion::~ContentSuggestion() {}
 

@@ -394,6 +394,8 @@
       'browser/native_window_notification_source.h',
       'browser/net/predictor_tab_helper.cc',
       'browser/net/predictor_tab_helper.h',
+      'browser/ntp_snippets/content_suggestions_service_factory.cc',
+      'browser/ntp_snippets/content_suggestions_service_factory.h',
       'browser/ntp_snippets/ntp_snippets_service_factory.cc',
       'browser/ntp_snippets/ntp_snippets_service_factory.h',
       'browser/page_load_metrics/observers/aborts_page_load_metrics_observer.cc',

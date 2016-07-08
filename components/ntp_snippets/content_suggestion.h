@@ -11,8 +11,6 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/ntp_snippets/content_suggestion_category.h"
-#include "components/ntp_snippets/content_suggestions_provider_type.h"
 #include "url/gurl.h"
 
 namespace ntp_snippets {
@@ -23,23 +21,17 @@ namespace ntp_snippets {
 // (see ntp_snippet.h).
 class ContentSuggestion {
  public:
+  // Creates a new ContentSuggestion. The caller must ensure that the |id|
+  // passed in here is unique application-wide.
   ContentSuggestion(const std::string& id,
-                    const ContentSuggestionsProviderType provider,
-                    const ContentSuggestionCategory category,
                     const GURL& url);
+  ContentSuggestion(ContentSuggestion&&);
+  ContentSuggestion& operator=(ContentSuggestion&&);
 
   ~ContentSuggestion();
 
-  // An ID for identifying the suggestion. The ID is unique among all
-  // suggestions from the same provider, so to determine a globally unique
-  // identifier, combine this ID with the provider type.
+  // An ID for identifying the suggestion. The ID is unique application-wide.
   const std::string& id() const { return id_; }
-
-  // The provider that created this suggestion.
-  ContentSuggestionsProviderType provider() const { return provider_; }
-
-  // The category that this suggestion belongs to.
-  ContentSuggestionCategory category() const { return category_; }
 
   // The normal content URL where the content referenced by the suggestion can
   // be accessed.
@@ -72,7 +64,7 @@ class ContentSuggestion {
     publisher_name_ = publisher_name;
   }
 
-  // TODO(pke) Remove the score from the ContentSuggestion class. The UI only
+  // TODO(pke): Remove the score from the ContentSuggestion class. The UI only
   // uses it to track user clicks (histogram data). Instead, the providers
   // should be informed about clicks and do appropriate logging themselves.
   // IMPORTANT: The score may simply be 0 for suggestions from providers which
@@ -82,8 +74,6 @@ class ContentSuggestion {
 
  private:
   std::string id_;
-  ContentSuggestionsProviderType provider_;
-  ContentSuggestionCategory category_;
   GURL url_;
   GURL amp_url_;
   std::string title_;
