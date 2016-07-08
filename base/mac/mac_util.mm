@@ -456,27 +456,13 @@ int MacOSXMinorVersion() {
 }
 
 enum {
-  SNOW_LEOPARD_MINOR_VERSION = 6,
-  LION_MINOR_VERSION = 7,
-  MOUNTAIN_LION_MINOR_VERSION = 8,
   MAVERICKS_MINOR_VERSION = 9,
   YOSEMITE_MINOR_VERSION = 10,
   EL_CAPITAN_MINOR_VERSION = 11,
+  SIERRA_MINOR_VERSION = 12,
 };
 
 }  // namespace
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_8)
-bool IsOSMountainLion() {
-  return MacOSXMinorVersion() == MOUNTAIN_LION_MINOR_VERSION;
-}
-#endif
-
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_8)
-bool IsOSMountainLionOrLater() {
-  return MacOSXMinorVersion() >= MOUNTAIN_LION_MINOR_VERSION;
-}
-#endif
 
 #if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_9)
 bool IsOSMavericks() {
@@ -514,9 +500,21 @@ bool IsOSElCapitanOrLater() {
 }
 #endif
 
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_11)
-bool IsOSLaterThanElCapitan_DontCallThis() {
-  return MacOSXMinorVersion() > EL_CAPITAN_MINOR_VERSION;
+#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_12)
+bool IsOSSierra() {
+  return MacOSXMinorVersion() == SIERRA_MINOR_VERSION;
+}
+#endif
+
+#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_12)
+bool IsOSSierraOrLater() {
+  return MacOSXMinorVersion() >= SIERRA_MINOR_VERSION;
+}
+#endif
+
+#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_12)
+bool IsOSLaterThanSierra_DontCallThis() {
+  return MacOSXMinorVersion() > SIERRA_MINOR_VERSION;
 }
 #endif
 
