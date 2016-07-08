@@ -47,7 +47,7 @@ class ExceptionState;
 class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static TextEncoder* create(ExecutionContext*, const String& utfLabel, ExceptionState&);
+    static TextEncoder* create(ExecutionContext*, ExceptionState&);
     ~TextEncoder();
 
     // Implement the IDL

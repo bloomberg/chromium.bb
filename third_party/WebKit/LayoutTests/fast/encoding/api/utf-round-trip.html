@@ -31,16 +31,41 @@ function makeBatch(cp) {
  }
 
 utf_encodings.forEach(function(encoding) {
+    if (encoding === 'utf-8') {
+        test(function() {
+            for (var i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
+                var string = makeBatch(i);
+                var encoded = new TextEncoder().encode(string);
+                var decoded = new TextDecoder(encoding).decode(encoded);
+                assert_equals(string, decoded);
+            }
+        }, encoding + ' - encode/decode round trip');
+    }
+});
+
+['utf-16le', 'utf-16be'].forEach(function(encoding) {
     test(function() {
         for (var i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
             var string = makeBatch(i);
-            var encoded = new TextEncoder(encoding).encode(string);
+
+            if (encoding === 'utf-16le')
+                var encoded = encode_utf16(string, true);
+            else 
+                var encoded = encode_utf16(string, false);
+
             var decoded = new TextDecoder(encoding).decode(encoded);
-            assert_equals(decoded, string);
+            assert_equals(string, decoded);
         }
     }, encoding + ' - encode/decode round trip');
 });
 
+function encode_utf16(s, littleEndian) {
+    var a = new Uint8Array(s.length * 2), view = new DataView(a.buffer);
+    s.split('').forEach(function(c, i) {
+        view.setUint16(i * 2, c.charCodeAt(0), littleEndian);
+    });
+    return a;
+}
 
 // Inspired by:
 // http://ecmanaut.blogspot.com/2006/07/encoding-decoding-utf8-in-javascript.html
@@ -61,7 +86,7 @@ test(function() {
     for (var i = 0; i < 0x10FFFF; i += BATCH_SIZE) {
         var string = makeBatch(i);
         var expected = encode_utf8(string);
-        var actual = new TextEncoder('UTF-8').encode(string);
+        var actual = new TextEncoder().encode(string);
         assert_array_equals(actual, expected);
     }
 }, 'UTF-8 encoding (compare against unescape/encodeURIComponent)');
@@ -71,9 +96,8 @@ test(function() {
         var string = makeBatch(i);
         var encoded = encode_utf8(string);
         var expected = decode_utf8(encoded);
-        var actual = new TextDecoder('UTF-8').decode(new Uint8Array(encoded));
+        var actual = new TextDecoder().decode(new Uint8Array(encoded));
         assert_equals(actual, expected);
     }
 }, 'UTF-8 decoding (compare against decodeURIComponent/escape)');
-
 </script>

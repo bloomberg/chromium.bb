@@ -32,30 +32,15 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/UseCounter.h"
 #include "modules/encoding/Encoding.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncodingRegistry.h"
 
 namespace blink {
 
-TextEncoder* TextEncoder::create(ExecutionContext* context, const String& utfLabel, ExceptionState& exceptionState)
+TextEncoder* TextEncoder::create(ExecutionContext* context, ExceptionState& exceptionState)
 {
-    WTF::TextEncoding encoding(utfLabel.stripWhiteSpace(&Encoding::isASCIIWhiteSpace));
-    if (!encoding.isValid()) {
-        exceptionState.throwRangeError("The encoding label provided ('" + utfLabel + "') is invalid.");
-        return 0;
-    }
-
-    String name(encoding.name());
-    if (name != "UTF-8" && name != "UTF-16LE" && name != "UTF-16BE") {
-        exceptionState.throwRangeError("The encoding provided ('" + utfLabel + "') is not one of 'utf-8', 'utf-16', or 'utf-16be'.");
-        return 0;
-    }
-
-    if (name == "UTF-16LE" || name == "UTF-16BE")
-        UseCounter::count(context, UseCounter::TextEncoderUTF16);
-
+    WTF::TextEncoding encoding("UTF-8");
     return new TextEncoder(encoding);
 }
 
@@ -63,6 +48,8 @@ TextEncoder::TextEncoder(const WTF::TextEncoding& encoding)
     : m_encoding(encoding)
     , m_codec(newTextCodec(encoding))
 {
+    String name(m_encoding.name());
+    DCHECK_EQ(name, "UTF-8");
 }
 
 TextEncoder::~TextEncoder()
@@ -72,7 +59,7 @@ TextEncoder::~TextEncoder()
 String TextEncoder::encoding() const
 {
     String name = String(m_encoding.name()).lower();
-    ASSERT(name == "utf-8" || name == "utf-16le" || name == "utf-16be");
+    DCHECK_EQ(name, "utf-8");
     return name;
 }
 

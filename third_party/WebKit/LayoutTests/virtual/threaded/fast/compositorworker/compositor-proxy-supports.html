@@ -41,8 +41,17 @@ test(function() {
     assert_false(proxy.supports('あ'));
 
     // This is a hack to get a 16-bit string for a supported property.
-    var transform16 = new TextDecoder('utf-16').decode(new TextEncoder('utf-16').encode('transform'));
+    var encoded = encode_utf16('transform', true);
+    var transform16 = new TextDecoder('utf-16').decode(encoded);
     assert_true(transform16 === 'transform');
     assert_true(proxy.supports(transform16));
 }, "This test ensures that supports correctly handles queries with strings that a prefix of a property or vice versa.");
+
+function encode_utf16(s, littleEndian) {
+    var a = new Uint8Array(s.length * 2), view = new DataView(a.buffer);
+    s.split('').forEach(function(c, i) {
+        view.setUint16(i * 2, c.charCodeAt(0), littleEndian);
+    });
+    return a;
+}
 </script>
