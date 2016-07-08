@@ -843,6 +843,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets image pane element.
+     * @type {!HTMLDivElement}
+     */
+    get imagePaneElement() {
+      return this.querySelector('.user-image-pane');
+    },
+
+    /**
      * Gets image element.
      * @type {!HTMLImageElement}
      */
@@ -1129,8 +1137,8 @@ cr.define('login', function() {
     },
 
     setPinVisibility: function(visible) {
-      var elements = [this, this.authElement, this.imageElement,
-                      this.signInElement, this.pinContainer];
+      var elements = [this, this.authElement, this.imagePaneElement,
+                      this.imageElement, this.pinContainer];
 
       for (var idx = 0; idx < elements.length; idx++) {
         var currentElement = elements[idx];

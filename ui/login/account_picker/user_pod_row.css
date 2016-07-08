@@ -84,11 +84,34 @@ podrow[ncolumns='6'] .pod {
 
 .user-image-pane {
   background-color: white;
+  height: 160px;
+  left: 10px;
+  position: absolute;
+  top: 10px;
+  transition: height 180ms ease-in-out,
+              left 180ms ease-in-out,
+              right 180ms ease-in-out,
+              top 180ms ease-in-out,
+              width 180ms ease-in-out;
+  width: 160px;
+  z-index: 3;
+}
+
+.user-image-pane.pin-enabled {
+  height: 230px;
+  left: 20px;
+  top: 20px;
+  width: 230px;
 }
 
 html[dir=rtl] .user-image-pane {
   left: auto;
   right: 10px;
+}
+
+html[dir=rtl] .user-image-pane.pin-enabled {
+  left: auto;
+  right: 20px;
 }
 
 .user-image-container {
@@ -110,7 +133,6 @@ html:not([screen=login-add-user]) .pod .user-image {
   max-width: 160px;
   opacity: 0.7;
   position: absolute;
-  top: 10px;
   transition: max-height 180ms ease-in-out,
               max-width 180ms ease-in-out,
               top 180ms ease-in-out;
@@ -119,7 +141,6 @@ html:not([screen=login-add-user]) .pod .user-image {
 html:not([screen=login-add-user]) .pod .user-image.pin-enabled {
   max-height: 230px;
   max-width: 230px;
-  top: 20px;
 }
 
 html:not([screen=login-add-user]) .pod.focused .user-image {
@@ -139,14 +160,13 @@ html:not([screen=login-add-user]) .pod.focused .user-image {
   color: white;
   display: block;
   font-size: small;
-  left: 10px;
   position: absolute;
   text-align: center;
-  top: 10px;
+  top: 0;
   transition: left 180ms ease-in-out,
               top 180ms ease-in-out,
               width 180ms ease-in-out;
-  width: 160px;
+  width: 100%;
 }
 
 .pod.signed-in .signed-in-indicator.pin-enabled {
