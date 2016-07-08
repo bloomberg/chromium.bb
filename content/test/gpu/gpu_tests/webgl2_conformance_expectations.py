@@ -46,6 +46,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
+    # Regression from https://github.com/KhronosGroup/WebGL/pull/1854.
+    self.Fail('deqp/functional/gles3/fbodepthbuffer.html', bug=483282)
+
     # Avoid a conflict with a Mac expectation by setting
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
@@ -497,8 +500,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux only.
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
-        ['linux'], bug=483282)
-    self.Fail('deqp/functional/gles3/fbodepthbuffer.html',
         ['linux'], bug=483282)
 
     # Behavior difference between GL compatibility profile and ES3.
