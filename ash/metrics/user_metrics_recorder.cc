@@ -587,6 +587,14 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
       break;
+    case UMA_WINDOW_OVERVIEW_CLOSE_BUTTON:
+      base::RecordAction(
+          base::UserMetricsAction("WindowSelector_OverviewCloseButton"));
+      break;
+    case UMA_WINDOW_OVERVIEW_CLOSE_KEY:
+      base::RecordAction(
+          base::UserMetricsAction("WindowSelector_OverviewCloseKey"));
+      break;
   }
 }
 

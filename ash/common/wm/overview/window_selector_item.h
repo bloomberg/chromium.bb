@@ -101,6 +101,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // enabled.
   void SendAccessibleSelectionEvent();
 
+  // Closes |transform_window_|.
+  void CloseWindow();
+
   // Sets if the item is dimmed in the overview. Changing the value will also
   // change the visibility of the transform windows.
   void SetDimmed(bool dimmed);

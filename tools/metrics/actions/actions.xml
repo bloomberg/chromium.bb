@@ -14826,6 +14826,22 @@ should be able to be added at any place in this file.
   <description>Starting the window overview mode.</description>
 </action>
 
+<action name="WindowSelector_OverviewCloseButton">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>varkha@chromium.org</owner>
+  <description>
+    Using the 'X' button to close a window in the overview.
+  </description>
+</action>
+
+<action name="WindowSelector_OverviewCloseKey">
+  <owner>tdanderson@chromium.org</owner>
+  <owner>varkha@chromium.org</owner>
+  <description>
+    Using Ctrl+W shortcut to close a window in the overview.
+  </description>
+</action>
+
 <action name="WindowSelector_OverviewEnterKey">
   <owner>tdanderson@chromium.org</owner>
   <owner>flackr@chromium.org</owner>

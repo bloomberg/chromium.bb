@@ -126,6 +126,12 @@ enum UserMetricsAction {
 
   // Selecting a window in overview mode by pressing the enter key.
   UMA_WINDOW_OVERVIEW_ENTER_KEY,
+
+  // Closing a window in overview mode by clicking the 'X' button.
+  UMA_WINDOW_OVERVIEW_CLOSE_BUTTON,
+
+  // Closing a window in overview mode by pressing Ctrl+w shortcut.
+  UMA_WINDOW_OVERVIEW_CLOSE_KEY,
 };
 
 }  // namespace ash

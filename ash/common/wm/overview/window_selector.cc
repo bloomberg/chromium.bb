@@ -499,12 +499,24 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
       break;
     case ui::VKEY_RIGHT:
     case ui::VKEY_TAB:
-      num_key_presses_++;
-      Move(WindowSelector::RIGHT, true);
-      break;
+      if (key_event.key_code() == ui::VKEY_RIGHT ||
+          !(key_event.flags() & ui::EF_SHIFT_DOWN)) {
+        num_key_presses_++;
+        Move(WindowSelector::RIGHT, true);
+        break;
+      }
     case ui::VKEY_LEFT:
       num_key_presses_++;
       Move(WindowSelector::LEFT, true);
+      break;
+    case ui::VKEY_W:
+      if (!(key_event.flags() & ui::EF_CONTROL_DOWN) ||
+          !grid_list_[selected_grid_index_]->is_selecting()) {
+        // Allow the textfield to handle 'W' key when not used with Ctrl.
+        return false;
+      }
+      WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_CLOSE_KEY);
+      grid_list_[selected_grid_index_]->SelectedWindow()->CloseWindow();
       break;
     case ui::VKEY_RETURN:
       // Ignore if no item is selected.

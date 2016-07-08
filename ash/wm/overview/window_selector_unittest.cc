@@ -231,6 +231,14 @@ class WindowSelectorTest
     event_generator.ReleaseKey(key, 0);
   }
 
+  void SendCtrlKey(ui::KeyboardCode key) {
+    ui::test::EventGenerator event_generator(Shell::GetPrimaryRootWindow());
+    event_generator.PressKey(ui::VKEY_CONTROL, ui::EF_CONTROL_DOWN);
+    event_generator.PressKey(key, ui::EF_CONTROL_DOWN);
+    event_generator.ReleaseKey(key, ui::EF_CONTROL_DOWN);
+    event_generator.ReleaseKey(ui::VKEY_CONTROL, ui::EF_NONE);
+  }
+
   bool IsSelecting() { return window_selector_controller()->IsSelecting(); }
 
   aura::Window* GetFocusedWindow() {
@@ -1372,6 +1380,21 @@ TEST_P(WindowSelectorTest, BasicTabKeyNavigation) {
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(GetSelectedWindow(),
             WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
+}
+
+// Tests that pressing Ctrl+W while a window is selected in overview closes it.
+TEST_P(WindowSelectorTest, CloseWindowWithKey) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<views::Widget> widget =
+      CreateWindowWidget(gfx::Rect(0, 0, 400, 400));
+  aura::Window* window1 = widget->GetNativeWindow();
+  ToggleOverview();
+
+  SendKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(window1, GetSelectedWindow());
+  SendCtrlKey(ui::VKEY_W);
+  EXPECT_TRUE(widget->IsClosed());
 }
 
 // Tests traversing some windows in overview mode with the arrow keys in every

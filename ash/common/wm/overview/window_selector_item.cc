@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/overview/overview_animation_type.h"
 #include "ash/common/wm/overview/scoped_overview_animation_settings.h"
@@ -18,6 +19,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/common/wm_window_property.h"
 #include "base/auto_reset.h"
@@ -390,6 +392,26 @@ void WindowSelectorItem::SendAccessibleSelectionEvent() {
                                                       true);
 }
 
+void WindowSelectorItem::CloseWindow() {
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    gfx::Rect inset_bounds(target_bounds_);
+    inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
+                       target_bounds_.height() * kPreCloseScale);
+    OverviewAnimationType animation_type =
+        OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM;
+    // Scale down both the window and label.
+    SetBounds(inset_bounds, animation_type);
+    // First animate opacity to an intermediate value concurrently with the
+    // scaling animation.
+    AnimateOpacity(kClosingItemOpacity, animation_type);
+
+    // Fade out the window and the label, effectively hiding them.
+    AnimateOpacity(
+        0.0, OverviewAnimationType::OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
+  }
+  transform_window_.Close();
+}
+
 void WindowSelectorItem::SetDimmed(bool dimmed) {
   dimmed_ = dimmed;
   SetOpacity(dimmed ? kDimmedItemOpacity : 1.0f);
@@ -398,24 +420,8 @@ void WindowSelectorItem::SetDimmed(bool dimmed) {
 void WindowSelectorItem::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == close_button_) {
-    if (ash::MaterialDesignController::IsOverviewMaterial()) {
-      gfx::Rect inset_bounds(target_bounds_);
-      inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
-                         target_bounds_.height() * kPreCloseScale);
-      OverviewAnimationType animation_type =
-          OverviewAnimationType::OVERVIEW_ANIMATION_CLOSING_SELECTOR_ITEM;
-      // Scale down both the window and label.
-      SetBounds(inset_bounds, animation_type);
-      // First animate opacity to an intermediate value concurrently with the
-      // scaling animation.
-      AnimateOpacity(kClosingItemOpacity, animation_type);
-
-      // Fade out the window and the label, effectively hiding them.
-      AnimateOpacity(
-          0.0, OverviewAnimationType::OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM);
-    }
-    window_selector_->WindowClosing(this);
-    transform_window_.Close();
+    WmShell::Get()->RecordUserMetricsAction(UMA_WINDOW_OVERVIEW_CLOSE_BUTTON);
+    CloseWindow();
     return;
   }
   CHECK(sender == window_label_button_view_);
