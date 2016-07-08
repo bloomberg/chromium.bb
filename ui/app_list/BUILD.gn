@@ -178,39 +178,6 @@ component("app_list") {
       "//ui/views",
     ]
   }
-
-  if (is_mac) {
-    sources += [
-      "cocoa/app_list_pager_view.h",
-      "cocoa/app_list_pager_view.mm",
-      "cocoa/app_list_view_controller.h",
-      "cocoa/app_list_view_controller.mm",
-      "cocoa/app_list_window_controller.h",
-      "cocoa/app_list_window_controller.mm",
-      "cocoa/apps_collection_view_drag_manager.h",
-      "cocoa/apps_collection_view_drag_manager.mm",
-      "cocoa/apps_grid_controller.h",
-      "cocoa/apps_grid_controller.mm",
-      "cocoa/apps_grid_view_item.h",
-      "cocoa/apps_grid_view_item.mm",
-      "cocoa/apps_pagination_model_observer.h",
-      "cocoa/apps_search_box_controller.h",
-      "cocoa/apps_search_box_controller.mm",
-      "cocoa/apps_search_results_controller.h",
-      "cocoa/apps_search_results_controller.mm",
-      "cocoa/apps_search_results_model_bridge.h",
-      "cocoa/apps_search_results_model_bridge.mm",
-      "cocoa/item_drag_controller.h",
-      "cocoa/item_drag_controller.mm",
-      "cocoa/scroll_view_with_no_scrollbars.h",
-      "cocoa/scroll_view_with_no_scrollbars.mm",
-    ]
-    deps += [ "//third_party/google_toolbox_for_mac" ]
-    libs = [
-      "AppKit.framework",
-      "QuartzCore.framework",
-    ]
-  }
 }
 
 static_library("test_support") {
@@ -323,18 +290,6 @@ test("app_list_unittests") {
     deps += [
       "//ui/views",
       "//ui/views:test_support",
-    ]
-  }
-
-  if (is_mac) {
-    sources += [
-      "cocoa/app_list_view_controller_unittest.mm",
-      "cocoa/app_list_window_controller_unittest.mm",
-      "cocoa/apps_grid_controller_unittest.mm",
-      "cocoa/apps_search_box_controller_unittest.mm",
-      "cocoa/apps_search_results_controller_unittest.mm",
-      "cocoa/test/apps_grid_controller_test_helper.h",
-      "cocoa/test/apps_grid_controller_test_helper.mm",
     ]
   }
 }

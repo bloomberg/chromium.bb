@@ -12,14 +12,9 @@ INCLUDE_CPP_FILES_ONLY = (
   r'.*\.(cc|h)$',
 )
 
-EXCLUDE = (
-  # Objective C confuses everything.
-  r'.*/cocoa/.*',
-)
-
 def CheckChangeLintsClean(input_api, output_api):
   """Makes sure that the ui/app_list/ code is cpplint clean."""
-  black_list = input_api.DEFAULT_BLACK_LIST + EXCLUDE
+  black_list = input_api.DEFAULT_BLACK_LIST
   sources = lambda x: input_api.FilterSourceFile(
     x, white_list = INCLUDE_CPP_FILES_ONLY, black_list = black_list)
   return input_api.canned_checks.CheckChangeLintsClean(

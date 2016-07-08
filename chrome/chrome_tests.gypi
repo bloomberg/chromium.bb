@@ -1163,7 +1163,6 @@
     ],
     'chrome_interactive_ui_test_app_list_sources': [
       'browser/ui/app_list/app_list_service_interactive_uitest.cc',
-      'browser/ui/app_list/app_list_service_mac_interactive_uitest.mm',
     ],
     'chrome_interactive_ui_test_win_sources': [
       '../ui/resources/cursors/aliasb.cur',

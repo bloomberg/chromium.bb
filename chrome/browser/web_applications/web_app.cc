@@ -437,13 +437,6 @@ void CreateShortcutsWithInfo(
                                  file_handlers_info);
 }
 
-void CreateNonAppShortcut(const ShortcutLocations& locations,
-                          std::unique_ptr<ShortcutInfo> shortcut_info) {
-  ScheduleCreatePlatformShortcut(SHORTCUT_CREATION_AUTOMATED, locations,
-                                 std::move(shortcut_info),
-                                 extensions::FileHandlersInfo());
-}
-
 void CreateShortcuts(ShortcutCreationReason reason,
                      const ShortcutLocations& locations,
                      Profile* profile,

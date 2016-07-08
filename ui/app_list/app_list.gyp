@@ -55,29 +55,6 @@
         'app_list_switches.h',
         'app_list_view_delegate.cc',
         'app_list_view_delegate.h',
-        'cocoa/app_list_pager_view.h',
-        'cocoa/app_list_pager_view.mm',
-        'cocoa/app_list_view_controller.h',
-        'cocoa/app_list_view_controller.mm',
-        'cocoa/app_list_window_controller.h',
-        'cocoa/app_list_window_controller.mm',
-        'cocoa/apps_collection_view_drag_manager.h',
-        'cocoa/apps_collection_view_drag_manager.mm',
-        'cocoa/apps_grid_controller.h',
-        'cocoa/apps_grid_controller.mm',
-        'cocoa/apps_grid_view_item.h',
-        'cocoa/apps_grid_view_item.mm',
-        'cocoa/apps_pagination_model_observer.h',
-        'cocoa/apps_search_box_controller.h',
-        'cocoa/apps_search_box_controller.mm',
-        'cocoa/apps_search_results_controller.h',
-        'cocoa/apps_search_results_controller.mm',
-        'cocoa/apps_search_results_model_bridge.h',
-        'cocoa/apps_search_results_model_bridge.mm',
-        'cocoa/item_drag_controller.h',
-        'cocoa/item_drag_controller.mm',
-        'cocoa/scroll_view_with_no_scrollbars.h',
-        'cocoa/scroll_view_with_no_scrollbars.mm',
         'folder_image.cc',
         'folder_image.h',
         'pagination_controller.cc',
@@ -206,20 +183,6 @@
             ['exclude', 'views/'],
           ],
         }],
-        ['OS=="mac"', {
-          'dependencies': [
-            '../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
-          ],
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ],
-          },
-        }, {  # OS!="mac"
-          'sources/': [
-            ['exclude', 'cocoa/'],
-          ],
-        }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -265,13 +228,6 @@
         # Note: sources list duplicated in GN build.
         'app_list_item_list_unittest.cc',
         'app_list_model_unittest.cc',
-        'cocoa/app_list_view_controller_unittest.mm',
-        'cocoa/app_list_window_controller_unittest.mm',
-        'cocoa/apps_grid_controller_unittest.mm',
-        'cocoa/apps_search_box_controller_unittest.mm',
-        'cocoa/apps_search_results_controller_unittest.mm',
-        'cocoa/test/apps_grid_controller_test_helper.h',
-        'cocoa/test/apps_grid_controller_test_helper.mm',
         'folder_image_unittest.cc',
         'pagination_model_unittest.cc',
         'search/history_data_store_unittest.cc',
@@ -303,22 +259,6 @@
           'sources/': [
             ['exclude', 'views/'],
           ]
-        }],
-        ['OS=="mac"', {
-          'dependencies': [
-            '../events/events.gyp:events_test_support',
-            '../gfx/gfx.gyp:gfx_test_support',
-          ],
-          'conditions': [
-            ['component=="static_library"', {
-              # Needed to link to Obj-C static libraries.
-              'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
-            }],
-          ],
-        }, {  # OS!="mac"
-          'sources/': [
-            ['exclude', 'cocoa/'],
-          ],
         }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.

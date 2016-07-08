@@ -1621,7 +1621,6 @@
       'browser/apps/drive/drive_app_mapping_unittest.cc',
       'browser/ui/app_list/app_context_menu_unittest.cc',
       'browser/ui/app_list/app_list_positioner_unittest.cc',
-      'browser/ui/app_list/app_list_service_mac_unittest.mm',
       'browser/ui/app_list/app_list_service_unittest.cc',
       'browser/ui/app_list/app_list_test_util.cc',
       'browser/ui/app_list/app_list_test_util.h',

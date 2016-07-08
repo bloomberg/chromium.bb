@@ -219,20 +219,12 @@ class AppContextMenuTest : public AppListTestBase {
     if (!platform_app) {
       if (extensions::util::CanHostedAppsOpenInWindows() &&
           extensions::util::IsNewBookmarkAppsEnabled()) {
-        // MACOS has different logic for this case.
-        // See chrome/browser/extensions/launch_util.cc for more details.
-        bool checked = launch_type == extensions::LAUNCH_TYPE_WINDOW;
-#if !defined(OS_MACOSX)
-        checked |= launch_type == extensions::LAUNCH_TYPE_FULLSCREEN;
-#endif
+        bool checked = launch_type == extensions::LAUNCH_TYPE_WINDOW ||
+            launch_type == extensions::LAUNCH_TYPE_FULLSCREEN;
         states.push_back(MenuState(
             app_list::AppContextMenu::USE_LAUNCH_TYPE_WINDOW, true, checked));
       } else if (!extensions::util::IsNewBookmarkAppsEnabled()) {
         bool regular_checked = launch_type == extensions::LAUNCH_TYPE_REGULAR;
-#if defined(OS_MACOSX)
-        regular_checked |= (!extensions::util::CanHostedAppsOpenInWindows() &&
-            launch_type == extensions::LAUNCH_TYPE_WINDOW);
-#endif
         states.push_back(MenuState(
             app_list::AppContextMenu::USE_LAUNCH_TYPE_REGULAR,
             true,

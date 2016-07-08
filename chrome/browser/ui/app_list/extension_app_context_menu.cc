@@ -105,18 +105,11 @@ void ExtensionAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
               USE_LAUNCH_TYPE_WINDOW,
               IDS_APP_CONTEXT_MENU_OPEN_WINDOW);
         }
-#if defined(OS_MACOSX)
-        // Mac does not support standalone web app browser windows or maximize.
-        menu_model->AddCheckItemWithStringId(
-            USE_LAUNCH_TYPE_FULLSCREEN,
-            IDS_APP_CONTEXT_MENU_OPEN_FULLSCREEN);
-#else
         // Even though the launch type is Full Screen it is more accurately
         // described as Maximized in Ash.
         menu_model->AddCheckItemWithStringId(
             USE_LAUNCH_TYPE_FULLSCREEN,
             IDS_APP_CONTEXT_MENU_OPEN_MAXIMIZED);
-#endif
       }
       menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
     }
@@ -160,11 +153,6 @@ base::string16 ExtensionAppContextMenu::GetLabelForCommandId(
 
   DCHECK_EQ(LAUNCH_NEW, command_id);
 
-#if defined(OS_MACOSX)
-  // Full screen on Mac launches in a tab.
-  bool launches_in_window = extensions::util::CanHostedAppsOpenInWindows() &&
-                            IsCommandIdChecked(USE_LAUNCH_TYPE_WINDOW);
-#else
   // If --enable-new-bookmark-apps is enabled, then only check if
   // USE_LAUNCH_TYPE_WINDOW is checked, as USE_LAUNCH_TYPE_PINNED (i.e. open
   // as pinned tab) and fullscreen-by-default windows do not exist.
@@ -173,7 +161,6 @@ base::string16 ExtensionAppContextMenu::GetLabelForCommandId(
            ? IsCommandIdChecked(USE_LAUNCH_TYPE_WINDOW)
            : !(IsCommandIdChecked(USE_LAUNCH_TYPE_PINNED) ||
                IsCommandIdChecked(USE_LAUNCH_TYPE_REGULAR)));
-#endif
 
   return launches_in_window ?
       l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW) :
