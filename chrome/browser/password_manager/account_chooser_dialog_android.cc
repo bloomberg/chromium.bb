@@ -25,6 +25,7 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/AccountChooserDialog_jni.h"
 #include "ui/android/window_android.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/range/range.h"
 
@@ -147,14 +148,19 @@ void AccountChooserDialogAndroid::ShowDialog() {
       password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED,
       local_credentials_forms().size());
   base::android::ScopedJavaGlobalRef<jobject> java_dialog_global;
+  const std::string origin = password_manager::GetShownOrigin(origin_);
+  base::string16 signin_button;
+  if (local_credentials_forms().size() == 1) {
+    signin_button =
+        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN);
+  }
   dialog_jobject_.Reset(Java_AccountChooserDialog_createAndShowAccountChooser(
       env, native_window->GetJavaObject().obj(),
       reinterpret_cast<intptr_t>(this), java_credentials_array.obj(),
       base::android::ConvertUTF16ToJavaString(env, title).obj(),
       title_link_range.start(), title_link_range.end(),
-      base::android::ConvertUTF8ToJavaString(
-          env, password_manager::GetShownOrigin(origin_))
-          .obj()));
+      base::android::ConvertUTF8ToJavaString(env, origin).obj(),
+      base::android::ConvertUTF16ToJavaString(env, signin_button).obj()));
   net::URLRequestContextGetter* request_context =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext())
           ->GetRequestContext();
@@ -167,10 +173,12 @@ void AccountChooserDialogAndroid::OnCredentialClicked(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint credential_item,
-    jint credential_type) {
+    jint credential_type,
+    jboolean signin_button_clicked) {
   ChooseCredential(
       credential_item,
-      static_cast<password_manager::CredentialType>(credential_type));
+      static_cast<password_manager::CredentialType>(credential_type),
+      signin_button_clicked);
 }
 
 void AccountChooserDialogAndroid::Destroy(JNIEnv* env,
@@ -207,7 +215,8 @@ void AccountChooserDialogAndroid::WasHidden() {
 }
 
 void AccountChooserDialogAndroid::OnDialogCancel() {
-  ChooseCredential(-1, password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
+  ChooseCredential(-1, password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY,
+                   false /* signin_button_clicked */);
 }
 
 const std::vector<const autofill::PasswordForm*>&
@@ -222,14 +231,17 @@ AccountChooserDialogAndroid::federated_credentials_forms() const {
 
 void AccountChooserDialogAndroid::ChooseCredential(
     size_t index,
-    password_manager::CredentialType type) {
+    password_manager::CredentialType type,
+    bool signin_button_clicked) {
   using namespace password_manager;
   password_manager::metrics_util::AccountChooserUserAction action;
   if (type == CredentialType::CREDENTIAL_TYPE_EMPTY) {
     passwords_data_.ChooseCredential(nullptr);
-    action = password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED;
+    action = metrics_util::ACCOUNT_CHOOSER_DISMISSED;
   } else {
-    action = password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN;
+    action = signin_button_clicked
+                 ? metrics_util::ACCOUNT_CHOOSER_SIGN_IN
+                 : metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN;
     const auto& credentials_forms =
         (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
             ? local_credentials_forms()

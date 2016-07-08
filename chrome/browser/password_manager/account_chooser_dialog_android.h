@@ -47,7 +47,8 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
   void OnCredentialClicked(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            jint credential_item,
-                           jint credential_type);
+                           jint credential_type,
+                           jboolean sign_button_clicked);
 
   // Opens new tab with page which explains the Smart Lock branding.
   void OnLinkClicked(JNIEnv* env,
@@ -66,7 +67,9 @@ class AccountChooserDialogAndroid : public content::WebContentsObserver {
   const std::vector<const autofill::PasswordForm*>&
   federated_credentials_forms() const;
 
-  void ChooseCredential(size_t index, password_manager::CredentialType type);
+  void ChooseCredential(size_t index,
+                        password_manager::CredentialType type,
+                        bool sign_button_clicked);
 
   content::WebContents* web_contents_;
   ManagePasswordsState passwords_data_;
