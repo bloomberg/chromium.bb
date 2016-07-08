@@ -354,10 +354,10 @@ def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
     if request.url in effective_encoded_data_lengths:
       effective_encoded_data_lengths[request.url] = max(
           effective_encoded_data_lengths[request.url],
-          request.GetEncodedDataLength())
+          request.GetResponseTransportLength())
     else:
       effective_encoded_data_lengths[request.url] = (
-          request.GetEncodedDataLength())
+          request.GetResponseTransportLength())
 
   upload_data_stream_cache_entry_keys = set()
   upload_data_stream_requests = set()
@@ -436,7 +436,7 @@ def _ProcessRunOutputDir(
           response_size = response_sizes[request.url]
         served_from_cache_bytes += response_size
       else:
-        response_size = request.GetEncodedDataLength()
+        response_size = request.GetResponseTransportLength()
         served_from_network_bytes += response_size
       response_sizes[request.url] = response_size
 

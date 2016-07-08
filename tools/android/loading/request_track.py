@@ -209,6 +209,7 @@ class Request(object):
     self.timing = None
     self.status = None
     self.status_text = None
+    self.response_headers_length = 0
     self.encoded_data_length = 0
     self.data_chunks = []
     self.failed = False
@@ -253,24 +254,20 @@ class Request(object):
       result.timing = Timing(request_time=result.timestamp)
     return result
 
-  def GetEncodedDataLength(self):
+  def GetResponseTransportLength(self):
     """Get the total amount of encoded data no matter whether load has finished
     or not.
     """
     assert self.HasReceivedResponse()
     assert not self.from_disk_cache and not self.served_from_cache
-    assert self.protocol != 'about'
-    if self.failed:
-      # TODO(gabadie): Once crbug.com/622018 is fixed, remove this branch.
-      return 0
+    assert self.protocol not in {'about', 'blob', 'data'}
     if self.timing.loading_finished != Timing.UNVAILABLE:
       encoded_data_length = self.encoded_data_length
-      assert encoded_data_length > 0
     else:
       encoded_data_length = sum(
           [chunk_size for _, chunk_size in self.data_chunks])
       assert encoded_data_length > 0 or len(self.data_chunks) == 0
-    return encoded_data_length
+    return encoded_data_length + self.response_headers_length
 
   def GetHTTPResponseHeader(self, header_name):
     """Gets the value of a HTTP response header.
@@ -736,7 +733,7 @@ class RequestTrack(devtools_monitor.Track):
 
     _CopyFromDictToObject(redirect_response, r,
                           (('headers', 'response_headers'),
-                           ('encodedDataLength', 'encoded_data_length'),
+                           ('encodedDataLength', 'response_headers_length'),
                            ('fromDiskCache', 'from_disk_cache'),
                            ('protocol', 'protocol'), ('status', 'status'),
                            ('statusText', 'status_text')))
@@ -792,6 +789,7 @@ class RequestTrack(devtools_monitor.Track):
                       # Actual request headers are not known before reaching the
                       # network stack.
                       ('requestHeaders', 'request_headers'),
+                      ('encodedDataLength', 'response_headers_length'),
                       ('headers', 'response_headers')))
     timing_dict = {}
     # Some URLs don't have a timing dict (e.g. data URLs), and timings for
@@ -822,8 +820,6 @@ class RequestTrack(devtools_monitor.Track):
     assert (status == RequestTrack._STATUS_RESPONSE
             or status == RequestTrack._STATUS_DATA)
     r.encoded_data_length = params['encodedDataLength']
-    assert (r.encoded_data_length > 0 or r.protocol in {'about', 'data'} or
-            r.from_disk_cache or r.served_from_cache)
     r.timing.loading_finished = r._TimestampOffsetFromStartMs(
         params['timestamp'])
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_FINISHED)
