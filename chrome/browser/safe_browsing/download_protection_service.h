@@ -187,6 +187,7 @@ class DownloadProtectionService {
     REASON_LOCAL_FILE = 24,
     REASON_REMOTE_FILE = 25,
     REASON_SAMPLED_UNSUPPORTED_FILE = 26,
+    REASON_VERDICT_UNKNOWN = 27,
     REASON_MAX  // Always add new values before this one.
   };
 

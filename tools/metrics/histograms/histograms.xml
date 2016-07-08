@@ -88630,6 +88630,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="24" label="LOCAL_FILE"/>
   <int value="25" label="REMOTE_FILE"/>
   <int value="26" label="SAMPLED_UNSUPPORTED_FILE"/>
+  <int value="27" label="VERDICT_UNKNOWN"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult" type="int">

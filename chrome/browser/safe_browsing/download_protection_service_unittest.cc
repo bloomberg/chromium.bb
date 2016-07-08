@@ -975,11 +975,11 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
               MatchDownloadWhitelistUrl(_))
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(6);
+      .Times(7);
   EXPECT_CALL(*binary_feature_extractor_.get(),
               ExtractImageFeatures(
                   tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-      .Times(6);
+      .Times(7);
 
   download_service_->CheckClientDownload(
       &item,
@@ -1082,6 +1082,22 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSuccess) {
   base::RunLoop().Run();
 
   EXPECT_TRUE(IsResult(DownloadProtectionService::POTENTIALLY_UNWANTED));
+  EXPECT_TRUE(HasClientDownloadRequest());
+  ClearClientDownloadRequest();
+
+  // If the response is UNKNOWN the result should also be marked as
+  // UNKNOWN
+  PrepareResponse(
+      &factory, ClientDownloadResponse::UNKNOWN, net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
+
+  download_service_->CheckClientDownload(
+      &item,
+      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
+                 base::Unretained(this)));
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
   EXPECT_TRUE(HasClientDownloadRequest());
   ClearClientDownloadRequest();
 }
@@ -1373,42 +1389,6 @@ TEST_F(DownloadProtectionServiceTest,
   CheckClientDownloadReportCorruptArchive(DMG, true, true);
 }
 #endif
-
-TEST_F(DownloadProtectionServiceTest, CheckClientCrxDownloadSuccess) {
-  // Even if the server verdict is dangerous we should return SAFE because
-  // DownloadProtectionService::IsSupportedDownload() will return false
-  // for crx downloads.
-  net::FakeURLFetcherFactory factory(NULL);
-  PrepareResponse(
-      &factory, ClientDownloadResponse::DANGEROUS, net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-
-  content::MockDownloadItem item;
-  PrepareBasicDownloadItem(
-    &item,
-    {"http://www.evil.com/a.crx"},  // url_chain
-    "http://www.google.com/",       // referrer
-    FILE_PATH_LITERAL("a.tmp"),     // tmp_path
-    FILE_PATH_LITERAL("a.crx"));    // final_path
-
-  EXPECT_CALL(*sb_service_->mock_database_manager(),
-              MatchDownloadWhitelistUrl(_))
-      .WillRepeatedly(Return(false));
-  EXPECT_CALL(*binary_feature_extractor_.get(), CheckSignature(tmp_path_, _))
-      .Times(1);
-  EXPECT_CALL(*binary_feature_extractor_.get(),
-              ExtractImageFeatures(
-                  tmp_path_, BinaryFeatureExtractor::kDefaultOptions, _, _))
-              .Times(1);
-
-  EXPECT_FALSE(download_service_->IsSupportedDownload(item, final_path_));
-  download_service_->CheckClientDownload(
-      &item,
-      base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
-                 base::Unretained(this)));
-  base::RunLoop().Run();
-  EXPECT_TRUE(IsResult(DownloadProtectionService::UNKNOWN));
-}
 
 TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   net::TestURLFetcherFactory factory;
@@ -2032,6 +2012,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_SupportedDefault) {
        DownloadProtectionService::DANGEROUS_HOST},
       {ClientDownloadResponse::POTENTIALLY_UNWANTED,
        DownloadProtectionService::POTENTIALLY_UNWANTED},
+      {ClientDownloadResponse::UNKNOWN, DownloadProtectionService::UNKNOWN},
   };
 
   for (const auto& test_case : kExpectedResults) {

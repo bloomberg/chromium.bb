@@ -471,37 +471,44 @@ class DownloadProtectionService::CheckClientDownloadRequest
         // Ignore the verdict because we were just reporting a sampled file.
         reason = REASON_SAMPLED_UNSUPPORTED_FILE;
         result = UNKNOWN;
-      } else if (response.verdict() == ClientDownloadResponse::SAFE) {
-        reason = REASON_DOWNLOAD_SAFE;
-        result = SAFE;
-      } else if (service_ && !service_->IsSupportedDownload(
-          *item_, item_->GetTargetFilePath())) {
-        // TODO(nparker): Remove this check since it should be impossible.
-        reason = REASON_DOWNLOAD_NOT_SUPPORTED;
-        result = UNKNOWN;
-      } else if (response.verdict() == ClientDownloadResponse::DANGEROUS) {
-        reason = REASON_DOWNLOAD_DANGEROUS;
-        result = DANGEROUS;
-        token = response.token();
-      } else if (response.verdict() == ClientDownloadResponse::UNCOMMON) {
-        reason = REASON_DOWNLOAD_UNCOMMON;
-        result = UNCOMMON;
-        token = response.token();
-      } else if (response.verdict() == ClientDownloadResponse::DANGEROUS_HOST) {
-        reason = REASON_DOWNLOAD_DANGEROUS_HOST;
-        result = DANGEROUS_HOST;
-        token = response.token();
-      } else if (
-          response.verdict() == ClientDownloadResponse::POTENTIALLY_UNWANTED) {
-        reason = REASON_DOWNLOAD_POTENTIALLY_UNWANTED;
-        result = POTENTIALLY_UNWANTED;
-        token = response.token();
       } else {
-        LOG(DFATAL) << "Unknown download response verdict: "
-                    << response.verdict();
-        reason = REASON_INVALID_RESPONSE_VERDICT;
-        result = UNKNOWN;
+        switch (response.verdict()) {
+          case ClientDownloadResponse::SAFE:
+            reason = REASON_DOWNLOAD_SAFE;
+            result = SAFE;
+            break;
+          case ClientDownloadResponse::DANGEROUS:
+            reason = REASON_DOWNLOAD_DANGEROUS;
+            result = DANGEROUS;
+            token = response.token();
+            break;
+          case ClientDownloadResponse::UNCOMMON:
+            reason = REASON_DOWNLOAD_UNCOMMON;
+            result = UNCOMMON;
+            token = response.token();
+            break;
+          case ClientDownloadResponse::DANGEROUS_HOST:
+            reason = REASON_DOWNLOAD_DANGEROUS_HOST;
+            result = DANGEROUS_HOST;
+            token = response.token();
+            break;
+          case ClientDownloadResponse::POTENTIALLY_UNWANTED:
+            reason = REASON_DOWNLOAD_POTENTIALLY_UNWANTED;
+            result = POTENTIALLY_UNWANTED;
+            token = response.token();
+            break;
+          case ClientDownloadResponse::UNKNOWN:
+            reason = REASON_VERDICT_UNKNOWN;
+            result = UNKNOWN;
+            break;
+          default:
+            LOG(DFATAL) << "Unknown download response verdict: "
+                        << response.verdict();
+            reason = REASON_INVALID_RESPONSE_VERDICT;
+            result = UNKNOWN;
+        }
       }
+
       if (!token.empty())
         SetDownloadPingToken(item_, token);
 
@@ -1394,6 +1401,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
         return DANGEROUS;
       case ClientDownloadResponse::DANGEROUS_HOST:
         return DANGEROUS_HOST;
+      case ClientDownloadResponse::UNKNOWN:
+        return UNKNOWN;
     }
     return UNKNOWN;
   }

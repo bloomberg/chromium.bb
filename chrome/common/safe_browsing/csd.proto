@@ -390,12 +390,15 @@ message ClientDownloadResponse {
     // Download is considered dangerous.  Chrome should show a warning to the
     // user.
     DANGEROUS = 1;
-    // Download is unknown.  Chrome should display a less severe warning.
+    // Download is uncommon.  Chrome should display a less severe warning.
     UNCOMMON = 2;
     // The download is potentially unwanted.
     POTENTIALLY_UNWANTED = 3;
     // The download is from a dangerous host.
     DANGEROUS_HOST = 4;
+    // The backend doesn't have confidence in its verdict of this file.
+    // Chrome should show the default warning if configured for this file type.
+    UNKNOWN = 5;
   }
   required Verdict verdict = 1;
 
