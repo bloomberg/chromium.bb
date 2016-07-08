@@ -38,12 +38,11 @@ GS_AUTH_URL = 'https://storage.cloud.google.com'
 #   apk: apk to be installed.
 #   apk_package: package for the apk to be installed.
 #   test_apk: apk to run tests on.
-#   test_data: data folder in format destination:source.
 #   host_driven_root: The host-driven test root directory.
 #   annotation: Annotation of the tests to include.
 #   exclude_annotation: The annotation of the tests to exclude.
 I_TEST = collections.namedtuple('InstrumentationTest', [
-    'name', 'apk', 'apk_package', 'test_apk', 'test_data', 'isolate_file_path',
+    'name', 'apk', 'apk_package', 'test_apk', 'isolate_file_path',
     'host_driven_root', 'annotation', 'exclude_annotation', 'extra_flags'])
 
 
@@ -51,10 +50,10 @@ def SrcPath(*path):
   return os.path.join(CHROME_SRC_DIR, *path)
 
 
-def I(name, apk, apk_package, test_apk, test_data, isolate_file_path=None,
+def I(name, apk, apk_package, test_apk, isolate_file_path=None,
       host_driven_root=None, annotation=None, exclude_annotation=None,
       extra_flags=None):
-  return I_TEST(name, apk, apk_package, test_apk, test_data, isolate_file_path,
+  return I_TEST(name, apk, apk_package, test_apk, isolate_file_path,
                 host_driven_root, annotation, exclude_annotation, extra_flags)
 
 INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
@@ -62,19 +61,16 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'ContentShell.apk',
       'org.chromium.content_shell_apk',
       'ContentShellTest',
-      'content:content/test/data/android/device_files',
       isolate_file_path='content/content_shell_test_data.isolate'),
     I('ChromePublic',
       'ChromePublic.apk',
       'org.chromium.chrome',
       'ChromePublicTest',
-      'chrome:chrome/test/data/android/device_files',
       isolate_file_path='chrome/chrome_public_test_apk.isolate'),
     I('AndroidWebView',
       'AndroidWebView.apk',
       'org.chromium.android_webview.shell',
       'AndroidWebViewTest',
-      'webview:android_webview/test/data/device_files',
       isolate_file_path='android_webview/android_webview_test_data.isolate'),
     I('ChromeSyncShell',
       'ChromeSyncShell.apk',
@@ -245,8 +241,6 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
       '--test-apk', test.test_apk, '--verbose',
       '--blacklist-file', 'out/bad_devices.json'
   ]
-  if test.test_data:
-    args.extend(['--test_data', test.test_data])
   if options.target == 'Release':
     args.append('--release')
   if options.asan:

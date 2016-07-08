@@ -372,7 +372,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._isolate_abs_path = None
     self._isolate_delegate = None
     self._isolated_abs_path = None
-    self._test_data = None
     self._initializeDataDependencyAttributes(args, isolate_delegate)
 
     self._annotations = None
@@ -471,15 +470,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     else:
       self._isolate_delegate = None
 
-    # TODO(jbudorick): Deprecate and remove --test-data once data dependencies
-    # are fully converted to isolate.
-    if args.test_data:
-      logging.info('Data dependencies specified via --test-data')
-      self._test_data = args.test_data
-    else:
-      self._test_data = None
-
-    if not self._isolate_delegate and not self._test_data:
+    if not self._isolate_delegate:
       logging.warning('No data dependencies will be pushed.')
 
   def _initializeTestFilterAttributes(self, args):
@@ -627,16 +618,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
           self._isolate_abs_path, self._isolated_abs_path)
       self._isolate_delegate.MoveOutputDeps()
       self._data_deps.extend([(self._isolate_delegate.isolate_deps_dir, None)])
-
-    # TODO(jbudorick): Convert existing tests that depend on the --test-data
-    # mechanism to isolate, then remove this.
-    if self._test_data:
-      for t in self._test_data:
-        device_rel_path, host_rel_path = t.split(':')
-        host_abs_path = os.path.join(host_paths.DIR_SOURCE_ROOT, host_rel_path)
-        self._data_deps.extend(
-            [(host_abs_path,
-              [None, 'chrome', 'test', 'data', device_rel_path])])
 
   def GetDataDependencies(self):
     return self._data_deps

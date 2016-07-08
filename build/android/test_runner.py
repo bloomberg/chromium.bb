@@ -340,13 +340,6 @@ def AddJavaTestOptions(argument_group):
   argument_group.add_argument(
       '--official-build', action='store_true', help='Run official build tests.')
   argument_group.add_argument(
-      '--test_data', '--test-data', action='append', default=[],
-      help=('Each instance defines a directory of test data that should be '
-            'copied to the target(s) before running the tests. The argument '
-            'should be of the form <target>:<source>, <target> is relative to '
-            'the device data directory, and <source> is relative to the '
-            'chromium build directory.'))
-  argument_group.add_argument(
       '--disable-dalvik-asserts', dest='set_asserts', action='store_false',
       default=True, help='Removes the dalvik.vm.enableassertions property')
 
