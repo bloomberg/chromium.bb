@@ -120,6 +120,12 @@ void DelegatedFrameHost::MaybeCreateResizeLock() {
 }
 
 bool DelegatedFrameHost::ShouldCreateResizeLock() {
+  static const bool is_disabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableResizeLock);
+  if (is_disabled)
+    return false;
+
   if (!client_->DelegatedFrameCanCreateResizeLock())
     return false;
 
