@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "media/base/demuxer_stream_provider.h"
+#include "media/base/pipeline_status.h"
 #include "media/base/renderer_client.h"
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/clients/mojo_demuxer_stream_impl.h"
@@ -237,6 +238,18 @@ void MojoRenderer::OnVideoOpacityChange(bool opaque) {
   DVLOG(2) << __FUNCTION__ << ": " << opaque;
   DCHECK(task_runner_->BelongsToCurrentThread());
   client_->OnVideoOpacityChange(opaque);
+}
+
+void MojoRenderer::OnStatisticsUpdate(const PipelineStatistics& stats) {
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnStatisticsUpdate(stats);
+}
+
+void MojoRenderer::OnWaitingForDecryptionKey() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  client_->OnWaitingForDecryptionKey();
 }
 
 void MojoRenderer::OnConnectionError() {

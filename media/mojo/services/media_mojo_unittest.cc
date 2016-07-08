@@ -49,6 +49,9 @@ class MockRendererClient : public mojom::RendererClient {
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnVideoOpacityChange, void(bool opaque));
   MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size& size));
+  MOCK_METHOD1(OnStatisticsUpdate,
+               void(const media::PipelineStatistics& stats));
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);

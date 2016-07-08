@@ -336,3 +336,12 @@ struct VideoFrame {
   uint64 u_offset;
   uint64 v_offset;
 };
+
+struct PipelineStatistics {
+  uint64 audio_bytes_decoded;
+  uint64 video_bytes_decoded;
+  uint32 video_frames_decoded;
+  uint32 video_frames_dropped;
+  int64 audio_memory_usage;
+  int64 video_memory_usage;
+};

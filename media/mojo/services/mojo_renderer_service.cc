@@ -115,7 +115,8 @@ void MojoRendererService::OnEnded() {
 }
 
 void MojoRendererService::OnStatisticsUpdate(const PipelineStatistics& stats) {
-  // TODO(alokp): Plumb the event to mojom::RendererClient. crbug/585287
+  DVLOG(3) << __FUNCTION__;
+  client_->OnStatisticsUpdate(stats);
 }
 
 void MojoRendererService::OnBufferingStateChange(BufferingState state) {
@@ -124,7 +125,8 @@ void MojoRendererService::OnBufferingStateChange(BufferingState state) {
 }
 
 void MojoRendererService::OnWaitingForDecryptionKey() {
-  // TODO(alokp): Plumb the event to mojom::RendererClient. crbug/585287
+  DVLOG(1) << __FUNCTION__;
+  client_->OnWaitingForDecryptionKey();
 }
 
 void MojoRendererService::OnVideoNaturalSizeChange(const gfx::Size& size) {

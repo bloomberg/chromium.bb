@@ -65,6 +65,8 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   void OnError() override;
   void OnVideoNaturalSizeChange(const gfx::Size& size) override;
   void OnVideoOpacityChange(bool opaque) override;
+  void OnWaitingForDecryptionKey() override;
+  void OnStatisticsUpdate(const PipelineStatistics& stats) override;
 
   // Binds |remote_renderer_| to the mojo message pipe. Can be called multiple
   // times. If an error occurs during connection, OnConnectionError will be

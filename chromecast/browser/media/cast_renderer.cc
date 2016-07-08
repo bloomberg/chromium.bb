@@ -17,7 +17,9 @@
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/demuxer_stream_provider.h"
 #include "media/base/media_log.h"
+#include "media/base/renderer_client.h"
 
 namespace chromecast {
 namespace media {

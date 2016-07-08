@@ -59,4 +59,12 @@ interface RendererClient {
 
   // Executed for the first video frame and whenever opacity changes.
   OnVideoOpacityChange(bool opaque);
+
+  // Called periodically to pass statistics to the web player. See
+  // media_types.mojom.
+  OnStatisticsUpdate(PipelineStatistics stats);
+
+  // Called when the remote renderering service is waiting on the decryption
+  // key.
+  OnWaitingForDecryptionKey();
 };
