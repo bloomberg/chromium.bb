@@ -44,8 +44,6 @@ var NTP_LOGGING_EVENT_TYPE = {
   NTP_GRAY_TILE_FALLBACK: 7,
   // The visuals of that tile's fallback are handled externally.
   NTP_EXTERNAL_TILE_FALLBACK: 8,
-  // The user moused over an NTP tile or title.
-  NTP_MOUSEOVER: 9,
   // A NTP Tile has finished loading (successfully or failing).
   NTP_TILE_LOADED: 10,
 };
@@ -136,10 +134,6 @@ function createMostVisitedLink(
     spanWrap.textContent = text;
     link.appendChild(spanWrap);
   }
-  link.addEventListener('mouseover', function() {
-    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
-    ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_MOUSEOVER);
-  });
   link.addEventListener('focus', function() {
     window.parent.postMessage('linkFocused', DOMAIN_ORIGIN);
   });

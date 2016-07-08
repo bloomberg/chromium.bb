@@ -25,22 +25,9 @@ var LOG_TYPE = {
   NTP_TILE: 2,
   // The tile uses a local thumbnail image.
   NTP_THUMBNAIL_TILE: 3,
-  // Used when no thumbnail is specified and a gray tile with the domain is used
-  // as the main tile. Unused here.
-  NTP_GRAY_TILE: 4,
-  // The visuals of that tile are handled externally by the page itself.
-  // Unused here.
-  NTP_EXTERNAL_TILE: 5,
   // There was an error in loading both the thumbnail image and the fallback
   // (if it was provided), resulting in a gray tile.
   NTP_THUMBNAIL_ERROR: 6,
-  // Used a gray tile with the domain as the fallback for a failed thumbnail.
-  // Unused here.
-  NTP_GRAY_TILE_FALLBACK: 7,
-  // The visuals of that tile's fallback are handled externally. Unused here.
-  NTP_EXTERNAL_TILE_FALLBACK: 8,
-  // The user moused over an NTP tile.
-  NTP_MOUSEOVER: 9,
   // A NTP Tile has finished loading (successfully or failing).
   NTP_TILE_LOADED: 10,
 };
@@ -458,10 +445,6 @@ var renderTile = function(data) {
         nextTile.focus();
       }
     }
-  });
-  // TODO(fserb): remove this or at least change to mouseenter.
-  tile.addEventListener('mouseover', function() {
-    logEvent(LOG_TYPE.NTP_MOUSEOVER);
   });
 
   var title = tile.querySelector('.mv-title');

@@ -34700,6 +34700,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfMouseOvers">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The total number of times the user hovered the mouse over Most Visited tile

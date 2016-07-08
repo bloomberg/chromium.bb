@@ -110,9 +110,6 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
 }
 
 void NTPUserDataLogger::EmitNtpStatistics() {
-  UMA_HISTOGRAM_COUNTS("NewTabPage.NumberOfMouseOvers", number_of_mouseovers_);
-  number_of_mouseovers_ = 0;
-
   // We only send statistics once per page.
   // And we don't send if there are no tiles recorded.
   if (has_emitted_ || !number_of_tiles_)
@@ -203,9 +200,6 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_EXTERNAL_TILE_FALLBACK:
       number_of_external_tile_fallbacks_++;
       break;
-    case NTP_MOUSEOVER:
-      number_of_mouseovers_++;
-      break;
     case NTP_TILE_LOADED:
       // The time at which the last tile has loaded (title, thumbnail or single)
       // is a good proxy for the total load time of the NTP, therefore we keep
@@ -277,7 +271,6 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       number_of_thumbnail_errors_(0),
       number_of_gray_tile_fallbacks_(0),
       number_of_external_tile_fallbacks_(0),
-      number_of_mouseovers_(0),
       has_emitted_(false),
       during_startup_(false) {
   during_startup_ = !AfterStartupTaskUtils::IsBrowserStartupComplete();

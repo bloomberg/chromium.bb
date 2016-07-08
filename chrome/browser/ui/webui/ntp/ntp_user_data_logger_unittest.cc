@@ -43,17 +43,11 @@ class NTPUserDataLoggerTest : public testing::Test {
 TEST_F(NTPUserDataLoggerTest, TestLogging) {
   base::StatisticsRecorder::Initialize();
 
-  // Ensure empty statistics.
-  EXPECT_EQ(0, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
-  EXPECT_EQ(0, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
-
   // Enusure non-zero statistics.
   TestNTPUserDataLogger logger;
 
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
 
-  for (int i = 0; i < 20; ++i)
-    logger.LogEvent(NTP_MOUSEOVER, delta);
   for (int i = 0; i < 8; ++i)
     logger.LogEvent(NTP_TILE, delta);
   for (int i = 0; i < 4; ++i)
@@ -70,9 +64,6 @@ TEST_F(NTPUserDataLoggerTest, TestLogging) {
 
   logger.EmitNtpStatistics();
 
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
-  EXPECT_EQ(0, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 20));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfTiles", 8));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailTiles"));
@@ -92,9 +83,6 @@ TEST_F(NTPUserDataLoggerTest, TestLogging) {
 
   // Statistics should be reset to 0, so we should not log anything else.
   logger.EmitNtpStatistics();
-  EXPECT_EQ(2, GetTotalCount("NewTabPage.NumberOfMouseOvers"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 0));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfMouseOvers", 20));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailTiles"));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailErrors"));

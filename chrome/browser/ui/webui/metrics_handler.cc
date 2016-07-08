@@ -36,9 +36,6 @@ void MetricsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "metricsHandler:logEventTime",
       base::Bind(&MetricsHandler::HandleLogEventTime, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "metricsHandler:logMouseover",
-      base::Bind(&MetricsHandler::HandleLogMouseover, base::Unretained(this)));
 }
 
 void MetricsHandler::HandleRecordAction(const base::ListValue* args) {
@@ -105,13 +102,4 @@ void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {
   } else {
     NOTREACHED();
   }
-}
-
-void MetricsHandler::HandleLogMouseover(const base::ListValue* args) {
-#if !defined(OS_ANDROID)
-  // Android uses native UI for NTP.
-  NTPUserDataLogger::GetOrCreateFromWebContents(
-    web_ui()->GetWebContents())->LogEvent(NTP_MOUSEOVER,
-                                          base::TimeDelta::FromMilliseconds(0));
-#endif  // !defined(OS_ANDROID)
 }

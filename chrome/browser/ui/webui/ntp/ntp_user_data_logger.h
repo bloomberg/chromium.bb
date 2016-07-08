@@ -96,9 +96,6 @@ class NTPUserDataLogger
   // handled by the page itself, was the fallback for a failed thumbnail.
   size_t number_of_external_tile_fallbacks_;
 
-  // Total number of mouseovers for this NTP session.
-  size_t number_of_mouseovers_;
-
   // Time from navigation start it took to load the NTP in milliseconds.
   base::TimeDelta load_time_;
 

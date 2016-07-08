@@ -9,6 +9,7 @@
 // to transfer information from the NTP javascript to the renderer and is not
 // used as a UMA enum histogram's logged value.
 // Note: Keep in sync with browser/resources/local_ntp/most_visited_util.js
+// and browser/resources/local_ntp/most_visited_single.js
 enum NTPLoggingEventType {
   // The suggestion is coming from the server.
   NTP_SERVER_SIDE_SUGGESTION = 0,
@@ -40,8 +41,7 @@ enum NTPLoggingEventType {
   // The visuals of that tile's fallback are handled externally.
   NTP_EXTERNAL_TILE_FALLBACK = 8,
 
-  // The user moused over an NTP tile or title.
-  NTP_MOUSEOVER = 9,
+  // Deleted: NTP_MOUSEOVER = 9
 
   // A NTP Tile has finished loading (successfully or failing).
   NTP_TILE_LOADED = 10,
