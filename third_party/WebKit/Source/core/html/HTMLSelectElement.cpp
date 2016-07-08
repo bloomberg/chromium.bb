@@ -145,7 +145,7 @@ void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeN
     if (optionIndex == selectedIndex())
         return;
 
-    selectOption(optionIndex, DeselectOtherOptions | MakeOptionDirty | (fireOnChangeNow ? DispatchInputAndChangeEvent : 0));
+    selectOption(item(optionIndex), DeselectOtherOptions | MakeOptionDirty | (fireOnChangeNow ? DispatchInputAndChangeEvent : 0));
 }
 
 bool HTMLSelectElement::hasPlaceholderLabelOption() const
@@ -283,6 +283,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
     // We clear the previously selected option(s) when needed, to guarantee
     // calling setSelectedIndex() only once.
     int optionIndex = 0;
+    HTMLOptionElement* option = nullptr;
     if (value.isNull()) {
         optionIndex = -1;
     } else {
@@ -291,8 +292,10 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
         for (auto& item : listItems()) {
             if (!isHTMLOptionElement(item))
                 continue;
-            if (toHTMLOptionElement(item)->value() == value)
+            if (toHTMLOptionElement(item)->value() == value) {
+                option = toHTMLOptionElement(item);
                 break;
+            }
             optionIndex++;
         }
         if (optionIndex >= static_cast<int>(listItems().size()))
@@ -306,7 +309,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
     SelectOptionFlags flags = DeselectOtherOptions | MakeOptionDirty;
     if (sendEvents)
         flags |= DispatchInputAndChangeEvent;
-    selectOption(optionIndex, flags);
+    selectOption(option, flags);
 
     if (sendEvents && previousSelectedIndex != selectedIndex() && !usesMenuList())
         listBoxOnChange();
@@ -880,7 +883,6 @@ void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
     if (multiple())
         return;
     HTMLOptionElement* firstEnabledOption = nullptr;
-    int firstEnabledOptionIndex = -1;
     HTMLOptionElement* lastSelectedOption = nullptr;
     bool didChange = false;
     int optionIndex = 0;
@@ -897,7 +899,6 @@ void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
         }
         if (!firstEnabledOption && !option->isDisabledFormControl()) {
             firstEnabledOption = option;
-            firstEnabledOptionIndex = optionIndex;
             if (reason == ResetReasonSelectedOptionRemoved) {
                 // There must be no selected OPTIONs.
                 break;
@@ -906,7 +907,7 @@ void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
         ++optionIndex;
     }
     if (!lastSelectedOption && m_size <= 1 && firstEnabledOption && !firstEnabledOption->selected()) {
-        selectOption(firstEnabledOption, firstEnabledOptionIndex, reason == ResetReasonSelectedOptionRemoved ? 0 : DeselectOtherOptions);
+        selectOption(firstEnabledOption, reason == ResetReasonSelectedOptionRemoved ? 0 : DeselectOtherOptions);
         lastSelectedOption = firstEnabledOption;
         didChange = true;
     }
@@ -942,7 +943,7 @@ int HTMLSelectElement::selectedIndex() const
 
 void HTMLSelectElement::setSelectedIndex(int index)
 {
-    selectOption(index, DeselectOtherOptions | MakeOptionDirty);
+    selectOption(item(index), DeselectOtherOptions | MakeOptionDirty);
 }
 
 void HTMLSelectElement::setSuggestedOption(HTMLOptionElement* option)
@@ -1051,25 +1052,14 @@ void HTMLSelectElement::hrInsertedOrRemoved(HTMLHRElement& hr)
     m_lastOnChangeSelection.clear();
 }
 
-void HTMLSelectElement::selectOption(int optionIndex, SelectOptionFlags flags)
-{
-    selectOption(optionIndex < 0 ? nullptr : item(optionIndex), flags);
-}
-
-void HTMLSelectElement::selectOption(HTMLOptionElement* option, SelectOptionFlags flags)
-{
-    selectOption(option, option ? option->index() : -1, flags);
-}
-
 // TODO(tkent): This function is not efficient.  It contains multiple O(N)
 // operations. crbug.com/577989.
-void HTMLSelectElement::selectOption(HTMLOptionElement* element, int optionIndex, SelectOptionFlags flags)
+void HTMLSelectElement::selectOption(HTMLOptionElement* element, SelectOptionFlags flags)
 {
     TRACE_EVENT0("blink", "HTMLSelectElement::selectOption");
-    ASSERT((!element && optionIndex < 0) || (element && optionIndex >= 0));
 
-    // selectedIndex() is O(N).
-    if (isAutofilled() && selectedIndex() != optionIndex)
+    // selectedOption() is O(N).
+    if (isAutofilled() && selectedOption() != element)
         setAutofilled(false);
 
     if (element) {
@@ -1286,7 +1276,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
 void HTMLSelectElement::parseMultipleAttribute(const AtomicString& value)
 {
     bool oldMultiple = m_multiple;
-    int oldSelectedIndex = selectedIndex();
+    HTMLOptionElement* oldSelectedOption = selectedOption();
     m_multiple = !value.isNull();
     setNeedsValidityCheck();
     lazyReattachIfAttached();
@@ -1296,8 +1286,8 @@ void HTMLSelectElement::parseMultipleAttribute(const AtomicString& value)
         // Preserving the first selection is compatible with Firefox and
         // WebKit. However Edge seems to "ask for a reset" simply.  As of 2016
         // March, the HTML specification says nothing about this.
-        if (oldSelectedIndex >= 0)
-            selectOption(oldSelectedIndex, DeselectOtherOptions);
+        if (oldSelectedOption)
+            selectOption(oldSelectedOption, DeselectOtherOptions);
         else
             resetToDefaultSelection();
     }
@@ -1800,7 +1790,10 @@ void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
     int index = m_typeAhead.handleEvent(event, TypeAhead::MatchPrefix | TypeAhead::CycleFirstChar);
     if (index < 0)
         return;
-    selectOption(listToOptionIndex(index), DeselectOtherOptions | MakeOptionDirty | DispatchInputAndChangeEvent);
+    HTMLOptionElement* option = nullptr;
+    if (static_cast<size_t>(index) < listItems().size() && isHTMLOptionElement(listItems()[index]))
+        option = toHTMLOptionElement(listItems()[index]);
+    selectOption(option, DeselectOtherOptions | MakeOptionDirty | DispatchInputAndChangeEvent);
     if (!usesMenuList())
         listBoxOnChange();
 }
@@ -1811,26 +1804,22 @@ void HTMLSelectElement::accessKeySetSelectedIndex(int index)
     if (!focused())
         accessKeyAction(false);
 
-    const ListItems& items = listItems();
-    int listIndex = optionToListIndex(index);
-    if (listIndex < 0)
-        return;
-    HTMLElement& element = *items[listIndex];
-    if (!isHTMLOptionElement(element))
+    HTMLOptionElement* option = item(index);
+    if (!option)
         return;
     EventQueueScope scope;
     // If this index is already selected, unselect. otherwise update the
     // selected index.
     SelectOptionFlags flags = DispatchInputAndChangeEvent | (multiple() ? 0 : DeselectOtherOptions);
-    if (toHTMLOptionElement(element).selected()) {
+    if (option->selected()) {
         if (usesMenuList())
-            selectOption(-1, flags);
+            selectOption(nullptr, flags);
         else
-            toHTMLOptionElement(element).setSelectedState(false);
+            option->setSelectedState(false);
     } else {
-        selectOption(index, flags);
+        selectOption(option, flags);
     }
-    toHTMLOptionElement(element).setDirty(true);
+    option->setDirty(true);
     if (usesMenuList())
         return;
     listBoxOnChange();

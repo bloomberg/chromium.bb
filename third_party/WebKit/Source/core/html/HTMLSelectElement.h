@@ -229,9 +229,7 @@ private:
         MakeOptionDirty = 1 << 2,
     };
     typedef unsigned SelectOptionFlags;
-    void selectOption(int optionIndex, SelectOptionFlags);
     void selectOption(HTMLOptionElement*, SelectOptionFlags);
-    void selectOption(HTMLOptionElement*, int optionIndex, SelectOptionFlags);
     void deselectItemsWithoutValidation(HTMLElement* elementToExclude = 0);
     void parseMultipleAttribute(const AtomicString&);
     HTMLOptionElement* lastSelectedOption() const;
