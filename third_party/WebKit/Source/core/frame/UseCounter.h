@@ -1234,10 +1234,13 @@ public:
         MediaSourceAbortRemove = 1428,
         MediaSourceDurationTruncatingBuffered = 1429,
         AudioContextCrossOriginIframe = 1430,
+        // The above items are available in M53 branch
+
         PointerEventSetCapture = 1431,
         PointerEventDispatch = 1432,
         MIDIMessageEventReceivedTime = 1433,
         SummaryElementWithDisplayBlockAuthorRule = 1434,
+        V8MediaStream_Active_AttributeGetter = 1435,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
