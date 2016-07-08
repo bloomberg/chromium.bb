@@ -250,7 +250,7 @@
             'cronet_version',
             'load_states_list',
             'network_quality_observation_source_java',
-            '../third_party/android_tools/android_tools.gyp:android_support_v13_java',
+            '../third_party/android_tools/android_tools.gyp:android_support_annotations_javalib',
           ],
           'variables': {
             'java_in_dir': 'cronet/android/api',
@@ -269,7 +269,7 @@
             'libcronet',
             'net_request_priority_java',
             'network_quality_observation_source_java',
-            '../third_party/android_tools/android_tools.gyp:android_support_v13_java',
+            '../third_party/android_tools/android_tools.gyp:android_support_annotations_javalib',
           ],
           'variables': {
             'java_in_dir': 'cronet/android/java',

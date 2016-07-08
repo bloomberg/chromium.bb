@@ -274,7 +274,7 @@ android_library("cronet_api") {
   ]
 
   deps = [
-    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_annotations_javalib",
   ]
 
   srcjar_deps = [
@@ -313,7 +313,7 @@ android_library("cronet_java") {
     ":cronet_api",
     "//base:base_java",
     "//net/android:net_java",
-    "//third_party/android_tools:android_support_v13_java",
+    "//third_party/android_tools:android_support_annotations_javalib",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 
