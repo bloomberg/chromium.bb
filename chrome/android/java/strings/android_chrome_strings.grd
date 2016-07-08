@@ -1097,7 +1097,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         To get your tabs from your other devices, turn on sync.
       </message>
       <message name="IDS_RECENT_TABS_SYNC_PROMO_ENABLE_ANDROID_SYNC" desc="Text that displayed in a textview encouraging the user to enable sync in the android settings.">
-        To get your tabs from your other devices, turn on "Auto-sync data" in Android account settings.
+        To get your tabs from your other devices, turn on “Auto-sync data” in Android account settings.
       </message>
       <message name="IDS_NTP_RECENT_TABS_SYNC_PROMO_INSTRUCTIONS" desc="Information about sync displayed on the NTP when the user has signed in on mobile but not on desktop">
         Tabs that you've opened in Chrome on your other devices will appear here.
@@ -2481,7 +2481,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
         All site storage, including cookies and other locally stored data
       </message>
       <message name="IDS_STORAGE_MANAGEMENT_COMPUTING_SIZE" desc="String shown in place of the data usage while it's being calculated. [CHAR-LIMIT=30]">
-        Computing...
+        Computing…
       </message>
       <message name="IDS_STORAGE_MANAGEMENT_STARTUP_FAILURE" desc="String shown in place of the data usage when starting the chrome native process failed. [CHAR-LIMIT=30]">
         Unknown
@@ -2509,7 +2509,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
       </message>
 
       <message name="IDS_STORAGE_CLEAR_BUTTON_TITLE" desc="Title of a button in the storage UI used to clear all storage data. [CHAR-LIMIT=24]">
-        Clear Site Storage...
+        Clear Site Storage…
       </message>
       <message name="IDS_STORAGE_CLEAR_DIALOG_TEXT" desc="Text of the clear storage dialog which give the user a choice to reset the app or delete site storage data.">
         This will clear all <ph name="SIZE_IN_KB">%1$s<ex>101kb</ex></ph> of website storage.
