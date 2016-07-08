@@ -5,12 +5,15 @@
 """Pull latest revisions of a W3C test repo and make a local commit."""
 
 import argparse
+import time
 
 from webkitpy.common.webkit_finder import WebKitFinder
 
 # Import destination directories (under LayoutTests/imported/).
 WPT_DEST_NAME = 'wpt'
 CSS_DEST_NAME = 'csswg-test'
+
+POLL_DELAY_SECONDS = 300
 
 
 class DepsUpdater(object):
@@ -24,6 +27,7 @@ class DepsUpdater(object):
         self.allow_local_commits = False
         self.keep_w3c_repos_around = False
         self.target = None
+        self.auto_update = False
 
     def main(self, argv=None):
         self.parse_args(argv)
@@ -60,6 +64,19 @@ class DepsUpdater(object):
 
         self.commit_changes_if_needed(chromium_commitish, import_commitish)
 
+        if self.auto_update:
+            self.check_run(['git', 'cl', 'upload', '-f'])
+            self.run(['git', 'cl', 'set-commit', '--dry-run'])
+            while True:
+                time.sleep(POLL_DELAY_SECONDS)
+                _, out = self.run(['git', 'cl', 'try-results'])
+                results = self.parse_try_job_results(out)
+                if results['Started'] or results['Scheduled']:
+                    continue
+                if results['Failures']:
+                    return 1
+                break
+            self.run(['git', 'cl', 'land', '-f'])
         return 0
 
     def parse_args(self, argv):
@@ -73,12 +90,15 @@ class DepsUpdater(object):
                             help='leave the w3c repos around that were imported previously.')
         parser.add_argument('target', choices=['css', 'wpt'],
                             help='Target repository.  "css" for csswg-test, "wpt" for web-platform-tests.')
+        parser.add_argument('--auto-update', action='store_true',
+                            help='uploads CL and initiates commit queue.')
 
         args = parser.parse_args(argv)
         self.allow_local_commits = args.allow_local_commits
         self.keep_w3c_repos_around = args.keep_w3c_repos_around
         self.verbose = args.verbose
         self.target = args.target
+        self.auto_update = args.auto_update
 
     def checkout_is_okay(self):
         git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
@@ -222,3 +242,42 @@ class DepsUpdater(object):
 
     def print_(self, msg):
         self.host.print_(msg)
+
+    def parse_try_job_results(self, results):
+        """Parses try job results from Rietveld.
+
+        Turns the output from git cl try-results into a usable format.
+
+        Args:
+            results: The stdout obtained by running git cl try-results.
+
+        Returns:
+            A dict mapping result type (e.g. Success, Failure)
+            to list of bots with that result type. The list of builders
+            is represented as a set and any bots with both success and
+            failure results are not included in failures.
+
+        Raises:
+            AttributeError: An unexpected result was found.
+        """
+        sets = {}
+        for line in results.splitlines():
+            line = line.strip()
+            if line[-1] == ':':
+                result_type = line[:-1]
+                sets[result_type] = set()
+            elif line.split()[0] == 'Total:':
+                break
+            else:
+                sets[result_type].add(line.split()[0])
+            print sets
+        sets['Failures'] -= sets['Successes']
+        sets['Started'] -= sets['Successes']
+        sets['Started'] -= sets['Failures']
+        return sets
+
+    def check_run(self, command):
+        return_code, out = self.run(command)
+        if return_code:
+            raise Exception('%s failed with exit code %d.' % ' '.join(command), return_code)
+        return out
