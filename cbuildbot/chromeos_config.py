@@ -92,7 +92,8 @@ class HWTestList(object):
       bvt_inline_kwargs = async_kwargs
     else:
       bvt_inline_kwargs = kwargs.copy()
-      bvt_inline_kwargs['timeout'] = 120 * 60
+      bvt_inline_kwargs['timeout'] = (
+          config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT)
 
     # BVT + AU suite.
     return [config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
