@@ -903,12 +903,7 @@ public class ToolbarPhone extends ToolbarLayout
                 (mNtpSearchBoxTransformedBounds.top - mPhoneLocationBar.getTop()
                         + halfHeightDifference)));
         if (!mUrlFocusChangeInProgress) {
-            float searchBoxTranslationY =
-                    mNtpSearchBoxTransformedBounds.top - mNtpSearchBoxOriginalBounds.top;
-            searchBoxTranslationY = Math.min(searchBoxTranslationY, 0);
-            mToolbarButtonsContainer.setTranslationY(searchBoxTranslationY);
-            mReturnButton.setTranslationY(searchBoxTranslationY);
-            mHomeButton.setTranslationY(searchBoxTranslationY);
+            setButtonsTranslationY();
         }
 
         mLocationBarBackgroundOffset.set(
@@ -936,6 +931,15 @@ public class ToolbarPhone extends ToolbarLayout
                 mUrlExpansionPercent >= 0.4f ? 255 : (int) ((mUrlExpansionPercent * 2.5f) * 255);
         if (mUrlExpansionPercent == 1f) mUrlBackgroundAlpha = 255;
         mForceDrawLocationBarBackground = mUrlExpansionPercent != 0f;
+    }
+
+    private void setButtonsTranslationY() {
+        float searchBoxTranslationY =
+                mNtpSearchBoxTransformedBounds.top - mNtpSearchBoxOriginalBounds.top;
+        searchBoxTranslationY = Math.min(searchBoxTranslationY, 0);
+        mToolbarButtonsContainer.setTranslationY(searchBoxTranslationY);
+        mReturnButton.setTranslationY(searchBoxTranslationY);
+        mHomeButton.setTranslationY(searchBoxTranslationY);
     }
 
     private void setAncestorsShouldClipChildren(boolean clip) {
@@ -1719,10 +1723,10 @@ public class ToolbarPhone extends ToolbarLayout
         // during the URL focus and defocus animations it should not be touched. Unfortunately
         // updateNtpTransitionAnimation() is called a few times after the URL focus animation has
         // been completed while mUrlFocusChangeInProgress is set to false, causing translationY to
-        // non-zero at the end.
+        // incorrect at the end.
         // We reset the translationY here so the mToolbarButtonsContainer is on screen for the
         // defocusing animation.
-        mToolbarButtonsContainer.setTranslationY(0f);
+        setButtonsTranslationY();
 
         triggerUrlFocusAnimation(hasFocus);
 
