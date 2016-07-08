@@ -25,22 +25,7 @@ GLContextVirtual::GLContextVirtual(gl::GLShareGroup* share_group,
 bool GLContextVirtual::Initialize(gl::GLSurface* compatible_surface,
                                   gl::GpuPreference gpu_preference) {
   SetGLStateRestorer(new GLStateRestorerImpl(decoder_));
-
-  // Virtual contexts obviously can't make a context that is compatible
-  // with the surface (the context already exists), but we do need to
-  // make a context current for SetupForVirtualization() below.
-  if (!IsCurrent(compatible_surface)) {
-    if (!shared_context_->MakeCurrent(compatible_surface)) {
-      // This is likely an error. The real context should be made as
-      // compatible with all required surfaces when it was created.
-      LOG(ERROR) << "Failed MakeCurrent(compatible_surface)";
-      return false;
-    }
-  }
-
-  shared_context_->SetupForVirtualization();
-  shared_context_->MakeVirtuallyCurrent(this, compatible_surface);
-  return true;
+  return shared_context_->MakeVirtuallyCurrent(this, compatible_surface);
 }
 
 void GLContextVirtual::Destroy() {

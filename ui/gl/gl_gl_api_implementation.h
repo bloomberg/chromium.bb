@@ -70,9 +70,6 @@ class GL_EXPORT RealGLApi : public GLApiBase {
   void InitializeFilteredExtensions();
 
  private:
-  void glFinishFn() override;
-  void glFlushFn() override;
-
   // Filtered GL_EXTENSIONS we return to glGetString(i) calls.
   std::vector<std::string> disabled_exts_;
   std::vector<std::string> filtered_exts_;
@@ -108,39 +105,6 @@ class NoContextGLApi : public GLApi {
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
   #include "gl_bindings_api_autogen_gl.h"
-};
-
-// Implementents the GL API using co-operative state restoring.
-// Assumes there is only one real GL context and that multiple virtual contexts
-// are implemented above it. Restores the needed state from the current context.
-class VirtualGLApi : public GLApiBase {
- public:
-  VirtualGLApi();
-  ~VirtualGLApi() override;
-  void Initialize(DriverGL* driver, GLContext* real_context);
-
-  // Sets the current virutal context.
-  bool MakeCurrent(GLContext* virtual_context, GLSurface* surface);
-
-  void OnReleaseVirtuallyCurrent(GLContext* virtual_context);
-
- private:
-  // Overridden functions from GLApiBase
-  void glGetIntegervFn(GLenum pname, GLint* params) override;
-  const GLubyte* glGetStringFn(GLenum name) override;
-  const GLubyte* glGetStringiFn(GLenum name, GLuint index) override;
-  void glFinishFn() override;
-  void glFlushFn() override;
-
-  // The real context we're running on.
-  GLContext* real_context_;
-
-  // The current virtual context.
-  GLContext* current_context_;
-
-  // The supported extensions being advertised for this virtual context.
-  std::string extensions_;
-  std::vector<std::string> extensions_vec_;
 };
 
 }  // namespace gl

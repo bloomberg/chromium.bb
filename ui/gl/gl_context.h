@@ -31,7 +31,6 @@ namespace gl {
 class GLSurface;
 class GPUTiming;
 class GPUTimingClient;
-class VirtualGLApi;
 struct GLVersionInfo;
 
 // Encapsulates an OpenGL context, hiding platform specific management.
@@ -116,9 +115,6 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 
   virtual bool WasAllocatedUsingRobustnessExtension();
 
-  // Use this context for virtualization.
-  void SetupForVirtualization();
-
   // Make this context current when used for context virtualization.
   bool MakeVirtuallyCurrent(GLContext* virtual_context, GLSurface* surface);
 
@@ -168,11 +164,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   friend class base::RefCounted<GLContext>;
 
   // For GetRealCurrent.
-  friend class VirtualGLApi;
   friend class gpu::GLContextVirtual;
 
   scoped_refptr<GLShareGroup> share_group_;
-  std::unique_ptr<VirtualGLApi> virtual_gl_api_;
+  GLContext* current_virtual_context_;
   bool state_dirtied_externally_;
   std::unique_ptr<GLStateRestorer> state_restorer_;
   std::unique_ptr<GLVersionInfo> version_info_;

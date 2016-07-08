@@ -46,6 +46,7 @@ void GLContext::ScopedReleaseCurrent::Cancel() {
 
 GLContext::GLContext(GLShareGroup* share_group)
     : share_group_(share_group),
+      current_virtual_context_(nullptr),
       state_dirtied_externally_(false),
       swap_interval_(1),
       force_swap_interval_zero_(false) {
@@ -186,24 +187,67 @@ bool GLContext::InitializeDynamicBindings() {
   return initialized;
 }
 
-void GLContext::SetupForVirtualization() {
-  if (!virtual_gl_api_) {
-    virtual_gl_api_.reset(new VirtualGLApi());
-    virtual_gl_api_->Initialize(&g_driver_gl, this);
-  }
-}
-
 bool GLContext::MakeVirtuallyCurrent(
     GLContext* virtual_context, GLSurface* surface) {
-  DCHECK(virtual_gl_api_);
   if (!ForceGpuSwitchIfNeeded())
     return false;
-  return virtual_gl_api_->MakeCurrent(virtual_context, surface);
+  bool switched_real_contexts = GLContext::GetRealCurrent() != this;
+  GLSurface* current_surface = GLSurface::GetCurrent();
+  if (switched_real_contexts || surface != current_surface) {
+    // MakeCurrent 'lite' path that avoids potentially expensive MakeCurrent()
+    // calls if the GLSurface uses the same underlying surface or renders to
+    // an FBO.
+    if (switched_real_contexts || !current_surface ||
+        !virtual_context->IsCurrent(surface)) {
+      if (!MakeCurrent(surface)) {
+        return false;
+      }
+    }
+  }
+
+  DCHECK_EQ(this, GLContext::GetRealCurrent());
+  DCHECK(IsCurrent(NULL));
+  DCHECK(virtual_context->IsCurrent(surface));
+
+  if (switched_real_contexts || virtual_context != current_virtual_context_) {
+#if DCHECK_IS_ON()
+    GLenum error = glGetError();
+    // Accepting a context loss error here enables using debug mode to work on
+    // context loss handling in virtual context mode.
+    // There should be no other errors from the previous context leaking into
+    // the new context.
+    DCHECK(error == GL_NO_ERROR || error == GL_CONTEXT_LOST_KHR) <<
+        "GL error was: " << error;
+#endif
+
+    // Set all state that is different from the real state
+    if (virtual_context->GetGLStateRestorer()->IsInitialized()) {
+      GLStateRestorer* virtual_state = virtual_context->GetGLStateRestorer();
+      GLStateRestorer* current_state =
+          current_virtual_context_
+              ? current_virtual_context_->GetGLStateRestorer()
+              : nullptr;
+      if (current_state)
+        current_state->PauseQueries();
+      virtual_state->ResumeQueries();
+
+      virtual_state->RestoreState(
+          (current_state && !switched_real_contexts) ? current_state : NULL);
+    }
+    current_virtual_context_ = virtual_context;
+  }
+
+  virtual_context->SetCurrent(surface);
+  if (!surface->OnMakeCurrent(virtual_context)) {
+    LOG(ERROR) << "Could not make GLSurface current.";
+    return false;
+  }
+  return true;
 }
 
 void GLContext::OnReleaseVirtuallyCurrent(GLContext* virtual_context) {
-  if (virtual_gl_api_)
-    virtual_gl_api_->OnReleaseVirtuallyCurrent(virtual_context);
+  if (current_virtual_context_ == virtual_context)
+    current_virtual_context_ = nullptr;
 }
 
 void GLContext::SetRealGLApi() {
