@@ -484,6 +484,75 @@ padding-bottom: 20px
 padding-left: 20px
 
 
+Resolved values for element "ruby" with display "block":
+line-height: normal
+width: 452px
+height: 0px
+top: 0px
+right: -50px
+bottom: 0px
+left: 50px
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+
+Resolved values for element "ruby" with display "inline":
+line-height: normal
+width: auto
+height: auto
+top: 0px
+right: auto
+bottom: 0px
+left: 10%
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+
+Resolved values for element "ruby" with display "inline-block":
+line-height: normal
+width: 0px
+height: 0px
+top: 0px
+right: -50px
+bottom: 0px
+left: 50px
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+
+Resolved values for element "ruby" with display "none":
+line-height: normal
+width: auto
+height: auto
+top: auto
+right: auto
+bottom: auto
+left: 10%
+margin-top: 0px
+margin-right: 0px
+margin-bottom: 0px
+margin-left: 0px
+padding-top: 0px
+padding-right: 0px
+padding-bottom: 0px
+padding-left: 0px
+
+
 Fixed
 Percents
 EMs
@@ -491,3 +560,4 @@ Auto
 Mixed
 Relative Positioned
 Absolute Positioned
+

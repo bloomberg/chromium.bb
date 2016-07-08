@@ -101,6 +101,11 @@
             padding: 20px;
         }
 
+        #ruby {
+            left: 10%;
+            position: relative;
+        }
+
     </style>
     
     <script>
@@ -163,6 +168,7 @@
             test('mixed');
             test('rel_positioned');
             test('abs_positioned');
+            test('ruby');
         }
     </script>
 </head>
@@ -194,6 +200,9 @@
     </div>
     <div class="outer" id="abs_container">
         <div class="testbox" id="abs_positioned">Absolute Positioned</div>
+    </div>
+    <div class="outer">
+        <ruby class="testbox" id="ruby"></ruby>
     </div>
 </body>
 </html>

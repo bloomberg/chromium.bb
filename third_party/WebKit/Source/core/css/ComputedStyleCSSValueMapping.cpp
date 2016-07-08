@@ -207,17 +207,24 @@ static CSSValue* valueForPositionOffset(const ComputedStyle& style, CSSPropertyI
             if (opposite.isAuto())
                 return CSSPrimitiveValue::create(0, CSSPrimitiveValue::UnitType::Pixels);
 
-            if (opposite.hasPercent()) {
-                LayoutUnit containingBlockSize =
-                    (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
-                    toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent() :
-                    toLayoutBox(layoutObject)->containingBlockLogicalHeightForGetComputedStyle();
-                return zoomAdjustedPixelValue(-floatValueForLength(opposite, containingBlockSize), style);
+            if (opposite.hasPercent() || opposite.isCalculated()) {
+                if (layoutObject->isBox()) {
+                    LayoutUnit containingBlockSize =
+                        (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
+                        toLayoutBox(layoutObject)->containingBlockLogicalWidthForContent() :
+                        toLayoutBox(layoutObject)->containingBlockLogicalHeightForGetComputedStyle();
+                    return zoomAdjustedPixelValue(-floatValueForLength(opposite, containingBlockSize), style);
+                }
+                // FIXME:  fall back to auto for position:relative, display:inline
+                return CSSPrimitiveValue::createIdentifier(CSSValueAuto);
             }
-            return zoomAdjustedPixelValue(-opposite.pixels(), style);
+
+            // Length doesn't provide operator -, so multiply by -1.
+            opposite *= -1.f;
+            return zoomAdjustedPixelValueForLength(opposite, style);
         }
 
-        if (layoutObject->isOutOfFlowPositioned()) {
+        if (layoutObject->isOutOfFlowPositioned() && layoutObject->isBox()) {
             // For fixed and absolute positioned elements, the top, left, bottom, and right
             // are defined relative to the corresponding sides of the containing block.
             LayoutBlock* container = layoutObject->containingBlock();
