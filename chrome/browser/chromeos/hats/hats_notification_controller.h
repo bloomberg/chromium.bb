@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_HATS_HATS_NOTIFICATION_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
@@ -23,7 +24,10 @@ class HatsNotificationController : public NotificationDelegate,
  public:
   // Minimum amount of time before the notification is displayed again after a
   // user has interacted with it.
-  static const base::TimeDelta kHatsThresholdTime;
+  static const int kHatsThresholdDays;
+  // Minimum amount of time after initial login or oobe after which we can show
+  // the HaTS notification.
+  static const int kHatsNewDeviceThresholdDays;
   static const char kDelegateId[];
   static const char kNotificationId[];
 
@@ -36,6 +40,7 @@ class HatsNotificationController : public NotificationDelegate,
   ~HatsNotificationController() override;
 
   // NotificationDelegate overrides:
+  void Initialize(bool is_new_device);
   void ButtonClick(int button_index) override;
   void Close(bool by_user) override;
   std::string id() const override;
@@ -49,6 +54,7 @@ class HatsNotificationController : public NotificationDelegate,
   void UpdateLastInteractionTime();
 
   Profile* profile_;
+  base::WeakPtrFactory<HatsNotificationController> weak_pointer_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsNotificationController);
 };
