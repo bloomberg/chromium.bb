@@ -185,9 +185,19 @@ class JSChecker(object):
             errors.MISSING_JSDOC_TAG_THIS,
         ]
 
-    # Whitelist Polymer-specific JsDoc tags.
-    gflags.FLAGS.custom_jsdoc_tags = ('group', 'element', 'attribute',
-                                      'default', 'polymerBehavior')
+    # Keep this in sync with third_party/closure_compiler/closure_args.gypi
+    gflags.FLAGS.custom_jsdoc_tags = (
+        'abstract',
+        'attribute',
+        'default',
+        'demo',
+        'element',
+        'group',
+        'hero',
+        'polymerBehavior'
+        'status',
+        'submodule',
+    )
     error_handler = ErrorHandlerImpl(self.input_api.re)
     runner.Run(file_to_lint, error_handler, source=source)
     return error_handler.GetErrors()

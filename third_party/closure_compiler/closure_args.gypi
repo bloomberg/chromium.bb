@@ -2,9 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GN version: third_party/closure_compiler/closure_args.gni
 {
   'closure_args': [
     'compilation_level=SIMPLE_OPTIMIZATIONS',
+
+    # Keep this in sync with chrome/browser/web_dev_style/js_checker.py.
     'extra_annotation_name=attribute',
     'extra_annotation_name=demo',
     'extra_annotation_name=element',
@@ -13,6 +16,7 @@
     'extra_annotation_name=homepage',
     'extra_annotation_name=status',
     'extra_annotation_name=submodule',
+
     'jscomp_error=accessControls',
     'jscomp_error=ambiguousFunctionDecl',
     'jscomp_error=checkTypes',
@@ -31,9 +35,12 @@
     'jscomp_error=unknownDefines',
     'jscomp_error=uselessCode',
     'jscomp_error=visibility',
+
     'language_in=ECMASCRIPT6_STRICT',
     'language_out=ECMASCRIPT5_STRICT',
+
     'polymer_pass',
+
     'source_map_format=V3',
   ],
   'default_disabled_closure_args': [
