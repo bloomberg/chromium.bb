@@ -20,8 +20,8 @@ main/e/e2fsprogs/comerr-dev_2.1-1.42.12-1.1_arm64.deb
 main/e/e2fsprogs/libcomerr2_1.42.12-1.1_arm64.deb
 main/e/elfutils/libelf1_0.159-4.2_arm64.deb
 main/e/elfutils/libelf-dev_0.159-4.2_arm64.deb
-main/e/expat/libexpat1_2.1.0-6+deb8u2_arm64.deb
-main/e/expat/libexpat1-dev_2.1.0-6+deb8u2_arm64.deb
+main/e/expat/libexpat1_2.1.0-6+deb8u1_arm64.deb
+main/e/expat/libexpat1-dev_2.1.0-6+deb8u1_arm64.deb
 main/f/fontconfig/libfontconfig1_2.11.0-6.3_arm64.deb
 main/f/fontconfig/libfontconfig1-dev_2.11.0-6.3_arm64.deb
 main/f/freetype/libfreetype6_2.5.2-3+deb8u1_arm64.deb
@@ -86,7 +86,7 @@ main/libp/libpng/libpng12-0_1.2.50-2+deb8u2_arm64.deb
 main/libp/libpng/libpng12-dev_1.2.50-2+deb8u2_arm64.deb
 main/libp/libpthread-stubs/libpthread-stubs0-dev_0.3-4_arm64.deb
 main/libs/libselinux/libselinux1_2.3-2_arm64.deb
-main/libt/libtasn1-6/libtasn1-6_4.2-3+deb8u2_arm64.deb
+main/libt/libtasn1-6/libtasn1-6_4.2-3+deb8u1_arm64.deb
 main/libt/libthai/libthai0_0.1.21-1_arm64.deb
 main/libx/libx11/libx11-6_1.6.2-3_arm64.deb
 main/libx/libx11/libx11-dev_1.6.2-3_arm64.deb
@@ -127,7 +127,7 @@ main/libx/libxt/libxt-dev_1.1.4-1+b1_arm64.deb
 main/libx/libxtst/libxtst6_1.2.2-1+b1_arm64.deb
 main/libx/libxtst/libxtst-dev_1.2.2-1+b1_arm64.deb
 main/libx/libxxf86vm/libxxf86vm1_1.1.3-1+b1_arm64.deb
-main/l/linux/linux-libc-dev_3.16.7-ckt25-2_arm64.deb
+main/l/linux/linux-libc-dev_3.16.7-ckt25-1_arm64.deb
 main/m/mesa/libgl1-mesa-dev_10.3.2-1+deb8u1_arm64.deb
 main/m/mesa/libgl1-mesa-glx_10.3.2-1+deb8u1_arm64.deb
 main/m/mesa/libglapi-mesa_10.3.2-1+deb8u1_arm64.deb
@@ -138,8 +138,8 @@ main/n/nspr/libnspr4_4.10.7-1+deb8u1_arm64.deb
 main/n/nspr/libnspr4-dev_4.10.7-1+deb8u1_arm64.deb
 main/n/nss/libnss3_3.17.2-1.1+deb8u2_arm64.deb
 main/n/nss/libnss3-dev_3.17.2-1.1+deb8u2_arm64.deb
-main/o/openssl/libssl1.0.0_1.0.1t-1+deb8u2_arm64.deb
-main/o/openssl/libssl-dev_1.0.1t-1+deb8u2_arm64.deb
+main/o/openssl/libssl1.0.0_1.0.1k-3+deb8u4_arm64.deb
+main/o/openssl/libssl-dev_1.0.1k-3+deb8u4_arm64.deb
 main/o/orbit2/liborbit2_2.14.19-0.3_arm64.deb
 main/p/p11-kit/libp11-kit0_0.20.7-1_arm64.deb
 main/p/pam/libpam0g_1.1.8-3.1+deb8u1+b1_arm64.deb
