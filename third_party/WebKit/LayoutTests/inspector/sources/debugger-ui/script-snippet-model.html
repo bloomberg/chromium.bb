@@ -281,6 +281,30 @@ function test()
                 evaluateSnippetAndDumpEvaluationDetails(uiSourceCode, context, next);
             }
         },
+
+        function testDangerousNames(next)
+        {
+            resetSnippetsSettings();
+
+            WebInspector.scriptSnippetModel.project().createFile("", null, "", step2.bind(this));
+
+            function step2(uiSourceCode)
+            {
+                uiSourceCode.rename("toString", function() { });
+                InspectorTest.showUISourceCode(uiSourceCode,step3.bind(this));
+            }
+
+            function step3()
+            {
+                WebInspector.scriptSnippetModel.project().createFile("", null, "", step4.bind(this));
+            }
+
+            function step4(uiSourceCode)
+            {
+                uiSourceCode.rename("myfile.toString", function() { });
+                InspectorTest.showUISourceCode(uiSourceCode,next);
+            }
+        }
     ]);
 };
 </script>

@@ -69,3 +69,5 @@ Running: testEvaluateInWorker
 Last evaluation source url for snippet: snippets:///1_1
 Snippet execution result: 4
 
+Running: testDangerousNames
+
