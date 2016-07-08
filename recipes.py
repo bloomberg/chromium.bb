@@ -1,26 +1,39 @@
 #!/usr/bin/env python
 
-# Copyright 2015 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
+# Copyright 2016 The LUCI Authors. All rights reserved.
+# Use of this source code is governed under the Apache License, Version 2.0
+# that can be found in the LICENSE file.
 
-"""Bootstrap script to clone and forward to the recipe engine tool."""
+"""Bootstrap script to clone and forward to the recipe engine tool.
+
+***********************************************************************
+** DO NOT MODIFY EXCEPT IN THE PER-REPO CONFIGURATION SECTION BELOW. **
+***********************************************************************
+
+This is a copy of https://github.com/luci/recipes-py/blob/master/doc/recipes.py.
+To fix bugs, fix in the github repo then copy it back to here and fix the
+PER-REPO CONFIGURATION section to look like this one.
+"""
+
+import os
+
+#### PER-REPO CONFIGURATION (editable) ####
+# The root of the repository relative to the directory of this file.
+REPO_ROOT = ''
+# The path of the recipes.cfg file relative to the root of the repository.
+RECIPES_CFG = os.path.join('infra', 'config', 'recipes.cfg')
+#### END PER-REPO CONFIGURATION ####
+
+BOOTSTRAP_VERSION = 1
 
 import ast
 import logging
-import os
 import random
 import re
 import subprocess
 import sys
 import time
 import traceback
-
-BOOTSTRAP_VERSION = 1
-# The root of the repository relative to the directory of this file.
-REPO_ROOT = ''
-# The path of the recipes.cfg file relative to the root of the repository.
-RECIPES_CFG = os.path.join('infra', 'config', 'recipes.cfg')
 
 
 def parse_protobuf(fh):
@@ -39,8 +52,10 @@ def parse_protobuf(fh):
     A recursive dictionary of lists.
   """
   def parse_atom(text):
-    if text == 'true': return True
-    if text == 'false': return False
+    if text == 'true':
+      return True
+    if text == 'false':
+      return False
     return ast.literal_eval(text)
 
   ret = {}
@@ -57,10 +72,12 @@ def parse_protobuf(fh):
       ret.setdefault(m.group(1), []).append(subparse)
       continue
 
-    if line == '}': return ret
-    if line == '': continue
+    if line == '}':
+      return ret
+    if line == '':
+      continue
 
-    raise Exception('Could not understand line: <%s>' % line)
+    raise ValueError('Could not understand line: <%s>' % line)
 
   return ret
 
@@ -76,7 +93,19 @@ def get_unique(things):
     return things[0]
 
 
+def _subprocess_call(argv, **kwargs):
+  logging.info('Running %r', argv)
+  return subprocess.call(argv, **kwargs)
+
+def _subprocess_check_call(argv, **kwargs):
+  logging.info('Running %r', argv)
+  subprocess.check_call(argv, **kwargs)
+
+
 def main():
+  if '--verbose' in sys.argv:
+    logging.getLogger().setLevel(logging.INFO)
+
   if sys.platform.startswith(('win', 'cygwin')):
     git = 'git.bat'
   else:
@@ -107,28 +136,28 @@ def main():
     if not os.path.exists(deps_path):
       os.makedirs(deps_path)
     if not os.path.exists(engine_path):
-      subprocess.check_call([git, 'clone', engine_url, engine_path])
+      _subprocess_check_call([git, 'clone', engine_url, engine_path])
 
-    needs_fetch = subprocess.call(
+    needs_fetch = _subprocess_call(
         [git, 'rev-parse', '--verify', '%s^{commit}' % engine_revision],
         cwd=engine_path, stdout=open(os.devnull, 'w'))
     if needs_fetch:
-      subprocess.check_call([git, 'fetch'], cwd=engine_path)
-    subprocess.check_call(
+      _subprocess_check_call([git, 'fetch'], cwd=engine_path)
+    _subprocess_check_call(
         [git, 'checkout', '--quiet', engine_revision], cwd=engine_path)
 
   try:
     ensure_engine()
-  except subprocess.CalledProcessError as e:
-    if e.returncode == 128:  # Thrown when git gets a lock error.
-      time.sleep(random.uniform(2,5))
-      ensure_engine()
-    else:
-      raise
+  except subprocess.CalledProcessError:
+    logging.exception('ensure_engine failed')
+
+    # Retry errors.
+    time.sleep(random.uniform(2,5))
+    ensure_engine()
 
   args = ['--package', recipes_cfg_path,
           '--bootstrap-script', __file__] + sys.argv[1:]
-  return subprocess.call([
+  return _subprocess_call([
       sys.executable, '-u',
       os.path.join(engine_path, engine_subpath, 'recipes.py')] + args)
 
