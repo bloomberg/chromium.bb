@@ -137,6 +137,10 @@ class IdlDefinitions(object):
             callback_function.accept(visitor)
         for dictionary in self.dictionaries.itervalues():
             dictionary.accept(visitor)
+        for enumeration in self.enumerations.itervalues():
+            enumeration.accept(visitor)
+        for implement in self.implements:
+            implement.accept(visitor)
         for typedef in self.typedefs.itervalues():
             typedef.accept(visitor)
 
@@ -253,6 +257,9 @@ class IdlEnum(object):
         self.values = []
         for child in node.GetChildren():
             self.values.append(child.GetName())
+
+    def accept(self, visitor):
+        visitor.visit_enumeration(self)
 
 
 ################################################################################
@@ -837,6 +844,9 @@ class IdlImplement(object):
         self.left_interface = node.GetName()
         self.right_interface = node.GetProperty('REFERENCE')
 
+    def accept(self, visitor):
+        visitor.visit_implement(self)
+
 
 ################################################################################
 # Extended attributes
@@ -1091,6 +1101,12 @@ class Visitor(object):
 
     def visit_dictionary_member(self, member):
         self.visit_typed_object(member)
+
+    def visit_enumeration(self, enumeration):
+        pass
+
+    def visit_implement(self, implement):
+        pass
 
     def visit_interface(self, interface):
         pass
