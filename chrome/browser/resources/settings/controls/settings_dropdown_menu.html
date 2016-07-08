@@ -9,31 +9,7 @@
 <dom-module id="settings-dropdown-menu">
   <template>
     <style include="settings-shared">
-      .item {
-        align-items: center;
-        color: var(--paper-grey-800);
-        display: flex;
-        font-size: inherit;
-        min-height: 48px;
-        padding: 0 16px;
-      }
-
-      .item:focus {
-        background-color: var(--paper-grey-300);
-        outline: none;
-      }
-
-      paper-dropdown-menu {
-        --iron-icon-fill-color: var(--paper-grey-600);
-        --paper-font-subhead: {
-          font-size: inherit;
-        };
-        --paper-input-container-underline: {
-          background: var(--paper-grey-300);
-        };
-        width: 160px;
-      }
-     </style>
+    </style>
     <paper-dropdown-menu id="dropdownMenu" label="[[menuLabel_]]"
         on-iron-select="onSelect_" no-label-float$="[[noLabelFloat]]"
         disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
@@ -42,11 +18,12 @@
         <template is="dom-repeat" items="[[menuOptions]]" initial-count="5">
           <!--TODO(dpapad): Use <button class="paper-item">..</button> once it
               lands in paper-item-shared-styles.html-->
-          <div class="item" role="option" data-value$="[[item.value]]">
+          <div class="dropdown-item" role="option" data-value$="[[item.value]]">
             [[item.name]]
           </div>
         </template>
-        <div class="item" role="option" data-value$="[[notFoundValue_]]"
+        <div class="dropdown-item" role="option"
+            data-value$="[[notFoundValue_]]"
             hidden$="[[!isSelectedNotFound_(selected_)]]">
           $i18n{custom}
         </div>

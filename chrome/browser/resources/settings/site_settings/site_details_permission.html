@@ -2,7 +2,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="/i18n_setup.html">
@@ -16,16 +15,6 @@
     <style include="settings-shared">
       :host {
         display: block;
-      }
-
-      paper-dropdown-menu {
-        --paper-input-container-input: {
-          font-size: inherit;
-        };
-
-        --paper-font-caption: {
-          font-size: inherit;
-        }
       }
 
       .left-column {
@@ -71,14 +60,14 @@
             <paper-listbox id="permission" class="dropdown-content"
                 on-iron-activate="onPermissionMenuIronActivate_"
                 attr-for-selected="data-permission-value">
-              <paper-item id="allow"
+              <div id="allow" class="dropdown-item" role="option"
                   data-permission-value$="[[PermissionValues.ALLOW]]">
                 [[i18n_.allowAction]]
-              </paper-item>
-              <paper-item id="block"
+              </div>
+              <div id="block" class="dropdown-item" role="option"
                   data-permission-value$="[[PermissionValues.BLOCK]]">
                  [[i18n_.blockAction]]
-              </paper-item>
+              </div>
             </paper-listbox>
           </paper-dropdown-menu>
         </div>

@@ -12,28 +12,6 @@
 <dom-module id="settings-search-page">
   <template>
     <style include="settings-shared">
-      paper-dropdown-menu {
-        /* TODO(dschuyler): share styling with settings-dropdown-menu */
-        --iron-icon-fill-color: var(--paper-grey-600);
-      }
-
-      paper-listbox div {
-        align-items: center;
-        color: var(--paper-grey-800);
-        display: flex;
-        font-size: inherit;
-        min-height: 48px;
-        padding: 0 16px;
-      }
-
-      paper-listbox div.iron-selected {
-        font-weight: bold;
-      }
-
-      paper-listbox div:focus {
-        background-color: var(--paper-grey-300);
-        outline: none;
-      }
     </style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="search">
@@ -47,7 +25,7 @@
               <template is="dom-repeat" items="[[searchEngines_]]">
                 <!--TODO(dpapad): Use <button class="paper-item">..</button>
                     once it lands in paper-item-shared-styles.html-->
-                <div role="option">[[item.name]]</div>
+                <div class="dropdown-item" role="option">[[item.name]]</div>
               </template>
             </paper-listbox>
           </paper-dropdown-menu>

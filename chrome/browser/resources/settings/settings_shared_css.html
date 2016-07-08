@@ -27,6 +27,34 @@
         background-color: var(--paper-grey-300);
       }
 
+      paper-dropdown-menu {
+        --iron-icon-fill-color: var(--paper-grey-600);
+        --paper-font-subhead: {
+          font-size: inherit;
+        };
+        --paper-input-container-underline: {
+          background: var(--paper-grey-300);
+        };
+      }
+
+      paper-dropdown-menu .dropdown-item {
+        align-items: center;
+        color: var(--paper-grey-800);
+        display: flex;
+        font-size: inherit;
+        min-height: 48px;
+        padding: 0 16px;
+      }
+
+      paper-dropdown-menu .dropdown-item.iron-selected {
+        font-weight: bold;
+      }
+
+      paper-dropdown-menu .dropdown-item:focus {
+        background-color: var(--paper-grey-300);
+        outline: none;
+      }
+
       span ~ a {
         -webkit-margin-start: 4px;
       }
