@@ -52,9 +52,6 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
   bool use_image_chromium =
       !command_line->HasSwitch(switches::kDisablePepper3DImageChromium);
   use_image_chromium_ = use_image_chromium;
-
-  // TODO(erikchen): Remove this line to enable the feature.
-  use_image_chromium_ = false;
 #endif
 }
 
