@@ -1967,7 +1967,9 @@ if (enable_java_templates) {
     _extra_native_libs_even_when_incremental_deps = []
     assert(_extra_native_libs_even_when_incremental_deps == [])  # Mark as used.
     if (_native_libs_deps != []) {
-      if (is_debug) {
+      # zipalign can't align gdb_server, don't pack gdbserver temporarily.
+      if (is_debug && (!defined(invoker.page_align_shared_libraries) ||
+                       !invoker.page_align_shared_libraries)) {
         _extra_native_libs_even_when_incremental = [ android_gdbserver ]
       }
 
