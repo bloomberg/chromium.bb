@@ -306,7 +306,7 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
   for (base::DictionaryValue::Iterator it(*dictionary);
       !it.IsAtEnd();
       it.Advance()) {
-    std::string key = it.key();
+    const std::string& key = it.key();
     const base::Value* value = &it.value();
     if (key == "matches") {
       ParseURLPatterns(dictionary, "matches", &matches_);

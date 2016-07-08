@@ -82,7 +82,7 @@ void PowerAPI::RemoveRequest(const std::string& extension_id) {
 }
 
 void PowerAPI::SetCreateBlockerFunctionForTesting(
-    CreateBlockerFunction function) {
+    const CreateBlockerFunction& function) {
   create_blocker_function_ =
       !function.is_null() ? function : base::Bind(&CreatePowerSaveBlocker);
 }

@@ -91,7 +91,8 @@ ManifestTest::ManifestData::~ManifestData() {
 }
 
 base::DictionaryValue* ManifestTest::ManifestData::GetManifest(
-    base::FilePath test_data_dir, std::string* error) const {
+    const base::FilePath& test_data_dir,
+    std::string* error) const {
   if (manifest_)
     return manifest_;
 

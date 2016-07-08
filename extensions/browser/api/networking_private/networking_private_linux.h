@@ -218,7 +218,7 @@ class NetworkingPrivateLinux : public NetworkingPrivateDelegate {
   // all active connections then checks if the device matches the requested
   // device, then gets the access point associated with the connection.
   // Returns false if there is an error getting the connected access point.
-  bool GetConnectedAccessPoint(dbus::ObjectPath device_path,
+  bool GetConnectedAccessPoint(const dbus::ObjectPath& device_path,
                                dbus::ObjectPath* access_point_path);
 
   // Given a path to an active connection gets the path to the device

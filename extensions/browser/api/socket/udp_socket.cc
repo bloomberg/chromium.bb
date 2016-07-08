@@ -46,7 +46,7 @@ void UDPSocket::Connect(const net::AddressList& address,
 
     // UDP API only connects to the first address received from DNS so
     // connection may not work even if other addresses are reachable.
-    net::IPEndPoint ip_end_point = address.front();
+    const net::IPEndPoint& ip_end_point = address.front();
     result = socket_.Open(ip_end_point.GetFamily());
     if (result != net::OK)
       break;

@@ -170,7 +170,7 @@ void IdleManager::OnListenerRemoved(const EventListenerInfo& details) {
   }
 }
 
-void IdleManager::QueryState(int threshold, QueryStateCallback notify) {
+void IdleManager::QueryState(int threshold, const QueryStateCallback& notify) {
   DCHECK(thread_checker_.CalledOnValidThread());
   idle_time_provider_->CalculateIdleState(threshold, notify);
 }

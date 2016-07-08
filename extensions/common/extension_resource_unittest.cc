@@ -149,7 +149,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   std::string extension_id = crx_file::id_util::GenerateId("test");
   ExtensionResource resource(extension_id, temp.path(),
                              base::FilePath().AppendASCII(filename));
-  base::FilePath resolved_path = resource.GetFilePath();
+  const base::FilePath& resolved_path = resource.GetFilePath();
 
   base::FilePath expected_path;
   // Expect default path only, since fallback logic is disabled.

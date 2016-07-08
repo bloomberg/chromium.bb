@@ -220,7 +220,7 @@ void IconImage::OnImageLoaded(float scale, const gfx::Image& image_in) {
   if (image->isNull())
     return;
 
-  gfx::ImageSkiaRep rep = image->GetRepresentation(scale);
+  const gfx::ImageSkiaRep& rep = image->GetRepresentation(scale);
   DCHECK(!rep.is_null());
   DCHECK_EQ(scale, rep.scale());
 

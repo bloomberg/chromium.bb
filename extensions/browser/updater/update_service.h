@@ -48,7 +48,7 @@ class UpdateService : public KeyedService {
   // updates available, they will be downloaded, checked for integrity,
   // unpacked, and then passed off to the ExtensionSystem::InstallUpdate method
   // for install completion.
-  void StartUpdateCheck(std::vector<std::string> extension_ids);
+  void StartUpdateCheck(const std::vector<std::string>& extension_ids);
 
  private:
   friend class UpdateServiceFactory;

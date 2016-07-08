@@ -162,7 +162,7 @@ class PermissionIDSet {
   const_iterator end() const { return permissions_.end(); }
 
  private:
-  PermissionIDSet(const std::set<PermissionID>& permissions);
+  explicit PermissionIDSet(const std::set<PermissionID>& permissions);
 
   std::set<PermissionID> permissions_;
 };

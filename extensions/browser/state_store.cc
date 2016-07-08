@@ -42,7 +42,7 @@ class StateStore::DelayedTaskQueue {
 
   // Queues up a task for invoking once we're ready. Invokes immediately if
   // we're already ready.
-  void InvokeWhenReady(base::Closure task);
+  void InvokeWhenReady(const base::Closure& task);
 
   // Marks us ready, and invokes all pending tasks.
   void SetReady();
@@ -55,7 +55,7 @@ class StateStore::DelayedTaskQueue {
   std::vector<base::Closure> pending_tasks_;
 };
 
-void StateStore::DelayedTaskQueue::InvokeWhenReady(base::Closure task) {
+void StateStore::DelayedTaskQueue::InvokeWhenReady(const base::Closure& task) {
   if (ready_) {
     task.Run();
   } else {

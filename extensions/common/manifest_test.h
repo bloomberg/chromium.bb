@@ -53,7 +53,7 @@ class ManifestTest : public testing::Test {
 
     const std::string& name() const { return name_; };
 
-    base::DictionaryValue* GetManifest(base::FilePath manifest_path,
+    base::DictionaryValue* GetManifest(const base::FilePath& manifest_path,
                                        std::string* error) const;
 
    private:

@@ -985,7 +985,7 @@ void NetworkingPrivateLinux::MapSecurityFlagsToString(uint32_t security_flags,
 }
 
 bool NetworkingPrivateLinux::GetConnectedAccessPoint(
-    dbus::ObjectPath device_path,
+    const dbus::ObjectPath& device_path,
     dbus::ObjectPath* access_point_path) {
   AssertOnDBusThread();
   dbus::MethodCall method_call(DBUS_INTERFACE_PROPERTIES,

@@ -74,9 +74,7 @@ class BaseSetOperators {
                   "U ptr must implicitly convert to T ptr");
   }
 
-  BaseSetOperators(const T& set) {
-    this->operator=(set);
-  }
+  explicit BaseSetOperators(const T& set) { this->operator=(set); }
 
   ~BaseSetOperators() {}
 

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_
 #define EXTENSIONS_BROWSER_API_EXECUTE_CODE_FUNCTION_H_
 
+#include "base/macros.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/script_executor.h"
 #include "extensions/common/api/extension_types.h"
@@ -45,9 +46,7 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
                               const std::string& data);
 
   const HostID& host_id() const { return host_id_; }
-  void set_host_id(HostID host_id) {
-    host_id_ = host_id;
-  }
+  void set_host_id(const HostID& host_id) { host_id_ = host_id; }
 
   // The injection details.
   std::unique_ptr<api::extension_types::InjectDetails> details_;
@@ -78,6 +77,8 @@ class ExecuteCodeFunction : public AsyncExtensionFunction {
 
   // The ID of the injection host.
   HostID host_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExecuteCodeFunction);
 };
 
 }  // namespace extensions

@@ -29,7 +29,7 @@ class WebviewInfo : public Extension::ManifestData {
                                           const std::string& relative_path);
 
   // Define out of line constructor/destructor to please Clang.
-  WebviewInfo(const std::string& extension_id);
+  explicit WebviewInfo(const std::string& extension_id);
   ~WebviewInfo() override;
 
   void AddPartitionItem(std::unique_ptr<PartitionItem> item);

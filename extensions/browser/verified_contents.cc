@@ -44,8 +44,8 @@ const char kWebstoreKId[] = "webstore";
 // Helper function to iterate over a list of dictionaries, returning the
 // dictionary that has |key| -> |value| in it, if any, or NULL.
 DictionaryValue* FindDictionaryWithValue(const ListValue* list,
-                                         std::string key,
-                                         std::string value) {
+                                         const std::string& key,
+                                         const std::string& value) {
   for (const auto& i : *list) {
     DictionaryValue* dictionary;
     if (!i->GetAsDictionary(&dictionary))

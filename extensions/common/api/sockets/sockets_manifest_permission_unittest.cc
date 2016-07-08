@@ -84,7 +84,7 @@ struct CheckFormatEntry {
 };
 
 static testing::AssertionResult CheckFormat(
-    std::multiset<CheckFormatEntry> permissions,
+    const std::multiset<CheckFormatEntry>& permissions,
     const std::string& json) {
   std::unique_ptr<SocketsManifestPermission> permission(
       PermissionFromJSON(json));

@@ -64,7 +64,7 @@ class PermissionsData {
 
   static void SetPolicyDelegate(PolicyDelegate* delegate);
 
-  PermissionsData(const Extension* extension);
+  explicit PermissionsData(const Extension* extension);
   virtual ~PermissionsData();
 
   // Returns true if the extension is a COMPONENT extension or is on the

@@ -76,7 +76,8 @@ class PowerAPI : public BrowserContextKeyedAPI,
 
   // Replaces the function that will be called to create PowerSaveBlocker
   // objects.  Passing an empty callback will revert to the default.
-  void SetCreateBlockerFunctionForTesting(CreateBlockerFunction function);
+  void SetCreateBlockerFunctionForTesting(
+      const CreateBlockerFunction& function);
 
   // Overridden from extensions::ExtensionRegistryObserver.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
