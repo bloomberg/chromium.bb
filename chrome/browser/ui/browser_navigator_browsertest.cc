@@ -68,7 +68,7 @@ GURL ShortenUberURL(const GURL& url) {
   std::string url_string = url.spec();
   const std::string long_prefix = "chrome://chrome/";
   const std::string short_prefix = "chrome://";
-  if (!base::StartsWith(url_string, long_prefix, base::CompareCase::SENSITIVE))
+  if (url_string.find(long_prefix) != 0)
     return url;
   url_string.replace(0, long_prefix.length(), short_prefix);
   return GURL(url_string);

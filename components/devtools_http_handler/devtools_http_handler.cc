@@ -395,7 +395,7 @@ void ServerWrapper::OnHttpRequest(int connection_id,
                                   const net::HttpServerRequestInfo& info) {
   server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
 
-  if (base::StartsWith(info.path, "/json", base::CompareCase::SENSITIVE)) {
+  if (info.path.find("/json") == 0) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
@@ -406,8 +406,7 @@ void ServerWrapper::OnHttpRequest(int connection_id,
     return;
   }
 
-  if (base::StartsWith(info.path, kThumbUrlPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  if (info.path.find(kThumbUrlPrefix) == 0) {
     // Thumbnail request.
     const std::string target_id = info.path.substr(strlen(kThumbUrlPrefix));
     BrowserThread::PostTask(
@@ -431,8 +430,7 @@ void ServerWrapper::OnHttpRequest(int connection_id,
     return;
   }
 
-  if (!base::StartsWith(info.path, "/devtools/",
-                        base::CompareCase::SENSITIVE)) {
+  if (info.path.find("/devtools/") != 0) {
     server_->Send404(connection_id);
     return;
   }
@@ -519,7 +517,7 @@ static bool ParseJsonPath(
     return true;
   }
 
-  if (!base::StartsWith(path, "/", base::CompareCase::SENSITIVE)) {
+  if (path.find("/") != 0) {
     // Malformed command.
     return false;
   }
@@ -698,8 +696,8 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     return;
 
   std::string browser_prefix = "/devtools/browser";
-  if (base::StartsWith(request.path, browser_prefix,
-                       base::CompareCase::SENSITIVE)) {
+  size_t browser_pos = request.path.find(browser_prefix);
+  if (browser_pos == 0) {
     scoped_refptr<DevToolsAgentHost> browser_agent =
         DevToolsAgentHost::CreateForBrowser(
             thread_->task_runner(),
@@ -723,8 +721,8 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     return;
   }
 
-  if (!base::StartsWith(request.path, kPageUrlPrefix,
-                        base::CompareCase::SENSITIVE)) {
+  size_t pos = request.path.find(kPageUrlPrefix);
+  if (pos != 0) {
     Send404(connection_id);
     return;
   }

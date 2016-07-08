@@ -7,7 +7,6 @@
 #include "base/barrier_closure.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -139,12 +138,13 @@ std::string ProfileHelper::GetUserIdHashFromProfile(const Profile* profile) {
 
   // Check that profile directory starts with the correct prefix.
   std::string prefix(chrome::kProfileDirPrefix);
-  if (!base::StartsWith(profile_dir, prefix, base::CompareCase::SENSITIVE)) {
+  if (profile_dir.find(prefix) != 0) {
     // This happens when creating a TestingProfile in browser tests.
     return std::string();
   }
 
-  return profile_dir.substr(prefix.length());
+  return profile_dir.substr(prefix.length(),
+                            profile_dir.length() - prefix.length());
 }
 
 // static

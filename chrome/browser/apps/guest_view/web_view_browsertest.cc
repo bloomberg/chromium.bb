@@ -2355,8 +2355,7 @@ const char kDownloadPathPrefix[] = "/download_cookie_isolation_test";
 std::unique_ptr<net::test_server::HttpResponse> HandleDownloadRequestWithCookie(
     std::queue<net::HttpStatusCode>* status_codes,
     const net::test_server::HttpRequest& request) {
-  if (!base::StartsWith(request.relative_url, kDownloadPathPrefix,
-                        base::CompareCase::SENSITIVE)) {
+  if (request.relative_url.find(kDownloadPathPrefix) != 0) {
     return std::unique_ptr<net::test_server::HttpResponse>();
   }
 

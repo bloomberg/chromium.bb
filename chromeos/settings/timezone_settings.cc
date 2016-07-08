@@ -223,8 +223,7 @@ std::string GetTimezoneIDAsString() {
 
   std::string timezone(buf, len);
   // Remove kTimezoneFilesDir from the beginning.
-  if (!base::StartsWith(timezone, kTimezoneFilesDir,
-                        base::CompareCase::SENSITIVE)) {
+  if (timezone.find(kTimezoneFilesDir) != 0) {
     LOG(ERROR) << "GetTimezoneID: Timezone symlink is wrong "
                << timezone;
     return std::string();

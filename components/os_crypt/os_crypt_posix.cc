@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -119,8 +118,7 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   // old data saved as clear text and we'll return it directly.
   // Credit card numbers are current legacy data, so false match with prefix
   // won't happen.
-  if (!base::StartsWith(ciphertext, kObfuscationPrefix,
-                        base::CompareCase::SENSITIVE)) {
+  if (ciphertext.find(kObfuscationPrefix) != 0) {
     *plaintext = ciphertext;
     return true;
   }

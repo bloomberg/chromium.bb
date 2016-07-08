@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/leveldatabase/chromium_logger.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
@@ -138,12 +137,10 @@ class MojoWritableFile : public leveldb::WritableFile {
         dir_(dir),
         thread_(thread) {
     base::FilePath path = base::FilePath::FromUTF8Unsafe(fname);
-    if (base::StartsWith(path.BaseName().AsUTF8Unsafe(), "MANIFEST",
-                         base::CompareCase::SENSITIVE)) {
+    if (path.BaseName().AsUTF8Unsafe().find("MANIFEST") == 0)
       file_type_ = kManifest;
-    } else if (path.MatchesExtension(table_extension)) {
+    else if (path.MatchesExtension(table_extension))
       file_type_ = kTable;
-    }
     parent_dir_ =
         base::FilePath::FromUTF8Unsafe(fname).DirName().AsUTF8Unsafe();
   }

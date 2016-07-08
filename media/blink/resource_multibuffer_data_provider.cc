@@ -14,7 +14,6 @@
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/blink/active_loader.h"
 #include "media/blink/cache_util.h"
@@ -462,13 +461,11 @@ bool ResourceMultiBufferDataProvider::ParseContentRange(
     int64_t* first_byte_position,
     int64_t* last_byte_position,
     int64_t* instance_size) {
-  const char kUpThroughBytesUnit[] = "bytes ";
-  if (!base::StartsWith(content_range_str, kUpThroughBytesUnit,
-                        base::CompareCase::SENSITIVE)) {
+  const std::string kUpThroughBytesUnit = "bytes ";
+  if (content_range_str.find(kUpThroughBytesUnit) != 0)
     return false;
-  }
   std::string range_spec =
-      content_range_str.substr(sizeof(kUpThroughBytesUnit) - 1);
+      content_range_str.substr(kUpThroughBytesUnit.length());
   size_t dash_offset = range_spec.find("-");
   size_t slash_offset = range_spec.find("/");
 

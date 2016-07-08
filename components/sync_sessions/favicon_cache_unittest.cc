@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "sync/api/attachments/attachment_id.h"
@@ -245,7 +244,7 @@ int GetFaviconId(const syncer::SyncChange change) {
   std::string tag = syncer::SyncDataLocal(change.sync_data()).GetTag();
   const std::string kPrefix = "http://bla.com/";
   const std::string kSuffix = ".ico";
-  if (!base::StartsWith(tag, kPrefix, base::CompareCase::SENSITIVE))
+  if (tag.find(kPrefix) != 0)
     return -1;
   std::string temp = tag.substr(kPrefix.length());
   if (temp.rfind(kSuffix) <= 0)

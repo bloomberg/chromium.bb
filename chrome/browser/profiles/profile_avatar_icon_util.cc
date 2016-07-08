@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -488,7 +487,7 @@ bool IsDefaultAvatarIconIndex(size_t index) {
 
 bool IsDefaultAvatarIconUrl(const std::string& url, size_t* icon_index) {
   DCHECK(icon_index);
-  if (!base::StartsWith(url, kDefaultUrlPrefix, base::CompareCase::SENSITIVE))
+  if (url.find(kDefaultUrlPrefix) != 0)
     return false;
 
   int int_value = -1;

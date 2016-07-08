@@ -134,9 +134,7 @@ GURL GetURLFromCanonicalCookie(const net::CanonicalCookie& cookie) {
   const std::string scheme =
       cookie.IsSecure() ? url::kHttpsScheme : url::kHttpScheme;
   const std::string host =
-      base::StartsWith(domain_key, ".", base::CompareCase::SENSITIVE)
-          ? domain_key.substr(1)
-          : domain_key;
+      domain_key.find('.') != 0 ? domain_key : domain_key.substr(1);
   return GURL(scheme + url::kStandardSchemeSeparator + host + "/");
 }
 
