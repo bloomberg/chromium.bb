@@ -45,6 +45,10 @@
   return [[self parentWindow] themeImagePositionForAlignment:alignment];
 }
 
+- (BOOL)hasDarkTheme {
+  return [[self parentWindow] hasDarkTheme];
+}
+
 @end
 
 @implementation TabWindowController
