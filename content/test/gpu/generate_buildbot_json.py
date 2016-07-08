@@ -833,6 +833,12 @@ TELEMETRY_TESTS = {
       },
     ],
   },
+}
+
+# These tests use Telemetry's new, simpler, browser_test_runner.
+# Eventually all of the Telemetry based tests above will be ported to
+# this harness, and the old harness will be deleted.
+TELEMETRY_GPU_INTEGRATION_TESTS = {
   'webgl_conformance': {
     'tester_configs': [
       {
@@ -898,12 +904,6 @@ TELEMETRY_TESTS = {
       '--use-gl=angle',
     ],
   },
-}
-
-# These tests use Telemetry's new, simpler, browser_test_runner.
-# Eventually all of the Telemetry based tests above will be ported to
-# this harness, and the old harness will be deleted.
-TELEMETRY_GPU_INTEGRATION_TESTS = {
   'webgl2_conformance_tests': {
     'tester_configs': [
       {
