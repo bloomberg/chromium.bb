@@ -43,6 +43,9 @@ class AppBannerDataFetcherAndroid : public AppBannerDataFetcher {
   std::string GetAppIdentifier() override;
 
  private:
+  bool IsWebAppInstalled(content::BrowserContext* browser_context,
+                         const GURL& start_url) override;
+
   void ShowBanner(const GURL& icon_url,
                   const SkBitmap* icon,
                   const base::string16& title,

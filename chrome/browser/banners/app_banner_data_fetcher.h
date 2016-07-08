@@ -158,7 +158,6 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
   void OnHasServiceWorker(content::WebContents* web_contents);
 
   // Returns whether the given web app has already been installed.
-  // Implemented on desktop platforms only.
   virtual bool IsWebAppInstalled(content::BrowserContext* browser_context,
                                  const GURL& start_url);
 

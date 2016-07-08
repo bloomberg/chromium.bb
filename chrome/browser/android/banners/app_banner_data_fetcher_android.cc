@@ -73,6 +73,15 @@ base::Closure AppBannerDataFetcherAndroid::FetchWebappSplashScreenImageCallback(
       minimum_splash_image_size_in_dp_, webapp_id);
 }
 
+bool AppBannerDataFetcherAndroid::IsWebAppInstalled(
+    content::BrowserContext* browser_context,
+    const GURL& start_url) {
+  // Check whether a WebAPK is installed in order to block showing the app
+  // banner if a WebAPK is installed even after a user clears Chrome's data.
+  // This function does not check whether a non-WebAPK web app is installed.
+  return ShortcutHelper::IsWebApkInstalled(start_url);
+}
+
 void AppBannerDataFetcherAndroid::ShowBanner(const GURL& icon_url,
                                              const SkBitmap* icon,
                                              const base::string16& title,

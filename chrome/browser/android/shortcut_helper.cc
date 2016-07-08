@@ -215,6 +215,14 @@ SkBitmap ShortcutHelper::FinalizeLauncherIcon(const SkBitmap& bitmap,
   return gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(result.obj()));
 }
 
+// static
+bool ShortcutHelper::IsWebApkInstalled(const GURL& url) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, url.spec());
+  return Java_ShortcutHelper_isWebApkInstalled(env, java_url.obj());
+}
+
 // Callback used by Java when the shortcut has been created.
 // |splash_image_callback| is a pointer to a base::Closure allocated in
 // AddShortcutInBackgroundWithSkBitmap, so reinterpret_cast it back and run it.

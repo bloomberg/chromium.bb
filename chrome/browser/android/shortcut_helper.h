@@ -72,6 +72,10 @@ class ShortcutHelper {
                                        const GURL& url,
                                        bool* is_generated);
 
+  // Returns true if WebAPKs are enabled and there is a WebAPK installed which
+  // can handle |url|.
+  static bool IsWebApkInstalled(const GURL& url);
+
  private:
   ShortcutHelper() = delete;
   ~ShortcutHelper() = delete;

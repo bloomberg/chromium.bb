@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.common.ScreenOrientationConstants;
 import org.chromium.net.GURLUtils;
 import org.chromium.ui.widget.Toast;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.io.ByteArrayOutputStream;
 import java.util.List;
@@ -434,6 +435,19 @@ public class ShortcutHelper {
         canvas.drawBitmap(icon, padding, padding, null);
 
         return bitmap;
+    }
+
+    /**
+     * Returns true if WebAPKs are enabled and there is a WebAPK installed which can handle
+     * {@link url}.
+     */
+    @CalledByNative
+    public static boolean isWebApkInstalled(String url) {
+        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+            return false;
+        }
+        return WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url)
+                != null;
     }
 
     /**
