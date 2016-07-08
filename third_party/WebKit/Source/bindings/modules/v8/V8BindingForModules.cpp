@@ -543,37 +543,29 @@ void installOriginTrialsForModules(ScriptState* scriptState)
 
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = context->Global();
-    v8::Isolate* isolate = scriptState->isolate();
 
     if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage", nullptr))) {
-        v8::Local<v8::String> navigatorName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("navigator"), v8::NewStringType::kNormal).ToLocalChecked();
         if (executionContext->isDocument()) {
-            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8WindowPartial::installDurableStorage(scriptState, global);
-            V8NavigatorPartial::installDurableStorage(scriptState, navigator);
+            V8NavigatorPartial::installDurableStorage(scriptState);
         } else if (executionContext->isSharedWorkerGlobalScope()) {
-            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8SharedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
-            V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
+            V8WorkerNavigatorPartial::installDurableStorage(scriptState);
         } else if (executionContext->isDedicatedWorkerGlobalScope()) {
-            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8DedicatedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
-            V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
+            V8WorkerNavigatorPartial::installDurableStorage(scriptState);
         } else if (executionContext->isServiceWorkerGlobalScope()) {
-            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             V8ServiceWorkerGlobalScope::installDurableStorage(scriptState, global);
-            V8WorkerNavigatorPartial::installDurableStorage(scriptState, navigator);
+            V8WorkerNavigatorPartial::installDurableStorage(scriptState);
         }
     }
 
     if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth", nullptr))) {
-        v8::Local<v8::String> navigatorName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("navigator"), v8::NewStringType::kNormal).ToLocalChecked();
         if (executionContext->isDocument()) {
-            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
             // For global interfaces e.g. BluetoothUUID.
             V8WindowPartial::installWebBluetooth(scriptState, global);
             // For navigator interfaces e.g. navigator.bluetooth.
-            V8NavigatorPartial::installWebBluetooth(scriptState, navigator);
+            V8NavigatorPartial::installWebBluetooth(scriptState);
         }
     }
 }

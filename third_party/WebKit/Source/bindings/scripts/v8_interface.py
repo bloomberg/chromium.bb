@@ -36,7 +36,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 from collections import defaultdict
 import itertools
-from operator import itemgetter
+from operator import itemgetter, or_
 
 from idl_definitions import IdlOperation, IdlArgument
 from idl_types import IdlType, inherits_interface
@@ -98,23 +98,35 @@ def constant_filters():
             'origin_trial_enabled_constants': filter_origin_trial_enabled}
 
 
-def origin_trial_feature_names(interface, constants, attributes, methods):
-    """ Returns a list of the names of each origin trial feature used in this interface.
+def origin_trial_features(interface, constants, attributes, methods):
+    """ Returns a list of the origin trial features used in this interface.
 
-    This list is the union of the sets of names used for constants, attributes and methods.
+    Each element is a dictionary with keys 'name' and 'needs_instance'.
+    'needs_instance' is true if any member associated with the interface needs
+    to be installed on every instance of the interface. This list is the union
+    of the sets of features used for constants, attributes and methods.
     """
 
-    feature_names = set(
-        [constant['origin_trial_feature_name'] for constant in constants if constant['origin_trial_feature_name']] +
-        [attribute['origin_trial_feature_name'] for attribute in attributes if attribute['origin_trial_feature_name']] +
-        [method['origin_trial_feature_name'] for method in methods if (
+    # Collect all members visible on this interface with a defined origin trial
+    origin_trial_members = (
+        [constant for constant in constants if constant['origin_trial_feature_name']] +
+        [attribute for attribute in attributes if attribute['origin_trial_feature_name']] +
+        [method for method in methods if (
             v8_methods.method_is_visible(method, interface.is_partial) and
             method['origin_trial_feature_name'])]
     )
-    if feature_names:
+    # Group members by origin_trial_feature_name
+    members_by_name = itertools.groupby(origin_trial_members, itemgetter('origin_trial_feature_name'))
+    # Construct the list of dictionaries. 'needs_instance' will be true if any
+    # member for the feature has 'on_instance' defined as true.
+    features = [{'name': name,
+                 'needs_instance': reduce(or_, (member.get('on_instance', False)
+                                                for member in members))}
+                for name, members in members_by_name]
+    if features:
         includes.add('bindings/core/v8/ScriptState.h')
         includes.add('core/origin_trials/OriginTrials.h')
-    return sorted(feature_names)
+    return sorted(features)
 
 
 def interface_context(interface):
@@ -570,7 +582,7 @@ def interface_context(interface):
 
     # Origin Trials
     context.update({
-        'origin_trial_feature_names': origin_trial_feature_names(interface, context['constants'], context['attributes'], context['methods']),
+        'origin_trial_features': origin_trial_features(interface, context['constants'], context['attributes'], context['methods']),
     })
     return context
 

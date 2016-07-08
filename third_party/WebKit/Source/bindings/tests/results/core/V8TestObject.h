@@ -89,12 +89,16 @@ public:
     CORE_EXPORT static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);
 
     static void installFeatureName(ScriptState*, v8::Local<v8::Object> instance);
+    static void installFeatureName(ScriptState*);
 
     static void installFeatureName1(ScriptState*, v8::Local<v8::Object> instance);
+    static void installFeatureName1(ScriptState*);
 
     static void installFeatureName2(ScriptState*, v8::Local<v8::Object> instance);
+    static void installFeatureName2(ScriptState*);
 
     static void installFeatureName3(ScriptState*, v8::Local<v8::Object> instance);
+    static void installFeatureName3(ScriptState*);
 };
 
 template <>

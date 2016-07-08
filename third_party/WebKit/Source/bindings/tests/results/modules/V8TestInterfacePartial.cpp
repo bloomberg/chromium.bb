@@ -384,13 +384,11 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate
 
 void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState, v8::Local<v8::Object> instance)
 {
-    v8::Local<v8::Object> prototype = instance->GetPrototype()->ToObject(scriptState->isolate());
-
-    V8PerIsolateData* perIsolateData = V8PerIsolateData::from(scriptState->isolate());
-    v8::Local<v8::FunctionTemplate> interfaceTemplate = perIsolateData->findInterfaceTemplate(scriptState->world(), &V8TestInterface::wrapperTypeInfo);
+    v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestInterface::wrapperTypeInfo.domTemplate(scriptState->isolate(), scriptState->world());
     v8::Local<v8::Signature> signature = v8::Signature::New(scriptState->isolate(), interfaceTemplate);
     ALLOW_UNUSED_LOCAL(signature);
     V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
+    v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestInterface::wrapperTypeInfo);
     v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestInterface::wrapperTypeInfo);
     ALLOW_UNUSED_LOCAL(interface);
     const V8DOMConfiguration::AccessorConfiguration accessorpartial4LongAttributeConfiguration = \
@@ -403,6 +401,11 @@ void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scrip
     V8DOMConfiguration::installConstant(scriptState->isolate(), interface, prototype, constantPartial4UnsignedShortConfiguration);
     const V8DOMConfiguration::MethodConfiguration methodPartial4VoidmethodConfiguration = {"partial4VoidMethod", TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
     V8DOMConfiguration::installMethod(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, methodPartial4VoidmethodConfiguration);
+}
+
+void V8TestInterfacePartial::installOriginTrialPartialFeature(ScriptState* scriptState)
+{
+    installOriginTrialPartialFeature(scriptState, v8::Local<v8::Object>());
 }
 void V8TestInterfacePartial::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {

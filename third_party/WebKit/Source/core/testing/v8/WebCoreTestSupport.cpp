@@ -99,15 +99,14 @@ void installOriginTrialsForTests(ScriptState* scriptState)
     v8::Local<v8::Object> global = context->Global();
     v8::Isolate* isolate = scriptState->isolate();
 
-    v8::Local<v8::String> internalsName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("internals"), v8::NewStringType::kNormal).ToLocalChecked();
-    v8::Local<v8::Value> v8Internals = global->Get(context, internalsName).ToLocalChecked();
-    if (v8Internals->IsObject()) {
-        v8::Local<v8::Object> internals = v8Internals->ToObject();
-        if (!originTrialContext->featureBindingsInstalled("Frobulate") && originTrialContext->isFeatureEnabled("Frobulate", nullptr)) {
+    if (!originTrialContext->featureBindingsInstalled("Frobulate") && originTrialContext->isFeatureEnabled("Frobulate", nullptr)) {
+        v8::Local<v8::String> internalsName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("internals"), v8::NewStringType::kNormal).ToLocalChecked();
+        v8::Local<v8::Value> v8Internals = global->Get(context, internalsName).ToLocalChecked();
+        if (v8Internals->IsObject()) {
             if (executionContext->isDocument())
-                V8Internals::installOriginTrialsSampleAPI(scriptState, internals);
+                V8Internals::installOriginTrialsSampleAPI(scriptState);
             else if (executionContext->isWorkerGlobalScope())
-                V8WorkerInternals::installOriginTrialsSampleAPI(scriptState, internals);
+                V8WorkerInternals::installOriginTrialsSampleAPI(scriptState);
             originTrialContext->setFeatureBindingsInstalled("Frobulate");
         }
     }
