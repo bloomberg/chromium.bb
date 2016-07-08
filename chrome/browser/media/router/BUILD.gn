@@ -6,11 +6,6 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-gypi_values = exec_script("//build/gypi_to_gn.py",
-                          [ rebase_path("media_router.gypi") ],
-                          "scope",
-                          [ "media_router.gypi" ])
-
 static_library("router") {
   deps = [
     "//base",
@@ -20,18 +15,65 @@ static_library("router") {
     "//content/public/browser",
     "//url",
   ]
-  sources = rebase_path(gypi_values.media_router_sources,
-                        ".",
-                        "//chrome/browser/media/router")
+  sources = [
+    "create_presentation_connection_request.cc",
+    "create_presentation_connection_request.h",
+    "issue.cc",
+    "issue.h",
+    "issue_manager.cc",
+    "issue_manager.h",
+    "issues_observer.cc",
+    "issues_observer.h",
+    "media_route.cc",
+    "media_route.h",
+    "media_router.h",
+    "media_router_base.cc",
+    "media_router_base.h",
+    "media_router_dialog_controller.cc",
+    "media_router_dialog_controller.h",
+    "media_router_factory.cc",
+    "media_router_factory.h",
+    "media_router_metrics.cc",
+    "media_router_metrics.h",
+    "media_routes_observer.cc",
+    "media_routes_observer.h",
+    "media_sink.cc",
+    "media_sink.h",
+    "media_sinks_observer.cc",
+    "media_sinks_observer.h",
+    "media_source.cc",
+    "media_source.h",
+    "media_source_helper.cc",
+    "media_source_helper.h",
+    "presentation_media_sinks_observer.cc",
+    "presentation_media_sinks_observer.h",
+    "presentation_request.cc",
+    "presentation_request.h",
+    "presentation_service_delegate_impl.cc",
+    "presentation_service_delegate_impl.h",
+    "presentation_session_messages_observer.cc",
+    "presentation_session_messages_observer.h",
+    "render_frame_host_id.h",
+    "route_request_result.cc",
+    "route_request_result.h",
+  ]
+
   if (!is_android) {
     deps += [
       ":mojo_bindings",
       "//extensions/browser",
       "//mojo/public/cpp/bindings",
     ]
-    sources += rebase_path(gypi_values.media_router_non_android_sources,
-                           ".",
-                           "//chrome/browser/media/router")
+    sources += [
+      "mojo/media_route_provider_util_win.cc",
+      "mojo/media_route_provider_util_win.h",
+      "mojo/media_router_mojo_impl.cc",
+      "mojo/media_router_mojo_impl.h",
+      "mojo/media_router_mojo_metrics.cc",
+      "mojo/media_router_mojo_metrics.h",
+      "mojo/media_router_type_converters.cc",
+      "mojo/media_router_type_converters.h",
+    ]
   }
 }
 
@@ -48,17 +90,23 @@ source_set("test_support") {
     "//chrome/test:test_support",
     "//testing/gmock",
   ]
-  sources = rebase_path(gypi_values.media_router_test_support_sources,
-                        ".",
-                        "//chrome/browser/media/router")
+  sources = [
+    "mock_media_router.cc",
+    "mock_media_router.h",
+    "mock_screen_availability_listener.cc",
+    "mock_screen_availability_listener.h",
+    "test_helper.cc",
+    "test_helper.h",
+  ]
+
   if (!is_android) {
     deps += [
       ":mojo_bindings",
       "//extensions/common",
     ]
-    sources +=
-        rebase_path(gypi_values.media_router_non_android_test_support_sources,
-                    ".",
-                    "//chrome/browser/media/router")
+    sources += [
+      "mojo/media_router_mojo_test.cc",
+      "mojo/media_router_mojo_test.h",
+    ]
   }
 }
