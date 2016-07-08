@@ -5,7 +5,6 @@
 #include "ui/base/cocoa/remote_layer_api.h"
 
 #include "base/command_line.h"
-#include "base/mac/mac_util.h"
 #include "ui/base/ui_base_switches.h"
 
 #include <objc/runtime.h>
@@ -13,10 +12,6 @@
 namespace ui {
 
 bool RemoteLayerAPISupported() {
-  // This API only works on Mac OS 10.9 and later.
-  if (!base::mac::IsOSMavericksOrLater())
-    return false;
-
   static bool disabled_at_command_line =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRemoteCoreAnimation);
@@ -54,4 +49,3 @@ bool RemoteLayerAPISupported() {
 }
 
 }  // namespace
-

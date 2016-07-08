@@ -470,12 +470,6 @@ bool IsOSMavericks() {
 }
 #endif
 
-#if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GE_10_9)
-bool IsOSMavericksOrLater() {
-  return MacOSXMinorVersion() >= MAVERICKS_MINOR_VERSION;
-}
-#endif
-
 #if !defined(BASE_MAC_MAC_UTIL_H_INLINED_GT_10_10)
 bool IsOSYosemite() {
   return MacOSXMinorVersion() == YOSEMITE_MINOR_VERSION;

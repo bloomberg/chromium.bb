@@ -115,7 +115,6 @@ BASE_EXPORT bool RemoveQuarantineAttribute(const FilePath& file_path);
 
 // Mavericks is OS X 10.9, Darwin 13.
 BASE_EXPORT bool IsOSMavericks();
-BASE_EXPORT bool IsOSMavericksOrLater();
 
 // Yosemite is OS X 10.10, Darwin 14.
 BASE_EXPORT bool IsOSYosemite();
@@ -145,12 +144,6 @@ inline bool IsOSElCapitanOrEarlier() { return !IsOSSierraOrLater(); }
 // OS releases. That enables some of the IsOS* family to be implemented as
 // constant-value inline functions. The MAC_OS_X_VERSION_MIN_REQUIRED macro
 // contains the value of the deployment target.
-
-#if defined(MAC_OS_X_VERSION_10_9) && \
-    MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_9
-#define BASE_MAC_MAC_UTIL_H_INLINED_GE_10_9
-inline bool IsOSMavericksOrLater() { return true; }
-#endif
 
 #if defined(MAC_OS_X_VERSION_10_9) && \
     MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_9

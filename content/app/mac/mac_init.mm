@@ -6,8 +6,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/mac_util.h"
-
 namespace content {
 
 void InitializeMac() {
@@ -27,7 +25,7 @@ void InitializeMac() {
       // in the window server, which is the default when not not using the
       // 10.9 SDK.
       // TODO: Remove this when we build with the 10.9 SDK.
-      @"NSWindowHostsLayersInWindowServer": @(base::mac::IsOSMavericksOrLater())
+      @"NSWindowHostsLayersInWindowServer": @YES
   }];
 }
 

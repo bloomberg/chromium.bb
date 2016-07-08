@@ -660,7 +660,6 @@ void WebContentsViewMac::CloseTab() {
 }
 
 - (void)windowChangedOcclusionState:(NSNotification*)notification {
-  DCHECK(base::mac::IsOSMavericksOrLater());
   NSWindow* window = [notification object];
   WebContentsImpl* webContents = [self webContents];
   if (window && webContents && !webContents->IsBeingDestroyed()) {
