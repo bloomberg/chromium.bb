@@ -331,6 +331,7 @@ exec_script_whitelist = [
   "//tools/gn/misc/vim/syntax/gn.vim",
   "//tools/gn/setup.cc",
   "//ui/accessibility/BUILD.gn",
+  "//ui/gfx/BUILD.gn",
   "//ui/views/BUILD.gn",
   "//ui/views/mus/BUILD.gn",
   "//v8/test/cctest/BUILD.gn",

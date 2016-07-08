@@ -6,24 +6,34 @@ import fileinput
 import glob
 import optparse
 import os
+import shlex
 import textwrap
 
-
-# TODO(brettw) bug 535386: This should not take a directory as an input, but
-# rather a response file listing the inputs or sometimes the build will be
-# incorrect.
-
-def AggregateVectorIcons(working_directory, output_cc, output_h):
+def AggregateVectorIcons(working_directory, file_list, output_cc, output_h):
   """Compiles all .icon files in a directory into two C++ files.
 
   Args:
       working_directory: The path to the directory that holds the .icon files
           and C++ templates.
+      file_list: A file containing the list of vector icon files to process.
+          Used for GN only (this argument defaults to None for GYP).
       output_cc: The path that should be used to write the .cc file.
       output_h: The path that should be used to write the .h file.
   """
 
-  icon_list = glob.glob(working_directory + "*.icon")
+  icon_list = []
+  if file_list is None:
+    # TODO(GYP_GONE): |file_list| is only None for GYP builds (where response
+    # files are not supported), in which case we process all .icon files
+    # contained within |working_directory| and all of its descendant
+    # directories. This logic can be removed when GN is used everywhere.
+    # See crbug.com/535386.
+    for dirpath, dirnames, filenames in os.walk(working_directory):
+      icon_list.extend(glob.glob(os.path.join(dirpath, "*.icon")))
+  else:
+    with open(file_list, 'r') as f:
+      file_list_contents = f.read()
+    icon_list = shlex.split(file_list_contents)
 
   input_header_template = open(os.path.join(working_directory,
                                             "vector_icons.h.template"))
@@ -74,6 +84,10 @@ def main():
   parser.add_option("--working_directory",
                     help="The directory to look for template C++ as well as "
                          "icon files.")
+  parser.add_option("--file_list",
+                    help="A response file containing the list of icon files "
+                         "to be processed (GN only). Defaults to None.",
+                    default=None)
   parser.add_option("--output_cc",
                     help="The path to output the CC file to.")
   parser.add_option("--output_h",
@@ -82,6 +96,7 @@ def main():
   (options, args) = parser.parse_args()
 
   AggregateVectorIcons(options.working_directory,
+                       options.file_list,
                        options.output_cc,
                        options.output_h)
 
