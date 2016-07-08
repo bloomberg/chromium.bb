@@ -157,6 +157,7 @@ class NodeController : public ports::NodeDelegate,
   void SendPeerMessage(const ports::NodeName& name,
                        ports::ScopedMessage message);
   void AcceptIncomingMessages();
+  void ProcessIncomingMessages();
   void DropAllPeers();
 
   // ports::NodeDelegate:
