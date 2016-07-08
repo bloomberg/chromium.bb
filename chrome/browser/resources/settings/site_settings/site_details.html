@@ -43,7 +43,8 @@
     </style>
     <div class="settings-box block">
       <div class="horizontal layout origin-box">
-        <div class="website-icon" style$="[[computeSiteIcon(site)]]"></div>
+        <div class="website-icon"
+            style$="[[computeSiteIcon(site.originForDisplay)]]"></div>
         <div class="origin flex">[[site.originForDisplay]]</div>
       </div>
       <h2 id="usage" hidden$="[[!storedData_]]">$i18n{siteSettingsUsage}</h2>

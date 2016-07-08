@@ -362,12 +362,12 @@ var SiteSettingsBehaviorImpl = {
 
   /**
    * Returns the icon to use for a given site.
-   * @param {SiteException} site The url of the site to fetch the icon for.
+   * @param {string} site The url of the site to fetch the icon for.
    * @return {string} The background-image style with the favicon.
    * @private
    */
   computeSiteIcon: function(site) {
-    var url = this.ensureUrlHasScheme(site.originForDisplay);
+    var url = this.ensureUrlHasScheme(site);
     return 'background-image: ' + cr.icon.getFaviconImageSet(url);
   },
 };

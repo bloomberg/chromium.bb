@@ -2048,6 +2048,8 @@
       'browser/ui/webui/settings/chromeos/device_keyboard_handler.h',
       'browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.cc',
       'browser/ui/webui/settings/chromeos/easy_unlock_settings_handler.h',
+      'browser/ui/webui/settings/settings_cookies_view_handler.cc',
+      'browser/ui/webui/settings/settings_cookies_view_handler.h',
       'browser/ui/webui/settings/downloads_handler.cc',
       'browser/ui/webui/settings/downloads_handler.h',
       'browser/ui/webui/settings/font_handler.cc',

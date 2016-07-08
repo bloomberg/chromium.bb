@@ -109,6 +109,24 @@ cr.define('settings', function() {
      * @param {string} defaultValue The id of the media device to set.
      */
     setDefaultCaptureDevice: function(type, defaultValue) {},
+
+    /**
+     * Reloads all cookies. List is returned through a JS call to loadChildren.
+     */
+    reloadCookies: function() {},
+
+    /**
+     * Fetches all children of a given cookie. List is returned through a JS
+     * call to loadChildren.
+     * @param {string} path The path to the parent cookie.
+     */
+    loadCookieChildren: function(path) {},
+
+    /**
+     * Removes a given cookie.
+     * @param {string} path The path to the parent cookie.
+     */
+    removeCookie: function(path) {},
   };
 
   /**
@@ -165,6 +183,21 @@ cr.define('settings', function() {
     setDefaultCaptureDevice: function(type, defaultValue) {
       chrome.send('setDefaultCaptureDevice', [type, defaultValue]);
     },
+
+    /** @override */
+    reloadCookies: function() {
+      chrome.send('reloadCookies');
+    },
+
+    /** @override */
+    loadCookieChildren: function(path) {
+      chrome.send('loadCookie', [path]);
+    },
+
+    /** @override */
+    removeCookie: function(path) {
+      chrome.send('removeCookie', [path]);
+    }
   };
 
   return {

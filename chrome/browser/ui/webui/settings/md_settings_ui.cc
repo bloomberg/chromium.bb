@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/settings/reset_settings_handler.h"
 #include "chrome/browser/ui/webui/settings/search_engines_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_clear_browsing_data_handler.h"
+#include "chrome/browser/ui/webui/settings/settings_cookies_view_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_media_devices_selection_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_startup_pages_handler.h"
@@ -65,6 +66,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 
   AddSettingsPageUIHandler(new ClearBrowsingDataHandler(web_ui));
   AddSettingsPageUIHandler(new BrowserLifetimeHandler());
+  AddSettingsPageUIHandler(new CookiesViewHandler());
   AddSettingsPageUIHandler(new DownloadsHandler());
   AddSettingsPageUIHandler(new FontHandler(web_ui));
   AddSettingsPageUIHandler(new LanguagesHandler(web_ui));

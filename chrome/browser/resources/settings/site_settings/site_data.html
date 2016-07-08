@@ -1,0 +1,44 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="/settings_shared_css.html">
+<link rel="import" href="/site_settings/site_data_details_dialog.html">
+<link rel="import" href="/site_settings/site_settings_behavior.html">
+
+<dom-module id="site-data">
+  <template>
+    <style include="settings-shared">
+      :host {
+        display: block;
+        margin-top: 18px;
+        width: 100%;
+      }
+
+      .list-frame {
+        -webkit-padding-start: 36px;
+        margin-top: 10px;
+      }
+
+      .site {
+        margin-top: 3px;
+      }
+    </style>
+    <div>$i18n{siteSettingsCookieHeader}</div>
+    <div class="list-frame vertical-list">
+      <template is="dom-repeat" items="[[sites]]">
+        <div class="list-item underscore">
+          <div class="favicon-image" style$="[[computeSiteIcon(item.site)]]"
+              on-tap="onOriginTap_"></div>
+          <div class="middle layout horizontal" on-tap="onSiteTap_">
+            <div class="site flex">[[item.site]]</div>
+            <div class="secondary">[[item.localData]]</div>
+          </div>
+        </div>
+      </template>
+    </div>
+
+  </template>
+  <script src="cookie_info.js"></script>
+  <script src="cookie_tree_node.js"></script>
+  <script src="site_data.js"></script>
+</dom-module>

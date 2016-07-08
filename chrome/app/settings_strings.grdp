@@ -1150,6 +1150,18 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_DELETE" desc="Label for the trashcan icon used to delete storage on the Site Details page.">
     Delete
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_HEADER" desc="A header for the list of showing all sites and their data.">
+    All cookies and site data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_DIALOG" desc="A label for cookie dialog, stating which site we're showing data for.">
+    <ph name="SITE">$1<ex>www.example.com</ex></ph> locally stored data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE" desc="Label for the button to delete a single site cookie.">
+    Remove
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL" desc="Label for the button to delete all cookies for a site.">
+    Remove All
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE" desc="Label for the Block 3rd-party cookie checkbox on the Cookies category.">
     Block third-party cookies.
   </message>

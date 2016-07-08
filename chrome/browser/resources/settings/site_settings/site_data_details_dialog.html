@@ -1,0 +1,59 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
+<link rel="import" href="/i18n_setup.html">
+<link rel="import" href="/settings_shared_css.html">
+
+<dom-module id="site-data-details-dialog">
+  <template>
+    <style include="settings-shared">
+      .remove-button {
+        margin-top: 12px;
+      }
+    </style>
+    <cr-dialog id="dialog">
+      <div class="title">
+        [[title_]]
+      </div>
+      <div class="body">
+        <div class="layout horizontal" id="container">
+          <div class="flex">
+            <paper-dropdown-menu>
+              <paper-listbox id="picker" class="dropdown-content"
+                  attr-for-selected="picker-value"
+                  on-iron-activate="onItemSelected_">
+                <template is="dom-repeat" items="[[entries_]]">
+                  <paper-item picker-value$="[[item.id]]">
+                    [[item.title]]
+                  </paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+          </div>
+          <div class="button-container">
+            <paper-button on-tap="onRemove_"
+                class="cancel-button remove-button">
+              $i18n{siteSettingsCookieRemove}
+            </paper-button>
+          </div>
+        </div>
+
+        <div id="content"></div>
+
+        <div class="button-container">
+          <paper-button class="cancel-button" dialog-dismiss>
+              $i18n{cancel}
+          </paper-button>
+          <paper-button class="action-button" dialog-confirm
+              id="clear" on-tap="onRemoveAll_">
+            $i18n{siteSettingsCookieRemoveAll}
+          </paper-button>
+        </div>
+      </div>
+    </cr-dialog>
+  </template>
+  <script src="cookie_info.js"></script>
+  <script src="cookie_tree_node.js"></script>
+  <script src="site_data_details_dialog.js"></script>
+</dom-module>

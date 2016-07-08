@@ -11,6 +11,7 @@
 <link rel="import" href="/site_settings/all_sites.html">
 <link rel="import" href="/site_settings/constants.html">
 <link rel="import" href="/site_settings/media_picker.html">
+<link rel="import" href="/site_settings/site_data.html">
 <link rel="import" href="/site_settings_page/site_settings_page.html">
 
 <if expr="use_nss_certs">
@@ -169,6 +170,7 @@
                   pref="{{prefs.profile.block_third_party_cookies}}">
               </settings-checkbox>
             </div>
+            <site-data class="site-data"></site-data>
           </site-settings-category>
         </settings-subpage>
       </template>
