@@ -324,7 +324,9 @@ void ContentSettingBubbleContents::Init() {
           !(i->second.disabled || model->GetDevices().empty()));
       combobox->set_listener(this);
       combobox->SetSelectedIndex(
-          model->GetDeviceIndex(i->second.selected_device));
+          model->GetDevices().empty()
+              ? 0
+              : model->GetDeviceIndex(i->second.selected_device));
       layout->AddView(combobox);
 
       bubble_content_empty = false;
