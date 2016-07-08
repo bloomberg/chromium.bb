@@ -3589,12 +3589,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_EXTENSION_IS_BLACKLISTED" desc="Text displayed in an infobar when an extension is blacklisted and prevented from being installed.">
         Google has flagged "<ph name="EXTENSION_NAME">$1<ex>Google Talk</ex></ph>" as malicious and installation has been prevented.
       </message>
-      <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_LABEL" desc="Text displayed when an extension was disabled due to it being installed server side, requiring an explicit permission check from the user.">
-        The extension "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" was installed remotely.
-      </message>
-      <message name="IDS_APP_DISABLED_REMOTE_INSTALL_ERROR_LABEL" desc="Text displayed when an extension was disabled due to it being installed server side, requiring an explicit permission check from the user.">
-        The app "<ph name="EXTENSION_NAME">$1<ex>Flashblock</ex></ph>" was installed remotely.
-      </message>
       <message name="IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_TITLE" desc="Title of the notification that an extension or app was disabled due to it being installed server side, requiring an explicit permission check from the user.">
         <ph name="EXTENSION_NAME">$1<ex>Adblock</ex></ph> was installed remotely
       </message>

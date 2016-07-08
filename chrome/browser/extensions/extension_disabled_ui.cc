@@ -297,11 +297,6 @@ ExtensionDisabledGlobalError::GetBubbleViewMessages() {
   PermissionMessages permission_warnings =
       extension_->permissions_data()->GetPermissionMessages();
   if (is_remote_install_) {
-    messages.push_back(l10n_util::GetStringFUTF16(
-        extension_->is_app()
-            ? IDS_APP_DISABLED_REMOTE_INSTALL_ERROR_LABEL
-            : IDS_EXTENSION_DISABLED_REMOTE_INSTALL_ERROR_LABEL,
-        base::UTF8ToUTF16(extension_->name())));
     if (!permission_warnings.empty())
       messages.push_back(
           l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WILL_HAVE_ACCESS_TO));
