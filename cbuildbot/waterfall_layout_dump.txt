@@ -218,6 +218,9 @@ x86-zgb-release (gce_beefy)
 x86-zgb_he-release (gce_beefy)
 zako-release (gce_beefy)
 
+== chromeos.infra ==
+config-updater (gce_wimpy)
+
 == chromeos_release ==
 lumpy-pre-flight-branch (baremetal)
 

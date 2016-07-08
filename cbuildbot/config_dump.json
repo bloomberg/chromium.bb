@@ -6025,9 +6025,11 @@
         ]
     },
     "config-updater": {
+        "active_waterfall": "chromeos.infra",
         "boards": [],
         "build_type": "config",
         "builder_class_name": "config_builders.UpdateConfigBuilder",
+        "buildslave_type": "gce_wimpy",
         "description": "Build Config Updater",
         "hw_tests_override": [],
         "important": true,

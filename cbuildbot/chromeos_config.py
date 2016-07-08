@@ -708,6 +708,10 @@ _waterfall_config_map = {
 
     constants.WATERFALL_RELEASE: frozenset([
     ]),
+
+    constants.WATERFALL_INFRA: frozenset([
+        'config-updater',
+    ])
 }
 
 
@@ -1205,6 +1209,7 @@ def GetConfig():
       build_type=constants.CONFIG_UPDATER_TYPE,
       boards=[],
       builder_class_name='config_builders.UpdateConfigBuilder',
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
   )
 
   # A base config for each board.

@@ -70,6 +70,7 @@ CIDB_DEBUG_BOT_CREDS = os.path.join(HOME_DIRECTORY, '.cidb_creds',
 
 WATERFALL_INTERNAL = 'chromeos'
 WATERFALL_EXTERNAL = 'chromiumos'
+WATERFALL_INFRA = 'chromeos.infra'
 WATERFALL_TRYBOT = 'chromiumos.tryserver'
 WATERFALL_RELEASE = 'chromeos_release'
 WATERFALL_BRANCH = 'chromeos.branch'
