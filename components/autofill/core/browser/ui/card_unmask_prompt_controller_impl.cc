@@ -220,46 +220,37 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE);
 #else
   int ids;
-  if (reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST)
-    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_TITLE;
-  else if (ShouldRequestExpirationDate())
+  if (reason_ == AutofillClient::UNMASK_FOR_AUTOFILL &&
+      ShouldRequestExpirationDate()) {
     ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE;
-  else
+  }
+  else {
     ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE;
+  }
   return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
 #endif
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
-  int ids;
-  if (reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST) {
-    ids = card_.type() == kAmericanExpressCard
-        ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS_AMEX
-        : IDS_AUTOFILL_CARD_UNMASK_PROMPT_PAY_INSTRUCTIONS;
-  } else if (ShouldRequestExpirationDate()) {
-    ids = card_.type() == kAmericanExpressCard
-        ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_AMEX
-        : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED;
-  } else {
-    ids = card_.type() == kAmericanExpressCard
-        ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_AMEX
-        : IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS;
-  }
-
 #if defined(OS_IOS)
+  int ids;
+  if (reason_ == AutofillClient::UNMASK_FOR_AUTOFILL &&
+      ShouldRequestExpirationDate()) {
+    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED;
+  } else {
+    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS;
+  }
   // The iOS UI shows the card details in the instructions text since they
   // don't fit in the title.
   return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
 #else
-  return l10n_util::GetStringUTF16(ids);
+  return l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);
 #endif
 }
 
 base::string16 CardUnmaskPromptControllerImpl::GetOkButtonLabel() const {
-  return l10n_util::GetStringUTF16(
-      reason_ == AutofillClient::UNMASK_FOR_PAYMENT_REQUEST
-          ? IDS_AUTOFILL_CARD_UNMASK_CONTINUE_BUTTON
-          : IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON);
+  return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON);
 }
 
 int CardUnmaskPromptControllerImpl::GetCvcImageRid() const {
