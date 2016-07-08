@@ -488,7 +488,7 @@ class TestExpectationLine(object):
         result.is_skipped_outside_expectations_file = line1.is_skipped_outside_expectations_file or line2.is_skipped_outside_expectations_file
         return result
 
-    def to_string(self, test_configuration_converter, include_specifiers=True, include_expectations=True, include_comment=True):
+    def to_string(self, test_configuration_converter=None, include_specifiers=True, include_expectations=True, include_comment=True):
         parsed_expectation_to_string = dict([[parsed_expectation, expectation_string]
                                              for expectation_string, parsed_expectation in TestExpectations.EXPECTATIONS.items()])
 
@@ -1036,6 +1036,9 @@ class TestExpectations(object):
     # tests to run, but not when getting metrics.
     def model(self):
         return self._model
+
+    def expectations(self):
+        return self._expectations
 
     def get_needs_rebaseline_failures(self):
         return self._model.get_test_set(NEEDS_REBASELINE)
