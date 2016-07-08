@@ -19,7 +19,6 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluez/bluetooth_service_record_bluez.h"
-#include "device/bluetooth/dbus/bluetooth_device_client.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 
 namespace device {
@@ -40,7 +39,6 @@ class BluetoothPairingBlueZ;
 // thread.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
     : public device::BluetoothDevice,
-      public bluez::BluetoothDeviceClient::Observer,
       public bluez::BluetoothGattServiceClient::Observer {
  public:
   using GetServiceRecordsCallback =
@@ -139,18 +137,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
   ~BluetoothDeviceBlueZ() override;
 
-  // bluez::BluetoothDeviceClient::Observer overrides
-  void DevicePropertyChanged(const dbus::ObjectPath& object_path,
-                             const std::string& property_name) override;
-
   // bluez::BluetoothGattServiceClient::Observer overrides
   void GattServiceAdded(const dbus::ObjectPath& object_path) override;
   void GattServiceRemoved(const dbus::ObjectPath& object_path) override;
 
-  // Called by the constructor to initialize the map of GATT services associated
-  // with this device and to invoke NotifyGattDiscoveryComplete() with each
-  // cached service.
-  void InitializeGattServiceMap();
+  // Called once all services have been discovered. Invokes
+  // NotifyGattDiscoveryComplete() for services for which we haven't notified
+  // before e.g. if a services is exposed during construction but services
+  // haven't been resolved yet..
+  void UpdateGattServices(const dbus::ObjectPath& object_path);
 
   // Called by dbus:: on completion of the D-Bus method call to get the
   // connection attributes of the current connection to the device.
@@ -232,16 +227,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // RSSI and TX power.
   bool connection_monitor_started_;
 
+  // Keeps track of all services for which we've called
+  // NotifyGattDiscoveryComplete().
+  std::unordered_set<device::BluetoothRemoteGattService*>
+      discovery_complete_notified_;
+
   // UI thread task runner and socket thread object used to create sockets.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<device::BluetoothSocketThread> socket_thread_;
 
-  // This vector temporarily caches the newly added services for later
-  // notification of discovery complete. Once DevicePropertyChange is invoked
-  // with a toggle of ServicesResolved property, the
-  // NotifyGattDiscoveryComplete() will be called with each service once.
-  std::vector<device::BluetoothRemoteGattService*>
-      newly_discovered_gatt_services_;
 
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and

@@ -583,6 +583,7 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
 
   if (property_name == properties->services_resolved.name() &&
       properties->services_resolved.value()) {
+    device_bluez->UpdateGattServices(object_path);
     NotifyGattServicesDiscovered(device_bluez);
   }
 

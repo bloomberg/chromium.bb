@@ -129,6 +129,74 @@ class BluetoothGattBlueZTest : public testing::Test {
     ASSERT_TRUE(adapter_->IsPresent());
   }
 
+  void BatteryServiceShouldBeComplete(BluetoothDevice* device) {
+    ASSERT_TRUE(device);
+    ASSERT_GE(device->GetGattServices().size(), 1u);
+
+    BluetoothRemoteGattService* service = device->GetGattService(
+        fake_bluetooth_gatt_service_client_->GetBatteryServicePath().value());
+
+    ASSERT_TRUE(service);
+    EXPECT_TRUE(service->IsPrimary());
+    EXPECT_EQ(BluetoothUUID(
+                  bluez::FakeBluetoothGattServiceClient::kBatteryServiceUUID),
+              service->GetUUID());
+    EXPECT_EQ(service, device->GetGattService(service->GetIdentifier()));
+  }
+
+  void HeartRateServiceShouldBeComplete(BluetoothDevice* device) {
+    ASSERT_TRUE(device);
+    ASSERT_GE(device->GetGattServices().size(), 1u);
+
+    BluetoothRemoteGattService* service = device->GetGattService(
+        fake_bluetooth_gatt_service_client_->GetHeartRateServicePath().value());
+
+    ASSERT_TRUE(service);
+    EXPECT_TRUE(service->IsPrimary());
+    EXPECT_EQ(BluetoothUUID(
+                  bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
+              service->GetUUID());
+    EXPECT_EQ(service, device->GetGattService(service->GetIdentifier()));
+    EXPECT_EQ(3U, service->GetCharacteristics().size());
+
+    BluetoothRemoteGattCharacteristic* characteristic =
+        service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                       ->GetBodySensorLocationPath()
+                                       .value());
+    ASSERT_TRUE(characteristic);
+    EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
+                                kBodySensorLocationUUID),
+              characteristic->GetUUID());
+    EXPECT_TRUE(characteristic->GetDescriptors().empty());
+
+    characteristic =
+        service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                       ->GetHeartRateControlPointPath()
+                                       .value());
+    ASSERT_TRUE(characteristic);
+    EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
+                                kHeartRateControlPointUUID),
+              characteristic->GetUUID());
+    EXPECT_TRUE(characteristic->GetDescriptors().empty());
+
+    characteristic =
+        service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
+                                       ->GetHeartRateMeasurementPath()
+                                       .value());
+    ASSERT_TRUE(characteristic);
+    EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
+                                kHeartRateMeasurementUUID),
+              characteristic->GetUUID());
+
+    ASSERT_EQ(1u, characteristic->GetDescriptors().size());
+
+    BluetoothRemoteGattDescriptor* descriptor =
+        characteristic->GetDescriptors()[0];
+    EXPECT_EQ(
+        BluetoothRemoteGattDescriptor::ClientCharacteristicConfigurationUuid(),
+        descriptor->GetUUID());
+  }
+
   void AdapterCallback(scoped_refptr<BluetoothAdapter> adapter) {
     adapter_ = adapter;
     if (base::MessageLoop::current() &&
@@ -366,63 +434,40 @@ TEST_F(BluetoothGattBlueZTest, GattServiceAddedAndRemoved) {
                       bluez::FakeBluetoothDeviceClient::kLowEnergyAddress));
 }
 
-TEST_F(BluetoothGattBlueZTest, DiscoveryCompleteForCachedGattService) {
-  // This tests if the notifications on service discovered complete are invoked
-  // with the cached services and added to the GATT service map of |device|.
-  TestBluetoothAdapterObserver observer(adapter_);
+TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredBeforeAdapterIsCreated) {
+  // Tests that all GATT objects are created for a device whose D-Bus objects
+  // were already exposed and for which services have been resolved.
+  adapter_ = NULL;
+  ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
 
-  // Create the device and pre-expose the fake Heart Rate service. This will
-  // synchronously expose characteristics.
-  fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kCachedLowEnergyPath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
-  ASSERT_TRUE(device);
-
-  device::BluetoothRemoteGattService* service = device->GetGattServices()[0];
-  EXPECT_EQ(1u, device->GetGattServices().size());
-  EXPECT_EQ(1, observer.gatt_discovery_complete_count());
-  EXPECT_EQ(device, service->GetDevice());
-  EXPECT_EQ(service, device->GetGattService(service->GetIdentifier()));
-  EXPECT_EQ(3U, service->GetCharacteristics().size());
-}
-
-TEST_F(BluetoothGattBlueZTest, DiscoveryCompleteForNewGattService) {
-  TestBluetoothAdapterObserver observer(adapter_);
-
-  // This tests the discovery complete notification on a newly-added GATT
-  // service.
+  // Create the fake D-Bus objects.
   fake_bluetooth_device_client_->CreateDevice(
       dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device =
-      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
-  ASSERT_TRUE(device);
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
 
-  EXPECT_EQ(0u, device->GetGattServices().size());
-  EXPECT_EQ(0, observer.gatt_discovery_complete_count());
-
-  // Expose the fake Heart Rate service. This will asynchronously expose
-  // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  while (!fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible())
+    base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsHeartRateVisible());
+  ASSERT_TRUE(fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible());
 
-  // Run the message loop so that the characteristics/descriptors appear.
-  base::MessageLoop::current()->Run();
+  properties->services_resolved.ReplaceValue(true);
 
-  // The discovery completed event of a newly-added GATT service should not be
-  // fired until ServicesResolved property becomes true. And the new service
-  // will be added immediately to the GATT service map of |device|.
-  BluetoothRemoteGattService* service = device->GetGattServices()[0];
-  EXPECT_EQ(1u, device->GetGattServices().size());
-  EXPECT_EQ(1, observer.gatt_discovery_complete_count());
-  EXPECT_EQ(device, service->GetDevice());
-  EXPECT_EQ(service, device->GetGattService(service->GetIdentifier()));
-  EXPECT_EQ(3U, service->GetCharacteristics().size());
+  // Create the adapter. This should create all the GATT objects.
+  GetAdapter();
+
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+  HeartRateServiceShouldBeComplete(device);
 }
 
-TEST_F(BluetoothGattBlueZTest, ServicesDiscovered) {
+TEST_F(BluetoothGattBlueZTest, ServicesDiscoveredAfterAdapterIsCreated) {
   // Create a fake LE device. We store the device pointer here because this is a
   // test. It's unsafe to do this in production as the device might get deleted.
   fake_bluetooth_device_client_->CreateDevice(
@@ -443,6 +488,8 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscovered) {
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   // Run the message loop so that the characteristics/descriptors appear.
   base::MessageLoop::current()->Run();
+  properties->services_resolved.ReplaceValue(true);
+
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(1u, device->GetGattServices().size());
   EXPECT_EQ(device, observer.last_device());
@@ -476,8 +523,158 @@ TEST_F(BluetoothGattBlueZTest, ServicesDiscovered) {
       dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   // Run the message loop so that the characteristics/descriptors appear.
   base::MessageLoop::current()->Run();
+  properties->services_resolved.ReplaceValue(true);
+
   EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
   EXPECT_EQ(1u, device->GetGattServices().size());
+}
+
+TEST_F(BluetoothGattBlueZTest, DiscoverCachedServices) {
+  // This unit test tests that all remote GATT objects are created for D-Bus
+  // objects that were already exposed and all relevant events have been
+  // dispatched.
+  adapter_ = NULL;
+  ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
+
+  // Create the fake D-Bus objects.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  properties->services_resolved.ReplaceValue(false);
+
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  while (!fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible())
+    base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsHeartRateVisible());
+  ASSERT_TRUE(fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible());
+
+  // Create the adapter. This should create all the GATT objects.
+  GetAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // The device should exist but contain no cached services while the services
+  // haven't been resolved.
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+
+  EXPECT_TRUE(device->GetGattServices().empty());
+
+  EXPECT_EQ(0, observer.gatt_services_discovered_count());
+  EXPECT_EQ(0, observer.gatt_service_added_count());
+  EXPECT_EQ(0, observer.gatt_discovery_complete_count());
+  EXPECT_EQ(0, observer.gatt_characteristic_added_count());
+  EXPECT_EQ(0, observer.gatt_descriptor_added_count());
+
+  properties->services_resolved.ReplaceValue(true);
+
+  EXPECT_EQ(1, observer.gatt_services_discovered_count());
+  EXPECT_EQ(1, observer.gatt_service_added_count());
+  EXPECT_EQ(1, observer.gatt_discovery_complete_count());
+  EXPECT_EQ(3, observer.gatt_characteristic_added_count());
+  EXPECT_EQ(1, observer.gatt_descriptor_added_count());
+
+  HeartRateServiceShouldBeComplete(device);
+}
+
+TEST_F(BluetoothGattBlueZTest, DiscoverNewServices) {
+  // This unit test tests that all remote GATT Objects are created for D-Bus
+  // objects that are newly exposed.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // Create the fake D-Bus objects.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+
+  properties->services_resolved.ReplaceValue(false);
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  while (!fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible())
+    base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsHeartRateVisible());
+  ASSERT_TRUE(fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible());
+
+  // The device should exist and contain new services even though the services
+  // haven't been resolved.
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+  EXPECT_EQ(1u, device->GetGattServices().size());
+  HeartRateServiceShouldBeComplete(device);
+
+  EXPECT_EQ(0, observer.gatt_services_discovered_count());
+  EXPECT_EQ(0, observer.gatt_discovery_complete_count());
+  // The rest of the events are tested in the corresponding
+  // {GATTObject}AddedAndRemoved tests.
+
+  properties->services_resolved.ReplaceValue(true);
+
+  EXPECT_EQ(1, observer.gatt_services_discovered_count());
+  EXPECT_EQ(1, observer.gatt_discovery_complete_count());
+}
+
+TEST_F(BluetoothGattBlueZTest, DiscoverCachedAndNewServices) {
+  // This unit test tests that all remote GATT objects are created for D-Bus
+  // objects that were already exposed and for new GATT Objects.
+  adapter_ = NULL;
+  ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
+
+  // Create the fake D-Bus objects.
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  properties->services_resolved.ReplaceValue(false);
+
+  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  while (!fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible())
+    base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsHeartRateVisible());
+  ASSERT_TRUE(fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible());
+
+  // Create the adapter. This should create all the GATT objects.
+  GetAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  // The device should exist but contain no cached services while the services
+  // haven't been resolved.
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
+
+  EXPECT_EQ(0, observer.gatt_services_discovered_count());
+  EXPECT_EQ(0, observer.gatt_discovery_complete_count());
+  EXPECT_TRUE(device->GetGattServices().empty());
+
+  fake_bluetooth_gatt_service_client_->ExposeBatteryService(
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsBatteryServiceVisible());
+
+  EXPECT_EQ(0, observer.gatt_services_discovered_count());
+  EXPECT_EQ(0, observer.gatt_discovery_complete_count());
+  EXPECT_EQ(1u, device->GetGattServices().size());
+
+  // A newly added service should be complete even if services haven't been
+  // resolved.
+  BatteryServiceShouldBeComplete(device);
+
+  properties->services_resolved.ReplaceValue(true);
+
+  EXPECT_EQ(1, observer.gatt_services_discovered_count());
+  EXPECT_EQ(2, observer.gatt_discovery_complete_count());
+  EXPECT_EQ(2u, device->GetGattServices().size());
+
+  // Now that services have been resolved both services should be present.
+  HeartRateServiceShouldBeComplete(device);
+  BatteryServiceShouldBeComplete(device);
 }
 
 TEST_F(BluetoothGattBlueZTest, GattCharacteristicAddedAndRemoved) {
@@ -636,76 +833,6 @@ TEST_F(BluetoothGattBlueZTest, GattDescriptorAddedAndRemoved) {
       descriptor->GetUUID());
   EXPECT_EQ(descriptor->GetUUID(), observer.last_gatt_descriptor_uuid());
   EXPECT_EQ(descriptor->GetIdentifier(), observer.last_gatt_descriptor_id());
-}
-
-TEST_F(BluetoothGattBlueZTest, AdapterAddedAfterGattService) {
-  // This unit test tests that all remote GATT objects are created for D-Bus
-  // objects that were already exposed.
-  adapter_ = NULL;
-  ASSERT_FALSE(device::BluetoothAdapterFactory::HasSharedInstanceForTesting());
-
-  // Create the fake D-Bus objects.
-  fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
-  fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
-  while (!fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible())
-    base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsHeartRateVisible());
-  ASSERT_TRUE(fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible());
-
-  // Create the adapter. This should create all the GATT objects.
-  GetAdapter();
-  BluetoothDevice* device =
-      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
-  ASSERT_TRUE(device);
-  EXPECT_EQ(1U, device->GetGattServices().size());
-
-  BluetoothRemoteGattService* service = device->GetGattServices()[0];
-  ASSERT_TRUE(service);
-  EXPECT_TRUE(service->IsPrimary());
-  EXPECT_EQ(BluetoothUUID(
-                bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
-            service->GetUUID());
-  EXPECT_EQ(service, device->GetGattServices()[0]);
-  EXPECT_EQ(service, device->GetGattService(service->GetIdentifier()));
-  EXPECT_EQ(3U, service->GetCharacteristics().size());
-
-  BluetoothRemoteGattCharacteristic* characteristic =
-      service->GetCharacteristic(fake_bluetooth_gatt_characteristic_client_
-                                     ->GetBodySensorLocationPath()
-                                     .value());
-  ASSERT_TRUE(characteristic);
-  EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
-                              kBodySensorLocationUUID),
-            characteristic->GetUUID());
-  EXPECT_TRUE(characteristic->GetDescriptors().empty());
-
-  characteristic = service->GetCharacteristic(
-      fake_bluetooth_gatt_characteristic_client_->GetHeartRateControlPointPath()
-          .value());
-  ASSERT_TRUE(characteristic);
-  EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
-                              kHeartRateControlPointUUID),
-            characteristic->GetUUID());
-  EXPECT_TRUE(characteristic->GetDescriptors().empty());
-
-  characteristic = service->GetCharacteristic(
-      fake_bluetooth_gatt_characteristic_client_->GetHeartRateMeasurementPath()
-          .value());
-  ASSERT_TRUE(characteristic);
-  EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
-                              kHeartRateMeasurementUUID),
-            characteristic->GetUUID());
-  EXPECT_EQ(1U, characteristic->GetDescriptors().size());
-
-  BluetoothRemoteGattDescriptor* descriptor =
-      characteristic->GetDescriptors()[0];
-  ASSERT_TRUE(descriptor);
-  EXPECT_EQ(
-      BluetoothRemoteGattDescriptor::ClientCharacteristicConfigurationUuid(),
-      descriptor->GetUUID());
 }
 
 TEST_F(BluetoothGattBlueZTest, GattCharacteristicValue) {
