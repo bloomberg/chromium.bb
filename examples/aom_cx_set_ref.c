@@ -296,7 +296,7 @@ int main(int argc, char **argv) {
   unsigned int frame_out = 0;
 
   // The frame number to set reference frame on
-  int update_frame_num = 0;
+  unsigned int update_frame_num = 0;
   int mismatch_seen = 0;
 
   const int fps = 30;
@@ -307,7 +307,8 @@ int main(int argc, char **argv) {
   const char *height_arg = NULL;
   const char *infile_arg = NULL;
   const char *outfile_arg = NULL;
-  int limit = 0;
+  const char *update_frame_num_arg = NULL;
+  unsigned int limit = 0;
   exec_name = argv[0];
 
   if (argc < 7) die("Invalid number of arguments");
@@ -317,18 +318,21 @@ int main(int argc, char **argv) {
   height_arg = argv[3];
   infile_arg = argv[4];
   outfile_arg = argv[5];
+  update_frame_num_arg = argv[6];
 
   encoder = get_aom_encoder_by_name(codec_arg);
   if (!encoder) die("Unsupported codec.");
 
-  update_frame_num = atoi(argv[6]);
+  update_frame_num = (unsigned int)strtoul(update_frame_num_arg, NULL, 0);
   // In AV1, the reference buffers (cm->buffer_pool->frame_bufs[i].buf) are
   // allocated while calling aom_codec_encode(), thus, setting reference for
   // 1st frame isn't supported.
-  if (update_frame_num <= 1) die("Couldn't parse frame number '%s'\n", argv[6]);
+  if (update_frame_num <= 1) {
+    die("Couldn't parse frame number '%s'\n", update_frame_num_arg);
+  }
 
   if (argc > 7) {
-    limit = atoi(argv[7]);
+    limit = (unsigned int)strtoul(argv[7], NULL, 0);
     if (update_frame_num > limit)
       die("Update frame number couldn't larger than limit\n");
   }
