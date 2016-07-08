@@ -79,7 +79,7 @@ IPC::SyncMessageFilter* MockRenderThread::GetSyncMessageFilter() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-MockRenderThread::GetIOMessageLoopProxy() {
+MockRenderThread::GetIOTaskRunner() {
   return scoped_refptr<base::SingleThreadTaskRunner>();
 }
 

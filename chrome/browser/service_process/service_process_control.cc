@@ -52,10 +52,8 @@ void ServiceProcessControl::ConnectInternal() {
   // TODO(hclam): Handle error connecting to channel.
   const IPC::ChannelHandle channel_id = GetServiceProcessChannel();
   SetChannel(IPC::ChannelProxy::Create(
-      channel_id,
-      IPC::Channel::MODE_NAMED_CLIENT,
-      this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
+      channel_id, IPC::Channel::MODE_NAMED_CLIENT, this,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
 }
 
 void ServiceProcessControl::SetChannel(

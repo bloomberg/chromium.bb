@@ -211,7 +211,7 @@ bool ReadMessageCatalogsFromFile(const base::FilePath& extension_path,
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
     : RefCountedDeleteOnMessageLoop<SandboxedUnpackerClient>(
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::UI)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

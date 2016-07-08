@@ -77,9 +77,9 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile))),
       std::unique_ptr<GCMClientFactory>(new GCMClientFactory),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
       blocking_task_runner);
 #endif

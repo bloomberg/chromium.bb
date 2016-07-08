@@ -91,7 +91,7 @@ net::URLRequestContext* BlimpURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 BlimpURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
+  return content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::IO);
 }
 

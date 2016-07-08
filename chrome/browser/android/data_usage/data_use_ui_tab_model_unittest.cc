@@ -106,9 +106,9 @@ class DataUseUITabModelTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    io_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
-    ui_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    ui_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::UI);
 
     data_use_aggregator_.reset(

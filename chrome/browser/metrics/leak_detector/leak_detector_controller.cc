@@ -94,7 +94,7 @@ LeakDetectorController::LeakDetectorController()
   detector->AddObserver(this);
 
   // Leak detector parameters are stored in |params_|.
-  detector->Init(params_, content::BrowserThread::GetMessageLoopProxyForThread(
+  detector->Init(params_, content::BrowserThread::GetTaskRunnerForThread(
                               content::BrowserThread::UI));
 }
 

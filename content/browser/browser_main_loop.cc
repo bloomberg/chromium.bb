@@ -582,7 +582,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
   {
     base::SetRecordActionTaskRunner(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
   }
 
 #if defined(OS_WIN)

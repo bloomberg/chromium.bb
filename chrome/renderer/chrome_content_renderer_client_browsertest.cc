@@ -52,7 +52,7 @@ TEST_F(InstantProcessNavigationTest, ForkForNavigationsFromInstantProcess) {
 TEST_F(InstantProcessNavigationTest, ForkForNavigationsToSearchURLs) {
   ChromeContentRendererClient* client =
       static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());
-  chrome_render_thread_->set_io_message_loop_proxy(
+  chrome_render_thread_->set_io_task_runner(
       base::ThreadTaskRunnerHandle::Get());
   client->RenderThreadStarted();
   std::vector<GURL> search_urls;

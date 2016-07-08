@@ -441,10 +441,9 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
   // that utilizes the QuotaManager.
   scoped_refptr<storage::QuotaManager> quota_manager =
       new storage::QuotaManager(
-          in_memory,
-          partition_path,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
+          in_memory, partition_path,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
           context->GetSpecialStoragePolicy());
 
   // Each consumer is responsible for registering its QuotaClient during
@@ -454,12 +453,10 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
           context, partition_path, in_memory, quota_manager->proxy());
 
   scoped_refptr<storage::DatabaseTracker> database_tracker =
-      new storage::DatabaseTracker(partition_path,
-                                   in_memory,
-                                   context->GetSpecialStoragePolicy(),
-                                   quota_manager->proxy(),
-                                   BrowserThread::GetMessageLoopProxyForThread(
-                                       BrowserThread::FILE).get());
+      new storage::DatabaseTracker(
+          partition_path, in_memory, context->GetSpecialStoragePolicy(),
+          quota_manager->proxy(),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
 
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context =
       new DOMStorageContextWrapper(

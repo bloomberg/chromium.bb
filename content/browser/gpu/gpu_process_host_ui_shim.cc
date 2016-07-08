@@ -72,8 +72,7 @@ GpuProcessHostUIShim::GpuProcessHostUIShim(int host_id)
   ui::OzonePlatform::GetInstance()
       ->GetGpuPlatformSupportHost()
       ->OnChannelEstablished(
-          host_id,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          host_id, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           base::Bind(&SendOnIOThreadTask, host_id_));
 #endif
 }

@@ -88,8 +88,7 @@ void WriteFromUrlOperation::Download(const base::Closure& continuation) {
 
   url_fetcher_->SetRequestContext(request_context_);
   url_fetcher_->SaveResponseToFileAtPath(
-      image_path_,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      image_path_, BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
 
   AddCleanUpFunction(
       base::Bind(&WriteFromUrlOperation::DestroyUrlFetcher, this));

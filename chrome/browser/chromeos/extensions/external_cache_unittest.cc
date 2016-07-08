@@ -62,7 +62,7 @@ class ExternalCacheTest : public testing::Test,
   // testing::Test overrides:
   void SetUp() override {
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO));
     fetcher_factory_.reset(new net::TestURLFetcherFactory());
 

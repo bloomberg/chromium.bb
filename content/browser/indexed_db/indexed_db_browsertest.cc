@@ -140,7 +140,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     qm->SetTemporaryGlobalOverrideQuota(bytes, storage::QuotaCallback());
     // Don't return until the quota has been set.
     scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::DB)));
     ASSERT_TRUE(helper->Run());
   }
 

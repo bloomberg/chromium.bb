@@ -19,7 +19,7 @@ ExtensionDataTypeController::ExtensionDataTypeController(
     sync_driver::SyncClient* sync_client,
     Profile* profile)
     : UIDataTypeController(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
           error_callback,
           type,
           sync_client),

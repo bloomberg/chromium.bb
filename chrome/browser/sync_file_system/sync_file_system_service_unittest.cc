@@ -136,10 +136,9 @@ class SyncFileSystemServiceTest : public testing::Test {
   void SetUp() override {
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     file_system_.reset(new CannedSyncableFileSystem(
-        GURL(kOrigin),
-        in_memory_env_.get(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+        GURL(kOrigin), in_memory_env_.get(),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 
     std::unique_ptr<LocalFileSyncService> local_service =
         LocalFileSyncService::CreateForTesting(&profile_, in_memory_env_.get());

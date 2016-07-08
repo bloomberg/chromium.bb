@@ -442,11 +442,9 @@ ProfileImpl::ProfileImpl(
 #else
   cloud_policy_manager_ =
       policy::UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
-          this,
-          force_immediate_policy_load,
-          sequenced_task_runner,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+          this, force_immediate_policy_load, sequenced_task_runner,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #endif
   profile_policy_connector_ =
       policy::ProfilePolicyConnectorFactory::CreateForBrowserContext(
@@ -564,7 +562,7 @@ void ProfileImpl::DoFinalInit() {
   ssl_config_service_manager_.reset(
       ssl_config::SSLConfigServiceManager::CreateDefaultManager(
           local_state,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
 #if BUILDFLAG(ENABLE_BACKGROUND)
   // Initialize the BackgroundModeManager - this has to be done here before
@@ -1287,5 +1285,5 @@ ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
     return std::unique_ptr<domain_reliability::DomainReliabilityMonitor>();
 
   return service->CreateMonitor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }

@@ -77,29 +77,6 @@ def _CheckForUseOfWrongClock(input_api, output_api):
     return []
 
 
-def _CheckForMessageLoopProxy(input_api, output_api):
-  """Make sure media code only uses MessageLoopProxy for accessing the current
-  loop."""
-
-  message_loop_proxy_re = input_api.re.compile(
-      r'\bMessageLoopProxy(?!::current\(\))')
-
-  problems = []
-  for f in input_api.AffectedSourceFiles(_FilterFile):
-    for line_number, line in f.ChangedContents():
-      if message_loop_proxy_re.search(line):
-        problems.append('%s:%d' % (f.LocalPath(), line_number))
-
-  if problems:
-    return [output_api.PresubmitError(
-      'MessageLoopProxy should only be used for accessing the current loop.\n'
-      'Use the TaskRunner interfaces instead as they are more explicit about\n'
-      'the run-time characteristics. In most cases, SingleThreadTaskRunner\n'
-      'is a drop-in replacement for MessageLoopProxy.', problems)]
-
-  return []
-
-
 def _CheckForHistogramOffByOne(input_api, output_api):
   """Make sure histogram enum maxes are used properly"""
 
@@ -193,7 +170,6 @@ def _CheckPassByValue(input_api, output_api):
 def _CheckChange(input_api, output_api):
   results = []
   results.extend(_CheckForUseOfWrongClock(input_api, output_api))
-  results.extend(_CheckForMessageLoopProxy(input_api, output_api))
   results.extend(_CheckPassByValue(input_api, output_api))
   results.extend(_CheckForHistogramOffByOne(input_api, output_api))
   results += input_api.canned_checks.CheckPatchFormatted(input_api, output_api)

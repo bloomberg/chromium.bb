@@ -32,7 +32,7 @@ ManifestServiceChannel::ManifestServiceChannel(
           handle,
           IPC::Channel::MODE_CLIENT,
           this,
-          content::RenderThread::Get()->GetIOMessageLoopProxy(),
+          content::RenderThread::Get()->GetIOTaskRunner(),
           true,
           waitable_event)),
       peer_pid_(base::kNullProcessId),

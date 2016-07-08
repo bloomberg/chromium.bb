@@ -76,7 +76,7 @@ PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
   DCHECK(queue_.get());
   is_printing_enabled_->Init(prefs::kPrintingEnabled, profile->GetPrefs());
   is_printing_enabled_->MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {

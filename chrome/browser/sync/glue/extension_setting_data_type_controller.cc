@@ -23,7 +23,7 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     sync_driver::SyncClient* sync_client,
     Profile* profile)
     : NonUIDataTypeController(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
           error_callback,
           sync_client),
       type_(type),

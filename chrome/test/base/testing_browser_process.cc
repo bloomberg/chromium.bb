@@ -151,7 +151,7 @@ policy::BrowserPolicyConnector*
     browser_policy_connector_ = platform_part_->CreateBrowserPolicyConnector();
 
     // Note: creating the ChromeBrowserPolicyConnector invokes BrowserThread::
-    // GetMessageLoopProxyForThread(), which initializes a base::LazyInstance of
+    // GetTaskRunnerForThread(), which initializes a base::LazyInstance of
     // BrowserThreadTaskRunners. However, the threads that these task runners
     // would run tasks on are *also* created lazily and might not exist yet.
     // Creating them requires a MessageLoop, which a test can optionally create

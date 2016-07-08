@@ -176,7 +176,7 @@ class MediaTransferProtocolManager {
   // On Linux, |task_runner| specifies the task runner to process asynchronous
   // operations.
   // On ChromeOS, |task_runner| should just be set to NULL because ChromeOS
-  // already has a dedicated message loop proxy.
+  // already has a dedicated task runner.
   static MediaTransferProtocolManager* Initialize(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
 };

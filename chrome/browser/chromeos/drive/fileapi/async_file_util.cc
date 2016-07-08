@@ -79,7 +79,7 @@ void RunCreateOrOpenFileCallback(
   callback.Run(
       std::move(file),
       base::Bind(&google_apis::RunTaskWithTaskRunner,
-                 BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+                 BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
                  close_callback_on_ui_thread));
 }
 

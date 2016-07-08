@@ -96,7 +96,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
   unsafe_resource.callback = base::Bind(
       &DataReductionProxyResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
   unsafe_resource.callback_thread =
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO);
   unsafe_resource.render_process_host_id = info->GetChildID();
   unsafe_resource.render_frame_id = info->GetRenderFrameID();

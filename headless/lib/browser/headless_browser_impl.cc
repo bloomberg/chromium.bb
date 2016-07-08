@@ -87,13 +87,13 @@ HeadlessWebContents* HeadlessBrowserImpl::CreateWebContents(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessBrowserImpl::BrowserMainThread() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
+  return content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::UI);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessBrowserImpl::BrowserFileThread() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
+  return content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::FILE);
 }
 

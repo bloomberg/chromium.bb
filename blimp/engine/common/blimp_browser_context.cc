@@ -181,9 +181,9 @@ net::URLRequestContextGetter* BlimpBrowserContext::CreateRequestContext(
   resource_context_->set_url_request_context_getter(
       new BlimpURLRequestContextGetter(
           ignore_certificate_errors_, GetPath(),
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO),
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::FILE),
           protocol_handlers, std::move(request_interceptors), net_log_));
   return resource_context_->url_request_context_getter().get();

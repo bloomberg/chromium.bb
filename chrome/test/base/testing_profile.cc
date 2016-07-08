@@ -182,7 +182,7 @@ class TestExtensionURLRequestContextGetter
   }
   scoped_refptr<base::SingleThreadTaskRunner> GetNetworkTaskRunner()
       const override {
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+    return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   }
 
  protected:
@@ -221,10 +221,9 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
   std::unique_ptr<BookmarkModel> bookmark_model(
       new BookmarkModel(base::WrapUnique(new ChromeBookmarkClient(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile)))));
-  bookmark_model->Load(profile->GetPrefs(),
-                       profile->GetPath(),
+  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        profile->GetIOTaskRunner(),
-                       content::BrowserThread::GetMessageLoopProxyForThread(
+                       content::BrowserThread::GetTaskRunnerForThread(
                            content::BrowserThread::UI));
   return std::move(bookmark_model);
 }
@@ -239,8 +238,8 @@ std::unique_ptr<KeyedService> BuildWebDataService(
   const base::FilePath& context_path = context->GetPath();
   return base::WrapUnique(new WebDataServiceWrapper(
       context_path, g_browser_process->GetApplicationLocale(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
       sync_start_util::GetFlareForSyncableService(context_path),
       &TestProfileErrorCallback));
 }
@@ -953,7 +952,7 @@ net::URLRequestContextGetter* TestingProfile::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
   return new net::TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 
 net::URLRequestContextGetter*

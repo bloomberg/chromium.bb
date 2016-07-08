@@ -30,7 +30,7 @@ class IOSChromeURLRequestContextGetter : public net::URLRequestContextGetter {
 
   // Note that GetURLRequestContext() can only be called from the IO
   // thread (it will assert otherwise).
-  // GetIOMessageLoopProxy however can be called from any thread.
+  // GetIOTaskRunner however can be called from any thread.
   //
   // net::URLRequestContextGetter implementation.
   net::URLRequestContext* GetURLRequestContext() override;

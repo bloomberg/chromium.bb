@@ -101,7 +101,7 @@ void DebugStubPortSelectedHandler(uint16_t port) {
 
 // Creates the PPAPI IPC channel between the NaCl IRT and the host
 // (browser/renderer) process, and starts to listen it on the thread where
-// the given message_loop_proxy runs.
+// the given task runner runs.
 // Also, creates and sets the corresponding NaClDesc to the given nap with
 // the FD #.
 void SetUpIPCAdapter(

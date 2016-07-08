@@ -95,7 +95,7 @@ scoped_refptr<ShortcutsBackend> ShortcutsBackendFactory::CreateShortcutsBackend(
       base::WrapUnique(new UIThreadSearchTermsData(profile)),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::EXPLICIT_ACCESS),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::DB),
       profile->GetPath().Append(kShortcutsDatabaseName), suppress_db));
 #if defined(ENABLE_EXTENSIONS)

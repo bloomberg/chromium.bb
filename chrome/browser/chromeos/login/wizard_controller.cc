@@ -385,8 +385,7 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
     if (!remora_controller_) {
       remora_controller_.reset(
           new pairing_chromeos::BluetoothHostPairingController(
-              BrowserThread::GetMessageLoopProxyForThread(
-                  BrowserThread::FILE)));
+              BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
       remora_controller_->StartPairing();
     }
     return new HostPairingScreen(this, this,
@@ -1354,7 +1353,7 @@ void WizardController::MaybeStartListeningForSharkConnection() {
   if (!shark_connection_listener_) {
     shark_connection_listener_.reset(
         new pairing_chromeos::SharkConnectionListener(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
             base::Bind(&WizardController::OnSharkConnected,
                        weak_factory_.GetWeakPtr())));
   }

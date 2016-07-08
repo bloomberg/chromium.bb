@@ -95,7 +95,7 @@ TEST_F(BrowserThreadTest, ReleasedOnCorrectThread) {
 
 TEST_F(BrowserThreadTest, PostTaskViaTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
   task_runner->PostTask(
       FROM_HERE, base::Bind(&BasicFunction, base::MessageLoop::current()));
   base::RunLoop().Run();
@@ -103,7 +103,7 @@ TEST_F(BrowserThreadTest, PostTaskViaTaskRunner) {
 
 TEST_F(BrowserThreadTest, ReleaseViaTaskRunner) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   task_runner->ReleaseSoon(FROM_HERE, this);
   base::RunLoop().Run();
 }

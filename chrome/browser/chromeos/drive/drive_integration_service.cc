@@ -260,7 +260,7 @@ DriveIntegrationService::DriveIntegrationService(
       metadata_storage_.get(), cache_.get(), blocking_task_runner_));
 
   file_task_runner_ =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
   file_system_.reset(
       test_file_system
           ? test_file_system

@@ -73,10 +73,9 @@ class LocalFileSyncContextTest : public testing::Test {
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     ui_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    io_task_runner_ = BrowserThread::GetMessageLoopProxyForThread(
-        BrowserThread::IO);
-    file_task_runner_ = BrowserThread::GetMessageLoopProxyForThread(
-        BrowserThread::IO);
+    io_task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
+    file_task_runner_ =
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   }
 
   void TearDown() override { RevokeSyncableFileSystem(); }

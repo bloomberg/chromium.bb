@@ -232,14 +232,14 @@ void DeviceLocalAccountPolicyBroker::CreateComponentCloudPolicyService(
 
   std::unique_ptr<ResourceCache> resource_cache(
       new ResourceCache(component_policy_cache_path_,
-                        content::BrowserThread::GetMessageLoopProxyForThread(
+                        content::BrowserThread::GetTaskRunnerForThread(
                             content::BrowserThread::FILE)));
 
   component_policy_service_.reset(new ComponentCloudPolicyService(
       this, &schema_registry_, core(), client, std::move(resource_cache),
-      request_context, content::BrowserThread::GetMessageLoopProxyForThread(
+      request_context, content::BrowserThread::GetTaskRunnerForThread(
                            content::BrowserThread::FILE),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO)));
 }
 

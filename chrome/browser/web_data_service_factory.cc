@@ -167,8 +167,8 @@ KeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
   const base::FilePath& profile_path = context->GetPath();
   return new WebDataServiceWrapper(
       profile_path, g_browser_process->GetApplicationLocale(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
       sync_start_util::GetFlareForSyncableService(profile_path),
       &ProfileErrorCallback);
 }

@@ -642,7 +642,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   // to wait for the SafeBrowsingService to finish loading/stopping.
   void WaitForIOThread() {
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
     ASSERT_TRUE(io_helper->Run());
   }
 
@@ -651,7 +651,7 @@ class SafeBrowsingServiceTest : public InProcessBrowserTest {
   void WaitForIOAndCheckEnabled(SafeBrowsingService* service, bool enabled) {
     scoped_refptr<ServiceEnabledHelper> enabled_helper(new ServiceEnabledHelper(
         service, enabled,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
     ASSERT_TRUE(enabled_helper->Run());
   }
 

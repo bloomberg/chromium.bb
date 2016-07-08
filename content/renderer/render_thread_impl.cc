@@ -681,7 +681,7 @@ void RenderThreadImpl::Init(
 
   media_stream_center_ = nullptr;
 
-  blob_message_filter_ = new BlobMessageFilter(GetFileThreadMessageLoopProxy());
+  blob_message_filter_ = new BlobMessageFilter(GetFileThreadTaskRunner());
   AddFilter(blob_message_filter_.get());
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
@@ -696,28 +696,26 @@ void RenderThreadImpl::Init(
   peer_connection_tracker_.reset(new PeerConnectionTracker());
   AddObserver(peer_connection_tracker_.get());
 
-  p2p_socket_dispatcher_ =
-      new P2PSocketDispatcher(GetIOMessageLoopProxy().get());
+  p2p_socket_dispatcher_ = new P2PSocketDispatcher(GetIOTaskRunner().get());
   AddFilter(p2p_socket_dispatcher_.get());
 
   peer_connection_factory_.reset(
       new PeerConnectionDependencyFactory(p2p_socket_dispatcher_.get()));
 
   aec_dump_message_filter_ = new AecDumpMessageFilter(
-      GetIOMessageLoopProxy(), message_loop()->task_runner());
+      GetIOTaskRunner(), message_loop()->task_runner());
 
   AddFilter(aec_dump_message_filter_.get());
 
 #endif  // defined(ENABLE_WEBRTC)
 
-  audio_input_message_filter_ =
-      new AudioInputMessageFilter(GetIOMessageLoopProxy());
+  audio_input_message_filter_ = new AudioInputMessageFilter(GetIOTaskRunner());
   AddFilter(audio_input_message_filter_.get());
 
-  audio_message_filter_ = new AudioMessageFilter(GetIOMessageLoopProxy());
+  audio_message_filter_ = new AudioMessageFilter(GetIOTaskRunner());
   AddFilter(audio_message_filter_.get());
 
-  midi_message_filter_ = new MidiMessageFilter(GetIOMessageLoopProxy());
+  midi_message_filter_ = new MidiMessageFilter(GetIOTaskRunner());
   AddFilter(midi_message_filter_.get());
 
   AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
@@ -1044,7 +1042,7 @@ IPC::SyncMessageFilter* RenderThreadImpl::GetSyncMessageFilter() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetIOMessageLoopProxy() {
+RenderThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
@@ -2074,7 +2072,7 @@ void RenderThreadImpl::OnMemoryPressure(
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetFileThreadMessageLoopProxy() {
+RenderThreadImpl::GetFileThreadTaskRunner() {
   DCHECK(message_loop()->task_runner()->BelongsToCurrentThread());
   if (!file_thread_) {
     file_thread_.reset(new base::Thread("Renderer::FILE"));

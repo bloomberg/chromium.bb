@@ -63,11 +63,10 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
   BookmarkModel* bookmark_model =
       new BookmarkModel(base::WrapUnique(new ChromeBookmarkClient(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile))));
-  bookmark_model->Load(profile->GetPrefs(),
-                       profile->GetPath(),
+  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
                        StartupTaskRunnerServiceFactory::GetForProfile(profile)
                            ->GetBookmarkTaskRunner(),
-                       content::BrowserThread::GetMessageLoopProxyForThread(
+                       content::BrowserThread::GetTaskRunnerForThread(
                            content::BrowserThread::UI));
   bool register_bookmark_undo_service_as_observer = true;
 #if !BUILDFLAG(ANDROID_JAVA_UI)

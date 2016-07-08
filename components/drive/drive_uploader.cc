@@ -103,9 +103,9 @@ struct DriveUploader::UploadFileInfo {
             device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
             device::PowerSaveBlocker::kReasonOther,
             "Upload in progress",
-            content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::UI),
-            content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::FILE))),
         cancelled(false),
         weak_ptr_factory_(this) {}

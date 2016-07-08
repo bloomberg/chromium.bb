@@ -1414,8 +1414,8 @@ void CacheStorageCache::CreateBackend(const ErrorCallback& callback) {
   int rv = disk_cache::CreateCacheBackend(
       cache_type, net::CACHE_BACKEND_SIMPLE, path_, kMaxCacheBytes,
       false, /* force */
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get(),
-      NULL, backend, create_cache_callback);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE).get(), NULL,
+      backend, create_cache_callback);
   if (rv != net::ERR_IO_PENDING)
     create_cache_callback.Run(rv);
 }

@@ -90,8 +90,8 @@ void ProfileStatisticsAggregator::StartAggregator() {
 
   // Initiate bookmark counting (async).
   tracker_.PostTask(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI).get(),
+      content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+          .get(),
       FROM_HERE,
       base::Bind(&ProfileStatisticsAggregator::WaitOrCountBookmarks, this));
 
@@ -122,12 +122,11 @@ void ProfileStatisticsAggregator::StartAggregator() {
 
   // Initiate preference counting (async).
   tracker_.PostTaskAndReplyWithResult(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI).get(),
-      FROM_HERE,
-      base::Bind(&ProfileStatisticsAggregator::CountPrefs, this),
-      base::Bind(&ProfileStatisticsAggregator::StatisticsCallback,
-                 this, profiles::kProfileStatisticsSettings));
+      content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
+          .get(),
+      FROM_HERE, base::Bind(&ProfileStatisticsAggregator::CountPrefs, this),
+      base::Bind(&ProfileStatisticsAggregator::StatisticsCallback, this,
+                 profiles::kProfileStatisticsSettings));
 }
 
 void ProfileStatisticsAggregator::StatisticsCallback(

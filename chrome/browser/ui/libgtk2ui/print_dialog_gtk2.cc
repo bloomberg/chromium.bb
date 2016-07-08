@@ -535,10 +535,8 @@ void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job,
   if (print_job)
     g_object_unref(print_job);
   base::FileUtilProxy::DeleteFile(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
-      path_to_pdf_,
-      false,
-      base::FileUtilProxy::StatusCallback());
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
+      path_to_pdf_, false, base::FileUtilProxy::StatusCallback());
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }

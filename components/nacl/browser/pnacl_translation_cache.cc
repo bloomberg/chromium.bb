@@ -338,12 +338,9 @@ int PnaclTranslationCache::Init(net::CacheType cache_type,
                                 int cache_size,
                                 const CompletionCallback& callback) {
   int rv = disk_cache::CreateCacheBackend(
-      cache_type,
-      net::CACHE_BACKEND_DEFAULT,
-      cache_dir,
-      cache_size,
+      cache_type, net::CACHE_BACKEND_DEFAULT, cache_dir, cache_size,
       true /* force_initialize */,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE).get(),
       NULL, /* dummy net log */
       &disk_cache_,
       base::Bind(&PnaclTranslationCache::OnCreateBackendComplete, AsWeakPtr()));

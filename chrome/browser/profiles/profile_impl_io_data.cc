@@ -187,8 +187,8 @@ void ProfileImplIOData::Handle::Init(
   io_data_->set_data_reduction_proxy_io_data(
       CreateDataReductionProxyChromeIOData(
           g_browser_process->io_thread()->net_log(), profile_->GetPrefs(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 
   base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
@@ -201,7 +201,7 @@ void ProfileImplIOData::Handle::Init(
       ->InitDataReductionProxySettings(
           io_data_->data_reduction_proxy_io_data(), profile_->GetPrefs(),
           profile_->GetRequestContext(), std::move(store),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
           db_task_runner);
 }
 
@@ -370,11 +370,11 @@ void ProfileImplIOData::Handle::LazyInitialize() const {
   io_data_->session_startup_pref()->Init(
       prefs::kRestoreOnStartup, pref_service);
   io_data_->session_startup_pref()->MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       pref_service);
   io_data_->safe_browsing_enabled()->MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   io_data_->InitializeOnUIThread(profile_);
 }
 
@@ -520,7 +520,7 @@ void ProfileImplIOData::InitializeInternal(
       new net::HttpCache::DefaultBackend(
           net::DISK_CACHE, ChooseCacheBackendType(), lazy_params_->cache_path,
           lazy_params_->cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
   main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
                                              std::move(main_backend));
@@ -635,11 +635,9 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
     app_backend = net::HttpCache::DefaultBackend::InMemory(0);
   } else {
     app_backend.reset(new net::HttpCache::DefaultBackend(
-        net::DISK_CACHE,
-        ChooseCacheBackendType(),
-        cache_path,
+        net::DISK_CACHE, ChooseCacheBackendType(), cache_path,
         app_cache_max_size_,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
   }
 
   std::unique_ptr<net::CookieStore> cookie_store;
@@ -736,7 +734,7 @@ ProfileImplIOData::InitializeMediaRequestContext(
       new net::HttpCache::DefaultBackend(
           net::MEDIA_CACHE, ChooseCacheBackendType(), cache_path,
           cache_max_size,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
   std::unique_ptr<net::HttpCache> media_http_cache =
       CreateHttpFactory(http_network_session_.get(), std::move(media_backend));
 

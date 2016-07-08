@@ -136,7 +136,7 @@ void CreateTestSerialServiceOnFileThread(
     mojo::InterfaceRequest<device::serial::SerialService> request) {
   auto io_handler_factory = base::Bind(&FakeEchoSerialIoHandler::Create);
   auto* connection_factory = new device::SerialConnectionFactory(
-      io_handler_factory, content::BrowserThread::GetMessageLoopProxyForThread(
+      io_handler_factory, content::BrowserThread::GetTaskRunnerForThread(
                               content::BrowserThread::IO));
   std::unique_ptr<device::SerialDeviceEnumerator> device_enumerator(
       new FakeSerialDeviceEnumerator);

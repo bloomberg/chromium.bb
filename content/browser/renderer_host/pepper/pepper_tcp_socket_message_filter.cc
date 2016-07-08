@@ -153,14 +153,14 @@ PepperTCPSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_TCPSocket_Connect::ID:
     case PpapiHostMsg_TCPSocket_ConnectWithNetAddress::ID:
     case PpapiHostMsg_TCPSocket_Listen::ID:
-      return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
     case PpapiHostMsg_TCPSocket_SSLHandshake::ID:
     case PpapiHostMsg_TCPSocket_Read::ID:
     case PpapiHostMsg_TCPSocket_Write::ID:
     case PpapiHostMsg_TCPSocket_Accept::ID:
     case PpapiHostMsg_TCPSocket_Close::ID:
     case PpapiHostMsg_TCPSocket_SetOption::ID:
-      return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   }
   return NULL;
 }

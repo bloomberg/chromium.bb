@@ -81,10 +81,10 @@ PepperTCPServerSocketMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
     case PpapiHostMsg_TCPServerSocket_Listen::ID:
-      return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
     case PpapiHostMsg_TCPServerSocket_Accept::ID:
     case PpapiHostMsg_TCPServerSocket_StopListening::ID:
-      return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   }
   return NULL;
 }

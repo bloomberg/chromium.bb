@@ -33,7 +33,7 @@ FileDownloader::FileDownloader(const GURL& url,
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(kNumRetries);
   fetcher_->SaveResponseToTemporaryFile(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
 
   if (overwrite) {
     fetcher_->Start();

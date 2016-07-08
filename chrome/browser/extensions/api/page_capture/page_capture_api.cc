@@ -106,10 +106,8 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated(bool success) {
       // Setup a ShareableFileReference so the temporary file gets deleted
       // once it is no longer used.
       mhtml_file_ = ShareableFileReference::GetOrCreate(
-          mhtml_path_,
-          ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-              .get());
+          mhtml_path_, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
     }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

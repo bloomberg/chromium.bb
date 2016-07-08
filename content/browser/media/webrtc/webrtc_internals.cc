@@ -509,8 +509,8 @@ void WebRTCInternals::CreateOrReleasePowerSaveBlocker() {
         device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         device::PowerSaveBlocker::kReasonOther,
         "WebRTC has active PeerConnections",
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
   }
 }
 

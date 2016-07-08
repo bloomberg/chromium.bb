@@ -208,9 +208,9 @@ void ChromeSyncClient::Initialize() {
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         *base::CommandLine::ForCurrentProcess(),
         prefs::kSavingBrowserHistoryDisabled, sync_service_url,
-        content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
-        content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::DB),
         token_service, url_request_context_getter, web_data_service_,
         password_store_));
@@ -442,16 +442,15 @@ ChromeSyncClient::CreateModelWorkerForGroup(
   switch (group) {
     case syncer::GROUP_DB:
       return new BrowserThreadModelWorker(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
           syncer::GROUP_DB, observer);
     case syncer::GROUP_FILE:
       return new BrowserThreadModelWorker(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
           syncer::GROUP_FILE, observer);
     case syncer::GROUP_UI:
       return new UIModelWorker(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          observer);
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI), observer);
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker(observer);
     case syncer::GROUP_HISTORY: {
@@ -460,8 +459,7 @@ ChromeSyncClient::CreateModelWorkerForGroup(
         return nullptr;
       return new HistoryModelWorker(
           history_service->AsWeakPtr(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          observer);
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI), observer);
     }
     case syncer::GROUP_PASSWORD: {
       if (!password_store_.get())
@@ -512,7 +510,7 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
   base::Closure error_callback =
       base::Bind(&ChromeReportUnrecoverableError, chrome::GetChannel());
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
 
 #if defined(ENABLE_EXTENSIONS)
   // App sync is enabled by default.  Register unless explicitly

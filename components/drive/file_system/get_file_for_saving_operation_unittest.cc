@@ -64,7 +64,7 @@ class GetFileForSavingOperationTest : public OperationTestBase {
   void SetUp() override {
     OperationTestBase::SetUp();
 
-    file_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    file_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::FILE);
 
     operation_.reset(new GetFileForSavingOperation(

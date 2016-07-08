@@ -1440,11 +1440,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
           blob_context);
     }
     new_request->set_upload(UploadDataStreamBuilder::Build(
-        request_data.request_body.get(),
-        blob_context,
+        request_data.request_body.get(), blob_context,
         filter_->file_system_context(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-            .get()));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
   }
 
   bool allow_download = request_data.allow_download &&
@@ -1686,8 +1684,8 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     // Block power save while uploading data.
     throttles.push_back(new PowerSaveBlockResourceThrottle(
         request->url().host(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
   }
 
   // TODO(ricea): Stop looking this up so much.
@@ -2187,11 +2185,9 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     // another renderer requested this navigation, this should be the same
     // FileSystemContext passed into ShouldServiceRequest.
     new_request->set_upload(UploadDataStreamBuilder::Build(
-        body,
-        blob_context,
+        body, blob_context,
         nullptr,  // file_system_context
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-            .get()));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
   }
 
   request_id_--;

@@ -988,7 +988,7 @@ void NetInternalsMessageHandler::ImportONCFileToNSSDB(
     error += network_error;
 
   chromeos::onc::CertificateImporterImpl cert_importer(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO), nssdb);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), nssdb);
   cert_importer.ImportCertificates(
       certificates,
       onc_source,

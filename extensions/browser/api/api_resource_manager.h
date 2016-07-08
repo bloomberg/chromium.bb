@@ -45,7 +45,7 @@ struct NamedThreadTraits {
   }
 
   static scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
-    return content::BrowserThread::GetMessageLoopProxyForThread(T::kThreadId);
+    return content::BrowserThread::GetTaskRunnerForThread(T::kThreadId);
   }
 };
 

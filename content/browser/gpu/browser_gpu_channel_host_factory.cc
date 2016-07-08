@@ -85,7 +85,7 @@ BrowserGpuChannelHostFactory::EstablishRequest::Create(
   scoped_refptr<EstablishRequest> establish_request = new EstablishRequest(
       cause, gpu_client_id, gpu_client_tracing_id, gpu_host_id);
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   // PostTask outside the constructor to ensure at least one reference exists.
   task_runner->PostTask(
       FROM_HERE,
@@ -271,7 +271,7 @@ bool BrowserGpuChannelHostFactory::IsMainThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 BrowserGpuChannelHostFactory::GetIOThreadTaskRunner() {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 }
 
 std::unique_ptr<base::SharedMemory>

@@ -129,13 +129,13 @@ class PasswordStoreWinTest : public testing::Test {
 
     base::FilePath path = temp_dir_.path().AppendASCII("web_data_test");
     wdbs_ = new WebDatabaseService(
-        path, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+        path, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
     // Need to add at least one table so the database gets created.
     wdbs_->AddTable(std::unique_ptr<WebDatabaseTable>(new LoginsTable()));
     wdbs_->LoadDatabase();
     wds_ = new PasswordWebDataService(
-        wdbs_, BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        wdbs_, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
         WebDataServiceBase::ProfileErrorCallback());
     wds_->Init();
   }
@@ -170,7 +170,7 @@ class PasswordStoreWinTest : public testing::Test {
   PasswordStoreWin* CreatePasswordStore() {
     return new PasswordStoreWin(
         base::ThreadTaskRunnerHandle::Get(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::DB),
         base::WrapUnique(new LoginDatabase(test_login_db_file_path())),
         wds_.get());
   }

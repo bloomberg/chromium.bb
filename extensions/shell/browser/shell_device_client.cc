@@ -22,7 +22,7 @@ device::UsbService* ShellDeviceClient::GetUsbService() {
 
   if (!usb_service_) {
     usb_service_ = device::UsbService::Create(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
   }
   return usb_service_.get();
 }
@@ -31,7 +31,7 @@ device::HidService* ShellDeviceClient::GetHidService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!hid_service_) {
     hid_service_ = device::HidService::Create(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
   }
   return hid_service_.get();
 }

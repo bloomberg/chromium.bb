@@ -44,7 +44,7 @@ class ContentLoFiUIServiceTest : public content::RenderViewHostTestHarness {
     context.Init();
 
     content_lofi_ui_service_.reset(new ContentLoFiUIService(
-        content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
         base::Bind(&ContentLoFiUIServiceTest::OnLoFiResponseReceivedCallback,
                    base::Unretained(this))));

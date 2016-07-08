@@ -59,13 +59,13 @@ std::unique_ptr<KeyedService> BuildGCMProfileService(
           ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
           LoginUIServiceFactory::GetShowLoginPopupCallbackForProfile(profile))),
       std::unique_ptr<gcm::GCMClientFactory>(new gcm::FakeGCMClientFactory(
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::UI),
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO))),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
       blocking_task_runner));
 }

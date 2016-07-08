@@ -269,7 +269,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
     quota_message_filter_ = ChildThreadImpl::current()->quota_message_filter();
     blob_registry_.reset(new WebBlobRegistryImpl(
-        RenderThreadImpl::current()->GetIOMessageLoopProxy().get(),
+        RenderThreadImpl::current()->GetIOTaskRunner().get(),
         base::ThreadTaskRunnerHandle::Get(), thread_safe_sender_.get()));
     web_idb_factory_.reset(new WebIDBFactoryImpl(thread_safe_sender_.get()));
     web_database_observer_impl_.reset(
@@ -935,7 +935,7 @@ WebCanvasCaptureHandler* RendererBlinkPlatformImpl::createCanvasCaptureHandler(
     WebMediaStreamTrack* track) {
 #if defined(ENABLE_WEBRTC)
   return CanvasCaptureHandler::CreateCanvasCaptureHandler(
-      size, frame_rate, RenderThread::Get()->GetIOMessageLoopProxy(), track);
+      size, frame_rate, RenderThread::Get()->GetIOTaskRunner(), track);
 #else
   return nullptr;
 #endif  // defined(ENABLE_WEBRTC)
@@ -951,8 +951,7 @@ void RendererBlinkPlatformImpl::createHTMLVideoElementCapturer(
   DCHECK(web_media_player);
   AddVideoTrackToMediaStream(
       HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
-          web_media_player,
-          content::RenderThread::Get()->GetIOMessageLoopProxy()),
+          web_media_player, content::RenderThread::Get()->GetIOTaskRunner()),
       false,  // is_remote
       false,  // is_readonly
       web_media_stream);

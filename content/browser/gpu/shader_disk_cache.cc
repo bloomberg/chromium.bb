@@ -532,15 +532,11 @@ void ShaderDiskCache::Init() {
   is_initialized_ = true;
 
   int rv = disk_cache::CreateCacheBackend(
-      net::SHADER_CACHE,
-      net::CACHE_BACKEND_DEFAULT,
+      net::SHADER_CACHE, net::CACHE_BACKEND_DEFAULT,
       cache_path_.Append(kGpuCachePath),
-      gpu::kDefaultMaxProgramCacheMemoryBytes,
-      true,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get(),
-      NULL,
-      &backend_,
-      base::Bind(&ShaderDiskCache::CacheCreatedCallback, this));
+      gpu::kDefaultMaxProgramCacheMemoryBytes, true,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE).get(), NULL,
+      &backend_, base::Bind(&ShaderDiskCache::CacheCreatedCallback, this));
 
   if (rv == net::OK)
     cache_available_ = true;

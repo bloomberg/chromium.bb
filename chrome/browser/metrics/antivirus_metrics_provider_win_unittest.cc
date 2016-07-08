@@ -70,7 +70,7 @@ class AntiVirusMetricsProviderTest : public ::testing::TestWithParam<bool> {
       : got_results_(false),
         expect_unhashed_value_(GetParam()),
         provider_(new AntiVirusMetricsProvider(
-            content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::FILE))),
         thread_bundle_(content::TestBrowserThreadBundle::REAL_FILE_THREAD),
         weak_ptr_factory_(this) {}

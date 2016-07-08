@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
 
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   interceptor.SetResponseIgnoreQuery(
@@ -273,7 +273,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
 
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
   interceptor.SetResponseIgnoreQuery(

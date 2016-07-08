@@ -92,8 +92,8 @@ bool InitializePnaclResourceHost() {
   if (!render_thread)
     return false;
   if (!g_pnacl_resource_host.Get().get()) {
-    g_pnacl_resource_host.Get() = new PnaclTranslationResourceHost(
-        render_thread->GetIOMessageLoopProxy());
+    g_pnacl_resource_host.Get() =
+        new PnaclTranslationResourceHost(render_thread->GetIOTaskRunner());
     render_thread->AddFilter(g_pnacl_resource_host.Get().get());
   }
   return true;
@@ -530,12 +530,9 @@ void PPBNaClPrivate::LaunchSelLdr(
       // Return an IPC channel which allows communicating with a PNaCl
       // translator process.
       *translator_channel = IPC::SyncChannel::Create(
-          instance_info.channel_handle,
-          IPC::Channel::MODE_CLIENT,
-          new NoOpListener,
-          content::RenderThread::Get()->GetIOMessageLoopProxy(),
-          true,
-          content::RenderThread::Get()->GetShutdownEvent());
+          instance_info.channel_handle, IPC::Channel::MODE_CLIENT,
+          new NoOpListener, content::RenderThread::Get()->GetIOTaskRunner(),
+          true, content::RenderThread::Get()->GetShutdownEvent());
     } else {
       // Save the channel handle for when StartPpapiProxy() is called.
       NaClPluginInstance* nacl_plugin_instance =

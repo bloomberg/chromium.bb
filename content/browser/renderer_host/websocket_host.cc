@@ -500,7 +500,7 @@ void WebSocketHost::OnSendBlob(const std::string& uuid,
   int rv = blob_sender_->Start(
       uuid, expected_size, dispatcher_->blob_storage_context(),
       file_system_context,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
       &channel_state,
       base::Bind(&WebSocketHost::BlobSendComplete, base::Unretained(this)));
   if (channel_state == net::WebSocketEventInterface::CHANNEL_ALIVE &&

@@ -171,7 +171,7 @@ class CONTENT_EXPORT RenderThreadImpl
   IPC::SyncChannel* GetChannel() override;
   std::string GetLocale() override;
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOMessageLoopProxy() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
   void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
   void RemoveRoute(int32_t routing_id) override;
   int GenerateRoutingID() override;
@@ -333,7 +333,7 @@ class CONTENT_EXPORT RenderThreadImpl
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which file operations should be run. Must be called
   // on the renderer's main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> GetFileThreadMessageLoopProxy();
+  scoped_refptr<base::SingleThreadTaskRunner> GetFileThreadTaskRunner();
 
   // Returns a SingleThreadTaskRunner instance corresponding to the message loop
   // of the thread on which media operations should be run. Must be called

@@ -110,8 +110,7 @@ PepperFileIOHost::PepperFileIOHost(BrowserPpapiHostImpl* host,
                                    PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       browser_ppapi_host_(host),
-      file_(BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-                .get()),
+      file_(BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()),
       open_flags_(0),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID),
       max_written_offset_(0),

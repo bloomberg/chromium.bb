@@ -27,8 +27,7 @@ PepperExternalFileRefBackend::PepperExternalFileRefBackend(
       path_(path),
       render_process_id_(render_process_id),
       weak_factory_(this) {
-  task_runner_ =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+  task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
 }
 
 PepperExternalFileRefBackend::~PepperExternalFileRefBackend() {}

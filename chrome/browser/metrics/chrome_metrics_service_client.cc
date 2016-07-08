@@ -440,7 +440,7 @@ void ChromeMetricsServiceClient::Initialize() {
           metrics_state_manager_->IsMetricsReportingEnabled()));
 
   drive_metrics_provider_ = new metrics::DriveMetricsProvider(
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE),
       chrome::FILE_LOCAL_STATE);
   metrics_service_->RegisterMetricsProvider(

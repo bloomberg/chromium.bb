@@ -132,13 +132,12 @@ bool WillStorePings(DownloadProtectionService::DownloadCheckResult result,
 class DownloadFeedbackServiceTest : public testing::Test {
  public:
   DownloadFeedbackServiceTest()
-      : file_task_runner_(content::BrowserThread::GetMessageLoopProxyForThread(
+      : file_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::FILE)),
-        io_task_runner_(content::BrowserThread::GetMessageLoopProxyForThread(
+        io_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO)),
         request_context_getter_(
-            new net::TestURLRequestContextGetter(io_task_runner_)) {
-  }
+            new net::TestURLRequestContextGetter(io_task_runner_)) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

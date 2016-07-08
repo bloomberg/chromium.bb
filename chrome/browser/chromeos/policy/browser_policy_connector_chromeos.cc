@@ -189,13 +189,11 @@ void BrowserPolicyConnectorChromeOS::Init(
   device_local_account_policy_service_.reset(
       new DeviceLocalAccountPolicyService(
           chromeos::DBusThreadManager::Get()->GetSessionManagerClient(),
-          chromeos::DeviceSettingsService::Get(),
-          chromeos::CrosSettings::Get(),
+          chromeos::DeviceSettingsService::Get(), chromeos::CrosSettings::Get(),
           affiliated_invalidation_service_provider_.get(),
+          GetBackgroundTaskRunner(), GetBackgroundTaskRunner(),
           GetBackgroundTaskRunner(),
-          GetBackgroundTaskRunner(),
-          GetBackgroundTaskRunner(),
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO),
           request_context));
   device_local_account_policy_service_->Connect(device_management_service());

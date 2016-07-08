@@ -18,11 +18,11 @@ ChromeMockRenderThread::~ChromeMockRenderThread() {
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-ChromeMockRenderThread::GetIOMessageLoopProxy() {
+ChromeMockRenderThread::GetIOTaskRunner() {
   return io_task_runner_;
 }
 
-void ChromeMockRenderThread::set_io_message_loop_proxy(
+void ChromeMockRenderThread::set_io_task_runner(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   io_task_runner_ = task_runner;
 }

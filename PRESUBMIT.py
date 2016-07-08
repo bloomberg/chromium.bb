@@ -278,18 +278,6 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
-      '\<MessageLoopProxy\>',
-      (
-        'MessageLoopProxy is deprecated. ',
-        'Please use SingleThreadTaskRunner or ThreadTaskRunnerHandle instead.'
-      ),
-      True,
-      (
-        # Internal message_loop related code may still use it.
-        r'^base[\\\/]message_loop[\\\/].*',
-      ),
-    ),
-    (
       '#pragma comment(lib,',
       (
         'Specify libraries to link with in build files and not in the source.',

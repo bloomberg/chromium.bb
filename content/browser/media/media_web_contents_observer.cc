@@ -186,8 +186,8 @@ void MediaWebContentsObserver::CreateAudioPowerSaveBlocker() {
   audio_power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       device::PowerSaveBlocker::kReasonAudioPlayback, "Playing audio",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 }
 
 void MediaWebContentsObserver::CreateVideoPowerSaveBlocker() {
@@ -196,8 +196,8 @@ void MediaWebContentsObserver::CreateVideoPowerSaveBlocker() {
   video_power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       device::PowerSaveBlocker::kReasonVideoPlayback, "Playing video",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 #if defined(OS_ANDROID)
   if (web_contents()->GetNativeView()) {
     view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(

@@ -100,9 +100,9 @@ TwoPhaseUploader* FakeUploaderFactory::CreateTwoPhaseUploader(
 class DownloadFeedbackTest : public testing::Test {
  public:
   DownloadFeedbackTest()
-      : file_task_runner_(content::BrowserThread::GetMessageLoopProxyForThread(
+      : file_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::FILE)),
-        io_task_runner_(content::BrowserThread::GetMessageLoopProxyForThread(
+        io_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO)),
         url_request_context_getter_(
             new net::TestURLRequestContextGetter(io_task_runner_)),

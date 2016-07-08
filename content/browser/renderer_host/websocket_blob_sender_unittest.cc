@@ -156,7 +156,7 @@ class WebSocketBlobSenderTest : public ::testing::Test {
         net::WebSocketEventInterface::CHANNEL_ALIVE;
     return sender_->Start(
         uuid, expected_size, context(), GetFileSystemContext(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
         &channel_state, callback);
   }
 

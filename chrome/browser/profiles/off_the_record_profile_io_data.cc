@@ -162,7 +162,7 @@ void OffTheRecordProfileIOData::Handle::LazyInitialize() const {
   io_data_->safe_browsing_enabled()->Init(prefs::kSafeBrowsingEnabled,
       profile_->GetPrefs());
   io_data_->safe_browsing_enabled()->MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   io_data_->InitializeOnUIThread(profile_);
 }
 

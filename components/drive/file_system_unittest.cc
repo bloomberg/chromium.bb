@@ -148,7 +148,7 @@ class FileSystemTest : public testing::Test {
 
     const base::FilePath temp_file_dir = temp_dir_.path().AppendASCII("tmp");
     ASSERT_TRUE(base::CreateDirectory(temp_file_dir));
-    file_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    file_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::FILE);
     file_system_.reset(new FileSystem(
         pref_service_.get(), logger_.get(), cache_.get(), scheduler_.get(),

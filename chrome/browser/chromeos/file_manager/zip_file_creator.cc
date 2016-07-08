@@ -93,8 +93,7 @@ void ZipFileCreator::StartProcessOnIOThread(base::File dest_file) {
   base::FileDescriptor dest_fd(std::move(dest_file));
 
   UtilityProcessHost* host = UtilityProcessHost::Create(
-      this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get());
+      this, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get());
   host->SetName(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_ZIP_FILE_CREATOR_NAME));
   host->SetExposedDir(src_dir_);

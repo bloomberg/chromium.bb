@@ -194,7 +194,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     ScopedVector<storage::FileSystemBackend> additional_providers;
     file_system_context_ = new FileSystemContext(
         base::ThreadTaskRunnerHandle::Get().get(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         make_scoped_refptr(new MockSpecialStoragePolicy()).get(), nullptr,
         std::move(additional_providers),

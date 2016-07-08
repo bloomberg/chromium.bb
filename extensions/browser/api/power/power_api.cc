@@ -127,9 +127,9 @@ void PowerAPI::UpdatePowerSaveBlocker() {
         create_blocker_function_.Run(
             type, device::PowerSaveBlocker::kReasonOther,
             kPowerSaveBlockerDescription,
-            content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::UI),
-            content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::FILE)));
     power_save_blocker_.swap(new_blocker);
     current_level_ = new_level;

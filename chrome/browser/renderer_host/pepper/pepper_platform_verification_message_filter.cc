@@ -33,7 +33,7 @@ PepperPlatformVerificationMessageFilter::
 scoped_refptr<base::TaskRunner>
 PepperPlatformVerificationMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
+  return content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::UI);
 }
 

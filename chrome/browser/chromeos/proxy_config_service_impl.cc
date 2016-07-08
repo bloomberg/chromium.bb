@@ -53,7 +53,7 @@ ProxyConfigServiceImpl::ProxyConfigServiceImpl(PrefService* profile_prefs,
                                                PrefService* local_state_prefs)
     : PrefProxyConfigTrackerImpl(
           profile_prefs ? profile_prefs : local_state_prefs,
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO)),
       active_config_state_(ProxyPrefs::CONFIG_UNSET),
       profile_prefs_(profile_prefs),

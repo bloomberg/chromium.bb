@@ -44,12 +44,10 @@ void ChromeAppCacheService::InitializeOnIOThread(
     set_request_context(request_context_getter->GetURLRequestContext());
 
   // Init our base class.
-  Initialize(
-      cache_path_,
-      BrowserThread::GetMessageLoopProxyForThread(
-          BrowserThread::FILE_USER_BLOCKING)
-          .get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE).get());
+  Initialize(cache_path_, BrowserThread::GetTaskRunnerForThread(
+                              BrowserThread::FILE_USER_BLOCKING)
+                              .get(),
+             BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE).get());
   set_appcache_policy(this);
   set_special_storage_policy(special_storage_policy.get());
 }

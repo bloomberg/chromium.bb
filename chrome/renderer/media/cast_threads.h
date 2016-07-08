@@ -19,10 +19,8 @@
 
 class CastThreads {
  public:
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetAudioEncodeMessageLoopProxy();
-  scoped_refptr<base::SingleThreadTaskRunner>
-  GetVideoEncodeMessageLoopProxy();
+  scoped_refptr<base::SingleThreadTaskRunner> GetAudioEncodeTaskRunner();
+  scoped_refptr<base::SingleThreadTaskRunner> GetVideoEncodeTaskRunner();
 
  private:
   friend struct base::DefaultLazyInstanceTraits<CastThreads>;

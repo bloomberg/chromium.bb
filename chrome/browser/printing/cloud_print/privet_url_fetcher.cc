@@ -171,7 +171,7 @@ void PrivetURLFetcher::Try() {
 
     if (make_response_file_) {
       url_fetcher_->SaveResponseToTemporaryFile(
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::FILE));
     }
 
@@ -181,7 +181,7 @@ void PrivetURLFetcher::Try() {
         url_fetcher_->SetUploadFilePath(
             upload_content_type_, upload_file_path_, 0 /*offset*/,
             std::numeric_limits<uint64_t>::max() /*length*/,
-            content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::FILE));
       } else {
         url_fetcher_->SetUploadData(upload_content_type_, upload_data_);

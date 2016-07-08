@@ -283,8 +283,7 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
           worker_pool,
           worker_pool->GetNamedSequenceToken("dom_storage_primary"),
           worker_pool->GetNamedSequenceToken("dom_storage_commit"),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)
-              .get()));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&DOMStorageContextWrapper::OnMemoryPressure, this)));

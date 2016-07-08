@@ -80,8 +80,7 @@ class PlatformNotificationContextTest : public ::testing::Test {
 
  protected:
   // Creates a new PlatformNotificationContextImpl instance. When using this
-  // method, the underlying database will always be created in memory. The
-  // current message loop proxy will be used as the task runner.
+  // method, the underlying database will always be created in memory.
   PlatformNotificationContextImpl* CreatePlatformNotificationContext() {
     PlatformNotificationContextImpl* context =
         new PlatformNotificationContextImpl(base::FilePath(), &browser_context_,

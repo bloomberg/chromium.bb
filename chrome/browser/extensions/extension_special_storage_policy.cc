@@ -69,11 +69,9 @@ void LogHostedAppUnlimitedStorageUsage(
     // cannot ask for any more temporary storage, according to
     // https://developers.google.com/chrome/whitepapers/storage.
     BrowserThread::PostAfterStartupTask(
-        FROM_HERE,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
         base::Bind(&storage::QuotaManager::GetUsageAndQuotaForWebApps,
-                   partition->GetQuotaManager(),
-                   launch_url,
+                   partition->GetQuotaManager(), launch_url,
                    storage::kStorageTypePersistent,
                    base::Bind(&ReportQuotaUsage)));
   }

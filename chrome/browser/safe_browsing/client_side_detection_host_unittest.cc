@@ -364,7 +364,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.callback_thread =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
     resource.render_process_host_id = web_contents()->GetRenderProcessHost()->
         GetID();
     resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
@@ -395,7 +395,7 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource.callback = base::Bind(&EmptyUrlCheckCallback);
     resource.callback_thread =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
     resource.render_process_host_id = pending_rvh()->GetProcess()->GetID();
     resource.render_frame_id = pending_main_rfh()->GetRoutingID();
     csd_host_->OnSafeBrowsingHit(resource);

@@ -33,7 +33,7 @@ class PrivetV3ContextGetterTest : public testing::Test,
 
   void SetUp() override {
     context_getter_ = new extensions::PrivetV3ContextGetter(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 
   void OnURLFetchComplete(const net::URLFetcher* source) override {

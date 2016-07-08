@@ -73,9 +73,9 @@ class AfterStartupTaskTest : public testing::Test {
   AfterStartupTaskTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::REAL_DB_THREAD) {
     ui_thread_ = new WrappedTaskRunner(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
     db_thread_ = new WrappedTaskRunner(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
     AfterStartupTaskUtils::UnsafeResetForTesting();
   }
 

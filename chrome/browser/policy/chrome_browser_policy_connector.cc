@@ -96,19 +96,19 @@ ConfigurationPolicyProvider*
     ChromeBrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
   std::unique_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
       kRegistryChromePolicyKey));
   return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
 #elif defined(OS_MACOSX)
   std::unique_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
       GetManagedPolicyPath(), new MacPreferences()));
   return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   base::FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
     std::unique_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
         config_dir_path, POLICY_SCOPE_MACHINE));
     return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
   } else {

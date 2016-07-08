@@ -66,8 +66,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
     bool use_in_proc_software_draw)
     : rwhva_(rwhva),
       client_(client),
-      ui_task_runner_(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+      ui_task_runner_(BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
       process_id_(rwhva_->GetRenderWidgetHost()->GetProcess()->GetID()),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
       sender_(rwhva_->GetRenderWidgetHost()),

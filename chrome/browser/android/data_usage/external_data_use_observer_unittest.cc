@@ -58,9 +58,9 @@ class ExternalDataUseObserverTest : public testing::Test {
   void SetUp() override {
     thread_bundle_.reset(new content::TestBrowserThreadBundle(
         content::TestBrowserThreadBundle::IO_MAINLOOP));
-    io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    io_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
-    ui_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    ui_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::UI);
     data_use_aggregator_.reset(
         new data_usage::DataUseAggregator(nullptr, nullptr));

@@ -503,8 +503,8 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
   power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       device::PowerSaveBlocker::kReasonOther, "DevTools",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
   if (web_contents()->GetNativeView()) {
     view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
         web_contents()->GetNativeView()));

@@ -77,7 +77,7 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
 
     // Turn on interception and set up our dummy file.
     get_interceptor_.reset(new GetInterceptor(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
         BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
     get_interceptor_->SetResponse(GURL(kTestImageUrl),

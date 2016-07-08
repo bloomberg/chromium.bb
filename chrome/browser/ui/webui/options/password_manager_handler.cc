@@ -346,7 +346,7 @@ void PasswordManagerHandler::ImportPasswordFileSelected(
       new ImportPasswordResultConsumer(GetProfile()));
 
   password_manager::PasswordImporter::Import(
-      path, content::BrowserThread::GetMessageLoopProxyForThread(
+      path, content::BrowserThread::GetTaskRunnerForThread(
                 content::BrowserThread::FILE)
                 .get(),
       base::Bind(&ImportPasswordResultConsumer::ConsumePassword,
@@ -409,7 +409,7 @@ void PasswordManagerHandler::ExportPasswordFileSelected(
   UMA_HISTOGRAM_COUNTS("PasswordManager.ExportedPasswordsPerUserInCSV",
                        password_list.size());
   password_manager::PasswordExporter::Export(
-      path, password_list, content::BrowserThread::GetMessageLoopProxyForThread(
+      path, password_list, content::BrowserThread::GetTaskRunnerForThread(
                                content::BrowserThread::FILE)
                                .get());
 }

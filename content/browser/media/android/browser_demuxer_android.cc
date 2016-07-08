@@ -60,10 +60,9 @@ BrowserDemuxerAndroid::BrowserDemuxerAndroid()
   VLOG(1) << "Using " << (use_media_thread ? "media" : "UI") << " thread"
           << " for MSE playback";
   task_runner_ =
-      use_media_thread ?
-      media::GetMediaTaskRunner().get() :
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get();
-
+      use_media_thread
+          ? media::GetMediaTaskRunner().get()
+          : BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get();
 }
 
 BrowserDemuxerAndroid::~BrowserDemuxerAndroid() {}

@@ -65,8 +65,7 @@ class TwoPhaseUploaderTest : public testing::Test {
   TwoPhaseUploaderTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         url_request_context_getter_(new net::TestURLRequestContextGetter(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO))) {
-  }
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::IO))) {}
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -81,7 +80,7 @@ TEST_F(TwoPhaseUploaderTest, UploadFile) {
   Delegate delegate;
   std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
       test_server.GetURL("start"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
@@ -105,7 +104,7 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseOneResponse) {
   Delegate delegate;
   std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p1code=500"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
@@ -125,7 +124,7 @@ TEST_F(TwoPhaseUploaderTest, BadPhaseTwoResponse) {
   Delegate delegate;
   std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p2code=500"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
@@ -149,7 +148,7 @@ TEST_F(TwoPhaseUploaderTest, PhaseOneConnectionClosed) {
   Delegate delegate;
   std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p1close=1"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),
@@ -169,7 +168,7 @@ TEST_F(TwoPhaseUploaderTest, PhaseTwoConnectionClosed) {
   Delegate delegate;
   std::unique_ptr<TwoPhaseUploader> uploader(TwoPhaseUploader::Create(
       url_request_context_getter_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
       test_server.GetURL("start?p2close=1"), "metadata", GetTestFilePath(),
       base::Bind(&Delegate::ProgressCallback, base::Unretained(&delegate)),
       base::Bind(&Delegate::FinishCallback, base::Unretained(&delegate),

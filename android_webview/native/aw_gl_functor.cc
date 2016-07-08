@@ -33,7 +33,7 @@ AwGLFunctor::AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref)
     : java_ref_(java_ref),
       render_thread_manager_(
           this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)) {
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ++g_instance_count;
 }

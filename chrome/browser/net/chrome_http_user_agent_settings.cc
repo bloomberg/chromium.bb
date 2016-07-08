@@ -17,7 +17,7 @@ ChromeHttpUserAgentSettings::ChromeHttpUserAgentSettings(PrefService* prefs) {
   last_http_accept_language_ =
       net::HttpUtil::GenerateAcceptLanguageHeader(last_pref_accept_language_);
   pref_accept_language_.MoveToThread(
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO));
 }
 

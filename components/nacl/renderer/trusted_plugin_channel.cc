@@ -24,8 +24,7 @@ TrustedPluginChannel::TrustedPluginChannel(
       is_helper_nexe_(is_helper_nexe) {
   channel_ = IPC::SyncChannel::Create(
       handle, IPC::Channel::MODE_CLIENT, this,
-      content::RenderThread::Get()->GetIOMessageLoopProxy(), true,
-      shutdown_event);
+      content::RenderThread::Get()->GetIOTaskRunner(), true, shutdown_event);
 }
 
 TrustedPluginChannel::~TrustedPluginChannel() {

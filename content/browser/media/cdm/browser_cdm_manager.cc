@@ -186,8 +186,7 @@ BrowserCdmManager::BrowserCdmManager(
   new BrowserCdmManagerProcessWatcher(render_process_id, this);
 
   if (!task_runner_.get()) {
-    task_runner_ =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+    task_runner_ = BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   }
 }
 

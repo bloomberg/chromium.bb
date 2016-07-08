@@ -1689,7 +1689,7 @@ class CacheStorageSideDataSizeChecker
     blob_data_handle_ = std::move(blob_data_handle);
     blob_reader_ = blob_data_handle_->CreateReader(
         file_system_context_,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get());
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
     const storage::BlobReader::Status status = blob_reader_->CalculateSize(
         base::Bind(&self::OnBlobReaderCalculateSizeCallback, this, result,
                    continuation));

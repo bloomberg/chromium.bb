@@ -131,7 +131,7 @@ class CONTENT_EXPORT BrowserThread {
       const base::Callback<ReturnType(void)>& task,
       const base::Callback<void(ReplyArgType)>& reply) {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        GetMessageLoopProxyForThread(identifier);
+        GetTaskRunnerForThread(identifier);
     return base::PostTaskAndReplyWithResult(task_runner.get(), from_here, task,
                                             reply);
   }
@@ -140,16 +140,14 @@ class CONTENT_EXPORT BrowserThread {
   static bool DeleteSoon(ID identifier,
                          const tracked_objects::Location& from_here,
                          const T* object) {
-    return GetMessageLoopProxyForThread(identifier)->DeleteSoon(
-        from_here, object);
+    return GetTaskRunnerForThread(identifier)->DeleteSoon(from_here, object);
   }
 
   template <class T>
   static bool ReleaseSoon(ID identifier,
                           const tracked_objects::Location& from_here,
                           const T* object) {
-    return GetMessageLoopProxyForThread(identifier)->ReleaseSoon(
-        from_here, object);
+    return GetTaskRunnerForThread(identifier)->ReleaseSoon(from_here, object);
   }
 
   // Simplified wrappers for posting to the blocking thread pool. Use this
@@ -218,8 +216,8 @@ class CONTENT_EXPORT BrowserThread {
 
   // Callers can hold on to a refcounted task runner beyond the lifetime
   // of the thread.
-  static scoped_refptr<base::SingleThreadTaskRunner>
-  GetMessageLoopProxyForThread(ID identifier);
+  static scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForThread(
+      ID identifier);
 
   // Returns a pointer to the thread's message loop, which will become
   // invalid during shutdown, so you probably shouldn't hold onto it.

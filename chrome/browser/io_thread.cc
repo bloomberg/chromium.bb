@@ -264,8 +264,7 @@ SystemURLRequestContextGetter::SystemURLRequestContextGetter(
     IOThread* io_thread)
     : io_thread_(io_thread),
       network_task_runner_(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {
-}
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {}
 
 SystemURLRequestContextGetter::~SystemURLRequestContextGetter() {}
 
@@ -315,7 +314,7 @@ IOThread::IOThread(
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   auth_schemes_ = local_state->GetString(prefs::kAuthSchemes);
   negotiate_disable_cname_lookup_.Init(
       prefs::kDisableAuthNegotiateCnameLookup, local_state,
@@ -357,7 +356,7 @@ IOThread::IOThread(
   ssl_config_service_manager_.reset(
       ssl_config::SSLConfigServiceManager::CreateDefaultManager(
           local_state,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
   base::Value* dns_client_enabled_default = new base::FundamentalValue(
       chrome_browser_net::ConfigureAsyncDnsFieldTrial());
@@ -461,7 +460,7 @@ void IOThread::Init() {
   if (!ssl_keylog_file.empty()) {
     net::SSLClientSocket::SetSSLKeyLogFile(
         ssl_keylog_file,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
   }
 
   DCHECK(!globals_);
@@ -504,8 +503,8 @@ void IOThread::Init() {
   globals_->external_data_use_observer.reset(
       new chrome::android::ExternalDataUseObserver(
           globals_->data_use_aggregator.get(),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #endif
 
   globals_->system_network_delegate = std::move(chrome_network_delegate);

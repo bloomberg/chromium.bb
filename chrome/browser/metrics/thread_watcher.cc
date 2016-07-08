@@ -39,8 +39,7 @@ using content::BrowserThread;
 ThreadWatcher::ThreadWatcher(const WatchingParams& params)
     : thread_id_(params.thread_id),
       thread_name_(params.thread_name),
-      watched_runner_(
-          BrowserThread::GetMessageLoopProxyForThread(params.thread_id)),
+      watched_runner_(BrowserThread::GetTaskRunnerForThread(params.thread_id)),
       sleep_time_(params.sleep_time),
       unresponsive_time_(params.unresponsive_time),
       ping_time_(base::TimeTicks::Now()),

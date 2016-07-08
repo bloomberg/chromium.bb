@@ -46,8 +46,7 @@ void CreateVideoEncodeMemory(
 
 CastSession::CastSession()
     : delegate_(new CastSessionDelegate()),
-      io_task_runner_(
-          content::RenderThread::Get()->GetIOMessageLoopProxy()) {}
+      io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()) {}
 
 CastSession::~CastSession() {
   // We should always be able to delete the object on the IO thread.

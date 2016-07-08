@@ -268,7 +268,7 @@ void StorageMonitorLinux::Init() {
   if (!media_transfer_protocol_manager_) {
     media_transfer_protocol_manager_.reset(
         device::MediaTransferProtocolManager::Initialize(
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
   }
 
   media_transfer_protocol_device_observer_.reset(

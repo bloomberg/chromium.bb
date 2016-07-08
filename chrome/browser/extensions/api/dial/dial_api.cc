@@ -39,7 +39,7 @@ namespace dial = api::dial;
 
 DialAPI::DialAPI(Profile* profile)
     : RefcountedKeyedService(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       profile_(profile) {
   EventRouter::Get(profile)
       ->RegisterObserver(this, dial::OnDeviceList::kEventName);

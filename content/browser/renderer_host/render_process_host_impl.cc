@@ -736,7 +736,7 @@ bool RenderProcessHostImpl::Init() {
   // is created. On Mac audio thread is the UI thread, a hang monitor is not
   // necessary or recommended.
   media::AudioManager::StartHangMonitorIfNeeded(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
@@ -822,7 +822,7 @@ bool RenderProcessHostImpl::Init() {
 std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     const std::string& channel_id) {
   scoped_refptr<base::SingleThreadTaskRunner> runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   mojo_channel_token_ = mojo::edk::GenerateRandomToken();
   mojo::ScopedMessagePipeHandle handle =
       mojo::edk::CreateParentMessagePipe(mojo_channel_token_, child_token_);
@@ -843,8 +843,8 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
       new IPC::ChannelProxy(this, runner.get()));
 #if USE_ATTACHMENT_BROKER
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel.get(), content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::IO));
+      channel.get(), content::BrowserThread::GetTaskRunnerForThread(
+                         content::BrowserThread::IO));
 #endif
   channel->Init(IPC::ChannelMojo::CreateServerFactory(std::move(handle)), true);
   return channel;
@@ -1076,10 +1076,10 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&MimeRegistryImpl::Create),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   GetInterfaceRegistry()->AddInterface(base::Bind(&DeviceLightHost::Create),
                                        io_task_runner);
   GetInterfaceRegistry()->AddInterface(base::Bind(&DeviceMotionHost::Create),

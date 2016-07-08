@@ -51,7 +51,7 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedService
   // If you need your service to be deleted on a specific thread (for example,
   // you're converting a service that used content::DeleteOnThread<IO>), then
   // use this constructor with a reference to the SingleThreadTaskRunner (you
-  // can get it from content::BrowserThread::GetMessageLoopProxyForThread).
+  // can get it from content::BrowserThread::GetTaskRunnerForThread).
   explicit RefcountedKeyedService(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 

@@ -76,7 +76,7 @@ scoped_refptr<storage::FileSystemContext> CreateFileSystemContext(
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
       new storage::FileSystemContext(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get(),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
           file_task_runner.get(),
           BrowserContext::GetMountPoints(browser_context),
           browser_context->GetSpecialStoragePolicy(), quota_manager_proxy,

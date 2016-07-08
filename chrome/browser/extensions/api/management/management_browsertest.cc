@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
 
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
@@ -382,7 +382,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
 
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
@@ -547,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
@@ -628,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   // Note: This interceptor gets requests on the IO thread.
   net::LocalHostTestURLRequestInterceptor interceptor(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 

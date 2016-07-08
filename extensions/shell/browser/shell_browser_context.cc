@@ -68,9 +68,9 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
 
   set_url_request_context_getter(new ShellURLRequestContextGetter(
       this, IgnoreCertificateErrors(), GetPath(),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE),
       protocol_handlers, std::move(request_interceptors), nullptr /* net_log */,
       extension_info_map));

@@ -73,7 +73,7 @@ class MojomProtocolHandler : public net::URLRequestJobFactory::ProtocolHandler {
 
     return new net::URLRequestFileJob(
         request, network_delegate, path,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
   }
 };
 
@@ -96,8 +96,8 @@ LayoutTestBrowserContext::CreateURLRequestContextGetter(
       "layout-test-mojom", make_linked_ptr(new MojomProtocolHandler)));
   return new LayoutTestURLRequestContextGetter(
       ignore_certificate_errors(), GetPath(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
       protocol_handlers, std::move(request_interceptors), net_log());
 }
 

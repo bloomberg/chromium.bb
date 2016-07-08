@@ -32,7 +32,7 @@ void DidCreateTemporaryFile(const CreateTemporaryFileStreamCallback& callback,
   }
 
   scoped_refptr<base::TaskRunner> task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
 
   // Cancelled or not, create the deletable_file so the temporary is cleaned up.
   scoped_refptr<ShareableFileReference> deletable_file =
@@ -54,7 +54,7 @@ void CreateTemporaryFileStream(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   std::unique_ptr<base::FileProxy> file_proxy(new base::FileProxy(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get()));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get()));
   base::FileProxy* proxy = file_proxy.get();
   proxy->CreateTemporary(
       base::File::FLAG_ASYNC,

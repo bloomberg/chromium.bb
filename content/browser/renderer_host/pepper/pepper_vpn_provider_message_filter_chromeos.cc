@@ -94,7 +94,7 @@ PepperVpnProviderMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_VpnProvider_Bind::ID:
     case PpapiHostMsg_VpnProvider_SendPacket::ID:
     case PpapiHostMsg_VpnProvider_OnPacketReceivedReply::ID:
-      return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   }
   return nullptr;
 }

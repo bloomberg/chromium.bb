@@ -232,7 +232,7 @@ MojoShellContext::MojoShellContext() {
   proxy_.Get().reset(new Proxy(this));
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
   std::unique_ptr<shell::NativeRunnerFactory> native_runner_factory(
       new shell::InProcessNativeRunnerFactory(
           BrowserThread::GetBlockingPool()));

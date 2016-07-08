@@ -108,12 +108,12 @@ PepperUDPSocketMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_UDPSocket_SetOption::ID:
     case PpapiHostMsg_UDPSocket_Close::ID:
     case PpapiHostMsg_UDPSocket_RecvSlotAvailable::ID:
-      return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
     case PpapiHostMsg_UDPSocket_Bind::ID:
     case PpapiHostMsg_UDPSocket_SendTo::ID:
     case PpapiHostMsg_UDPSocket_JoinGroup::ID:
     case PpapiHostMsg_UDPSocket_LeaveGroup::ID:
-      return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   }
   return NULL;
 }

@@ -128,7 +128,7 @@ void ServiceWorkerContextWrapper::Init(
   std::unique_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
       new ServiceWorkerDatabaseTaskManagerImpl(pool));
   scoped_refptr<base::SingleThreadTaskRunner> disk_cache_thread =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE);
   InitInternal(user_data_directory, std::move(database_task_manager),
                disk_cache_thread, quota_manager_proxy, special_storage_policy);
 }

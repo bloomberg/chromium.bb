@@ -27,7 +27,7 @@ void CastRenderThreadObserver::CreateCustomFilters() {
   content::RenderThread* thread = content::RenderThread::Get();
 #if !defined(OS_ANDROID)
   cma_message_filter_proxy_ =
-      new media::CmaMessageFilterProxy(thread->GetIOMessageLoopProxy());
+      new media::CmaMessageFilterProxy(thread->GetIOTaskRunner());
   thread->AddFilter(cma_message_filter_proxy_.get());
 #endif  // !defined(OS_ANDROID)
   capabilities_message_filter_ = new CapabilitiesMessageFilter;

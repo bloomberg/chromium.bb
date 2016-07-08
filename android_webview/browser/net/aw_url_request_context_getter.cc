@@ -178,7 +178,7 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_proxy =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
   auth_server_whitelist_.Init(
       prefs::kAuthServerWhitelist, user_pref_service,
@@ -243,7 +243,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   cache_params.path = cache_path_;
   builder.EnableHttpCache(cache_params);
   builder.SetFileTaskRunner(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE));
 
   net::URLRequestContextBuilder::HttpNetworkSessionParams
       network_session_params;
@@ -278,7 +278,7 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 AwURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 }
 
 void AwURLRequestContextGetter::SetHandlersAndInterceptors(

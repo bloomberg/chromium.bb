@@ -54,7 +54,7 @@ class MockRenderThread : public RenderThread {
   IPC::SyncChannel* GetChannel() override;
   std::string GetLocale() override;
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOMessageLoopProxy() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
   void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
   void RemoveRoute(int32_t routing_id) override;
   int GenerateRoutingID() override;

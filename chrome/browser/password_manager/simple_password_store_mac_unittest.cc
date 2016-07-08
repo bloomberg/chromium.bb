@@ -44,13 +44,13 @@ class SimplePasswordStoreMacTest : public testing::Test {
     std::unique_ptr<password_manager::LoginDatabase> login_db(
         new password_manager::LoginDatabase(test_login_db_file_path()));
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
     ASSERT_TRUE(file_task_runner);
     file_task_runner->PostTask(
         FROM_HERE,
         base::Bind(&InitOnBackgroundThread, base::Unretained(login_db.get())));
     store_ = new SimplePasswordStoreMac(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI), nullptr,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI), nullptr,
         std::unique_ptr<password_manager::LoginDatabase>());
     file_task_runner->PostTask(
         FROM_HERE,

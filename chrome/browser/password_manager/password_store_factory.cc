@@ -97,7 +97,7 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
 
   password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
       password_store.get(), sync_service, request_context_getter,
-      profile->GetPath(), content::BrowserThread::GetMessageLoopProxyForThread(
+      profile->GetPath(), content::BrowserThread::GetTaskRunnerForThread(
                               content::BrowserThread::DB));
 }
 
@@ -107,7 +107,7 @@ void PasswordStoreFactory::TrimOrDeleteAffiliationCache(Profile* profile) {
       GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
   password_manager::TrimOrDeleteAffiliationCacheForStoreAndPath(
       password_store.get(), profile->GetPath(),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::DB));
 }
 
@@ -156,7 +156,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner(
       base::ThreadTaskRunnerHandle::Get());
   scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner(
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::DB));
 
   scoped_refptr<PasswordStore> ps;

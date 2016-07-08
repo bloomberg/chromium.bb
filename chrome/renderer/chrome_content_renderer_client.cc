@@ -360,8 +360,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   subresource_filter_ruleset_dealer_.reset(
       new subresource_filter::RulesetDealer());
 #if defined(ENABLE_WEBRTC)
-  webrtc_logging_message_filter_ = new WebRtcLoggingMessageFilter(
-      thread->GetIOMessageLoopProxy());
+  webrtc_logging_message_filter_ =
+      new WebRtcLoggingMessageFilter(thread->GetIOTaskRunner());
 #endif
 
   thread->AddObserver(chrome_observer_.get());

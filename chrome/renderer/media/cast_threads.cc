@@ -15,11 +15,11 @@ CastThreads::CastThreads()
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-CastThreads::GetAudioEncodeMessageLoopProxy() {
+CastThreads::GetAudioEncodeTaskRunner() {
   return audio_encode_thread_.task_runner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
-CastThreads::GetVideoEncodeMessageLoopProxy() {
+CastThreads::GetVideoEncodeTaskRunner() {
   return video_encode_thread_.task_runner();
 }

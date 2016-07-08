@@ -80,7 +80,7 @@ class URLRequestContextFactory::URLRequestContextGetter
 
   scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
-    return content::BrowserThread::GetMessageLoopProxyForThread(
+    return content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
   }
 
@@ -122,7 +122,7 @@ class URLRequestContextFactory::MainURLRequestContextGetter
 
   scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
-    return content::BrowserThread::GetMessageLoopProxyForThread(
+    return content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
   }
 
@@ -159,9 +159,9 @@ void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
   // Proxy config service should be initialized in UI thread, since
   // ProxyConfigServiceDelegate on Android expects UI thread.
   proxy_config_service_ = net::ProxyService::CreateSystemProxyConfigService(
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE));
 
   net_log_ = net_log;

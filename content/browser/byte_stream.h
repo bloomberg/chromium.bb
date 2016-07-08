@@ -66,8 +66,8 @@ namespace content {
 //      std::unique_ptr<ByteStreamWriter> writer;
 //      std::unique_ptr<ByteStreamReader> reader;
 //      CreateByteStream(
-//          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-//          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+//          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+//          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
 //          kStreamBufferSize /* e.g. 10240.  */,
 //          &writer,
 //          &reader);         // Presumed passed to FILE thread for reading.

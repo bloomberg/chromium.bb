@@ -59,8 +59,7 @@ class CastReceiverSession::VideoCapturerSource
 
 CastReceiverSession::CastReceiverSession()
     : delegate_(new CastReceiverSessionDelegate()),
-      io_task_runner_(
-          content::RenderThread::Get()->GetIOMessageLoopProxy()) {}
+      io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()) {}
 
 CastReceiverSession::~CastReceiverSession() {
   // We should always be able to delete the object on the IO thread.

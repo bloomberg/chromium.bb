@@ -307,7 +307,7 @@ base::CancelableTaskTracker::TaskId HistoryService::ScheduleDBTask(
   base::CancelableTaskTracker::IsCanceledCallback is_canceled;
   base::CancelableTaskTracker::TaskId task_id =
       tracker->NewTrackedTaskId(&is_canceled);
-  // Use base::ThreadTaskRunnerHandler::Get() to get a message loop proxy to
+  // Use base::ThreadTaskRunnerHandler::Get() to get a task runner for
   // the current message loop so that we can forward the call to the method
   // HistoryDBTask::DoneRunOnMainThread() in the correct thread.
   thread_->task_runner()->PostTask(

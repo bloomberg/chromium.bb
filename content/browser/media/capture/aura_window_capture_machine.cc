@@ -88,8 +88,8 @@ bool AuraWindowCaptureMachine::InternalStart(
   power_save_blocker_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       device::PowerSaveBlocker::kReasonOther, "DesktopCaptureDevice is running",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 
   return true;
 }

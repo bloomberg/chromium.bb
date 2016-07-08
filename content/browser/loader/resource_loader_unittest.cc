@@ -938,10 +938,8 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
                                          base::ThreadTaskRunnerHandle::Get()));
     file_stream_ = file_stream.get();
     deletable_file_ = ShareableFileReference::GetOrCreate(
-        temp_path_,
-        ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-        BrowserThread::GetMessageLoopProxyForThread(
-            BrowserThread::FILE).get());
+        temp_path_, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
 
     // Inject them into the handler.
     std::unique_ptr<RedirectToFileResourceHandler> handler(

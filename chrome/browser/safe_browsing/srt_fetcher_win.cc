@@ -255,7 +255,7 @@ class SRTFetcher : public net::URLFetcherDelegate {
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     url_fetcher_->SetMaxRetriesOn5xx(3);
     url_fetcher_->SaveResponseToTemporaryFile(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
     url_fetcher_->SetRequestContext(
         g_browser_process->system_request_context());
     // Adds the UMA bit to the download request if the user is enrolled in UMA.

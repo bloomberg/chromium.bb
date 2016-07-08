@@ -153,7 +153,7 @@ void ChromeExtensionsRendererClient::RenderThreadStarted() {
 
   thread->AddObserver(extension_dispatcher_.get());
   thread->AddObserver(guest_view_container_dispatcher_.get());
-  thread->AddFilter(new CastIPCDispatcher(thread->GetIOMessageLoopProxy()));
+  thread->AddFilter(new CastIPCDispatcher(thread->GetIOTaskRunner()));
 }
 
 void ChromeExtensionsRendererClient::RenderFrameCreated(

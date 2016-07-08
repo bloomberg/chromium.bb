@@ -1599,7 +1599,7 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 4"));
   video_capture_manager_ =
       new VideoCaptureManager(media::VideoCaptureDeviceFactory::CreateFactory(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #if defined(OS_WIN)
   // Use an STA Video Capture Thread to try to avoid crashes on enumeration of
   // buggy third party Direct Show modules, http://crbug.com/428958.

@@ -38,8 +38,7 @@ static base::LazyInstance<CastThreads> g_cast_threads =
     LAZY_INSTANCE_INITIALIZER;
 
 CastSessionDelegateBase::CastSessionDelegateBase()
-    : io_task_runner_(
-          content::RenderThread::Get()->GetIOMessageLoopProxy()),
+    : io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()),
       weak_factory_(this) {
   DCHECK(io_task_runner_.get());
 #if defined(OS_WIN)
@@ -71,8 +70,8 @@ void CastSessionDelegateBase::StartUDP(
   cast_environment_ = new CastEnvironment(
       std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),
       base::ThreadTaskRunnerHandle::Get(),
-      g_cast_threads.Get().GetAudioEncodeMessageLoopProxy(),
-      g_cast_threads.Get().GetVideoEncodeMessageLoopProxy());
+      g_cast_threads.Get().GetAudioEncodeTaskRunner(),
+      g_cast_threads.Get().GetVideoEncodeTaskRunner());
 
   // Rationale for using unretained: The callback cannot be called after the
   // destruction of CastTransportIPC, and they both share the same thread.

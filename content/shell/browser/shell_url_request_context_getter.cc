@@ -173,7 +173,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             net::CACHE_BACKEND_DEFAULT,
 #endif
             cache_path, 0,
-            BrowserThread::GetMessageLoopProxyForThread(BrowserThread::CACHE)));
+            BrowserThread::GetTaskRunnerForThread(BrowserThread::CACHE)));
 
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.cert_verifier =
@@ -266,7 +266,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
     ShellURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 }
 
 net::HostResolver* ShellURLRequestContextGetter::host_resolver() {

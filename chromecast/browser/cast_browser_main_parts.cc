@@ -404,10 +404,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   memory_pressure_monitor_.reset(new CastMemoryPressureMonitor());
 #endif  // defined(OS_ANDROID)
 
-  cast_browser_process_->SetConnectivityChecker(
-      ConnectivityChecker::Create(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO)));
+  cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO)));
 
   cast_browser_process_->SetNetLog(net_log_.get());
 

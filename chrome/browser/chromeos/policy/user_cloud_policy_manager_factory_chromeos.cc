@@ -200,7 +200,7 @@ UserCloudPolicyManagerFactoryChromeOS::CreateManagerForProfile(
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           content::BrowserThread::GetBlockingPool()->GetSequenceToken());
   scoped_refptr<base::SequencedTaskRunner> io_task_runner =
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO);
   std::unique_ptr<CloudExternalDataManager> external_data_manager(
       new UserCloudExternalDataManager(base::Bind(&GetChromePolicyDetails),
@@ -210,7 +210,7 @@ UserCloudPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     store->LoadImmediately();
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE);
 
   std::unique_ptr<UserCloudPolicyManagerChromeOS> manager(

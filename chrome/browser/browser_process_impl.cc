@@ -1181,9 +1181,9 @@ void BrowserProcessImpl::CreateGCMDriver() {
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       base::WrapUnique(new gcm::GCMClientFactory), local_state(), store_path,
       system_request_context(), chrome::GetChannel(),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI),
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO),
       blocking_task_runner);
 #endif  // defined(OS_ANDROID)

@@ -59,8 +59,8 @@ void SandboxedDMGAnalyzer::StartAnalysis() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   content::UtilityProcessHost* utility_process_host =
-      content::UtilityProcessHost::Create(this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      content::UtilityProcessHost::Create(
+          this, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
   utility_process_host->SetName(l10n_util::GetStringUTF16(
       IDS_UTILITY_PROCESS_SAFE_BROWSING_ZIP_FILE_ANALYZER_NAME));

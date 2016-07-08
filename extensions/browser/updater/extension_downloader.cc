@@ -748,7 +748,7 @@ void ExtensionDownloader::CreateExtensionFetcher() {
   // processed in memory, so it is fetched into a string.
   if (fetch->id != kBlacklistAppID) {
     extension_fetcher_->SaveResponseToTemporaryFile(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
   }
 
   if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&

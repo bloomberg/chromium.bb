@@ -319,7 +319,7 @@ class CloudPrintProxyPolicyStartupTest : public base::MultiProcessTest,
   void TearDown() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> IOTaskRunner() {
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+    return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   }
   base::Process Launch(const std::string& name);
   void WaitForConnect();

@@ -13,7 +13,7 @@ SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
     sync_driver::SyncClient* sync_client,
     Profile* profile)
     : sync_driver::UIDataTypeController(
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::UI),
           error_callback,
           type,

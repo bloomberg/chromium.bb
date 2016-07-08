@@ -185,7 +185,7 @@ TEST_F(EventRouterForwarderTest, BroadcastRendererIO) {
 
   // Wait for IO thread's message loop to be processed
   scoped_refptr<base::ThreadTestHelper> helper(new base::ThreadTestHelper(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
   ASSERT_TRUE(helper->Run());
 
   base::RunLoop().RunUntilIdle();

@@ -493,9 +493,8 @@ bool BrowserThread::PostTaskAndReply(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     const base::Closure& reply) {
-  return GetMessageLoopProxyForThread(identifier)->PostTaskAndReply(from_here,
-                                                                    task,
-                                                                    reply);
+  return GetTaskRunnerForThread(identifier)
+      ->PostTaskAndReply(from_here, task, reply);
 }
 
 // static
@@ -523,7 +522,7 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
 
 // static
 scoped_refptr<base::SingleThreadTaskRunner>
-BrowserThread::GetMessageLoopProxyForThread(ID identifier) {
+BrowserThread::GetTaskRunnerForThread(ID identifier) {
   return g_task_runners.Get().proxies[identifier];
 }
 

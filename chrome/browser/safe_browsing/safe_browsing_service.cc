@@ -159,7 +159,7 @@ SafeBrowsingURLRequestContextGetter::SafeBrowsingURLRequestContextGetter(
     : shut_down_(false),
       system_context_getter_(system_context_getter),
       network_task_runner_(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)) {}
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)) {}
 
 net::URLRequestContext*
 SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {

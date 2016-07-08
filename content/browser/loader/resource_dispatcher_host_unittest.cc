@@ -3443,10 +3443,8 @@ TEST_P(ResourceDispatcherHostTest, RegisterDownloadedTempFile) {
   ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
   scoped_refptr<ShareableFileReference> deletable_file =
       ShareableFileReference::GetOrCreate(
-          file_path,
-          ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-          BrowserThread::GetMessageLoopProxyForThread(
-              BrowserThread::FILE).get());
+          file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
 
   // Not readable.
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
@@ -3490,10 +3488,8 @@ TEST_P(ResourceDispatcherHostTest, ReleaseTemporiesOnProcessExit) {
   ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
   scoped_refptr<ShareableFileReference> deletable_file =
       ShareableFileReference::GetOrCreate(
-          file_path,
-          ShareableFileReference::DELETE_ON_FINAL_RELEASE,
-          BrowserThread::GetMessageLoopProxyForThread(
-              BrowserThread::FILE).get());
+          file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
 
   // Register it for a resource request.
   host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);

@@ -302,10 +302,10 @@ void BlimpEngineSession::GetEnginePortForTesting(
 }
 
 void BlimpEngineSession::RegisterFeatures() {
-  thread_pipe_manager_.reset(new ThreadPipeManager(
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::IO),
-      net_components_->GetBrowserConnectionHandler()));
+  thread_pipe_manager_.reset(
+      new ThreadPipeManager(content::BrowserThread::GetTaskRunnerForThread(
+                                content::BrowserThread::IO),
+                            net_components_->GetBrowserConnectionHandler()));
 
   // Register features' message senders and receivers.
   tab_control_message_sender_ =

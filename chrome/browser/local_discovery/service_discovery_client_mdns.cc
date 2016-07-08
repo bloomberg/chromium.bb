@@ -326,8 +326,7 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
 }  // namespace
 
 ServiceDiscoveryClientMdns::ServiceDiscoveryClientMdns()
-    : mdns_runner_(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
+    : mdns_runner_(BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),
       restart_attempts_(0),
       need_dalay_mdns_tasks_(true),
       weak_ptr_factory_(this) {

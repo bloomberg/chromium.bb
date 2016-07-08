@@ -801,7 +801,7 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
 
   g_browser_process->metrics_service()->CheckForClonedInstall(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
 
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
 }
@@ -1456,7 +1456,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 
   ui::SelectFileDialog::SetFactory(new ChromeSelectFileDialogFactory(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 #endif  // defined(OS_WIN)
 
   if (parsed_command_line().HasSwitch(switches::kMakeDefaultBrowser)) {

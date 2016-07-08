@@ -103,7 +103,7 @@ scoped_refptr<base::TaskRunner>
 PepperHostResolverMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   if (message.type() == PpapiHostMsg_HostResolver_Resolve::ID)
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+    return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   return NULL;
 }
 

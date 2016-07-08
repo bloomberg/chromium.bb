@@ -52,7 +52,7 @@ struct PPAPI_HOST_EXPORT ResourceMessageFilterDeleteTraits {
 //   scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
 //       const IPC::Message& message) override {
 //     if (message.type() == MyMessage::ID)
-//       return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+//       return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
 //     return NULL;
 //   }
 //
@@ -127,9 +127,9 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
 
   scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;
 
-  // Message loop to send resource message replies on. This will be the message
-  // loop proxy of the IO thread for the browser process or the main thread for
-  // the renderer process.
+  // Task runner to send resource message replies on. This will be the task
+  // runner of the IO thread for the browser process or the main thread for a
+  // renderer process.
   scoped_refptr<base::SingleThreadTaskRunner> reply_thread_task_runner_;
 
   // Non-owning pointer to the resource host owning this filter. Should only be

@@ -63,7 +63,7 @@ HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service) {
   using content::BrowserThread;
   return new net::HttpServerPropertiesManager(
       new PrefServiceAdapter(pref_service),  // Transfers ownership.
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 
 /* static */

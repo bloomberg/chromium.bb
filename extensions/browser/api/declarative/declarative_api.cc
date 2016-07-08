@@ -156,7 +156,7 @@ bool RulesFunction::RunAsync() {
     SendResponse(success);
   } else {
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner =
-        content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::GetTaskRunnerForThread(
             rules_registry_->owner_thread());
     base::PostTaskAndReplyWithResult(
         thread_task_runner.get(), FROM_HERE,

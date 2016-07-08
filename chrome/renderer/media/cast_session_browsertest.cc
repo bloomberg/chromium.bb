@@ -16,7 +16,7 @@ typedef ChromeRenderViewTest CastSessionBrowserTest;
 // Tests that CastSession is created and destroyed properly inside
 // chrome renderer.
 TEST_F(CastSessionBrowserTest, CreateAndDestroy) {
-  chrome_render_thread_->set_io_message_loop_proxy(
+  chrome_render_thread_->set_io_task_runner(
       base::ThreadTaskRunnerHandle::Get());
   ChromeContentRendererClient* client =
       static_cast<ChromeContentRendererClient*>(content_renderer_client_.get());

@@ -299,7 +299,7 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartRead(
 
   // Post task to file thread to read file.
   return tracker->PostTaskAndReply(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
       FROM_HERE,
       base::Bind(&FileAccessProvider::DoRead, this, path, saved_errno, data),
       base::Bind(callback, base::Owned(saved_errno), base::Owned(data)));
@@ -316,16 +316,11 @@ base::CancelableTaskTracker::TaskId FileAccessProvider::StartWrite(
 
   // Post task to file thread to write file.
   return tracker->PostTaskAndReply(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE).get(),
-      FROM_HERE,
-      base::Bind(&FileAccessProvider::DoWrite,
-                 this,
-                 path,
-                 data,
-                 saved_errno,
-                 bytes_written),
-      base::Bind(
-          callback, base::Owned(saved_errno), base::Owned(bytes_written)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
+      FROM_HERE, base::Bind(&FileAccessProvider::DoWrite, this, path, data,
+                            saved_errno, bytes_written),
+      base::Bind(callback, base::Owned(saved_errno),
+                 base::Owned(bytes_written)));
 }
 
 void FileAccessProvider::DoRead(const base::FilePath& path,

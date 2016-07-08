@@ -73,7 +73,7 @@ AwBrowserContext* g_browser_context = NULL;
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService() {
   std::unique_ptr<net::ProxyConfigService> config_service =
       net::ProxyService::CreateSystemProxyConfigService(
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           nullptr /* Ignored on Android */);
 
   // TODO(csharrison) Architect the wrapper better so we don't need a cast for
@@ -98,7 +98,7 @@ policy::URLBlacklistManager* CreateURLBlackListManager(
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       pool->GetSequencedTaskRunner(pool->GetSequenceToken());
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
   return new policy::URLBlacklistManager(pref_service, background_task_runner,
                                          io_task_runner, segment_url_callback,

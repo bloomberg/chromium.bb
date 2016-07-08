@@ -1039,7 +1039,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
 
   void SetUp() override {
     context_getter_ = new net::TestURLRequestContextGetter(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 
     server_.reset(new EmbeddedTestServer(EmbeddedTestServer::TYPE_HTTP));
     ASSERT_TRUE(server_->Start());

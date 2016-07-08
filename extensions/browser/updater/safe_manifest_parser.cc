@@ -45,8 +45,7 @@ void SafeManifestParser::ParseInSandbox() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   content::UtilityProcessHost* host = content::UtilityProcessHost::Create(
-      this,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get());
+      this, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get());
   host->SetName(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MANIFEST_PARSER_NAME));
   host->Send(new ExtensionUtilityMsg_ParseUpdateManifest(xml_));

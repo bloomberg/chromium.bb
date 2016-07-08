@@ -482,7 +482,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       pref_service);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 
   chrome_http_user_agent_settings_.reset(
       new ChromeHttpUserAgentSettings(pref_service));
@@ -895,14 +895,14 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   enable_metrics_.Init(prefs::kCrashReportingEnabled,
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #else
   // Prep the PrefMember and send it to the IO thread, since this value will be
   // read from there.
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 

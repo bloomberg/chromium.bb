@@ -91,7 +91,7 @@ PepperOutputProtectionMessageFilter::~PepperOutputProtectionMessageFilter() {
 scoped_refptr<base::TaskRunner>
 PepperOutputProtectionMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
+  return content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::UI);
 }
 

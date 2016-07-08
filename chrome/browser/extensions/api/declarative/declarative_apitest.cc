@@ -123,7 +123,7 @@ class DeclarativeApiTest : public ExtensionApiTest {
         base::Bind(
             &RulesRegistry::GetAllRules, rules_registry, extension_id, &rules));
     scoped_refptr<base::ThreadTestHelper> io_helper(new base::ThreadTestHelper(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO).get()));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
     EXPECT_TRUE(io_helper->Run());
     return rules.size();
   }

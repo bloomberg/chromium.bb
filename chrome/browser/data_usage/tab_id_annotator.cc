@@ -81,7 +81,7 @@ void TabIdAnnotator::Annotate(net::URLRequest* request,
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_thread_task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   std::unique_ptr<TabIdProvider> tab_id_provider(new TabIdProvider(
       ui_thread_task_runner.get(), FROM_HERE,
       base::Bind(&GetTabIdForRenderFrame, render_process_id, render_frame_id)));

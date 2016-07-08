@@ -67,9 +67,8 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     // TODO(skyostil): Make these configurable.
     builder.set_data_enabled(true);
     builder.set_file_enabled(true);
-    builder.SetFileTaskRunner(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::FILE));
+    builder.SetFileTaskRunner(content::BrowserThread::GetTaskRunnerForThread(
+        content::BrowserThread::FILE));
     if (!proxy_server_.IsEmpty()) {
       builder.set_proxy_service(
           net::ProxyService::CreateFixed(proxy_server_.ToString()));
@@ -108,7 +107,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return content::BrowserThread::GetMessageLoopProxyForThread(
+  return content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::IO);
 }
 

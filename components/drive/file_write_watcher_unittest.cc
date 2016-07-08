@@ -89,7 +89,7 @@ TEST_F(FileWriteWatcherTest, WatchThreeFiles) {
 
   // Set up the watcher.
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE);
   FileWriteWatcher watcher(file_task_runner.get());
   watcher.DisableDelayForTesting();

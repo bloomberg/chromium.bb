@@ -131,7 +131,7 @@ class ValidateCrxHelper : public SandboxedUnpackerClient {
   void StartOnFileThread() {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE);
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
 
     scoped_refptr<SandboxedUnpacker> unpacker(new SandboxedUnpacker(
         Manifest::INTERNAL, 0, /* no special creation flags */

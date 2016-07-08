@@ -91,7 +91,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
           profile->GetRequestContext()));
   std::unique_ptr<ImageManager> thumbnail_manager(new ImageManager(
       std::move(image_fetcher), std::move(db), database_dir,
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB)));
   return new SuggestionsService(
       signin_manager, token_service, sync_service, profile->GetRequestContext(),
       std::move(suggestions_store), std::move(thumbnail_manager),

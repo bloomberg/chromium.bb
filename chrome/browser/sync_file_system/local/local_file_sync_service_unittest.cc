@@ -117,10 +117,9 @@ class LocalFileSyncServiceTest
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
     file_system_.reset(new CannedSyncableFileSystem(
-        GURL(kOrigin),
-        in_memory_env_.get(),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+        GURL(kOrigin), in_memory_env_.get(),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 
     local_service_ = LocalFileSyncService::CreateForTesting(
         &profile_, in_memory_env_.get());
@@ -300,10 +299,9 @@ TEST_F(LocalFileSyncServiceTest, LocalChangeObserver) {
 TEST_F(LocalFileSyncServiceTest, MAYBE_LocalChangeObserverMultipleContexts) {
   const char kOrigin2[] = "http://foo";
   CannedSyncableFileSystem file_system2(
-      GURL(kOrigin2),
-      in_memory_env_.get(),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
+      GURL(kOrigin2), in_memory_env_.get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
   file_system2.SetUp(CannedSyncableFileSystem::QUOTA_ENABLED);
 
   base::RunLoop run_loop;

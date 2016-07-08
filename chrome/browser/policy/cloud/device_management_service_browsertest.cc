@@ -104,8 +104,7 @@ class DeviceManagementServiceIntegrationTest
 
   std::string InitCannedResponse() {
     interceptor_.reset(new TestRequestInterceptor(
-        "localhost",
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+        "localhost", BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
     return "http://localhost";
   }
 

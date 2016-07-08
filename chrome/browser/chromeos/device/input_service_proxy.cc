@@ -87,8 +87,7 @@ class InputServiceProxy::ServiceObserver : public InputServiceLinux::Observer {
 
 InputServiceProxy::InputServiceProxy()
     : service_observer_(new ServiceObserver()),
-      task_runner_(BrowserThread::GetMessageLoopProxyForThread(
-          thread_identifier_)),
+      task_runner_(BrowserThread::GetTaskRunnerForThread(thread_identifier_)),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   task_runner_->PostTask(

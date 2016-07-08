@@ -32,7 +32,7 @@ ChromecastMediaRendererFactory::CreateRenderer(
   // TODO(erickung): crbug.com/443956. Need to provide right LoadType.
   LoadType cma_load_type = kLoadTypeMediaSource;
   std::unique_ptr<MediaPipelineProxy> cma_media_pipeline(new MediaPipelineProxy(
-      render_frame_id_, content::RenderThread::Get()->GetIOMessageLoopProxy(),
+      render_frame_id_, content::RenderThread::Get()->GetIOTaskRunner(),
       cma_load_type));
   std::unique_ptr<CmaRenderer> cma_renderer(new CmaRenderer(
       std::move(cma_media_pipeline), video_renderer_sink, gpu_factories_));

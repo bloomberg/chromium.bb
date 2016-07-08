@@ -1852,7 +1852,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
 
   TestRequestInterceptor interceptor(
       "update.extension",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   interceptor.PushJobCallback(
       TestRequestInterceptor::FileJob(
           test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
@@ -2063,7 +2063,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
   TestRequestInterceptor interceptor(
       "update.extension",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   interceptor.PushJobCallback(TestRequestInterceptor::BadRequestJob());
   interceptor.PushJobCallback(TestRequestInterceptor::FileJob(
       test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
@@ -2133,7 +2133,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_path));
   TestRequestInterceptor interceptor(
       "update.extension",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   interceptor.PushJobCallback(TestRequestInterceptor::FileJob(
       test_path.Append(kTestExtensionsDir).Append(kGood2CrxManifestName)));
 

@@ -153,9 +153,9 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
         device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         device::PowerSaveBlocker::kReasonOther,
         "Cast is streaming content to a remote receiver",
-        content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::UI),
-        content::BrowserThread::GetMessageLoopProxyForThread(
+        content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::FILE)));
   }
 

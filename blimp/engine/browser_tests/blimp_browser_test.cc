@@ -76,8 +76,7 @@ void BlimpBrowserTest::SetUpOnMainThread() {
 }
 
 void BlimpBrowserTest::TearDownOnMainThread() {
-  content::BrowserThread::GetMessageLoopProxyForThread(
-      content::BrowserThread::UI)
+  content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
       ->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 

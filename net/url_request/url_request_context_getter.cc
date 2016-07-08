@@ -47,7 +47,7 @@ void URLRequestContextGetter::OnDestruct() const {
       }
     }
   }
-  // If no IO message loop proxy was available, we will just leak memory.
+  // If no IO task runner was available, we will just leak memory.
   // This is also true if the IO thread is gone.
 }
 

@@ -179,11 +179,10 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
   init_params.debug_identifier = profile->GetDebugName();
   init_params.channel = chrome::GetChannel();
 
-  init_params.db_thread = content::BrowserThread::GetMessageLoopProxyForThread(
+  init_params.db_thread = content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::DB);
-  init_params.file_thread =
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::FILE);
+  init_params.file_thread = content::BrowserThread::GetTaskRunnerForThread(
+      content::BrowserThread::FILE);
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
   auto pss = base::WrapUnique(new ProfileSyncService(std::move(init_params)));

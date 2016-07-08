@@ -174,7 +174,7 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
       functor_(nullptr),
       browser_view_renderer_(
           this,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
       web_contents_(std::move(web_contents)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);

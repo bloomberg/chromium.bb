@@ -66,8 +66,7 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
         << "Pre-existing policies in this machine will make this test fail.";
 
     interceptor_.reset(new TestRequestInterceptor(
-        "localhost",
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)));
+        "localhost", BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
     BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();

@@ -149,7 +149,7 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
 
     if (!client_task_runner.get()) {
       client_task_runner =
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
     }
 
     if (!background_task_runner.get()) {

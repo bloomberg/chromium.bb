@@ -462,7 +462,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
       new_id, request->size, request->format,
       base::Bind(
           &GpuMemoryBufferDeleted,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
                      base::Unretained(this), new_id, request->client_id)));
   request->event.Signal();
@@ -489,7 +489,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
       handle, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
                      base::Unretained(this), new_id, request->client_id)));
   request->event.Signal();
@@ -512,7 +512,7 @@ void BrowserGpuMemoryBufferManager::HandleGpuMemoryBufferCreatedOnIO(
       handle, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
           base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
                      base::Unretained(this), handle.id, request->client_id)));
   request->event.Signal();

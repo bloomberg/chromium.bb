@@ -318,7 +318,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   base::FilePath path(
       profile()->GetPath().AppendASCII("ChromeDWriteFontCache"));
   content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetMessageLoopProxyForThread(
+      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
                      content::BrowserThread::FILE),
       base::Bind(base::IgnoreResult(&base::DeleteFile), path, false));
 }

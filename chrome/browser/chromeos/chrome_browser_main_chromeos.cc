@@ -382,7 +382,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::IO));
 
   CrasAudioHandler::Initialize(
@@ -399,7 +399,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
   // will ensure that loading is aborted on early exit.
   bool load_oem_statistics = !StartupUtils::IsOobeCompleted();
   system::StatisticsProvider::GetInstance()->StartLoadingMachineStatistics(
-      content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::FILE),
       load_oem_statistics);
 

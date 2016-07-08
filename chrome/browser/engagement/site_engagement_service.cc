@@ -109,7 +109,7 @@ bool SiteEngagementService::IsEnabled() {
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, base::WrapUnique(new base::DefaultClock)) {
   content::BrowserThread::PostAfterStartupTask(
-      FROM_HERE, content::BrowserThread::GetMessageLoopProxyForThread(
+      FROM_HERE, content::BrowserThread::GetTaskRunnerForThread(
                      content::BrowserThread::UI),
       base::Bind(&SiteEngagementService::AfterStartupTask,
                  weak_factory_.GetWeakPtr()));

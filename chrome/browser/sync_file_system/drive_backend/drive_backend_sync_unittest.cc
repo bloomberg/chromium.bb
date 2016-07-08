@@ -85,7 +85,7 @@ class DriveBackendSyncTest : public testing::Test,
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     in_memory_env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
 
-    io_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    io_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::IO);
     scoped_refptr<base::SequencedWorkerPool> worker_pool(
         content::BrowserThread::GetBlockingPool());
@@ -93,7 +93,7 @@ class DriveBackendSyncTest : public testing::Test,
         worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
             worker_pool->GetSequenceToken(),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-    file_task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+    file_task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
         content::BrowserThread::FILE);
     scoped_refptr<base::SequencedTaskRunner> drive_task_runner =
         worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(

@@ -69,8 +69,8 @@ void WakeLockServiceContext::CreateWakeLock() {
   wake_lock_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       device::PowerSaveBlocker::kReasonOther, "Wake Lock API",
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 
 #if defined(OS_ANDROID)
   // On Android, additionaly associate the blocker with this WebContents.

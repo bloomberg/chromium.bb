@@ -58,7 +58,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  task_runner_ = content::BrowserThread::GetMessageLoopProxyForThread(
+  task_runner_ = content::BrowserThread::GetTaskRunnerForThread(
       content::BrowserThread::IO);
 }
 

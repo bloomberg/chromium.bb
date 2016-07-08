@@ -192,7 +192,7 @@ void HostGlobals::BroadcastLogWithSource(PP_Module pp_module,
 }
 
 base::TaskRunner* HostGlobals::GetFileTaskRunner() {
-  return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get();
+  return RenderThreadImpl::current()->GetFileThreadTaskRunner().get();
 }
 
 ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() { return NULL; }

@@ -432,8 +432,7 @@ void SpellcheckCustomDictionary::OnLoaded(
         base::Bind(&SpellcheckCustomDictionary::FixInvalidFile,
                    weak_ptr_factory_.GetWeakPtr(), base::Passed(&result)));
     BrowserThread::PostAfterStartupTask(
-        FROM_HERE,
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
+        FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
         fix_invalid_file_.callback());
   }
 }

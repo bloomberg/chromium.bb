@@ -88,16 +88,16 @@ WiFiDisplayMediaManager::WiFiDisplayMediaManager(
     const std::string& sink_ip_address,
     content::ServiceRegistry* service_registry,
     const ErrorCallback& error_callback)
-  : video_track_(video_track),
-    audio_track_(audio_track),
-    service_registry_(service_registry),
-    sink_ip_address_(sink_ip_address),
-    player_(nullptr),
-    io_task_runner_(content::RenderThread::Get()->GetIOMessageLoopProxy()),
-    error_callback_(error_callback),
-    is_playing_(false),
-    is_initialized_(false),
-    weak_factory_(this) {
+    : video_track_(video_track),
+      audio_track_(audio_track),
+      service_registry_(service_registry),
+      sink_ip_address_(sink_ip_address),
+      player_(nullptr),
+      io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()),
+      error_callback_(error_callback),
+      is_playing_(false),
+      is_initialized_(false),
+      weak_factory_(this) {
   DCHECK(!video_track.isNull() || !audio_track.isNull());
   DCHECK(service_registry_);
   DCHECK(!error_callback_.is_null());

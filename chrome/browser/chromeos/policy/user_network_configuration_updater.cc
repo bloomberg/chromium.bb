@@ -141,7 +141,7 @@ void UserNetworkConfigurationUpdater::CreateAndSetCertificateImporter(
   DCHECK(database);
   SetCertificateImporter(std::unique_ptr<chromeos::onc::CertificateImporter>(
       new chromeos::onc::CertificateImporterImpl(
-          content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::GetTaskRunnerForThread(
               content::BrowserThread::IO),
           database)));
 }

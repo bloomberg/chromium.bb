@@ -19,13 +19,12 @@ class ChromeMockRenderThread : public content::MockRenderThread {
   ~ChromeMockRenderThread() override;
 
   // content::RenderThread overrides.
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOMessageLoopProxy() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.
 
-  // Set IO message loop proxy.
-  void set_io_message_loop_proxy(
+  void set_io_task_runner(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
  private:

@@ -60,7 +60,7 @@ void SafeIAppsLibraryParser::StartProcessOnIOThread() {
   DCHECK_EQ(INITIAL_STATE, parser_state_);
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   utility_process_host_ =
       UtilityProcessHost::Create(this, task_runner.get())->AsWeakPtr();
   utility_process_host_->SetName(l10n_util::GetStringUTF16(

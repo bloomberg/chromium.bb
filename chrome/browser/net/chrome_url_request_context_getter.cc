@@ -206,7 +206,7 @@ void ChromeURLRequestContextGetter::NotifyContextShuttingDown() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 ChromeURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+  return BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
 }
 
 // static

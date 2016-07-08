@@ -439,10 +439,10 @@ void BrowserContext::Initialize(
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kMojoLocalStorage)) {
       MojoApplicationInfo info;
-      info.application_factory = base::Bind(
-          &user_service::CreateUserService,
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::DB));
+      info.application_factory =
+          base::Bind(&user_service::CreateUserService,
+                     BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+                     BrowserThread::GetTaskRunnerForThread(BrowserThread::DB));
       connection->AddEmbeddedService(user_service::kUserServiceName, info);
     }
   }

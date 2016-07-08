@@ -205,7 +205,7 @@ TEST_F(SafeBrowsingUIManagerTest, UICallbackProceed) {
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
                  base::Unretained(&waiter));
   resource.callback_thread =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, true);
@@ -223,7 +223,7 @@ TEST_F(SafeBrowsingUIManagerTest, UICallbackDontProceed) {
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDone,
                  base::Unretained(&waiter));
   resource.callback_thread =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
   std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, false);
@@ -241,7 +241,7 @@ TEST_F(SafeBrowsingUIManagerTest, IOCallbackProceed) {
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
                  base::Unretained(&waiter));
   resource.callback_thread =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, true);
@@ -259,7 +259,7 @@ TEST_F(SafeBrowsingUIManagerTest, IOCallbackDontProceed) {
       base::Bind(&SafeBrowsingCallbackWaiter::OnBlockingPageDoneOnIO,
                  base::Unretained(&waiter));
   resource.callback_thread =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO);
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
   std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, false);

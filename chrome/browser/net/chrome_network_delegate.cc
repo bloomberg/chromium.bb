@@ -315,27 +315,27 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   enable_referrers->Init(prefs::kEnableReferrers, pref_service);
   enable_referrers->MoveToThread(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   if (enable_do_not_track) {
     enable_do_not_track->Init(prefs::kEnableDoNotTrack, pref_service);
     enable_do_not_track->MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
   if (force_google_safe_search) {
     force_google_safe_search->Init(prefs::kForceGoogleSafeSearch, pref_service);
     force_google_safe_search->MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
   if (force_youtube_safety_mode) {
     force_youtube_safety_mode->Init(prefs::kForceYouTubeSafetyMode,
                                     pref_service);
     force_youtube_safety_mode->MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
   if (allowed_domains_for_apps) {
     allowed_domains_for_apps->Init(prefs::kAllowedDomainsForApps, pref_service);
     allowed_domains_for_apps->MoveToThread(
-        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 }
 
