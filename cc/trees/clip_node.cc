@@ -15,7 +15,8 @@ ClipNode::ClipNode()
       parent_id(-1),
       owner_id(-1),
       transform_id(-1),
-      target_id(-1),
+      target_transform_id(-1),
+      target_effect_id(-1),
       applies_local_clip(true),
       layer_clipping_uses_only_local_clip(false),
       target_is_clipped(false),
@@ -30,7 +31,9 @@ bool ClipNode::operator==(const ClipNode& other) const {
          owner_id == other.owner_id && clip == other.clip &&
          combined_clip_in_target_space == other.combined_clip_in_target_space &&
          clip_in_target_space == other.clip_in_target_space &&
-         transform_id == other.transform_id && target_id == other.target_id &&
+         transform_id == other.transform_id &&
+         target_transform_id == other.target_transform_id &&
+         target_effect_id == other.target_effect_id &&
          applies_local_clip == other.applies_local_clip &&
          layer_clipping_uses_only_local_clip ==
              other.layer_clipping_uses_only_local_clip &&
@@ -55,7 +58,8 @@ void ClipNode::ToProtobuf(proto::TreeNode* proto) const {
   RectFToProto(clip_in_target_space, data->mutable_clip_in_target_space());
 
   data->set_transform_id(transform_id);
-  data->set_target_id(target_id);
+  data->set_target_transform_id(target_transform_id);
+  data->set_target_effect_id(target_effect_id);
   data->set_applies_local_clip(applies_local_clip);
   data->set_layer_clipping_uses_only_local_clip(
       layer_clipping_uses_only_local_clip);
@@ -80,7 +84,8 @@ void ClipNode::FromProtobuf(const proto::TreeNode& proto) {
   clip_in_target_space = ProtoToRectF(data.clip_in_target_space());
 
   transform_id = data.transform_id();
-  target_id = data.target_id();
+  target_transform_id = data.target_transform_id();
+  target_effect_id = data.target_effect_id();
   applies_local_clip = data.applies_local_clip();
   layer_clipping_uses_only_local_clip =
       data.layer_clipping_uses_only_local_clip();
@@ -97,7 +102,8 @@ void ClipNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("owner_id", owner_id);
   MathUtil::AddToTracedValue("clip", clip, value);
   value->SetInteger("transform_id", transform_id);
-  value->SetInteger("target_id", target_id);
+  value->SetInteger("target_transform_id", target_transform_id);
+  value->SetInteger("target_effect_id", target_effect_id);
   value->SetBoolean("applies_local_clip", applies_local_clip);
   value->SetBoolean("layer_clipping_uses_only_local_clip",
                     layer_clipping_uses_only_local_clip);

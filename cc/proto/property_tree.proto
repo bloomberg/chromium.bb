@@ -68,14 +68,15 @@ message TransformCachedNodeData {
 }
 
 // Proto for struct ClipNodeData.
-// NEXT ID: 12
+// NEXT ID: 13
 message ClipNodeData {
   optional RectF clip = 1;
   optional RectF combined_clip_in_target_space = 2;
   optional RectF clip_in_target_space = 3;
 
   optional int64 transform_id = 4;
-  optional int64 target_id = 5;
+  optional int64 target_transform_id = 5;
+  optional int64 target_effect_id = 12;
   optional bool applies_local_clip = 6;
   optional bool layer_clipping_uses_only_local_clip = 7;
   optional bool target_is_clipped = 8;

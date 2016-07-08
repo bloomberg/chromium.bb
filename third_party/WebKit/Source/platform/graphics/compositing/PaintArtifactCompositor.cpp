@@ -424,7 +424,7 @@ int PropertyTreeManager::compositorIdForClipNode(const ClipPaintPropertyNode* cl
     // TODO(jbroman): Don't discard rounded corners.
     compositorNode.clip = clipNode->clipRect().rect();
     compositorNode.transform_id = compositorIdForTransformNode(clipNode->localTransformSpace());
-    compositorNode.target_id = kRealRootNodeId;
+    compositorNode.target_transform_id = kRealRootNodeId;
     compositorNode.applies_local_clip = true;
     compositorNode.layers_are_clipped = true;
     compositorNode.layers_are_clipped_when_surfaces_disabled = true;

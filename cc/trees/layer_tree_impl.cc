@@ -1672,7 +1672,7 @@ static bool PointIsClippedByAncestorClipNode(
        clip_node->id > 1; clip_node = clip_tree.parent(clip_node)) {
     if (clip_node->applies_local_clip) {
       const TransformNode* transform_node =
-          transform_tree.Node(clip_node->target_id);
+          transform_tree.Node(clip_node->target_transform_id);
       gfx::Rect combined_clip_in_target_space =
           gfx::ToEnclosingRect(clip_node->combined_clip_in_target_space);
 

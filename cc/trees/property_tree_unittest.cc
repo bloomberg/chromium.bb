@@ -111,7 +111,8 @@ TEST(PropertyTreeSerializationTest, ClipNodeSerialization) {
   original.combined_clip_in_target_space = gfx::RectF(0.6f, 0.6f);
   original.clip_in_target_space = gfx::RectF(0.7f, 0.7f);
   original.transform_id = 2;
-  original.target_id = 3;
+  original.target_transform_id = 3;
+  original.target_effect_id = 4;
   original.applies_local_clip = false;
   original.layer_clipping_uses_only_local_clip = false;
   original.target_is_clipped = false;
@@ -132,14 +133,16 @@ TEST(PropertyTreeSerializationTest, ClipTreeSerialization) {
   ClipNode& root = *original.Node(0);
   root.owner_id = 1;
   root.transform_id = 2;
-  root.target_id = 1;
+  root.target_transform_id = 1;
+  root.target_effect_id = 1;
   ClipNode second;
   second.owner_id = 2;
   second.transform_id = 4;
   second.applies_local_clip = true;
   ClipNode third;
   third.owner_id = 3;
-  third.target_id = 3;
+  third.target_transform_id = 3;
+  third.target_effect_id = 2;
   third.target_is_clipped = false;
 
   original.Insert(second, 0);

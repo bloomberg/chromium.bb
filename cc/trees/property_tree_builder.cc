@@ -404,9 +404,10 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     node.clip = gfx::RectF(gfx::PointF() + layer->offset_to_transform_parent(),
                            gfx::SizeF(layer->bounds()));
     node.transform_id = transform_parent->transform_tree_index();
-    node.target_id = data_for_children->property_trees->effect_tree
-                         .Node(data_for_children->render_target)
-                         ->transform_id;
+    node.target_effect_id = data_for_children->render_target;
+    node.target_transform_id = data_for_children->property_trees->effect_tree
+                                   .Node(data_for_children->render_target)
+                                   ->transform_id;
     node.owner_id = layer->id();
 
     if (ancestor_clips_subtree || layer_clips_subtree) {

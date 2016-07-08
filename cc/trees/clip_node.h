@@ -49,7 +49,10 @@ struct CC_EXPORT ClipNode {
   int transform_id;
 
   // The id of the transform node that defines the clip node's target space.
-  int target_id;
+  int target_transform_id;
+
+  // The id of the effect node that defines the clip node's target space.
+  int target_effect_id;
 
   // Whether this node contributes a new clip (that is, whether |clip| needs to
   // be applied), rather than only inheriting ancestor clips.
