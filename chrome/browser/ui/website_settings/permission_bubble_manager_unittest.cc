@@ -36,7 +36,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL("http://www.google.com"));
 
     manager_.reset(new PermissionBubbleManager(web_contents()));
-    view_factory_.reset(new MockPermissionBubbleFactory(false, manager_.get()));
+    view_factory_.reset(new MockPermissionBubbleFactory(manager_.get()));
   }
 
   void TearDown() override {

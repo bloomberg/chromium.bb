@@ -317,7 +317,7 @@ void GeolocationPermissionContextTests::SetupBubbleManager(
 
   // Create a MockPermissionBubbleFactory for the PermissionBubbleManager.
   mock_permission_bubble_factories_.push_back(base::WrapUnique(
-      new MockPermissionBubbleFactory(false, permission_bubble_manager)));
+      new MockPermissionBubbleFactory(permission_bubble_manager)));
 
   // Prepare the PermissionBubbleManager to display a mock bubble.
   permission_bubble_manager->DisplayPendingRequests();

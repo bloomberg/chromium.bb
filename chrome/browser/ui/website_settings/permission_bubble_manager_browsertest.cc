@@ -37,7 +37,7 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
     PermissionBubbleManager* manager = GetPermissionBubbleManager();
     mock_permission_bubble_factory_.reset(
-        new MockPermissionBubbleFactory(true, manager));
+        new MockPermissionBubbleFactory(manager));
     manager->DisplayPendingRequests();
   }
 
@@ -49,12 +49,6 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
   PermissionBubbleManager* GetPermissionBubbleManager() {
     return PermissionBubbleManager::FromWebContents(
         browser()->tab_strip_model()->GetActiveWebContents());
-  }
-
-  void WaitForPermissionBubble() {
-    if (bubble_factory()->is_visible())
-      return;
-    content::RunMessageLoop();
   }
 
   MockPermissionBubbleFactory* bubble_factory() {
@@ -86,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       browser(),
       embedded_test_server()->GetURL("/permissions/requests-before-load.html"),
       1);
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(2, bubble_factory()->total_request_count());
@@ -102,7 +96,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       embedded_test_server()->GetURL(
           "/permissions/requests-before-after-load.html"),
       1);
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->total_request_count());
@@ -123,13 +117,13 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, MAYBE_NavTwice) {
       browser(),
       embedded_test_server()->GetURL("/permissions/requests-before-load.html"),
       1);
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),
       embedded_test_server()->GetURL("/permissions/requests-before-load.html"),
       1);
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(2, bubble_factory()->show_count());
   EXPECT_EQ(4, bubble_factory()->total_request_count());
@@ -151,14 +145,14 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       browser(),
       embedded_test_server()->GetURL("/permissions/requests-before-load.html"),
       1);
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(),
       embedded_test_server()->GetURL(
           "/permissions/requests-before-load.html#0"),
       1);
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(2, bubble_factory()->total_request_count());
@@ -182,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, InPageNavigation) {
   ExecuteScriptAndGetValue(
       browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame(),
       "navigator.geolocation.getCurrentPosition(function(){});");
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
 
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->total_request_count());
@@ -219,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       embedded_test_server()->GetURL("/permissions/killswitch_tester.html"));
 
   EXPECT_TRUE(content::ExecuteScript(web_contents, "requestGeolocation();"));
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->total_request_count());
 }
@@ -249,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
   variations::testing::ClearAllVariationParams();
 
   EXPECT_TRUE(content::ExecuteScript(web_contents, "requestNotification();"));
-  WaitForPermissionBubble();
+  bubble_factory()->WaitForPermissionBubble();
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->total_request_count());
 }

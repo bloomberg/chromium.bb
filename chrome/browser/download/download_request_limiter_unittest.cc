@@ -100,7 +100,7 @@ class TestingDelegate {
   void SetUp(WebContents* web_contents) {
     PermissionBubbleManager::CreateForWebContents(web_contents);
     mock_permission_bubble_factory_.reset(new MockPermissionBubbleFactory(
-        false, PermissionBubbleManager::FromWebContents(web_contents)));
+        PermissionBubbleManager::FromWebContents(web_contents)));
     PermissionBubbleManager::FromWebContents(web_contents)
         ->DisplayPendingRequests();
   }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 class Browser;
@@ -21,10 +22,7 @@ class MockPermissionBubbleView;
 // chrome/browser/ui/website_settings/permission_bubble_manager_unittest.cc
 class MockPermissionBubbleFactory {
  public:
-  // Set |is_browser_test| if in a browser test in order to interact with the
-  // message loop. That shouldn't be done in unit tests.
-  MockPermissionBubbleFactory(bool is_browser_test,
-                              PermissionBubbleManager* manager);
+  explicit MockPermissionBubbleFactory(PermissionBubbleManager* manager);
   ~MockPermissionBubbleFactory();
 
   // Create method called by the PBM to show a bubble.
@@ -49,6 +47,8 @@ class MockPermissionBubbleFactory {
   // Number of requests seen.
   int total_request_count() { return total_requests_count_; }
 
+  void WaitForPermissionBubble();
+
  private:
   friend class MockPermissionBubbleView;
 
@@ -60,13 +60,14 @@ class MockPermissionBubbleFactory {
   void ShowView(MockPermissionBubbleView* view);
   void HideView(MockPermissionBubbleView* view);
 
-  bool is_browser_test_;
   bool can_update_ui_;
   int show_count_;
   int requests_count_;
   int total_requests_count_;
   std::vector<MockPermissionBubbleView*> views_;
   PermissionBubbleManager::AutoResponseType response_type_;
+
+  base::Closure show_bubble_quit_closure_;
 
   // The bubble manager that will be associated with this factory.
   PermissionBubbleManager* manager_;

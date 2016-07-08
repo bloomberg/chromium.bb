@@ -6,14 +6,13 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 MockPermissionBubbleFactory::MockPermissionBubbleFactory(
-    bool is_browser_test,
     PermissionBubbleManager* manager)
-    : is_browser_test_(is_browser_test),
-      can_update_ui_(false),
+    : can_update_ui_(false),
       show_count_(0),
       requests_count_(0),
       total_requests_count_(0),
@@ -35,7 +34,7 @@ MockPermissionBubbleFactory::~MockPermissionBubbleFactory() {
 std::unique_ptr<PermissionBubbleView> MockPermissionBubbleFactory::Create(
     Browser* browser) {
   MockPermissionBubbleView* view =
-      new MockPermissionBubbleView(this, manager_, is_browser_test_);
+      new MockPermissionBubbleView(this, manager_);
   view->can_update_ui_ = can_update_ui_;
   return base::WrapUnique(view);
 }
@@ -64,12 +63,22 @@ bool MockPermissionBubbleFactory::is_visible() {
   return false;
 }
 
+void MockPermissionBubbleFactory::WaitForPermissionBubble() {
+  if (is_visible())
+    return;
+  DCHECK(show_bubble_quit_closure_.is_null());
+  base::RunLoop loop;
+  show_bubble_quit_closure_ = loop.QuitClosure();
+  loop.Run();
+  show_bubble_quit_closure_ = base::Closure();
+}
+
 // static
 std::unique_ptr<PermissionBubbleView> MockPermissionBubbleFactory::DoNotCreate(
     Browser* browser) {
   NOTREACHED();
   return base::WrapUnique(
-      new MockPermissionBubbleView(nullptr, nullptr, false));
+      new MockPermissionBubbleView(nullptr, nullptr));
 }
 
 void MockPermissionBubbleFactory::UpdateResponseType() {
@@ -83,6 +92,9 @@ void MockPermissionBubbleFactory::ShowView(MockPermissionBubbleView* view) {
       return;
   }
   views_.push_back(view);
+
+  if (!show_bubble_quit_closure_.is_null())
+    show_bubble_quit_closure_.Run();
 }
 
 void MockPermissionBubbleFactory::HideView(MockPermissionBubbleView* view) {

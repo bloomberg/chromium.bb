@@ -32,12 +32,10 @@ class MockPermissionBubbleView : public PermissionBubbleView {
   friend class MockPermissionBubbleFactory;
 
   MockPermissionBubbleView(MockPermissionBubbleFactory* factory,
-                           PermissionBubbleManager* manager,
-                           bool browser_test);
+                           PermissionBubbleManager* manager);
 
   MockPermissionBubbleFactory* factory_;
   PermissionBubbleManager* manager_;
-  bool browser_test_;
   bool can_update_ui_;
   bool is_visible_;
 };

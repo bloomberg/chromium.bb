@@ -22,9 +22,6 @@ void MockPermissionBubbleView::Show(
   factory_->total_requests_count_ += manager_->requests_.size();
   factory_->UpdateResponseType();
   is_visible_ = true;
-
-  if (browser_test_)
-    base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
 bool MockPermissionBubbleView::CanAcceptRequestUpdate() {
@@ -51,10 +48,8 @@ gfx::NativeWindow MockPermissionBubbleView::GetNativeWindow() {
 
 MockPermissionBubbleView::MockPermissionBubbleView(
     MockPermissionBubbleFactory* factory,
-    PermissionBubbleManager* manager,
-    bool browser_test)
+    PermissionBubbleManager* manager)
     : factory_(factory),
       manager_(manager),
-      browser_test_(browser_test),
       can_update_ui_(true),
       is_visible_(false) {}
