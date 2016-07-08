@@ -13915,6 +13915,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_OS_Update_Default_Selected">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <description>
+    Counts the number of times the user selects the update row in the system
+    menu.
+  </description>
+</action>
+
 <action name="StatusArea_SMS_Detailed">
   <owner>tbuckley@chromium.org</owner>
   <owner>bruthig@chromium.org</owner>
