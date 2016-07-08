@@ -263,6 +263,11 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(const LayoutOb
         return;
 
     AffineTransform transformToBorderBox = SVGRootPainter(toLayoutSVGRoot(object)).transformToPixelSnappedBorderBox(context.paintOffset);
+
+    // The paint offset is included in |transformToBorderBox| so SVG does not need to handle paint
+    // offset internally.
+    context.paintOffset = LayoutPoint();
+
     if (transformToBorderBox.isIdentity())
         return;
 

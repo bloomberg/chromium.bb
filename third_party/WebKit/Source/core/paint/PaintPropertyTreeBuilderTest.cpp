@@ -1086,4 +1086,25 @@ TEST_F(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos)
     EXPECT_EQ(dPaintOffset, dProperties->localBorderBoxProperties()->paintOffset);
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset)
+{
+    setBodyInnerHTML(
+        "<svg id='svg' style='position: relative; left: 0.1px; transform: matrix(1, 0, 0, 1, 0, 0);'>"
+        "    <rect id='rect' transform='translate(1, 1)'/>"
+        "</svg>");
+
+    LayoutObject& svgWithTransform = *document().getElementById("svg")->layoutObject();
+    ObjectPaintProperties* svgWithTransformProperties = svgWithTransform.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix(), svgWithTransformProperties->transform()->matrix());
+    EXPECT_EQ(LayoutPoint(FloatPoint(0.1, 0)), svgWithTransformProperties->localBorderBoxProperties()->paintOffset);
+    EXPECT_EQ(nullptr, svgWithTransformProperties->svgLocalToBorderBoxTransform());
+
+    LayoutObject& rectWithTransform = *document().getElementById("rect")->layoutObject();
+    ObjectPaintProperties* rectWithTransformProperties = rectWithTransform.objectPaintProperties();
+    EXPECT_EQ(TransformationMatrix().translate(1, 1), rectWithTransformProperties->transform()->matrix());
+
+    // Ensure there is no PaintOffset transform between the rect and the svg's transform.
+    EXPECT_EQ(svgWithTransformProperties->transform(), rectWithTransformProperties->transform()->parent());
+}
+
 } // namespace blink
