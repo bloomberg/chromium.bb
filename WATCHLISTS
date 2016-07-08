@@ -648,6 +648,12 @@
         'chrome/android/java/res/layout/new_tab_page|'\
         'chrome/android/java/res/layout/most_visited'
     },
+    'ntp_tiles': {
+      'filepath': 'chrome/browser/android/ntp/|'\
+        'chrome/browser/ui/webui/ntp/|'\
+        'chrome/common/search/ntp|'\
+        'components/ntp_tiles/'
+    },
     'offline_pages': {
       'filepath': 'components/offline_pages/'\
                   '|chrome/browser/android/offline_pages/'\
@@ -1573,6 +1579,7 @@
     'ntp': ['dbeam+watch-ntp@chromium.org',
             'pedrosimonetti+watch@chromium.org'],
     'ntp_snippets': ['ntp-dev+reviews@chromium.org'],
+    'ntp_tiles': ['ntp-dev+reviews@chromium.org'],
     'offline_pages': ['dimich+watch@chromium.org',
                       'fgorski+watch@chromium.org',
                       'petewil+watch@chromium.org',
