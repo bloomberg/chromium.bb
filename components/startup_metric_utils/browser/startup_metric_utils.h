@@ -78,9 +78,7 @@ void RecordExeMainEntryPointTime(const base::Time& time);
 
 // Call this with the time recorded just before the message loop is started.
 // |is_first_run| - is the current launch part of a first run. |pref_service| is
-// an optional parameter which, if provided, will be used to store state for
-// stats that span multiple startups; in its absence those stats will not be
-// recorded.
+// used to store state for stats that span multiple startups.
 void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
                                        bool is_first_run,
                                        PrefService* pref_service);

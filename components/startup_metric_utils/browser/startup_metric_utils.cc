@@ -186,8 +186,7 @@ void RecordSystemUptimeHistogram() {
 // On Windows, records the number of hard-faults that have occurred in the
 // current chrome.exe process since it was started. A version of the histograms
 // recorded in this method suffixed by |same_version_startup_count| will also be
-// recorded (unless |same_version_startup_count| is 0 which indicates it's
-// unknown). This is a nop on other platforms.
+// recorded. This is a nop on other platforms.
 void RecordHardFaultHistogram(int same_version_startup_count) {
 #if defined(OS_WIN)
   uint32_t hard_fault_count = 0;
@@ -196,22 +195,19 @@ void RecordHardFaultHistogram(int same_version_startup_count) {
   if (!GetHardFaultCountForCurrentProcess(&hard_fault_count))
     return;
 
-  std::string same_version_startup_count_suffix;
-  if (same_version_startup_count != 0) {
-    // Histograms below will be suffixed by |same_version_startup_count| up to
-    // |kMaxSameVersionCountRecorded|, higher counts will be grouped in the
-    // ".Over" suffix. Make sure to reflect changes to
-    // kMaxSameVersionCountRecorded in the "SameVersionStartupCounts" histogram
-    // suffix.
-    const int kMaxSameVersionCountRecorded = 9;
-    same_version_startup_count_suffix.push_back('.');
-    DCHECK_GE(same_version_startup_count, 1);
-    if (same_version_startup_count <= kMaxSameVersionCountRecorded) {
-      same_version_startup_count_suffix.append(
-          base::IntToString(same_version_startup_count));
-    } else {
-      same_version_startup_count_suffix.append("Over");
-    }
+  // Histograms below will be suffixed by |same_version_startup_count| up to
+  // |kMaxSameVersionCountRecorded|, higher counts will be grouped in the
+  // ".Over" suffix. Make sure to reflect changes to
+  // kMaxSameVersionCountRecorded in the "SameVersionStartupCounts" histogram
+  // suffix.
+  std::string same_version_startup_count_suffix(".");
+  constexpr int kMaxSameVersionCountRecorded = 9;
+  DCHECK_GE(same_version_startup_count, 1);
+  if (same_version_startup_count <= kMaxSameVersionCountRecorded) {
+    same_version_startup_count_suffix.append(
+        base::IntToString(same_version_startup_count));
+  } else {
+    same_version_startup_count_suffix.append("Over");
   }
 
   // Hard fault counts are expected to be in the thousands range,
@@ -545,15 +541,15 @@ void RecordExeMainEntryPointTime(const base::Time& time) {
 void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
                                        bool is_first_run,
                                        PrefService* pref_service) {
-  int same_version_startup_count = 0;
-  if (pref_service)
-    same_version_startup_count = RecordSameVersionStartupCount(pref_service);
+  DCHECK(pref_service);
+
+  const int same_version_startup_count =
+      RecordSameVersionStartupCount(pref_service);
   // Keep RecordHardFaultHistogram() first as much as possible as many other
   // histograms depend on it setting |g_startup_temperature|.
   RecordHardFaultHistogram(same_version_startup_count);
   AddStartupEventsForTelemetry();
-  if (pref_service)
-    RecordTimeSinceLastStartup(pref_service);
+  RecordTimeSinceLastStartup(pref_service);
   RecordSystemUptimeHistogram();
   RecordMainEntryTimeHistogram();
 
