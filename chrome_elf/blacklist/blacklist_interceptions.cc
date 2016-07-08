@@ -91,7 +91,7 @@ base::string16 GetBackingModuleFilePath(PVOID address) {
 }
 
 bool IsModuleValidImageSection(HANDLE section,
-                               PVOID *base,
+                               PVOID* base,
                                PLARGE_INTEGER offset,
                                PSIZE_T view_size) {
   DCHECK_NT(g_nt_query_section_func);
@@ -115,14 +115,13 @@ bool IsModuleValidImageSection(HANDLE section,
 }
 
 base::string16 ExtractLoadedModuleName(const base::string16& module_path) {
-  if (module_path.empty() || module_path[module_path.size() - 1] == L'\\')
+  if (module_path.empty() || module_path.back() == L'\\')
     return base::string16();
 
   size_t sep = module_path.find_last_of(L'\\');
   if (sep == base::string16::npos)
     return module_path;
-  else
-    return module_path.substr(sep+1);
+  return module_path.substr(sep + 1);
 }
 
 // Fills |out_name| with the image name from the given |pe| image and |flags|
@@ -178,7 +177,7 @@ NTSTATUS BlNtMapViewOfSectionImpl(
     NtMapViewOfSectionFunction orig_MapViewOfSection,
     HANDLE section,
     HANDLE process,
-    PVOID *base,
+    PVOID* base,
     ULONG_PTR zero_bits,
     SIZE_T commit_size,
     PLARGE_INTEGER offset,
@@ -245,18 +244,18 @@ bool InitializeInterceptImports() {
           g_nt_unmap_view_of_section_func);
 }
 
-SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
-    NtMapViewOfSectionFunction orig_MapViewOfSection,
-    HANDLE section,
-    HANDLE process,
-    PVOID *base,
-    ULONG_PTR zero_bits,
-    SIZE_T commit_size,
-    PLARGE_INTEGER offset,
-    PSIZE_T view_size,
-    SECTION_INHERIT inherit,
-    ULONG allocation_type,
-    ULONG protect) {
+SANDBOX_INTERCEPT NTSTATUS WINAPI
+BlNtMapViewOfSection(NtMapViewOfSectionFunction orig_MapViewOfSection,
+                     HANDLE section,
+                     HANDLE process,
+                     PVOID* base,
+                     ULONG_PTR zero_bits,
+                     SIZE_T commit_size,
+                     PLARGE_INTEGER offset,
+                     PSIZE_T view_size,
+                     SECTION_INHERIT inherit,
+                     ULONG allocation_type,
+                     ULONG protect) {
   NTSTATUS ret = STATUS_UNSUCCESSFUL;
 
   __try {

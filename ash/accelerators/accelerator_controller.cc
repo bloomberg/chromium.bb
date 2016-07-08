@@ -144,7 +144,7 @@ void EnsureNoWordBreaks(base::string16* shortcut_text) {
     *shortcut_text += non_breaking_plus;
   }
 
-  *shortcut_text += keys[keys.size() - 1];
+  *shortcut_text += keys.back();
 }
 
 // Gets the notification message after it formats it in such a way that there

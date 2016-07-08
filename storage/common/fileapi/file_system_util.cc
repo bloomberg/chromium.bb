@@ -38,7 +38,7 @@ base::FilePath VirtualPath::BaseName(const base::FilePath& virtual_path) {
 
   // Keep everything after the final separator, but if the pathname is only
   // one character and it's a separator, leave it alone.
-  while (path.size() > 1 && base::FilePath::IsSeparator(path[path.size() - 1]))
+  while (path.size() > 1 && base::FilePath::IsSeparator(path.back()))
     path.resize(path.size() - 1);
   base::FilePath::StringType::size_type last_separator =
       path.find_last_of(base::FilePath::kSeparators);
@@ -57,7 +57,7 @@ base::FilePath VirtualPath::DirName(const base::FilePath& virtual_path) {
   // that this version never cares about '//' or drive-letters even on win32.
 
   // Strip trailing separators.
-  while (path.size() > 1 && base::FilePath::IsSeparator(path[path.size() - 1]))
+  while (path.size() > 1 && base::FilePath::IsSeparator(path.back()))
     path.resize(path.size() - 1);
 
   StringType::size_type last_separator =
@@ -74,7 +74,7 @@ base::FilePath VirtualPath::DirName(const base::FilePath& virtual_path) {
   path.resize(last_separator);
 
   // Strip trailing separators.
-  while (path.size() > 1 && base::FilePath::IsSeparator(path[path.size() - 1]))
+  while (path.size() > 1 && base::FilePath::IsSeparator(path.back()))
     path.resize(path.size() - 1);
 
   if (path.empty())

@@ -85,7 +85,7 @@ CookieMap GetRequestCookies(const HttpRequest& request) {
         continue;
 
       std::string value = name_value[1];
-      if (value.size() && value[value.size() - 1] == ';')
+      if (value.size() && value.back() == ';')
         value = value.substr(0, value.size() -1);
 
       result.insert(std::make_pair(name_value[0], value));

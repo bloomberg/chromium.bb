@@ -59,7 +59,7 @@ bool GetUniformNameSansElement(
     const std::string& name, int* element_index, std::string* new_name) {
   DCHECK(element_index);
   DCHECK(new_name);
-  if (name.size() < 3 || name[name.size() - 1] != ']') {
+  if (name.size() < 3 || name.back() != ']') {
     *element_index = 0;
     *new_name = name;
     return true;
@@ -1649,7 +1649,6 @@ bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
       *conflicting_name = name;
       return true;
     }
-
   }
   return false;
 }

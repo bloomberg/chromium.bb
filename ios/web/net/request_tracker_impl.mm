@@ -812,7 +812,7 @@ void RequestTrackerImpl::SSLNotify() {
   if (is_closing_)
     return;
 
-  if (!counts_.size())
+  if (counts_.empty())
     return;  // Nothing yet to notify.
 
   if (!page_url_.SchemeIsCryptographic())

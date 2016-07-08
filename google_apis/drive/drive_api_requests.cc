@@ -219,10 +219,9 @@ bool ParseMultipartResponse(const std::string& content_type,
   if (content_type_piece.empty())
     return false;
   if (content_type_piece[0] == '"') {
-    if (content_type_piece.size() <= 2 ||
-        content_type_piece[content_type_piece.size() - 1] != '"') {
+    if (content_type_piece.size() <= 2 || content_type_piece.back() != '"')
       return false;
-    }
+
     content_type_piece =
         content_type_piece.substr(1, content_type_piece.size() - 2);
   }

@@ -399,7 +399,7 @@ void BluetoothSocketBlueZ::Cancel() {
 
   VLOG(1) << profile_->object_path().value() << ": Cancel";
 
-  if (!connection_request_queue_.size())
+  if (connection_request_queue_.empty())
     return;
 
   // If the front request is being accepted mark it as cancelled, otherwise

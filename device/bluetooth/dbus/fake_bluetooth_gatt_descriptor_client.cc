@@ -115,7 +115,7 @@ void FakeBluetoothGattDescriptorClient::ReadValue(
     uint8_t value_byte = chrc_props->notifying.value() ? 0x01 : 0x00;
     const std::vector<uint8_t>& cur_value = properties->value.value();
 
-    if (!cur_value.size() || cur_value[0] != value_byte) {
+    if (cur_value.empty() || cur_value[0] != value_byte) {
       std::vector<uint8_t> value = {value_byte, 0x00};
       properties->value.ReplaceValue(value);
     }

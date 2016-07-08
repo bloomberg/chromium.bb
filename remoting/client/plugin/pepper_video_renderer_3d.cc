@@ -218,7 +218,7 @@ void PepperVideoRenderer3D::ProcessVideoPacket(
 
   // Don't need to do anything if the packet is empty. Host sends empty video
   // packets when the screen is not changing.
-  if (!packet_ptr->data().size())
+  if (packet_ptr->data().empty())
     return;
 
   if (!frame_received_) {

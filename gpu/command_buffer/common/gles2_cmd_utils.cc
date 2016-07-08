@@ -5,14 +5,16 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
-#include <sstream>
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
+
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
 
+#include <sstream>
+
 #include "base/numerics/safe_math.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 namespace gpu {
 namespace gles2 {
@@ -27,7 +29,7 @@ enum GLErrorBit {
   kInvalidFrameBufferOperation = (1 << 4),
   kContextLost = (1 << 5)
 };
-}
+}  // namespace gl_error_bit
 
 int GLES2Util::GLGetNumValuesReturned(int id) const {
   switch (id) {
@@ -1454,10 +1456,9 @@ uint32_t GLES2Util::GetChannelsNeededForAttachmentType(
 std::string GLES2Util::GetStringEnum(uint32_t value) {
   const EnumToString* entry = enum_to_string_table_;
   const EnumToString* end = entry + enum_to_string_table_len_;
-  for (;entry < end; ++entry) {
-    if (value == entry->value) {
+  for (; entry < end; ++entry) {
+    if (value == entry->value)
       return entry->name;
-    }
   }
   std::stringstream ss;
   ss.fill('0');
@@ -1492,7 +1493,7 @@ std::string GLES2Util::GetQualifiedEnumString(const EnumToString* table,
 GLSLArrayName::GLSLArrayName(const std::string& name) : element_index_(-1) {
   if (name.size() < 4)
     return;
-  if (name[name.size() - 1] != ']')
+  if (name.back() != ']')
     return;
 
   size_t open_pos = name.find_last_of('[');

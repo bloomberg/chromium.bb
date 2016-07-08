@@ -258,7 +258,7 @@ void SingleThreadProxy::DoCommit() {
     // touched on the impl layer tree.
     std::unique_ptr<ScrollAndScaleSet> scroll_info =
         layer_tree_host_impl_->ProcessScrollDeltas();
-    DCHECK(!scroll_info->scrolls.size());
+    DCHECK(scroll_info->scrolls.empty());
     DCHECK_EQ(1.f, scroll_info->page_scale_delta);
 #endif
 

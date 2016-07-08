@@ -575,7 +575,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     new_mode.ui_scale = iter->configured_ui_scale();
     const std::vector<DisplayMode>& display_modes = iter->display_modes();
     // This is empty the displays are initialized from InitFromCommandLine.
-    if (!display_modes.size())
+    if (display_modes.empty())
       continue;
     auto display_modes_iter = FindDisplayMode(*iter, new_mode);
     // Update the actual resolution selected as the resolution request may fail.

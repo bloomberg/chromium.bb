@@ -408,7 +408,7 @@ class TextureUploadPerfTest : public testing::Test {
     for (int i = 0; i < kUploadPerfWarmupRuns + kUploadPerfTestRuns; ++i) {
       GenerateTextureData(size, GLFormatBytePerPixel(format), i + 1, &pixels);
       auto run = UploadAndDraw(texture_id, size, pixels, format, subimage);
-      if (i < kUploadPerfWarmupRuns || !run.size()) {
+      if (i < kUploadPerfWarmupRuns || run.empty()) {
         continue;
       }
       successful_runs++;

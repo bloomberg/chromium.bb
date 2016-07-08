@@ -38,7 +38,7 @@ bool ProcessVersionString(const std::string& version_string,
   // If the splitter is '-', we assume it's a date with format "mm-dd-yyyy";
   // we split it into the order of "yyyy", "mm", "dd".
   if (splitter == '-') {
-    std::string year = (*version)[version->size() - 1];
+    std::string year = version->back();
     for (int i = version->size() - 1; i > 0; --i) {
       (*version)[i] = (*version)[i - 1];
     }
@@ -125,7 +125,7 @@ const char kVersionStyleStringLexical[] = "lexical";
 
 const char kOp[] = "op";
 
-}  // namespace anonymous
+}  // namespace
 
 GpuControlList::VersionInfo::VersionInfo(
     const std::string& version_op,

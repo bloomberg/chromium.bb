@@ -158,7 +158,7 @@ class PipelineHelper {
       frame_specs[k].size = kFrameSize;
       frame_specs[k].has_decrypt_config = encrypted_;
     }
-    frame_specs[frame_specs.size() - 1].is_eos = true;
+    frame_specs.back().is_eos = true;
 
     std::unique_ptr<FrameGeneratorForTest> frame_generator(
         new FrameGeneratorForTest(frame_specs));

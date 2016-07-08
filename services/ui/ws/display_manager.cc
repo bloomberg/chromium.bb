@@ -61,7 +61,7 @@ void DisplayManager::DestroyDisplay(Display* display) {
 
   // If we have no more roots left, let the app know so it can terminate.
   // TODO(sky): move to delegate/observer.
-  if (!displays_.size() && !pending_displays_.size())
+  if (displays_.empty() && pending_displays_.empty())
     delegate_->OnNoMoreDisplays();
 }
 

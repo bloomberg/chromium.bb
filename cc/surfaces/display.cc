@@ -409,7 +409,7 @@ void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
     if (surface) {
       const CompositorFrame& current_frame = surface->GetEligibleFrame();
       if (!current_frame.delegated_frame_data ||
-          !current_frame.delegated_frame_data->resource_list.size()) {
+          current_frame.delegated_frame_data->resource_list.empty()) {
         aggregator_->ReleaseResources(surface_id);
       }
     }

@@ -105,7 +105,7 @@ class Simulator {
   }
 
   void Run() {
-    if (!sims_remaining_.size()) {
+    if (sims_remaining_.empty()) {
       LOG(WARNING) << "No configuration files loaded.";
       return;
     }
@@ -321,7 +321,7 @@ class Simulator {
       }
     }
 
-    if (!sims_remaining_.size()) {
+    if (sims_remaining_.empty()) {
       DumpOutput();
       base::MessageLoop::current()->QuitWhenIdle();
       return false;

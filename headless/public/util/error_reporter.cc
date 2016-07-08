@@ -24,7 +24,7 @@ void ErrorReporter::Pop() {
 
 void ErrorReporter::SetName(const char* name) {
   DCHECK(!path_.empty());
-  path_[path_.size() - 1] = name;
+  path_.back() = name;
 }
 
 void ErrorReporter::AddError(base::StringPiece description) {

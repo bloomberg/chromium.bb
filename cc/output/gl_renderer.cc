@@ -3670,7 +3670,7 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
 }
 
 void GLRenderer::ScheduleOverlays(DrawingFrame* frame) {
-  if (!frame->overlay_list.size())
+  if (frame->overlay_list.empty())
     return;
 
   OverlayCandidateList& overlays = frame->overlay_list;

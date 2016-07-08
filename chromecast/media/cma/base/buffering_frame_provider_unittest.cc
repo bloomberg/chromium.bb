@@ -73,7 +73,7 @@ void BufferingFrameProviderTest::Configure(
     frame_specs[k].size = 512;
     frame_specs[k].has_decrypt_config = ((k % 3) == 0);
   }
-  frame_specs[frame_specs.size() - 1].is_eos = true;
+  frame_specs.back().is_eos = true;
 
   std::unique_ptr<FrameGeneratorForTest> frame_generator_provider(
       new FrameGeneratorForTest(frame_specs));
@@ -131,7 +131,7 @@ TEST_F(BufferingFrameProviderTest, FastProviderSlowConsumer) {
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
   message_loop->Run();
-};
+}
 
 TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
   bool provider_delayed_pattern[] = { true };
@@ -152,7 +152,7 @@ TEST_F(BufferingFrameProviderTest, SlowProviderFastConsumer) {
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
   message_loop->Run();
-};
+}
 
 TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
   // Lengths are prime between each other so we can test a lot of combinations.
@@ -180,7 +180,7 @@ TEST_F(BufferingFrameProviderTest, SlowFastProducerConsumer) {
       FROM_HERE,
       base::Bind(&BufferingFrameProviderTest::Start, base::Unretained(this)));
   message_loop->Run();
-};
+}
 
 }  // namespace media
 }  // namespace chromecast

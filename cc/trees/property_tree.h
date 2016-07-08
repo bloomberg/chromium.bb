@@ -85,10 +85,8 @@ class CC_EXPORT PropertyTree {
   T* parent(const T* t) { return Node(t->parent_id); }
   const T* parent(const T* t) const { return Node(t->parent_id); }
 
-  T* back() { return size() ? &nodes_[nodes_.size() - 1] : nullptr; }
-  const T* back() const {
-    return size() ? &nodes_[nodes_.size() - 1] : nullptr;
-  }
+  T* back() { return size() ? &nodes_.back() : nullptr; }
+  const T* back() const { return size() ? &nodes_.back() : nullptr; }
 
   void clear();
   size_t size() const { return nodes_.size(); }

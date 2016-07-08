@@ -129,7 +129,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
     ClientSourceMapping();
     ClientSourceMapping(const ClientSourceMapping& other);
     ~ClientSourceMapping();
-    bool is_empty() const { return !client && !children.size(); }
+    bool is_empty() const { return !client && children.empty(); }
     // The client that's responsible for creating this namespace.  Never null.
     SurfaceFactoryClient* client;
     // The currently assigned begin frame source for this client.

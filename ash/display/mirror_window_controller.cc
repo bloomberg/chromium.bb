@@ -270,7 +270,7 @@ void MirrorWindowController::UpdateWindow(
 }
 
 void MirrorWindowController::UpdateWindow() {
-  if (!mirroring_host_info_map_.size())
+  if (mirroring_host_info_map_.empty())
     return;
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   std::vector<DisplayInfo> display_info_list;

@@ -180,7 +180,7 @@ std::vector<Feature*> BaseFeatureProvider::GetChildren(const Feature& parent)
   const FeatureMap::const_iterator first_child = features_.lower_bound(prefix);
 
   // All children have names before (parent.name() + ('.'+1)).
-  ++prefix[prefix.size() - 1];
+  ++prefix.back();
   const FeatureMap::const_iterator after_children =
       features_.lower_bound(prefix);
 

@@ -304,7 +304,7 @@ void SurfaceManager::UnregisterSurfaceNamespaceHierarchy(
   for (size_t i = 0; i < children.size(); ++i) {
     if (children[i] == child_namespace) {
       found_child = true;
-      children[i] = children[children.size() - 1];
+      children[i] = children.back();
       children.resize(children.size() - 1);
       break;
     }

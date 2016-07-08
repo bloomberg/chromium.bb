@@ -114,7 +114,7 @@ void AvStreamerTest::Configure(
     frame_specs[k].size = 512;
     frame_specs[k].has_decrypt_config = ((k % 3) == 0);
   }
-  frame_specs[frame_specs.size() - 1].is_eos = true;
+  frame_specs.back().is_eos = true;
 
   std::unique_ptr<FrameGeneratorForTest> frame_generator_provider(
       new FrameGeneratorForTest(frame_specs));
@@ -230,7 +230,7 @@ TEST_F(AvStreamerTest, FastProviderSlowConsumer) {
       FROM_HERE,
       base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
   message_loop->Run();
-};
+}
 
 TEST_F(AvStreamerTest, SlowProviderFastConsumer) {
   bool provider_delayed_pattern[] = { true };
@@ -251,7 +251,7 @@ TEST_F(AvStreamerTest, SlowProviderFastConsumer) {
       FROM_HERE,
       base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
   message_loop->Run();
-};
+}
 
 TEST_F(AvStreamerTest, SlowFastProducerConsumer) {
   // Pattern lengths are prime between each other
@@ -280,7 +280,7 @@ TEST_F(AvStreamerTest, SlowFastProducerConsumer) {
       FROM_HERE,
       base::Bind(&AvStreamerTest::Start, base::Unretained(this)));
   message_loop->Run();
-};
+}
 
 // Test case for when AvStreamerProxy::StopAndFlush is invoked while a previous
 // flush is pending. This can happen when pipeline is stopped while a seek/flush

@@ -64,7 +64,7 @@ bool GetTimeFromString(const base::StringPiece& raw_value,
   // Parses timezone suffix on the time part if available.
   {
     std::vector<base::StringPiece> parts;
-    if (time_and_tz[time_and_tz.size() - 1] == 'Z') {
+    if (time_and_tz.back() == 'Z') {
       // Timezone is 'Z' (UTC)
       has_timezone = true;
       offset_to_utc_in_minutes = 0;

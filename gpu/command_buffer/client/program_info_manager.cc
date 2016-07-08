@@ -21,7 +21,7 @@ static T LocalGetAs(const std::vector<int8_t>& data,
   return static_cast<T>(static_cast<const void*>(p));
 }
 
-}  // namespace anonymous
+}  // namespace
 
 namespace gpu {
 namespace gles2 {
@@ -42,7 +42,7 @@ ProgramInfoManager::Program::UniformInfo::UniformInfo(
     : size(_size),
       type(_type),
       name(_name) {
-  is_array = (!name.empty() && name[name.size() - 1] == ']');
+  is_array = (!name.empty() && name.back() == ']');
   DCHECK(!(size > 1 && !is_array));
 }
 
