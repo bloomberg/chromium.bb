@@ -31,7 +31,6 @@ class LatencyInfo;
 
 namespace cc {
 
-class LayerScrollOffsetDelegate;
 class ScrollElasticityHelper;
 
 struct CC_EXPORT InputHandlerScrollResult {

@@ -32,7 +32,6 @@ class SynchronousCompositorClient {
                                     int process_id,
                                     int routing_id) = 0;
 
-  // See LayerScrollOffsetDelegate for details.
   virtual void UpdateRootLayerState(SynchronousCompositor* compositor,
                                     const gfx::Vector2dF& total_scroll_offset,
                                     const gfx::Vector2dF& max_scroll_offset,

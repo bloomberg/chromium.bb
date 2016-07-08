@@ -40,7 +40,6 @@ class FrameRateCounter;
 class HeadsUpDisplayLayerImpl;
 class ImageDecodeController;
 class LayerExternalScrollOffsetListener;
-class LayerScrollOffsetDelegate;
 class LayerTreeDebugState;
 class LayerTreeImpl;
 class LayerTreeSettings;
