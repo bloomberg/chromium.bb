@@ -45,6 +45,7 @@ public:
     ScriptPromise prompt(ScriptState*);
 
     const AtomicString& interfaceName() const override;
+    void preventDefault() override;
 
     DECLARE_VIRTUAL_TRACE();
 

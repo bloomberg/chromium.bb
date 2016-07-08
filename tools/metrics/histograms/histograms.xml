@@ -76546,6 +76546,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1433" label="MIDIMessageEventReceivedTime"/>
   <int value="1434" label="SummaryElementWithDisplayBlockAuthorRule"/>
   <int value="1435" label="V8MediaStream_Active_AttributeGetter"/>
+  <int value="1436" label="BeforeInstallPromptEvent"/>
+  <int value="1437" label="BeforeInstallPromptEventUserChoice"/>
+  <int value="1438" label="BeforeInstallPromptEventPreventDefault"/>
+  <int value="1439" label="BeforeInstallPromptEventPrompt"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
