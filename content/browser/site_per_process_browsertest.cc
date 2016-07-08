@@ -954,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // This test uses the position of the nested iframe within the parent iframe
   // to infer the scroll position of the parent. FrameRectChangedMessageFilter
   // catches updates to the position in order to avoid busy waiting.
-  // It gets set created early to catch the initial rects from the navigation.
+  // It gets created early to catch the initial rects from the navigation.
   scoped_refptr<FrameRectChangedMessageFilter> filter =
       new FrameRectChangedMessageFilter();
   parent_iframe_node->current_frame_host()->GetProcess()->AddFilter(
@@ -963,6 +963,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL site_url(embedded_test_server()->GetURL(
       "b.com", "/frame_tree/page_with_positioned_frame.html"));
   NavigateFrameToURL(parent_iframe_node, site_url);
+
+    // Navigate the nested frame to a page large enough to have scrollbars.
+  FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
+  GURL nested_site_url(embedded_test_server()->GetURL(
+      "baz.com", "/tall_page.html"));
+  NavigateFrameToURL(nested_iframe_node, nested_site_url);
 
   EXPECT_EQ(
       " Site A ------------ proxies for B C\n"
@@ -979,7 +985,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
               ->GetRenderWidgetHost()
               ->GetView());
 
-  FrameTreeNode* nested_iframe_node = parent_iframe_node->child_at(0);
   RenderWidgetHostViewBase* rwhv_nested =
       static_cast<RenderWidgetHostViewBase*>(
           nested_iframe_node->current_frame_host()
@@ -1074,6 +1079,24 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     run_loop.Run();
     update_rect = filter->last_rect();
   }
+
+  // Test that when the child frame absorbs all of the scroll delta, it does
+  // not propagate to the parent (see https://crbug.com/621624).
+  filter->Reset();
+  scroll_event.deltaY = -5.0f;
+  rwhv_nested->ProcessMouseWheelEvent(scroll_event, ui::LatencyInfo());
+  // It isn't possible to busy loop waiting on the renderer here because we
+  // are explicitly testing that something does *not* happen. This creates a
+  // small chance of false positives but shouldn't result in false negatives,
+  // so flakiness implies this test is failing.
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());
+    run_loop.Run();
+  }
+  DCHECK_EQ(filter->last_rect().x(), 0);
+  DCHECK_EQ(filter->last_rect().y(), 0);
 }
 
 // Test that an ET_SCROLL event sent to an out-of-process iframe correctly

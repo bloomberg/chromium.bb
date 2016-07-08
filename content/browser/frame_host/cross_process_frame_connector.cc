@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
 #include "gpu/ipc/common/gpu_messages.h"
@@ -26,12 +27,12 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer),
       view_(nullptr),
-      device_scale_factor_(1) {
-}
+      device_scale_factor_(1),
+      is_scroll_bubbling_(false) {}
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
-  if (view_)
-    view_->SetCrossProcessFrameConnector(nullptr);
+  // Notify the view of this object being destroyed, if the view still exists.
+  set_view(nullptr);
 }
 
 bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
@@ -54,8 +55,17 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
 void CrossProcessFrameConnector::set_view(
     RenderWidgetHostViewChildFrame* view) {
   // Detach ourselves from the previous |view_|.
-  if (view_)
+  if (view_) {
+    if (is_scroll_bubbling_ && GetParentRenderWidgetHostView()) {
+      RenderWidgetHostImpl::From(
+          GetParentRenderWidgetHostView()->GetRenderWidgetHost())
+          ->delegate()
+          ->GetInputEventRouter()
+          ->CancelScrollBubbling(view_);
+      is_scroll_bubbling_ = false;
+    }
     view_->SetCrossProcessFrameConnector(nullptr);
+  }
 
   view_ = view;
 
@@ -144,40 +154,32 @@ void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(
 }
 
 void CrossProcessFrameConnector::BubbleScrollEvent(
-    const blink::WebInputEvent& event) {
+    const blink::WebGestureEvent& event) {
+  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate ||
+         event.type == blink::WebInputEvent::GestureScrollEnd);
   auto parent_view = GetParentRenderWidgetHostView();
 
   if (!parent_view)
     return;
 
+  auto event_router =
+      RenderWidgetHostImpl::From(parent_view->GetRenderWidgetHost())
+          ->delegate()
+          ->GetInputEventRouter();
+
   gfx::Vector2d offset_from_parent = child_frame_rect_.OffsetFromOrigin();
+  blink::WebGestureEvent resent_gesture_event(event);
+  // TODO(kenrb, wjmaclean): Do we need to account for transforms here?
+  // See https://crbug.com/626020.
+  resent_gesture_event.x += offset_from_parent.x();
+  resent_gesture_event.y += offset_from_parent.y();
   if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
-    blink::WebGestureEvent resent_gesture_event;
-    memcpy(&resent_gesture_event, &event, sizeof(resent_gesture_event));
-    resent_gesture_event.x += offset_from_parent.x();
-    resent_gesture_event.y += offset_from_parent.y();
-    // TODO(wjmaclean, kenrb): The resendingPluginId field is used by
-    // BrowserPlugin to associate bubbled events with each plugin, which is
-    // not needed for OOPIFs. However the field needs to be set in order
-    // to prompt the parent frame's RenderWidgetHostImpl to
-    // manage the gesture scroll event lifetime (in particular creating the
-    // GestureScrollBegin and GestureScrollEnd events). This can be converted
-    // to a flag or otherwise refactored out when BrowserPlugin supporting
-    // code is eventually removed (https://crbug.com/533069).
-    resent_gesture_event.resendingPluginId = 1;
-    ui::LatencyInfo latency_info;
-    parent_view->ProcessGestureEvent(resent_gesture_event, latency_info);
-  } else if (event.type == blink::WebInputEvent::MouseWheel) {
-    blink::WebMouseWheelEvent resent_wheel_event;
-    memcpy(&resent_wheel_event, &event, sizeof(resent_wheel_event));
-    resent_wheel_event.x += offset_from_parent.x();
-    resent_wheel_event.y += offset_from_parent.y();
-    // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
-    // https://crbug.com/613628
-    ui::LatencyInfo latency_info;
-    parent_view->ProcessMouseWheelEvent(resent_wheel_event, latency_info);
-  } else {
-    NOTIMPLEMENTED();
+    event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+    is_scroll_bubbling_ = true;
+  } else if (event.type == blink::WebInputEvent::GestureScrollEnd &&
+             is_scroll_bubbling_) {
+    event_router->BubbleScrollEvent(parent_view, resent_gesture_event);
+    is_scroll_bubbling_ = false;
   }
 }
 

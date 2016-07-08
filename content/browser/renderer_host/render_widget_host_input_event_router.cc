@@ -57,6 +57,12 @@ void RenderWidgetHostInputEventRouter::OnRenderWidgetHostViewBaseDestroyed(
 
   if (view == touchpad_gesture_target_.target)
     touchpad_gesture_target_.target = nullptr;
+
+  if (view == bubbling_gesture_scroll_target_.target ||
+      view == first_bubbling_scroll_target_.target) {
+    bubbling_gesture_scroll_target_.target = nullptr;
+    first_bubbling_scroll_target_.target = nullptr;
+  }
 }
 
 void RenderWidgetHostInputEventRouter::ClearAllObserverRegistrations() {
@@ -234,6 +240,108 @@ void RenderWidgetHostInputEventRouter::RouteTouchEvent(
       break;
     default:
       NOTREACHED();
+  }
+}
+
+void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
+    RenderWidgetHostViewBase* target_view,
+    const blink::WebGestureEvent& event) {
+  // TODO(kenrb, tdresser): This needs to be refactored when scroll latching
+  // is implemented (see https://crbug.com/526463). This design has some
+  // race problems that can result in lost scroll delta, which are very
+  // difficult to resolve until this is changed to do all scroll targeting,
+  // including bubbling, based on GestureScrollBegin.
+  DCHECK(target_view);
+  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate ||
+         event.type == blink::WebInputEvent::GestureScrollEnd);
+  // DCHECK_XNOR the current and original bubble targets. Both should be set
+  // if a bubbling gesture scroll is in progress.
+  DCHECK(!first_bubbling_scroll_target_.target ==
+         !bubbling_gesture_scroll_target_.target);
+
+  // If target_view is already set up for bubbled scrolls, we forward
+  // the event to the current scroll target without further consideration.
+  if (target_view == first_bubbling_scroll_target_.target) {
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+        event, ui::LatencyInfo());
+    if (event.type == blink::WebInputEvent::GestureScrollEnd) {
+      first_bubbling_scroll_target_.target = nullptr;
+      bubbling_gesture_scroll_target_.target = nullptr;
+    }
+    return;
+  }
+
+  // Disregard GestureScrollEnd events going to non-current targets.
+  // These should only happen on ACKs of synthesized GSE events that are
+  // sent from SendGestureScrollEnd calls, and are not relevant here.
+  if (event.type == blink::WebInputEvent::GestureScrollEnd)
+    return;
+
+  // This is a special case to catch races where multiple GestureScrollUpdates
+  // have been sent to a renderer before the first one was ACKed, and the ACK
+  // caused a bubble retarget. In this case they all get forwarded.
+  if (target_view == bubbling_gesture_scroll_target_.target) {
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+        event, ui::LatencyInfo());
+    return;
+  }
+
+  // If target_view has unrelated gesture events in progress, do
+  // not proceed. This could cause confusion between independent
+  // scrolls.
+  if (target_view == touchscreen_gesture_target_.target ||
+      target_view == touchpad_gesture_target_.target)
+    return;
+
+  // This accounts for bubbling through nested OOPIFs. A gesture scroll has
+  // been bubbled but the target has sent back a gesture scroll event ack with
+  // unused scroll delta, and so another level of bubbling is needed. This
+  // requires a GestureScrollEnd be sent to the last view, which will no
+  // longer be the scroll target.
+  if (bubbling_gesture_scroll_target_.target)
+    SendGestureScrollEnd(bubbling_gesture_scroll_target_.target, event);
+  else
+    first_bubbling_scroll_target_.target = target_view;
+
+  bubbling_gesture_scroll_target_.target = target_view;
+
+  SendGestureScrollBegin(target_view, event);
+  target_view->ProcessGestureEvent(event, ui::LatencyInfo());
+}
+
+void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
+    RenderWidgetHostViewBase* view,
+    const blink::WebGestureEvent& event) {
+  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate);
+  blink::WebGestureEvent scroll_begin(event);
+  scroll_begin.type = blink::WebInputEvent::GestureScrollBegin;
+  scroll_begin.data.scrollBegin.deltaXHint = event.data.scrollUpdate.deltaX;
+  scroll_begin.data.scrollBegin.deltaYHint = event.data.scrollUpdate.deltaY;
+  scroll_begin.data.scrollBegin.deltaHintUnits =
+      event.data.scrollUpdate.deltaUnits;
+  view->ProcessGestureEvent(scroll_begin, ui::LatencyInfo());
+}
+
+void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
+    RenderWidgetHostViewBase* view,
+    const blink::WebGestureEvent& event) {
+  DCHECK(event.type == blink::WebInputEvent::GestureScrollUpdate);
+  blink::WebGestureEvent scroll_end(event);
+  scroll_end.type = blink::WebInputEvent::GestureScrollEnd;
+  scroll_end.timeStampSeconds =
+      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
+  scroll_end.data.scrollEnd.inertialPhase =
+      event.data.scrollUpdate.inertialPhase;
+  scroll_end.data.scrollEnd.deltaUnits = event.data.scrollUpdate.deltaUnits;
+  view->ProcessGestureEvent(scroll_end, ui::LatencyInfo());
+}
+
+void RenderWidgetHostInputEventRouter::CancelScrollBubbling(
+    RenderWidgetHostViewBase* target_view) {
+  DCHECK(target_view);
+  if (target_view == first_bubbling_scroll_target_.target) {
+    first_bubbling_scroll_target_.target = nullptr;
+    bubbling_gesture_scroll_target_.target = nullptr;
   }
 }
 

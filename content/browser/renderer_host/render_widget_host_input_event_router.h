@@ -66,6 +66,10 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                        blink::WebTouchEvent *event,
                        const ui::LatencyInfo& latency);
 
+  void BubbleScrollEvent(RenderWidgetHostViewBase* target_view,
+                         const blink::WebGestureEvent& event);
+  void CancelScrollBubbling(RenderWidgetHostViewBase* target_view);
+
   void AddSurfaceIdNamespaceOwner(uint32_t id, RenderWidgetHostViewBase* owner);
   void RemoveSurfaceIdNamespaceOwner(uint32_t id);
 
@@ -117,11 +121,21 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                  blink::WebGestureEvent* event,
                                  const ui::LatencyInfo& latency);
 
+  // The following methods take a GestureScrollUpdate event and send a
+  // GestureScrollBegin or GestureScrollEnd for wrapping it. This is needed
+  // when GestureScrollUpdates are being forwarded for scroll bubbling.
+  void SendGestureScrollBegin(RenderWidgetHostViewBase* view,
+                              const blink::WebGestureEvent& event);
+  void SendGestureScrollEnd(RenderWidgetHostViewBase* view,
+                            const blink::WebGestureEvent& event);
+
   SurfaceIdNamespaceOwnerMap owner_map_;
   TargetQueue touchscreen_gesture_target_queue_;
   TargetData touch_target_;
   TargetData touchscreen_gesture_target_;
   TargetData touchpad_gesture_target_;
+  TargetData bubbling_gesture_scroll_target_;
+  TargetData first_bubbling_scroll_target_;
   int active_touches_;
   std::unordered_map<cc::SurfaceId, HittestData, cc::SurfaceIdHash>
       hittest_data_;

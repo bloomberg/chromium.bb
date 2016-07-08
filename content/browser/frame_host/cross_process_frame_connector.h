@@ -14,6 +14,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
+class WebGestureEvent;
 class WebInputEvent;
 struct WebScreenInfo;
 }
@@ -100,9 +101,9 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
   // Pass acked touch events to the root view for gesture processing.
   void ForwardProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                      InputEventAckState ack_result);
-  // Gesture and wheel events with unused scroll deltas must be bubbled to
-  // ancestors who may consume the delta.
-  void BubbleScrollEvent(const blink::WebInputEvent& event);
+  // Gesture events with unused scroll deltas must be bubbled to ancestors
+  // who may consume the delta.
+  void BubbleScrollEvent(const blink::WebGestureEvent& event);
 
   // Determines whether the root RenderWidgetHostView (and thus the current
   // page) has focus.
@@ -146,6 +147,8 @@ class CONTENT_EXPORT CrossProcessFrameConnector {
 
   gfx::Rect child_frame_rect_;
   float device_scale_factor_;
+
+  bool is_scroll_bubbling_;
 };
 
 }  // namespace content
