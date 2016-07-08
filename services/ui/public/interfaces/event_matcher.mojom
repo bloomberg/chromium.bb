@@ -42,6 +42,7 @@ struct EventFlagsMatcher {
 // A matcher to match any key-press event would be:
 // - |type_matcher.type| = ui::mojom::EventType::KEY_PRESSED
 struct EventMatcher {
+  // |accelerator_phase| is only applicable to accelerators.
   // TODO(jamescook): Move this to somewhere accelerator-specific.
   ui.mojom.AcceleratorPhase accelerator_phase;
   EventTypeMatcher? type_matcher;

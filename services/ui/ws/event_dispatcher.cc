@@ -253,18 +253,35 @@ void EventDispatcher::RemoveAccelerator(uint32_t id) {
     accelerators_.erase(it);
 }
 
-void EventDispatcher::ProcessEvent(const ui::Event& event) {
+void EventDispatcher::ProcessEvent(const ui::Event& event,
+                                   AcceleratorMatchPhase match_phase) {
+#if !defined(NDEBUG)
+  if (match_phase == AcceleratorMatchPhase::POST_ONLY) {
+    // POST_ONLY should always be preceeded by ANY with the same event.
+    DCHECK(previous_event_);
+    // Event doesn't define ==, so this compares the key fields.
+    DCHECK(event.type() == previous_event_->type() &&
+           event.time_stamp() == previous_event_->time_stamp() &&
+           event.flags() == previous_event_->flags());
+    DCHECK_EQ(previous_accelerator_match_phase_, AcceleratorMatchPhase::ANY);
+  }
+  previous_event_ = Event::Clone(event);
+  previous_accelerator_match_phase_ = match_phase;
+#endif
   if (event.IsKeyEvent()) {
     const ui::KeyEvent* key_event = event.AsKeyEvent();
-    if (event.type() == ui::ET_KEY_PRESSED && !key_event->is_char()) {
+    if (event.type() == ui::ET_KEY_PRESSED && !key_event->is_char() &&
+        match_phase == AcceleratorMatchPhase::ANY) {
       Accelerator* pre_target =
           FindAccelerator(*key_event, ui::mojom::AcceleratorPhase::PRE_TARGET);
       if (pre_target) {
-        delegate_->OnAccelerator(pre_target->id(), event);
+        delegate_->OnAccelerator(
+            pre_target->id(), event,
+            EventDispatcherDelegate::AcceleratorPhase::PRE);
         return;
       }
     }
-    ProcessKeyEvent(*key_event);
+    ProcessKeyEvent(*key_event, match_phase);
     return;
   }
 
@@ -276,7 +293,8 @@ void EventDispatcher::ProcessEvent(const ui::Event& event) {
   NOTREACHED();
 }
 
-void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event) {
+void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event,
+                                      AcceleratorMatchPhase match_phase) {
   Accelerator* post_target =
       FindAccelerator(event, ui::mojom::AcceleratorPhase::POST_TARGET);
   ServerWindow* focused_window =
@@ -292,7 +310,8 @@ void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event) {
   }
   delegate_->OnEventTargetNotFound(event);
   if (post_target)
-    delegate_->OnAccelerator(post_target->id(), event);
+    delegate_->OnAccelerator(post_target->id(), event,
+                             EventDispatcherDelegate::AcceleratorPhase::POST);
 }
 
 void EventDispatcher::ProcessLocatedEvent(const ui::LocatedEvent& event) {
@@ -511,9 +530,8 @@ Accelerator* EventDispatcher::FindAccelerator(
     const ui::KeyEvent& event,
     const ui::mojom::AcceleratorPhase phase) {
   for (const auto& pair : accelerators_) {
-    if (pair.second->MatchesEvent(event, phase)) {
+    if (pair.second->MatchesEvent(event, phase))
       return pair.second.get();
-    }
   }
   return nullptr;
 }

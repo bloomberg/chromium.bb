@@ -199,12 +199,15 @@ void WindowManagerState::ProcessEvent(const ui::Event& event) {
     QueueEvent(event, nullptr);
     return;
   }
-  event_dispatcher_.ProcessEvent(event);
+
+  event_dispatcher_.ProcessEvent(event,
+                                 EventDispatcher::AcceleratorMatchPhase::ANY);
 }
 
 void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
                                     mojom::EventResult result) {
-  if (tree_awaiting_input_ack_ != tree) {
+  if (tree_awaiting_input_ack_ != tree ||
+      event_dispatch_phase_ != EventDispatchPhase::TARGET) {
     // TODO(sad): The ack must have arrived after the timeout. We should do
     // something here, and in OnEventAckTimeout().
     return;
@@ -212,10 +215,37 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
   tree_awaiting_input_ack_ = nullptr;
   event_ack_timer_.Stop();
 
-  if (result == mojom::EventResult::UNHANDLED && post_target_accelerator_)
-    OnAccelerator(post_target_accelerator_->id(), *event_awaiting_input_ack_);
+  if (result == mojom::EventResult::UNHANDLED && post_target_accelerator_) {
+    OnAccelerator(post_target_accelerator_->id(), *event_awaiting_input_ack_,
+                  AcceleratorPhase::POST);
+  }
 
+  event_dispatch_phase_ = EventDispatchPhase::NONE;
   ProcessNextEventFromQueue();
+}
+
+void WindowManagerState::OnAcceleratorAck(mojom::EventResult result) {
+  if (event_dispatch_phase_ != EventDispatchPhase::PRE_TARGET_ACCELERATOR) {
+    // TODO(sad): The ack must have arrived after the timeout. We should do
+    // something here, and in OnEventAckTimeout().
+    return;
+  }
+
+  tree_awaiting_input_ack_ = nullptr;
+  event_ack_timer_.Stop();
+  event_dispatch_phase_ = EventDispatchPhase::NONE;
+
+  if (result == mojom::EventResult::UNHANDLED) {
+    event_dispatcher_.ProcessEvent(
+        *event_awaiting_input_ack_,
+        EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
+  } else {
+    // We're not going to process the event any further, notify event observers.
+    // We don't do this first to ensure we don't send an event twice to clients.
+    window_server()->SendToEventObservers(*event_awaiting_input_ack_, user_id(),
+                                          nullptr);
+    ProcessNextEventFromQueue();
+  }
 }
 
 const WindowServer* WindowManagerState::window_server() const {
@@ -258,7 +288,10 @@ void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
   WindowTree* hung_tree = window_server()->GetTreeWithId(client_id);
   if (hung_tree && !hung_tree->janky())
     window_tree_->ClientJankinessChanged(hung_tree);
-  OnEventAck(tree_awaiting_input_ack_, mojom::EventResult::UNHANDLED);
+  if (event_dispatch_phase_ == EventDispatchPhase::PRE_TARGET_ACCELERATOR)
+    OnAcceleratorAck(mojom::EventResult::UNHANDLED);
+  else
+    OnEventAck(tree_awaiting_input_ack_, mojom::EventResult::UNHANDLED);
 }
 
 void WindowManagerState::QueueEvent(
@@ -277,7 +310,8 @@ void WindowManagerState::ProcessNextEventFromQueue() {
     std::unique_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
     event_queue_.pop();
     if (!queued_event->processed_target) {
-      event_dispatcher_.ProcessEvent(*queued_event->event);
+      event_dispatcher_.ProcessEvent(
+          *queued_event->event, EventDispatcher::AcceleratorMatchPhase::ANY);
       return;
     }
     if (queued_event->processed_target->IsValid()) {
@@ -309,18 +343,12 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
     }
   }
 
+  event_dispatch_phase_ = EventDispatchPhase::TARGET;
+
   WindowTree* tree = window_server()->GetTreeWithId(client_id);
 
-  // TOOD(sad): Adjust this delay, possibly make this dynamic.
-  const base::TimeDelta max_delay = base::debug::BeingDebugged()
-                                        ? base::TimeDelta::FromDays(1)
-                                        : GetDefaultAckTimerDelay();
-  event_ack_timer_.Start(
-      FROM_HERE, max_delay,
-      base::Bind(&WindowManagerState::OnEventAckTimeout,
-                 weak_factory_.GetWeakPtr(), tree->id()));
+  ScheduleInputEventTimeout(tree);
 
-  tree_awaiting_input_ack_ = tree;
   if (accelerator) {
     event_awaiting_input_ack_ = ui::Event::Clone(event);
     post_target_accelerator_ = accelerator;
@@ -361,15 +389,35 @@ bool WindowManagerState::HandleDebugAccelerator(uint32_t accelerator_id) {
   return false;
 }
 
+void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree) {
+  // TOOD(sad): Adjust this delay, possibly make this dynamic.
+  const base::TimeDelta max_delay = base::debug::BeingDebugged()
+                                        ? base::TimeDelta::FromDays(1)
+                                        : GetDefaultAckTimerDelay();
+  event_ack_timer_.Start(FROM_HERE, max_delay,
+                         base::Bind(&WindowManagerState::OnEventAckTimeout,
+                                    weak_factory_.GetWeakPtr(), tree->id()));
+
+  tree_awaiting_input_ack_ = tree;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // EventDispatcherDelegate:
 
 void WindowManagerState::OnAccelerator(uint32_t accelerator_id,
-                                       const ui::Event& event) {
+                                       const ui::Event& event,
+                                       AcceleratorPhase phase) {
   DCHECK(IsActive());
   if (HandleDebugAccelerator(accelerator_id))
     return;
-  window_tree_->OnAccelerator(accelerator_id, event);
+  const bool needs_ack = phase == AcceleratorPhase::PRE;
+  if (needs_ack) {
+    DCHECK_EQ(EventDispatchPhase::NONE, event_dispatch_phase_);
+    event_dispatch_phase_ = EventDispatchPhase::PRE_TARGET_ACCELERATOR;
+    event_awaiting_input_ack_ = ui::Event::Clone(event);
+    ScheduleInputEventTimeout(window_tree_);
+  }
+  window_tree_->OnAccelerator(accelerator_id, event, needs_ack);
 }
 
 void WindowManagerState::SetFocusedWindowFromEventDispatcher(

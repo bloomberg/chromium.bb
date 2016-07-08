@@ -29,6 +29,19 @@ import "ui/platform_window/mojo/text_input_state.mojom";
 // rather than a callback to ensure ordering. The server does not interpret the
 // change id in anyway, it is up to the client to assign a value and use it.
 // Generally the change id is an ever increasing integer.
+//
+// Event processing happens in the following order:
+// . The event is sent to the accelerator registered for the PRE_TARGET. If
+//   the client consumes the event, matching event observers are notified and
+//   processing stops. If the client does not consume the event processing
+//   continues.
+// . Target window (lookup of the target window depends upon the event type) and
+//   matching event observers are notified at the same time. The target is only
+//   notified once, even if it has a matching event observer registered. If the
+//   target consumes the event, processing stops.
+// . Accelerator registered for POST_TARGET. No response is expected from the
+//   client for the POST_TARGET and processing of the next continues
+//   immediately.
 interface WindowTree {
   // Creates a new window with the specified id. It is up to the client to
   // ensure the id is unique to the connection (the id need not be globally
@@ -73,6 +86,8 @@ interface WindowTree {
   // this window tree) or OnEventObserved (if the target is another tree). The
   // client must supply a non-zero |observer_id|, which is reported back with
   // observed events.  Set the matcher to null to clear the observer.
+  //
+  // See class description for details on event delivery.
   SetEventObserver(EventMatcher? matcher, uint32 observer_id);
 
   // Sets the specified bounds of the specified window.

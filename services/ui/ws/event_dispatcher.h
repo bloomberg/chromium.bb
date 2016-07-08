@@ -22,9 +22,7 @@ namespace ui {
 class Event;
 class KeyEvent;
 class LocatedEvent;
-}
 
-namespace ui {
 namespace ws {
 
 class Accelerator;
@@ -38,6 +36,15 @@ class EventDispatcherTestApi;
 // Handles dispatching events to the right location as well as updating focus.
 class EventDispatcher : public ServerWindowObserver {
  public:
+  enum class AcceleratorMatchPhase {
+    // Both pre and post should be considered.
+    ANY,
+
+    // PRE_TARGETs are not considered, only the actual target and any
+    // accelerators registered with POST_TARGET.
+    POST_ONLY,
+  };
+
   explicit EventDispatcher(EventDispatcherDelegate* delegate);
   ~EventDispatcher() override;
 
@@ -104,8 +111,11 @@ class EventDispatcher : public ServerWindowObserver {
   void RemoveAccelerator(uint32_t id);
 
   // Processes the supplied event, informing the delegate as approriate. This
-  // may result in generating any number of events.
-  void ProcessEvent(const ui::Event& event);
+  // may result in generating any number of events. If |match_phase| is
+  // ANY and there is a matching accelerator with PRE_TARGET found, than only
+  // OnAccelerator() is called. The expectation is after the PRE_TARGET has been
+  // handled this is again called with an AcceleratorMatchPhase of POST_ONLY.
+  void ProcessEvent(const ui::Event& event, AcceleratorMatchPhase match_phase);
 
  private:
   friend class test::EventDispatcherTestApi;
@@ -130,7 +140,8 @@ class EventDispatcher : public ServerWindowObserver {
     bool is_pointer_down;
   };
 
-  void ProcessKeyEvent(const ui::KeyEvent& event);
+  void ProcessKeyEvent(const ui::KeyEvent& event,
+                       AcceleratorMatchPhase match_phase);
 
   bool IsTrackingPointer(int32_t pointer_id) const {
     return pointer_targets_.count(pointer_id) > 0;
@@ -226,6 +237,12 @@ class EventDispatcher : public ServerWindowObserver {
 
   // Keeps track of number of observe requests for each observed window.
   std::map<const ServerWindow*, uint8_t> observed_windows_;
+
+#if !defined(NDEBUG)
+  std::unique_ptr<ui::Event> previous_event_;
+  AcceleratorMatchPhase previous_accelerator_match_phase_ =
+      AcceleratorMatchPhase::ANY;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

@@ -102,6 +102,9 @@ class WindowTreeTestApi {
   void AckLastEvent(mojom::EventResult result) {
     tree_->OnWindowInputEventAck(tree_->event_ack_id_, result);
   }
+  void AckLastAccelerator(mojom::EventResult result) {
+    tree_->OnAcceleratorAck(tree_->event_ack_id_, result);
+  }
 
   void SetEventObserver(mojom::EventMatcherPtr matcher,
                         uint32_t event_observer_id);
@@ -282,6 +285,11 @@ class TestWindowManager : public mojom::WindowManager {
     return true;
   }
 
+  void ClearAcceleratorCalled() {
+    on_accelerator_id_ = 0u;
+    on_accelerator_called_ = false;
+  }
+
   bool on_perform_move_loop_called() { return on_perform_move_loop_called_; }
   bool on_accelerator_called() { return on_accelerator_called_; }
   uint32_t on_accelerator_id() { return on_accelerator_id_; }
@@ -310,7 +318,9 @@ class TestWindowManager : public mojom::WindowManager {
                          mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
   void WmCancelMoveLoop(uint32_t window_id) override;
-  void OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) override;
+  void OnAccelerator(uint32_t ack_id,
+                     uint32_t accelerator_id,
+                     std::unique_ptr<ui::Event> event) override;
 
   bool on_perform_move_loop_called_ = false;
 

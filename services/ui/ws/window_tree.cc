@@ -431,11 +431,16 @@ void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
 }
 
 void WindowTree::OnAccelerator(uint32_t accelerator_id,
-                               const ui::Event& event) {
+                               const ui::Event& event,
+                               bool needs_ack) {
   DCHECK(window_manager_internal_);
+  if (needs_ack)
+    GenerateEventAckId();
+  else
+    DCHECK_EQ(0u, event_ack_id_);
   // TODO(moshayedi): crbug.com/617167. Don't clone even once we map
   // mojom::Event directly to ui::Event.
-  window_manager_internal_->OnAccelerator(accelerator_id,
+  window_manager_internal_->OnAccelerator(event_ack_id_, accelerator_id,
                                           ui::Event::Clone(event));
 }
 
@@ -959,14 +964,18 @@ void WindowTree::RemoveChildrenAsPartOfEmbed(ServerWindow* window) {
     window->Remove(window->children().front());
 }
 
-void WindowTree::DispatchInputEventImpl(ServerWindow* target,
-                                        const ui::Event& event) {
+uint32_t WindowTree::GenerateEventAckId() {
   DCHECK(!event_ack_id_);
   // We do not want to create a sequential id for each event, because that can
   // leak some information to the client. So instead, manufacture the id
   // randomly.
-  // TODO(moshayedi): Find a faster way to generate ids.
   event_ack_id_ = 0x1000000 | (rand() & 0xffffff);
+  return event_ack_id_;
+}
+
+void WindowTree::DispatchInputEventImpl(ServerWindow* target,
+                                        const ui::Event& event) {
+  GenerateEventAckId();
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(target);
   DCHECK(display_root);
   event_source_wms_ = display_root->window_manager_state();
@@ -1297,6 +1306,7 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
     // TODO(sad): Something bad happened. Kill the client?
     NOTIMPLEMENTED() << ": Wrong event acked. event_id=" << event_id
                      << ", event_ack_id_=" << event_ack_id_;
+    DVLOG(1) << "OnWindowInputEventAck supplied unexpected event_id";
   }
   event_ack_id_ = 0;
 
@@ -1608,6 +1618,18 @@ void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
     window = nullptr;
   }
   window_server_->WindowManagerCreatedTopLevelWindow(this, change_id, window);
+}
+
+void WindowTree::OnAcceleratorAck(uint32_t event_id,
+                                  mojom::EventResult result) {
+  if (event_ack_id_ == 0 || event_id != event_ack_id_) {
+    DVLOG(1) << "OnAcceleratorAck supplied invalid event_id";
+    window_server_->WindowManagerSentBogusMessage();
+    return;
+  }
+  event_ack_id_ = 0;
+  DCHECK(window_manager_state_);
+  window_manager_state_->OnAcceleratorAck(result);
 }
 
 bool WindowTree::HasRootForAccessPolicy(const ServerWindow* window) const {

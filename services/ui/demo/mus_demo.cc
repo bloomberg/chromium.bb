@@ -126,10 +126,6 @@ void MusDemo::OnWmNewDisplay(ui::Window* window,
                base::Bind(&MusDemo::DrawFrame, base::Unretained(this)));
 }
 
-void MusDemo::OnAccelerator(uint32_t id, const ui::Event& event) {
-  // Don't care
-}
-
 void MusDemo::OnWmPerformMoveLoop(ui::Window* window,
                                   ui::mojom::MoveLoopSource source,
                                   const gfx::Point& cursor_location,

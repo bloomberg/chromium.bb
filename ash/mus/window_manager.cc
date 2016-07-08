@@ -230,18 +230,6 @@ void WindowManager::OnWmNewDisplay(::ui::Window* window,
   CreateRootWindowController(window, display);
 }
 
-void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
-  switch (id) {
-    case kWindowSwitchAccelerator:
-      window_manager_client()->ActivateNextWindow();
-      break;
-    default:
-      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
-                        OnAccelerator(id, event));
-      break;
-  }
-}
-
 void WindowManager::OnWmPerformMoveLoop(
     ::ui::Window* window,
     ::ui::mojom::MoveLoopSource source,
@@ -252,6 +240,20 @@ void WindowManager::OnWmPerformMoveLoop(
 
 void WindowManager::OnWmCancelMoveLoop(::ui::Window* window) {
   NOTIMPLEMENTED();
+}
+
+ui::mojom::EventResult WindowManager::OnAccelerator(uint32_t id,
+                                                    const ui::Event& event) {
+  switch (id) {
+    case kWindowSwitchAccelerator:
+      window_manager_client()->ActivateNextWindow();
+      break;
+    default:
+      FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
+                        OnAccelerator(id, event));
+      break;
+  }
+  return ui::mojom::EventResult::HANDLED;
 }
 
 }  // namespace mus

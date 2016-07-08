@@ -131,11 +131,6 @@ void WindowServerTestBase::OnWmNewDisplay(Window* window,
     window_manager_delegate_->OnWmNewDisplay(window, display);
 }
 
-void WindowServerTestBase::OnAccelerator(uint32_t id, const ui::Event& event) {
-  if (window_manager_delegate_)
-    window_manager_delegate_->OnAccelerator(id, event);
-}
-
 void WindowServerTestBase::OnWmPerformMoveLoop(
     Window* window,
     mojom::MoveLoopSource source,
@@ -150,6 +145,13 @@ void WindowServerTestBase::OnWmPerformMoveLoop(
 void WindowServerTestBase::OnWmCancelMoveLoop(Window* window) {
   if (window_manager_delegate_)
     window_manager_delegate_->OnWmCancelMoveLoop(window);
+}
+
+mojom::EventResult WindowServerTestBase::OnAccelerator(uint32_t accelerator_id,
+                                                       const ui::Event& event) {
+  return window_manager_delegate_
+             ? window_manager_delegate_->OnAccelerator(accelerator_id, event)
+             : mojom::EventResult::UNHANDLED;
 }
 
 void WindowServerTestBase::Create(shell::Connection* connection,

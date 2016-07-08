@@ -180,7 +180,12 @@ class WindowTree : public mojom::WindowTree,
 
   // Calls through to the client.
   void OnChangeCompleted(uint32_t change_id, bool success);
-  void OnAccelerator(uint32_t accelerator_id, const ui::Event& event);
+  // |state_to_ack| is the WindowManagerState to call through to when the ack
+  // from the accelerator is received. If |needs_ack| is true an ack is
+  // required.
+  void OnAccelerator(uint32_t accelerator_id,
+                     const ui::Event& event,
+                     bool needs_ack);
 
   // Called when |tree|'s jankiness changes (see janky_ for definition).
   // Notifies the window manager client so it can update UI for the affected
@@ -326,6 +331,10 @@ class WindowTree : public mojom::WindowTree,
   void PrepareForEmbed(ServerWindow* window);
   void RemoveChildrenAsPartOfEmbed(ServerWindow* window);
 
+  // Generates a new event id for an accelerator or event ack, sets it in
+  // |event_ack_id_| and returns it.
+  uint32_t GenerateEventAckId();
+
   void DispatchInputEventImpl(ServerWindow* target, const ui::Event& event);
 
   // Calls OnChangeCompleted() on the client.
@@ -432,6 +441,7 @@ class WindowTree : public mojom::WindowTree,
                             mojom::Cursor cursor_id) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
+  void OnAcceleratorAck(uint32_t event_id, mojom::EventResult result) override;
 
   // AccessPolicyDelegate:
   bool HasRootForAccessPolicy(const ServerWindow* window) const override;

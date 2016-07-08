@@ -61,7 +61,6 @@ class TestWindowManagerDelegate : public WindowManagerDelegate {
                                   bool janky) override {}
   void OnWmNewDisplay(Window* window,
                       const display::Display& display) override {}
-  void OnAccelerator(uint32_t id, const ui::Event& event) override {}
   void OnWmPerformMoveLoop(Window* window,
                            mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

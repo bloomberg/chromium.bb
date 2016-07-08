@@ -13,7 +13,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-namespace {}  // namespace
 
 AcceleratorDelegate::AcceleratorDelegate() {}
 AcceleratorDelegate::~AcceleratorDelegate() {}

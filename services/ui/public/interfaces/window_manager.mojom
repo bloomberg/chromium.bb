@@ -93,8 +93,10 @@ interface WindowManager {
   // Asks the WindowManager to cancel any outstanding move loop on |change_id|.
   WmCancelMoveLoop(uint32 change_id);
 
-  // An accelerator registered via AddAccelerator() has been triggered.
-  OnAccelerator(uint32 id, ui.mojom.Event event);
+  // An accelerator registered via AddAccelerator() has been triggered. If
+  // |ack_id| is non-zero the accelerator matches a PRE_TARGET and must be
+  // acknowledged by WindowManagerClient::OnAcceleratorAck().
+  OnAccelerator(uint32 ack_id, uint32 accelerator_id, ui.mojom.Event event);
 };
 
 // This interface is only used as an associated interface and is associated
@@ -121,6 +123,8 @@ interface WindowManagerClient {
   // easily identify the accelerator's action. If an accelerator with the same
   // id or the same matcher already exists, then the accelerator is not added.
   // Accelerator ids 1 << 31 and above are reserved for internal use.
+  //
+  // See WindowTree for details on event dispatch.
   AddAccelerator(uint32 id, EventMatcher matcher) => (bool success);
   RemoveAccelerator(uint32 id);
 
@@ -141,4 +145,8 @@ interface WindowManagerClient {
   // Response from WmCreateTopLevelWindow() informing the client of the id for
   // the new window.
   OnWmCreatedTopLevelWindow(uint32 change_id, uint32 window_id);
+
+  // See description in WindowManager::OnAccelerator(). |ack_id| is the value
+  // that was passed to OnAccelerator().
+  OnAcceleratorAck(uint32 ack_id, EventResult event_result);
 };

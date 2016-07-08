@@ -106,7 +106,7 @@ class WindowManagerDelegate {
   virtual void OnWmNewDisplay(Window* window,
                               const display::Display& display) = 0;
 
-  virtual void OnAccelerator(uint32_t id, const ui::Event& event) = 0;
+  virtual mojom::EventResult OnAccelerator(uint32_t id, const ui::Event& event);
 
   virtual void OnWmPerformMoveLoop(
       Window* window,

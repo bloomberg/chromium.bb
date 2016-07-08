@@ -26,7 +26,14 @@ class ServerWindow;
 // Used by EventDispatcher for mocking in tests.
 class EventDispatcherDelegate {
  public:
-  virtual void OnAccelerator(uint32_t accelerator, const ui::Event& event) = 0;
+  enum class AcceleratorPhase {
+    PRE,
+    POST,
+  };
+
+  virtual void OnAccelerator(uint32_t accelerator,
+                             const ui::Event& event,
+                             AcceleratorPhase phase) = 0;
 
   virtual void SetFocusedWindowFromEventDispatcher(ServerWindow* window) = 0;
   virtual ServerWindow* GetFocusedWindowForEventDispatcher() = 0;

@@ -59,7 +59,6 @@ class MusDemo : public shell::Service,
                                   bool janky) override;
   void OnWmNewDisplay(ui::Window* window,
                       const display::Display& display) override;
-  void OnAccelerator(uint32_t id, const ui::Event& event) override;
   void OnWmPerformMoveLoop(ui::Window* window,
                            ui::mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,

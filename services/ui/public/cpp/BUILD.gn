@@ -28,6 +28,7 @@ source_set("cpp") {
     "property_type_converters.h",
     "scoped_window_ptr.h",
     "window.h",
+    "window_manager_delegate.cc",
     "window_manager_delegate.h",
     "window_observer.h",
     "window_property.h",

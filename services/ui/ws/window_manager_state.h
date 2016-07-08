@@ -79,10 +79,24 @@ class WindowManagerState : public EventDispatcherDelegate {
   // TODO(sky): make this private and use a callback.
   void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
 
+  // Called when the WindowManager acks an accelerator.
+  void OnAcceleratorAck(mojom::EventResult result);
+
  private:
   class ProcessedEventTarget;
   friend class Display;
   friend class test::WindowManagerStateTestApi;
+
+  enum class EventDispatchPhase {
+    // Not actively dispatching.
+    NONE,
+
+    // A PRE_TARGET accelerator has been encountered and we're awaiting the ack.
+    PRE_TARGET_ACCELERATOR,
+
+    // Dispatching to the target, awaiting the ack.
+    TARGET,
+  };
 
   // There are two types of events that may be queued, both occur only when
   // waiting for an ack from a client.
@@ -113,6 +127,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   // |window|. |window| corresponds to the root of a Display.
   ServerWindow* GetWindowManagerRoot(ServerWindow* window);
 
+  // Called if the client doesn't ack an event in the appropriate amount of
+  // time.
   void OnEventAckTimeout(ClientSpecificId client_id);
 
   // Schedules an event to be processed later.
@@ -136,8 +152,13 @@ class WindowManagerState : public EventDispatcherDelegate {
   // Returns true if the accelerator was handled.
   bool HandleDebugAccelerator(uint32_t accelerator_id);
 
+  // Called when waiting for an event or accelerator to be processed by |tree|.
+  void ScheduleInputEventTimeout(WindowTree* tree);
+
   // EventDispatcherDelegate:
-  void OnAccelerator(uint32_t accelerator_id, const ui::Event& event) override;
+  void OnAccelerator(uint32_t accelerator_id,
+                     const ui::Event& event,
+                     AcceleratorPhase phase) override;
   void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override;
   ServerWindow* GetFocusedWindowForEventDispatcher() override;
   void SetNativeCapture(ServerWindow* window) override;
@@ -161,7 +182,10 @@ class WindowManagerState : public EventDispatcherDelegate {
   bool got_frame_decoration_values_ = false;
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
+  EventDispatchPhase event_dispatch_phase_ = EventDispatchPhase::NONE;
+  // The tree we're waiting to process the current accelerator or event.
   mojom::WindowTree* tree_awaiting_input_ack_ = nullptr;
+  // The event we're awaiting an accelerator or input ack from.
   std::unique_ptr<ui::Event> event_awaiting_input_ack_;
   base::WeakPtr<Accelerator> post_target_accelerator_;
   std::queue<std::unique_ptr<QueuedEvent>> event_queue_;
