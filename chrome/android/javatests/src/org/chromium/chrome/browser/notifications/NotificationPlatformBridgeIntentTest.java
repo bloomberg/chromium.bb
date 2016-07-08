@@ -101,7 +101,7 @@ public class NotificationPlatformBridgeIntentTest
                         .putExtra(EXTRA_NOTIFICATION_ID, NotificationPlatformBridge.PLATFORM_ID)
                         .putExtra(NotificationConstants.EXTRA_NOTIFICATION_TAG,
                                 NotificationPlatformBridge.makePlatformTag(
-                                        42L /* persistentNotificationId */, "https://example.com",
+                                        "42" /* notificationId */, "https://example.com",
                                         null /* tag */));
 
         Preferences activity = ActivityUtils.waitForActivity(
@@ -137,9 +137,7 @@ public class NotificationPlatformBridgeIntentTest
         Intent intent = new Intent(NotificationConstants.ACTION_CLICK_NOTIFICATION);
         intent.setClass(context, NotificationService.Receiver.class);
 
-        long persistentId = 42;
-
-        intent.putExtra(NotificationConstants.EXTRA_PERSISTENT_NOTIFICATION_ID, persistentId);
+        intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, "42");
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID, "Default");
         intent.putExtra(
                 NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, "https://example.com");

@@ -24,7 +24,7 @@ public class NotificationConstants {
      * Names of the Intent extras used for Intents related to notifications. These intents are set
      * and owned by Chromium.
      */
-    public static final String EXTRA_PERSISTENT_NOTIFICATION_ID = "notification_persistent_id";
+    public static final String EXTRA_NOTIFICATION_ID = "notification_id";
     public static final String EXTRA_NOTIFICATION_INFO_ORIGIN = "notification_info_origin";
     public static final String EXTRA_NOTIFICATION_INFO_PROFILE_ID = "notification_info_profile_id";
     public static final String EXTRA_NOTIFICATION_INFO_PROFILE_INCOGNITO =

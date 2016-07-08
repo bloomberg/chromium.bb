@@ -41,7 +41,7 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   void OnNotificationClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& java_object,
-      jlong persistent_notification_id,
+      const base::android::JavaParamRef<jstring>& java_notification_id,
       const base::android::JavaParamRef<jstring>& java_origin,
       const base::android::JavaParamRef<jstring>& java_profile_id,
       jboolean incognito,
@@ -53,7 +53,7 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   void OnNotificationClosed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& java_object,
-      jlong persistent_notification_id,
+      const base::android::JavaParamRef<jstring>& java_notification_id,
       const base::android::JavaParamRef<jstring>& java_origin,
       const base::android::JavaParamRef<jstring>& java_profile_id,
       jboolean incognito,
@@ -94,10 +94,10 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
     std::string webapk_package;
   };
 
-  // Mapping of a persistent notification id to renegerated notification info.
+  // Mapping of notification id to renegerated notification info.
   // TODO(peter): Remove this map once notification delegate ids for Web
   // notifications are created by the content/ layer.
-  std::map<int64_t, RegeneratedNotificationInfo>
+  std::map<std::string, RegeneratedNotificationInfo>
       regenerated_notification_infos_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
