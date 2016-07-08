@@ -703,7 +703,8 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   bool lost_resource =
       resource->lost || exported_resource_lost || gpu_resource_lost;
 
-  if (!lost_resource &&
+  // Wait on sync token before deleting resources we own.
+  if (!lost_resource && resource->origin == Resource::INTERNAL &&
       resource->synchronization_state() == Resource::NEEDS_WAIT) {
     DCHECK(resource->allocated);
     DCHECK(IsGpuResourceType(resource->type));
@@ -744,6 +745,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
       GLES2Interface* gl = ContextGL();
       DCHECK(gl);
       if (resource->gl_id) {
+        DCHECK_NE(Resource::NEEDS_WAIT, resource->synchronization_state());
         gl->DeleteTextures(1, &resource->gl_id);
         resource->gl_id = 0;
         if (!lost_resource) {
