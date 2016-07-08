@@ -475,8 +475,8 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         // auto | baseline | before-edge | text-before-edge | middle |
         // central | after-edge | text-after-edge | ideographic | alphabetic |
         // hanging | mathematical
-        return valueID == CSSValueAuto || valueID == CSSValueBaseline || valueID == CSSValueMiddle
-            || (valueID >= CSSValueBeforeEdge && valueID <= CSSValueMathematical);
+        return valueID == CSSValueAuto || valueID == CSSValueAlphabetic || valueID == CSSValueBaseline
+            || valueID == CSSValueMiddle || (valueID >= CSSValueBeforeEdge && valueID <= CSSValueMathematical);
     case CSSPropertyAll:
         return false; // Only accepts css-wide keywords
     case CSSPropertyBackgroundRepeatX: // repeat | no-repeat
@@ -523,7 +523,7 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         // auto | use-script | no-change | reset-size | ideographic |
         // alphabetic | hanging | mathematical | central | middle |
         // text-after-edge | text-before-edge
-        return valueID == CSSValueAuto || valueID == CSSValueMiddle
+        return valueID == CSSValueAuto || valueID == CSSValueAlphabetic || valueID == CSSValueMiddle
             || (valueID >= CSSValueUseScript && valueID <= CSSValueResetSize)
             || (valueID >= CSSValueCentral && valueID <= CSSValueMathematical);
     case CSSPropertyEmptyCells: // show | hide
