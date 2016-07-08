@@ -631,6 +631,7 @@
       'proximity_auth/ble/bluetooth_low_energy_connection_unittest.cc',
       'proximity_auth/ble/bluetooth_low_energy_device_whitelist_unittest.cc',
       'proximity_auth/ble/bluetooth_low_energy_weave_packet_generator_unittest.cc',
+      'proximity_auth/ble/bluetooth_low_energy_weave_packet_receiver_unittest.cc',
       'proximity_auth/bluetooth_connection_finder_unittest.cc',
       'proximity_auth/bluetooth_connection_unittest.cc',
       'proximity_auth/bluetooth_throttler_impl_unittest.cc',
@@ -708,6 +709,7 @@
       'safe_browsing_db/v4_database_unittest.cc',
       'safe_browsing_db/v4_get_hash_protocol_manager_unittest.cc',
       'safe_browsing_db/v4_protocol_manager_util_unittest.cc',
+      'safe_browsing_db/v4_store_unittest.cc',
       'safe_browsing_db/v4_update_protocol_manager_unittest.cc',
     ],
     'safe_json_unittest_sources': [
@@ -884,6 +886,8 @@
       'tracing/browser/trace_config_file_unittest.cc',
       'tracing/common/graphics_memory_dump_provider_android_unittest.cc',
       'tracing/common/process_metrics_memory_dump_provider_unittest.cc',
+      'tracing/core/trace_ring_buffer_unittest.cc',
+      'tracing/core/scattered_stream_writer_unittest.cc',
     ],
     'translate_unittest_sources': [
       'translate/core/browser/language_state_unittest.cc',
