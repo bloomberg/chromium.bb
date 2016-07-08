@@ -566,6 +566,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win NVIDIA failures
     self.Fail('deqp/data/gles2/shaders/functions.html',
         ['win', 'nvidia'], bug=478572)
+    self.Flaky('conformance/textures/misc/texture-npot-video.html',
+        ['win', 'nvidia'], bug=626524)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
@@ -659,6 +661,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
+    self.Fail('conformance/textures/misc/tex-image-webgl.html',
+              ['linux', 'amd'], bug=626742)
 
     # AMD Radeon 6450
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
