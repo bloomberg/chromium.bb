@@ -70,7 +70,9 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   // ppapi::PPB_Graphics3D_Shared overrides.
   gpu::CommandBuffer* GetCommandBuffer() override;
   gpu::GpuControl* GetGpuControl() override;
-  int32_t DoSwapBuffers(const gpu::SyncToken& sync_token) override;
+  int32_t DoSwapBuffers(const gpu::SyncToken& sync_token,
+                        int32_t width,
+                        int32_t height) override;
 
  private:
   explicit PPB_Graphics3D_Impl(PP_Instance instance);
@@ -110,7 +112,14 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared,
   bool lost_context_ = false;
 #endif
 
+  // The width and height of the command buffer back buffer are first sized from
+  // this process, but then resized by the pepper process. Cache the original
+  // size.
+  int32_t original_width_ = 0;
+  int32_t original_height_ = 0;
+
   bool has_alpha_;
+  bool use_image_chromium_;
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;
 
   base::WeakPtrFactory<PPB_Graphics3D_Impl> weak_ptr_factory_;

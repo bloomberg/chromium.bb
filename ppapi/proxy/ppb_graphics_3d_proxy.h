@@ -61,7 +61,9 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   // PPB_Graphics3D_Shared overrides.
   gpu::CommandBuffer* GetCommandBuffer() override;
   gpu::GpuControl* GetGpuControl() override;
-  int32_t DoSwapBuffers(const gpu::SyncToken& sync_token) override;
+  int32_t DoSwapBuffers(const gpu::SyncToken& sync_token,
+                        int32_t width,
+                        int32_t height) override;
 
   std::unique_ptr<PpapiCommandBufferProxy> command_buffer_;
 
@@ -110,7 +112,9 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
       ppapi::proxy::SerializedHandle* transfer_buffer);
   void OnMsgDestroyTransferBuffer(const HostResource& context, int32_t id);
   void OnMsgSwapBuffers(const HostResource& context,
-                        const gpu::SyncToken& sync_token);
+                        const gpu::SyncToken& sync_token,
+                        int32_t width,
+                        int32_t height);
   void OnMsgTakeFrontBuffer(const HostResource& context);
   void OnMsgEnsureWorkVisible(const HostResource& context);
   // Renderer->plugin message handlers.

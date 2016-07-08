@@ -51,18 +51,22 @@ int32_t PPB_Graphics3D_Shared::ResizeBuffers(int32_t width, int32_t height) {
     return PP_ERROR_BADARGUMENT;
 
   gles2_impl()->ResizeCHROMIUM(width, height, 1.f, true);
+  width_ = width;
+  height_ = height;
   // TODO(alokp): Check if resize succeeded and return appropriate error code.
   return PP_OK;
 }
 
 int32_t PPB_Graphics3D_Shared::SwapBuffers(
     scoped_refptr<TrackedCallback> callback) {
-  return SwapBuffersWithSyncToken(callback, gpu::SyncToken());
+  return SwapBuffersWithSyncToken(callback, gpu::SyncToken(), width_, height_);
 }
 
 int32_t PPB_Graphics3D_Shared::SwapBuffersWithSyncToken(
     scoped_refptr<TrackedCallback> callback,
-    const gpu::SyncToken& sync_token) {
+    const gpu::SyncToken& sync_token,
+    int32_t width,
+    int32_t height) {
   if (HasPendingSwap()) {
     Log(PP_LOGLEVEL_ERROR,
         "PPB_Graphics3D.SwapBuffers: Plugin attempted swap "
@@ -72,7 +76,7 @@ int32_t PPB_Graphics3D_Shared::SwapBuffersWithSyncToken(
   }
 
   swap_callback_ = callback;
-  return DoSwapBuffers(sync_token);
+  return DoSwapBuffers(sync_token, width, height);
 }
 
 int32_t PPB_Graphics3D_Shared::GetAttribMaxValue(int32_t attribute,

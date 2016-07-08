@@ -18,6 +18,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -44,7 +45,18 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
       bound_to_instance_(false),
       commit_pending_(false),
       has_alpha_(false),
-      weak_ptr_factory_(this) {}
+      use_image_chromium_(false),
+      weak_ptr_factory_(this) {
+#if defined(OS_MACOSX)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool use_image_chromium =
+      !command_line->HasSwitch(switches::kDisablePepper3DImageChromium);
+  use_image_chromium_ = use_image_chromium;
+
+  // TODO(erikchen): Remove this line to enable the feature.
+  use_image_chromium_ = false;
+#endif
+}
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
   // Unset the client before the command_buffer_ is destroyed, similar to how
@@ -158,7 +170,9 @@ gpu::GpuControl* PPB_Graphics3D_Impl::GetGpuControl() {
   return command_buffer_.get();
 }
 
-int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token) {
+int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token,
+                                           int32_t width,
+                                           int32_t height) {
   DCHECK(command_buffer_);
   if (taken_front_buffer_.IsZero()) {
     DLOG(ERROR) << "TakeFrontBuffer should be called before DoSwapBuffers";
@@ -173,8 +187,16 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token) {
     //
     // Don't need to check for NULL from GetPluginInstance since when we're
     // bound, we know our instance is valid.
-    cc::TextureMailbox texture_mailbox(taken_front_buffer_, sync_token,
-                                       GL_TEXTURE_2D);
+    if (width < 0 || height < 0) {
+      width = original_width_;
+      height = original_height_;
+    }
+    bool is_overlay_candidate = use_image_chromium_;
+    GLenum target =
+        is_overlay_candidate ? GL_TEXTURE_RECTANGLE_ARB : GL_TEXTURE_2D;
+    cc::TextureMailbox texture_mailbox(taken_front_buffer_, sync_token, target,
+                                       gfx::Size(width, height),
+                                       is_overlay_candidate, false);
     taken_front_buffer_.SetZero();
     HostGlobals::Get()
         ->GetInstance(pp_instance())
@@ -260,6 +282,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
   }
   if (!attrib_helper.Parse(attribs))
     return false;
+  attrib_helper.should_use_native_gmb_for_backbuffer = use_image_chromium_;
 
   gpu::CommandBufferProxyImpl* share_buffer = NULL;
   if (share_context) {
@@ -272,6 +295,8 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
       std::move(channel), gpu::kNullSurfaceHandle, share_buffer,
       gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL, attrib_helper,
       GURL::EmptyGURL(), base::ThreadTaskRunnerHandle::Get());
+  original_width_ = attrib_helper.offscreen_framebuffer_size.width();
+  original_height_ = attrib_helper.offscreen_framebuffer_size.height();
   if (!command_buffer_)
     return false;
 

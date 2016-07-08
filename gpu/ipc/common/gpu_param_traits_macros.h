@@ -129,6 +129,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::gles2::ContextCreationAttribHelper)
   IPC_STRUCT_TRAITS_MEMBER(fail_if_major_perf_caveat)
   IPC_STRUCT_TRAITS_MEMBER(lose_context_when_out_of_memory)
   IPC_STRUCT_TRAITS_MEMBER(context_type)
+  IPC_STRUCT_TRAITS_MEMBER(should_use_native_gmb_for_backbuffer)
 IPC_STRUCT_TRAITS_END()
 
 
