@@ -15,14 +15,18 @@
 namespace remoting {
 
 class ChromotingJniRuntime;
-class JniVideoRenderer;
 
 // Handles OpenGL display operations. Draws desktop and cursor on the OpenGL
 // surface.
+// JNI functions should all be called on the UI thread. The display handler
+// itself should be deleted on the display thread.
+// Please see GlDisplay.java for documentations.
 class JniGlDisplayHandler : public DisplayUpdaterFactory {
  public:
-  JniGlDisplayHandler();
+  JniGlDisplayHandler(ChromotingJniRuntime* runtime);
   ~JniGlDisplayHandler() override;
+
+  base::android::ScopedJavaLocalRef<jobject> GetJavaDisplay();
 
   // DisplayUpdaterFactory overrides.
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;
@@ -30,18 +34,61 @@ class JniGlDisplayHandler : public DisplayUpdaterFactory {
 
   static bool RegisterJni(JNIEnv* env);
 
-  void OnSurfaceCreated(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& caller);
+  void OnSurfaceCreated(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jobject>& surface);
 
   void OnSurfaceChanged(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& caller,
                         int width,
                         int height);
 
-  void OnDrawFrame(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& caller);
+  void OnSurfaceDestroyed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
+
+  void OnPixelTransformationChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jfloatArray>&  matrix
+      );
+
+  void OnCursorPixelPositionChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      int x,
+      int y);
+
+  void OnCursorVisibilityChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      bool visible);
+
+  void OnCursorInputFeedback(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      int x,
+      int y,
+      float diameter);
+
+  void SetRenderEventEnabled(JNIEnv* env,
+                             const base::android::JavaParamRef<jobject>& caller,
+                             jboolean enabled);
 
  private:
+  static void NotifyRenderEventOnUiThread(
+      base::android::ScopedJavaGlobalRef<jobject> java_client);
+
+  static void ChangeCanvasSizeOnUiThread(
+      base::android::ScopedJavaGlobalRef<jobject> java_client,
+      int width,
+      int height);
+
+  ChromotingJniRuntime* runtime_;
+
+  base::android::ScopedJavaGlobalRef<jobject> java_display_;
+
   DISALLOW_COPY_AND_ASSIGN(JniGlDisplayHandler);
 };
 

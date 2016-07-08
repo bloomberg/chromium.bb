@@ -14,6 +14,7 @@ generate_jni("jni_headers") {
     "host/src/org/chromium/chromoting/host/jni/Host.java",
     "java/src/org/chromium/chromoting/jni/Client.java",
     "java/src/org/chromium/chromoting/jni/Display.java",
+    "java/src/org/chromium/chromoting/jni/GlDisplay.java",
     "java/src/org/chromium/chromoting/jni/JniInterface.java",
     "java/src/org/chromium/chromoting/jni/TouchEventData.java",
   ]

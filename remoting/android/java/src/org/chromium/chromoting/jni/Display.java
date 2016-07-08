@@ -56,13 +56,6 @@ public class Display {
     }
 
     /**
-     * @return the pointer to the native C++ object.
-     */
-    public long getNativePointer() {
-        return mNativeJniDisplayHandler;
-    }
-
-    /**
      * Sets the redraw callback to the provided functor. Provide a value of null whenever the
      * window is no longer visible so that we don't continue to draw onto it. Called on the UI
      * thread.

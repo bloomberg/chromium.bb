@@ -78,6 +78,7 @@ template("remoting_android_client_java_tmpl") {
       "jni/Client.java",
       "jni/ConnectionListener.java",
       "jni/Display.java",
+      "jni/GlDisplay.java",
       "jni/JniInterface.java",
       "jni/TouchEventData.java",
     ]
