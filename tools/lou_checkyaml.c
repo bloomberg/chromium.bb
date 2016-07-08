@@ -93,17 +93,17 @@ static char** emph_classes = NULL;
 
 void
 simple_error (const char *msg, yaml_parser_t *parser, yaml_event_t *event) {
-  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line ? event->start_mark.line : parser->problem_mark.line, "%s", msg);
+  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line ? event->start_mark.line + 1 : parser->problem_mark.line + 1, "%s", msg);
 }
 
 void
 yaml_parse_error (yaml_parser_t *parser) {
-  error_at_line(EXIT_FAILURE, 0, file_name, parser->problem_mark.line, "%s", parser->problem);
+  error_at_line(EXIT_FAILURE, 0, file_name, parser->problem_mark.line + 1, "%s", parser->problem);
 }
 
 void
 yaml_error (yaml_event_type_t expected, yaml_event_t *event) {
-  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line,
+  error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line + 1,
 		"Expected %s (actual %s)",
 		event_names[expected], event_names[event->type]);
 }
@@ -171,11 +171,11 @@ read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
       } else if (!strcmp(event.data.scalar.value, "hyphenate")) {
 	*hyphenation = 1;
       } else {
-	error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+	error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		      "Testmode '%s' not supported\n", event.data.scalar.value);
       }
     } else {
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		    "Flag '%s' not supported\n", event.data.scalar.value);
     }
   }
@@ -231,7 +231,7 @@ read_mode (yaml_parser_t *parser) {
     } else if (!strcmp(event.data.scalar.value, "ucBrl")) {
       mode |= ucBrl;
     } else {
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		    "Mode '%s' not supported\n", event.data.scalar.value);
     }
     yaml_event_delete(&event);
@@ -261,13 +261,13 @@ read_cursorPos (yaml_parser_t *parser, int len) {
 	 (event.type == YAML_SCALAR_EVENT)) {
     pos[i++] = strtol(event.data.scalar.value, &tail, 0);
     if (!pos && !strcmp(event.data.scalar.value, tail))
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		    "Not a valid cursor position '%s'. Must be a number\n",
 		    event.data.scalar.value);
     yaml_event_delete(&event);
   }
   if (i != len)
-    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		  "Too many or too few cursor positions (%i) for word of length %i\n", i, len);
   if (!parse_error)
     yaml_parse_error(parser);
@@ -286,7 +286,7 @@ read_typeform_string(yaml_parser_t *parser, formtype* typeform, typeforms kind, 
     yaml_error(YAML_SCALAR_EVENT, &event);
   typeform_len = strlen(event.data.scalar.value);
   if (typeform_len != len)
-    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		  "Too many or too typeforms (%i) for word of length %i\n", typeform_len, len);
   update_typeform(event.data.scalar.value, typeform, kind);
   yaml_event_delete(&event);
@@ -322,7 +322,7 @@ read_typeforms (yaml_parser_t *parser, int len) {
           yaml_event_delete(&event);
           kind = italic << i;
           if (kind > emph_10)
-            error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+            error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
                           "Typeform '%s' was not declared\n", event.data.scalar.value);
           read_typeform_string(parser, typeform, kind, len);
           break;
@@ -369,7 +369,7 @@ read_options (yaml_parser_t *parser, int len,
       yaml_event_delete(&event);
       *cursorPos = read_cursorPos(parser, len);
     } else {
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		    "Unsupported option %s", option_name);
     }
     free(option_name);
@@ -439,7 +439,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 	(event.type != YAML_SEQUENCE_END_EVENT))
       yaml_error(YAML_SEQUENCE_END_EVENT, &event);
   } else if (event.type != YAML_SEQUENCE_END_EVENT) {
-    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		  "Expected %s or %s (actual %s)",
 		  event_names[YAML_MAPPING_START_EVENT],
 		  event_names[YAML_SEQUENCE_END_EVENT],
@@ -450,7 +450,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
       if (description)
 	fprintf(stderr, "%s\n", description);
-      error_at_line(0, 0, file_name, event.start_mark.line,
+      error_at_line(0, 0, file_name, event.start_mark.line + 1,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
@@ -458,7 +458,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     if (xfail != check_hyphenation(tables_list, word, translation)) {
       if (description)
 	fprintf(stderr, "%s\n", description);
-      error_at_line(0, 0, file_name, event.start_mark.line,
+      error_at_line(0, 0, file_name, event.start_mark.line + 1,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
@@ -467,7 +467,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 				 translation, translation_mode, direction, !xfail)) {
       if (description)
 	fprintf(stderr, "%s\n", description);
-      error_at_line(0, 0, file_name, event.start_mark.line,
+      error_at_line(0, 0, file_name, event.start_mark.line + 1,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
     }
@@ -502,7 +502,7 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
       yaml_event_delete(&event);
       read_test(parser, tables_list, direction, hyphenation);
     } else {
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		    "Expected %s or %s (actual %s)",
 		    event_names[YAML_SEQUENCE_END_EVENT],
 		    event_names[YAML_SEQUENCE_START_EVENT],
@@ -576,7 +576,7 @@ main(int argc, char *argv[]) {
   }
 
   if (event.data.stream_start.encoding != YAML_UTF8_ENCODING)
-    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		  "UTF-8 encoding expected (actual %s)",
 		  encoding_names[event.data.stream_start.encoding]);
   yaml_event_delete(&event);
@@ -598,7 +598,7 @@ main(int argc, char *argv[]) {
   read_tables(&parser, tables_list);
 
   if (!lou_getTable(tables_list)) {
-    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+    error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 		  "Table %s not valid", tables_list);
   }
   if (!yaml_parser_parse(&parser, &event) ||
