@@ -1365,32 +1365,42 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
   std::vector<GLbyte*> unverified_sync_tokens;
   std::vector<Resource*> need_synchronization_resources;
   for (Resource* resource : resources) {
+    if (!IsGpuResourceType(resource->type))
+      continue;
+
     CreateMailboxAndBindResource(gl, resource);
 
-    if (delegated_sync_points_required_ && resource->needs_sync_token()) {
-      need_synchronization_resources.push_back(resource);
-    } else if (resource->mailbox().HasSyncToken() &&
-               !resource->mailbox().sync_token().verified_flush()) {
-      unverified_sync_tokens.push_back(resource->GetSyncTokenData());
+    if (delegated_sync_points_required_) {
+      if (resource->needs_sync_token()) {
+        need_synchronization_resources.push_back(resource);
+      } else if (resource->mailbox().HasSyncToken() &&
+                 !resource->mailbox().sync_token().verified_flush()) {
+        unverified_sync_tokens.push_back(resource->GetSyncTokenData());
+      }
     }
   }
 
   // Insert sync point to synchronize the mailbox creation or bound textures.
   gpu::SyncToken new_sync_token;
-  if (gl) {
-    if (!need_synchronization_resources.empty()) {
-      const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
-      gl->OrderingBarrierCHROMIUM();
-      gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
-      unverified_sync_tokens.push_back(new_sync_token.GetData());
-    }
-
-    if (!unverified_sync_tokens.empty()) {
-      gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
-                                   unverified_sync_tokens.size());
-    }
+  if (!need_synchronization_resources.empty()) {
+    DCHECK(delegated_sync_points_required_);
+    DCHECK(gl);
+    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+    unverified_sync_tokens.push_back(new_sync_token.GetData());
   }
+
+  if (!unverified_sync_tokens.empty()) {
+    DCHECK(delegated_sync_points_required_);
+    DCHECK(gl);
+    gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
+                                 unverified_sync_tokens.size());
+  }
+
+  // Set sync token after verification.
   for (Resource* resource : need_synchronization_resources) {
+    DCHECK(IsGpuResourceType(resource->type));
     resource->UpdateSyncToken(new_sync_token);
     resource->SetSynchronized();
   }
@@ -1548,24 +1558,25 @@ void ResourceProvider::ReceiveReturnsFromParent(
 void ResourceProvider::CreateMailboxAndBindResource(
     gpu::gles2::GLES2Interface* gl,
     Resource* resource) {
-  if (resource->type != RESOURCE_TYPE_BITMAP) {
-    if (!resource->mailbox().IsValid()) {
-      LazyCreate(resource);
+  DCHECK(IsGpuResourceType(resource->type));
+  DCHECK(gl);
 
-      gpu::MailboxHolder mailbox_holder;
-      mailbox_holder.texture_target = resource->target;
-      gl->GenMailboxCHROMIUM(mailbox_holder.mailbox.name);
-      gl->ProduceTextureDirectCHROMIUM(resource->gl_id,
-                                       mailbox_holder.texture_target,
-                                       mailbox_holder.mailbox.name);
-      resource->set_mailbox(TextureMailbox(mailbox_holder));
-    }
+  if (!resource->mailbox().IsValid()) {
+    LazyCreate(resource);
 
-    if (resource->image_id && resource->dirty_image) {
-      DCHECK(resource->gl_id);
-      DCHECK(resource->origin == Resource::INTERNAL);
-      BindImageForSampling(resource);
-    }
+    gpu::MailboxHolder mailbox_holder;
+    mailbox_holder.texture_target = resource->target;
+    gl->GenMailboxCHROMIUM(mailbox_holder.mailbox.name);
+    gl->ProduceTextureDirectCHROMIUM(resource->gl_id,
+                                     mailbox_holder.texture_target,
+                                     mailbox_holder.mailbox.name);
+    resource->set_mailbox(TextureMailbox(mailbox_holder));
+  }
+
+  if (resource->image_id && resource->dirty_image) {
+    DCHECK(resource->gl_id);
+    DCHECK(resource->origin == Resource::INTERNAL);
+    BindImageForSampling(resource);
   }
 }
 
@@ -1612,10 +1623,11 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
   ReturnedResourceArray to_return;
   to_return.reserve(unused.size());
+  std::vector<ReturnedResource*> need_synchronization_resources;
   std::vector<GLbyte*> unverified_sync_tokens;
 
-  bool need_sync_token = false;
   GLES2Interface* gl = ContextGL();
+
   for (ResourceId local_id : unused) {
     ResourceMap::iterator it = resources_.find(local_id);
     CHECK(it != resources_.end());
@@ -1649,10 +1661,11 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
       is_lost = true;
     }
 
-    if (gl && resource.filter != resource.original_filter) {
+    if (IsGpuResourceType(resource.type) &&
+        resource.filter != resource.original_filter) {
       DCHECK(resource.target);
       DCHECK(resource.gl_id);
-
+      DCHECK(gl);
       gl->BindTexture(resource.target, resource.gl_id);
       gl->TexParameteri(resource.target, GL_TEXTURE_MIN_FILTER,
                         resource.original_filter);
@@ -1663,30 +1676,30 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
     ReturnedResource returned;
     returned.id = child_id;
-    if (resource.needs_sync_token())
-      need_sync_token = true;
-    else
-      returned.sync_token = resource.mailbox().sync_token();
-
+    returned.sync_token = resource.mailbox().sync_token();
     returned.count = resource.imported_count;
     returned.lost = is_lost;
     to_return.push_back(returned);
+
+    if (IsGpuResourceType(resource.type) && child_info->needs_sync_tokens) {
+      if (resource.needs_sync_token()) {
+        need_synchronization_resources.push_back(&to_return.back());
+      } else if (returned.sync_token.HasData() &&
+                 !returned.sync_token.verified_flush()) {
+        // Before returning any sync tokens, they must be verified.
+        unverified_sync_tokens.push_back(returned.sync_token.GetData());
+      }
+    }
 
     child_info->parent_to_child_map.erase(local_id);
     child_info->child_to_parent_map.erase(child_id);
     resource.imported_count = 0;
     DeleteResourceInternal(it, style);
-
-    // Before returning any sync tokens, they must be verified. Note that we
-    // need to verify the sync token inside of the "to_return" array.
-    if (to_return.back().sync_token.HasData() &&
-        !to_return.back().sync_token.verified_flush()) {
-      unverified_sync_tokens.push_back(to_return.back().sync_token.GetData());
-    }
   }
 
   gpu::SyncToken new_sync_token;
-  if (need_sync_token && child_info->needs_sync_tokens) {
+  if (!need_synchronization_resources.empty()) {
+    DCHECK(child_info->needs_sync_tokens);
     DCHECK(gl);
     const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
     gl->OrderingBarrierCHROMIUM();
@@ -1695,18 +1708,15 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
   }
 
   if (!unverified_sync_tokens.empty()) {
+    DCHECK(child_info->needs_sync_tokens);
     DCHECK(gl);
     gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
                                  unverified_sync_tokens.size());
   }
 
-  if (new_sync_token.HasData()) {
-    DCHECK(need_sync_token && child_info->needs_sync_tokens);
-    for (ReturnedResource& returned_resource : to_return) {
-      if (!returned_resource.sync_token.HasData())
-        returned_resource.sync_token = new_sync_token;
-    }
-  }
+  // Set sync token after verification.
+  for (ReturnedResource* returned : need_synchronization_resources)
+    returned->sync_token = new_sync_token;
 
   if (!to_return.empty())
     child_info->return_callback.Run(to_return,
