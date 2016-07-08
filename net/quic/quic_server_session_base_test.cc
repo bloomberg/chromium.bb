@@ -459,8 +459,8 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   // but not enough packets have been sent.
   int64_t srtt_ms =
       sent_packet_manager->GetRttStats()->smoothed_rtt().ToMilliseconds();
-  now = now.Add(QuicTime::Delta::FromMilliseconds(
-      kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms));
+  now = now + QuicTime::Delta::FromMilliseconds(
+                  kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms);
   session_->OnCongestionWindowChange(now);
 
   // The connection no longer has pending data to be written.

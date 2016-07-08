@@ -109,7 +109,7 @@ EnqueuePacketResult QuicBufferedPacketStore::EnqueuePacket(
   queue.buffered_packets.push_back(std::move(new_entry));
 
   if (!expiration_alarm_->IsSet()) {
-    expiration_alarm_->Set(clock_->ApproximateNow().Add(connection_life_span_));
+    expiration_alarm_->Set(clock_->ApproximateNow() + connection_life_span_);
   }
   return SUCCESS;
 }
@@ -131,8 +131,7 @@ list<BufferedPacket> QuicBufferedPacketStore::DeliverPackets(
 }
 
 void QuicBufferedPacketStore::OnExpirationTimeout() {
-  QuicTime expiration_time =
-      clock_->ApproximateNow().Subtract(connection_life_span_);
+  QuicTime expiration_time = clock_->ApproximateNow() - connection_life_span_;
   while (!undecryptable_packets_.empty()) {
     auto& entry = undecryptable_packets_.front();
     if (entry.second.creation_time > expiration_time) {
@@ -142,7 +141,7 @@ void QuicBufferedPacketStore::OnExpirationTimeout() {
     undecryptable_packets_.erase(undecryptable_packets_.begin());
   }
   if (!undecryptable_packets_.empty()) {
-    expiration_alarm_->Set(clock_->ApproximateNow().Add(connection_life_span_));
+    expiration_alarm_->Set(clock_->ApproximateNow() + connection_life_span_);
   }
 }
 

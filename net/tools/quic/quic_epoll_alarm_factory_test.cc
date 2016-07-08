@@ -48,11 +48,11 @@ TEST_P(QuicEpollAlarmFactoryTest, CreateAlarm) {
 
   QuicTime start = clock_.Now();
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
-  alarm->Set(start.Add(delta));
+  alarm->Set(start + delta);
 
   epoll_server_.AdvanceByAndWaitForEventsAndExecuteCallbacks(
       delta.ToMicroseconds());
-  EXPECT_EQ(start.Add(delta), clock_.Now());
+  EXPECT_EQ(start + delta, clock_.Now());
 }
 
 TEST_P(QuicEpollAlarmFactoryTest, CreateAlarmAndCancel) {
@@ -64,11 +64,11 @@ TEST_P(QuicEpollAlarmFactoryTest, CreateAlarmAndCancel) {
 
   QuicTime start = clock_.Now();
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
-  alarm->Set(start.Add(delta));
+  alarm->Set(start + delta);
   alarm->Cancel();
 
   epoll_server_.AdvanceByExactlyAndCallCallbacks(delta.ToMicroseconds());
-  EXPECT_EQ(start.Add(delta), clock_.Now());
+  EXPECT_EQ(start + delta, clock_.Now());
   EXPECT_FALSE(unowned_delegate->fired());
 }
 
@@ -81,18 +81,18 @@ TEST_P(QuicEpollAlarmFactoryTest, CreateAlarmAndReset) {
 
   QuicTime start = clock_.Now();
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
-  alarm->Set(clock_.Now().Add(delta));
+  alarm->Set(clock_.Now() + delta);
   alarm->Cancel();
   QuicTime::Delta new_delta = QuicTime::Delta::FromMicroseconds(3);
-  alarm->Set(clock_.Now().Add(new_delta));
+  alarm->Set(clock_.Now() + new_delta);
 
   epoll_server_.AdvanceByExactlyAndCallCallbacks(delta.ToMicroseconds());
-  EXPECT_EQ(start.Add(delta), clock_.Now());
+  EXPECT_EQ(start + delta, clock_.Now());
   EXPECT_FALSE(unowned_delegate->fired());
 
   epoll_server_.AdvanceByExactlyAndCallCallbacks(
-      new_delta.Subtract(delta).ToMicroseconds());
-  EXPECT_EQ(start.Add(new_delta), clock_.Now());
+      (new_delta - delta).ToMicroseconds());
+  EXPECT_EQ(start + new_delta, clock_.Now());
   EXPECT_TRUE(unowned_delegate->fired());
 }
 
@@ -105,28 +105,25 @@ TEST_P(QuicEpollAlarmFactoryTest, CreateAlarmAndUpdate) {
 
   QuicTime start = clock_.Now();
   QuicTime::Delta delta = QuicTime::Delta::FromMicroseconds(1);
-  alarm->Set(clock_.Now().Add(delta));
+  alarm->Set(clock_.Now() + delta);
   QuicTime::Delta new_delta = QuicTime::Delta::FromMicroseconds(3);
-  alarm->Update(clock_.Now().Add(new_delta),
-                QuicTime::Delta::FromMicroseconds(1));
+  alarm->Update(clock_.Now() + new_delta, QuicTime::Delta::FromMicroseconds(1));
 
   epoll_server_.AdvanceByExactlyAndCallCallbacks(delta.ToMicroseconds());
-  EXPECT_EQ(start.Add(delta), clock_.Now());
+  EXPECT_EQ(start + delta, clock_.Now());
   EXPECT_FALSE(unowned_delegate->fired());
 
   // Move the alarm forward 1us and ensure it doesn't move forward.
-  alarm->Update(clock_.Now().Add(new_delta),
-                QuicTime::Delta::FromMicroseconds(2));
+  alarm->Update(clock_.Now() + new_delta, QuicTime::Delta::FromMicroseconds(2));
 
   epoll_server_.AdvanceByExactlyAndCallCallbacks(
-      new_delta.Subtract(delta).ToMicroseconds());
-  EXPECT_EQ(start.Add(new_delta), clock_.Now());
+      (new_delta - delta).ToMicroseconds());
+  EXPECT_EQ(start + new_delta, clock_.Now());
   EXPECT_TRUE(unowned_delegate->fired());
 
   // Set the alarm via an update call.
   new_delta = QuicTime::Delta::FromMicroseconds(5);
-  alarm->Update(clock_.Now().Add(new_delta),
-                QuicTime::Delta::FromMicroseconds(1));
+  alarm->Update(clock_.Now() + new_delta, QuicTime::Delta::FromMicroseconds(1));
   EXPECT_TRUE(alarm->IsSet());
 
   // Update it with an uninitialized time and ensure it's cancelled.

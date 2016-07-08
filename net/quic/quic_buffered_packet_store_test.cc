@@ -59,8 +59,7 @@ class QuicBufferedPacketStoreTest : public ::testing::Test {
         server_address_(Loopback6(), 65535),
         client_address_(Loopback6(), 65535),
         packet_content_("some encrypted content"),
-        packet_time_(
-            QuicTime::Zero().Add(QuicTime::Delta::FromMicroseconds(42))),
+        packet_time_(QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(42)),
         data_packet_(packet_content_.data(),
                      packet_content_.size(),
                      packet_time_) {}
@@ -190,9 +189,9 @@ TEST_F(QuicBufferedPacketStoreTest, PacketQueueExpiredBeforeDelivery) {
   store_.EnqueuePacket(connection_id2, data_packet_, server_address_,
                        another_client_address);
   // Advance clock to the time when connection 1 expires.
-  clock_.AdvanceTime(QuicBufferedPacketStorePeer::expiration_alarm(&store_)
-                         ->deadline()
-                         .Subtract(clock_.ApproximateNow()));
+  clock_.AdvanceTime(
+      QuicBufferedPacketStorePeer::expiration_alarm(&store_)->deadline() -
+      clock_.ApproximateNow());
   ASSERT_GE(clock_.ApproximateNow(),
             QuicBufferedPacketStorePeer::expiration_alarm(&store_)->deadline());
   // Fire alarm to remove long-staying connection 1 packets.
@@ -217,9 +216,9 @@ TEST_F(QuicBufferedPacketStoreTest, PacketQueueExpiredBeforeDelivery) {
                        client_address_);
   store_.EnqueuePacket(connection_id3, data_packet_, server_address_,
                        client_address_);
-  clock_.AdvanceTime(QuicBufferedPacketStorePeer::expiration_alarm(&store_)
-                         ->deadline()
-                         .Subtract(clock_.ApproximateNow()));
+  clock_.AdvanceTime(
+      QuicBufferedPacketStorePeer::expiration_alarm(&store_)->deadline() -
+      clock_.ApproximateNow());
   alarm_factory_.FireAlarm(
       QuicBufferedPacketStorePeer::expiration_alarm(&store_));
   // |last_expired_packet_queue_| should be updated.

@@ -206,8 +206,6 @@ class QuicSimpleServerSessionTest
     visitor_ = QuicConnectionPeer::GetVisitor(connection_);
     headers_stream_ = new MockQuicHeadersStream(session_.get());
     QuicSpdySessionPeer::SetHeadersStream(session_.get(), headers_stream_);
-    // TODO(jri): Remove this line once tests pass.
-    FLAGS_quic_cede_correctly = false;
 
     session_->OnConfigNegotiated();
   }

@@ -135,6 +135,7 @@ TEST_P(StatelessRejectorTest, InvalidChlo) {
   // clang-format off
   const CryptoHandshakeMessage client_hello = CryptoTestUtils::Message(
       "CHLO",
+      "PDMD", "X509",
       "COPT", "SREJ",
       nullptr);
   // clang-format on
@@ -154,6 +155,7 @@ TEST_P(StatelessRejectorTest, ValidChloWithoutSrejSupport) {
   // clang-format off
   const CryptoHandshakeMessage client_hello = CryptoTestUtils::Message(
       "CHLO",
+      "PDMD", "X509",
       "AEAD", "AESG",
       "KEXS", "C255",
       "PUBS", pubs_hex_.c_str(),
@@ -172,6 +174,7 @@ TEST_P(StatelessRejectorTest, RejectChlo) {
   // clang-format off
   const CryptoHandshakeMessage client_hello = CryptoTestUtils::Message(
       "CHLO",
+      "PDMD", "X509",
       "AEAD", "AESG",
       "KEXS", "C255",
       "COPT", "SREJ",
@@ -210,6 +213,7 @@ TEST_P(StatelessRejectorTest, AcceptChlo) {
   // clang-format off
   const CryptoHandshakeMessage client_hello = CryptoTestUtils::Message(
       "CHLO",
+      "PDMD", "X509",
       "AEAD", "AESG",
       "KEXS", "C255",
       "COPT", "SREJ",

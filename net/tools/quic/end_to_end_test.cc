@@ -525,7 +525,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
   void VerifyCleanConnection(bool had_packet_loss) {
     QuicConnectionStats client_stats =
         client_->client()->session()->connection()->GetStats();
-    if (FLAGS_quic_reply_to_rej && !had_packet_loss) {
+    if (!had_packet_loss) {
       EXPECT_EQ(0u, client_stats.packets_lost);
     }
     EXPECT_EQ(0u, client_stats.packets_discarded);
@@ -550,7 +550,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     ASSERT_EQ(1u, dispatcher->session_map().size());
     QuicSession* session = dispatcher->session_map().begin()->second;
     QuicConnectionStats server_stats = session->connection()->GetStats();
-    if (FLAGS_quic_reply_to_rej && !had_packet_loss) {
+    if (!had_packet_loss) {
       EXPECT_EQ(0u, server_stats.packets_lost);
     }
     EXPECT_EQ(0u, server_stats.packets_discarded);
