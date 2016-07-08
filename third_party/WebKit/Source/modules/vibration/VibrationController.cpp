@@ -125,7 +125,7 @@ void VibrationController::doVibrate(Timer<VibrationController>* timer)
 
     if (m_service) {
         m_isCallingVibrate = true;
-        m_service->Vibrate(m_pattern[0], createBaseCallback(WTF::bind(&VibrationController::didVibrate, wrapPersistent(this))));
+        m_service->Vibrate(m_pattern[0], convertToBaseCallback(WTF::bind(&VibrationController::didVibrate, wrapPersistent(this))));
     }
 }
 
@@ -160,7 +160,7 @@ void VibrationController::cancel()
 
     if (m_isRunning && !m_isCallingCancel && m_service) {
         m_isCallingCancel = true;
-        m_service->Cancel(createBaseCallback(WTF::bind(&VibrationController::didCancel, wrapPersistent(this))));
+        m_service->Cancel(convertToBaseCallback(WTF::bind(&VibrationController::didCancel, wrapPersistent(this))));
     }
 
     m_isRunning = false;

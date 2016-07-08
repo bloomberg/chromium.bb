@@ -56,7 +56,7 @@ USB::USB(LocalFrame& frame)
 {
     ThreadState::current()->registerPreFinalizer(this);
     frame.serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_deviceManager));
-    m_deviceManager.set_connection_error_handler(createBaseCallback(WTF::bind(&USB::onDeviceManagerConnectionError, wrapWeakPersistent(this))));
+    m_deviceManager.set_connection_error_handler(convertToBaseCallback(WTF::bind(&USB::onDeviceManagerConnectionError, wrapWeakPersistent(this))));
     m_deviceManager->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
 }
 
@@ -88,7 +88,7 @@ ScriptPromise USB::getDevices(ScriptState* scriptState)
             resolver->reject(DOMException::create(SecurityError, errorMessage));
         } else {
             m_deviceManagerRequests.add(resolver);
-            m_deviceManager->GetDevices(nullptr, createBaseCallback(WTF::bind(&USB::onGetDevices, wrapPersistent(this), wrapPersistent(resolver))));
+            m_deviceManager->GetDevices(nullptr, convertToBaseCallback(WTF::bind(&USB::onGetDevices, wrapPersistent(this), wrapPersistent(resolver))));
         }
     }
     return promise;
@@ -106,7 +106,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
             return promise;
         }
         frame->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_chooserService));
-        m_chooserService.set_connection_error_handler(createBaseCallback(WTF::bind(&USB::onChooserServiceConnectionError, wrapWeakPersistent(this))));
+        m_chooserService.set_connection_error_handler(convertToBaseCallback(WTF::bind(&USB::onChooserServiceConnectionError, wrapWeakPersistent(this))));
     }
 
     String errorMessage;
@@ -122,7 +122,7 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState, const USBDeviceReques
                 filters.append(convertDeviceFilter(filter));
         }
         m_chooserServiceRequests.add(resolver);
-        m_chooserService->GetPermission(std::move(filters), createBaseCallback(WTF::bind(&USB::onGetPermission, wrapPersistent(this), wrapPersistent(resolver))));
+        m_chooserService->GetPermission(std::move(filters), convertToBaseCallback(WTF::bind(&USB::onGetPermission, wrapPersistent(this), wrapPersistent(resolver))));
     }
     return promise;
 }

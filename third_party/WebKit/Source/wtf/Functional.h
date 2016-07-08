@@ -229,9 +229,9 @@ public:
         return m_callback.Run(std::forward<Args>(args)...);
     }
 
-    explicit operator base::Callback<R(Args...)>()
+    friend base::Callback<R(Args...)> convertToBaseCallback(std::unique_ptr<Function> function)
     {
-        return m_callback;
+        return std::move(function->m_callback);
     }
 
 private:

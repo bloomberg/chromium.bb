@@ -41,7 +41,7 @@ public:
 
     explicit WebFunction(std::unique_ptr<WTFFunction> c)
     {
-        m_callback = static_cast<base::Callback<R(Args...)>>(*c);
+        m_callback = convertToBaseCallback(std::move(c));
     }
 #endif
 

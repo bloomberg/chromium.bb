@@ -5,21 +5,9 @@
 #ifndef MojoHelper_h
 #define MojoHelper_h
 
-#include "base/callback.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "platform/heap/HeapAllocator.h"
-#include "wtf/Functional.h"
 #include <utility>
-
-namespace blink {
-
-template <typename R, typename... Args>
-base::Callback<R(Args...)> createBaseCallback(std::unique_ptr<Function<R(Args...)>> functor)
-{
-    return static_cast<base::Callback<R(Args...)>>(*functor);
-}
-
-} // namespace blink
 
 namespace mojo {
 

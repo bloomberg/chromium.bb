@@ -123,14 +123,14 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* executionContext, const Str
     // Local BroadcastChannelClient for messages send from the browser to this channel.
     webmessaging::mojom::blink::BroadcastChannelClientAssociatedPtrInfo localClientInfo;
     m_binding.Bind(&localClientInfo, provider.associated_group());
-    m_binding.set_connection_error_handler(createBaseCallback(WTF::bind(&BroadcastChannel::onError, wrapWeakPersistent(this))));
+    m_binding.set_connection_error_handler(convertToBaseCallback(WTF::bind(&BroadcastChannel::onError, wrapWeakPersistent(this))));
 
     // Remote BroadcastChannelClient for messages send from this channel to the browser.
     webmessaging::mojom::blink::BroadcastChannelClientAssociatedPtrInfo remoteClientInfo;
     mojo::AssociatedInterfaceRequest<webmessaging::mojom::blink::BroadcastChannelClient> remoteCientRequest;
     provider.associated_group()->CreateAssociatedInterface(mojo::AssociatedGroup::WILL_PASS_REQUEST, &remoteClientInfo, &remoteCientRequest);
     m_remoteClient.Bind(std::move(remoteClientInfo));
-    m_remoteClient.set_connection_error_handler(createBaseCallback(WTF::bind(&BroadcastChannel::onError, wrapWeakPersistent(this))));
+    m_remoteClient.set_connection_error_handler(convertToBaseCallback(WTF::bind(&BroadcastChannel::onError, wrapWeakPersistent(this))));
 
     provider->ConnectToChannel(m_origin, m_name, std::move(localClientInfo), std::move(remoteCientRequest));
 }

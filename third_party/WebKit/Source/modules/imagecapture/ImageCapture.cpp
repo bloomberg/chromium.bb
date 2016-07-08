@@ -92,7 +92,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState, Excep
     // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
     // TODO(mcasas) consider sending the security origin as well:
     // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(WTF::bind(&ImageCapture::onCapabilities, wrapPersistent(this), wrapPersistent(resolver))));
+    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), convertToBaseCallback(WTF::bind(&ImageCapture::onCapabilities, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
 }
 
@@ -119,7 +119,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
     if (settings->has_zoom)
         settings->zoom = photoSettings.zoom();
 
-    m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), createBaseCallback(WTF::bind(&ImageCapture::onSetOptions, wrapPersistent(this), wrapPersistent(resolver))));
+    m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), convertToBaseCallback(WTF::bind(&ImageCapture::onSetOptions, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
 }
 
@@ -144,7 +144,7 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState, ExceptionState& 
     // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
     // TODO(mcasas) consider sending the security origin as well:
     // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-    m_service->TakePhoto(m_streamTrack->component()->source()->id(), createBaseCallback(WTF::bind(&ImageCapture::onTakePhoto, wrapPersistent(this), wrapPersistent(resolver))));
+    m_service->TakePhoto(m_streamTrack->component()->source()->id(), convertToBaseCallback(WTF::bind(&ImageCapture::onTakePhoto, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
 }
 
@@ -184,7 +184,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
 
     Platform::current()->serviceRegistry()->connectToRemoteService(mojo::GetProxy(&m_service));
 
-    m_service.set_connection_error_handler(createBaseCallback(WTF::bind(&ImageCapture::onServiceConnectionError, wrapWeakPersistent(this))));
+    m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(&ImageCapture::onServiceConnectionError, wrapWeakPersistent(this))));
 
 }
 
