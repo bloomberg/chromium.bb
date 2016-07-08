@@ -6,14 +6,7 @@
 
 namespace cc {
 
-CompositorFrameMetadata::CompositorFrameMetadata()
-    : device_scale_factor(0.f),
-      page_scale_factor(0.f),
-      min_page_scale_factor(0.f),
-      max_page_scale_factor(0.f),
-      root_overflow_x_hidden(false),
-      root_overflow_y_hidden(false),
-      root_background_color(SK_ColorWHITE) {}
+CompositorFrameMetadata::CompositorFrameMetadata() = default;
 
 CompositorFrameMetadata::CompositorFrameMetadata(
     CompositorFrameMetadata&& other) = default;

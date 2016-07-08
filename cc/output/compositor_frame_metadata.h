@@ -31,21 +31,27 @@ class CC_EXPORT CompositorFrameMetadata {
   CompositorFrameMetadata Clone() const;
 
   // The device scale factor used to generate this compositor frame.
-  float device_scale_factor;
+  float device_scale_factor = 0.f;
 
   // Scroll offset and scale of the root layer. This can be used for tasks
   // like positioning windowed plugins.
   gfx::Vector2dF root_scroll_offset;
-  float page_scale_factor;
+  float page_scale_factor = 0.f;
 
   // These limits can be used together with the scroll/scale fields above to
   // determine if scrolling/scaling in a particular direction is possible.
   gfx::SizeF scrollable_viewport_size;
   gfx::SizeF root_layer_size;
-  float min_page_scale_factor;
-  float max_page_scale_factor;
-  bool root_overflow_x_hidden;
-  bool root_overflow_y_hidden;
+  float min_page_scale_factor = 0.f;
+  float max_page_scale_factor = 0.f;
+  bool root_overflow_x_hidden = false;
+  bool root_overflow_y_hidden = false;
+
+  // WebView makes quality decisions for rastering resourceless software frames
+  // based on information that a scroll or animation is active.
+  // TODO(aelias): Remove this and always enable filtering if there aren't apps
+  // depending on this anymore.
+  bool is_resourceless_software_draw_with_scroll_or_animation = false;
 
   // Used to position the Android location top bar and page content, whose
   // precise position is computed by the renderer compositor.
@@ -55,7 +61,7 @@ class CC_EXPORT CompositorFrameMetadata {
   // This color is usually obtained from the background color of the <body>
   // element. It can be used for filling in gutter areas around the frame when
   // it's too small to fill the box the parent reserved for it.
-  SkColor root_background_color;
+  SkColor root_background_color = SK_ColorWHITE;
 
   // Provides selection region updates relative to the current viewport. If the
   // selection is empty or otherwise unused, the bound types will indicate such.

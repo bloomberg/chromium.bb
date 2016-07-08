@@ -1598,6 +1598,11 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
         !OuterViewportScrollLayer()->user_scrollable_vertical();
   }
 
+  if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
+    metadata.is_resourceless_software_draw_with_scroll_or_animation =
+        IsActivelyScrolling() || animation_host_->NeedsAnimateLayers();
+  }
+
   for (LayerImpl* surface_layer : active_tree_->SurfaceLayers()) {
     metadata.referenced_surfaces.push_back(
         static_cast<SurfaceLayerImpl*>(surface_layer)->surface_id());
@@ -1672,28 +1677,9 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                                                 resource_provider_.get());
   }
 
-  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
-    bool disable_picture_quad_image_filtering =
-        IsActivelyScrolling() || animation_host_->NeedsAnimateLayers();
-
-    // We must disable the image hijack canvas when using GPU rasterization but
-    // performing a resourceless software draw. Otherwise, we will attempt to
-    // use the GPU ImageDecodeController during software raster.
-    bool use_image_hijack_canvas = !use_gpu_rasterization_;
-
-    std::unique_ptr<SoftwareRenderer> temp_software_renderer =
-        SoftwareRenderer::Create(this, &settings_.renderer_settings,
-                                 output_surface_, nullptr,
-                                 use_image_hijack_canvas);
-    temp_software_renderer->DrawFrame(
-        &frame->render_passes, active_tree_->device_scale_factor(),
-        gfx::ColorSpace(), DeviceViewport(), DeviceClip(),
-        disable_picture_quad_image_filtering);
-  } else {
-    renderer_->DrawFrame(&frame->render_passes,
-                         active_tree_->device_scale_factor(), gfx::ColorSpace(),
-                         DeviceViewport(), DeviceClip(), false);
-  }
+  renderer_->DrawFrame(&frame->render_passes,
+                       active_tree_->device_scale_factor(), gfx::ColorSpace(),
+                       DeviceViewport(), DeviceClip());
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
 
@@ -2150,9 +2136,9 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
         resource_provider_.get(), texture_mailbox_deleter_.get(),
         settings_.renderer_settings.highp_threshold_min);
   } else if (output_surface_->software_device()) {
-    renderer_ = SoftwareRenderer::Create(
-        this, &settings_.renderer_settings, output_surface_,
-        resource_provider_.get(), true /* use_image_hijack_canvas */);
+    renderer_ =
+        SoftwareRenderer::Create(this, &settings_.renderer_settings,
+                                 output_surface_, resource_provider_.get());
   }
   DCHECK(renderer_);
 

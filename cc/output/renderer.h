@@ -73,8 +73,7 @@ class CC_EXPORT Renderer {
                          float device_scale_factor,
                          const gfx::ColorSpace& device_color_space,
                          const gfx::Rect& device_viewport_rect,
-                         const gfx::Rect& device_clip_rect,
-                         bool disable_picture_quad_image_filtering) = 0;
+                         const gfx::Rect& device_clip_rect) = 0;
 
   // Waits for rendering to finish.
   virtual void Finish() = 0;

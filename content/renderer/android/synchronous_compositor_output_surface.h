@@ -18,12 +18,18 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface.h"
+#include "cc/surfaces/display_client.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "ipc/ipc_message.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
 class ContextProvider;
 class CompositorFrameMetadata;
+class Display;
+class SurfaceFactory;
+class SurfaceIdAllocator;
+class SurfaceManager;
 }
 
 namespace IPC {
@@ -57,7 +63,8 @@ class SynchronousCompositorOutputSurfaceClient {
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
 class SynchronousCompositorOutputSurface
-    : NON_EXPORTED_BASE(public cc::OutputSurface) {
+    : NON_EXPORTED_BASE(public cc::OutputSurface),
+      public cc::SurfaceFactoryClient {
  public:
   SynchronousCompositorOutputSurface(
       scoped_refptr<cc::ContextProvider> context_provider,
@@ -92,14 +99,14 @@ class SynchronousCompositorOutputSurface
                     const gfx::Transform& transform_for_tile_priority);
   void DemandDrawSw(SkCanvas* canvas);
 
- private:
-  class SoftwareDevice;
-  friend class SoftwareDevice;
+  // SurfaceFactoryClient implementation.
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
 
+ private:
   void InvokeComposite(const gfx::Transform& transform,
                        const gfx::Rect& viewport,
-                       const gfx::Rect& clip,
-                       bool hardware_draw);
+                       const gfx::Rect& clip);
   bool Send(IPC::Message* message);
   void DidActivatePendingTree();
   void DeliverMessages();
@@ -117,21 +124,39 @@ class SynchronousCompositorOutputSurface
   const uint32_t output_surface_id_;
   SynchronousCompositorRegistry* const registry_;  // Not owned.
   IPC::Sender* const sender_;  // Not owned.
-  bool registered_;
+  bool registered_ = false;
 
   // Not owned.
-  SynchronousCompositorOutputSurfaceClient* sync_client_;
+  SynchronousCompositorOutputSurfaceClient* sync_client_ = nullptr;
 
   // Only valid (non-NULL) during a DemandDrawSw() call.
-  SkCanvas* current_sw_canvas_;
+  SkCanvas* current_sw_canvas_ = nullptr;
 
   cc::ManagedMemoryPolicy memory_policy_;
-  bool did_swap_;
+  bool in_software_draw_ = false;
+  bool did_swap_ = false;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
   base::CancelableClosure fallback_tick_;
-  bool fallback_tick_pending_;
-  bool fallback_tick_running_;
+  bool fallback_tick_pending_ = false;
+  bool fallback_tick_running_ = false;
+
+  class StubDisplayClient : public cc::DisplayClient {
+    void DisplayOutputSurfaceLost() override {}
+    void DisplaySetMemoryPolicy(
+        const cc::ManagedMemoryPolicy& policy) override {}
+  };
+
+  // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
+  // is owned/destroyed on the compositor thread.
+  std::unique_ptr<cc::SurfaceManager> surface_manager_;
+  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  cc::SurfaceId delegated_surface_id_;
+  // Uses surface_manager_.
+  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  StubDisplayClient display_client_;
+  // Uses surface_manager_.
+  std::unique_ptr<cc::Display> display_;
 
   base::ThreadChecker thread_checker_;
 

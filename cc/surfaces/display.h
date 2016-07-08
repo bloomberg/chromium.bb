@@ -39,6 +39,7 @@ class OutputSurface;
 class RendererSettings;
 class ResourceProvider;
 class SharedBitmapManager;
+class SoftwareRenderer;
 class Surface;
 class SurfaceAggregator;
 class SurfaceIdAllocator;
@@ -142,6 +143,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<SurfaceAggregator> aggregator_;
   std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   std::unique_ptr<DirectRenderer> renderer_;
+  SoftwareRenderer* software_renderer_ = nullptr;
   std::vector<ui::LatencyInfo> stored_latency_info_;
 
  private:

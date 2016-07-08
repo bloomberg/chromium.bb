@@ -56,24 +56,20 @@ std::unique_ptr<SoftwareRenderer> SoftwareRenderer::Create(
     RendererClient* client,
     const RendererSettings* settings,
     OutputSurface* output_surface,
-    ResourceProvider* resource_provider,
-    bool use_image_hijack_canvas) {
+    ResourceProvider* resource_provider) {
   return base::WrapUnique(new SoftwareRenderer(client, settings, output_surface,
-                                               resource_provider,
-                                               use_image_hijack_canvas));
+                                               resource_provider));
 }
 
 SoftwareRenderer::SoftwareRenderer(RendererClient* client,
                                    const RendererSettings* settings,
                                    OutputSurface* output_surface,
-                                   ResourceProvider* resource_provider,
-                                   bool use_image_hijack_canvas)
+                                   ResourceProvider* resource_provider)
     : DirectRenderer(client, settings, output_surface, resource_provider),
       is_scissor_enabled_(false),
       is_backbuffer_discarded_(false),
       output_device_(output_surface->software_device()),
-      current_canvas_(nullptr),
-      use_image_hijack_canvas_(use_image_hijack_canvas) {
+      current_canvas_(nullptr) {
   if (resource_provider_) {
     capabilities_.max_texture_size = resource_provider_->max_texture_size();
     capabilities_.best_texture_format =
@@ -366,13 +362,19 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   const bool needs_transparency =
       SkScalarRoundToInt(quad->shared_quad_state->opacity * 255) < 255;
   const bool disable_image_filtering =
-      frame->disable_picture_quad_image_filtering || quad->nearest_neighbor;
+      disable_picture_quad_image_filtering_ || quad->nearest_neighbor;
 
   TRACE_EVENT0("cc", "SoftwareRenderer::DrawPictureQuad");
 
   RasterSource::PlaybackSettings playback_settings;
   playback_settings.playback_to_shared_canvas = true;
-  playback_settings.use_image_hijack_canvas = use_image_hijack_canvas_;
+  // Indicates whether content rasterization should happen through an
+  // ImageHijackCanvas, which causes image decodes to be managed by an
+  // ImageDecodeController. PictureDrawQuads are used for resourceless software
+  // draws, while a GPU ImageDecodeController may be in use by the compositor
+  // providing the RasterSource. So we disable the image hijack canvas to avoid
+  // trying to use the GPU ImageDecodeController while doing a software draw.
+  playback_settings.use_image_hijack_canvas = false;
   if (needs_transparency || disable_image_filtering) {
     // TODO(aelias): This isn't correct in all cases. We should detect these
     // cases and fall back to a persistent bitmap backing

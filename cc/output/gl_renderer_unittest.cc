@@ -66,13 +66,13 @@ class GLRendererTest : public testing::Test {
   }
   void DrawFrame(Renderer* renderer, const gfx::Rect& viewport_rect) {
     renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, gfx::ColorSpace(),
-                        viewport_rect, viewport_rect, false);
+                        viewport_rect, viewport_rect);
   }
   void DrawFrame(Renderer* renderer,
                  const gfx::Rect& viewport_rect,
                  const gfx::Rect& clip_rect) {
     renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, gfx::ColorSpace(),
-                        viewport_rect, clip_rect, false);
+                        viewport_rect, clip_rect);
   }
 
   RenderPassList render_passes_in_draw_order_;
@@ -1693,7 +1693,7 @@ class MockOutputSurface : public OutputSurface {
                     bool has_alpha));
   MOCK_METHOD0(BindFramebuffer, void());
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
-  MOCK_METHOD1(SwapBuffers_, void(CompositorFrame& frame));
+  MOCK_METHOD1(SwapBuffers_, void(CompositorFrame& frame));  // NOLINT
   void SwapBuffers(CompositorFrame frame) override { SwapBuffers_(frame); }
 };
 
@@ -1739,7 +1739,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
         render_passes_in_draw_order_);
     renderer_->DrawFrame(&render_passes_in_draw_order_, device_scale_factor,
                          gfx::ColorSpace(), device_viewport_rect,
-                         device_viewport_rect, false);
+                         device_viewport_rect);
   }
 
   OutputSurfaceMockContext* Context() {

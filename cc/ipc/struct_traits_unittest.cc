@@ -267,6 +267,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float max_page_scale_factor = 4.6f;
   const bool root_overflow_x_hidden = true;
   const bool root_overflow_y_hidden = true;
+  const bool is_resourceless_software_draw_with_scroll_or_animation = true;
   const gfx::Vector2dF location_bar_offset(1234.5f, 5432.1f);
   const gfx::Vector2dF location_bar_content_translation(1234.5f, 5432.1f);
   const uint32_t root_background_color = 1337;
@@ -300,6 +301,8 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.max_page_scale_factor = max_page_scale_factor;
   input.root_overflow_x_hidden = root_overflow_x_hidden;
   input.root_overflow_y_hidden = root_overflow_y_hidden;
+  input.is_resourceless_software_draw_with_scroll_or_animation =
+      is_resourceless_software_draw_with_scroll_or_animation;
   input.location_bar_offset = location_bar_offset;
   input.location_bar_content_translation = location_bar_content_translation;
   input.root_background_color = root_background_color;
@@ -320,6 +323,8 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
   EXPECT_EQ(root_overflow_x_hidden, output.root_overflow_x_hidden);
   EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
+  EXPECT_EQ(is_resourceless_software_draw_with_scroll_or_animation,
+            output.is_resourceless_software_draw_with_scroll_or_animation);
   EXPECT_EQ(location_bar_offset, output.location_bar_offset);
   EXPECT_EQ(location_bar_content_translation,
             output.location_bar_content_translation);

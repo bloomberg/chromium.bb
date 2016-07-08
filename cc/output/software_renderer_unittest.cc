@@ -42,8 +42,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), shared_bitmap_manager_.get());
     renderer_ = SoftwareRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider(),
-        true /* use_image_hijack_canvas */);
+        this, &settings_, output_surface_.get(), resource_provider());
   }
 
   ResourceProvider* resource_provider() const {
@@ -68,7 +67,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
                        loop.QuitClosure())));
 
     renderer()->DrawFrame(list, device_scale_factor, gfx::ColorSpace(),
-                          device_viewport_rect, device_viewport_rect, false);
+                          device_viewport_rect, device_viewport_rect);
     loop.Run();
     return bitmap_result;
   }

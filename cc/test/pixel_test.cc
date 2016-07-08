@@ -80,10 +80,15 @@ bool PixelTest::RunPixelTestWithReadbackTargetAndArea(
   gfx::Rect device_clip_rect = external_device_clip_rect_.IsEmpty()
                                    ? device_viewport_rect
                                    : external_device_clip_rect_;
+
+  if (software_renderer_) {
+    software_renderer_->SetDisablePictureQuadImageFiltering(
+        disable_picture_quad_image_filtering_);
+  }
+
   renderer_->DecideRenderPassAllocationsForFrame(*pass_list);
   renderer_->DrawFrame(pass_list, device_scale_factor, gfx::ColorSpace(),
-                       device_viewport_rect, device_clip_rect,
-                       disable_picture_quad_image_filtering_);
+                       device_viewport_rect, device_clip_rect);
 
   // Wait for the readback to complete.
   if (output_surface_->context_provider())
@@ -182,9 +187,11 @@ void PixelTest::SetUpSoftwareRenderer() {
       main_thread_task_runner_.get(), 0, 1, delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.use_image_texture_targets);
-  renderer_ = SoftwareRenderer::Create(
-      this, &settings_.renderer_settings, output_surface_.get(),
-      resource_provider_.get(), true /* use_image_hijack_canvas */);
+  std::unique_ptr<SoftwareRenderer> renderer =
+      SoftwareRenderer::Create(this, &settings_.renderer_settings,
+                               output_surface_.get(), resource_provider_.get());
+  software_renderer_ = renderer.get();
+  renderer_ = std::move(renderer);
 }
 
 }  // namespace cc

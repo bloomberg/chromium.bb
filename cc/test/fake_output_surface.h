@@ -57,13 +57,6 @@ class FakeOutputSurface : public OutputSurface {
         new FakeOutputSurface(std::move(software_device), false));
   }
 
-  static std::unique_ptr<FakeOutputSurface>
-  Create3dWithResourcelessSoftwareSupport() {
-    return base::WrapUnique(new FakeOutputSurface(
-        TestContextProvider::Create(), TestContextProvider::CreateWorker(),
-        base::WrapUnique(new SoftwareOutputDevice), false));
-  }
-
   static std::unique_ptr<FakeOutputSurface> CreateDelegating3d() {
     return base::WrapUnique(
         new FakeOutputSurface(TestContextProvider::Create(),

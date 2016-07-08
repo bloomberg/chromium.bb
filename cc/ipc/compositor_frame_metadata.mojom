@@ -20,6 +20,7 @@ struct CompositorFrameMetadata {
   float max_page_scale_factor;
   bool root_overflow_x_hidden;
   bool root_overflow_y_hidden;
+  bool is_resourceless_software_draw_with_scroll_or_animation;
   gfx.mojom.Vector2dF location_bar_offset;
   gfx.mojom.Vector2dF location_bar_content_translation;
   uint32 root_background_color;

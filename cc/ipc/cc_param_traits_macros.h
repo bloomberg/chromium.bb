@@ -184,6 +184,8 @@ IPC_STRUCT_TRAITS_BEGIN(cc::CompositorFrameMetadata)
   IPC_STRUCT_TRAITS_MEMBER(max_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(root_overflow_x_hidden)
   IPC_STRUCT_TRAITS_MEMBER(root_overflow_y_hidden)
+  IPC_STRUCT_TRAITS_MEMBER(
+      is_resourceless_software_draw_with_scroll_or_animation)
   IPC_STRUCT_TRAITS_MEMBER(location_bar_offset)
   IPC_STRUCT_TRAITS_MEMBER(location_bar_content_translation)
   IPC_STRUCT_TRAITS_MEMBER(root_background_color)

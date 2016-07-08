@@ -9647,7 +9647,7 @@ TEST_F(LayerTreeHostImplTest, OnDrawConstraintSetNeedsRedraw) {
 class ResourcelessSoftwareLayerTreeHostImplTest : public LayerTreeHostImplTest {
  protected:
   std::unique_ptr<OutputSurface> CreateOutputSurface() override {
-    return FakeOutputSurface::Create3dWithResourcelessSoftwareSupport();
+    return FakeOutputSurface::CreateDelegating3d();
   }
 };
 

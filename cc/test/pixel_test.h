@@ -58,6 +58,7 @@ class PixelTest : public testing::Test, RendererClient {
   std::unique_ptr<ResourceProvider> resource_provider_;
   std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   std::unique_ptr<DirectRenderer> renderer_;
+  SoftwareRenderer* software_renderer_ = nullptr;
   std::unique_ptr<SkBitmap> result_bitmap_;
   gfx::Vector2d external_device_viewport_offset_;
   gfx::Rect external_device_clip_rect_;
@@ -118,11 +119,7 @@ class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
                                        const RendererSettings* settings,
                                        OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
-      : SoftwareRenderer(client,
-                         settings,
-                         output_surface,
-                         resource_provider,
-                         true /* use_image_hijack_canvas */) {}
+      : SoftwareRenderer(client, settings, output_surface, resource_provider) {}
 };
 
 class GLRendererWithFlippedSurface : public GLRenderer {

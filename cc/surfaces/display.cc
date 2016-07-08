@@ -52,7 +52,6 @@ Display::Display(SurfaceManager* manager,
       texture_mailbox_deleter_(std::move(texture_mailbox_deleter)) {
   DCHECK(surface_manager_);
   DCHECK(output_surface_);
-  DCHECK(texture_mailbox_deleter_);
   DCHECK_EQ(!scheduler_, !begin_frame_source_);
 
   surface_manager_->AddObserver(this);
@@ -163,6 +162,7 @@ void Display::InitializeRenderer() {
                             GL_TEXTURE_2D)));
 
   if (output_surface_->context_provider()) {
+    DCHECK(texture_mailbox_deleter_);
     std::unique_ptr<GLRenderer> renderer = GLRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
@@ -171,6 +171,7 @@ void Display::InitializeRenderer() {
     renderer_ = std::move(renderer);
   } else if (output_surface_->vulkan_context_provider()) {
 #if defined(ENABLE_VULKAN)
+    DCHECK(texture_mailbox_deleter_);
     std::unique_ptr<VulkanRenderer> renderer = VulkanRenderer::Create(
         this, &settings_, output_surface_.get(), resource_provider.get(),
         texture_mailbox_deleter_.get(), settings_.highp_threshold_min);
@@ -182,10 +183,10 @@ void Display::InitializeRenderer() {
 #endif
   } else {
     std::unique_ptr<SoftwareRenderer> renderer = SoftwareRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider.get(),
-        true /* use_image_hijack_canvas */);
+        this, &settings_, output_surface_.get(), resource_provider.get());
     if (!renderer)
       return;
+    software_renderer_ = renderer.get();
     renderer_ = std::move(renderer);
   }
 
@@ -290,14 +291,22 @@ bool Display::DrawAndSwap() {
     gfx::Rect device_viewport_rect = gfx::Rect(current_surface_size_);
     gfx::Rect device_clip_rect =
         external_clip_.IsEmpty() ? device_viewport_rect : external_clip_;
-    bool disable_picture_quad_image_filtering = false;
+
+    bool disable_image_filtering =
+        frame.metadata.is_resourceless_software_draw_with_scroll_or_animation;
+    if (software_renderer_) {
+      software_renderer_->SetDisablePictureQuadImageFiltering(
+          disable_image_filtering);
+    } else {
+      // This should only be set for software draws in synchronous compositor.
+      DCHECK(!disable_image_filtering);
+    }
 
     renderer_->DecideRenderPassAllocationsForFrame(
         frame_data->render_pass_list);
     renderer_->DrawFrame(&frame_data->render_pass_list, device_scale_factor_,
                          device_color_space_, device_viewport_rect,
-                         device_clip_rect,
-                         disable_picture_quad_image_filtering);
+                         device_clip_rect);
   } else {
     TRACE_EVENT_INSTANT0("cc", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }

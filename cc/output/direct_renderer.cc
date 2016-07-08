@@ -200,8 +200,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
                                float device_scale_factor,
                                const gfx::ColorSpace& device_color_space,
                                const gfx::Rect& device_viewport_rect,
-                               const gfx::Rect& device_clip_rect,
-                               bool disable_picture_quad_image_filtering) {
+                               const gfx::Rect& device_clip_rect) {
   TRACE_EVENT0("cc", "DirectRenderer::DrawFrame");
   UMA_HISTOGRAM_COUNTS(
       "Renderer4.renderPassCount",
@@ -218,8 +217,6 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   frame.root_damage_rect.Intersect(gfx::Rect(device_viewport_rect.size()));
   frame.device_viewport_rect = device_viewport_rect;
   frame.device_clip_rect = device_clip_rect;
-  frame.disable_picture_quad_image_filtering =
-      disable_picture_quad_image_filtering;
 
   EnsureBackbuffer();
 

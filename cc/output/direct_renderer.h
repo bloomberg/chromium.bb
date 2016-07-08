@@ -38,8 +38,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
                  float device_scale_factor,
                  const gfx::ColorSpace& device_color_space,
                  const gfx::Rect& device_viewport_rect,
-                 const gfx::Rect& device_clip_rect,
-                 bool disable_picture_quad_image_filtering) override;
+                 const gfx::Rect& device_clip_rect) override;
   virtual void SwapBuffersComplete() {}
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) {}
@@ -64,8 +63,6 @@ class CC_EXPORT DirectRenderer : public Renderer {
 
     gfx::Transform projection_matrix;
     gfx::Transform window_matrix;
-
-    bool disable_picture_quad_image_filtering;
 
     OverlayCandidateList overlay_list;
     CALayerOverlayList ca_layer_overlay_list;
