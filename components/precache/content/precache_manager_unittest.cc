@@ -147,6 +147,8 @@ class PrecacheManagerUnderTest : public PrecacheManager {
   bool control_group_;
 };
 
+}  // namespace
+
 class PrecacheManagerTest : public testing::Test {
  public:
   PrecacheManagerTest()
@@ -342,6 +344,8 @@ TEST_F(PrecacheManagerTest, StartAndCancelPrecachingAfterURLsReceived) {
   EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
 }
 
+// TODO(rajendrant): Add unittests for
+// PrecacheUtil::UpdatePrecacheMetricsAndState() for more test coverage.
 TEST_F(PrecacheManagerTest, RecordStatsForFetchWithSizeZero) {
   // Fetches with size 0 should be ignored.
   precache_manager_->RecordStatsForFetch(GURL("http://url.com"), GURL(),
@@ -522,7 +526,5 @@ TEST_F(PrecacheManagerTest, DeleteExpiredPrecacheHistory) {
   EXPECT_THAT(histograms_.GetTotalCountsForPrefix("Precache."),
               ContainerEq(expected_histogram_count_map));
 }
-
-}  // namespace
 
 }  // namespace precache

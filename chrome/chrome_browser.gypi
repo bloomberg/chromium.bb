@@ -1045,6 +1045,8 @@
       'browser/platform_util_android.cc',
       'browser/precache/precache_manager_factory.cc',
       'browser/precache/precache_manager_factory.h',
+      'browser/precache/precache_util.cc',
+      'browser/precache/precache_util.h',
       'browser/prerender/external_prerender_handler_android.cc',
       'browser/prerender/external_prerender_handler_android.h',
       'browser/profiles/profile_android.cc',

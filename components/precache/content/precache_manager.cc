@@ -214,6 +214,21 @@ bool PrecacheManager::IsPrecaching() const {
   return is_precaching_;
 }
 
+void PrecacheManager::UpdatePrecacheMetricsAndState(
+    const GURL& url,
+    const GURL& referrer,
+    const base::TimeDelta& latency,
+    const base::Time& fetch_time,
+    int64_t size,
+    bool was_cached,
+    bool is_user_traffic) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RecordStatsForFetch(url, referrer, latency, fetch_time, size, was_cached);
+  if (is_user_traffic && IsPrecaching())
+    CancelPrecaching();
+}
+
 void PrecacheManager::RecordStatsForFetch(const GURL& url,
                                           const GURL& referrer,
                                           const base::TimeDelta& latency,

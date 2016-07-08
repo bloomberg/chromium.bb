@@ -41,6 +41,9 @@ class DataUseMeasurement {
   // Records the data use of the |request|, thus |request| must be non-null.
   void ReportDataUseUMA(const net::URLRequest* request) const;
 
+  // Returns true if the URLRequest |request| is initiated by user traffic.
+  static bool IsUserInitiatedRequest(const net::URLRequest* request);
+
 #if defined(OS_ANDROID)
   // This function should just be used for testing purposes. A change in
   // application state can be simulated by calling this function.

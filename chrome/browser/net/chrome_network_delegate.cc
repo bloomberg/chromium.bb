@@ -63,8 +63,7 @@
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/precache/precache_manager_factory.h"
-#include "components/precache/content/precache_manager.h"
+#include "chrome/browser/precache/precache_util.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -106,31 +105,6 @@ void ForceGoogleSafeSearchCallbackWrapper(
     safe_search_util::ForceGoogleSafeSearch(request, new_url);
   callback.Run(rv);
 }
-
-#if BUILDFLAG(ANDROID_JAVA_UI)
-void RecordPrecacheStatsOnUIThread(const GURL& url,
-                                   const GURL& referrer,
-                                   base::TimeDelta latency,
-                                   const base::Time& fetch_time,
-                                   int64_t size,
-                                   bool was_cached,
-                                   void* profile_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!g_browser_process->profile_manager()->IsValidProfile(profile_id))
-    return;
-  Profile* profile = reinterpret_cast<Profile*>(profile_id);
-
-  precache::PrecacheManager* precache_manager =
-      precache::PrecacheManagerFactory::GetForBrowserContext(profile);
-  // |precache_manager| could be NULL if the profile is off the record.
-  if (!precache_manager || !precache_manager->IsPrecachingAllowed())
-    return;
-
-  precache_manager->RecordStatsForFetch(url, referrer, latency, fetch_time,
-                                        size, was_cached);
-}
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 void ReportInvalidReferrerSendOnUI() {
   base::RecordAction(
@@ -529,20 +503,7 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
 
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
 #if BUILDFLAG(ANDROID_JAVA_UI)
-    // For better accuracy, we use the actual bytes read instead of the length
-    // specified with the Content-Length header, which may be inaccurate,
-    // or missing, as is the case with chunked encoding.
-    int64_t received_content_length =
-        request->received_response_content_length();
-    base::TimeDelta latency = base::TimeTicks::Now() - request->creation_time();
-
-    // Record precache metrics when a fetch is completed successfully, if
-    // precaching is allowed.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&RecordPrecacheStatsOnUIThread, request->url(),
-                   GURL(request->referrer()), latency, base::Time::Now(),
-                   received_content_length, request->was_cached(), profile_));
+    precache::UpdatePrecacheMetricsAndState(request, profile_);
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
     extensions_delegate_->OnCompleted(request, started);
   } else if (request->status().status() == net::URLRequestStatus::FAILED ||

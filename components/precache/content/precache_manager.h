@@ -26,6 +26,7 @@
 namespace base {
 class FilePath;
 class Time;
+class TimeDelta;
 }
 
 namespace content {
@@ -96,19 +97,34 @@ class PrecacheManager : public KeyedService,
   // Returns true if precaching is currently in progress, or false otherwise.
   bool IsPrecaching() const;
 
-  // Update precache-related metrics in response to a URL being fetched.
-  void RecordStatsForFetch(const GURL& url,
-                           const GURL& referrer,
-                           const base::TimeDelta& latency,
-                           const base::Time& fetch_time,
-                           int64_t size,
-                           bool was_cached);
-
   // Posts a task to the DB thread to delete all history entries from the
   // database. Does not wait for completion of this task.
   void ClearHistory();
 
+  // Update precache about an URL being fetched. Metrics related to precache are
+  // updated and any ongoing precache will be cancelled if this is an user
+  // initiated request. Should be called on UI thread.
+  void UpdatePrecacheMetricsAndState(const GURL& url,
+                                     const GURL& referrer,
+                                     const base::TimeDelta& latency,
+                                     const base::Time& fetch_time,
+                                     int64_t size,
+                                     bool was_cached,
+                                     bool is_user_traffic);
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest, DeleteExpiredPrecacheHistory);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest,
+                           RecordStatsForFetchDuringPrecaching);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest, RecordStatsForFetchHTTP);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest, RecordStatsForFetchHTTPS);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest, RecordStatsForFetchInTopHosts);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest,
+                           RecordStatsForFetchWithEmptyURL);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest, RecordStatsForFetchWithNonHTTP);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheManagerTest,
+                           RecordStatsForFetchWithSizeZero);
+
   enum class AllowedType {
     ALLOWED,
     DISALLOWED,
@@ -137,6 +153,14 @@ class PrecacheManager : public KeyedService,
 
   // Returns true if precaching is allowed for the browser context.
   AllowedType PrecachingAllowed() const;
+
+  // Update precache-related metrics in response to a URL being fetched.
+  void RecordStatsForFetch(const GURL& url,
+                           const GURL& referrer,
+                           const base::TimeDelta& latency,
+                           const base::Time& fetch_time,
+                           int64_t size,
+                           bool was_cached);
 
   // Update precache-related metrics in response to a URL being fetched. Called
   // by RecordStatsForFetch() by way of an asynchronous HistoryService callback.

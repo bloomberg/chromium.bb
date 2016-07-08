@@ -61,14 +61,6 @@ DataUseMeasurement::~DataUseMeasurement(){};
 
 void DataUseMeasurement::ReportDataUseUMA(
     const net::URLRequest* request) const {
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  // Having |info| is the sign of a request for a web content from user. For now
-  // we could add a condition to check ProcessType in info is
-  // content::PROCESS_TYPE_RENDERER, but it won't be compatible with upcoming
-  // PlzNavigate architecture. So just existence of |info| is verified, and the
-  // current check should be compatible with upcoming changes in PlzNavigate.
-  bool is_user_traffic = info != nullptr;
 
   // Counts rely on URLRequest::GetTotalReceivedBytes() and
   // URLRequest::GetTotalSentBytes(), which does not include the send path,
@@ -77,6 +69,7 @@ void DataUseMeasurement::ReportDataUseUMA(
   // bytes in lower levels.
   int64_t total_upload_bytes = request->GetTotalSentBytes();
   int64_t total_received_bytes = request->GetTotalReceivedBytes();
+  bool is_user_traffic = IsUserInitiatedRequest(request);
 
   bool is_connection_cellular =
       net::NetworkChangeNotifier::IsConnectionCellular(
@@ -110,6 +103,20 @@ void DataUseMeasurement::ReportDataUseUMA(
         attached_service_data->GetServiceNameAsString(service_name),
         total_upload_bytes + total_received_bytes, is_connection_cellular);
   }
+}
+
+// static
+bool DataUseMeasurement::IsUserInitiatedRequest(
+    const net::URLRequest* request) {
+  // Having ResourceRequestInfo in the URL request is a sign that the request is
+  // for a web content from user. For now we could add a condition to check
+  // ProcessType in info is content::PROCESS_TYPE_RENDERER, but it won't be
+  // compatible with upcoming PlzNavigate architecture. So just existence of
+  // ResourceRequestInfo is verified, and the current check should be compatible
+  // with upcoming changes in PlzNavigate.
+  // TODO(rajendrant): Verify this condition for different use cases. See
+  // crbug.com/626063.
+  return content::ResourceRequestInfo::ForRequest(request) != nullptr;
 }
 
 #if defined(OS_ANDROID)
