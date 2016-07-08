@@ -267,14 +267,14 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     av1_loop_filter_alloc(lf_sync, cm, sb_rows, cm->width, num_workers);
   }
 
-  // Set up loopfilter thread data.
-  // The decoder is capping num_workers because it has been observed that using
-  // more threads on the loopfilter than there are cores will hurt performance
-  // on Android. This is because the system will only schedule the tile decode
-  // workers on cores equal to the number of tile columns. Then if the decoder
-  // tries to use more threads for the loopfilter, it will hurt performance
-  // because of contention. If the multithreading code changes in the future
-  // then the number of workers used by the loopfilter should be revisited.
+// Set up loopfilter thread data.
+// The decoder is capping num_workers because it has been observed that using
+// more threads on the loopfilter than there are cores will hurt performance
+// on Android. This is because the system will only schedule the tile decode
+// workers on cores equal to the number of tile columns. Then if the decoder
+// tries to use more threads for the loopfilter, it will hurt performance
+// because of contention. If the multithreading code changes in the future
+// then the number of workers used by the loopfilter should be revisited.
 
 #if CONFIG_PARALLEL_DEBLOCKING
   // Initialize cur_sb_col to -1 for all SB rows.
