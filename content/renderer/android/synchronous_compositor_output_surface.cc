@@ -197,6 +197,15 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
 
+  if (fallback_tick_running_) {
+    client_->DidSwapBuffers();
+    client_->DidSwapBuffersComplete();
+    DCHECK(frame.delegated_frame_data->resource_list.empty());
+    cc::ReturnedResourceArray return_resources;
+    ReturnResources(return_resources);
+    return;
+  }
+
   cc::CompositorFrame swap_frame;
 
   if (in_software_draw_) {
@@ -220,13 +229,13 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
         delegated_surface_id_, std::move(frame), base::Bind(&NoOpDrawCallback));
     display_->DrawAndSwap();
   } else {
+    // For hardware draws we send the whole frame to the client so it can draw
+    // the content in it.
     swap_frame = std::move(frame);
   }
 
-  if (!fallback_tick_running_) {
-    sync_client_->SwapBuffers(output_surface_id_, std::move(swap_frame));
-    DeliverMessages();
-  }
+  sync_client_->SwapBuffers(output_surface_id_, std::move(swap_frame));
+  DeliverMessages();
   client_->DidSwapBuffers();
   did_swap_ = true;
 }
