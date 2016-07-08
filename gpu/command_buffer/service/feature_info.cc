@@ -1044,6 +1044,8 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
+  bool have_es3_occlusion_query =
+      gl_version_info_->IsAtLeastGLES(3, 0);
   bool have_ext_occlusion_query_boolean =
       extensions.Contains("GL_EXT_occlusion_query_boolean");
   bool have_arb_occlusion_query2 =
@@ -1051,10 +1053,13 @@ void FeatureInfo::InitializeFeatures() {
   bool have_arb_occlusion_query =
       extensions.Contains("GL_ARB_occlusion_query");
 
-  if (have_ext_occlusion_query_boolean ||
+  if (have_es3_occlusion_query ||
+      have_ext_occlusion_query_boolean ||
       have_arb_occlusion_query2 ||
       have_arb_occlusion_query) {
-    AddExtensionString("GL_EXT_occlusion_query_boolean");
+    if (context_type_ == CONTEXT_TYPE_OPENGLES2) {
+      AddExtensionString("GL_EXT_occlusion_query_boolean");
+    }
     feature_flags_.occlusion_query_boolean = true;
     feature_flags_.use_arb_occlusion_query2_for_occlusion_query_boolean =
         !have_ext_occlusion_query_boolean && have_arb_occlusion_query2;

@@ -1191,8 +1191,10 @@ TEST_P(FeatureInfoTest, InitializeIMG_texture_compression_pvrtc) {
 
 TEST_P(FeatureInfoTest, InitializeEXT_occlusion_query_boolean) {
   SetupInitExpectations("GL_EXT_occlusion_query_boolean");
-  EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_EXT_occlusion_query_boolean"));
+  if (GetContextType() == CONTEXT_TYPE_OPENGLES2) {
+    EXPECT_THAT(info_->extensions(),
+                HasSubstr("GL_EXT_occlusion_query_boolean"));
+  }
   EXPECT_TRUE(info_->feature_flags().occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags(
       ).use_arb_occlusion_query2_for_occlusion_query_boolean);
@@ -1202,8 +1204,10 @@ TEST_P(FeatureInfoTest, InitializeEXT_occlusion_query_boolean) {
 
 TEST_P(FeatureInfoTest, InitializeARB_occlusion_query) {
   SetupInitExpectations("GL_ARB_occlusion_query");
-  EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_EXT_occlusion_query_boolean"));
+  if (GetContextType() == CONTEXT_TYPE_OPENGLES2) {
+    EXPECT_THAT(info_->extensions(),
+                HasSubstr("GL_EXT_occlusion_query_boolean"));
+  }
   EXPECT_TRUE(info_->feature_flags().occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags(
       ).use_arb_occlusion_query2_for_occlusion_query_boolean);
@@ -1213,13 +1217,24 @@ TEST_P(FeatureInfoTest, InitializeARB_occlusion_query) {
 
 TEST_P(FeatureInfoTest, InitializeARB_occlusion_query2) {
   SetupInitExpectations("GL_ARB_occlusion_query2 GL_ARB_occlusion_query2");
-  EXPECT_THAT(info_->extensions(),
-              HasSubstr("GL_EXT_occlusion_query_boolean"));
+  if (GetContextType() == CONTEXT_TYPE_OPENGLES2) {
+    EXPECT_THAT(info_->extensions(),
+                HasSubstr("GL_EXT_occlusion_query_boolean"));
+  }
   EXPECT_TRUE(info_->feature_flags().occlusion_query_boolean);
   EXPECT_TRUE(info_->feature_flags(
       ).use_arb_occlusion_query2_for_occlusion_query_boolean);
   EXPECT_FALSE(info_->feature_flags(
       ).use_arb_occlusion_query_for_occlusion_query_boolean);
+}
+
+TEST_P(FeatureInfoTest, InitializeGLES3_occlusion_query_boolean) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 3.0");
+  if (GetContextType() == CONTEXT_TYPE_OPENGLES2) {
+    EXPECT_THAT(info_->extensions(),
+                HasSubstr("GL_EXT_occlusion_query_boolean"));
+  }
+  EXPECT_TRUE(info_->feature_flags().occlusion_query_boolean);
 }
 
 TEST_P(FeatureInfoTest, InitializeOES_vertex_array_object) {
