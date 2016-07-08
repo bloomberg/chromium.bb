@@ -118,24 +118,39 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
   PageLoadTiming timing;
   double start = perf.navigationStart();
   timing.navigation_start = base::Time::FromDoubleT(start);
-  timing.response_start = ClampDelta(perf.responseStart(), start);
-  timing.dom_loading = ClampDelta(perf.domLoading(), start);
-  timing.dom_content_loaded_event_start =
-      ClampDelta(perf.domContentLoadedEventStart(), start);
-  timing.load_event_start = ClampDelta(perf.loadEventStart(), start);
-  timing.first_layout = ClampDelta(perf.firstLayout(), start);
-  timing.first_paint = ClampDelta(perf.firstPaint(), start);
-  timing.first_text_paint = ClampDelta(perf.firstTextPaint(), start);
-  timing.first_image_paint = ClampDelta(perf.firstImagePaint(), start);
-  timing.first_contentful_paint =
-      ClampDelta(perf.firstContentfulPaint(), start);
-  timing.parse_start = ClampDelta(perf.parseStart(), start);
-  timing.parse_stop = ClampDelta(perf.parseStop(), start);
-  timing.parse_blocked_on_script_load_duration =
-      base::TimeDelta::FromSecondsD(perf.parseBlockedOnScriptLoadDuration());
-  timing.parse_blocked_on_script_load_from_document_write_duration =
-      base::TimeDelta::FromSecondsD(
-          perf.parseBlockedOnScriptLoadFromDocumentWriteDuration());
+  if (perf.responseStart() > 0.0)
+    timing.response_start = ClampDelta(perf.responseStart(), start);
+  if (perf.domLoading() > 0.0)
+    timing.dom_loading = ClampDelta(perf.domLoading(), start);
+  if (perf.domContentLoadedEventStart() > 0.0)
+    timing.dom_content_loaded_event_start =
+        ClampDelta(perf.domContentLoadedEventStart(), start);
+  if (perf.loadEventStart() > 0.0)
+    timing.load_event_start = ClampDelta(perf.loadEventStart(), start);
+  if (perf.firstLayout() > 0.0)
+    timing.first_layout = ClampDelta(perf.firstLayout(), start);
+  if (perf.firstPaint() > 0.0)
+    timing.first_paint = ClampDelta(perf.firstPaint(), start);
+  if (perf.firstTextPaint() > 0.0)
+    timing.first_text_paint = ClampDelta(perf.firstTextPaint(), start);
+  if (perf.firstImagePaint() > 0.0)
+    timing.first_image_paint = ClampDelta(perf.firstImagePaint(), start);
+  if (perf.firstContentfulPaint() > 0.0)
+    timing.first_contentful_paint =
+        ClampDelta(perf.firstContentfulPaint(), start);
+  if (perf.parseStart() > 0.0)
+    timing.parse_start = ClampDelta(perf.parseStart(), start);
+  if (perf.parseStop() > 0.0)
+    timing.parse_stop = ClampDelta(perf.parseStop(), start);
+  if (timing.parse_start) {
+    // If we started parsing, record all parser durations such as the amount of
+    // time blocked on script load, even if those values are zero.
+    timing.parse_blocked_on_script_load_duration =
+        base::TimeDelta::FromSecondsD(perf.parseBlockedOnScriptLoadDuration());
+    timing.parse_blocked_on_script_load_from_document_write_duration =
+        base::TimeDelta::FromSecondsD(
+            perf.parseBlockedOnScriptLoadFromDocumentWriteDuration());
+  }
   return timing;
 }
 

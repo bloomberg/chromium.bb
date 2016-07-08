@@ -201,11 +201,11 @@ void AbortsPageLoadMetricsObserver::OnComplete(
   if (timing.IsEmpty())
     return;
 
-  if (!timing.parse_start.is_zero() && time_to_abort >= timing.parse_start &&
-      (timing.parse_stop.is_zero() || timing.parse_stop >= time_to_abort)) {
+  if (timing.parse_start && time_to_abort >= timing.parse_start &&
+      (!timing.parse_stop || timing.parse_stop >= time_to_abort)) {
     RecordAbortDuringParse(abort_type, time_to_abort);
   }
-  if (timing.first_paint.is_zero() || timing.first_paint >= time_to_abort) {
+  if (!timing.first_paint || timing.first_paint >= time_to_abort) {
     RecordAbortAfterCommitBeforePaint(abort_type, time_to_abort);
   }
 }

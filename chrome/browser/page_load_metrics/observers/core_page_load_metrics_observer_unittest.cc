@@ -311,13 +311,13 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
 
   histogram_tester().ExpectTotalCount(internal::kBackgroundHistogramCommit, 0);
 
-  if (page_load_metrics::WasStartedInForegroundEventInForeground(
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
           timing.dom_content_loaded_event_start, info)) {
     histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded,
                                         1);
     histogram_tester().ExpectBucketCount(
         internal::kHistogramDomContentLoaded,
-        timing.dom_content_loaded_event_start.InMilliseconds(), 1);
+        timing.dom_content_loaded_event_start.value().InMilliseconds(), 1);
     histogram_tester().ExpectTotalCount(
         internal::kBackgroundHistogramDomContentLoaded, 0);
   } else {
@@ -332,12 +332,12 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
                                       1);
   histogram_tester().ExpectBucketCount(
       internal::kBackgroundHistogramFirstLayout,
-      timing.first_layout.InMilliseconds(), 1);
+      timing.first_layout.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramFirstTextPaint, 1);
   histogram_tester().ExpectBucketCount(
       internal::kBackgroundHistogramFirstTextPaint,
-      timing.first_text_paint.InMilliseconds(), 1);
+      timing.first_text_paint.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 1);
   histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
@@ -502,7 +502,7 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
       internal::kHistogramLoadTypeFirstContentfulPaintReload, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramLoadTypeFirstContentfulPaintReload,
-      timing.first_contentful_paint.InMilliseconds(), 1);
+      timing.first_contentful_paint.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 0);
   histogram_tester().ExpectTotalCount(
@@ -511,7 +511,7 @@ TEST_F(CorePageLoadMetricsObserverTest, Reload) {
       internal::kHistogramLoadTypeParseStartReload, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramLoadTypeParseStartReload,
-      timing.parse_start.InMilliseconds(), 1);
+      timing.parse_start.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeParseStartForwardBack, 0);
   histogram_tester().ExpectTotalCount(
@@ -542,7 +542,7 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
       internal::kHistogramLoadTypeFirstContentfulPaintForwardBack, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramLoadTypeFirstContentfulPaintForwardBack,
-      timing.first_contentful_paint.InMilliseconds(), 1);
+      timing.first_contentful_paint.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 0);
   histogram_tester().ExpectTotalCount(
@@ -551,7 +551,7 @@ TEST_F(CorePageLoadMetricsObserverTest, ForwardBack) {
       internal::kHistogramLoadTypeParseStartForwardBack, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramLoadTypeParseStartForwardBack,
-      timing.parse_start.InMilliseconds(), 1);
+      timing.parse_start.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeParseStartNewNavigation, 0);
 }
@@ -576,7 +576,7 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
       internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramLoadTypeFirstContentfulPaintNewNavigation,
-      timing.first_contentful_paint.InMilliseconds(), 1);
+      timing.first_contentful_paint.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramLoadTypeParseStartReload, 0);
   histogram_tester().ExpectTotalCount(
@@ -585,5 +585,5 @@ TEST_F(CorePageLoadMetricsObserverTest, NewNavigation) {
       internal::kHistogramLoadTypeParseStartNewNavigation, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramLoadTypeParseStartNewNavigation,
-      timing.parse_start.InMilliseconds(), 1);
+      timing.parse_start.value().InMilliseconds(), 1);
 }

@@ -23,31 +23,31 @@ void StaleWhileRevalidateMetricsObserver::OnCommit(
 void StaleWhileRevalidateMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
-  using page_load_metrics::WasStartedInForegroundEventInForeground;
+  using page_load_metrics::WasStartedInForegroundOptionalEventInForeground;
 
   if (!is_interesting_domain_)
     return;
 
-  if (WasStartedInForegroundEventInForeground(timing.load_event_start,
-                                              extra_info)) {
+  if (WasStartedInForegroundOptionalEventInForeground(timing.load_event_start,
+                                                      extra_info)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.StaleWhileRevalidateExperiment.Timing2."
         "NavigationToLoadEventFired",
-        timing.load_event_start);
+        timing.load_event_start.value());
   }
-  if (WasStartedInForegroundEventInForeground(timing.first_layout,
-                                              extra_info)) {
+  if (WasStartedInForegroundOptionalEventInForeground(timing.first_layout,
+                                                      extra_info)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.StaleWhileRevalidateExperiment.Timing2."
         "NavigationToFirstLayout",
-        timing.first_layout);
+        timing.first_layout.value());
   }
-  if (WasStartedInForegroundEventInForeground(timing.first_text_paint,
-                                              extra_info)) {
+  if (WasStartedInForegroundOptionalEventInForeground(timing.first_text_paint,
+                                                      extra_info)) {
     PAGE_LOAD_HISTOGRAM(
         "PageLoad.Clients.StaleWhileRevalidateExperiment.Timing2."
         "NavigationToFirstTextPaint",
-        timing.first_text_paint);
+        timing.first_text_paint.value());
   }
 }
 

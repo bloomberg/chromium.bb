@@ -5,6 +5,7 @@
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
 #include <algorithm>
+#include <ostream>
 #include <string>
 #include <utility>
 
@@ -53,6 +54,16 @@ const char kClientRedirectDelayAfterPaint[] =
 
 namespace {
 
+// Helper to allow use of Optional<> values in LOG() messages.
+std::ostream& operator<<(std::ostream& os,
+                         const base::Optional<base::TimeDelta>& opt) {
+  if (opt)
+    os << opt.value();
+  else
+    os << "(unset)";
+  return os;
+}
+
 // The url we see from the renderer side is not always the same as what
 // we see from the browser side (e.g. chrome://newtab). We want to be
 // sure here that we aren't logging UMA for internal pages.
@@ -70,11 +81,12 @@ bool IsRelevantNavigation(content::NavigationHandle* navigation_handle,
 
 // If second is non-zero, first must also be non-zero and less than or equal to
 // second.
-bool EventsInOrder(base::TimeDelta first, base::TimeDelta second) {
-  if (second.is_zero()) {
+bool EventsInOrder(const base::Optional<base::TimeDelta>& first,
+                   const base::Optional<base::TimeDelta>& second) {
+  if (!second) {
     return true;
   }
-  return !first.is_zero() && first <= second;
+  return first && first <= second;
 }
 
 bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
@@ -111,9 +123,9 @@ bool IsValidPageLoadTiming(const PageLoadTiming& timing) {
     return false;
   }
 
-  if (!timing.parse_stop.is_zero()) {
+  if (timing.parse_stop) {
     const base::TimeDelta parse_duration =
-        timing.parse_stop - timing.parse_start;
+        timing.parse_stop.value() - timing.parse_start.value();
     if (timing.parse_blocked_on_script_load_duration > parse_duration) {
       NOTREACHED() << "Invalid parse_blocked_on_script_load_duration "
                    << timing.parse_blocked_on_script_load_duration
@@ -212,28 +224,24 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
                                      const PageLoadMetadata& last_metadata,
                                      const PageLoadExtraInfo& extra_info) {
   observer->OnTimingUpdate(new_timing, extra_info);
-  if (!new_timing.dom_content_loaded_event_start.is_zero() &&
-      last_timing.dom_content_loaded_event_start.is_zero())
+  if (new_timing.dom_content_loaded_event_start &&
+      !last_timing.dom_content_loaded_event_start)
     observer->OnDomContentLoadedEventStart(new_timing, extra_info);
-  if (!new_timing.load_event_start.is_zero() &&
-      last_timing.load_event_start.is_zero())
+  if (new_timing.load_event_start && !last_timing.load_event_start)
     observer->OnLoadEventStart(new_timing, extra_info);
-  if (!new_timing.first_layout.is_zero() && last_timing.first_layout.is_zero())
+  if (new_timing.first_layout && !last_timing.first_layout)
     observer->OnFirstLayout(new_timing, extra_info);
-  if (!new_timing.first_paint.is_zero() && last_timing.first_paint.is_zero())
+  if (new_timing.first_paint && !last_timing.first_paint)
     observer->OnFirstPaint(new_timing, extra_info);
-  if (!new_timing.first_text_paint.is_zero() &&
-      last_timing.first_text_paint.is_zero())
+  if (new_timing.first_text_paint && !last_timing.first_text_paint)
     observer->OnFirstTextPaint(new_timing, extra_info);
-  if (!new_timing.first_image_paint.is_zero() &&
-      last_timing.first_image_paint.is_zero())
+  if (new_timing.first_image_paint && !last_timing.first_image_paint)
     observer->OnFirstImagePaint(new_timing, extra_info);
-  if (!new_timing.first_contentful_paint.is_zero() &&
-      last_timing.first_contentful_paint.is_zero())
+  if (new_timing.first_contentful_paint && !last_timing.first_contentful_paint)
     observer->OnFirstContentfulPaint(new_timing, extra_info);
-  if (!new_timing.parse_start.is_zero() && last_timing.parse_start.is_zero())
+  if (new_timing.parse_start && !last_timing.parse_start)
     observer->OnParseStart(new_timing, extra_info);
-  if (!new_timing.parse_stop.is_zero() && last_timing.parse_stop.is_zero())
+  if (new_timing.parse_stop && !last_timing.parse_stop)
     observer->OnParseStop(new_timing, extra_info);
   if (extra_info.metadata.behavior_flags != last_metadata.behavior_flags)
     observer->OnLoadingBehaviorObserved(extra_info);
@@ -390,8 +398,9 @@ void PageLoadTracker::OnInputEvent(const blink::WebInputEvent& event) {
 void PageLoadTracker::NotifyClientRedirectTo(
     const PageLoadTracker& destination) {
   base::TimeDelta redirect_delay_after_paint;
-  if (!timing_.first_paint.is_zero()) {
-    base::TimeTicks first_paint_time = navigation_start() + timing_.first_paint;
+  if (timing_.first_paint) {
+    base::TimeTicks first_paint_time =
+        navigation_start() + timing_.first_paint.value();
     if (destination.navigation_start() > first_paint_time)
       redirect_delay_after_paint =
           destination.navigation_start() - first_paint_time;

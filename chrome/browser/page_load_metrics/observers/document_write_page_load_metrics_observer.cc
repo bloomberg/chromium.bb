@@ -188,107 +188,119 @@ void DocumentWritePageLoadMetricsObserver::
     LogDocumentWriteEvaluatorFirstContentfulPaint(
         const page_load_metrics::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                              info)) {
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.first_contentful_paint, info)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramDocWriteFirstContentfulPaintImmediate,
-        timing.first_contentful_paint);
+        timing.first_contentful_paint.value());
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramDocWriteParseStartToFirstContentfulPaintImmediate,
-        timing.first_contentful_paint - timing.parse_start);
+        timing.first_contentful_paint.value() - timing.parse_start.value());
   } else {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteFirstContentfulPaintImmediate,
-        timing.first_contentful_paint);
+        timing.first_contentful_paint.value());
   }
 }
 
 void DocumentWritePageLoadMetricsObserver::LogDocumentWriteEvaluatorParseStop(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  base::TimeDelta parse_duration = timing.parse_stop - timing.parse_start;
-  if (WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+  base::TimeDelta parse_duration =
+      timing.parse_stop.value() - timing.parse_start.value();
+  if (WasStartedInForegroundOptionalEventInForeground(timing.parse_stop,
+                                                      info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteParseDurationImmediate,
                         parse_duration);
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramDocWriteParseBlockedOnScriptImmediate,
-        timing.parse_blocked_on_script_load_duration);
+        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kHistogramDocWriteParseBlockedOnScriptLoadDocumentWriteImmediate,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   } else {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteParseDurationImmediate,
         parse_duration);
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteParseBlockedOnScriptImmediate,
-        timing.parse_blocked_on_script_load_duration);
+        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kBackgroundHistogramDocWriteParseBlockedOnScriptLoadDocumentWriteImmediate,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   }
 }
 
 void DocumentWritePageLoadMetricsObserver::LogDocumentWriteEvaluatorData(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  bool foreground_paint = WasStartedInForegroundEventInForeground(
+  bool foreground_paint = WasStartedInForegroundOptionalEventInForeground(
       timing.first_contentful_paint, info);
-  if (!timing.first_contentful_paint.is_zero()) {
+
+  if (timing.first_contentful_paint) {
     if (foreground_paint) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteFirstContentfulPaint,
-                          timing.first_contentful_paint);
+                          timing.first_contentful_paint.value());
     } else {
       PAGE_LOAD_HISTOGRAM(
           internal::kBackgroundHistogramDocWriteFirstContentfulPaint,
-          timing.first_contentful_paint);
+          timing.first_contentful_paint.value());
     }
   }
 
   // Log parse based metrics.
-  if (!timing.parse_start.is_zero()) {
-    if (foreground_paint) {
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramDocWriteParseStartToFirstContentfulPaint,
-          timing.first_contentful_paint - timing.parse_start);
-    }
+  if (!timing.parse_start)
+    return;
 
-    if (WasParseInForeground(timing.parse_start, timing.parse_stop, info)) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteParseBlockedOnScript,
-                          timing.parse_blocked_on_script_load_duration);
-      PAGE_LOAD_HISTOGRAM(
-          internal::kHistogramDocWriteParseBlockedOnScriptLoadDocumentWrite,
-          timing.parse_blocked_on_script_load_from_document_write_duration);
-    } else {
-      PAGE_LOAD_HISTOGRAM(
-          internal::kBackgroundHistogramDocWriteParseBlockedOnScript,
-          timing.parse_blocked_on_script_load_duration);
-      PAGE_LOAD_HISTOGRAM(
-          internal::
-              kBackgroundHistogramDocWriteParseBlockedOnScriptLoadDocumentWrite,
-          timing.parse_blocked_on_script_load_from_document_write_duration);
-    }
+  if (foreground_paint) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteParseStartToFirstContentfulPaint,
+        timing.first_contentful_paint.value() - timing.parse_start.value());
+  }
 
-    // These metrics require a full parse.
-    if (!timing.parse_stop.is_zero()) {
-      base::TimeDelta parse_duration = timing.parse_stop - timing.parse_start;
-      if (WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteParseDuration,
-                            parse_duration);
-        PAGE_LOAD_HISTOGRAM(
-            internal::kHistogramDocWriteParseBlockedOnScriptParseComplete,
-            timing.parse_blocked_on_script_load_duration);
-        PAGE_LOAD_HISTOGRAM(
-            internal::
-                kHistogramDocWriteParseBlockedOnScriptLoadDocumentWriteParseComplete,
-            timing.parse_blocked_on_script_load_from_document_write_duration);
-      } else {
-        PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramDocWriteParseDuration,
-                            parse_duration);
-      }
-    }
+  if (WasParseInForeground(timing.parse_start, timing.parse_stop, info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteParseBlockedOnScript,
+                        timing.parse_blocked_on_script_load_duration.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteParseBlockedOnScriptLoadDocumentWrite,
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
+  } else {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kBackgroundHistogramDocWriteParseBlockedOnScript,
+        timing.parse_blocked_on_script_load_duration.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::
+            kBackgroundHistogramDocWriteParseBlockedOnScriptLoadDocumentWrite,
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
+  }
+
+  // These metrics require a full parse.
+  if (!timing.parse_stop)
+    return;
+
+  base::TimeDelta parse_duration =
+      timing.parse_stop.value() - timing.parse_start.value();
+  if (WasStartedInForegroundOptionalEventInForeground(timing.parse_stop,
+                                                      info)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteParseDuration,
+                        parse_duration);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteParseBlockedOnScriptParseComplete,
+        timing.parse_blocked_on_script_load_duration.value());
+    PAGE_LOAD_HISTOGRAM(
+        internal::
+            kHistogramDocWriteParseBlockedOnScriptLoadDocumentWriteParseComplete,
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
+  } else {
+    PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramDocWriteParseDuration,
+                        parse_duration);
   }
 }
 
@@ -296,29 +308,32 @@ void DocumentWritePageLoadMetricsObserver::
     LogDocumentWriteBlockFirstContentfulPaint(
         const page_load_metrics::PageLoadTiming& timing,
         const page_load_metrics::PageLoadExtraInfo& info) {
-  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                              info)) {
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.first_contentful_paint, info)) {
     PAGE_LOAD_HISTOGRAM(
         internal::
             kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate,
-        timing.first_contentful_paint - timing.parse_start);
+        timing.first_contentful_paint.value() - timing.parse_start.value());
   }
 }
 
 void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockParseStop(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  base::TimeDelta parse_duration = timing.parse_stop - timing.parse_start;
-  if (WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+  base::TimeDelta parse_duration =
+      timing.parse_stop.value() - timing.parse_start.value();
+  if (WasStartedInForegroundOptionalEventInForeground(timing.parse_stop,
+                                                      info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockParseDurationImmediate,
                         parse_duration);
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramDocWriteBlockParseBlockedOnScriptImmediate,
-        timing.parse_blocked_on_script_load_duration);
+        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kHistogramDocWriteBlockParseBlockedOnScriptLoadDocumentWriteImmediate,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   } else {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteBlockParseDurationImmediate,
@@ -326,68 +341,75 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockParseStop(
     PAGE_LOAD_HISTOGRAM(
         internal::
             kBackgroundHistogramDocWriteBlockParseBlockedOnScriptImmediate,
-        timing.parse_blocked_on_script_load_duration);
+        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocumentWriteImmediate,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   }
 }
 
 void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockData(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
-  if (timing.parse_start.is_zero()) {
+  if (!timing.parse_start) {
     return;
   }
 
-  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                              info)) {
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.first_contentful_paint, info)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramDocWriteBlockParseStartToFirstContentfulPaint,
-        timing.first_contentful_paint - timing.parse_start);
+        timing.first_contentful_paint.value() - timing.parse_start.value());
   }
 
   if (WasParseInForeground(timing.parse_start, timing.parse_stop, info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockParseBlockedOnScript,
-                        timing.parse_blocked_on_script_load_duration);
+                        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramDocWriteBlockParseBlockedOnScriptLoadDocumentWrite,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   } else {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteBlockParseBlockedOnScript,
-        timing.parse_blocked_on_script_load_duration);
+        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocumentWrite,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   }
 
-  if (timing.parse_stop.is_zero()) {
+  if (!timing.parse_stop) {
     return;
   }
 
-  base::TimeDelta parse_duration = timing.parse_stop - timing.parse_start;
-  if (WasStartedInForegroundEventInForeground(timing.parse_stop, info)) {
+  base::TimeDelta parse_duration =
+      timing.parse_stop.value() - timing.parse_start.value();
+  if (WasStartedInForegroundOptionalEventInForeground(timing.parse_stop,
+                                                      info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramDocWriteBlockParseDuration,
                         parse_duration);
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramDocWriteBlockParseBlockedOnScriptParseComplete,
-        timing.parse_blocked_on_script_load_duration);
+        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kDocWriteBlockParseBlockedOnScriptLoadDocumentWriteParseComplete,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   } else {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteBlockParseDuration,
         parse_duration);
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramDocWriteBlockParseBlockedOnScriptComplete,
-        timing.parse_blocked_on_script_load_duration);
+        timing.parse_blocked_on_script_load_duration.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kBackgroundDocWriteBlockParseBlockedOnScriptLoadDocWriteComplete,
-        timing.parse_blocked_on_script_load_from_document_write_duration);
+        timing.parse_blocked_on_script_load_from_document_write_duration
+            .value());
   }
 }

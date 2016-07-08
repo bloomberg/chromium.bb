@@ -28,10 +28,10 @@ namespace data_reduction_proxy {
 namespace {
 
 bool ShouldRecordHistogram(const DataReductionProxyData* data,
-                           const base::TimeDelta& event,
+                           const base::Optional<base::TimeDelta>& event,
                            const page_load_metrics::PageLoadExtraInfo& info) {
   return data && data->used_data_reduction_proxy() &&
-         WasStartedInForegroundEventInForeground(event, info);
+         WasStartedInForegroundOptionalEventInForeground(event, info);
 }
 
 // A macro is needed because PAGE_LOAD_HISTOGRAM creates a static instance of
@@ -43,12 +43,12 @@ bool ShouldRecordHistogram(const DataReductionProxyData* data,
       PAGE_LOAD_HISTOGRAM(                                                  \
           std::string(internal::kHistogramDataReductionProxyPrefix)         \
               .append(histogram_suffix),                                    \
-          event);                                                           \
+          event.value());                                                   \
       if (data->lofi_requested()) {                                         \
         PAGE_LOAD_HISTOGRAM(                                                \
             std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix) \
                 .append(histogram_suffix),                                  \
-            event);                                                         \
+            event.value());                                                 \
       }                                                                     \
     }                                                                       \
   } while (false)
@@ -130,16 +130,24 @@ void DataReductionProxyMetricsObserver::OnComplete(
   base::TimeDelta load_event_start;
   base::TimeDelta first_image_paint;
   base::TimeDelta first_contentful_paint;
-  if (WasStartedInForegroundEventInForeground(timing.response_start, info))
-    response_start = timing.response_start;
-  if (WasStartedInForegroundEventInForeground(timing.load_event_start, info))
-    load_event_start = timing.load_event_start;
-  if (WasStartedInForegroundEventInForeground(timing.first_image_paint, info))
-    first_image_paint = timing.first_image_paint;
-  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                              info)) {
-    first_contentful_paint = timing.first_contentful_paint;
+  if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
+                                                      info)) {
+    response_start = timing.response_start.value();
   }
+  if (WasStartedInForegroundOptionalEventInForeground(timing.load_event_start,
+                                                      info)) {
+    load_event_start = timing.load_event_start.value();
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(timing.first_image_paint,
+                                                      info)) {
+    first_image_paint = timing.first_image_paint.value();
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
+          timing.first_contentful_paint, info)) {
+    first_contentful_paint = timing.first_contentful_paint.value();
+  }
+  // TODO(ryansturm): Change DataReductionProxyPageLoadTiming to take
+  // base::Optional<>s (see crbug.com/626040).
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint);

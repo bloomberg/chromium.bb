@@ -31,14 +31,12 @@ bool PageLoadTiming::operator==(const PageLoadTiming& other) const {
 }
 
 bool PageLoadTiming::IsEmpty() const {
-  return navigation_start.is_null() && response_start.is_zero() &&
-         dom_loading.is_zero() && dom_content_loaded_event_start.is_zero() &&
-         load_event_start.is_zero() && first_layout.is_zero() &&
-         first_paint.is_zero() && first_text_paint.is_zero() &&
-         first_image_paint.is_zero() && parse_start.is_zero() &&
-         parse_stop.is_zero() &&
-         parse_blocked_on_script_load_duration.is_zero() &&
-         parse_blocked_on_script_load_from_document_write_duration.is_zero();
+  return navigation_start.is_null() && !response_start && !dom_loading &&
+         !dom_content_loaded_event_start && !load_event_start &&
+         !first_layout && !first_paint && !first_text_paint &&
+         !first_image_paint && !parse_start && !parse_stop &&
+         !parse_blocked_on_script_load_duration &&
+         !parse_blocked_on_script_load_from_document_write_duration;
 }
 
 PageLoadMetadata::PageLoadMetadata() {}

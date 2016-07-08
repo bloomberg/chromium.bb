@@ -206,9 +206,18 @@ bool WasAbortedInForeground(
   return false;
 }
 
-bool WasAbortedBeforeInteraction(UserAbortType abort_type,
-                                 base::TimeDelta time_to_interaction,
-                                 base::TimeDelta time_to_abort) {
+bool WasAbortedBeforeInteraction(
+    UserAbortType abort_type,
+    const base::Optional<base::TimeDelta>& time_to_interaction,
+    const base::Optional<base::TimeDelta>& time_to_abort) {
+  // These conditions should be guaranteed by the call to
+  // WasAbortedInForeground, which is called before WasAbortedBeforeInteraction
+  // gets invoked.
+  DCHECK(time_to_abort);
+  DCHECK(abort_type != UserAbortType::ABORT_NONE);
+
+  if (!time_to_interaction)
+    return true;
   // For the case the abort is a reload or forward_back. Since pull to
   // reload / forward_back is the most common user case such aborts being
   // triggered, add a sanitization threshold here: if the first user
@@ -221,7 +230,8 @@ bool WasAbortedBeforeInteraction(UserAbortType abort_type,
   // revealed by the interaction.
   if (abort_type == UserAbortType::ABORT_RELOAD ||
       abort_type == UserAbortType::ABORT_FORWARD_BACK) {
-    return time_to_interaction + base::TimeDelta::FromMilliseconds(1000) >
+    return time_to_interaction.value() +
+               base::TimeDelta::FromMilliseconds(1000) >
            time_to_abort;
   } else {
     return time_to_interaction > time_to_abort;
@@ -371,6 +381,8 @@ bool FromGWSPageLoadMetricsLogger::QueryContainsComponentHelper(
   return false;
 }
 
+FromGWSPageLoadMetricsLogger::FromGWSPageLoadMetricsLogger() {}
+
 void FromGWSPageLoadMetricsLogger::SetPreviouslyCommittedUrl(const GURL& url) {
   previously_committed_url_is_search_results_ = IsGoogleSearchResultUrl(url);
   previously_committed_url_is_search_redirector_ =
@@ -495,16 +507,13 @@ void FromGWSPageLoadMetricsLogger::OnComplete(
   if (timing.IsEmpty())
     return;
 
-  if (timing.first_paint.is_zero() || timing.first_paint >= time_to_abort)
+  if (!timing.first_paint || timing.first_paint >= time_to_abort) {
     LogCommittedAbortsBeforePaint(abort_type, time_to_abort);
-
-  // Temporary hack as we can't distinguish TimeDelta unset from zero
-  // TODO(bmcquade): change back to else if once crbug.com/616901 is addressed
-  if (first_paint_triggered_ && timing.first_paint <= time_to_abort &&
-      (!has_user_interaction_after_paint_ ||
-       WasAbortedBeforeInteraction(
-           abort_type, first_user_interaction_after_paint_, time_to_abort)))
+  } else if (WasAbortedBeforeInteraction(abort_type,
+                                         first_user_interaction_after_paint_,
+                                         extra_info.time_to_abort)) {
     LogAbortsAfterPaintBeforeInteraction(abort_type, time_to_abort);
+  }
 }
 
 bool FromGWSPageLoadMetricsLogger::ShouldLogMetrics(const GURL& committed_url) {
@@ -546,12 +555,12 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogMetrics(const GURL& committed_url) {
 }
 
 bool FromGWSPageLoadMetricsLogger::ShouldLogForegroundEventAfterCommit(
-    base::TimeDelta event,
+    const base::Optional<base::TimeDelta>& event,
     const page_load_metrics::PageLoadExtraInfo& info) {
   DCHECK(!info.committed_url.is_empty())
       << "ShouldLogForegroundEventAfterCommit called without committed URL.";
   return ShouldLogMetrics(info.committed_url) &&
-         WasStartedInForegroundEventInForeground(event, info);
+         WasStartedInForegroundOptionalEventInForeground(event, info);
 }
 
 void FromGWSPageLoadMetricsLogger::OnDomContentLoadedEventStart(
@@ -560,7 +569,7 @@ void FromGWSPageLoadMetricsLogger::OnDomContentLoadedEventStart(
   if (ShouldLogForegroundEventAfterCommit(timing.dom_content_loaded_event_start,
                                           extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSDomContentLoaded,
-                        timing.dom_content_loaded_event_start);
+                        timing.dom_content_loaded_event_start.value());
   }
 }
 
@@ -570,7 +579,7 @@ void FromGWSPageLoadMetricsLogger::OnLoadEventStart(
   if (ShouldLogForegroundEventAfterCommit(timing.load_event_start,
                                           extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLoad,
-                        timing.load_event_start);
+                        timing.load_event_start.value());
   }
 }
 
@@ -579,7 +588,7 @@ void FromGWSPageLoadMetricsLogger::OnFirstPaint(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (ShouldLogForegroundEventAfterCommit(timing.first_paint, extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstPaint,
-                        timing.first_paint);
+                        timing.first_paint.value());
   }
   first_paint_triggered_ = true;
 }
@@ -590,7 +599,7 @@ void FromGWSPageLoadMetricsLogger::OnFirstTextPaint(
   if (ShouldLogForegroundEventAfterCommit(timing.first_text_paint,
                                           extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstTextPaint,
-                        timing.first_text_paint);
+                        timing.first_text_paint.value());
   }
 }
 
@@ -600,7 +609,7 @@ void FromGWSPageLoadMetricsLogger::OnFirstImagePaint(
   if (ShouldLogForegroundEventAfterCommit(timing.first_image_paint,
                                           extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstImagePaint,
-                        timing.first_image_paint);
+                        timing.first_image_paint.value());
   }
 }
 
@@ -610,15 +619,15 @@ void FromGWSPageLoadMetricsLogger::OnFirstContentfulPaint(
   if (ShouldLogForegroundEventAfterCommit(timing.first_contentful_paint,
                                           extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstContentfulPaint,
-                        timing.first_contentful_paint);
+                        timing.first_contentful_paint.value());
 
     // If we have a foreground paint, we should have a foreground parse start,
     // since paints can't happen until after parsing starts.
-    DCHECK(WasStartedInForegroundEventInForeground(timing.parse_start,
-                                                   extra_info));
+    DCHECK(WasStartedInForegroundOptionalEventInForeground(timing.parse_start,
+                                                           extra_info));
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramFromGWSParseStartToFirstContentfulPaint,
-        timing.first_contentful_paint - timing.parse_start);
+        timing.first_contentful_paint.value() - timing.parse_start.value());
   }
 }
 
@@ -627,7 +636,7 @@ void FromGWSPageLoadMetricsLogger::OnParseStart(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (ShouldLogForegroundEventAfterCommit(timing.parse_start, extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseStart,
-                        timing.parse_start);
+                        timing.parse_start.value());
   }
 }
 
@@ -636,14 +645,13 @@ void FromGWSPageLoadMetricsLogger::OnParseStop(
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   if (ShouldLogForegroundEventAfterCommit(timing.parse_stop, extra_info)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSParseDuration,
-                        timing.parse_stop - timing.parse_start);
+                        timing.parse_stop.value() - timing.parse_start.value());
   }
 }
 
 void FromGWSPageLoadMetricsLogger::OnUserInput(
     const blink::WebInputEvent& event) {
-  if (first_paint_triggered_ && first_user_interaction_after_paint_.is_zero()) {
-    has_user_interaction_after_paint_ = true;
+  if (first_paint_triggered_ && !first_user_interaction_after_paint_) {
     DCHECK(!navigation_start_.is_null());
     first_user_interaction_after_paint_ =
         base::TimeTicks::Now() - navigation_start_;

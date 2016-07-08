@@ -51,46 +51,49 @@ PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
 // static
 void PageLoadMetricsObserverTestHarness::PopulateRequiredTimingFields(
     PageLoadTiming* inout_timing) {
-  if (!inout_timing->first_contentful_paint.is_zero() &&
-      inout_timing->first_paint.is_zero()) {
+  if (inout_timing->first_contentful_paint && !inout_timing->first_paint) {
     inout_timing->first_paint = inout_timing->first_contentful_paint;
   }
-  if (!inout_timing->first_text_paint.is_zero() &&
-      inout_timing->first_paint.is_zero()) {
+  if (inout_timing->first_text_paint && !inout_timing->first_paint) {
     inout_timing->first_paint = inout_timing->first_text_paint;
   }
-  if (!inout_timing->first_image_paint.is_zero() &&
-      inout_timing->first_paint.is_zero()) {
+  if (inout_timing->first_image_paint && !inout_timing->first_paint) {
     inout_timing->first_paint = inout_timing->first_image_paint;
   }
-  if (!inout_timing->first_paint.is_zero() &&
-      inout_timing->first_layout.is_zero()) {
+  if (inout_timing->first_paint && !inout_timing->first_layout) {
     inout_timing->first_layout = inout_timing->first_paint;
   }
-  if (!inout_timing->load_event_start.is_zero() &&
-      inout_timing->dom_content_loaded_event_start.is_zero()) {
+  if (inout_timing->load_event_start &&
+      !inout_timing->dom_content_loaded_event_start) {
     inout_timing->dom_content_loaded_event_start =
         inout_timing->load_event_start;
   }
-  if (!inout_timing->first_layout.is_zero() &&
-      inout_timing->dom_loading.is_zero()) {
+  if (inout_timing->first_layout && !inout_timing->dom_loading) {
     inout_timing->dom_loading = inout_timing->first_layout;
   }
-  if (!inout_timing->dom_content_loaded_event_start.is_zero() &&
-      inout_timing->dom_loading.is_zero()) {
+  if (inout_timing->dom_content_loaded_event_start &&
+      !inout_timing->dom_loading) {
     inout_timing->dom_loading = inout_timing->dom_content_loaded_event_start;
   }
-  if (!inout_timing->parse_stop.is_zero() &&
-      inout_timing->parse_start.is_zero()) {
+  if (inout_timing->dom_loading && !inout_timing->parse_start) {
+    inout_timing->parse_start = inout_timing->dom_loading;
+  }
+  if (inout_timing->parse_stop && !inout_timing->parse_start) {
     inout_timing->parse_start = inout_timing->parse_stop;
   }
-  if (!inout_timing->parse_start.is_zero() &&
-      inout_timing->response_start.is_zero()) {
+  if (inout_timing->parse_start && !inout_timing->response_start) {
     inout_timing->response_start = inout_timing->parse_start;
   }
-  if (!inout_timing->dom_loading.is_zero() &&
-      inout_timing->response_start.is_zero()) {
+  if (inout_timing->dom_loading && !inout_timing->response_start) {
     inout_timing->response_start = inout_timing->dom_loading;
+  }
+  if (inout_timing->parse_start) {
+    if (!inout_timing->parse_blocked_on_script_load_duration)
+      inout_timing->parse_blocked_on_script_load_duration = base::TimeDelta();
+    if (!inout_timing
+             ->parse_blocked_on_script_load_from_document_write_duration)
+      inout_timing->parse_blocked_on_script_load_from_document_write_duration =
+          base::TimeDelta();
   }
 }
 

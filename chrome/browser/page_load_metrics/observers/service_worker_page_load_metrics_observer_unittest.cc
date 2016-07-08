@@ -94,7 +94,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
       internal::kHistogramServiceWorkerFirstContentfulPaint, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerFirstContentfulPaint,
-      timing.first_contentful_paint.InMilliseconds(), 1);
+      timing.first_contentful_paint.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint, 0);
@@ -103,18 +103,20 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorker) {
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
-      (timing.first_contentful_paint - timing.parse_start).InMilliseconds(), 1);
+      (timing.first_contentful_paint.value() - timing.parse_start.value())
+          .InMilliseconds(),
+      1);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerDomContentLoaded, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerDomContentLoaded,
-      (timing.dom_content_loaded_event_start).InMilliseconds(), 1);
+      timing.dom_content_loaded_event_start.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(internal::kHistogramServiceWorkerLoad, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerLoad,
-      (timing.load_event_start).InMilliseconds(), 1);
+      timing.load_event_start.value().InMilliseconds(), 1);
 
   AssertNoInboxHistogramsLogged();
 }
@@ -143,7 +145,7 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, WithServiceWorkerBackground) {
       internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint, 1);
   histogram_tester().ExpectBucketCount(
       internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
-      timing.first_contentful_paint.InMilliseconds(), 1);
+      timing.first_contentful_paint.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint, 0);
   histogram_tester().ExpectTotalCount(
@@ -167,12 +169,12 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, InboxSite) {
       internal::kHistogramServiceWorkerFirstContentfulPaint, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerFirstContentfulPaint,
-      timing.first_contentful_paint.InMilliseconds(), 1);
+      timing.first_contentful_paint.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerFirstContentfulPaintInbox, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerFirstContentfulPaintInbox,
-      timing.first_contentful_paint.InMilliseconds(), 1);
+      timing.first_contentful_paint.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint, 0);
@@ -181,32 +183,36 @@ TEST_F(ServiceWorkerPageLoadMetricsObserverTest, InboxSite) {
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
-      (timing.first_contentful_paint - timing.parse_start).InMilliseconds(), 1);
+      (timing.first_contentful_paint.value() - timing.parse_start.value())
+          .InMilliseconds(),
+      1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
       1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
-      (timing.first_contentful_paint - timing.parse_start).InMilliseconds(), 1);
+      (timing.first_contentful_paint.value() - timing.parse_start.value())
+          .InMilliseconds(),
+      1);
 
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerDomContentLoaded, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerDomContentLoaded,
-      (timing.dom_content_loaded_event_start).InMilliseconds(), 1);
+      timing.dom_content_loaded_event_start.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerDomContentLoadedInbox, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerDomContentLoadedInbox,
-      (timing.dom_content_loaded_event_start).InMilliseconds(), 1);
+      timing.dom_content_loaded_event_start.value().InMilliseconds(), 1);
 
   histogram_tester().ExpectTotalCount(internal::kHistogramServiceWorkerLoad, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerLoad,
-      (timing.load_event_start).InMilliseconds(), 1);
+      timing.load_event_start.value().InMilliseconds(), 1);
   histogram_tester().ExpectTotalCount(
       internal::kHistogramServiceWorkerLoadInbox, 1);
   histogram_tester().ExpectBucketCount(
       internal::kHistogramServiceWorkerLoadInbox,
-      (timing.load_event_start).InMilliseconds(), 1);
+      timing.load_event_start.value().InMilliseconds(), 1);
 }

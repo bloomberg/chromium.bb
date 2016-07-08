@@ -152,18 +152,29 @@ class DataReductionProxyMetricsObserverTest
     NavigateAndCommit(GURL(kDefaultTestUrl2));
   }
 
+  // Verify that, if expected is set, its value equals that of
+  // actual. Otherwise, if expected is unset, verify that actual is zero.
+  void ExpectEqualOrUnset(const base::Optional<base::TimeDelta>& expected,
+                          base::TimeDelta actual) {
+    if (expected) {
+      EXPECT_EQ(expected.value(), actual);
+    } else {
+      EXPECT_TRUE(actual.is_zero());
+    }
+  }
+
   void ValidateTimes() {
     EXPECT_TRUE(pingback_client_->send_pingback_called());
     EXPECT_EQ(timing_.navigation_start,
               pingback_client_->timing()->navigation_start);
-    EXPECT_EQ(timing_.first_contentful_paint,
-              pingback_client_->timing()->first_contentful_paint);
-    EXPECT_EQ(timing_.response_start,
-              pingback_client_->timing()->response_start);
-    EXPECT_EQ(timing_.load_event_start,
-              pingback_client_->timing()->load_event_start);
-    EXPECT_EQ(timing_.first_image_paint,
-              pingback_client_->timing()->first_image_paint);
+    ExpectEqualOrUnset(timing_.first_contentful_paint,
+                       pingback_client_->timing()->first_contentful_paint);
+    ExpectEqualOrUnset(timing_.response_start,
+                       pingback_client_->timing()->response_start);
+    ExpectEqualOrUnset(timing_.load_event_start,
+                       pingback_client_->timing()->load_event_start);
+    ExpectEqualOrUnset(timing_.first_image_paint,
+                       pingback_client_->timing()->first_image_paint);
   }
 
   void ValidateHistograms() {
@@ -186,8 +197,9 @@ class DataReductionProxyMetricsObserverTest
                                 timing_.parse_start);
   }
 
-  void ValidateHistogramsForSuffix(const std::string& histogram_suffix,
-                                   const base::TimeDelta& event) {
+  void ValidateHistogramsForSuffix(
+      const std::string& histogram_suffix,
+      const base::Optional<base::TimeDelta>& event) {
     histogram_tester().ExpectTotalCount(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(histogram_suffix),
@@ -201,13 +213,15 @@ class DataReductionProxyMetricsObserverTest
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyPrefix)
             .append(histogram_suffix),
-        static_cast<base::HistogramBase::Sample>(event.InMilliseconds()), 1);
+        static_cast<base::HistogramBase::Sample>(
+            event.value().InMilliseconds()),
+        1);
     if (!is_using_lofi_)
       return;
     histogram_tester().ExpectUniqueSample(
         std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix)
             .append(histogram_suffix),
-        event.InMilliseconds(), is_using_lofi_ ? 1 : 0);
+        event.value().InMilliseconds(), is_using_lofi_ ? 1 : 0);
   }
 
  protected:
@@ -260,22 +274,22 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
 
   ResetTest();
   // Verify that when data reduction proxy was used but first image paint is
-  // zero, the correct timing information is sent to SendPingback.
-  timing_.first_image_paint = base::TimeDelta::FromSeconds(0);
+  // unset, the correct timing information is sent to SendPingback.
+  timing_.first_image_paint = base::nullopt;
   RunTest(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but first contentful paint
-  // is zero, SendPingback is not called.
-  timing_.first_contentful_paint = base::TimeDelta::FromSeconds(0);
+  // is unset, SendPingback is not called.
+  timing_.first_contentful_paint = base::nullopt;
   RunTest(true, false);
   ValidateTimes();
 
   ResetTest();
   // Verify that when data reduction proxy was used but load event start is
-  // zero, SendPingback is not called.
-  timing_.load_event_start = base::TimeDelta::FromSeconds(0);
+  // unset, SendPingback is not called.
+  timing_.load_event_start = base::nullopt;
   RunTest(true, false);
   ValidateTimes();
 

@@ -29,9 +29,6 @@ struct PageLoadTiming;
 // If the event time delta and background time delta are equal, we still
 // consider the event to be logged in the foreground histogram since any
 // background specific handling would not yet have been applied to that event.
-bool WasStartedInForegroundEventInForeground(base::TimeDelta event,
-                                             const PageLoadExtraInfo& info);
-
 bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadExtraInfo& info);
@@ -40,8 +37,8 @@ bool WasStartedInForegroundOptionalEventInForeground(
 // - Parse started and did not complete but the entire page load duration
 // happened in the foreground.
 // - Parse completed and happened entirely in the foreground.
-bool WasParseInForeground(base::TimeDelta parse_start,
-                          base::TimeDelta parse_stop,
+bool WasParseInForeground(const base::Optional<base::TimeDelta>& parse_start,
+                          const base::Optional<base::TimeDelta>& parse_stop,
                           const PageLoadExtraInfo& info);
 }  // namespace page_load_metrics
 

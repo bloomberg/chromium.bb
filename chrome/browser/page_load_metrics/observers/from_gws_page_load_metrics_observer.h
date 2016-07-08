@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_FROM_GWS_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "url/gurl.h"
 
@@ -42,7 +43,7 @@ extern const char kHistogramFromGWSAbortUnknownNavigationBeforeCommit[];
 // the code more unit testable.
 class FromGWSPageLoadMetricsLogger {
  public:
-  FromGWSPageLoadMetricsLogger() {}
+  FromGWSPageLoadMetricsLogger();
 
   void SetPreviouslyCommittedUrl(const GURL& url);
   void SetProvisionalUrl(const GURL& url);
@@ -55,12 +56,6 @@ class FromGWSPageLoadMetricsLogger {
     // Should be invoked at most once
     DCHECK(navigation_start_.is_null());
     navigation_start_ = navigation_start;
-  }
-
-  // TODO(bmcquade): remove SetFirstPaintTriggered as part of fixing
-  // crbug.com/616901
-  void SetFirstPaintTriggered(const bool first_paint_triggered) {
-    first_paint_triggered_ = first_paint_triggered;
   }
 
   // Invoked when metrics for the given page are complete.
@@ -94,7 +89,7 @@ class FromGWSPageLoadMetricsLogger {
   static bool IsGoogleSearchRedirectorUrl(const GURL& url);
   bool ShouldLogMetrics(const GURL& url);
   bool ShouldLogForegroundEventAfterCommit(
-      base::TimeDelta event,
+      const base::Optional<base::TimeDelta>& event,
       const page_load_metrics::PageLoadExtraInfo& info);
 
   // Whether the given query string contains the given component. The query
@@ -124,10 +119,8 @@ class FromGWSPageLoadMetricsLogger {
 
   base::TimeTicks navigation_start_;
 
-  bool has_user_interaction_after_paint_ = false;
-
   // The time of first user interaction after paint from navigation start.
-  base::TimeDelta first_user_interaction_after_paint_;
+  base::Optional<base::TimeDelta> first_user_interaction_after_paint_;
 
   // Common helper for QueryContainsComponent and QueryContainsComponentPrefix.
   static bool QueryContainsComponentHelper(const base::StringPiece query,
@@ -141,9 +134,6 @@ class FromGWSPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
   FromGWSPageLoadMetricsObserver();
-
-  // TODO(bmcquade): remove this as part of fixing crbug.com/616901
-  FromGWSPageLoadMetricsLogger* GetLogger() { return &logger_; }
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
   void OnStart(content::NavigationHandle* navigation_handle,
