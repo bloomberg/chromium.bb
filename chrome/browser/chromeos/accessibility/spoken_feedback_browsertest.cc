@@ -37,6 +37,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/user_names.h"
 #include "components/signin/core/account_id/account_id.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -57,7 +58,7 @@ namespace chromeos {
 //
 
 class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
- protected:
+ public:
   LoggedInSpokenFeedbackTest()
       : animation_mode_(ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {}
   ~LoggedInSpokenFeedbackTest() override {}
@@ -578,7 +579,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
 
   // Press the sticky-key sequence: Search Search.
   SendKeyPress(ui::VKEY_LWIN);
-  SendKeyPress(ui::VKEY_LWIN);
+
+  // Sticky key has a minimum 100 ms check to prevent key repeat from toggling
+  // it.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&LoggedInSpokenFeedbackTest::SendKeyPress,
+                 base::Unretained(this), ui::VKEY_LWIN),
+      base::TimeDelta::FromMilliseconds(200));
+
   EXPECT_EQ("Sticky mode enabled", speech_monitor_.GetNextUtterance());
 
   // Even once we hear "sticky mode enabled" from the ChromeVox background
@@ -607,7 +616,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextStickyMode) {
 
   // Press the sticky-key sequence: Search Search.
   SendKeyPress(ui::VKEY_LWIN);
-  SendKeyPress(ui::VKEY_LWIN);
+
+  // Sticky key has a minimum 100 ms check to prevent key repeat from toggling
+  // it.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&LoggedInSpokenFeedbackTest::SendKeyPress,
+                 base::Unretained(this), ui::VKEY_LWIN),
+      base::TimeDelta::FromMilliseconds(200));
+
   EXPECT_EQ("Sticky mode enabled", speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_H);
@@ -615,7 +632,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxNextStickyMode) {
   }
 
   SendKeyPress(ui::VKEY_LWIN);
-  SendKeyPress(ui::VKEY_LWIN);
+
+  // Sticky key has a minimum 100 ms check to prevent key repeat from toggling
+  // it.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&LoggedInSpokenFeedbackTest::SendKeyPress,
+                 base::Unretained(this), ui::VKEY_LWIN),
+      base::TimeDelta::FromMilliseconds(200));
+
   while ("Sticky mode disabled" != speech_monitor_.GetNextUtterance()) {
   }
 }

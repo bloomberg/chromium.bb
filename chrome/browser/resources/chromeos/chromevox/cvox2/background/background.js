@@ -149,7 +149,6 @@ Background = function() {
 
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       this.onAccessibilityGesture_);
-  Notifications.onStartup();
 };
 
 /**
@@ -338,7 +337,6 @@ Background.prototype = {
         'switch_to_next' : 'switch_to_classic');
     cvox.ChromeVox.tts.speak(
         announce, cvox.QueueMode.FLUSH, {doNotInterrupt: true});
-    Notifications.onModeChange();
 
     // If the new mode is Classic, return false now so we don't announce
     // anything more.

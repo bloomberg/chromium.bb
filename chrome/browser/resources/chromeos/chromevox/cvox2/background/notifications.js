@@ -74,7 +74,6 @@ Notifications.currentUpdate;
  * Runs notifications that should be shown for startup.
  */
 Notifications.onStartup = function() {
-  return;
   // Only run on background page.
   if (document.location.href.indexOf('background.html') == -1)
     return;
@@ -88,7 +87,6 @@ Notifications.onStartup = function() {
  * Runs notifications that should be shown for mode changes.
  */
 Notifications.onModeChange = function() {
-  return;
   // Only run on background page.
   if (document.location.href.indexOf('background.html') == -1)
     return;
