@@ -69,6 +69,13 @@
     <span id="loading-message">$i18n{loading}</span>
   </div>
 
+<if expr="is_macosx">
+  <command id="find-command" shortcut="Meta|f /">
+</if>
+<if expr="not is_macosx">
+  <command id="find-command" shortcut="Ctrl|f /">
+</if>
+
   <link rel="import" href="chrome://resources/html/cr.html">
   <link rel="import" href="chrome://resources/html/util.html">
   <link rel="import" href="chrome://resources/html/load_time_data.html">

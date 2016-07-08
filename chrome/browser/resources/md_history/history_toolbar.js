@@ -96,6 +96,12 @@ Polymer({
     this.fire('delete-selected');
   },
 
+  showSearchField: function() {
+    /** @type {!CrToolbarElement} */(this.$['main-toolbar'])
+        .getSearchField()
+        .showAndFocus();
+  },
+
   /**
    * If the user is a supervised user the delete button is not shown.
    * @private

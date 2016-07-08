@@ -57,6 +57,10 @@ Polymer({
   /** @override */
   ready: function() {
     this.grouped_ = loadTimeData.getBoolean('groupByDomain');
+
+    cr.ui.decorate('command', cr.ui.Command);
+    document.addEventListener('canExecute', this.onCanExecute_.bind(this));
+    document.addEventListener('command', this.onCommand_.bind(this));
   },
 
   /** @private */
@@ -108,6 +112,23 @@ Polymer({
    * @param {{detail: {domain: string}}} e
    */
   searchDomain_: function(e) { this.$.toolbar.setSearchTerm(e.detail.domain); },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onCanExecute_: function(e) {
+    e.canExecute = true;
+  },
+
+  /**
+   * @param {Event} e
+   * @private
+   */
+  onCommand_: function(e) {
+    if (e.command.id == 'find-command')
+      this.$.toolbar.showSearchField();
+  },
 
   /**
    * @param {!Array<!ForeignSession>} sessionList Array of objects describing

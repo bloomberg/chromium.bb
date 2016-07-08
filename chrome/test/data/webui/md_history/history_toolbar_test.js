@@ -52,6 +52,26 @@ cr.define('md_history.history_toolbar_test', function() {
         toolbar.$$('cr-toolbar').fire('search-changed', 'Test');
       });
 
+      test('shortcuts to open search field', function() {
+        var field = toolbar.$['main-toolbar'].getSearchField();
+        assertFalse(field.showingSearch);
+
+        MockInteractions.pressAndReleaseKeyOn(
+            document.body, 191, '', '/');
+        assertTrue(field.showingSearch);
+        assertEquals(field.$.searchInput, field.root.activeElement);
+
+        MockInteractions.pressAndReleaseKeyOn(
+            field.$.searchInput, 27, '', 'Escape');
+        assertFalse(field.showingSearch, 'Pressing escape closes field.');
+        assertNotEquals(field.$.searchInput, field.root.activeElement);
+
+        MockInteractions.pressAndReleaseKeyOn(
+            document.body, 70, 'ctrl', 'f');
+        assertTrue(field.showingSearch);
+        assertEquals(field.$.searchInput, field.root.activeElement);
+     });
+
       teardown(function() {
         element.historyData_ = [];
         element.searchedTerm = '';

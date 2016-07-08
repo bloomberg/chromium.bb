@@ -90,6 +90,7 @@
       'target_name': 'app',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
         'constants',
         'history_toolbar',
         'list_container',
