@@ -48,9 +48,6 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
-#if defined(OS_ANDROID)
-#include "ui/gfx/android/device_display_info.h"
-#endif  // OS_ANDROID
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
 #include "services/shell/runner/common/client_util.h"
 #endif

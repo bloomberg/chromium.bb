@@ -601,7 +601,6 @@ void WebContentsAndroid::RequestAccessibilitySnapshot(
   // base::Callback.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
-  gfx::DeviceDisplayInfo device_info;
 
   WebContentsImpl::AXTreeSnapshotCallback snapshot_callback =
       base::Bind(&AXTreeSnapshotCallback, j_callback);

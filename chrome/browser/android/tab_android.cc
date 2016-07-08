@@ -83,7 +83,8 @@
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/android/device_display_info.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
@@ -663,8 +664,8 @@ ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(
   // Always return the default favicon in Android.
   SkBitmap favicon = favicon_driver->GetFavicon().AsBitmap();
   if (!favicon.empty()) {
-    gfx::DeviceDisplayInfo device_info;
-    const float device_scale_factor = device_info.GetDIPScale();
+    const float device_scale_factor =
+        display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
     int target_size_dip = device_scale_factor * gfx::kFaviconSize;
     if (favicon.width() != target_size_dip ||
         favicon.height() != target_size_dip) {
