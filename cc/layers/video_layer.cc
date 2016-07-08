@@ -35,7 +35,7 @@ bool VideoLayer::Update() {
   //
   // This is the inefficient legacy redraw path for videos.  It's better to
   // communicate this directly to the VideoLayerImpl.
-  updated |= !update_rect_.IsEmpty();
+  updated |= !update_rect().IsEmpty();
 
   return updated;
 }

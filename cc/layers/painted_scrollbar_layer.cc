@@ -245,7 +245,7 @@ bool PaintedScrollbarLayer::Update() {
     updated = true;
   }
 
-  if (update_rect_.IsEmpty() && track_resource_)
+  if (update_rect().IsEmpty() && track_resource_)
     return updated;
 
   if (!track_resource_ || scrollbar_->NeedsPaintPart(TRACK)) {

@@ -32,8 +32,8 @@ FakePictureLayer::~FakePictureLayer() {}
 std::unique_ptr<LayerImpl> FakePictureLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   if (is_mask())
-    return FakePictureLayerImpl::CreateMask(tree_impl, layer_id_);
-  return FakePictureLayerImpl::Create(tree_impl, layer_id_);
+    return FakePictureLayerImpl::CreateMask(tree_impl, id());
+  return FakePictureLayerImpl::Create(tree_impl, id());
 }
 
 bool FakePictureLayer::Update() {

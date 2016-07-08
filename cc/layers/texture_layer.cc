@@ -201,7 +201,7 @@ bool TextureLayer::Update() {
   // SetTextureMailbox could be called externally and the same mailbox used for
   // different textures.  Such callers notify this layer that the texture has
   // changed by calling SetNeedsDisplay, so check for that here.
-  return updated || !update_rect_.IsEmpty();
+  return updated || !update_rect().IsEmpty();
 }
 
 void TextureLayer::PushPropertiesTo(LayerImpl* layer) {

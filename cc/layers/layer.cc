@@ -41,55 +41,60 @@ namespace cc {
 
 base::StaticAtomicSequenceNumber g_next_layer_id;
 
+Layer::Inputs::Inputs()
+    :  // Layer IDs start from 1.
+      layer_id(g_next_layer_id.GetNext() + 1),
+      masks_to_bounds(false),
+      mask_layer(nullptr),
+      replica_layer(nullptr),
+      opacity(1.f),
+      blend_mode(SkXfermode::kSrcOver_Mode),
+      is_root_for_isolated_group(false),
+      contents_opaque(false),
+      is_drawable(false),
+      double_sided(true),
+      should_flatten_transform(true),
+      sorting_context_id(0),
+      use_parent_backface_visibility(false),
+      background_color(0),
+      scroll_clip_layer_id(INVALID_ID),
+      user_scrollable_horizontal(true),
+      user_scrollable_vertical(true),
+      main_thread_scrolling_reasons(
+          MainThreadScrollingReason::kNotScrollingOnMain),
+      is_container_for_fixed_position_layers(false),
+      mutable_properties(MutableProperty::kNone),
+      scroll_parent(nullptr),
+      clip_parent(nullptr),
+      has_will_change_transform_hint(false),
+      hide_layer_and_subtree(false),
+      client(nullptr) {}
+
+Layer::Inputs::~Inputs() {}
+
 scoped_refptr<Layer> Layer::Create() {
   return make_scoped_refptr(new Layer());
 }
 
 Layer::Layer()
-    :  // Layer IDs start from 1.
-      layer_id_(g_next_layer_id.GetNext() + 1),
-      ignore_set_needs_commit_(false),
-      sorting_context_id_(0),
+    : ignore_set_needs_commit_(false),
       parent_(nullptr),
       layer_tree_host_(nullptr),
-      scroll_clip_layer_id_(INVALID_ID),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(-1),
       effect_tree_index_(-1),
       clip_tree_index_(-1),
       scroll_tree_index_(-1),
       property_tree_sequence_number_(-1),
-      mutable_properties_(MutableProperty::kNone),
-      main_thread_scrolling_reasons_(
-          MainThreadScrollingReason::kNotScrollingOnMain),
       should_flatten_transform_from_property_tree_(false),
-      user_scrollable_horizontal_(true),
-      user_scrollable_vertical_(true),
-      is_root_for_isolated_group_(false),
-      is_container_for_fixed_position_layers_(false),
-      is_drawable_(false),
       draws_content_(false),
-      hide_layer_and_subtree_(false),
-      masks_to_bounds_(false),
-      contents_opaque_(false),
-      double_sided_(true),
-      should_flatten_transform_(true),
-      use_parent_backface_visibility_(false),
       use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
       force_render_surface_for_testing_(false),
       subtree_property_changed_(false),
       layer_property_changed_(false),
-      has_will_change_transform_hint_(false),
-      background_color_(0),
       safe_opaque_background_color_(0),
-      opacity_(1.f),
-      blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
-      scroll_parent_(nullptr),
-      clip_parent_(nullptr),
-      replica_layer_(nullptr),
-      client_(nullptr),
       num_unclipped_descendants_(0) {}
 
 Layer::~Layer() {
@@ -105,13 +110,13 @@ Layer::~Layer() {
 
   // Remove the parent reference from all children and dependents.
   RemoveAllChildren();
-  if (mask_layer_.get()) {
-    DCHECK_EQ(this, mask_layer_->parent());
-    mask_layer_->RemoveFromParent();
+  if (inputs_.mask_layer.get()) {
+    DCHECK_EQ(this, inputs_.mask_layer->parent());
+    inputs_.mask_layer->RemoveFromParent();
   }
-  if (replica_layer_.get()) {
-    DCHECK_EQ(this, replica_layer_->parent());
-    replica_layer_->RemoveFromParent();
+  if (inputs_.replica_layer.get()) {
+    DCHECK_EQ(this, inputs_.replica_layer->parent());
+    inputs_.replica_layer->RemoveFromParent();
   }
 }
 
@@ -123,18 +128,18 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     layer_tree_host_->property_trees()->RemoveIdFromIdToIndexMaps(id());
     layer_tree_host_->property_trees()->needs_rebuild = true;
     layer_tree_host_->UnregisterLayer(this);
-    if (element_id_) {
+    if (inputs_.element_id) {
       layer_tree_host_->animation_host()->UnregisterElement(
-          element_id_, ElementListType::ACTIVE);
+          inputs_.element_id, ElementListType::ACTIVE);
       layer_tree_host_->RemoveFromElementMap(this);
     }
   }
   if (host) {
     host->property_trees()->needs_rebuild = true;
     host->RegisterLayer(this);
-    if (element_id_) {
+    if (inputs_.element_id) {
       host->AddToElementMap(this);
-      host->animation_host()->RegisterElement(element_id_,
+      host->animation_host()->RegisterElement(inputs_.element_id,
                                               ElementListType::ACTIVE);
     }
   }
@@ -146,13 +151,13 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
   // side for the new host.
   SetNeedsPushProperties();
 
-  for (size_t i = 0; i < children_.size(); ++i)
-    children_[i]->SetLayerTreeHost(host);
+  for (size_t i = 0; i < inputs_.children.size(); ++i)
+    inputs_.children[i]->SetLayerTreeHost(host);
 
-  if (mask_layer_.get())
-    mask_layer_->SetLayerTreeHost(host);
-  if (replica_layer_.get())
-    replica_layer_->SetLayerTreeHost(host);
+  if (inputs_.mask_layer.get())
+    inputs_.mask_layer->SetLayerTreeHost(host);
+  if (inputs_.replica_layer.get())
+    inputs_.replica_layer->SetLayerTreeHost(host);
 
   const bool has_any_animation =
       layer_tree_host_ ? layer_tree_host_->HasAnyAnimation(this) : false;
@@ -238,7 +243,7 @@ void Layer::SetParent(Layer* layer) {
 }
 
 void Layer::AddChild(scoped_refptr<Layer> child) {
-  InsertChild(child, children_.size());
+  InsertChild(child, inputs_.children.size());
 }
 
 void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
@@ -249,8 +254,8 @@ void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
   child->SetParent(this);
   child->SetSubtreePropertyChanged();
 
-  index = std::min(index, children_.size());
-  children_.insert(children_.begin() + index, child);
+  index = std::min(index, inputs_.children.size());
+  inputs_.children.insert(inputs_.children.begin() + index, child);
   SetNeedsFullTreeSync();
 }
 
@@ -261,29 +266,28 @@ void Layer::RemoveFromParent() {
 }
 
 void Layer::RemoveChildOrDependent(Layer* child) {
-  if (mask_layer_.get() == child) {
-    mask_layer_->SetParent(nullptr);
-    mask_layer_ = nullptr;
+  if (inputs_.mask_layer.get() == child) {
+    inputs_.mask_layer->SetParent(nullptr);
+    inputs_.mask_layer = nullptr;
     SetNeedsFullTreeSync();
     return;
   }
-  if (replica_layer_.get() == child) {
-    replica_layer_->SetParent(nullptr);
-    replica_layer_ = nullptr;
+  if (inputs_.replica_layer.get() == child) {
+    inputs_.replica_layer->SetParent(nullptr);
+    inputs_.replica_layer = nullptr;
     SetNeedsFullTreeSync();
     return;
   }
 
-  for (LayerList::iterator iter = children_.begin();
-       iter != children_.end();
-       ++iter) {
+  for (LayerList::iterator iter = inputs_.children.begin();
+       iter != inputs_.children.end(); ++iter) {
     if (iter->get() != child)
       continue;
 
     child->SetParent(nullptr);
     AddDrawableDescendants(-child->NumDescendantsThatDrawContent() -
                            (child->DrawsContent() ? 1 : 0));
-    children_.erase(iter);
+    inputs_.children.erase(iter);
     SetNeedsFullTreeSync();
     return;
   }
@@ -299,12 +303,12 @@ void Layer::ReplaceChild(Layer* reference, scoped_refptr<Layer> new_layer) {
 
   // Find the index of |reference| in |children_|.
   auto reference_it =
-      std::find_if(children_.begin(), children_.end(),
+      std::find_if(inputs_.children.begin(), inputs_.children.end(),
                    [reference](const scoped_refptr<Layer>& layer) {
                      return layer.get() == reference;
                    });
-  DCHECK(reference_it != children_.end());
-  size_t reference_index = reference_it - children_.begin();
+  DCHECK(reference_it != inputs_.children.end());
+  size_t reference_index = reference_it - inputs_.children.begin();
   reference->RemoveFromParent();
 
   if (new_layer.get()) {
@@ -317,7 +321,7 @@ void Layer::SetBounds(const gfx::Size& size) {
   DCHECK(IsPropertyChangeAllowed());
   if (bounds() == size)
     return;
-  bounds_ = size;
+  inputs_.bounds = size;
 
   if (!layer_tree_host_)
     return;
@@ -336,8 +340,8 @@ Layer* Layer::RootLayer() {
 
 void Layer::RemoveAllChildren() {
   DCHECK(IsPropertyChangeAllowed());
-  while (children_.size()) {
-    Layer* layer = children_[0].get();
+  while (inputs_.children.size()) {
+    Layer* layer = inputs_.children[0].get();
     DCHECK_EQ(this, layer->parent());
     layer->RemoveFromParent();
   }
@@ -345,7 +349,7 @@ void Layer::RemoveAllChildren() {
 
 void Layer::SetChildren(const LayerList& children) {
   DCHECK(IsPropertyChangeAllowed());
-  if (children == children_)
+  if (children == inputs_.children)
     return;
 
   RemoveAllChildren();
@@ -365,25 +369,25 @@ void Layer::RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request) {
   DCHECK(IsPropertyChangeAllowed());
   if (void* source = request->source()) {
     auto it =
-        std::find_if(copy_requests_.begin(), copy_requests_.end(),
+        std::find_if(inputs_.copy_requests.begin(), inputs_.copy_requests.end(),
                      [source](const std::unique_ptr<CopyOutputRequest>& x) {
                        return x->source() == source;
                      });
-    if (it != copy_requests_.end())
-      copy_requests_.erase(it);
+    if (it != inputs_.copy_requests.end())
+      inputs_.copy_requests.erase(it);
   }
   if (request->IsEmpty())
     return;
-  copy_requests_.push_back(std::move(request));
+  inputs_.copy_requests.push_back(std::move(request));
   SetSubtreePropertyChanged();
   SetNeedsCommit();
 }
 
 void Layer::SetBackgroundColor(SkColor background_color) {
   DCHECK(IsPropertyChangeAllowed());
-  if (background_color_ == background_color)
+  if (inputs_.background_color == background_color)
     return;
-  background_color_ = background_color;
+  inputs_.background_color = background_color;
   SetNeedsCommit();
 }
 
@@ -406,27 +410,27 @@ SkColor Layer::SafeOpaqueBackgroundColor() const {
 
 void Layer::SetMasksToBounds(bool masks_to_bounds) {
   DCHECK(IsPropertyChangeAllowed());
-  if (masks_to_bounds_ == masks_to_bounds)
+  if (inputs_.masks_to_bounds == masks_to_bounds)
     return;
-  masks_to_bounds_ = masks_to_bounds;
+  inputs_.masks_to_bounds = masks_to_bounds;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
 }
 
 void Layer::SetMaskLayer(Layer* mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
-  if (mask_layer_.get() == mask_layer)
+  if (inputs_.mask_layer.get() == mask_layer)
     return;
-  if (mask_layer_.get()) {
-    DCHECK_EQ(this, mask_layer_->parent());
-    mask_layer_->RemoveFromParent();
+  if (inputs_.mask_layer.get()) {
+    DCHECK_EQ(this, inputs_.mask_layer->parent());
+    inputs_.mask_layer->RemoveFromParent();
   }
-  mask_layer_ = mask_layer;
-  if (mask_layer_.get()) {
-    mask_layer_->RemoveFromParent();
-    DCHECK(!mask_layer_->parent());
-    mask_layer_->SetParent(this);
-    mask_layer_->SetIsMask(true);
+  inputs_.mask_layer = mask_layer;
+  if (inputs_.mask_layer.get()) {
+    inputs_.mask_layer->RemoveFromParent();
+    DCHECK(!inputs_.mask_layer->parent());
+    inputs_.mask_layer->SetParent(this);
+    inputs_.mask_layer->SetIsMask(true);
   }
   SetSubtreePropertyChanged();
   SetNeedsFullTreeSync();
@@ -434,17 +438,17 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
 
 void Layer::SetReplicaLayer(Layer* layer) {
   DCHECK(IsPropertyChangeAllowed());
-  if (replica_layer_.get() == layer)
+  if (inputs_.replica_layer.get() == layer)
     return;
-  if (replica_layer_.get()) {
-    DCHECK_EQ(this, replica_layer_->parent());
-    replica_layer_->RemoveFromParent();
+  if (inputs_.replica_layer.get()) {
+    DCHECK_EQ(this, inputs_.replica_layer->parent());
+    inputs_.replica_layer->RemoveFromParent();
   }
-  replica_layer_ = layer;
-  if (replica_layer_.get()) {
-    DCHECK(!replica_layer_->parent());
-    replica_layer_->RemoveFromParent();
-    replica_layer_->SetParent(this);
+  inputs_.replica_layer = layer;
+  if (inputs_.replica_layer.get()) {
+    DCHECK(!inputs_.replica_layer->parent());
+    inputs_.replica_layer->RemoveFromParent();
+    inputs_.replica_layer->SetParent(this);
   }
   SetSubtreePropertyChanged();
   SetNeedsFullTreeSync();
@@ -452,9 +456,9 @@ void Layer::SetReplicaLayer(Layer* layer) {
 
 void Layer::SetFilters(const FilterOperations& filters) {
   DCHECK(IsPropertyChangeAllowed());
-  if (filters_ == filters)
+  if (inputs_.filters == filters)
     return;
-  filters_ = filters;
+  inputs_.filters = filters;
   SetSubtreePropertyChanged();
   SetNeedsCommit();
 }
@@ -470,9 +474,9 @@ bool Layer::HasPotentiallyRunningFilterAnimation() const {
 
 void Layer::SetBackgroundFilters(const FilterOperations& filters) {
   DCHECK(IsPropertyChangeAllowed());
-  if (background_filters_ == filters)
+  if (inputs_.background_filters == filters)
     return;
-  background_filters_ = filters;
+  inputs_.background_filters = filters;
   SetLayerPropertyChanged();
   SetNeedsCommit();
 }
@@ -482,12 +486,12 @@ void Layer::SetOpacity(float opacity) {
   DCHECK_GE(opacity, 0.f);
   DCHECK_LE(opacity, 1.f);
 
-  if (opacity_ == opacity)
+  if (inputs_.opacity == opacity)
     return;
   // We need to force a property tree rebuild when opacity changes from 1 to a
   // non-1 value or vice-versa as render surfaces can change.
-  bool force_rebuild = opacity == 1.f || opacity_ == 1.f;
-  opacity_ = opacity;
+  bool force_rebuild = opacity == 1.f || inputs_.opacity == 1.f;
+  inputs_.opacity = opacity;
   SetSubtreePropertyChanged();
   if (layer_tree_host_ && !force_rebuild) {
     PropertyTrees* property_trees = layer_tree_host_->property_trees();
@@ -506,7 +510,7 @@ void Layer::SetOpacity(float opacity) {
 }
 
 float Layer::EffectiveOpacity() const {
-  return hide_layer_and_subtree_ ? 0.f : opacity_;
+  return inputs_.hide_layer_and_subtree ? 0.f : inputs_.opacity;
 }
 
 bool Layer::OpacityIsAnimating() const {
@@ -528,7 +532,7 @@ bool Layer::AlwaysUseActiveTreeOpacity() const {
 
 void Layer::SetBlendMode(SkXfermode::Mode blend_mode) {
   DCHECK(IsPropertyChangeAllowed());
-  if (blend_mode_ == blend_mode)
+  if (inputs_.blend_mode == blend_mode)
     return;
 
   // Allowing only blend modes that are defined in the CSS Compositing standard:
@@ -571,33 +575,33 @@ void Layer::SetBlendMode(SkXfermode::Mode blend_mode) {
       return;
   }
 
-  blend_mode_ = blend_mode;
+  inputs_.blend_mode = blend_mode;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
 }
 
 void Layer::SetIsRootForIsolatedGroup(bool root) {
   DCHECK(IsPropertyChangeAllowed());
-  if (is_root_for_isolated_group_ == root)
+  if (inputs_.is_root_for_isolated_group == root)
     return;
-  is_root_for_isolated_group_ = root;
+  inputs_.is_root_for_isolated_group = root;
   SetNeedsCommit();
 }
 
 void Layer::SetContentsOpaque(bool opaque) {
   DCHECK(IsPropertyChangeAllowed());
-  if (contents_opaque_ == opaque)
+  if (inputs_.contents_opaque == opaque)
     return;
-  contents_opaque_ = opaque;
+  inputs_.contents_opaque = opaque;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
 }
 
 void Layer::SetPosition(const gfx::PointF& position) {
   DCHECK(IsPropertyChangeAllowed());
-  if (position_ == position)
+  if (inputs_.position == position)
     return;
-  position_ = position;
+  inputs_.position = position;
 
   if (!layer_tree_host_)
     return;
@@ -623,11 +627,11 @@ void Layer::SetPosition(const gfx::PointF& position) {
 }
 
 bool Layer::IsContainerForFixedPositionLayers() const {
-  if (!transform_.IsIdentityOrTranslation())
+  if (!inputs_.transform.IsIdentityOrTranslation())
     return true;
-  if (parent_ && !parent_->transform_.IsIdentityOrTranslation())
+  if (parent_ && !parent_->inputs_.transform.IsIdentityOrTranslation())
     return true;
-  return is_container_for_fixed_position_layers_;
+  return inputs_.is_container_for_fixed_position_layers;
 }
 
 bool Are2dAxisAligned(const gfx::Transform& a, const gfx::Transform& b) {
@@ -647,7 +651,7 @@ bool Are2dAxisAligned(const gfx::Transform& a, const gfx::Transform& b) {
 
 void Layer::SetTransform(const gfx::Transform& transform) {
   DCHECK(IsPropertyChangeAllowed());
-  if (transform_ == transform)
+  if (inputs_.transform == transform)
     return;
 
   SetSubtreePropertyChanged();
@@ -656,14 +660,15 @@ void Layer::SetTransform(const gfx::Transform& transform) {
     if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
                                          id())) {
       // We need to trigger a rebuild if we could have affected 2d axis
-      // alignment. We'll check to see if transform and transform_ are axis
+      // alignment. We'll check to see if transform and inputs_.transform
+      // are axis
       // align with respect to one another.
       DCHECK_EQ(transform_tree_index(),
                 property_trees->transform_id_to_index_map[id()]);
       TransformNode* transform_node =
           property_trees->transform_tree.Node(transform_tree_index());
       bool preserves_2d_axis_alignment =
-          Are2dAxisAligned(transform_, transform);
+          Are2dAxisAligned(inputs_.transform, transform);
       transform_node->data.local = transform;
       transform_node->data.needs_local_transform_update = true;
       transform_node->data.transform_changed = true;
@@ -672,21 +677,21 @@ void Layer::SetTransform(const gfx::Transform& transform) {
         SetNeedsCommitNoRebuild();
       else
         SetNeedsCommit();
-      transform_ = transform;
+      inputs_.transform = transform;
       return;
     }
   }
 
-  transform_ = transform;
+  inputs_.transform = transform;
 
   SetNeedsCommit();
 }
 
 void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   DCHECK(IsPropertyChangeAllowed());
-  if (transform_origin_ == transform_origin)
+  if (inputs_.transform_origin == transform_origin)
     return;
-  transform_origin_ = transform_origin;
+  inputs_.transform_origin = transform_origin;
 
   if (!layer_tree_host_)
     return;
@@ -750,16 +755,16 @@ bool Layer::ScrollOffsetAnimationWasInterrupted() const {
 
 void Layer::SetScrollParent(Layer* parent) {
   DCHECK(IsPropertyChangeAllowed());
-  if (scroll_parent_ == parent)
+  if (inputs_.scroll_parent == parent)
     return;
 
-  if (scroll_parent_)
-    scroll_parent_->RemoveScrollChild(this);
+  if (inputs_.scroll_parent)
+    inputs_.scroll_parent->RemoveScrollChild(this);
 
-  scroll_parent_ = parent;
+  inputs_.scroll_parent = parent;
 
-  if (scroll_parent_)
-    scroll_parent_->AddScrollChild(this);
+  if (inputs_.scroll_parent)
+    inputs_.scroll_parent->AddScrollChild(this);
 
   SetNeedsCommit();
 }
@@ -780,16 +785,16 @@ void Layer::RemoveScrollChild(Layer* child) {
 
 void Layer::SetClipParent(Layer* ancestor) {
   DCHECK(IsPropertyChangeAllowed());
-  if (clip_parent_ == ancestor)
+  if (inputs_.clip_parent == ancestor)
     return;
 
-  if (clip_parent_)
-    clip_parent_->RemoveClipChild(this);
+  if (inputs_.clip_parent)
+    inputs_.clip_parent->RemoveClipChild(this);
 
-  clip_parent_ = ancestor;
+  inputs_.clip_parent = ancestor;
 
-  if (clip_parent_)
-    clip_parent_->AddClipChild(this);
+  if (inputs_.clip_parent)
+    inputs_.clip_parent->AddClipChild(this);
 
   SetNeedsCommit();
   if (layer_tree_host_)
@@ -813,9 +818,9 @@ void Layer::RemoveClipChild(Layer* child) {
 void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
   DCHECK(IsPropertyChangeAllowed());
 
-  if (scroll_offset_ == scroll_offset)
+  if (inputs_.scroll_offset == scroll_offset)
     return;
-  scroll_offset_ = scroll_offset;
+  inputs_.scroll_offset = scroll_offset;
 
   if (!layer_tree_host_)
     return;
@@ -846,9 +851,9 @@ void Layer::SetScrollOffsetFromImplSide(
   // This function only gets called during a BeginMainFrame, so there
   // is no need to call SetNeedsUpdate here.
   DCHECK(layer_tree_host_ && layer_tree_host_->CommitRequested());
-  if (scroll_offset_ == scroll_offset)
+  if (inputs_.scroll_offset == scroll_offset)
     return;
-  scroll_offset_ = scroll_offset;
+  inputs_.scroll_offset = scroll_offset;
   SetNeedsPushProperties();
 
   bool needs_rebuild = true;
@@ -872,31 +877,31 @@ void Layer::SetScrollOffsetFromImplSide(
   if (needs_rebuild)
     property_trees->needs_rebuild = true;
 
-  if (!did_scroll_callback_.is_null())
-    did_scroll_callback_.Run();
+  if (!inputs_.did_scroll_callback.is_null())
+    inputs_.did_scroll_callback.Run();
   // The callback could potentially change the layer structure:
   // "this" may have been destroyed during the process.
 }
 
 void Layer::SetScrollClipLayerId(int clip_layer_id) {
   DCHECK(IsPropertyChangeAllowed());
-  if (scroll_clip_layer_id_ == clip_layer_id)
+  if (inputs_.scroll_clip_layer_id == clip_layer_id)
     return;
-  scroll_clip_layer_id_ = clip_layer_id;
+  inputs_.scroll_clip_layer_id = clip_layer_id;
   SetNeedsCommit();
 }
 
 Layer* Layer::scroll_clip_layer() const {
-  return layer_tree_host()->LayerById(scroll_clip_layer_id_);
+  return layer_tree_host()->LayerById(inputs_.scroll_clip_layer_id);
 }
 
 void Layer::SetUserScrollable(bool horizontal, bool vertical) {
   DCHECK(IsPropertyChangeAllowed());
-  if (user_scrollable_horizontal_ == horizontal &&
-      user_scrollable_vertical_ == vertical)
+  if (inputs_.user_scrollable_horizontal == horizontal &&
+      inputs_.user_scrollable_vertical == vertical)
     return;
-  user_scrollable_horizontal_ = horizontal;
-  user_scrollable_vertical_ = vertical;
+  inputs_.user_scrollable_horizontal = horizontal;
+  inputs_.user_scrollable_vertical = vertical;
   SetNeedsCommit();
 }
 
@@ -905,10 +910,10 @@ void Layer::AddMainThreadScrollingReasons(
   DCHECK(IsPropertyChangeAllowed());
   DCHECK(main_thread_scrolling_reasons);
   uint32_t new_reasons =
-      main_thread_scrolling_reasons_ | main_thread_scrolling_reasons;
-  if (main_thread_scrolling_reasons_ == new_reasons)
+      inputs_.main_thread_scrolling_reasons | main_thread_scrolling_reasons;
+  if (inputs_.main_thread_scrolling_reasons == new_reasons)
     return;
-  main_thread_scrolling_reasons_ = new_reasons;
+  inputs_.main_thread_scrolling_reasons = new_reasons;
   SetNeedsCommit();
 }
 
@@ -916,28 +921,28 @@ void Layer::ClearMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons_to_clear) {
   DCHECK(IsPropertyChangeAllowed());
   DCHECK(main_thread_scrolling_reasons_to_clear);
-  uint32_t new_reasons =
-      ~main_thread_scrolling_reasons_to_clear & main_thread_scrolling_reasons_;
-  if (new_reasons == main_thread_scrolling_reasons_)
+  uint32_t new_reasons = ~main_thread_scrolling_reasons_to_clear &
+                         inputs_.main_thread_scrolling_reasons;
+  if (new_reasons == inputs_.main_thread_scrolling_reasons)
     return;
-  main_thread_scrolling_reasons_ = new_reasons;
+  inputs_.main_thread_scrolling_reasons = new_reasons;
   SetNeedsCommit();
 }
 
 void Layer::SetNonFastScrollableRegion(const Region& region) {
   DCHECK(IsPropertyChangeAllowed());
-  if (non_fast_scrollable_region_ == region)
+  if (inputs_.non_fast_scrollable_region == region)
     return;
-  non_fast_scrollable_region_ = region;
+  inputs_.non_fast_scrollable_region = region;
   SetNeedsCommit();
 }
 
 void Layer::SetTouchEventHandlerRegion(const Region& region) {
   DCHECK(IsPropertyChangeAllowed());
-  if (touch_event_handler_region_ == region)
+  if (inputs_.touch_event_handler_region == region)
     return;
 
-  touch_event_handler_region_ = region;
+  inputs_.touch_event_handler_region = region;
   SetNeedsCommit();
 }
 
@@ -951,18 +956,18 @@ void Layer::SetForceRenderSurfaceForTesting(bool force) {
 
 void Layer::SetDoubleSided(bool double_sided) {
   DCHECK(IsPropertyChangeAllowed());
-  if (double_sided_ == double_sided)
+  if (inputs_.double_sided == double_sided)
     return;
-  double_sided_ = double_sided;
+  inputs_.double_sided = double_sided;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
 }
 
 void Layer::Set3dSortingContextId(int id) {
   DCHECK(IsPropertyChangeAllowed());
-  if (id == sorting_context_id_)
+  if (id == inputs_.sorting_context_id)
     return;
-  sorting_context_id_ = id;
+  inputs_.sorting_context_id = id;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
 }
@@ -1044,18 +1049,18 @@ void Layer::InvalidatePropertyTreesIndices() {
 
 void Layer::SetShouldFlattenTransform(bool should_flatten) {
   DCHECK(IsPropertyChangeAllowed());
-  if (should_flatten_transform_ == should_flatten)
+  if (inputs_.should_flatten_transform == should_flatten)
     return;
-  should_flatten_transform_ = should_flatten;
+  inputs_.should_flatten_transform = should_flatten;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
 }
 
 void Layer::SetUseParentBackfaceVisibility(bool use) {
   DCHECK(IsPropertyChangeAllowed());
-  if (use_parent_backface_visibility_ == use)
+  if (inputs_.use_parent_backface_visibility == use)
     return;
-  use_parent_backface_visibility_ = use;
+  inputs_.use_parent_backface_visibility = use;
   SetNeedsPushProperties();
 }
 
@@ -1076,19 +1081,19 @@ void Layer::SetShouldCheckBackfaceVisibility(
 
 void Layer::SetIsDrawable(bool is_drawable) {
   DCHECK(IsPropertyChangeAllowed());
-  if (is_drawable_ == is_drawable)
+  if (inputs_.is_drawable == is_drawable)
     return;
 
-  is_drawable_ = is_drawable;
+  inputs_.is_drawable = is_drawable;
   UpdateDrawsContent(HasDrawableContent());
 }
 
 void Layer::SetHideLayerAndSubtree(bool hide) {
   DCHECK(IsPropertyChangeAllowed());
-  if (hide_layer_and_subtree_ == hide)
+  if (inputs_.hide_layer_and_subtree == hide)
     return;
 
-  hide_layer_and_subtree_ = hide;
+  inputs_.hide_layer_and_subtree = hide;
   SetNeedsCommit();
   SetSubtreePropertyChanged();
 }
@@ -1098,25 +1103,25 @@ void Layer::SetNeedsDisplayRect(const gfx::Rect& dirty_rect) {
     return;
 
   SetNeedsPushProperties();
-  update_rect_.Union(dirty_rect);
+  inputs_.update_rect.Union(dirty_rect);
 
   if (DrawsContent())
     SetNeedsUpdate();
 }
 
 bool Layer::DescendantIsFixedToContainerLayer() const {
-  for (size_t i = 0; i < children_.size(); ++i) {
-    if (children_[i]->position_constraint_.is_fixed_position() ||
-        children_[i]->DescendantIsFixedToContainerLayer())
+  for (size_t i = 0; i < inputs_.children.size(); ++i) {
+    if (inputs_.children[i]->inputs_.position_constraint.is_fixed_position() ||
+        inputs_.children[i]->DescendantIsFixedToContainerLayer())
       return true;
   }
   return false;
 }
 
 void Layer::SetIsContainerForFixedPositionLayers(bool container) {
-  if (is_container_for_fixed_position_layers_ == container)
+  if (inputs_.is_container_for_fixed_position_layers == container)
     return;
-  is_container_for_fixed_position_layers_ = container;
+  inputs_.is_container_for_fixed_position_layers = container;
 
   if (layer_tree_host_ && layer_tree_host_->CommitRequested())
     return;
@@ -1128,9 +1133,9 @@ void Layer::SetIsContainerForFixedPositionLayers(bool container) {
 
 void Layer::SetPositionConstraint(const LayerPositionConstraint& constraint) {
   DCHECK(IsPropertyChangeAllowed());
-  if (position_constraint_ == constraint)
+  if (inputs_.position_constraint == constraint)
     return;
-  position_constraint_ = constraint;
+  inputs_.position_constraint = constraint;
   SetNeedsCommit();
 }
 
@@ -1159,10 +1164,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   bool use_paint_properties = paint_properties_.source_frame_number ==
                               layer_tree_host_->source_frame_number();
 
-  layer->SetBackgroundColor(background_color_);
+  layer->SetBackgroundColor(inputs_.background_color);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);
   layer->SetBounds(use_paint_properties ? paint_properties_.bounds
-                                        : bounds_);
+                                        : inputs_.bounds);
 
 #if defined(NDEBUG)
   if (frame_viewer_instrumentation::IsTracingLayerTreeSnapshots())
@@ -1182,30 +1187,31 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (subtree_property_changed_ || layer_property_changed_)
     layer->NoteLayerPropertyChanged();
   if (!FilterIsAnimating())
-    layer->SetFilters(filters_);
-  layer->SetMasksToBounds(masks_to_bounds_);
-  layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
-  layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
-  layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
-  layer->SetContentsOpaque(contents_opaque_);
-  layer->SetBlendMode(blend_mode_);
-  layer->SetPosition(position_);
+    layer->SetFilters(inputs_.filters);
+  layer->SetMasksToBounds(inputs_.masks_to_bounds);
+  layer->set_main_thread_scrolling_reasons(
+      inputs_.main_thread_scrolling_reasons);
+  layer->SetNonFastScrollableRegion(inputs_.non_fast_scrollable_region);
+  layer->SetTouchEventHandlerRegion(inputs_.touch_event_handler_region);
+  layer->SetContentsOpaque(inputs_.contents_opaque);
+  layer->SetBlendMode(inputs_.blend_mode);
+  layer->SetPosition(inputs_.position);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
   layer->set_draw_blend_mode(draw_blend_mode_);
-  layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
+  layer->SetUseParentBackfaceVisibility(inputs_.use_parent_backface_visibility);
   layer->SetUseLocalTransformForBackfaceVisibility(
       use_local_transform_for_backface_visibility_);
   layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
   if (!TransformIsAnimating())
-    layer->SetTransform(transform_);
-  layer->Set3dSortingContextId(sorting_context_id_);
+    layer->SetTransform(inputs_.transform);
+  layer->Set3dSortingContextId(inputs_.sorting_context_id);
 
-  layer->SetScrollClipLayer(scroll_clip_layer_id_);
-  layer->set_user_scrollable_horizontal(user_scrollable_horizontal_);
-  layer->set_user_scrollable_vertical(user_scrollable_vertical_);
-  layer->SetElementId(element_id_);
-  layer->SetMutableProperties(mutable_properties_);
+  layer->SetScrollClipLayer(inputs_.scroll_clip_layer_id);
+  layer->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);
+  layer->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
+  layer->SetElementId(inputs_.element_id);
+  layer->SetMutableProperties(inputs_.mutable_properties);
 
   // When a scroll offset animation is interrupted the new scroll position on
   // the pending tree will clobber any impl-side scrolling occuring on the
@@ -1220,8 +1226,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // draws, then damage tracking will become incorrect if we simply clobber the
   // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
   // union) any update changes that have occurred on the main thread.
-  update_rect_.Union(layer->update_rect());
-  layer->SetUpdateRect(update_rect_);
+  inputs_.update_rect.Union(layer->update_rect());
+  layer->SetUpdateRect(inputs_.update_rect);
 
   layer->SetHasWillChangeTransformHint(has_will_change_transform_hint());
   layer->SetNeedsPushProperties();
@@ -1229,14 +1235,14 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   // Reset any state that should be cleared for the next update.
   subtree_property_changed_ = false;
   layer_property_changed_ = false;
-  update_rect_ = gfx::Rect();
+  inputs_.update_rect = gfx::Rect();
 
   layer_tree_host()->RemoveLayerShouldPushProperties(this);
 }
 
 void Layer::TakeCopyRequests(
     std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
-  for (auto& it : copy_requests_) {
+  for (auto& it : inputs_.copy_requests) {
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
         layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
     std::unique_ptr<CopyOutputRequest> original_request = std::move(it);
@@ -1253,7 +1259,7 @@ void Layer::TakeCopyRequests(
     requests->push_back(std::move(main_thread_request));
   }
 
-  copy_requests_.clear();
+  inputs_.copy_requests.clear();
 }
 
 void Layer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
@@ -1261,26 +1267,26 @@ void Layer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {
 }
 
 void Layer::ToLayerNodeProto(proto::LayerNode* proto) const {
-  proto->set_id(layer_id_);
+  proto->set_id(inputs_.layer_id);
   SetTypeForProtoSerialization(proto);
 
   if (parent_)
     proto->set_parent_id(parent_->id());
 
   DCHECK_EQ(0, proto->children_size());
-  for (const auto& child : children_) {
+  for (const auto& child : inputs_.children) {
     child->ToLayerNodeProto(proto->add_children());
   }
 
-  if (mask_layer_)
-    mask_layer_->ToLayerNodeProto(proto->mutable_mask_layer());
-  if (replica_layer_)
-    replica_layer_->ToLayerNodeProto(proto->mutable_replica_layer());
+  if (inputs_.mask_layer)
+    inputs_.mask_layer->ToLayerNodeProto(proto->mutable_mask_layer());
+  if (inputs_.replica_layer)
+    inputs_.replica_layer->ToLayerNodeProto(proto->mutable_replica_layer());
 }
 
 void Layer::ClearLayerTreePropertiesForDeserializationAndAddToMap(
     LayerIdMap* layer_map) {
-  (*layer_map)[layer_id_] = this;
+  (*layer_map)[inputs_.layer_id] = this;
 
   if (layer_tree_host_)
     layer_tree_host_->UnregisterLayer(this);
@@ -1289,22 +1295,22 @@ void Layer::ClearLayerTreePropertiesForDeserializationAndAddToMap(
   parent_ = nullptr;
 
   // Clear these properties for all the children and add them to the map.
-  for (auto& child : children_) {
+  for (auto& child : inputs_.children) {
     child->ClearLayerTreePropertiesForDeserializationAndAddToMap(layer_map);
   }
 
-  children_.clear();
+  inputs_.children.clear();
 
-  if (mask_layer_) {
-    mask_layer_->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+  if (inputs_.mask_layer) {
+    inputs_.mask_layer->ClearLayerTreePropertiesForDeserializationAndAddToMap(
         layer_map);
-    mask_layer_ = nullptr;
+    inputs_.mask_layer = nullptr;
   }
 
-  if (replica_layer_) {
-    replica_layer_->ClearLayerTreePropertiesForDeserializationAndAddToMap(
-        layer_map);
-    replica_layer_ = nullptr;
+  if (inputs_.replica_layer) {
+    inputs_.replica_layer
+        ->ClearLayerTreePropertiesForDeserializationAndAddToMap(layer_map);
+    inputs_.replica_layer = nullptr;
   }
 }
 
@@ -1312,13 +1318,13 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
                                const LayerIdMap& layer_map,
                                LayerTreeHost* layer_tree_host) {
   DCHECK(!layer_tree_host_);
-  DCHECK(children_.empty());
-  DCHECK(!mask_layer_);
-  DCHECK(!replica_layer_);
+  DCHECK(inputs_.children.empty());
+  DCHECK(!inputs_.mask_layer);
+  DCHECK(!inputs_.replica_layer);
   DCHECK(layer_tree_host);
   DCHECK(proto.has_id());
 
-  layer_id_ = proto.id();
+  inputs_.layer_id = proto.id();
 
   layer_tree_host_ = layer_tree_host;
   layer_tree_host_->RegisterLayer(this);
@@ -1333,36 +1339,36 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
     DCHECK(!child->parent_);
     child->parent_ = this;
     child->FromLayerNodeProto(child_proto, layer_map, layer_tree_host_);
-    children_.push_back(child);
+    inputs_.children.push_back(child);
   }
 
   if (proto.has_mask_layer()) {
-    mask_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
+    inputs_.mask_layer = LayerProtoConverter::FindOrAllocateAndConstruct(
         proto.mask_layer(), layer_map);
-    mask_layer_->parent_ = this;
-    mask_layer_->FromLayerNodeProto(proto.mask_layer(), layer_map,
-                                    layer_tree_host_);
+    inputs_.mask_layer->parent_ = this;
+    inputs_.mask_layer->FromLayerNodeProto(proto.mask_layer(), layer_map,
+                                           layer_tree_host_);
   }
 
   if (proto.has_replica_layer()) {
-    replica_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
+    inputs_.replica_layer = LayerProtoConverter::FindOrAllocateAndConstruct(
         proto.replica_layer(), layer_map);
-    replica_layer_->parent_ = this;
-    replica_layer_->FromLayerNodeProto(proto.replica_layer(), layer_map,
-                                       layer_tree_host_);
+    inputs_.replica_layer->parent_ = this;
+    inputs_.replica_layer->FromLayerNodeProto(proto.replica_layer(), layer_map,
+                                              layer_tree_host_);
   }
 }
 
 void Layer::ToLayerPropertiesProto(proto::LayerUpdate* layer_update) {
   // Always set properties metadata for serialized layers.
   proto::LayerProperties* proto = layer_update->add_layers();
-  proto->set_id(layer_id_);
+  proto->set_id(inputs_.layer_id);
   LayerSpecificPropertiesToProto(proto);
 }
 
 void Layer::FromLayerPropertiesProto(const proto::LayerProperties& proto) {
   DCHECK(proto.has_id());
-  DCHECK_EQ(layer_id_, proto.id());
+  DCHECK_EQ(inputs_.layer_id, proto.id());
   FromLayerSpecificPropertiesProto(proto);
 }
 
@@ -1373,10 +1379,10 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
                               paint_properties_.source_frame_number ==
                                   layer_tree_host_->source_frame_number();
 
-  Point3FToProto(transform_origin_, base->mutable_transform_origin());
-  base->set_background_color(background_color_);
+  Point3FToProto(inputs_.transform_origin, base->mutable_transform_origin());
+  base->set_background_color(inputs_.background_color);
   base->set_safe_opaque_background_color(safe_opaque_background_color_);
-  SizeToProto(use_paint_properties ? paint_properties_.bounds : bounds_,
+  SizeToProto(use_paint_properties ? paint_properties_.bounds : inputs_.bounds,
               base->mutable_bounds());
 
   // TODO(nyquist): Figure out what to do with debug info. See crbug.com/570372.
@@ -1387,44 +1393,47 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   base->set_scroll_tree_index(scroll_tree_index_);
   Vector2dFToProto(offset_to_transform_parent_,
                    base->mutable_offset_to_transform_parent());
-  base->set_double_sided(double_sided_);
+  base->set_double_sided(inputs_.double_sided);
   base->set_draws_content(draws_content_);
-  base->set_hide_layer_and_subtree(hide_layer_and_subtree_);
+  base->set_hide_layer_and_subtree(inputs_.hide_layer_and_subtree);
   base->set_subtree_property_changed(subtree_property_changed_);
   base->set_layer_property_changed(layer_property_changed_);
 
   // TODO(nyquist): Add support for serializing FilterOperations for
   // |filters_| and |background_filters_|. See crbug.com/541321.
 
-  base->set_masks_to_bounds(masks_to_bounds_);
-  base->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
-  RegionToProto(non_fast_scrollable_region_,
+  base->set_masks_to_bounds(inputs_.masks_to_bounds);
+  base->set_main_thread_scrolling_reasons(
+      inputs_.main_thread_scrolling_reasons);
+  RegionToProto(inputs_.non_fast_scrollable_region,
                 base->mutable_non_fast_scrollable_region());
-  RegionToProto(touch_event_handler_region_,
+  RegionToProto(inputs_.touch_event_handler_region,
                 base->mutable_touch_event_handler_region());
-  base->set_contents_opaque(contents_opaque_);
-  base->set_opacity(opacity_);
-  base->set_blend_mode(SkXfermodeModeToProto(blend_mode_));
-  base->set_is_root_for_isolated_group(is_root_for_isolated_group_);
-  PointFToProto(position_, base->mutable_position());
+  base->set_contents_opaque(inputs_.contents_opaque);
+  base->set_opacity(inputs_.opacity);
+  base->set_blend_mode(SkXfermodeModeToProto(inputs_.blend_mode));
+  base->set_is_root_for_isolated_group(inputs_.is_root_for_isolated_group);
+  PointFToProto(inputs_.position, base->mutable_position());
   base->set_is_container_for_fixed_position_layers(
-      is_container_for_fixed_position_layers_);
-  position_constraint_.ToProtobuf(base->mutable_position_constraint());
-  base->set_should_flatten_transform(should_flatten_transform_);
+      inputs_.is_container_for_fixed_position_layers);
+  inputs_.position_constraint.ToProtobuf(base->mutable_position_constraint());
+  base->set_should_flatten_transform(inputs_.should_flatten_transform);
   base->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
   base->set_draw_blend_mode(SkXfermodeModeToProto(draw_blend_mode_));
-  base->set_use_parent_backface_visibility(use_parent_backface_visibility_);
-  TransformToProto(transform_, base->mutable_transform());
-  base->set_sorting_context_id(sorting_context_id_);
+  base->set_use_parent_backface_visibility(
+      inputs_.use_parent_backface_visibility);
+  TransformToProto(inputs_.transform, base->mutable_transform());
+  base->set_sorting_context_id(inputs_.sorting_context_id);
   base->set_num_descendants_that_draw_content(
       num_descendants_that_draw_content_);
 
-  base->set_scroll_clip_layer_id(scroll_clip_layer_id_);
-  base->set_user_scrollable_horizontal(user_scrollable_horizontal_);
-  base->set_user_scrollable_vertical(user_scrollable_vertical_);
+  base->set_scroll_clip_layer_id(inputs_.scroll_clip_layer_id);
+  base->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);
+  base->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
 
-  int scroll_parent_id = scroll_parent_ ? scroll_parent_->id() : INVALID_ID;
+  int scroll_parent_id =
+      inputs_.scroll_parent ? inputs_.scroll_parent->id() : INVALID_ID;
   base->set_scroll_parent_id(scroll_parent_id);
 
   if (scroll_children_) {
@@ -1432,7 +1441,8 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
       base->add_scroll_children_ids(child->id());
   }
 
-  int clip_parent_id = clip_parent_ ? clip_parent_->id() : INVALID_ID;
+  int clip_parent_id =
+      inputs_.clip_parent ? inputs_.clip_parent->id() : INVALID_ID;
   base->set_clip_parent_id(clip_parent_id);
 
   if (clip_children_) {
@@ -1440,19 +1450,20 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
       base->add_clip_children_ids(child->id());
   }
 
-  ScrollOffsetToProto(scroll_offset_, base->mutable_scroll_offset());
+  ScrollOffsetToProto(inputs_.scroll_offset, base->mutable_scroll_offset());
 
   // TODO(nyquist): Figure out what to do with CopyRequests.
   // See crbug.com/570374.
 
-  RectToProto(update_rect_, base->mutable_update_rect());
+  RectToProto(inputs_.update_rect, base->mutable_update_rect());
 
   // TODO(nyquist): Figure out what to do with ElementAnimations.
   // See crbug.com/570376.
 
-  update_rect_ = gfx::Rect();
+  inputs_.update_rect = gfx::Rect();
 
-  base->set_has_will_change_transform_hint(has_will_change_transform_hint_);
+  base->set_has_will_change_transform_hint(
+      inputs_.has_will_change_transform_hint);
 }
 
 void Layer::FromLayerSpecificPropertiesProto(
@@ -1461,10 +1472,10 @@ void Layer::FromLayerSpecificPropertiesProto(
   DCHECK(layer_tree_host_);
   const proto::BaseLayerProperties& base = proto.base();
 
-  transform_origin_ = ProtoToPoint3F(base.transform_origin());
-  background_color_ = base.background_color();
+  inputs_.transform_origin = ProtoToPoint3F(base.transform_origin());
+  inputs_.background_color = base.background_color();
   safe_opaque_background_color_ = base.safe_opaque_background_color();
-  bounds_ = ProtoToSize(base.bounds());
+  inputs_.bounds = ProtoToSize(base.bounds());
 
   transform_tree_index_ = base.transform_free_index();
   effect_tree_index_ = base.effect_tree_index();
@@ -1472,41 +1483,43 @@ void Layer::FromLayerSpecificPropertiesProto(
   scroll_tree_index_ = base.scroll_tree_index();
   offset_to_transform_parent_ =
       ProtoToVector2dF(base.offset_to_transform_parent());
-  double_sided_ = base.double_sided();
+  inputs_.double_sided = base.double_sided();
   draws_content_ = base.draws_content();
-  hide_layer_and_subtree_ = base.hide_layer_and_subtree();
+  inputs_.hide_layer_and_subtree = base.hide_layer_and_subtree();
   subtree_property_changed_ = base.subtree_property_changed();
   layer_property_changed_ = base.layer_property_changed();
-  masks_to_bounds_ = base.masks_to_bounds();
-  main_thread_scrolling_reasons_ = base.main_thread_scrolling_reasons();
-  non_fast_scrollable_region_ =
+  inputs_.masks_to_bounds = base.masks_to_bounds();
+  inputs_.main_thread_scrolling_reasons = base.main_thread_scrolling_reasons();
+  inputs_.non_fast_scrollable_region =
       RegionFromProto(base.non_fast_scrollable_region());
-  touch_event_handler_region_ =
+  inputs_.touch_event_handler_region =
       RegionFromProto(base.touch_event_handler_region());
-  contents_opaque_ = base.contents_opaque();
-  opacity_ = base.opacity();
-  blend_mode_ = SkXfermodeModeFromProto(base.blend_mode());
-  is_root_for_isolated_group_ = base.is_root_for_isolated_group();
-  position_ = ProtoToPointF(base.position());
-  is_container_for_fixed_position_layers_ =
+  inputs_.contents_opaque = base.contents_opaque();
+  inputs_.opacity = base.opacity();
+  inputs_.blend_mode = SkXfermodeModeFromProto(base.blend_mode());
+  inputs_.is_root_for_isolated_group = base.is_root_for_isolated_group();
+  inputs_.position = ProtoToPointF(base.position());
+  inputs_.is_container_for_fixed_position_layers =
       base.is_container_for_fixed_position_layers();
-  position_constraint_.FromProtobuf(base.position_constraint());
-  should_flatten_transform_ = base.should_flatten_transform();
+  inputs_.position_constraint.FromProtobuf(base.position_constraint());
+  inputs_.should_flatten_transform = base.should_flatten_transform();
   should_flatten_transform_from_property_tree_ =
       base.should_flatten_transform_from_property_tree();
   draw_blend_mode_ = SkXfermodeModeFromProto(base.draw_blend_mode());
-  use_parent_backface_visibility_ = base.use_parent_backface_visibility();
-  transform_ = ProtoToTransform(base.transform());
-  sorting_context_id_ = base.sorting_context_id();
+  inputs_.use_parent_backface_visibility =
+      base.use_parent_backface_visibility();
+  inputs_.transform = ProtoToTransform(base.transform());
+  inputs_.sorting_context_id = base.sorting_context_id();
   num_descendants_that_draw_content_ = base.num_descendants_that_draw_content();
 
-  scroll_clip_layer_id_ = base.scroll_clip_layer_id();
-  user_scrollable_horizontal_ = base.user_scrollable_horizontal();
-  user_scrollable_vertical_ = base.user_scrollable_vertical();
+  inputs_.scroll_clip_layer_id = base.scroll_clip_layer_id();
+  inputs_.user_scrollable_horizontal = base.user_scrollable_horizontal();
+  inputs_.user_scrollable_vertical = base.user_scrollable_vertical();
 
-  scroll_parent_ = base.scroll_parent_id() == INVALID_ID
-                       ? nullptr
-                       : layer_tree_host_->LayerById(base.scroll_parent_id());
+  inputs_.scroll_parent =
+      base.scroll_parent_id() == INVALID_ID
+          ? nullptr
+          : layer_tree_host_->LayerById(base.scroll_parent_id());
 
   // If there have been scroll children entries in previous deserializations,
   // clear out the set. If there have been none, initialize the set of children.
@@ -1523,9 +1536,10 @@ void Layer::FromLayerSpecificPropertiesProto(
     scroll_children_->insert(child.get());
   }
 
-  clip_parent_ = base.clip_parent_id() == INVALID_ID
-                     ? nullptr
-                     : layer_tree_host_->LayerById(base.clip_parent_id());
+  inputs_.clip_parent =
+      base.clip_parent_id() == INVALID_ID
+          ? nullptr
+          : layer_tree_host_->LayerById(base.clip_parent_id());
 
   // If there have been clip children entries in previous deserializations,
   // clear out the set. If there have been none, initialize the set of children.
@@ -1542,15 +1556,16 @@ void Layer::FromLayerSpecificPropertiesProto(
     clip_children_->insert(child.get());
   }
 
-  scroll_offset_ = ProtoToScrollOffset(base.scroll_offset());
+  inputs_.scroll_offset = ProtoToScrollOffset(base.scroll_offset());
 
-  update_rect_.Union(ProtoToRect(base.update_rect()));
+  inputs_.update_rect.Union(ProtoToRect(base.update_rect()));
 
-  has_will_change_transform_hint_ = base.has_will_change_transform_hint();
+  inputs_.has_will_change_transform_hint =
+      base.has_will_change_transform_hint();
 }
 
 std::unique_ptr<LayerImpl> Layer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
-  return LayerImpl::Create(tree_impl, layer_id_);
+  return LayerImpl::Create(tree_impl, inputs_.layer_id);
 }
 
 bool Layer::DrawsContent() const {
@@ -1558,12 +1573,12 @@ bool Layer::DrawsContent() const {
 }
 
 bool Layer::HasDrawableContent() const {
-  return is_drawable_;
+  return inputs_.is_drawable;
 }
 
 void Layer::UpdateDrawsContent(bool has_drawable_content) {
   bool draws_content = has_drawable_content;
-  DCHECK(is_drawable_ || !has_drawable_content);
+  DCHECK(inputs_.is_drawable || !has_drawable_content);
   if (draws_content == draws_content_)
     return;
 
@@ -1583,7 +1598,7 @@ void Layer::SavePaintProperties() {
 
   // TODO(reveman): Save all layer properties that we depend on not
   // changing until PushProperties() has been called. crbug.com/231016
-  paint_properties_.bounds = bounds_;
+  paint_properties_.bounds = inputs_.bounds;
   paint_properties_.source_frame_number =
       layer_tree_host_->source_frame_number();
 }
@@ -1602,8 +1617,8 @@ bool Layer::IsSuitableForGpuRasterization() const {
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 Layer::TakeDebugInfo() {
-  if (client_)
-    return client_->TakeDebugInfo(this);
+  if (inputs_.client)
+    return inputs_.client->TakeDebugInfo(this);
   else
     return nullptr;
 }
@@ -1631,16 +1646,16 @@ gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {
 // is no need to request a commit to push this value over, so the value is
 // set directly rather than by calling Set<Property>.
 void Layer::OnFilterAnimated(const FilterOperations& filters) {
-  filters_ = filters;
+  inputs_.filters = filters;
 }
 
 void Layer::OnOpacityAnimated(float opacity) {
   DCHECK_GE(opacity, 0.f);
   DCHECK_LE(opacity, 1.f);
 
-  if (opacity_ == opacity)
+  if (inputs_.opacity == opacity)
     return;
-  opacity_ = opacity;
+  inputs_.opacity = opacity;
   // Changing the opacity may make a previously hidden layer visible, so a new
   // recording may be needed.
   SetNeedsUpdate();
@@ -1658,9 +1673,9 @@ void Layer::OnOpacityAnimated(float opacity) {
 }
 
 void Layer::OnTransformAnimated(const gfx::Transform& transform) {
-  if (transform_ == transform)
+  if (inputs_.transform == transform)
     return;
-  transform_ = transform;
+  inputs_.transform = transform;
   // Changing the transform may change the visible part of this layer, so a new
   // recording may be needed.
   SetNeedsUpdate();
@@ -1751,9 +1766,9 @@ bool Layer::HasActiveAnimationForTesting() const {
 }
 
 void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
-  if (has_will_change_transform_hint_ == has_will_change)
+  if (inputs_.has_will_change_transform_hint == has_will_change)
     return;
-  has_will_change_transform_hint_ = has_will_change;
+  inputs_.has_will_change_transform_hint = has_will_change;
   SetNeedsCommit();
 }
 
@@ -1804,21 +1819,21 @@ void Layer::RunMicroBenchmark(MicroBenchmark* benchmark) {
 
 void Layer::SetElementId(ElementId id) {
   DCHECK(IsPropertyChangeAllowed());
-  if (element_id_ == id)
+  if (inputs_.element_id == id)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "Layer::SetElementId", "element", id.AsValue().release());
-  if (element_id_ && layer_tree_host()) {
+  if (inputs_.element_id && layer_tree_host()) {
     layer_tree_host()->animation_host()->UnregisterElement(
-        element_id_, ElementListType::ACTIVE);
+        inputs_.element_id, ElementListType::ACTIVE);
     layer_tree_host()->RemoveFromElementMap(this);
   }
 
-  element_id_ = id;
+  inputs_.element_id = id;
 
-  if (element_id_ && layer_tree_host()) {
+  if (inputs_.element_id && layer_tree_host()) {
     layer_tree_host()->animation_host()->RegisterElement(
-        element_id_, ElementListType::ACTIVE);
+        inputs_.element_id, ElementListType::ACTIVE);
     layer_tree_host()->AddToElementMap(this);
   }
 
@@ -1827,11 +1842,11 @@ void Layer::SetElementId(ElementId id) {
 
 void Layer::SetMutableProperties(uint32_t properties) {
   DCHECK(IsPropertyChangeAllowed());
-  if (mutable_properties_ == properties)
+  if (inputs_.mutable_properties == properties)
     return;
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "Layer::SetMutableProperties", "properties", properties);
-  mutable_properties_ = properties;
+  inputs_.mutable_properties = properties;
   SetNeedsCommit();
 }
 

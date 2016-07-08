@@ -60,7 +60,7 @@ class MockLayer : public Layer {
 
   std::unique_ptr<LayerImpl> CreateLayerImpl(
       LayerTreeImpl* tree_impl) override {
-    return MockLayerImpl::Create(tree_impl, layer_id_);
+    return MockLayerImpl::Create(tree_impl, id());
   }
 
   void PushPropertiesTo(LayerImpl* layer_impl) override {

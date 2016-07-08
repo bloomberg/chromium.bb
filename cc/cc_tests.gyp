@@ -243,6 +243,8 @@
       'test/fake_video_frame_provider.h',
       'test/geometry_test_utils.cc',
       'test/geometry_test_utils.h',
+      'test/layer_internals_for_test.cc',
+      'test/layer_internals_for_test.h',
       'test/layer_test_common.cc',
       'test/layer_test_common.h',
       'test/layer_tree_host_common_test.cc',

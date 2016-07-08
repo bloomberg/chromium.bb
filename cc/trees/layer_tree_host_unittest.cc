@@ -45,6 +45,7 @@
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
+#include "cc/test/layer_internals_for_test.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -1116,7 +1117,7 @@ class LayerTreeHostTestTransformTreeDamageIsUpdated : public LayerTreeHostTest {
     if (layer_tree_host()->source_frame_number() == 1) {
       gfx::Transform scale;
       scale.Scale(2.0, 2.0);
-      child_->OnTransformAnimated(scale);
+      LayerInternalsForTest(child_.get()).OnTransformAnimated(scale);
     }
   }
 

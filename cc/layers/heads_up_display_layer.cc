@@ -63,7 +63,7 @@ bool HeadsUpDisplayLayer::HasDrawableContent() const {
 
 std::unique_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
-  return HeadsUpDisplayLayerImpl::Create(tree_impl, layer_id_);
+  return HeadsUpDisplayLayerImpl::Create(tree_impl, id());
 }
 
 void HeadsUpDisplayLayer::SetTypeForProtoSerialization(

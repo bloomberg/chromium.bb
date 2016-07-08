@@ -81,7 +81,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   static scoped_refptr<Layer> Create();
 
-  int id() const { return layer_id_; }
+  int id() const { return inputs_.layer_id; }
 
   Layer* RootLayer();
   Layer* parent() { return parent_; }
@@ -94,8 +94,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetChildren(const LayerList& children);
   bool HasAncestor(const Layer* ancestor) const;
 
-  const LayerList& children() const { return children_; }
-  Layer* child_at(size_t index) { return children_[index].get(); }
+  const LayerList& children() const { return inputs_.children; }
+  Layer* child_at(size_t index) { return inputs_.children[index].get(); }
 
   // This requests the layer and its subtree be rendered and given to the
   // callback. If the copy is unable to be produced (the layer is destroyed
@@ -103,15 +103,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // request's source property is set, any prior uncommitted requests having the
   // same source will be aborted.
   void RequestCopyOfOutput(std::unique_ptr<CopyOutputRequest> request);
-  bool HasCopyRequest() const {
-    return !copy_requests_.empty();
-  }
+  bool HasCopyRequest() const { return !inputs_.copy_requests.empty(); }
 
   void TakeCopyRequests(
       std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
 
   virtual void SetBackgroundColor(SkColor background_color);
-  SkColor background_color() const { return background_color_; }
+  SkColor background_color() const { return inputs_.background_color; }
   void SetSafeOpaqueBackgroundColor(SkColor background_color);
   // If contents_opaque(), return an opaque color else return a
   // non-opaque color.  Tries to return background_color(), if possible.
@@ -120,20 +118,20 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // A layer's bounds are in logical, non-page-scaled pixels (however, the
   // root layer's bounds are in physical pixels).
   void SetBounds(const gfx::Size& bounds);
-  gfx::Size bounds() const { return bounds_; }
+  gfx::Size bounds() const { return inputs_.bounds; }
 
   void SetMasksToBounds(bool masks_to_bounds);
-  bool masks_to_bounds() const { return masks_to_bounds_; }
+  bool masks_to_bounds() const { return inputs_.masks_to_bounds; }
 
   void SetMaskLayer(Layer* mask_layer);
-  Layer* mask_layer() { return mask_layer_.get(); }
-  const Layer* mask_layer() const { return mask_layer_.get(); }
+  Layer* mask_layer() { return inputs_.mask_layer.get(); }
+  const Layer* mask_layer() const { return inputs_.mask_layer.get(); }
 
   virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect);
   void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::Rect(bounds())); }
 
   virtual void SetOpacity(float opacity);
-  float opacity() const { return opacity_; }
+  float opacity() const { return inputs_.opacity; }
   float EffectiveOpacity() const;
   bool OpacityIsAnimating() const;
   bool HasPotentiallyRunningOpacityAnimation() const;
@@ -142,7 +140,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual bool AlwaysUseActiveTreeOpacity() const;
 
   void SetBlendMode(SkXfermode::Mode blend_mode);
-  SkXfermode::Mode blend_mode() const { return blend_mode_; }
+  SkXfermode::Mode blend_mode() const { return inputs_.blend_mode; }
 
   void set_draw_blend_mode(SkXfermode::Mode blend_mode) {
     if (draw_blend_mode_ == blend_mode)
@@ -153,7 +151,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   SkXfermode::Mode draw_blend_mode() const { return draw_blend_mode_; }
 
   bool uses_default_blend_mode() const {
-    return blend_mode_ == SkXfermode::kSrcOver_Mode;
+    return inputs_.blend_mode == SkXfermode::kSrcOver_Mode;
   }
 
   // A layer is root for an isolated group when it and all its descendants are
@@ -162,11 +160,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // layers within the group to blend with layers outside this group.
   void SetIsRootForIsolatedGroup(bool root);
   bool is_root_for_isolated_group() const {
-    return is_root_for_isolated_group_;
+    return inputs_.is_root_for_isolated_group;
   }
 
   void SetFilters(const FilterOperations& filters);
-  const FilterOperations& filters() const { return filters_; }
+  const FilterOperations& filters() const { return inputs_.filters; }
   bool FilterIsAnimating() const;
   bool HasPotentiallyRunningFilterAnimation() const;
 
@@ -175,14 +173,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // through the WebLayer interface, and are not exposed to HTML.
   void SetBackgroundFilters(const FilterOperations& filters);
   const FilterOperations& background_filters() const {
-    return background_filters_;
+    return inputs_.background_filters;
   }
 
   virtual void SetContentsOpaque(bool opaque);
-  bool contents_opaque() const { return contents_opaque_; }
+  bool contents_opaque() const { return inputs_.contents_opaque; }
 
   void SetPosition(const gfx::PointF& position);
-  gfx::PointF position() const { return position_; }
+  gfx::PointF position() const { return inputs_.position; }
 
   // A layer that is a container for fixed position layers cannot be both
   // scrollable and have a non-identity transform.
@@ -195,11 +193,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetPositionConstraint(const LayerPositionConstraint& constraint);
   const LayerPositionConstraint& position_constraint() const {
-    return position_constraint_;
+    return inputs_.position_constraint;
   }
 
   void SetTransform(const gfx::Transform& transform);
-  const gfx::Transform& transform() const { return transform_; }
+  const gfx::Transform& transform() const { return inputs_.transform; }
   bool TransformIsAnimating() const;
   bool HasPotentiallyRunningTransformAnimation() const;
   bool HasOnlyTranslationTransforms() const;
@@ -209,7 +207,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool AnimationStartScale(float* start_scale) const;
 
   void SetTransformOrigin(const gfx::Point3F&);
-  gfx::Point3F transform_origin() const { return transform_origin_; }
+  gfx::Point3F transform_origin() const { return inputs_.transform_origin; }
 
   bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
 
@@ -217,8 +215,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetScrollParent(Layer* parent);
 
-  Layer* scroll_parent() { return scroll_parent_; }
-  const Layer* scroll_parent() const { return scroll_parent_; }
+  Layer* scroll_parent() { return inputs_.scroll_parent; }
+  const Layer* scroll_parent() const { return inputs_.scroll_parent; }
 
   void AddScrollChild(Layer* child);
   void RemoveScrollChild(Layer* child);
@@ -230,10 +228,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetClipParent(Layer* ancestor);
 
-  Layer* clip_parent() { return clip_parent_; }
-  const Layer* clip_parent() const {
-    return clip_parent_;
-  }
+  Layer* clip_parent() { return inputs_.clip_parent; }
+  const Layer* clip_parent() const { return inputs_.clip_parent; }
 
   void AddClipChild(Layer* child);
   void RemoveClipChild(Layer* child);
@@ -255,41 +251,43 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetScrollOffset(const gfx::ScrollOffset& scroll_offset);
 
-  gfx::ScrollOffset scroll_offset() const { return scroll_offset_; }
+  gfx::ScrollOffset scroll_offset() const { return inputs_.scroll_offset; }
   void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
 
   void SetScrollClipLayerId(int clip_layer_id);
-  bool scrollable() const { return scroll_clip_layer_id_ != INVALID_ID; }
+  bool scrollable() const { return inputs_.scroll_clip_layer_id != INVALID_ID; }
   Layer* scroll_clip_layer() const;
 
   void SetUserScrollable(bool horizontal, bool vertical);
   bool user_scrollable_horizontal() const {
-    return user_scrollable_horizontal_;
+    return inputs_.user_scrollable_horizontal;
   }
-  bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
+  bool user_scrollable_vertical() const {
+    return inputs_.user_scrollable_vertical;
+  }
 
   void AddMainThreadScrollingReasons(uint32_t main_thread_scrolling_reasons);
   void ClearMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons_to_clear);
   uint32_t main_thread_scrolling_reasons() const {
-    return main_thread_scrolling_reasons_;
+    return inputs_.main_thread_scrolling_reasons;
   }
   bool should_scroll_on_main_thread() const {
-    return !!main_thread_scrolling_reasons_;
+    return !!inputs_.main_thread_scrolling_reasons;
   }
 
   void SetNonFastScrollableRegion(const Region& non_fast_scrollable_region);
   const Region& non_fast_scrollable_region() const {
-    return non_fast_scrollable_region_;
+    return inputs_.non_fast_scrollable_region;
   }
 
   void SetTouchEventHandlerRegion(const Region& touch_event_handler_region);
   const Region& touch_event_handler_region() const {
-    return touch_event_handler_region_;
+    return inputs_.touch_event_handler_region;
   }
 
   void set_did_scroll_callback(const base::Closure& callback) {
-    did_scroll_callback_ = callback;
+    inputs_.did_scroll_callback = callback;
   }
 
   void SetForceRenderSurfaceForTesting(bool force_render_surface);
@@ -297,19 +295,23 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return force_render_surface_for_testing_;
   }
 
-  gfx::ScrollOffset CurrentScrollOffset() const { return scroll_offset_; }
+  gfx::ScrollOffset CurrentScrollOffset() const {
+    return inputs_.scroll_offset;
+  }
 
   void SetDoubleSided(bool double_sided);
-  bool double_sided() const { return double_sided_; }
+  bool double_sided() const { return inputs_.double_sided; }
 
   void SetShouldFlattenTransform(bool flatten);
-  bool should_flatten_transform() const { return should_flatten_transform_; }
+  bool should_flatten_transform() const {
+    return inputs_.should_flatten_transform;
+  }
 
-  bool Is3dSorted() const { return sorting_context_id_ != 0; }
+  bool Is3dSorted() const { return inputs_.sorting_context_id != 0; }
 
   void SetUseParentBackfaceVisibility(bool use);
   bool use_parent_backface_visibility() const {
-    return use_parent_backface_visibility_;
+    return inputs_.use_parent_backface_visibility;
   }
 
   void SetUseLocalTransformForBackfaceVisibility(bool use_local);
@@ -327,17 +329,18 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetIsDrawable(bool is_drawable);
 
   void SetHideLayerAndSubtree(bool hide);
-  bool hide_layer_and_subtree() const { return hide_layer_and_subtree_; }
+  bool hide_layer_and_subtree() const { return inputs_.hide_layer_and_subtree; }
 
   void SetReplicaLayer(Layer* layer);
-  Layer* replica_layer() { return replica_layer_.get(); }
-  const Layer* replica_layer() const { return replica_layer_.get(); }
+  Layer* replica_layer() { return inputs_.replica_layer.get(); }
+  const Layer* replica_layer() const { return inputs_.replica_layer.get(); }
 
-  bool has_mask() const { return !!mask_layer_.get(); }
-  bool has_replica() const { return !!replica_layer_.get(); }
+  bool has_mask() const { return !!inputs_.mask_layer.get(); }
+  bool has_replica() const { return !!inputs_.replica_layer.get(); }
   bool replica_has_mask() const {
-    return replica_layer_.get() &&
-           (mask_layer_.get() || replica_layer_->mask_layer_.get());
+    return inputs_.replica_layer.get() &&
+           (inputs_.mask_layer.get() ||
+            inputs_.replica_layer->inputs_.mask_layer.get());
   }
 
   int NumDescendantsThatDrawContent() const;
@@ -358,7 +361,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   TakeDebugInfo();
 
-  void SetLayerClient(LayerClient* client) { client_ = client; }
+  void SetLayerClient(LayerClient* client) { inputs_.client = client; }
 
   virtual void PushPropertiesTo(LayerImpl* layer);
 
@@ -416,8 +419,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Constructs a LayerImpl of the correct runtime type for this Layer type.
   virtual std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
 
-  bool NeedsDisplayForTesting() const { return !update_rect_.IsEmpty(); }
-  void ResetNeedsDisplayForTesting() { update_rect_ = gfx::Rect(); }
+  bool NeedsDisplayForTesting() const { return !inputs_.update_rect.IsEmpty(); }
+  void ResetNeedsDisplayForTesting() { inputs_.update_rect = gfx::Rect(); }
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation() const;
 
@@ -431,7 +434,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void RunMicroBenchmark(MicroBenchmark* benchmark);
 
   void Set3dSortingContextId(int id);
-  int sorting_context_id() const { return sorting_context_id_; }
+  int sorting_context_id() const { return inputs_.sorting_context_id; }
 
   void set_property_tree_sequence_number(int sequence_number) {
     property_tree_sequence_number_ = sequence_number;
@@ -493,26 +496,16 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   int num_copy_requests_in_target_subtree();
 
   void SetElementId(ElementId id);
-  ElementId element_id() const { return element_id_; }
+  ElementId element_id() const { return inputs_.element_id; }
 
   void SetMutableProperties(uint32_t properties);
-  uint32_t mutable_properties() const { return mutable_properties_; }
+  uint32_t mutable_properties() const { return inputs_.mutable_properties; }
 
-  // Interactions with attached animations.
-  gfx::ScrollOffset ScrollOffsetForAnimation() const;
-  void OnFilterAnimated(const FilterOperations& filters);
-  void OnOpacityAnimated(float opacity);
-  void OnTransformAnimated(const gfx::Transform& transform);
-  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
-  void OnTransformIsCurrentlyAnimatingChanged(bool is_animating);
-  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
-  void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
-  void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
   bool HasActiveAnimationForTesting() const;
 
   void SetHasWillChangeTransformHint(bool has_will_change);
   bool has_will_change_transform_hint() const {
-    return has_will_change_transform_hint_;
+    return inputs_.has_will_change_transform_hint;
   }
 
  protected:
@@ -564,30 +557,29 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void FromLayerSpecificPropertiesProto(
       const proto::LayerProperties& proto);
 
-  // The update rect is the region of the compositor resource that was
-  // actually updated by the compositor. For layers that may do updating
-  // outside the compositor's control (i.e. plugin layers), this information
-  // is not available and the update rect will remain empty.
-  // Note this rect is in layer space (not content space).
-  gfx::Rect update_rect_;
-
-  scoped_refptr<Layer> mask_layer_;
-
-  int layer_id_;
+  gfx::Rect& update_rect() { return inputs_.update_rect; }
 
   // When true, the layer is about to perform an update. Any commit requests
   // will be handled implicitly after the update completes.
   bool ignore_set_needs_commit_;
 
-  // Layers that share a sorting context id will be sorted together in 3d
-  // space.  0 is a special value that means this layer will not be sorted and
-  // will be drawn in paint order.
-  int sorting_context_id_;
-
  private:
   friend class base::RefCounted<Layer>;
   friend class LayerSerializationTest;
   friend class LayerTreeHostCommon;
+  friend class LayerTreeHost;
+  friend class LayerInternalsForTest;
+
+  // Interactions with attached animations.
+  gfx::ScrollOffset ScrollOffsetForAnimation() const;
+  void OnFilterAnimated(const FilterOperations& filters);
+  void OnOpacityAnimated(float opacity);
+  void OnTransformAnimated(const gfx::Transform& transform);
+  void OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset);
+  void OnTransformIsCurrentlyAnimatingChanged(bool is_animating);
+  void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
+  void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
+  void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
 
   void SetParent(Layer* layer);
   bool DescendantIsFixedToContainerLayer() const;
@@ -607,7 +599,95 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // indices becomes invalid.
   void InvalidatePropertyTreesIndices();
 
-  LayerList children_;
+  // Encapsulates all data, callbacks or interfaces received from the embedder.
+  // TODO(khushalsagar): This is only valid when PropertyTrees are built
+  // internally in cc. Update this for the SPv2 path where blink generates
+  // PropertyTrees.
+  struct Inputs {
+    Inputs();
+    ~Inputs();
+
+    int layer_id;
+
+    LayerList children;
+
+    // The update rect is the region of the compositor resource that was
+    // actually updated by the compositor. For layers that may do updating
+    // outside the compositor's control (i.e. plugin layers), this information
+    // is not available and the update rect will remain empty.
+    // Note this rect is in layer space (not content space).
+    gfx::Rect update_rect;
+
+    gfx::Size bounds;
+    bool masks_to_bounds;
+
+    scoped_refptr<Layer> mask_layer;
+
+    // Replica layer used for reflections.
+    scoped_refptr<Layer> replica_layer;
+
+    float opacity;
+    SkXfermode::Mode blend_mode;
+
+    bool is_root_for_isolated_group : 1;
+
+    bool contents_opaque : 1;
+
+    gfx::PointF position;
+    gfx::Transform transform;
+    gfx::Point3F transform_origin;
+
+    bool is_drawable : 1;
+
+    bool double_sided : 1;
+    bool should_flatten_transform : 1;
+
+    // Layers that share a sorting context id will be sorted together in 3d
+    // space.  0 is a special value that means this layer will not be sorted
+    // and will be drawn in paint order.
+    int sorting_context_id;
+
+    bool use_parent_backface_visibility : 1;
+
+    SkColor background_color;
+
+    FilterOperations filters;
+    FilterOperations background_filters;
+
+    gfx::ScrollOffset scroll_offset;
+
+    // This variable indicates which ancestor layer (if any) whose size,
+    // transformed relative to this layer, defines the maximum scroll offset
+    // for this layer.
+    int scroll_clip_layer_id;
+    bool user_scrollable_horizontal : 1;
+    bool user_scrollable_vertical : 1;
+
+    uint32_t main_thread_scrolling_reasons;
+    Region non_fast_scrollable_region;
+
+    Region touch_event_handler_region;
+
+    bool is_container_for_fixed_position_layers : 1;
+    LayerPositionConstraint position_constraint;
+
+    ElementId element_id;
+
+    uint32_t mutable_properties;
+
+    Layer* scroll_parent;
+    Layer* clip_parent;
+
+    bool has_will_change_transform_hint : 1;
+
+    bool hide_layer_and_subtree : 1;
+
+    // The following elements can not and are not serialized.
+    LayerClient* client;
+    base::Closure did_scroll_callback;
+    std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
+  };
+
   Layer* parent_;
 
   // Layer instances have a weak pointer to their LayerTreeHost.
@@ -615,73 +695,29 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // updated via SetLayerTreeHost() if a layer moves between trees.
   LayerTreeHost* layer_tree_host_;
 
-  // Layer properties.
-  gfx::Size bounds_;
+  Inputs inputs_;
 
-  gfx::ScrollOffset scroll_offset_;
-  // This variable indicates which ancestor layer (if any) whose size,
-  // transformed relative to this layer, defines the maximum scroll offset for
-  // this layer.
-  int scroll_clip_layer_id_;
   int num_descendants_that_draw_content_;
   int transform_tree_index_;
   int effect_tree_index_;
   int clip_tree_index_;
   int scroll_tree_index_;
   int property_tree_sequence_number_;
-  ElementId element_id_;
-  uint32_t mutable_properties_;
   gfx::Vector2dF offset_to_transform_parent_;
-  uint32_t main_thread_scrolling_reasons_;
   bool should_flatten_transform_from_property_tree_ : 1;
-  bool user_scrollable_horizontal_ : 1;
-  bool user_scrollable_vertical_ : 1;
-  bool is_root_for_isolated_group_ : 1;
-  bool is_container_for_fixed_position_layers_ : 1;
-  bool is_drawable_ : 1;
   bool draws_content_ : 1;
-  bool hide_layer_and_subtree_ : 1;
-  bool masks_to_bounds_ : 1;
-  bool contents_opaque_ : 1;
-  bool double_sided_ : 1;
-  bool should_flatten_transform_ : 1;
-  bool use_parent_backface_visibility_ : 1;
   bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
   bool layer_property_changed_ : 1;
-  bool has_will_change_transform_hint_ : 1;
-  Region non_fast_scrollable_region_;
-  Region touch_event_handler_region_;
-  gfx::PointF position_;
-  SkColor background_color_;
   SkColor safe_opaque_background_color_;
-  float opacity_;
-  SkXfermode::Mode blend_mode_;
   // draw_blend_mode may be different than blend_mode_,
   // when a RenderSurface re-parents the layer's blend_mode.
   SkXfermode::Mode draw_blend_mode_;
-  FilterOperations filters_;
-  FilterOperations background_filters_;
-  LayerPositionConstraint position_constraint_;
-  Layer* scroll_parent_;
   std::unique_ptr<std::set<Layer*>> scroll_children_;
 
-  Layer* clip_parent_;
   std::unique_ptr<std::set<Layer*>> clip_children_;
-
-  gfx::Transform transform_;
-  gfx::Point3F transform_origin_;
-
-  // Replica layer used for reflections.
-  scoped_refptr<Layer> replica_layer_;
-
-  LayerClient* client_;
-
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
-
-  base::Closure did_scroll_callback_;
 
   PaintProperties paint_properties_;
 
