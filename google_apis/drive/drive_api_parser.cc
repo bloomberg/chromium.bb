@@ -133,7 +133,6 @@ const char kAppListKind[] = "drive#appList";
 // Parent Resource
 // https://developers.google.com/drive/v2/reference/parents
 const char kParentReferenceKind[] = "drive#parentReference";
-const char kParentLink[] = "parentLink";
 
 // File Resource
 // https://developers.google.com/drive/v2/reference/files
@@ -402,9 +401,6 @@ ParentReference::~ParentReference() {}
 void ParentReference::RegisterJSONConverter(
     base::JSONValueConverter<ParentReference>* converter) {
   converter->RegisterStringField(kId, &ParentReference::file_id_);
-  converter->RegisterCustomField<GURL>(kParentLink,
-                                       &ParentReference::parent_link_,
-                                       GetGURLFromString);
 }
 
 // static

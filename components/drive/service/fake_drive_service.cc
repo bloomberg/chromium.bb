@@ -336,10 +336,6 @@ void FakeDriveService::SetQuotaValue(int64_t used, int64_t total) {
   about_resource_->set_quota_bytes_total(total);
 }
 
-GURL FakeDriveService::GetFakeLinkUrl(const std::string& resource_id) {
-  return GURL("https://fake_server/" + net::EscapePath(resource_id));
-}
-
 void FakeDriveService::Initialize(const std::string& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
@@ -851,7 +847,6 @@ CancelCallback FakeDriveService::CopyResource(
 
   ParentReference parent;
   parent.set_file_id(parent_resource_id);
-  parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
   std::vector<ParentReference> parents;
   parents.push_back(parent);
   *new_file->mutable_parents() = parents;
@@ -919,7 +914,6 @@ CancelCallback FakeDriveService::UpdateResource(
   if (!parent_resource_id.empty()) {
     ParentReference parent;
     parent.set_file_id(parent_resource_id);
-    parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
 
     std::vector<ParentReference> parents;
     parents.push_back(parent);
@@ -973,7 +967,6 @@ CancelCallback FakeDriveService::AddResourceToDirectory(
   // one more parent, not overwriting old ones.
   ParentReference parent;
   parent.set_file_id(parent_resource_id);
-  parent.set_parent_link(GetFakeLinkUrl(parent_resource_id));
   change->mutable_file()->mutable_parents()->push_back(parent);
 
   AddNewChangestamp(change);
@@ -1633,7 +1626,6 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   if (!parent_resource_id.empty()) {
     ParentReference parent;
     parent.set_file_id(parent_resource_id);
-    parent.set_parent_link(GetFakeLinkUrl(parent.file_id()));
     std::vector<ParentReference> parents;
     parents.push_back(parent);
     *new_file->mutable_parents() = parents;

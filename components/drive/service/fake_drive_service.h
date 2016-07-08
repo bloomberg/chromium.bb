@@ -123,9 +123,6 @@ class FakeDriveService : public DriveServiceInterface {
     return last_cancelled_file_;
   }
 
-  // Returns the (fake) URL for the link.
-  static GURL GetFakeLinkUrl(const std::string& resource_id);
-
   // Sets the printf format for constructing the response of AuthorizeApp().
   // The format string must include two %s that are to be filled with
   // resource_id and app_id.

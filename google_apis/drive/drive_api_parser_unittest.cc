@@ -152,9 +152,6 @@ TEST(DriveAPIParserTest, FileListParser) {
 
   ASSERT_EQ(1U, file1.parents().size());
   EXPECT_EQ("0B4v7G8yEYAWHYW1OcExsUVZLABC", file1.parents()[0].file_id());
-  EXPECT_EQ(GURL("https://www.googleapis.com/drive/v2/files/"
-                 "0B4v7G8yEYAWHYW1OcExsUVZLABC"),
-            file1.parents()[0].parent_link());
 
   EXPECT_EQ("d41d8cd98f00b204e9800998ecf8427e", file1.md5_checksum());
   EXPECT_EQ(1000U, file1.file_size());

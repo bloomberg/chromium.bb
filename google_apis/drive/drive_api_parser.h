@@ -338,13 +338,7 @@ class ParentReference {
   // Returns the file id of the reference.
   const std::string& file_id() const { return file_id_; }
 
-  // Returns the URL for the parent in Drive.
-  const GURL& parent_link() const { return parent_link_; }
-
   void set_file_id(const std::string& file_id) { file_id_ = file_id; }
-  void set_parent_link(const GURL& parent_link) {
-    parent_link_ = parent_link;
-  }
 
  private:
   // Parses and initializes data members from content of |value|.
@@ -352,7 +346,6 @@ class ParentReference {
   bool Parse(const base::Value& value);
 
   std::string file_id_;
-  GURL parent_link_;
 };
 
 // FileLabels represents labels for file or folder.
