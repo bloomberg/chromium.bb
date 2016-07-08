@@ -232,6 +232,7 @@ void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {
       "Cast.Platform.Playing");
 
   // Enable time updates.
+  last_media_time_ = time;
   statistics_rolling_counter_ = 0;
   if (!pending_time_update_task_) {
     pending_time_update_task_ = true;
