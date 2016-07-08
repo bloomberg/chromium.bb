@@ -425,33 +425,6 @@ class CC_EXPORT LayerTreeImpl {
   void DidUpdateScrollOffset(int layer_id, int transform_id);
   void DidUpdateScrollState(int layer_id);
 
-  bool IsAnimatingFilterProperty(const LayerImpl* layer) const;
-  bool IsAnimatingOpacityProperty(const LayerImpl* layer) const;
-  bool IsAnimatingTransformProperty(const LayerImpl* layer) const;
-
-  bool HasPotentiallyRunningFilterAnimation(const LayerImpl* layer) const;
-  bool HasPotentiallyRunningOpacityAnimation(const LayerImpl* layer) const;
-  bool HasPotentiallyRunningTransformAnimation(const LayerImpl* layer) const;
-
-  bool HasAnyAnimationTargetingProperty(const LayerImpl* layer,
-                                        TargetProperty::Type property) const;
-
-  bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;
-  bool HasOnlyTranslationTransforms(const LayerImpl* layer) const;
-
-  bool MaximumTargetScale(const LayerImpl* layer, float* max_scale) const;
-  bool AnimationStartScale(const LayerImpl* layer, float* start_scale) const;
-
-  bool HasFilterAnimationThatInflatesBounds(const LayerImpl* layer) const;
-  bool HasTransformAnimationThatInflatesBounds(const LayerImpl* layer) const;
-  bool HasAnimationThatInflatesBounds(const LayerImpl* layer) const;
-
-  bool FilterAnimationBoundsForBox(const LayerImpl* layer,
-                                   const gfx::BoxF& box,
-                                   gfx::BoxF* bounds) const;
-  bool TransformAnimationBoundsForBox(const LayerImpl* layer,
-                                      const gfx::BoxF& box,
-                                      gfx::BoxF* bounds) const;
   void ScrollAnimationAbort(bool needs_completion);
 
   bool have_scroll_event_handlers() const {

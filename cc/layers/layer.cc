@@ -162,7 +162,8 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
     inputs_.replica_layer->SetLayerTreeHost(host);
 
   const bool has_any_animation =
-      layer_tree_host_ ? layer_tree_host_->HasAnyAnimation(this) : false;
+      layer_tree_host_ ? GetAnimationHost()->HasAnyAnimation(element_id())
+                       : false;
 
   if (host && has_any_animation)
     host->SetNeedsCommit();
@@ -465,15 +466,6 @@ void Layer::SetFilters(const FilterOperations& filters) {
   SetNeedsCommit();
 }
 
-bool Layer::FilterIsAnimating() const {
-  DCHECK(layer_tree_host_);
-  return layer_tree_host_->IsAnimatingFilterProperty(this);
-}
-
-bool Layer::HasPotentiallyRunningFilterAnimation() const {
-  return layer_tree_host_->HasPotentiallyRunningFilterAnimation(this);
-}
-
 void Layer::SetBackgroundFilters(const FilterOperations& filters) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.background_filters == filters)
@@ -513,15 +505,6 @@ void Layer::SetOpacity(float opacity) {
 
 float Layer::EffectiveOpacity() const {
   return inputs_.hide_layer_and_subtree ? 0.f : inputs_.opacity;
-}
-
-bool Layer::OpacityIsAnimating() const {
-  DCHECK(layer_tree_host_);
-  return layer_tree_host_->IsAnimatingOpacityProperty(this);
-}
-
-bool Layer::HasPotentiallyRunningOpacityAnimation() const {
-  return layer_tree_host_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
 bool Layer::OpacityCanAnimateOnImplThread() const {
@@ -717,40 +700,13 @@ void Layer::SetTransformOrigin(const gfx::Point3F& transform_origin) {
   SetNeedsCommit();
 }
 
-bool Layer::AnimationsPreserveAxisAlignment() const {
-  DCHECK(layer_tree_host_);
-  return layer_tree_host_->AnimationsPreserveAxisAlignment(this);
-}
-
-bool Layer::TransformIsAnimating() const {
-  DCHECK(layer_tree_host_);
-  return layer_tree_host_->IsAnimatingTransformProperty(this);
-}
-
-bool Layer::HasPotentiallyRunningTransformAnimation() const {
-  return layer_tree_host_->HasPotentiallyRunningTransformAnimation(this);
+bool Layer::ScrollOffsetAnimationWasInterrupted() const {
+  return GetAnimationHost()->ScrollOffsetAnimationWasInterrupted(element_id());
 }
 
 bool Layer::HasOnlyTranslationTransforms() const {
-  return layer_tree_host_->HasOnlyTranslationTransforms(this);
-}
-
-bool Layer::MaximumTargetScale(float* max_scale) const {
-  return layer_tree_host_->MaximumTargetScale(this, max_scale);
-}
-
-bool Layer::AnimationStartScale(float* start_scale) const {
-  return layer_tree_host_->AnimationStartScale(this, start_scale);
-}
-
-bool Layer::HasAnyAnimationTargetingProperty(
-    TargetProperty::Type property) const {
-  return layer_tree_host_->HasAnyAnimationTargetingProperty(this, property);
-}
-
-bool Layer::ScrollOffsetAnimationWasInterrupted() const {
-  DCHECK(layer_tree_host_);
-  return layer_tree_host_->ScrollOffsetAnimationWasInterrupted(this);
+  return GetAnimationHost()->HasOnlyTranslationTransforms(
+      element_id(), GetElementTypeForAnimation());
 }
 
 void Layer::SetScrollParent(Layer* parent) {
@@ -1637,6 +1593,16 @@ void Layer::SetLayerPropertyChanged() {
   SetNeedsPushProperties();
 }
 
+bool Layer::FilterIsAnimating() const {
+  return GetAnimationHost()->IsAnimatingFilterProperty(
+      element_id(), GetElementTypeForAnimation());
+}
+
+bool Layer::TransformIsAnimating() const {
+  return GetAnimationHost()->IsAnimatingTransformProperty(
+      element_id(), GetElementTypeForAnimation());
+}
+
 gfx::ScrollOffset Layer::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
@@ -1761,8 +1727,9 @@ void Layer::OnOpacityIsPotentiallyAnimatingChanged(
 }
 
 bool Layer::HasActiveAnimationForTesting() const {
-  return layer_tree_host_ ? layer_tree_host_->HasActiveAnimationForTesting(this)
-                          : false;
+  return layer_tree_host_
+             ? GetAnimationHost()->HasActiveAnimationForTesting(element_id())
+             : false;
 }
 
 void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
@@ -1772,12 +1739,16 @@ void Layer::SetHasWillChangeTransformHint(bool has_will_change) {
   SetNeedsCommit();
 }
 
-ScrollbarLayerInterface* Layer::ToScrollbarLayer() {
-  return nullptr;
+AnimationHost* Layer::GetAnimationHost() const {
+  return layer_tree_host_ ? layer_tree_host_->animation_host() : nullptr;
 }
 
-RenderingStatsInstrumentation* Layer::rendering_stats_instrumentation() const {
-  return layer_tree_host_->rendering_stats_instrumentation();
+ElementListType Layer::GetElementTypeForAnimation() const {
+  return ElementListType::ACTIVE;
+}
+
+ScrollbarLayerInterface* Layer::ToScrollbarLayer() {
+  return nullptr;
 }
 
 void Layer::RemoveFromScrollTree() {

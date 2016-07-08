@@ -392,22 +392,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;
 
-  bool ScrollOffsetAnimationWasInterrupted(const Layer* layer) const;
-  bool IsAnimatingFilterProperty(const Layer* layer) const;
-  bool IsAnimatingOpacityProperty(const Layer* layer) const;
-  bool IsAnimatingTransformProperty(const Layer* layer) const;
-  bool HasPotentiallyRunningFilterAnimation(const Layer* layer) const;
-  bool HasPotentiallyRunningOpacityAnimation(const Layer* layer) const;
-  bool HasPotentiallyRunningTransformAnimation(const Layer* layer) const;
-  bool HasOnlyTranslationTransforms(const Layer* layer) const;
-  bool MaximumTargetScale(const Layer* layer, float* max_scale) const;
-  bool AnimationStartScale(const Layer* layer, float* start_scale) const;
-  bool HasAnyAnimationTargetingProperty(const Layer* layer,
-                                        TargetProperty::Type property) const;
-  bool AnimationsPreserveAxisAlignment(const Layer* layer) const;
-  bool HasAnyAnimation(const Layer* layer) const;
-  bool HasActiveAnimationForTesting(const Layer* layer) const;
-
   // Serializes the parts of this LayerTreeHost that is needed for a commit to a
   // protobuf message. Not all members are serialized as they are not helpful
   // for remote usage.

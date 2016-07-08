@@ -27,6 +27,7 @@
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/paint_properties.h"
 #include "cc/output/filter_operations.h"
+#include "cc/trees/mutator_host_client.h"
 #include "cc/trees/property_tree.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -49,6 +50,7 @@ class ConvertableToTraceFormat;
 
 namespace cc {
 
+class AnimationHost;
 class CopyOutputRequest;
 class LayerAnimationEventObserver;
 class LayerClient;
@@ -133,8 +135,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void SetOpacity(float opacity);
   float opacity() const { return inputs_.opacity; }
   float EffectiveOpacity() const;
-  bool OpacityIsAnimating() const;
-  bool HasPotentiallyRunningOpacityAnimation() const;
   virtual bool OpacityCanAnimateOnImplThread() const;
 
   virtual bool AlwaysUseActiveTreeOpacity() const;
@@ -165,8 +165,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return inputs_.filters; }
-  bool FilterIsAnimating() const;
-  bool HasPotentiallyRunningFilterAnimation() const;
 
   // Background filters are filters applied to what is behind this layer, when
   // they are viewed through non-opaque regions in this layer. They are used
@@ -198,28 +196,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return inputs_.transform; }
-  bool TransformIsAnimating() const;
-  bool HasPotentiallyRunningTransformAnimation() const;
-  bool HasOnlyTranslationTransforms() const;
-  bool AnimationsPreserveAxisAlignment() const;
-
-  bool MaximumTargetScale(float* max_scale) const;
-  bool AnimationStartScale(float* start_scale) const;
 
   void SetTransformOrigin(const gfx::Point3F&);
   gfx::Point3F transform_origin() const { return inputs_.transform_origin; }
-
-  bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
-
-  bool ScrollOffsetAnimationWasInterrupted() const;
 
   void SetScrollParent(Layer* parent);
 
   Layer* scroll_parent() { return inputs_.scroll_parent; }
   const Layer* scroll_parent() const { return inputs_.scroll_parent; }
-
-  void AddScrollChild(Layer* child);
-  void RemoveScrollChild(Layer* child);
 
   std::set<Layer*>* scroll_children() { return scroll_children_.get(); }
   const std::set<Layer*>* scroll_children() const {
@@ -230,9 +214,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   Layer* clip_parent() { return inputs_.clip_parent; }
   const Layer* clip_parent() const { return inputs_.clip_parent; }
-
-  void AddClipChild(Layer* child);
-  void RemoveClipChild(Layer* child);
 
   std::set<Layer*>* clip_children() { return clip_children_.get(); }
   const std::set<Layer*>* clip_children() const {
@@ -422,8 +403,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool NeedsDisplayForTesting() const { return !inputs_.update_rect.IsEmpty(); }
   void ResetNeedsDisplayForTesting() { inputs_.update_rect = gfx::Rect(); }
 
-  RenderingStatsInstrumentation* rendering_stats_instrumentation() const;
-
   const PaintProperties& paint_properties() const {
     return paint_properties_;
   }
@@ -508,6 +487,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.has_will_change_transform_hint;
   }
 
+  AnimationHost* GetAnimationHost() const;
+
+  ElementListType GetElementTypeForAnimation() const;
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -580,6 +563,17 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void OnTransformIsPotentiallyAnimatingChanged(bool is_animating);
   void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
   void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
+
+  bool FilterIsAnimating() const;
+  bool TransformIsAnimating() const;
+  bool ScrollOffsetAnimationWasInterrupted() const;
+  bool HasOnlyTranslationTransforms() const;
+
+  void AddScrollChild(Layer* child);
+  void RemoveScrollChild(Layer* child);
+
+  void AddClipChild(Layer* child);
+  void RemoveClipChild(Layer* child);
 
   void SetParent(Layer* layer);
   bool DescendantIsFixedToContainerLayer() const;

@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_host.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
 #include "cc/base/simple_enclosed_region.h"
@@ -105,6 +106,14 @@ LayerImpl::~LayerImpl() {
 
 void LayerImpl::SetHasWillChangeTransformHint(bool has_will_change) {
   has_will_change_transform_hint_ = has_will_change;
+}
+
+AnimationHost* LayerImpl::GetAnimationHost() const {
+  return layer_tree_impl_ ? layer_tree_impl_->animation_host() : nullptr;
+}
+
+ElementListType LayerImpl::GetElementTypeForAnimation() const {
+  return IsActive() ? ElementListType::ACTIVE : ElementListType::PENDING;
 }
 
 void LayerImpl::SetDebugInfo(
@@ -773,11 +782,13 @@ void LayerImpl::SetFilters(const FilterOperations& filters) {
 }
 
 bool LayerImpl::FilterIsAnimating() const {
-  return layer_tree_impl_->IsAnimatingFilterProperty(this);
+  return GetAnimationHost()->IsAnimatingFilterProperty(
+      element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
-  return layer_tree_impl_->HasPotentiallyRunningFilterAnimation(this);
+  return GetAnimationHost()->HasPotentiallyRunningFilterAnimation(
+      element_id(), GetElementTypeForAnimation());
 }
 
 void LayerImpl::SetMasksToBounds(bool masks_to_bounds) {
@@ -795,14 +806,6 @@ float LayerImpl::Opacity() const {
   EffectNode* node = property_trees->effect_tree.Node(
       property_trees->effect_id_to_index_map[id()]);
   return node->opacity;
-}
-
-bool LayerImpl::OpacityIsAnimating() const {
-  return layer_tree_impl_->IsAnimatingOpacityProperty(this);
-}
-
-bool LayerImpl::HasPotentiallyRunningOpacityAnimation() const {
-  return layer_tree_impl_->HasPotentiallyRunningOpacityAnimation(this);
 }
 
 void LayerImpl::SetElementId(ElementId element_id) {
@@ -849,54 +852,49 @@ void LayerImpl::SetTransform(const gfx::Transform& transform) {
 }
 
 bool LayerImpl::TransformIsAnimating() const {
-  return layer_tree_impl_->IsAnimatingTransformProperty(this);
+  return GetAnimationHost()->IsAnimatingTransformProperty(
+      element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
-  return layer_tree_impl_->HasPotentiallyRunningTransformAnimation(this);
+  return GetAnimationHost()->HasPotentiallyRunningTransformAnimation(
+      element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasOnlyTranslationTransforms() const {
-  return layer_tree_impl_->HasOnlyTranslationTransforms(this);
-}
-
-bool LayerImpl::AnimationsPreserveAxisAlignment() const {
-  return layer_tree_impl_->AnimationsPreserveAxisAlignment(this);
-}
-
-bool LayerImpl::MaximumTargetScale(float* max_scale) const {
-  return layer_tree_impl_->MaximumTargetScale(this, max_scale);
-}
-
-bool LayerImpl::AnimationStartScale(float* start_scale) const {
-  return layer_tree_impl_->AnimationStartScale(this, start_scale);
+  return GetAnimationHost()->HasOnlyTranslationTransforms(
+      element_id(), GetElementTypeForAnimation());
 }
 
 bool LayerImpl::HasAnyAnimationTargetingProperty(
     TargetProperty::Type property) const {
-  return layer_tree_impl_->HasAnyAnimationTargetingProperty(this, property);
+  return GetAnimationHost()->HasAnyAnimationTargetingProperty(element_id(),
+                                                              property);
 }
 
 bool LayerImpl::HasFilterAnimationThatInflatesBounds() const {
-  return layer_tree_impl_->HasFilterAnimationThatInflatesBounds(this);
+  return GetAnimationHost()->HasFilterAnimationThatInflatesBounds(element_id());
 }
 
 bool LayerImpl::HasTransformAnimationThatInflatesBounds() const {
-  return layer_tree_impl_->HasTransformAnimationThatInflatesBounds(this);
+  return GetAnimationHost()->HasTransformAnimationThatInflatesBounds(
+      element_id());
 }
 
 bool LayerImpl::HasAnimationThatInflatesBounds() const {
-  return layer_tree_impl_->HasAnimationThatInflatesBounds(this);
+  return GetAnimationHost()->HasAnimationThatInflatesBounds(element_id());
 }
 
 bool LayerImpl::FilterAnimationBoundsForBox(const gfx::BoxF& box,
                                             gfx::BoxF* bounds) const {
-  return layer_tree_impl_->FilterAnimationBoundsForBox(this, box, bounds);
+  return GetAnimationHost()->FilterAnimationBoundsForBox(element_id(), box,
+                                                         bounds);
 }
 
 bool LayerImpl::TransformAnimationBoundsForBox(const gfx::BoxF& box,
                                                gfx::BoxF* bounds) const {
-  return layer_tree_impl_->TransformAnimationBoundsForBox(this, box, bounds);
+  return GetAnimationHost()->TransformAnimationBoundsForBox(element_id(), box,
+                                                            bounds);
 }
 
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
@@ -1027,8 +1025,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetBoolean("can_use_lcd_text", CanUseLCDText());
   state->SetBoolean("contents_opaque", contents_opaque());
 
-  state->SetBoolean("has_animation_bounds",
-                    layer_tree_impl_->HasAnimationThatInflatesBounds(this));
+  state->SetBoolean("has_animation_bounds", HasAnimationThatInflatesBounds());
 
   state->SetBoolean("has_will_change_transform_hint",
                     has_will_change_transform_hint());

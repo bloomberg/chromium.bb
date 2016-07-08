@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_host.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/proto/property_tree.pb.h"
@@ -1817,12 +1818,14 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
       // TODO(sunxd): make LayerTreeImpl::MaximumTargetScale take layer id as
       // parameter.
       LayerImpl* layer_impl = layer_tree_impl->LayerById(node->owner_id);
-      layer_tree_impl->MaximumTargetScale(
-          layer_impl, &cached_data_.animation_scales[transform_node_id]
-                           .local_maximum_animation_target_scale);
-      layer_tree_impl->AnimationStartScale(
-          layer_impl, &cached_data_.animation_scales[transform_node_id]
-                           .local_starting_animation_scale);
+      layer_impl->GetAnimationHost()->MaximumTargetScale(
+          layer_impl->element_id(), layer_impl->GetElementTypeForAnimation(),
+          &cached_data_.animation_scales[transform_node_id]
+               .local_maximum_animation_target_scale);
+      layer_impl->GetAnimationHost()->AnimationStartScale(
+          layer_impl->element_id(), layer_impl->GetElementTypeForAnimation(),
+          &cached_data_.animation_scales[transform_node_id]
+               .local_starting_animation_scale);
       gfx::Vector2dF local_scales =
           MathUtil::ComputeTransform2dScaleComponents(node->local, 0.f);
       float max_local_scale = std::max(local_scales.x(), local_scales.y());

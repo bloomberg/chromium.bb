@@ -9,6 +9,7 @@
 #include <map>
 #include <set>
 
+#include "cc/animation/animation_host.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -233,6 +234,64 @@ static LayerImpl* ReplicaLayer(LayerImpl* layer) {
   return layer->test_properties()->replica_layer;
 }
 
+// Methods to query state from the AnimationHost ----------------------
+template <typename LayerType>
+bool OpacityIsAnimating(LayerType* layer) {
+  return layer->GetAnimationHost()->IsAnimatingOpacityProperty(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool HasPotentiallyRunningOpacityAnimation(LayerType* layer) {
+  return layer->GetAnimationHost()->HasPotentiallyRunningOpacityAnimation(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool FilterIsAnimating(LayerType* layer) {
+  return layer->GetAnimationHost()->IsAnimatingFilterProperty(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool HasPotentiallyRunningFilterAnimation(LayerType* layer) {
+  return layer->GetAnimationHost()->HasPotentiallyRunningFilterAnimation(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool TransformIsAnimating(LayerType* layer) {
+  return layer->GetAnimationHost()->IsAnimatingTransformProperty(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool HasPotentiallyRunningTransformAnimation(LayerType* layer) {
+  return layer->GetAnimationHost()->HasPotentiallyRunningTransformAnimation(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool HasOnlyTranslationTransforms(LayerType* layer) {
+  return layer->GetAnimationHost()->HasOnlyTranslationTransforms(
+      layer->element_id(), layer->GetElementTypeForAnimation());
+}
+
+template <typename LayerType>
+bool AnimationsPreserveAxisAlignment(LayerType* layer) {
+  return layer->GetAnimationHost()->AnimationsPreserveAxisAlignment(
+      layer->element_id());
+}
+
+template <typename LayerType>
+bool HasAnyAnimationTargetingProperty(LayerType* layer,
+                                      TargetProperty::Type property) {
+  return layer->GetAnimationHost()->HasAnyAnimationTargetingProperty(
+      layer->element_id(), property);
+}
+
+// -------------------------------------------------------------------
+
 template <typename LayerType>
 static LayerType* GetTransformParent(const DataForRecursion<LayerType>& data,
                                      LayerType* layer) {
@@ -430,14 +489,14 @@ bool AddTransformNodeIfNeeded(
       !layer->transform().IsIdentityOr2DTranslation();
 
   const bool has_potentially_animated_transform =
-      layer->HasPotentiallyRunningTransformAnimation();
+      HasPotentiallyRunningTransformAnimation(layer);
 
   // A transform node is needed even for a finished animation, since differences
   // in the timing of animation state updates can mean that an animation that's
   // in the Finished state at tree-building time on the main thread is still in
   // the Running state right after commit on the compositor thread.
   const bool has_any_transform_animation =
-      layer->HasAnyAnimationTargetingProperty(TargetProperty::TRANSFORM);
+      HasAnyAnimationTargetingProperty(layer, TargetProperty::TRANSFORM);
 
   const bool has_surface = created_render_surface;
 
@@ -558,10 +617,10 @@ bool AddTransformNodeIfNeeded(
       kInvalidPropertyTreeNodeId);
 
   node->has_potential_animation = has_potentially_animated_transform;
-  node->is_currently_animating = layer->TransformIsAnimating();
+  node->is_currently_animating = TransformIsAnimating(layer);
   if (has_potentially_animated_transform) {
     node->has_only_translation_animations =
-        layer->HasOnlyTranslationTransforms();
+        HasOnlyTranslationTransforms(layer);
   }
 
   float post_local_scale_factor = 1.0f;
@@ -642,12 +701,12 @@ bool AddTransformNodeIfNeeded(
 }
 
 static inline bool HasPotentialOpacityAnimation(Layer* layer) {
-  return layer->HasPotentiallyRunningOpacityAnimation() ||
+  return HasPotentiallyRunningOpacityAnimation(layer) ||
          layer->OpacityCanAnimateOnImplThread();
 }
 
 static inline bool HasPotentialOpacityAnimation(LayerImpl* layer) {
-  return layer->HasPotentiallyRunningOpacityAnimation() ||
+  return HasPotentiallyRunningOpacityAnimation(layer) ||
          layer->test_properties()->opacity_can_animate;
 }
 
@@ -745,7 +804,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
                                bool axis_aligned) {
   const bool preserves_2d_axis_alignment =
       (current_transform * layer->transform()).Preserves2dAxisAlignment() &&
-      axis_aligned && layer->AnimationsPreserveAxisAlignment();
+      axis_aligned && AnimationsPreserveAxisAlignment(layer);
   const bool is_root = !Parent(layer);
   if (is_root)
     return true;
@@ -768,7 +827,7 @@ bool ShouldCreateRenderSurface(LayerType* layer,
 
   // If the layer will use a CSS filter.  In this case, the animation
   // will start and add a filter to this layer, so it needs a surface.
-  if (layer->HasPotentiallyRunningFilterAnimation()) {
+  if (HasPotentiallyRunningFilterAnimation(layer)) {
     return true;
   }
 
@@ -872,7 +931,7 @@ bool AddEffectNodeIfNeeded(
       layer, data_from_ancestor.compound_transform_since_render_target,
       data_from_ancestor.axis_align_since_render_target);
   data_for_children->axis_align_since_render_target &=
-      layer->AnimationsPreserveAxisAlignment();
+      AnimationsPreserveAxisAlignment(layer);
 
   bool requires_node = is_root || has_transparency ||
                        has_potential_opacity_animation ||
@@ -902,7 +961,7 @@ bool AddEffectNodeIfNeeded(
   node.has_potential_opacity_animation = has_potential_opacity_animation;
   node.double_sided = DoubleSided(layer);
   node.subtree_hidden = HideLayerAndSubtree(layer);
-  node.is_currently_animating_opacity = layer->OpacityIsAnimating();
+  node.is_currently_animating_opacity = OpacityIsAnimating(layer);
 
   EffectTree& effect_tree = data_for_children->property_trees->effect_tree;
   if (MaskLayer(layer)) {

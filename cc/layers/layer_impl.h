@@ -34,6 +34,7 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/tiles/tile_priority.h"
+#include "cc/trees/mutator_host_client.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -52,6 +53,7 @@ class DictionaryValue;
 
 namespace cc {
 
+class AnimationHost;
 class LayerTreeHostImpl;
 class LayerTreeImpl;
 class MicroBenchmarkImpl;
@@ -202,8 +204,6 @@ class CC_EXPORT LayerImpl {
   bool contents_opaque() const { return contents_opaque_; }
 
   float Opacity() const;
-  bool OpacityIsAnimating() const;
-  bool HasPotentiallyRunningOpacityAnimation() const;
 
   void SetElementId(ElementId element_id);
   ElementId element_id() const { return element_id_; }
@@ -364,15 +364,6 @@ class CC_EXPORT LayerImpl {
   const gfx::Transform& transform() const { return transform_; }
   bool TransformIsAnimating() const;
   bool HasPotentiallyRunningTransformAnimation() const;
-  bool HasOnlyTranslationTransforms() const;
-  bool AnimationsPreserveAxisAlignment() const;
-
-  bool MaximumTargetScale(float* max_scale) const;
-  bool AnimationStartScale(float* start_scale) const;
-
-  // This includes all animations, even those that are finished but haven't yet
-  // been deleted.
-  bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
 
   bool HasFilterAnimationThatInflatesBounds() const;
   bool HasTransformAnimationThatInflatesBounds() const;
@@ -474,6 +465,10 @@ class CC_EXPORT LayerImpl {
     return has_will_change_transform_hint_;
   }
 
+  AnimationHost* GetAnimationHost() const;
+
+  ElementListType GetElementTypeForAnimation() const;
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl,
             int id,
@@ -497,6 +492,12 @@ class CC_EXPORT LayerImpl {
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
+  bool HasOnlyTranslationTransforms() const;
+
+  // This includes all animations, even those that are finished but haven't yet
+  // been deleted.
+  bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
+
   void ValidateQuadResourcesInternal(DrawQuad* quad) const;
 
   virtual const char* LayerTypeAsString() const;
