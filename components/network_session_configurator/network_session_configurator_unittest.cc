@@ -20,8 +20,7 @@ namespace test {
 class NetworkSessionConfiguratorTest : public testing::Test {
  public:
   NetworkSessionConfiguratorTest()
-      : is_spdy_allowed_by_policy_(true),
-        is_quic_allowed_by_policy_(true),
+      : is_quic_allowed_by_policy_(true),
         quic_user_agent_id_("Chrome/52.0.2709.0 Linux x86_64") {
     field_trial_list_.reset(
         new base::FieldTrialList(new base::MockEntropyProvider()));
@@ -30,17 +29,14 @@ class NetworkSessionConfiguratorTest : public testing::Test {
 
   void ParseFieldTrials() {
     network_session_configurator::ParseFieldTrials(
-        is_spdy_allowed_by_policy_, is_quic_allowed_by_policy_,
-        quic_user_agent_id_, &params_);
+        is_quic_allowed_by_policy_, quic_user_agent_id_, &params_);
   }
 
   void ParseFieldTrialsAndCommandLine() {
     network_session_configurator::ParseFieldTrialsAndCommandLine(
-        is_spdy_allowed_by_policy_, is_quic_allowed_by_policy_,
-        quic_user_agent_id_, &params_);
+        is_quic_allowed_by_policy_, quic_user_agent_id_, &params_);
   }
 
-  bool is_spdy_allowed_by_policy_;
   bool is_quic_allowed_by_policy_;
   std::string quic_user_agent_id_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
@@ -54,7 +50,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_EQ("Chrome/52.0.2709.0 Linux x86_64", params_.quic_user_agent_id);
   EXPECT_EQ(0u, params_.testing_fixed_http_port);
   EXPECT_EQ(0u, params_.testing_fixed_https_port);
-  EXPECT_FALSE(params_.enable_spdy31);
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
@@ -83,65 +78,20 @@ TEST_F(NetworkSessionConfiguratorTest, TestingFixedPort) {
   EXPECT_EQ(1234u, params_.testing_fixed_https_port);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialHoldbackEnabled) {
-  net::HttpStreamFactory::set_spdy_enabled(true);
-  base::FieldTrialList::CreateFieldTrial("SPDY", "SpdyDisabled");
+TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialHttp2Disable) {
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Disable");
 
   ParseFieldTrials();
 
-  EXPECT_FALSE(net::HttpStreamFactory::spdy_enabled());
-}
-
-TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialSpdy31Enabled) {
-  base::FieldTrialList::CreateFieldTrial("SPDY", "Spdy31Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.enable_spdy31);
   EXPECT_FALSE(params_.enable_http2);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialSpdy4Enabled) {
-  base::FieldTrialList::CreateFieldTrial("SPDY", "Spdy4Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.enable_spdy31);
-  EXPECT_TRUE(params_.enable_http2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, SpdyFieldTrialParametrized) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["enable_spdy31"] = "false";
-  field_trial_params["enable_http2"] = "true";
-  variations::AssociateVariationParams("SPDY", "ParametrizedHTTP2Only",
-                                       field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("SPDY", "ParametrizedHTTP2Only");
-
-  ParseFieldTrials();
-
-  EXPECT_FALSE(params_.enable_spdy31);
-  EXPECT_TRUE(params_.enable_http2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, SpdyCommandLineDisableHttp2) {
-  // Command line should overwrite field trial group.
+TEST_F(NetworkSessionConfiguratorTest, Http2CommandLineDisableHttp2) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch("disable-http2");
-  base::FieldTrialList::CreateFieldTrial("SPDY", "Spdy4Enabled");
 
   ParseFieldTrialsAndCommandLine();
 
-  EXPECT_FALSE(params_.enable_spdy31);
   EXPECT_FALSE(params_.enable_http2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, SpdyDisallowedByPolicy) {
-  is_spdy_allowed_by_policy_ = false;
-
-  ParseFieldTrialsAndCommandLine();
-
-  EXPECT_FALSE(params_.enable_spdy31);
-  EXPECT_TRUE(params_.enable_http2);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, PriorityDependenciesTrialEnabled) {

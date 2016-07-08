@@ -133,6 +133,9 @@ const base::string16 kSecond(ASCIIToUTF16("second"));
 const base::string16 kTestingNTLM(ASCIIToUTF16("testing-ntlm"));
 const base::string16 kWrongPassword(ASCIIToUTF16("wrongpassword"));
 
+const char kAlternativeServiceHttpHeader[] =
+    "Alt-Svc: h2=\"mail.example.org:443\"\r\n";
+
 int GetIdleSocketCountInTransportSocketPool(HttpNetworkSession* session) {
   return session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)
       ->IdleSocketCount();
@@ -324,16 +327,6 @@ class HttpNetworkTransactionTest
 
   bool GetDependenciesFromPriority() const {
     return GetParam() == kTestCaseHTTP2PriorityDependencies;
-  }
-
-  const char* GetAlternateProtocolFromParam() {
-    return AlternateProtocolToString(
-        AlternateProtocolFromNextProto(GetProtocol()));
-  }
-
-  std::string GetAlternativeServiceHttpHeader() {
-    return std::string("Alt-Svc: ") + GetAlternateProtocolFromParam() +
-           "=\"mail.example.org:443\"\r\n";
   }
 
   // Either |write_failure| specifies a write failure or |read_failure|
@@ -9947,12 +9940,14 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
 }
 
 TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
+  // SPDY/3.1 is not supported.
+  if (GetProtocol() != kProtoHTTP2) {
+    return;
+  }
 
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
@@ -10010,12 +10005,9 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
 // Regression test for https://crbug.com/615497.
 TEST_P(HttpNetworkTransactionTest,
        DoNotParseAlternativeServiceHeaderOnInsecureRequest) {
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
@@ -10209,13 +10201,15 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
 }
 
 TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeaders) {
+  // SPDY/3.1 is not supported.
+  if (GetProtocol() != kProtoHTTP2) {
+    return;
+  }
+
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead("Alt-Svc: "),
-      MockRead(GetAlternateProtocolFromParam()),
-      MockRead("=\"www.example.com:443\","),
-      MockRead(GetAlternateProtocolFromParam()),
-      MockRead("=\":1234\"\r\n\r\n"),
+      MockRead("Alt-Svc: h2=\"www.example.com:443\","),
+      MockRead("h2=\":1234\"\r\n\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
   };
@@ -10789,12 +10783,9 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
@@ -10875,18 +10866,20 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
 }
 
 TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
+  // SPDY/3.1 is not supported.
+  if (GetProtocol() != kProtoHTTP2) {
+    return;
+  }
+
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
   // First transaction receives Alt-Svc header over HTTP/1.1.
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
@@ -11002,17 +10995,19 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
 }
 
 TEST_P(HttpNetworkTransactionTest, StallAlternativeServiceForNpnSpdy) {
+  // SPDY/3.1 is not supported.
+  if (GetProtocol() != kProtoHTTP2) {
+    return;
+  }
+
   HttpRequestInfo request;
   request.method = "GET";
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
@@ -11145,12 +11140,9 @@ TEST_P(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
@@ -11259,12 +11251,9 @@ TEST_P(HttpNetworkTransactionTest,
   request.url = GURL("https://www.example.org/");
   request.load_flags = 0;
 
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(ASYNC, OK),
@@ -11970,12 +11959,9 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
           "Connection: keep-alive\r\n\r\n"),
   };
 
-  std::string alternative_service_http_header =
-      GetAlternativeServiceHttpHeader();
-
   MockRead data_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
-      MockRead(alternative_service_http_header.c_str()),
+      MockRead(kAlternativeServiceHttpHeader),
       MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),

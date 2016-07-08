@@ -4482,7 +4482,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
       new SSLSocketDataProvider(ASYNC, OK));
   // Expect HTTP/2 protocols too in SSLConfig.
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
@@ -4566,7 +4565,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
       new SSLSocketDataProvider(ASYNC, OK));
   // Expect HTTP/2 protocols too in SSLConfig.
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);

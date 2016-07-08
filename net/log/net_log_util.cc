@@ -431,12 +431,8 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
   if (info_sources & NET_INFO_SPDY_STATUS) {
     base::DictionaryValue* status_dict = new base::DictionaryValue();
 
-    status_dict->SetBoolean("enable_spdy31",
-                            http_network_session->params().enable_spdy31 &&
-                                HttpStreamFactory::spdy_enabled());
     status_dict->SetBoolean("enable_http2",
-                            http_network_session->params().enable_http2 &&
-                                HttpStreamFactory::spdy_enabled());
+                            http_network_session->params().enable_http2);
 
     NextProtoVector alpn_protos;
     http_network_session->GetAlpnProtos(&alpn_protos);

@@ -357,7 +357,6 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       enable_priority_dependencies(true),
-      enable_spdy31(true),
       enable_quic(false),
       protocol(protocol),
       session_max_recv_window_size(
@@ -417,7 +416,6 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->enable_user_alternate_protocol_ports;
   params.enable_priority_dependencies =
       session_deps->enable_priority_dependencies;
-  params.enable_spdy31 = session_deps->enable_spdy31;
   params.enable_quic = session_deps->enable_quic;
   params.spdy_default_protocol = session_deps->protocol;
   params.spdy_session_max_recv_window_size =

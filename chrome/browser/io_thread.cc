@@ -311,7 +311,6 @@ IOThread::IOThread(
       extension_event_router_forwarder_(extension_event_router_forwarder),
 #endif
       globals_(NULL),
-      is_spdy_allowed_by_policy_(true),
       is_quic_allowed_by_policy_(true),
       creation_time_(base::TimeTicks::Now()),
       weak_factory_(this) {
@@ -380,12 +379,6 @@ IOThread::IOThread(
   pac_https_url_stripping_enabled_.Init(prefs::kPacHttpsUrlStrippingEnabled,
                                         local_state);
   pac_https_url_stripping_enabled_.MoveToThread(io_thread_proxy);
-
-  is_spdy_allowed_by_policy_ =
-      policy_service
-          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                                std::string()))
-          .Get(policy::key::kDisableSpdy) == nullptr;
 
   const base::Value* value = policy_service->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
@@ -635,8 +628,7 @@ void IOThread::Init() {
   quic_user_agent_id.push_back(' ');
   quic_user_agent_id.append(content::BuildOSCpuInfo());
   network_session_configurator::ParseFieldTrialsAndCommandLine(
-      is_spdy_allowed_by_policy_, is_quic_allowed_by_policy_,
-      quic_user_agent_id, &params_);
+      is_quic_allowed_by_policy_, quic_user_agent_id, &params_);
 
   bool always_enable_tfo_if_supported =
       command_line.HasSwitch(switches::kEnableTcpFastOpen);

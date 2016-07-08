@@ -374,9 +374,6 @@ class IOThread : public content::BrowserThreadDelegate {
   scoped_refptr<net::URLRequestContextGetter>
       system_url_request_context_getter_;
 
-  // True if SPDY is allowed by policy.
-  bool is_spdy_allowed_by_policy_;
-
   // True if QUIC is allowed by policy.
   bool is_quic_allowed_by_policy_;
 

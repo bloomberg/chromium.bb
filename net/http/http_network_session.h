@@ -88,7 +88,6 @@ class NET_EXPORT HttpNetworkSession
     // Use SPDY ping frames to test for connection health after idle.
     bool enable_spdy_ping_based_connection_checking;
     NextProto spdy_default_protocol;
-    bool enable_spdy31;
     bool enable_http2;
     size_t spdy_session_max_recv_window_size;
     size_t spdy_stream_max_recv_window_size;

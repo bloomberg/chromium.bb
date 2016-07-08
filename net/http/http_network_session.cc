@@ -91,7 +91,6 @@ HttpNetworkSession::Params::Params()
       enable_tcp_fast_open_for_ssl(false),
       enable_spdy_ping_based_connection_checking(true),
       spdy_default_protocol(kProtoUnknown),
-      enable_spdy31(false),
       enable_http2(true),
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
       spdy_stream_max_recv_window_size(kSpdyStreamMaxRecvWindowSize),
@@ -224,13 +223,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
   if (params_.enable_http2) {
     next_protos_.push_back(kProtoHTTP2);
     AlternateProtocol alternate = AlternateProtocolFromNextProto(kProtoHTTP2);
-    enabled_protocols_[alternate - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] =
-        true;
-  }
-
-  if (params_.enable_spdy31) {
-    next_protos_.push_back(kProtoSPDY31);
-    AlternateProtocol alternate = AlternateProtocolFromNextProto(kProtoSPDY31);
     enabled_protocols_[alternate - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] =
         true;
   }

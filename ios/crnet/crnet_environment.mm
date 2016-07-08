@@ -429,7 +429,6 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   params.http_auth_handler_factory = main_context_->http_auth_handler_factory();
   params.http_server_properties = main_context_->http_server_properties();
   params.net_log = main_context_->net_log();
-  params.enable_spdy31 = spdy_enabled();
   params.enable_http2 = spdy_enabled();
   params.enable_quic = quic_enabled();
 

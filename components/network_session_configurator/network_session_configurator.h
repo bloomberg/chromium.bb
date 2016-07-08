@@ -16,15 +16,13 @@
 namespace network_session_configurator {
 
 // Configure |params| based on field trials and policy arguments.
-void ParseFieldTrials(bool is_spdy_allowed_by_policy,
-                      bool is_quic_allowed_by_policy,
+void ParseFieldTrials(bool is_quic_allowed_by_policy,
                       const std::string& quic_user_agent_id,
                       net::HttpNetworkSession::Params* params);
 
 // Configure |params| based on field trials, policy arguments,
 // and command line.
-void ParseFieldTrialsAndCommandLine(bool is_spdy_allowed_by_policy,
-                                    bool is_quic_allowed_by_policy,
+void ParseFieldTrialsAndCommandLine(bool is_quic_allowed_by_policy,
                                     const std::string& quic_user_agent_id,
                                     net::HttpNetworkSession::Params* params);
 

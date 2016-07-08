@@ -396,7 +396,7 @@ void IOSChromeIOThread::Init() {
   quic_user_agent_id.push_back(' ');
   quic_user_agent_id.append(web::BuildOSCpuInfo());
 
-  network_session_configurator::ParseFieldTrials(true, true, quic_user_agent_id,
+  network_session_configurator::ParseFieldTrials(true, quic_user_agent_id,
                                                  &params_);
   const version_info::Channel channel = ::GetChannel();
   if (channel == version_info::Channel::UNKNOWN ||

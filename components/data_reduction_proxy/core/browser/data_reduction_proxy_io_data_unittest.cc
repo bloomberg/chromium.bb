@@ -109,7 +109,6 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
       io_data->basic_url_request_context_getter_.get()->GetURLRequestContext();
   const net::HttpNetworkSession::Params* http_params =
       request_context->GetNetworkSessionParams();
-  EXPECT_FALSE(http_params->enable_spdy31);
   EXPECT_FALSE(http_params->enable_http2);
   EXPECT_FALSE(http_params->enable_quic);
 

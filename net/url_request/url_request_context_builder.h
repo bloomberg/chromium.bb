@@ -90,7 +90,6 @@ class NET_EXPORT URLRequestContextBuilder {
     HostMappingRules* host_mapping_rules;
     uint16_t testing_fixed_http_port;
     uint16_t testing_fixed_https_port;
-    bool enable_spdy31;
     bool enable_http2;
     bool enable_quic;
     std::string quic_user_agent_id;
