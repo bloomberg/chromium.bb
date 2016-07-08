@@ -29,6 +29,10 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/message_filter.h"
 
+#if defined(MOJO_RUNNER_CLIENT)
+#include "services/shell/runner/common/client_util.h"
+#endif
+
 namespace content {
 
 BrowserGpuChannelHostFactory* BrowserGpuChannelHostFactory::instance_ = NULL;
@@ -297,6 +301,9 @@ BrowserGpuChannelHostFactory::EstablishGpuChannelSync(
 void BrowserGpuChannelHostFactory::EstablishGpuChannel(
     CauseForGpuLaunch cause_for_gpu_launch,
     const base::Closure& callback) {
+#if defined(MOJO_RUNNER_CLIENT)
+  DCHECK(!shell::ShellIsRemote());
+#endif
   if (gpu_channel_.get() && gpu_channel_->IsLost()) {
     DCHECK(!pending_request_.get());
     // Recreate the channel if it has been lost.

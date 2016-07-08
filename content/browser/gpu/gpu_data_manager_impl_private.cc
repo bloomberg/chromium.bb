@@ -49,7 +49,8 @@
 #include "base/win/windows_version.h"
 #endif  // OS_WIN
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-#include "services/shell/runner/common/client_util.h"
+#include "services/shell/runner/common/client_util.h"  // nogncheck
+#include "services/ui/common/gpu_service.h"            // nogncheck
 #endif
 
 namespace content {
@@ -267,7 +268,7 @@ enum BlockStatusHistogram {
 bool ShouldDisableHardwareAcceleration() {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
   // TODO(rjkroege): Remove this when https://crbug.com/602519 is fixed.
-  if (shell::ShellIsRemote())
+  if (shell::ShellIsRemote() && !ui::GpuService::UseChromeGpuCommandBuffer())
     return true;
 #endif
   return base::CommandLine::ForCurrentProcess()->HasSwitch(

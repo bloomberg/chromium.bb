@@ -604,6 +604,9 @@ const char kInProcessGPU[]                  = "in-process-gpu";
 // connection from the browser before killing itself.
 const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
 
+// Chrome is running in Mash.
+const char kIsRunningInMash[] = "is-running-in-mash";
+
 // Disable latest shipping ECMAScript 6 features.
 const char kDisableJavaScriptHarmonyShipping[] =
     "disable-javascript-harmony-shipping";

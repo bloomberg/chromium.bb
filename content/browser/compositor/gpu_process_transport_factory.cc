@@ -60,7 +60,10 @@
 #include "ui/gfx/geometry/size.h"
 
 #if defined(MOJO_RUNNER_CLIENT)
+#include "content/browser/compositor/mus_browser_compositor_output_surface.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/runner/common/client_util.h"
+#include "services/ui/common/gpu_service.h"
 #endif
 
 #if defined(OS_WIN)
@@ -101,9 +104,18 @@ namespace {
 
 const int kNumRetriesBeforeSoftwareFallback = 4;
 
+bool IsUsingMus() {
+#if defined(MOJO_RUNNER_CLIENT)
+  return shell::ShellIsRemote();
+#else
+  return false;
+#endif
+}
+
 scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::SurfaceHandle surface_handle,
+    bool need_alpha_channel,
     bool support_locking,
     content::ContextProviderCommandBuffer* shared_context_provider,
     content::command_buffer_metrics::ContextType type) {
@@ -115,7 +127,7 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
   // - The shared main thread context (offscreen).
   // - The compositor context, which is used by the browser compositor
   //   (offscreen) for synchronization mostly, and by the display compositor
-  //   (onscreen) for actual GL drawing.
+  //   (onscreen, except for with mus) for actual GL drawing.
   // - The compositor worker context (offscreen) used for GPU raster.
   // So ask for capabilities needed by any of these cases (we can optimize by
   // branching on |surface_handle| being null if these needs diverge).
@@ -123,14 +135,18 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
   // The default framebuffer for an offscreen context is not used, so it does
   // not need alpha, stencil, depth, antialiasing. The display compositor does
   // not use these things either, so we can request nothing here.
+  // The display compositor does not use these things either (except for alpha
+  // when using mus for non-opaque ui that overlaps the system's window
+  // borders), so we can request only that when needed.
   gpu::gles2::ContextCreationAttribHelper attributes;
-  attributes.alpha_size = -1;
+  attributes.alpha_size = need_alpha_channel ? 8 : -1;
   attributes.depth_size = 0;
   attributes.stencil_size = 0;
   attributes.samples = 0;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
+  attributes.buffer_preserved = false;
 
   constexpr bool automatic_flushes = false;
 
@@ -254,11 +270,8 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
 
 static bool ShouldCreateGpuOutputSurface(ui::Compositor* compositor) {
 #if defined(MOJO_RUNNER_CLIENT)
-  // Chrome running as a mojo app currently can only use software compositing.
-  // TODO(rjkroege): http://crbug.com/548451
-  if (shell::ShellIsRemote()) {
+  if (shell::ShellIsRemote() && !ui::GpuService::UseChromeGpuCommandBuffer())
     return false;
-  }
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -294,15 +307,24 @@ void GpuProcessTransportFactory::CreateOutputSurface(
 #endif
 
   const bool use_vulkan = static_cast<bool>(SharedVulkanContextProvider());
-
+  const bool use_mus = IsUsingMus();
   const bool create_gpu_output_surface =
       ShouldCreateGpuOutputSurface(compositor.get());
   if (create_gpu_output_surface && !use_vulkan) {
-    BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-        CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT,
+    base::Closure callback(
         base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
                    callback_factory_.GetWeakPtr(), compositor,
                    create_gpu_output_surface, 0));
+    if (!use_mus) {
+      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
+          CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT, callback);
+    } else {
+#if defined(MOJO_RUNNER_CLIENT)
+      ui::GpuService::GetInstance()->EstablishGpuChannel(callback);
+#else
+      NOTREACHED();
+#endif
+    }
   } else {
     EstablishedGpuChannel(compositor, create_gpu_output_surface, 0);
   }
@@ -339,7 +361,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   scoped_refptr<cc::VulkanInProcessContextProvider> vulkan_context_provider =
       SharedVulkanContextProvider();
-
+  const bool use_mus = IsUsingMus();
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (create_gpu_output_surface && !vulkan_context_provider) {
     // Try to reuse existing worker context provider.
@@ -360,18 +382,28 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
       // We attempted to do EstablishGpuChannel already, so we just use
       // GetGpuChannel() instead of EstablishGpuChannelSync().
-      gpu_channel_host =
-          BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
+      if (!use_mus) {
+        gpu_channel_host =
+            BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
+      } else {
+#if defined(MOJO_RUNNER_CLIENT)
+        gpu_channel_host = ui::GpuService::GetInstance()->GetGpuChannel();
+#else
+        NOTREACHED();
+#endif
+      }
     }
 
     if (!gpu_channel_host) {
       shared_worker_context_provider_ = nullptr;
     } else {
       if (!shared_worker_context_provider_) {
+        bool need_alpha_channel = false;
         const bool support_locking = true;
-        shared_worker_context_provider_ = CreateContextCommon(
-            gpu_channel_host, gpu::kNullSurfaceHandle, support_locking, nullptr,
-            command_buffer_metrics::BROWSER_WORKER_CONTEXT);
+        shared_worker_context_provider_ =
+            CreateContextCommon(gpu_channel_host, gpu::kNullSurfaceHandle,
+                                need_alpha_channel, support_locking, nullptr,
+                                command_buffer_metrics::BROWSER_WORKER_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
         // fixed. Tracking time in BindToCurrentThread.
         tracked_objects::ScopedTracker tracking_profile(
@@ -387,10 +419,17 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       // display compositor. It shares resources with the worker context, so if
       // we failed to make a worker context, just start over and try again.
       if (shared_worker_context_provider_) {
+        // For mus, we create an offscreen context for a mus window, and we will
+        // use CommandBufferProxyImpl::TakeFrontBuffer() to take the context's
+        // front buffer into a mailbox, insert a sync token, and send the
+        // mailbox+sync to the ui service process.
+        gpu::SurfaceHandle surface_handle =
+            IsUsingMus() ? gpu::kNullSurfaceHandle : data->surface_handle;
+        bool need_alpha_channel = IsUsingMus();
         bool support_locking = false;
         context_provider = CreateContextCommon(
-            std::move(gpu_channel_host), data->surface_handle, support_locking,
-            shared_worker_context_provider_.get(),
+            std::move(gpu_channel_host), surface_handle, need_alpha_channel,
+            support_locking, shared_worker_context_provider_.get(),
             command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
         // fixed. Tracking time in BindToCurrentThread.
@@ -418,11 +457,20 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
     if (!created_gpu_browser_compositor) {
       // Try again.
-      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
-          CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT,
+      base::Closure callback(
           base::Bind(&GpuProcessTransportFactory::EstablishedGpuChannel,
                      callback_factory_.GetWeakPtr(), compositor,
                      create_gpu_output_surface, num_attempts + 1));
+      if (!use_mus) {
+        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannel(
+            CAUSE_FOR_GPU_LAUNCH_SHARED_WORKER_THREAD_CONTEXT, callback);
+      } else {
+#if defined(MOJO_RUNNER_CLIENT)
+        ui::GpuService::GetInstance()->EstablishGpuChannel(callback);
+#else
+        NOTREACHED();
+#endif
+      }
       return;
     }
   }
@@ -491,12 +539,25 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             validator;
 #if !defined(OS_MACOSX)
         // Overlays are only supported on surfaceless output surfaces on Mac.
-        validator = CreateOverlayCandidateValidator(compositor->widget());
+        if (!use_mus)
+          validator = CreateOverlayCandidateValidator(compositor->widget());
 #endif
-        display_output_surface =
-            base::WrapUnique(new GpuBrowserCompositorOutputSurface(
-                context_provider, compositor->vsync_manager(),
-                begin_frame_source.get(), std::move(validator)));
+        if (!use_mus) {
+          display_output_surface =
+              base::WrapUnique(new GpuBrowserCompositorOutputSurface(
+                  context_provider, compositor->vsync_manager(),
+                  begin_frame_source.get(), std::move(validator)));
+        } else {
+#if defined(MOJO_RUNNER_CLIENT)
+          display_output_surface =
+              base::WrapUnique(new MusBrowserCompositorOutputSurface(
+                  data->surface_handle, context_provider,
+                  compositor->vsync_manager(), begin_frame_source.get(),
+                  std::move(validator)));
+#else
+          NOTREACHED();
+#endif
+        }
       }
     }
   }
@@ -732,18 +793,32 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
 
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return nullptr;
-  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host(
-      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_BROWSER_SHARED_MAIN_THREAD_CONTEXT));
+
+  const bool use_mus = IsUsingMus();
+  scoped_refptr<gpu::GpuChannelHost> gpu_channel_host;
+  if (!use_mus) {
+    gpu_channel_host =
+        BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(
+            CAUSE_FOR_GPU_LAUNCH_BROWSER_SHARED_MAIN_THREAD_CONTEXT);
+  } else {
+#if defined(MOJO_RUNNER_CLIENT)
+    gpu_channel_host = ui::GpuService::GetInstance()->EstablishGpuChannelSync();
+#else
+    NOTREACHED();
+#endif
+  }
+
   if (!gpu_channel_host)
     return nullptr;
 
   // We need a separate context from the compositor's so that skia and gl_helper
   // don't step on each other.
+  bool need_alpha_channel = false;
   bool support_locking = false;
   shared_main_thread_contexts_ = CreateContextCommon(
-      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, support_locking,
-      nullptr, command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+      std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
+      support_locking, nullptr,
+      command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
       callback_factory_.GetWeakPtr()));

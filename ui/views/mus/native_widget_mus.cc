@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bitmap_uploader/bitmap_uploader.h"
+#include "services/ui/common/gpu_service.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_observer.h"
@@ -528,7 +529,8 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
     context_factory_.reset(
         new SurfaceContextFactory(connector, window_, surface_type_));
     aura::Env::GetInstance()->set_context_factory(context_factory_.get());
-  } else {
+  } else if (!ui::GpuService::UseChromeGpuCommandBuffer()) {
+    // Only use the BitmapUploader when the mojo command buffer is being used.
     needs_bitmap_uploader = true;
   }
 
@@ -536,10 +538,10 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
   if (needs_bitmap_uploader) {
     bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(window));
     bitmap_uploader_->Init(connector);
-    prop_.reset(
-        new ui::ViewProp(window_tree_host_->GetAcceleratedWidget(),
-                         bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
-                         bitmap_uploader_.get()));
+    prop_ = base::MakeUnique<ui::ViewProp>(
+        window_tree_host_->GetAcceleratedWidget(),
+        bitmap_uploader::kBitmapUploaderForAcceleratedWidget,
+        bitmap_uploader_.get());
   }
 
   aura::Env::GetInstance()->set_context_factory(default_context_factory);

@@ -1,5 +1,7 @@
 include_rules = [
  "+components/bitmap_uploader",
  "+components/display_compositor",
+ "+services/ui/common",
  "+ui/platform_window",
+ "+ui/views",
 ]

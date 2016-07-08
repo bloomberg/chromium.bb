@@ -389,9 +389,12 @@ source_set("browser") {
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",
+      "//ui/views/mus",
       "//ui/wm",
     ]
     sources += [
+      "compositor/mus_browser_compositor_output_surface.cc",
+      "compositor/mus_browser_compositor_output_surface.h",
       "compositor/software_output_device_mus.cc",
       "compositor/software_output_device_mus.h",
       "renderer_host/render_widget_host_view_mus.cc",

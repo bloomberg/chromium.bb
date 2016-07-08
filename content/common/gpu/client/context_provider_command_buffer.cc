@@ -149,8 +149,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
       DCHECK_EQ(!!shared_command_buffer, !!share_group);
     }
 
-    DCHECK(attributes_.buffer_preserved);
-
     // This command buffer is a client-side proxy to the command buffer in the
     // GPU process.
     scoped_refptr<base::SingleThreadTaskRunner> task_runner =

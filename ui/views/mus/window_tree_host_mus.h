@@ -29,6 +29,7 @@ class VIEWS_MUS_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
   WindowTreeHostMus(NativeWidgetMus* native_widget, ui::Window* window);
   ~WindowTreeHostMus() override;
+  NativeWidgetMus* native_widget() { return native_widget_; }
 
  private:
   // aura::WindowTreeHostPlatform:

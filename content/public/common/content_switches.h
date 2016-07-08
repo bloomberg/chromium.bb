@@ -183,6 +183,7 @@ CONTENT_EXPORT extern const char kIgnoreGpuBlacklist[];
 CONTENT_EXPORT extern const char kInertVisualViewport[];
 CONTENT_EXPORT extern const char kInProcessGPU[];
 CONTENT_EXPORT extern const char kIPCConnectionTimeout[];
+CONTENT_EXPORT extern const char kIsRunningInMash[];
 CONTENT_EXPORT extern const char kJavaScriptFlags[];
 CONTENT_EXPORT extern const char kJavaScriptHarmony[];
 CONTENT_EXPORT extern const char kLogGpuControlListDecisions[];

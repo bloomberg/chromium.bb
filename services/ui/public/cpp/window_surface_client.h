@@ -5,6 +5,12 @@
 #ifndef SERVICES_UI_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_
 #define SERVICES_UI_PUBLIC_CPP_WINDOW_SURFACE_CLIENT_H_
 
+#include "mojo/public/cpp/bindings/array.h"
+
+namespace cc {
+struct ReturnedResource;
+}
+
 namespace ui {
 
 class WindowSurface;

@@ -89,12 +89,8 @@ void GpuService::EstablishGpuChannel(const base::Closure& callback) {
     runner->PostTask(FROM_HERE, callback);
     return;
   }
-
-  base::Closure wrapper_callback =
-      IsMainThread() ? callback
-                     : base::Bind(PostTask, runner, FROM_HERE, callback);
-  establish_callbacks_.push_back(wrapper_callback);
-
+  establish_callbacks_.push_back(
+      base::Bind(PostTask, runner, FROM_HERE, callback));
   if (!is_establishing_) {
     is_establishing_ = true;
     main_task_runner_->PostTask(
@@ -219,11 +215,11 @@ void GpuService::EstablishGpuChannelOnMainThreadDone(
   is_establishing_ = false;
   gpu_channel_ = gpu_channel;
   establishing_condition_.Broadcast();
+  gpu_service_.reset();
 
   for (const auto& i : establish_callbacks_)
     i.Run();
   establish_callbacks_.clear();
-  gpu_service_.reset();
 }
 
 bool GpuService::IsMainThread() {

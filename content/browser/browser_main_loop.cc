@@ -1106,7 +1106,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
   // Must happen after the IO thread is shutdown since this may be accessed from
   // it.
-  {
+  if (!shell::ShellIsRemote()) {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:GPUChannelFactory");
     if (BrowserGpuChannelHostFactory::instance())
       BrowserGpuChannelHostFactory::Terminate();
@@ -1175,8 +1175,11 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
   // TODO(rockot): Remove the blocking wait for init.
   // http://crbug.com/594852.
-  if (shell::ShellIsRemote() && MojoShellConnection::GetForProcess())
+  if (shell::ShellIsRemote() && MojoShellConnection::GetForProcess()) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kIsRunningInMash);
     WaitForMojoShellInitialize();
+  }
 #endif
 
 #if defined(OS_MACOSX)
@@ -1209,7 +1212,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #elif defined(USE_AURA) || defined(OS_MACOSX)
   established_gpu_channel = true;
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor() ||
-      parsed_command_line_.HasSwitch(switches::kDisableGpuEarlyInit)) {
+      parsed_command_line_.HasSwitch(switches::kDisableGpuEarlyInit) ||
+      shell::ShellIsRemote()) {
     established_gpu_channel = always_uses_gpu = false;
   }
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
@@ -1316,9 +1320,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // since creating the GPU thread races against creation of the one-and-only
   // ChildProcess instance which is created by the renderer thread.
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL) &&
-      !established_gpu_channel &&
-      always_uses_gpu &&
-      !UsingInProcessGpu()) {
+      !established_gpu_channel && always_uses_gpu && !UsingInProcessGpu() &&
+      !shell::ShellIsRemote()) {
     TRACE_EVENT_INSTANT0("gpu", "Post task to launch GPU process",
                          TRACE_EVENT_SCOPE_THREAD);
     BrowserThread::PostTask(

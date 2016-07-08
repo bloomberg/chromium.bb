@@ -151,7 +151,7 @@ void GpuServiceMus::SendAcceleratedSurfaceCreatedChildWindow(
 #endif
 
 void GpuServiceMus::SetActiveURL(const GURL& url) {
-  NOTIMPLEMENTED();
+  // TODO(penghuang): implement this function.
 }
 
 void GpuServiceMus::Initialize() {

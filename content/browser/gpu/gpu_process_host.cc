@@ -91,6 +91,10 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "services/shell/runner/common/client_util.h"
+#endif
+
 namespace content {
 
 bool GpuProcessHost::gpu_enabled_ = true;
@@ -313,6 +317,9 @@ bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
 // static
 GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind,
                                     CauseForGpuLaunch cause) {
+#if defined(MOJO_SHELL_CLIENT)
+  DCHECK(!shell::ShellIsRemote());
+#endif
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Don't grant further access to GPU if it is not allowed.
