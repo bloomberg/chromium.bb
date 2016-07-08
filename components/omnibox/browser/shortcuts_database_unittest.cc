@@ -96,13 +96,13 @@ class ShortcutsDatabaseTest : public testing::Test {
 
   void AddAll();
 
+  base::ScopedTempDir temp_dir_;
   scoped_refptr<ShortcutsDatabase> db_;
 };
 
 void ShortcutsDatabaseTest::SetUp() {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath db_path(temp_dir.path().Append(kShortcutsDatabaseName));
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  base::FilePath db_path(temp_dir_.path().Append(kShortcutsDatabaseName));
   db_ = new ShortcutsDatabase(db_path);
   ASSERT_TRUE(db_->Init());
   ClearDB();
