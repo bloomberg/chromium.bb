@@ -4600,6 +4600,91 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
             GURL(exploded_state.top.children.at(0).url_string.string()));
 }
 
+// Ensure that we do not corrupt a NavigationEntry's PageState if two forward
+// navigations compete in different frames.  See https://crbug.com/623319.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       PageStateAfterForwardInCompetingFrames) {
+  // Navigate to a page with an iframe.
+  GURL url_a(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_data_iframe.html"));
+  GURL frame_url_a1("data:text/html,Subframe");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  NavigationController& controller = shell()->web_contents()->GetController();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_EQ(url_a, root->current_url());
+  EXPECT_EQ(frame_url_a1, root->child_at(0)->current_url());
+
+  // Navigate the iframe to a second page.
+  GURL frame_url_a2 = embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html");
+  NavigateFrameToURL(root->child_at(0), frame_url_a2);
+
+  // Navigate the iframe to about:blank.
+  GURL blank_url(url::kAboutBlankURL);
+  NavigateFrameToURL(root->child_at(0), blank_url);
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_a, root->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
+
+  // Go back to the middle entry.
+  controller.GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+
+  // Replace the entry with a cross-site top-level page.  By doing a
+  // replacement, the main frame pages before and after have the same item
+  // sequence number, and thus going between them only requires loads in the
+  // subframe.
+  GURL url_b(embedded_test_server()->GetURL(
+      "b.com", "/navigation_controller/simple_page_2.html"));
+  std::string replace_script = "location.replace('" + url_b.spec() + "')";
+  TestNavigationObserver replace_observer(shell()->web_contents());
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), replace_script));
+  replace_observer.Wait();
+  EXPECT_EQ(3, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_b, root->current_url());
+
+  // Go back to the original page.
+  controller.GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Navigate forward twice using script.  In https://crbug.com/623319, this
+  // caused a mismatch between the NavigationEntry's URL and PageState.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "history.forward(); history.forward();"));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_b, root->current_url());
+  NavigationEntry* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(url_b, entry->GetURL());
+  ExplodedPageState exploded_state;
+  EXPECT_TRUE(
+      DecodePageState(entry->GetPageState().ToEncodedData(), &exploded_state));
+  EXPECT_EQ(url_b, GURL(exploded_state.top.url_string.string()));
+  // TODO(creis): Clear subframe FNEs after location.replace in
+  // --isolate-extensions mode.  See https://crbug.com/596707.
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
+    EXPECT_EQ(0U, exploded_state.top.children.size());
+
+  // Go back and then forward to see if the PageState loads correctly.
+  controller.GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  controller.GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // We should be on url_b, and the renderer process shouldn't be killed.
+  ASSERT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
+  EXPECT_EQ(url_b, root->current_url());
+  EXPECT_EQ(0U, root->child_count());
+}
+
 // Ensure that forward navigations in cloned tabs can commit if they redirect to
 // a different site than before.  This causes the navigation's item sequence
 // number to change, meaning that we can't use it for determining whether the
