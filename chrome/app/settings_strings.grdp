@@ -835,9 +835,16 @@
   <message name="IDS_SETTINGS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference to help with navigation errors.">
     Use a web service to help resolve navigation errors
   </message>
-  <message name="IDS_SETTINGS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
-    Use a prediction service to help complete searches and URLs typed in the address bar or the app launcher search box
-  </message>
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
+      Use a prediction service to help complete searches and URLs typed in the address bar or the app launcher search box
+    </message>
+  </if>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
+      Use a prediction service to help complete searches and URLs typed in the address bar
+    </message>
+  </if>
   <message name="IDS_SETTINGS_NETWORK_PREDICTION_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables prediction of network actions.  Actions include browser-initiated DNS prefetching, TCP and SSL preconnection, and prerendering of webpages.">
     Use a prediction service to load pages more quickly
   </message>
