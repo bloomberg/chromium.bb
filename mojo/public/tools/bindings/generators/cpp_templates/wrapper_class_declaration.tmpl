@@ -62,11 +62,11 @@ class {{struct.name}} {
   }
 
   template <typename UserType>
-  static bool Deserialize({{serialization_result_type}} input,
+  static bool Deserialize(const {{serialization_result_type}}& input,
                           UserType* output) {
     return mojo::internal::StructDeserializeImpl<
         {{struct.name}}Ptr, {{serialization_result_type}}>(
-            std::move(input), output);
+            input, output);
   }
 
 {#--- Struct members #}

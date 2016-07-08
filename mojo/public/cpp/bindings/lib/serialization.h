@@ -67,7 +67,7 @@ DataArrayType StructSerializeImpl(UserType* input) {
 }
 
 template <typename MojomType, typename DataArrayType, typename UserType>
-bool StructDeserializeImpl(DataArrayType input, UserType* output) {
+bool StructDeserializeImpl(const DataArrayType& input, UserType* output) {
   static_assert(BelongsTo<MojomType, MojomTypeCategory::STRUCT>::value,
                 "Unexpected type.");
   using DataType = typename MojomType::Struct::Data_;
@@ -75,7 +75,10 @@ bool StructDeserializeImpl(DataArrayType input, UserType* output) {
   if (input.is_null())
     return false;
 
-  void* input_buffer = input.empty() ? nullptr : &input.front();
+  void* input_buffer =
+      input.empty()
+          ? nullptr
+          : const_cast<void*>(reinterpret_cast<const void*>(&input.front()));
 
   // Please see comments in StructSerializeImpl.
   bool need_copy = !IsAligned(input_buffer);

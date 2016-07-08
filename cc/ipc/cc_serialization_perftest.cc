@@ -37,8 +37,48 @@ static const int kTimeCheckInterval = 10;
 
 class CCSerializationPerfTest : public testing::Test {
  protected:
-  static void RunTestParamTraits(const std::string& test_name,
-                                 const CompositorFrame& frame) {
+  static bool ReadMessage(const IPC::Message* msg, CompositorFrame* frame) {
+    base::PickleIterator iter(*msg);
+    return IPC::ParamTraits<CompositorFrame>::Read(msg, &iter, frame);
+  }
+
+  static void RunDeserializationTestParamTraits(const std::string& test_name,
+                                                const CompositorFrame& frame) {
+    IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
+    IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
+    for (int i = 0; i < kNumWarmupRuns; ++i) {
+      CompositorFrame compositor_frame;
+      ReadMessage(&msg, &compositor_frame);
+    }
+
+    base::TimeTicks start = base::TimeTicks::Now();
+    base::TimeTicks end =
+        start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeDelta min_time;
+    size_t count = 0;
+    while (start < end) {
+      for (int i = 0; i < kTimeCheckInterval; ++i) {
+        ++count;
+        CompositorFrame compositor_frame;
+        ReadMessage(&msg, &compositor_frame);
+      }
+
+      base::TimeTicks now = base::TimeTicks::Now();
+      if (now - start < min_time || min_time.is_zero())
+        min_time = now - start;
+      start = base::TimeTicks::Now();
+    }
+
+    perf_test::PrintResult(
+        "ParamTraits deserialization: min_frame_deserialization_time", "",
+        test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
+        true);
+    perf_test::PrintResult("ParamTraits deserialization: num runs in 2 seconds",
+                           "", test_name, count, "", true);
+  }
+
+  static void RunSerializationTestParamTraits(const std::string& test_name,
+                                              const CompositorFrame& frame) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
       IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);
@@ -63,14 +103,51 @@ class CCSerializationPerfTest : public testing::Test {
     }
 
     perf_test::PrintResult(
-        "ParamTraits: min_frame_serialization_time", "", test_name,
-        min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us", true);
-    perf_test::PrintResult("ParamTraits: num runs in 2 seconds", "", test_name,
-                           count, "", true);
+        "ParamTraits serialization: min_frame_serialization_time", "",
+        test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
+        true);
+    perf_test::PrintResult("ParamTraits serialization: num runs in 2 seconds",
+                           "", test_name, count, "", true);
   }
 
-  static void RunTestStructTraits(const std::string& test_name,
-                                  const CompositorFrame& frame) {
+  static void RunDeserializationTestStructTraits(const std::string& test_name,
+                                                 const CompositorFrame& frame) {
+    mojo::Array<uint8_t> data = mojom::CompositorFrame::Serialize(&frame);
+    DCHECK_GT(data.size(), 0u);
+    for (int i = 0; i < kNumWarmupRuns; ++i) {
+      CompositorFrame compositor_frame;
+      mojom::CompositorFrame::Deserialize(data, &compositor_frame);
+    }
+
+    base::TimeTicks start = base::TimeTicks::Now();
+    base::TimeTicks end =
+        start + base::TimeDelta::FromMilliseconds(kTimeLimitMillis);
+    base::TimeDelta min_time;
+    size_t count = 0;
+    while (start < end) {
+      for (int i = 0; i < kTimeCheckInterval; ++i) {
+        CompositorFrame compositor_frame;
+        mojom::CompositorFrame::Deserialize(data, &compositor_frame);
+        ++count;
+      }
+
+      base::TimeTicks now = base::TimeTicks::Now();
+      if (now - start < min_time || min_time.is_zero())
+        min_time = now - start;
+      start = base::TimeTicks::Now();
+    }
+
+    perf_test::PrintResult(
+        "StructTraits deserialization min_frame_deserialization_time", "",
+        test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
+        true);
+    perf_test::PrintResult(
+        "StructTraits deserialization: num runs in 2 seconds", "", test_name,
+        count, "", true);
+  }
+
+  static void RunSerializationTestStructTraits(const std::string& test_name,
+                                               const CompositorFrame& frame) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       mojo::Array<uint8_t> data = mojom::CompositorFrame::Serialize(&frame);
       DCHECK_GT(data.size(), 0u);
@@ -95,15 +172,18 @@ class CCSerializationPerfTest : public testing::Test {
     }
 
     perf_test::PrintResult(
-        "StructTraits min_frame_serialization_time", "", test_name,
-        min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us", true);
-    perf_test::PrintResult("StructTraits: num runs in 2 seconds", "", test_name,
-                           count, "", true);
+        "StructTraits serialization min_frame_serialization_time", "",
+        test_name, min_time.InMillisecondsF() / kTimeCheckInterval * 1000, "us",
+        true);
+    perf_test::PrintResult("StructTraits serialization: num runs in 2 seconds",
+                           "", test_name, count, "", true);
   }
 
   static void RunTest(const std::string& test_name, CompositorFrame frame) {
-    RunTestStructTraits(test_name, frame);
-    RunTestParamTraits(test_name, frame);
+    RunSerializationTestStructTraits(test_name, frame);
+    RunDeserializationTestStructTraits(test_name, frame);
+    RunSerializationTestParamTraits(test_name, frame);
+    RunDeserializationTestParamTraits(test_name, frame);
   }
 };
 
