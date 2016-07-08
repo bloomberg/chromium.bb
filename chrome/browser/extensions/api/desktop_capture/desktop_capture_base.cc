@@ -17,7 +17,6 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/browser/media/tab_desktop_media_list.h"
-#include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -98,20 +97,9 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
         break;
 
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_TAB:
-        if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                extensions::switches::kEnableTabForDesktopShare)) {
-          show_tabs = true;
-        } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+        if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
             extensions::switches::kDisableTabForDesktopShare)) {
-          show_tabs = false;
-        } else {
-          const version_info::Channel channel = chrome::GetChannel();
-          if ((channel == version_info::Channel::STABLE) ||
-              (channel == version_info::Channel::BETA)) {
-            show_tabs = false;
-          } else {
-            show_tabs = true;
-          }
+          show_tabs = true;
         }
         break;
 

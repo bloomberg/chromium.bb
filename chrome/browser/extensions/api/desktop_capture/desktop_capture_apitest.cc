@@ -173,10 +173,6 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 #define MAYBE_ChooseDesktopMedia ChooseDesktopMedia
 #endif
 IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
-  // For tabshare, we need to turn on the flag.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      extensions::switches::kEnableTabForDesktopShare);
-
   // Each element in the following array corresponds to one test in
   // chrome/test/data/extensions/api_test/desktop_capture/test.js .
   TestFlags test_flags[] = {

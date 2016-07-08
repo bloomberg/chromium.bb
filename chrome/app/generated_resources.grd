@@ -6167,15 +6167,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
         With this flag on, desktop share picker window will not let the user choose whether to share audio.
       </message>
       <message name="IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE" desc="Title for the flag to disable tab for desktop share.">
-        Desktop Share with tab source
+        Disable Desktop Share with tab source
       </message>
       <message name="IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to disable tab for desktop share.">
         This flag controls whether users can choose a tab for desktop share.
       </message>
-      <message name="IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_OLD_UI" desc="Title for the flag to disable desktop capture picker window new UI.">
-        Disable Desktop Capture Picker Window Old UI.
+      <message name="IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_NEW_UI" desc="Title for the flag to disable desktop capture picker window new UI.">
+        Disable Desktop Capture Picker Window New UI.
       </message>
-      <message name="IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_OLD_UI_DESCRIPTION" desc="Description for the flag to disable desktop capture picker window new UI.">
+      <message name="IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_NEW_UI_DESCRIPTION" desc="Description for the flag to disable desktop capture picker window new UI.">
         This flag controls whether we show the old or new UI for desktop capture picker window.
       </message>
       <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">

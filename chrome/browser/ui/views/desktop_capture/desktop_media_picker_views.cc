@@ -438,8 +438,8 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
 
 // static
 std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          extensions::switches::kDisableDesktopCapturePickerOldUI)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          extensions::switches::kDisableDesktopCapturePickerNewUI)) {
     return std::unique_ptr<DesktopMediaPicker>(
         new deprecated::DesktopMediaPickerViews());
   }

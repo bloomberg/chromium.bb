@@ -28,8 +28,8 @@ void DesktopMediaPickerCocoa::Show(
     std::unique_ptr<DesktopMediaList> tab_list,
     bool request_audio,
     const DoneCallback& done_callback) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          extensions::switches::kDisableDesktopCapturePickerOldUI)) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          extensions::switches::kDisableDesktopCapturePickerNewUI)) {
     controller_deprecated_.reset([[DesktopMediaPickerControllerDeprecated alloc]
         initWithScreenList:std::move(screen_list)
                 windowList:std::move(window_list)
