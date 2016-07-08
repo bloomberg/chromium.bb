@@ -151,6 +151,9 @@ void TableCellPainter::paintContainerBackgroundBehindCell(const PaintInfo& paint
 
 void TableCellPainter::paintBackground(const PaintInfo& paintInfo, const LayoutRect& paintRect, const LayoutObject& backgroundObject)
 {
+    if (m_layoutTableCell.backgroundStolenForBeingBody())
+        return;
+
     Color c = backgroundObject.resolveColor(CSSPropertyBackgroundColor);
     const FillLayer& bgLayer = backgroundObject.styleRef().backgroundLayers();
     if (bgLayer.hasImage() || c.alpha()) {
