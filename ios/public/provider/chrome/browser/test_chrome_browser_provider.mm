@@ -5,13 +5,13 @@
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 
 #include "base/logging.h"
-#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
 
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : chrome_identity_service_(new ios::ChromeIdentityService),
+    : chrome_identity_service_(new ios::FakeChromeIdentityService),
       test_updatable_resource_provider_(new TestUpdatableResourceProvider) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}

@@ -51,6 +51,10 @@
       'target_name': 'ios_provider_chrome_browser_test_support',
       'type': 'static_library',
       'sources': [
+        '../public/provider/chrome/browser/signin/fake_chrome_identity.h',
+        '../public/provider/chrome/browser/signin/fake_chrome_identity.mm',
+        '../public/provider/chrome/browser/signin/fake_chrome_identity_service.h',
+        '../public/provider/chrome/browser/signin/fake_chrome_identity_service.mm',
         '../public/provider/chrome/browser/test_chrome_browser_provider.h',
         '../public/provider/chrome/browser/test_chrome_browser_provider.mm',
         '../public/provider/chrome/browser/test_chrome_provider_initializer.h',
@@ -61,6 +65,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../components/components.gyp:signin_ios_browser_test_support',
+        '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         'ios_provider_chrome_browser',
       ],
