@@ -31418,6 +31418,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSLServerKeyExchangeHash" enum="SSLHashAlgorithm">
+  <obsolete>
+    Replaced by Net.SSLSignatureAlgorithm.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     For each SSL connection with a full handshake using a DHE- or ECDHE-based
@@ -31434,6 +31437,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     For each SSL connection that resumed a session, whether the session was
     resumed at the same version it was established at. This is only recorded in
     BoringSSL ports.
+  </summary>
+</histogram>
+
+<histogram name="Net.SSLSignatureAlgorithm" enum="SSLSignatureAlgorithm">
+  <summary>
+    For each SSL connection with a full handshake using a DHE- or ECDHE-based
+    key exchange, the signature algorithm used to authenticate the peer. In TLS
+    1.2, this is the signature on the ServerKeyExchange message. (Note: Although
+    the ECDSA values specify a curve, the curve is only enforced in TLS 1.3.)
   </summary>
 </histogram>
 
@@ -91260,6 +91272,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SSLHashAlgorithm" type="int">
+  <obsolete>
+    Removed June 2016.
+  </obsolete>
   <int value="0" label="None (unused)"/>
   <int value="1" label="MD5"/>
   <int value="2" label="SHA-1"/>
@@ -91363,6 +91378,17 @@ To add a new entry, add it with any value and run test to compute valid value.
              (DEPRECATED_CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)"/>
   <int value="25"
       label="Displayed clock interstitial. (DISPLAYED_CLOCK_INTERSTITIAL)"/>
+</enum>
+
+<enum name="SSLSignatureAlgorithm" type="int">
+  <int value="513" label="rsa_pkcs1_sha1"/>
+  <int value="515" label="ecdsa_sha1"/>
+  <int value="1025" label="rsa_pkcs1_sha256"/>
+  <int value="1027" label="ecdsa_secp256r1_sha256"/>
+  <int value="1281" label="rsa_pkcs1_sha384"/>
+  <int value="1283" label="ecdsa_secp384r1_sha384"/>
+  <int value="1537" label="rsa_pkcs1_sha512"/>
+  <int value="1539" label="ecdsa_secp521r1_sha512"/>
 </enum>
 
 <enum name="StarsLaunchLocation" type="int">
