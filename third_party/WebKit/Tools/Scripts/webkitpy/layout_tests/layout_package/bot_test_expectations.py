@@ -227,6 +227,37 @@ class BotTestExpectations(object):
             unexpected_results_by_path[test_path] = sorted(map(exp_to_string, expectations))
         return unexpected_results_by_path
 
+    def all_results_by_path(self):
+        """Returns all seen result types for each test.
+
+        Returns a dictionary from each test path that has a result to a list of distinct, sorted result
+        strings. For example, if the test results are as follows:
+
+            a.html IMAGE IMAGE PASS PASS PASS TIMEOUT PASS TEXT
+            b.html PASS PASS PASS PASS PASS PASS PASS PASS
+            c.html
+
+        This method will return:
+            {
+                'a.html': ['IMAGE', 'TEXT', 'TIMEOUT', 'PASS'],
+                'b.html': ['PASS'],
+            }
+        """
+        results_by_path = {}
+        for test_path, entry in self.results_json.walk_results():
+            results_dict = entry.get(self.results_json.RESULTS_KEY, {})
+
+            result_types = self._all_types_in_results(results_dict)
+
+            if not result_types:
+                continue
+
+            # Distinct results as non-encoded strings.
+            result_strings = map(self.results_json.expectation_for_type, result_types)
+
+            results_by_path[test_path] = sorted(result_strings)
+        return results_by_path
+
     def expectation_lines(self, only_ignore_very_flaky):
         lines = []
         for test_path, entry in self.results_json.walk_results():

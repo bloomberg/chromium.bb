@@ -42,8 +42,8 @@ class BuilderList(object):
         The given dictionary maps builder names to dicts with the keys:
             "port_name": A fully qualified port name.
             "specifiers": TestExpectations specifiers for that config. Valid values are found in
-                  TestExpectationsParser._configuration_tokens_list.
-            "is_try_builder": True for try bots, False for continuous waterfall builders.
+                  TestExpectationsParser._configuration_tokens_list. specifiers is a list whose
+                  first item is the version string and second item is the build type.
 
         Possible refactoring note: Potentially, it might make sense to use
         webkitpy.common.buildbot.Builder and add port_name and specifiers
@@ -86,3 +86,17 @@ class BuilderList(object):
                 else:
                     return builder_name
         return debug_builder_name
+
+    def builder_name_for_specifiers(self, version, build_type):
+        """Returns the builder name for a give version and build type.
+
+        Args:
+            version: A string with the OS version specifier. e.g. "win7", "precise", "mac10.10".
+            build_type: A string with the build type. e.g. "debug" or "release".
+        """
+        for builder_name, info in sorted(self._builders.items()):
+            specifiers = info['specifiers']
+            if specifiers[0].lower() == version.lower() and specifiers[1].lower() == build_type.lower():
+                return builder_name
+
+        return ''

@@ -117,6 +117,33 @@ class BotTestExpectationsTest(unittest.TestCase):
         expectations = bot_test_expectations.BotTestExpectations(results_json, BuilderList(BUILDERS), set('test'))
         self.assertEqual(expectations.unexpected_results_by_path(), expectations_string)
 
+    def test_all_results_by_path(self):
+        test_data = {
+            'tests': {
+                'foo': {
+                    'multiple_pass.html': {'results': [[4, 'P'], [1, 'P'], [2, 'P']]},
+                    'fail.html': {'results': [[2, 'Z']]},
+                    'all_types.html': {
+                        'results': [[2, 'A'], [1, 'C'], [2, 'F'], [1, 'I'], [1, 'O'], [1, 'N'], [1, 'P'], [1, 'T'],
+                                    [1, 'Y'], [10, 'X'], [1, 'Z'], [1, 'K']]
+                    },
+                    'not_run.html': {'results': []},
+                }
+            }
+        }
+
+        results_json = self._results_json_from_test_data(test_data)
+        expectations = bot_test_expectations.BotTestExpectations(results_json, BuilderList(BUILDERS), set('test'))
+        results_by_path = expectations.all_results_by_path()
+
+        expected_output = {
+            'foo/multiple_pass.html': ['PASS'],
+            'foo/fail.html': ['IMAGE+TEXT'],
+            'foo/all_types.html': ['AUDIO', 'CRASH', 'IMAGE', 'IMAGE+TEXT', 'LEAK', 'MISSING', 'PASS', 'TEXT', 'TIMEOUT']
+        }
+
+        self.assertEqual(results_by_path, expected_output)
+
     def test_basic(self):
         test_data = {
             'tests': {

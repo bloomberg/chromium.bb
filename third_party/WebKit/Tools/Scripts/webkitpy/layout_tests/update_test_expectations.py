@@ -60,7 +60,192 @@ class RemoveFlakesOMatic(object):
         self._host = host
         self._port = port
         self._expectations_factory = bot_test_expectations_factory
-        self.builder_results_by_path = {}
+        self._builder_results_by_path = {}
+
+    def _can_delete_line(self, test_expectation_line):
+        """Returns whether a given line in the expectations can be removed.
+
+        Uses results from builder bots to determine if a given line is stale and
+        can safely be removed from the TestExpectations file. (i.e. remove if
+        the bots show that it's not flaky.) There are also some rules about when
+        not to remove lines (e.g. never remove lines with Rebaseline
+        expectations, don't remove non-flaky expectations, etc.)
+
+        Args:
+            test_expectation_line (TestExpectationLine): A line in the test
+                expectation file to test for possible removal.
+
+        Returns:
+            True if the line can be removed, False otherwise.
+        """
+        expectations = test_expectation_line.expectations
+        if len(expectations) < 2:
+            return False
+
+        # Don't check lines that have expectations like NeedsRebaseline or Skip.
+        if self._has_unstrippable_expectations(expectations):
+            return False
+
+        # Don't check lines unless they're flaky. i.e. At least one expectation is a PASS.
+        if not self._has_pass_expectation(expectations):
+            return False
+
+        # The line can be deleted if the only expectation on the line that appears in the actual
+        # results is the PASS expectation.
+        for config in test_expectation_line.matching_configurations:
+            builder_name = self._host.builders.builder_name_for_specifiers(config.version, config.build_type)
+
+            if not builder_name:
+                _log.error('Failed to get builder for config [%s, %s, %s]',
+                           config.version, config.architecture, config.build_type)
+                # TODO(bokan): Matching configurations often give us bots that don't have a
+                # builder in builders.py's exact_matches. Should we ignore those or be conservative
+                # and assume we need these expectations to make a decision?
+                return False
+
+            if builder_name not in self._builder_results_by_path.keys():
+                _log.error('Failed to find results for builder "%s"' % builder_name)
+                return False
+
+            results_by_path = self._builder_results_by_path[builder_name]
+
+            # No results means the tests were all skipped or all results are passing.
+            if test_expectation_line.path not in results_by_path.keys():
+                continue
+
+            results_for_single_test = results_by_path[test_expectation_line.path]
+
+            if self._expectations_that_were_met(test_expectation_line, results_for_single_test) != set(['PASS']):
+                return False
+
+        return True
+
+    def _has_pass_expectation(self, expectations):
+        return 'PASS' in expectations
+
+    def _expectations_that_were_met(self, test_expectation_line, results_for_single_test):
+        """Returns the set of expectations that appear in the given results.
+
+        e.g. If the test expectations is "bug(test) fast/test.html [Crash Failure Pass]"
+        and the results are ['TEXT', 'PASS', 'PASS', 'TIMEOUT'], then this method would
+        return [Pass Failure] since the Failure expectation is satisfied by 'TEXT', Pass
+        by 'PASS' but Crash doesn't appear in the results.
+
+        Args:
+            test_expectation_line: A TestExpectationLine object
+            results_for_single_test: A list of result strings.
+                e.g. ['IMAGE', 'IMAGE', 'PASS']
+
+        Returns:
+            A set containing expectations that occured in the results.
+        """
+        # TODO(bokan): Does this not exist in a more central place?
+        def replace_failing_with_fail(expectation):
+            if expectation in ('TEXT', 'IMAGE', 'IMAGE+TEXT', 'AUDIO'):
+                return 'FAIL'
+            else:
+                return expectation
+
+        actual_results = {replace_failing_with_fail(r) for r in results_for_single_test}
+
+        return set(test_expectation_line.expectations) & actual_results
+
+    def _has_unstrippable_expectations(self, expectations):
+        """Returns whether any of the given expectations are considered unstrippable.
+
+        Unstrippable expectations are those which should stop a line from being
+        removed regardless of builder bot results.
+
+        Args:
+            expectations: A list of string expectations.
+                E.g. ['PASS', 'FAIL' 'CRASH']
+
+        Returns:
+            True if at least one of the expectations is unstrippable. False
+            otherwise.
+        """
+        unstrippable_expectations = ('REBASELINE', 'NEEDSREBASELINE',
+                                     'NEEDSMANUALREBASELINE', 'SLOW',
+                                     'SKIP')
+        return any(s in expectations for s in unstrippable_expectations)
+
+    def _get_builder_results_by_path(self):
+        """Returns a dictionary of results for each builder.
+
+        Returns a dictionary where each key is a builder and value is a dictionary containing
+        the distinct results for each test. E.g.
+
+        {
+            'WebKit Linux': {
+                  'test1.html': ['PASS', 'IMAGE'],
+                  'test2.html': ['PASS'],
+            },
+            'WebKit Mac10.10': {
+                  'test1.html': ['PASS', 'IMAGE'],
+                  'test2.html': ['PASS', 'TEXT'],
+            }
+        }
+        """
+        builder_results_by_path = {}
+        for builder_name in self._host.builders.all_builder_names():
+            expectations_for_builder = (
+                self._expectations_factory.expectations_for_builder(builder_name)
+            )
+
+            if not expectations_for_builder:
+                # This is not fatal since we may not need to check these
+                # results. If we do need these results we'll log an error later
+                # when trying to check against them.
+                _log.warn('Downloaded results are missing results for builder "%s"' % builder_name)
+                continue
+
+            builder_results_by_path[builder_name] = (
+                expectations_for_builder.all_results_by_path()
+            )
+        return builder_results_by_path
+
+    def _remove_associated_comments_and_whitespace(self, expectations, removed_index):
+        """Removes comments and whitespace from an empty expectation block.
+
+        If the removed expectation was the last in a block of expectations, this method
+        will remove any associated comments and whitespace.
+
+        Args:
+            expectations: A list of TestExpectationLine objects to be modified.
+            removed_index: The index in the above list that was just removed.
+        """
+        was_last_expectation_in_block = (removed_index == len(expectations)
+                                         or expectations[removed_index].is_whitespace()
+                                         or expectations[removed_index].is_comment())
+
+        # If the line immediately below isn't another expectation, then the block of
+        # expectations definitely isn't empty so we shouldn't remove their associated comments.
+        if not was_last_expectation_in_block:
+            return
+
+        did_remove_whitespace = False
+
+        # We may have removed the last expectation in a block. Remove any whitespace above.
+        while removed_index > 0 and expectations[removed_index - 1].is_whitespace():
+            removed_index -= 1
+            expectations.pop(removed_index)
+            did_remove_whitespace = True
+
+        # If we did remove some whitespace then we shouldn't remove any comments above it
+        # since those won't have belonged to this expectation block. For example, commented
+        # out expectations, or a section header.
+        if did_remove_whitespace:
+            return
+
+        # Remove all comments above the removed line.
+        while removed_index > 0 and expectations[removed_index - 1].is_comment():
+            removed_index -= 1
+            expectations.pop(removed_index)
+
+        # Remove all whitespace above the comments.
+        while removed_index > 0 and expectations[removed_index - 1].is_whitespace():
+            removed_index -= 1
+            expectations.pop(removed_index)
 
     def get_updated_test_expectations(self):
         """Filters out passing lines from TestExpectations file.
@@ -72,8 +257,25 @@ class RemoveFlakesOMatic(object):
         Returns:
             A TestExpectations object with the passing lines filtered out.
         """
+
+        self._builder_results_by_path = self._get_builder_results_by_path()
+
+        expectations_to_remove = []
         test_expectations = TestExpectations(self._port, include_overrides=False).expectations()
-        # TODO: Filter the expectations based on results.
+
+        for expectation in test_expectations:
+            if self._can_delete_line(expectation):
+                expectations_to_remove.append(expectation)
+
+        for expectation in expectations_to_remove:
+            index = test_expectations.index(expectation)
+            test_expectations.remove(expectation)
+
+            # Remove associated comments and whitespace if we've removed the last expectation under
+            # a comment block. Only remove a comment block if it's not separated from the test
+            # expectation line by whitespace.
+            self._remove_associated_comments_and_whitespace(test_expectations, index)
+
         return test_expectations
 
     def write_test_expectations(self, test_expectations, test_expectations_file):
