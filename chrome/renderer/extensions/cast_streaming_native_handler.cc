@@ -21,6 +21,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/extensions/api/cast_streaming_receiver_session.h"
 #include "chrome/common/extensions/api/cast_streaming_rtp_stream.h"
@@ -33,6 +34,7 @@
 #include "content/public/renderer/media_stream_utils.h"
 #include "extensions/renderer/script_context.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/limits.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -43,10 +45,10 @@
 #include "url/gurl.h"
 
 using content::V8ValueConverter;
+using media::cast::FrameSenderConfig;
 
 // Extension types.
 using extensions::api::cast_streaming_receiver_session::RtpReceiverParams;
-using extensions::api::cast_streaming_rtp_stream::CodecSpecificParams;
 using extensions::api::cast_streaming_rtp_stream::RtpParams;
 using extensions::api::cast_streaming_rtp_stream::RtpPayloadParams;
 using extensions::api::cast_streaming_udp_transport::IPEndPoint;
@@ -54,36 +56,28 @@ using extensions::api::cast_streaming_udp_transport::IPEndPoint;
 namespace extensions {
 
 namespace {
-const char kInvalidAesIvMask[] = "Invalid value for AES IV mask";
-const char kInvalidAesKey[] = "Invalid value for AES key";
-const char kInvalidAudioParams[] = "Invalid audio params";
-const char kInvalidDestination[] = "Invalid destination";
-const char kInvalidFPS[] = "Invalid FPS";
-const char kInvalidMediaStreamURL[] = "Invalid MediaStream URL";
-const char kInvalidRtpParams[] = "Invalid value for RTP params";
-const char kInvalidLatency[] = "Invalid value for max_latency. (0-1000)";
-const char kInvalidRtpTimebase[] = "Invalid rtp_timebase. (1000-1000000)";
-const char kInvalidStreamArgs[] = "Invalid stream arguments";
-const char kRtpStreamNotFound[] = "The RTP stream cannot be found";
-const char kUdpTransportNotFound[] = "The UDP transport cannot be found";
-const char kUnableToConvertArgs[] = "Unable to convert arguments";
-const char kUnableToConvertParams[] = "Unable to convert params";
 
-// These helper methods are used to convert between Extension API
-// types and Cast types.
-void ToCastCodecSpecificParams(const CodecSpecificParams& ext_params,
-                               CastCodecSpecificParams* cast_params) {
-  cast_params->key = ext_params.key;
-  cast_params->value = ext_params.value;
-}
+constexpr char kInvalidAesIvMask[] = "Invalid value for AES IV mask";
+constexpr char kInvalidAesKey[] = "Invalid value for AES key";
+constexpr char kInvalidAudioParams[] = "Invalid audio params";
+constexpr char kInvalidDestination[] = "Invalid destination";
+constexpr char kInvalidFPS[] = "Invalid FPS";
+constexpr char kInvalidMediaStreamURL[] = "Invalid MediaStream URL";
+constexpr char kInvalidRtpParams[] = "Invalid value for RTP params";
+constexpr char kInvalidLatency[] = "Invalid value for max_latency. (0-1000)";
+constexpr char kInvalidRtpTimebase[] = "Invalid rtp_timebase. (1000-1000000)";
+constexpr char kInvalidStreamArgs[] = "Invalid stream arguments";
+constexpr char kRtpStreamNotFound[] = "The RTP stream cannot be found";
+constexpr char kUdpTransportNotFound[] = "The UDP transport cannot be found";
+constexpr char kUnableToConvertArgs[] = "Unable to convert arguments";
+constexpr char kUnableToConvertParams[] = "Unable to convert params";
+constexpr char kCodecNameOpus[] = "OPUS";
+constexpr char kCodecNameVp8[] = "VP8";
+constexpr char kCodecNameH264[] = "H264";
 
-void FromCastCodecSpecificParams(const CastCodecSpecificParams& cast_params,
-                                 CodecSpecificParams* ext_params) {
-  ext_params->key = cast_params.key;
-  ext_params->value = cast_params.value;
-}
+// To convert from kilobits per second to bits per second.
+constexpr int kBitsPerKilobit = 1000;
 
-namespace {
 bool HexDecode(const std::string& input, std::string* output) {
   std::vector<uint8_t> bytes;
   if (!base::HexStringToBytes(input, &bytes))
@@ -91,107 +85,189 @@ bool HexDecode(const std::string& input, std::string* output) {
   output->assign(reinterpret_cast<const char*>(&bytes[0]), bytes.size());
   return true;
 }
-}  // namespace
 
-bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
-                                   const RtpPayloadParams& ext_params,
-                                   CastRtpPayloadParams* cast_params) {
-  cast_params->max_latency_ms = ext_params.max_latency;
-  cast_params->min_latency_ms =
-      ext_params.min_latency ? *ext_params.min_latency : ext_params.max_latency;
-  cast_params->animated_latency_ms = ext_params.animated_latency
-                                         ? *ext_params.animated_latency
-                                         : ext_params.max_latency;
-  cast_params->codec_name = ext_params.codec_name;
-  if (cast_params->codec_name == "OPUS") {
-    cast_params->payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
-  } else if (cast_params->codec_name == "PCM16") {
-    cast_params->payload_type = media::cast::RtpPayloadType::AUDIO_PCM16;
-  } else if (cast_params->codec_name == "AAC") {
-    cast_params->payload_type = media::cast::RtpPayloadType::AUDIO_AAC;
-  } else if (cast_params->codec_name == "VP8") {
-    cast_params->payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
-  } else if (cast_params->codec_name == "H264") {
-    cast_params->payload_type = media::cast::RtpPayloadType::VIDEO_H264;
+int NumberOfEncodeThreads() {
+  // Do not saturate CPU utilization just for encoding. On a lower-end system
+  // with only 1 or 2 cores, use only one thread for encoding. On systems with
+  // more cores, allow half of the cores to be used for encoding.
+  return std::min(8, (base::SysInfo::NumberOfProcessors() + 1) / 2);
+}
+
+bool ToFrameSenderConfigOrThrow(v8::Isolate* isolate,
+                                const RtpPayloadParams& ext_params,
+                                FrameSenderConfig* config) {
+  config->sender_ssrc = ext_params.ssrc;
+  config->receiver_ssrc = ext_params.feedback_ssrc;
+  if (config->sender_ssrc == config->receiver_ssrc) {
+    DVLOG(1) << "sender_ssrc " << config->sender_ssrc
+             << " cannot be equal to receiver_ssrc";
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+    return false;
   }
-  cast_params->ssrc = ext_params.ssrc;
-  cast_params->feedback_ssrc = ext_params.feedback_ssrc;
-  cast_params->clock_rate = ext_params.clock_rate ? *ext_params.clock_rate : 0;
-  cast_params->min_bitrate =
-      ext_params.min_bitrate ? *ext_params.min_bitrate : 0;
-  cast_params->max_bitrate =
-      ext_params.max_bitrate ? *ext_params.max_bitrate : 0;
-  cast_params->channels = ext_params.channels ? *ext_params.channels : 0;
-  cast_params->max_frame_rate =
-      ext_params.max_frame_rate ? *ext_params.max_frame_rate : 0.0;
-  if (ext_params.aes_key &&
-      !HexDecode(*ext_params.aes_key, &cast_params->aes_key)) {
+  config->min_playout_delay = base::TimeDelta::FromMilliseconds(
+      ext_params.min_latency ? *ext_params.min_latency
+                             : ext_params.max_latency);
+  config->max_playout_delay =
+      base::TimeDelta::FromMilliseconds(ext_params.max_latency);
+  config->animated_playout_delay = base::TimeDelta::FromMilliseconds(
+      ext_params.animated_latency ? *ext_params.animated_latency
+                                  : ext_params.max_latency);
+  if (config->min_playout_delay <= base::TimeDelta()) {
+    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
+             << " must be greater than zero";
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+    return false;
+  }
+  if (config->min_playout_delay > config->max_playout_delay) {
+    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
+             << " must be less than or equal to max_palyout_delay";
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+    return false;
+  }
+  if (config->animated_playout_delay < config->min_playout_delay ||
+      config->animated_playout_delay > config->max_playout_delay) {
+    DVLOG(1) << "animated_playout_delay " << config->animated_playout_delay
+             << " must be between (inclusive) the min and max playout delay";
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+    return false;
+  }
+  if (ext_params.codec_name == kCodecNameOpus) {
+    config->rtp_payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
+    config->use_external_encoder = false;
+    config->rtp_timebase = ext_params.clock_rate
+                               ? *ext_params.clock_rate
+                               : media::cast::kDefaultAudioSamplingRate;
+    // Sampling rate must be one of the Opus-supported values.
+    switch (config->rtp_timebase) {
+      case 48000:
+      case 24000:
+      case 16000:
+      case 12000:
+      case 8000:
+        break;
+      default:
+        DVLOG(1) << "rtp_timebase " << config->rtp_timebase << " is invalid";
+        isolate->ThrowException(v8::Exception::Error(
+            v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+        return false;
+    }
+    config->channels = ext_params.channels ? *ext_params.channels : 2;
+    if (config->channels != 1 && config->channels != 2) {
+      isolate->ThrowException(v8::Exception::Error(
+          v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+      DVLOG(1) << "channels " << config->channels << " is invalid";
+      return false;
+    }
+    config->min_bitrate = config->start_bitrate = config->max_bitrate =
+        ext_params.max_bitrate ? (*ext_params.max_bitrate) * kBitsPerKilobit
+                               : media::cast::kDefaultAudioEncoderBitrate;
+    config->max_frame_rate = 100;  // 10ms audio frames.
+    config->codec = media::cast::CODEC_AUDIO_OPUS;
+  } else if (ext_params.codec_name == kCodecNameVp8 ||
+             ext_params.codec_name == kCodecNameH264) {
+    config->rtp_timebase = media::cast::kVideoFrequency;
+    config->channels = ext_params.channels ? *ext_params.channels : 1;
+    if (config->channels != 1) {
+      isolate->ThrowException(v8::Exception::Error(
+          v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+      DVLOG(1) << "channels " << config->channels << " is invalid";
+      return false;
+    }
+    config->min_bitrate = ext_params.min_bitrate
+                              ? (*ext_params.min_bitrate) * kBitsPerKilobit
+                              : media::cast::kDefaultMinVideoBitrate;
+    config->max_bitrate = ext_params.max_bitrate
+                              ? (*ext_params.max_bitrate) * kBitsPerKilobit
+                              : media::cast::kDefaultMaxVideoBitrate;
+    if (config->min_bitrate > config->max_bitrate) {
+      DVLOG(1) << "min_bitrate " << config->min_bitrate << " is larger than "
+               << "max_bitrate " << config->max_bitrate;
+      isolate->ThrowException(v8::Exception::Error(
+          v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+      return false;
+    }
+    config->start_bitrate = config->min_bitrate;
+    config->max_frame_rate = std::max(
+        1.0, ext_params.max_frame_rate ? *ext_params.max_frame_rate : 0.0);
+    if (config->max_frame_rate > media::limits::kMaxFramesPerSecond) {
+      DVLOG(1) << "max_frame_rate " << config->max_frame_rate << " is invalid";
+      isolate->ThrowException(v8::Exception::Error(
+          v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+      return false;
+    }
+    if (ext_params.codec_name == kCodecNameVp8) {
+      config->rtp_payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
+      config->codec = media::cast::CODEC_VIDEO_VP8;
+      config->use_external_encoder =
+          CastRtpStream::IsHardwareVP8EncodingSupported();
+    } else {
+      config->rtp_payload_type = media::cast::RtpPayloadType::VIDEO_H264;
+      config->codec = media::cast::CODEC_VIDEO_H264;
+      config->use_external_encoder =
+          CastRtpStream::IsHardwareH264EncodingSupported();
+    }
+    if (!config->use_external_encoder)
+      config->video_codec_params.number_of_encode_threads =
+          NumberOfEncodeThreads();
+  } else {
+    DVLOG(1) << "codec_name " << ext_params.codec_name << " is invalid";
+    isolate->ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidRtpParams)));
+    return false;
+  }
+  if (ext_params.aes_key && !HexDecode(*ext_params.aes_key, &config->aes_key)) {
     isolate->ThrowException(v8::Exception::Error(
         v8::String::NewFromUtf8(isolate, kInvalidAesKey)));
     return false;
   }
   if (ext_params.aes_iv_mask &&
-      !HexDecode(*ext_params.aes_iv_mask, &cast_params->aes_iv_mask)) {
+      !HexDecode(*ext_params.aes_iv_mask, &config->aes_iv_mask)) {
     isolate->ThrowException(v8::Exception::Error(
         v8::String::NewFromUtf8(isolate, kInvalidAesIvMask)));
     return false;
   }
-  for (size_t i = 0; i < ext_params.codec_specific_params.size(); ++i) {
-    CastCodecSpecificParams cast_codec_params;
-    ToCastCodecSpecificParams(ext_params.codec_specific_params[i],
-                              &cast_codec_params);
-    cast_params->codec_specific_params.push_back(cast_codec_params);
-  }
   return true;
 }
 
-void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
-                              RtpPayloadParams* ext_params) {
-  ext_params->payload_type = static_cast<int>(cast_params.payload_type);
-  ext_params->max_latency = cast_params.max_latency_ms;
-  ext_params->min_latency.reset(new int(cast_params.min_latency_ms));
-  ext_params->animated_latency.reset(new int(cast_params.animated_latency_ms));
-  ext_params->codec_name = cast_params.codec_name;
-  ext_params->ssrc = cast_params.ssrc;
-  ext_params->feedback_ssrc = cast_params.feedback_ssrc;
-  if (cast_params.clock_rate)
-    ext_params->clock_rate.reset(new int(cast_params.clock_rate));
-  if (cast_params.min_bitrate)
-    ext_params->min_bitrate.reset(new int(cast_params.min_bitrate));
-  if (cast_params.max_bitrate)
-    ext_params->max_bitrate.reset(new int(cast_params.max_bitrate));
-  if (cast_params.channels)
-    ext_params->channels.reset(new int(cast_params.channels));
-  if (cast_params.max_frame_rate > 0.0)
-    ext_params->max_frame_rate.reset(new double(cast_params.max_frame_rate));
-  for (size_t i = 0; i < cast_params.codec_specific_params.size(); ++i) {
-    CodecSpecificParams ext_codec_params;
-    FromCastCodecSpecificParams(cast_params.codec_specific_params[i],
-                                &ext_codec_params);
-    ext_params->codec_specific_params.push_back(std::move(ext_codec_params));
+void FromFrameSenderConfig(const FrameSenderConfig& config,
+                           RtpPayloadParams* ext_params) {
+  ext_params->payload_type = static_cast<int>(config.rtp_payload_type);
+  ext_params->max_latency = config.max_playout_delay.InMilliseconds();
+  ext_params->min_latency.reset(
+      new int(config.min_playout_delay.InMilliseconds()));
+  ext_params->animated_latency.reset(
+      new int(config.animated_playout_delay.InMilliseconds()));
+  switch (config.codec) {
+    case media::cast::CODEC_AUDIO_OPUS:
+      ext_params->codec_name = kCodecNameOpus;
+      break;
+    case media::cast::CODEC_VIDEO_VP8:
+      ext_params->codec_name = kCodecNameVp8;
+      break;
+    case media::cast::CODEC_VIDEO_H264:
+      ext_params->codec_name = kCodecNameH264;
+      break;
+    default:
+      NOTREACHED();
   }
-}
-
-void FromCastRtpParams(const CastRtpParams& cast_params,
-                       RtpParams* ext_params) {
-  std::copy(cast_params.rtcp_features.begin(),
-            cast_params.rtcp_features.end(),
-            std::back_inserter(ext_params->rtcp_features));
-  FromCastRtpPayloadParams(cast_params.payload, &ext_params->payload);
-}
-
-bool ToCastRtpParamsOrThrow(v8::Isolate* isolate,
-                            const RtpParams& ext_params,
-                            CastRtpParams* cast_params) {
-  std::copy(ext_params.rtcp_features.begin(),
-            ext_params.rtcp_features.end(),
-            std::back_inserter(cast_params->rtcp_features));
-  if (!ToCastRtpPayloadParamsOrThrow(isolate,
-                                     ext_params.payload,
-                                     &cast_params->payload)) {
-    return false;
-  }
-  return true;
+  ext_params->ssrc = config.sender_ssrc;
+  ext_params->feedback_ssrc = config.receiver_ssrc;
+  if (config.rtp_timebase)
+    ext_params->clock_rate.reset(new int(config.rtp_timebase));
+  if (config.min_bitrate)
+    ext_params->min_bitrate.reset(
+        new int(config.min_bitrate / kBitsPerKilobit));
+  if (config.max_bitrate)
+    ext_params->max_bitrate.reset(
+        new int(config.max_bitrate / kBitsPerKilobit));
+  if (config.channels)
+    ext_params->channels.reset(new int(config.channels));
+  if (config.max_frame_rate > 0.0)
+    ext_params->max_frame_rate.reset(new double(config.max_frame_rate));
 }
 
 }  // namespace
@@ -399,13 +475,12 @@ void CastStreamingNativeHandler::GetSupportedParamsCastRtpStream(
     return;
 
   std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  std::vector<CastRtpParams> cast_params = transport->GetSupportedParams();
+  std::vector<FrameSenderConfig> configs = transport->GetSupportedConfigs();
   v8::Local<v8::Array> result =
-      v8::Array::New(args.GetIsolate(),
-                     static_cast<int>(cast_params.size()));
-  for (size_t i = 0; i < cast_params.size(); ++i) {
+      v8::Array::New(args.GetIsolate(), static_cast<int>(configs.size()));
+  for (size_t i = 0; i < configs.size(); ++i) {
     RtpParams params;
-    FromCastRtpParams(cast_params[i], &params);
+    FromFrameSenderConfig(configs[i], &params.payload);
     std::unique_ptr<base::DictionaryValue> params_value = params.ToValue();
     result->Set(
         static_cast<int>(i),
@@ -440,9 +515,9 @@ void CastStreamingNativeHandler::StartCastRtpStream(
     return;
   }
 
-  CastRtpParams cast_params;
+  FrameSenderConfig config;
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
-  if (!ToCastRtpParamsOrThrow(isolate, *params, &cast_params))
+  if (!ToFrameSenderConfigOrThrow(isolate, params->payload, &config))
     return;
 
   base::Closure start_callback =
@@ -457,7 +532,7 @@ void CastStreamingNativeHandler::StartCastRtpStream(
       base::Bind(&CastStreamingNativeHandler::CallErrorCallback,
                  weak_factory_.GetWeakPtr(),
                  transport_id);
-  transport->Start(cast_params, start_callback, stop_callback, error_callback);
+  transport->Start(config, start_callback, stop_callback, error_callback);
 }
 
 void CastStreamingNativeHandler::StopCastRtpStream(
@@ -816,7 +891,8 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
       media::AudioParameters::AUDIO_PCM_LINEAR,
       media::GuessChannelLayout(audio_config.channels),
       audio_config.rtp_timebase,  // sampling rate
-      16, audio_config.rtp_timebase / audio_config.target_frame_rate);
+      16, static_cast<int>(audio_config.rtp_timebase /
+                           audio_config.target_frame_rate));
 
   if (!params.IsValid()) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(

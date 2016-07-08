@@ -66,7 +66,7 @@ class VideoEncoderTest
 
   void CreateEncoder() {
     ASSERT_EQ(STATUS_UNINITIALIZED, operational_status_);
-    video_config_.max_number_of_video_buffers_used = 1;
+    video_config_.video_codec_params.max_number_of_video_buffers_used = 1;
     video_encoder_ = VideoEncoder::Create(
         cast_environment_, video_config_,
         base::Bind(&VideoEncoderTest::OnOperationalStatusChange,
@@ -121,6 +121,7 @@ class VideoEncoderTest
   }
 
   void RunTasksAndAdvanceClock() const {
+    DCHECK_GT(video_config_.max_frame_rate, 0);
     const base::TimeDelta frame_duration = base::TimeDelta::FromMicroseconds(
         1000000.0 / video_config_.max_frame_rate);
 #if defined(OS_MACOSX)
@@ -247,7 +248,8 @@ class VideoEncoderTest
     } else {
       if (expected_frame_id != expected_last_referenced_frame_id) {
         EXPECT_EQ(EncodedFrame::DEPENDENT, encoded_frame->dependency);
-      } else if (video_config_.max_number_of_video_buffers_used == 1) {
+      } else if (video_config_.video_codec_params
+                     .max_number_of_video_buffers_used == 1) {
         EXPECT_EQ(EncodedFrame::KEY, encoded_frame->dependency);
       }
       EXPECT_EQ(expected_last_referenced_frame_id,
@@ -265,7 +267,7 @@ class VideoEncoderTest
   base::SimpleTestTickClock* const testing_clock_;  // Owned by CastEnvironment.
   const scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   const scoped_refptr<CastEnvironment> cast_environment_;
-  VideoSenderConfig video_config_;
+  FrameSenderConfig video_config_;
   std::unique_ptr<FakeVideoEncodeAcceleratorFactory> vea_factory_;
   base::TimeTicks first_frame_time_;
   OperationalStatus operational_status_;
@@ -414,7 +416,7 @@ std::vector<std::pair<Codec, bool>> DetermineEncodersToTest() {
   values.push_back(std::make_pair(CODEC_VIDEO_VP8, true));
 #if defined(OS_MACOSX)
   // VideoToolbox encoder (when VideoToolbox is present).
-  VideoSenderConfig video_config = GetDefaultVideoSenderConfig();
+  FrameSenderConfig video_config = GetDefaultVideoSenderConfig();
   video_config.use_external_encoder = false;
   video_config.codec = CODEC_VIDEO_H264;
   if (H264VideoToolboxEncoder::IsSupported(video_config))

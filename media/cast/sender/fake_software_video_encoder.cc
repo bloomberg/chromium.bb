@@ -18,11 +18,13 @@ namespace media {
 namespace cast {
 
 FakeSoftwareVideoEncoder::FakeSoftwareVideoEncoder(
-    const VideoSenderConfig& video_config)
+    const FrameSenderConfig& video_config)
     : video_config_(video_config),
       next_frame_is_key_(true),
       frame_id_(FrameId::first()),
-      frame_size_(0) {}
+      frame_size_(0) {
+  DCHECK_GT(video_config_.max_frame_rate, 0);
+}
 
 FakeSoftwareVideoEncoder::~FakeSoftwareVideoEncoder() {}
 

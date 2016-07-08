@@ -35,7 +35,7 @@ class AudioSender : public FrameSender,
                     public base::SupportsWeakPtr<AudioSender> {
  public:
   AudioSender(scoped_refptr<CastEnvironment> cast_environment,
-              const AudioSenderConfig& audio_config,
+              const FrameSenderConfig& audio_config,
               const StatusChangeCallback& status_change_cb,
               CastTransport* const transport_sender);
 

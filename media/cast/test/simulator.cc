@@ -356,7 +356,7 @@ void RunSimulation(const base::FilePath& source_path,
   sender_env->logger()->Subscribe(&video_event_subscriber);
 
   // Audio sender config.
-  AudioSenderConfig audio_sender_config = GetDefaultAudioSenderConfig();
+  FrameSenderConfig audio_sender_config = GetDefaultAudioSenderConfig();
   audio_sender_config.min_playout_delay =
       audio_sender_config.max_playout_delay = base::TimeDelta::FromMilliseconds(
           GetIntegerSwitchValue(kTargetDelay, 400));
@@ -368,7 +368,7 @@ void RunSimulation(const base::FilePath& source_path,
       audio_sender_config.max_playout_delay.InMilliseconds();
 
   // Video sender config.
-  VideoSenderConfig video_sender_config = GetDefaultVideoSenderConfig();
+  FrameSenderConfig video_sender_config = GetDefaultVideoSenderConfig();
   video_sender_config.max_bitrate = 2500000;
   video_sender_config.min_bitrate = 2000000;
   video_sender_config.start_bitrate = 2000000;

@@ -108,7 +108,7 @@ CastSenderImpl::CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
 }
 
 void CastSenderImpl::InitializeAudio(
-    const AudioSenderConfig& audio_config,
+    const FrameSenderConfig& audio_config,
     const StatusChangeCallback& status_change_cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   CHECK(audio_config.use_external_encoder ||
@@ -130,7 +130,7 @@ void CastSenderImpl::InitializeAudio(
 }
 
 void CastSenderImpl::InitializeVideo(
-    const VideoSenderConfig& video_config,
+    const FrameSenderConfig& video_config,
     const StatusChangeCallback& status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb) {

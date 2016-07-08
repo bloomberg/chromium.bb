@@ -38,7 +38,7 @@ class VideoEncoder {
   // TODO(miu): Remove the CreateVEA callbacks.  http://crbug.com/454029
   static std::unique_ptr<VideoEncoder> Create(
       const scoped_refptr<CastEnvironment>& cast_environment,
-      const VideoSenderConfig& video_config,
+      const FrameSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);
