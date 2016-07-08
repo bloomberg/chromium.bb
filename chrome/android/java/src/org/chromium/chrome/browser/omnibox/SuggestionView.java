@@ -789,7 +789,7 @@ class SuggestionView extends ViewGroup {
                 // of the top of the text which includes some whitespace.
                 if (child == mAnswerImage) {
                     verticalOffset += getResources().getDimensionPixelOffset(
-                            R.dimen.omnibox_suggestion_answer_line2_vertical_spacing);
+                            R.dimen.omnibox_suggestion_answer_image_vertical_spacing);
                 }
 
                 if (child != mTextLine1 && verticalOffset + line2Height > height) {

@@ -222,7 +222,6 @@
     <dimen name="toolbar_tab_count_text_size_1_digit">12dp</dimen>
     <dimen name="toolbar_tab_count_text_size_2_digit">10dp</dimen>
     <dimen name="toolbar_height_no_shadow">56dp</dimen>
-    <dimen name="toolbar_elevation">2dp</dimen>
     <dimen name="toolbar_progress_bar_height">2dp</dimen>
     <dimen name="toolbar_button_width">48dp</dimen>
 
@@ -292,7 +291,6 @@
     <dimen name="snippets_padding_and_peeking_card_height">16dp</dimen>
     <dimen name="snippets_card_9_patch_adjustment">2dp</dimen>
     <dimen name="snippets_article_header_height">40dp</dimen>
-    <dimen name="snippets_card_elevation">2dp</dimen>
 
     <!-- Interests page -->
     <dimen name="ntp_interest_item_text_size">20sp</dimen>

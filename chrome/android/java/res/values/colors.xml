@@ -9,7 +9,6 @@
     <color name="default_primary_color">#f2f2f2</color>
     <color name="light_normal_color">#5A5A5A</color>
     <color name="light_active_color">#4285F4</color>
-    <color name="input_underline_color">#e5e5e5</color>
     <color name="input_underline_error_color">#d32f2f</color>
     <color name="explanation_text_color">#909090</color>
     <color name="text_highlight_color">#C6DAFC</color>
@@ -111,7 +110,6 @@
     <color name="ntp_material_design_bg">#f2f2f2</color>
     <color name="snippets_thumnail_placeholder_bg">#f2f2f2</color>
     <color name="snippets_thumnail_placeholder_fg">#757575</color>
-    <color name="snippets_background_color">#fff</color>
     <color name="snippets_publisher_name_color">#646464</color>
     <color name="snippets_text_color">#646464</color>
     <color name="snippets_list_header_text_color">#646464</color>
