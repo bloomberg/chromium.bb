@@ -16,6 +16,14 @@
   }
 
   try {
+    new IntersectionObserver(e => {}, {threshold: ["foo"]});
+    testFailed("IntersectionObserver constructor did not throw due to invalid threshold.");
+  } catch(e) {
+    exc = e;
+    shouldBeType("exc", "RangeError");
+  }
+
+  try {
     new IntersectionObserver(e => {}, {rootMargin: "1"});
     testFailed("IntersectionObserver constructor did not throw due to invalid rootMargin.");
   } catch(e) {

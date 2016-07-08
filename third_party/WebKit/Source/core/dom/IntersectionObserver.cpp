@@ -112,8 +112,8 @@ void parseThresholds(const DoubleOrDoubleArray& thresholdParameter, Vector<float
     }
 
     for (auto thresholdValue : thresholds) {
-        if (thresholdValue < 0.0 || thresholdValue > 1.0) {
-            exceptionState.throwRangeError("Threshold values must be between 0 and 1");
+        if (std::isnan(thresholdValue) || thresholdValue < 0.0 || thresholdValue > 1.0) {
+            exceptionState.throwRangeError("Threshold values must be numbers between 0 and 1");
             break;
         }
     }
