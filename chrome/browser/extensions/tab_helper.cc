@@ -82,7 +82,7 @@ class TabHelper::InlineInstallObserver : public InstallObserver {
   InlineInstallObserver(TabHelper* tab_helper,
                         content::BrowserContext* browser_context,
                         int routing_id,
-                        const std::string& extension_id,
+                        const ExtensionId& extension_id,
                         bool observe_download_progress,
                         bool observe_install_stage)
       : tab_helper_(tab_helper),
@@ -102,24 +102,24 @@ class TabHelper::InlineInstallObserver : public InstallObserver {
 
  private:
   // InstallObserver:
-  void OnBeginExtensionDownload(const std::string& extension_id) override {
+  void OnBeginExtensionDownload(const ExtensionId& extension_id) override {
     SendInstallStageChangedMessage(extension_id,
                                    api::webstore::INSTALL_STAGE_DOWNLOADING);
   }
-  void OnDownloadProgress(const std::string& extension_id,
+  void OnDownloadProgress(const ExtensionId& extension_id,
                           int percent_downloaded) override {
     if (observe_download_progress_ && extension_id == extension_id_) {
       tab_helper_->Send(new ExtensionMsg_InlineInstallDownloadProgress(
           routing_id_, percent_downloaded));
     }
   }
-  void OnBeginCrxInstall(const std::string& extension_id) override {
+  void OnBeginCrxInstall(const ExtensionId& extension_id) override {
     SendInstallStageChangedMessage(extension_id,
                                    api::webstore::INSTALL_STAGE_INSTALLING);
   }
   void OnShutdown() override { install_observer_.RemoveAll(); }
 
-  void SendInstallStageChangedMessage(const std::string& extension_id,
+  void SendInstallStageChangedMessage(const ExtensionId& extension_id,
                                       api::webstore::InstallStage stage) {
     if (observe_install_stage_ && extension_id == extension_id_) {
       tab_helper_->Send(
@@ -134,7 +134,7 @@ class TabHelper::InlineInstallObserver : public InstallObserver {
   int routing_id_;
 
   // The id of the extension to observe.
-  std::string extension_id_;
+  ExtensionId extension_id_;
 
   // Whether or not to observe download/install progress.
   const bool observe_download_progress_;
@@ -258,13 +258,13 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
       content::NotificationService::NoDetails());
 }
 
-void TabHelper::SetExtensionAppById(const std::string& extension_app_id) {
+void TabHelper::SetExtensionAppById(const ExtensionId& extension_app_id) {
   const Extension* extension = GetExtension(extension_app_id);
   if (extension)
     SetExtensionApp(extension);
 }
 
-void TabHelper::SetExtensionAppIconById(const std::string& extension_app_id) {
+void TabHelper::SetExtensionAppIconById(const ExtensionId& extension_app_id) {
   const Extension* extension = GetExtension(extension_app_id);
   if (extension)
     UpdateExtensionAppIcon(extension);
@@ -530,7 +530,7 @@ void TabHelper::OnContentScriptsExecuting(
       OnScriptsExecuted(web_contents(), executing_scripts_map, on_url));
 }
 
-const Extension* TabHelper::GetExtension(const std::string& extension_app_id) {
+const Extension* TabHelper::GetExtension(const ExtensionId& extension_app_id) {
   if (extension_app_id.empty())
     return NULL;
 
@@ -582,7 +582,7 @@ WindowController* TabHelper::GetExtensionWindowController() const  {
 
 void TabHelper::OnReenableComplete(int install_id,
                                    int return_route_id,
-                                   const std::string& extension_id,
+                                   const ExtensionId& extension_id,
                                    ExtensionReenabler::ReenableResult result) {
   // Map the re-enable results to webstore-install results.
   webstore_install::Result webstore_result = webstore_install::SUCCESS;
@@ -614,7 +614,7 @@ void TabHelper::OnReenableComplete(int install_id,
 
 void TabHelper::OnInlineInstallComplete(int install_id,
                                         int return_route_id,
-                                        const std::string& extension_id,
+                                        const ExtensionId& extension_id,
                                         bool success,
                                         const std::string& error,
                                         webstore_install::Result result) {
