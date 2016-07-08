@@ -73,6 +73,8 @@ class MockAutofillClient : public TestAutofillClient {
   MOCK_METHOD2(ConfirmSaveCreditCardLocally,
                void(const CreditCard& card, const base::Closure& callback));
 
+  MOCK_METHOD0(ShouldShowSigninPromo, bool());
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
@@ -4905,6 +4907,44 @@ TEST_F(AutofillManagerTest, NoCreditCardSuggestionsForNonPrefixTokenMatch) {
   GetAutofillSuggestions(form, field);
   // Autocomplete suggestions are queried, but not Autofill.
   EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
+// Test that ShouldShowCreditCardSigninPromo behaves as expected for a credit
+// card form.
+TEST_F(AutofillManagerTest, ShouldShowCreditCardSigninPromo_CreditCardField) {
+  // Set up our form data.
+  FormData form;
+  CreateTestCreditCardFormData(&form, true, false);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
+      .WillOnce(testing::Return(true));
+  EXPECT_TRUE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
+
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo())
+      .WillOnce(testing::Return(false));
+  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
+}
+
+// Test that ShouldShowCreditCardSigninPromo behaves as expected for an address
+// form.
+TEST_F(AutofillManagerTest, ShouldShowCreditCardSigninPromo_AddressField) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+
+  // Call will now return false, because it is initiated from an address field.
+  EXPECT_CALL(autofill_client_, ShouldShowSigninPromo()).Times(0);
+  EXPECT_FALSE(autofill_manager_->ShouldShowCreditCardSigninPromo(form, field));
 }
 
 // Verify that typing "S" into the middle name field will match and order middle

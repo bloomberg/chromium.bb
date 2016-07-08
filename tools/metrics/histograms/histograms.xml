@@ -89792,6 +89792,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="16" label="Recent tabs"/>
   <int value="17" label="Typed URL with unknown access point"/>
   <int value="18" label="Password bubble"/>
+  <int value="19" label="Autofill dropdown"/>
 </enum>
 
 <enum name="SigninAccountEquality" type="int">

@@ -408,6 +408,7 @@ const gfx::FontList& AutofillPopupControllerImpl::GetValueFontListForRow(
     case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
     case POPUP_ITEM_ID_SEPARATOR:
+    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
       return normal_font_list_;
     case POPUP_ITEM_ID_TITLE:
     case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:

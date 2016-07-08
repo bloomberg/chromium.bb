@@ -19,6 +19,7 @@ enum PopupItemId {
   POPUP_ITEM_ID_DATALIST_ENTRY = -6,
   POPUP_ITEM_ID_SCAN_CREDIT_CARD = -7,
   POPUP_ITEM_ID_TITLE = -8,
+  POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO = -9,
 };
 
 }  // namespace autofill

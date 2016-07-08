@@ -272,6 +272,16 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
                                  base::ASCIIToUTF16("0123456789"));
 }
 
+bool AutofillManager::ShouldShowCreditCardSigninPromo(
+    const FormData& form,
+    const FormFieldData& field) {
+  // Check whether we are dealing with a credit card field and whether it's
+  // appropriate to show the promo (e.g. the platform is supported).
+  AutofillField* autofill_field = GetAutofillField(form, field);
+  return autofill_field && autofill_field->Type().group() == CREDIT_CARD &&
+         client_->ShouldShowSigninPromo();
+}
+
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
                                   const TimeTicks& timestamp) {
   if (!IsValidFormDataVector(forms))

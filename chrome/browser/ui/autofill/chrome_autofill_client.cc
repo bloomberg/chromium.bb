@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
@@ -42,6 +43,8 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
+#include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -334,6 +337,30 @@ bool ChromeAutofillClient::IsContextSecure(const GURL& form_origin) {
   return ssl_status.security_style == content::SECURITY_STYLE_AUTHENTICATED &&
          !(ssl_status.content_status &
            content::SSLStatus::RAN_INSECURE_CONTENT);
+}
+
+bool ChromeAutofillClient::ShouldShowSigninPromo() {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  // TODO(crbug.com/626383): Implement signin promo for Android and iOS by
+  // changing the logic of StartSigninFlow() below.
+  return false;
+#else
+  return chrome::FindBrowserWithWebContents(web_contents()) &&
+         signin::ShouldShowPromo(
+             Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+#endif
+}
+
+void ChromeAutofillClient::StartSigninFlow() {
+// See ShouldShowSigninPromo.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  chrome::FindBrowserWithWebContents(web_contents())
+      ->window()
+      ->ShowAvatarBubbleFromAvatarButton(
+          BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN,
+          signin::ManageAccountsParams(),
+          signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
+#endif
 }
 
 }  // namespace autofill

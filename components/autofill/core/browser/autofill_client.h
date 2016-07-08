@@ -181,6 +181,13 @@ class AutofillClient {
 
   // If the context is secure.
   virtual bool IsContextSecure(const GURL& form_origin) = 0;
+
+  // Whether it is appropriate to show a signin promo for this user.
+  virtual bool ShouldShowSigninPromo() = 0;
+
+  // Starts the signin flow. Should not be called if ShouldShowSigninPromo()
+  // returns false.
+  virtual void StartSigninFlow() = 0;
 };
 
 }  // namespace autofill

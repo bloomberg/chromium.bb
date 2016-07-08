@@ -99,6 +99,8 @@ class AwAutofillClient : public autofill::AutofillClient,
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
   bool IsContextSecure(const GURL& form_origin) override;
+  bool ShouldShowSigninPromo() override;
+  void StartSigninFlow() override;
 
   void SuggestionSelected(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,

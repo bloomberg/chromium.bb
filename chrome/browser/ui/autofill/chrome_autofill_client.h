@@ -79,6 +79,8 @@ class ChromeAutofillClient
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
   bool IsContextSecure(const GURL& form_origin) override;
+  bool ShouldShowSigninPromo() override;
+  void StartSigninFlow() override;
 
   // content::WebContentsObserver implementation.
   void MainFrameWasResized(bool width_changed) override;

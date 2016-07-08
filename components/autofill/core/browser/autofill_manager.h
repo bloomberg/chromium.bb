@@ -94,6 +94,11 @@ class AutofillManager : public AutofillDownloadManager::Observer,
   virtual bool ShouldShowScanCreditCard(const FormData& form,
                                         const FormFieldData& field);
 
+  // Whether we should show the signin promo, based on the triggered |field|
+  // inside the |form|.
+  virtual bool ShouldShowCreditCardSigninPromo(const FormData& form,
+                                               const FormFieldData& field);
+
   // Called from our external delegate so they cannot be private.
   virtual void FillOrPreviewForm(AutofillDriver::RendererFormDataAction action,
                                  int query_id,

@@ -138,7 +138,8 @@ enum class AccessPoint : int {
   ACCESS_POINT_RECENT_TABS,
   ACCESS_POINT_UNKNOWN,  // This should never have been used to get signin URL.
   ACCESS_POINT_PASSWORD_BUBBLE,
-  ACCESS_POINT_MAX,      // This must be last.
+  ACCESS_POINT_AUTOFILL_DROPDOWN,
+  ACCESS_POINT_MAX,  // This must be last.
 };
 
 // Enum values which enumerates all reasons to start sign in process.

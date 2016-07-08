@@ -197,6 +197,12 @@ bool AwAutofillClient::IsContextSecure(const GURL& form_origin) {
            content::SSLStatus::RAN_INSECURE_CONTENT);
 }
 
+bool AwAutofillClient::ShouldShowSigninPromo() {
+  return false;
+}
+
+void AwAutofillClient::StartSigninFlow() {}
+
 void AwAutofillClient::SuggestionSelected(JNIEnv* env,
                                           const JavaParamRef<jobject>& object,
                                           jint position) {

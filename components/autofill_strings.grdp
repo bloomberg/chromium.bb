@@ -20,6 +20,9 @@
   <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
     Automatic credit card filling is disabled because this form does not use a secure connection.
   </message>
+  <message name="IDS_AUTOFILL_CREDIT_CARD_SIGNIN_PROMO" desc="Promo text shown alongside credit card suggestions to get people to sign in.">
+    Sign in to Chrome to use cards you saved to your Google Account.
+  </message>
   <if expr="_google_chrome">
     <message name="IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_CONFIRMATION_BODY" desc="Text in a dialog to confirm that the user wants to delete an autocomplete form history suggestion.">
       Remove form suggestion from Chrome?

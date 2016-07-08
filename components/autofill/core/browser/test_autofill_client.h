@@ -64,6 +64,8 @@ class TestAutofillClient : public AutofillClient {
                              const base::string16& profile_full_name) override;
   void OnFirstUserGestureObserved() override;
   bool IsContextSecure(const GURL& form_origin) override;
+  bool ShouldShowSigninPromo() override;
+  void StartSigninFlow() override;
 
   void set_is_context_secure(bool is_context_secure) {
     is_context_secure_ = is_context_secure;

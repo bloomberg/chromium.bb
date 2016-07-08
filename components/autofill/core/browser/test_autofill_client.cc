@@ -115,4 +115,10 @@ bool TestAutofillClient::IsContextSecure(const GURL& form_origin) {
   return is_context_secure_;
 }
 
+bool TestAutofillClient::ShouldShowSigninPromo() {
+  return false;
+}
+
+void TestAutofillClient::StartSigninFlow() {}
+
 }  // namespace autofill
