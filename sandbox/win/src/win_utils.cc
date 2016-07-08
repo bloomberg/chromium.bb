@@ -132,7 +132,8 @@ HKEY GetReservedKeyFromName(const base::string16& name) {
 
 bool ResolveRegistryName(base::string16 name, base::string16* resolved_name) {
   for (size_t i = 0; i < arraysize(kKnownKey); ++i) {
-    if (name.find(kKnownKey[i].name) == 0) {
+    if (base::StartsWith(name, kKnownKey[i].name,
+                         base::CompareCase::SENSITIVE)) {
       HKEY key;
       DWORD disposition;
       if (ERROR_SUCCESS != ::RegCreateKeyEx(kKnownKey[i].key, L"", 0, NULL, 0,

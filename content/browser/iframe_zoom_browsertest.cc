@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "base/strings/string_util.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -121,7 +122,7 @@ struct FrameResizeObserver {
   }
 
   void Check(const std::string& status_msg) {
-    if (status_msg.find(msg_label) != 0)
+    if (!base::StartsWith(status_msg, msg_label, base::CompareCase::SENSITIVE))
       return;
 
     double inner_width = std::stod(status_msg.substr(msg_label.length() + 1));

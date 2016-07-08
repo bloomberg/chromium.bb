@@ -271,7 +271,8 @@ class AdbQuerySocket : AdbClientSocket {
     bool is_void = current_query_ < queries_.size() - 1;
     // The |shell| command is a special case because it is the only command that
     // doesn't include a length at the beginning of the data stream.
-    bool has_length = query.find("shell:") != 0;
+    bool has_length =
+        !base::StartsWith(query, "shell:", base::CompareCase::SENSITIVE);
     SendCommand(query, is_void, has_length,
         base::Bind(&AdbQuerySocket::OnResponse, base::Unretained(this)));
   }

@@ -728,8 +728,10 @@ bool BufferedResourceLoader::ParseContentRange(
     int64_t* last_byte_position,
     int64_t* instance_size) {
   const std::string kUpThroughBytesUnit = "bytes ";
-  if (content_range_str.find(kUpThroughBytesUnit) != 0)
+  if (!base::StartsWith(content_range_str, kUpThroughBytesUnit,
+                        base::CompareCase::SENSITIVE)) {
     return false;
+  }
   std::string range_spec =
       content_range_str.substr(kUpThroughBytesUnit.length());
   size_t dash_offset = range_spec.find("-");

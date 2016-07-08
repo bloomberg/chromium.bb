@@ -298,7 +298,8 @@ bool SessionStorageDatabase::ReadNamespacesAndOrigins(
   std::string current_namespace_id;
   for (it->Next(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
-    if (key.find(namespace_prefix) != 0) {
+    if (!base::StartsWith(key, namespace_prefix,
+                          base::CompareCase::SENSITIVE)) {
       // Iterated past the "namespace-" keys.
       break;
     }
@@ -497,7 +498,8 @@ bool SessionStorageDatabase::GetAreasInNamespace(
   // Skip the dummy entry "namespace-<namespaceid>-" and iterate the origins.
   for (it->Next(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
-    if (key.find(namespace_start_key) != 0) {
+    if (!base::StartsWith(key, namespace_start_key,
+                          base::CompareCase::SENSITIVE)) {
       // Iterated past the origins for this namespace.
       break;
     }
@@ -549,7 +551,7 @@ bool SessionStorageDatabase::DeleteAreaHelper(
   if (!it->Valid())
     return true;
   std::string key = it->key().ToString();
-  if (key.find(namespace_start_key) != 0)
+  if (!base::StartsWith(key, namespace_start_key, base::CompareCase::SENSITIVE))
     batch->Delete(namespace_start_key);
   return true;
 }
@@ -608,7 +610,7 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
   // Skip the dummy entry "map-<mapid>-".
   for (it->Next(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
-    if (key.find(map_start_key) != 0) {
+    if (!base::StartsWith(key, map_start_key, base::CompareCase::SENSITIVE)) {
       // Iterated past the keys in this map.
       break;
     }

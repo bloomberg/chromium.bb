@@ -174,8 +174,10 @@ bool IsReservedNameOnWindows(const base::FilePath::StringType& filename) {
     if (filename_lower == known_devices[i])
       return true;
     // Starts with "DEVICE.".
-    if (filename_lower.find(std::string(known_devices[i]) + ".") == 0)
+    if (base::StartsWith(filename_lower, std::string(known_devices[i]) + ".",
+                         base::CompareCase::SENSITIVE)) {
       return true;
+    }
   }
 
   static const char* const magic_names[] = {
