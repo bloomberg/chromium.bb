@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/platform_screen_impl.h"
+#include "services/ui/display/platform_screen_impl.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -12,7 +12,7 @@
 
 namespace ui {
 
-namespace ws {
+namespace display {
 namespace {
 
 void FixedSizeScreenConfiguration(
@@ -39,5 +39,5 @@ void PlatformScreenImpl::ConfigurePhysicalDisplay(
       FROM_HERE, base::Bind(&FixedSizeScreenConfiguration, callback));
 }
 
-}  // namespace ws
+}  // namespace display
 }  // namespace ui

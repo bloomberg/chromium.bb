@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_PLATFORM_SCREEN_IMPL_H_
-#define SERVICES_UI_WS_PLATFORM_SCREEN_IMPL_H_
+#ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_H_
+#define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_H_
 
 #include <stdint.h>
 
 #include "base/callback.h"
-#include "services/ui/ws/platform_screen.h"
-
-namespace gfx {
-class Rect;
-}
+#include "services/ui/display/platform_screen.h"
 
 namespace ui {
-namespace ws {
+namespace display {
 
 // PlatformScreenImpl provides the necessary functionality to configure all
 // attached physical displays on non-ozone platforms.
@@ -33,7 +29,7 @@ class PlatformScreenImpl : public PlatformScreen {
   DISALLOW_COPY_AND_ASSIGN(PlatformScreenImpl);
 };
 
-}  // namespace ws
+}  // namespace display
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_PLATFORM_SCREEN_IMPL_H_
+#endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_IMPL_H_

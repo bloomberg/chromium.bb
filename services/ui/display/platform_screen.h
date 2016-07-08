@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_WS_PLATFORM_SCREEN_H_
-#define SERVICES_UI_WS_PLATFORM_SCREEN_H_
+#ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_H_
+#define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@ class Rect;
 }
 
 namespace ui {
-namespace ws {
+namespace display {
 
 // PlatformScreen provides the necessary functionality to configure all
 // attached physical displays.
@@ -37,7 +37,7 @@ class PlatformScreen {
       const ConfiguredDisplayCallback& callback) = 0;
 };
 
-}  // namespace ws
+}  // namespace display
 }  // namespace ui
 
-#endif  // SERVICES_UI_WS_PLATFORM_SCREEN_H_
+#endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_H_

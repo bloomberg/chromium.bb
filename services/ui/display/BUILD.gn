@@ -1,0 +1,34 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+source_set("display") {
+  sources = [
+    "platform_screen.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/display",
+    "//ui/gfx",
+  ]
+
+  if (use_ozone && is_chromeos) {
+    sources += [
+      "platform_screen_impl_ozone.cc",
+      "platform_screen_impl_ozone.h",
+    ]
+
+    deps += [
+      "//skia",
+      "//ui/ozone:ozone",
+    ]
+  } else {
+    sources += [
+      "platform_screen_impl.cc",
+      "platform_screen_impl.h",
+    ]
+  }
+}

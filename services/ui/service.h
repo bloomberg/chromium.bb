@@ -51,9 +51,13 @@ class PlatformEventSource;
 }
 
 namespace ui {
+
+namespace display {
+class PlatformScreen;
+}
+
 namespace ws {
 class ForwardingWindowManager;
-class PlatformScreen;
 class WindowServer;
 }
 
@@ -169,7 +173,7 @@ class Service
   std::unique_ptr<ui::ClientNativePixmapFactory> client_native_pixmap_factory_;
 #endif
 
-  std::unique_ptr<ws::PlatformScreen> platform_screen_;
+  std::unique_ptr<display::PlatformScreen> platform_screen_;
   std::unique_ptr<ws::TouchController> touch_controller_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;

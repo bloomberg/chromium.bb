@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/ws/platform_screen_impl_ozone.h"
+#include "services/ui/display/platform_screen_impl_ozone.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
@@ -16,7 +16,7 @@
 
 namespace ui {
 
-namespace ws {
+namespace display {
 namespace {
 
 // TODO(rjkroege): Remove this code once ozone headless has the same
@@ -92,5 +92,5 @@ void PlatformScreenImplOzone::OnDisplayModeChangeFailed(
   callback_.Reset();
 }
 
-}  // namespace ws
+}  // namespace display
 }  // namespace ui

@@ -19,13 +19,13 @@
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/switches.h"
+#include "services/ui/display/platform_screen.h"
 #include "services/ui/gles2/gpu_impl.h"
 #include "services/ui/gpu/gpu_service_impl.h"
 #include "services/ui/gpu/gpu_service_mus.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
-#include "services/ui/ws/platform_screen.h"
 #include "services/ui/ws/user_activity_monitor.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/window_server.h"
@@ -87,7 +87,7 @@ Service::Service()
 #else
       use_chrome_gpu_command_buffer_(true),
 #endif
-      platform_screen_(ws::PlatformScreen::Create()),
+      platform_screen_(display::PlatformScreen::Create()),
       weak_ptr_factory_(this) {
 }
 
