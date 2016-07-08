@@ -32,6 +32,7 @@ public class LofiBarController implements SnackbarManager.SnackbarController {
     private final Context mContext;
     private final boolean mDisabled;
     private Tab mTab;
+    private TabObserver mTabObserver;
     private boolean mLoFiPopupShownForPageLoad = false;
 
     /**
@@ -70,21 +71,11 @@ public class LofiBarController implements SnackbarManager.SnackbarController {
                     showLoFiBar(tab, isPreview);
                     tab.removeObserver(this);
                 }
-
-                @Override
-                public void onHidden(Tab tab) {
-                    dismissLoFiBar();
-                }
-
-                @Override
-                public void onDestroyed(Tab tab) {
-                    dismissLoFiBar();
-                }
             };
             tab.addObserver(tabObserver);
-            return;
+        } else {
+            showLoFiBar(tab, isPreview);
         }
-        showLoFiBar(tab, isPreview);
     }
 
     /**
@@ -93,6 +84,31 @@ public class LofiBarController implements SnackbarManager.SnackbarController {
     private void showLoFiBar(Tab tab, boolean isPreview) {
         if (mDisabled) return;
         mTab = tab;
+
+        mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onHidden(Tab tab) {
+                dismissLoFiBar();
+            }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                dismissLoFiBar();
+            }
+
+            @Override
+            public void onDidStartProvisionalLoadForFrame(Tab tab, long frameId,
+                    long parentFrameId, boolean isMainFrame, String validatedUrl,
+                    boolean isErrorPage, boolean isIframeSrcdoc) {
+                // When a provisional load is started for the main frame, the boolean storing if
+                // the Lo-Fi snackbar has been shown is reset. If there was a previous Lo-Fi
+                // snackbar showing, remove it.
+                if (isMainFrame) dismissLoFiBar();
+            }
+
+        };
+        tab.addObserver(mTabObserver);
+
         String message = mContext
                 .getString(isPreview ? R.string.data_reduction_lo_fi_preview_snackbar_message
                         : R.string.data_reduction_lo_fi_snackbar_message);
@@ -113,7 +129,16 @@ public class LofiBarController implements SnackbarManager.SnackbarController {
      * Dismisses the snackbar.
      */
     private void dismissLoFiBar() {
+        removeTabObserver();
         if (mSnackbarManager.isShowing()) mSnackbarManager.dismissSnackbars(this);
+    }
+
+    /**
+     * Removes the TabObserver.
+     */
+    private void removeTabObserver() {
+        mTab.removeObserver(mTabObserver);
+        mTabObserver = null;
     }
 
     /**
@@ -121,7 +146,7 @@ public class LofiBarController implements SnackbarManager.SnackbarController {
      */
     @Override
     public void onAction(Object actionData) {
-        mSnackbarManager.dismissSnackbars(this);
+        removeTabObserver();
 
         if (actionData == null) return;
         int snackbarType = (int) actionData;
@@ -143,5 +168,7 @@ public class LofiBarController implements SnackbarManager.SnackbarController {
     }
 
     @Override
-    public void onDismissNoAction(Object actionData) {}
+    public void onDismissNoAction(Object actionData) {
+        removeTabObserver();
+    }
 }
