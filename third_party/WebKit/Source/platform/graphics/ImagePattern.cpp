@@ -49,22 +49,25 @@ sk_sp<SkShader> ImagePattern::createShader(const SkMatrix& localMatrix) const
         ? SkShader::kRepeat_TileMode : SkShader::kClamp_TileMode;
     SkShader::TileMode tileModeY = isRepeatY()
         ? SkShader::kRepeat_TileMode : SkShader::kClamp_TileMode;
-    int expandW = isRepeatX() ? 0 : 1;
-    int expandH = isRepeatY() ? 0 : 1;
+    int borderPixelX = isRepeatX() ? 0 : 1;
+    int borderPixelY = isRepeatY() ? 0 : 1;
 
-    // Create a transparent image 1 pixel wider and/or taller than the
-    // original, then copy the orignal into it.
+    // Create a transparent image 2 pixels wider and/or taller than the
+    // original, then copy the orignal into the middle of it.
     // FIXME: Is there a better way to pad (not scale) an image in skia?
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
-        m_tileImage->width() + expandW, m_tileImage->height() + expandH);
+        m_tileImage->width() + 2 * borderPixelX, m_tileImage->height() + 2 * borderPixelY);
     if (!surface)
         return SkShader::MakeColorShader(SK_ColorTRANSPARENT);
 
     SkPaint paint;
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    surface->getCanvas()->drawImage(m_tileImage, 0, 0, &paint);
+    surface->getCanvas()->drawImage(m_tileImage, borderPixelX, borderPixelY, &paint);
 
-    return surface->makeImageSnapshot()->makeShader(tileModeX, tileModeY, &localMatrix);
+    SkMatrix newLocalMatrix(localMatrix);
+    newLocalMatrix.postTranslate(-borderPixelX, -borderPixelY);
+
+    return surface->makeImageSnapshot()->makeShader(tileModeX, tileModeY, &newLocalMatrix);
 }
 
 bool ImagePattern::isTextureBacked() const
