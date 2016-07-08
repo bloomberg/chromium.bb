@@ -15,19 +15,21 @@ function test()
 }
 
 var sawUpgradeNeeded = false;
+var sawOpenSuccess = false;
 var sawVersionChange = false;
 
 function initiallyDeleted(evt) {
     preamble(evt);
     evalAndLog("request = indexedDB.open(dbname, 1)");
     request.onupgradeneeded = upgradeNeededCallback;
-    request.onsuccess = unexpectedSuccessCallback;
+    request.onsuccess = openSuccessCallback;
 }
 
 function upgradeNeededCallback(evt)
 {
     preamble(evt);
     shouldBeFalse("sawUpgradeNeeded");
+    shouldBeFalse("sawOpenSuccess");
     evalAndLog("sawUpgradeNeeded = true");
     shouldBe("event.oldVersion", "0");
     shouldBe("event.newVersion", "1");
@@ -42,12 +44,19 @@ function upgradeNeededCallback(evt)
 
 function versionChangeCallback(evt) {
     preamble(evt);
+    shouldBeTrue("sawOpenSuccess");
     shouldBe("event.oldVersion", "1");
     shouldBeNull("event.newVersion");
     evalAndLog("sawVersionChange = true");
-
-    debug("Closing the connection before the IDBOpenDBRequest's success fires will cause the open to fail.");
     evalAndLog("db.close()");
+}
+
+function openSuccessCallback(evt)
+{
+    preamble(evt);
+    shouldBeTrue("sawUpgradeNeeded");
+    shouldBeFalse("sawVersionChange");
+    evalAndLog("sawOpenSuccess = true");
 }
 
 function deleteSuccessCallback(evt)

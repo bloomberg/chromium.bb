@@ -33,6 +33,7 @@ function prepareDatabase(evt)
     request.onblocked = function deleteDatabaseOnBlocked(evt) {
         preamble(evt);
         shouldBeTrue("sawVersionChange");
+        evalAndLog("h.close()");
     };
     request.onsuccess = function deleteDatabaseOnSuccess(evt) {
         preamble(evt);
@@ -45,9 +46,4 @@ function onOpenSuccess(evt)
 {
     preamble(evt);
     evalAndLog("h = event.target.result");
-    evalAndLog("h.close()");
-    debug("Closing too late to prevent the in-flight 'blocked' event");
-    // Event ordering between 'success' and 'blocked' is not strictly defined
-    // in the spec. This documents current Chromium behavior to detect
-    // unexpected changes.
 }

@@ -5,17 +5,6 @@
 <script src='resources/testharness-helpers.js'></script>
 <script>
 
-function expect(t, expected) {
-    var results = [];
-    return result => {
-        results.push(result);
-        if (results.length === expected.length) {
-            assert_array_equals(results, expected);
-            t.done();
-        }
-    };
-}
-
 indexeddb_test(
     (t, db) => {
         db.createObjectStore('store');

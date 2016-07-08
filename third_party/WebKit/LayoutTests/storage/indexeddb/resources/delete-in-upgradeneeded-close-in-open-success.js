@@ -47,16 +47,10 @@ function openSuccess(evt)
 {
     preamble(evt);
     shouldBeTrue("sawUpgradeNeeded");
-    shouldBeTrue("sawVersionChange");
+    shouldBeFalse("sawVersionChange");
     evalAndLog("sawOpenSuccess = true");
     evalAndLog("db = event.target.result");
     shouldBe('db.version', '1');
-
-    // Event ordering between 'success' and 'blocked' is not strictly defined
-    // in the spec. This documents current Chromium behavior to detect
-    // unexpected changes.
-    debug("Closing here is too late to prevent the in-flight 'blocked' event, but it does unblock the delete.");
-    evalAndLog("db.close()");
 }
 
 function versionChangeCallback(evt)
@@ -64,7 +58,7 @@ function versionChangeCallback(evt)
     preamble(evt);
     shouldBe("event.oldVersion", "1");
     shouldBeNull("event.newVersion");
-    shouldBeFalse("sawOpenSuccess");
+    shouldBeTrue("sawOpenSuccess");
     evalAndLog("sawVersionChange = true");
     debug("Connection not closed at the end of 'versionchange', so 'blocked' should fire");
 }
@@ -75,6 +69,7 @@ function deleteBlockedCallback(evt)
     shouldBeTrue("sawVersionChange");
     shouldBeTrue("sawOpenSuccess");
     evalAndLog("sawDeleteBlocked = true");
+    evalAndLog("db.close()");
 }
 
 function deleteSuccessCallback(evt)

@@ -19,3 +19,18 @@ function indexeddb_test(upgrade_func, body_func, description) {
 function assert_key_equals(a, b, message) {
     assert_equals(indexedDB.cmp(a, b), 0, message);
 }
+
+// Call with a Test and an array of expected results in order. Returns
+// a function; call the function when a result arrives and when the
+// expected number appear the order will be asserted and test
+// completed.
+function expect(t, expected) {
+    var results = [];
+    return result => {
+        results.push(result);
+        if (results.length === expected.length) {
+            assert_array_equals(results, expected);
+            t.done();
+        }
+    };
+}

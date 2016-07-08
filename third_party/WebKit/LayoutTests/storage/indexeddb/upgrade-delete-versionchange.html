@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<title>IndexedDB: delete should be blocked by open/upgrade</title>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script>
+
+async_test(t => {
+    let dbName = self.location.pathname + ' - ' + t.name;
+    let delete_request = indexedDB.deleteDatabase(dbName);
+    delete_request.onerror = t.unreached_func('deleteDatabase should not fail');
+    delete_request.onsuccess = t.step_func(() => {
+
+        let saw_versionchange = false;
+
+        let open_request = indexedDB.open(dbName);
+        open_request.onerror = t.unreached_func('open should succeed');
+        open_request.onupgradeneeded = t.step_func(e => {
+            let db = open_request.result;
+            db.onversionchange =
+                t.unreached_func('versionchange should not be seen before open success');
+        });
+        open_request.onsuccess = t.step_func(e => {
+            let db = open_request.result;
+            db.onversionchange = e => {
+                saw_versionchange = true;
+                db.close();
+            };
+        });
+
+        let delete_request2 = indexedDB.deleteDatabase(dbName);
+        delete_request2.onerror = t.unreached_func('deleteDatabase should not fail');
+        delete_request2.onblocked = t.unreached_func('blocked should not fire');
+        delete_request2.onsuccess = t.step_func(e => {
+            assert_true(saw_versionchange, 'delete should occur after versionchange');
+            t.done();
+        });
+    });
+}, 'delete should be blocked by upgrade');
+</script>

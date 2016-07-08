@@ -13,6 +13,12 @@ upgradeTransactionComplete = false
 h = event.target.result
 indexedDB.deleteDatabase(dbname)
 
+transactionOnComplete():
+upgradeTransactionComplete = true
+
+onOpenSuccess():
+h = event.target.result
+
 onVersionChange():
 PASS event.target.version is 1
 PASS event.oldVersion is 1
@@ -20,16 +26,9 @@ PASS event.newVersion is null
 sawVersionChange = true
 Connection is not closed, so 'blocked' should fire
 
-transactionOnComplete():
-upgradeTransactionComplete = true
-
-onOpenSuccess():
-h = event.target.result
-h.close()
-Closing too late to prevent the in-flight 'blocked' event
-
 deleteDatabaseOnBlocked():
 PASS sawVersionChange is true
+h.close()
 
 deleteDatabaseOnSuccess():
 PASS upgradeTransactionComplete is true
