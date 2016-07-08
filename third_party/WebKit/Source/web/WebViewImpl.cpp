@@ -4188,6 +4188,36 @@ bool WebViewImpl::tabsToLinks() const
     return m_tabsToLinks;
 }
 
+void WebViewImpl::registerViewportLayersWithCompositor()
+{
+    DCHECK(m_layerTreeView);
+    DCHECK(!page()->deprecatedLocalMainFrame()->contentLayoutItem().isNull());
+
+    PaintLayerCompositor* compositor =
+        page()->deprecatedLocalMainFrame()->contentLayoutItem().compositor();
+
+    DCHECK(compositor);
+
+    // Get the outer viewport scroll layer.
+    WebLayer* scrollLayer =
+        compositor->scrollLayer()
+            ? compositor->scrollLayer()->platformLayer()
+            : nullptr;
+
+    VisualViewport& visualViewport = page()->frameHost().visualViewport();
+
+    // TODO(bokan): This was moved here from when registerViewportLayers was a
+    // part of VisualViewport and maybe doesn't belong here. See comment inside
+    // the mehtod.
+    visualViewport.setScrollLayerOnScrollbars(scrollLayer);
+
+    m_layerTreeView->registerViewportLayers(
+        visualViewport.overscrollElasticityLayer()->platformLayer(),
+        visualViewport.pageScaleLayer()->platformLayer(),
+        visualViewport.scrollLayer()->platformLayer(),
+        scrollLayer);
+}
+
 void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
     if (!m_layerTreeView)
@@ -4207,7 +4237,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         m_layerTreeView->setRootLayer(*m_rootLayer);
         // We register viewport layers here since there may not be a layer
         // tree view prior to this point.
-        visualViewport.registerLayersWithTreeView(m_layerTreeView);
+        registerViewportLayersWithCompositor();
         updatePageOverlays();
         // TODO(enne): Work around page visibility changes not being
         // propagated to the WebView in some circumstances.  This needs to
@@ -4223,7 +4253,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
         // attempt to paint too early in the next page load.
         m_layerTreeView->setDeferCommits(true);
         m_layerTreeView->clearRootLayer();
-        visualViewport.clearLayersForTreeView(m_layerTreeView);
+        m_layerTreeView->clearViewportLayers();
     }
 }
 

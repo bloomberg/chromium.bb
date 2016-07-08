@@ -425,6 +425,7 @@ public:
     }
 
     GraphicsLayer* rootGraphicsLayer();
+    void registerViewportLayersWithCompositor();
     PaintLayerCompositor* compositor() const;
     void scheduleAnimation();
     CompositorAnimationTimeline* linkHighlightsTimeline() const { return m_linkHighlightsTimeline.get(); }

@@ -53,18 +53,9 @@
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeOverlay.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebLayer.h"
-#include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/platform/WebScrollbarLayer.h"
 #include <memory>
-
-using blink::WebLayer;
-using blink::WebLayerTreeView;
-using blink::WebScrollbar;
-using blink::WebScrollbarLayer;
-using blink::FrameHost;
-using blink::GraphicsLayer;
 
 namespace blink {
 
@@ -476,29 +467,13 @@ void VisualViewport::setupScrollbar(WebScrollbar::Orientation orientation)
     scrollbarGraphicsLayer->setContentsRect(IntRect(0, 0, width, height));
 }
 
-void VisualViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView) const
+void VisualViewport::setScrollLayerOnScrollbars(WebLayer* scrollLayer) const
 {
-    TRACE_EVENT0("blink", "VisualViewport::registerLayersWithTreeView");
-    ASSERT(layerTreeView);
-
-    if (!mainFrame())
-        return;
-
-    ASSERT(!frameHost().page().deprecatedLocalMainFrame()->contentLayoutItem().isNull());
-
-    PaintLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentLayoutItem().compositor();
-    // Get the outer viewport scroll layer.
-    WebLayer* scrollLayer = compositor->scrollLayer() ? compositor->scrollLayer()->platformLayer() : 0;
-
+    // TODO(bokan): This is currently done while registering viewport layers
+    // with the compositor but could it actually be done earlier, like in
+    // setupScrollbars? Then we wouldn't need this method.
     m_webOverlayScrollbarHorizontal->setScrollLayer(scrollLayer);
     m_webOverlayScrollbarVertical->setScrollLayer(scrollLayer);
-
-    ASSERT(compositor);
-    layerTreeView->registerViewportLayers(
-        m_overscrollElasticityLayer->platformLayer(),
-        m_pageScaleLayer->platformLayer(),
-        m_innerViewportScrollLayer->platformLayer(),
-        scrollLayer);
 }
 
 bool VisualViewport::visualViewportSuppliesScrollbars() const
@@ -509,13 +484,6 @@ bool VisualViewport::visualViewportSuppliesScrollbars() const
 bool VisualViewport::scrollAnimatorEnabled() const
 {
     return frameHost().settings().scrollAnimatorEnabled();
-}
-
-void VisualViewport::clearLayersForTreeView(WebLayerTreeView* layerTreeView) const
-{
-    ASSERT(layerTreeView);
-
-    layerTreeView->clearViewportLayers();
 }
 
 HostWindow* VisualViewport::getHostWindow() const
