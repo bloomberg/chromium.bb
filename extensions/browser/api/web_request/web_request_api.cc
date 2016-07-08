@@ -397,28 +397,10 @@ struct ExtensionWebRequestEventRouter::EventListener {
 
   // Comparator to work with std::set.
   bool operator<(const EventListener& that) const {
-    if (extension_id != that.extension_id)
-      return extension_id < that.extension_id;
-
-    if (sub_event_name != that.sub_event_name)
-      return sub_event_name < that.sub_event_name;
-
-    if (web_view_instance_id != that.web_view_instance_id)
-      return web_view_instance_id < that.web_view_instance_id;
-
-    if (web_view_instance_id == 0) {
-      // Do not filter by process ID for non-webviews, because this comparator
-      // is also used to find and remove an event listener when an extension is
-      // unloaded. At this point, the event listener cannot be mapped back to
-      // the original process, so 0 is used instead of the actual process ID.
-      if (embedder_process_id == 0 || that.embedder_process_id == 0)
-        return false;
-    }
-
-    if (embedder_process_id != that.embedder_process_id)
-      return embedder_process_id < that.embedder_process_id;
-
-    return false;
+    return std::tie(extension_id, sub_event_name, web_view_instance_id,
+                    embedder_process_id) <
+           std::tie(that.extension_id, that.sub_event_name,
+                    that.web_view_instance_id, that.embedder_process_id);
   }
 
   EventListener()
@@ -1147,6 +1129,12 @@ bool ExtensionWebRequestEventRouter::AddEventListener(
   return true;
 }
 
+int ExtensionWebRequestEventRouter::GetListenerCountForTesting(
+    void* browser_context,
+    const std::string& event_name) {
+  return listeners_[browser_context][event_name].size();
+}
+
 void ExtensionWebRequestEventRouter::RemoveEventListener(
     void* browser_context,
     const std::string& extension_id,
@@ -1156,14 +1144,23 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   std::string event_name = EventRouter::GetBaseEventName(sub_event_name);
   DCHECK(IsWebRequestEvent(event_name));
 
+  std::set<EventListener>& event_listeners =
+      listeners_[browser_context][event_name];
+
   EventListener listener;
   listener.extension_id = extension_id;
   listener.sub_event_name = sub_event_name;
-  listener.embedder_process_id = embedder_process_id;
-  listener.web_view_instance_id = web_view_instance_id;
 
-  std::set<EventListener>& event_listeners =
-      listeners_[browser_context][event_name];
+  if (web_view_instance_id != 0) {
+    listener.embedder_process_id = embedder_process_id;
+    listener.web_view_instance_id = web_view_instance_id;
+  } else {
+    for (const EventListener& l : event_listeners) {
+      if (l.extension_id == extension_id && l.sub_event_name == sub_event_name)
+        listener.embedder_process_id = l.embedder_process_id;
+    }
+  }
+
   // It's possible for AddEventListener to fail asynchronously. In that case,
   // the renderer believes the listener exists, while the browser does not.
   // Ignore a RemoveEventListener in that case.
@@ -1171,16 +1168,6 @@ void ExtensionWebRequestEventRouter::RemoveEventListener(
   if (it == event_listeners.end())
     return;
 
-#if defined(OS_WIN)
-  // Debugging https://crbug.com/589735
-  // Please post crash reports at the following lines to the above issue.
-  unsigned event_listener_count = event_listeners.count(listener);
-  CHECK_GE(event_listener_count, 0u);
-  CHECK_GE(event_listener_count, 1u);
-  CHECK_LE(event_listener_count, 2u);
-  CHECK_EQ(event_listener_count, 1u);
-  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-#endif  // OS_WIN
   CHECK_EQ(event_listeners.count(listener), 1u) <<
       "extension=" << extension_id << " event=" << event_name;
 

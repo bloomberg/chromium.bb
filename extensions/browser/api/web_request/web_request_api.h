@@ -274,6 +274,10 @@ class ExtensionWebRequestEventRouter
                         int web_view_instance_id,
                         base::WeakPtr<IPC::Sender> ipc_sender);
 
+  // Get the number of listeners - for testing only.
+  int GetListenerCountForTesting(void* browser_context,
+                                 const std::string& event_name);
+
   // Removes the listener for the given sub-event.
   void RemoveEventListener(
       void* browser_context,

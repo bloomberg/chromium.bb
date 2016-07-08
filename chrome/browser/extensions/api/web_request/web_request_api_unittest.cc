@@ -833,6 +833,38 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
   EXPECT_EQ(i, ipc_sender_.sent_end());
 }
 
+// Tests the sanity of operator< (crbug.com/589735).
+TEST_F(ExtensionWebRequestTest, AddAndRemoveListeners) {
+  std::string ext_id("abcdefghijklmnopabcdefghijklmnop");
+  ExtensionWebRequestEventRouter::RequestFilter filter;
+  const std::string kEventName(web_request::OnBeforeRequest::kEventName);
+  const std::string kSubEventName = kEventName + "/1";
+  base::WeakPtrFactory<TestIPCSender> ipc_sender_factory(&ipc_sender_);
+
+  // Add two non-webview listeners.
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
+      filter, 0, 1 /* embedder_process_id */, 0,
+      ipc_sender_factory.GetWeakPtr());
+  ExtensionWebRequestEventRouter::GetInstance()->AddEventListener(
+      &profile_, ext_id, ext_id, events::FOR_TEST, kEventName, kSubEventName,
+      filter, 0, 2 /* embedder_process_id */, 0,
+      ipc_sender_factory.GetWeakPtr());
+
+  // Now remove the events without passing an explicit process ID.
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, ext_id, kSubEventName, 0 /* embedder_process_id */, 0);
+  EXPECT_EQ(1,
+      ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
+        &profile_, kEventName));
+
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveEventListener(
+      &profile_, ext_id, kSubEventName, 0 /* embedder_process_id */, 0);
+  EXPECT_EQ(0,
+      ExtensionWebRequestEventRouter::GetInstance()->GetListenerCountForTesting(
+        &profile_, kEventName));
+}
+
 struct HeaderModificationTest_Header {
   const char* name;
   const char* value;
