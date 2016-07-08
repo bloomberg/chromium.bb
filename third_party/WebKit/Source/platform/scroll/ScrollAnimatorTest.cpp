@@ -627,9 +627,8 @@ TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment)
     EXPECT_GT(pos.y(), 0);
 
     // Adjustment
-    IntSize adjustment = IntSize(10, -10);
-    animator->adjustAnimationAndSetScrollPosition(adjustment, AnchoringScroll);
-    EXPECT_EQ(pos + FloatSize(adjustment), animator->currentPosition());
+    FloatPoint newPos = pos + FloatSize(10, -10);
+    animator->adjustAnimationAndSetScrollPosition(newPos, AnchoringScroll);
     EXPECT_EQ(FloatPoint(110, 90), animator->desiredTargetPosition());
 
     // Animation finished

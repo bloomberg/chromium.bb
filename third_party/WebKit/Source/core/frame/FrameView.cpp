@@ -164,7 +164,6 @@ FrameView::FrameView(LocalFrame* frame)
     , m_crossOriginForThrottling(false)
     , m_subtreeThrottled(false)
     , m_currentUpdateLifecyclePhasesTargetState(DocumentLifecycle::Uninitialized)
-    , m_scrollAnchor(this)
     , m_needsScrollbarsUpdate(false)
     , m_suppressAdjustViewSize(false)
     , m_allowsLayoutInvalidationAfterLayoutClean(true)
@@ -812,6 +811,16 @@ void FrameView::performPreLayoutTasks()
 
     document->updateStyleAndLayoutTree();
     lifecycle().advanceTo(DocumentLifecycle::StyleClean);
+
+    if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
+        ScrollableArea& visualViewport = m_frame->host()->visualViewport();
+        ScrollableArea* layoutViewport = layoutViewportScrollableArea();
+        DCHECK(layoutViewport);
+        m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
+    }
+
+    if (!m_scrollAnchor.hasScroller())
+        m_scrollAnchor.setScroller(m_viewportScrollableArea ? m_viewportScrollableArea : this);
 
     if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
         m_scrollAnchor.save();
@@ -3381,8 +3390,15 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
     frame().loader().saveScrollState();
     frame().loader().client()->didChangeScrollOffset();
 
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && scrollType != AnchoringScroll)
-        m_scrollAnchor.clear();
+    if (scrollType != AnchoringScroll)
+        clearScrollAnchor();
+}
+
+void FrameView::clearScrollAnchor()
+{
+    if (!RuntimeEnabledFeatures::scrollAnchoringEnabled())
+        return;
+    m_scrollAnchor.clear();
 }
 
 void FrameView::windowResizerRectChanged()

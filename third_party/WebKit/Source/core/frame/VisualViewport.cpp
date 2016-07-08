@@ -264,8 +264,14 @@ double VisualViewport::pageScale()
 
 void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location)
 {
+    if (didSetScaleOrLocation(scale, location))
+        clearScrollAnchor();
+}
+
+bool VisualViewport::didSetScaleOrLocation(float scale, const FloatPoint& location)
+{
     if (!mainFrame())
-        return;
+        return false;
 
     bool valuesChanged = false;
 
@@ -298,12 +304,23 @@ void VisualViewport::setScaleAndLocation(float scale, const FloatPoint& location
     }
 
     if (!valuesChanged)
-        return;
+        return false;
 
     InspectorInstrumentation::didUpdateLayout(mainFrame());
     mainFrame()->loader().saveScrollState();
 
     clampToBoundaries();
+
+    return true;
+}
+
+void VisualViewport::clearScrollAnchor()
+{
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled()) {
+        LocalFrame* frame = mainFrame();
+        if (frame && frame->view())
+            frame->view()->clearScrollAnchor();
+    }
 }
 
 bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta, const FloatPoint& anchor)
@@ -599,9 +616,10 @@ IntSize VisualViewport::contentsSize() const
     return frame->view()->visibleContentRect(IncludeScrollbars).size();
 }
 
-void VisualViewport::setScrollOffset(const DoublePoint& offset, ScrollType)
+void VisualViewport::setScrollOffset(const DoublePoint& offset, ScrollType scrollType)
 {
-    setLocation(toFloatPoint(offset));
+    if (didSetScaleOrLocation(m_scale, toFloatPoint(offset)) && scrollType != AnchoringScroll)
+        clearScrollAnchor();
 }
 
 GraphicsLayer* VisualViewport::layerForContainer() const

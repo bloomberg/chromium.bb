@@ -19,8 +19,16 @@ class CORE_EXPORT ScrollAnchor final {
     DISALLOW_NEW();
 
 public:
-    ScrollAnchor(ScrollableArea*);
+    ScrollAnchor();
+    explicit ScrollAnchor(ScrollableArea*);
     ~ScrollAnchor();
+
+    // The scroller that is scrolled to componsate for layout movements. Note
+    // that the scroller can only be initialized once.
+    void setScroller(ScrollableArea*);
+
+    // Returns true if the underlying scroller is set.
+    bool hasScroller() const { return m_scroller; }
 
     // The LayoutObject we are currently anchored to. Lazily computed during
     // save() and cached until the next call to clear().

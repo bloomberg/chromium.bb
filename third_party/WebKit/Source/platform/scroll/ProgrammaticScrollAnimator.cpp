@@ -35,7 +35,7 @@ void ProgrammaticScrollAnimator::resetAnimationState()
 
 void ProgrammaticScrollAnimator::notifyPositionChanged(const DoublePoint& offset)
 {
-    m_scrollableArea->scrollPositionChanged(offset, ProgrammaticScroll);
+    scrollPositionChanged(offset, ProgrammaticScroll);
 }
 
 void ProgrammaticScrollAnimator::scrollToOffsetWithoutAnimation(const FloatPoint& offset)

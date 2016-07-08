@@ -293,11 +293,18 @@ void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations()
     updateImplOnlyCompositorAnimations();
 }
 
+void ScrollAnimatorCompositorCoordinator::scrollPositionChanged(
+    const DoublePoint& offset, ScrollType scrollType)
+{
+    getScrollableArea()->scrollPositionChanged(offset, scrollType);
+}
+
 void ScrollAnimatorCompositorCoordinator::adjustAnimationAndSetScrollPosition(
-    IntSize adjustment, ScrollType scrollType) {
+    const DoublePoint& position, ScrollType scrollType)
+{
     // Subclasses should override this and adjust the animation as necessary.
-    getScrollableArea()->setScrollPosition(
-        getScrollableArea()->scrollPositionDouble() + adjustment, scrollType);
+    DoublePoint adjustedPos = getScrollableArea()->clampScrollPosition(position);
+    scrollPositionChanged(adjustedPos, scrollType);
 }
 
 void ScrollAnimatorCompositorCoordinator::adjustImplOnlyScrollOffsetAnimation(

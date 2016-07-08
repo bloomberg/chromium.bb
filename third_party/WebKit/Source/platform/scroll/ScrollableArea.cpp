@@ -193,8 +193,10 @@ void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollType s
 
     switch (scrollType) {
     case CompositorScroll:
-    case AnchoringScroll:
         scrollPositionChanged(clampScrollPosition(position), scrollType);
+        break;
+    case AnchoringScroll:
+        scrollAnimator().adjustAnimationAndSetScrollPosition(position, scrollType);
         break;
     case ProgrammaticScroll:
         programmaticScrollHelper(position, behavior);

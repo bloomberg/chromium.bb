@@ -226,6 +226,10 @@ public:
 private:
     explicit VisualViewport(FrameHost&);
 
+    bool didSetScaleOrLocation(float scale, const FloatPoint& location);
+
+    void clearScrollAnchor();
+
     bool visualViewportSuppliesScrollbars() const;
 
     void updateStyleAndLayoutIgnorePendingStylesheets();

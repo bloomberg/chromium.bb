@@ -88,7 +88,7 @@ FloatPoint ScrollAnimatorBase::currentPosition() const
 
 void ScrollAnimatorBase::notifyPositionChanged()
 {
-    m_scrollableArea->scrollPositionChanged(m_currentPos, UserScroll);
+    scrollPositionChanged(m_currentPos, UserScroll);
 }
 
 DEFINE_TRACE(ScrollAnimatorBase)

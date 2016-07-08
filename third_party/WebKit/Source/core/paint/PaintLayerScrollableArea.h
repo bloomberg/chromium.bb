@@ -393,6 +393,7 @@ public:
 
     IntRect resizerCornerRect(const IntRect&, ResizerHitTestType) const;
 
+    // TODO(ymalik): Remove box() and update callers to use layoutBox() instead.
     LayoutBox& box() const;
     PaintLayer* layer() const;
 
@@ -407,6 +408,8 @@ public:
     Widget* getWidget() override;
     ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
     bool isPaintLayerScrollableArea() const override { return true; }
+
+    LayoutBox* layoutBox() const override { return &box(); }
 
     bool shouldRebuildHorizontalScrollbarLayer() const { return m_rebuildHorizontalScrollbarLayer; }
     bool shouldRebuildVerticalScrollbarLayer() const { return m_rebuildVerticalScrollbarLayer; }

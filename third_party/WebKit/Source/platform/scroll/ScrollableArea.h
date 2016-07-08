@@ -44,6 +44,7 @@ class DoubleRect;
 class FloatPoint;
 class GraphicsLayer;
 class HostWindow;
+class LayoutBox;
 class PlatformWheelEvent;
 class ProgrammaticScrollAnimator;
 struct ScrollAlignment;
@@ -271,8 +272,11 @@ public:
     // Returns the widget associated with this ScrollableArea.
     virtual Widget* getWidget() { return nullptr; }
 
+    virtual LayoutBox* layoutBox() const { return nullptr; }
+
     virtual bool isFrameView() const { return false; }
     virtual bool isPaintLayerScrollableArea() const { return false; }
+    virtual bool isRootFrameViewport() const { return false; }
 
     // Need to promptly let go of owned animator objects.
     EAGERLY_FINALIZE();
@@ -290,8 +294,7 @@ protected:
     void resetScrollOriginChanged() { m_scrollOriginChanged = false; }
 
     // Needed to let the animators call scrollPositionChanged.
-    friend class ScrollAnimatorBase;
-    friend class ProgrammaticScrollAnimator;
+    friend class ScrollAnimatorCompositorCoordinator;
     void scrollPositionChanged(const DoublePoint&, ScrollType);
 
     bool horizontalScrollbarNeedsPaintInvalidation() const { return m_horizontalScrollbarNeedsPaintInvalidation; }

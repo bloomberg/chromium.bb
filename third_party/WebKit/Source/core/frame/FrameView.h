@@ -393,6 +393,7 @@ public:
     bool shouldPlaceVerticalScrollbarOnLeft() const override;
     Widget* getWidget() override;
     CompositorAnimationTimeline* compositorAnimationTimeline() const override;
+    LayoutBox* layoutBox() const override { return layoutView(); }
 
     LayoutRect scrollIntoView(
         const LayoutRect& rectInContent,
@@ -606,6 +607,7 @@ public:
     FloatSize viewportSizeForViewportUnits() const;
 
     ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
+    void clearScrollAnchor();
 
     // For PaintInvalidator temporarily. TODO(wangxianzhu): Move into PaintInvalidator.
     void invalidatePaintIfNeeded(const PaintInvalidationState&);

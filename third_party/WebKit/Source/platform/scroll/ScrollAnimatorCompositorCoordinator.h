@@ -46,7 +46,7 @@ public:
     virtual void takeOverCompositorAnimation();
     // Updates the scroll position of the animator's ScrollableArea by
     // adjustment and update the target of an ongoing scroll offset animation.
-    virtual void adjustAnimationAndSetScrollPosition(IntSize adjustment, ScrollType);
+    virtual void adjustAnimationAndSetScrollPosition(const DoublePoint& position, ScrollType);
     virtual void updateCompositorAnimations();
 
     virtual ScrollableArea* getScrollableArea() const = 0;
@@ -59,6 +59,8 @@ public:
 
 protected:
     explicit ScrollAnimatorCompositorCoordinator();
+
+    void scrollPositionChanged(const DoublePoint& offset, ScrollType);
 
     void adjustImplOnlyScrollOffsetAnimation(const IntSize& adjustment);
     IntSize implOnlyAnimationAdjustmentForTesting() { return m_implOnlyAnimationAdjustment; }

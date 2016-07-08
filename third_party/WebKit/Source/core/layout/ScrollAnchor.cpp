@@ -16,37 +16,42 @@ using Corner = ScrollAnchor::Corner;
 
 static const int kMaxAdjustments = 20;
 
-ScrollAnchor::ScrollAnchor(ScrollableArea* scroller)
-    : m_scroller(scroller)
-    , m_hasBounced(false)
+ScrollAnchor::ScrollAnchor()
+    : m_hasBounced(false)
     , m_adjustmentCount(0)
 {
-    ASSERT(m_scroller);
-    ASSERT(m_scroller->isFrameView() || m_scroller->isPaintLayerScrollableArea());
+}
+
+ScrollAnchor::ScrollAnchor(ScrollableArea* scroller)
+    : ScrollAnchor()
+{
+    setScroller(scroller);
 }
 
 ScrollAnchor::~ScrollAnchor()
 {
 }
 
+void ScrollAnchor::setScroller(ScrollableArea* scroller)
+{
+    DCHECK(!m_scroller);
+    DCHECK(scroller);
+    DCHECK(scroller->isRootFrameViewport() || scroller->isFrameView() || scroller->isPaintLayerScrollableArea());
+    m_scroller = scroller;
+}
+
 // TODO(pilgrim) replace all instances of scrollerLayoutBox with scrollerLayoutBoxItem
 // https://crbug.com/499321
 static LayoutBox* scrollerLayoutBox(const ScrollableArea* scroller)
 {
-    LayoutBox* box = scroller->isFrameView()
-        ? toFrameView(scroller)->layoutView()
-        : &toPaintLayerScrollableArea(scroller)->box();
-    ASSERT(box);
+    LayoutBox* box = scroller->layoutBox();
+    DCHECK(box);
     return box;
 }
 
 static LayoutBoxItem scrollerLayoutBoxItem(const ScrollableArea* scroller)
 {
-    LayoutBoxItem box = scroller->isFrameView()
-        ? toFrameView(scroller)->layoutViewItem()
-        : LayoutBoxItem(&toPaintLayerScrollableArea(scroller)->box());
-    ASSERT(!box.isNull());
-    return box;
+    return LayoutBoxItem(scrollerLayoutBox(scroller));
 }
 
 static Corner cornerFromCandidateRect(const LayoutObject* layoutObject)
@@ -97,7 +102,7 @@ static LayoutRect relativeBounds(const LayoutObject* layoutObject, const Scrolla
     // part of the scroll offset so that the rounding in restore() matches the snapping of
     // the anchor node to the pixel grid of the layer it paints into. For non-FrameView
     // scrollers, we rely on the flooring behavior of LayoutBox::scrolledContentOffset.
-    if (scroller->isFrameView())
+    if (scroller->isFrameView() || scroller->isRootFrameViewport())
         relativeBounds.moveBy(-flooredIntPoint(scroller->scrollPositionDouble()));
     return relativeBounds;
 }
@@ -187,6 +192,7 @@ void ScrollAnchor::findAnchor()
 
 void ScrollAnchor::save()
 {
+    DCHECK(m_scroller);
     if (m_scroller->scrollPosition() == IntPoint::zero()) {
         clear();
         return;
@@ -234,6 +240,7 @@ IntSize ScrollAnchor::computeAdjustment(const AnchorPoint& anchorPoint) const
 
 void ScrollAnchor::restore()
 {
+    DCHECK(m_scroller);
     if (m_lastAdjusted && m_lastAdjusted.m_anchorObject != m_current.m_anchorObject
         && !m_hasBounced && computeAdjustment(m_lastAdjusted) == -m_lastAdjustment) {
         // If previous anchor point has bounced, follow the bounce.
@@ -262,7 +269,7 @@ void ScrollAnchor::restore()
 
 void ScrollAnchor::adjust(IntSize adjustment)
 {
-    m_scroller->scrollAnimator().adjustAnimationAndSetScrollPosition(adjustment, AnchoringScroll);
+    m_scroller->setScrollPosition(m_scroller->scrollPositionDouble() + adjustment, AnchoringScroll);
 
     if (m_current && m_lastAdjusted.m_anchorObject != m_current.m_anchorObject) {
         m_lastAdjusted.clear();

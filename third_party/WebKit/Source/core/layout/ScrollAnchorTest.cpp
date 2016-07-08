@@ -4,6 +4,8 @@
 
 #include "core/layout/ScrollAnchor.h"
 
+#include "core/dom/ClientRect.h"
+#include "core/frame/VisualViewport.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayerScrollableArea.h"
@@ -28,6 +30,11 @@ protected:
     ScrollableArea* layoutViewport()
     {
         return document().view()->layoutViewportScrollableArea();
+    }
+
+    VisualViewport& visualViewport()
+    {
+        return document().view()->page()->frameHost().visualViewport();
     }
 
     ScrollableArea* scrollerForElement(Element* element)
@@ -109,6 +116,43 @@ TEST_F(ScrollAnchorTest, Basic)
     // ScrollableArea::userScroll should clear the anchor.
     viewport->userScroll(ScrollByPrecisePixel, FloatSize(0, 100));
     EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
+}
+
+TEST_F(ScrollAnchorTest, VisualViewportAnchors)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    * { font-size: 1.2em; font-family: sans-serif; }"
+        "    div { height: 100px; width: 20px; background-color: pink; }"
+        "</style>"
+        "<div id='div'></div>"
+        "<div id='text'><b>This is a scroll anchoring test</div>");
+
+    ScrollableArea* lViewport = layoutViewport();
+    VisualViewport& vViewport = visualViewport();
+
+    vViewport.setScale(2.0);
+
+    // No anchor at origin (0,0).
+    EXPECT_EQ(nullptr, scrollAnchor(lViewport).anchorObject());
+
+    // Scroll the visual viewport to bring #text to the top.
+    int top = document().getElementById("text")->getBoundingClientRect()->top();
+    vViewport.setLocation(FloatPoint(0, top));
+
+    setHeight(document().getElementById("div"), 10);
+    EXPECT_EQ(document().getElementById("text")->layoutObject(),
+        scrollAnchor(lViewport).anchorObject());
+    EXPECT_EQ(top - 90, vViewport.scrollPosition().y());
+
+    setHeight(document().getElementById("div"), 100);
+    EXPECT_EQ(document().getElementById("text")->layoutObject(),
+        scrollAnchor(lViewport).anchorObject());
+    EXPECT_EQ(top, vViewport.scrollPosition().y());
+
+    // Scrolling the visual viewport should clear the anchor.
+    vViewport.setLocation(FloatPoint(0, 0));
+    EXPECT_EQ(nullptr, scrollAnchor(lViewport).anchorObject());
 }
 
 TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing)
