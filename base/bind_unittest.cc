@@ -1038,6 +1038,36 @@ TEST_F(BindTest, ArgumentCopiesAndMoves) {
   EXPECT_EQ(0, move_assigns);
 }
 
+TEST_F(BindTest, CapturelessLambda) {
+  EXPECT_FALSE(internal::IsConvertibleToRunType<void>::value);
+  EXPECT_FALSE(internal::IsConvertibleToRunType<int>::value);
+  EXPECT_FALSE(internal::IsConvertibleToRunType<void(*)()>::value);
+  EXPECT_FALSE(internal::IsConvertibleToRunType<void(NoRef::*)()>::value);
+
+  auto f = []() {};
+  EXPECT_TRUE(internal::IsConvertibleToRunType<decltype(f)>::value);
+
+  int i = 0;
+  auto g = [i]() {};
+  EXPECT_FALSE(internal::IsConvertibleToRunType<decltype(g)>::value);
+
+  auto h = [](int, double) { return 'k'; };
+  EXPECT_TRUE((std::is_same<
+      char(int, double),
+      internal::ExtractCallableRunType<decltype(h)>>::value));
+
+  EXPECT_EQ(42, Bind([] { return 42; }).Run());
+  EXPECT_EQ(42, Bind([](int i) { return i * 7; }, 6).Run());
+
+  int x = 1;
+  base::Callback<void(int)> cb =
+      Bind([](int* x, int i) { *x *= i; }, Unretained(&x));
+  cb.Run(6);
+  EXPECT_EQ(6, x);
+  cb.Run(7);
+  EXPECT_EQ(42, x);
+}
+
 // Callback construction and assignment tests.
 //   - Construction from an InvokerStorageHolder should not cause ref/deref.
 //   - Assignment from other callback should only cause one ref
