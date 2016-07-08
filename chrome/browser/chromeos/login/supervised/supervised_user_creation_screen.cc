@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 
 #include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "base/rand_util.h"
 #include "base/values.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_controller_new.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
@@ -375,13 +375,8 @@ void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
   // during the user image picker step are below it.
   ash::Shell::GetInstance()->
       desktop_background_controller()->MoveDesktopToLockedContainer();
-
-  // Hide the status area and the control bar, since they will show up at the
-  // logged in users's preferred location, which could be on the left or right
-  // side of the screen.
-  LoginDisplayHost* default_host = LoginDisplayHost::default_host();
-  default_host->SetStatusAreaVisible(false);
-  default_host->GetOobeUI()->GetCoreOobeActor()->ShowControlBar(false);
+  ash::Shelf::ForPrimaryDisplay()->SetAlignment(
+      ash::ShelfAlignment::SHELF_ALIGNMENT_BOTTOM_LOCKED);
 
   controller_->SetManagerProfile(manager_profile);
   if (actor_)
