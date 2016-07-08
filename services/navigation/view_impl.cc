@@ -60,7 +60,7 @@ ViewImpl::ViewImpl(shell::Connector* connector,
                    const std::string& client_user_id,
                    mojom::ViewClientPtr client,
                    mojom::ViewRequest request,
-                   std::unique_ptr<shell::ShellConnectionRef> ref)
+                   std::unique_ptr<shell::ServiceContextRef> ref)
     : connector_(connector),
       binding_(this, std::move(request)),
       client_(std::move(client)),

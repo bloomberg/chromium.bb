@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/shell/public/cpp/shell_connection_ref.h"
+#include "services/shell/public/cpp/service_context_ref.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -12,10 +12,10 @@
 
 namespace shell {
 
-class ShellConnectionRefImpl : public ShellConnectionRef {
+class ServiceContextRefImpl : public ServiceContextRef {
  public:
-  ShellConnectionRefImpl(
-      base::WeakPtr<ShellConnectionRefFactory> factory,
+  ServiceContextRefImpl(
+      base::WeakPtr<ServiceContextRefFactory> factory,
       scoped_refptr<base::SingleThreadTaskRunner> service_task_runner)
       : factory_(factory),
         service_task_runner_(service_task_runner) {
@@ -24,7 +24,7 @@ class ShellConnectionRefImpl : public ShellConnectionRef {
     thread_checker_.DetachFromThread();
   }
 
-  ~ShellConnectionRefImpl() override {
+  ~ServiceContextRefImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     if (service_task_runner_->BelongsToCurrentThread() && factory_) {
@@ -32,13 +32,13 @@ class ShellConnectionRefImpl : public ShellConnectionRef {
     } else {
       service_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&ShellConnectionRefFactory::Release, factory_));
+          base::Bind(&ServiceContextRefFactory::Release, factory_));
     }
   }
 
  private:
-  // ShellConnectionRef:
-  std::unique_ptr<ShellConnectionRef> Clone() override {
+  // ServiceContextRef:
+  std::unique_ptr<ServiceContextRef> Clone() override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
     if (service_task_runner_->BelongsToCurrentThread() && factory_) {
@@ -46,40 +46,40 @@ class ShellConnectionRefImpl : public ShellConnectionRef {
     } else {
       service_task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&ShellConnectionRefFactory::AddRef, factory_));
+          base::Bind(&ServiceContextRefFactory::AddRef, factory_));
     }
 
     return base::WrapUnique(
-        new ShellConnectionRefImpl(factory_, service_task_runner_));
+        new ServiceContextRefImpl(factory_, service_task_runner_));
   }
 
-  base::WeakPtr<ShellConnectionRefFactory> factory_;
+  base::WeakPtr<ServiceContextRefFactory> factory_;
   scoped_refptr<base::SingleThreadTaskRunner> service_task_runner_;
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellConnectionRefImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceContextRefImpl);
 };
 
-ShellConnectionRefFactory::ShellConnectionRefFactory(
+ServiceContextRefFactory::ServiceContextRefFactory(
     const base::Closure& quit_closure)
     : quit_closure_(quit_closure), weak_factory_(this) {
   DCHECK(!quit_closure_.is_null());
 }
 
-ShellConnectionRefFactory::~ShellConnectionRefFactory() {}
+ServiceContextRefFactory::~ServiceContextRefFactory() {}
 
-std::unique_ptr<ShellConnectionRef> ShellConnectionRefFactory::CreateRef() {
+std::unique_ptr<ServiceContextRef> ServiceContextRefFactory::CreateRef() {
   AddRef();
   return base::WrapUnique(
-      new ShellConnectionRefImpl(weak_factory_.GetWeakPtr(),
+      new ServiceContextRefImpl(weak_factory_.GetWeakPtr(),
                                  base::ThreadTaskRunnerHandle::Get()));
 }
 
-void ShellConnectionRefFactory::AddRef() {
+void ServiceContextRefFactory::AddRef() {
   ++ref_count_;
 }
 
-void ShellConnectionRefFactory::Release() {
+void ServiceContextRefFactory::Release() {
   if (!--ref_count_)
     quit_closure_.Run();
 }

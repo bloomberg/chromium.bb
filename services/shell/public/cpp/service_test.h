@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -91,7 +91,7 @@ class ServiceTest : public testing::Test {
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<BackgroundShell> background_shell_;
-  std::unique_ptr<ShellConnection> shell_connection_;
+  std::unique_ptr<ServiceContext> service_context_;
 
   // See constructor.
   std::string test_name_;

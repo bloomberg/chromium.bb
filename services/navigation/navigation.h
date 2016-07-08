@@ -9,7 +9,7 @@
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection_ref.h"
+#include "services/shell/public/cpp/service_context_ref.h"
 
 namespace content {
 class BrowserContext;
@@ -44,8 +44,8 @@ class Navigation : public shell::Service,
   shell::Connector* connector_ = nullptr;
   std::string client_user_id_;
 
-  shell::ShellConnectionRefFactory ref_factory_;
-  std::set<std::unique_ptr<shell::ShellConnectionRef>> refs_;
+  shell::ServiceContextRefFactory ref_factory_;
+  std::set<std::unique_ptr<shell::ServiceContextRef>> refs_;
 
   mojo::BindingSet<mojom::ViewFactory> bindings_;
 

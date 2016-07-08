@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -18,10 +18,10 @@
 namespace shell {
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellConnection, public:
+// ServiceContext, public:
 
-ShellConnection::ShellConnection(shell::Service* client,
-                                 mojom::ServiceRequest request)
+ServiceContext::ServiceContext(shell::Service* client,
+                               mojom::ServiceRequest request)
     : client_(client), binding_(this) {
   mojom::ConnectorPtr connector;
   pending_connector_request_ = GetProxy(&connector);
@@ -31,19 +31,19 @@ ShellConnection::ShellConnection(shell::Service* client,
   binding_.Bind(std::move(request));
 }
 
-ShellConnection::~ShellConnection() {}
+ServiceContext::~ServiceContext() {}
 
-void ShellConnection::set_initialize_handler(const base::Closure& callback) {
+void ServiceContext::set_initialize_handler(const base::Closure& callback) {
   initialize_handler_ = callback;
 }
 
-void ShellConnection::SetAppTestConnectorForTesting(
+void ServiceContext::SetAppTestConnectorForTesting(
     mojom::ConnectorPtr connector) {
   pending_connector_request_ = nullptr;
   connector_.reset(new ConnectorImpl(std::move(connector)));
 }
 
-void ShellConnection::SetConnectionLostClosure(const base::Closure& closure) {
+void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
   connection_lost_closure_ = closure;
   if (should_run_connection_lost_closure_ &&
       !connection_lost_closure_.is_null())
@@ -51,11 +51,11 @@ void ShellConnection::SetConnectionLostClosure(const base::Closure& closure) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellConnection, mojom::Service implementation:
+// ServiceContext, mojom::Service implementation:
 
-void ShellConnection::OnStart(mojom::IdentityPtr identity,
-                              uint32_t id,
-                              const OnStartCallback& callback) {
+void ServiceContext::OnStart(mojom::IdentityPtr identity,
+                             uint32_t id,
+                             const OnStartCallback& callback) {
   identity_ = identity.To<Identity>();
   if (!initialize_handler_.is_null())
     initialize_handler_.Run();
@@ -64,12 +64,12 @@ void ShellConnection::OnStart(mojom::IdentityPtr identity,
 
   DCHECK(binding_.is_bound());
   binding_.set_connection_error_handler(
-      base::Bind(&ShellConnection::OnConnectionError, base::Unretained(this)));
+      base::Bind(&ServiceContext::OnConnectionError, base::Unretained(this)));
 
   client_->OnStart(connector_.get(), identity_, id);
 }
 
-void ShellConnection::OnConnect(
+void ServiceContext::OnConnect(
     mojom::IdentityPtr source,
     uint32_t source_id,
     mojom::InterfaceProviderRequest local_interfaces,
@@ -112,9 +112,9 @@ void ShellConnection::OnConnect(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShellConnection, private:
+// ServiceContext, private:
 
-void ShellConnection::OnConnectionError() {
+void ServiceContext::OnConnectionError() {
   // Note that the Service doesn't technically have to quit now, it may live
   // on to service existing connections. All existing Connectors however are
   // invalid.

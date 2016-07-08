@@ -13,7 +13,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
 
 namespace content {
@@ -32,7 +32,7 @@ class MojoShellConnectionImpl
 
  private:
   // MojoShellConnection:
-  shell::ShellConnection* GetShellConnection() override;
+  shell::ServiceContext* GetShellConnection() override;
   shell::Connector* GetConnector() override;
   const shell::Identity& GetIdentity() const override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
@@ -60,7 +60,7 @@ class MojoShellConnectionImpl
   void CreateService(shell::mojom::ServiceRequest request,
                          const mojo::String& name) override;
 
-  std::unique_ptr<shell::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ServiceContext> shell_connection_;
   mojo::BindingSet<shell::mojom::ServiceFactory> factory_bindings_;
   std::vector<shell::Service*> embedded_services_;
   std::vector<std::unique_ptr<shell::Service>> owned_services_;

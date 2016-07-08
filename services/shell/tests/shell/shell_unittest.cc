@@ -25,16 +25,16 @@ namespace shell {
 
 namespace {
 
-class ServiceTestClient
+class ShellTestClient
     : public test::ServiceTestClient,
       public InterfaceFactory<test::mojom::CreateInstanceTest>,
       public test::mojom::CreateInstanceTest {
  public:
-  explicit ServiceTestClient(test::ServiceTest* test)
+  explicit ShellTestClient(test::ServiceTest* test)
       : test::ServiceTestClient(test),
         target_id_(shell::mojom::kInvalidInstanceID),
         binding_(this) {}
-  ~ServiceTestClient() override {}
+  ~ShellTestClient() override {}
 
   uint32_t target_id() const { return target_id_; }
 
@@ -62,19 +62,19 @@ class ServiceTestClient
 
   mojo::Binding<test::mojom::CreateInstanceTest> binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceTestClient);
+  DISALLOW_COPY_AND_ASSIGN(ShellTestClient);
 };
 
 }  // namespace
 
-class ServiceTest : public test::ServiceTest,
+class ShellTest : public test::ServiceTest,
                   public mojom::ServiceManagerListener {
  public:
-  ServiceTest()
+  ShellTest()
       : test::ServiceTest("mojo:shell_unittest"),
         service_(nullptr),
         binding_(this) {}
-  ~ServiceTest() override {}
+  ~ShellTest() override {}
 
   void OnDriverQuit() {
     base::MessageLoop::current()->QuitNow();
@@ -124,7 +124,7 @@ class ServiceTest : public test::ServiceTest,
  private:
   // test::ServiceTest:
   std::unique_ptr<Service> CreateService() override {
-    service_ = new ServiceTestClient(this);
+    service_ = new ShellTestClient(this);
     return base::WrapUnique(service_);
   }
 
@@ -159,16 +159,16 @@ class ServiceTest : public test::ServiceTest,
     }
   }
 
-  ServiceTestClient* service_;
+  ShellTestClient* service_;
   mojo::Binding<mojom::ServiceManagerListener> binding_;
   std::vector<InstanceInfo> instances_;
   std::vector<InstanceInfo> initial_instances_;
   std::unique_ptr<base::RunLoop> wait_for_instances_loop_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceTest);
+  DISALLOW_COPY_AND_ASSIGN(ShellTest);
 };
 
-TEST_F(ServiceTest, CreateInstance) {
+TEST_F(ShellTest, CreateInstance) {
   AddListenerAndWaitForApplications();
 
   // 1. Launch a process. (Actually, have the runner launch a process that
@@ -209,7 +209,7 @@ TEST_F(ServiceTest, CreateInstance) {
   }
 
   driver.set_connection_error_handler(
-      base::Bind(&ServiceTest::OnDriverQuit,
+      base::Bind(&ShellTest::OnDriverQuit,
                  base::Unretained(this)));
   driver->QuitDriver();
   base::RunLoop().Run();

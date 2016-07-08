@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 
 namespace content {
 
@@ -68,8 +68,8 @@ class EmbeddedApplicationRunner::Instance
           base::Bind(&Instance::Quit, base::Unretained(this)));
     }
 
-    shell::ShellConnection* new_connection =
-        new shell::ShellConnection(service_.get(), std::move(request));
+    shell::ServiceContext* new_connection =
+        new shell::ServiceContext(service_.get(), std::move(request));
     shell_connections_.push_back(base::WrapUnique(new_connection));
     new_connection->SetConnectionLostClosure(
         base::Bind(&Instance::OnStop, base::Unretained(this),
@@ -85,7 +85,7 @@ class EmbeddedApplicationRunner::Instance
     DCHECK(!thread_);
   }
 
-  void OnStop(shell::ShellConnection* connection) {
+  void OnStop(shell::ServiceContext* connection) {
     DCHECK(application_task_runner_->BelongsToCurrentThread());
 
     for (auto it = shell_connections_.begin(); it != shell_connections_.end();
@@ -130,7 +130,7 @@ class EmbeddedApplicationRunner::Instance
   // the destructor which may run on either the runner thread or the application
   // thread.
   std::unique_ptr<shell::Service> service_;
-  std::vector<std::unique_ptr<shell::ShellConnection>> shell_connections_;
+  std::vector<std::unique_ptr<shell::ServiceContext>> shell_connections_;
 
   DISALLOW_COPY_AND_ASSIGN(Instance);
 };

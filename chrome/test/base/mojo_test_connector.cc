@@ -23,7 +23,7 @@
 #include "services/shell/native_runner_delegate.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/service_manager.h"

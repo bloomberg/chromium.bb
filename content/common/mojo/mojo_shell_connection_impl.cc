@@ -10,7 +10,7 @@
 #include "base/threading/thread_local.h"
 #include "content/common/mojo/embedded_application_runner.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/runner/common/client_util.h"
 
 namespace content {
@@ -70,7 +70,7 @@ MojoShellConnection::~MojoShellConnection() {}
 
 MojoShellConnectionImpl::MojoShellConnectionImpl(
     shell::mojom::ServiceRequest request)
-    : shell_connection_(new shell::ShellConnection(this, std::move(request))) {}
+    : shell_connection_(new shell::ServiceContext(this, std::move(request))) {}
 
 MojoShellConnectionImpl::~MojoShellConnectionImpl() {}
 
@@ -150,7 +150,7 @@ void MojoShellConnectionImpl::CreateService(
 ////////////////////////////////////////////////////////////////////////////////
 // MojoShellConnectionImpl, MojoShellConnection implementation:
 
-shell::ShellConnection* MojoShellConnectionImpl::GetShellConnection() {
+shell::ServiceContext* MojoShellConnectionImpl::GetShellConnection() {
   return shell_connection_.get();
 }
 

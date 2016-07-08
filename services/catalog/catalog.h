@@ -29,7 +29,7 @@ class LockTable;
 }
 
 namespace shell {
-class ShellConnection;
+class ServiceContext;
 }
 
 namespace catalog {
@@ -85,7 +85,7 @@ class Catalog : public shell::Service,
   std::unique_ptr<Store> store_;
 
   shell::mojom::ServicePtr service_;
-  std::unique_ptr<shell::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ServiceContext> shell_connection_;
 
   std::map<std::string, std::unique_ptr<Instance>> instances_;
 

@@ -10,7 +10,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/application_runner.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/tests/lifecycle/app_client.h"
 #include "services/shell/tests/lifecycle/lifecycle_unittest.mojom.h"
@@ -26,7 +26,7 @@ class PackagedApp : public shell::Service,
   PackagedApp(shell::mojom::ServiceRequest request,
               const DestructCallback& shell_connection_closed_callback,
               const DestructCallback& destruct_callback)
-      : connection_(new shell::ShellConnection(this, std::move(request))),
+      : connection_(new shell::ServiceContext(this, std::move(request))),
         shell_connection_closed_callback_(shell_connection_closed_callback),
         destruct_callback_(destruct_callback) {
     bindings_.set_connection_error_handler(base::Bind(&PackagedApp::BindingLost,
@@ -75,7 +75,7 @@ class PackagedApp : public shell::Service,
       delete this;
   }
 
-  std::unique_ptr<shell::ShellConnection> connection_;
+  std::unique_ptr<shell::ServiceContext> connection_;
   mojo::BindingSet<LifecycleControl> bindings_;
   // Run when this object's connection to the shell is closed.
   DestructCallback shell_connection_closed_callback_;

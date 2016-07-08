@@ -12,7 +12,7 @@
 #include "services/shell/background/tests/test_catalog_store.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace shell {
@@ -62,10 +62,10 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
   init_params->catalog_store = std::move(store_ptr);
   background_shell.Init(std::move(init_params));
   ServiceImpl service;
-  ShellConnection shell_connection(
+  ServiceContext service_context(
       &service, background_shell.CreateServiceRequest(kTestName));
   mojom::TestServicePtr test_service;
-  shell_connection.connector()->ConnectToInterface(
+  service_context.connector()->ConnectToInterface(
       "mojo:background_shell_test_app", &test_service);
   base::RunLoop run_loop;
   bool got_result = false;

@@ -4,14 +4,14 @@
 
 #include "services/shell/tests/lifecycle/app_client.h"
 
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 
 namespace shell {
 namespace test {
 
 AppClient::AppClient() {}
 AppClient::AppClient(shell::mojom::ServiceRequest request)
-    : connection_(new ShellConnection(this, std::move(request))) {}
+    : context_(new ServiceContext(this, std::move(request))) {}
 AppClient::~AppClient() {}
 
 bool AppClient::OnConnect(Connection* connection) {
@@ -41,7 +41,7 @@ void AppClient::Crash() {
 
 void AppClient::CloseShellConnection() {
   DCHECK(runner_);
-  runner_->DestroyShellConnection();
+  runner_->DestroyServiceContext();
   // Quit the app once the caller goes away.
   bindings_.set_connection_error_handler(
       base::Bind(&AppClient::BindingLost, base::Unretained(this)));

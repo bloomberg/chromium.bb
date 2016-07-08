@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "mojo/common/common_type_converters.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/cpp/service_test.h"
-#include "services/shell/public/cpp/shell_connection.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 
 using mojo::Array;

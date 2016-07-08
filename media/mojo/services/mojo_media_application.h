@@ -16,7 +16,7 @@
 #include "media/mojo/services/media_mojo_export.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection_ref.h"
+#include "services/shell/public/cpp/service_context_ref.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -51,7 +51,7 @@ class MEDIA_MOJO_EXPORT MojoMediaApplication
 
   shell::Connector* connector_;
   scoped_refptr<MediaLog> media_log_;
-  shell::ShellConnectionRefFactory ref_factory_;
+  shell::ServiceContextRefFactory ref_factory_;
 };
 
 }  // namespace media

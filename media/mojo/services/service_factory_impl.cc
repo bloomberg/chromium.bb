@@ -34,7 +34,7 @@ ServiceFactoryImpl::ServiceFactoryImpl(
     mojo::InterfaceRequest<mojom::ServiceFactory> request,
     shell::mojom::InterfaceProvider* interfaces,
     scoped_refptr<MediaLog> media_log,
-    std::unique_ptr<shell::ShellConnectionRef> connection_ref,
+    std::unique_ptr<shell::ServiceContextRef> connection_ref,
     MojoMediaClient* mojo_media_client)
     : binding_(this, std::move(request)),
 #if defined(ENABLE_MOJO_CDM)

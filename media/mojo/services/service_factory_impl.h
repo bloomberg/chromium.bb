@@ -12,7 +12,7 @@
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/connector.h"
-#include "services/shell/public/cpp/shell_connection_ref.h"
+#include "services/shell/public/cpp/service_context_ref.h"
 
 namespace shell {
 namespace mojom {
@@ -32,7 +32,7 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
   ServiceFactoryImpl(mojo::InterfaceRequest<mojom::ServiceFactory> request,
                      shell::mojom::InterfaceProvider* interfaces,
                      scoped_refptr<MediaLog> media_log,
-                     std::unique_ptr<shell::ShellConnectionRef> connection_ref,
+                     std::unique_ptr<shell::ServiceContextRef> connection_ref,
                      MojoMediaClient* mojo_media_client);
   ~ServiceFactoryImpl() final;
 
@@ -62,7 +62,7 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
 #endif
 
   scoped_refptr<MediaLog> media_log_;
-  std::unique_ptr<shell::ShellConnectionRef> connection_ref_;
+  std::unique_ptr<shell::ServiceContextRef> connection_ref_;
   MojoMediaClient* mojo_media_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);

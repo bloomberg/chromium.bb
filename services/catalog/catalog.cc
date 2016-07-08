@@ -18,7 +18,7 @@
 #include "services/catalog/instance.h"
 #include "services/catalog/reader.h"
 #include "services/shell/public/cpp/connection.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 
 namespace catalog {
 namespace {
@@ -92,7 +92,7 @@ shell::mojom::ServicePtr Catalog::TakeService() {
 Catalog::Catalog(std::unique_ptr<Store> store)
     : store_(std::move(store)), weak_factory_(this) {
   shell::mojom::ServiceRequest request = GetProxy(&service_);
-  shell_connection_.reset(new shell::ShellConnection(this, std::move(request)));
+  shell_connection_.reset(new shell::ServiceContext(this, std::move(request)));
 }
 
 void Catalog::ScanSystemPackageDir() {

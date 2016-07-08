@@ -63,16 +63,16 @@ void ServiceTest::SetUp() {
       base::MessageLoop::current());
   initialize_called_ = run_loop.QuitClosure();
 
-  shell_connection_.reset(new ShellConnection(
+  service_context_.reset(new ServiceContext(
       service_.get(),
       background_shell_->CreateServiceRequest(test_name_)));
-  connector_ = shell_connection_->connector();
+  connector_ = service_context_->connector();
 
   run_loop.Run();
 }
 
 void ServiceTest::TearDown() {
-  shell_connection_.reset();
+  service_context_.reset();
   background_shell_.reset();
   message_loop_.reset();
   service_.reset();

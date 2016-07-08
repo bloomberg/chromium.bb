@@ -16,13 +16,13 @@
 namespace shell {
 class Connection;
 class Connector;
-class ShellConnection;
+class ServiceContext;
 }
 
 namespace content {
 
 // Encapsulates a connection to a //services/shell.
-// Access a global instance on the thread the ShellConnection was bound by
+// Access a global instance on the thread the ServiceContext was bound by
 // calling Holder::Get().
 // Clients can add shell::Service implementations whose exposed interfaces
 // will be exposed to inbound connections to this object's Service.
@@ -59,9 +59,9 @@ class CONTENT_EXPORT MojoShellConnection {
   static std::unique_ptr<MojoShellConnection> Create(
       shell::mojom::ServiceRequest request);
 
-  // Returns the bound shell::ShellConnection object.
+  // Returns the bound shell::ServiceContext object.
   // TODO(rockot): remove.
-  virtual shell::ShellConnection* GetShellConnection() = 0;
+  virtual shell::ServiceContext* GetShellConnection() = 0;
 
   // Returns the shell::Connector received via this connection's Service
   // implementation. Use this to initiate connections as this object's Identity.

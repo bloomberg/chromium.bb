@@ -21,11 +21,6 @@ namespace content {
 class TestState;
 }
 
-namespace mojo {
-class Service;
-class ShellConnection;
-}
-
 // MojoTestConnector in responsible for providing the necessary wiring for
 // test processes to get a mojo channel passed to them.  To use this class
 // call PrepareForTest() prior to launching each test. It is expected

@@ -23,7 +23,7 @@
 #include "services/shell/connect_util.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/names.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/service.mojom.h"
 #include "services/shell/public/interfaces/service_manager.mojom.h"
@@ -497,7 +497,7 @@ ServiceManager::ServiceManager(
       Identity(), CreateServiceManagerIdentity(), GetPermissiveCapabilities());
   instance->StartWithService(std::move(service));
   singletons_.insert(kServiceManagerName);
-  shell_connection_.reset(new ShellConnection(this, std::move(request)));
+  service_context_.reset(new ServiceContext(this, std::move(request)));
 
   if (catalog)
     InitCatalog(std::move(catalog));

@@ -20,7 +20,7 @@ using LifecycleControl = shell::test::mojom::LifecycleControl;
 using LifecycleControlRequest = shell::test::mojom::LifecycleControlRequest;
 
 namespace shell {
-class ShellConnection;
+class ServiceContext;
 
 namespace test {
 
@@ -53,7 +53,7 @@ class AppClient : public Service,
 
   ApplicationRunner* runner_ = nullptr;
   mojo::BindingSet<LifecycleControl> bindings_;
-  std::unique_ptr<ShellConnection> connection_;
+  std::unique_ptr<ServiceContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(AppClient);
 };

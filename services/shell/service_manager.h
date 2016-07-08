@@ -27,7 +27,7 @@
 #include "services/shell/public/interfaces/service_manager.mojom.h"
 
 namespace shell {
-class ShellConnection;
+class ServiceContext;
 
 // Creates an identity for the Service Manager, used when the Service Manager
 // connects to services.
@@ -154,7 +154,7 @@ class ServiceManager : public Service {
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
   std::unique_ptr<NativeRunnerFactory> native_runner_factory_;
-  std::unique_ptr<ShellConnection> shell_connection_;
+  std::unique_ptr<ServiceContext> service_context_;
   base::WeakPtrFactory<ServiceManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);

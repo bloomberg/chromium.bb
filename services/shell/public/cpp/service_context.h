@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SHELL_PUBLIC_CPP_SHELL_CONNECTION_H_
-#define SERVICES_SHELL_PUBLIC_CPP_SHELL_CONNECTION_H_
+#ifndef SERVICES_SHELL_PUBLIC_CPP_SERVICE_CONTEXT_H_
+#define SERVICES_SHELL_PUBLIC_CPP_SERVICE_CONTEXT_H_
 
 #include <memory>
 #include <utility>
@@ -22,35 +22,35 @@ namespace shell {
 
 class Connector;
 
-// Encapsulates a connection to the Mojo Shell in two parts:
-// - a bound InterfacePtr to mojom::Shell, the primary mechanism
-//   by which the instantiating application interacts with other services
-//   brokered by the Mojo Shell.
-// - a bound InterfaceRequest of mojom::Service, an interface
-//   used by the Mojo Shell to inform this application of lifecycle events and
+// Encapsulates a connection to the Service Manager in two parts:
+// - a bound InterfacePtr to mojom::Connector, the primary mechanism
+//   by which the instantiating service connects to other services,
+//   brokered by the Service Manager.
+// - a bound InterfaceRequest of mojom::Service, an interface used by the
+//   Service Manager to inform this service of lifecycle events and
 //   inbound connections brokered by it.
 //
 // This class should be used in two scenarios:
 // - During early startup to bind the mojom::ServiceRequest obtained from
-//   the Mojo Shell, typically in response to either MojoMain() or main().
+//   the Service Manager, typically in response to either MojoMain() or main().
 // - In an implementation of mojom::ServiceFactory to bind the
-//   mojom::ServiceRequest passed via StartApplication. In this scenario
-//   there can be many instances of this class per process.
+//   mojom::ServiceRequest passed via CreateService. In this scenario there can
+//   be many instances of this class per process.
 //
-// Instances of this class are constructed with an implementation of the Shell
-// Client Lib's Service interface. See documentation in service.h
+// Instances of this class are constructed with an implementation of the Service
+// Manager Client Lib's Service interface. See documentation in service.h
 // for details.
 //
-class ShellConnection : public mojom::Service {
+class ServiceContext : public mojom::Service {
  public:
-  // Creates a new ShellConnection bound to |request|. This connection may be
+  // Creates a new ServiceContext bound to |request|. This connection may be
   // used immediately to make outgoing connections via connector().  Does not
   // take ownership of |client|, which must remain valid for the lifetime of
-  // ShellConnection.
-  ShellConnection(shell::Service* client,
-                  mojom::ServiceRequest request);
+  // ServiceContext.
+  ServiceContext(shell::Service* client,
+                 mojom::ServiceRequest request);
 
-  ~ShellConnection() override;
+  ~ServiceContext() override;
 
   Connector* connector() { return connector_.get(); }
   const Identity& identity() { return identity_; }
@@ -87,7 +87,8 @@ class ShellConnection : public mojom::Service {
   // convenient for the client.
   ScopedVector<Connection> incoming_connections_;
 
-  // A pending Connector request which will eventually be passed to the shell.
+  // A pending Connector request which will eventually be passed to the Service
+  // Manager.
   mojom::ConnectorRequest pending_connector_request_;
 
   shell::Service* client_;
@@ -98,9 +99,9 @@ class ShellConnection : public mojom::Service {
 
   base::Closure connection_lost_closure_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellConnection);
+  DISALLOW_COPY_AND_ASSIGN(ServiceContext);
 };
 
 }  // namespace shell
 
-#endif  // SERVICES_SHELL_PUBLIC_CPP_SHELL_CONNECTION_H_
+#endif  // SERVICES_SHELL_PUBLIC_CPP_SERVICE_CONTEXT_H_

@@ -37,12 +37,12 @@ source_set("sources") {
     "lib/interface_registry.cc",
     "lib/names.cc",
     "lib/service.cc",
-    "lib/shell_connection.cc",
-    "lib/shell_connection_ref.cc",
+    "lib/service_context.cc",
+    "lib/service_context_ref.cc",
     "names.h",
     "service.h",
-    "shell_connection.h",
-    "shell_connection_ref.h",
+    "service_context.h",
+    "service_context_ref.h",
   ]
 
   public_deps = [

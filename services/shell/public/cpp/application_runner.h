@@ -13,7 +13,7 @@
 namespace shell {
 
 class Service;
-class ShellConnection;
+class ServiceContext;
 
 // A utility for running a chromium based mojo Application. The typical use
 // case is to use when writing your MojoMain:
@@ -37,7 +37,7 @@ class ApplicationRunner {
   void set_message_loop_type(base::MessageLoop::Type type);
 
   // Once the various parameters have been set above, use Run to initialize an
-  // ShellConnection wired to the provided delegate, and run a MessageLoop until
+  // ServiceContext wired to the provided delegate, and run a MessageLoop until
   // the application exits.
   //
   // Iff |init_base| is true, the runner will perform some initialization of
@@ -48,18 +48,18 @@ class ApplicationRunner {
   // Calls Run above with |init_base| set to |true|.
   MojoResult Run(MojoHandle shell_handle);
 
-  // Allows the caller to shut down the connection with the shell. After the
-  // shell notices the pipe has closed, it will no longer track an instance of
-  // this application, though this application may continue to run and service
-  // requests from others.
-  void DestroyShellConnection();
+  // Allows the caller to shut down the connection with the Service Manager.
+  // After the Service Manager notices the pipe has closed, it will no longer
+  // track an instance of this service, though this service may continue to run
+  // and handle requests from others.
+  void DestroyServiceContext();
 
   // Allows the caller to explicitly quit the application. Must be called from
   // the thread which created the ApplicationRunner.
   void Quit();
 
  private:
-  std::unique_ptr<ShellConnection> connection_;
+  std::unique_ptr<ServiceContext> context_;
   std::unique_ptr<Service> client_;
 
   // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as

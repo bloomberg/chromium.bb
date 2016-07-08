@@ -11,7 +11,7 @@
 #include "base/process/launch.h"
 #include "base/run_loop.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 
 namespace shell {
 
@@ -51,12 +51,12 @@ MojoResult ApplicationRunner::Run(MojoHandle service_request_handle,
     std::unique_ptr<base::MessageLoop> loop;
     loop.reset(new base::MessageLoop(message_loop_type_));
 
-    connection_.reset(new ShellConnection(
+    context_.reset(new ServiceContext(
         client_.get(),
         mojo::MakeRequest<mojom::Service>(mojo::MakeScopedHandle(
             mojo::MessagePipeHandle(service_request_handle)))));
     base::RunLoop run_loop;
-    connection_->SetConnectionLostClosure(run_loop.QuitClosure());
+    context_->SetConnectionLostClosure(run_loop.QuitClosure());
     run_loop.Run();
     // It's very common for the client to cache the app and terminate on errors.
     // If we don't delete the client before the app we run the risk of the
@@ -66,7 +66,7 @@ MojoResult ApplicationRunner::Run(MojoHandle service_request_handle,
     // client.
     loop.reset();
     client_.reset();
-    connection_.reset();
+    context_.reset();
   }
   return MOJO_RESULT_OK;
 }
@@ -80,8 +80,8 @@ MojoResult ApplicationRunner::Run(MojoHandle service_request_handle) {
   return Run(service_request_handle, init_base);
 }
 
-void ApplicationRunner::DestroyShellConnection() {
-  connection_.reset();
+void ApplicationRunner::DestroyServiceContext() {
+  context_.reset();
 }
 
 void ApplicationRunner::Quit() {

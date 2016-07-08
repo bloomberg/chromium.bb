@@ -14,7 +14,7 @@
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection_ref.h"
+#include "services/shell/public/cpp/service_context_ref.h"
 #include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -36,7 +36,7 @@ class ViewImpl : public mojom::View,
            const std::string& client_user_id,
            mojom::ViewClientPtr client,
            mojom::ViewRequest request,
-           std::unique_ptr<shell::ShellConnectionRef> ref);
+           std::unique_ptr<shell::ServiceContextRef> ref);
   ~ViewImpl() override;
 
  private:
@@ -90,7 +90,7 @@ class ViewImpl : public mojom::View,
   shell::Connector* connector_;
   mojo::StrongBinding<mojom::View> binding_;
   mojom::ViewClientPtr client_;
-  std::unique_ptr<shell::ShellConnectionRef> ref_;
+  std::unique_ptr<shell::ServiceContextRef> ref_;
 
   views::WebView* web_view_;
 

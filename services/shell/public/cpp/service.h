@@ -43,7 +43,7 @@ class Service {
   // Called when the Service Manager has stopped tracking this instance. The
   // service should use this as a signal to exit, and in fact its process may
   // be reaped shortly afterward.
-  // Return true from this method to tell the ShellConnection to run its
+  // Return true from this method to tell the ServiceContext to run its
   // connection lost closure if it has one, false to prevent it from being run.
   // The default implementation returns true.
   // When used in conjunction with ApplicationRunner, returning true here quits

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SHELL_PUBLIC_CPP_SHELL_CONNECTION_REF_H_
-#define SERVICES_SHELL_PUBLIC_CPP_SHELL_CONNECTION_REF_H_
+#ifndef SERVICES_SHELL_PUBLIC_CPP_SERVICE_CONTEXT_REF_H_
+#define SERVICES_SHELL_PUBLIC_CPP_SERVICE_CONTEXT_REF_H_
 
 #include <memory>
 
@@ -13,47 +13,47 @@
 
 namespace shell {
 
-class ShellConnectionRefImpl;
+class ServiceContextRefImpl;
 
 // An interface implementation can keep this object as a member variable to
-// hold a reference to the ShellConnection, keeping it alive as long as the
+// hold a reference to the ServiceContext, keeping it alive as long as the
 // bound implementation exists.
 //
 // This class is safe to use on any thread and instances may be passed to other
 // threads. However, each instance should only be used on one thread at a time,
 // otherwise there'll be races between the AddRef resulting from cloning and
 // destruction.
-class ShellConnectionRef {
+class ServiceContextRef {
  public:
-  virtual ~ShellConnectionRef() {}
+  virtual ~ServiceContextRef() {}
 
-  virtual std::unique_ptr<ShellConnectionRef> Clone() = 0;
+  virtual std::unique_ptr<ServiceContextRef> Clone() = 0;
 };
 
-class ShellConnectionRefFactory {
+class ServiceContextRefFactory {
  public:
   // |quit_closure| is called whenever the last ref is destroyed.
-  explicit ShellConnectionRefFactory(const base::Closure& quit_closure);
-  ~ShellConnectionRefFactory();
+  explicit ServiceContextRefFactory(const base::Closure& quit_closure);
+  ~ServiceContextRefFactory();
 
-  std::unique_ptr<ShellConnectionRef> CreateRef();
+  std::unique_ptr<ServiceContextRef> CreateRef();
 
   bool HasNoRefs() const { return !ref_count_; }
 
  private:
-  friend ShellConnectionRefImpl;
+  friend ServiceContextRefImpl;
 
-  // Called from ShellConnectionRefImpl.
+  // Called from ServiceContextRefImpl.
   void AddRef();
   void Release();
 
   const base::Closure quit_closure_;
   int ref_count_ = 0;
-  base::WeakPtrFactory<ShellConnectionRefFactory> weak_factory_;
+  base::WeakPtrFactory<ServiceContextRefFactory> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ShellConnectionRefFactory);
+  DISALLOW_COPY_AND_ASSIGN(ServiceContextRefFactory);
 };
 
 }  // namespace shell
 
-#endif  // SERVICES_SHELL_PUBLIC_CPP_SHELL_CONNECTION_REF_H_
+#endif  // SERVICES_SHELL_PUBLIC_CPP_SERVICE_CONTEXT_REF_H_

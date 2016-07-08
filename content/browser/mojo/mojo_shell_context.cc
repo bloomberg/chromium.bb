@@ -267,11 +267,10 @@ MojoShellContext::MojoShellContext() {
     mojo::edk::SetParentPipeHandleFromCommandLine();
     request = shell::GetServiceRequestFromCommandLine();
   } else {
-    service_manager_.reset(
-        new shell::ServiceManager(std::move(native_runner_factory),
-                                  catalog_->TakeService()));
-    request = service_manager_->StartEmbedderService(
-        kBrowserMojoApplicationName);
+    service_manager_.reset(new shell::ServiceManager(
+        std::move(native_runner_factory), catalog_->TakeService()));
+    request =
+        service_manager_->StartEmbedderService(kBrowserMojoApplicationName);
   }
   MojoShellConnection::SetForProcess(
       MojoShellConnection::Create(std::move(request)));

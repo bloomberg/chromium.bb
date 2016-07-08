@@ -16,7 +16,7 @@
 #include "mash/example/window_type_launcher/window_type_launcher.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/interfaces/service.mojom.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/init.h"
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
     base::MessageLoop loop;
     WindowTypeLauncher delegate;
-    shell::ShellConnection impl(&delegate,
+    shell::ServiceContext impl(&delegate,
                                 shell::GetServiceRequestFromCommandLine());
     loop.Run();
 

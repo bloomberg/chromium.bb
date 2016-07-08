@@ -16,7 +16,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/runner/common/client_util.h"
 #include "services/shell/runner/init.h"
 
@@ -58,7 +58,7 @@ int TestNativeMain(shell::Service* service) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
 
     base::MessageLoop loop;
-    shell::ShellConnection impl(service,
+    shell::ServiceContext impl(service,
                                 shell::GetServiceRequestFromCommandLine());
     base::RunLoop().Run();
 

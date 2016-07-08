@@ -26,7 +26,7 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/identity.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/runner/host/child_process_base.h"
@@ -73,7 +73,7 @@ class DefaultService : public shell::Service,
     service_ = CreateService(mojo_name);
     if (service_) {
       shell_connection_.reset(
-          new shell::ShellConnection(service_.get(), std::move(request)));
+          new shell::ServiceContext(service_.get(), std::move(request)));
       return;
     }
     LOG(ERROR) << "unknown name " << mojo_name;
@@ -108,7 +108,7 @@ class DefaultService : public shell::Service,
 
   mojo::BindingSet<ServiceFactory> service_factory_bindings_;
   std::unique_ptr<shell::Service> service_;
-  std::unique_ptr<shell::ShellConnection> shell_connection_;
+  std::unique_ptr<shell::ServiceContext> shell_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultService);
 };
@@ -187,7 +187,7 @@ void MashRunner::RunMain() {
   init_params->native_runner_delegate = &native_runner_delegate;
   background_shell.Init(std::move(init_params));
   service_.reset(new DefaultService);
-  shell_connection_.reset(new shell::ShellConnection(
+  shell_connection_.reset(new shell::ServiceContext(
       service_.get(),
       background_shell.CreateServiceRequest("exe:chrome_mash")));
   shell_connection_->connector()->Connect("mojo:mash_session");
@@ -205,7 +205,7 @@ void MashRunner::StartChildApp(
   // TODO(sky): use MessagePumpMojo.
   base::MessageLoop message_loop(base::MessageLoop::TYPE_UI);
   service_.reset(new DefaultService);
-  shell_connection_.reset(new shell::ShellConnection(
+  shell_connection_.reset(new shell::ServiceContext(
       service_.get(), std::move(service_request)));
   message_loop.Run();
 }

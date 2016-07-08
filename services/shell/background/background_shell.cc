@@ -17,7 +17,7 @@
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"
 #include "services/shell/public/cpp/service.h"
-#include "services/shell/public/cpp/shell_connection.h"
+#include "services/shell/public/cpp/service_context.h"
 #include "services/shell/service_manager.h"
 #include "services/shell/standalone/context.h"
 
