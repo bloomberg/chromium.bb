@@ -96,7 +96,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/no-such-worker.js';
       var scope = 'resources/scope/no-such-worker';
       return promise_rejects(t,
-          check_error_types ? 'NetworkError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           navigator.serviceWorker.register(script, {scope: scope}),
           'Registration of non-existent script should fail.');
@@ -106,7 +106,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/invalid-chunked-encoding.php';
       var scope = 'resources/scope/invalid-chunked-encoding/';
       return promise_rejects(t,
-          check_error_types ? 'NetworkError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           'Registration of invalid chunked encoding script should fail.');
     }, 'Registering invalid chunked encoding script');
@@ -115,7 +115,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/invalid-chunked-encoding-with-flush.php';
       var scope = 'resources/scope/invalid-chunked-encoding-with-flush/';
       return promise_rejects(t,
-          check_error_types ? 'NetworkError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           'Registration of invalid chunked encoding script should fail.');
     }, 'Registering invalid chunked encoding script with flush');
@@ -152,7 +152,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/malformed-worker.php?parse-error';
       var scope = 'resources/scope/parse-error';
       return promise_rejects(t,
-          check_error_types ? 'AbortError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           'Registration of script including parse error should fail.');
     }, 'Registering script including parse error');
@@ -161,7 +161,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/malformed-worker.php?undefined-error';
       var scope = 'resources/scope/undefined-error';
       return promise_rejects(t,
-          check_error_types ? 'AbortError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           'Registration of script including undefined error should fail.');
     }, 'Registering script including undefined error');
@@ -170,7 +170,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/malformed-worker.php?uncaught-exception';
       var scope = 'resources/scope/uncaught-exception';
       return promise_rejects(t,
-          check_error_types ? 'AbortError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           'Registration of script including uncaught exception should fail.');
     }, 'Registering script including uncaught exception');
@@ -191,7 +191,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/malformed-worker.php?import-malformed-script';
       var scope = 'resources/scope/import-malformed-script';
       return promise_rejects(t,
-          check_error_types ? 'AbortError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           'Registration of script importing malformed script should fail.');
     }, 'Registering script importing malformed script');
@@ -200,7 +200,7 @@ function registration_tests(register_method, check_error_types) {
       var script = 'resources/malformed-worker.php?import-no-such-script';
       var scope = 'resources/scope/import-no-such-script';
       return promise_rejects(t,
-          check_error_types ? 'AbortError' : null,
+          check_error_types ? new TypeError : null,
           register_method(script, {scope: scope}),
           'Registration of script importing non-existent script should fail.');
     }, 'Registering script importing non-existent script');

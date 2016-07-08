@@ -78,10 +78,11 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
+        ScriptState::Scope scope(m_resolver->getScriptState());
         if (error.errorType == WebServiceWorkerError::ErrorTypeType) {
             m_resolver->reject(V8ThrowException::createTypeError(m_resolver->getScriptState()->isolate(), error.message));
         } else {
-            m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+            m_resolver->reject(ServiceWorkerErrorForUpdate::take(m_resolver.get(), error));
         }
     }
 

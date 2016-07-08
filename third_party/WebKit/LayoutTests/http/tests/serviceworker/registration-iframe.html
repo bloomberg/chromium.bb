@@ -47,7 +47,7 @@ async_test(function(t) {
      '- normal case');
 
 // Set script url and scope url relative to the iframe's document's url.
-// Assert the implementation throws a NetworkError exception.
+// Assert the implementation throws a TypeError exception.
 async_test(function(t) {
   var url = 'resources/blank.html';
   var scope = 'registration-for-iframe-from-calling-frame';
@@ -68,7 +68,7 @@ async_test(function(t) {
         assert_unreached('register() should reject');
       },
       function(e) {
-        assert_equals(e.name, 'NetworkError');
+        assert_equals(e.name, 'TypeError');
         frame.remove();
         return service_worker_unregister_and_done(t, scope);
       })
