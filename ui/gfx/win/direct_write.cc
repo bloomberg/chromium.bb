@@ -18,13 +18,23 @@ namespace gfx {
 namespace win {
 
 void CreateDWriteFactory(IDWriteFactory** factory) {
+  using DWriteCreateFactoryProc = decltype(DWriteCreateFactory)*;
+  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
+  if (!dwrite_dll)
+    return;
+
+  DWriteCreateFactoryProc dwrite_create_factory_proc =
+      reinterpret_cast<DWriteCreateFactoryProc>(
+          GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
+  // Not finding the DWriteCreateFactory function indicates a corrupt dll.
+  if (!dwrite_create_factory_proc)
+    return;
+
+  // Failure to create the DirectWrite factory indicates a corrupt dll.
   base::win::ScopedComPtr<IUnknown> factory_unknown;
-  HRESULT hr =
-      DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-                          factory_unknown.Receive());
-  if (FAILED(hr)) {
-    base::debug::Alias(&hr);
-    CHECK(false);
+  if (FAILED(dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_SHARED,
+                                        __uuidof(IDWriteFactory),
+                                        factory_unknown.Receive()))) {
     return;
   }
   factory_unknown.QueryInterface<IDWriteFactory>(factory);

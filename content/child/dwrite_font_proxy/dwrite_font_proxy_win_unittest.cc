@@ -24,9 +24,27 @@ namespace content {
 
 namespace {
 
+void CreateDWriteFactory(IUnknown** factory) {
+  using DWriteCreateFactoryProc = decltype(DWriteCreateFactory)*;
+  HMODULE dwrite_dll = LoadLibraryW(L"dwrite.dll");
+  if (!dwrite_dll)
+    return;
+
+  DWriteCreateFactoryProc dwrite_create_factory_proc =
+      reinterpret_cast<DWriteCreateFactoryProc>(
+          GetProcAddress(dwrite_dll, "DWriteCreateFactory"));
+  if (!dwrite_create_factory_proc)
+    return;
+
+  dwrite_create_factory_proc(DWRITE_FACTORY_TYPE_SHARED,
+                             __uuidof(IDWriteFactory), factory);
+}
+
 class DWriteFontProxyUnitTest : public testing::Test {
  public:
   DWriteFontProxyUnitTest() {
+    if (!factory)
+      return;
     fake_collection_ = new FakeFontCollection();
     SetupFonts(fake_collection_.get());
     mswr::MakeAndInitialize<DWriteFontCollectionProxy>(
@@ -53,8 +71,7 @@ class DWriteFontProxyUnitTest : public testing::Test {
   }
 
   static void SetUpTestCase() {
-    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
-                        &factory);
+    CreateDWriteFactory(&factory);
 
     std::vector<base::char16> font_path;
     font_path.resize(MAX_PATH);
@@ -79,6 +96,9 @@ std::vector<base::string16> DWriteFontProxyUnitTest::arial_font_files;
 mswr::ComPtr<IDWriteFactory> DWriteFontProxyUnitTest::factory;
 
 TEST_F(DWriteFontProxyUnitTest, GetFontFamilyCount) {
+  if (!factory)
+    return;
+
   UINT32 family_count = collection_->GetFontFamilyCount();
 
   EXPECT_EQ(3u, family_count);
@@ -94,6 +114,8 @@ TEST_F(DWriteFontProxyUnitTest, GetFontFamilyCount) {
 
 TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldFindFamily) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -111,6 +133,8 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldFindFamily) {
 
 TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldReturnUINTMAXWhenNotFound) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -126,6 +150,8 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldReturnUINTMAXWhenNotFound) {
 
 TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldNotSendDuplicateIPC) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -141,6 +167,8 @@ TEST_F(DWriteFontProxyUnitTest, FindFamilyNameShouldNotSendDuplicateIPC) {
 
 TEST_F(DWriteFontProxyUnitTest, GetFontFamilyShouldCreateFamily) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -186,6 +214,8 @@ void CheckLocale(const base::string16& locale_name,
 
 TEST_F(DWriteFontProxyUnitTest, GetFamilyNames) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -223,6 +253,8 @@ TEST_F(DWriteFontProxyUnitTest, GetFamilyNames) {
 
 TEST_F(DWriteFontProxyUnitTest, GetFontCollection) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -243,6 +275,8 @@ TEST_F(DWriteFontProxyUnitTest, GetFontCollection) {
 
 TEST_F(DWriteFontProxyUnitTest, GetFamilyNamesShouldNotIPCAfterLoadingFamily) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -261,6 +295,8 @@ TEST_F(DWriteFontProxyUnitTest, GetFamilyNamesShouldNotIPCAfterLoadingFamily) {
 TEST_F(DWriteFontProxyUnitTest,
        GetFontFamilyShouldNotCreateFamilyWhenIndexIsInvalid) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -276,6 +312,8 @@ TEST_F(DWriteFontProxyUnitTest,
 
 TEST_F(DWriteFontProxyUnitTest, LoadingFontFamily) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;
@@ -310,6 +348,8 @@ TEST_F(DWriteFontProxyUnitTest, LoadingFontFamily) {
 
 TEST_F(DWriteFontProxyUnitTest, GetFontFromFontFaceShouldFindFont) {
   HRESULT hr;
+  if (!factory)
+    return;
 
   UINT32 index = UINT_MAX;
   BOOL exists = FALSE;

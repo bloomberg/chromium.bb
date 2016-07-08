@@ -1152,13 +1152,6 @@
           'dependencies': [
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
           ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'AdditionalDependencies': [
-                'dwrite.lib',
-              ],
-            },
-          },
         }],
         ['OS=="mac"', {
           # These flags are needed to run the test on Mac.

@@ -351,10 +351,7 @@ component("gfx") {
     cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()), which is
                             # uninteresting.
 
-    libs = [
-      "setupapi.lib",
-      "dwrite.lib",
-    ]
+    libs = [ "setupapi.lib" ]
   } else {
     sources -= [
       "gdi_util.cc",
@@ -898,7 +895,6 @@ test("gfx_unittests") {
     libs = [
       "d2d1.lib",
       "d3d10_1.lib",
-      "dwrite.lib",
       "imm32.lib",
       "oleacc.lib",
     ]
