@@ -113,15 +113,6 @@ _OS_NEGATIVE_FILTER['linux'] = [
     'CombinedInputActionsTest.testCombiningShiftAndClickResultsInANewWindow',
     # Flaky: https://code.google.com/p/chromedriver/issues/detail?id=1150
     'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
-
-    # Flaky on Linux32:
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1418
-    'ClickTest.testShouldOnlyFollowHrefOnce',
-    'JavascriptEnabledDriverTest.testShouldFireOnChangeEventWhenSettingAnElementsValue',
-    'WindowSwitchingTest.testCanCloseWindowWhenMultipleWindowsAreOpen',
-    'WindowSwitchingTest.testCanCallGetWindowHandlesAfterClosingAWindow',
-    'WindowSwitchingTest.testCanCloseWindowAndSwitchBackToMainWindow',
-    'XPathElementFindingTest.testShouldFindElementsByXPath',
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=26
