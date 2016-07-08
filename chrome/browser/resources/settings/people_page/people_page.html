@@ -146,7 +146,8 @@
         </template>
 
         <div class="settings-box two-line" id="activity-controls"
-            on-tap="onActivityControlsTap_" actionable>
+            on-tap="onActivityControlsTap_" actionable
+            hidden="[[!syncStatus.signedIn]]">
           <div class="icon-container">
             <div id="googleg-logo"></div>
           </div>
