@@ -78,6 +78,10 @@ const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the STH component-updater component.
+const base::Feature kSTHSetComponent{"STHSetComponent",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(SYZYASAN)
 // Enable the deferred free mechanism in the syzyasan module, which helps the
 // performance by deferring some work on the critical path to a background

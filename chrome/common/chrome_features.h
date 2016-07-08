@@ -51,6 +51,8 @@ extern const base::Feature kSafeSearchUrlReporting;
 
 extern const base::Feature kSimplifiedFullscreenUI;
 
+extern const base::Feature kSTHSetComponent;
+
 #if defined(SYZYASAN)
 extern const base::Feature kSyzyasanDeferredFree;
 #endif

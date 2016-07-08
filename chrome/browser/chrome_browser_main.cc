@@ -497,10 +497,14 @@ void RegisterComponentsForUpdate() {
     // 2. Chrome OS: On Chrome OS this registration is delayed until user login.
     RegisterEVWhitelistComponent(cus, path);
 
-    // Registration of the STH set fetcher here is not done for:
-    // Android: Because the story around CT on Mobile is not finalized yet.
-    // Chrome OS: On Chrome OS this registration is delayed until user login.
-    RegisterSTHSetComponent(cus, path);
+    // Note: This is behind a base::Feature to verify whether it causes a
+    // suspected startup regression. See: http://crbug.com/626676
+    if (base::FeatureList::IsEnabled(features::kSTHSetComponent)) {
+      // Registration of the STH set fetcher here is not done for:
+      // Android: Because the story around CT on Mobile is not finalized yet.
+      // Chrome OS: On Chrome OS this registration is delayed until user login.
+      RegisterSTHSetComponent(cus, path);
+    }
 #endif  // defined(OS_ANDROID)
     RegisterOriginTrialsComponent(cus, path);
 
