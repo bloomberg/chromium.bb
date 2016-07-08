@@ -174,24 +174,24 @@ int check_with_mode(const char *tableList, const char *str,
       size_t expected_utf8_len;
       size_t out_utf8_len;
 #ifdef WIDECHARS_ARE_UCS4
-      expected_utf8 = u32_to_u8(expectedbuf, expectedlen, NULL, &expected_utf8_len);
-      out_utf8 = u32_to_u8(outbuf, outlen, NULL, &out_utf8_len);
+      expected_utf8 = u32_to_u8(&expectedbuf[i], 1, NULL, &expected_utf8_len);
+      out_utf8 = u32_to_u8(&outbuf[i], 1, NULL, &out_utf8_len);
 #else
-      expected_utf8 = u16_to_u8(expectedbuf, expectedlen, NULL, &expected_utf8_len);
-      out_utf8 = u16_to_u8(outbuf, outlen, NULL, &out_utf8_len);
+      expected_utf8 = u16_to_u8(&expectedbuf[i], 1, NULL, &expected_utf8_len);
+      out_utf8 = u16_to_u8(&outbuf[i], 1, NULL, &out_utf8_len);
 #endif
 
       if (i < outlen && i < expectedlen) {
-	fprintf(stderr, "Diff: Expected '%c' but received '%c' in index %d\n",
-	        expected_utf8[i], out_utf8[i], i);
+	fprintf(stderr, "Diff: Expected '%.*s' but received '%.*s' in index %d\n",
+	        (int)expected_utf8_len, expected_utf8, (int)out_utf8_len, out_utf8, i);
       } else if (i < expectedlen) {
 	fprintf(stderr,
-	        "Diff: Expected '%c' but received nothing in index %d\n",
-	        expected_utf8[i], i);
+	        "Diff: Expected '%.*s' but received nothing in index %d\n",
+	        (int)expected_utf8_len, expected_utf8, i);
       } else {
 	fprintf(stderr,
-	        "Diff: Expected nothing but received '%c' in index %d\n",
-	        out_utf8[i], i);
+	        "Diff: Expected nothing but received '%.*s' in index %d\n",
+	        (int)out_utf8_len, out_utf8, i);
       }
       free(expected_utf8);
       free(out_utf8);
