@@ -105,7 +105,6 @@ protected:
         error.domain = "FrameSerializerTest";
 
         WebURLResponse response;
-        response.initialize();
         response.setMIMEType("text/html");
         response.setHTTPStatusCode(statusCode);
 

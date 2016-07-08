@@ -77,7 +77,6 @@ public:
     KURL RegisterMockedUrl(const std::string& urlRoot, const WTF::String& filename)
     {
         WebURLResponse response;
-        response.initialize();
         response.setMIMEType("text/html");
         WTF::String localPath = m_baseFilePath;
         localPath.append(filename);
@@ -241,7 +240,6 @@ public:
 
         WebString headerNameString(WebString::fromUTF8(headerName));
         m_expectedResponse = WebURLResponse();
-        m_expectedResponse.initialize();
         m_expectedResponse.setMIMEType("text/html");
         m_expectedResponse.setHTTPStatusCode(200);
         m_expectedResponse.addHTTPHeaderField("Access-Control-Allow-Origin", "*");
@@ -294,7 +292,6 @@ TEST_F(AssociatedURLLoaderTest, SameOriginSuccess)
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     Platform::current()->getURLLoaderMockFactory()->registerURL(url, m_expectedResponse, m_frameFilePath);
@@ -332,7 +329,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginSuccess)
     request.setRequestContext(WebURLRequest::RequestContextScript);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     Platform::current()->getURLLoaderMockFactory()->registerURL(url, m_expectedResponse, m_frameFilePath);
@@ -358,7 +354,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess)
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
@@ -385,7 +380,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailure)
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
@@ -418,7 +412,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailureBadStatusCode
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(0);
     m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
@@ -450,7 +443,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
     request.setURL(url);
 
     m_expectedRedirectResponse = WebURLResponse();
-    m_expectedRedirectResponse.initialize();
     m_expectedRedirectResponse.setMIMEType("text/html");
     m_expectedRedirectResponse.setHTTPStatusCode(301);
     m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
@@ -461,7 +453,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
     m_expectedNewRequest.setURL(redirectURL);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     Platform::current()->getURLLoaderMockFactory()->registerURL(redirectURL, m_expectedResponse, m_frameFilePath);
@@ -488,7 +479,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
     request.setURL(url);
 
     m_expectedRedirectResponse = WebURLResponse();
-    m_expectedRedirectResponse.initialize();
     m_expectedRedirectResponse.setMIMEType("text/html");
     m_expectedRedirectResponse.setHTTPStatusCode(301);
     m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
@@ -499,7 +489,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
     m_expectedNewRequest.setURL(redirectURL);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     Platform::current()->getURLLoaderMockFactory()->registerURL(redirectURL, m_expectedResponse, m_frameFilePath);
@@ -527,7 +516,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
     request.setURL(url);
 
     m_expectedRedirectResponse = WebURLResponse();
-    m_expectedRedirectResponse.initialize();
     m_expectedRedirectResponse.setMIMEType("text/html");
     m_expectedRedirectResponse.setHTTPStatusCode(301);
     m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
@@ -538,7 +526,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
     m_expectedNewRequest.setURL(redirectURL);
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     Platform::current()->getURLLoaderMockFactory()->registerURL(redirectURL, m_expectedResponse, m_frameFilePath);
@@ -572,7 +559,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
 
     // Create a redirect response that allows the redirect to pass the access control checks.
     m_expectedRedirectResponse = WebURLResponse();
-    m_expectedRedirectResponse.initialize();
     m_expectedRedirectResponse.setMIMEType("text/html");
     m_expectedRedirectResponse.setHTTPStatusCode(301);
     m_expectedRedirectResponse.setHTTPHeaderField("Location", redirect);
@@ -585,7 +571,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
     m_expectedNewRequest.setHTTPHeaderField("accept", "application/json");
 
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     m_expectedResponse.addHTTPHeaderField("access-control-allow-origin", "*");
@@ -699,7 +684,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders)
 
     WebString headerNameString(WebString::fromUTF8("non-whitelisted"));
     m_expectedResponse = WebURLResponse();
-    m_expectedResponse.initialize();
     m_expectedResponse.setMIMEType("text/html");
     m_expectedResponse.setHTTPStatusCode(200);
     m_expectedResponse.addHTTPHeaderField("Access-Control-Allow-Origin", "*");

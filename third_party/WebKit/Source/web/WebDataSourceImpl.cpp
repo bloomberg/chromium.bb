@@ -59,7 +59,6 @@ const WebURLRequest& WebDataSourceImpl::request() const
 
 const WebURLResponse& WebDataSourceImpl::response() const
 {
-    m_responseWrapper.bind(DocumentLoader::response());
     return m_responseWrapper;
 }
 
@@ -135,6 +134,7 @@ WebNavigationType WebDataSourceImpl::toWebNavigationType(NavigationType type)
 
 WebDataSourceImpl::WebDataSourceImpl(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
     : DocumentLoader(frame, request, data)
+    , m_responseWrapper(DocumentLoader::response())
 {
 }
 

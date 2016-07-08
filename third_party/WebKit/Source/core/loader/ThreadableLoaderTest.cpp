@@ -396,7 +396,6 @@ private:
         timing.initialize();
 
         WebURLResponse response;
-        response.initialize();
         response.setURL(url);
         response.setHTTPStatusCode(301);
         response.setLoadTiming(timing);
@@ -414,7 +413,6 @@ private:
         timing.initialize();
 
         WebURLResponse response;
-        response.initialize();
         response.setURL(url);
         response.setHTTPStatusCode(301);
         response.setLoadTiming(timing);

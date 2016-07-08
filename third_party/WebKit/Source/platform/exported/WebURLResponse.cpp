@@ -39,6 +39,7 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoadTiming.h"
 #include "wtf/Allocator.h"
+#include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include <memory>
@@ -76,39 +77,54 @@ public:
         m_resourceResponse = &m_resourceResponseAllocation;
     }
 
-    WebURLResponsePrivateImpl(const WebURLResponsePrivate* p)
-        : m_resourceResponseAllocation(*p->m_resourceResponse)
+    WebURLResponsePrivateImpl(const WebURLResponsePrivate& p)
+        : m_resourceResponseAllocation(*p.m_resourceResponse)
     {
         m_resourceResponse = &m_resourceResponseAllocation;
     }
 
-    virtual void dispose() { delete this; }
+    ~WebURLResponsePrivateImpl() override {}
 
 private:
-    virtual ~WebURLResponsePrivateImpl() { }
-
     ResourceResponse m_resourceResponseAllocation;
 };
 
-void WebURLResponse::initialize()
+WebURLResponse::~WebURLResponse()
 {
-    assign(new WebURLResponsePrivateImpl());
 }
 
-void WebURLResponse::reset()
+WebURLResponse::WebURLResponse()
+    : m_owningPrivate(new WebURLResponsePrivateImpl())
+    , m_private(m_owningPrivate.get())
 {
-    assign(0);
 }
 
-void WebURLResponse::assign(const WebURLResponse& r)
+WebURLResponse::WebURLResponse(const WebURLResponse& r)
+    : m_owningPrivate(new WebURLResponsePrivateImpl(*r.m_private))
+    , m_private(m_owningPrivate.get())
 {
+}
+
+WebURLResponse::WebURLResponse(const WebURL& url)
+    : WebURLResponse()
+{
+    setURL(url);
+}
+
+WebURLResponse& WebURLResponse::operator=(const WebURLResponse& r)
+{
+    // Copying subclasses that have different m_private ownership semantics
+    // via this operator is just not supported.
+    DCHECK(m_owningPrivate);
+    DCHECK(m_private->m_resourceResponse);
     if (&r != this)
-        assign(r.m_private ? new WebURLResponsePrivateImpl(r.m_private) : 0);
+        *m_private->m_resourceResponse = *r.m_private->m_resourceResponse;
+    return *this;
 }
 
 bool WebURLResponse::isNull() const
 {
-    return !m_private || m_private->m_resourceResponse->isNull();
+    return m_private->m_resourceResponse->isNull();
 }
 
 WebURL WebURLResponse::url() const
@@ -342,17 +358,13 @@ void WebURLResponse::setSecurityDetails(const WebSecurityDetails& webSecurityDet
 
 ResourceResponse& WebURLResponse::toMutableResourceResponse()
 {
-    ASSERT(m_private);
-    ASSERT(m_private->m_resourceResponse);
-
+    DCHECK(m_private->m_resourceResponse);
     return *m_private->m_resourceResponse;
 }
 
 const ResourceResponse& WebURLResponse::toResourceResponse() const
 {
-    ASSERT(m_private);
-    ASSERT(m_private->m_resourceResponse);
-
+    DCHECK(m_private->m_resourceResponse);
     return *m_private->m_resourceResponse;
 }
 
@@ -511,15 +523,10 @@ void WebURLResponse::setExtraData(WebURLResponse::ExtraData* extraData)
     m_private->m_resourceResponse->setExtraData(ExtraDataContainer::create(extraData));
 }
 
-void WebURLResponse::assign(WebURLResponsePrivate* p)
+WebURLResponse::WebURLResponse(WebURLResponsePrivate* p)
+    : m_private(p)
 {
-    // Subclasses may call this directly so a self-assignment check is needed
-    // here as well as in the public assign method.
-    if (m_private == p)
-        return;
-    if (m_private)
-        m_private->dispose();
-    m_private = p;
+    DCHECK(p);
 }
 
 } // namespace blink

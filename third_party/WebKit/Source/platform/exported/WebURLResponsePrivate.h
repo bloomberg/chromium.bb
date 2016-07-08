@@ -41,10 +41,8 @@ class ResourceResponse;
 class WebURLResponsePrivate {
     WTF_MAKE_NONCOPYABLE(WebURLResponsePrivate);
 public:
-    WebURLResponsePrivate() : m_resourceResponse(0) { }
-
-    // Called by WebURLResponse when it no longer needs this object.
-    virtual void dispose() = 0;
+    WebURLResponsePrivate() : m_resourceResponse(nullptr) {}
+    virtual ~WebURLResponsePrivate() {}
 
     ResourceResponse* m_resourceResponse;
 };

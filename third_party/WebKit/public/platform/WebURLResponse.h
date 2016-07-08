@@ -37,6 +37,7 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
+#include <memory>
 
 namespace blink {
 
@@ -135,25 +136,12 @@ public:
         virtual ~ExtraData() { }
     };
 
-    ~WebURLResponse() { reset(); }
+    BLINK_PLATFORM_EXPORT ~WebURLResponse();
 
-    WebURLResponse() : m_private(0) { }
-    WebURLResponse(const WebURLResponse& r) : m_private(0) { assign(r); }
-    WebURLResponse& operator=(const WebURLResponse& r)
-    {
-        assign(r);
-        return *this;
-    }
-
-    explicit WebURLResponse(const WebURL& url) : m_private(0)
-    {
-        initialize();
-        setURL(url);
-    }
-
-    BLINK_PLATFORM_EXPORT void initialize();
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebURLResponse&);
+    BLINK_PLATFORM_EXPORT WebURLResponse();
+    BLINK_PLATFORM_EXPORT WebURLResponse(const WebURLResponse&);
+    BLINK_PLATFORM_EXPORT explicit WebURLResponse(const WebURL&);
+    BLINK_PLATFORM_EXPORT WebURLResponse& operator=(const WebURLResponse&);
 
     BLINK_PLATFORM_EXPORT bool isNull() const;
 
@@ -305,9 +293,17 @@ public:
     BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
 
 protected:
-    BLINK_PLATFORM_EXPORT void assign(WebURLResponsePrivate*);
+    // Permit subclasses to set arbitrary WebURLResponsePrivate pointer as
+    // |m_private|. Parameter must be non-null. |m_owningPrivate| is not set
+    // in this case.
+    BLINK_PLATFORM_EXPORT explicit WebURLResponse(WebURLResponsePrivate*);
 
 private:
+    // If this instance owns WebURLResponsePrivate |m_owningPrivate| is
+    // non-null and is pointed by |m_private|.
+    std::unique_ptr<WebURLResponsePrivate> m_owningPrivate;
+
+    // Should never be null.
     WebURLResponsePrivate* m_private;
 };
 

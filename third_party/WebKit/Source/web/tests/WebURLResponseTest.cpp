@@ -30,6 +30,8 @@
 
 #include "public/platform/WebURLResponse.h"
 
+#include "platform/weborigin/KURL.h"
+#include "public/platform/WebURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -60,7 +62,6 @@ TEST(WebURLResponseTest, ExtraData)
         TestExtraData* extraData = new TestExtraData(&alive);
         EXPECT_TRUE(alive);
 
-        urlResponse.initialize();
         urlResponse.setExtraData(extraData);
         EXPECT_EQ(extraData, urlResponse.getExtraData());
         {
@@ -73,6 +74,19 @@ TEST(WebURLResponseTest, ExtraData)
         EXPECT_EQ(extraData, urlResponse.getExtraData());
     }
     EXPECT_FALSE(alive);
+}
+
+TEST(WebURLResponseTest, NewInstanceIsNull)
+{
+    WebURLResponse instance;
+    EXPECT_TRUE(instance.isNull());
+}
+
+TEST(WebURLResponseTest, NotNullAfterSetURL)
+{
+    WebURLResponse instance;
+    instance.setURL(KURL(ParsedURLString, "http://localhost/"));
+    EXPECT_FALSE(instance.isNull());
 }
 
 } // namespace blink

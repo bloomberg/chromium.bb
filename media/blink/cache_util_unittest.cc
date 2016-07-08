@@ -35,7 +35,6 @@ struct GRFUTestCase {
 // Create a new WebURLResponse object.
 static WebURLResponse CreateResponse(const GRFUTestCase& test) {
   WebURLResponse response;
-  response.initialize();
   response.setHTTPVersion(test.version);
   response.setHTTPStatusCode(test.status_code);
   for (const std::string& line :

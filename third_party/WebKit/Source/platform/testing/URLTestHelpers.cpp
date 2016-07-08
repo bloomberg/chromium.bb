@@ -72,7 +72,6 @@ void registerMockedErrorURLLoad(const WebURL& fullURL)
     timing.initialize();
 
     WebURLResponse response;
-    response.initialize();
     response.setMIMEType("image/png");
     response.setHTTPStatusCode(404);
     response.setLoadTiming(timing);

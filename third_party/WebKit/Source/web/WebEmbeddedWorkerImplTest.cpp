@@ -67,7 +67,6 @@ protected:
 
         WebURL scriptURL = URLTestHelpers::toKURL("https://www.example.com/sw.js");
         WebURLResponse response;
-        response.initialize();
         response.setMIMEType("text/javascript");
         response.setHTTPStatusCode(200);
         Platform::current()->getURLLoaderMockFactory()->registerURL(scriptURL, response, "");
@@ -167,7 +166,6 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound)
 {
     WebURL scriptURL = URLTestHelpers::toKURL("https://www.example.com/sw-404.js");
     WebURLResponse response;
-    response.initialize();
     response.setMIMEType("text/javascript");
     response.setHTTPStatusCode(404);
     WebURLError error;

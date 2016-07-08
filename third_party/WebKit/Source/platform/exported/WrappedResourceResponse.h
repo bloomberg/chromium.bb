@@ -37,44 +37,27 @@
 
 namespace blink {
 
+// WrappedResourceResponse doesn't take ownership of given ResourceResponse,
+// but just holds a pointer to it. It is not copyable (as WebURLResponsePrivate
+// is non-copyable).
 class WrappedResourceResponse : public WebURLResponse {
 public:
-    ~WrappedResourceResponse()
-    {
-        reset(); // Need to drop reference to m_handle
-    }
+    ~WrappedResourceResponse() {}
 
-    WrappedResourceResponse() { }
-
-    WrappedResourceResponse(ResourceResponse& resourceResponse)
-    {
-        bind(resourceResponse);
-    }
-
-    WrappedResourceResponse(const ResourceResponse& resourceResponse)
-    {
-        bind(resourceResponse);
-    }
-
-    void bind(ResourceResponse& resourceResponse)
+    explicit WrappedResourceResponse(ResourceResponse& resourceResponse)
+        : WebURLResponse(&m_handle)
     {
         m_handle.m_resourceResponse = &resourceResponse;
-        assign(&m_handle);
     }
 
-    void bind(const ResourceResponse& resourceResponse)
+    explicit WrappedResourceResponse(const ResourceResponse& resourceResponse)
+        : WrappedResourceResponse(const_cast<ResourceResponse&>(resourceResponse))
     {
-        bind(*const_cast<ResourceResponse*>(&resourceResponse));
     }
 
 private:
-    class Handle : public WebURLResponsePrivate {
-        DISALLOW_NEW();
-    public:
-        virtual void dispose() { m_resourceResponse = 0; }
-    };
-
-    Handle m_handle;
+    // This is pointed by m_private.
+    WebURLResponsePrivate m_handle;
 };
 
 } // namespace blink

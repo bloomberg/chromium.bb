@@ -603,7 +603,6 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
 
   WebURLResponse response;
-  response.initialize();
   PopulateURLResponse(request_.url(), info, &response,
                       request_.reportRawHeaders());
 
@@ -654,7 +653,6 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   }
 
   WebURLResponse response;
-  response.initialize();
   PopulateURLResponse(request_.url(), info, &response,
                       request_.reportRawHeaders());
 

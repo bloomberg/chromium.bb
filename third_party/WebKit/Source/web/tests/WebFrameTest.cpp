@@ -208,7 +208,6 @@ protected:
     void registerMockedHttpURLLoadWithCSP(const std::string& fileName, const std::string& csp, bool reportOnly = false)
     {
         WebURLResponse response;
-        response.initialize();
         response.setMIMEType("text/html");
         response.addHTTPHeaderField(reportOnly ? WebString("Content-Security-Policy-Report-Only") : WebString("Content-Security-Policy"), WebString::fromUTF8(csp));
         std::string fullString = m_baseURL + fileName;
@@ -5075,7 +5074,6 @@ TEST_P(ParameterizedWebFrameTest, ReplaceNavigationAfterHistoryNavigation)
     error.domain = "WebFrameTest";
     std::string errorURL = "http://0.0.0.0";
     WebURLResponse response;
-    response.initialize();
     response.setURL(URLTestHelpers::toKURL(errorURL));
     response.setMIMEType("text/html");
     response.setHTTPStatusCode(500);
@@ -5721,14 +5719,12 @@ TEST_P(ParameterizedWebFrameTest, FirstPartyForCookiesForRedirect)
     char redirect[] = "http://internal.test/first_party.html";
     WebURL redirectURL(toKURL(redirect));
     WebURLResponse redirectResponse;
-    redirectResponse.initialize();
     redirectResponse.setMIMEType("text/html");
     redirectResponse.setHTTPStatusCode(302);
     redirectResponse.setHTTPHeaderField("Location", redirect);
     Platform::current()->getURLLoaderMockFactory()->registerURL(testURL, redirectResponse, filePath);
 
     WebURLResponse finalResponse;
-    finalResponse.initialize();
     finalResponse.setMIMEType("text/html");
     Platform::current()->getURLLoaderMockFactory()->registerURL(redirectURL, finalResponse, filePath);
 

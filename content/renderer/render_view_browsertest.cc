@@ -1900,7 +1900,6 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
 #endif
 TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   blink::WebURLResponse response;
-  response.initialize();
   response.setHTTPStatusCode(503);
   WebLocalFrame* web_frame = GetMainFrame();
 

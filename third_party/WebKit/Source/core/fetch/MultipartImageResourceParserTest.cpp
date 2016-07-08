@@ -89,7 +89,6 @@ TEST(MultipartResponseTest, ParseMultipartHeadersResult)
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
         WebURLResponse response;
-        response.initialize();
         size_t end = 0;
         bool result = Platform::current()->parseMultipartHeadersFromBody(tests[i].data, strlen(tests[i].data), &response, &end);
         EXPECT_EQ(tests[i].result, result);
@@ -100,7 +99,6 @@ TEST(MultipartResponseTest, ParseMultipartHeadersResult)
 TEST(MultipartResponseTest, ParseMultipartHeaders)
 {
     WebURLResponse webResponse;
-    webResponse.initialize();
     webResponse.addHTTPHeaderField(WebString::fromLatin1("foo"), WebString::fromLatin1("bar"));
     webResponse.addHTTPHeaderField(WebString::fromLatin1("range"), WebString::fromLatin1("piyo"));
     webResponse.addHTTPHeaderField(WebString::fromLatin1("content-length"), WebString::fromLatin1("999"));
@@ -121,7 +119,6 @@ TEST(MultipartResponseTest, ParseMultipartHeaders)
 TEST(MultipartResponseTest, ParseMultipartHeadersContentCharset)
 {
     WebURLResponse webResponse;
-    webResponse.initialize();
 
     const char data[] = "content-type: text/html; charset=utf-8\n\n";
     size_t end = 0;

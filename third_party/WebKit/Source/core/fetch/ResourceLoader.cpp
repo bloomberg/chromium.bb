@@ -238,7 +238,6 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request)
 
     WrappedResourceRequest requestIn(request);
     WebURLResponse responseOut;
-    responseOut.initialize();
     WebURLError errorOut;
     WebData dataOut;
     m_loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut);

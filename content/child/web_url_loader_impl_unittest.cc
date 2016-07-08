@@ -670,7 +670,6 @@ TEST_F(WebURLLoaderImplTest, ResponseIPAddress) {
     content::ResourceResponseInfo info;
     info.socket_address = net::HostPortPair(test.ip, 443);
     blink::WebURLResponse response;
-    response.initialize();
     WebURLLoaderImpl::PopulateURLResponse(url, info, &response, true);
     EXPECT_EQ(test.expected, response.remoteIPAddress().utf8());
   };
