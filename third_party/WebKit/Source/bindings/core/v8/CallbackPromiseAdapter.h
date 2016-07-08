@@ -116,34 +116,13 @@ private:
     template <typename T> static CallbackPromiseAdapterTrivialWebTypeHolder<T> webTypeHolderMatcher(...);
     template <typename T> using WebTypeHolder = decltype(webTypeHolderMatcher<T>(nullptr));
 
-    // The following templates should be gone when the repositories are merged
-    // and we can use C++11 libraries.
-    template <typename T>
-    struct PassTypeImpl {
-        using Type = T;
-    };
-    template <typename T>
-    struct PassTypeImpl<std::unique_ptr<T>> {
-        using Type = std::unique_ptr<T>;
-    };
-    template <typename T>
-    struct WebPassTypeImpl {
-        using Type = T;
-    };
-    template <typename T>
-    struct WebPassTypeImpl<std::unique_ptr<T>> {
-        using Type = std::unique_ptr<T>;
-    };
-    template <typename T> using PassType = typename PassTypeImpl<T>::Type;
-    template <typename T> using WebPassType = typename WebPassTypeImpl<T>::Type;
     template <typename T> static T& adopt(T& x) { return x; }
-    template <typename T>
-    static std::unique_ptr<T> adopt(std::unique_ptr<T>& x) { return std::move(x); }
-    template <typename T> static PassType<T> pass(T& x) { return x; }
+    template <typename T> static std::unique_ptr<T> adopt(std::unique_ptr<T>& x) { return std::move(x); }
+    template <typename T> static T pass(T& x) { return x; }
     template <typename T> static std::unique_ptr<T> pass(std::unique_ptr<T>& x) { return std::move(x); }
 
     template <typename S, typename T>
-    class Base : public WebCallbacks<WebPassType<typename S::WebType>, WebPassType<typename T::WebType>> {
+    class Base : public WebCallbacks<typename S::WebType, typename T::WebType> {
     public:
         explicit Base(ScriptPromiseResolver* resolver) : m_resolver(resolver) {}
         ScriptPromiseResolver* resolver() { return m_resolver; }
@@ -156,7 +135,7 @@ private:
     class OnSuccess : public Base<S, T> {
     public:
         explicit OnSuccess(ScriptPromiseResolver* resolver) : Base<S, T>(resolver) {}
-        void onSuccess(WebPassType<typename S::WebType> r) override
+        void onSuccess(typename S::WebType r) override
         {
             typename S::WebType result(adopt(r));
             ScriptPromiseResolver* resolver = this->resolver();
@@ -181,7 +160,7 @@ private:
     class OnError : public OnSuccess<S, T> {
     public:
         explicit OnError(ScriptPromiseResolver* resolver) : OnSuccess<S, T>(resolver) {}
-        void onError(WebPassType<typename T::WebType> e) override
+        void onError(typename T::WebType e) override
         {
             typename T::WebType result(adopt(e));
             ScriptPromiseResolver* resolver = this->resolver();
