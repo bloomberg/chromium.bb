@@ -366,13 +366,14 @@ template("compile_xibs") {
     script = "//build/config/mac/compile_xib.py"
     sources = invoker.sources
     outputs = [
-      "$target_gen_dir/{{source_name_part}}.nib",
+      "$target_gen_dir/$target_name/{{source_name_part}}.nib",
     ]
-    args = [
-             "--input",
-             "{{source}}",
-             "--output",
-             rebase_path("$target_gen_dir/{{source_name_part}}.nib"),
-           ] + ibtool_flags
+    args =
+        [
+          "--input",
+          "{{source}}",
+          "--output",
+          rebase_path("$target_gen_dir/$target_name/{{source_name_part}}.nib"),
+        ] + ibtool_flags
   }
 }
