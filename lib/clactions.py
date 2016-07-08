@@ -986,6 +986,8 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
       constants.MON_CL_CQRUN_TIME)
   false_rejection_metric = metrics.CumulativeSmallIntegerDistribution(
       constants.MON_CL_FALSE_REJ)
+  false_rejection_count_metric = metrics.Counter(
+      constants.MON_CL_FALSE_REJ_COUNT)
 
   precq_false_rejections = action_history.GetFalseRejections(
       bot_type=constants.PRE_CQ)
@@ -1015,3 +1017,4 @@ def RecordSubmissionMetrics(action_history, submitted_change_strategies):
       rejections = rej.get(change, [])
       f = dict(fields, rejected_by=by)
       false_rejection_metric.add(len(rejections), fields=f)
+      false_rejection_count_metric.increment_by(len(rejections), fields=f)
