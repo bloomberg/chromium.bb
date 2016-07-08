@@ -116,6 +116,8 @@ def GenerateBenchmarkOptions(benchmark_class):
   # Only measure a single story so that this test cycles reasonably quickly.
   options.pageset_repeat = 1
   options.page_repeat = 1
+  # Enable browser logging in the smoke test only (crbug.com/625172).
+  options.logging_verbosity = 'non-verbose'
   return options
 
 
