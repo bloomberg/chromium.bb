@@ -337,9 +337,9 @@ String getSelectedShippingOption(const PaymentDetails& details)
     if (!details.hasShippingOptions())
         return result;
 
-    for (size_t i = 0; i < details.shippingOptions().size(); ++i) {
+    for (int i = details.shippingOptions().size() - 1; i >= 0; --i) {
         if (details.shippingOptions()[i].hasSelected() && details.shippingOptions()[i].selected()) {
-            result = details.shippingOptions()[i].id();
+            return details.shippingOptions()[i].id();
         }
     }
 
