@@ -214,8 +214,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                                     bool success);
 
   // Callbacks for deleting pages with same URL when saving pages.
-  void OnPagesFoundWithSameURL(const ClientId& client_id,
-                               int64_t offline_id,
+  void DeleteExistingPagesWithSameURL(const OfflinePageItem& offline_page);
+  void OnPagesFoundWithSameURL(const OfflinePageItem& offline_page,
                                size_t pages_allowed,
                                const MultipleOfflinePageItemResult& items);
   void OnDeleteOldPagesWithSameURL(DeletePageResult result);
