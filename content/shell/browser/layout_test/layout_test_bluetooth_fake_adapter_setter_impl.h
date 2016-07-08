@@ -16,19 +16,15 @@ class LayoutTestBluetoothFakeAdapterSetterImpl
     : public mojom::LayoutTestBluetoothFakeAdapterSetter {
  public:
   static void Create(
-      int render_process_id,
       mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
 
  private:
   LayoutTestBluetoothFakeAdapterSetterImpl(
-      int render_process_id,
       mojom::LayoutTestBluetoothFakeAdapterSetterRequest request);
   ~LayoutTestBluetoothFakeAdapterSetterImpl() override;
 
   void Set(const mojo::String& adapter_name,
            const SetCallback& callback) override;
-
-  int render_process_id_;
 
   mojo::StrongBinding<LayoutTestBluetoothFakeAdapterSetter> binding_;
 

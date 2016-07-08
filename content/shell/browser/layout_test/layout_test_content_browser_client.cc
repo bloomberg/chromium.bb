@@ -69,7 +69,7 @@ void LayoutTestContentBrowserClient::RenderProcessWillLaunch(
       partition->GetURLRequestContext()));
 
   host->GetInterfaceRegistry()->AddInterface(base::Bind(
-      &LayoutTestBluetoothFakeAdapterSetterImpl::Create, host->GetID()));
+      &LayoutTestBluetoothFakeAdapterSetterImpl::Create));
 
   host->Send(new ShellViewMsg_SetWebKitSourceDir(GetWebKitRootDirFilePath()));
 }

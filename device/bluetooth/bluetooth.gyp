@@ -34,6 +34,8 @@
         'bluetooth_adapter_android.h',
         'bluetooth_adapter_factory.cc',
         'bluetooth_adapter_factory.h',
+        'bluetooth_adapter_factory_wrapper.cc',
+        'bluetooth_adapter_factory_wrapper.h',
         'bluetooth_adapter_mac.h',
         'bluetooth_adapter_mac.mm',
         'bluetooth_adapter_win.cc',

@@ -28,9 +28,15 @@ using device::BluetoothUUID;
 
 namespace content {
 
+bool BluetoothDeviceChooserController::use_test_scan_duration_ = false;
+
 namespace {
 constexpr size_t kMaxLengthForDeviceName =
     29;  // max length of device name in filter.
+
+// The duration of a Bluetooth Scan in seconds.
+constexpr int kScanDuration = 10;
+constexpr int kTestScanDuration = 0;
 
 void LogRequestDeviceOptions(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
@@ -181,8 +187,7 @@ UMARequestDeviceOutcome OutcomeFromChooserEvent(BluetoothChooser::Event event) {
 BluetoothDeviceChooserController::BluetoothDeviceChooserController(
     WebBluetoothServiceImpl* web_bluetooth_service,
     RenderFrameHost* render_frame_host,
-    device::BluetoothAdapter* adapter,
-    base::TimeDelta scan_duration)
+    device::BluetoothAdapter* adapter)
     : adapter_(adapter),
       web_bluetooth_service_(web_bluetooth_service),
       render_frame_host_(render_frame_host),
@@ -191,7 +196,8 @@ BluetoothDeviceChooserController::BluetoothDeviceChooserController(
           FROM_HERE,
           // TODO(jyasskin): Add a way for tests to control the dialog
           // directly, and change this to a reasonable discovery timeout.
-          scan_duration,
+          base::TimeDelta::FromSeconds(
+              use_test_scan_duration_ ? kTestScanDuration : kScanDuration),
           base::Bind(&BluetoothDeviceChooserController::StopDeviceDiscovery,
                      // base::Timer guarantees it won't call back after its
                      // destructor starts.
@@ -354,6 +360,10 @@ void BluetoothDeviceChooserController::AdapterPoweredChanged(bool powered) {
   if (!powered) {
     discovery_session_timer_.Stop();
   }
+}
+
+void BluetoothDeviceChooserController::SetTestScanDurationForTesting() {
+  BluetoothDeviceChooserController::use_test_scan_duration_ = true;
 }
 
 void BluetoothDeviceChooserController::PopulateFoundDevices() {

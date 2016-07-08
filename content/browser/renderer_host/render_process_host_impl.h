@@ -20,7 +20,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
-#include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/media/webrtc/webrtc_eventlog_host.h"
@@ -263,8 +262,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override;
 
-  BluetoothAdapterFactoryWrapper* GetBluetoothAdapterFactoryWrapper();
-
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
   // Launch the zygote early in the browser startup.
   static void EarlyZygoteLaunch();
@@ -466,8 +463,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<AudioRendererHost> audio_renderer_host_;
 
   scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;
-
-  BluetoothAdapterFactoryWrapper bluetooth_adapter_factory_wrapper_;
 
 #if defined(OS_ANDROID)
   scoped_refptr<BrowserDemuxerAndroid> browser_demuxer_android_;

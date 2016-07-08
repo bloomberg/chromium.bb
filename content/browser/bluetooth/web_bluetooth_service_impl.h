@@ -31,7 +31,6 @@ class Origin;
 namespace content {
 
 class BluetoothDeviceChooserController;
-class BluetoothAdapterFactoryWrapper;
 class FrameConnectedBluetoothDevices;
 class RenderFrameHost;
 class RenderProcessHost;
@@ -208,7 +207,6 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
       const std::string& characteristic_instance_id);
 
   RenderProcessHost* GetRenderProcessHost();
-  BluetoothAdapterFactoryWrapper* GetBluetoothAdapterFactoryWrapper();
   device::BluetoothAdapter* GetAdapter();
   url::Origin GetOrigin();
 

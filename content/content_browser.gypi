@@ -488,8 +488,6 @@
       'browser/blob_storage/blob_dispatcher_host.h',
       'browser/blob_storage/chrome_blob_storage_context.cc',
       'browser/blob_storage/chrome_blob_storage_context.h',
-      'browser/bluetooth/bluetooth_adapter_factory_wrapper.cc',
-      'browser/bluetooth/bluetooth_adapter_factory_wrapper.h',
       'browser/bluetooth/bluetooth_allowed_devices_map.cc',
       'browser/bluetooth/bluetooth_allowed_devices_map.h',
       'browser/bluetooth/bluetooth_blacklist.cc',

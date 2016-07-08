@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 
@@ -29,7 +30,7 @@ class WebBluetoothServiceImpl;
 // Class that interacts with a chooser and starts a bluetooth discovery session.
 // This class needs to be re-instantiated for each call to GetDevice(). Calling
 // GetDevice() twice for the same instance will DCHECK.
-class BluetoothDeviceChooserController final {
+class CONTENT_EXPORT BluetoothDeviceChooserController final {
  public:
   typedef base::Callback<void(blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
                               const std::string& device_address)>
@@ -41,12 +42,10 @@ class BluetoothDeviceChooserController final {
   // |render_frame_host| should be the RenderFrameHost that owns the
   // |web_bluetooth_service_|.
   // |adapter| should be the adapter used to scan for Bluetooth devices.
-  // |scan_duration| is how long will a discovery session be active.
   BluetoothDeviceChooserController(
       WebBluetoothServiceImpl* web_bluetooth_service_,
       RenderFrameHost* render_frame_host,
-      device::BluetoothAdapter* adapter,
-      base::TimeDelta scan_duration);
+      device::BluetoothAdapter* adapter);
   ~BluetoothDeviceChooserController();
 
   // This function performs the following checks before starting a discovery
@@ -79,6 +78,10 @@ class BluetoothDeviceChooserController final {
   // that the adapter changed states.
   void AdapterPoweredChanged(bool powered);
 
+  // After this method is called any new instance of
+  // BluetoothDeviceChooserController will have a scan duration of 0.
+  static void SetTestScanDurationForTesting();
+
  private:
   // Populates the chooser with the devices that are already in the adapter.
   void PopulateFoundDevices();
@@ -106,6 +109,9 @@ class BluetoothDeviceChooserController final {
   void PostSuccessCallback(const std::string& device_address);
   // Helper function to asynchronously run error_callback_.
   void PostErrorCallback(blink::mojom::WebBluetoothError error);
+
+  // If true all new instances of this class will have a scan duration of 0.
+  static bool use_test_scan_duration_;
 
   // The adapter used to get existing devices and start a discovery session.
   device::BluetoothAdapter* adapter_;

@@ -2732,11 +2732,6 @@ void RenderProcessHostImpl::GetAudioOutputControllers(
   audio_renderer_host()->GetOutputControllers(callback);
 }
 
-BluetoothAdapterFactoryWrapper*
-RenderProcessHostImpl::GetBluetoothAdapterFactoryWrapper() {
-  return &bluetooth_adapter_factory_wrapper_;
-}
-
 void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {
   // We are updating all widgets including swapped out ones.
   std::unique_ptr<RenderWidgetHostIterator> widgets(

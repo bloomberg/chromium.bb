@@ -17,7 +17,7 @@
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_proxy.h"
-#include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
+#include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -34,7 +34,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/common/shell_switches.h"
-#include "device/bluetooth/bluetooth_adapter.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
@@ -409,14 +408,8 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
   render_view->GetWidget()->SetDeviceColorProfileForTesting(color_profile);
 }
 
-void SetBluetoothAdapter(int render_process_id,
-                         scoped_refptr<device::BluetoothAdapter> adapter) {
-  RenderProcessHostImpl* render_process_host_impl =
-      static_cast<RenderProcessHostImpl*>(
-          RenderProcessHost::FromID(render_process_id));
-
-  render_process_host_impl->GetBluetoothAdapterFactoryWrapper()
-      ->SetBluetoothAdapterForTesting(std::move(adapter));
+void SetTestBluetoothScanDuration() {
+  BluetoothDeviceChooserController::SetTestScanDurationForTesting();
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {

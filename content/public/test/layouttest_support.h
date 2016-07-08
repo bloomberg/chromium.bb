@@ -119,9 +119,8 @@ float GetWindowToViewportScale(RenderView* render_view);
 // Set the device color profile associated with the profile |name|.
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name);
 
-// Change the bluetooth test adapter while running a layout test.
-void SetBluetoothAdapter(int render_process_id,
-                         scoped_refptr<device::BluetoothAdapter> adapter);
+// Sets the scan duration to 0.
+void SetTestBluetoothScanDuration();
 
 // Enables or disables synchronous resize mode. When enabled, all window-sizing
 // machinery is short-circuited inside the renderer. This mode is necessary for

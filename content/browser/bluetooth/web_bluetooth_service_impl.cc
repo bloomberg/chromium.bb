@@ -15,7 +15,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/bluetooth/bluetooth_metrics.h"
@@ -25,8 +24,10 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "device/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 
+using device::BluetoothAdapterFactoryWrapper;
 using device::BluetoothUUID;
 
 namespace content {
@@ -314,8 +315,8 @@ void WebBluetoothServiceImpl::RequestDevice(
   RecordRequestDeviceOptions(options);
 
   if (!GetAdapter()) {
-    if (GetBluetoothAdapterFactoryWrapper()->IsBluetoothAdapterAvailable()) {
-      GetBluetoothAdapterFactoryWrapper()->AcquireAdapter(
+    if (BluetoothAdapterFactoryWrapper::Get().IsBluetoothAdapterAvailable()) {
+      BluetoothAdapterFactoryWrapper::Get().AcquireAdapter(
           this, base::Bind(&WebBluetoothServiceImpl::RequestDeviceImpl,
                            weak_ptr_factory_.GetWeakPtr(),
                            base::Passed(std::move(options)), callback));
@@ -678,9 +679,8 @@ void WebBluetoothServiceImpl::RequestDeviceImpl(
   // they can't conflict.
   device_chooser_controller_.reset();
 
-  device_chooser_controller_.reset(new BluetoothDeviceChooserController(
-      this, render_frame_host_, adapter,
-      GetBluetoothAdapterFactoryWrapper()->GetScanDuration()));
+  device_chooser_controller_.reset(
+      new BluetoothDeviceChooserController(this, render_frame_host_, adapter));
 
   device_chooser_controller_->GetDevice(
       std::move(options),
@@ -970,15 +970,8 @@ RenderProcessHost* WebBluetoothServiceImpl::GetRenderProcessHost() {
   return render_frame_host_->GetProcess();
 }
 
-BluetoothAdapterFactoryWrapper*
-WebBluetoothServiceImpl::GetBluetoothAdapterFactoryWrapper() {
-  RenderProcessHostImpl* render_process_host_impl =
-      static_cast<RenderProcessHostImpl*>(GetRenderProcessHost());
-  return render_process_host_impl->GetBluetoothAdapterFactoryWrapper();
-}
-
 device::BluetoothAdapter* WebBluetoothServiceImpl::GetAdapter() {
-  return GetBluetoothAdapterFactoryWrapper()->GetAdapter(this);
+  return BluetoothAdapterFactoryWrapper::Get().GetAdapter(this);
 }
 
 void WebBluetoothServiceImpl::CrashRendererAndClosePipe(
@@ -1000,7 +993,7 @@ void WebBluetoothServiceImpl::ClearState() {
       new FrameConnectedBluetoothDevices(render_frame_host_));
   allowed_devices_map_ = BluetoothAllowedDevicesMap();
   device_chooser_controller_.reset();
-  GetBluetoothAdapterFactoryWrapper()->ReleaseAdapter(this);
+  BluetoothAdapterFactoryWrapper::Get().ReleaseAdapter(this);
 }
 
 }  // namespace content
