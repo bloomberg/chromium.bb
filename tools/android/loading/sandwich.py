@@ -10,9 +10,11 @@ WepPageReplay serving all connections.
 """
 
 import argparse
+import csv
 import json
 import logging
 import os
+import re
 import sys
 from urlparse import urlparse
 import yaml
@@ -115,8 +117,14 @@ def _ArgumentParser():
       help='Setup all NoState-Prefetch benchmarks.')
 
   # Setup Stale-While-Revalidate benchmarks subcommand.
-  subparsers.add_parser('setup-swr', parents=[sandwich_setup_parser],
+  swr_setup_parser = subparsers.add_parser('setup-swr',
+      parents=[sandwich_setup_parser],
       help='Setup all Stale-While-Revalidate benchmarks.')
+  swr_setup_parser.add_argument('-d', '--domains-csv',
+      type=argparse.FileType('r'), required=True,
+      help='Path of the CSV containing the pattern of domains in a '
+           '`domain-patterns` column and a `usage` column in percent in how '
+           'likely they are in a page load.')
 
   # Run benchmarks subcommand (used in _RunBenchmarkMain).
   subparsers.add_parser('run', parents=[task_manager.CommandLineParser()],
@@ -164,25 +172,46 @@ def _GenerateNoStatePrefetchBenchmarkTasks(
 
 
 def _SetupStaleWhileRevalidateBenchmark(args):
-  del args # unused.
+  domain_regexes = []
+  for row in csv.DictReader(args.domains_csv):
+    domain_patterns = json.loads('[{}]'.format(row['domain-patterns']))
+    for domain_pattern in domain_patterns:
+      domain_pattern_escaped = r'(\.|^){}$'.format(re.escape(domain_pattern))
+      domain_regexes.append({
+          'usage': float(row['usage']),
+          'domain_regex': domain_pattern_escaped.replace(r'\?', r'\w*')})
   return {
-    'network_conditions': ['Regular3G', 'Regular2G']
+    'domain_regexes': domain_regexes,
+    'network_conditions': ['Regular3G', 'Regular2G'],
+    'usage_thresholds': [1, 3, 5, 10]
   }
 
 
 def _GenerateStaleWhileRevalidateBenchmarkTasks(
     common_builder, main_transformer, benchmark_setup):
+  # Compile domain regexes.
+  domain_regexes = []
+  for e in benchmark_setup['domain_regexes']:
+     domain_regexes.append({
+        'usage': e['usage'],
+        'domain_regex': re.compile(e['domain_regex'])})
+
+  # Build tasks.
   builder = sandwich_swr.StaleWhileRevalidateBenchmarkBuilder(common_builder)
-  for enable_swr in [False, True]:
-    builder.PopulateBenchmark(enable_swr, _MAIN_TRANSFORMER_LIST_NAME,
-                              transformer_list=[main_transformer])
-    for network_condition in benchmark_setup['network_conditions']:
-      transformer_list_name = network_condition.lower()
-      network_transformer = \
-          sandwich_utils.NetworkSimulationTransformer(network_condition)
-      transformer_list = [main_transformer, network_transformer]
+  for network_condition in benchmark_setup['network_conditions']:
+    transformer_list_name = network_condition.lower()
+    network_transformer = \
+        sandwich_utils.NetworkSimulationTransformer(network_condition)
+    transformer_list = [main_transformer, network_transformer]
+    builder.PopulateBenchmark(
+        'no-swr', [], transformer_list_name, transformer_list)
+    for usage_threshold in benchmark_setup['usage_thresholds']:
+      benchmark_name = 'threshold{}'.format(usage_threshold)
+      selected_domain_regexes = [e['domain_regex'] for e in domain_regexes
+          if e['usage'] > usage_threshold]
       builder.PopulateBenchmark(
-          enable_swr, transformer_list_name, transformer_list)
+          benchmark_name, selected_domain_regexes,
+          transformer_list_name, transformer_list)
 
 
 _TASK_GENERATORS = {

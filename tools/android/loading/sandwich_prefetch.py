@@ -77,60 +77,6 @@ def _NormalizeUrl(url):
   return urlparse.urlunparse(parsed_url)
 
 
-def _PatchWpr(wpr_archive):
-  """Patches a WPR archive to get all resources into the HTTP cache and avoid
-  invalidation and revalidations.
-
-  Args:
-    wpr_archive: wpr_backend.WprArchiveBackend WPR archive to patch.
-  """
-  # Sets the resources cache max-age to 10 years.
-  MAX_AGE = 10 * 365 * 24 * 60 * 60
-  CACHE_CONTROL = 'public, max-age={}'.format(MAX_AGE)
-
-  logging.info('number of entries: %d', len(wpr_archive.ListUrlEntries()))
-  patched_entry_count = 0
-  for url_entry in wpr_archive.ListUrlEntries():
-    response_headers = url_entry.GetResponseHeadersDict()
-    if 'cache-control' in response_headers and \
-        response_headers['cache-control'] == CACHE_CONTROL:
-      continue
-    # Override the cache-control header to set the resources max age to MAX_AGE.
-    #
-    # Important note: Some resources holding sensitive information might have
-    # cache-control set to no-store which allow the resource to be cached but
-    # not cached in the file system. NoState-Prefetch is going to take care of
-    # this case. But in here, to simulate NoState-Prefetch, we don't have other
-    # choices but save absolutely all cached resources on disk so they survive
-    # after killing chrome for cache save, modification and push.
-    url_entry.SetResponseHeader('cache-control', CACHE_CONTROL)
-
-    # TODO(gabadie): May need to extend Vary blacklist (referer?)
-    #
-    # All of these Vary and Pragma possibilities need to be removed from
-    # response headers in order for Chrome to store a resource in HTTP cache and
-    # not to invalidate it.
-    url_entry.RemoveResponseHeaderDirectives('vary', {'*', 'cookie'})
-    url_entry.RemoveResponseHeaderDirectives('pragma', {'no-cache'})
-    patched_entry_count += 1
-  logging.info('number of entries patched: %d', patched_entry_count)
-
-
-def _FilterOutDataAndIncompleteRequests(requests):
-  for request in filter(lambda r: not r.IsDataRequest(), requests):
-    # The protocol is only known once the response has been received. But the
-    # trace recording might have been stopped with still some JavaScript
-    # originated requests that have not received any responses yet.
-    if request.protocol is None:
-      assert not request.HasReceivedResponse()
-      continue
-    if request.protocol == 'about':
-      continue
-    if request.protocol not in {'http/0.9', 'http/1.0', 'http/1.1'}:
-      raise RuntimeError('Unknown request protocol {}'.format(request.protocol))
-    yield request
-
-
 def _PatchCacheArchive(cache_archive_path, loading_trace_path,
                        cache_archive_dest_path):
   """Patch the cache archive.
@@ -153,7 +99,7 @@ def _PatchCacheArchive(cache_archive_path, loading_trace_path,
     cache_backend = chrome_cache.CacheBackend(cache_path, 'simple')
     cache_entries = set(cache_backend.ListKeys())
     logging.info('Original cache size: %d bytes' % cache_backend.GetSize())
-    for request in _FilterOutDataAndIncompleteRequests(
+    for request in sandwich_utils.FilterOutDataAndIncompleteRequests(
         trace.request_track.GetEvents()):
       # On requests having an upload data stream such as POST requests,
       # net::HttpCache::GenerateCacheKey() prefixes the cache entry's key with
@@ -257,7 +203,8 @@ def _ExtractDiscoverableUrls(
         dependencies_lens, subresource_discoverer)
 
   whitelisted_urls = set()
-  for request in _FilterOutDataAndIncompleteRequests(discovered_requests):
+  for request in sandwich_utils.FilterOutDataAndIncompleteRequests(
+      discovered_requests):
     logging.debug('white-listing %s', request.url)
     whitelisted_urls.add(request.url)
   logging.info('number of white-listed resources: %d', len(whitelisted_urls))
@@ -289,37 +236,6 @@ def _PrintUrlSetComparison(ref_url_set, url_set, url_set_name):
     logging.error('+     ' + url)
 
 
-class _RequestOutcome:
-  All, ServedFromCache, NotServedFromCache, Post = range(4)
-
-
-def _ListUrlRequests(trace, request_kind):
-  """Lists requested URLs from a trace.
-
-  Args:
-    trace: (loading_trace.LoadingTrace) loading trace.
-    request_kind: _RequestOutcome indicating the subset of requests to output.
-
-  Returns:
-    set([str])
-  """
-  urls = set()
-  for request_event in _FilterOutDataAndIncompleteRequests(
-      trace.request_track.GetEvents()):
-    if (request_kind == _RequestOutcome.ServedFromCache and
-        request_event.from_disk_cache):
-      urls.add(request_event.url)
-    elif (request_kind == _RequestOutcome.Post and
-        request_event.method.upper().strip() == 'POST'):
-      urls.add(request_event.url)
-    elif (request_kind == _RequestOutcome.NotServedFromCache and
-        not request_event.from_disk_cache):
-      urls.add(request_event.url)
-    elif request_kind == _RequestOutcome.All:
-      urls.add(request_event.url)
-  return urls
-
-
 class _RunOutputVerifier(object):
   """Object to verify benchmark run from traces and WPR log stored in the
   runner output directory.
@@ -347,12 +263,14 @@ class _RunOutputVerifier(object):
     """Verifies a trace with the cache validation result and the benchmark
     setup.
     """
-    effective_requests = _ListUrlRequests(trace, _RequestOutcome.All)
-    effective_post_requests = _ListUrlRequests(trace, _RequestOutcome.Post)
-    effective_cached_requests = \
-        _ListUrlRequests(trace, _RequestOutcome.ServedFromCache)
-    effective_uncached_requests = \
-        _ListUrlRequests(trace, _RequestOutcome.NotServedFromCache)
+    effective_requests = sandwich_utils.ListUrlRequests(
+        trace, sandwich_utils.RequestOutcome.All)
+    effective_post_requests = sandwich_utils.ListUrlRequests(
+        trace, sandwich_utils.RequestOutcome.Post)
+    effective_cached_requests = sandwich_utils.ListUrlRequests(
+        trace, sandwich_utils.RequestOutcome.ServedFromCache)
+    effective_uncached_requests = sandwich_utils.ListUrlRequests(
+        trace, sandwich_utils.RequestOutcome.NotServedFromCache)
 
     missing_requests = self._original_requests.difference(effective_requests)
     unexpected_requests = effective_requests.difference(self._original_requests)
@@ -422,10 +340,12 @@ def _ValidateCacheArchiveContent(cache_build_trace_path, cache_archive_path):
     cache_keys = set(
         chrome_cache.CacheBackend(cache_directory, 'simple').ListKeys())
   trace = loading_trace.LoadingTrace.FromJsonFile(cache_build_trace_path)
-  effective_requests = _ListUrlRequests(trace, _RequestOutcome.All)
-  effective_post_requests = _ListUrlRequests(trace, _RequestOutcome.Post)
+  effective_requests = sandwich_utils.ListUrlRequests(
+      trace, sandwich_utils.RequestOutcome.All)
+  effective_post_requests = sandwich_utils.ListUrlRequests(
+      trace, sandwich_utils.RequestOutcome.Post)
   effective_encoded_data_lengths = {}
-  for request in _FilterOutDataAndIncompleteRequests(
+  for request in sandwich_utils.FilterOutDataAndIncompleteRequests(
       trace.request_track.GetEvents()):
     if request.from_disk_cache or request.served_from_cache:
       # At cache archive creation time, a request might be loaded several times,
@@ -498,7 +418,7 @@ def _ProcessRunOutputDir(
     served_from_cache_bytes = 0
     urls_hitting_network = set()
     response_sizes = {}
-    for request in _FilterOutDataAndIncompleteRequests(
+    for request in sandwich_utils.FilterOutDataAndIncompleteRequests(
         trace.request_track.GetEvents()):
       # Ignore requests served from the blink's cache.
       if request.served_from_cache:
@@ -522,7 +442,7 @@ def _ProcessRunOutputDir(
 
     # Make sure the served from blink's cache requests have at least one
     # corresponding request that was not served from the blink's cache.
-    for request in _FilterOutDataAndIncompleteRequests(
+    for request in sandwich_utils.FilterOutDataAndIncompleteRequests(
         trace.request_track.GetEvents()):
       assert (request.url in urls_hitting_network or
               not request.served_from_cache)
@@ -537,12 +457,12 @@ def _ProcessRunOutputDir(
             len(cache_validation_result['successfully_cached_resources']),
         'cache_recording.cached_subresource_count':
             len(cache_validation_result['expected_cached_resources']),
-        'benchmark.subresource_count': len(_ListUrlRequests(
-            trace, _RequestOutcome.All)),
+        'benchmark.subresource_count': len(sandwich_utils.ListUrlRequests(
+            trace, sandwich_utils.RequestOutcome.All)),
         'benchmark.served_from_cache_count_theoretic':
             len(benchmark_setup['cache_whitelist']),
-        'benchmark.served_from_cache_count': len(_ListUrlRequests(
-            trace, _RequestOutcome.ServedFromCache)),
+        'benchmark.served_from_cache_count': len(sandwich_utils.ListUrlRequests(
+            trace, sandwich_utils.RequestOutcome.ServedFromCache)),
         'benchmark.served_from_network_bytes': served_from_network_bytes,
         'benchmark.served_from_cache_bytes': served_from_cache_bytes
     }
@@ -594,7 +514,6 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
     @self.RegisterTask('common/webpages-patched.wpr',
                        dependencies=[self._common_builder.original_wpr_task])
     def BuildPatchedWpr():
-      common_util.EnsureParentDirectoryExists(BuildPatchedWpr.path)
       shutil.copyfile(
           self._common_builder.original_wpr_task.path, BuildPatchedWpr.path)
       wpr_archive = wpr_backend.WprArchiveBackend(BuildPatchedWpr.path)
@@ -615,7 +534,10 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
         json.dump(original_response_headers, file_output)
 
       # Patch WPR.
-      _PatchWpr(wpr_archive)
+      wpr_url_entries = wpr_archive.ListUrlEntries()
+      for wpr_url_entry in wpr_url_entries:
+        sandwich_utils.PatchWprEntryToBeCached(wpr_url_entry)
+      logging.info('number of patched entries: %d', len(wpr_url_entries))
       wpr_archive.Persist()
 
     @self.RegisterTask('common/original-cache.zip', [BuildPatchedWpr])
