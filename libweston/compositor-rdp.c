@@ -1209,6 +1209,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 {
 	struct rdp_backend *b;
 	char *fd_str;
+	char *fd_tail;
 	int fd;
 
 	b = zalloc(sizeof *b);
@@ -1261,8 +1262,8 @@ rdp_backend_create(struct weston_compositor *compositor,
 			goto err_output;
 		}
 
-		fd = strtoul(fd_str, NULL, 10);
-		if (rdp_peer_init(freerdp_peer_new(fd), b))
+		fd = strtoul(fd_str, &fd_tail, 10);
+		if (fd_tail == fd_str || rdp_peer_init(freerdp_peer_new(fd), b))
 			goto err_output;
 	}
 
