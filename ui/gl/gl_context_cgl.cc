@@ -232,9 +232,7 @@ bool GLContextCGL::MakeCurrent(GLSurface* surface) {
   SetRealGLApi();
 
   SetCurrent(surface);
-  if (!InitializeDynamicBindings()) {
-    return false;
-  }
+  InitializeDynamicBindings();
 
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Unable to make gl context current.";

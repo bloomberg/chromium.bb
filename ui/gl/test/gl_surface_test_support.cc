@@ -86,9 +86,4 @@ void GLSurfaceTestSupport::InitializeOneOffWithMockBindings() {
   InitializeOneOffImplementation(kGLImplementationMockGL, false);
 }
 
-// static
-void GLSurfaceTestSupport::InitializeDynamicMockBindings(GLContext* context) {
-  CHECK(InitializeDynamicGLBindings(kGLImplementationMockGL, context));
-}
-
 }  // namespace gl

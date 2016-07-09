@@ -37,7 +37,6 @@ void GpuServiceTest::SetUpWithGLVersion(const char* gl_version,
   context_->SetGLVersionString(gl_version);
   surface_ = new gl::GLSurfaceStub;
   context_->MakeCurrent(surface_.get());
-  gl::GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
   ran_setup_ = true;
 }
 

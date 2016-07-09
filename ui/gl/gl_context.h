@@ -153,7 +153,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Initialize function pointers to functions where the bound version depends
   // on GL version or supported extensions. Should be called immediately after
   // this context is made current.
-  bool InitializeDynamicBindings();
+  void InitializeDynamicBindings();
 
   // Returns the last real (non-virtual) GLContext made current.
   static GLContext* GetRealCurrent();

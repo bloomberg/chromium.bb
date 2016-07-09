@@ -118,23 +118,12 @@ class GpuChannelTest : public GpuChannelTestCommon {
         .Times(AnyNumber())
         .WillRepeatedly(Return(GL_FRAMEBUFFER_COMPLETE));
 
-    // Dynamic bindings must be set up for the GLES2DecoderImpl, which requires
-    // a GLContext. Use a GLContextStub which does nothing but call through to
-    // our |gl_interface| above.
-    stub_context_ = new gl::GLContextStub;
-    stub_surface_ = new gl::GLSurfaceStub;
-    stub_context_->MakeCurrent(stub_surface_.get());
-    gl::GLSurfaceTestSupport::InitializeDynamicMockBindings(
-        stub_context_.get());
-
     GpuChannelTestCommon::SetUp();
   }
 
   void TearDown() override {
     GpuChannelTestCommon::TearDown();
 
-    stub_context_ = nullptr;
-    stub_surface_ = nullptr;
     gl::MockGLInterface::SetGLInterface(nullptr);
     gl::init::ClearGLBindings();
     gl_interface_ = nullptr;
@@ -192,8 +181,6 @@ class GpuChannelTest : public GpuChannelTestCommon {
  private:
   base::TestMessageLoop message_loop_;
   std::unique_ptr<gl::MockGLInterface> gl_interface_;
-  scoped_refptr<gl::GLContextStub> stub_context_;
-  scoped_refptr<gl::GLSurfaceStub> stub_surface_;
 };
 
 #if defined(OS_WIN)

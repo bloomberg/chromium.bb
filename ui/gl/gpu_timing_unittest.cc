@@ -60,7 +60,6 @@ class GPUTimingTest : public testing::Test {
     surface_ = new GLSurfaceStub;
     context_->MakeCurrent(surface_.get());
     gpu_timing_fake_queries_.Reset();
-    GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
 
     setup_ = true;
   }

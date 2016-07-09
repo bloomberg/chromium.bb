@@ -46,11 +46,6 @@ typedef void* (WINAPI *GLGetProcAddressProc)(const char* name);
 typedef void* (*GLGetProcAddressProc)(const char* name);
 #endif
 
-// Initialize function bindings that depend on the context for a GL
-// implementation.
-GL_EXPORT bool InitializeDynamicGLBindings(GLImplementation implementation,
-                                           GLContext* context);
-
 // Initialize stub methods for drawing operations in the GL bindings. The
 // null draw bindings default to enabled, so that draw operations do nothing.
 GL_EXPORT void InitializeNullDrawGLBindings();

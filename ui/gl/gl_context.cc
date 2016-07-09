@@ -179,12 +179,9 @@ bool GLContext::WasAllocatedUsingRobustnessExtension() {
   return false;
 }
 
-bool GLContext::InitializeDynamicBindings() {
+void GLContext::InitializeDynamicBindings() {
   DCHECK(IsCurrent(nullptr));
-  bool initialized = InitializeDynamicGLBindings(GetGLImplementation(), this);
-  if (!initialized)
-    LOG(ERROR) << "Could not initialize dynamic bindings.";
-  return initialized;
+  InitializeDynamicGLBindingsGL(this);
 }
 
 bool GLContext::MakeVirtuallyCurrent(

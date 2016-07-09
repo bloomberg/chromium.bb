@@ -103,9 +103,7 @@ bool GLContextWGL::MakeCurrent(GLSurface* surface) {
   SetRealGLApi();
 
   SetCurrent(surface);
-  if (!InitializeDynamicBindings()) {
-    return false;
-  }
+  InitializeDynamicBindings();
 
   if (!surface->OnMakeCurrent(this)) {
     LOG(ERROR) << "Could not make current.";

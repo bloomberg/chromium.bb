@@ -18,31 +18,6 @@ void GetAllowedGLImplementations(std::vector<GLImplementation>* impls) {
   impls->push_back(kGLImplementationOSMesaGL);
 }
 
-bool InitializeDynamicGLBindings(GLImplementation implementation,
-    GLContext* context) {
-  switch (implementation) {
-    case kGLImplementationOSMesaGL:
-    case kGLImplementationEGLGLES2:
-    case kGLImplementationDesktopGL:
-      InitializeDynamicGLBindingsGL(context);
-      break;
-    case kGLImplementationMockGL:
-      if (!context) {
-        scoped_refptr<GLContextStubWithExtensions> mock_context(
-            new GLContextStubWithExtensions());
-        mock_context->SetGLVersionString("3.0");
-        InitializeDynamicGLBindingsGL(mock_context.get());
-      } else {
-        InitializeDynamicGLBindingsGL(context);
-      }
-      break;
-    default:
-      return false;
-  }
-
-  return true;
-}
-
 bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   switch (GetGLImplementation()) {
     case kGLImplementationDesktopGL:

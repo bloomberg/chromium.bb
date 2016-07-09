@@ -16,8 +16,9 @@ bool GLContextStub::Initialize(
 }
 
 bool GLContextStub::MakeCurrent(GLSurface* surface) {
-  SetCurrent(surface);
   SetRealGLApi();
+  SetCurrent(surface);
+  InitializeDynamicBindings();
   return true;
 }
 
