@@ -203,6 +203,11 @@ bool ShouldQuicPreferAes(const VariationParameters& quic_trial_params) {
       GetVariationParam(quic_trial_params, "prefer_aes"), "true");
 }
 
+bool ShouldForceHolBlocking(const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "force_hol_blocking"), "true");
+}
+
 int GetQuicMaxNumberOfLossyConnections(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -376,6 +381,7 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     params->quic_disable_disk_cache =
         ShouldQuicDisableDiskCache(quic_trial_params);
     params->quic_prefer_aes = ShouldQuicPreferAes(quic_trial_params);
+    params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
     int max_number_of_lossy_connections =
         GetQuicMaxNumberOfLossyConnections(quic_trial_params);
     if (max_number_of_lossy_connections != 0) {

@@ -139,6 +139,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params_.quic_migrate_sessions_early);
   EXPECT_TRUE(params_.quic_host_whitelist.empty());
+  EXPECT_FALSE(params_.quic_force_hol_blocking);
 
   net::HttpNetworkSession::Params default_params;
   EXPECT_EQ(default_params.quic_supported_versions,
@@ -553,6 +554,17 @@ TEST_F(NetworkSessionConfiguratorTest, TCPFastOpenHttpsEnabled) {
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.enable_tcp_fast_open_for_ssl);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicForceHolBlocking) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["force_hol_blocking"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.quic_force_hol_blocking);
 }
 
 }  // namespace test

@@ -178,6 +178,8 @@ class NET_EXPORT HttpNetworkSession
     bool quic_migrate_sessions_early;
     // If true, bidirectional streams over QUIC will be disabled.
     bool quic_disable_bidirectional_streams;
+    // If true, enable force HOL blocking.  For measurement purposes.
+    bool quic_force_hol_blocking;
 
     ProxyDelegate* proxy_delegate;
     // Enable support for Token Binding.

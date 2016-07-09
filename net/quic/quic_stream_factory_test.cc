@@ -320,7 +320,8 @@ class QuicStreamFactoryTestBase {
         disable_quic_on_timeout_with_open_streams_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         migrate_sessions_on_network_change_(false),
-        migrate_sessions_early_(false) {
+        migrate_sessions_early_(false),
+        force_hol_blocking_(false) {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
@@ -352,7 +353,7 @@ class QuicStreamFactoryTestBase {
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
         idle_connection_timeout_seconds_, migrate_sessions_on_network_change_,
-        migrate_sessions_early_, QuicTagVector(),
+        migrate_sessions_early_, force_hol_blocking_, QuicTagVector(),
         /*enable_token_binding*/ false));
     factory_->set_require_confirmation(false);
     EXPECT_FALSE(factory_->has_quic_server_info_factory());
@@ -545,6 +546,7 @@ class QuicStreamFactoryTestBase {
   int idle_connection_timeout_seconds_;
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
+  bool force_hol_blocking_;
 };
 
 class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
@@ -4392,6 +4394,33 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, ForceHolBlockingEnabled) {
+  force_hol_blocking_ = true;
+  Initialize();
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  if (session->connection()->version() > QUIC_VERSION_35) {
+    EXPECT_TRUE(session->force_hol_blocking());
+  } else {
+    EXPECT_FALSE(session->force_hol_blocking());
+  }
 }
 
 class QuicStreamFactoryWithDestinationTest

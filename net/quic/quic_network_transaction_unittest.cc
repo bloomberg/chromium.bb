@@ -417,6 +417,28 @@ class QuicNetworkTransactionTest
         packet_number, stream_id, should_include_version, fin, offset, data);
   }
 
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientDataPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      QuicStreamOffset offset,
+      base::StringPiece data) {
+    return client_maker_.MakeDataPacket(
+        packet_number, stream_id, should_include_version, fin, offset, data);
+  }
+
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientForceHolDataPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      QuicStreamOffset* offset,
+      base::StringPiece data) {
+    return client_maker_.MakeForceHolDataPacket(
+        packet_number, stream_id, should_include_version, fin, offset, data);
+  }
+
   std::unique_ptr<QuicEncryptedPacket> ConstructClientRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
@@ -2351,6 +2373,56 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
       entries, 0, NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
       NetLog::PHASE_NONE);
   EXPECT_LT(0, pos);
+}
+
+TEST_P(QuicNetworkTransactionTest, QuicForceHolBlocking) {
+  FLAGS_quic_enable_version_35 = true;
+  FLAGS_quic_enable_version_36 = true;
+  params_.quic_force_hol_blocking = true;
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
+
+  MockQuicData mock_quic_data;
+
+  QuicStreamOffset offset = 0;
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, kClientDataStreamId1, true, false,
+      GetRequestHeaders("POST", "https", "/"), &offset));
+
+  std::unique_ptr<QuicEncryptedPacket> packet;
+  if (GetParam() > QUIC_VERSION_35) {
+    packet = ConstructClientForceHolDataPacket(2, kClientDataStreamId1, true,
+                                               true, &offset, "1");
+  } else {
+    packet =
+        ConstructClientDataPacket(2, kClientDataStreamId1, true, true, 0, "1");
+  }
+  mock_quic_data.AddWrite(std::move(packet));
+
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, kClientDataStreamId1, false, false, GetResponseHeaders("200 OK")));
+
+  mock_quic_data.AddRead(ConstructServerDataPacket(2, kClientDataStreamId1,
+                                                   false, true, 0, "hello!"));
+
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+
+  // The non-alternate protocol job needs to hang in order to guarantee that
+  // the alternate-protocol job will "win".
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+  request_.method = "POST";
+  ChunkedUploadDataStream upload_data(0);
+  upload_data.AppendData("1", 1, true);
+
+  request_.upload_data_stream = &upload_data;
+
+  SendRequestAndExpectQuicResponse("hello!");
 }
 
 class QuicNetworkTransactionWithDestinationTest

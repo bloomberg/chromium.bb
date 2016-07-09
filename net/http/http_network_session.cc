@@ -128,6 +128,7 @@ HttpNetworkSession::Params::Params()
       quic_migrate_sessions_on_network_change(false),
       quic_migrate_sessions_early(false),
       quic_disable_bidirectional_streams(false),
+      quic_force_hol_blocking(false),
       proxy_delegate(NULL),
       enable_token_binding(false) {
   quic_supported_versions.push_back(QUIC_VERSION_34);
@@ -186,6 +187,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_idle_connection_timeout_seconds,
           params.quic_migrate_sessions_on_network_change,
           params.quic_migrate_sessions_early,
+          params.quic_force_hol_blocking,
           params.quic_connection_options,
           params.enable_token_binding),
       spdy_session_pool_(params.host_resolver,
@@ -337,6 +339,7 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.disable_quic_on_timeout_with_open_streams);
   dict->SetString("disabled_reason",
                   quic_stream_factory_.QuicDisabledReasonString());
+  dict->SetBoolean("force_hol_blocking", params_.quic_force_hol_blocking);
   return std::move(dict);
 }
 
