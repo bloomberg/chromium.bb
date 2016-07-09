@@ -159,3 +159,6 @@ class LayoutTestResults(object):
 
     def unexpected_mismatch_results(self):
         return self._filter_tests(lambda r: r.has_mismatch_result() and not r.did_run_as_expected())
+
+    def didnt_run_as_expected_results(self):
+        return self._filter_tests(lambda r: not r.did_run_as_expected())
