@@ -37,7 +37,7 @@ parse_count(const char *str, int *value)
 	long v;
 
 	errno = 0;
-	v = strtol(str, &end, 0);
+	v = strtol(str, &end, 10);
 	if ((errno == ERANGE && (v == LONG_MAX || v == LONG_MIN)) ||
 	    (errno != 0 && v == 0) ||
 	    (end == str) ||
