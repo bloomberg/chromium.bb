@@ -41,7 +41,6 @@ struct WebExternalTextureMailbox {
     bool validSyncToken = false;
     bool allowOverlay = false;
     bool nearestNeighbor = false;
-    int gpuMemoryBufferId = -1;
     unsigned textureTarget = 0;
     WebSize textureSize;
 
