@@ -321,16 +321,16 @@ class QuicStreamFactoryTestBase {
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         migrate_sessions_on_network_change_(false),
         migrate_sessions_early_(false),
-        force_hol_blocking_(false) {
+        force_hol_blocking_(false),
+        race_cert_verification_(false) {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
   ~QuicStreamFactoryTestBase() {
     // If |factory_| was initialized, then it took over ownership of |clock_|.
     // If |factory_| was not initialized, then |clock_| needs to be destroyed.
-    if (!factory_) {
+    if (!factory_)
       delete clock_;
-    }
   }
 
   void Initialize() {
@@ -353,8 +353,8 @@ class QuicStreamFactoryTestBase {
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
         idle_connection_timeout_seconds_, migrate_sessions_on_network_change_,
-        migrate_sessions_early_, force_hol_blocking_, QuicTagVector(),
-        /*enable_token_binding*/ false));
+        migrate_sessions_early_, force_hol_blocking_, race_cert_verification_,
+        QuicTagVector(), /*enable_token_binding*/ false));
     factory_->set_require_confirmation(false);
     EXPECT_FALSE(factory_->has_quic_server_info_factory());
     factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());
@@ -377,6 +377,11 @@ class QuicStreamFactoryTestBase {
   bool HasActiveSession(const HostPortPair& host_port_pair) {
     QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
     return QuicStreamFactoryPeer::HasActiveSession(factory_.get(), server_id);
+  }
+
+  bool HasActiveCertVerifierJob(const QuicServerId& server_id) {
+    return QuicStreamFactoryPeer::HasActiveCertVerifierJob(factory_.get(),
+                                                           server_id);
   }
 
   QuicChromiumClientSession* GetActiveSession(
@@ -547,6 +552,7 @@ class QuicStreamFactoryTestBase {
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
   bool force_hol_blocking_;
+  bool race_cert_verification_;
 };
 
 class QuicStreamFactoryTest : public QuicStreamFactoryTestBase,
@@ -4134,6 +4140,64 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   EXPECT_EQ(signature2, cached2->signature());
   ASSERT_EQ(1U, cached->certs().size());
   EXPECT_EQ(test_cert2, cached2->certs()[0]);
+}
+
+TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
+  Initialize();
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Save current state of |race_cert_verification|.
+  bool race_cert_verification =
+      QuicStreamFactoryPeer::GetRaceCertVerification(factory_.get());
+
+  // Load server config.
+  HostPortPair host_port_pair("test.example.com", kDefaultServerPort);
+  QuicServerId quic_server_id(host_port_pair_, privacy_mode_);
+  QuicStreamFactoryPeer::CacheDummyServerConfig(factory_.get(), quic_server_id);
+
+  QuicStreamFactoryPeer::SetRaceCertVerification(factory_.get(), true);
+
+  // Start CertVerifyJob.
+  QuicAsyncStatus status = QuicStreamFactoryPeer::StartCertVerifyJob(
+      factory_.get(), quic_server_id, /*cert_verify_flags=*/0, net_log_);
+  EXPECT_NE(QUIC_FAILURE, status);
+
+  if (status == QUIC_PENDING) {
+    // Verify CertVerifierJob has started.
+    EXPECT_TRUE(HasActiveCertVerifierJob(quic_server_id));
+
+    while (HasActiveCertVerifierJob(quic_server_id)) {
+      base::RunLoop().RunUntilIdle();
+    }
+  }
+  // Verify CertVerifierJob has finished.
+  EXPECT_FALSE(HasActiveCertVerifierJob(quic_server_id));
+
+  // Start a QUIC request.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+
+  // Restore |race_cert_verification|.
+  QuicStreamFactoryPeer::SetRaceCertVerification(factory_.get(),
+                                                 race_cert_verification);
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+
+  // Verify there are no outstanding CertVerifierJobs after request has
+  // finished.
+  EXPECT_FALSE(HasActiveCertVerifierJob(quic_server_id));
 }
 
 TEST_P(QuicStreamFactoryTest, QuicDoingZeroRTT) {
