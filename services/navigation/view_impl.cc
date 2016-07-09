@@ -15,6 +15,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "services/shell/public/cpp/connector.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -56,12 +57,12 @@ mojom::NavigationEntryPtr EntryPtrFromNavEntry(
 
 }  // namespace
 
-ViewImpl::ViewImpl(shell::Connector* connector,
+ViewImpl::ViewImpl(std::unique_ptr<shell::Connector> connector,
                    const std::string& client_user_id,
                    mojom::ViewClientPtr client,
                    mojom::ViewRequest request,
                    std::unique_ptr<shell::ServiceContextRef> ref)
-    : connector_(connector),
+    : connector_(std::move(connector)),
       binding_(this, std::move(request)),
       client_(std::move(client)),
       ref_(std::move(ref)),
@@ -148,8 +149,9 @@ void ViewImpl::AddNewContents(content::WebContents* source,
   const std::string new_user_id =
       content::BrowserContext::GetShellUserIdFor(
           new_contents->GetBrowserContext());
-  ViewImpl* impl = new ViewImpl(connector_, new_user_id, std::move(client),
-                                std::move(view_request), ref_->Clone());
+  ViewImpl* impl = new ViewImpl(
+      connector_->Clone(), new_user_id, std::move(client),
+      std::move(view_request), ref_->Clone());
   // TODO(beng): This is a bit crappy. should be able to create the ViewImpl
   //             with |new_contents| instead.
   impl->web_view_->SetWebContents(new_contents);
@@ -272,7 +274,7 @@ void ViewImpl::OnEmbed(ui::Window* root) {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.delegate = this;
   params.native_widget = new views::NativeWidgetMus(
-      widget_.get(), connector_, root, ui::mojom::SurfaceType::DEFAULT);
+      widget_.get(), connector_.get(), root, ui::mojom::SurfaceType::DEFAULT);
   widget_->Init(params);
   widget_->Show();
 }

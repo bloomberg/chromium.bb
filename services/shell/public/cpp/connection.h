@@ -37,8 +37,7 @@ class InterfaceProvider;
 // interface_registry.h for more information.
 //
 // A Connection returned via Shell::ConnectToApplication() is owned by the
-// caller.
-// An Connection received via OnConnect is owned by the ServiceContext.
+// caller. A Connection received via OnConnect is owned by the ServiceContext.
 // To close a connection, call CloseConnection which will destroy this object.
 class Connection {
  public:

@@ -28,10 +28,12 @@ class ConnectorImpl : public Connector {
   std::unique_ptr<Connection> Connect(ConnectParams* params) override;
   std::unique_ptr<Connector> Clone() override;
 
+  bool BindIfNecessary();
+
   mojom::ConnectorPtrInfo unbound_state_;
   mojom::ConnectorPtr connector_;
 
-  std::unique_ptr<base::ThreadChecker> thread_checker_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectorImpl);
 };

@@ -49,20 +49,10 @@ namespace content {
 
 namespace {
 
-using ConnectorPtr = base::ThreadLocalPointer<shell::Connector>;
+base::LazyInstance<std::unique_ptr<shell::Connector>>::Leaky
+    g_io_thread_connector = LAZY_INSTANCE_INITIALIZER;
 
-base::LazyInstance<ConnectorPtr>::Leaky io_connector_tls_ptr =
-    LAZY_INSTANCE_INITIALIZER;
-
-void SetConnectorOnIOThread(std::unique_ptr<shell::Connector> connector) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  io_connector_tls_ptr.Pointer()->Set(connector.release());
-}
-
-void DestroyConnectorOnIOThread() {
-  delete MojoShellContext::GetConnectorForIOThread();
-  io_connector_tls_ptr.Pointer()->Set(nullptr);
-}
+void DestroyConnectorOnIOThread() { g_io_thread_connector.Get().reset(); }
 
 void StartUtilityProcessOnIOThread(
     mojo::InterfaceRequest<mojom::ProcessControl> request,
@@ -272,14 +262,9 @@ MojoShellContext::MojoShellContext() {
     request =
         service_manager_->StartEmbedderService(kBrowserMojoApplicationName);
   }
-  MojoShellConnection::SetForProcess(
-      MojoShellConnection::Create(std::move(request)));
-
-  std::unique_ptr<shell::Connector> io_connector =
-      MojoShellConnection::GetForProcess()->GetConnector()->Clone();
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&SetConnectorOnIOThread, base::Passed(&io_connector)));
+  MojoShellConnection::SetForProcess(MojoShellConnection::Create(
+      std::move(request),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
   ContentBrowserClient::StaticMojoApplicationMap apps;
   GetContentClient()->browser()->RegisterInProcessMojoApplications(&apps);
@@ -287,6 +272,13 @@ MojoShellContext::MojoShellContext() {
     MojoShellConnection::GetForProcess()->AddEmbeddedService(entry.first,
                                                              entry.second);
   }
+
+  // This is safe to assign directly from any thread, because MojoShellContext
+  // must be constructed before anyone can call GetConnectorForIOThread().
+  g_io_thread_connector.Get() =
+      MojoShellConnection::GetForProcess()->GetConnector()->Clone();
+
+  MojoShellConnection::GetForProcess()->Start();
 
   ContentBrowserClient::OutOfProcessMojoApplicationMap sandboxed_apps;
   GetContentClient()
@@ -340,7 +332,7 @@ void MojoShellContext::ConnectToApplication(
 // static
 shell::Connector* MojoShellContext::GetConnectorForIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return io_connector_tls_ptr.Pointer()->Get();
+  return g_io_thread_connector.Get().get();
 }
 
 void MojoShellContext::ConnectToApplicationOnOwnThread(

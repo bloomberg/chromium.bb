@@ -23,7 +23,6 @@
 #include "ipc/ipc_message.h"  // For IPC_MESSAGE_LOG_ENABLED.
 #include "ipc/ipc_platform_file.h"
 #include "ipc/message_router.h"
-#include "services/shell/public/cpp/service.h"
 
 namespace base {
 class MessageLoop;
@@ -68,8 +67,7 @@ struct RequestInfo;
 // The main thread of a child process derives from this class.
 class CONTENT_EXPORT ChildThreadImpl
     : public IPC::Listener,
-      virtual public ChildThread,
-      public NON_EXPORTED_BASE(shell::Service){
+      virtual public ChildThread {
  public:
   struct CONTENT_EXPORT Options;
 
@@ -100,10 +98,6 @@ class CONTENT_EXPORT ChildThreadImpl
   MojoShellConnection* GetMojoShellConnection() override;
   shell::InterfaceRegistry* GetInterfaceRegistry() override;
   shell::InterfaceProvider* GetRemoteInterfaces() override;
-
-  // shell::Service:
-  shell::InterfaceRegistry* GetInterfaceRegistryForConnection() override;
-  shell::InterfaceProvider* GetInterfaceProviderForConnection() override;
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
@@ -209,6 +203,10 @@ class CONTENT_EXPORT ChildThreadImpl
   // Called when the process refcount is 0.
   void OnProcessFinalRelease();
 
+  // Implemented by subclasses to attach ConnectionFilters to the thread's
+  // shell connection.
+  virtual void AddConnectionFilters(MojoShellConnection* connection);
+
   virtual bool OnControlMessageReceived(const IPC::Message& msg);
   virtual void OnProcessBackgrounded(bool backgrounded);
   virtual void OnProcessPurgeAndSuspend();
@@ -253,9 +251,9 @@ class CONTENT_EXPORT ChildThreadImpl
   void EnsureConnected();
 
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
-  std::unique_ptr<MojoShellConnection> mojo_shell_connection_;
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
+  std::unique_ptr<MojoShellConnection> mojo_shell_connection_;
 
   std::string channel_name_;
   std::unique_ptr<IPC::SyncChannel> channel_;
@@ -309,7 +307,10 @@ class CONTENT_EXPORT ChildThreadImpl
 
   scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner_;
 
-  base::WeakPtrFactory<ChildThreadImpl> channel_connected_factory_;
+  std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
+      channel_connected_factory_;
+
+  base::WeakPtrFactory<ChildThreadImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildThreadImpl);
 };

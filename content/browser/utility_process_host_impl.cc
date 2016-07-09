@@ -172,9 +172,10 @@ UtilityProcessHostImpl::UtilityProcessHostImpl(
                                                  child_token_));
   mojo_child_connection_.reset(new MojoChildConnection(
       kUtilityMojoApplicationName,
-      base::StringPrintf("%d_0", process_->GetData().id),
-      child_token_,
-      MojoShellContext::GetConnectorForIOThread()));
+      base::StringPrintf("%d_0", process_->GetData().id), child_token_,
+      MojoShellContext::GetConnectorForIOThread(),
+      BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
+          ->task_runner()));
 }
 
 UtilityProcessHostImpl::~UtilityProcessHostImpl() {
@@ -239,11 +240,11 @@ bool UtilityProcessHostImpl::Start() {
 }
 
 shell::InterfaceRegistry* UtilityProcessHostImpl::GetInterfaceRegistry() {
-  return mojo_child_connection_->connection()->GetInterfaceRegistry();
+  return mojo_child_connection_->GetInterfaceRegistry();
 }
 
 shell::InterfaceProvider* UtilityProcessHostImpl::GetRemoteInterfaces() {
-  return mojo_child_connection_->connection()->GetRemoteInterfaces();
+  return mojo_child_connection_->GetRemoteInterfaces();
 }
 
 void UtilityProcessHostImpl::SetName(const base::string16& name) {

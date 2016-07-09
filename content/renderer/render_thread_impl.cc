@@ -142,6 +142,8 @@
 #include "net/base/port_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/WebKit/public/platform/WebImageGenerator.h"
@@ -849,15 +851,6 @@ void RenderThreadImpl::Init(
   GetInterfaceRegistry()->AddInterface(base::Bind(CreateFrameFactory));
   GetInterfaceRegistry()->AddInterface(base::Bind(CreateEmbeddedWorkerSetup));
 
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-  // We may not have a MojoShellConnection object in tests that directly
-  // instantiate a RenderThreadImpl.
-  if (MojoShellConnection::GetForProcess() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMusInRenderer))
-    CreateRenderWidgetWindowTreeClientFactory();
-#endif
-
   GetRemoteInterfaces()->GetInterface(
       mojo::GetProxy(&storage_partition_service_));
 
@@ -992,6 +985,15 @@ void RenderThreadImpl::Shutdown() {
   main_message_loop_.reset();
 
   lazy_tls.Pointer()->Set(nullptr);
+}
+
+void RenderThreadImpl::AddConnectionFilters(MojoShellConnection* connection) {
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMusInRenderer)) {
+    CreateRenderWidgetWindowTreeClientFactory(connection);
+  }
+#endif
 }
 
 bool RenderThreadImpl::Send(IPC::Message* msg) {

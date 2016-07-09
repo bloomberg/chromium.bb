@@ -159,6 +159,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
@@ -2849,8 +2850,8 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
 #if defined(OS_CHROMEOS)
 #if defined(MOJO_SHELL_CLIENT)
   if (chrome::IsRunningInMash()) {
-    content::MojoShellConnection::GetForProcess()->MergeService(
-        base::WrapUnique(new chromeos::ChromeInterfaceFactory));
+    content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
+        base::MakeUnique<chromeos::ChromeInterfaceFactory>());
   }
 #endif  // MOJO_SHELL_CLIENT
 #endif  // OS_CHROMEOS

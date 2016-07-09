@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/mojo_test_connector.h"
@@ -108,7 +109,9 @@ std::unique_ptr<content::MojoShellConnection> CreateMojoShellConnection(
     MashTestLauncherDelegate* delegate) {
   std::unique_ptr<content::MojoShellConnection> connection(
       content::MojoShellConnection::Create(
-          delegate->GetMojoTestConnectorForSingleProcess()->Init()));
+          delegate->GetMojoTestConnectorForSingleProcess()->Init(),
+          base::ThreadTaskRunnerHandle::Get()));
+  connection->Start();
   ConnectToDefaultApps(connection->GetConnector());
   return connection;
 }

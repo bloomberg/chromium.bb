@@ -10,7 +10,6 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/shell/public/cpp/capabilities.h"
-#include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/lib/connection_impl.h"
 #include "services/shell/public/cpp/lib/connector_impl.h"
 #include "services/shell/public/cpp/service.h"
@@ -20,28 +19,23 @@ namespace shell {
 ////////////////////////////////////////////////////////////////////////////////
 // ServiceContext, public:
 
-ServiceContext::ServiceContext(shell::Service* client,
-                               mojom::ServiceRequest request)
-    : client_(client), binding_(this) {
-  mojom::ConnectorPtr connector;
-  pending_connector_request_ = GetProxy(&connector);
-  connector_.reset(new ConnectorImpl(std::move(connector)));
-
-  DCHECK(request.is_pending());
-  binding_.Bind(std::move(request));
+ServiceContext::ServiceContext(shell::Service* service,
+                               mojom::ServiceRequest request,
+                               std::unique_ptr<Connector> connector,
+                               mojom::ConnectorRequest connector_request)
+    : pending_connector_request_(std::move(connector_request)),
+      service_(service),
+      binding_(this, std::move(request)),
+      connector_(std::move(connector)) {
+  DCHECK(binding_.is_bound());
+  if (!connector_) {
+    connector_ = Connector::Create(&pending_connector_request_);
+  } else {
+    DCHECK(pending_connector_request_.is_pending());
+  }
 }
 
 ServiceContext::~ServiceContext() {}
-
-void ServiceContext::set_initialize_handler(const base::Closure& callback) {
-  initialize_handler_ = callback;
-}
-
-void ServiceContext::SetAppTestConnectorForTesting(
-    mojom::ConnectorPtr connector) {
-  pending_connector_request_ = nullptr;
-  connector_.reset(new ConnectorImpl(std::move(connector)));
-}
 
 void ServiceContext::SetConnectionLostClosure(const base::Closure& closure) {
   connection_lost_closure_ = closure;
@@ -66,7 +60,7 @@ void ServiceContext::OnStart(mojom::IdentityPtr identity,
   binding_.set_connection_error_handler(
       base::Bind(&ServiceContext::OnConnectionError, base::Unretained(this)));
 
-  client_->OnStart(connector_.get(), identity_, id);
+  service_->OnStart(connector_.get(), identity_, id);
 }
 
 void ServiceContext::OnConnect(
@@ -81,29 +75,16 @@ void ServiceContext::OnConnect(
                                    allowed_capabilities.To<CapabilityRequest>(),
                                    Connection::State::CONNECTED));
 
-  InterfaceRegistry* exposed_interfaces =
-      client_->GetInterfaceRegistryForConnection();
-  if (exposed_interfaces) {
-    exposed_interfaces->Bind(std::move(local_interfaces));
-    registry->set_exposed_interfaces(exposed_interfaces);
-  } else {
-    std::unique_ptr<InterfaceRegistry> interfaces(
-        new InterfaceRegistry(registry.get()));
-    interfaces->Bind(std::move(local_interfaces));
-    registry->SetExposedInterfaces(std::move(interfaces));
-  }
-  shell::InterfaceProvider* remote_interface_provider =
-    client_->GetInterfaceProviderForConnection();
-  if (remote_interface_provider) {
-    remote_interface_provider->Bind(std::move(remote_interfaces));
-    registry->set_remote_interfaces(remote_interface_provider);
-  } else {
-    std::unique_ptr<InterfaceProvider> interfaces(new InterfaceProvider);
-    interfaces->Bind(std::move(remote_interfaces));
-    registry->SetRemoteInterfaces(std::move(interfaces));
-  }
+  std::unique_ptr<InterfaceRegistry> exposed_interfaces(
+      new InterfaceRegistry(registry.get()));
+  exposed_interfaces->Bind(std::move(local_interfaces));
+  registry->SetExposedInterfaces(std::move(exposed_interfaces));
 
-  if (!client_->OnConnect(registry.get()))
+  std::unique_ptr<InterfaceProvider> interfaces(new InterfaceProvider);
+  interfaces->Bind(std::move(remote_interfaces));
+  registry->SetRemoteInterfaces(std::move(interfaces));
+
+  if (!service_->OnConnect(registry.get()))
     return;
 
   // TODO(beng): it appears we never prune this list. We should, when the
@@ -118,7 +99,7 @@ void ServiceContext::OnConnectionError() {
   // Note that the Service doesn't technically have to quit now, it may live
   // on to service existing connections. All existing Connectors however are
   // invalid.
-  should_run_connection_lost_closure_ = client_->OnStop();
+  should_run_connection_lost_closure_ = service_->OnStop();
   if (should_run_connection_lost_closure_ &&
       !connection_lost_closure_.is_null())
     connection_lost_closure_.Run();

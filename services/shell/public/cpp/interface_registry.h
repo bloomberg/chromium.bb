@@ -6,7 +6,10 @@
 #define SERVICES_SHELL_PUBLIC_CPP_INTERFACE_REGISTRY_H_
 
 #include <memory>
+#include <queue>
+#include <utility>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/lib/callback_binder.h"
@@ -40,6 +43,9 @@ class InterfaceBinder;
 //
 class InterfaceRegistry : public mojom::InterfaceProvider {
  public:
+  using Binder = base::Callback<void(const mojo::String&,
+                                     mojo::ScopedMessagePipeHandle)>;
+
   class TestApi {
    public:
     explicit TestApi(InterfaceRegistry* registry) : registry_(registry) {}
@@ -63,6 +69,10 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   // imposed on this registry. If null, they are not.
   explicit InterfaceRegistry(Connection* connection);
   ~InterfaceRegistry() override;
+
+  // Sets a default handler for incoming interface requests which are allowed by
+  // capability filters but have no registered handler in this registry.
+  void set_default_binder(const Binder& binder) { default_binder_ = binder; }
 
   void Bind(mojom::InterfaceProviderRequest local_interfaces_request);
 
@@ -131,6 +141,15 @@ class InterfaceRegistry : public mojom::InterfaceProvider {
   Connection* connection_;
 
   NameToInterfaceBinderMap name_to_binder_;
+
+  Binder default_binder_;
+
+  bool is_paused_ = false;
+
+  // Pending interface requests which can accumulate if GetInterface() is called
+  // while binding is paused.
+  std::queue<std::pair<mojo::String, mojo::ScopedMessagePipeHandle>>
+      pending_interface_requests_;
 
   base::WeakPtrFactory<InterfaceRegistry> weak_factory_;
 
