@@ -57,7 +57,7 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   PP_Resource CreateGraphics3DRaw(
       PP_Instance instance,
       PP_Resource share_context,
-      const int32_t* attrib_list,
+      const gpu::gles2::ContextCreationAttribHelper& attrib_helper,
       gpu::Capabilities* capabilities,
       base::SharedMemoryHandle* shared_state,
       gpu::CommandBufferId* command_buffer_id) override;

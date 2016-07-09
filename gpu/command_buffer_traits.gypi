@@ -7,6 +7,8 @@
     '../base/base.gyp:base',
     '../ipc/ipc.gyp:ipc',
     '../third_party/khronos/khronos.gyp:khronos_headers',
+    '../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
+    'command_buffer/command_buffer.gyp:gles2_utils',
   ],
   'include_dirs': [
     '..',
@@ -26,6 +28,8 @@
       'dependencies!': [
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
+        '../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry',
+        'command_buffer/command_buffer.gyp:gles2_utils',
       ],
     }],
     ['OS=="android"', {

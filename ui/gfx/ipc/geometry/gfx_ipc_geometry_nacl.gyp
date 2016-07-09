@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,19 +7,18 @@
     'chromium_code': 1,
   },
   'includes': [
-    '../../build/common_untrusted.gypi',
-    'command_buffer.gypi',
+    '../../../../build/common_untrusted.gypi',
   ],
   'conditions': [
     ['disable_nacl==0 and disable_nacl_untrusted==0', {
       'targets': [
-        {
-          'target_name': 'gles2_utils_nacl',
+         {
+          # GN version: //ui/gfx/ipc
+          'target_name': 'gfx_ipc_geometry_nacl',
           'type': 'none',
           'variables': {
-            'gles2_utils_target': 1,
             'nacl_untrusted_build': 1,
-            'nlib_target': 'libgles2_utils_nacl.a',
+            'nlib_target': 'libgfx_ipc_geometry_nacl.a',
             'build_glibc': 0,
             'build_newlib': 0,
             'build_irt': 1,
@@ -27,10 +26,12 @@
             'build_nonsfi_helper': 1,
           },
           'dependencies': [
-            '../../base/base_nacl.gyp:base_nacl',
-            '../../base/base_nacl.gyp:base_nacl_nonsfi',
-            '../../ui/gfx/gfx_nacl.gyp:gfx_geometry_nacl',
-            '../../third_party/khronos/khronos.gyp:khronos_headers',
+            '../../../../base/base_nacl.gyp:base_nacl',
+            '../../../../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../../gfx_nacl.gyp:gfx_geometry_nacl',
+          ],
+          'includes': [
+            'gfx_ipc_geometry.gypi',
           ],
         },
       ],

@@ -911,31 +911,8 @@
           'dependencies': [
             '../base/base.gyp:base_win64',
             '../ipc/ipc.gyp:ipc_win64',
-            'command_buffer_common_win64',
-          ],
-          'defines': [
-            '<@(nacl_win64_defines)',
-            'GPU_IMPLEMENTATION',
-          ],
-          'configurations': {
-            'Common_Base': {
-              'msvs_target_platform': 'x64',
-            },
-          },
-        },
-        {
-          'target_name': 'gpu_ipc_common_win64',
-          'type': 'static_library',
-          'variables': {
-            'nacl_win64_target': 1,
-          },
-          'includes': [
-            'command_buffer_traits.gypi',
-            'gpu_ipc_common.gypi',
-          ],
-          'dependencies': [
-            '../base/base.gyp:base_win64',
-            '../ipc/ipc.gyp:ipc_win64',
+            '../ui/gfx/ipc/geometry/gfx_ipc_geometry.gyp:gfx_ipc_geometry_win64',
+            'command_buffer/command_buffer.gyp:gles2_utils_win64',
             'command_buffer_common_win64',
           ],
           'defines': [

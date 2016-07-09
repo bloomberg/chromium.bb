@@ -7,7 +7,7 @@
     'chromium_code': 1,
   },
   'targets': [
-     {
+    {
       # GN version: //ui/gfx/ipc
       'target_name': 'gfx_ipc_geometry',
       'type': '<(component)',
@@ -17,17 +17,36 @@
         '../../gfx.gyp:gfx',
         '../../gfx.gyp:gfx_geometry',
       ],
-      'defines': [
-        'GFX_IPC_GEOMETRY_IMPLEMENTATION',
-      ],
-      'include_dirs': [
-        '../../..',
-      ],
-      'sources': [
-        'gfx_param_traits.cc',
-        'gfx_param_traits.h',
-        'gfx_param_traits_macros.h',
+      'includes': [
+        'gfx_ipc_geometry.gypi',
       ],
     },
+  ],
+  'conditions': [
+    ['disable_nacl!=1 and OS=="win" and target_arch=="ia32"', {
+      'targets': [
+        {
+          # GN version: //ui/gfx/ipc
+          'target_name': 'gfx_ipc_geometry_win64',
+          'type': '<(component)',
+          'dependencies': [
+            '../../../../base/base.gyp:base_win64',
+            '../../../../ipc/ipc.gyp:ipc_win64',
+            '../../gfx.gyp:gfx_geometry_win64',
+          ],
+          'includes': [
+            'gfx_ipc_geometry.gypi',
+          ],
+          'defines': [
+            '<@(nacl_win64_defines)',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
   ],
 }
