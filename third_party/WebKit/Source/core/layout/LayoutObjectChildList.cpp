@@ -181,10 +181,8 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(LayoutObject& oldChild)
 {
     if (!oldChild.isRooted())
         return;
-    if (oldChild.isBody()) {
+    if (oldChild.isBody())
         oldChild.view()->setShouldDoFullPaintInvalidation();
-        return;
-    }
     oldChild.slowSetPaintingLayerNeedsRepaint();
     oldChild.invalidatePaintOfPreviousPaintInvalidationRect(oldChild.containerForPaintInvalidation(), PaintInvalidationLayoutObjectRemoval);
 }

@@ -35,7 +35,7 @@ DisplayItemClient::~DisplayItemClient()
         for (auto& item : *displayItemClientsShouldKeepAlive) {
             CHECK(!item.value.contains(this))
                 << "Short-lived DisplayItemClient: " << item.value.get(this)
-                << ". See crbug.com/570030.";
+                << ". See crbug.com/609218.";
         }
     }
     liveDisplayItemClients->remove(this);
@@ -61,7 +61,7 @@ void DisplayItemClient::beginShouldKeepAlive(const void* owner) const
 void DisplayItemClient::endShouldKeepAlive() const
 {
     if (displayItemClientsShouldKeepAlive) {
-        for (auto item : *displayItemClientsShouldKeepAlive)
+        for (auto& item : *displayItemClientsShouldKeepAlive)
             item.value.remove(this);
     }
 }

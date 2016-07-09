@@ -45,6 +45,11 @@ LayoutScrollbarPart::LayoutScrollbarPart(ScrollableArea* scrollableArea, LayoutS
 
 LayoutScrollbarPart::~LayoutScrollbarPart()
 {
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+    // We may not have invalidated the painting layer for now, but the
+    // scrollable area will invalidate during paint invalidation.
+    endShouldKeepAlive();
+#endif
 }
 
 static void recordScrollbarPartStats(Document& document, ScrollbarPart part)

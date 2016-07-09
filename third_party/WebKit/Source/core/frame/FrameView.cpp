@@ -2630,10 +2630,6 @@ void FrameView::synchronizedPaint()
         if (!layoutViewItem.isNull())
             layoutViewItem.layer()->clearNeedsRepaintRecursively();
     });
-
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::endShouldKeepAliveAllClients();
-#endif
 }
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
