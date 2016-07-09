@@ -5,11 +5,11 @@ blackboxedFoo: 10:12
 notBlackboxedBoo: 17:12
 testFunction: 8:4
 
-Try to set positions: [{"line":0,"column":0},{"line":0,"column":0}]
+Try to set positions: [{"lineNumber":0,"columnNumber":0},{"lineNumber":0,"columnNumber":0}]
 Input positions array is not sorted or contains duplicate values.
-Try to set positions: [{"line":0,"column":1},{"line":0,"column":0}]
+Try to set positions: [{"lineNumber":0,"columnNumber":1},{"lineNumber":0,"columnNumber":0}]
 Input positions array is not sorted or contains duplicate values.
-Try to set positions: [{"line":0,"column":-1}]
+Try to set positions: [{"lineNumber":0,"columnNumber":-1}]
 Position missing 'column' or 'column' < 0.
 action: stepOut
 notBlackboxedFoo: 4:4

@@ -880,15 +880,15 @@ void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String16
     positions.reserve(inPositions->length());
     for (size_t i = 0; i < inPositions->length(); ++i) {
         protocol::Debugger::ScriptPosition* position = inPositions->get(i);
-        if (position->getLine() < 0) {
+        if (position->getLineNumber() < 0) {
             *error = "Position missing 'line' or 'line' < 0.";
             return;
         }
-        if (position->getColumn() < 0) {
+        if (position->getColumnNumber() < 0) {
             *error = "Position missing 'column' or 'column' < 0.";
             return;
         }
-        positions.push_back(std::make_pair(position->getLine(), position->getColumn()));
+        positions.push_back(std::make_pair(position->getLineNumber(), position->getColumnNumber()));
     }
 
     for (size_t i = 1; i < positions.size(); ++i) {

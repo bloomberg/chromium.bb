@@ -347,8 +347,8 @@
                 "hidden": true,
                 "type": "object",
                 "properties": [
-                    { "name": "line", "type": "integer" },
-                    { "name": "column", "type": "integer" }
+                    { "name": "lineNumber", "type": "integer" },
+                    { "name": "columnNumber", "type": "integer" }
                 ],
                 "description": "Location in the source code."
             },

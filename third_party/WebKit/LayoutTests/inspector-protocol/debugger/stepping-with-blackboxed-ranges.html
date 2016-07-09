@@ -33,14 +33,14 @@ function test()
         printCallFrames(callFrames);
         InspectorTest.sendCommand("Debugger.setBlackboxedRanges", {
             scriptId: callFrames[1].location.scriptId,
-            positions: [ { line: 0, column: 0 } ] // blackbox ranges for blackboxed.js
+            positions: [ { lineNumber: 0, columnNumber: 0 } ] // blackbox ranges for blackboxed.js
         }, setIncorrectRanges.bind(null, callFrames[2].location.scriptId));
     }
 
     var incorrectPositions = [
-        [ { line: 0, column: 0 }, { line: 0, column: 0 } ],
-        [ { line: 0, column: 1 }, { line: 0, column: 0 } ],
-        [ { line: 0, column: -1 } ],
+        [ { lineNumber: 0, columnNumber: 0 }, { lineNumber: 0, columnNumber: 0 } ],
+        [ { lineNumber: 0, columnNumber: 1 }, { lineNumber: 0, columnNumber: 0 } ],
+        [ { lineNumber: 0, columnNumber: -1 } ],
     ];
 
     function setIncorrectRanges(scriptId, response)
@@ -64,7 +64,7 @@ function test()
         InspectorTest.eventHandler["Debugger.paused"] = runAction;
         InspectorTest.sendCommandOrDie("Debugger.setBlackboxedRanges", {
             scriptId: scriptId,
-            positions: [ { line: 8, column: 0 }, { line: 15, column: 0 } ] // blackbox ranges for mixed.js
+            positions: [ { lineNumber: 8, columnNumber: 0 }, { lineNumber: 15, columnNumber: 0 } ] // blackbox ranges for mixed.js
         }, runAction);
     }
 
