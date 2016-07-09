@@ -9,7 +9,7 @@ var test = function()
     {
         InspectorTest.addResult("exceptionDetails:")
         InspectorTest.addResult("   " + exceptionDetails.text);
-        InspectorTest.addResult("   line: " + exceptionDetails.line + ", column: " + exceptionDetails.column);
+        InspectorTest.addResult("   line: " + exceptionDetails.lineNumber + ", column: " + exceptionDetails.columnNumber);
 
         var stack = exceptionDetails.stack ? exceptionDetails.stack.callFrames : null;
         if (!stack) {
@@ -19,7 +19,7 @@ var test = function()
             for (var i = 0; i < stack.length && i < 100; ++i) {
                 InspectorTest.addResult("       url: " + stack[i].url);
                 InspectorTest.addResult("       function: " + stack[i].functionName);
-                InspectorTest.addResult("       line: " + stack[i].lineNumber);            
+                InspectorTest.addResult("       line: " + stack[i].lineNumber);
             }
         }
     }

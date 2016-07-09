@@ -1,0 +1,45 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+function test()
+{
+    var executionContextId;
+
+    InspectorTest.sendCommand("Runtime.enable", {});
+    InspectorTest.eventHandler["Runtime.executionContextCreated"] = function(messageObject)
+    {
+        executionContextId = messageObject.params.context.id;
+
+        compileScriptPromise("\n  (", false, "foo1.js")
+            .then(dumpResult)
+            .then(() => compileScriptPromise("239", true, "foo2.js"))
+            .then(dumpResult)
+            .then(() => compileScriptPromise("239", false, "foo3.js"))
+            .then(dumpResult)
+            .then(() => compileScriptPromise("testfunction f()\n{\n    return 0;\n}\n", false, "foo4.js"))
+            .then(dumpResult)
+            .then(() => InspectorTest.completeTest());
+    }
+
+    function dumpResult(messageObject)
+    {
+        if (messageObject.result.exceptionDetails)
+            messageObject.result.exceptionDetails.scriptId = 0;
+        if (messageObject.result.scriptId)
+            messageObject.result.scriptId = 0;
+        InspectorTest.logObject(messageObject.result);
+    }
+
+    function compileScriptPromise(expression, persistScript, sourceURL)
+    {
+        var cb;
+        var p = new Promise((resolver) => cb = resolver);
+        InspectorTest.sendCommand("Runtime.compileScript", { expression: expression, sourceURL: sourceURL, persistScript: persistScript, executionContextId: executionContextId }, cb);
+        return p;
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();"></body>
+</html>

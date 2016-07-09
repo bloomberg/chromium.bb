@@ -1,0 +1,43 @@
+CONSOLE MESSAGE: line 1: 239
+CONSOLE MESSAGE: line 2: 239
+{
+    column : 9
+    level : log
+    line : 1
+    source : console-api
+    stack : {
+        callFrames : [
+            [0] : {
+                columnNumber : 9
+                functionName : 
+                lineNumber : 1
+                scriptId : 0
+                url : 
+            }
+        ]
+    }
+    text : 239
+    type : log
+    url : 
+}
+{
+    column : 3
+    level : log
+    line : 2
+    source : console-api
+    stack : {
+        callFrames : [
+            [0] : {
+                columnNumber : 3
+                functionName : 
+                lineNumber : 2
+                scriptId : 0
+                url : 
+            }
+        ]
+    }
+    text : 239
+    type : log
+    url : 
+}
+

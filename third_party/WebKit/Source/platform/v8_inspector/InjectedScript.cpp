@@ -314,10 +314,10 @@ std::unique_ptr<protocol::Runtime::ExceptionDetails> InjectedScript::createExcep
 
     v8::Maybe<int> lineNumber = message->GetLineNumber(m_context->context());
     if (lineNumber.IsJust())
-        exceptionDetailsObject->setLine(lineNumber.FromJust());
+        exceptionDetailsObject->setLineNumber(lineNumber.FromJust() - 1);
     v8::Maybe<int> columnNumber = message->GetStartColumn(m_context->context());
     if (columnNumber.IsJust())
-        exceptionDetailsObject->setColumn(columnNumber.FromJust());
+        exceptionDetailsObject->setColumnNumber(columnNumber.FromJust());
 
     v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)

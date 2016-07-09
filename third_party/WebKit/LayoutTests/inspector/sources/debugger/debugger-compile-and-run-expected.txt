@@ -12,7 +12,7 @@ Compiling script
 Running script
 exceptionDetails:
    Uncaught ReferenceError: c is not defined
-   line: 1, column: 15
+   line: 0, column: 15
    exceptionDetails stack trace:
        url: test.js
        function: 
@@ -22,6 +22,6 @@ Running: testCompileError
 Compiling script
 exceptionDetails:
    Uncaught SyntaxError: Unexpected token }
-   line: 1, column: 0
+   line: 0, column: 0
    no stack trace attached to exceptionDetails
 
