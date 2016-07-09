@@ -26,7 +26,7 @@ class JniGlDisplayHandler : public DisplayUpdaterFactory {
   JniGlDisplayHandler(ChromotingJniRuntime* runtime);
   ~JniGlDisplayHandler() override;
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaDisplay();
+  base::android::ScopedJavaLocalRef<jobject> CreateDesktopViewFactory();
 
   // DisplayUpdaterFactory overrides.
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;

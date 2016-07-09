@@ -9,6 +9,7 @@ template("remoting_android_client_java_tmpl") {
   android_library(target_name) {
     _java_file_prefix = "//remoting/android/java/src/org/chromium/chromoting"
     _java_files = [
+      "AbstractDesktopView.java",
       "AccountsAdapter.java",
       "ActivityLifecycleListener.java",
       "AnimationJob.java",
@@ -21,7 +22,7 @@ template("remoting_android_client_java_tmpl") {
       "Desktop.java",
       "DesktopCanvas.java",
       "DesktopView.java",
-      "DesktopViewInterface.java",
+      "DesktopViewFactory.java",
       "DummyActivityLifecycleListener.java",
       "DummyClientExtension.java",
       "Event.java",

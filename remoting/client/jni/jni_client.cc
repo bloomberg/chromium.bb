@@ -166,8 +166,9 @@ void JniClient::Connect(
 #else
   JniDisplayHandler* raw_display_handler = new JniDisplayHandler(runtime_);
 #endif  // defined(REMOTING_ANDROID_ENABLE_OPENGL_RENDERER)
-  Java_Client_setDisplay(env, java_client_.obj(),
-                         raw_display_handler->GetJavaDisplay().obj());
+  Java_Client_setDesktopViewFactory(
+      env, java_client_.obj(),
+      raw_display_handler->CreateDesktopViewFactory().obj());
   display_handler_.reset(raw_display_handler);
   ConnectToHost(raw_display_handler,
                 ConvertJavaStringToUTF8(env, username),

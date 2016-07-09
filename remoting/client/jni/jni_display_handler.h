@@ -30,7 +30,7 @@ class JniDisplayHandler : public DisplayUpdaterFactory {
   // Must be deleted on the display thread.
   ~JniDisplayHandler() override;
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaDisplay();
+  base::android::ScopedJavaLocalRef<jobject> CreateDesktopViewFactory();
 
   void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
 

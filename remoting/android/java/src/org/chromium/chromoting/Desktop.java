@@ -24,6 +24,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.chromoting.cardboard.DesktopActivity;
@@ -104,7 +105,10 @@ public class Desktop
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        DesktopView remoteHostDesktop = (DesktopView) findViewById(R.id.desktop_view);
+        AbstractDesktopView remoteHostDesktop = mClient.createDesktopView(this);
+        remoteHostDesktop.setLayoutParams(new ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        ((ViewGroup) findViewById(R.id.desktop_view_placeholder)).addView(remoteHostDesktop);
         remoteHostDesktop.init(this, mClient);
         mSwitchToCardboardDesktopActivity = false;
 
@@ -163,8 +167,6 @@ public class Desktop
         super.onStart();
         mActivityLifecycleListener.onActivityStarted(this);
         mClient.enableVideoChannel(true);
-        DesktopView desktopView = (DesktopView) findViewById(R.id.desktop_view);
-        desktopView.attachRedrawCallback();
         mClient.getCapabilityManager().addListener(this);
     }
 

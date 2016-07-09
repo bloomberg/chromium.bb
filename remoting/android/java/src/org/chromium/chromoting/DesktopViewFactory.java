@@ -1,0 +1,18 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chromoting;
+
+import android.content.Context;
+
+/**
+ * Interface for creating a implementation specific desktop view.
+ */
+public interface DesktopViewFactory {
+    /**
+     * Creates an uninitialized implementation specific desktop view. Initializing and adding the
+     * view should done separately.
+     */
+    AbstractDesktopView createDesktopView(Context context);
+}

@@ -4,10 +4,13 @@
 
 package org.chromium.chromoting.jni;
 
+import android.content.Context;
 import android.view.Surface;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromoting.AbstractDesktopView;
+import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.Event;
 import org.chromium.chromoting.SizeChangedEventParameter;
 
@@ -153,6 +156,17 @@ public class GlDisplay {
         if (mNativeJniGlDisplay != 0) {
             nativeOnCursorInputFeedback(mNativeJniGlDisplay, x, y, diameter);
         }
+    }
+
+    @CalledByNative
+    private DesktopViewFactory createDesktopViewFactory() {
+        return new DesktopViewFactory() {
+            @Override
+            public AbstractDesktopView createDesktopView(Context context) {
+                // UNIMPLEMENTED.
+                return null;
+            }
+        };
     }
 
     @CalledByNative

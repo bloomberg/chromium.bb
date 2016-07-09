@@ -4,65 +4,72 @@
 
 package org.chromium.chromoting;
 
+import android.content.Context;
 import android.graphics.Point;
+import android.view.SurfaceView;
 
 import org.chromium.chromoting.jni.Client;
 
 /**
  * Callback interface to allow the TouchInputHandler to request actions on the DesktopView.
  */
-public interface DesktopViewInterface {
+public abstract class AbstractDesktopView extends SurfaceView {
+    public AbstractDesktopView(Context context) {
+        super(context);
+    }
+
     /**
      * Initializes the instance. Implementations can assume this function will be called exactly
      * once after constructor but before other functions.
      */
-    void init(Desktop desktop, Client client);
+    public abstract void init(Desktop desktop, Client client);
 
     /** Triggers a brief animation to indicate the existence and location of an input event. */
-    void showInputFeedback(DesktopView.InputFeedbackType feedbackToShow, Point pos);
+    public abstract void showInputFeedback(DesktopView.InputFeedbackType feedbackToShow, Point pos);
 
+    // TODO(yuweih): move showActionBar and showKeyboard out of this abstract class.
     /** Shows the action bar. */
-    void showActionBar();
+    public abstract void showActionBar();
 
     /** Shows the software keyboard. */
-    void showKeyboard();
+    public abstract void showKeyboard();
 
     /**
      * Informs the view that its transformation matrix (for rendering the remote desktop bitmap)
      * has been changed by the TouchInputHandler, which requires repainting.
      */
-    void transformationChanged();
+    public abstract void transformationChanged();
 
     /**
      * Informs the view that the cursor has been moved by the TouchInputHandler, which requires
      * repainting.
      */
-    void cursorMoved();
+    public abstract void cursorMoved();
 
     /**
      * Informs the view that the cursor visibility has been changed (for different input mode) by
      * the TouchInputHandler, which requires repainting.
      */
-    void cursorVisibilityChanged();
+    public abstract void cursorVisibilityChanged();
 
     /**
      * Starts or stops an animation. Whilst the animation is running, the DesktopView will
      * periodically call TouchInputHandler.processAnimation() and repaint itself.
      */
-    void setAnimationEnabled(boolean enabled);
+    public abstract void setAnimationEnabled(boolean enabled);
 
     /**
      * An {@link Event} which is triggered when the view is being painted. Adding handlers to this
      * event causes painting to be triggered continuously until they are all removed.
      */
-    Event<PaintEventParameter> onPaint();
+    public abstract Event<PaintEventParameter> onPaint();
 
     /** An {@link Event} which is triggered when the client size is changed. */
-    Event<SizeChangedEventParameter> onClientSizeChanged();
+    public abstract Event<SizeChangedEventParameter> onClientSizeChanged();
 
     /** An {@link Event} which is triggered when the host size is changed. */
-    Event<SizeChangedEventParameter> onHostSizeChanged();
+    public abstract Event<SizeChangedEventParameter> onHostSizeChanged();
 
-    /** An {@link Event} which is triggered when user touchs the screen. */
-    Event<TouchEventParameter> onTouch();
+    /** An {@link Event} which is triggered when user touches the screen. */
+    public abstract Event<TouchEventParameter> onTouch();
 }

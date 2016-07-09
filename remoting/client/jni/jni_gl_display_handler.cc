@@ -24,8 +24,9 @@ JniGlDisplayHandler::~JniGlDisplayHandler() {
 }
 
 base::android::ScopedJavaLocalRef<jobject>
-JniGlDisplayHandler::GetJavaDisplay() {
-  return base::android::ScopedJavaLocalRef<jobject>(java_display_);
+JniGlDisplayHandler::CreateDesktopViewFactory() {
+  return Java_GlDisplay_createDesktopViewFactory(
+      base::android::AttachCurrentThread(), java_display_.obj());
 }
 
 std::unique_ptr<protocol::CursorShapeStub>

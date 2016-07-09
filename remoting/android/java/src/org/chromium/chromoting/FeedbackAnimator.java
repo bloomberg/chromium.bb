@@ -34,7 +34,7 @@ public final class FeedbackAnimator
     }
 
     /** Begins a new animation sequence at position (|pos|). */
-    public static void startAnimation(DesktopViewInterface view,
+    public static void startAnimation(AbstractDesktopView view,
                                       Point pos,
                                       DesktopView.InputFeedbackType feedbackType) {
         if (feedbackType == DesktopView.InputFeedbackType.NONE) {

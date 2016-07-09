@@ -80,9 +80,9 @@ public class Cursor {
 
     private PointF mCursorPosition;
 
-    public Cursor(Client client) {
+    public Cursor(Client client, Display display) {
         mClient = client;
-        mDisplay = (Display) client.getDisplay();
+        mDisplay = display;
         mHalfFrameSize = new PointF(0.0f, 0.0f);
         mCursorPosition = new PointF(0.0f, 0.0f);
 

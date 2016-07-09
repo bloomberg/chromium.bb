@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting.jni;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Looper;
@@ -11,6 +12,9 @@ import android.os.Looper;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chromoting.AbstractDesktopView;
+import org.chromium.chromoting.DesktopView;
+import org.chromium.chromoting.DesktopViewFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -163,6 +167,16 @@ public class Display {
     /** Returns the current cursor shape. Called on the graphics thread. */
     public Bitmap getCursorBitmap() {
         return mCursorBitmap;
+    }
+
+    @CalledByNative
+    private DesktopViewFactory createDesktopViewFactory() {
+        return new DesktopViewFactory() {
+            @Override
+            public AbstractDesktopView createDesktopView(Context context) {
+                return new DesktopView(context, Display.this);
+            }
+        };
     }
 
     @CalledByNative

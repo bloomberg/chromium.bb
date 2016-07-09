@@ -44,7 +44,11 @@ public class DesktopActivity extends CardboardActivity {
 
         mSwitchToDesktopActivity = false;
         CardboardView cardboardView = (CardboardView) findViewById(R.id.cardboard_view);
-        mRenderer = new CardboardRenderer(this, mClient);
+
+        // THE CODE BELOW IS BROKEN.
+        // To make it work, you have to somehow get the reference to the Display object and pass
+        // it into the constructor.
+        mRenderer = new CardboardRenderer(this, mClient, null);
         mIsListening = false;
 
         // Associate a CardboardView.StereoRenderer with cardboard view.

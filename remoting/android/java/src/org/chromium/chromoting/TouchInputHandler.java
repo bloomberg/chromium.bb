@@ -20,7 +20,7 @@ import android.view.ViewConfiguration;
  * are passed to the InputStrategyInterface implementation set by the DesktopView.
  */
 public class TouchInputHandler {
-    private final DesktopViewInterface mViewer;
+    private final AbstractDesktopView mViewer;
     private final Context mContext;
     private final RenderData mRenderData;
     private final DesktopCanvas mDesktopCanvas;
@@ -179,7 +179,7 @@ public class TouchInputHandler {
         }
     }
 
-    public TouchInputHandler(DesktopViewInterface viewer, Context context, RenderData renderData) {
+    public TouchInputHandler(AbstractDesktopView viewer, Context context, RenderData renderData) {
         mViewer = viewer;
         mContext = context;
         mRenderData = renderData;
@@ -242,7 +242,7 @@ public class TouchInputHandler {
                 });
     }
 
-    private void attachViewEvents(DesktopViewInterface viewer) {
+    private void attachViewEvents(AbstractDesktopView viewer) {
         viewer.onTouch().add(new Event.ParameterRunnable<TouchEventParameter>() {
             @Override
             public void run(TouchEventParameter parameter) {

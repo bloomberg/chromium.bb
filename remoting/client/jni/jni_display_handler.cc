@@ -66,8 +66,10 @@ JniDisplayHandler::~JniDisplayHandler() {
                           java_display_.obj());
 }
 
-base::android::ScopedJavaLocalRef<jobject> JniDisplayHandler::GetJavaDisplay() {
-  return base::android::ScopedJavaLocalRef<jobject>(java_display_);
+base::android::ScopedJavaLocalRef<jobject>
+JniDisplayHandler::CreateDesktopViewFactory() {
+  return Java_Display_createDesktopViewFactory(
+      base::android::AttachCurrentThread(), java_display_.obj());
 }
 
 void JniDisplayHandler::UpdateCursorShape(

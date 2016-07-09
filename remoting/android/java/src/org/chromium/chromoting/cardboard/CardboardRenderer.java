@@ -106,10 +106,10 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     // Flag to indicate whether to show menu bar.
     private boolean mMenuBarVisible;
 
-    public CardboardRenderer(Activity activity, Client client) {
+    public CardboardRenderer(Activity activity, Client client, Display display) {
         mActivity = activity;
         mClient = client;
-        mDisplay = (Display) client.getDisplay();
+        mDisplay = display;
         mCameraPosition = 0.0f;
 
         mCameraMatrix = new float[16];
@@ -154,7 +154,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
         mDesktop = new Desktop(mDisplay);
         mMenuBar = new MenuBar(mActivity);
         mPhotosphere = new Photosphere(mActivity);
-        mCursor = new Cursor(mClient);
+        mCursor = new Cursor(mClient, mDisplay);
 
         initializeRedrawCallback();
     }
