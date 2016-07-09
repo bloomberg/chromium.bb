@@ -4525,6 +4525,9 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_MD_EXTENSIONS_SIDEBAR_KEYBOARD_SHORTCUTS" desc="The text for the link to manage keyboard shortcuts for extensions.">
           Keyboard shortcuts
         </message>
+        <message name="IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT" desc="The prompt to the user to enter a keyboard shortcut in order to assign it to an extension.">
+          Type a shortcut
+        </message>
         <if expr="not use_titlecase">
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS" desc="The label in an extension's context menu for the submenu specifying whether or not the extension can run on the current page (sentence case).">
             Page access

@@ -122,6 +122,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_LABEL);
   source->AddLocalizedString("shortcutScopeInChrome",
                              IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME);
+  source->AddLocalizedString("shortcutTypeAShortcut",
+                             IDS_MD_EXTENSIONS_TYPE_A_SHORTCUT);
   source->AddLocalizedString("viewBackgroundPage",
                              IDS_EXTENSIONS_BACKGROUND_PAGE);
   source->AddLocalizedString("viewIncognito",
@@ -164,6 +166,10 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("pack_dialog.js", IDR_MD_EXTENSIONS_PACK_DIALOG_JS);
   source->AddResourcePath("service.html", IDR_MD_EXTENSIONS_SERVICE_HTML);
   source->AddResourcePath("service.js", IDR_MD_EXTENSIONS_SERVICE_JS);
+  source->AddResourcePath("shortcut_input.html",
+                          IDR_MD_EXTENSIONS_SHORTCUT_INPUT_HTML);
+  source->AddResourcePath("shortcut_input.js",
+                          IDR_MD_EXTENSIONS_SHORTCUT_INPUT_JS);
   source->AddResourcePath("shortcut_util.html",
                           IDR_EXTENSIONS_SHORTCUT_UTIL_HTML);
   source->AddResourcePath("shortcut_util.js", IDR_EXTENSIONS_SHORTCUT_UTIL_JS);

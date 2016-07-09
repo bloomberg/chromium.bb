@@ -82,15 +82,11 @@ cr.define('extension_keyboard_shortcut_tests', function() {
         var commands = card1.querySelectorAll('.command-entry');
         assertEquals(1, commands.length);
         expectTrue(isVisibleOnCard(commands[0], '.command-name'));
-        expectTrue(isVisibleOnCard(commands[0], '.command-keys'));
-        expectFalse(isVisibleOnCard(commands[0], '.no-command-set'));
         expectTrue(isVisibleOnCard(commands[0], 'paper-dropdown-menu'));
 
         var card2 = cards[1];
         commands = card2.querySelectorAll('.command-entry');
         assertEquals(2, commands.length);
-        expectFalse(isVisibleOnCard(commands[1], '.command-keys'));
-        expectTrue(isVisibleOnCard(commands[1], '.no-command-set'));
 
         expectEquals(
             1,

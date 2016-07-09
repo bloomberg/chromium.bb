@@ -6,7 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://extensions/animation_helper.html">
-<link rel="import" href="chrome://extensions/shortcut_util.html">
+<link rel="import" href="chrome://extensions/shortcut_input.html">
 
 <dom-module id="extensions-keyboard-shortcuts">
   <template>
@@ -58,16 +58,12 @@
           </div>
           <div class="card-controls">
             <template is="dom-repeat" items="[[item.commands]]" as="command">
-              <div class="command-entry">
+              <div class="command-entry" command="[[command]]">
                 <span class="command-name">[[command.description]]</span>
-                <span class="command-keys"
-                    hidden$="[[!hasKeybinding_(command.keybinding)]]">
-                  [[command.keybinding]]
-                </span>
-                <span class="no-command-set"
-                    hidden$="[[hasKeybinding_(command.keybinding)]]">
-                  $i18n{shortcutNotSet}
-                </span>
+                <extensions-shortcut-input item="[[item.id]]"
+                    shortcut="[[command.keybinding]]"
+                    command-name="[[command.name]]">
+                </extensions-shortcut-input>
                 <paper-dropdown-menu label="$i18n{shortcutScopeLabel}">
                   <paper-listbox class="dropdown-content"
                       selected="[[computeSelectedScope_(command)]]">

@@ -891,6 +891,16 @@ var testing = {};
   }
 
   /**
+   * @param {*} expected
+   * @param {*} actual
+   * {string=} opt_message
+   * @throws {Error}
+   */
+  function assertDeepEquals(expected, actual, opt_message) {
+    chai.assert.deepEqual(actual, expected, opt_message);
+  }
+
+  /**
    * @param {number} value1 The first operand.
    * @param {number} value2 The second operand.
    * @param {string=} opt_message Additional error message.
@@ -1667,6 +1677,7 @@ var testing = {};
     exports.assertGE = assertGE;
     exports.assertGT = assertGT;
     exports.assertEquals = assertEquals;
+    exports.assertDeepEquals = assertDeepEquals;
     exports.assertLE = assertLE;
     exports.assertLT = assertLT;
     exports.assertNotEquals = assertNotEquals;
@@ -1683,6 +1694,7 @@ var testing = {};
     exports.expectGE = createExpect(assertGE);
     exports.expectGT = createExpect(assertGT);
     exports.expectEquals = createExpect(assertEquals);
+    exports.expectDeepEquals = createExpect(assertDeepEquals);
     exports.expectLE = createExpect(assertLE);
     exports.expectLT = createExpect(assertLT);
     exports.expectNotEquals = createExpect(assertNotEquals);
