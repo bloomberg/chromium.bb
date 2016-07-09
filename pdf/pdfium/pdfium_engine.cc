@@ -1706,7 +1706,6 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
     }
 
     client_->UpdateCursor(cursor);
-    pp::Point point = event.GetPosition();
     std::string url = GetLinkAtPosition(event.GetPosition());
     if (url != link_under_cursor_) {
       link_under_cursor_ = url;
