@@ -1384,3 +1384,4 @@ crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 # Minor image differences after Skia GPU batching change.
 crbug.com/625909 virtual/gpu-rasterization/fast/images/color-profile-group.html  [ NeedsRebaseline ]
 crbug.com/625909 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+crbug.com/626823 virtual/gpu-rasterization/fast/images/color-profile-iframe.html [ NeedsManualRebaseline ]
