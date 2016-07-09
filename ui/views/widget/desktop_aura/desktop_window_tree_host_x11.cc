@@ -568,10 +568,20 @@ gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
 }
 
 std::string DesktopWindowTreeHostX11::GetWorkspace() const {
-  int workspace_id;
-  if (ui::GetIntProperty(xwindow_, "_NET_WM_DESKTOP", &workspace_id))
-    return base::IntToString(workspace_id);
-  return std::string();
+  if (workspace_.empty())
+    const_cast<DesktopWindowTreeHostX11*>(this)->UpdateWorkspace();
+  return workspace_;
+}
+
+bool DesktopWindowTreeHostX11::UpdateWorkspace() {
+  int workspace_int;
+  if (!ui::GetWindowDesktop(xwindow_, &workspace_int))
+    return false;
+  std::string workspace_str = base::IntToString(workspace_int);
+  if (workspace_ == workspace_str)
+    return false;
+  workspace_ = workspace_str;
+  return true;
 }
 
 gfx::Rect DesktopWindowTreeHostX11::GetWorkAreaBoundsInScreen() const {
@@ -1230,6 +1240,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (is_always_on_top_)
     state_atom_list.push_back(atom_cache_.GetAtom("_NET_WM_STATE_ABOVE"));
 
+  workspace_.clear();
   if (params.visible_on_all_workspaces) {
     state_atom_list.push_back(atom_cache_.GetAtom("_NET_WM_STATE_STICKY"));
     ui::SetIntProperty(xwindow_, "_NET_WM_DESKTOP", "CARDINAL", kAllDesktops);
@@ -1996,12 +2007,14 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
     }
     case PropertyNotify: {
       ::Atom changed_atom = xev->xproperty.atom;
-      if (changed_atom == atom_cache_.GetAtom("_NET_WM_STATE"))
+      if (changed_atom == atom_cache_.GetAtom("_NET_WM_STATE")) {
         OnWMStateUpdated();
-      else if (changed_atom == atom_cache_.GetAtom("_NET_FRAME_EXTENTS"))
+      } else if (changed_atom == atom_cache_.GetAtom("_NET_FRAME_EXTENTS")) {
         OnFrameExtentsUpdated();
-      else if (changed_atom == atom_cache_.GetAtom("_NET_WM_DESKTOP"))
-        OnHostWorkspaceChanged();
+      } else if (changed_atom == atom_cache_.GetAtom("_NET_WM_DESKTOP")) {
+        if (UpdateWorkspace())
+          OnHostWorkspaceChanged();
+      }
       break;
     }
     case SelectionNotify: {

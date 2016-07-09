@@ -185,6 +185,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Called when |xwindow_|'s _NET_FRAME_EXTENTS property is updated.
   void OnFrameExtentsUpdated();
 
+  // Makes a round trip to the X server to get the enclosing workspace for this
+  // window.  Returns true iff |workspace_| was changed.
+  bool UpdateWorkspace();
+
   // Updates |xwindow_|'s minimum and maximum size.
   void UpdateMinAndMaxSize();
 
@@ -283,6 +287,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
   // |xwindow_|'s maximum size.
   gfx::Size max_size_in_pixels_;
+
+  // The workspace containing |xwindow_|.
+  std::string workspace_;
 
   // The window manager state bits.
   std::set< ::Atom> window_properties_;

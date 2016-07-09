@@ -204,7 +204,7 @@ UI_BASE_X_EXPORT bool GetCustomFramePrefDefault();
 static const int kAllDesktops = -1;
 // Queries the desktop |window| is on, kAllDesktops if sticky. Returns false if
 // property not found.
-bool GetWindowDesktop(XID window, int* desktop);
+UI_BASE_X_EXPORT bool GetWindowDesktop(XID window, int* desktop);
 
 // Translates an X11 error code into a printable string.
 UI_BASE_X_EXPORT std::string GetX11ErrorString(XDisplay* display, int err);

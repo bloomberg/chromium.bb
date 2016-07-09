@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/x/x11_foreign_window_manager.h"
@@ -19,9 +20,10 @@
 
 namespace {
 
-const char* kAtomsToCache[] = {
+const char* const kAtomsToCache[] = {
   "_NET_ACTIVE_WINDOW",
-  NULL
+  "_NET_CURRENT_DESKTOP",
+  nullptr
 };
 
 // Our global instance. Deleted when our Env() is deleted.
@@ -124,6 +126,29 @@ void X11DesktopHandler::ActivateWindow(::Window window) {
   }
 }
 
+void X11DesktopHandler::AddObserver(X11DesktopHandlerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void X11DesktopHandler::RemoveObserver(X11DesktopHandlerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+std::string X11DesktopHandler::GetWorkspace() {
+  if (workspace_.empty())
+    UpdateWorkspace();
+  return workspace_;
+}
+
+bool X11DesktopHandler::UpdateWorkspace() {
+  int desktop;
+  if (ui::GetCurrentDesktop(&desktop)) {
+    workspace_ = base::IntToString(desktop);
+    return true;
+  }
+  return false;
+}
+
 void X11DesktopHandler::set_wm_user_time_ms(Time time_ms) {
   if (time_ms != CurrentTime) {
     int64_t event_time_64 = time_ms;
@@ -184,10 +209,7 @@ bool X11DesktopHandler::CanDispatchEvent(const ui::PlatformEvent& event) {
 uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
   switch (event->type) {
     case PropertyNotify: {
-      // Check for a change to the active window.
-      CHECK_EQ(x_root_window_, event->xproperty.window);
-      ::Atom active_window_atom = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
-      if (event->xproperty.atom == active_window_atom) {
+      if (event->xproperty.atom == atom_cache_.GetAtom("_NET_ACTIVE_WINDOW")) {
         ::Window window;
         if (ui::GetXIDProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &window) &&
             window) {
@@ -196,10 +218,15 @@ uint32_t X11DesktopHandler::DispatchEvent(const ui::PlatformEvent& event) {
         } else {
           x_active_window_ = None;
         }
+      } else if (event->xproperty.atom ==
+                 atom_cache_.GetAtom("_NET_CURRENT_DESKTOP")) {
+        if (UpdateWorkspace()) {
+          FOR_EACH_OBSERVER(views::X11DesktopHandlerObserver, observers_,
+                            OnWorkspaceChanged(workspace_));
+        }
       }
       break;
     }
-
     case CreateNotify:
       OnWindowCreatedOrDestroyed(event->type, event->xcreatewindow.window);
       break;

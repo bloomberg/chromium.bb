@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/libgtk2ui/gtk2_ui.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -18,6 +19,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -28,6 +30,7 @@
 #include "ui/native_theme/native_theme_dark_aura.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
@@ -68,7 +71,11 @@ ChromeBrowserMainExtraPartsViewsLinux::ChromeBrowserMainExtraPartsViewsLinux() {
 }
 
 ChromeBrowserMainExtraPartsViewsLinux::
-    ~ChromeBrowserMainExtraPartsViewsLinux() {}
+    ~ChromeBrowserMainExtraPartsViewsLinux() {
+  // X11DesktopHandler is destructed at this point, so we don't need to remove
+  // ourselves as an X11DesktopHandlerObserver
+  DCHECK(!aura::Env::GetInstanceDontCreate());
+}
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
   // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
@@ -89,6 +96,8 @@ void ChromeBrowserMainExtraPartsViewsLinux::PreCreateThreads() {
   views::LinuxUI::instance()->MaterialDesignControllerReady();
   views::LinuxUI::instance()->UpdateDeviceScaleFactor(
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+
+  views::X11DesktopHandler::get()->AddObserver(this);
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreProfileInit() {
@@ -116,4 +125,9 @@ void ChromeBrowserMainExtraPartsViewsLinux::PreProfileInit() {
   base::RunLoop().RunUntilIdle();
 
   exit(EXIT_FAILURE);
+}
+
+void ChromeBrowserMainExtraPartsViewsLinux::OnWorkspaceChanged(
+    const std::string& new_workspace) {
+  BrowserList::MoveBrowsersInWorkspaceToFront(new_workspace);
 }

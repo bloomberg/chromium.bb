@@ -186,6 +186,36 @@ void BrowserList::PostBeforeUnloadHandlers(
 }
 
 // static
+void BrowserList::MoveBrowsersInWorkspaceToFront(
+    const std::string& new_workspace) {
+  DCHECK(!new_workspace.empty());
+
+  BrowserList* instance = GetInstance();
+
+  Browser* old_last_active = instance->GetLastActive();
+  BrowserVector& last_active_browsers = instance->last_active_browsers_;
+
+  // Perform a stable partition on the browsers in the list so that the browsers
+  // in the new workspace appear after the browsers in the other workspaces.
+  //
+  // For example, if we have a list of browser-workspace pairs
+  // [{b1, 0}, {b2, 1}, {b3, 0}, {b4, 1}]
+  // and we switch to workspace 1, we want the resulting browser list to look
+  // like [{b1, 0}, {b3, 0}, {b2, 1}, {b4, 1}].
+  std::stable_partition(
+      last_active_browsers.begin(), last_active_browsers.end(),
+      [&new_workspace](Browser* browser) {
+        return browser->window()->GetWorkspace() != new_workspace;
+      });
+
+  Browser* new_last_active = instance->GetLastActive();
+  if (old_last_active != new_last_active) {
+    FOR_EACH_OBSERVER(chrome::BrowserListObserver, observers_.Get(),
+                      OnBrowserSetLastActive(new_last_active));
+  }
+}
+
+// static
 void BrowserList::SetLastActive(Browser* browser) {
   content::RecordAction(UserMetricsAction("ActiveBrowserChanged"));
 

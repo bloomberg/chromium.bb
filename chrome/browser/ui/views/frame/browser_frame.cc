@@ -41,6 +41,10 @@
 #include "chrome/browser/ui/views/frame/browser_command_handler_linux.h"
 #endif
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
+#endif
+
 #if defined(OS_WIN)
 #include "ui/native_theme/native_theme_dark_win.h"
 #endif
@@ -221,6 +225,10 @@ void BrowserFrame::OnNativeWidgetActivationChanged(bool active) {
 
 void BrowserFrame::OnNativeWidgetWorkspaceChanged() {
   chrome::SaveWindowWorkspace(browser_view_->browser(), GetWorkspace());
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  BrowserList::MoveBrowsersInWorkspaceToFront(
+      views::X11DesktopHandler::get()->GetWorkspace());
+#endif
   Widget::OnNativeWidgetWorkspaceChanged();
 }
 

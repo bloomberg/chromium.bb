@@ -11,9 +11,11 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_handler_observer.h"
 
 class ChromeBrowserMainExtraPartsViewsLinux
-    : public ChromeBrowserMainExtraPartsViews {
+    : public ChromeBrowserMainExtraPartsViews,
+      public views::X11DesktopHandlerObserver {
  public:
   ChromeBrowserMainExtraPartsViewsLinux();
   ~ChromeBrowserMainExtraPartsViewsLinux() override;
@@ -23,6 +25,9 @@ class ChromeBrowserMainExtraPartsViewsLinux
   void ToolkitInitialized() override;
   void PreCreateThreads() override;
   void PreProfileInit() override;
+
+  // Overridden from views::X11DesktopHandlerObserver.
+  void OnWorkspaceChanged(const std::string& new_workspace) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsViewsLinux);

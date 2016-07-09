@@ -463,6 +463,7 @@
       'widget/desktop_aura/desktop_window_tree_host_x11.h',
       'widget/desktop_aura/x11_desktop_handler.cc',
       'widget/desktop_aura/x11_desktop_handler.h',
+      'widget/desktop_aura/x11_desktop_handler_observer.h',
       'widget/desktop_aura/x11_desktop_window_move_client.cc',
       'widget/desktop_aura/x11_desktop_window_move_client.h',
       'widget/desktop_aura/x11_move_loop.h',

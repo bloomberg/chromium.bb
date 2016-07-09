@@ -13,12 +13,14 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/aura/env_observer.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/views_export.h"
+#include "ui/views/widget/desktop_aura/x11_desktop_handler_observer.h"
 
 namespace base {
 template <typename T> struct DefaultSingletonTraits;
@@ -34,6 +36,13 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
  public:
   // Returns the singleton handler.
   static X11DesktopHandler* get();
+
+  // Adds/removes X11DesktopHandlerObservers.
+  void AddObserver(X11DesktopHandlerObserver* observer);
+  void RemoveObserver(X11DesktopHandlerObserver* observer);
+
+  // Gets the current workspace ID.
+  std::string GetWorkspace();
 
   // Gets/sets the X11 server time of the most recent mouse click, touch or
   // key press on a Chrome window.
@@ -81,6 +90,9 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   // managed by Chrome.
   void OnWindowCreatedOrDestroyed(int event_type, XID window);
 
+  // Makes a round trip to the X server to get the current workspace.
+  bool UpdateWorkspace();
+
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_;
 
@@ -104,6 +116,10 @@ class VIEWS_EXPORT X11DesktopHandler : public ui::PlatformEventDispatcher,
   ui::X11AtomCache atom_cache_;
 
   bool wm_supports_active_window_;
+
+  base::ObserverList<X11DesktopHandlerObserver> observers_;
+
+  std::string workspace_;
 
   DISALLOW_COPY_AND_ASSIGN(X11DesktopHandler);
 };
