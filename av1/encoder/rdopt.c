@@ -648,13 +648,15 @@ static void choose_tx_size_from_rd(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
   int n, m;
   int s0, s1;
   int64_t best_rd = INT64_MAX, last_rd = INT64_MAX;
-  TX_SIZE best_tx = max_tx_size;
+  TX_SIZE best_tx = TX_SIZES;
   int start_tx, end_tx;
   const int tx_select = cm->tx_mode == TX_MODE_SELECT;
   TX_TYPE tx_type, best_tx_type = DCT_DCT;
   const int is_inter = is_inter_block(mbmi);
-
+  uint8_t zcoeff_blk[TX_SIZES][256];
+  int num_4x4_blks = 1 << (num_pels_log2_lookup[bs] - 4);
   const aom_prob *tx_probs = get_tx_probs2(max_tx_size, xd, &cm->fc->tx_probs);
+
   assert(skip_prob > 0);
   s0 = av1_cost_bit(skip_prob, 0);
   s1 = av1_cost_bit(skip_prob, 1);
@@ -738,15 +740,18 @@ static void choose_tx_size_from_rd(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
         *skip = s;
         *psse = sse;
         best_tx_type = mbmi->tx_type;
+        memcpy(zcoeff_blk, x->zcoeff_blk[n], num_4x4_blks);
       }
     }
   }
 
   mbmi->tx_size = best_tx;
   mbmi->tx_type = best_tx_type;
+
   if (mbmi->tx_size >= TX_32X32) assert(mbmi->tx_type == DCT_DCT);
-  txfm_rd_in_plane(x, &r, &d, &s, &sse, ref_best_rd, 0, bs, best_tx,
-                   cpi->sf.use_fast_coef_costing);
+
+  if (best_tx < TX_SIZES)
+    memcpy(x->zcoeff_blk[best_tx], zcoeff_blk, num_4x4_blks);
 }
 
 static void super_block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
@@ -4016,6 +4021,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #endif  // CONFIG_EXT_INTRA
       distortion2 = distortion_y + distortion_uv;
+      av1_encode_intra_block_plane(x, bsize, 0);
     } else {
 #if CONFIG_REF_MV
       int_mv backup_ref_mv[2];
