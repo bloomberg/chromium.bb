@@ -824,7 +824,7 @@ String HTMLInputElement::altText() const
         alt = fastGetAttribute(titleAttr);
     if (alt.isNull())
         alt = fastGetAttribute(valueAttr);
-    if (alt.isEmpty())
+    if (alt.isNull())
         alt = locale().queryString(WebLocalizedString::InputElementAltText);
     return alt;
 }
