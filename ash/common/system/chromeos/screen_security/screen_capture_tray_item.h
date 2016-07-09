@@ -31,6 +31,8 @@ class ASH_EXPORT ScreenCaptureTrayItem : public ScreenTrayItem,
   // Overridden from ScreenTrayItem.
   void CreateOrUpdateNotification() override;
   std::string GetNotificationId() override;
+  void RecordStoppedFromDefaultViewMetric() override;
+  void RecordStoppedFromNotificationViewMetric() override;
 
   // Overridden from ScreenCaptureObserver.
   void OnScreenCaptureStart(

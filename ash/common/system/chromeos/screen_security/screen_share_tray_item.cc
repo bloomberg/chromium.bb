@@ -77,6 +77,14 @@ std::string ScreenShareTrayItem::GetNotificationId() {
   return kScreenShareNotificationId;
 }
 
+void ScreenShareTrayItem::RecordStoppedFromDefaultViewMetric() {
+  // Intentionally not recording a metric.
+}
+
+void ScreenShareTrayItem::RecordStoppedFromNotificationViewMetric() {
+  // Intentionally not recording a metric.
+}
+
 void ScreenShareTrayItem::OnScreenShareStart(
     const base::Closure& stop_callback,
     const base::string16& helper_name) {

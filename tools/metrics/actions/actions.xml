@@ -13952,6 +13952,25 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="StatusArea_ScreenCapture_Default_Stop">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <description>
+    Counts the number of times the user stops screen capturing via the screen
+    capture row in the system menu.
+  </description>
+</action>
+
+<action name="StatusArea_ScreenCapture_Notification_Stop">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <description>
+    Counts the number of times the user stops screen capturing via the Screen
+    Capture notification. Note these notifications are managed by the system
+    menu and not the general notification center.
+  </description>
+</action>
+
 <action name="StatusArea_SignOut">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

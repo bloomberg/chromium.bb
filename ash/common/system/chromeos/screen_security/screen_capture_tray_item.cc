@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
@@ -68,6 +69,16 @@ void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
 
 std::string ScreenCaptureTrayItem::GetNotificationId() {
   return kScreenCaptureNotificationId;
+}
+
+void ScreenCaptureTrayItem::RecordStoppedFromDefaultViewMetric() {
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_SCREEN_CAPTURE_DEFAULT_STOP);
+}
+
+void ScreenCaptureTrayItem::RecordStoppedFromNotificationViewMetric() {
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP);
 }
 
 void ScreenCaptureTrayItem::OnScreenCaptureStart(

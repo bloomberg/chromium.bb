@@ -494,10 +494,17 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_NETWORK_SETTINGS_CLICKED:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_Network_Settings"));
-      break;
     case UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED:
       base::RecordAction(
           base::UserMetricsAction("StatusArea_OS_Update_Default_Selected"));
+      break;
+    case UMA_STATUS_AREA_SCREEN_CAPTURE_DEFAULT_STOP:
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_ScreenCapture_Default_Stop"));
+      break;
+    case UMA_STATUS_AREA_SCREEN_CAPTURE_NOTIFICATION_STOP:
+      base::RecordAction(base::UserMetricsAction(
+          "StatusArea_ScreenCapture_Notification_Stop"));
       break;
     case UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS:
       base::RecordAction(

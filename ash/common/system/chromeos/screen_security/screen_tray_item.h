@@ -117,6 +117,12 @@ class ASH_EXPORT ScreenTrayItem : public SystemTrayItem {
   // Returns the id of the notification for the tray item.
   virtual std::string GetNotificationId() = 0;
 
+  // Called after Stop() is invoked from the default view.
+  virtual void RecordStoppedFromDefaultViewMetric() = 0;
+
+  // Called after Stop() is invoked from the notification view.
+  virtual void RecordStoppedFromNotificationViewMetric() = 0;
+
   // Overridden from SystemTrayItem.
   views::View* CreateTrayView(LoginStatus status) override = 0;
   views::View* CreateDefaultView(LoginStatus status) override = 0;

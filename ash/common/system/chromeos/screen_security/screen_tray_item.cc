@@ -77,6 +77,7 @@ void ScreenStatusView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK(sender == stop_button_);
   screen_tray_item_->Stop();
+  screen_tray_item_->RecordStoppedFromDefaultViewMetric();
 }
 
 void ScreenStatusView::CreateItems() {
@@ -113,6 +114,7 @@ ScreenNotificationDelegate::~ScreenNotificationDelegate() {}
 void ScreenNotificationDelegate::ButtonClick(int button_index) {
   DCHECK_EQ(0, button_index);
   screen_tray_->Stop();
+  screen_tray_->RecordStoppedFromNotificationViewMetric();
 }
 
 }  // namespace tray
@@ -166,6 +168,10 @@ void ScreenTrayItem::Stop() {
   stop_callback_.Reset();
   callback.Run();
 }
+
+void ScreenTrayItem::RecordStoppedFromDefaultViewMetric() {}
+
+void ScreenTrayItem::RecordStoppedFromNotificationViewMetric() {}
 
 void ScreenTrayItem::DestroyTrayView() {
   tray_view_ = NULL;

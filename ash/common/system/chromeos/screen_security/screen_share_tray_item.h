@@ -29,6 +29,8 @@ class ASH_EXPORT ScreenShareTrayItem : public ScreenTrayItem,
   // Overridden from ScreenTrayItem.
   void CreateOrUpdateNotification() override;
   std::string GetNotificationId() override;
+  void RecordStoppedFromDefaultViewMetric() override;
+  void RecordStoppedFromNotificationViewMetric() override;
 
   // Overridden from ScreenShareObserver.
   void OnScreenShareStart(const base::Closure& stop_callback,
