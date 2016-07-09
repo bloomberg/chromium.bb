@@ -3,30 +3,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Certificate chain with 2 intermediaries. The first intermediary has a basic
+"""Certificate chain with 2 intermediates. The first intermediate has a basic
 constraints path length of 0, so it is a violation for it to have a subordinate
-intermediary."""
+intermediate."""
 
 import common
 
 # Self-signed root certificate (part of trust store).
 root = common.create_self_signed_root_certificate('Root')
 
-# Intermediary with pathlen 0
-intermediary1 = common.create_intermediary_certificate('Intermediary1', root)
-intermediary1.get_extensions().set_property('basicConstraints',
+# Intermediate with pathlen 0
+intermediate1 = common.create_intermediate_certificate('Intermediate1', root)
+intermediate1.get_extensions().set_property('basicConstraints',
                                             'critical,CA:true,pathlen:0')
 
-# Another intermediary (with the same pathlen restriction)
-intermediary2 = common.create_intermediary_certificate('Intermediary2',
-                                                       intermediary1)
-intermediary2.get_extensions().set_property('basicConstraints',
+# Another intermediate (with the same pathlen restriction)
+intermediate2 = common.create_intermediate_certificate('Intermediate2',
+                                                       intermediate1)
+intermediate2.get_extensions().set_property('basicConstraints',
                                             'critical,CA:true,pathlen:0')
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediary2)
+target = common.create_end_entity_certificate('Target', intermediate2)
 
-chain = [target, intermediary2, intermediary1]
+chain = [target, intermediate2, intermediate1]
 trusted = [root]
 time = common.DEFAULT_TIME
 verify_result = False

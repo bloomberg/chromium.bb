@@ -24,6 +24,6 @@ These files descibe a test case for certificate chain verification.
 
 The input file is a PEM file with blocks for:
   * The trust store
-  * The certificate chain (target certificate and all intermediaries)
+  * The certificate chain (target certificate and all intermediates)
   * The timestamp to use when verifying
   * The expected result of verification (success or fail)

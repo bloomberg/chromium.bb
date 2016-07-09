@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Certificate chain with 1 intermediary and a trusted root. The intermediary
+"""Certificate chain with 1 intermediate and a trusted root. The intermediate
 has an unknown X.509v3 extension that is marked as non-critical. Verification
 is expected to succeed because although unrecognized, the extension is not
 critical."""
@@ -12,15 +12,15 @@ import common
 
 # Self-signed root certificate (part of trust store).
 root = common.create_self_signed_root_certificate('Root')
-intermediary = common.create_intermediary_certificate('Intermediary', root)
+intermediate = common.create_intermediate_certificate('Intermediate', root)
 
-# Intermediary that has an unknown non-critical extension.
-intermediary.get_extensions().add_property('1.2.3.4', 'DER:01:02:03:04')
+# Intermediate that has an unknown non-critical extension.
+intermediate.get_extensions().add_property('1.2.3.4', 'DER:01:02:03:04')
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediary)
+target = common.create_end_entity_certificate('Target', intermediate)
 
-chain = [target, intermediary]
+chain = [target, intermediate]
 trusted = [root]
 time = common.DEFAULT_TIME
 verify_result = True

@@ -12,19 +12,19 @@ import common
 # Self-signed root certificate (part of trust store).
 root = common.create_self_signed_root_certificate('Root')
 
-# Intermediary certificate to include in the certificate chain.
-intermediary = common.create_intermediary_certificate('Intermediary', root)
+# Intermediate certificate to include in the certificate chain.
+intermediate = common.create_intermediate_certificate('Intermediate', root)
 
 # Actual intermediate that was used to sign the target certificate. It has the
 # same subject as expected, but a different RSA key from the certificate
 # included in the actual chain.
-wrong_intermediary = common.create_intermediary_certificate('Intermediary',
+wrong_intermediate = common.create_intermediate_certificate('Intermediate',
                                                             root)
 
-# Target certificate, signed using |wrong_intermediary| NOT |intermediary|.
-target = common.create_end_entity_certificate('Target', wrong_intermediary)
+# Target certificate, signed using |wrong_intermediate| NOT |intermediate|.
+target = common.create_end_entity_certificate('Target', wrong_intermediate)
 
-chain = [target, intermediary]
+chain = [target, intermediate]
 trusted = [root]
 time = common.DEFAULT_TIME
 verify_result = False

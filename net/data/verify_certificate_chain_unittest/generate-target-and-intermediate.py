@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Certificate chain with 1 intermediary and a trusted root. Verification is
+"""Certificate chain with 1 intermediate and a trusted root. Verification is
 expected to succeed."""
 
 import common
@@ -11,13 +11,13 @@ import common
 # Self-signed root certificate (part of trust store).
 root = common.create_self_signed_root_certificate('Root')
 
-# Intermediary certificate.
-intermediary = common.create_intermediary_certificate('Intermediary', root)
+# Intermediate certificate.
+intermediate = common.create_intermediate_certificate('Intermediate', root)
 
 # Target certificate.
-target = common.create_end_entity_certificate('Target', intermediary)
+target = common.create_end_entity_certificate('Target', intermediate)
 
-chain = [target, intermediary]
+chain = [target, intermediate]
 trusted = [root]
 time = common.DEFAULT_TIME
 verify_result = True

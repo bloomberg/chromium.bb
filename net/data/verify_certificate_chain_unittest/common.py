@@ -426,7 +426,7 @@ def create_self_signed_root_certificate(name):
   return Certificate(name, TYPE_CA, None)
 
 
-def create_intermediary_certificate(name, issuer):
+def create_intermediate_certificate(name, issuer):
   return Certificate(name, TYPE_CA, issuer)
 
 

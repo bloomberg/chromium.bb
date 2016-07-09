@@ -118,38 +118,38 @@ class VerifyCertificateChainSingleRootTest
 
 TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest);
 
-TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetAndIntermediary) {
-  this->RunTest("target-and-intermediary.pem");
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetAndIntermediate) {
+  this->RunTest("target-and-intermediate.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
-             IntermediaryLacksBasicConstraints) {
-  this->RunTest("intermediary-lacks-basic-constraints.pem");
+             IntermediateLacksBasicConstraints) {
+  this->RunTest("intermediate-lacks-basic-constraints.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
-             IntermediaryBasicConstraintsCaFalse) {
-  this->RunTest("intermediary-basic-constraints-ca-false.pem");
+             IntermediateBasicConstraintsCaFalse) {
+  this->RunTest("intermediate-basic-constraints-ca-false.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
-             IntermediaryBasicConstraintsNotCritical) {
-  this->RunTest("intermediary-basic-constraints-not-critical.pem");
+             IntermediateBasicConstraintsNotCritical) {
+  this->RunTest("intermediate-basic-constraints-not-critical.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
-             IntermediaryLacksSigningKeyUsage) {
-  this->RunTest("intermediary-lacks-signing-key-usage.pem");
+             IntermediateLacksSigningKeyUsage) {
+  this->RunTest("intermediate-lacks-signing-key-usage.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
-             IntermediaryUnknownCriticalExtension) {
-  this->RunTest("intermediary-unknown-critical-extension.pem");
+             IntermediateUnknownCriticalExtension) {
+  this->RunTest("intermediate-unknown-critical-extension.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
-             IntermediaryUnknownNonCriticalExtension) {
-  this->RunTest("intermediary-unknown-non-critical-extension.pem");
+             IntermediateUnknownNonCriticalExtension) {
+  this->RunTest("intermediate-unknown-non-critical-extension.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest,
@@ -166,8 +166,8 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetSignedWithMd5) {
   this->RunTest("target-signed-with-md5.pem");
 }
 
-TYPED_TEST_P(VerifyCertificateChainSingleRootTest, IntermediarySignedWithMd5) {
-  this->RunTest("intermediary-signed-with-md5.pem");
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, IntermediateSignedWithMd5) {
+  this->RunTest("intermediate-signed-with-md5.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetWrongSignature) {
@@ -182,8 +182,8 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, TargetSignedUsingEcdsa) {
   this->RunTest("target-signed-using-ecdsa.pem");
 }
 
-TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExpiredIntermediary) {
-  this->RunTest("expired-intermediary.pem");
+TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExpiredIntermediate) {
+  this->RunTest("expired-intermediate.pem");
 }
 
 TYPED_TEST_P(VerifyCertificateChainSingleRootTest, ExpiredTarget) {
@@ -255,21 +255,21 @@ TYPED_TEST_P(VerifyCertificateChainSingleRootTest, KeyRolloverNewChain) {
 // ordinal not in range, like "March 39, 2016" are rejected.
 
 REGISTER_TYPED_TEST_CASE_P(VerifyCertificateChainSingleRootTest,
-                           TargetAndIntermediary,
-                           IntermediaryLacksBasicConstraints,
-                           IntermediaryBasicConstraintsCaFalse,
-                           IntermediaryBasicConstraintsNotCritical,
-                           IntermediaryLacksSigningKeyUsage,
-                           IntermediaryUnknownCriticalExtension,
-                           IntermediaryUnknownNonCriticalExtension,
+                           TargetAndIntermediate,
+                           IntermediateLacksBasicConstraints,
+                           IntermediateBasicConstraintsCaFalse,
+                           IntermediateBasicConstraintsNotCritical,
+                           IntermediateLacksSigningKeyUsage,
+                           IntermediateUnknownCriticalExtension,
+                           IntermediateUnknownNonCriticalExtension,
                            ViolatesBasicConstraintsPathlen0,
                            BasicConstraintsPathlen0SelfIssued,
                            TargetSignedWithMd5,
-                           IntermediarySignedWithMd5,
+                           IntermediateSignedWithMd5,
                            TargetWrongSignature,
                            TargetSignedBy512bitRsa,
                            TargetSignedUsingEcdsa,
-                           ExpiredIntermediary,
+                           ExpiredIntermediate,
                            ExpiredTarget,
                            ExpiredTargetNotBefore,
                            ExpiredRoot,

@@ -15,39 +15,39 @@ import common
 root = common.create_self_signed_root_certificate('Root')
 
 
-# Intermediary certificates. All have the same subject and key.
-i_base = common.create_intermediary_certificate('I', root)
+# Intermediate certificates. All have the same subject and key.
+i_base = common.create_intermediate_certificate('I', root)
 common.write_string_to_file(i_base.get_cert_pem(), 'i.pem')
 
-i2 = common.create_intermediary_certificate('I', root)
+i2 = common.create_intermediate_certificate('I', root)
 i2.set_key_path(i_base.get_key_path())
 common.write_string_to_file(i2.get_cert_pem(), 'i2.pem')
 
-i3 = common.create_intermediary_certificate('I', root)
+i3 = common.create_intermediate_certificate('I', root)
 i3.set_key_path(i_base.get_key_path())
 common.write_string_to_file(i3.get_cert_pem(), 'i3.pem')
 
 
-# More Intermediary certificates, which are just to generate the proper config
+# More Intermediate certificates, which are just to generate the proper config
 # files so the target certs will have the desired Authority Information Access
 # values. These ones aren't saved to files.
-i_no_aia = common.create_intermediary_certificate('I', root)
+i_no_aia = common.create_intermediate_certificate('I', root)
 i_no_aia.set_key_path(i_base.get_key_path())
 section = i_no_aia.config.get_section('signing_ca_ext')
 section.set_property('authorityInfoAccess', None)
 
-i_two_aia = common.create_intermediary_certificate('I', root)
+i_two_aia = common.create_intermediate_certificate('I', root)
 i_two_aia.set_key_path(i_base.get_key_path())
 section = i_two_aia.config.get_section('issuer_info')
 section.set_property('caIssuers;URI.1', 'http://url-for-aia2/I2.foo')
 
-i_three_aia = common.create_intermediary_certificate('I', root)
+i_three_aia = common.create_intermediate_certificate('I', root)
 i_three_aia.set_key_path(i_base.get_key_path())
 section = i_three_aia.config.get_section('issuer_info')
 section.set_property('caIssuers;URI.1', 'http://url-for-aia2/I2.foo')
 section.set_property('caIssuers;URI.2', 'http://url-for-aia3/I3.foo')
 
-i_six_aia = common.create_intermediary_certificate('I', root)
+i_six_aia = common.create_intermediate_certificate('I', root)
 i_six_aia.set_key_path(i_base.get_key_path())
 section = i_six_aia.config.get_section('issuer_info')
 section.set_property('caIssuers;URI.1', 'http://url-for-aia2/I2.foo')
@@ -56,23 +56,23 @@ section.set_property('caIssuers;URI.3', 'http://url-for-aia4/I4.foo')
 section.set_property('caIssuers;URI.4', 'http://url-for-aia5/I5.foo')
 section.set_property('caIssuers;URI.5', 'http://url-for-aia6/I6.foo')
 
-i_file_aia = common.create_intermediary_certificate('I', root)
+i_file_aia = common.create_intermediate_certificate('I', root)
 i_file_aia.set_key_path(i_base.get_key_path())
 section = i_file_aia.config.get_section('issuer_info')
 section.set_property('caIssuers;URI.0', 'file:///dev/null')
 
-i_invalid_url_aia = common.create_intermediary_certificate('I', root)
+i_invalid_url_aia = common.create_intermediate_certificate('I', root)
 i_invalid_url_aia.set_key_path(i_base.get_key_path())
 section = i_invalid_url_aia.config.get_section('issuer_info')
 section.set_property('caIssuers;URI.0', 'foobar')
 
-i_file_and_http_aia = common.create_intermediary_certificate('I', root)
+i_file_and_http_aia = common.create_intermediate_certificate('I', root)
 i_file_and_http_aia.set_key_path(i_base.get_key_path())
 section = i_file_and_http_aia.config.get_section('issuer_info')
 section.set_property('caIssuers;URI.0', 'file:///dev/null')
 section.set_property('caIssuers;URI.1', 'http://url-for-aia2/I2.foo')
 
-i_invalid_and_http_aia = common.create_intermediary_certificate('I', root)
+i_invalid_and_http_aia = common.create_intermediate_certificate('I', root)
 i_invalid_and_http_aia.set_key_path(i_base.get_key_path())
 section = i_invalid_and_http_aia.config.get_section('issuer_info')
 section.set_property('caIssuers;URI.0', 'foobar')

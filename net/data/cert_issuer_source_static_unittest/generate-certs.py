@@ -47,16 +47,16 @@ root = common.create_self_signed_root_certificate('Root')
 write_cert_to_file(root, 'root.pem')
 
 
-# Intermediary certificates
-i1_1 = common.create_intermediary_certificate('I1', root)
+# Intermediate certificates
+i1_1 = common.create_intermediate_certificate('I1', root)
 write_cert_to_file(i1_1, 'i1_1.pem')
 
 # same name (after normalization), different key
-i1_2 = common.create_intermediary_certificate('i1', root)
+i1_2 = common.create_intermediate_certificate('i1', root)
 write_cert_to_file(i1_2, 'i1_2.pem')
 
 # different name
-i2 = common.create_intermediary_certificate('I2', root)
+i2 = common.create_intermediate_certificate('I2', root)
 write_cert_to_file(i2, 'i2.pem')
 
 

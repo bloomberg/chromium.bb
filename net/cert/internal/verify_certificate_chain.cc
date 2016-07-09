@@ -169,7 +169,7 @@ WARN_UNUSED_RESULT bool BasicCertificateProcessing(
 }
 
 // This function corresponds to RFC 5280 section 6.1.4's "Preparation for
-// Certificate i+1" procedure. |cert| is expected to be an intermediary.
+// Certificate i+1" procedure. |cert| is expected to be an intermediate.
 WARN_UNUSED_RESULT bool PrepareForNextCertificate(
     const ParsedCertificate& cert,
     size_t* max_path_length_ptr,
@@ -211,7 +211,7 @@ WARN_UNUSED_RESULT bool PrepareForNextCertificate(
   //    choose to reject all version 1 and version 2 intermediate
   //    certificates.)
   //
-  // This code implicitly rejects non version 3 intermediaries, since they
+  // This code implicitly rejects non version 3 intermediates, since they
   // can't contain a BasicConstraints extension.
   if (!cert.has_basic_constraints() || !cert.basic_constraints().is_ca)
     return false;

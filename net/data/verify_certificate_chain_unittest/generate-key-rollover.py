@@ -49,18 +49,18 @@ oldroot.set_validity_range(common.JANUARY_1_2015_UTC, common.JANUARY_1_2016_UTC)
 newroot = common.create_self_signed_root_certificate('Root')
 newroot.set_validity_range(JANUARY_2_2015_UTC, common.JANUARY_1_2016_UTC)
 # Root with the new key signed by the old key.
-newrootrollover = common.create_intermediary_certificate('Root', oldroot)
+newrootrollover = common.create_intermediate_certificate('Root', oldroot)
 newrootrollover.set_key_path(newroot.get_key_path())
 newrootrollover.set_validity_range(JANUARY_2_2015_UTC,
                                    common.JANUARY_1_2016_UTC)
 
 # Intermediate signed by oldroot.
-oldintermediate = common.create_intermediary_certificate('Intermediate',
+oldintermediate = common.create_intermediate_certificate('Intermediate',
                                                          oldroot)
 oldintermediate.set_validity_range(common.JANUARY_1_2015_UTC,
                                    common.JANUARY_1_2016_UTC)
 # Intermediate signed by newroot. Same key as oldintermediate.
-newintermediate = common.create_intermediary_certificate('Intermediate',
+newintermediate = common.create_intermediate_certificate('Intermediate',
                                                          newroot)
 newintermediate.set_key_path(oldintermediate.get_key_path())
 newintermediate.set_validity_range(JANUARY_2_2015_UTC,
