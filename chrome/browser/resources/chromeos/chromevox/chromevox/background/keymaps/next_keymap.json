@@ -570,6 +570,24 @@
           "keyCode": [65, 66]
         }
       }
+    },
+    {
+      "command": "toggleSelection",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [83]
+        }
+      }
+    },
+    {
+      "command": "copy",
+      "sequence": {
+        "keys": {
+          "keyCode": [67],
+          "ctrlKey": [true]
+        }
+      }
     }
   ]
 }

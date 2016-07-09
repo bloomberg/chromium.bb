@@ -369,9 +369,23 @@ TEST_F('CursorsTest', 'MultiLineOffsetSelection', function() {
     assertEquals('diff ', secondLine.name);
 
     var secondLineCursor = new cursors.Cursor(secondLine, -1);
-    assertEquals(0, secondLineCursor.selectionIndex_);
-    secondLineCursor = new cursors.Cursor(secondLine, 0);
-    secondLineCursor.index = 0;
+    // The selected node moves to the static text node.
+    assertEquals(secondLineCursor.node.parent,
+                 secondLineCursor.selectionNode_);
+    // This selects the entire node via a character offset.
     assertEquals(6, secondLineCursor.selectionIndex_);
+
+    // Index into the characters.
+    secondLineCursor = new cursors.Cursor(secondLine, 1);
+    assertEquals(7, secondLineCursor.selectionIndex_);
+
+    // Now, try selecting via node offsets.
+    var cursor = new cursors.Cursor(root.firstChild, -1);
+    assertEquals(root, cursor.selectionNode_);
+    assertEquals(0, cursor.selectionIndex_);
+
+    cursor = new cursors.Cursor(root.firstChild.nextSibling, -1);
+    assertEquals(root, cursor.selectionNode_);
+    assertEquals(1, cursor.selectionIndex_);
   });
 });

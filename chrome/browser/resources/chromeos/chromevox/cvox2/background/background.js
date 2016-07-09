@@ -796,6 +796,36 @@ Background.prototype = {
         cvox.BrailleCaptionsBackground.setActive(
             !cvox.BrailleCaptionsBackground.isEnabled());
         return false;
+      case 'copy':
+        var textarea = document.createElement('textarea');
+        document.body.appendChild(textarea);
+        textarea.focus();
+        document.execCommand('paste');
+        var clipboardContent = textarea.value;
+        textarea.remove();
+        cvox.ChromeVox.tts.speak(
+            Msgs.getMsg('copy', [clipboardContent]), cvox.QueueMode.FLUSH);
+        this.pageSel_ = null;
+        return true;
+      case 'toggleSelection':
+        if (!this.pageSel_) {
+          this.pageSel_ = this.currentRange;
+        } else {
+          var root = this.currentRange_.start.node.root;
+          if (root && root.anchorObject && root.focusObject) {
+            var sel = new cursors.Range(
+                new cursors.Cursor(root.anchorObject, root.anchorOffset),
+                new cursors.Cursor(root.focusObject, root.focusOffset)
+                );
+            var o = new Output()
+                .format('@end_selection')
+                .withSpeechAndBraille(sel, sel, Output.EventType.NAVIGATE)
+                .go();
+          }
+          this.pageSel_ = null;
+          return false;
+        }
+        break;
       default:
         return true;
     }
@@ -884,11 +914,63 @@ Background.prototype = {
     var prevRange = this.currentRange_;
     this.setCurrentRange(range);
 
-    range.select();
+    var o = new Output();
+    var selectedRange;
+    if (this.pageSel_ &&
+        this.pageSel_.isValid() &&
+        range.isValid()) {
+      // Compute the direction of the endpoints of each range.
 
-    var o = new Output().withRichSpeechAndBraille(
-        range, prevRange, Output.EventType.NAVIGATE)
+      // Casts are ok because isValid checks node start and end nodes are
+      // non-null; Closure just doesn't eval enough to see it.
+      var startDir =
+          AutomationUtil.getDirection(this.pageSel_.start.node,
+              /** @type {!AutomationNode} */ (range.start.node));
+      var endDir =
+          AutomationUtil.getDirection(this.pageSel_.end.node,
+              /** @type {!AutomationNode} */ (range.end.node));
+
+      // Selection across roots isn't supported.
+      var pageRootStart = this.pageSel_.start.node.root;
+      var pageRootEnd = this.pageSel_.end.node.root;
+      var curRootStart = range.start.node.root;
+      var curRootEnd = range.end.node.root;
+
+      // Disallow crossing over the start of the page selection and roots.
+      if (startDir == Dir.BACKWARD ||
+          pageRootStart != pageRootEnd ||
+          pageRootStart != curRootStart ||
+          pageRootEnd != curRootEnd) {
+        o.format('@end_selection');
+        this.pageSel_ = null;
+      } else {
+        // Expand or shrink requires different feedback.
+        var msg;
+        if (endDir == Dir.FORWARD &&
+            (this.pageSel_.end.node != range.end.node ||
+                this.pageSel_.end.index <= range.end.index)) {
+          msg = '@selected';
+        } else {
+          msg = '@unselected';
+          selectedRange = prevRange;
+        }
+        this.pageSel_ = new cursors.Range(
+            this.pageSel_.start,
+            range.end
+            );
+        if (this.pageSel_)
+          this.pageSel_.select();
+      }
+    } else {
+      range.select();
+    }
+
+    o.withRichSpeechAndBraille(
+        selectedRange || range, prevRange, Output.EventType.NAVIGATE)
             .withQueueMode(cvox.QueueMode.FLUSH);
+
+    if (msg)
+      o.format(msg);
 
     for (var prop in opt_speechProps)
       o.format('!' + prop);

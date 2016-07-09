@@ -130,25 +130,61 @@ cursors.Cursor.prototype = {
     return this.index_;
   },
 
+
   /**
-   * An index appropriate for making selections.
+   * A node appropriate for making selections.
+   * @return {AutomationNode}
+   * @private
+   */
+  get selectionNode_() {
+    if (!this.node)
+      return null;
+
+    if (this.node.role == RoleType.inlineTextBox ||
+        this.index == cursors.NODE_INDEX)
+      return this.node.parent;
+
+    return this.node;
+  },
+
+  /**
+   * An index appropriate for making selections.  If this cursor has a
+   * cursors.NODE_INDEX index, the selection index is a node offset e.g. the
+   * index in parent. If not, the index is a character offset.
    * @return {number}
    * @private
    */
   get selectionIndex_() {
-    if (this.index_ == cursors.NODE_INDEX)
-      return 0;
-
     var adjustedIndex = this.index_;
-
     if (this.node.role == RoleType.inlineTextBox) {
+      if (adjustedIndex == cursors.NODE_INDEX)
+        adjustedIndex = 0;
+
       var sibling = this.node.previousSibling;
       while (sibling) {
         adjustedIndex += sibling.name.length;
         sibling = sibling.previousSibling;
       }
-    }
 
+      // Work around Blink's somewhat unexpected offset calculation which
+      // requires us to consider all previous siblings of the parenting static
+      // text.
+      var parent = this.node.parent;
+      if (parent.role == RoleType.staticText) {
+        sibling = parent.previousSibling;
+        while (sibling) {
+          if (sibling.name)
+            adjustedIndex += sibling.name.length;
+          sibling = sibling.previousSibling;
+        }
+      }
+    } else if (this.index_ == cursors.NODE_INDEX) {
+      if (this.index_ == cursors.NODE_INDEX) {
+        // Translate the index into a selection on the parent.
+        if (this.node.parent)
+          adjustedIndex = this.node.indexInParent;
+      }
+    }
     return adjustedIndex;
   },
 
@@ -546,15 +582,15 @@ cursors.Range.prototype = {
    * Select the text contained within this range.
    */
   select: function() {
-    var start = this.start.node;
-    var end = this.end.node;
+    var startNode = this.start.selectionNode_;
+    var endNode = this.end.selectionNode_;
 
-    if (!start || !end)
+    if (!startNode || !endNode)
       return;
 
     // Find the most common root.
-    var uniqueAncestors = AutomationUtil.getUniqueAncestors(start, end);
-    var mcr = start.root;
+    var uniqueAncestors = AutomationUtil.getUniqueAncestors(startNode, endNode);
+    var mcr = startNode.root;
     if (uniqueAncestors) {
       var common = uniqueAncestors.pop().parent;
       if (common)
@@ -564,18 +600,19 @@ cursors.Range.prototype = {
     if (!mcr || mcr.role == RoleType.desktop)
       return;
 
-    if (mcr === start.root && mcr === end.root) {
-      start = start.role == RoleType.inlineTextBox ? start.parent : start;
-      end = end.role == RoleType.inlineTextBox ? end.parent : end;
+    if (mcr === startNode.root && mcr === endNode.root) {
+      var startIndex = this.start.selectionIndex_;
 
-      if (!start || !end)
-        return;
+      // We want to adjust to select the entire node for node offsets;
+      // otherwise, use the plain character offset.
+      var endIndex = this.end.index == cursors.NODE_INDEX ?
+          this.end.selectionIndex_ + 1 : this.end.selectionIndex_;
 
       chrome.automation.setDocumentSelection(
-          { anchorObject: start,
-            anchorOffset: this.start.selectionIndex_,
-            focusObject: end,
-            focusOffset: this.end.selectionIndex_ }
+          { anchorObject: startNode,
+            anchorOffset: startIndex,
+            focusObject: endNode,
+            focusOffset: endIndex }
       );
     }
   },

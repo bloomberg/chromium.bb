@@ -888,8 +888,6 @@ cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
     return true;
   }
 
-  cvox.ChromeVox.tts.speak(Msgs.getMsg(evt.type).toLowerCase(),
-                           cvox.QueueMode.QUEUE);
   var text = '';
   switch (evt.type) {
   case 'paste':
@@ -900,7 +898,8 @@ cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
     text = window.getSelection().toString();
     break;
   }
-  cvox.ChromeVox.tts.speak(text, cvox.QueueMode.QUEUE);
+  cvox.ChromeVox.tts.speak(
+      Msgs.getMsg(evt.type, [text]), cvox.QueueMode.QUEUE);
   cvox.ChromeVox.navigationManager.clearPageSel();
   return true;
 };

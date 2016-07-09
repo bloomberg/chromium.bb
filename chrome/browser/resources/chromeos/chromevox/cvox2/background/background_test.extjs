@@ -967,3 +967,28 @@ TEST_F('BackgroundTest', 'ContentEditableJumpSyncsRange', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'Selection', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*!
+    <p>simple</p>
+    <p>doc</p>
+  */}, function(root) {
+    // Fakes a toggleSelection command.
+    root.addEventListener('textSelectionChanged', function() {
+      if (root.focusOffset == 3)
+        ChromeVoxState.instance.onGotCommand('toggleSelection');
+    }, true);
+
+    mockFeedback.call(doCmd('toggleSelection'))
+        .expectSpeech('simple', 'selected')
+        .call(doCmd('nextCharacter'))
+        .expectSpeech('i', 'selected')
+        .call(doCmd('previousCharacter'))
+        .expectSpeech('i', 'unselected')
+        .call(doCmd('nextCharacter'))
+        .call(doCmd('nextCharacter'))
+        .expectSpeech('End selection', 'sim')
+        .replay();
+  });
+});

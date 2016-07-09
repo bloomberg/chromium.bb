@@ -430,7 +430,7 @@ chrome.automation.AutomationNode.prototype.wordEnds;
 
 
 /**
- * @type {chrome.automation.AutomationNode}
+ * @type {chrome.automation.AutomationRootNode}
  */
 chrome.automation.AutomationNode.prototype.root;
 
@@ -617,6 +617,32 @@ chrome.automation.focusOffset;
  * @type {(chrome.automation.AutomationNode|undefined)}
  */
 chrome.automation.AutomationNode.prototype.activeDescendant;
+
+/**
+ * @extends {chrome.automation.AutomationNode}
+ * @constructor
+ */
+chrome.automation.AutomationRootNode = function() {};
+
+/**
+ * @type {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationRootNode.prototype.anchorObject;
+
+/**
+ * @type {number}
+ */
+chrome.automation.AutomationRootNode.prototype.anchorOffset;
+
+/**
+ * @type {chrome.automation.AutomationNode}
+ */
+chrome.automation.AutomationRootNode.prototype.focusObject;
+
+/**
+ * @type {number}
+ */
+chrome.automation.AutomationRootNode.prototype.focusOffset;
 
 /** @type {function() : !Object} */
 chrome.app.getDetails;
