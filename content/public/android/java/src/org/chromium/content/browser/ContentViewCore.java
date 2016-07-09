@@ -3285,6 +3285,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     public boolean onDragEvent(DragEvent event) {
         if (mNativeContentViewCore == 0) return false;
 
+
         ClipDescription clipDescription = event.getClipDescription();
         if (clipDescription == null && event.getAction() != DragEvent.ACTION_DRAG_ENDED) {
             Log.e(TAG, "Null clipDescription when the drag is not ended.");
@@ -3297,7 +3298,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
         if (event.getAction() == DragEvent.ACTION_DRAG_STARTED) {
             // TODO(hush): support dragging more than just text.
-            return mimeTypes.length > 0;
+            return mimeTypes.length > 0 && nativeIsTouchDragDropEnabled(mNativeContentViewCore);
         }
 
         StringBuilder content = new StringBuilder("");
@@ -3568,6 +3569,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             int x, int y, int w, int h);
 
     private native void nativeSetBackgroundOpaque(long nativeContentViewCoreImpl, boolean opaque);
+    private native boolean nativeIsTouchDragDropEnabled(long nativeContentViewCoreImpl);
     private native void nativeOnDragEvent(long nativeContentViewCoreImpl, int action, int x, int y,
             int screenX, int screenY, String[] mimeTypes, String content);
 }

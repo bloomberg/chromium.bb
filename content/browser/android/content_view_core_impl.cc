@@ -58,6 +58,7 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/ui_base_switches_util.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/event_utils.h"
@@ -1474,6 +1475,12 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env,
     else
       GetRenderWidgetHostViewAndroid()->SetBackgroundColor(SK_ColorTRANSPARENT);
   }
+}
+
+bool ContentViewCoreImpl::IsTouchDragDropEnabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jobj) {
+  return switches::IsTouchDragDropEnabled();
 }
 
 void ContentViewCoreImpl::OnDragEvent(

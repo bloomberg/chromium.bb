@@ -282,6 +282,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SetBackgroundOpaque(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& jobj,
                            jboolean opaque);
+
+  bool IsTouchDragDropEnabled(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& jobj);
+
   void OnDragEvent(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jobj,
                    jint action,
