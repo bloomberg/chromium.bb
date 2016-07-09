@@ -2,6 +2,7 @@
 -IFrameZoomBrowserTest.RedirectToPageWithSubframeZoomsCorrectly
 -IFrameZoomBrowserTest.SubframesDontZoomIndependently
 -NavigationControllerBrowserTest.BackTwiceToIframeWithContent
+-NavigationHandleImplHttpsUpgradeBrowserTest.*
 -RenderFrameHostManagerTest.RestoreSubframeFileAccessForHistoryNavigation
 -RequestDataResourceDispatcherHostBrowserTest.*
 -ServiceWorker*

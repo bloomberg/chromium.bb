@@ -99,7 +99,7 @@ public:
     void sendImagePing(const KURL&) override;
     void addConsoleMessage(const String&) const override;
     SecurityOrigin* getSecurityOrigin() const override;
-    void upgradeInsecureRequest(FetchRequest&) override;
+    void upgradeInsecureRequest(ResourceRequest&) override;
     void addClientHintsIfNecessary(FetchRequest&) override;
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
 

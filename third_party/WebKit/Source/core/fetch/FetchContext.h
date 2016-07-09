@@ -104,7 +104,7 @@ public:
     virtual void sendImagePing(const KURL&);
     virtual void addConsoleMessage(const String&) const;
     virtual SecurityOrigin* getSecurityOrigin() const { return nullptr; }
-    virtual void upgradeInsecureRequest(FetchRequest&);
+    virtual void upgradeInsecureRequest(ResourceRequest&);
     virtual void addClientHintsIfNecessary(FetchRequest&);
     virtual void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&);
 

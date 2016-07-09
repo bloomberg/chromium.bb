@@ -109,7 +109,7 @@ void FetchContext::addConsoleMessage(const String&) const
 {
 }
 
-void FetchContext::upgradeInsecureRequest(FetchRequest&)
+void FetchContext::upgradeInsecureRequest(ResourceRequest&)
 {
 }
 

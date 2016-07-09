@@ -113,6 +113,8 @@ public:
     NavigationType getNavigationType() const { return m_navigationType; }
     void setNavigationType(NavigationType navigationType) { m_navigationType = navigationType; }
 
+    void upgradeInsecureRequest();
+
     void startLoadingMainResource();
 
     void acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength);

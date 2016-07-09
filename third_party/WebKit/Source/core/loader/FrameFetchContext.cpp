@@ -676,14 +676,20 @@ SecurityOrigin* FrameFetchContext::getSecurityOrigin() const
     return m_document ? m_document->getSecurityOrigin() : nullptr;
 }
 
-void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
+void FrameFetchContext::upgradeInsecureRequest(ResourceRequest& resourceRequest)
 {
-    KURL url = fetchRequest.resourceRequest().url();
-
     // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational requests, as described in
     // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
-    if (fetchRequest.resourceRequest().frameType() != WebURLRequest::FrameTypeNone)
-        fetchRequest.mutableResourceRequest().addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
+    if (resourceRequest.frameType() != WebURLRequest::FrameTypeNone) {
+
+        // Early return if the request has already been upgraded.
+        if (resourceRequest.httpHeaderField("Upgrade-Insecure-Requests") == AtomicString("1"))
+            return;
+
+        resourceRequest.addHTTPHeaderField("Upgrade-Insecure-Requests", "1");
+    }
+
+    KURL url = resourceRequest.url();
 
     // If we don't yet have an |m_document| (because we're loading an iframe, for instance), check the FrameLoader's policy.
     WebInsecureRequestPolicy relevantPolicy = m_document ? m_document->getInsecureRequestPolicy() : frame()->loader().getInsecureRequestPolicy();
@@ -695,17 +701,15 @@ void FrameFetchContext::upgradeInsecureRequest(FetchRequest& fetchRequest)
         // 1. Are for subresources (including nested frames).
         // 2. Are form submissions.
         // 3. Whose hosts are contained in the document's InsecureNavigationSet.
-        const ResourceRequest& request = fetchRequest.resourceRequest();
-        if (request.frameType() == WebURLRequest::FrameTypeNone
-            || request.frameType() == WebURLRequest::FrameTypeNested
-            || request.requestContext() == WebURLRequest::RequestContextForm
-            || (!url.host().isNull() && relevantNavigationSet->contains(url.host().impl()->hash())))
-        {
+        if (resourceRequest.frameType() == WebURLRequest::FrameTypeNone
+            || resourceRequest.frameType() == WebURLRequest::FrameTypeNested
+            || resourceRequest.requestContext() == WebURLRequest::RequestContextForm
+            || (!url.host().isNull() && relevantNavigationSet->contains(url.host().impl()->hash()))) {
             UseCounter::count(m_document, UseCounter::UpgradeInsecureRequestsUpgradedRequest);
             url.setProtocol("https");
             if (url.port() == 80)
                 url.setPort(443);
-            fetchRequest.mutableResourceRequest().setURL(url);
+            resourceRequest.setURL(url);
         }
     }
 }

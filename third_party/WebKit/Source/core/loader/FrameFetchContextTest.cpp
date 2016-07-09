@@ -186,7 +186,7 @@ protected:
         fetchRequest.mutableResourceRequest().setRequestContext(requestContext);
         fetchRequest.mutableResourceRequest().setFrameType(frameType);
 
-        fetchContext->upgradeInsecureRequest(fetchRequest);
+        fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
 
         EXPECT_STREQ(expectedURL.getString().utf8().data(), fetchRequest.resourceRequest().url().getString().utf8().data());
         EXPECT_EQ(expectedURL.protocol(), fetchRequest.resourceRequest().url().protocol());
@@ -204,10 +204,16 @@ protected:
         fetchRequest.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextScript);
         fetchRequest.mutableResourceRequest().setFrameType(frameType);
 
-        fetchContext->upgradeInsecureRequest(fetchRequest);
+        fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
 
         EXPECT_STREQ(shouldPrefer ? "1" : "",
             fetchRequest.resourceRequest().httpHeaderField(HTTPNames::Upgrade_Insecure_Requests).utf8().data());
+
+        // Calling upgradeInsecureRequest more than once shouldn't affect the header.
+        if (shouldPrefer) {
+            fetchContext->upgradeInsecureRequest(fetchRequest.mutableResourceRequest());
+            EXPECT_STREQ("1", fetchRequest.resourceRequest().httpHeaderField(HTTPNames::Upgrade_Insecure_Requests).utf8().data());
+        }
     }
 
     RefPtr<SecurityOrigin> exampleOrigin;

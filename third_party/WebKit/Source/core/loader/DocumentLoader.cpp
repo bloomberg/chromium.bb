@@ -624,6 +624,11 @@ bool DocumentLoader::maybeLoadEmpty()
     return true;
 }
 
+void DocumentLoader::upgradeInsecureRequest()
+{
+    fetcher()->context().upgradeInsecureRequest(m_request);
+}
+
 void DocumentLoader::startLoadingMainResource()
 {
     timing().markNavigationStart();

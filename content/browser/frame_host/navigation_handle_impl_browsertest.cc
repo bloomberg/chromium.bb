@@ -21,9 +21,12 @@ namespace content {
 
 namespace {
 
+// Gathers data from the NavigationHandle assigned to navigations that start
+// with the expected URL.
 class NavigationHandleObserver : public WebContentsObserver {
  public:
-  NavigationHandleObserver(WebContents* web_contents, const GURL& expected_url)
+  NavigationHandleObserver(WebContents* web_contents,
+                           const GURL& expected_start_url)
       : WebContentsObserver(web_contents),
         handle_(nullptr),
         has_committed_(false),
@@ -36,10 +39,10 @@ class NavigationHandleObserver : public WebContentsObserver {
         was_redirected_(false),
         frame_tree_node_id_(-1),
         page_transition_(ui::PAGE_TRANSITION_LINK),
-        expected_url_(expected_url) {}
+        expected_start_url_(expected_start_url) {}
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
-    if (handle_ || navigation_handle->GetURL() != expected_url_)
+    if (handle_ || navigation_handle->GetURL() != expected_start_url_)
       return;
 
     handle_ = navigation_handle;
@@ -115,12 +118,13 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool was_redirected_;
   int frame_tree_node_id_;
   ui::PageTransition page_transition_;
-  GURL expected_url_;
+  GURL expected_start_url_;
   GURL last_committed_url_;
 };
 
 // A test NavigationThrottle that will return pre-determined checks and run
-// callbacks when the various NavigationThrottle methods are called.
+// callbacks when the various NavigationThrottle methods are called. It is
+// not instantiated directly but through a TestNavigationThrottleInstaller.
 class TestNavigationThrottle : public NavigationThrottle {
  public:
   TestNavigationThrottle(
@@ -169,8 +173,10 @@ class TestNavigationThrottle : public NavigationThrottle {
   base::Closure did_call_will_process_;
 };
 
-// Install a TestNavigationThrottle on all requests and allows waiting for
-// various NavigationThrottle related events.
+// Install a TestNavigationThrottle on all following requests and allows waiting
+// for various NavigationThrottle related events. Waiting works only for the
+// immediately next navigation. New instances are needed to wait for further
+// navigations.
 class TestNavigationThrottleInstaller : public WebContentsObserver {
  public:
   TestNavigationThrottleInstaller(
@@ -268,6 +274,22 @@ class TestNavigationThrottleInstaller : public WebContentsObserver {
   scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_redirect_loop_runner_;
   scoped_refptr<MessageLoopRunner> will_process_loop_runner_;
+};
+
+// Records all navigation start URLs from the WebContents.
+class NavigationStartUrlRecorder : public WebContentsObserver {
+ public:
+  NavigationStartUrlRecorder(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    urls_.push_back(navigation_handle->GetURL());
+  }
+
+  const std::vector<GURL>& urls() const { return urls_; }
+
+ private:
+  std::vector<GURL> urls_;
 };
 
 }  // namespace
@@ -630,6 +652,69 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
   EXPECT_FALSE(observer.is_error());
   EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
             GURL(embedded_test_server()->GetURL("bar.com", "/title2.html")));
+}
+
+// Specialized test that verifies the NavigationHandle gets the HTTPS upgraded
+// URL from the very beginning of the navigation.
+class NavigationHandleImplHttpsUpgradeBrowserTest
+    : public NavigationHandleImplBrowserTest {
+ public:
+  void CheckHttpsUpgradedIframeNavigation(const GURL& start_url,
+                                          const GURL& iframe_secure_url) {
+    ASSERT_TRUE(start_url.SchemeIs(url::kHttpScheme));
+    ASSERT_TRUE(iframe_secure_url.SchemeIs(url::kHttpsScheme));
+
+    NavigationStartUrlRecorder url_recorder(shell()->web_contents());
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+    TestNavigationManager navigation_manager(shell()->web_contents(),
+                                             iframe_secure_url);
+
+    // Load the page and wait for the frame load with the expected URL.
+    // Note: if the test times out while waiting then a navigation to
+    // iframe_secure_url never happened and the expected upgrade may not be
+    // working.
+    shell()->LoadURL(start_url);
+    navigation_manager.WaitForWillStartRequest();
+
+    // The main frame should have finished navigating while the iframe should
+    // have just started.
+    EXPECT_EQ(2, installer.will_start_called());
+    EXPECT_EQ(0, installer.will_redirect_called());
+    EXPECT_EQ(1, installer.will_process_called());
+
+    // Check the correct start URLs have been registered.
+    EXPECT_EQ(iframe_secure_url, url_recorder.urls().back());
+    EXPECT_EQ(start_url, url_recorder.urls().front());
+    EXPECT_EQ(2ul, url_recorder.urls().size());
+  }
+};
+
+// Tests that the start URL is HTTPS upgraded for a same site navigation.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
+                       StartUrlIsHttpsUpgradedSameSite) {
+  GURL start_url(
+      embedded_test_server()->GetURL("/https_upgrade_same_site.html"));
+
+  // Builds the expected upgraded same site URL.
+  GURL::Replacements replace_scheme;
+  replace_scheme.SetSchemeStr("https");
+  GURL cross_site_iframe_secure_url = embedded_test_server()
+                                          ->GetURL("/title1.html")
+                                          .ReplaceComponents(replace_scheme);
+
+  CheckHttpsUpgradedIframeNavigation(start_url, cross_site_iframe_secure_url);
+}
+
+// Tests that the start URL is HTTPS upgraded for a cross site navigation.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplHttpsUpgradeBrowserTest,
+                       StartUrlIsHttpsUpgradedCrossSite) {
+  GURL start_url(
+      embedded_test_server()->GetURL("/https_upgrade_cross_site.html"));
+  GURL cross_site_iframe_secure_url("https://other.com/title1.html");
+
+  CheckHttpsUpgradedIframeNavigation(start_url, cross_site_iframe_secure_url);
 }
 
 }  // namespace content
