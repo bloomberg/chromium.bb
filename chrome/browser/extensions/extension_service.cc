@@ -869,6 +869,12 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
   }
 
   const Extension* extension = GetInstalledExtension(extension_id);
+
+  // Shared modules cannot be disabled, they are just resources used by other
+  // extensions, and are not user controlled.
+  if (extension && SharedModuleInfo::IsSharedModule(extension))
+    return;
+
   // |extension| can be nullptr if sync disables an extension that is not
   // installed yet.
   // EXTERNAL_COMPONENT extensions are not generally modifiable by users, but
@@ -1419,6 +1425,18 @@ void ExtensionService::SetReadyAndNotifyListeners() {
 void ExtensionService::OnLoadedInstalledExtensions() {
   if (updater_)
     updater_->Start();
+
+  // Enable any Shared Modules that incorrectly got disabled previously.
+  // This is temporary code to fix incorrect behavior from previous versions of
+  // Chrome and can be removed after several releases (perhaps M60).
+  extensions::ExtensionList to_enable;
+  for (const auto& extension : registry_->disabled_extensions()) {
+    if (SharedModuleInfo::IsSharedModule(extension.get()))
+      to_enable.push_back(extension);
+  }
+  for (const auto& extension : to_enable) {
+    EnableExtension(extension->id());
+  }
 
   OnBlacklistUpdated();
 }

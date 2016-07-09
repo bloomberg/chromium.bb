@@ -6776,6 +6776,36 @@ TEST_F(ExtensionServiceTest, CannotEnableBlacklistedExtension) {
   EXPECT_TRUE(ExtensionPrefs::Get(profile())->IsExtensionBlacklisted(id));
 }
 
+// Test that calls to disable Shared Modules do not work.
+TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
+  InitializeEmptyExtensionService();
+  std::unique_ptr<base::DictionaryValue> manifest =
+      extensions::DictionaryBuilder()
+          .Set("name", "Shared Module")
+          .Set("version", "1.0")
+          .Set("manifest_version", 2)
+          .Set("export",
+               extensions::DictionaryBuilder()
+                   .Set("resources",
+                        extensions::ListBuilder().Append("foo.js").Build())
+                   .Build())
+          .Build();
+
+  scoped_refptr<Extension> extension = extensions::ExtensionBuilder()
+                                           .SetManifest(std::move(manifest))
+                                           .AddFlags(Extension::FROM_WEBSTORE)
+                                           .Build();
+
+  service()->OnExtensionInstalled(extension.get(), syncer::StringOrdinal(),
+                                  extensions::kInstallFlagInstallImmediately);
+
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+  // Try to disable the extension.
+  service()->DisableExtension(extension->id(), Extension::DISABLE_USER_ACTION);
+  // Shared Module should still be enabled.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+}
+
 // Make sure we can uninstall a blacklisted extension
 TEST_F(ExtensionServiceTest, UninstallBlacklistedExtension) {
   InitializeGoodInstalledExtensionService();
