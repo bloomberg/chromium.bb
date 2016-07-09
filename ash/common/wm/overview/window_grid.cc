@@ -783,6 +783,10 @@ void WindowGrid::OnWindowBoundsChanged(WmWindow* window,
   // Immediately finish any active bounds animation.
   window->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
 
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    PositionWindows(false);
+    return;
+  }
   // Recompute the transform for the window.
   (*iter)->RecomputeWindowTransforms();
 }

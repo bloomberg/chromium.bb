@@ -180,7 +180,7 @@ TransientDescendantIteratorRange GetTransientTreeIterator(WmWindow* window) {
 class ScopedTransformOverviewWindow::OverviewContentMask
     : public ui::LayerDelegate {
  public:
-  OverviewContentMask(int inset, int radius);
+  explicit OverviewContentMask(float radius);
   ~OverviewContentMask() override;
 
   ui::Layer* layer() { return &layer_; }
@@ -193,16 +193,14 @@ class ScopedTransformOverviewWindow::OverviewContentMask
 
  private:
   ui::Layer layer_;
-  int inset_;
-  int radius_;
+  float radius_;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewContentMask);
 };
 
 ScopedTransformOverviewWindow::OverviewContentMask::OverviewContentMask(
-    int inset,
-    int radius)
-    : layer_(ui::LAYER_TEXTURED), inset_(inset), radius_(radius) {
+    float radius)
+    : layer_(ui::LAYER_TEXTURED), radius_(radius) {
   layer_.set_delegate(this);
 }
 
@@ -214,7 +212,6 @@ void ScopedTransformOverviewWindow::OverviewContentMask::OnPaintLayer(
     const ui::PaintContext& context) {
   ui::PaintRecorder recorder(context, layer()->size());
   gfx::Rect bounds(layer()->bounds().size());
-  bounds.Inset(0, inset_, 0, 0);
 
   // Tile a window into an area, rounding the bottom corners.
   const SkRect rect = gfx::RectToSkRect(bounds);
@@ -260,11 +257,6 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {}
 
 void ScopedTransformOverviewWindow::RestoreWindow() {
-  if (ash::MaterialDesignController::IsOverviewMaterial()) {
-    window()->GetLayer()->SetMaskLayer(nullptr);
-    mask_.reset();
-  }
-
   ScopedAnimationSettings animation_settings_list;
   BeginScopedAnimation(OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
                        &animation_settings_list);
@@ -288,6 +280,20 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
   }
   window_->GetWindowState()->set_ignored_by_shelf(ignored_by_shelf_);
   SetOpacity(original_opacity_);
+
+  if (ash::MaterialDesignController::IsOverviewMaterial()) {
+    ui::Layer* layer = window()->GetLayer();
+    layer->SetMaskLayer(nullptr);
+    mask_.reset();
+
+    if (original_window_shape_) {
+      layer->SetAlphaShape(
+          base::WrapUnique(new SkRegion(*original_window_shape_.get())));
+    } else {
+      layer->SetAlphaShape(nullptr);
+    }
+    window()->SetMasksToBounds(false);
+  }
 }
 
 void ScopedTransformOverviewWindow::BeginScopedAnimation(
@@ -394,14 +400,31 @@ gfx::Transform ScopedTransformOverviewWindow::GetTransformForRect(
 void ScopedTransformOverviewWindow::SetTransform(
     WmWindow* root_window,
     const gfx::Transform& transform,
-    int radius) {
+    float radius) {
   DCHECK(overview_started_);
 
-  if (ash::MaterialDesignController::IsOverviewMaterial() && !mask_) {
-    mask_.reset(new OverviewContentMask(
-        window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET), radius));
-    mask_->layer()->SetBounds(GetTargetBoundsInScreen());
+  if (ash::MaterialDesignController::IsOverviewMaterial() &&
+      &transform != &original_transform_) {
+    gfx::Rect bounds(GetTargetBoundsInScreen().size());
+    mask_.reset(new OverviewContentMask(radius));
+    mask_->layer()->SetFillsBoundsOpaquely(false);
+    mask_->layer()->SetBounds(bounds);
     window()->GetLayer()->SetMaskLayer(mask_->layer());
+
+    SkRegion* window_shape = window()->GetLayer()->alpha_shape();
+    if (!original_window_shape_ && window_shape)
+      original_window_shape_.reset(new SkRegion(*window_shape));
+    const int inset =
+        window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
+    if (inset > 0) {
+      bounds.Inset(0, inset, 0, 0);
+      SkRegion* region = new SkRegion;
+      region->setRect(RectToSkIRect(bounds));
+      if (original_window_shape_)
+        region->op(*original_window_shape_, SkRegion::kIntersect_Op);
+      window()->GetLayer()->SetAlphaShape(base::WrapUnique(region));
+      window()->SetMasksToBounds(true);
+    }
   }
 
   gfx::Point target_origin(GetTargetBoundsInScreen().origin());

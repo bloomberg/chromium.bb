@@ -477,8 +477,7 @@ void WindowSelectorItem::SetItemBounds(const gfx::Rect& target_bounds,
   // which when scaled will yield |kLabelBackgroundRadius|.
   transform_window_.SetTransform(
       root_window_, transform,
-      gfx::ToFlooredInt(kLabelBackgroundRadius /
-                        GetItemScale(target_bounds.size())));
+      (kLabelBackgroundRadius / GetItemScale(target_bounds.size())));
   transform_window_.set_overview_transform(transform);
 }
 

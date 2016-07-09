@@ -15,6 +15,8 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
+class SkRegion;
+
 namespace gfx {
 class Rect;
 }
@@ -106,7 +108,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // using rounded corners of |radius|.
   void SetTransform(WmWindow* root_window,
                     const gfx::Transform& transform,
-                    int radius);
+                    float radius);
 
   // Set's the opacity of the managed windows.
   void SetOpacity(float opacity);
@@ -134,6 +136,9 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
 
   // Mask layer that hides the original window header.
   std::unique_ptr<OverviewContentMask> mask_;
+
+  // Original window shape, if it was set on a window.
+  std::unique_ptr<SkRegion> original_window_shape_;
 
   // If true, the window was minimized and should be restored if the window
   // was not selected.
