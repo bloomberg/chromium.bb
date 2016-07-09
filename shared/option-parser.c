@@ -40,10 +40,10 @@ handle_option(const struct weston_option *option, char *value)
 
 	switch (option->type) {
 	case WESTON_OPTION_INTEGER:
-		* (int32_t *) option->data = strtol(value, &p, 0);
+		* (int32_t *) option->data = strtol(value, &p, 10);
 		return *value && !*p;
 	case WESTON_OPTION_UNSIGNED_INTEGER:
-		* (uint32_t *) option->data = strtoul(value, &p, 0);
+		* (uint32_t *) option->data = strtoul(value, &p, 10);
 		return *value && !*p;
 	case WESTON_OPTION_STRING:
 		* (char **) option->data = strdup(value);
