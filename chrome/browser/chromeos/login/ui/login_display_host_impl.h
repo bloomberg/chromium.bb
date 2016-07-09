@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/shell_delegate.h"
+#include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
@@ -57,7 +57,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
                              public content::WebContentsObserver,
                              public chromeos::SessionManagerClient::Observer,
                              public chromeos::CrasAudioHandler::AudioObserver,
-                             public ash::VirtualKeyboardStateObserver,
+                             public ash::ShellObserver,
                              public keyboard::KeyboardControllerObserver,
                              public display::DisplayObserver,
                              public views::WidgetRemovalsObserver,
@@ -123,7 +123,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   // Overridden from chromeos::CrasAudioHandler::AudioObserver:
   void OnActiveOutputNodeChanged() override;
 
-  // Overridden from ash::KeyboardStateObserver:
+  // ash::ShellObserver:
   void OnVirtualKeyboardStateChanged(bool activated) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:

@@ -189,6 +189,9 @@ class ASH_EXPORT WmShell {
   // |pinned_window|'s window state.
   void NotifyPinnedStateChanged(WmWindow* pinned_window);
 
+  // Called when virtual keyboard has been activated/deactivated.
+  void OnVirtualKeyboardActivated(bool activated);
+
   virtual AccessibilityDelegate* GetAccessibilityDelegate() = 0;
 
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;

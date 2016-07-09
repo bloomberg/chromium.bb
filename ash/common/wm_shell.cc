@@ -53,6 +53,11 @@ void WmShell::NotifyPinnedStateChanged(WmWindow* pinned_window) {
                     OnPinnedStateChanged(pinned_window));
 }
 
+void WmShell::OnVirtualKeyboardActivated(bool activated) {
+  FOR_EACH_OBSERVER(ShellObserver, shell_observers_,
+                    OnVirtualKeyboardStateChanged(activated));
+}
+
 void WmShell::AddShellObserver(ShellObserver* observer) {
   shell_observers_.AddObserver(observer);
 }

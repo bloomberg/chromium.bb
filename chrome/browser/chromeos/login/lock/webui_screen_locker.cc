@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 
-#include "ash/common/shell_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
@@ -69,7 +68,7 @@ WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
       weak_factory_(this) {
   set_should_emit_login_prompt_visible(false);
   ash::Shell::GetInstance()->lock_state_controller()->AddObserver(this);
-  ash::WmShell::Get()->delegate()->AddVirtualKeyboardStateObserver(this);
+  ash::WmShell::Get()->AddShellObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
 
@@ -169,7 +168,7 @@ WebUIScreenLocker::~WebUIScreenLocker() {
   display::Screen::GetScreen()->RemoveObserver(this);
   ash::Shell::GetInstance()->lock_state_controller()->RemoveObserver(this);
 
-  ash::WmShell::Get()->delegate()->RemoveVirtualKeyboardStateObserver(this);
+  ash::WmShell::Get()->RemoveShellObserver(this);
   // In case of shutdown, lock_window_ may be deleted before WebUIScreenLocker.
   if (lock_window_) {
     lock_window_->RemoveObserver(this);
@@ -354,7 +353,7 @@ void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ash::KeyboardStateObserver overrides.
+// ash::ShellObserver:
 
 void WebUIScreenLocker::OnVirtualKeyboardStateChanged(bool activated) {
   if (keyboard::KeyboardController::GetInstance()) {

@@ -487,22 +487,6 @@ keyboard::KeyboardUI* ChromeShellDelegate::CreateKeyboardUI() {
   return new ChromeKeyboardUI(ProfileManager::GetActiveUserProfile());
 }
 
-void ChromeShellDelegate::VirtualKeyboardActivated(bool activated) {
-  FOR_EACH_OBSERVER(ash::VirtualKeyboardStateObserver,
-                    keyboard_state_observer_list_,
-                    OnVirtualKeyboardStateChanged(activated));
-}
-
-void ChromeShellDelegate::AddVirtualKeyboardStateObserver(
-    ash::VirtualKeyboardStateObserver* observer) {
-  keyboard_state_observer_list_.AddObserver(observer);
-}
-
-void ChromeShellDelegate::RemoveVirtualKeyboardStateObserver(
-    ash::VirtualKeyboardStateObserver* observer) {
-  keyboard_state_observer_list_.RemoveObserver(observer);
-}
-
 ash::SessionStateDelegate* ChromeShellDelegate::CreateSessionStateDelegate() {
   return new SessionStateDelegateChromeos;
 }

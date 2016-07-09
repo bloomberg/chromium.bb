@@ -35,11 +35,6 @@ class ShellDelegateMus : public ShellDelegate {
   void PreShutdown() override;
   void Exit() override;
   keyboard::KeyboardUI* CreateKeyboardUI() override;
-  void VirtualKeyboardActivated(bool activated) override;
-  void AddVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) override;
-  void RemoveVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) override;
   void OpenUrl(const GURL& url) override;
   app_list::AppListPresenter* GetAppListPresenter() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;

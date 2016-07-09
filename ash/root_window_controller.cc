@@ -703,7 +703,7 @@ void RootWindowController::ActivateKeyboard(
   keyboard_controller->AddObserver(workspace_controller_->layout_manager());
   keyboard_controller->AddObserver(
       always_on_top_controller_->GetLayoutManager());
-  WmShell::Get()->delegate()->VirtualKeyboardActivated(true);
+  WmShell::Get()->OnVirtualKeyboardActivated(true);
   aura::Window* parent = GetContainer(kShellWindowId_ImeWindowParentContainer);
   DCHECK(parent);
   aura::Window* keyboard_container = keyboard_controller->GetContainerWindow();
@@ -733,7 +733,7 @@ void RootWindowController::DeactivateKeyboard(
         workspace_controller_->layout_manager());
     keyboard_controller->RemoveObserver(
         always_on_top_controller_->GetLayoutManager());
-    WmShell::Get()->delegate()->VirtualKeyboardActivated(false);
+    WmShell::Get()->OnVirtualKeyboardActivated(false);
   }
 }
 

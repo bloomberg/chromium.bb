@@ -154,20 +154,6 @@ keyboard::KeyboardUI* ShellDelegateMus::CreateKeyboardUI() {
   return nullptr;
 }
 
-void ShellDelegateMus::VirtualKeyboardActivated(bool activated) {
-  NOTIMPLEMENTED();
-}
-
-void ShellDelegateMus::AddVirtualKeyboardStateObserver(
-    VirtualKeyboardStateObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
-void ShellDelegateMus::RemoveVirtualKeyboardStateObserver(
-    VirtualKeyboardStateObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
 void ShellDelegateMus::OpenUrl(const GURL& url) {
   NOTIMPLEMENTED();
 }

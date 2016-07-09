@@ -51,15 +51,6 @@ struct ShelfItem;
 class WmShelf;
 class WmWindow;
 
-class ASH_EXPORT VirtualKeyboardStateObserver {
- public:
-  // Called when keyboard is activated/deactivated.
-  virtual void OnVirtualKeyboardStateChanged(bool activated) {}
-
- protected:
-  virtual ~VirtualKeyboardStateObserver() {}
-};
-
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
  public:
@@ -103,15 +94,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Create a shell-specific keyboard::KeyboardUI
   virtual keyboard::KeyboardUI* CreateKeyboardUI() = 0;
-
-  // Called when virtual keyboard has been activated/deactivated.
-  virtual void VirtualKeyboardActivated(bool activated) = 0;
-
-  // Adds or removes virtual keyboard state observer.
-  virtual void AddVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) = 0;
-  virtual void RemoveVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) = 0;
 
   // Opens the |url| in a new browser tab.
   virtual void OpenUrl(const GURL& url) = 0;

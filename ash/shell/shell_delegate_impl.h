@@ -9,7 +9,6 @@
 #include <string>
 
 #include "ash/common/shell_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace app_list {
@@ -41,11 +40,6 @@ class ShellDelegateImpl : public ShellDelegate {
   void PreShutdown() override;
   void Exit() override;
   keyboard::KeyboardUI* CreateKeyboardUI() override;
-  void VirtualKeyboardActivated(bool activated) override;
-  void AddVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) override;
-  void RemoveVirtualKeyboardStateObserver(
-      VirtualKeyboardStateObserver* observer) override;
   void OpenUrl(const GURL& url) override;
   app_list::AppListPresenter* GetAppListPresenter() override;
   ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override;

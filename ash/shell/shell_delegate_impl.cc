@@ -204,14 +204,6 @@ keyboard::KeyboardUI* ShellDelegateImpl::CreateKeyboardUI() {
   return new TestKeyboardUI;
 }
 
-void ShellDelegateImpl::VirtualKeyboardActivated(bool activated) {}
-
-void ShellDelegateImpl::AddVirtualKeyboardStateObserver(
-    VirtualKeyboardStateObserver* observer) {}
-
-void ShellDelegateImpl::RemoveVirtualKeyboardStateObserver(
-    VirtualKeyboardStateObserver* observer) {}
-
 void ShellDelegateImpl::OpenUrl(const GURL& url) {}
 
 app_list::AppListPresenter* ShellDelegateImpl::GetAppListPresenter() {
