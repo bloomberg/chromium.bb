@@ -16,7 +16,11 @@ webview,
 }
 
 #arc-support {
-  padding: 0;
+  width: 960px;
+}
+
+#terms-view {
+  width: 468px;
 }
 
 .button-separator {
@@ -55,7 +59,7 @@ webview,
 
 .section-checkbox-container {
   margin: auto;
-  padding: 16px 0 0 0;
+  padding: 8px 0 0 0;
   text-align: left;
   width: 468px;
 }
@@ -64,7 +68,7 @@ webview,
   border: 1px solid #e6e6e6;
   color: rgba(0, 0, 0, 0.54);
   flex: auto;
-  margin: auto;
+  margin: 0 auto 8px auto;
   overflow: hidden;
   padding: 0;
   width: 468px;

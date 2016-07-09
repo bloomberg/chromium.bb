@@ -8,7 +8,8 @@
  * @type {Array<string>}
  */
 var UI_PAGES = ['none',
-                'start',
+                'terms-loading',
+                'terms',
                 'lso-loading',
                 'lso',
                 'arc-loading',
@@ -59,6 +60,12 @@ var termsReloadTimeout = null;
 var currentDeviceId = null;
 
 /**
+ * Indicates that terms were accepted by user.
+ * @type {boolean}
+ */
+var termsAccepted = false;
+
+/**
  * Closes current window in response to request from native code. This does not
  * issue 'cancelAuthCode' message to native code.
  */
@@ -105,9 +112,6 @@ function initialize(data, deviceId) {
         js: { files: ['playstore.js'] },
         run_at: 'document_end'
       }]);
-
-  // Applying localization changes page layout, update terms height.
-  updateTermsHeight();
 }
 
 /**
@@ -171,6 +175,9 @@ function updateTermsHeight() {
   var setTermsHeight = function() {
     var doc = appWindow.contentWindow.document;
     var termsContainer = doc.getElementById('terms-container');
+    // Reset terms-view height in order to stabilize style computation. For
+    // some reason, child webview affects final result.
+    termsView.style.height = '0px';
     var style = window.getComputedStyle(termsContainer, null);
     var height = style.getPropertyValue('height');
     termsView.style.height = height;
@@ -277,10 +284,17 @@ function showPageWithStatus(pageId, status) {
     return;
   }
 
-  if (UI_PAGES[pageId] == 'start') {
+  if (UI_PAGES[pageId] == 'terms-loading') {
+    termsAccepted = false;
     loadInitialTerms();
-  } else if (UI_PAGES[pageId] == 'error' ||
-             UI_PAGES[pageId] == 'error-with-feedback') {
+  } else {
+    // Explicit request to start not from start page. Assume terms are
+    // accepted in this case.
+    termsAccepted = true;
+  }
+
+  if (UI_PAGES[pageId] == 'error' ||
+      UI_PAGES[pageId] == 'error-with-feedback') {
     setErrorMessage(status);
   }
   showPage(UI_PAGES[pageId]);
@@ -297,25 +311,32 @@ chrome.app.runtime.onLaunched.addListener(function() {
   var onAppContentLoad = function() {
     var doc = appWindow.contentWindow.document;
     lsoView = doc.getElementById('arc-support');
-    // Apply absolute dimension to webview tag in order to avoid UI glitch
-    // when embedded content layout is visible for user, even if 100% width and
-    // height are set in css file.
-    // TODO(khmel): Investigate why relative layout is not enough.
-    lsoView.style.width = appWindow.innerBounds.width + 'px';
-    lsoView.style.height = appWindow.innerBounds.height + 'px';
 
     var isApprovalResponse = function(url) {
       var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
       return url.substring(0, resultUrlPrefix.length) == resultUrlPrefix;
     };
 
+    var lsoError = false;
     var onLsoViewRequestResponseStarted = function(details) {
       if (isApprovalResponse(details.url)) {
         showPage('arc-loading');
       }
+      lsoError = false;
+    };
+
+    var onLsoViewErrorOccurred = function(details) {
+      setErrorMessage(appWindow.contentWindow.loadTimeData.getString(
+          'serverError'));
+      showPage('error');
+      lsoError = true;
     };
 
     var onLsoViewContentLoad = function() {
+      if (lsoError) {
+        return;
+      }
+
       if (!isApprovalResponse(lsoView.src)) {
         // Show LSO page when its content is ready.
         showPage('lso');
@@ -324,8 +345,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
       lsoView.executeScript({code: 'document.title;'}, function(results) {
         var authCodePrefix = 'Success code=';
-        if (results[0].substring(0, authCodePrefix.length) ==
-            authCodePrefix) {
+        if (results && results.length == 1 && typeof results[0] == 'string' &&
+            results[0].substring(0, authCodePrefix.length) == authCodePrefix) {
           var authCode = results[0].substring(authCodePrefix.length);
           sendNativeMessage('setAuthCode', {code: authCode});
         } else {
@@ -343,31 +364,40 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
     lsoView.request.onResponseStarted.addListener(
         onLsoViewRequestResponseStarted, requestFilter);
+    lsoView.request.onErrorOccurred.addListener(
+        onLsoViewErrorOccurred, requestFilter);
     lsoView.addEventListener('contentload', onLsoViewContentLoad);
 
-    termsView = doc.getElementById('terms');
+    termsView = doc.getElementById('terms-view');
 
-    // Handle terms view completed event. Enable button 'Agree' in case terms
-    // were loaded successfully and try to reload its content on error.
-    var termsReloadRetryTimeMs = 1000;  // 1 second
-    function onTermsViewRequestCompleted(details) {
-      if (termsReloadTimeout) {
-        clearTimeout(termsReloadTimeout);
-        termsReloadTimeout = null;
+    var termsError = false;
+    var onTermsViewBeforeRequest = function(details) {
+      showPage('terms-loading');
+      termsError = false;
+    };
+
+    var onTermsViewErrorOccurred = function(details) {
+      termsAccepted = false;
+      setErrorMessage(appWindow.contentWindow.loadTimeData.getString(
+          'serverError'));
+      showPage('error');
+      termsError = true;
+    };
+
+    var onTermsViewContentLoad = function() {
+      if (termsError) {
+        return;
       }
-      if (details.statusCode == 200) {
-        doc.getElementById('button-agree').disabled = false;
-      } else {
-        termsReloadTimeout = setTimeout(loadInitialTerms,
-                                        termsReloadRetryTimeMs);
-        termsReloadRetryTimeMs = termsReloadRetryTimeMs * 2;
-        if (termsReloadRetryTimeMs > 30000) {
-          termsReloadRetryTimeMs = 30000;
-        }
-      }
-    }
-    termsView.request.onCompleted.addListener(onTermsViewRequestCompleted,
-                                              requestFilter);
+      showPage('terms');
+      updateTermsHeight();
+    };
+
+    termsView.request.onBeforeRequest.addListener(onTermsViewBeforeRequest,
+                                                  requestFilter);
+    termsView.request.onErrorOccurred.addListener(onTermsViewErrorOccurred,
+                                                  requestFilter);
+    termsView.addEventListener('contentload', onTermsViewContentLoad);
+
 
     // webview is not allowed to open links in the new window. Hook these events
     // and open links in context of main page.
@@ -377,6 +407,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
     });
 
     var onAgree = function() {
+      termsAccepted = true;
+
       var enableMetrics = doc.getElementById('enable-metrics');
       if (!enableMetrics.hidden) {
         sendNativeMessage('enableMetrics', {
@@ -401,7 +433,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
     };
 
     var onRetry = function() {
-      sendNativeMessage('startLso');
+      if (termsAccepted) {
+        sendNativeMessage('startLso');
+      } else {
+        loadInitialTerms();
+      }
     };
 
     var onSendFeedback = function() {

@@ -42,13 +42,19 @@
   <script src="chrome://resources/js/i18n_template_no_process.js"></script>
 </head>
 <body>
-  <div id="start" class="section section-flex">
+  <div id="terms-loading" class="section">
+    <img class="image-header" src="images/header.png">
+    <p class="text-title" i18n-content="greetingHeader"></p>
+    <p class="text-desc" i18n-content="greetingDescription"></p>
+    <paper-progress class="blue" indeterminate></paper-progress>
+  </div>
+  <div id="terms" class="section section-flex" hidden>
     <img class="image-header" src="images/header.png">
     <p class="text-title" i18n-content="greetingHeader"></p>
     <p class="text-desc" i18n-content="greetingDescription"></p>
     <p class="text-terms-title" i18n-content="termsOfService"></p>
     <div class="section-terms" id ="terms-container">
-      <webview id="terms" partition="persist:arc_support"></webview>
+      <webview id="terms-view" partition="persist:arc_support"></webview>
     </div>
     <div class="layout horizontal section-checkbox-container">
       <input type="checkbox" class="checkbox-option" id="enable-metrics" hidden>
@@ -64,8 +70,7 @@
           i18n-content="buttonCancel">
       </paper-button>
       <div class="button-separator"></div>
-      <paper-button class="blue" id="button-agree" i18n-content="buttonAgree"
-          disabled>
+      <paper-button class="blue" id="button-agree" i18n-content="buttonAgree">
       </paper-button>
     </div>
   </div>
