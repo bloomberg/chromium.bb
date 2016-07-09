@@ -536,14 +536,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # self.Fail('conformance/extensions/webgl-draw-buffers.html',
     #     ['linux', ('intel', 0x412), 'opengl'], bug=586536)
 
-
-    self.Skip('conformance/glsl/bugs/' +
-        'global-invariant-does-not-leak-across-shaders.html',
-        bug=625363)
-
-    # Fails on multiple platforms
-    self.Skip('deqp/data/gles2/shaders/preprocessor.html', bug=625363)
-
     # OpenGL / NVIDIA failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['win', 'linux', 'nvidia', 'opengl'], bug=1007) # angle bug ID
