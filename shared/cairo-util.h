@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <cairo.h>
 
+#include <wayland-client.h>
 #include <wayland-util.h>
 
 void
@@ -123,11 +124,6 @@ enum {
 	FRAME_BUTTON_ALL = 0x7
 };
 
-enum frame_button_state {
-	FRAME_BUTTON_RELEASED = 0,
-	FRAME_BUTTON_PRESSED = 1
-};
-
 struct frame *
 frame_create(struct theme *t, int32_t width, int32_t height, uint32_t buttons,
 	     const char *title);
@@ -208,7 +204,7 @@ frame_pointer_leave(struct frame *frame, void *pointer);
  */
 enum theme_location
 frame_pointer_button(struct frame *frame, void *pointer,
-		     uint32_t button, enum frame_button_state state);
+		     uint32_t button, enum wl_pointer_button_state state);
 
 enum theme_location
 frame_touch_down(struct frame *frame, void *data, int32_t id, int x, int y);
@@ -218,7 +214,7 @@ frame_touch_up(struct frame *frame, void *data, int32_t id);
 
 enum theme_location
 frame_double_click(struct frame *frame, void *pointer,
-		   uint32_t button, enum frame_button_state state);
+		   uint32_t button, enum wl_pointer_button_state state);
 
 void
 frame_double_touch_down(struct frame *frame, void *data, int32_t id,

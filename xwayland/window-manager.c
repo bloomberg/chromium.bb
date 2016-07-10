@@ -1759,7 +1759,7 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	struct weston_pointer *pointer;
 	struct weston_wm_window *window;
 	enum theme_location location;
-	enum frame_button_state button_state;
+	enum wl_pointer_button_state button_state;
 	uint32_t button_id;
 
 	wm_log("XCB_BUTTON_%s (detail %d)\n",
@@ -1777,7 +1777,8 @@ weston_wm_handle_button(struct weston_wm *wm, xcb_generic_event_t *event)
 	pointer = weston_seat_get_pointer(seat);
 
 	button_state = button->response_type == XCB_BUTTON_PRESS ?
-		FRAME_BUTTON_PRESSED : FRAME_BUTTON_RELEASED;
+		WL_POINTER_BUTTON_STATE_PRESSED :
+		WL_POINTER_BUTTON_STATE_RELEASED;
 	button_id = button->detail == 1 ? BTN_LEFT : BTN_RIGHT;
 
 	/* Make sure we're looking at the right location.  The frame

@@ -745,7 +745,7 @@ frame_pointer_leave(struct frame *frame, void *data)
 
 enum theme_location
 frame_pointer_button(struct frame *frame, void *data,
-		     uint32_t btn, enum frame_button_state state)
+		     uint32_t btn, enum wl_pointer_button_state state)
 {
 	struct frame_pointer *pointer = frame_pointer_get(frame, data);
 	struct frame_pointer_button *button;
@@ -759,7 +759,7 @@ frame_pointer_button(struct frame *frame, void *data,
 				      frame->flags & FRAME_FLAG_MAXIMIZED ?
 				      THEME_FRAME_MAXIMIZED : 0);
 
-	if (state == FRAME_BUTTON_PRESSED) {
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		button = malloc(sizeof *button);
 		if (!button)
 			return location;
@@ -770,7 +770,7 @@ frame_pointer_button(struct frame *frame, void *data,
 		wl_list_insert(&pointer->down_buttons, &button->link);
 
 		frame_pointer_button_press(frame, pointer, button);
-	} else if (state == FRAME_BUTTON_RELEASED) {
+	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		button = NULL;
 		wl_list_for_each(button, &pointer->down_buttons, link)
 			if (button->button == btn)
@@ -844,7 +844,7 @@ frame_touch_up(struct frame *frame, void *data, int32_t id)
 
 enum theme_location
 frame_double_click(struct frame *frame, void *data,
-		   uint32_t btn, enum frame_button_state state)
+		   uint32_t btn, enum wl_pointer_button_state state)
 {
 	struct frame_pointer *pointer = frame_pointer_get(frame, data);
 	struct frame_button *button;
@@ -860,12 +860,12 @@ frame_double_click(struct frame *frame, void *data,
 	if (location != THEME_LOCATION_TITLEBAR || btn != BTN_LEFT)
 		return location;
 
-	if (state == FRAME_BUTTON_PRESSED) {
+	if (state == WL_POINTER_BUTTON_STATE_PRESSED) {
 		if (button)
 			frame_button_press(button);
 		else
 			frame->status |= FRAME_STATUS_MAXIMIZE;
-	} else if (state == FRAME_BUTTON_RELEASED) {
+	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		if (button)
 			frame_button_release(button);
 	}

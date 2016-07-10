@@ -1363,22 +1363,17 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 static void
 input_handle_button(void *data, struct wl_pointer *pointer,
 		    uint32_t serial, uint32_t time, uint32_t button,
-		    uint32_t state_w)
+		    enum wl_pointer_button_state state)
 {
 	struct wayland_input *input = data;
-	enum wl_pointer_button_state state = state_w;
-	enum frame_button_state fstate;
 	enum theme_location location;
 
 	if (!input->output)
 		return;
 
 	if (input->output->frame) {
-		fstate = state == WL_POINTER_BUTTON_STATE_PRESSED ?
-			FRAME_BUTTON_PRESSED : FRAME_BUTTON_RELEASED;
-
 		location = frame_pointer_button(input->output->frame, input,
-						button, fstate);
+						button, state);
 
 		if (frame_status(input->output->frame) & FRAME_STATUS_MOVE) {
 
