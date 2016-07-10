@@ -8,6 +8,7 @@
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/v8_inspector/protocol/Console.h"
+#include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/public/V8ConsoleTypes.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
 #include <deque>
@@ -20,10 +21,12 @@ class V8DebuggerImpl;
 class V8InspectorSessionImpl;
 class V8StackTrace;
 
+enum class V8MessageOrigin { kConsole, kException, kRevokedException };
+
 class V8ConsoleMessage {
 public:
     V8ConsoleMessage(
-        double timestampMS,
+        double timestamp,
         MessageSource,
         MessageLevel,
         const String16& message,
@@ -36,7 +39,7 @@ public:
     ~V8ConsoleMessage();
 
     static std::unique_ptr<V8ConsoleMessage> createForConsoleAPI(
-        double timestampMS,
+        double timestamp,
         MessageType,
         MessageLevel,
         const String16& message,
@@ -44,18 +47,37 @@ public:
         std::unique_ptr<V8StackTrace>,
         InspectedContext*);
 
-    std::unique_ptr<protocol::Console::ConsoleMessage> buildInspectorObject(V8InspectorSessionImpl*, bool generatePreview) const;
+    static std::unique_ptr<V8ConsoleMessage> createForException(
+        double timestamp,
+        const String16& message,
+        const String16& url,
+        unsigned lineNumber,
+        unsigned columnNumber,
+        std::unique_ptr<V8StackTrace>,
+        int scriptId,
+        v8::Isolate*,
+        int contextId,
+        v8::Local<v8::Value> exception,
+        unsigned exceptionId);
+
+    static std::unique_ptr<V8ConsoleMessage> createForRevokedException(
+        double timestamp,
+        const String16& message,
+        unsigned revokedExceptionId);
+
+    V8MessageOrigin origin() const;
+    void reportToFrontend(protocol::Console::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
+    void reportToFrontend(protocol::Runtime::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
     unsigned argumentCount() const;
     MessageType type() const;
     void contextDestroyed(int contextId);
-    void assignId(unsigned);
-    void assignRelatedId(unsigned);
-    void addArguments(v8::Isolate*, int contextId, std::vector<v8::Local<v8::Value>>*);
 
 private:
     using Arguments = std::vector<std::unique_ptr<v8::Global<v8::Value>>>;
-    void appendArguments(protocol::Console::ConsoleMessage*, V8InspectorSessionImpl*, bool generatePreview) const;
+    std::unique_ptr<protocol::Array<protocol::Runtime::RemoteObject>> wrapArguments(V8InspectorSessionImpl*, bool generatePreview) const;
+    std::unique_ptr<protocol::Runtime::RemoteObject> wrapException(V8InspectorSessionImpl*, bool generatePreview) const;
 
+    V8MessageOrigin m_origin;
     double m_timestamp;
     MessageSource m_source;
     MessageLevel m_level;
@@ -68,8 +90,8 @@ private:
     String16 m_requestIdentifier;
     int m_contextId;
     MessageType m_type;
-    unsigned m_messageId;
-    unsigned m_relatedMessageId;
+    unsigned m_exceptionId;
+    unsigned m_revokedExceptionId;
     Arguments m_arguments;
 };
 

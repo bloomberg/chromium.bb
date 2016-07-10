@@ -175,6 +175,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InstanceCounters.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutView.h"
@@ -2890,10 +2891,9 @@ EventTarget* Document::errorEventTarget()
     return domWindow();
 }
 
-void Document::logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void Document::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location));
-    addConsoleMessage(consoleMessage);
+    MainThreadDebugger::instance()->exceptionThrown(m_frame.get(), errorMessage, std::move(location));
 }
 
 void Document::setURL(const KURL& url)

@@ -5,8 +5,8 @@
 function createTestFunction(expected_message) {
   return function(tab) {
     function onDebuggerEvent(debuggee, method, params) {
-      if (debuggee.tabId == tab.id && method == 'Console.messageAdded') {
-        if (params.message.text.indexOf(expected_message) > -1) {
+      if (debuggee.tabId == tab.id && method == 'Runtime.exceptionThrown') {
+        if (params.details.text.indexOf(expected_message) > -1) {
           chrome.debugger.onEvent.removeListener(onDebuggerEvent);
           chrome.test.succeed();
         }
@@ -16,7 +16,7 @@ function createTestFunction(expected_message) {
     chrome.debugger.attach({ tabId: tab.id }, "1.1", function() {
       // Enabling console provides both stored and new messages via the
       // Console.messageAdded event.
-      chrome.debugger.sendCommand({ tabId: tab.id }, "Console.enable");
+      chrome.debugger.sendCommand({ tabId: tab.id }, "Runtime.enable");
     });
   }
 }

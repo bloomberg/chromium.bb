@@ -42,6 +42,7 @@ namespace blink {
 class InjectedScript;
 class InspectedContext;
 class RemoteObjectIdBase;
+class V8ConsoleMessage;
 class V8DebuggerImpl;
 class V8InspectorSessionImpl;
 
@@ -115,8 +116,11 @@ public:
     void reportExecutionContextCreated(InspectedContext*);
     void reportExecutionContextDestroyed(InspectedContext*);
     void inspect(std::unique_ptr<protocol::Runtime::RemoteObject> objectToInspect, std::unique_ptr<protocol::DictionaryValue> hints);
+    void exceptionMessageAdded(V8ConsoleMessage*);
 
 private:
+    void reportMessage(V8ConsoleMessage*, bool generatePreview);
+
     V8InspectorSessionImpl* m_session;
     protocol::DictionaryValue* m_state;
     protocol::Runtime::Frontend m_frontend;

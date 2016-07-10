@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/frame/FrameConsole.h"
+#include "core/inspector/MainThreadDebugger.h"
 
 namespace blink {
 
@@ -33,6 +34,11 @@ void MainThreadWorkletGlobalScope::terminateWorkletGlobalScope()
 void MainThreadWorkletGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     frame()->console().addMessage(consoleMessage);
+}
+
+void MainThreadWorkletGlobalScope::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+{
+    MainThreadDebugger::instance()->exceptionThrown(frame(), errorMessage, std::move(location));
 }
 
 } // namespace blink

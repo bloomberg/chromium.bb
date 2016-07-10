@@ -34,6 +34,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/WorkerThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
@@ -83,11 +84,11 @@ SharedWorkerThread* SharedWorkerGlobalScope::thread()
     return static_cast<SharedWorkerThread*>(Base::thread());
 }
 
-void SharedWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void SharedWorkerGlobalScope::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
-    WorkerGlobalScope::logExceptionToConsole(errorMessage, location->clone());
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location));
-    addMessageToWorkerConsole(consoleMessage);
+    WorkerGlobalScope::exceptionThrown(errorMessage, location->clone());
+    if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
+        debugger->exceptionThrown(errorMessage, std::move(location));
 }
 
 DEFINE_TRACE(SharedWorkerGlobalScope)

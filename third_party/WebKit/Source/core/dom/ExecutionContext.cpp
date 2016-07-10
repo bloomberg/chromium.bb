@@ -153,14 +153,14 @@ void ExecutionContext::reportException(ErrorEvent* errorEvent, AccessControlStat
 
     // First report the original exception and only then all the nested ones.
     if (!dispatchErrorEvent(errorEvent, corsStatus))
-        logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->location()->clone());
+        exceptionThrown(errorEvent->messageForConsole(), errorEvent->location()->clone());
 
     if (!m_pendingExceptions)
         return;
 
     for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
         PendingException* e = m_pendingExceptions->at(i).get();
-        logExceptionToConsole(e->m_errorMessage, std::move(e->m_location));
+        exceptionThrown(e->m_errorMessage, std::move(e->m_location));
     }
     m_pendingExceptions.reset();
 }

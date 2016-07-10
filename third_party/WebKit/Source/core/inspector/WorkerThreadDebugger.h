@@ -31,13 +31,15 @@
 #ifndef WorkerThreadDebugger_h
 #define WorkerThreadDebugger_h
 
+#include "core/CoreExport.h"
 #include "core/inspector/ThreadDebugger.h"
 
 namespace blink {
 
+class SourceLocation;
 class WorkerThread;
 
-class WorkerThreadDebugger final : public ThreadDebugger {
+class CORE_EXPORT WorkerThreadDebugger final : public ThreadDebugger {
     WTF_MAKE_NONCOPYABLE(WorkerThreadDebugger);
 public:
     explicit WorkerThreadDebugger(WorkerThread*, v8::Isolate*);
@@ -48,6 +50,7 @@ public:
     int contextGroupId();
     void contextCreated(v8::Local<v8::Context>);
     void contextWillBeDestroyed(v8::Local<v8::Context>);
+    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>);
 
     // V8DebuggerClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;

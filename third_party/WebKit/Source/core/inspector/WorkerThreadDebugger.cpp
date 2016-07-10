@@ -71,6 +71,11 @@ void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context
     debugger()->contextDestroyed(context);
 }
 
+void WorkerThreadDebugger::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+{
+    debugger()->exceptionThrown(workerContextGroupId, errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+}
+
 int WorkerThreadDebugger::contextGroupId()
 {
     return workerContextGroupId;

@@ -43,7 +43,9 @@ public:
     virtual bool addConsoleMessage(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, const String16& requestIdentifier) = 0;
     // TODO(dgozman): can we remove this method?
     virtual void logToConsole(v8::Local<v8::Context>, const String16& message, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2) = 0;
-    virtual unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> reason, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
+    // TODO(dgozman): can we pass exception object?
+    virtual void exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
+    virtual unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) = 0;
     virtual void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId) = 0;
     virtual void consoleMessagesCount(int contextGroupId, unsigned* total, unsigned* withArguments) = 0;
     // TODO(dgozman): remove mute methods.

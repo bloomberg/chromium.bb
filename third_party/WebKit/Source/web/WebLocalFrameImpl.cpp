@@ -766,7 +766,6 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
         break;
     // Unsupported values.
     case WebConsoleMessage::LevelInfo:
-    case WebConsoleMessage::LevelRevokedError:
         break;
     }
 

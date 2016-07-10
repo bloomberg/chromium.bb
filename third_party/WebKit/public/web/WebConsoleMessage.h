@@ -42,7 +42,6 @@ struct WebConsoleMessage {
         LevelInfo = 5,
         LevelWarning = 2,
         LevelError = 3,
-        LevelRevokedError = 6,
         LevelLast = LevelInfo
     };
 

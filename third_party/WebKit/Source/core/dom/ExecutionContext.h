@@ -107,7 +107,7 @@ public:
     void reportException(ErrorEvent*, AccessControlStatus);
 
     virtual void addConsoleMessage(ConsoleMessage*) = 0;
-    virtual void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) = 0;
+    virtual void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) = 0;
 
     PublicURLManager& publicURLManager();
 

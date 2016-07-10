@@ -34,6 +34,7 @@
 #include "platform/v8_inspector/InjectedScript.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/V8ConsoleMessage.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -365,8 +366,13 @@ void V8RuntimeAgentImpl::enable(ErrorString* errorString)
     m_session->changeInstrumentationCounter(+1);
     m_enabled = true;
     m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, true);
-    v8::HandleScope handles(m_debugger->isolate());
+    m_session->debugger()->enableStackCapturingIfNeeded();
     m_session->reportAllContexts(this);
+    V8ConsoleMessageStorage* storage = m_session->debugger()->ensureConsoleMessageStorage(m_session->contextGroupId());
+    for (const auto& message : storage->messages()) {
+        if (message->origin() == V8MessageOrigin::kException || message->origin() == V8MessageOrigin::kRevokedException)
+            reportMessage(message.get(), false);
+    }
 }
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)
@@ -375,6 +381,7 @@ void V8RuntimeAgentImpl::disable(ErrorString* errorString)
         return;
     m_enabled = false;
     m_state->setBoolean(V8RuntimeAgentImplState::runtimeEnabled, false);
+    m_session->debugger()->disableStackCapturingIfNeeded();
     m_session->discardInjectedScripts();
     reset();
     m_session->changeInstrumentationCounter(-1);
@@ -418,6 +425,19 @@ void V8RuntimeAgentImpl::inspect(std::unique_ptr<protocol::Runtime::RemoteObject
 {
     if (m_enabled)
         m_frontend.inspectRequested(std::move(objectToInspect), std::move(hints));
+}
+
+void V8RuntimeAgentImpl::exceptionMessageAdded(V8ConsoleMessage* message)
+{
+    if (m_enabled)
+        reportMessage(message, true);
+}
+
+void V8RuntimeAgentImpl::reportMessage(V8ConsoleMessage* message, bool generatePreview)
+{
+    DCHECK(message->origin() == V8MessageOrigin::kException || message->origin() == V8MessageOrigin::kRevokedException);
+    message->reportToFrontend(&m_frontend, m_session, generatePreview);
+    m_frontend.flush();
 }
 
 } // namespace blink

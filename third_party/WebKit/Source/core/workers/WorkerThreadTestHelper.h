@@ -164,7 +164,7 @@ public:
         return EventTargetNames::DedicatedWorkerGlobalScope;
     }
 
-    void logExceptionToConsole(const String&, std::unique_ptr<SourceLocation>) override
+    void exceptionThrown(const String&, std::unique_ptr<SourceLocation>) override
     {
     }
 

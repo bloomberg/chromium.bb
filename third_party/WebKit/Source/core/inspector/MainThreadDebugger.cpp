@@ -123,6 +123,11 @@ void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
     debugger()->contextDestroyed(scriptState->context());
 }
 
+void MainThreadDebugger::exceptionThrown(LocalFrame* frame, const String& errorMessage, std::unique_ptr<SourceLocation> location)
+{
+    debugger()->exceptionThrown(contextGroupId(frame), errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+}
+
 int MainThreadDebugger::contextGroupId(LocalFrame* frame)
 {
     LocalFrame* localFrameRoot = frame->localFrameRoot();

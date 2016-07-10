@@ -131,7 +131,8 @@ public:
     void idleFinished() override;
     bool addConsoleMessage(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, const String16& requestIdentifier) override;
     void logToConsole(v8::Local<v8::Context>, const String16& message, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2) override;
-    unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> reason, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
+    void exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
+    unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
     void promiseRejectionRevoked(v8::Local<v8::Context>, unsigned promiseRejectionId) override;
     void consoleMessagesCount(int contextGroupId, unsigned* total, unsigned* withArguments) override;
     std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) override;
@@ -186,7 +187,7 @@ private:
     ConsoleStorageMap m_consoleStorageMap;
     int m_capturingStackTracesCount;
     int m_muteConsoleCount;
-    unsigned m_lastConsoleMessageId;
+    unsigned m_lastExceptionId;
     int m_enabledAgentsCount;
     bool m_breakpointsActivated;
     v8::Global<v8::Object> m_debuggerScript;

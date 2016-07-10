@@ -43,6 +43,7 @@ namespace blink {
 
 class LocalFrame;
 class SecurityOrigin;
+class SourceLocation;
 
 class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
     WTF_MAKE_NONCOPYABLE(MainThreadDebugger);
@@ -64,10 +65,12 @@ public:
     InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
     bool isWorker() override { return false; }
     void setClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
+    // TODO(dgozman): by making this method virtual, we can move many methods to ThreadDebugger and avoid some duplication. Should be careful about performance.
     int contextGroupId(LocalFrame*);
     void didClearContextsForFrame(LocalFrame*);
     void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
     void contextWillBeDestroyed(ScriptState*);
+    void exceptionThrown(LocalFrame*, const String& errorMessage, std::unique_ptr<SourceLocation>);
 
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
 

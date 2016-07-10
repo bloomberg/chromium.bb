@@ -27,6 +27,7 @@ public:
 
     using LocalFrameLifecycleObserver::frame;
     void addConsoleMessage(ConsoleMessage*) final;
+    void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>) final;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {

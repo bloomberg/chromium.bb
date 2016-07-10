@@ -55,7 +55,6 @@ public:
     }
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-    void logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation>) final;
 
     DECLARE_VIRTUAL_TRACE();
 

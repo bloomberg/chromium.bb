@@ -309,6 +309,28 @@
                 "description": "Issued when all executionContexts were cleared in browser"
             },
             {
+                "name": "exceptionThrown",
+                "description": "Issued when exception was thrown and unhandled.",
+                "parameters": [
+                    { "name": "exceptionId", "type": "integer", "description": "Exception id." },
+                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "details", "$ref": "ExceptionDetails" },
+                    { "name": "exception", "$ref": "RemoteObject", "optional": true, "description": "Exception object." },
+                    { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Identifier of the context where exception happened." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "exceptionRevoked",
+                "description": "Issued when unhandled exception was revoked.",
+                "parameters": [
+                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "message", "type": "string", "description": "Message describing why exception was revoked." },
+                    { "name": "exceptionId", "type": "integer", "description": "The id of revoked exception, as reported in <code>exceptionUnhandled</code>." }
+                ],
+                "hidden": true
+            },
+            {
                 "name": "inspectRequested",
                 "parameters": [
                     { "name": "object", "$ref": "RemoteObject" },
@@ -720,7 +742,7 @@
                 "description": "Console message.",
                 "properties": [
                     { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "security", "other", "deprecation"], "description": "Message source." },
-                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info", "revokedError"], "description": "Message severity." },
+                    { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug", "info"], "description": "Message severity." },
                     { "name": "text", "type": "string", "description": "Message text." },
                     { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Console message type." },
                     { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
@@ -732,9 +754,7 @@
                     { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." },
                     { "name": "networkRequestId", "type": "string", "optional": true, "description": "Identifier of the network request associated with this message." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
-                    { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true },
-                    { "name": "messageId", "type": "integer", "hidden": true, "optional": true, "description": "Message id." },
-                    { "name": "relatedMessageId", "type": "integer", "hidden": true, "optional": true, "description": "Related message id." }
+                    { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true }
                 ]
             }
         ],

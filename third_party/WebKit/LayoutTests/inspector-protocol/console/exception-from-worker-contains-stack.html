@@ -43,7 +43,7 @@ function test()
     {
         var workerId = messageObject["params"]["workerId"];
         InspectorTest.log("Worker created");
-        sendCommandToWorker("Console.enable", {}, workerId);
+        sendCommandToWorker("Runtime.enable", {}, workerId);
         if (!--waitForWorkers)
             InspectorTest.sendCommandOrDie("Runtime.evaluate", { expression: "worker1.postMessage(239);worker2.postMessage(42);" });
     }
@@ -53,11 +53,9 @@ function test()
     InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = function(messageObject)
     {
         var message = JSON.parse(messageObject["params"]["message"]);
-        if (message["method"] === "Console.messageAdded") {
-            var callFrames = message.params.message.stack.callFrames;
-            if (callFrames.length < 2 || callFrames[1].functionName !== "boo1")
-                return;
-            InspectorTest.log(message.params.message.stack.callFrames.length > 0 ? "Message with stack trace received." : "[FAIL] Message contains empty stack trace");
+        if (message["method"] === "Runtime.exceptionThrown") {
+            var callFrames = message.params.details.stack ? message.params.details.stack.callFrames : [];
+            InspectorTest.log(callFrames.length > 0 ? "Message with stack trace received." : "[FAIL] Message contains empty stack trace");
             messageReceived = true;
             if (messageReceived && workerTerminated)
                 InspectorTest.completeTest();

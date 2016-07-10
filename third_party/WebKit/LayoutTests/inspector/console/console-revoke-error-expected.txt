@@ -1,8 +1,6 @@
 CONSOLE ERROR: line 12: Uncaught (in promise) Error: Handled error
 CONSOLE ERROR: line 12: Uncaught (in promise) Error: Handled error
 CONSOLE ERROR: line 12: Uncaught (in promise) Error: Handled error
-CONSOLE MESSAGE: Handler added to rejected promise
-CONSOLE MESSAGE: Handler added to rejected promise
 Tests that console revokes lazily handled promise rejections.
 
 Creating promise

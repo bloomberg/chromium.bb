@@ -8,6 +8,7 @@
 #include "platform/v8_inspector/V8ConsoleAgentImpl.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
+#include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
@@ -61,7 +62,6 @@ String messageLevelValue(MessageLevel level)
     case WarningMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Warning;
     case ErrorMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Error;
     case InfoMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Info;
-    case RevokedErrorMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::RevokedError;
     }
     return protocol::Console::ConsoleMessage::LevelEnum::Log;
 }
@@ -198,7 +198,7 @@ private:
 } // namespace
 
 V8ConsoleMessage::V8ConsoleMessage(
-    double timestampMS,
+    double timestamp,
     MessageSource source,
     MessageLevel level,
     const String16& message,
@@ -208,7 +208,8 @@ V8ConsoleMessage::V8ConsoleMessage(
     std::unique_ptr<V8StackTrace> stackTrace,
     int scriptId,
     const String16& requestIdentifier)
-    : m_timestamp(timestampMS / 1000.0)
+    : m_origin(V8MessageOrigin::kConsole)
+    , m_timestamp(timestamp)
     , m_source(source)
     , m_level(level)
     , m_message(message)
@@ -220,8 +221,8 @@ V8ConsoleMessage::V8ConsoleMessage(
     , m_requestIdentifier(requestIdentifier)
     , m_contextId(0)
     , m_type(LogMessageType)
-    , m_messageId(0)
-    , m_relatedMessageId(0)
+    , m_exceptionId(0)
+    , m_revokedExceptionId(0)
 {
 }
 
@@ -229,14 +230,15 @@ V8ConsoleMessage::~V8ConsoleMessage()
 {
 }
 
-std::unique_ptr<protocol::Console::ConsoleMessage> V8ConsoleMessage::buildInspectorObject(V8InspectorSessionImpl* session, bool generatePreview) const
+void V8ConsoleMessage::reportToFrontend(protocol::Console::Frontend* frontend, V8InspectorSessionImpl* session, bool generatePreview) const
 {
+    DCHECK_EQ(V8MessageOrigin::kConsole, m_origin);
     std::unique_ptr<protocol::Console::ConsoleMessage> result =
         protocol::Console::ConsoleMessage::create()
         .setSource(messageSourceValue(m_source))
         .setLevel(messageLevelValue(m_level))
         .setText(m_message)
-        .setTimestamp(m_timestamp)
+        .setTimestamp(m_timestamp / 1000) // TODO(dgozman): migrate this to milliseconds.
         .build();
     result->setType(messageTypeValue(m_type));
     result->setLine(static_cast<int>(m_lineNumber));
@@ -248,23 +250,21 @@ std::unique_ptr<protocol::Console::ConsoleMessage> V8ConsoleMessage::buildInspec
         result->setNetworkRequestId(m_requestIdentifier);
     if (m_contextId)
         result->setExecutionContextId(m_contextId);
-    appendArguments(result.get(), session, generatePreview);
+    std::unique_ptr<protocol::Array<protocol::Runtime::RemoteObject>> args = wrapArguments(session, generatePreview);
+    if (args)
+        result->setParameters(std::move(args));
     if (m_stackTrace)
         result->setStack(m_stackTrace->buildInspectorObject());
-    if (m_messageId)
-        result->setMessageId(m_messageId);
-    if (m_relatedMessageId)
-        result->setRelatedMessageId(m_relatedMessageId);
-    return result;
+    frontend->messageAdded(std::move(result));
 }
 
-void V8ConsoleMessage::appendArguments(protocol::Console::ConsoleMessage* result, V8InspectorSessionImpl* session, bool generatePreview) const
+std::unique_ptr<protocol::Array<protocol::Runtime::RemoteObject>> V8ConsoleMessage::wrapArguments(V8InspectorSessionImpl* session, bool generatePreview) const
 {
     if (!m_arguments.size() || !m_contextId)
-        return;
+        return nullptr;
     InspectedContext* inspectedContext = session->debugger()->getContext(session->contextGroupId(), m_contextId);
     if (!inspectedContext)
-        return;
+        return nullptr;
 
     v8::Isolate* isolate = inspectedContext->isolate();
     v8::HandleScope handles(isolate);
@@ -289,8 +289,57 @@ void V8ConsoleMessage::appendArguments(protocol::Console::ConsoleMessage* result
             args->addItem(std::move(wrapped));
         }
     }
-    if (args)
-        result->setParameters(std::move(args));
+    return args;
+}
+
+void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V8InspectorSessionImpl* session, bool generatePreview) const
+{
+    if (m_origin == V8MessageOrigin::kException) {
+        // TODO(dgozman): unify with InjectedScript::createExceptionDetails.
+        std::unique_ptr<protocol::Runtime::ExceptionDetails> details = protocol::Runtime::ExceptionDetails::create().setText(m_message).build();
+        details->setUrl(m_url);
+        if (m_lineNumber)
+            details->setLineNumber(static_cast<int>(m_lineNumber) - 1);
+        if (m_columnNumber)
+            details->setColumnNumber(static_cast<int>(m_columnNumber) - 1);
+        if (m_scriptId)
+            details->setScriptId(String::number(m_scriptId));
+        if (m_stackTrace)
+            details->setStack(m_stackTrace->buildInspectorObject());
+
+        std::unique_ptr<protocol::Runtime::RemoteObject> exception = wrapException(session, generatePreview);
+
+        if (exception)
+            frontend->exceptionThrown(m_exceptionId, m_timestamp, std::move(details), std::move(exception), m_contextId);
+        else
+            frontend->exceptionThrown(m_exceptionId, m_timestamp, std::move(details));
+        return;
+    }
+    if (m_origin == V8MessageOrigin::kRevokedException) {
+        frontend->exceptionRevoked(m_timestamp, m_message, m_revokedExceptionId);
+        return;
+    }
+    NOTREACHED();
+}
+
+std::unique_ptr<protocol::Runtime::RemoteObject> V8ConsoleMessage::wrapException(V8InspectorSessionImpl* session, bool generatePreview) const
+{
+    if (!m_arguments.size() || !m_contextId)
+        return nullptr;
+    DCHECK_EQ(1u, m_arguments.size());
+    InspectedContext* inspectedContext = session->debugger()->getContext(session->contextGroupId(), m_contextId);
+    if (!inspectedContext)
+        return nullptr;
+
+    v8::Isolate* isolate = inspectedContext->isolate();
+    v8::HandleScope handles(isolate);
+    // TODO(dgozman): should we use different object group?
+    return session->wrapObject(inspectedContext->context(), m_arguments[0]->Get(isolate), "console", generatePreview);
+}
+
+V8MessageOrigin V8ConsoleMessage::origin() const
+{
+    return m_origin;
 }
 
 unsigned V8ConsoleMessage::argumentCount() const
@@ -304,7 +353,7 @@ MessageType V8ConsoleMessage::type() const
 }
 
 // static
-std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double timestampMS, MessageType type, MessageLevel level, const String16& messageText, std::vector<v8::Local<v8::Value>>* arguments, std::unique_ptr<V8StackTrace> stackTrace, InspectedContext* context)
+std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double timestamp, MessageType type, MessageLevel level, const String16& messageText, std::vector<v8::Local<v8::Value>>* arguments, std::unique_ptr<V8StackTrace> stackTrace, InspectedContext* context)
 {
     String16 url;
     unsigned lineNumber = 0;
@@ -325,7 +374,7 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
             actualMessage = V8ValueStringBuilder::toString(messageArguments.at(0)->Get(context->isolate()), context->isolate());
     }
 
-    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(timestampMS, ConsoleAPIMessageSource, level, actualMessage, url, lineNumber, columnNumber, std::move(stackTrace), 0 /* scriptId */, String16() /* requestIdentifier */));
+    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(timestamp, ConsoleAPIMessageSource, level, actualMessage, url, lineNumber, columnNumber, std::move(stackTrace), 0 /* scriptId */, String16() /* requestIdentifier */));
     message->m_type = type;
     if (messageArguments.size()) {
         message->m_contextId = context->contextId();
@@ -333,6 +382,28 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
     }
 
     context->debugger()->client()->messageAddedToConsole(context->contextGroupId(), message->m_source, message->m_level, message->m_message, message->m_url, message->m_lineNumber, message->m_columnNumber, message->m_stackTrace.get());
+    return message;
+}
+
+// static
+std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForException(double timestamp, const String16& messageText, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, v8::Isolate* isolate, int contextId, v8::Local<v8::Value> exception, unsigned exceptionId)
+{
+    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(timestamp, JSMessageSource, ErrorMessageLevel, messageText, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, String16() /* requestIdentifier */));
+    message->m_exceptionId = exceptionId;
+    message->m_origin = V8MessageOrigin::kException;
+    if (contextId && !exception.IsEmpty()) {
+        message->m_contextId = contextId;
+        message->m_arguments.push_back(wrapUnique(new v8::Global<v8::Value>(isolate, exception)));
+    }
+    return message;
+}
+
+// static
+std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForRevokedException(double timestamp, const String16& messageText, unsigned revokedExceptionId)
+{
+    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(timestamp, JSMessageSource, ErrorMessageLevel, messageText, String16(), 0, 0, nullptr, 0, String16()));
+    message->m_origin = V8MessageOrigin::kRevokedException;
+    message->m_revokedExceptionId = revokedExceptionId;
     return message;
 }
 
@@ -345,25 +416,6 @@ void V8ConsoleMessage::contextDestroyed(int contextId)
         m_message = "<message collected>";
     Arguments empty;
     m_arguments.swap(empty);
-}
-
-void V8ConsoleMessage::assignId(unsigned id)
-{
-    m_messageId = id;
-}
-
-void V8ConsoleMessage::assignRelatedId(unsigned id)
-{
-    m_relatedMessageId = id;
-}
-
-void V8ConsoleMessage::addArguments(v8::Isolate* isolate, int contextId, std::vector<v8::Local<v8::Value>>* arguments)
-{
-    if (!arguments || !contextId)
-        return;
-    m_contextId = contextId;
-    for (size_t i = 0; i < arguments->size(); ++i)
-        m_arguments.push_back(wrapUnique(new v8::Global<v8::Value>(isolate, arguments->at(i))));
 }
 
 // ------------------------ V8ConsoleMessageStorage ----------------------------
@@ -386,8 +438,12 @@ void V8ConsoleMessageStorage::addMessage(std::unique_ptr<V8ConsoleMessage> messa
         clear();
 
     V8InspectorSessionImpl* session = m_debugger->sessionForContextGroup(m_contextGroupId);
-    if (session)
-        session->consoleAgent()->messageAdded(message.get());
+    if (session) {
+        if (message->origin() == V8MessageOrigin::kConsole)
+            session->consoleAgent()->messageAdded(message.get());
+        else
+            session->runtimeAgent()->exceptionMessageAdded(message.get());
+    }
 
     DCHECK(m_messages.size() <= maxConsoleMessageCount);
     if (m_messages.size() == maxConsoleMessageCount) {

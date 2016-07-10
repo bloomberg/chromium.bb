@@ -85,7 +85,7 @@ V8DebuggerImpl::V8DebuggerImpl(v8::Isolate* isolate, V8DebuggerClient* client)
     , m_client(client)
     , m_capturingStackTracesCount(0)
     , m_muteConsoleCount(0)
-    , m_lastConsoleMessageId(0)
+    , m_lastExceptionId(0)
     , m_enabledAgentsCount(0)
     , m_breakpointsActivated(true)
     , m_runningNestedMessageLoop(false)
@@ -1029,7 +1029,17 @@ void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, const String16
     ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createForConsoleAPI(m_client->currentTimeMS(), LogMessageType, LogMessageLevel, message, arguments.size() ? &arguments : nullptr, captureStackTrace(false), inspectedContext));
 }
 
-unsigned V8DebuggerImpl::promiseRejected(v8::Local<v8::Context> context, const String16& errorMessage, v8::Local<v8::Value> reason, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
+void V8DebuggerImpl::exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
+{
+    if (m_muteConsoleCount || !contextGroupId)
+        return;
+    m_client->messageAddedToConsole(contextGroupId, JSMessageSource, ErrorMessageLevel, errorMessage, url, lineNumber, columnNumber, stackTrace.get());
+    unsigned exceptionId = ++m_lastExceptionId;
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), errorMessage, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, m_isolate, 0, v8::Local<v8::Value>(), exceptionId);
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
+}
+
+unsigned V8DebuggerImpl::promiseRejected(v8::Local<v8::Context> context, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
     if (m_muteConsoleCount)
         return 0;
@@ -1045,17 +1055,10 @@ unsigned V8DebuggerImpl::promiseRejected(v8::Local<v8::Context> context, const S
         message = message.substring(0, 8) + " (in promise)" + message.substring(8);
 
     m_client->messageAddedToConsole(contextGroupId, JSMessageSource, ErrorMessageLevel, message, url, lineNumber, columnNumber, stackTrace.get());
-    std::unique_ptr<V8ConsoleMessage> consoleMessage = wrapUnique(new V8ConsoleMessage(m_client->currentTimeMS(), JSMessageSource, ErrorMessageLevel, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, String16()));
-    unsigned id = ++m_lastConsoleMessageId;
-    consoleMessage->assignId(id);
-
-    std::vector<v8::Local<v8::Value>> arguments;
-    arguments.push_back(toV8String(m_isolate, defaultMessage));
-    arguments.push_back(reason);
-    consoleMessage->addArguments(m_isolate, contextId(context), &arguments);
-
+    unsigned exceptionId = ++m_lastExceptionId;
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, m_isolate, contextId(context), exception, exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
-    return id;
+    return exceptionId;
 }
 
 void V8DebuggerImpl::promiseRejectionRevoked(v8::Local<v8::Context> context, unsigned promiseRejectionId)
@@ -1066,10 +1069,7 @@ void V8DebuggerImpl::promiseRejectionRevoked(v8::Local<v8::Context> context, uns
     if (!contextGroupId)
         return;
 
-    const String16 message = "Handler added to rejected promise";
-    m_client->messageAddedToConsole(contextGroupId, JSMessageSource, RevokedErrorMessageLevel, message, String16(), 0, 0, nullptr);
-    std::unique_ptr<V8ConsoleMessage> consoleMessage = wrapUnique(new V8ConsoleMessage(m_client->currentTimeMS(), JSMessageSource, RevokedErrorMessageLevel, message, String16(), 0, 0, nullptr, 0, String16()));
-    consoleMessage->assignRelatedId(promiseRejectionId);
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForRevokedException(m_client->currentTimeMS(), "Handler added to rejected promise", promiseRejectionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
 }
 

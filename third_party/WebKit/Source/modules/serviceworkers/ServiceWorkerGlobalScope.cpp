@@ -42,6 +42,7 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/WorkerInspectorController.h"
+#include "core/inspector/WorkerThreadDebugger.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerClients.h"
@@ -212,11 +213,11 @@ CachedMetadataHandler* ServiceWorkerGlobalScope::createWorkerScriptCachedMetadat
     return ServiceWorkerScriptCachedMetadataHandler::create(this, scriptURL, metaData);
 }
 
-void ServiceWorkerGlobalScope::logExceptionToConsole(const String& errorMessage, std::unique_ptr<SourceLocation> location)
+void ServiceWorkerGlobalScope::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
-    WorkerGlobalScope::logExceptionToConsole(errorMessage, location->clone());
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location));
-    addMessageToWorkerConsole(consoleMessage);
+    WorkerGlobalScope::exceptionThrown(errorMessage, location->clone());
+    if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
+        debugger->exceptionThrown(errorMessage, std::move(location));
 }
 
 void ServiceWorkerGlobalScope::scriptLoaded(size_t scriptSize, size_t cachedMetadataSize)
