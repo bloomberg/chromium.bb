@@ -124,6 +124,7 @@ init_state_machine(struct utf8_state_machine *machine)
 	machine->state = utf8state_start;
 	machine->len = 0;
 	machine->s.ch = 0;
+	machine->unicode = 0;
 }
 
 static enum utf8_state
