@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
@@ -21,18 +22,72 @@ namespace {
 template <typename... Args> void IgnoreAllArgs(Args&&...) {}
 
 template <typename... Args>
-void DoCaptures(Args*... out_args, Args... in_args) {
+void DoCaptures(Args*... out_args,
+                const base::Closure& quit_closure,
+                Args... in_args) {
   IgnoreAllArgs((*out_args = std::move(in_args))...);
+  quit_closure.Run();
 }
 
 template <typename T1>
-base::Callback<void(T1)> Capture(T1* t1) {
-  return base::Bind(&DoCaptures<T1>, t1);
+base::Callback<void(T1)> Capture(T1* t1, const base::Closure& quit_closure) {
+  return base::Bind(&DoCaptures<T1>, t1, quit_closure);
 }
 
 template <typename T1, typename T2>
-base::Callback<void(T1, T2)> Capture(T1* t1, T2* t2) {
-  return base::Bind(&DoCaptures<T1, T2>, t1, t2);
+base::Callback<void(T1, T2)> Capture(T1* t1,
+                                     T2* t2,
+                                     const base::Closure& quit_closure) {
+  return base::Bind(&DoCaptures<T1, T2>, t1, t2, quit_closure);
+}
+
+void DatabaseSyncPut(mojom::LevelDBDatabase* database,
+                     mojo::Array<uint8_t> key,
+                     mojo::Array<uint8_t> value,
+                     mojom::DatabaseError* out_error) {
+  base::RunLoop run_loop;
+  database->Put(std::move(key), std::move(value),
+                Capture(out_error, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+void DatabaseSyncGet(mojom::LevelDBDatabase* database,
+                     mojo::Array<uint8_t> key,
+                     mojom::DatabaseError* out_error,
+                     mojo::Array<uint8_t>* out_value) {
+  base::RunLoop run_loop;
+  database->Get(std::move(key),
+                Capture(out_error, out_value, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+void DatabaseSyncGetPrefixed(mojom::LevelDBDatabase* database,
+                             mojo::Array<uint8_t> key_prefix,
+                             mojom::DatabaseError* out_error,
+                             mojo::Array<mojom::KeyValuePtr>* out_key_values) {
+  base::RunLoop run_loop;
+  database->GetPrefixed(
+      std::move(key_prefix),
+      Capture(out_error, out_key_values, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+void DatabaseSyncDeletePrefixed(mojom::LevelDBDatabase* database,
+                                mojo::Array<uint8_t> key_prefix,
+                                mojom::DatabaseError* out_error) {
+  base::RunLoop run_loop;
+  database->DeletePrefixed(std::move(key_prefix),
+                           Capture(out_error, run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+void LevelDBSyncOpenInMemory(mojom::LevelDBService* leveldb,
+                             mojom::LevelDBDatabaseRequest database,
+                             mojom::DatabaseError* out_error) {
+  base::RunLoop run_loop;
+  leveldb->OpenInMemory(std::move(database),
+                        Capture(out_error, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 class LevelDBServiceTest : public shell::test::ServiceTest {
@@ -58,8 +113,8 @@ class LevelDBServiceTest : public shell::test::ServiceTest {
   // since |ASSERT_...()| doesn't work with return values.
   void GetTempDirectory(filesystem::mojom::DirectoryPtr* directory) {
     FileError error = FileError::FAILED;
-    files()->OpenTempDirectory(GetProxy(directory), Capture(&error));
-    ASSERT_TRUE(files().WaitForIncomingResponse());
+    bool handled = files()->OpenTempDirectory(GetProxy(directory), &error);
+    ASSERT_TRUE(handled);
     ASSERT_EQ(FileError::OK, error);
   }
 
@@ -76,40 +131,39 @@ class LevelDBServiceTest : public shell::test::ServiceTest {
 TEST_F(LevelDBServiceTest, Basic) {
   mojom::DatabaseError error;
   mojom::LevelDBDatabasePtr database;
-  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
-  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  LevelDBSyncOpenInMemory(leveldb().get(), GetProxy(&database), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Put(mojo::Array<uint8_t>::From(std::string("key")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Read the key back from the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   mojo::Array<uint8_t> value;
-  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")), &error,
+                  &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("value", value.To<std::string>());
 
   // Delete the key from the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
+  base::RunLoop run_loop;
   database->Delete(mojo::Array<uint8_t>::From(std::string("key")),
-                   Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+                   Capture(&error, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Read the key back from the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   value.SetToEmpty();
-  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")), &error,
+                  &value);
   EXPECT_EQ(mojom::DatabaseError::NOT_FOUND, error);
   EXPECT_EQ("", value.To<std::string>());
 }
@@ -117,15 +171,13 @@ TEST_F(LevelDBServiceTest, Basic) {
 TEST_F(LevelDBServiceTest, WriteBatch) {
   mojom::DatabaseError error;
   mojom::LevelDBDatabasePtr database;
-  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
-  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  LevelDBSyncOpenInMemory(leveldb().get(), GetProxy(&database), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
-  database->Put(mojo::Array<uint8_t>::From(std::string("key")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Create a batched operation which both deletes "key" and adds another write.
@@ -141,37 +193,37 @@ TEST_F(LevelDBServiceTest, WriteBatch) {
   item->value = mojo::Array<uint8_t>::From(std::string("more"));
   operations.push_back(std::move(item));
 
-  database->Write(std::move(operations), Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  base::RunLoop run_loop;
+  database->Write(std::move(operations),
+                  Capture(&error, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Reading "key" should be invalid now.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   mojo::Array<uint8_t> value;
-  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")), &error,
+                  &value);
   EXPECT_EQ(mojom::DatabaseError::NOT_FOUND, error);
   EXPECT_EQ("", value.To<std::string>());
 
   // Reading "other" should return "more"
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Get(mojo::Array<uint8_t>::From(std::string("other")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("other")), &error,
+                  &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("more", value.To<std::string>());
 
   // Write a some prefixed keys to the database.
-  database->Put(mojo::Array<uint8_t>::From(std::string("prefix-key1")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("prefix-key1")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
-  database->Put(mojo::Array<uint8_t>::From(std::string("prefix-key2")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("prefix-key2")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Create a batched operation to delete them.
@@ -180,24 +232,26 @@ TEST_F(LevelDBServiceTest, WriteBatch) {
   item->type = mojom::BatchOperationType::DELETE_PREFIXED_KEY;
   item->key = mojo::Array<uint8_t>::From(std::string("prefix"));
   operations.push_back(std::move(item));
-  database->Write(std::move(operations), Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  base::RunLoop run_loop2;
+  database->Write(std::move(operations),
+                  Capture(&error, run_loop2.QuitClosure()));
+  run_loop2.Run();
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Reading all "prefix" keys should be invalid now.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   value = nullptr;
-  database->Get(mojo::Array<uint8_t>::From(std::string("prefix-key1")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("prefix-key1")),
+                  &error, &value);
   EXPECT_EQ(mojom::DatabaseError::NOT_FOUND, error);
   EXPECT_EQ("", value.To<std::string>());
   // Reading "key" should be invalid now.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   value = nullptr;
-  database->Get(mojo::Array<uint8_t>::From(std::string("prefix-key2")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("prefix-key2")),
+                  &error, &value);
   EXPECT_EQ(mojom::DatabaseError::NOT_FOUND, error);
   EXPECT_EQ("", value.To<std::string>());
 }
@@ -216,19 +270,18 @@ TEST_F(LevelDBServiceTest, Reconnect) {
     leveldb::mojom::OpenOptionsPtr options = leveldb::mojom::OpenOptions::New();
     options->error_if_exists = true;
     options->create_if_missing = true;
-    leveldb()->OpenWithOptions(std::move(options),
-                               std::move(directory), "test",
+    base::RunLoop run_loop;
+    leveldb()->OpenWithOptions(std::move(options), std::move(directory), "test",
                                GetProxy(&database),
-                               Capture(&error));
-    ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+                               Capture(&error, run_loop.QuitClosure()));
+    run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
 
     // Write a key to the database.
     error = mojom::DatabaseError::INVALID_ARGUMENT;
-    database->Put(mojo::Array<uint8_t>::From(std::string("key")),
-                  mojo::Array<uint8_t>::From(std::string("value")),
-                  Capture(&error));
-    ASSERT_TRUE(database.WaitForIncomingResponse());
+    DatabaseSyncPut(database.get(),
+                    mojo::Array<uint8_t>::From(std::string("key")),
+                    mojo::Array<uint8_t>::From(std::string("value")), &error);
     EXPECT_EQ(mojom::DatabaseError::OK, error);
 
     // The database should go out of scope here.
@@ -240,17 +293,18 @@ TEST_F(LevelDBServiceTest, Reconnect) {
 
     // Reconnect to the database.
     mojom::LevelDBDatabasePtr database;
+    base::RunLoop run_loop;
     leveldb()->Open(std::move(directory), "test", GetProxy(&database),
-                    Capture(&error));
-    ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+                    Capture(&error, run_loop.QuitClosure()));
+    run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
 
     // We should still be able to read the key back from the database.
     error = mojom::DatabaseError::INVALID_ARGUMENT;
     mojo::Array<uint8_t> value;
-    database->Get(mojo::Array<uint8_t>::From(std::string("key")),
-                  Capture(&error, &value));
-    ASSERT_TRUE(database.WaitForIncomingResponse());
+    DatabaseSyncGet(database.get(),
+                    mojo::Array<uint8_t>::From(std::string("key")), &error,
+                    &value);
     EXPECT_EQ(mojom::DatabaseError::OK, error);
     EXPECT_EQ("value", value.To<std::string>());
   }
@@ -259,61 +313,59 @@ TEST_F(LevelDBServiceTest, Reconnect) {
 TEST_F(LevelDBServiceTest, GetSnapshotSimple) {
   mojom::DatabaseError error;
   mojom::LevelDBDatabasePtr database;
-  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
-  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  LevelDBSyncOpenInMemory(leveldb().get(), GetProxy(&database), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   uint64_t snapshot_id = 0;
-  database->GetSnapshot(Capture(&snapshot_id));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  base::RunLoop run_loop;
+  database->GetSnapshot(Capture(&snapshot_id, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_NE(static_cast<uint64_t>(0), snapshot_id);
 }
 
 TEST_F(LevelDBServiceTest, GetFromSnapshots) {
   mojom::DatabaseError error;
   mojom::LevelDBDatabasePtr database;
-  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
-  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  LevelDBSyncOpenInMemory(leveldb().get(), GetProxy(&database), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Put(mojo::Array<uint8_t>::From(std::string("key")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Take a snapshot where key=value.
   uint64_t key_value_snapshot = 0;
-  database->GetSnapshot(Capture(&key_value_snapshot));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  base::RunLoop run_loop;
+  database->GetSnapshot(Capture(&key_value_snapshot, run_loop.QuitClosure()));
+  run_loop.Run();
 
   // Change key to "yek".
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Put(mojo::Array<uint8_t>::From(std::string("key")),
-                mojo::Array<uint8_t>::From(std::string("yek")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")),
+                  mojo::Array<uint8_t>::From(std::string("yek")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // (Ensure this change is live on the database.)
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   mojo::Array<uint8_t> value;
-  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")), &error,
+                  &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("yek", value.To<std::string>());
 
   // But if we were to read from the snapshot, we'd still get value.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   value.SetToEmpty();
-  database->GetFromSnapshot(
-      key_value_snapshot,
-      mojo::Array<uint8_t>::From(std::string("key")),
-      Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  base::RunLoop run_loop2;
+  database->GetFromSnapshot(key_value_snapshot,
+                            mojo::Array<uint8_t>::From(std::string("key")),
+                            Capture(&error, &value, run_loop2.QuitClosure()));
+  run_loop2.Run();
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("value", value.To<std::string>());
 }
@@ -321,59 +373,57 @@ TEST_F(LevelDBServiceTest, GetFromSnapshots) {
 TEST_F(LevelDBServiceTest, InvalidArgumentOnInvalidSnapshot) {
   mojom::LevelDBDatabasePtr database;
   mojom::DatabaseError error = mojom::DatabaseError::INVALID_ARGUMENT;
-  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
-  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  LevelDBSyncOpenInMemory(leveldb().get(), GetProxy(&database), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   uint64_t invalid_snapshot = 8;
 
   error = mojom::DatabaseError::OK;
   mojo::Array<uint8_t> value;
-  database->GetFromSnapshot(
-      invalid_snapshot,
-      mojo::Array<uint8_t>::From(std::string("key")),
-      Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  base::RunLoop run_loop;
+  database->GetFromSnapshot(invalid_snapshot,
+                            mojo::Array<uint8_t>::From(std::string("key")),
+                            Capture(&error, &value, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(mojom::DatabaseError::INVALID_ARGUMENT, error);
 }
 
 TEST_F(LevelDBServiceTest, MemoryDBReadWrite) {
   mojom::LevelDBDatabasePtr database;
   mojom::DatabaseError error = mojom::DatabaseError::INVALID_ARGUMENT;
-  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
-  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  LevelDBSyncOpenInMemory(leveldb().get(), GetProxy(&database), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Write a key to the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Put(mojo::Array<uint8_t>::From(std::string("key")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Read the key back from the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   mojo::Array<uint8_t> value;
-  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")), &error,
+                  &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("value", value.To<std::string>());
 
   // Delete the key from the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
+  base::RunLoop run_loop;
   database->Delete(mojo::Array<uint8_t>::From(std::string("key")),
-                   Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+                   Capture(&error, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   // Read the key back from the database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   value.SetToEmpty();
-  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("key")), &error,
+                  &value);
   EXPECT_EQ(mojom::DatabaseError::NOT_FOUND, error);
   EXPECT_EQ("", value.To<std::string>());
 }
@@ -382,8 +432,7 @@ TEST_F(LevelDBServiceTest, Prefixed) {
   // Open an in memory database for speed.
   mojom::DatabaseError error = mojom::DatabaseError::INVALID_ARGUMENT;
   mojom::LevelDBDatabasePtr database;
-  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
-  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  LevelDBSyncOpenInMemory(leveldb().get(), GetProxy(&database), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
 
   const std::string prefix("prefix");
@@ -391,60 +440,50 @@ TEST_F(LevelDBServiceTest, Prefixed) {
 
   // Completely empty database.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
-                        Capture(&error, &key_values));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGetPrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                          &error, &key_values);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_TRUE(key_values.empty());
 
   // No values with our prefix, but values before and after.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Put(mojo::Array<uint8_t>::From(std::string("a-before-prefix")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("a-before-prefix")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Put(mojo::Array<uint8_t>::From(std::string("z-after-prefix")),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("z-after-prefix")),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   key_values.SetToEmpty();
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
-                        Capture(&error, &key_values));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGetPrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                          &error, &key_values);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_TRUE(key_values.empty());
 
   // One value with the exact prefix.
-  database->Put(mojo::Array<uint8_t>::From(prefix),
-                mojo::Array<uint8_t>::From(std::string("value")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(), mojo::Array<uint8_t>::From(prefix),
+                  mojo::Array<uint8_t>::From(std::string("value")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   key_values.SetToEmpty();
-  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
-                        Capture(&error, &key_values));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGetPrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                          &error, &key_values);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ(1u, key_values.size());
   EXPECT_EQ("prefix", key_values[0]->key.To<std::string>());
   EXPECT_EQ("value", key_values[0]->value.To<std::string>());
 
   // Multiple values with starting with the prefix.
-  database->Put(mojo::Array<uint8_t>::From(prefix + "2"),
-                mojo::Array<uint8_t>::From(std::string("value2")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(), mojo::Array<uint8_t>::From(prefix + "2"),
+                  mojo::Array<uint8_t>::From(std::string("value2")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   key_values.SetToEmpty();
-  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
-                        Capture(&error, &key_values));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGetPrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                          &error, &key_values);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ(2u, key_values.size());
   EXPECT_EQ("prefix", key_values[0]->key.To<std::string>());
@@ -454,29 +493,27 @@ TEST_F(LevelDBServiceTest, Prefixed) {
 
   // Delete the prefixed values.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->DeletePrefixed(mojo::Array<uint8_t>::From(prefix),
-                          Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncDeletePrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                             &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   key_values.SetToEmpty();
-  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
-                        Capture(&error, &key_values));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGetPrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                          &error, &key_values);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_TRUE(key_values.empty());
 
   // Make sure the others are not deleted.
   mojo::Array<uint8_t> value;
-  database->Get(mojo::Array<uint8_t>::From(std::string("a-before-prefix")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("a-before-prefix")),
+                  &error, &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("value", value.To<std::string>());
   value.SetToEmpty();
-  database->Get(mojo::Array<uint8_t>::From(std::string("z-after-prefix")),
-                Capture(&error, &value));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGet(database.get(),
+                  mojo::Array<uint8_t>::From(std::string("z-after-prefix")),
+                  &error, &value);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ("value", value.To<std::string>());
 
@@ -484,30 +521,25 @@ TEST_F(LevelDBServiceTest, Prefixed) {
   // Even thought there is no exact matching key, GetPrefixed
   // and DeletePrefixed still operate on the values.
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->Put(mojo::Array<uint8_t>::From(prefix + "2"),
-                mojo::Array<uint8_t>::From(std::string("value2")),
-                Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncPut(database.get(), mojo::Array<uint8_t>::From(prefix + "2"),
+                  mojo::Array<uint8_t>::From(std::string("value2")), &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   key_values.SetToEmpty();
-  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
-                        Capture(&error, &key_values));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGetPrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                          &error, &key_values);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_EQ(1u, key_values.size());
   EXPECT_EQ("prefix2", key_values[0]->key.To<std::string>());
   EXPECT_EQ("value2", key_values[0]->value.To<std::string>());
   error = mojom::DatabaseError::INVALID_ARGUMENT;
-  database->DeletePrefixed(mojo::Array<uint8_t>::From(prefix),
-                          Capture(&error));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncDeletePrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                             &error);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   error = mojom::DatabaseError::INVALID_ARGUMENT;
   key_values.SetToEmpty();
-  database->GetPrefixed(mojo::Array<uint8_t>::From(prefix),
-                        Capture(&error, &key_values));
-  ASSERT_TRUE(database.WaitForIncomingResponse());
+  DatabaseSyncGetPrefixed(database.get(), mojo::Array<uint8_t>::From(prefix),
+                          &error, &key_values);
   EXPECT_EQ(mojom::DatabaseError::OK, error);
   EXPECT_TRUE(key_values.empty());
 }

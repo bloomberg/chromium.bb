@@ -59,10 +59,6 @@ class MathCalculatorUI {
       : calculator_(std::move(calculator)),
         output_(0.0) {}
 
-  bool WaitForIncomingResponse() {
-    return calculator_.WaitForIncomingResponse();
-  }
-
   bool encountered_error() const { return calculator_.encountered_error(); }
   void set_connection_error_handler(const base::Closure& closure) {
     calculator_.set_connection_error_handler(closure);
@@ -251,16 +247,18 @@ TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
 
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
 
-  calculator_ui.Add(2.0, base::Closure());
+  base::RunLoop run_loop;
+  calculator_ui.Add(2.0, run_loop.QuitClosure());
   EXPECT_EQ(0.0, calculator_ui.GetOutput());
   calc_impl.WaitForIncomingMethodCall();
-  calculator_ui.WaitForIncomingResponse();
+  run_loop.Run();
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
 
-  calculator_ui.Multiply(5.0, base::Closure());
+  base::RunLoop run_loop2;
+  calculator_ui.Multiply(5.0, run_loop2.QuitClosure());
   EXPECT_EQ(2.0, calculator_ui.GetOutput());
   calc_impl.WaitForIncomingMethodCall();
-  calculator_ui.WaitForIncomingResponse();
+  run_loop2.Run();
   EXPECT_EQ(10.0, calculator_ui.GetOutput());
 }
 

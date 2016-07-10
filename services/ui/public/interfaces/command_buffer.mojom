@@ -33,11 +33,13 @@ interface CommandBuffer {
   // If the context is lost after creation the LostContext method on the
   // CommandBufferClient's will be called then this pipe will be
   // closed.
+  [Sync]
   Initialize(CommandBufferClient client,
              handle<shared_buffer> shared_state,
              array<int32> attribs) => (CommandBufferInitializeResult? result);
   SetGetBuffer(int32 buffer);
   Flush(int32 put_offset);
+  [Sync]
   MakeProgress(int32 last_get_offset) => (gpu.mojom.CommandBufferState state);
   RegisterTransferBuffer(
       int32 id, handle<shared_buffer> transfer_buffer, uint32 size);

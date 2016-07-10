@@ -4,7 +4,9 @@
 
 #include <map>
 
+#include "base/bind.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "components/leveldb/public/cpp/remote_iterator.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
@@ -15,11 +17,17 @@ namespace leveldb {
 namespace {
 
 template <typename T>
-void DoCapture(T* t, T got_t) { *t = std::move(got_t); }
+void DoCapture(T* t, const base::Closure& quit_closure, T got_t) {
+  *t = std::move(got_t);
+  if (!quit_closure.is_null())
+    quit_closure.Run();
+}
 
 template <typename T1>
-base::Callback<void(T1)> Capture(T1* t1) {
-  return base::Bind(&DoCapture<T1>, t1);
+base::Callback<void(T1)> Capture(
+    T1* t1,
+    const base::Closure& quit_closure = base::Closure()) {
+  return base::Bind(&DoCapture<T1>, t1, quit_closure);
 }
 
 class RemoteIteratorTest : public shell::test::ServiceTest {
@@ -34,8 +42,10 @@ class RemoteIteratorTest : public shell::test::ServiceTest {
     connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
 
     mojom::DatabaseError error;
-    leveldb()->OpenInMemory(GetProxy(&database_), Capture(&error));
-    ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+    base::RunLoop run_loop;
+    leveldb()->OpenInMemory(GetProxy(&database_),
+                            Capture(&error, run_loop.QuitClosure()));
+    run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
 
     std::map<std::string, std::string> data{
@@ -44,9 +54,11 @@ class RemoteIteratorTest : public shell::test::ServiceTest {
     for (auto p : data) {
       // Write a key to the database.
       error = mojom::DatabaseError::INVALID_ARGUMENT;
+      base::RunLoop run_loop;
       database_->Put(mojo::Array<uint8_t>::From(p.first),
-                     mojo::Array<uint8_t>::From(p.second), Capture(&error));
-      ASSERT_TRUE(database_.WaitForIncomingResponse());
+                     mojo::Array<uint8_t>::From(p.second),
+                     Capture(&error, run_loop.QuitClosure()));
+      run_loop.Run();
       EXPECT_EQ(mojom::DatabaseError::OK, error);
     }
   }
@@ -68,8 +80,9 @@ class RemoteIteratorTest : public shell::test::ServiceTest {
 
 TEST_F(RemoteIteratorTest, Seeking) {
   uint64_t iterator_id = 0;
-  database()->NewIterator(Capture(&iterator_id));
-  ASSERT_TRUE(database().WaitForIncomingResponse());
+  base::RunLoop run_loop;
+  database()->NewIterator(Capture(&iterator_id, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_NE(0u, iterator_id);
 
   RemoteIterator it(database().get(), iterator_id);
@@ -93,8 +106,9 @@ TEST_F(RemoteIteratorTest, Seeking) {
 
 TEST_F(RemoteIteratorTest, Next) {
   uint64_t iterator_id = 0;
-  database()->NewIterator(Capture(&iterator_id));
-  ASSERT_TRUE(database().WaitForIncomingResponse());
+  base::RunLoop run_loop;
+  database()->NewIterator(Capture(&iterator_id, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_NE(0u, iterator_id);
 
   RemoteIterator it(database().get(), iterator_id);
@@ -121,8 +135,9 @@ TEST_F(RemoteIteratorTest, Next) {
 
 TEST_F(RemoteIteratorTest, Prev) {
   uint64_t iterator_id = 0;
-  database()->NewIterator(Capture(&iterator_id));
-  ASSERT_TRUE(database().WaitForIncomingResponse());
+  base::RunLoop run_loop;
+  database()->NewIterator(Capture(&iterator_id, run_loop.QuitClosure()));
+  run_loop.Run();
   EXPECT_NE(0u, iterator_id);
 
   RemoteIterator it(database().get(), iterator_id);

@@ -12,6 +12,7 @@ struct Entry {
 interface Catalog {
   // Returns the catalog entries for the specified mojo names.
   // If |names| is null, all available entries are returned.
+  [Sync]
   GetEntries(array<string>? names) => (array<Entry> entries);
 
   // Returns the entry(ies) for applications that export to the caller the

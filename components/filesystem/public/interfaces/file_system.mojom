@@ -10,8 +10,10 @@ import "components/filesystem/public/interfaces/types.mojom";
 interface FileSystem {
   // Opens a temporary filesystem. Will return a different directory each time
   // it is called.
+  [Sync]
   OpenTempDirectory(Directory& directory) => (FileError error);
 
   // Returns a directory which will persist to disk.
+  [Sync]
   OpenPersistentFileSystem(Directory& directory) => (FileError error);
 };

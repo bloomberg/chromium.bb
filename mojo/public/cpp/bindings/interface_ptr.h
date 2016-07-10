@@ -126,17 +126,6 @@ class InterfacePtr {
     return internal_state_.HasAssociatedInterfaces();
   }
 
-  // Blocks the current thread until the next incoming response callback arrives
-  // or an error occurs. Returns |true| if a response arrived, or |false| in
-  // case of error.
-  //
-  // This method may only be called if the InterfacePtr has been bound to a
-  // message pipe and there are no associated interfaces running.
-  bool WaitForIncomingResponse() {
-    CHECK(!HasAssociatedInterfaces());
-    return internal_state_.WaitForIncomingResponse();
-  }
-
   // Indicates whether the message pipe has encountered an error. If true,
   // method calls made on this interface will be dropped (and may already have
   // been dropped).

@@ -108,13 +108,6 @@ class InterfacePtrState<Interface, false> {
 
   bool HasAssociatedInterfaces() const { return false; }
 
-  bool WaitForIncomingResponse() {
-    ConfigureProxyIfNecessary();
-
-    DCHECK(router_);
-    return router_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
-  }
-
   // After this method is called, the object is in an invalid state and
   // shouldn't be reused.
   InterfacePtrInfo<Interface> PassInterface() {
@@ -263,13 +256,6 @@ class InterfacePtrState<Interface, true> {
 
   bool HasAssociatedInterfaces() const {
     return router_ ? router_->HasAssociatedEndpoints() : false;
-  }
-
-  bool WaitForIncomingResponse() {
-    ConfigureProxyIfNecessary();
-
-    DCHECK(router_);
-    return router_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
   }
 
   // After this method is called, the object is in an invalid state and

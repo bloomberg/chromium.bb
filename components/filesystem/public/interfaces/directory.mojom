@@ -91,9 +91,11 @@ interface Directory {
   Clone(Directory& directory);
 
   // Reads the contents of an entire file.
+  [Sync]
   ReadEntireFile(string path) => (FileError error, array<uint8> data);
 
   // Writes |data| to |path|, overwriting the file if it already exists.
+  [Sync]
   WriteFile(string path, array<uint8> data) => (FileError error);
 
   // TODO(vtl): directory "streaming"?

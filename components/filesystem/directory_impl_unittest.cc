@@ -32,24 +32,23 @@ TEST_F(DirectoryImplTest, Read) {
       {"my_file3", mojom::kFlagAppend | mojom::kFlagCreate}};
   for (size_t i = 0; i < arraysize(files_to_create); i++) {
     error = mojom::FileError::FAILED;
-    directory->OpenFile(files_to_create[i].name, nullptr,
-                        files_to_create[i].open_flags, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    bool handled = directory->OpenFile(files_to_create[i].name, nullptr,
+                                       files_to_create[i].open_flags, &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
   // Make a directory.
   error = mojom::FileError::FAILED;
-  directory->OpenDirectory(
+  bool handled = directory->OpenDirectory(
       "my_dir", nullptr,
-      mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate,
-      Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+      mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate, &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
 
   error = mojom::FileError::FAILED;
   mojo::Array<mojom::DirectoryEntryPtr> directory_contents;
-  directory->Read(Capture(&error, &directory_contents));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  handled = directory->Read(&error, &directory_contents);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
 
   // Expected contents of the directory.
@@ -80,48 +79,48 @@ TEST_F(DirectoryImplTest, BasicRenameDelete) {
 
   // Create my_file.
   error = mojom::FileError::FAILED;
-  directory->OpenFile("my_file", nullptr,
-                      mojom::kFlagWrite | mojom::kFlagCreate, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  bool handled = directory->OpenFile(
+      "my_file", nullptr, mojom::kFlagWrite | mojom::kFlagCreate, &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
 
   // Opening my_file should succeed.
   error = mojom::FileError::FAILED;
-  directory->OpenFile("my_file", nullptr, mojom::kFlagRead | mojom::kFlagOpen,
-                      Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  handled = directory->OpenFile("my_file", nullptr,
+                                mojom::kFlagRead | mojom::kFlagOpen, &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
 
   // Rename my_file to my_new_file.
-  directory->Rename("my_file", "my_new_file", Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  handled = directory->Rename("my_file", "my_new_file", &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
 
   // Opening my_file should fail.
 
   error = mojom::FileError::FAILED;
-  directory->OpenFile("my_file", nullptr, mojom::kFlagRead | mojom::kFlagOpen,
-                      Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  handled = directory->OpenFile("my_file", nullptr,
+                                mojom::kFlagRead | mojom::kFlagOpen, &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::NOT_FOUND, error);
 
   // Opening my_new_file should succeed.
   error = mojom::FileError::FAILED;
-  directory->OpenFile("my_new_file", nullptr,
-                      mojom::kFlagRead | mojom::kFlagOpen, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  handled = directory->OpenFile("my_new_file", nullptr,
+                                mojom::kFlagRead | mojom::kFlagOpen, &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
 
   // Delete my_new_file (no flags).
-  directory->Delete("my_new_file", 0, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  handled = directory->Delete("my_new_file", 0, &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::OK, error);
 
   // Opening my_new_file should fail.
   error = mojom::FileError::FAILED;
-  directory->OpenFile("my_new_file", nullptr,
-                      mojom::kFlagRead | mojom::kFlagOpen, Capture(&error));
-  ASSERT_TRUE(directory.WaitForIncomingResponse());
+  handled = directory->OpenFile("my_new_file", nullptr,
+                                mojom::kFlagRead | mojom::kFlagOpen, &error);
+  ASSERT_TRUE(handled);
   EXPECT_EQ(mojom::FileError::NOT_FOUND, error);
 }
 
@@ -134,11 +133,10 @@ TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {
     // Create a directory called 'my_file'
     mojom::DirectoryPtr my_file_directory;
     error = mojom::FileError::FAILED;
-    directory->OpenDirectory(
+    bool handled = directory->OpenDirectory(
         "my_file", GetProxy(&my_file_directory),
-        mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate,
-        Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+        mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate, &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
 
@@ -146,9 +144,10 @@ TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {
     // Attempt to open that directory as a file. This must fail!
     mojom::FilePtr file;
     error = mojom::FileError::FAILED;
-    directory->OpenFile("my_file", GetProxy(&file),
-                        mojom::kFlagRead | mojom::kFlagOpen, Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    bool handled =
+        directory->OpenFile("my_file", GetProxy(&file),
+                            mojom::kFlagRead | mojom::kFlagOpen, &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::NOT_A_FILE, error);
   }
 }
@@ -171,16 +170,16 @@ TEST_F(DirectoryImplTest, Clone) {
 
   std::string data("one two three");
   {
-    clone_one->WriteFile("data", mojo::Array<uint8_t>::From(data),
-                         Capture(&error));
-    ASSERT_TRUE(clone_one.WaitForIncomingResponse());
+    bool handled =
+        clone_one->WriteFile("data", mojo::Array<uint8_t>::From(data), &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
 
   {
     mojo::Array<uint8_t> file_contents;
-    clone_two->ReadEntireFile("data", Capture(&error, &file_contents));
-    ASSERT_TRUE(clone_two.WaitForIncomingResponse());
+    bool handled = clone_two->ReadEntireFile("data", &error, &file_contents);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
     EXPECT_EQ(data, file_contents.To<std::string>());
@@ -194,16 +193,16 @@ TEST_F(DirectoryImplTest, WriteFileReadFile) {
 
   std::string data("one two three");
   {
-    directory->WriteFile("data", mojo::Array<uint8_t>::From(data),
-                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    bool handled =
+        directory->WriteFile("data", mojo::Array<uint8_t>::From(data), &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
 
   {
     mojo::Array<uint8_t> file_contents;
-    directory->ReadEntireFile("data", Capture(&error, &file_contents));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    bool handled = directory->ReadEntireFile("data", &error, &file_contents);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
 
     EXPECT_EQ(data, file_contents.To<std::string>());
@@ -217,8 +216,9 @@ TEST_F(DirectoryImplTest, ReadEmptyFileIsNotFoundError) {
 
   {
     mojo::Array<uint8_t> file_contents;
-    directory->ReadEntireFile("doesnt_exist", Capture(&error, &file_contents));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    bool handled =
+        directory->ReadEntireFile("doesnt_exist", &error, &file_contents);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::NOT_FOUND, error);
   }
 }
@@ -232,19 +232,18 @@ TEST_F(DirectoryImplTest, CantReadEntireFileOnADirectory) {
   {
     mojom::DirectoryPtr my_file_directory;
     error = mojom::FileError::FAILED;
-    directory->OpenDirectory(
+    bool handled = directory->OpenDirectory(
         "my_dir", GetProxy(&my_file_directory),
-        mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate,
-        Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+        mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate, &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
 
   // Try to read it as a file
   {
     mojo::Array<uint8_t> file_contents;
-    directory->ReadEntireFile("my_dir", Capture(&error, &file_contents));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    bool handled = directory->ReadEntireFile("my_dir", &error, &file_contents);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::NOT_A_FILE, error);
   }
 }
@@ -258,19 +257,18 @@ TEST_F(DirectoryImplTest, CantWriteFileOnADirectory) {
   {
     mojom::DirectoryPtr my_file_directory;
     error = mojom::FileError::FAILED;
-    directory->OpenDirectory(
+    bool handled = directory->OpenDirectory(
         "my_dir", GetProxy(&my_file_directory),
-        mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate,
-        Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+        mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate, &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
   }
 
   {
     std::string data("one two three");
-    directory->WriteFile("my_dir", mojo::Array<uint8_t>::From(data),
-                         Capture(&error));
-    ASSERT_TRUE(directory.WaitForIncomingResponse());
+    bool handled = directory->WriteFile(
+        "my_dir", mojo::Array<uint8_t>::From(data), &error);
+    ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::NOT_A_FILE, error);
   }
 }
