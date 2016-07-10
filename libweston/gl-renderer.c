@@ -455,7 +455,7 @@ static int
 compress_bands(pixman_box32_t *inrects, int nrects,
 		   pixman_box32_t **outrects)
 {
-	bool merged;
+	bool merged = false;
 	pixman_box32_t *out, merge_rect;
 	int i, j, nout;
 
