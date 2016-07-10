@@ -5093,7 +5093,7 @@ weston_compositor_load_backend(struct weston_compositor *compositor,
 	int (*backend_init)(struct weston_compositor *c,
 			    struct weston_backend_config *config_base);
 
-	if (backend < 0 || backend >= ARRAY_LENGTH(backend_map))
+	if (backend >= ARRAY_LENGTH(backend_map))
 		return -1;
 
 	backend_init = weston_load_module(backend_map[backend], "backend_init");
