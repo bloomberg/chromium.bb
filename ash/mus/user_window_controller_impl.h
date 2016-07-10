@@ -56,7 +56,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
 
   // mojom::UserWindowController:
   void AddUserWindowObserver(mojom::UserWindowObserverPtr observer) override;
-  void FocusUserWindow(uint32_t window_id) override;
+  void ActivateUserWindow(uint32_t window_id) override;
 
   RootWindowController* root_controller_;
   mojom::UserWindowObserverPtr user_window_observer_;

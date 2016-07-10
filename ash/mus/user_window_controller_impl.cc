@@ -197,10 +197,12 @@ void UserWindowControllerImpl::AddUserWindowObserver(
   user_window_observer_->OnUserWindowObserverAdded(std::move(user_windows));
 }
 
-void UserWindowControllerImpl::FocusUserWindow(uint32_t window_id) {
+void UserWindowControllerImpl::ActivateUserWindow(uint32_t window_id) {
   ::ui::Window* window = GetUserWindowById(window_id);
-  if (window)
+  if (window) {
+    window->SetVisible(true);
     window->SetFocus();
+  }
 }
 
 }  // namespace mus

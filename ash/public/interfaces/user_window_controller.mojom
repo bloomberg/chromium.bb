@@ -34,5 +34,5 @@ interface UserWindowObserver {
 // TODO(msw): Add minimization, restoration, opening a chooser view, etc.
 interface UserWindowController {
   AddUserWindowObserver(UserWindowObserver observer);
-  FocusUserWindow(uint32 window_id);
+  ActivateUserWindow(uint32 window_id);
 };

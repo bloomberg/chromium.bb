@@ -94,7 +94,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
       return false;
     }
     void ExecuteCommand(int command_id, int event_flags) override {
-      item_delegate_->user_window_controller_->FocusUserWindow(command_id);
+      item_delegate_->user_window_controller_->ActivateUserWindow(command_id);
     }
 
    private:
@@ -111,7 +111,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
       return kNewWindowCreated;
     }
     if (window_id_to_title_.size() == 1) {
-      user_window_controller_->FocusUserWindow(
+      user_window_controller_->ActivateUserWindow(
           window_id_to_title_.begin()->first);
       return kExistingWindowActivated;
     }
