@@ -55,15 +55,6 @@
 
 #include <xf86drm.h>
 
-static inline int
-is_drm_master(int drm_fd)
-{
-	drm_magic_t magic;
-
-	return drmGetMagic(drm_fd, &magic) == 0 &&
-		drmAuthMagic(drm_fd, magic) == 0;
-}
-
 #else
 
 static inline int
@@ -74,12 +65,6 @@ drmDropMaster(int drm_fd)
 
 static inline int
 drmSetMaster(int drm_fd)
-{
-	return 0;
-}
-
-static inline int
-is_drm_master(int drm_fd)
 {
 	return 0;
 }
