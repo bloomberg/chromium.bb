@@ -396,7 +396,7 @@ static const struct image_loader loaders[] = {
 pixman_image_t *
 load_image(const char *filename)
 {
-	pixman_image_t *image;
+	pixman_image_t *image = NULL;
 	unsigned char header[4];
 	FILE *fp;
 	unsigned int i;
@@ -431,7 +431,6 @@ load_image(const char *filename)
 		fprintf(stderr, "%s: unrecognized file header "
 			"0x%02x 0x%02x 0x%02x 0x%02x\n",
 			filename, header[0], header[1], header[2], header[3]);
-		image = NULL;
 	} else if (!image) {
 		/* load probably printed something, but just in case */
 		fprintf(stderr, "%s: error reading image\n", filename);
