@@ -53,6 +53,12 @@
 
 #define ISO_8601_FORMAT "%Y-%m-%dT%H:%M:%SZ"
 
+#if LIBXML_VERSION >= 20904
+#define STRPRINTF_CAST
+#else
+#define STRPRINTF_CAST BAD_CAST
+#endif
+
 /**
  * Internal data.
  */
@@ -68,7 +74,7 @@ static void
 set_attribute(xmlNodePtr node, const char *name, int value)
 {
 	xmlChar scratch[MAX_64BIT_STRLEN + 1] = {};
-	xmlStrPrintf(scratch, sizeof(scratch), BAD_CAST "%d", value);
+	xmlStrPrintf(scratch, sizeof(scratch), STRPRINTF_CAST "%d", value);
 	xmlSetProp(node, BAD_CAST name, scratch);
 }
 
