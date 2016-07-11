@@ -306,9 +306,10 @@ const struct UmaEnumCommandIdPair {
     {85, -1, IDC_CONTENT_CONTEXT_OPEN_WITH12},
     {86, -1, IDC_CONTENT_CONTEXT_OPEN_WITH13},
     {87, -1, IDC_CONTENT_CONTEXT_OPEN_WITH14},
+    {88, -1, IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {88, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {89, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -882,6 +883,16 @@ void RenderViewContextMenu::RecordShownItem(int id) {
   }
 }
 
+bool RenderViewContextMenu::IsHTML5Fullscreen() const {
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  if (!browser)
+    return false;
+
+  FullscreenController* controller =
+      browser->exclusive_access_manager()->fullscreen_controller();
+  return controller->IsTabFullscreen();
+}
+
 #if defined(ENABLE_PLUGINS)
 void RenderViewContextMenu::HandleAuthorizeAllPlugins() {
   ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
@@ -1170,6 +1181,8 @@ void RenderViewContextMenu::AppendPluginItems() {
 }
 
 void RenderViewContextMenu::AppendPageItems() {
+  AppendExitFullscreenItem();
+
   menu_model_.AddItemWithStringId(IDC_BACK, IDS_CONTENT_CONTEXT_BACK);
   menu_model_.AddItemWithStringId(IDC_FORWARD, IDS_CONTENT_CONTEXT_FORWARD);
   menu_model_.AddItemWithStringId(IDC_RELOAD, IDS_CONTENT_CONTEXT_RELOAD);
@@ -1189,6 +1202,23 @@ void RenderViewContextMenu::AppendPageItems() {
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
     AddGoogleIconToLastMenuItem(&menu_model_);
   }
+}
+
+void RenderViewContextMenu::AppendExitFullscreenItem() {
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  if (!browser)
+    return;
+
+  // Only show item if in fullscreen mode.
+  if (!browser->exclusive_access_manager()
+           ->fullscreen_controller()
+           ->IsControllerInitiatedFullscreen()) {
+    return;
+  }
+
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN,
+                                  IDS_CONTENT_CONTEXT_EXIT_FULLSCREEN);
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
 void RenderViewContextMenu::AppendCopyItem() {
@@ -1581,6 +1611,9 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_ROUTE_MEDIA:
       return IsRouteMediaEnabled();
 
+    case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
+      return true;
+
     default:
       NOTREACHED();
       return false;
@@ -1752,6 +1785,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_ROUTE_MEDIA:
       ExecRouteMedia();
+      break;
+
+    case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
+      ExecExitFullscreen();
       break;
 
     case IDC_VIEW_SOURCE:
@@ -2192,6 +2229,15 @@ void RenderViewContextMenu::ExecSaveAs() {
   }
 }
 
+void RenderViewContextMenu::ExecExitFullscreen() {
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  if (!browser) {
+    NOTREACHED();
+    return;
+  }
+
+  browser->exclusive_access_manager()->ExitExclusiveAccess();
+}
 
 void RenderViewContextMenu::ExecCopyLinkText() {
   ui::ScopedClipboardWriter scw(ui::CLIPBOARD_TYPE_COPY_PASTE);

@@ -92,6 +92,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 #endif
   void RecordUsedItem(int id) override;
 
+  // Returns true if the browser is in HTML fullscreen mode, initiated by the
+  // page (as opposed to the user). Used to determine which shortcut to display.
+  bool IsHTML5Fullscreen() const;
+
  private:
   friend class RenderViewContextMenuTest;
   friend class TestRenderViewContextMenu;
@@ -131,6 +135,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendMediaItems();
   void AppendPluginItems();
   void AppendPageItems();
+  void AppendExitFullscreenItem();
   void AppendCopyItem();
   void AppendPrintItem();
   void AppendMediaRouterItem();
@@ -169,6 +174,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecInspectBackgroundPage();
   void ExecSaveLinkAs();
   void ExecSaveAs();
+  void ExecExitFullscreen();
   void ExecCopyLinkText();
   void ExecCopyImageAt();
   void ExecSearchWebForImage();

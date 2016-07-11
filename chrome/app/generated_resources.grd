@@ -553,6 +553,9 @@ are declared in build/common.gypi.
           <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="The name of the Translate command in the content area context menu">
             &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
           </message>
+          <message name="IDS_CONTENT_CONTEXT_EXIT_FULLSCREEN" desc="The name of the Exit Full Screen command in the content area context menu">
+            Exit full screen
+          </message>
 
           <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="The name of the Reload Frame command in the content area context menu">
             Reload &amp;frame
@@ -762,6 +765,9 @@ are declared in build/common.gypi.
           </message>
           <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="In Title Case: The name of the Translate command in the content area context menu">
             &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_EXIT_FULLSCREEN" desc="In Title Case: The name of the Exit Full Screen command in the content area context menu">
+            Exit Full Screen
           </message>
 
           <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="In Title Case: The name of the Reload Frame command in the content area context menu">

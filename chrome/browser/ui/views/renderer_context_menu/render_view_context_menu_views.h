@@ -21,6 +21,10 @@ namespace views {
 class Widget;
 }
 
+namespace ui {
+class AcceleratorProvider;
+}
+
 class RenderViewContextMenuViews : public RenderViewContextMenu {
  public:
   ~RenderViewContextMenuViews() override;
@@ -51,6 +55,9 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
   void AppendPlatformEditableItems() override;
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
+
+  // Gets the AcceleratorProvider for the browser. May be null.
+  ui::AcceleratorProvider* GetBrowserAcceleratorProvider() const;
 
   aura::Window* GetActiveNativeView();
   views::Widget* GetTopLevelWidget();

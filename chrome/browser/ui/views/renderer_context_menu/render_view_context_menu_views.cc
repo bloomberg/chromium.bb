@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/renderer_context_menu/views/toolkit_delegate_views.h"
@@ -63,6 +65,7 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     ui::Accelerator* accel) {
   // There are no formally defined accelerators we can query so we assume
   // that Ctrl+C, Ctrl+V, Ctrl+X, Ctrl-A, etc do what they normally do.
+  ui::AcceleratorProvider* accelerator_provider = nullptr;
   switch (command_id) {
     case IDC_BACK:
       *accel = ui::Accelerator(ui::VKEY_LEFT, ui::EF_ALT_DOWN);
@@ -128,6 +131,28 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     case IDC_SAVE_PAGE:
       *accel = ui::Accelerator(ui::VKEY_S, ui::EF_CONTROL_DOWN);
       return true;
+
+    case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
+      // Esc only works in HTML5 (site-triggered) fullscreen.
+      if (IsHTML5Fullscreen()) {
+        *accel = ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
+        return true;
+      }
+
+#if defined(OS_CHROMEOS)
+      // Chromebooks typically do not have an F11 key, so do not show an
+      // accelerator here.
+      return false;
+#endif
+
+      // User-triggered fullscreen. Show the shortcut for toggling fullscreen
+      // (i.e., F11).
+      accelerator_provider = GetBrowserAcceleratorProvider();
+      if (!accelerator_provider)
+        return false;
+
+      return accelerator_provider->GetAcceleratorForCommandId(IDC_FULLSCREEN,
+                                                              accel);
 
     case IDC_VIEW_SOURCE:
       *accel = ui::Accelerator(ui::VKEY_U, ui::EF_CONTROL_DOWN);
@@ -198,6 +223,15 @@ bool RenderViewContextMenuViews::IsCommandIdEnabled(int command_id) const {
     default:
       return RenderViewContextMenu::IsCommandIdEnabled(command_id);
   }
+}
+
+ui::AcceleratorProvider*
+RenderViewContextMenuViews::GetBrowserAcceleratorProvider() const {
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  if (!browser)
+    return nullptr;
+
+  return BrowserView::GetBrowserViewForBrowser(browser);
 }
 
 void RenderViewContextMenuViews::AppendPlatformEditableItems() {

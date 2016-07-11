@@ -88107,6 +88107,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="85" label="IDC_CONTENT_CONTEXT_OPEN_WITH12"/>
   <int value="86" label="IDC_CONTENT_CONTEXT_OPEN_WITH13"/>
   <int value="87" label="IDC_CONTENT_CONTEXT_OPEN_WITH14"/>
+  <int value="88" label="IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN"/>
 </enum>
 
 <enum name="ReportProcessingResult" type="int">
