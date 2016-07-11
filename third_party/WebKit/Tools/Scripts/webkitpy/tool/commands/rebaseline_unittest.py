@@ -82,23 +82,22 @@ class BaseTestCase(unittest.TestCase):
         self.tool.filesystem.written_files = {}
 
     def _setup_mock_builder_data(self):
-        data = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "userscripts": {
-            "first-test.html": {
-                "expected": "PASS",
-                "actual": "IMAGE+TEXT"
-            },
-            "second-test.html": {
-                "expected": "FAIL",
-                "actual": "IMAGE+TEXT"
+        data = LayoutTestResults({
+            "tests": {
+                "userscripts": {
+                    "first-test.html": {
+                        "expected": "PASS",
+                        "actual": "IMAGE+TEXT"
+                    },
+                    "second-test.html": {
+                        "expected": "FAIL",
+                        "actual": "IMAGE+TEXT"
+                    }
+                }
             }
-        }
-    }
-});""")
+        })
         for builder in ['MOCK Win7', 'MOCK Win7 (dbg)', 'MOCK Mac10.11']:
             self.command._builder_data[builder] = data
-
 
 class TestCopyExistingBaselinesInternal(BaseTestCase):
     command_constructor = CopyExistingBaselinesInternal
@@ -338,16 +337,16 @@ class TestRebaselineJson(BaseTestCase):
         self._setup_mock_builder_data()
 
         def builder_data():
-            self.command._builder_data['MOCK Win7'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "userscripts": {
-            "first-test.html": {
-                "expected": "NEEDSREBASELINE",
-                "actual": "PASS"
-            }
-        }
-    }
-});""")
+            self.command._builder_data['MOCK Win7'] = LayoutTestResults({
+                "tests": {
+                    "userscripts": {
+                        "first-test.html": {
+                            "expected": "NEEDSREBASELINE",
+                            "actual": "PASS"
+                        }
+                    }
+                }
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -603,20 +602,20 @@ class TestRebaselineExpectations(BaseTestCase):
         self.tool.executive = MockExecutive2()
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.11'] = self.command._builder_data['MOCK Mac10.10'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "userscripts": {
-            "another-test.html": {
-                "expected": "PASS",
-                "actual": "PASS TEXT"
-            },
-            "images.svg": {
-                "expected": "FAIL",
-                "actual": "IMAGE+TEXT"
-            }
-        }
-    }
-});""")
+            self.command._builder_data['MOCK Mac10.11'] = self.command._builder_data['MOCK Mac10.10'] = LayoutTestResults({
+                "tests": {
+                    "userscripts": {
+                        "another-test.html": {
+                            "expected": "PASS",
+                            "actual": "PASS TEXT"
+                        },
+                        "images.svg": {
+                            "expected": "FAIL",
+                            "actual": "IMAGE+TEXT"
+                        }
+                    }
+                }
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -660,24 +659,24 @@ class TestRebaselineExpectations(BaseTestCase):
         self.tool.executive = MockExecutive2()
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "userscripts": {
-            "reftest-text.html": {
-                "expected": "PASS",
-                "actual": "TEXT"
-            },
-            "reftest-image.html": {
-                "expected": "FAIL",
-                "actual": "IMAGE"
-            },
-            "reftest-image-text.html": {
-                "expected": "FAIL",
-                "actual": "IMAGE+TEXT"
-            }
-        }
-    }
-});""")
+            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+                "tests": {
+                    "userscripts": {
+                        "reftest-text.html": {
+                            "expected": "PASS",
+                            "actual": "TEXT"
+                        },
+                        "reftest-image.html": {
+                            "expected": "FAIL",
+                            "actual": "IMAGE"
+                        },
+                        "reftest-image-text.html": {
+                            "expected": "FAIL",
+                            "actual": "IMAGE+TEXT"
+                        }
+                    }
+                }
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -746,19 +745,19 @@ class TestRebaselineExpectations(BaseTestCase):
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "FAIL",
-                    "actual": "PASS",
-                    "is_unexpected": true
+            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "prototype-taco.html": {
+                                "expected": "FAIL",
+                                "actual": "PASS",
+                                "is_unexpected": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -786,33 +785,33 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
 
     def test_rebaseline_missing(self):
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "missing-text.html": {
-                    "expected": "PASS",
-                    "actual": "MISSING",
-                    "is_unexpected": true,
-                    "is_missing_text": true
-                },
-                "missing-text-and-image.html": {
-                    "expected": "PASS",
-                    "actual": "MISSING",
-                    "is_unexpected": true,
-                    "is_missing_text": true,
-                    "is_missing_image": true
-                },
-                "missing-image.html": {
-                    "expected": "PASS",
-                    "actual": "MISSING",
-                    "is_unexpected": true,
-                    "is_missing_image": true
+            self.command._builder_data['MOCK Mac10.10'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "missing-text.html": {
+                                "expected": "PASS",
+                                "actual": "MISSING",
+                                "is_unexpected": True,
+                                "is_missing_text": True
+                            },
+                            "missing-text-and-image.html": {
+                                "expected": "PASS",
+                                "actual": "MISSING",
+                                "is_unexpected": True,
+                                "is_missing_text": True,
+                                "is_missing_image": True
+                            },
+                            "missing-image.html": {
+                                "expected": "PASS",
+                                "actual": "MISSING",
+                                "is_unexpected": True,
+                                "is_missing_image": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -829,7 +828,6 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
 
         self.command.execute(self.options, [], self.tool)
 
-        print self.tool.executive.calls
         self.assertEqual(self.tool.executive.calls, [
             [
                 ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
@@ -1054,29 +1052,29 @@ TBR=foo@chromium.org
         original_builder_data = self.command.builder_data
         def builder_data():
             original_builder_data()
-            # have prototype-chocolate only fail on "MOCK Mac10.10".
-            self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "PASS",
-                    "actual": "PASS TEXT",
-                    "is_unexpected": true
-                },
-                "prototype-chocolate.html": {
-                    "expected": "FAIL",
-                    "actual": "PASS"
-                },
-                "prototype-strawberry.html": {
-                    "expected": "PASS",
-                    "actual": "IMAGE PASS",
-                    "is_unexpected": true
+            # Have prototype-chocolate only fail on "MOCK Mac10.11".
+            self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "prototype-taco.html": {
+                                "expected": "PASS",
+                                "actual": "PASS TEXT",
+                                "is_unexpected": True
+                            },
+                            "prototype-chocolate.html": {
+                                "expected": "FAIL",
+                                "actual": "PASS"
+                            },
+                            "prototype-strawberry.html": {
+                                "expected": "PASS",
+                                "actual": "IMAGE PASS",
+                                "is_unexpected": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -1165,19 +1163,19 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
         def builder_data():
             original_builder_data()
             # have prototype-chocolate only fail on "MOCK Mac10.10".
-            self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "PASS",
-                    "actual": "PASS TEXT",
-                    "is_unexpected": true
+            self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "prototype-taco.html": {
+                                "expected": "PASS",
+                                "actual": "PASS TEXT",
+                                "is_unexpected": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -1221,19 +1219,19 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "FAIL",
-                    "actual": "PASS",
-                    "is_unexpected": true
+            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "prototype-taco.html": {
+                                "expected": "FAIL",
+                                "actual": "PASS",
+                                "is_unexpected": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -1275,19 +1273,19 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Win'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "FAIL",
-                    "actual": "PASS",
-                    "is_unexpected": true
+            self.command._builder_data['MOCK Win'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "prototype-taco.html": {
+                                "expected": "FAIL",
+                                "actual": "PASS",
+                                "is_unexpected": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -1331,19 +1329,19 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Win'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "FAIL",
-                    "actual": "PASS",
-                    "is_unexpected": true
+            self.command._builder_data['MOCK Win'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "prototype-taco.html": {
+                                "expected": "FAIL",
+                                "actual": "PASS",
+                                "is_unexpected": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
@@ -1388,19 +1386,19 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults.results_from_string("""ADD_RESULTS({
-    "tests": {
-        "fast": {
-            "dom": {
-                "prototype-taco.html": {
-                    "expected": "FAIL",
-                    "actual": "PASS",
-                    "is_unexpected": true
+            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+                "tests": {
+                    "fast": {
+                        "dom": {
+                            "prototype-taco.html": {
+                                "expected": "FAIL",
+                                "actual": "PASS",
+                                "is_unexpected": True
+                            }
+                        }
+                    }
                 }
-            }
-        }
-    }
-});""")
+            })
             return self.command._builder_data
 
         self.command.builder_data = builder_data
