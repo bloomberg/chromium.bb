@@ -43,7 +43,11 @@ class DistillabilityDriver
   void SetupMojoService(content::RenderFrameHost* frame_host);
   void OnDistillability(bool distillable, bool is_last);
 
+  void SetNeedsMojoSetup();
+
   base::Callback<void(bool, bool)> m_delegate_;
+
+  bool mojo_needs_setup_;
 
   base::WeakPtrFactory<DistillabilityDriver> weak_factory_;
 
