@@ -107,19 +107,8 @@ void OverlayPanelContent::SetWebContents(
       new web_contents_delegate_android::WebContentsDelegateAndroid(
           env, jweb_contents_delegate));
   web_contents_->SetDelegate(web_contents_delegate_.get());
-}
-
-void OverlayPanelContent::SetViewAndroid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jcontent_view_core) {
-  content::ContentViewCore* content_view_core =
-      content::ContentViewCore::GetNativeContentViewCore(env,
-                                                         jcontent_view_core);
-  DCHECK(content_view_core);
-
   ViewAndroidHelper::FromWebContents(web_contents_.get())
-      ->SetViewAndroid(content_view_core);
+      ->SetViewAndroid(web_contents_->GetNativeView());
 }
 
 void OverlayPanelContent::DestroyWebContents(

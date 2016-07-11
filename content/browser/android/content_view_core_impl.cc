@@ -213,29 +213,28 @@ ContentViewCoreImpl::ContentViewCoreImpl(
     JNIEnv* env,
     jobject obj,
     WebContents* web_contents,
-    jobject view_android_delegate,
+    const base::android::JavaRef<jobject>& view_android_delegate,
     ui::WindowAndroid* window_android,
     jobject java_bridge_retained_object_set)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
+      view_(view_android_delegate, window_android),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      root_layer_(cc::SolidColorLayer::Create()),
       page_scale_(1),
-      dpi_scale_(ui::GetScaleFactorForNativeView(this)),
-      window_android_(window_android),
+      dpi_scale_(ui::GetScaleFactorForNativeView(&view_)),
       device_orientation_(0),
       accessibility_enabled_(false) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
-  DCHECK(window_android_);
-  DCHECK(view_android_delegate);
-  view_android_delegate_.Reset(AttachCurrentThread(), view_android_delegate);
-  root_layer_->SetBackgroundColor(GetBackgroundColor(env, obj));
+  DCHECK(window_android);
+  DCHECK(!view_android_delegate.is_null());
+  view_.SetLayer(cc::SolidColorLayer::Create());
+  view_.GetLayer()->SetBackgroundColor(GetBackgroundColor(env, obj));
   gfx::Size physical_size(
       Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
       Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
-  root_layer_->SetBounds(physical_size);
-  root_layer_->SetIsDrawable(true);
+  view_.GetLayer()->SetBounds(physical_size);
+  view_.GetLayer()->SetIsDrawable(true);
 
   // Currently, the only use case we have for overriding a user agent involves
   // spoofing a desktop Linux user agent for "Request desktop site".
@@ -265,7 +264,7 @@ void ContentViewCoreImpl::RemoveObserver(
 }
 
 ContentViewCoreImpl::~ContentViewCoreImpl() {
-  root_layer_->RemoveFromParent();
+  view_.GetLayer()->RemoveFromParent();
   FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
                     observer_list_,
                     OnContentViewCoreDestroyed());
@@ -285,8 +284,9 @@ void ContentViewCoreImpl::UpdateWindowAndroid(
     const base::android::JavaParamRef<jobject>& obj,
     jlong window_android) {
   if (window_android) {
-    DCHECK(!window_android_);
-    window_android_ = reinterpret_cast<ui::WindowAndroid*>(window_android);
+    DCHECK(!view_.GetWindowAndroid());
+    view_.SetWindowAndroid(
+        reinterpret_cast<ui::WindowAndroid*>(window_android));
     FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
                       observer_list_,
                       OnAttachedToWindow());
@@ -294,7 +294,7 @@ void ContentViewCoreImpl::UpdateWindowAndroid(
     FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
                       observer_list_,
                       OnDetachedFromWindow());
-    window_android_ = NULL;
+    view_.SetWindowAndroid(nullptr);
   }
 }
 
@@ -307,9 +307,9 @@ ContentViewCoreImpl::GetWebContentsAndroid(JNIEnv* env,
 base::android::ScopedJavaLocalRef<jobject>
 ContentViewCoreImpl::GetJavaWindowAndroid(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
-  if (!window_android_)
+  if (!view_.GetWindowAndroid())
     return ScopedJavaLocalRef<jobject>();
-  return window_android_->GetJavaObject();
+  return view_.GetWindowAndroid()->GetJavaObject();
 }
 
 void ContentViewCoreImpl::OnJavaContentViewCoreDestroyed(
@@ -430,10 +430,10 @@ void ContentViewCoreImpl::UpdateFrameInfo(
     const gfx::SelectionBound& selection_start) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null() || !window_android_)
+  if (obj.is_null() || !view_.GetWindowAndroid())
     return;
 
-  window_android_->set_content_offset(
+  view_.GetWindowAndroid()->set_content_offset(
       gfx::ScaleVector2d(content_offset, dpi_scale_));
 
   page_scale_ = page_scale_factor;
@@ -482,7 +482,7 @@ void ContentViewCoreImpl::SetTitle(const base::string16& title) {
 }
 
 void ContentViewCoreImpl::OnBackgroundColorChanged(SkColor color) {
-  root_layer_->SetBackgroundColor(color);
+  view_.GetLayer()->SetBackgroundColor(color);
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
@@ -832,15 +832,15 @@ float ContentViewCoreImpl::GetTopControlsHeightDip() const {
 }
 
 void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
-  root_layer_->InsertChild(layer, 0);
-  root_layer_->SetIsDrawable(false);
+  view_.GetLayer()->InsertChild(layer, 0);
+  view_.GetLayer()->SetIsDrawable(false);
 }
 
 void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
   layer->RemoveFromParent();
 
-  if (root_layer_->children().empty())
-    root_layer_->SetIsDrawable(true);
+  if (!view_.GetLayer()->children().empty())
+    view_.GetLayer()->SetIsDrawable(true);
 }
 
 void ContentViewCoreImpl::MoveRangeSelectionExtent(const gfx::PointF& extent) {
@@ -863,18 +863,23 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(const gfx::PointF& base,
   web_contents_->SelectRange(base_point, extent_point);
 }
 
-ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetViewAndroidDelegate()
-    const {
-  return base::android::ScopedJavaLocalRef<jobject>(view_android_delegate_);
+const base::android::JavaRef<jobject>&
+ContentViewCoreImpl::GetViewAndroidDelegate() const {
+  return view_.GetViewAndroidDelegate();
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
-  return window_android_;
+  return view_.GetWindowAndroid();
 }
 
-const scoped_refptr<cc::Layer>& ContentViewCoreImpl::GetLayer() const {
-  return root_layer_;
+cc::Layer* ContentViewCoreImpl::GetLayer() const {
+  return view_.GetLayer();
 }
+
+ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() {
+  return &view_;
+}
+
 
 // ----------------------------------------------------------------------------
 // Methods called from Java via JNI
@@ -1299,7 +1304,7 @@ void ContentViewCoreImpl::WasResized(JNIEnv* env,
   gfx::Size physical_size(
       Java_ContentViewCore_getPhysicalBackingWidthPix(env, obj),
       Java_ContentViewCore_getPhysicalBackingHeightPix(env, obj));
-  root_layer_->SetBounds(physical_size);
+  view_.GetLayer()->SetBounds(physical_size);
 
   if (view) {
     web_contents_->SendScreenRects();
@@ -1436,7 +1441,7 @@ void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
 void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
-    rwhv->UpdateScreenInfo(this);
+    rwhv->UpdateScreenInfo(&view_);
 
   static_cast<WebContentsImpl*>(web_contents())->
       screen_orientation_dispatcher_host()->OnOrientationChange();

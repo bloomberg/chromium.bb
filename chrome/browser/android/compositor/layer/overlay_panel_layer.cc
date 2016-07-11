@@ -202,7 +202,7 @@ void OverlayPanelLayer::SetProperties(
   content_view_container_->SetPosition(
       gfx::PointF(0.f, content_view_core_offset_y));
   content_view_container_->SetBounds(gfx::Size(panel_width, panel_height));
-  if (content_view_core && content_view_core->GetLayer().get()) {
+  if (content_view_core && content_view_core->GetLayer()) {
     scoped_refptr<cc::Layer> content_view_layer = content_view_core->GetLayer();
     if (content_view_layer->parent() != content_view_container_)
       content_view_container_->AddChild(content_view_layer);

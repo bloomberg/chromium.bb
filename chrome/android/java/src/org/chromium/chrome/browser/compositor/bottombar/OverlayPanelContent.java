@@ -234,8 +234,6 @@ public class OverlayPanelContent {
         // Transfers the ownership of the WebContents to the native OverlayPanelContent.
         nativeSetWebContents(mNativeOverlayPanelContentPtr, panelWebContents, mWebContentsDelegate);
 
-        nativeSetViewAndroid(mNativeOverlayPanelContentPtr, mContentViewCore);
-
         mWebContentsObserver =
                 new WebContentsObserver(panelWebContents) {
                     @Override
@@ -461,8 +459,6 @@ public class OverlayPanelContent {
             long nativeOverlayPanelContent, String historyUrl, long urlTimeMs);
     private native void nativeSetWebContents(long nativeOverlayPanelContent,
             WebContents webContents, WebContentsDelegateAndroid delegate);
-    private native void nativeSetViewAndroid(long nativeOverlayPanelContent,
-            ContentViewCore contentViewCore);
     private native void nativeDestroyWebContents(long nativeOverlayPanelContent);
     private native void nativeSetInterceptNavigationDelegate(long nativeOverlayPanelContent,
             InterceptNavigationDelegate delegate, WebContents webContents);

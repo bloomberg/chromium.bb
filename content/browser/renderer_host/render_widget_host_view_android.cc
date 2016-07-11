@@ -431,7 +431,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     result_callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
   }
-  gfx::Size bounds = layer_->bounds();
+  gfx::Size bounds = view_.GetLayer()->bounds();
   if (src_subrect.IsEmpty())
     src_subrect = gfx::Rect(bounds);
   DCHECK_LE(src_subrect.width() + src_subrect.x(), bounds.width());
@@ -451,7 +451,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
 bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   if (!content_view_core_)
     return false;
-  if (!layer_.get())
+  if (!view_.GetLayer())
     return false;
 
   if (texture_size_in_layer_.IsEmpty())
@@ -468,7 +468,7 @@ gfx::Vector2dF RenderWidgetHostViewAndroid::GetLastScrollOffset() const {
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
-  return content_view_core_;
+  return &view_;
 }
 
 gfx::NativeViewAccessible
@@ -548,8 +548,8 @@ void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
       last_frame_info_.reset();
     }
 
-    if (!is_showing_ && layer_.get())
-      layer_->SetHideLayerAndSubtree(true);
+    if (!is_showing_ && view_.GetLayer())
+      view_.GetLayer()->SetHideLayerAndSubtree(true);
   }
 }
 
@@ -904,7 +904,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     request->set_area(src_subrect_in_pixel);
   // Make sure the layer doesn't get deleted until we fulfill the request.
   LockCompositingSurface();
-  layer_->RequestCopyOfOutput(std::move(request));
+  view_.GetLayer()->RequestCopyOfOutput(std::move(request));
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
@@ -977,7 +977,7 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
     surface_factory_->Destroy(surface_id_);
     surface_id_ = cc::SurfaceId();
   }
-  layer_ = NULL;
+  view_.SetLayer(nullptr);
 }
 
 void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
@@ -1008,9 +1008,9 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
       surface_factory_->Destroy(surface_id_);
     surface_id_ = id_allocator_->GenerateId();
     surface_factory_->Create(surface_id_);
-    layer_ = CreateSurfaceLayer(surface_id_, texture_size_in_layer_);
+    view_.SetLayer(CreateSurfaceLayer(surface_id_, texture_size_in_layer_));
 
-    DCHECK(layer_);
+    DCHECK(view_.GetLayer());
 
     current_surface_size_ = texture_size_in_layer_;
     location_bar_content_translation_ =
@@ -1061,9 +1061,9 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     DestroyDelegatedContent();
   } else {
     SubmitCompositorFrame(std::move(frame));
-    layer_->SetIsDrawable(true);
-    layer_->SetContentsOpaque(true);
-    layer_->SetBounds(texture_size_in_layer_);
+    view_.GetLayer()->SetIsDrawable(true);
+    view_.GetLayer()->SetContentsOpaque(true);
+    view_.GetLayer()->SetBounds(texture_size_in_layer_);
   }
 
   if (host_->is_hidden())
@@ -1131,8 +1131,8 @@ void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
 }
 
 void RenderWidgetHostViewAndroid::SetOverlayVideoMode(bool enabled) {
-  if (layer_.get())
-    layer_->SetContentsOpaque(!enabled);
+  if (view_.GetLayer())
+    view_.GetLayer()->SetContentsOpaque(!enabled);
 }
 
 bool RenderWidgetHostViewAndroid::SupportsAnimation() const {
@@ -1188,7 +1188,7 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
 
   return std::unique_ptr<
       ui::TouchHandleDrawable>(new CompositedTouchHandleDrawable(
-      content_view_core_->GetLayer().get(), content_view_core_->GetDpiScale(),
+      content_view_core_->GetLayer(), content_view_core_->GetDpiScale(),
       // Use the activity context (instead of the application context) to ensure
       // proper handle theming.
       content_view_core_->GetContext().obj()));
@@ -1294,8 +1294,8 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
   if (!host_ || !host_->is_hidden())
     return;
 
-  if (layer_.get())
-    layer_->SetHideLayerAndSubtree(false);
+  if (view_.GetLayer())
+    view_.GetLayer()->SetHideLayerAndSubtree(false);
 
   frame_evictor_->SetVisible(true);
 
@@ -1325,8 +1325,8 @@ void RenderWidgetHostViewAndroid::HideInternal() {
   bool stop_observing_root_window = !is_showing_ && hide_frontbuffer;
 
   if (hide_frontbuffer) {
-    if (layer_.get() && locks_on_frame_count_ == 0)
-      layer_->SetHideLayerAndSubtree(true);
+    if (view_.GetLayer() && locks_on_frame_count_ == 0)
+      view_.GetLayer()->SetHideLayerAndSubtree(true);
 
     frame_evictor_->SetVisible(false);
   }
@@ -1352,21 +1352,21 @@ void RenderWidgetHostViewAndroid::HideInternal() {
 void RenderWidgetHostViewAndroid::AttachLayers() {
   if (!content_view_core_)
     return;
-  if (!layer_.get())
+  if (!view_.GetLayer())
     return;
 
-  content_view_core_->AttachLayer(layer_);
-  layer_->SetHideLayerAndSubtree(!is_showing_);
+  content_view_core_->AttachLayer(view_.GetLayer());
+  view_.GetLayer()->SetHideLayerAndSubtree(!is_showing_);
 }
 
 void RenderWidgetHostViewAndroid::RemoveLayers() {
   if (!content_view_core_)
     return;
 
-  if (!layer_.get())
+  if (!view_.GetLayer())
     return;
 
-  content_view_core_->RemoveLayer(layer_);
+  content_view_core_->RemoveLayer(view_.GetLayer());
 }
 
 void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32_t requests) {
@@ -1440,7 +1440,7 @@ bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
   bool needs_animate = false;
   if (overscroll_controller_) {
     needs_animate |= overscroll_controller_->Animate(
-        frame_time, content_view_core_->GetLayer().get());
+        frame_time, content_view_core_->GetLayer());
   }
   if (selection_controller_)
     needs_animate |= selection_controller_->Animate(frame_time);
@@ -1455,7 +1455,7 @@ void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
 void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
   DCHECK_EQ(locks_on_frame_count_, 0u);
   frame_evictor_->DiscardedFrame();
-  if (layer_.get())
+  if (view_.GetLayer())
     DestroyDelegatedContent();
 }
 
@@ -1666,7 +1666,7 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
   if (sync_compositor_)
     sync_compositor_->DidOverscroll(params);
 
-  if (!content_view_core_ || !layer_.get() || !is_showing_)
+  if (!content_view_core_ || !view_.GetLayer() || !is_showing_)
     return;
 
   if (overscroll_controller_)
@@ -1697,13 +1697,16 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     selection_controller_.reset();
     ReleaseLocksOnSurface();
     resize = true;
-    if (content_view_core_)
+    if (content_view_core_) {
       content_view_core_->RemoveObserver(this);
-    if (content_view_core)
+      content_view_core_->GetViewAndroid()->RemoveChild(&view_);
+    }
+    if (content_view_core) {
       content_view_core->AddObserver(this);
+      content_view_core->GetViewAndroid()->AddChild(&view_);
+    }
+    content_view_core_ = content_view_core;
   }
-
-  content_view_core_ = content_view_core;
 
   BrowserAccessibilityManager* manager = NULL;
   if (host_)
@@ -1859,7 +1862,7 @@ void RenderWidgetHostViewAndroid::OnActivityStarted() {
 
 void RenderWidgetHostViewAndroid::OnLostResources() {
   ReleaseLocksOnSurface();
-  if (layer_.get())
+  if (view_.GetLayer())
     DestroyDelegatedContent();
   DCHECK(ack_callbacks_.empty());
 }

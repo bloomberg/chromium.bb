@@ -49,18 +49,21 @@ class ContentViewCoreImpl : public ContentViewCore,
                             public WebContentsObserver {
  public:
   static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
-  ContentViewCoreImpl(JNIEnv* env,
-                      jobject obj,
-                      WebContents* web_contents,
-                      jobject view_android,
-                      ui::WindowAndroid* window_android,
-                      jobject java_bridge_retained_object_set);
+  ContentViewCoreImpl(
+      JNIEnv* env,
+      jobject obj,
+      WebContents* web_contents,
+      const base::android::JavaRef<jobject>& view_android_delegate,
+      ui::WindowAndroid* window_android,
+      jobject java_bridge_retained_object_set);
 
   // ContentViewCore implementation.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   WebContents* GetWebContents() const override;
   ui::WindowAndroid* GetWindowAndroid() const override;
-  const scoped_refptr<cc::Layer>& GetLayer() const override;
+  const base::android::JavaRef<jobject>& GetViewAndroidDelegate()
+      const override;
+  cc::Layer* GetLayer() const override;
   bool ShowPastePopup(int x, int y) override;
   float GetDpiScale() const override;
   void PauseOrResumeGeolocation(bool should_pause) override;
@@ -72,10 +75,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void AddObserver(ContentViewCoreImplObserver* observer);
   void RemoveObserver(ContentViewCoreImplObserver* observer);
-
-  // ViewAndroid implementation
-  base::android::ScopedJavaLocalRef<jobject> GetViewAndroidDelegate()
-      const override;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI
@@ -405,6 +404,8 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
 
+  ui::ViewAndroid* GetViewAndroid();
+
  private:
   class ContentViewUserData;
 
@@ -452,24 +453,17 @@ class ContentViewCoreImpl : public ContentViewCore,
   // A weak reference to the Java ContentViewCore object.
   JavaObjectWeakGlobalRef java_ref_;
 
+  ui::ViewAndroid view_;
+
   // Reference to the current WebContents used to determine how and what to
   // display in the ContentViewCore.
   WebContentsImpl* web_contents_;
 
-  // A compositor layer containing any layer that should be shown.
-  scoped_refptr<cc::Layer> root_layer_;
-
   // Page scale factor.
   float page_scale_;
 
-  // Java delegate to acquire and release anchor views from the NativeView
-  base::android::ScopedJavaGlobalRef<jobject> view_android_delegate_;
-
   // Device scale factor.
   const float dpi_scale_;
-
-  // The owning window that has a hold of main application activity.
-  ui::WindowAndroid* window_android_;
 
   // Observer to notify of lifecyle changes.
   base::ObserverList<ContentViewCoreImplObserver> observer_list_;

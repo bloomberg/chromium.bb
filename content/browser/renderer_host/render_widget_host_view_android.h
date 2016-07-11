@@ -33,6 +33,7 @@
 #include "content/public/browser/readback_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/android/view_android.h"
 #include "ui/android/window_android_observer.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 #include "ui/gfx/geometry/size.h"
@@ -341,7 +342,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Body background color of the underlying document.
   SkColor cached_background_color_;
 
-  scoped_refptr<cc::Layer> layer_;
+  mutable ui::ViewAndroid view_;
 
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;

@@ -390,7 +390,7 @@ void TabAndroid::InitWebContents(
   ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
       jcontext_menu_populator);
   ViewAndroidHelper::FromWebContents(web_contents())->
-      SetViewAndroid(content_view_core);
+      SetViewAndroid(web_contents()->GetNativeView());
   CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
   SearchTabHelper::FromWebContents(web_contents())->set_delegate(this);
   web_contents_delegate_.reset(

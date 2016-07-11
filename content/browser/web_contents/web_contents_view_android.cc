@@ -59,15 +59,20 @@ void WebContentsViewAndroid::SetContentViewCore(
 }
 
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {
-  return content_view_core_ ? content_view_core_ : NULL;
+  return content_view_core_ ? content_view_core_->GetViewAndroid() : nullptr;
 }
 
 gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
-  return content_view_core_ ? content_view_core_ : NULL;
+  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    return rwhv->GetNativeView();
+
+  // TODO(sievers): This should return null.
+  return GetNativeView();
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
-  return content_view_core_ ? content_view_core_->GetWindowAndroid() : NULL;
+  return content_view_core_ ? content_view_core_->GetWindowAndroid() : nullptr;
 }
 
 void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
