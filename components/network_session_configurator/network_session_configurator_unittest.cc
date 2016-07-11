@@ -53,7 +53,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_TRUE(params_.enable_http2);
   EXPECT_FALSE(params_.enable_tcp_fast_open_for_ssl);
   EXPECT_TRUE(params_.enable_quic_alternative_service_with_different_host);
-  EXPECT_TRUE(params_.enable_priority_dependencies);
   EXPECT_FALSE(params_.enable_quic);
 }
 
@@ -92,24 +91,6 @@ TEST_F(NetworkSessionConfiguratorTest, Http2CommandLineDisableHttp2) {
   ParseFieldTrialsAndCommandLine();
 
   EXPECT_FALSE(params_.enable_http2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, PriorityDependenciesTrialEnabled) {
-  base::FieldTrialList::CreateFieldTrial("SpdyEnableDependencies",
-                                         "Enable-experiment");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.enable_priority_dependencies);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, PriorityDependenciesTrialDisabled) {
-  base::FieldTrialList::CreateFieldTrial("SpdyEnableDependencies",
-                                         "Disable-holdback");
-
-  ParseFieldTrials();
-
-  EXPECT_FALSE(params_.enable_priority_dependencies);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {

@@ -36,11 +36,6 @@ const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 const char kHttp2FieldTrialName[] = "HTTP2";
 const char kHttp2FieldTrialDisablePrefix[] = "Disable";
 
-// Field trial for priority dependencies.
-const char kSpdyDependenciesFieldTrial[] = "SpdyEnableDependencies";
-const char kSpdyDependenciesFieldTrialEnable[] = "Enable";
-const char kSpdyDepencenciesFieldTrialDisable[] = "Disable";
-
 int GetSwitchValueAsInt(const base::CommandLine& command_line,
                         const std::string& switch_name) {
   int value;
@@ -82,18 +77,6 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
 
   if (http2_trial_group.starts_with(kHttp2FieldTrialDisablePrefix)) {
     params->enable_http2 = false;
-  }
-}
-
-void ConfigurePriorityDependencies(
-    base::StringPiece priority_dependencies_trial_group,
-    net::HttpNetworkSession::Params* params) {
-  if (priority_dependencies_trial_group.starts_with(
-          kSpdyDependenciesFieldTrialEnable)) {
-    params->enable_priority_dependencies = true;
-  } else if (priority_dependencies_trial_group.starts_with(
-                 kSpdyDepencenciesFieldTrialDisable)) {
-    params->enable_priority_dependencies = false;
   }
 }
 
@@ -478,10 +461,6 @@ void ParseFieldTrialsAndCommandLineInternal(
   const std::string tfo_trial_group =
       base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
   ConfigureTCPFastOpenParams(tfo_trial_group, params);
-
-  std::string priority_dependencies_trial_group =
-      base::FieldTrialList::FindFullName(kSpdyDependenciesFieldTrial);
-  ConfigurePriorityDependencies(priority_dependencies_trial_group, params);
 }
 
 }  // anonymous namespace
