@@ -49,7 +49,9 @@ class HTMLDocumentParser;
 class HTMLTreeBuilder final : public GarbageCollectedFinalized<HTMLTreeBuilder> {
     WTF_MAKE_NONCOPYABLE(HTMLTreeBuilder);
 public:
-    static HTMLTreeBuilder* create(HTMLDocumentParser* parser, HTMLDocument* document, ParserContentPolicy parserContentPolicy, const HTMLParserOptions& options)
+    // HTMLTreeBuilder can be created for non-HTMLDocument (XHTMLDocument) from editing code.
+    // TODO(kouhei): Fix editing code to always invoke HTML parser on HTMLDocument.
+    static HTMLTreeBuilder* create(HTMLDocumentParser* parser, Document& document, ParserContentPolicy parserContentPolicy, const HTMLParserOptions& options)
     {
         return new HTMLTreeBuilder(parser, document, parserContentPolicy, options);
     }
@@ -113,7 +115,7 @@ private:
         AfterAfterFramesetMode,
     };
 
-    HTMLTreeBuilder(HTMLDocumentParser*, HTMLDocument*, ParserContentPolicy, const HTMLParserOptions&);
+    HTMLTreeBuilder(HTMLDocumentParser*, Document&, ParserContentPolicy, const HTMLParserOptions&);
     HTMLTreeBuilder(HTMLDocumentParser*, DocumentFragment*, Element* contextElement, ParserContentPolicy, const HTMLParserOptions&);
 
     void processToken(AtomicHTMLToken*);
@@ -191,9 +193,8 @@ private:
         WTF_MAKE_NONCOPYABLE(FragmentParsingContext);
         DISALLOW_NEW();
     public:
-        FragmentParsingContext();
-        FragmentParsingContext(DocumentFragment*, Element* contextElement);
-        ~FragmentParsingContext();
+        FragmentParsingContext() = default;
+        void init(DocumentFragment*, Element* contextElement);
 
         DocumentFragment* fragment() const { return m_fragment; }
         Element* contextElement() const { ASSERT(m_fragment); return m_contextElementStackItem->element(); }

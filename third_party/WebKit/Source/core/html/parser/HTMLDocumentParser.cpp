@@ -92,7 +92,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, ParserSynchroniza
     : HTMLDocumentParser(document, AllowScriptingContent, syncPolicy)
 {
     m_scriptRunner = HTMLScriptRunner::create(&document, this);
-    m_treeBuilder = HTMLTreeBuilder::create(this, &document, AllowScriptingContent, m_options);
+    m_treeBuilder = HTMLTreeBuilder::create(this, document, AllowScriptingContent, m_options);
 }
 
 HTMLDocumentParser::HTMLDocumentParser(DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy)

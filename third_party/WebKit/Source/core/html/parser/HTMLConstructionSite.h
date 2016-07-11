@@ -109,10 +109,11 @@ class HTMLConstructionSite final {
     WTF_MAKE_NONCOPYABLE(HTMLConstructionSite);
     DISALLOW_NEW();
 public:
-    HTMLConstructionSite(Document*, ParserContentPolicy);
-    HTMLConstructionSite(DocumentFragment*, ParserContentPolicy);
+    HTMLConstructionSite(Document&, ParserContentPolicy);
     ~HTMLConstructionSite();
     DECLARE_TRACE();
+
+    void initFragmentParsing(DocumentFragment*);
 
     void detach();
 

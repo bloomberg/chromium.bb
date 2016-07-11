@@ -313,26 +313,25 @@ void HTMLConstructionSite::executeQueuedTasks()
     // We might be detached now.
 }
 
-HTMLConstructionSite::HTMLConstructionSite(Document* document, ParserContentPolicy parserContentPolicy)
-    : m_document(document)
+HTMLConstructionSite::HTMLConstructionSite(Document& document, ParserContentPolicy parserContentPolicy)
+    : m_document(&document)
     , m_attachmentRoot(document)
     , m_parserContentPolicy(parserContentPolicy)
     , m_isParsingFragment(false)
     , m_redirectAttachToFosterParent(false)
-    , m_inQuirksMode(document->inQuirksMode())
+    , m_inQuirksMode(document.inQuirksMode())
 {
     ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
 }
 
-HTMLConstructionSite::HTMLConstructionSite(DocumentFragment* fragment, ParserContentPolicy parserContentPolicy)
-    : m_document(&fragment->document())
-    , m_attachmentRoot(fragment)
-    , m_parserContentPolicy(parserContentPolicy)
-    , m_isParsingFragment(true)
-    , m_redirectAttachToFosterParent(false)
-    , m_inQuirksMode(fragment->document().inQuirksMode())
+void HTMLConstructionSite::initFragmentParsing(DocumentFragment* fragment)
 {
-    ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
+    DCHECK_EQ(m_document, &fragment->document());
+    DCHECK_EQ(m_inQuirksMode, fragment->document().inQuirksMode());
+    DCHECK(!m_isParsingFragment);
+
+    m_attachmentRoot = fragment;
+    m_isParsingFragment = true;
 }
 
 HTMLConstructionSite::~HTMLConstructionSite()

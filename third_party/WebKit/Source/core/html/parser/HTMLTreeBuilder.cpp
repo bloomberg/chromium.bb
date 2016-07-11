@@ -267,7 +267,7 @@ private:
     unsigned m_end;
 };
 
-HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* document, ParserContentPolicy parserContentPolicy, const HTMLParserOptions& options)
+HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, Document& document, ParserContentPolicy parserContentPolicy, const HTMLParserOptions& options)
     : m_framesetOk(true)
 #if ENABLE(ASSERT)
     , m_isAttached(true)
@@ -282,24 +282,13 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, HTMLDocument* docum
 {
 }
 
-// FIXME: Member variables should be grouped into self-initializing structs to
-// minimize code duplication between these constructors.
 HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* fragment, Element* contextElement, ParserContentPolicy parserContentPolicy, const HTMLParserOptions& options)
-    : m_framesetOk(true)
-#if ENABLE(ASSERT)
-    , m_isAttached(true)
-#endif
-    , m_fragmentContext(fragment, contextElement)
-    , m_tree(fragment, parserContentPolicy)
-    , m_insertionMode(InitialMode)
-    , m_originalInsertionMode(InitialMode)
-    , m_shouldSkipLeadingNewline(false)
-    , m_parser(parser)
-    , m_scriptToProcessStartPosition(uninitializedPositionValue1())
-    , m_options(options)
+    : HTMLTreeBuilder(parser, fragment->document(), parserContentPolicy, options)
 {
     ASSERT(isMainThread());
     ASSERT(contextElement);
+    m_tree.initFragmentParsing(fragment);
+    m_fragmentContext.init(fragment, contextElement);
 
     // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
@@ -316,6 +305,20 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* f
 
 HTMLTreeBuilder::~HTMLTreeBuilder()
 {
+}
+
+void HTMLTreeBuilder::FragmentParsingContext::init(DocumentFragment* fragment, Element* contextElement)
+{
+    DCHECK(fragment);
+    DCHECK(!fragment->hasChildren());
+    m_fragment = fragment;
+    m_contextElementStackItem = HTMLStackItem::create(contextElement, HTMLStackItem::ItemForContextElement);
+}
+
+DEFINE_TRACE(HTMLTreeBuilder::FragmentParsingContext)
+{
+    visitor->trace(m_fragment);
+    visitor->trace(m_contextElementStackItem);
 }
 
 DEFINE_TRACE(HTMLTreeBuilder)
@@ -336,28 +339,6 @@ void HTMLTreeBuilder::detach()
     // HTMLConstructionSite might be on the callstack when detach() is called
     // otherwise we'd just call m_tree.clear() here instead.
     m_tree.detach();
-}
-
-HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext()
-    : m_fragment(nullptr)
-{
-}
-
-HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext(DocumentFragment* fragment, Element* contextElement)
-    : m_fragment(fragment)
-{
-    ASSERT(!fragment->hasChildren());
-    m_contextElementStackItem = HTMLStackItem::create(contextElement, HTMLStackItem::ItemForContextElement);
-}
-
-HTMLTreeBuilder::FragmentParsingContext::~FragmentParsingContext()
-{
-}
-
-DEFINE_TRACE(HTMLTreeBuilder::FragmentParsingContext)
-{
-    visitor->trace(m_fragment);
-    visitor->trace(m_contextElementStackItem);
 }
 
 Element* HTMLTreeBuilder::takeScriptToProcess(TextPosition& scriptStartPosition)
@@ -2135,7 +2116,7 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token)
     case InFramesetMode:
         ASSERT(getInsertionMode() == InFramesetMode);
         if (token->name() == framesetTag) {
-            bool ignoreFramesetForFragmentParsing  = m_tree.currentIsRootNode();
+            bool ignoreFramesetForFragmentParsing = m_tree.currentIsRootNode();
             ignoreFramesetForFragmentParsing = ignoreFramesetForFragmentParsing || m_tree.openElements()->hasTemplateInHTMLScope();
             if (ignoreFramesetForFragmentParsing) {
                 ASSERT(isParsingFragmentOrTemplateContents());
