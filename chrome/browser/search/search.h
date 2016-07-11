@@ -88,19 +88,26 @@ bool IsRenderedInInstantProcess(const content::WebContents* contents,
 bool ShouldUseProcessPerSiteForInstantURL(const GURL& url, Profile* profile);
 
 // Returns true if |url| corresponds to a New Tab page (it can be either an
-// Instant Extended NTP or a non-extended NTP).
+// Instant Extended NTP or a non-extended NTP). A page that matches the search
+// or Instant URL of the default search provider but does not have any search
+// terms is considered an Instant NTP.
+// TODO(treib): This is confusingly named, as it includes URLs that are related
+// to an NTP, but aren't an NTP themselves (such as the Instant URL, e.g.
+// https://www.google.com/webhp?espv=2).
 bool IsNTPURL(const GURL& url, Profile* profile);
 
 // Returns true if the visible entry of |contents| is a New Tab Page rendered
-// by Instant. A page that matches the search or Instant URL of the default
-// search provider but does not have any search terms is considered an Instant
-// New Tab Page.
+// by Instant.
 bool IsInstantNTP(const content::WebContents* contents);
 
 // Same as IsInstantNTP but uses |nav_entry| to determine the URL for the page
 // instead of using the visible entry.
 bool NavEntryIsInstantNTP(const content::WebContents* contents,
                           const content::NavigationEntry* nav_entry);
+
+// Returns true if |url| corresponds to a New Tab page that would get rendered
+// by Instant.
+bool IsInstantNTPURL(const GURL& url, Profile* profile);
 
 // Returns the Instant URL of the default search engine. Returns an empty GURL
 // if the engine doesn't have an Instant URL, or if it shouldn't be used (say

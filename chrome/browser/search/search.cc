@@ -411,12 +411,18 @@ bool NavEntryIsInstantNTP(const content::WebContents* contents,
   if (!IsRenderedInInstantProcess(contents, profile))
     return false;
 
-  if (entry->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl))
+  return IsInstantNTPURL(entry->GetURL(), profile);
+}
+
+bool IsInstantNTPURL(const GURL& url, Profile* profile) {
+  if (!IsInstantExtendedAPIEnabled())
+    return false;
+
+  if (url == GURL(chrome::kChromeSearchLocalNtpUrl))
     return true;
 
   GURL new_tab_url(GetNewTabPageURL(profile));
-  return new_tab_url.is_valid() &&
-         MatchesOriginAndPath(entry->GetURL(), new_tab_url);
+  return new_tab_url.is_valid() && MatchesOriginAndPath(url, new_tab_url);
 }
 
 bool IsSuggestPrefEnabled(Profile* profile) {
@@ -563,13 +569,7 @@ bool HandleNewTabURLReverseRewrite(GURL* url,
   if (profile && profile->IsOffTheRecord())
     return false;
 
-  if (MatchesOriginAndPath(GURL(chrome::kChromeSearchLocalNtpUrl), *url)) {
-    *url = GURL(chrome::kChromeUINewTabURL);
-    return true;
-  }
-
-  GURL new_tab_url(GetNewTabPageURL(profile));
-  if (new_tab_url.is_valid() && MatchesOriginAndPath(new_tab_url, *url)) {
+  if (IsInstantNTPURL(*url, profile)) {
     *url = GURL(chrome::kChromeUINewTabURL);
     return true;
   }
