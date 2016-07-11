@@ -3,6 +3,31 @@ CONSOLE MESSAGE: line 7: follow http://www.chromium.org/
 CONSOLE MESSAGE: line 8: string
 CONSOLE MESSAGE: line 9: 123
 CONSOLE MESSAGE: line 10: http://www.chromium.org/some?v=114:56:57
+CONSOLE MESSAGE: line 11: http://[1234:0:0:0:8:800:200C:417A]/index.html
+CONSOLE MESSAGE: line 12: http://[1234:2a00:100:7031::1]
+CONSOLE MESSAGE: line 13: http://[1234::8:800:200C:417A]/foo
+CONSOLE MESSAGE: line 14: http://[::192.9.5.5]/ipng
+CONSOLE MESSAGE: line 15: http://[::FFFF:129.144.52.38]:80/index.html
+CONSOLE MESSAGE: line 16: http://[2010:836B:4179::836B:4179]
+CONSOLE MESSAGE: line 17: {x:'http://abc',bcd:'www.google.com'}
+CONSOLE MESSAGE: line 18: asdf"www.google.com"asdf
+CONSOLE MESSAGE: line 19: {http:'google.com'}
+CONSOLE MESSAGE: line 20: http://google.com:900a?
+CONSOLE MESSAGE: line 21: 'www.google.com/ some spaces and stuff...'
+CONSOLE MESSAGE: line 22: http://w'ww.google.com
+CONSOLE MESSAGE: line 23: http://www.google...com
+CONSOLE MESSAGE: line 24: http://fo/test
+CONSOLE MESSAGE: line 25: http://fo/test#asdf&asdf?qwer!asdf:asdf::
+CONSOLE MESSAGE: line 26: http://fo/test?asdf#asdf&asdf?qwer!asdf:asdf::
+CONSOLE MESSAGE: line 27: http://fo/test/?asdf#asdf&asdf?qwer!asdf:asdf::
+CONSOLE MESSAGE: line 29: http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.
+CONSOLE MESSAGE: line 30: http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.oktext
+CONSOLE MESSAGE: line 31: http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::. notpartofurl
+CONSOLE MESSAGE: line 33: =http://google.com
+CONSOLE MESSAGE: line 34: http://google.com
+CONSOLE MESSAGE: line 35: data:,not pass
+CONSOLE MESSAGE: line 36: 'data:,this shall all pass'but not here
+CONSOLE MESSAGE: line 37: 'data:,"this shall all pass";'
 Test that console.log() would linkify the links. Bug 231074.
 
 console-log-linkify-links.html:6 http://www.chromium.org/ console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
@@ -10,10 +35,91 @@ console-log-linkify-links.html:7 follow http://www.chromium.org/ console-message
 console-log-linkify-links.html:8 string http://www.chromium.org/ console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
 console-log-linkify-links.html:9 123 "http://www.chromium.org/" console-message-text source-code > console-message-url webkit-html-resource-link > object-value-number source-code > source-code > object-value-string source-code > webkit-html-external-link
 console-log-linkify-links.html:10 http://www.chromium.org/some?v=114:56:57 console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:11 http://[1234:0:0:0:8:800:200C:417A]/index.html console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:12 http://[1234:2a00:100:7031::1] console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:13 http://[1234::8:800:200C:417A]/foo console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:14 http://[::192.9.5.5]/ipng console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:15 http://[::FFFF:129.144.52.38]:80/index.html console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:16 http://[2010:836B:4179::836B:4179] console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:17 {x:'http://abc',bcd:'www.google.com'} console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link > webkit-html-external-link
+console-log-linkify-links.html:18 asdf"www.google.com"asdf console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:19 {http:'google.com'} console-message-text source-code > console-message-url webkit-html-resource-link
+console-log-linkify-links.html:20 http://google.com:900a? console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:21 'www.google.com/ some spaces and stuff...' console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:22 http://w'ww.google.com console-message-text source-code > console-message-url webkit-html-resource-link
+console-log-linkify-links.html:23 http://www.google...com console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:24 http://fo/test console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:25 http://fo/test#asdf&asdf?qwer!asdf:asdf:: console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:26 http://fo/test?asdf#asdf&asdf?qwer!asdf:asdf:: console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:27 http://fo/test/?asdf#asdf&asdf?qwer!asdf:asdf:: console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:29 http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::. console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:30 http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.oktext console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:31 http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::. notpartofurl console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:33 =http://google.com console-message-text source-code > console-message-url webkit-html-resource-link
+console-log-linkify-links.html:34 http://google.com console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:35 data:,not pass console-message-text source-code > console-message-url webkit-html-resource-link
+console-log-linkify-links.html:36 'data:,this shall all pass'but not here console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
+console-log-linkify-links.html:37 'data:,"this shall all pass";' console-message-text source-code > console-message-url webkit-html-resource-link > webkit-html-external-link
 Dump urls in messages
-linked url:http://www.chromium.org/
-linked url:http://www.chromium.org/
-linked url:http://www.chromium.org/
-linked url:http://www.chromium.org/
-linked url:http://www.chromium.org/some?v=114
+console-log-linkify-links.html:6 http://www.chromium.org/
+    Url: http://www.chromium.org/
+console-log-linkify-links.html:7 follow http://www.chromium.org/
+    Url: http://www.chromium.org/
+console-log-linkify-links.html:8 string http://www.chromium.org/
+    Url: http://www.chromium.org/
+console-log-linkify-links.html:9 123 "http://www.chromium.org/"
+    Url: http://www.chromium.org/
+console-log-linkify-links.html:10 http://www.chromium.org/some?v=114:56:57
+    Url: http://www.chromium.org/some?v=114
+console-log-linkify-links.html:11 http://[1234:0:0:0:8:800:200C:417A]/index.html
+    Url: http://[1234::8:800:200c:417a]/index.html
+console-log-linkify-links.html:12 http://[1234:2a00:100:7031::1]
+    Url: http://[1234:2a00:100:7031::1]/
+console-log-linkify-links.html:13 http://[1234::8:800:200C:417A]/foo
+    Url: http://[1234::8:800:200c:417a]/foo
+console-log-linkify-links.html:14 http://[::192.9.5.5]/ipng
+    Url: http://[::c009:505]/ipng
+console-log-linkify-links.html:15 http://[::FFFF:129.144.52.38]:80/index.html
+    Url: http://[::ffff:8190:3426]/index.html
+console-log-linkify-links.html:16 http://[2010:836B:4179::836B:4179]
+    Url: http://[2010:836b:4179::836b:4179]/
+console-log-linkify-links.html:17 {x:'http://abc',bcd:'www.google.com'}
+    Url: http://abc/
+    Url: http://www.google.com/
+console-log-linkify-links.html:18 asdf"www.google.com"asdf
+    Url: http://www.google.com/
+console-log-linkify-links.html:19 {http:'google.com'}
+    No links
+console-log-linkify-links.html:20 http://google.com:900a?
+    Url: http://google.com/
+console-log-linkify-links.html:21 'www.google.com/ some spaces and stuff...'
+    Url: http://www.google.com/%20some%20spaces%20and%20stuff...
+console-log-linkify-links.html:22 http://w'ww.google.com
+    No links
+console-log-linkify-links.html:23 http://www.google...com
+    Url: http://www.google/
+console-log-linkify-links.html:24 http://fo/test
+    Url: http://fo/test
+console-log-linkify-links.html:25 http://fo/test#asdf&asdf?qwer!asdf:asdf::
+    Url: http://fo/test#asdf&asdf?qwer!asdf:asdf:
+console-log-linkify-links.html:26 http://fo/test?asdf#asdf&asdf?qwer!asdf:asdf::
+    Url: http://fo/test?asdf#asdf&asdf?qwer!asdf:asdf:
+console-log-linkify-links.html:27 http://fo/test/?asdf#asdf&asdf?qwer!asdf:asdf::
+    Url: http://fo/test/?asdf#asdf&asdf?qwer!asdf:asdf:
+console-log-linkify-links.html:29 http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.
+    Url: http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::
+console-log-linkify-links.html:30 http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.oktext
+    Url: http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.oktext
+console-log-linkify-links.html:31 http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::. notpartofurl
+    Url: http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::
+console-log-linkify-links.html:33 =http://google.com
+    No links
+console-log-linkify-links.html:34 http://google.com
+    Url: http://google.com/
+console-log-linkify-links.html:35 data:,not pass
+    No links
+console-log-linkify-links.html:36 'data:,this shall all pass'but not here
+    Url: data:,this shall all pass
+console-log-linkify-links.html:37 'data:,"this shall all pass";'
+    Url: data:,"this shall all pass";
 

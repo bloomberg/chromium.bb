@@ -8,7 +8,33 @@ console.log("follow http://www.chromium.org/");
 console.log("string", "http://www.chromium.org/");
 console.log(123, "http://www.chromium.org/");
 console.log("http://www.chromium.org/some?v=114:56:57");
+console.log("http://[1234:0:0:0:8:800:200C:417A]/index.html");
+console.log("http://[1234:2a00:100:7031::1]");
+console.log("http://[1234::8:800:200C:417A]/foo");
+console.log("http://[::192.9.5.5]/ipng");
+console.log("http://[::FFFF:129.144.52.38]:80/index.html");
+console.log("http://[2010:836B:4179::836B:4179]");
+console.log("{x:'http://abc',bcd:'www.google.com'}");
+console.log("asdf\"www.google.com\"asdf");
+console.log("{http:'google.com'}");
+console.log("http://google.com:900a?");
+console.log("'www.google.com/ some spaces and stuff...'");
+console.log("http://w'ww.google.com");
+console.log("http://www.google...com");
+console.log("http://fo/test");
+console.log("http://fo/test#asdf&asdf?qwer!asdf:asdf::");
+console.log("http://fo/test?asdf#asdf&asdf?qwer!asdf:asdf::");
+console.log("http://fo/test/?asdf#asdf&asdf?qwer!asdf:asdf::");
 
+console.log("http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.");
+console.log("http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::.oktext");
+console.log("http://fo/test?/asdf#asdf&asdf?qwer!asdf:asdf::. notpartofurl");
+
+console.log("=http://google.com");
+console.log("http://google.com");
+console.log("data:,not pass");
+console.log("'data:,this shall all pass'but not here");
+console.log("'data:,\"this shall all pass\";'");
 
 function test()
 {
@@ -19,9 +45,15 @@ function test()
     var viewMessages = consoleView._visibleViewMessages;
     for (var i = 0; i < viewMessages.length; ++i) {
         var uiMessage = viewMessages[i];
-        var element = uiMessage.contentElement();
-        var href = element.querySelector(".webkit-html-external-link");
-        InspectorTest.addResult("linked url:" + href.href);
+        var element = uiMessage.element();
+        var links = element.querySelectorAll(".webkit-html-external-link");
+        InspectorTest.addResult(element.innerText.trim());
+        if (!links.length)
+            InspectorTest.addResult("    No links");
+        for (var j = 0; j < links.length; j++) {
+            var href = links[j];
+            InspectorTest.addResult("    Url: " + href.href);
+        }
     }
 
     InspectorTest.completeTest();
