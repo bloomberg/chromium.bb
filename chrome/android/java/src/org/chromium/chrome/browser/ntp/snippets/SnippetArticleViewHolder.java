@@ -43,7 +43,7 @@ public class SnippetArticleViewHolder extends CardViewHolder {
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
-            "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab&sz=%d&alt=404";
+            "https://s2.googleusercontent.com/s2/favicons?domain=%s&src=chrome_newtab_mobile&sz=%d&alt=404";
 
     // The variation parameter to fetch the value from the favicon service.
     private static final String PARAMETER_FAVICON_SERVICE_NAME = "favicons_fetch_from_service";
