@@ -55,6 +55,7 @@
   {
     "name": "$result",
     "reason": "Infra Failure: Step('bot_update') returned 1",
+    "recipe_result": null,
     "status_code": 1
   }
 ]
