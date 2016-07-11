@@ -4517,6 +4517,7 @@ void av1_rd_pick_inter_mode_sb_seg_skip(AV1_COMP *cpi, TileDataEnc *tile_data,
   mbmi->ref_frame[0] = LAST_FRAME;
   mbmi->ref_frame[1] = NONE;
   mbmi->mv[0].as_int = 0;
+  mbmi->tx_size = max_txsize_lookup[bsize];
 #if CONFIG_MOTION_VAR
   mbmi->motion_mode = SIMPLE_TRANSLATION;
 #endif  // CONFIG_MOTION_VAR
