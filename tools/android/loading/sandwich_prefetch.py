@@ -414,16 +414,14 @@ def _ProcessRunOutputDir(
     run_output_verifier.VerifyTrace(trace)
 
     logging.info('extracting metrics from trace: %s', trace_path)
-    served_from_network_bytes = 0
-    served_from_cache_bytes = 0
-    urls_hitting_network = set()
+
+    # Gather response size per URLs.
     response_sizes = {}
     for request in sandwich_utils.FilterOutDataAndIncompleteRequests(
         trace.request_track.GetEvents()):
       # Ignore requests served from the blink's cache.
       if request.served_from_cache:
         continue
-      urls_hitting_network.add(request.url)
       if request.from_disk_cache:
         if request.url in cached_encoded_data_lengths:
           response_size = cached_encoded_data_lengths[request.url]
@@ -433,12 +431,26 @@ def _ProcessRunOutputDir(
           # load.
           logging.warning('Looks like could be served from memory cache: %s',
               request.url)
-          response_size = response_sizes[request.url]
-        served_from_cache_bytes += response_size
+          if request.url in response_sizes:
+            response_size = response_sizes[request.url]
       else:
         response_size = request.GetResponseTransportLength()
-        served_from_network_bytes += response_size
       response_sizes[request.url] = response_size
+
+    # Sums the served from cache/network bytes.
+    served_from_network_bytes = 0
+    served_from_cache_bytes = 0
+    urls_hitting_network = set()
+    for request in sandwich_utils.FilterOutDataAndIncompleteRequests(
+        trace.request_track.GetEvents()):
+      # Ignore requests served from the blink's cache.
+      if request.served_from_cache:
+        continue
+      urls_hitting_network.add(request.url)
+      if request.from_disk_cache:
+        served_from_cache_bytes += response_sizes[request.url]
+      else:
+        served_from_network_bytes += response_sizes[request.url]
 
     # Make sure the served from blink's cache requests have at least one
     # corresponding request that was not served from the blink's cache.
