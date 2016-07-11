@@ -37,6 +37,8 @@ namespace {
 Display* g_display = nullptr;
 bool g_glx_context_create = false;
 bool g_glx_create_context_robustness_supported = false;
+bool g_glx_create_context_profile_supported = false;
+bool g_glx_create_context_profile_es2_supported = false;
 bool g_glx_texture_from_pixmap_supported = false;
 bool g_glx_oml_sync_control_supported = false;
 
@@ -391,6 +393,10 @@ bool GLSurfaceGLX::InitializeOneOff() {
       HasGLXExtension("GLX_ARB_create_context");
   g_glx_create_context_robustness_supported =
       HasGLXExtension("GLX_ARB_create_context_robustness");
+  g_glx_create_context_profile_supported =
+      HasGLXExtension("GLX_ARB_create_context_profile");
+  g_glx_create_context_profile_es2_supported =
+      HasGLXExtension("GLX_ARB_create_context_es2_profile");
   g_glx_texture_from_pixmap_supported =
       HasGLXExtension("GLX_EXT_texture_from_pixmap");
   g_glx_oml_sync_control_supported =
@@ -424,6 +430,16 @@ bool GLSurfaceGLX::IsCreateContextSupported() {
 // static
 bool GLSurfaceGLX::IsCreateContextRobustnessSupported() {
   return g_glx_create_context_robustness_supported;
+}
+
+// static
+bool GLSurfaceGLX::IsCreateContextProfileSupported() {
+  return g_glx_create_context_profile_supported;
+}
+
+// static
+bool GLSurfaceGLX::IsCreateContextES2ProfileSupported() {
+  return g_glx_create_context_profile_es2_supported;
 }
 
 // static
