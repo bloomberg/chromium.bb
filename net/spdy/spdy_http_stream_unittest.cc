@@ -40,16 +40,11 @@ namespace net {
 namespace {
 
 enum TestCase {
-  // Test using the SPDY/3.1 protocol.
-  kTestCaseSPDY31,
+  // Test without specifying a stream dependency based on the RequestPriority.
+  kTestCaseNoPriorityDependencies,
 
-  // Test using the HTTP/2 protocol, without specifying a stream
-  // dependency based on the RequestPriority.
-  kTestCaseHTTP2NoPriorityDependencies,
-
-  // Test using the HTTP/2 protocol, specifying a stream
-  // dependency based on the RequestPriority.
-  kTestCaseHTTP2PriorityDependencies
+  // Test specifying a stream dependency based on the RequestPriority.
+  kTestCasePriorityDependencies
 };
 
 // Tests the load timing of a stream that's connected and is not the first
@@ -117,8 +112,7 @@ class SpdyHttpStreamTest : public testing::Test,
                            public testing::WithParamInterface<TestCase> {
  public:
   SpdyHttpStreamTest()
-      : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
-        session_deps_(GetProtocol()),
+      : spdy_util_(GetDependenciesFromPriority()),
         host_port_pair_(HostPortPair::FromURL(GURL(kDefaultUrl))),
         key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED) {
     session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
@@ -129,12 +123,8 @@ class SpdyHttpStreamTest : public testing::Test,
   ~SpdyHttpStreamTest() {}
 
  protected:
-  NextProto GetProtocol() const {
-    return GetParam() == kTestCaseSPDY31 ? kProtoSPDY31 : kProtoHTTP2;
-  }
-
   bool GetDependenciesFromPriority() const {
-    return GetParam() == kTestCaseHTTP2PriorityDependencies;
+    return GetParam() == kTestCasePriorityDependencies;
   }
 
   void TearDown() override {
@@ -177,9 +167,8 @@ class SpdyHttpStreamTest : public testing::Test,
 
 INSTANTIATE_TEST_CASE_P(ProtoPlusDepend,
                         SpdyHttpStreamTest,
-                        testing::Values(kTestCaseSPDY31,
-                                        kTestCaseHTTP2NoPriorityDependencies,
-                                        kTestCaseHTTP2PriorityDependencies));
+                        testing::Values(kTestCaseNoPriorityDependencies,
+                                        kTestCasePriorityDependencies));
 
 // SpdyHttpStream::GetUploadProgress() should still work even before the
 // stream is initialized.
@@ -358,7 +347,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
 }
 
 TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
@@ -378,7 +367,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
   const int kFirstChunkSize = kUploadDataSize/2;
@@ -439,7 +428,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
   upload_stream.AppendData(nullptr, 0, true);
@@ -475,7 +464,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
 }
 
 TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
@@ -493,7 +482,7 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
   // Append first chunk.
@@ -979,7 +968,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::SYNC);
@@ -1030,7 +1019,7 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(spdy_util_.spdy_version(), session_->GetProtocolVersion());
+  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::ASYNC);

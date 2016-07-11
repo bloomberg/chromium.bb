@@ -336,8 +336,7 @@ class MockTimer : public base::MockTimer {
 class BidirectionalStreamTest : public testing::TestWithParam<bool> {
  public:
   BidirectionalStreamTest()
-      : spdy_util_(kProtoHTTP2, true),
-        session_deps_(kProtoHTTP2),
+      : spdy_util_(true),
         default_url_(kDefaultUrl),
         host_port_pair_(HostPortPair::FromURL(default_url_)),
         key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED),
@@ -511,7 +510,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
 
 // Tests that the NetLog contains correct entries.
 TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -654,7 +653,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
 }
 
 TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -758,7 +757,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
 }
 
 TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 1, LOWEST, nullptr, 0));
@@ -1084,7 +1083,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
 }
 
 TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -1151,7 +1150,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
 }
 
 TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));

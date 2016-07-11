@@ -65,60 +65,31 @@ using testing::Eq;
 
 const int32_t kBufferSize = SpdyHttpStream::kRequestBodyBufferSize;
 
-struct SpdyNetworkTransactionTestParams {
-  SpdyNetworkTransactionTestParams()
-      : protocol(kProtoSPDY31),
-        priority_to_dependency(false) {}
-
-  SpdyNetworkTransactionTestParams(NextProto protocol,
-                                   bool priority_to_dependency)
-      : protocol(protocol),
-        priority_to_dependency(priority_to_dependency) {}
-
-  friend std::ostream& operator<<(std::ostream& os,
-                                  const SpdyNetworkTransactionTestParams& p) {
-    os << "{ protocol: " << SSLClientSocket::NextProtoToString(p.protocol)
-       << ", priority_to_dependency: " << p.priority_to_dependency << " }";
-    return os;
-  }
-
-  NextProto protocol;
-  bool priority_to_dependency;
-};
-
-void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
-                                   SpdySessionDependencies* session_deps) {
-  session_deps->enable_priority_dependencies =
-      test_params.priority_to_dependency;
-}
-
 std::unique_ptr<SpdySessionDependencies> CreateSpdySessionDependencies(
-    SpdyNetworkTransactionTestParams test_params) {
+    bool priority_to_dependency) {
   std::unique_ptr<SpdySessionDependencies> session_deps(
-      new SpdySessionDependencies(test_params.protocol));
-  UpdateSpdySessionDependencies(test_params, session_deps.get());
+      new SpdySessionDependencies());
+  session_deps->enable_priority_dependencies = priority_to_dependency;
   return session_deps;
 }
 
 std::unique_ptr<SpdySessionDependencies> CreateSpdySessionDependencies(
-    SpdyNetworkTransactionTestParams test_params,
+    bool priority_to_dependency,
     std::unique_ptr<ProxyService> proxy_service) {
   std::unique_ptr<SpdySessionDependencies> session_deps(
-      new SpdySessionDependencies(test_params.protocol,
-                                  std::move(proxy_service)));
-  UpdateSpdySessionDependencies(test_params, session_deps.get());
+      new SpdySessionDependencies(std::move(proxy_service)));
+  session_deps->enable_priority_dependencies = priority_to_dependency;
   return session_deps;
 }
 
 }  // namespace
 
-class SpdyNetworkTransactionTest
-    : public ::testing::TestWithParam<SpdyNetworkTransactionTestParams> {
+class SpdyNetworkTransactionTest : public ::testing::TestWithParam<bool> {
  protected:
   SpdyNetworkTransactionTest()
       : default_url_(kDefaultUrl),
         host_port_pair_(HostPortPair::FromURL(default_url_)),
-        spdy_util_(GetParam().protocol, GetParam().priority_to_dependency) {}
+        spdy_util_(GetParam()) {}
 
   virtual ~SpdyNetworkTransactionTest() {
     // UploadDataStream may post a deletion tasks back to the message loop on
@@ -148,17 +119,18 @@ class SpdyNetworkTransactionTest
         const HttpRequestInfo& request,
         RequestPriority priority,
         const BoundNetLog& log,
-        SpdyNetworkTransactionTestParams test_params,
+        bool priority_to_dependency,
         std::unique_ptr<SpdySessionDependencies> session_deps)
         : request_(request),
           priority_(priority),
-          session_deps_(session_deps.get() == NULL
-                            ? CreateSpdySessionDependencies(test_params)
-                            : std::move(session_deps)),
+          session_deps_(
+              session_deps.get() == NULL
+                  ? CreateSpdySessionDependencies(priority_to_dependency)
+                  : std::move(session_deps)),
           session_(
               SpdySessionDependencies::SpdyCreateSession(session_deps_.get())),
           log_(log),
-          test_params_(test_params),
+          priority_to_dependency_(priority_to_dependency),
           spdy_enabled_(true) {}
 
     ~NormalSpdyTransactionHelper() {
@@ -179,7 +151,7 @@ class SpdyNetworkTransactionTest
 
     void RunPreTestSetup() {
       if (!session_deps_.get())
-        session_deps_ = CreateSpdySessionDependencies(test_params_);
+        session_deps_ = CreateSpdySessionDependencies(priority_to_dependency_);
       if (!session_.get()) {
         session_ = SpdySessionDependencies::SpdyCreateSession(
             session_deps_.get());
@@ -216,10 +188,8 @@ class SpdyNetworkTransactionTest
       ASSERT_TRUE(response);
       ASSERT_TRUE(response->headers);
       if (HttpStreamFactory::spdy_enabled()) {
-        EXPECT_EQ(
-            HttpResponseInfo::ConnectionInfoFromNextProto(
-                test_params_.protocol),
-            response->connection_info);
+        EXPECT_EQ(HttpResponseInfo::ConnectionInfoFromNextProto(kProtoHTTP2),
+                  response->connection_info);
       } else {
         EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
                   response->connection_info);
@@ -301,7 +271,7 @@ class SpdyNetworkTransactionTest
       data_vector_.push_back(data);
       if (ssl_provider->next_proto_status ==
           SSLClientSocket::kNextProtoUnsupported) {
-        ssl_provider->SetNextProto(test_params_.protocol);
+        ssl_provider->SetNextProto(kProtoHTTP2);
       }
 
       session_deps_->socket_factory->AddSSLSocketDataProvider(
@@ -322,9 +292,6 @@ class SpdyNetworkTransactionTest
     std::unique_ptr<SpdySessionDependencies>& session_deps() {
       return session_deps_;
     }
-    SpdyNetworkTransactionTestParams test_params() const {
-      return test_params_;
-    }
 
    private:
     typedef std::vector<SocketDataProvider*> DataVector;
@@ -343,7 +310,7 @@ class SpdyNetworkTransactionTest
     DataVector data_vector_;
     AlternateVector alternate_vector_;
     const BoundNetLog log_;
-    SpdyNetworkTransactionTestParams test_params_;
+    bool priority_to_dependency_;
     bool spdy_enabled_;
   };
 
@@ -634,19 +601,7 @@ class SpdyNetworkTransactionTest
   base::ScopedTempDir temp_dir_;
 };
 
-//-----------------------------------------------------------------------------
-// All tests are run with three different connection types: SPDY after NPN
-// negotiation, SPDY without SSL, and SPDY with SSL.
-//
-// TODO(akalin): Use ::testing::Combine() when we are able to use
-// <tr1/tuple>.
-INSTANTIATE_TEST_CASE_P(
-    Spdy,
-    SpdyNetworkTransactionTest,
-    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY31, false),
-                      SpdyNetworkTransactionTestParams(kProtoSPDY31, true),
-                      SpdyNetworkTransactionTestParams(kProtoHTTP2, false),
-                      SpdyNetworkTransactionTestParams(kProtoHTTP2, true)));
+INSTANTIATE_TEST_CASE_P(Spdy, SpdyNetworkTransactionTest, ::testing::Bool());
 
 // Verify HttpNetworkTransaction constructor.
 TEST_P(SpdyNetworkTransactionTest, Constructor) {
@@ -687,8 +642,7 @@ TEST_P(SpdyNetworkTransactionTest, Get) {
 TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
   for (RequestPriority p = MINIMUM_PRIORITY; p <= MAXIMUM_PRIORITY;
        p = RequestPriority(p + 1)) {
-    SpdyTestUtil spdy_test_util(GetParam().protocol,
-                                GetParam().priority_to_dependency);
+    SpdyTestUtil spdy_test_util(GetParam());
 
     // Construct the request.
     std::unique_ptr<SpdySerializedFrame> req(
@@ -696,8 +650,7 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
     MockWrite writes[] = {CreateMockWrite(*req, 0)};
 
     SpdyPriority spdy_prio = 0;
-    EXPECT_TRUE(
-        GetSpdyPriority(spdy_test_util.spdy_version(), *req, &spdy_prio));
+    EXPECT_TRUE(GetSpdyPriority(*req, &spdy_prio));
     // this repeats the RequestPriority-->SpdyPriority mapping from
     // SpdyFramer::ConvertRequestPriorityToSpdyPriority to make
     // sure it's being done right.
@@ -1870,7 +1823,7 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
 
 // Test that a POST without any post data works.
 TEST_P(SpdyNetworkTransactionTest, NullPost) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
@@ -1912,7 +1865,7 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
   // Create an empty UploadDataStream.
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   ElementsUploadDataStream stream(std::move(element_readers), 0);
@@ -2427,7 +2380,7 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   // TODO(erikchen): Make test support SPDYSSL, SPDYNPN
   TestDelegate d;
   {
-    SpdyURLRequestContext spdy_url_request_context(GetParam().protocol);
+    SpdyURLRequestContext spdy_url_request_context;
     std::unique_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
         default_url_, DEFAULT_PRIORITY, &d));
     spdy_url_request_context.socket_factory().
@@ -2509,10 +2462,9 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
   SequencedSocketData data2(reads2, arraysize(reads2), writes2,
                             arraysize(writes2));
 
-  // TODO(erikchen): Make test support SPDYSSL, SPDYNPN
   TestDelegate d;
   TestDelegate d2;
-  SpdyURLRequestContext spdy_url_request_context(GetParam().protocol);
+  SpdyURLRequestContext spdy_url_request_context;
   {
     std::unique_ptr<URLRequest> r(spdy_url_request_context.CreateRequest(
         default_url_, DEFAULT_PRIORITY, &d));
@@ -2888,13 +2840,8 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
   std::unique_ptr<SpdySerializedFrame> stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> goaway;
-  if (spdy_util_.spdy_version() == SPDY3) {
-    goaway.reset(spdy_util_.ConstructSpdyGoAway(0, GOAWAY_PROTOCOL_ERROR,
-                                                "Push on even stream id."));
-  } else {
     goaway.reset(spdy_util_.ConstructSpdyGoAway(
         0, GOAWAY_PROTOCOL_ERROR, "Framer error: 1 (INVALID_STREAM_ID)."));
-  }
   MockWrite writes[] = {
       CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*goaway, 3),
   };
@@ -2999,7 +2946,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   SpdyHeaderBlock incomplete_headers;
   incomplete_headers[spdy_util_.GetStatusKey()] = "200 OK";
-  incomplete_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   incomplete_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_syn(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(incomplete_headers), 2,
@@ -3206,13 +3152,6 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
   test_cases[1].expected_headers["status"] = "200";
   test_cases[2].expected_headers["status"] = "200";
 
-  // HTTP/2 eliminates use of the :version header.
-  if (GetParam().protocol == kProtoSPDY31) {
-    test_cases[0].expected_headers["version"] = "HTTP/1.1";
-    test_cases[1].expected_headers["version"] = "HTTP/1.1";
-    test_cases[2].expected_headers["version"] = "HTTP/1.1";
-  }
-
   test_cases[0].expected_headers["hello"] = "bye";
   test_cases[1].expected_headers["hello"] = "bye";
   test_cases[2].expected_headers["hello"] = "bye";
@@ -3221,8 +3160,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
   test_cases[2].expected_headers["cookie"] = "val1,val2";
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    SpdyTestUtil spdy_test_util(GetParam().protocol,
-                                GetParam().priority_to_dependency);
+    SpdyTestUtil spdy_test_util(GetParam());
     std::unique_ptr<SpdySerializedFrame> req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
     MockWrite writes[] = {CreateMockWrite(*req, 0)};
@@ -3282,36 +3220,31 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
       // Test the case of a multi-valued cookie.  When the value is delimited
       // with NUL characters, it needs to be unfolded into multiple headers.
       {true,
-       {1, 4},
+       {1, 3},
        {{"cookie", "val1,val2", NULL},
         {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary", "cookie",
-         NULL}}},
+         "/index.php", "vary", "cookie", NULL}}},
       {// Multiple vary fields.
-       true,
-       {2, 5},
-       {{"friend", "barney", "enemy", "snaggletooth", NULL},
-        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary", "friend",
-         "vary", "enemy", NULL}}},
-      {// Test a '*' vary field.
-       false,
-       {1, 4},
-       {{"cookie", "val1,val2", NULL},
-        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary", "*",
-         NULL}}},
-      {// Multiple comma-separated vary fields.
        true,
        {2, 4},
        {{"friend", "barney", "enemy", "snaggletooth", NULL},
         {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
-         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary",
-         "friend,enemy", NULL}}}};
+         "/index.php", "vary", "friend", "vary", "enemy", NULL}}},
+      {// Test a '*' vary field.
+       false,
+       {1, 3},
+       {{"cookie", "val1,val2", NULL},
+        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
+         "/index.php", "vary", "*", NULL}}},
+      {// Multiple comma-separated vary fields.
+       true,
+       {2, 3},
+       {{"friend", "barney", "enemy", "snaggletooth", NULL},
+        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
+         "/index.php", "vary", "friend,enemy", NULL}}}};
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    SpdyTestUtil spdy_test_util(GetParam().protocol,
-                                GetParam().priority_to_dependency);
+    SpdyTestUtil spdy_test_util(GetParam());
 
     // Construct the request.
     std::unique_ptr<SpdySerializedFrame> frame_req(
@@ -3392,13 +3325,13 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
   } test_cases[] = {
       // SYN_REPLY missing status header
       {
-          4,
-          {spdy_util_.GetPathKey(), "/index.php", spdy_util_.GetVersionKey(),
-           "HTTP/1.1", "cookie", "val1", "cookie", "val2", NULL},
+          3,
+          {spdy_util_.GetPathKey(), "/index.php", "cookie", "val1", "cookie",
+           "val2", NULL},
       },
       // SYN_REPLY missing version header
       {
-          2, {spdy_util_.GetPathKey(), "/index.php", "status", "200", NULL},
+          1, {spdy_util_.GetPathKey(), "/index.php", "status", "200", NULL},
       },
       // SYN_REPLY with no headers
       {
@@ -3407,8 +3340,7 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    SpdyTestUtil spdy_test_util(GetParam().protocol,
-                                GetParam().priority_to_dependency);
+    SpdyTestUtil spdy_test_util(GetParam());
 
     std::unique_ptr<SpdySerializedFrame> req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3439,49 +3371,6 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
-  if (spdy_util_.spdy_version() != SPDY3) {
-    return;
-  }
-
-  std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
-      0, GOAWAY_COMPRESSION_ERROR, "Framer error: 5 (DECOMPRESS_FAILURE)."));
-  MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 3),
-  };
-
-  // This is the length field that's too short.
-  std::unique_ptr<SpdySerializedFrame> syn_reply_wrong_length(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  size_t right_size =
-      syn_reply_wrong_length->size() -
-      SpdyConstants::GetControlFrameHeaderSize(spdy_util_.spdy_version());
-  size_t wrong_size = right_size - 4;
-  test::SetFrameLength(syn_reply_wrong_length.get(),
-                       wrong_size,
-                       spdy_util_.spdy_version());
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockRead reads[] = {
-      MockRead(ASYNC, syn_reply_wrong_length->data(),
-               syn_reply_wrong_length->size(), 1),
-      CreateMockRead(*body, 2),
-  };
-
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     BoundNetLog(), GetParam(), nullptr);
-  helper.RunToCompletion(&data);
-  TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
-}
-
-TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
-  if (spdy_util_.spdy_version() != HTTP2) {
-    return;
-  }
-
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
@@ -3491,13 +3380,10 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
   // This is the length field that's too short.
   std::unique_ptr<SpdySerializedFrame> syn_reply_wrong_length(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  size_t right_size =
-      syn_reply_wrong_length->size() -
-      SpdyConstants::GetControlFrameHeaderSize(spdy_util_.spdy_version());
+  size_t right_size = syn_reply_wrong_length->size() -
+                      SpdyConstants::GetControlFrameHeaderSize(HTTP2);
   size_t wrong_size = right_size - 4;
-  test::SetFrameLength(syn_reply_wrong_length.get(),
-                       wrong_size,
-                       spdy_util_.spdy_version());
+  test::SetFrameLength(syn_reply_wrong_length.get(), wrong_size, HTTP2);
 
   MockRead reads[] = {
       MockRead(ASYNC, syn_reply_wrong_length->data(),
@@ -3513,10 +3399,6 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
-  if (GetParam().protocol < kProtoHTTP2) {
-    // Decompression failures are a stream error in SPDY3.
-    return;
-  }
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
@@ -3548,9 +3430,8 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
   // Read WINDOW_UPDATE with incorrectly-sized payload.
   std::unique_ptr<SpdySerializedFrame> bad_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, 1));
-  test::SetFrameLength(bad_window_update.get(),
-                       bad_window_update->size() - 1,
-                       spdy_util_.spdy_version());
+  test::SetFrameLength(bad_window_update.get(), bad_window_update->size() - 1,
+                       HTTP2);
   MockRead reads[] = {CreateMockRead(*bad_window_update, 1)};
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -3681,10 +3562,8 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
                                    NetLog::PHASE_END);
 
   // Check that we logged all the headers correctly
-  const NetLog::EventType type = (GetParam().protocol == kProtoSPDY31)
-                                     ? NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
-                                     : NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS;
-  pos = ExpectLogContainsSomewhere(entries, 0, type, NetLog::PHASE_NONE);
+  pos = ExpectLogContainsSomewhere(
+      entries, 0, NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS, NetLog::PHASE_NONE);
 
   base::ListValue* header_list;
   ASSERT_TRUE(entries[pos].params.get());
@@ -3698,10 +3577,6 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
                      default_url_.scheme());
   expected.push_back(std::string(spdy_util_.GetMethodKey()) + ": GET");
   expected.push_back("user-agent: Chrome");
-  if (spdy_util_.spdy_version() < HTTP2) {
-    // HTTP/2 eliminates use of the :version header.
-    expected.push_back(std::string(spdy_util_.GetVersionKey()) + ": HTTP/1.1");
-  }
   EXPECT_EQ(expected.size(), header_list->GetSize());
   for (std::vector<std::string>::const_iterator it = expected.begin();
        it != expected.end();
@@ -3717,7 +3592,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
 // on the network, but issued a Read for only 5 of those bytes) that the data
 // flow still works correctly.
 TEST_P(SpdyNetworkTransactionTest, BufferFull) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3810,7 +3685,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
 // at the same time, ensure that we don't notify a read completion for
 // each data frame individually.
 TEST_P(SpdyNetworkTransactionTest, Buffering) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3902,7 +3777,7 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
 
 // Verify the case where we buffer data but read it after it has been buffered.
 TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3988,7 +3863,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
 
 // Verify the case where we buffer data and close the connection.
 TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -4075,7 +3950,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
 
 // Verify the case where we buffer data and cancel the transaction.
 TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -4142,236 +4017,6 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
   helper.VerifyDataConsumed();
 }
 
-// Test that if the server requests persistence of settings, that we save
-// the settings in the HttpServerProperties.
-TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
-  if (spdy_util_.spdy_version() >= HTTP2) {
-    // HTTP/2 doesn't support settings persistence.
-    return;
-  }
-  static const SpdyHeaderInfo kSynReplyInfo = {
-      SYN_REPLY,  // Syn Reply
-      1,          // Stream ID
-      0,          // Associated Stream ID
-      ConvertRequestPriorityToSpdyPriority(LOWEST, spdy_util_.spdy_version()),
-      0,                   // Weight (unused)
-      CONTROL_FLAG_NONE,   // Control Flags
-      RST_STREAM_INVALID,  // Status
-      NULL,                // Data
-      0,                   // Data Length
-      DATA_FLAG_NONE       // Data Flags
-  };
-
-  BoundNetLog net_log;
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     net_log, GetParam(), NULL);
-  helper.RunPreTestSetup();
-
-  // Verify that no settings exist initially.
-  url::SchemeHostPort spdy_server(default_url_);
-  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
-  EXPECT_TRUE(spdy_session_pool->http_server_properties()
-                  ->GetSpdySettings(spdy_server)
-                  .empty());
-
-  // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
-
-  // Construct the reply.
-  SpdyHeaderBlock reply_headers;
-  reply_headers[spdy_util_.GetStatusKey()] = "200";
-  reply_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyFrame(kSynReplyInfo, std::move(reply_headers)));
-
-  const SpdySettingsIds kSampleId1 = SETTINGS_UPLOAD_BANDWIDTH;
-  unsigned int kSampleValue1 = 0x0a0a0a0a;
-  const SpdySettingsIds kSampleId2 = SETTINGS_DOWNLOAD_BANDWIDTH;
-  unsigned int kSampleValue2 = 0x0b0b0b0b;
-  const SpdySettingsIds kSampleId3 = SETTINGS_ROUND_TRIP_TIME;
-  unsigned int kSampleValue3 = 0x0c0c0c0c;
-  std::unique_ptr<SpdySerializedFrame> settings_frame;
-  {
-    // Construct the SETTINGS frame.
-    SettingsMap settings;
-    // First add a persisted setting.
-    settings[kSampleId1] =
-        SettingsFlagsAndValue(SETTINGS_FLAG_PLEASE_PERSIST, kSampleValue1);
-    // Next add a non-persisted setting.
-    settings[kSampleId2] =
-        SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kSampleValue2);
-    // Next add another persisted setting.
-    settings[kSampleId3] =
-        SettingsFlagsAndValue(SETTINGS_FLAG_PLEASE_PERSIST, kSampleValue3);
-    settings_frame.reset(spdy_util_.ConstructSpdySettings(settings));
-  }
-
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockRead reads[] = {
-      CreateMockRead(*reply, 1),
-      CreateMockRead(*body, 2),
-      CreateMockRead(*settings_frame, 3),
-      MockRead(ASYNC, 0, 4)  // EOF
-  };
-
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  helper.AddData(&data);
-  helper.RunDefaultTest();
-  helper.VerifyDataConsumed();
-  TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsOk());
-  EXPECT_EQ("HTTP/1.1 200", out.status_line);
-  EXPECT_EQ("hello!", out.response_data);
-
-  {
-    // Verify we had two persisted settings.
-    const SettingsMap& settings_map =
-        spdy_session_pool->http_server_properties()->GetSpdySettings(
-            spdy_server);
-    ASSERT_EQ(2u, settings_map.size());
-
-    // Verify the first persisted setting.
-    SettingsMap::const_iterator it1 = settings_map.find(kSampleId1);
-    EXPECT_TRUE(it1 != settings_map.end());
-    SettingsFlagsAndValue flags_and_value1 = it1->second;
-    EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value1.first);
-    EXPECT_EQ(kSampleValue1, flags_and_value1.second);
-
-    // Verify the second persisted setting.
-    SettingsMap::const_iterator it3 = settings_map.find(kSampleId3);
-    EXPECT_TRUE(it3 != settings_map.end());
-    SettingsFlagsAndValue flags_and_value3 = it3->second;
-    EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value3.first);
-    EXPECT_EQ(kSampleValue3, flags_and_value3.second);
-  }
-}
-
-// Test that when there are settings saved that they are sent back to the
-// server upon session establishment.
-TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
-  if (spdy_util_.spdy_version() >= HTTP2) {
-    // HTTP/2 doesn't support settings persistence.
-    return;
-  }
-  static const SpdyHeaderInfo kSynReplyInfo = {
-      SYN_REPLY,  // Syn Reply
-      1,          // Stream ID
-      0,          // Associated Stream ID
-      ConvertRequestPriorityToSpdyPriority(LOWEST, spdy_util_.spdy_version()),
-      0,                   // Weight (unused)
-      CONTROL_FLAG_NONE,   // Control Flags
-      RST_STREAM_INVALID,  // Status
-      NULL,                // Data
-      0,                   // Data Length
-      DATA_FLAG_NONE       // Data Flags
-  };
-
-  BoundNetLog net_log;
-  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
-                                     net_log, GetParam(), NULL);
-  helper.RunPreTestSetup();
-
-  SpdySessionPool* spdy_session_pool = helper.session()->spdy_session_pool();
-
-  SpdySessionPoolPeer pool_peer(spdy_session_pool);
-  pool_peer.SetEnableSendingInitialData(true);
-
-  // Verify that no settings exist initially.
-  url::SchemeHostPort spdy_server(default_url_);
-  EXPECT_TRUE(spdy_session_pool->http_server_properties()
-                  ->GetSpdySettings(spdy_server)
-                  .empty());
-
-  const SpdySettingsIds kSampleId1 = SETTINGS_MAX_CONCURRENT_STREAMS;
-  unsigned int kSampleValue1 = 0x0a0a0a0a;
-  const SpdySettingsIds kSampleId2 = SETTINGS_INITIAL_WINDOW_SIZE;
-  unsigned int kSampleValue2 = 0x0c0c0c0c;
-
-  // First add a persisted setting.
-  spdy_session_pool->http_server_properties()->SetSpdySetting(
-      spdy_server, kSampleId1, SETTINGS_FLAG_PLEASE_PERSIST, kSampleValue1);
-
-  // Next add another persisted setting.
-  spdy_session_pool->http_server_properties()->SetSpdySetting(
-      spdy_server, kSampleId2, SETTINGS_FLAG_PLEASE_PERSIST, kSampleValue2);
-
-  EXPECT_EQ(2u, spdy_session_pool->http_server_properties()
-                    ->GetSpdySettings(spdy_server)
-                    .size());
-
-  // Construct the initial SETTINGS frame.
-  SettingsMap initial_settings;
-  initial_settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
-      SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
-  std::unique_ptr<SpdySerializedFrame> initial_settings_frame(
-      spdy_util_.ConstructSpdySettings(initial_settings));
-
-  // Construct the persisted SETTINGS frame.
-  const SettingsMap& settings =
-      spdy_session_pool->http_server_properties()->GetSpdySettings(spdy_server);
-  std::unique_ptr<SpdySerializedFrame> settings_frame(
-      spdy_util_.ConstructSpdySettings(settings));
-
-  // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-
-  MockWrite writes[] = {
-      CreateMockWrite(*initial_settings_frame, 0),
-      CreateMockWrite(*settings_frame, 1),
-      CreateMockWrite(*req, 2),
-  };
-
-  // Construct the reply.
-  SpdyHeaderBlock reply_headers;
-  reply_headers[spdy_util_.GetStatusKey()] = "200";
-  reply_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyFrame(kSynReplyInfo, std::move(reply_headers)));
-
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  MockRead reads[] = {
-      CreateMockRead(*reply, 3),
-      CreateMockRead(*body, 4),
-      MockRead(ASYNC, 0, 5)  // EOF
-  };
-
-  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
-  helper.AddData(&data);
-  helper.RunDefaultTest();
-  helper.VerifyDataConsumed();
-  TransactionHelperResult out = helper.output();
-  EXPECT_THAT(out.rv, IsOk());
-  EXPECT_EQ("HTTP/1.1 200", out.status_line);
-  EXPECT_EQ("hello!", out.response_data);
-
-  {
-    // Verify we had two persisted settings.
-    const SettingsMap& settings_map =
-        spdy_session_pool->http_server_properties()->GetSpdySettings(
-            spdy_server);
-    ASSERT_EQ(2u, settings_map.size());
-
-    // Verify the first persisted setting.
-    SettingsMap::const_iterator it1 = settings_map.find(kSampleId1);
-    EXPECT_TRUE(it1 != settings_map.end());
-    SettingsFlagsAndValue flags_and_value1 = it1->second;
-    EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value1.first);
-    EXPECT_EQ(kSampleValue1, flags_and_value1.second);
-
-    // Verify the second persisted setting.
-    SettingsMap::const_iterator it2 = settings_map.find(kSampleId2);
-    EXPECT_TRUE(it2 != settings_map.end());
-    SettingsFlagsAndValue flags_and_value2 = it2->second;
-    EXPECT_EQ(SETTINGS_FLAG_PERSISTED, flags_and_value2.first);
-    EXPECT_EQ(kSampleValue2, flags_and_value2.second);
-  }
-}
-
 TEST_P(SpdyNetworkTransactionTest, GoAwayWithActiveStream) {
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -4431,10 +4076,6 @@ TEST_P(SpdyNetworkTransactionTest, CloseWithActiveStream) {
 
 // HTTP_1_1_REQUIRED results in ERR_HTTP_1_1_REQUIRED.
 TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredError) {
-  // HTTP_1_1_REQUIRED is only supported by HTTP/2.
-  if (spdy_util_.spdy_version() < HTTP2)
-    return;
-
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), nullptr);
 
@@ -4454,10 +4095,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredError) {
 // protocol negotiation happens, instead this test forces protocols for both
 // sockets.
 TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
-  // HTTP_1_1_REQUIRED is only supported by HTTP/2.
-  if (spdy_util_.spdy_version() < HTTP2)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = default_url_;
@@ -4484,7 +4121,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
-  ssl_provider0->SetNextProto(GetParam().protocol);
+  ssl_provider0->SetNextProto(kProtoHTTP2);
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
 
   // Second socket: falling back to HTTP/1.1.
@@ -4537,10 +4174,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 // proxy.  Note that no actual protocol negotiation happens, instead this test
 // forces protocols for both sockets.
 TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
-  // HTTP_1_1_REQUIRED is only supported by HTTP/2.
-  if (spdy_util_.spdy_version() < HTTP2)
-    return;
-
   HttpRequestInfo request;
   request.method = "GET";
   request.url = default_url_;
@@ -4568,7 +4201,7 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
-  ssl_provider0->SetNextProto(GetParam().protocol);
+  ssl_provider0->SetNextProto(kProtoHTTP2);
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
 
   // Second socket: retry using HTTP/1.1.
@@ -4763,8 +4396,7 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
 
   // New SpdyTestUtil instance for the session that will be used for the
   // proxy connection.
-  SpdyTestUtil spdy_util_2(GetParam().protocol,
-                           GetParam().priority_to_dependency);
+  SpdyTestUtil spdy_util_2(GetParam());
 
   // Set up data for the proxy connection.
   const char kConnect443[] = {
@@ -5092,7 +4724,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
 
   SpdyHeaderBlock late_headers;
   late_headers[spdy_util_.GetStatusKey()] = "200";
-  late_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   late_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_headers(
       spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
@@ -5153,7 +4784,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
       spdy_util_.ConstructSpdyBodyFrame(1, true));
   SpdyHeaderBlock late_headers;
   late_headers[spdy_util_.GetStatusKey()] = "200";
-  late_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
   late_headers["hello"] = "bye";
   std::unique_ptr<SpdySerializedFrame> stream2_headers(
       spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
@@ -5254,10 +4884,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
   SpdyHeaderBlock initial_headers;
-  if (spdy_util_.spdy_version() < HTTP2) {
-    // In HTTP/2 PUSH_PROMISE headers won't show up in the response headers.
-    initial_headers["alpha"] = "beta";
-  }
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  &initial_headers);
   std::unique_ptr<SpdySerializedFrame> stream2_syn(
@@ -5275,10 +4901,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
   SpdyHeaderBlock late_headers;
   late_headers[spdy_util_.GetStatusKey()] = "200";
-  if (spdy_util_.spdy_version() < HTTP2) {
-    // HTTP/2 eliminates use of the :version header.
-    late_headers[spdy_util_.GetVersionKey()] = "HTTP/1.1";
-  }
   std::unique_ptr<SpdySerializedFrame> stream2_headers2(
       spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
                                               false));
@@ -5362,8 +4984,6 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
 
   // Verify we got all the headers from all header blocks.
-  if (spdy_util_.spdy_version() < HTTP2)
-    EXPECT_TRUE(response2.headers->HasHeaderValue("alpha", "beta"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("hello", "bye"));
   EXPECT_TRUE(response2.headers->HasHeaderValue("status", "200"));
 
@@ -5574,8 +5194,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     const char* url_to_fetch = kTestCases[index];
     const char* url_to_push = kTestCases[index + 1];
 
-    SpdyTestUtil spdy_test_util(GetParam().protocol,
-                                GetParam().priority_to_dependency);
+    SpdyTestUtil spdy_test_util(GetParam());
     std::unique_ptr<SpdySerializedFrame> stream1_syn(
         spdy_test_util.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
     std::unique_ptr<SpdySerializedFrame> stream1_body(
@@ -5758,8 +5377,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   const char* url_to_fetch1 = "https://docs.example.org";
   const char* url_to_push = "https://mail.example.org/bar";
 
-  SpdyTestUtil spdy_util_0(GetParam().protocol,
-                           GetParam().priority_to_dependency);
+  SpdyTestUtil spdy_util_0(GetParam());
 
   std::unique_ptr<SpdySerializedFrame> headers0(
       spdy_util_0.ConstructSpdyGet(url_to_fetch0, 1, LOWEST));
@@ -5781,8 +5399,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));
 
-  SpdyTestUtil spdy_util_1(GetParam().protocol,
-                           GetParam().priority_to_dependency);
+  SpdyTestUtil spdy_util_1(GetParam());
 
   std::unique_ptr<SpdySerializedFrame> headers1(
       spdy_util_1.ConstructSpdyGet(url_to_fetch1, 1, LOWEST));
@@ -6219,11 +5836,10 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   SpdyHttpStream* stream = static_cast<SpdyHttpStream*>(trans->stream_.get());
   ASSERT_TRUE(stream);
   ASSERT_TRUE(stream->stream());
-  EXPECT_EQ(static_cast<int>(
-                SpdySession::GetDefaultInitialWindowSize(GetParam().protocol)) +
-                kDeltaWindowSize * kDeltaCount -
-                kMaxSpdyFrameChunkSize * kFrameCount,
-            stream->stream()->send_window_size());
+  EXPECT_EQ(
+      static_cast<int>(SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2)) +
+          kDeltaWindowSize * kDeltaCount - kMaxSpdyFrameChunkSize * kFrameCount,
+      stream->stream()->send_window_size());
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -6238,7 +5854,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   const int32_t default_initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
   // Session level maximum window size that is more than twice the default
   // initial window size so that an initial window update is sent.
   const int32_t session_max_recv_window_size = 5 * 64 * 1024;
@@ -6285,10 +5901,8 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
       spdy_util_.ConstructSpdyWindowUpdate(1, stream_window_update_delta));
 
   std::vector<MockWrite> writes;
-  if (GetParam().protocol == kProtoHTTP2) {
-    writes.push_back(MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
-                               kHttp2ConnectionHeaderPrefixSize, 0));
-  }
+  writes.push_back(MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
+                             kHttp2ConnectionHeaderPrefixSize, 0));
   writes.push_back(CreateMockWrite(*initial_settings_frame, writes.size()));
   writes.push_back(CreateMockWrite(*initial_window_update, writes.size()));
   writes.push_back(CreateMockWrite(*req, writes.size()));
@@ -6447,7 +6061,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 // WINDOW_UPDATE to be read and I/O process resumes.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   const int32_t initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
   // Number of upload data buffers we need to send to zero out the window size
   // is the minimal number of upload buffers takes to be bigger than
   // |initial_window_size|.
@@ -6596,7 +6210,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 // unstalling the send window.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   const int32_t initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
   // Number of upload data buffers we need to send to zero out the window size
   // is the minimal number of upload buffers takes to be bigger than
   // |initial_window_size|.
@@ -6762,7 +6376,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 // negative send window size.
 TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   const int32_t initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(GetParam().protocol);
+      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
   // Number of upload data buffers we need to send to zero out the window size
   // is the minimal number of upload buffers takes to be bigger than
   // |initial_window_size|.
@@ -7055,65 +6669,6 @@ TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
   ASSERT_TRUE(out.response_info.headers->HasHeaderValue(kKey, kValue));
 }
 
-class SpdyNetworkTransactionNoTLSUsageCheckTest
-    : public SpdyNetworkTransactionTest {
- protected:
-  void RunNoTLSUsageCheckTest(
-      std::unique_ptr<SSLSocketDataProvider> ssl_provider) {
-    // Construct the request.
-    std::unique_ptr<SpdySerializedFrame> req(
-        spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-    MockWrite writes[] = {CreateMockWrite(*req, 0)};
-
-    std::unique_ptr<SpdySerializedFrame> resp(
-        spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-    std::unique_ptr<SpdySerializedFrame> body(
-        spdy_util_.ConstructSpdyBodyFrame(1, true));
-    MockRead reads[] = {
-        CreateMockRead(*resp, 1),
-        CreateMockRead(*body, 2),
-        MockRead(ASYNC, 0, 3)  // EOF
-    };
-
-    SequencedSocketData data(reads, arraysize(reads), writes,
-                             arraysize(writes));
-    HttpRequestInfo request;
-    request.method = "GET";
-    request.url = default_url_;
-    NormalSpdyTransactionHelper helper(
-        request, DEFAULT_PRIORITY, BoundNetLog(), GetParam(), NULL);
-    helper.RunToCompletionWithSSLData(&data, std::move(ssl_provider));
-    TransactionHelperResult out = helper.output();
-    EXPECT_THAT(out.rv, IsOk());
-    EXPECT_EQ("HTTP/1.1 200", out.status_line);
-    EXPECT_EQ("hello!", out.response_data);
-  }
-};
-
-INSTANTIATE_TEST_CASE_P(
-    Spdy,
-    SpdyNetworkTransactionNoTLSUsageCheckTest,
-    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY31,
-                                                       false)));
-
-TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSVersionTooOld) {
-  std::unique_ptr<SSLSocketDataProvider> ssl_provider(
-      new SSLSocketDataProvider(ASYNC, OK));
-  SSLConnectionStatusSetVersion(SSL_CONNECTION_VERSION_SSL3,
-                                &ssl_provider->connection_status);
-
-  RunNoTLSUsageCheckTest(std::move(ssl_provider));
-}
-
-TEST_P(SpdyNetworkTransactionNoTLSUsageCheckTest, TLSCipherSuiteSucky) {
-  std::unique_ptr<SSLSocketDataProvider> ssl_provider(
-      new SSLSocketDataProvider(ASYNC, OK));
-  // Set to TLS_RSA_WITH_NULL_MD5
-  SSLConnectionStatusSetCipherSuite(0x1, &ssl_provider->connection_status);
-
-  RunNoTLSUsageCheckTest(std::move(ssl_provider));
-}
-
 class SpdyNetworkTransactionTLSUsageCheckTest
     : public SpdyNetworkTransactionTest {
  protected:
@@ -7135,11 +6690,9 @@ class SpdyNetworkTransactionTLSUsageCheckTest
   }
 };
 
-INSTANTIATE_TEST_CASE_P(
-    Spdy,
-    SpdyNetworkTransactionTLSUsageCheckTest,
-    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoHTTP2, false),
-                      SpdyNetworkTransactionTestParams(kProtoHTTP2, true)));
+INSTANTIATE_TEST_CASE_P(Spdy,
+                        SpdyNetworkTransactionTLSUsageCheckTest,
+                        ::testing::Bool());
 
 TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
   std::unique_ptr<SSLSocketDataProvider> ssl_provider(

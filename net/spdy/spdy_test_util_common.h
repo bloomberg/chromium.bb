@@ -29,7 +29,6 @@
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
-#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -97,9 +96,7 @@ int CombineFrames(const SpdySerializedFrame** frames,
 
 // Returns the SpdyPriority embedded in the given frame.  Returns true
 // and fills in |priority| on success.
-bool GetSpdyPriority(SpdyMajorVersion version,
-                     const SpdySerializedFrame& frame,
-                     SpdyPriority* priority);
+bool GetSpdyPriority(const SpdySerializedFrame& frame, SpdyPriority* priority);
 
 // Tries to create a stream in |session| synchronously. Returns NULL
 // on failure.
@@ -175,11 +172,10 @@ class MockECSignatureCreatorFactory : public crypto::ECSignatureCreatorFactory {
 // HttpNetworkTransaction.
 struct SpdySessionDependencies {
   // Default set of dependencies -- "null" proxy service.
-  explicit SpdySessionDependencies(NextProto protocol);
+  SpdySessionDependencies();
 
   // Custom proxy service dependency.
-  SpdySessionDependencies(NextProto protocol,
-                          std::unique_ptr<ProxyService> proxy_service);
+  explicit SpdySessionDependencies(std::unique_ptr<ProxyService> proxy_service);
 
   ~SpdySessionDependencies();
 
@@ -205,7 +201,6 @@ struct SpdySessionDependencies {
   bool enable_user_alternate_protocol_ports;
   bool enable_priority_dependencies;
   bool enable_quic;
-  NextProto protocol;
   size_t session_max_recv_window_size;
   size_t stream_max_recv_window_size;
   SpdySession::TimeFunc time_func;
@@ -216,7 +211,7 @@ struct SpdySessionDependencies {
 
 class SpdyURLRequestContext : public URLRequestContext {
  public:
-  explicit SpdyURLRequestContext(NextProto protocol);
+  SpdyURLRequestContext();
   ~SpdyURLRequestContext() override;
 
   MockClientSocketFactory& socket_factory() { return socket_factory_; }
@@ -287,7 +282,7 @@ class SpdySessionPoolPeer {
 
 class SpdyTestUtil {
  public:
-  explicit SpdyTestUtil(NextProto protocol, bool dependency_priorities);
+  explicit SpdyTestUtil(bool dependency_priorities);
   ~SpdyTestUtil();
 
   // Add the appropriate headers to put |url| into |block|.
@@ -327,8 +322,7 @@ class SpdyTestUtil {
   // Returns the constructed frame.  The caller takes ownership of the frame.
   SpdySerializedFrame* ConstructSpdySettings(const SettingsMap& settings);
 
-  // Constructs an expected SPDY SETTINGS acknowledgement frame, if the protocol
-  // version is SPDY4 or higher, or an empty placeholder frame otherwise.
+  // Constructs an expected SPDY SETTINGS acknowledgement frame.
   SpdySerializedFrame* ConstructSpdySettingsAck();
 
   // Construct a SPDY PING frame.
@@ -412,22 +406,20 @@ class SpdyTestUtil {
       const char* const extra_headers[],
       int extra_header_count);
 
-  // Constructs a SPDY header frame with the request header compression context
-  // with END_STREAM flag set to |fin|.
+  // Constructs a HEADERS frame with the request header compression context with
+  // END_STREAM flag set to |fin|.
   SpdySerializedFrame* ConstructSpdyResponseHeaders(int stream_id,
                                                     SpdyHeaderBlock headers,
                                                     bool fin);
 
-  // Construct a SPDY syn (HEADERS or SYN_STREAM, depending on protocol
-  // version) carrying exactly the given headers and priority.
+  // Construct a HEADERS frame carrying exactly the given headers and priority.
   SpdySerializedFrame* ConstructSpdySyn(int stream_id,
                                         SpdyHeaderBlock headers,
                                         RequestPriority priority,
                                         bool fin);
 
-  // Construct a SPDY reply (HEADERS or SYN_REPLY, depending on protocol
-  // version) carrying exactly the given headers, and the default priority
-  // (or no priority, depending on protocol version).
+  // Construct a reply HEADERS frame carrying exactly the given headers and the
+  // default priority.
   SpdySerializedFrame* ConstructSpdyReply(int stream_id,
                                           SpdyHeaderBlock headers);
 
@@ -515,15 +507,8 @@ class SpdyTestUtil {
   // class of stream destruction.
   void UpdateWithStreamDestruction(int stream_id);
 
-  // For versions below SPDY4, adds the version HTTP/1.1 header.
-  void MaybeAddVersionHeader(SpdyHeaderBlock* block) const;
-
-  // Maps |priority| to SPDY version priority, and sets it on |frame_ir|.
+  // Maps |priority| to SPDY priority, and sets it on |frame_ir|.
   void SetPriority(RequestPriority priority, SpdySynStreamIR* frame_ir) const;
-
-  NextProto protocol() const { return protocol_; }
-  SpdyMajorVersion spdy_version() const { return spdy_version_; }
-  bool include_version_header() const { return protocol_ < kProtoHTTP2; }
 
   void set_default_url(const GURL& url) { default_url_ = url; }
 
@@ -531,7 +516,6 @@ class SpdyTestUtil {
   const char* GetStatusKey() const;
   const char* GetHostKey() const;
   const char* GetSchemeKey() const;
-  const char* GetVersionKey() const;
   const char* GetPathKey() const;
 
  private:
@@ -540,9 +524,6 @@ class SpdyTestUtil {
   SpdyHeaderBlock ConstructHeaderBlock(base::StringPiece method,
                                        base::StringPiece url,
                                        int64_t* content_length) const;
-
-  const NextProto protocol_;
-  const SpdyMajorVersion spdy_version_;
 
   // Multiple SpdyFramers are required to keep track of header compression
   // state.

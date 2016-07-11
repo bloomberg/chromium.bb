@@ -47,20 +47,12 @@ enum HttpProxyType {
 };
 
 struct HttpProxyClientSocketPoolTestParams {
-  HttpProxyClientSocketPoolTestParams()
-      : proxy_type(HTTP),
-        protocol(kProtoSPDY31),
-        priority_to_dependency(false) {}
-
   HttpProxyClientSocketPoolTestParams(HttpProxyType proxy_type,
-                                      NextProto protocol,
                                       bool priority_to_dependency)
       : proxy_type(proxy_type),
-        protocol(protocol),
         priority_to_dependency(priority_to_dependency) {}
 
   HttpProxyType proxy_type;
-  NextProto protocol;
   bool priority_to_dependency;
 };
 
@@ -75,8 +67,7 @@ class HttpProxyClientSocketPoolTest
     : public ::testing::TestWithParam<HttpProxyClientSocketPoolTestParams> {
  protected:
   HttpProxyClientSocketPoolTest()
-      : session_deps_(GetParam().protocol),
-        transport_socket_pool_(kMaxSockets,
+      : transport_socket_pool_(kMaxSockets,
                                kMaxSocketsPerGroup,
                                session_deps_.socket_factory.get()),
         ssl_socket_pool_(kMaxSockets,
@@ -93,7 +84,7 @@ class HttpProxyClientSocketPoolTest
                          NULL,
                          session_deps_.ssl_config_service.get(),
                          BoundNetLog().net_log()),
-        spdy_util_(GetParam().protocol, GetParam().priority_to_dependency),
+        spdy_util_(GetParam().priority_to_dependency),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               &transport_socket_pool_,
@@ -204,9 +195,7 @@ class HttpProxyClientSocketPoolTest
     }
   }
 
-  void InitializeSpdySsl() {
-    ssl_data_->SetNextProto(GetParam().protocol);
-  }
+  void InitializeSpdySsl() { ssl_data_->SetNextProto(kProtoHTTP2); }
 
   std::unique_ptr<HttpNetworkSession> CreateNetworkSession() {
     return SpdySessionDependencies::SpdyCreateSession(&session_deps_);
@@ -244,16 +233,12 @@ class HttpProxyClientSocketPoolTest
 INSTANTIATE_TEST_CASE_P(
     HttpProxyClientSocketPoolTests,
     HttpProxyClientSocketPoolTest,
-    ::testing::Values(
-        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY31, false),
-        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY31, false),
-        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY31, false),
-        HttpProxyClientSocketPoolTestParams(HTTP, kProtoHTTP2, false),
-        HttpProxyClientSocketPoolTestParams(HTTP, kProtoHTTP2, true),
-        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoHTTP2, false),
-        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoHTTP2, true),
-        HttpProxyClientSocketPoolTestParams(SPDY, kProtoHTTP2, false),
-        HttpProxyClientSocketPoolTestParams(SPDY, kProtoHTTP2, true)));
+    ::testing::Values(HttpProxyClientSocketPoolTestParams(HTTP, false),
+                      HttpProxyClientSocketPoolTestParams(HTTP, true),
+                      HttpProxyClientSocketPoolTestParams(HTTPS, false),
+                      HttpProxyClientSocketPoolTestParams(HTTPS, true),
+                      HttpProxyClientSocketPoolTestParams(SPDY, false),
+                      HttpProxyClientSocketPoolTestParams(SPDY, true)));
 
 TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);
@@ -306,7 +291,6 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
   SpdyHeaderBlock resp_block;
   resp_block[spdy_util_.GetStatusKey()] = "407";
   resp_block["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
-  spdy_util_.MaybeAddVersionHeader(&resp_block);
 
   std::unique_ptr<SpdySerializedFrame> resp(
       spdy_util_.ConstructSpdyReply(1, std::move(resp_block)));

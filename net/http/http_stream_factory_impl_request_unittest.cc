@@ -20,19 +20,11 @@ using testing::_;
 
 namespace net {
 
-class HttpStreamFactoryImplRequestTest
-    : public ::testing::Test,
-      public ::testing::WithParamInterface<NextProto> {};
-
-INSTANTIATE_TEST_CASE_P(NextProto,
-                        HttpStreamFactoryImplRequestTest,
-                        testing::Values(kProtoSPDY31,
-                                        kProtoHTTP2));
+class HttpStreamFactoryImplRequestTest : public ::testing::Test {};
 
 // Make sure that Request passes on its priority updates to its jobs.
-TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
-  SpdySessionDependencies session_deps(GetParam(),
-                                       ProxyService::CreateDirect());
+TEST_F(HttpStreamFactoryImplRequestTest, SetPriority) {
+  SpdySessionDependencies session_deps(ProxyService::CreateDirect());
   std::unique_ptr<HttpNetworkSession> session =
       SpdySessionDependencies::SpdyCreateSession(&session_deps);
   HttpStreamFactoryImpl* factory =
@@ -63,9 +55,8 @@ TEST_P(HttpStreamFactoryImplRequestTest, SetPriority) {
   EXPECT_EQ(IDLE, job_controller->main_job()->priority());
 }
 
-TEST_P(HttpStreamFactoryImplRequestTest, DelayMainJob) {
-  SpdySessionDependencies session_deps(GetParam(),
-                                       ProxyService::CreateDirect());
+TEST_F(HttpStreamFactoryImplRequestTest, DelayMainJob) {
+  SpdySessionDependencies session_deps(ProxyService::CreateDirect());
 
   std::unique_ptr<HttpNetworkSession> session =
       SpdySessionDependencies::SpdyCreateSession(&session_deps);

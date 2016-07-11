@@ -45,16 +45,11 @@ namespace test {
 namespace {
 
 enum TestCase {
-  // Test using the SPDY/3.1 protocol.
-  kTestCaseSPDY31,
+  // Test without specifying a stream dependency based on the RequestPriority.
+  kTestCaseNoPriorityDependencies,
 
-  // Test using the HTTP/2 protocol, without specifying a stream
-  // dependency based on the RequestPriority.
-  kTestCaseHTTP2NoPriorityDependencies,
-
-  // Test using the HTTP/2 protocol, specifying a stream
-  // dependency based on the RequestPriority.
-  kTestCaseHTTP2PriorityDependencies
+  // Test specifying a stream dependency based on the RequestPriority.
+  kTestCasePriorityDependencies
 };
 
 const char kStreamUrl[] = "http://www.example.org/";
@@ -72,10 +67,7 @@ class SpdyStreamTest : public ::testing::Test,
   typedef base::Callback<void(const base::WeakPtr<SpdyStream>&, int32_t)>
       UnstallFunction;
 
-  SpdyStreamTest()
-      : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
-        session_deps_(GetProtocol()),
-        offset_(0) {
+  SpdyStreamTest() : spdy_util_(GetDependenciesFromPriority()), offset_(0) {
     spdy_util_.set_default_url(GURL(kStreamUrl));
     session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
@@ -92,12 +84,8 @@ class SpdyStreamTest : public ::testing::Test,
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
-  NextProto GetProtocol() const {
-    return GetParam() == kTestCaseSPDY31 ? kProtoSPDY31 : kProtoHTTP2;
-  }
-
   bool GetDependenciesFromPriority() const {
-    return GetParam() == kTestCaseHTTP2PriorityDependencies;
+    return GetParam() == kTestCasePriorityDependencies;
   }
 
   void RunResumeAfterUnstallRequestResponseTest(
@@ -161,9 +149,8 @@ class SpdyStreamTest : public ::testing::Test,
 
 INSTANTIATE_TEST_CASE_P(ProtoPlusDepend,
                         SpdyStreamTest,
-                        testing::Values(kTestCaseSPDY31,
-                                        kTestCaseHTTP2NoPriorityDependencies,
-                                        kTestCaseHTTP2PriorityDependencies));
+                        testing::Values(kTestCaseNoPriorityDependencies,
+                                        kTestCasePriorityDependencies));
 
 TEST_P(SpdyStreamTest, SendDataAfterOpen) {
   GURL url(kStreamUrl);
@@ -339,7 +326,6 @@ TEST_P(SpdyStreamTest, PushedStream) {
   // Send some basic response headers.
   SpdyHeaderBlock response;
   response[spdy_util_.GetStatusKey()] = "200";
-  response[spdy_util_.GetVersionKey()] = "OK";
   stream->OnInitialResponseHeadersReceived(response, response_time,
                                            first_byte_time);
 
@@ -1134,7 +1120,7 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
 
   int64_t reply_frame_len = reply->size();
   int64_t data_header_len = SpdyConstants::GetDataFrameMinimumSize(
-      NextProtoToSpdyMajorVersion(GetProtocol()));
+      NextProtoToSpdyMajorVersion(kProtoHTTP2));
   int64_t data_frame_len = data_header_len + kPostBodyLength;
   int64_t response_len = reply_frame_len + data_frame_len;
 

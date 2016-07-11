@@ -2039,10 +2039,10 @@ TEST(SSLClientSocket, ClearSessionCache) {
 TEST(SSLClientSocket, SerializeNextProtos) {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoSPDY31);
+  next_protos.push_back(kProtoHTTP2);
   static std::vector<uint8_t> serialized =
       SSLClientSocket::SerializeNextProtos(next_protos);
-  ASSERT_EQ(18u, serialized.size());
+  ASSERT_EQ(12u, serialized.size());
   EXPECT_EQ(8, serialized[0]);  // length("http/1.1")
   EXPECT_EQ('h', serialized[1]);
   EXPECT_EQ('t', serialized[2]);
@@ -2052,15 +2052,9 @@ TEST(SSLClientSocket, SerializeNextProtos) {
   EXPECT_EQ('1', serialized[6]);
   EXPECT_EQ('.', serialized[7]);
   EXPECT_EQ('1', serialized[8]);
-  EXPECT_EQ(8, serialized[9]);  // length("spdy/3.1")
-  EXPECT_EQ('s', serialized[10]);
-  EXPECT_EQ('p', serialized[11]);
-  EXPECT_EQ('d', serialized[12]);
-  EXPECT_EQ('y', serialized[13]);
-  EXPECT_EQ('/', serialized[14]);
-  EXPECT_EQ('3', serialized[15]);
-  EXPECT_EQ('.', serialized[16]);
-  EXPECT_EQ('1', serialized[17]);
+  EXPECT_EQ(2, serialized[9]);  // length("h2")
+  EXPECT_EQ('h', serialized[10]);
+  EXPECT_EQ('2', serialized[11]);
 }
 
 // Test that the server certificates are properly retrieved from the underlying
@@ -3116,47 +3110,6 @@ TEST_F(SSLClientSocketTest, NPN) {
   std::string proto;
   EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, sock_->GetNextProto(&proto));
   EXPECT_EQ("h2", proto);
-}
-
-// In case of no overlap between client and server list, SSLClientSocket should
-// fall back to last one on the client list.
-TEST_F(SSLClientSocketTest, NPNNoOverlap) {
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.npn_protocols.push_back(std::string("http/1.1"));
-  ASSERT_TRUE(StartTestServer(server_options));
-
-  SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoSPDY31);
-  client_config.npn_protos.push_back(kProtoHTTP2);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-
-  std::string proto;
-  EXPECT_EQ(SSLClientSocket::kNextProtoNoOverlap, sock_->GetNextProto(&proto));
-  EXPECT_EQ("h2", proto);
-}
-
-// Server preference should be respected.  The list is in decreasing order of
-// preference.
-TEST_F(SSLClientSocketTest, NPNServerPreference) {
-  SpawnedTestServer::SSLOptions server_options;
-  server_options.npn_protocols.push_back(std::string("spdy/3.1"));
-  server_options.npn_protocols.push_back(std::string("h2"));
-  ASSERT_TRUE(StartTestServer(server_options));
-
-  SSLConfig client_config;
-  client_config.npn_protos.push_back(kProtoHTTP2);
-  client_config.npn_protos.push_back(kProtoSPDY31);
-
-  int rv;
-  ASSERT_TRUE(CreateAndConnectSSLClientSocket(client_config, &rv));
-  EXPECT_THAT(rv, IsOk());
-
-  std::string proto;
-  EXPECT_EQ(SSLClientSocket::kNextProtoNegotiated, sock_->GetNextProto(&proto));
-  EXPECT_EQ("spdy/3.1", proto);
 }
 
 // If npn_protos.empty(), then NPN should be disabled, even if

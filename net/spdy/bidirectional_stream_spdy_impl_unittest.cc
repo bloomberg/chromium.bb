@@ -207,8 +207,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
 class BidirectionalStreamSpdyImplTest : public testing::Test {
  public:
   BidirectionalStreamSpdyImplTest()
-      : spdy_util_(kProtoHTTP2, true),
-        session_deps_(kProtoHTTP2),
+      : spdy_util_(true),
         default_url_(kDefaultUrl),
         host_port_pair_(HostPortPair::FromURL(default_url_)),
         key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED),
@@ -307,7 +306,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
 }
 
 TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterCancelStream) {
-  BufferedSpdyFramer framer(spdy_util_.spdy_version());
+  BufferedSpdyFramer framer(HTTP2);
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));

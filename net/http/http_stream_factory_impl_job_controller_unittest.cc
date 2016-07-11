@@ -34,7 +34,7 @@ class HttpStreamFactoryImplJobControllerTest
       public ::testing::WithParamInterface<NextProto> {
  public:
   HttpStreamFactoryImplJobControllerTest()
-      : session_deps_(GetParam(), ProxyService::CreateDirect()) {
+      : session_deps_(ProxyService::CreateDirect()) {
     session_deps_.enable_quic = true;
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
     factory_ =
@@ -66,11 +66,7 @@ class HttpStreamFactoryImplJobControllerTest
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactoryImplJobControllerTest);
 };
 
-INSTANTIATE_TEST_CASE_P(NextProto,
-                        HttpStreamFactoryImplJobControllerTest,
-                        testing::Values(kProtoSPDY31, kProtoHTTP2));
-
-TEST_P(HttpStreamFactoryImplJobControllerTest,
+TEST_F(HttpStreamFactoryImplJobControllerTest,
        OnStreamFailedWithNoAlternativeJob) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -90,7 +86,7 @@ TEST_P(HttpStreamFactoryImplJobControllerTest,
                                   SSLConfig());
 }
 
-TEST_P(HttpStreamFactoryImplJobControllerTest,
+TEST_F(HttpStreamFactoryImplJobControllerTest,
        OnStreamReadyWithNoAlternativeJob) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -116,7 +112,7 @@ TEST_P(HttpStreamFactoryImplJobControllerTest,
 
 // Test we cancel Jobs correctly when the Request is explicitly canceled
 // before any Job is bound to Request.
-TEST_P(HttpStreamFactoryImplJobControllerTest, CancelJobsBeforeBinding) {
+TEST_F(HttpStreamFactoryImplJobControllerTest, CancelJobsBeforeBinding) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
@@ -139,7 +135,7 @@ TEST_P(HttpStreamFactoryImplJobControllerTest, CancelJobsBeforeBinding) {
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
-TEST_P(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
+TEST_F(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
@@ -172,7 +168,7 @@ TEST_P(HttpStreamFactoryImplJobControllerTest, OnStreamFailedForBothJobs) {
                                   SSLConfig());
 }
 
-TEST_P(HttpStreamFactoryImplJobControllerTest,
+TEST_F(HttpStreamFactoryImplJobControllerTest,
        SecondJobFailsAfterFirstJobSucceeds) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -214,7 +210,7 @@ TEST_P(HttpStreamFactoryImplJobControllerTest,
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
-TEST_P(HttpStreamFactoryImplJobControllerTest,
+TEST_F(HttpStreamFactoryImplJobControllerTest,
        SecondJobSucceedsAfterFirstJobFailed) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -253,7 +249,7 @@ TEST_P(HttpStreamFactoryImplJobControllerTest,
 
 // Regression test for crbug/621069.
 // Get load state after main job fails and before alternative job succeeds.
-TEST_P(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
+TEST_F(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");
