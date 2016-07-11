@@ -270,7 +270,6 @@ class DepsUpdater(object):
                 break
             else:
                 sets[result_type].add(line.split()[0])
-            print sets
         sets['Failures'] -= sets['Successes']
         sets['Started'] -= sets['Successes']
         sets['Started'] -= sets['Failures']
