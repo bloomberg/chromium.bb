@@ -38,8 +38,7 @@ DocumentResource* DocumentResource::fetchSVGDocument(FetchRequest& request, Reso
 }
 
 DocumentResource::DocumentResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
-    : Resource(request, type, options)
-    , m_decoder(TextResourceDecoder::create("application/xml"))
+    : TextResource(request, type, options, "application/xml", String())
 {
     // FIXME: We'll support more types to support HTMLImports.
     ASSERT(type == SVGDocument);
@@ -55,25 +54,12 @@ DEFINE_TRACE(DocumentResource)
     Resource::trace(visitor);
 }
 
-void DocumentResource::setEncoding(const String& chs)
-{
-    m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
-}
-
-String DocumentResource::encoding() const
-{
-    return m_decoder->encoding().name();
-}
-
 void DocumentResource::checkNotify()
 {
     if (m_data && mimeTypeAllowed()) {
-        StringBuilder decodedText;
-        decodedText.append(m_decoder->decode(m_data->data(), m_data->size()));
-        decodedText.append(m_decoder->flush());
         // We don't need to create a new frame because the new document belongs to the parent UseElement.
         m_document = createDocument(response().url());
-        m_document->setContent(decodedText.toString());
+        m_document->setContent(decodedText());
     }
     Resource::checkNotify();
 }
