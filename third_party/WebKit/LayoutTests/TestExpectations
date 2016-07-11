@@ -1374,7 +1374,8 @@ crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrup
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
-crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
+# TODO(fmalita): re-enable
+# crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ Failure ]
 crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profile-lossy.html [ Failure ]
 
 crbug.com/625020 [ Debug ] compositing/repaint/page-scale-repaint.html [ Timeout ]
@@ -1385,3 +1386,5 @@ crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 crbug.com/625909 virtual/gpu-rasterization/fast/images/color-profile-group.html  [ NeedsRebaseline ]
 crbug.com/625909 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
 crbug.com/626823 virtual/gpu-rasterization/fast/images/color-profile-iframe.html [ NeedsManualRebaseline ]
+crbug.com/626823 virtual/gpu-rasterization/fast/images/jpeg-with-color-profile.html [ NeedsManualRebaseline ]
+crbug.com/626823 virtual/gpu-rasterization/fast/images/png-with-color-profile.html [ NeedsManualRebaseline ]
