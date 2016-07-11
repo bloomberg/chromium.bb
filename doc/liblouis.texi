@@ -128,6 +128,7 @@ How to Write Translation Tables
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
+* The match Opcodes::
 * Miscellaneous Opcodes::
 
 Emphasis Opcodes
@@ -277,6 +278,7 @@ program in which you can test your work.
 * Swap Opcodes::
 * The Context and Multipass Opcodes::
 * The correct Opcode::
+* The match Opcodes::
 * Miscellaneous Opcodes::
 @end menu
 
@@ -1529,6 +1531,162 @@ correct "\s?" "?" drop space before question mark
 @end example
 
 @end table
+
+@node The match Opcodes
+@section The match Opcodes
+
+In my most recent update, I have added to opcodes; attribute and
+match. They work together and their description is complex. I would
+recommend looking at the en-ueb-g2.ctb table to get the best idea
+about how they are used as the following descriptions and examples are
+terse.
+
+@table @code
+@opcode{attribute bit CHARACTERS}
+
+Sets the CTC_UserDefined# bit on the list of CHARACTERS.  There are 0 - 7 bits available.
+
+@opcode{match, pre-pattern characters post-pattern dots}
+
+This opcode allows for matching a string of characters via pre and
+post patterns. The patterns are specified using an expression syntax
+somewhat like regular expressions. A single hyphen by itself means no
+pattern is specified.
+
+The following will replace @samp{xyz} with the dots
+@samp{1346-13456-1356} when it appears in the string @samp{abxyzcd}.
+
+@example
+match ab xyz cd 1346-13456-1356
+@end example
+
+The following will replace @samp{ONE} with @samp{3456-1} when it
+starts the input and is followed by @samp{:}
+
+@example
+match ^ ONE : 3456-1
+@end example
+@end table
+
+The list of expression specifiers:
+
+@table @samp
+@item [ ]
+Expression can be any of the characters between the brackets. If only
+one character present then the brackets are not needed unless it is a
+special character, in which it should be escaped with the backslash.
+
+@item .
+Expression can be any character.
+
+@item %[ ]
+Expression is a character with the attributes listed between the
+brackets. If only one character is present then the brackets are not
+needed. The set of attributes are specifed as follows:
+
+@table @samp
+@item _
+CTC_Space
+@item #
+CTC_Digit
+@item a
+CTC_Letter
+@item u
+CTC_UpperCase
+@item l
+CTC_LowerCase
+@item .
+CTC_Punctuation
+@item $
+CTC_Sign
+@item ~
+CTC_SeqDelimiter
+@item <
+CTC_SeqBefore
+@item >
+CTC_SeqAfter
+@item 0
+CTC_UserDefined0  (set via the attribute opcode)
+@item 1
+CTC_UserDefined1
+@item 2
+CTC_UserDefined2
+@item 3
+CTC_UserDefined3
+@item 4
+CTC_UserDefined4
+@item 5
+CTC_UserDefined5
+@item 6
+CTC_UserDefined6
+@item 7
+CTC_UserDefined7
+@item ^
+CTC_EndOfInput  (Special use for pattern matcher)
+@end table
+
+@item ^
+Match at the end of input processing (or beginning depending of the
+direction pre or post).
+
+@item $
+Same as ^.
+@end table
+
+For example the following will replace @samp{bb} with the dots @samp{23} when it
+is between letters.
+
+@example
+match %a bb %a 23
+@end example
+
+The following will replace @samp{con} with the dots @samp{25} when it
+is preceded by a space, seqdelimiter, or beginning of input, and
+followed by an @samp{s} and then any letter.
+
+@example
+match %[^_~] con s%a 25  cons  "mod cons" 10.6.4
+@end example
+
+Expression can be modified by the following:
+
+@table @samp
+@item ( )
+Expressions between parentheses are grouped together as one
+expression.
+
+@item !
+The following expression is negated.
+
+@item ?
+The previous expression must match zero or one times.
+
+@item *
+The previous expression must match zero or more times.
+
+@item +
+The previous expression must match one or more times.
+
+@item |
+Either the previous or the following expressions must match.
+@end table
+
+For example the following will replace @samp{ing} with the dots
+@samp{346} when it is NOT preceded by a space, seqdelimiter, or
+beginning of input.  What is after it does not matter
+
+@example
+!%[^_~] ing - 346
+@end example
+
+The following will replace @samp{con} with the dots @samp{25} when it
+is preceded by a space, seqdelimiter, or beginning of input, then zero
+or more CTC_SeqBefore characters; then followed by a @samp{c} that is
+followed by any character but @samp{h}.
+
+@example
+match %[^_~]%<* con c!h 25
+@end example
 
 @node Miscellaneous Opcodes
 @section Miscellaneous Opcodes
