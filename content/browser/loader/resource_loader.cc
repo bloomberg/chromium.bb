@@ -694,13 +694,19 @@ void ResourceLoader::CallDidFinishLoading() {
 }
 
 void ResourceLoader::RecordHistograms() {
-  if (request_->response_info().network_accessed) {
-    UMA_HISTOGRAM_ENUMERATION("Net.HttpResponseInfo.ConnectionInfo",
-                              request_->response_info().connection_info,
-                              net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
-  }
-
   ResourceRequestInfoImpl* info = GetRequestInfo();
+  if (request_->response_info().network_accessed) {
+    if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
+      UMA_HISTOGRAM_ENUMERATION("Net.HttpResponseInfo.ConnectionInfo.MainFrame",
+                                request_->response_info().connection_info,
+                                net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Net.HttpResponseInfo.ConnectionInfo.SubResource",
+          request_->response_info().connection_info,
+          net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
+    }
+  }
 
   if (info->GetResourceType() == RESOURCE_TYPE_PREFETCH) {
     PrefetchStatus status = STATUS_UNDEFINED;

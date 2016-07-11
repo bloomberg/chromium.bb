@@ -609,7 +609,7 @@ class QuicNetworkTransactionTest
     EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
     EXPECT_FALSE(response->was_fetched_via_spdy);
     EXPECT_FALSE(response->was_npn_negotiated);
-    EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1,
+    EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
               response->connection_info);
   }
 

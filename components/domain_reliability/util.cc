@@ -108,7 +108,9 @@ std::string GetDomainReliabilityProtocol(
   switch (connection_info) {
     case net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN:
       return "";
-    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP0_9:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_0:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1:
       return ssl_info_populated ? "HTTPS" : "HTTP";
     case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2:
     case net::HttpResponseInfo::CONNECTION_INFO_SPDY3:

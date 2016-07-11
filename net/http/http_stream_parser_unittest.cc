@@ -1140,12 +1140,15 @@ TEST(HttpStreamParser, ReceivedBytesNoHeaders) {
   int read_lengths[] = {response_size, 0};
   get_runner.ReadBody(response_size, read_lengths);
   EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP0_9,
+            get_runner.response_info()->connection_info);
 }
 
 // Test basic case where there is no keep-alive or extra data from the socket,
 // and the entire response is received in a single read.
 TEST(HttpStreamParser, ReceivedBytesNormal) {
-  std::string headers = "HTTP/1.1 200 OK\r\n"
+  std::string headers =
+      "HTTP/1.0 200 OK\r\n"
       "Content-Length: 7\r\n\r\n";
   std::string body = "content";
   std::string response = headers + body;
@@ -1161,6 +1164,8 @@ TEST(HttpStreamParser, ReceivedBytesNormal) {
   get_runner.ReadBody(body_size, read_lengths);
   int64_t response_size = response.size();
   EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1_0,
+            get_runner.response_info()->connection_info);
 }
 
 // Test that bytes that represent "next" response are not counted
@@ -1187,6 +1192,8 @@ TEST(HttpStreamParser, ReceivedBytesExcludesNextResponse) {
   EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
   int64_t next_response_size = next_response.size();
   EXPECT_EQ(next_response_size, get_runner.read_buffer()->offset());
+  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
+            get_runner.response_info()->connection_info);
 }
 
 // Test that "received_bytes" calculation works fine when last read
