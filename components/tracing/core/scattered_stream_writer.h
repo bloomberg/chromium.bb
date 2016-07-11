@@ -16,6 +16,10 @@ namespace v2 {
 struct ContiguousMemoryRange {
   uint8_t* begin;
   uint8_t* end;  // STL style: one byte past the end of the buffer.
+
+  inline bool is_valid() const { return begin != nullptr; }
+  inline void reset() { begin = nullptr; }
+  inline size_t size() { return static_cast<size_t>(end - begin); }
 };
 
 // This class deals with the following problem: append-only proto messages want

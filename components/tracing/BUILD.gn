@@ -14,6 +14,7 @@ component("tracing") {
     "common/process_metrics_memory_dump_provider.h",
     "common/tracing_messages.cc",
     "common/tracing_messages.h",
+    "core/proto_utils.h",
     "core/scattered_stream_writer.cc",
     "core/scattered_stream_writer.h",
     "core/trace_ring_buffer.cc",
@@ -58,6 +59,7 @@ source_set("unit_tests") {
     "child/child_trace_message_filter_unittest.cc",
     "common/graphics_memory_dump_provider_android_unittest.cc",
     "common/process_metrics_memory_dump_provider_unittest.cc",
+    "core/proto_utils_unittest.cc",
     "core/scattered_stream_writer_unittest.cc",
     "core/trace_ring_buffer_unittest.cc",
   ]
