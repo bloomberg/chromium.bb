@@ -16,7 +16,7 @@ class HTMLOptionElement;
 class CORE_EXPORT OptionListIterator final {
     STACK_ALLOCATED();
 public:
-    explicit OptionListIterator(HTMLSelectElement* select) : m_select(select)
+    explicit OptionListIterator(const HTMLSelectElement* select) : m_select(select)
     {
         if (m_select)
             advance(nullptr);
@@ -33,7 +33,7 @@ public:
 private:
     void advance(HTMLOptionElement* current);
 
-    Member<HTMLSelectElement> m_select;
+    Member<const HTMLSelectElement> m_select;
     Member<HTMLOptionElement> m_current; // nullptr means we reached to the end.
 };
 
@@ -41,13 +41,13 @@ private:
 class OptionList final {
     STACK_ALLOCATED();
 public:
-    explicit OptionList(HTMLSelectElement& select) : m_select(select) {}
+    explicit OptionList(const HTMLSelectElement& select) : m_select(select) {}
     using Iterator = OptionListIterator;
     Iterator begin() { return Iterator(m_select); }
     Iterator end() { return Iterator(nullptr); }
 
 private:
-    Member<HTMLSelectElement> m_select;
+    Member<const HTMLSelectElement> m_select;
 };
 
 } // namespace blink

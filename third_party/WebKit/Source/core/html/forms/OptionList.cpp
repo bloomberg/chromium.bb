@@ -28,7 +28,7 @@ void OptionListIterator::advance(HTMLOptionElement* previous)
             m_current = toHTMLOptionElement(current);
             return;
         }
-        if (isHTMLOptGroupElement(current) && current->parentNode() == m_select) {
+        if (isHTMLOptGroupElement(current) && current->parentNode() == m_select.get()) {
             if ((m_current = Traversal<HTMLOptionElement>::firstChild(*current)))
                 return;
         }

@@ -183,13 +183,8 @@ int HTMLOptionElement::index() const
         return 0;
 
     int optionIndex = 0;
-
-    const HeapVector<Member<HTMLElement>>& items = selectElement->listItems();
-    size_t length = items.size();
-    for (size_t i = 0; i < length; ++i) {
-        if (!isHTMLOptionElement(*items[i]))
-            continue;
-        if (items[i].get() == this)
+    for (const auto& option : selectElement->optionList()) {
+        if (option == this)
             return optionIndex;
         ++optionIndex;
     }

@@ -93,7 +93,7 @@ public:
     // This is similar to |options| HTMLCollection.  But this is safe in
     // HTMLOptionElement::removedFrom() and insertedInto().
     // OptionList supports only forward iteration.
-    OptionList optionList() { return OptionList(*this); }
+    OptionList optionList() const { return OptionList(*this); }
 
     void optionElementChildrenChanged(const HTMLOptionElement&);
 
@@ -204,8 +204,7 @@ private:
 
     void dispatchInputAndChangeEventForMenuList();
 
-    // |subject| is an element which was inserted or removed.
-    void setRecalcListItems(HTMLElement& subject);
+    void setRecalcListItems();
     void recalcListItems() const;
     enum ResetReason {
         ResetReasonSelectedOptionRemoved,
@@ -230,7 +229,7 @@ private:
     };
     typedef unsigned SelectOptionFlags;
     void selectOption(HTMLOptionElement*, SelectOptionFlags);
-    void deselectItemsWithoutValidation(HTMLElement* elementToExclude = 0);
+    void deselectItemsWithoutValidation(HTMLOptionElement* elementToExclude = nullptr);
     void parseMultipleAttribute(const AtomicString&);
     HTMLOptionElement* lastSelectedOption() const;
     void updateSelectedState(HTMLOptionElement*, bool multi, bool shift);

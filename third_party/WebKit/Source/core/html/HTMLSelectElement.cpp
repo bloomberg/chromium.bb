@@ -644,8 +644,8 @@ void HTMLSelectElement::saveListboxActiveSelection()
     //   m_activeSelectionEndIndex = 3, options at 1-3 indices are selected.
     //   updateListBoxSelection needs to clear selection of the fifth OPTION.
     m_cachedStateForActiveSelection.resize(0);
-    for (auto& element : listItems()) {
-        m_cachedStateForActiveSelection.append(isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected());
+    for (const auto& option : optionList()) {
+        m_cachedStateForActiveSelection.append(option->selected());
     }
 }
 
@@ -659,27 +659,27 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions, bool s
     ASSERT(layoutObject());
     ASSERT(layoutObject()->isListBox() || m_multiple);
 
-    int activeSelectionAnchorIndex = m_activeSelectionAnchor ? m_activeSelectionAnchor->listIndex() : -1;
-    int activeSelectionEndIndex = m_activeSelectionEnd ? m_activeSelectionEnd->listIndex() : -1;
+    int activeSelectionAnchorIndex = m_activeSelectionAnchor ? m_activeSelectionAnchor->index() : -1;
+    int activeSelectionEndIndex = m_activeSelectionEnd ? m_activeSelectionEnd->index() : -1;
     int start = std::min(activeSelectionAnchorIndex, activeSelectionEndIndex);
     int end = std::max(activeSelectionAnchorIndex, activeSelectionEndIndex);
 
-    const ListItems& items = listItems();
-    for (int i = 0; i < static_cast<int>(items.size()); ++i) {
-        if (!isHTMLOptionElement(*items[i]))
+    int i = 0;
+    for (const auto& option : optionList()) {
+        if (option->isDisabledFormControl() || !option->layoutObject()) {
+            ++i;
             continue;
-        HTMLOptionElement& option = toHTMLOptionElement(*items[i]);
-        if (option.isDisabledFormControl() || !option.layoutObject())
-            continue;
-        if (i >= start && i <= end) {
-            option.setSelectedState(m_activeSelectionState);
-            option.setDirty(true);
-        } else if (deselectOtherOptions || i >= static_cast<int>(m_cachedStateForActiveSelection.size())) {
-            option.setSelectedState(false);
-            option.setDirty(true);
-        } else {
-            option.setSelectedState(m_cachedStateForActiveSelection[i]);
         }
+        if (i >= start && i <= end) {
+            option->setSelectedState(m_activeSelectionState);
+            option->setDirty(true);
+        } else if (deselectOtherOptions || i >= static_cast<int>(m_cachedStateForActiveSelection.size())) {
+            option->setSelectedState(false);
+            option->setDirty(true);
+        } else {
+            option->setSelectedState(m_cachedStateForActiveSelection[i]);
+        }
+        ++i;
     }
 
     setNeedsValidityCheck();
@@ -770,54 +770,12 @@ void HTMLSelectElement::invalidateSelectedItems()
         collection->invalidateCache();
 }
 
-void HTMLSelectElement::setRecalcListItems(HTMLElement& subject)
+void HTMLSelectElement::setRecalcListItems()
 {
     // FIXME: This function does a bunch of confusing things depending on if it
     // is in the document or not.
 
-    bool shouldRecalc = true;
-    if (!m_shouldRecalcListItems && !isHTMLOptGroupElement(subject)) {
-        if (firstChild() == &subject) {
-            // The subject was prepended. This doesn't handle elements in an
-            // OPTGROUP.
-            DCHECK(m_listItems.size() == 0 || m_listItems[0] != &subject);
-            m_listItems.prepend(&subject);
-            shouldRecalc = false;
-        } else if (lastChild() == &subject) {
-            // The subject was appended. This doesn't handle elements in an
-            // OPTGROUP.
-            DCHECK(m_listItems.size() == 0 || m_listItems.last() != &subject);
-            m_listItems.append(&subject);
-            shouldRecalc = false;
-        } else if (!subject.isDescendantOf(this)) {
-            // |subject| was removed from this. This logic works well with
-            // SELECT children and OPTGROUP children.
-
-            // m_listItems might be empty, or might not have the OPTION.
-            //   1. Remove an OPTGROUP with OPTION children from a SELECT.
-            //   2. This function is called for the OPTGROUP removal.
-            //   3. m_shouldRecalcListItems becomes true.
-            //   4. recalcListItems() happens.  m_listItems has no OPTGROUP and
-            //      no its children.  m_shouldRecalcListItems becomes false.
-            //   5. This function is called for the removal of an OPTION child
-            //      of the OPTGROUP.
-            if (m_listItems.size() > 0) {
-                size_t index;
-                // Avoid Vector::find() in typical cases.
-                if (m_listItems.first() == &subject)
-                    index = 0;
-                else if (m_listItems.last() == &subject)
-                    index = m_listItems.size() - 1;
-                else
-                    index = m_listItems.find(&subject);
-                if (index != WTF::kNotFound) {
-                    m_listItems.remove(index);
-                    shouldRecalc = false;
-                }
-            }
-        }
-    }
-    m_shouldRecalcListItems = shouldRecalc;
+    m_shouldRecalcListItems = true;
 
     setOptionsChangedOnLayoutObject();
     if (!inShadowIncludingDocument()) {
@@ -918,9 +876,9 @@ void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
 
 HTMLOptionElement* HTMLSelectElement::selectedOption() const
 {
-    for (const auto& element : listItems()) {
-        if (isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected())
-            return toHTMLOptionElement(element);
+    for (const auto option : optionList()) {
+        if (option->selected())
+            return option;
     }
     return nullptr;
 }
@@ -1004,7 +962,7 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option, b
 void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsSelected)
 {
     ASSERT(option.ownerSelectElement() == this);
-    setRecalcListItems(option);
+    setRecalcListItems();
     if (optionIsSelected) {
         selectOption(&option, multiple() ? 0 : DeselectOtherOptions);
     } else {
@@ -1018,7 +976,7 @@ void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsS
 
 void HTMLSelectElement::optionRemoved(HTMLOptionElement& option)
 {
-    setRecalcListItems(option);
+    setRecalcListItems();
     if (option.selected())
         resetToDefaultSelection(ResetReasonSelectedOptionRemoved);
     else if (!m_lastOnChangeOption)
@@ -1041,14 +999,14 @@ void HTMLSelectElement::optionRemoved(HTMLOptionElement& option)
 
 void HTMLSelectElement::optGroupInsertedOrRemoved(HTMLOptGroupElement& optgroup)
 {
-    setRecalcListItems(optgroup);
+    setRecalcListItems();
     setNeedsValidityCheck();
     m_lastOnChangeSelection.clear();
 }
 
 void HTMLSelectElement::hrInsertedOrRemoved(HTMLHRElement& hr)
 {
-    setRecalcListItems(hr);
+    setRecalcListItems();
     m_lastOnChangeSelection.clear();
 }
 
@@ -1174,15 +1132,15 @@ void HTMLSelectElement::dispatchBlurEvent(Element* newFocusedElement, WebFocusTy
     HTMLFormControlElementWithState::dispatchBlurEvent(newFocusedElement, type, sourceCapabilities);
 }
 
-void HTMLSelectElement::deselectItemsWithoutValidation(HTMLElement* excludeElement)
+void HTMLSelectElement::deselectItemsWithoutValidation(HTMLOptionElement* excludeElement)
 {
     if (!multiple() && usesMenuList() && m_lastOnChangeOption && m_lastOnChangeOption != excludeElement) {
         m_lastOnChangeOption->setSelectedState(false);
         return;
     }
-    for (auto& element : listItems()) {
-        if (element != excludeElement && isHTMLOptionElement(*element))
-            toHTMLOptionElement(element)->setSelectedState(false);
+    for (const auto& option : optionList()) {
+        if (option != excludeElement)
+            option->setSelectedState(false);
     }
 }
 
