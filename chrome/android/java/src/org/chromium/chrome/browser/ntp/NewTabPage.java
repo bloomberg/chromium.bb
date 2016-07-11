@@ -166,6 +166,11 @@ public class NewTabPage
         boolean isVoiceSearchEnabled();
 
         /**
+         * @return Whether the URL bar is currently focused.
+         */
+        boolean isUrlBarFocused();
+
+        /**
          * Focuses the URL bar when the user taps the fakebox, types in the fakebox, or pastes text
          * into the fakebox.
          *
@@ -679,6 +684,13 @@ public class NewTabPage
         mFakeboxDelegate = fakeboxDelegate;
         if (mFakeboxDelegate != null) {
             mNewTabPageView.updateVoiceSearchButtonVisibility();
+
+            // The toolbar can't get the reference to the native page until its initialization is
+            // finished, so we can't cache it here and transfer it to the view later. We pull that
+            // state from the location bar when we get a reference to it as a workaround.
+            if (fakeboxDelegate.isUrlBarFocused()) {
+                mNewTabPageView.setUrlFocusChangeAnimationPercent(1f);
+            }
         }
     }
 

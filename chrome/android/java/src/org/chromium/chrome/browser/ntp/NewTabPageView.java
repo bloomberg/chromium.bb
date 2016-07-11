@@ -113,6 +113,8 @@ public class NewTabPageView extends FrameLayout
     private float mUrlFocusChangePercent;
     private boolean mDisableUrlFocusChangeAnimations;
 
+    /** Flag used to request some layout changes after the next layout pass is completed. */
+    private boolean mTileCountChanged;
     private boolean mSnapshotMostVisitedChanged;
     private int mSnapshotWidth;
     private int mSnapshotHeight;
@@ -351,7 +353,7 @@ public class NewTabPageView extends FrameLayout
             params.bottomMargin = 0;
         }
 
-        addOnLayoutChangeListener(this);
+        mNewTabPageLayout.addOnLayoutChangeListener(this);
         setSearchProviderHasLogo(searchProviderHasLogo);
 
         mPendingLoadTasks++;
@@ -790,9 +792,11 @@ public class NewTabPageView extends FrameLayout
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom,
             int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        int oldWidth = oldRight - oldLeft;
-        int newWidth = right - left;
-        if (oldWidth == newWidth) return;
+        int oldHeight = oldBottom - oldTop;
+        int newHeight = bottom - top;
+
+        if (oldHeight == newHeight && !mTileCountChanged) return;
+        mTileCountChanged = false;
 
         // Re-apply the url focus change amount after a rotation to ensure the views are correctly
         // placed with their new layout configurations.
@@ -874,6 +878,12 @@ public class NewTabPageView extends FrameLayout
 
         mHasReceivedMostVisitedSites = true;
         updateMostVisitedPlaceholderVisibility();
+
+        if (mUrlFocusChangePercent == 1f && oldItemCount != mMostVisitedItems.length) {
+            // If the number of NTP Tile rows change while the URL bar is focused, the icons'
+            // position will be wrong. Schedule the translation to be updated.
+            mTileCountChanged = true;
+        }
 
         if (isInitialLoad) {
             loadTaskCompleted();
