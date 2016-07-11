@@ -191,6 +191,8 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_4000) {
   CompositorFrame frame;
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
+                      gfx::Transform());
   render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 4000; ++i) {
     const gfx::Rect bounds(100, 100, 100, 100);
@@ -212,6 +214,8 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_1_100000) {
   CompositorFrame frame;
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
+                      gfx::Transform());
   render_pass->CreateAndAppendSharedQuadState();
   for (int i = 0; i < 100000; ++i) {
     const gfx::Rect bounds(100, 100, 100, 100);
@@ -233,6 +237,8 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_4000_4000) {
   CompositorFrame frame;
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
+                      gfx::Transform());
   for (int i = 0; i < 4000; ++i) {
     const gfx::Rect bounds(100, 100, 100, 100);
     const bool kForceAntiAliasingOff = true;
@@ -254,6 +260,8 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyQuads_100000_100000) {
   CompositorFrame frame;
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
+                      gfx::Transform());
   for (int i = 0; i < 100000; ++i) {
     render_pass->CreateAndAppendSharedQuadState();
     const gfx::Rect bounds(100, 100, 100, 100);
@@ -277,6 +285,8 @@ TEST_F(CCSerializationPerfTest, DelegatedFrame_ManyRenderPasses_10000_100) {
 
   for (int i = 0; i < 1000; ++i) {
     std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+    render_pass->SetNew(RenderPassId(1, 1), gfx::Rect(), gfx::Rect(),
+                        gfx::Transform());
     for (int j = 0; j < 100; ++j) {
       render_pass->CreateAndAppendSharedQuadState();
       const gfx::Rect bounds(100, 100, 100, 100);
