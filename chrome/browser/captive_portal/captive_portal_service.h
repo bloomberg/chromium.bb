@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -27,7 +26,7 @@ class Profile;
 // Captive portal checks are rate-limited.  The CaptivePortalService may only
 // be accessed on the UI thread.
 // Design doc: https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
-class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
+class CaptivePortalService : public KeyedService {
  public:
   enum TestingState {
     NOT_TESTING,
@@ -151,7 +150,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   void set_test_url(const GURL& test_url) { test_url_ = test_url; }
 
   // The profile that owns this CaptivePortalService.
-  Profile* profile_;
+  Profile* const profile_;
 
   State state_;
 
@@ -196,7 +195,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   static TestingState testing_state_;
 
   // Test tick clock used by unit tests.
-  base::TickClock* tick_clock_for_testing_;  // Not owned.
+  base::TickClock* const tick_clock_for_testing_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalService);
 };

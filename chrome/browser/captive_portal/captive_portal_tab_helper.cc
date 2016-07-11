@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -44,17 +45,19 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
                      web_contents,
                      false))),
       login_detector_(new CaptivePortalLoginDetector(profile_)) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   registrar_.Add(this,
                  chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
                  content::Source<Profile>(profile_));
 }
 
 CaptivePortalTabHelper::~CaptivePortalTabHelper() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void CaptivePortalTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!navigation_handle->IsInMainFrame())
     return;
 
@@ -73,7 +76,7 @@ void CaptivePortalTabHelper::DidStartNavigation(
 
 void CaptivePortalTabHelper::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (navigation_handle != navigation_handle_)
     return;
   DCHECK(navigation_handle->IsInMainFrame());
@@ -83,7 +86,7 @@ void CaptivePortalTabHelper::DidRedirectNavigation(
 
 void CaptivePortalTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!navigation_handle->IsInMainFrame())
     return;
 
@@ -114,7 +117,7 @@ void CaptivePortalTabHelper::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
   DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
 

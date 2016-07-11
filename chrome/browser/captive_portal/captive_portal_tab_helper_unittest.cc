@@ -50,7 +50,7 @@ enum NavigationType {
 class MockCaptivePortalTabReloader : public CaptivePortalTabReloader {
  public:
   MockCaptivePortalTabReloader()
-      : CaptivePortalTabReloader(NULL, NULL, base::Callback<void()>()) {
+      : CaptivePortalTabReloader(nullptr, nullptr, base::Callback<void()>()) {
   }
 
   MOCK_METHOD1(OnLoadStart, void(bool));
@@ -86,6 +86,11 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
     tab_helper_.reset(new CaptivePortalTabHelper(web_contents()));
     tab_helper_->profile_ = nullptr;
     tab_helper_->SetTabReloaderForTest(mock_reloader_);
+  }
+
+  void TearDown() override {
+    tab_helper_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
   }
 
   // Simulates a successful load of |url|.
@@ -175,7 +180,7 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
   // Simulates a captive portal redirect by calling the Observe method.
   void ObservePortalResult(CaptivePortalResult previous_result,
                            CaptivePortalResult result) {
-    content::Source<Profile> source_profile(NULL);
+    content::Source<Profile> source_profile(nullptr);
 
     CaptivePortalService::Results results;
     results.previous_result = previous_result;

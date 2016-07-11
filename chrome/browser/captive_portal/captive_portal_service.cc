@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_types.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_WIN)
@@ -181,6 +182,7 @@ CaptivePortalService::CaptivePortalService(Profile* profile,
       num_checks_with_same_result_(0),
       test_url_(captive_portal::CaptivePortalDetector::kDefaultURL),
       tick_clock_for_testing_(clock_for_testing) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // The order matters here:
   // |resolve_errors_with_web_service_| must be initialized and |backoff_entry_|
   // created before the call to UpdateEnabledState.
@@ -195,10 +197,11 @@ CaptivePortalService::CaptivePortalService(Profile* profile,
 }
 
 CaptivePortalService::~CaptivePortalService() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void CaptivePortalService::DetectCaptivePortal() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Detection should be disabled only in tests.
   if (testing_state_ == IGNORE_REQUESTS_FOR_TESTING)
@@ -220,7 +223,7 @@ void CaptivePortalService::DetectCaptivePortal() {
 }
 
 void CaptivePortalService::DetectCaptivePortalInternal() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(state_ == STATE_TIMER_RUNNING || state_ == STATE_IDLE);
   DCHECK(!TimerRunning());
 
@@ -243,7 +246,7 @@ void CaptivePortalService::DetectCaptivePortalInternal() {
 
 void CaptivePortalService::OnPortalDetectionCompleted(
     const captive_portal::CaptivePortalDetector::Results& results) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(STATE_CHECKING_FOR_PORTAL, state_);
   DCHECK(!TimerRunning());
   DCHECK(enabled_);
@@ -301,7 +304,7 @@ void CaptivePortalService::OnPortalDetectionCompleted(
 }
 
 void CaptivePortalService::Shutdown() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (enabled_) {
     RecordRepeatHistograms(
         last_detection_result_,
@@ -343,7 +346,7 @@ void CaptivePortalService::ResetBackoffEntry(CaptivePortalResult result) {
 }
 
 void CaptivePortalService::UpdateEnabledState() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool enabled_before = enabled_;
   enabled_ = testing_state_ != DISABLED_FOR_TESTING &&
              resolve_errors_with_web_service_.GetValue();
@@ -380,8 +383,7 @@ void CaptivePortalService::UpdateEnabledState() {
 base::TimeTicks CaptivePortalService::GetCurrentTimeTicks() const {
   if (tick_clock_for_testing_)
     return tick_clock_for_testing_->NowTicks();
-  else
-    return base::TimeTicks::Now();
+  return base::TimeTicks::Now();
 }
 
 bool CaptivePortalService::DetectionInProgress() const {
