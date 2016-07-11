@@ -225,13 +225,11 @@
 	and pending input regions become undefined, and the wl_surface is
 	unmapped.
 
-	This request gives the surface the role of a cursor. The role
-	assigned by this request is the same as assigned by
-	wl_pointer.set_cursor meaning the same surface can be
-	used both as a wl_pointer cursor and a wp_tablet cursor. If the
-	surface already has another role, it raises a protocol error.
-	The surface may be used on multiple tablets and across multiple
-	seats.
+	This request gives the surface the role of a wp_tablet_tool cursor. A
+	surface may only ever be used as the cursor surface for one
+	wp_tablet_tool. If the surface already has another role or has
+	previously been used as cursor surface for a different tool, a
+	protocol error is raised.
       </description>
       <arg name="serial" type="uint" summary="serial of the enter event"/>
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
