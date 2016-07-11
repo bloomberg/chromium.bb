@@ -1757,19 +1757,14 @@ doCompEmph ()
 static int
 insertBrailleIndicators (int finish)
 {
-/*Insert braille indicators such as italic, bold, capital, 
-* letter, number, etc.*/
+/*Insert braille indicators such as letter, number, etc.*/
   typedef enum
   {
     checkNothing,
     checkBeginTypeform,
     checkEndTypeform,
     checkNumber,
-    checkLetter,
-    checkBeginMultCaps,
-    checkEndMultCaps,
-    checkSingleCap,
-    checkAll
+    checkLetter
   } checkThis;
   checkThis checkWhat = checkNothing;
   int ok = 0;
@@ -1821,18 +1816,11 @@ insertBrailleIndicators (int finish)
 	  break;
 	case checkBeginTypeform:
 	  if (haveEmphasis)
-	    switch (curType)
-	      {
-	      case plain_text:
-		ok = 0;
-		break;
-		
-		default:
+	  {
 		ok = 0;
 		curType = 0;
-		break;
-	      }
-	  if (!curType)
+	  }
+	  if (curType == plain_text)
 	    {
 	      if (!finish)
 		checkWhat = checkNothing;
@@ -1842,17 +1830,10 @@ insertBrailleIndicators (int finish)
 	  break;
 	case checkEndTypeform:
 	  if (haveEmphasis)
-	    switch (prevType)
-	      {
-	      case plain_text:
+	  {
 		ok = 0;
-		break;
-		
-		default:
-		ok = 0;
-		prevType = 0;
-		break;
-	      }
+		prevType = plain_text;
+	  }
 	  if (prevType == plain_text)
 	    {
 	      checkWhat = checkBeginTypeform;
@@ -1876,13 +1857,13 @@ insertBrailleIndicators (int finish)
 	  if (!brailleIndicatorDefined (table->letterSign))
 	    {
 	      ok = 0;
-	      checkWhat = checkBeginMultCaps;
+	      checkWhat = checkNothing;
 	      break;
 	    }
 	  if (transOpcode == CTO_Contraction)
 	    {
-	      ok = 0;//1;
-	      checkWhat = checkBeginMultCaps;
+	      ok = 1;
+	      checkWhat = checkNothing;
 	      break;
 	    }
 	    if ((checkAttr_safe (currentInput, src, CTC_Letter, 0)
@@ -1912,12 +1893,9 @@ insertBrailleIndicators (int finish)
 		      break;
 		    }
 	    }
-	  checkWhat = checkBeginMultCaps;
+	  checkWhat = checkNothing;
 	  break;
 	  
-	case checkBeginMultCaps:
-	case checkEndMultCaps:
-	case checkSingleCap:
 	default:
 	  ok = 0;
 	  checkWhat = checkNothing;
