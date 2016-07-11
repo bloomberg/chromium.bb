@@ -7,6 +7,7 @@
 #include <openssl/ssl.h>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "net/ssl/scoped_openssl_types.h"
@@ -221,6 +222,51 @@ TEST(SSLClientSessionCacheTest, LookupExpirationCheck) {
   clock->Advance(-kTimeout * 2);
 
   EXPECT_EQ(nullptr, cache.Lookup("key").get());
+  EXPECT_EQ(0u, cache.size());
+}
+
+// Test that SSL cache is flushed on low memory notifications
+TEST(SSLClientSessionCacheTest, TestFlushOnMemoryNotifications) {
+  // kExpirationCheckCount is set to a suitably large number so the automated
+  // pruning never triggers.
+  const size_t kExpirationCheckCount = 1000;
+  const base::TimeDelta kTimeout = base::TimeDelta::FromSeconds(1000);
+
+  SSLClientSessionCache::Config config;
+  config.expiration_check_count = kExpirationCheckCount;
+  config.timeout = kTimeout;
+  SSLClientSessionCache cache(config);
+  base::SimpleTestClock* clock = new base::SimpleTestClock;
+  cache.SetClockForTesting(base::WrapUnique(clock));
+
+  // Insert an entry into the session cache.
+  ScopedSSL_SESSION session1(SSL_SESSION_new());
+  cache.Insert("key1", session1.get());
+  EXPECT_EQ(session1.get(), cache.Lookup("key1").get());
+  EXPECT_EQ(1u, cache.size());
+
+  // Expire the session.
+  clock->Advance(kTimeout * 2);
+  // Add one more session.
+  ScopedSSL_SESSION session2(SSL_SESSION_new());
+  cache.Insert("key2", session2.get());
+  EXPECT_EQ(2u, cache.size());
+
+  // Fire a notification that will flush expired sessions.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  base::RunLoop().RunUntilIdle();
+
+  // Expired session's cache should be flushed.
+  // Lookup returns nullptr, when cache entry not found.
+  EXPECT_FALSE(cache.Lookup("key1"));
+  EXPECT_TRUE(cache.Lookup("key2"));
+  EXPECT_EQ(1u, cache.size());
+
+  // Fire notification that will flush everything.
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, cache.size());
 }
 
