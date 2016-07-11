@@ -24,7 +24,4 @@ Updated to 1.6.22, stripped all unneeded files.
 - Fix performance regression in png encoding (and overflow handling in filter heuristic)
   from upstream (crbug.com/619850):
   https://github.com/glennrp/libpng/commit/9c04f57cabbf736e91b831858d0eeecca703eabf
-  https://github.com/glennrp/libpng/commit/29135161d74e5f6f640ec1fc2ab3ceebc34e339b
-  *** Note that this second commit (29135161) has been reverted in upstream.  They
-      feel that it is unnecessary.  It increases code size (slightly) and changing
-      the compiler flags might accomplish the same optimization.
+  https://github.com/glennrp/libpng/commit/f7d5419816d85d0b996c403e788bb707b552524f
