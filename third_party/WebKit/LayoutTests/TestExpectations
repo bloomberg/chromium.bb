@@ -1370,6 +1370,8 @@ crbug.com/612278 svg/as-background-image/background-repeat.html [ NeedsRebaselin
 crbug.com/612278 ietestcenter/css3/bordersbackgrounds/background-size-aspect-ratio.htm [ NeedsRebaseline ]
 crbug.com/612278 fast/backgrounds/background-repeat-with-background-color.html [ NeedsRebaseline ]
 
+crbug.com/623784 fast/text/caps-lock-indicator-enabled-rtl.html [ NeedsRebaseline ]
+
 crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrupted-scroll.html [ Pass Failure ]
 
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]

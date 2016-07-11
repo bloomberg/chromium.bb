@@ -87,7 +87,7 @@ bool ThemePainterMac::paintTextField(const LayoutObject& o, const PaintInfo& pai
     return false;
 }
 
-bool ThemePainterMac::paintCapsLockIndicator(const LayoutObject&, const PaintInfo& paintInfo, const IntRect& r)
+bool ThemePainterMac::paintCapsLockIndicator(const LayoutObject& o, const PaintInfo& paintInfo, const IntRect& r)
 {
     // This draws the caps lock indicator as it was done by
     // WKDrawCapsLockIndicator.
@@ -128,12 +128,14 @@ bool ThemePainterMac::paintCapsLockIndicator(const LayoutObject&, const PaintInf
     // Scale and translate the shape.
     CGRect cgr = r;
     CGFloat maxX = CGRectGetMaxX(cgr);
+    CGFloat minX = CGRectGetMinX(cgr);
     CGFloat minY = CGRectGetMinY(cgr);
     CGFloat heightScale = r.height() / kSquareSize;
+    bool isRTL = o.styleRef().direction() == RTL;
     CGAffineTransform transform = CGAffineTransformMake(
         heightScale, 0,  // A  B
         0, heightScale,  // C  D
-        maxX - r.height(), minY);  // Tx Ty
+        isRTL ? minX : maxX - r.height(), minY);  // Tx Ty
 
     CGMutablePathRef paintPath = CGPathCreateMutable();
     CGPathAddPath(paintPath, &transform, shape);
