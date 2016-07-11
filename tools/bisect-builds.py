@@ -27,9 +27,7 @@ CHANGELOG_URL = ('https://chromium.googlesource.com/chromium/src/+log/%s..%s')
 CRREV_URL = ('https://cr-rev.appspot.com/_ah/api/crrev/v1/redirect/')
 
 # DEPS file URL.
-DEPS_FILE_OLD = ('http://src.chromium.org/viewvc/chrome/trunk/src/'
-                 'DEPS?revision=%d')
-DEPS_FILE_NEW = ('https://chromium.googlesource.com/chromium/src/+/%s/DEPS')
+DEPS_FILE = ('https://chromium.googlesource.com/chromium/src/+/%s/DEPS')
 
 # Blink changelogs URL.
 BLINK_CHANGELOG_URL = ('http://build.chromium.org'
@@ -896,19 +894,13 @@ def GetBlinkDEPSRevisionForChromiumRevision(self, rev):
     m = blink_re.search(url.read())
     url.close()
     if m:
-      return m.group(1)
+      return m.group(1)]
 
-  url = urllib.urlopen(DEPS_FILE_OLD % rev)
+  url = urllib.urlopen(DEPS_FILE % GetGitHashFromSVNRevision(rev))
   if url.getcode() == 200:
-    # . doesn't match newlines without re.DOTALL, so this is safe.
-    blink_re = re.compile(r'webkit_revision\D*(\d+)')
-    return int(_GetBlinkRev(url, blink_re))
-  else:
-    url = urllib.urlopen(DEPS_FILE_NEW % GetGitHashFromSVNRevision(rev))
-    if url.getcode() == 200:
-      blink_re = re.compile(r'webkit_revision\D*\d+;\D*\d+;(\w+)')
-      blink_git_sha = _GetBlinkRev(url, blink_re)
-      return self.GetSVNRevisionFromGitHash(blink_git_sha, 'blink')
+    blink_re = re.compile(r'webkit_revision\D*\d+;\D*\d+;(\w+)')
+    blink_git_sha = _GetBlinkRev(url, blink_re)
+    return self.GetSVNRevisionFromGitHash(blink_git_sha, 'blink')
   raise Exception('Could not get Blink revision for Chromium rev %d' % rev)
 
 
