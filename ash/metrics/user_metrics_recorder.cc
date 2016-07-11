@@ -525,6 +525,10 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       base::RecordAction(
           base::UserMetricsAction("StatusArea_SMS_Notification_DismissMsg"));
       break;
+    case UMA_STATUS_AREA_TRACING_DEFAULT_SELECTED:
+      base::RecordAction(
+          base::UserMetricsAction("StatusArea_Tracing_Default_Selected"));
+      break;
     case UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED:
       base::RecordAction(base::UserMetricsAction("StatusArea_VPN_AddBuiltIn"));
       break;

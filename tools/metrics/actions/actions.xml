@@ -13986,6 +13986,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="StatusArea_Tracing_Default_Selected">
+  <owner>bruthig@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
+  <description>
+    Counts the number of times the user selects the tracing row in the system
+    menu.
+  </description>
+</action>
+
 <action name="StatusArea_VPN_AddBuiltIn">
   <owner>bartfab@chromium.org</owner>
   <description>

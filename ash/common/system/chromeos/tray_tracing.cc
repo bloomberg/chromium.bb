@@ -5,6 +5,7 @@
 #include "ash/common/system/chromeos/tray_tracing.h"
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -57,6 +58,8 @@ class DefaultTracingView : public ActionableView {
  private:
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override {
+    WmShell::Get()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_TRACING_DEFAULT_SELECTED);
     WmShell::Get()->system_tray_delegate()->ShowChromeSlow();
     return true;
   }
