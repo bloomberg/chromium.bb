@@ -194,7 +194,7 @@ class JSChecker(object):
         'element',
         'group',
         'hero',
-        'polymerBehavior'
+        'polymerBehavior',
         'status',
         'submodule',
     )
