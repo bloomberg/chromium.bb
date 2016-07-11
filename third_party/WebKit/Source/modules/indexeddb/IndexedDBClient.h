@@ -39,7 +39,7 @@ class ExecutionContext;
 class LocalFrame;
 class WorkerClients;
 
-class MODULES_EXPORT IndexedDBClient : public Supplement<LocalFrame>, public Supplement<WorkerClients>, public GarbageCollectedFinalized<IndexedDBClient> {
+class MODULES_EXPORT IndexedDBClient : public GarbageCollectedFinalized<IndexedDBClient>, public Supplement<LocalFrame>, public Supplement<WorkerClients> {
     USING_GARBAGE_COLLECTED_MIXIN(IndexedDBClient);
     WTF_MAKE_NONCOPYABLE(IndexedDBClient);
 public:
