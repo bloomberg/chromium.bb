@@ -67853,6 +67853,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="OK"/>
   <int value="2" label="Failed to create stream"/>
   <int value="3" label="Failed to open stream"/>
+  <int value="4" label="Never recieved any data"/>
 </enum>
 
 <enum name="CastOverlayEvents" type="int">

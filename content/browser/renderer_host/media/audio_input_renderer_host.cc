@@ -290,17 +290,6 @@ void AudioInputRendererHost::DoHandleError(
     return;
   }
 
-  // This is a fix for crbug.com/357501. The error can be triggered when closing
-  // the lid on Macs, which causes more problems than it fixes.
-  // Also, in crbug.com/357569, the goal is to remove usage of the error since
-  // it was added to solve a crash on Windows that no longer can be reproduced.
-  if (error_code == media::AudioInputController::NO_DATA_ERROR) {
-    // TODO(henrika): it might be possible to do something other than just
-    // logging when we detect many NO_DATA_ERROR calls for a stream.
-    LogMessage(entry->stream_id, "AIC::DoCheckForNoData: NO_DATA_ERROR", false);
-    return;
-  }
-
   std::ostringstream oss;
   oss << "AIC reports error_code=" << error_code;
   LogMessage(entry->stream_id, oss.str(), false);

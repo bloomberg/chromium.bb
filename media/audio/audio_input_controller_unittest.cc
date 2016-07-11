@@ -148,60 +148,6 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
   CloseAudioController(controller.get());
 }
 
-// Test that the AudioInputController reports an error when the input stream
-// stops. This can happen when the underlying audio layer stops feeding data as
-// a result of a removed microphone device.
-// Disabled due to crbug.com/357569 and crbug.com/357501.
-// TODO(henrika): Remove the test when the timer workaround has been removed.
-TEST_F(AudioInputControllerTest, DISABLED_RecordAndError) {
-  MockAudioInputControllerEventHandler event_handler;
-  int count = 0;
-
-  // OnCreated() will be called once.
-  EXPECT_CALL(event_handler, OnCreated(NotNull()))
-      .Times(Exactly(1));
-
-  // OnRecording() will be called only once.
-  EXPECT_CALL(event_handler, OnRecording(NotNull()))
-      .Times(Exactly(1));
-
-  // OnData() shall be called ten times.
-  EXPECT_CALL(event_handler, OnData(NotNull(), NotNull()))
-      .Times(AtLeast(10))
-      .WillRepeatedly(CheckCountAndPostQuitTask(
-          &count, 10, message_loop_.task_runner()));
-
-  // OnError() will be called after the data stream stops while the
-  // controller is in a recording state.
-  EXPECT_CALL(event_handler, OnError(NotNull(),
-                                     AudioInputController::NO_DATA_ERROR))
-      .Times(Exactly(1))
-      .WillOnce(QuitMessageLoop(&message_loop_));
-
-  AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
-                         kSampleRate, kBitsPerSample, kSamplesPerPacket);
-
-  // Creating the AudioInputController should render an OnCreated() call.
-  scoped_refptr<AudioInputController> controller = AudioInputController::Create(
-      audio_manager_.get(), &event_handler, params,
-      AudioDeviceDescription::kDefaultDeviceId, NULL);
-  ASSERT_TRUE(controller.get());
-
-  // Start recording and trigger one OnRecording() call.
-  controller->Record();
-
-  // Record and wait until ten OnData() callbacks are received.
-  base::RunLoop().Run();
-
-  // Stop the stream and verify that OnError() is posted.
-  AudioInputStream* stream = controller->stream_for_testing();
-  stream->Stop();
-  base::RunLoop().Run();
-
-  // Close the AudioInputController synchronously.
-  CloseAudioController(controller.get());
-}
-
 // Test that AudioInputController rejects insanely large packet sizes.
 TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
   // Create an audio device with a very large packet size.
