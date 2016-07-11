@@ -694,13 +694,6 @@
    ...
    fun:yy_reduce
 }
-# The following three suppressions are related to the workers code.
-{
-   bug_27837
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN19WebSharedWorkerStub9OnConnectEii
-}
 {
    bug_32085
    Memcheck:Leak
