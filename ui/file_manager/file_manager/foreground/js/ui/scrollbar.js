@@ -51,6 +51,7 @@ ScrollBar.prototype.decorate = function() {
 
   this.button_.addEventListener('mousedown',
                                 this.onButtonPressed_.bind(this));
+  this.button_.addEventListener('wheel', this.onWheel_.bind(this));
   window.addEventListener('mouseup', this.onMouseUp_.bind(this));
   window.addEventListener('mousemove', this.onMouseMove_.bind(this));
 };
@@ -84,6 +85,27 @@ ScrollBar.prototype.attachToView = function(view) {
       /** @type {MutationObserverInit} */ ({subtree: true, attributes: true}));
   this.onRelayout_();
 };
+
+/**
+ * Handles scroll by a mouse wheel.
+ *
+ * @param {Event} event Mouse event.
+ * @private
+ */
+ScrollBar.prototype.onWheel_ = function(event) {
+  var scrollPosition = this.view_.scrollTop + event.deltaY;
+  // Ensure the scrollbar is in the view.
+  var scrollBottom =
+      Math.max(this.view_.scrollHeight - this.view_.clientHeight, 0);
+  scrollPosition = Math.max(Math.min(scrollPosition, scrollBottom), 0);
+
+  // TODO(yamaguchi): Invoke native scroll instead of setting scrollTop.
+  // This implementation will bypass the smooth scroll animation seen with
+  // native scroll.
+  this.scrollTop_ = scrollPosition;
+  this.view_.scrollTop = scrollPosition;
+  this.redraw_();
+}
 
 /**
  * Scroll handler.
