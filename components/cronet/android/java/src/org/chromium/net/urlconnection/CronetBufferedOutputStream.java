@@ -71,17 +71,17 @@ final class CronetBufferedOutputStream extends CronetOutputStream {
 
     @Override
     public void write(int oneByte) throws IOException {
+        checkNotClosed();
         ensureCanWrite(1);
         mBuffer.put((byte) oneByte);
     }
 
     @Override
     public void write(byte[] buffer, int offset, int count) throws IOException {
+        checkNotClosed();
         ensureCanWrite(count);
         mBuffer.put(buffer, offset, count);
     }
-
-    // TODO(xunjieli): implement close().
 
     /**
      * Ensures that {@code count} bytes can be written to the internal buffer.

@@ -25,7 +25,6 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
     private final UploadDataProvider mUploadDataProvider = new UploadDataProviderImpl();
     private long mBytesWritten;
     private boolean mLastChunk = false;
-    private boolean mClosed = false;
 
     /**
      * Package protected constructor.
@@ -68,8 +67,10 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
             return;
         }
         int toSend = count;
+        // TODO(xunjieli): refactor commond code with CronetFixedModeOutputStream.
         while (toSend > 0) {
             if (mBuffer.position() == mBuffer.limit()) {
+                checkNotClosed();
                 // Wait until buffer is consumed.
                 mMessageLoop.loop();
             }
@@ -82,15 +83,9 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
 
     @Override
     public void close() throws IOException {
+        super.close();
         // Last chunk is written.
         mLastChunk = true;
-        mClosed = true;
-    }
-
-    private void checkNotClosed() throws IOException {
-        if (mClosed) {
-            throw new IOException("Stream has been closed.");
-        }
     }
 
     // Below are CronetOutputStream implementations:

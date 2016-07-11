@@ -10,7 +10,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
+import org.chromium.net.UrlRequestException;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpRetryException;
 import java.net.HttpURLConnection;
@@ -66,8 +68,36 @@ public class CronetFixedModeOutputStreamTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @CompareDefaultWithCronet
-    public void testFixedLengthStreamingModeZeroContentLength()
-            throws Exception {
+    public void testWriteAfterRequestFailed() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        byte[] largeData = TestUtil.getLargeData();
+        connection.setFixedLengthStreamingMode(largeData.length);
+        OutputStream out = connection.getOutputStream();
+        out.write(largeData, 0, 10);
+        NativeTestServer.shutdownNativeTestServer();
+        try {
+            out.write(largeData, 10, largeData.length - 10);
+            connection.getResponseCode();
+            fail();
+        } catch (IOException e) {
+            // Expected.
+            if (!testingSystemHttpURLConnection()) {
+                UrlRequestException requestException = (UrlRequestException) e;
+                assertEquals(UrlRequestException.ERROR_CONNECTION_REFUSED,
+                        requestException.getErrorCode());
+            }
+        }
+        // Restarting server to run the test for a second time.
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testFixedLengthStreamingModeZeroContentLength() throws Exception {
         // Check content length is set.
         URL echoLength = new URL(NativeTestServer.getEchoHeaderURL("Content-Length"));
         HttpURLConnection connection1 =

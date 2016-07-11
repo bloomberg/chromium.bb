@@ -14,6 +14,15 @@ import java.io.OutputStream;
  * extend in order to be used in {@link CronetHttpURLConnection}.
  */
 abstract class CronetOutputStream extends OutputStream {
+    private IOException mException;
+    private boolean mClosed;
+    private boolean mRequestCompleted;
+
+    @Override
+    public void close() throws IOException {
+        mClosed = true;
+    }
+
     /**
      * Tells the underlying implementation that connection has been established.
      * Used in {@link CronetHttpURLConnection}.
@@ -30,4 +39,28 @@ abstract class CronetOutputStream extends OutputStream {
      * Returns {@link UploadDataProvider} implementation.
      */
     abstract UploadDataProvider getUploadDataProvider();
+
+    /**
+     * Signals that the request is done. If there is no error,
+     * {@code exception} is null. Used by {@link CronetHttpURLConnection}.
+     */
+    void setRequestCompleted(IOException exception) {
+        mException = exception;
+        mRequestCompleted = true;
+    }
+
+    /**
+     * Throws an IOException if the stream is closed or the request is done.
+     */
+    protected void checkNotClosed() throws IOException {
+        if (mRequestCompleted) {
+            if (mException != null) {
+                throw mException;
+            }
+            throw new IOException("Writing after request completed.");
+        }
+        if (mClosed) {
+            throw new IOException("Stream has been closed.");
+        }
+    }
 }

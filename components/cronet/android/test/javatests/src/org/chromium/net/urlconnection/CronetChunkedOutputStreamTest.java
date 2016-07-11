@@ -10,6 +10,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
+import org.chromium.net.UrlRequestException;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -82,6 +83,33 @@ public class CronetChunkedOutputStreamTest extends CronetTestBase {
         } catch (IOException e) {
             // Expected.
         }
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testWriteAfterRequestFailed() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setChunkedStreamingMode(0);
+        OutputStream out = connection.getOutputStream();
+        out.write(UPLOAD_DATA);
+        NativeTestServer.shutdownNativeTestServer();
+        try {
+            out.write(TestUtil.getLargeData());
+            connection.getResponseCode();
+            fail();
+        } catch (IOException e) {
+            if (!testingSystemHttpURLConnection()) {
+                UrlRequestException requestException = (UrlRequestException) e;
+                assertEquals(UrlRequestException.ERROR_CONNECTION_REFUSED,
+                        requestException.getErrorCode());
+            }
+        }
+        // Restarting server to run the test for a second time.
+        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
     }
 
     @SmallTest

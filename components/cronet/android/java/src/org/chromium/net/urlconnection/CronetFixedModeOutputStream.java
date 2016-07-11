@@ -73,6 +73,7 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
 
     @Override
     public void write(int oneByte) throws IOException {
+        checkNotClosed();
         checkNotExceedContentLength(1);
         ensureBufferHasRemaining();
         mBuffer.put((byte) oneByte);
@@ -82,6 +83,7 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
 
     @Override
     public void write(byte[] buffer, int offset, int count) throws IOException {
+        checkNotClosed();
         if (buffer.length - offset < count || offset < 0 || count < 0) {
             throw new IndexOutOfBoundsException();
         }
@@ -126,6 +128,7 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
      * write more data.
      */
     private void uploadBufferInternal() throws IOException {
+        checkNotClosed();
         mBuffer.flip();
         mMessageLoop.loop();
     }
@@ -141,8 +144,6 @@ final class CronetFixedModeOutputStream extends CronetOutputStream {
                     + numBytes);
         }
     }
-
-    // TODO(xunjieli): implement close().
 
     // Below are CronetOutputStream implementations:
 
