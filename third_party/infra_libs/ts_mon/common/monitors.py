@@ -6,19 +6,24 @@
 
 
 import base64
+import httplib2
 import json
 import logging
+import socket
+import traceback
 
-from apiclient import discovery
-from oauth2client import gce
-from oauth2client.client import GoogleCredentials
-from oauth2client.file import Storage
-import httplib2
-
+from googleapiclient import discovery
+from googleapiclient import errors
 from infra_libs import httplib2_utils
 from infra_libs.ts_mon.common import http_metrics
+from infra_libs.ts_mon.common import pb_to_popo
 from infra_libs.ts_mon.protos import metrics_pb2
-
+try: # pragma: no cover
+  from oauth2client import gce
+except ImportError: # pragma: no cover
+  from oauth2client.contrib import gce
+from oauth2client.client import GoogleCredentials
+from oauth2client.file import Storage
 
 # Special string that can be passed through as the credentials path to use the
 # default Appengine or GCE service account.
@@ -35,6 +40,9 @@ class Monitor(object):
   Metrics may be initialized before the underlying Monitor. If it does not exist
   at the time that a Metric is sent, an exception will be raised.
   """
+
+  _SCOPES = []
+
   @staticmethod
   def _wrap_proto(data):
     """Normalize MetricsData, list(MetricsData), and MetricsCollection.
@@ -53,8 +61,59 @@ class Monitor(object):
       ret = metrics_pb2.MetricsCollection(data=[data])
     return ret
 
+  def _load_credentials(self, credentials_file_path):
+    if credentials_file_path == GCE_CREDENTIALS:
+      return gce.AppAssertionCredentials(self._SCOPES)
+    if credentials_file_path == APPENGINE_CREDENTIALS:  # pragma: no cover
+      # This import doesn't work outside appengine, so delay it until it's used.
+      from oauth2client import appengine
+      from google.appengine.api import app_identity
+      logging.info('Initializing with service account %s',
+                   app_identity.get_service_account_name())
+      return appengine.AppAssertionCredentials(self._SCOPES)
+
+    with open(credentials_file_path, 'r') as credentials_file:
+      credentials_json = json.load(credentials_file)
+    if credentials_json.get('type', None):
+      credentials = GoogleCredentials.from_stream(credentials_file_path)
+      credentials = credentials.create_scoped(self._SCOPES)
+      return credentials
+    return Storage(credentials_file_path).get()
+
   def send(self, metric_pb):
     raise NotImplementedError()
+
+class HttpsMonitor(Monitor):
+
+  _SCOPES = [
+    'https://www.googleapis.com/auth/prodxmon'
+  ]
+
+  def __init__(self, endpoint, credentials_file_path, http=None):
+    self._endpoint = endpoint
+    credentials = self._load_credentials(credentials_file_path)
+    if http is None:
+      http = httplib2_utils.RetriableHttp(
+          httplib2_utils.InstrumentedHttp('acq-mon-api'))
+    self._http = credentials.authorize(http)
+
+  def encodeToJson(self, metric_pb):
+    return json.dumps({ 'resource': pb_to_popo.convert(metric_pb) })
+
+  def send(self, metric_pb):
+    body = self.encodeToJson(self._wrap_proto(metric_pb))
+
+    try:
+      resp, content = self._http.request(self._endpoint, method='POST',
+                                         body=body)
+      if resp.status != 200:
+        logging.warning('HttpsMonitor.send received status %d: %s', resp.status,
+                        content)
+    except (ValueError, errors.Error,
+            socket.timeout, socket.error, socket.herror, socket.gaierror,
+            httplib2.HttpLib2Error):
+      logging.warning('HttpsMonitor.send failed: %s\n',
+                      traceback.format_exc())
 
 
 class PubSubMonitor(Monitor):
@@ -65,22 +124,6 @@ class PubSubMonitor(Monitor):
   ]
 
   TIMEOUT = 10  # seconds
-
-  def _load_credentials(self, credentials_file_path):
-    if credentials_file_path == GCE_CREDENTIALS:
-      return gce.AppAssertionCredentials(self._SCOPES)
-    if credentials_file_path == APPENGINE_CREDENTIALS:  # pragma: no cover
-      # This import doesn't work outside appengine, so delay it until it's used.
-      from oauth2client import appengine
-      return appengine.AppAssertionCredentials(self._SCOPES)
-
-    with open(credentials_file_path, 'r') as credentials_file:
-      credentials_json = json.load(credentials_file)
-    if credentials_json.get('type', None):
-      credentials = GoogleCredentials.from_stream(credentials_file_path)
-      credentials = credentials.create_scoped(self._SCOPES)
-      return credentials
-    return Storage(credentials_file_path).get()
 
   def _initialize(self):
     creds = self._load_credentials(self._credsfile)
@@ -100,8 +143,12 @@ class PubSubMonitor(Monitor):
       return True
     try:
       self._initialize()
-    except EnvironmentError:
-      logging.exception('PubSubMonitor._initialize failed')
+    except (ValueError, errors.Error,
+            socket.timeout, socket.error, socket.herror, socket.gaierror,
+            httplib2.HttpLib2Error, EnvironmentError):
+      # Log a warning, not error, to avoid false alarms in AppEngine apps.
+      logging.warning('PubSubMonitor._initialize failed:\n%s',
+                      traceback.format_exc())
       self._api = None
       self._update_init_metrics(http_metrics.STATUS_ERROR)
       return False
@@ -119,6 +166,9 @@ class PubSubMonitor(Monitor):
       use_instrumented_http (bool): whether to record monitoring metrics for
           HTTP requests made to the pubsub API.
     """
+    # Do not call self._check_initialize() in the constructor. This
+    # class is constructed during app initialization on AppEngine, and
+    # network calls are especially flaky during that time.
     self._api = None
     self._use_instrumented_http = use_instrumented_http
     if use_instrumented_http:
@@ -128,7 +178,6 @@ class PubSubMonitor(Monitor):
       self._http = httplib2.Http(timeout=self.TIMEOUT)
     self._credsfile = credsfile
     self._topic = 'projects/%s/topics/%s' % (project, topic)
-    self._check_initialize()
 
   def send(self, metric_pb):
     """Send a metric proto to the monitoring api.
@@ -145,9 +194,20 @@ class PubSubMonitor(Monitor):
           {'data': base64.b64encode(proto.SerializeToString())},
         ],
     }
-    self._api.projects().topics().publish(
-        topic=self._topic,
-        body=body).execute(num_retries=5)
+    # Occasionally, client fails to receive a proper internal JSON
+    # from the server and raises ValueError trying to parse it.  Other
+    # times we may fail with a network error. This is not fatal, we'll
+    # resend metrics next time.
+    try:
+      self._api.projects().topics().publish(
+          topic=self._topic,
+          body=body).execute(num_retries=5)
+    except (ValueError, errors.Error,
+            socket.timeout, socket.error, socket.herror, socket.gaierror,
+            httplib2.HttpLib2Error):
+      # Log a warning, not error, to avoid false alarms in AppEngine apps.
+      logging.warning('PubSubMonitor.send failed:\n%s',
+                      traceback.format_exc())
 
 
 class DebugMonitor(Monitor):

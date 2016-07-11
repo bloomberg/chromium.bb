@@ -21,6 +21,32 @@ class DeviceTargetTest(unittest.TestCase):
     self.assertEquals(pb.network_device.realm, 'ACQ_CHROME')
     self.assertEquals(pb.network_device.alertable, True)
 
+  def test_update_to_dict(self):
+    target = targets.DeviceTarget('reg', 'role', 'net', 'host')
+    self.assertEqual({
+      'region': 'reg',
+      'role': 'role',
+      'network': 'net',
+      'hostname': 'host'}, target.to_dict())
+    target.update({'region': 'other', 'hostname': 'guest'})
+    self.assertEqual({
+      'region': 'other',
+      'role': 'role',
+      'network': 'net',
+      'hostname': 'guest'}, target.to_dict())
+
+  def test_update_private_field(self):
+    target = targets.DeviceTarget('reg', 'role', 'net', 'host')
+    with self.assertRaises(AttributeError):
+      target.update({'realm': 'boo'})
+
+  def test_update_nonexistent_field(self):
+    target = targets.DeviceTarget('reg', 'role', 'net', 'host')
+    # Simulate a bug: exporting a non-existent field.
+    target._fields += ('bad',)
+    with self.assertRaises(AttributeError):
+      target.update({'bad': 'boo'})
+
 
 class TaskTargetTest(unittest.TestCase):
 
@@ -33,3 +59,31 @@ class TaskTargetTest(unittest.TestCase):
     self.assertEquals(pb.task.data_center, 'reg')
     self.assertEquals(pb.task.host_name, 'host')
     self.assertEquals(pb.task.task_num, 0)
+
+  def test_update_to_dict(self):
+    target = targets.TaskTarget('serv', 'job', 'reg', 'host', 5)
+    self.assertEqual({
+      'service_name': 'serv',
+      'job_name': 'job',
+      'region': 'reg',
+      'hostname': 'host',
+      'task_num': 5}, target.to_dict())
+    target.update({'region': 'other', 'hostname': 'guest'})
+    self.assertEqual({
+      'service_name': 'serv',
+      'job_name': 'job',
+      'region': 'other',
+      'hostname': 'guest',
+      'task_num': 5}, target.to_dict())
+
+  def test_update_private_field(self):
+    target = targets.TaskTarget('serv', 'job', 'reg', 'host')
+    with self.assertRaises(AttributeError):
+      target.update({'realm': 'boo'})
+
+  def test_update_nonexistent_field(self):
+    target = targets.TaskTarget('serv', 'job', 'reg', 'host')
+    # Simulate a bug: exporting a non-existent field.
+    target._fields += ('bad',)
+    with self.assertRaises(AttributeError):
+      target.update({'bad': 'boo'})

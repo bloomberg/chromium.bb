@@ -14,13 +14,16 @@ from testing_support import auto_stub
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import metrics
+from infra_libs.ts_mon.common import targets
 from infra_libs.ts_mon.common.test import stubs
 
 
 class GlobalsTest(unittest.TestCase):
 
   def setUp(self):
-    self.mock_state = stubs.MockState()
+    target = targets.TaskTarget('test_service', 'test_job',
+                                'test_region', 'test_host')
+    self.mock_state = interface.State(target=target)
     self.state_patcher = mock.patch('infra_libs.ts_mon.common.interface.state',
                                     new=self.mock_state)
     self.state_patcher.start()
@@ -44,13 +47,20 @@ class GlobalsTest(unittest.TestCase):
     fake_metric.name = 'fake'
     fake_metric.serialize_to.side_effect = serialize_to
     interface.register(fake_metric)
-    interface.state.store.set('fake', (), 123)
+    interface.state.store.set('fake', (), None, 123)
 
     interface.flush()
     interface.state.global_monitor.send.assert_called_once()
     proto = interface.state.global_monitor.send.call_args[0][0]
     self.assertEqual(1, len(proto.data))
     self.assertEqual('foo', proto.data[0].name)
+
+  def test_flush_disabled(self):
+    interface.reset_for_unittest(disable=True)
+    interface.state.global_monitor = stubs.MockMonitor()
+    interface.state.target = stubs.MockTarget()
+    interface.flush()
+    self.assertFalse(interface.state.global_monitor.send.called)
 
   def test_flush_raises(self):
     self.assertIsNone(interface.state.global_monitor)
@@ -78,12 +88,37 @@ class GlobalsTest(unittest.TestCase):
     interface.register(fake_metric)
 
     for i in xrange(1001):
-      interface.state.store.set('fake', ('field', i), 123)
+      interface.state.store.set('fake', ('field', i), None, 123)
 
     interface.flush()
     self.assertEquals(2, interface.state.global_monitor.send.call_count)
     self.assertEqual(1000, data_lengths[0])
     self.assertEqual(1, data_lengths[1])
+
+  def test_send_modifies_metric_values(self):
+    interface.state.global_monitor = stubs.MockMonitor()
+    interface.state.target = stubs.MockTarget()
+
+    # pylint: disable=unused-argument
+    def serialize_to(pb, start_time, fields, value, target):
+      pb.data.add().name = 'foo'
+
+    fake_metric = mock.create_autospec(metrics.Metric, spec_set=True)
+    fake_metric.name = 'fake'
+    fake_metric.serialize_to.side_effect = serialize_to
+    interface.register(fake_metric)
+
+    # Setting this will modify store._values in the middle of iteration.
+    delayed_metric = metrics.CounterMetric('foo')
+    def send(proto):
+      delayed_metric.increment_by(1)
+    interface.state.global_monitor.send.side_effect = send
+
+    for i in xrange(1001):
+      interface.state.store.set('fake', ('field', i), None, 123)
+
+    # Shouldn't raise an exception.
+    interface.flush()
 
   def test_register_unregister(self):
     fake_metric = mock.create_autospec(metrics.Metric, spec_set=True)
