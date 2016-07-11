@@ -936,7 +936,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   // Have the cross-site navigation commit. The main RenderFrameHost should
   // still be loading after that.
-  cross_site_delayer.ResumeNavigation();
   cross_site_delayer.WaitForNavigationFinished();
   EXPECT_TRUE(shell()->web_contents()->IsLoading());
 }

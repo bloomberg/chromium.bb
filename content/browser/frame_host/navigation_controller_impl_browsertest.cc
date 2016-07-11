@@ -4566,7 +4566,9 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // Go forward two times in a row, being careful that the subframe commits
   // after the second forward navigation begins but before the main frame
   // commits.
-  TestNavigationManager subframe_delayer(shell()->web_contents(), frame_url_a2);
+  TestNavigationManager subframe_delayer(
+      root->child_at(0)->frame_tree_node_id(), shell()->web_contents(),
+      frame_url_a2);
   TestNavigationManager mainframe_delayer(shell()->web_contents(), url_b);
   controller.GoForward();
   subframe_delayer.WaitForWillStartRequest();
@@ -4575,14 +4577,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(2, controller.GetPendingEntryIndex());
 
   // Let the subframe commit.
-  subframe_delayer.ResumeNavigation();
   subframe_delayer.WaitForNavigationFinished();
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(url_a, root->current_url());
   EXPECT_EQ(frame_url_a2, root->child_at(0)->current_url());
 
   // Let the main frame commit.
-  mainframe_delayer.ResumeNavigation();
   mainframe_delayer.WaitForNavigationFinished();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(2, controller.GetLastCommittedEntryIndex());

@@ -119,29 +119,32 @@ class NavigationStallDelegate : public ResourceDispatcherHostDelegate {
 
 // This class can be used to pause and resume navigations, based on a URL
 // match. Note that it only keeps track of one navigation at a time.
+// Navigations are paused automatically before hitting the network, and are
+// resumed automatically if a Wait method is called for a future event.
 class TestNavigationManager : public WebContentsObserver {
  public:
-  // Currently this monitors any frame in WebContents.
-  // TODO(clamy): Extend this class so that it can monitor a specific frame.
+  // Monitors notifications within the given frame tree node. Use the other
+  // constructor if the manager should monitor all frames, which is equivalent
+  // to passing kFrameTreeNodeInvalidId for |frame_tree_node_id|.
+  TestNavigationManager(int frame_tree_node_id,
+                        WebContents* web_contents,
+                        const GURL& url);
+
+  // Monitors any frame in WebContents.
   TestNavigationManager(WebContents* web_contents, const GURL& url);
+
   ~TestNavigationManager() override;
 
   // Waits until the navigation request is ready to be sent to the network
-  // stack. The navigation will be paused until it is resumed by calling
-  // ResumeNavigation.
+  // stack.
   void WaitForWillStartRequest();
 
-  // Resumes the navigation if it was previously paused.
-  void ResumeNavigation();
-
-  // Waits until the navigation has been finished. Users of this method should
-  // first use WaitForWillStartRequest, then call ResumeNavigation, and only
-  // then WaitForNavigationFinished.
-  // TODO(clamy): Do not pause the navigation in WillStartRequest by default.
+  // Waits until the navigation has been finished. Will automatically resume
+  // navigations paused before this point.
   void WaitForNavigationFinished();
 
  private:
-  // WebContentsObserver implementation.
+  // WebContentsObserver:
   void DidStartNavigation(NavigationHandle* handle) override;
   void DidFinishNavigation(NavigationHandle* handle) override;
 
@@ -149,10 +152,18 @@ class TestNavigationManager : public WebContentsObserver {
   // WillStartRequest.
   void OnWillStartRequest();
 
+  // Resumes the navigation.
+  void ResumeNavigation();
+
+  // If this member is not |kFrameTreeNodeInvalidId|, notifications are filtered
+  // so only this frame is monitored.
+  int filtering_frame_tree_node_id_;
+
   const GURL url_;
   bool navigation_paused_;
   NavigationHandle* handle_;
-  scoped_refptr<MessageLoopRunner> loop_runner_;
+  scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
+  scoped_refptr<MessageLoopRunner> did_finish_loop_runner_;
 
   base::WeakPtrFactory<TestNavigationManager> weak_factory_;
 };

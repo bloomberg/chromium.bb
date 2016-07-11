@@ -367,42 +367,54 @@ void NavigationStallDelegate::RequestBeginning(
     throttles->push_back(new HttpRequestStallThrottle);
 }
 
-TestNavigationManager::TestNavigationManager(WebContents* web_contents,
-                                             const GURL& url)
+TestNavigationManager::TestNavigationManager(
+    int filtering_frame_tree_node_id,
+    WebContents* web_contents,
+    const GURL& url)
     : WebContentsObserver(web_contents),
+      filtering_frame_tree_node_id_(filtering_frame_tree_node_id),
       url_(url),
       navigation_paused_(false),
       handle_(nullptr),
       weak_factory_(this) {}
 
-TestNavigationManager::~TestNavigationManager() {}
+TestNavigationManager::TestNavigationManager(WebContents* web_contents,
+                                             const GURL& url)
+    : TestNavigationManager(FrameTreeNode::kFrameTreeNodeInvalidId,
+                            web_contents,
+                            url) {}
 
-void TestNavigationManager::WaitForWillStartRequest() {
-  if (navigation_paused_)
-    return;
-  loop_runner_ = new MessageLoopRunner();
-  loop_runner_->Run();
-  loop_runner_ = nullptr;
+TestNavigationManager::~TestNavigationManager() {
+  ResumeNavigation();
 }
 
-void TestNavigationManager::ResumeNavigation() {
-  if (!navigation_paused_ || !handle_)
+void TestNavigationManager::WaitForWillStartRequest() {
+  DCHECK(!did_finish_loop_runner_);
+  if (navigation_paused_)
     return;
-  navigation_paused_ = false;
-  handle_->Resume();
+  will_start_loop_runner_ = new MessageLoopRunner();
+  will_start_loop_runner_->Run();
+  will_start_loop_runner_ = nullptr;
 }
 
 void TestNavigationManager::WaitForNavigationFinished() {
-  if (!handle_)
-    return;
-  loop_runner_ = new MessageLoopRunner();
-  loop_runner_->Run();
-  loop_runner_ = nullptr;
+  DCHECK(!will_start_loop_runner_);
+  // Ensure the navigation is resumed if the manager paused it previously.
+  if (navigation_paused_)
+    ResumeNavigation();
+  did_finish_loop_runner_ = new MessageLoopRunner();
+  did_finish_loop_runner_->Run();
+  did_finish_loop_runner_ = nullptr;
 }
 
 void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
   if (handle_ || handle->GetURL() != url_)
     return;
+
+  if (filtering_frame_tree_node_id_ != FrameTreeNode::kFrameTreeNodeInvalidId &&
+      handle->GetFrameTreeNodeId() != filtering_frame_tree_node_id_) {
+    return;
+  }
 
   handle_ = handle;
   std::unique_ptr<NavigationThrottle> throttle(
@@ -417,14 +429,25 @@ void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
     return;
   handle_ = nullptr;
   navigation_paused_ = false;
-  if (loop_runner_)
-    loop_runner_->Quit();
+  if (did_finish_loop_runner_)
+    did_finish_loop_runner_->Quit();
 }
 
 void TestNavigationManager::OnWillStartRequest() {
   navigation_paused_ = true;
-  if (loop_runner_)
-    loop_runner_->Quit();
+  if (will_start_loop_runner_)
+    will_start_loop_runner_->Quit();
+
+  // If waiting for the navigation to finish, resume the navigation.
+  if (did_finish_loop_runner_)
+    ResumeNavigation();
+}
+
+void TestNavigationManager::ResumeNavigation() {
+  if (!navigation_paused_ || !handle_)
+    return;
+  navigation_paused_ = false;
+  handle_->Resume();
 }
 
 FileChooserDelegate::FileChooserDelegate(const base::FilePath& file)
