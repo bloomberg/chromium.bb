@@ -528,7 +528,7 @@ public:
     const KURL& baseURL() const { return m_baseURL; }
     void setBaseURLOverride(const KURL&);
     const KURL& baseURLOverride() const { return m_baseURLOverride; }
-    const KURL& baseElementURL() const { return m_baseElementURL; }
+    KURL validBaseElementURL() const;
     const AtomicString& baseTarget() const { return m_baseTarget; }
     void processBaseElement();
 

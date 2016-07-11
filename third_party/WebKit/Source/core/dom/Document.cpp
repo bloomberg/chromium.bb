@@ -2908,6 +2908,14 @@ void Document::setURL(const KURL& url)
     contextFeatures().urlDidChange(this);
 }
 
+KURL Document::validBaseElementURL() const
+{
+    if (m_baseElementURL.isValid())
+        return m_baseElementURL;
+
+    return KURL();
+}
+
 void Document::updateBaseURL()
 {
     KURL oldBaseURL = m_baseURL;

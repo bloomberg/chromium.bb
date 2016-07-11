@@ -618,7 +618,7 @@ void HTMLDocumentParser::pumpTokenizer()
                 m_preloadScanner = createPreloadScanner();
                 m_preloadScanner->appendToEnd(m_input.current());
             }
-            m_preloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
+            m_preloadScanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(), nullptr);
         }
     }
 
@@ -695,7 +695,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
         if (!m_insertionPreloadScanner)
             m_insertionPreloadScanner = createPreloadScanner();
         m_insertionPreloadScanner->appendToEnd(source);
-        m_insertionPreloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
+        m_insertionPreloadScanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(), nullptr);
     }
 
     endIfDelayed();
@@ -775,7 +775,7 @@ void HTMLDocumentParser::append(const String& inputSource)
         } else {
             m_preloadScanner->appendToEnd(source);
             if (isWaitingForScripts())
-                m_preloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
+                m_preloadScanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(), nullptr);
         }
     }
 
@@ -950,7 +950,7 @@ void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan()
 {
     ASSERT(m_preloadScanner);
     m_preloadScanner->appendToEnd(m_input.current());
-    m_preloadScanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
+    m_preloadScanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(), nullptr);
 }
 
 void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource)
@@ -1106,7 +1106,7 @@ void HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite(const String& 
     int currentPreloadCount = document()->loader()->fetcher()->countPreloads();
     std::unique_ptr<HTMLPreloadScanner> scanner = createPreloadScanner();
     scanner->appendToEnd(SegmentedString(writtenSource));
-    scanner->scanAndPreload(m_preloader.get(), document()->baseElementURL(), nullptr);
+    scanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(), nullptr);
     int numPreloads = document()->loader()->fetcher()->countPreloads() - currentPreloadCount;
 
     TRACE_EVENT_INSTANT2("blink", "HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite.data", TRACE_EVENT_SCOPE_THREAD, "numPreloads", numPreloads, "scriptLength", source.length());
