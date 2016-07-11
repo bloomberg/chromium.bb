@@ -9,7 +9,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.StrictMode;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
@@ -42,7 +41,6 @@ public class DataReductionPromoInfoBar extends ConfirmInfoBar {
     private static String sText;
     private static String sPrimaryButtonText;
     private static String sSecondaryButtonText;
-
     /**
      * Launch the data reduction infobar promo, if it needs to be displayed.
      *
@@ -82,16 +80,7 @@ public class DataReductionPromoInfoBar extends ConfirmInfoBar {
         String freOrSecondRunVersion =
                 DataReductionPromoUtils.getDisplayedFreOrSecondRunPromoVersion();
 
-        Calendar releaseDateOfM48Stable = null;
-
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577185
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            releaseDateOfM48Stable = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
+        Calendar releaseDateOfM48Stable = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         releaseDateOfM48Stable.setTime(Date.valueOf(M48_STABLE_RELEASE_DATE));
         long packageInstallTime = getPackageInstallTime(context);
 
