@@ -76,6 +76,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_FILE_MANAGER_MTP_DESCRIPTION" desc="Description of the about:flag option for MTP support in file manager.">
     Show MTP devices as a file storage in the file manager.
   </message>
+  <message name="IDS_FLAGS_FILES_QUICK_VIEW_NAME" desc="Name of the feature flag for files app quick view.">
+    Files app quick view
+  </message>
+  <message name="IDS_FLAGS_FILES_QUICK_VIEW_DESCRIPTION" desc="Description for the feature flag for files app quick view.">
+    Flag for files app quick view, which shows quick preview of a file.
+  </message>
   <message name="IDS_FLAGS_VIDEO_PLAYER_CHROMECAST_SUPPORT_NAME" desc="Name of the about:flag option to enable the chromecast support for video app.">
     Experimental Chromecast support for Video Player
   </message>

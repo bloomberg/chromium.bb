@@ -1968,6 +1968,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-intent-picker", IDS_ENABLE_INTENT_PICKER,
      IDS_ENABLE_INTENT_PICKER_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(switches::kEnableIntentPicker)},
+    {"files-quick-view", IDS_FLAGS_FILES_QUICK_VIEW_NAME,
+     IDS_FLAGS_FILES_QUICK_VIEW_DESCRIPTION, kOsCrOS,
+     ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableFilesQuickView,
+                               chromeos::switches::kDisableFilesQuickView)},
 #endif  // defined(OS_CHROMEOS)
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

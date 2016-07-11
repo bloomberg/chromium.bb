@@ -555,8 +555,8 @@ FileManager.prototype = /** @struct */ {
       var fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (
           this.directoryModel_.getFileListSelection());
       chrome.commandLinePrivate.hasSwitch(
-          'disable-files-quick-view', function(disabled) {
-            if (!disabled) {
+          'enable-files-quick-view', function(enabled) {
+            if (enabled) {
               this.quickViewController_ = new QuickViewController(
                   quickView, assert(this.metadataModel_),
                   assert(this.selectionHandler_),
