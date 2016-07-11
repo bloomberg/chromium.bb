@@ -323,14 +323,3 @@ fuzzer_test("skia_pathop_fuzzer") {
   ]
   libfuzzer_options = [ "max_len=512" ]
 }
-
-fuzzer_test("icu_break_iterator_utf32_fuzzer") {
-  sources = [
-    "icu_break_iterator_utf32_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-    "//base:i18n",
-    "//third_party/icu",
-  ]
-}
