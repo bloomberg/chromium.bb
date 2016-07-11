@@ -88,6 +88,8 @@ class AutofillClientIOS : public AutofillClient {
   void OnFirstUserGestureObserved() override;
   scoped_refptr<AutofillWebDataService> GetDatabase() override;
   bool IsContextSecure(const GURL& form_origin) override;
+  bool ShouldShowSigninPromo() override;
+  void StartSigninFlow() override;
 
  private:
   ios::ChromeBrowserState* browser_state_;

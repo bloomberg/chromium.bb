@@ -175,4 +175,12 @@ void AutofillClientIOS::OnFirstUserGestureObserved() {
   NOTIMPLEMENTED();
 }
 
+bool AutofillClientIOS::ShouldShowSigninPromo() {
+  return false;
+}
+
+void AutofillClientIOS::StartSigninFlow() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace autofill
