@@ -96,6 +96,8 @@ def _BuildBenchmarkCache(
         cache_backend.DeleteKey(request.url)
         delete_count += 1
         continue
+      if not request.HasReceivedResponse():
+        continue
       if request.url in urls_to_enable_swr:
         request.SetHTTPResponseHeader(
             'cache-control', 'max-age=0,stale-while-revalidate=315360000')

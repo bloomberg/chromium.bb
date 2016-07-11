@@ -341,7 +341,7 @@ class Request(object):
     directives = [s.strip() for s in cache_control_str.split(',')]
     for directive in directives:
       parts = directive.split('=')
-      if len(parts) == 1:
+      if len(parts) != 2:
         continue
       (name, value) = parts
       if name == directive_name:
@@ -385,10 +385,12 @@ class Request(object):
     net::HttpResponseHeaders's constructor.
     """
     assert not self.IsDataRequest()
-    headers = '{} {} {}\x00'.format(
-        self.protocol.upper(), self.status, self.status_text)
+    assert self.HasReceivedResponse()
+    headers = bytes('{} {} {}\x00'.format(
+        self.protocol.upper(), self.status, self.status_text))
     for key in sorted(self.response_headers.keys()):
-      headers += '{}: {}\x00'.format(key, self.response_headers[key])
+      headers += (bytes(key.encode('latin-1')) + b': ' +
+          bytes(self.response_headers[key].encode('latin-1')) + b'\x00')
     return headers
 
   def __eq__(self, o):
