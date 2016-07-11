@@ -43,6 +43,7 @@ present_progressive_SOURCES = default_table.h present_progressive.c
 resolve_table_SOURCES = resolve_table.c
 squash_space_SOURCES = squash_space.c
 typeform_SOURCES = typeform.c
+typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
 uplow_with_unicode_SOURCES = uplow_with_unicode.c
 
 # Note that this is not currently included in check_programs below
@@ -74,6 +75,7 @@ program_TESTS =					\
 	outpos					\
 	getTable				\
 	typeform				\
+	typeform_for_emphclass			\
 	pass0_typebuf				\
 	hash_collision				\
 	resolve_table				\

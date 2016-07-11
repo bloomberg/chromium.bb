@@ -101,6 +101,8 @@ liblouis.lou_checkTable.argtypes = (c_char_p,)
 
 liblouis.lou_compileString.argtypes = (c_char_p, c_char_p)
 
+liblouis.lou_getTypeformForEmphClass.argtypes = (c_char_p, c_char_p)
+
 def version():
     """Obtain version information for liblouis.
     @return: The version of liblouis, plus other information, such as
@@ -304,6 +306,17 @@ def compileString(tableList, inString):
     inBytes = inString.encode("ASCII") if isinstance(inString, str) else bytes(inString)
     if not liblouis.lou_compileString(tablesString, inString):
         raise RuntimeError("Can't compile entry: tables %s, inString %s"%(tableList, inString))
+
+def getTypeformForEmphClass(tableList, emphClass):
+    """Get the typeform bit for the named emphasis class.
+    @param tableList: A list of translation tables.
+    @type tableList: list of str
+    @param emphClass: An emphasis class name.
+    @type emphClass: str
+    @see: lou_getTypeformForEmphClass in the liblouis documentation
+    """
+    tablesString = _createTablesString(tableList)
+    return liblouis.lou_getTypeformForEmphClass(tablesString, emphClass)
 
 #{ Typeforms
 plain_text = 0x0000

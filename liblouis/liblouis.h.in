@@ -190,6 +190,14 @@ void EXPORT_CALL lou_registerTableResolver(
 int EXPORT_CALL lou_compileString(const char *tableList, const char *inString);
 
 /**
+ * Get the typeform bit for the named emphasis class.
+ *
+ * If the table defines the specified emphasis class the corresponding
+ * typeform is returned. Else the return value is 0.
+ */
+formtype EXPORT_CALL lou_getTypeformForEmphClass(const char *tableList, const char *emphClass);
+
+/**
  * Set the path used for searching for tables and liblouisutdml files.
  *
  * Overrides the installation path. */

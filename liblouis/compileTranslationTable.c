@@ -5278,6 +5278,17 @@ lou_checkTable (const char *tableList)
   return 0;
 }
 
+formtype EXPORT_CALL
+lou_getTypeformForEmphClass(const char *tableList, const char *emphClass) {
+	int i;
+	if (!getTable(tableList))
+		return 0;//perensap
+	for (i = 0; table->emphClasses[i]; i++)
+		if (strcmp(emphClass, table->emphClasses[i]) == 0)
+			return italic << i;
+	return 0;
+}
+
 static unsigned char *destSpacing = NULL;
 static int sizeDestSpacing = 0;
 static unsigned short *typebuf = NULL;
