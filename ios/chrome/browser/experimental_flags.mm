@@ -28,6 +28,7 @@ NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 NSString* const kEnableReadingList = @"EnableReadingList";
 NSString* const kUpdatePasswordUIEnabled = @"UpdatePasswordUIEnabled";
+NSString* const kEnableQRCodeReader = @"EnableQRCodeReader";
 }  // namespace
 
 namespace experimental_flags {
@@ -140,6 +141,11 @@ bool IsPhysicalWebEnabled() {
 bool IsUpdatePasswordUIEnabled() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:kUpdatePasswordUIEnabled];
+}
+
+bool IsQRCodeReaderEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kEnableQRCodeReader];
 }
 
 }  // namespace experimental_flags

@@ -43,6 +43,9 @@ bool IsPhysicalWebEnabled();
 // Whether the update password UI is enabled.
 bool IsUpdatePasswordUIEnabled();
 
+// Whether the QR Code Reader is enabled.
+bool IsQRCodeReaderEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
