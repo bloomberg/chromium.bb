@@ -61,7 +61,7 @@ class TestSerializationPictureLayer : public PictureLayer {
   void set_is_mask(bool is_mask) { is_mask_ = is_mask; }
 
   void set_nearest_neighbor(bool nearest_neighbor) {
-    nearest_neighbor_ = nearest_neighbor;
+    inputs_.nearest_neighbor = nearest_neighbor;
   }
 
   void ValidateSerialization(
@@ -93,7 +93,7 @@ class TestSerializationPictureLayer : public PictureLayer {
     EXPECT_TRUE(recording_source()->EqualsTo(*layer->recording_source()));
     EXPECT_EQ(update_source_frame_number_, layer->update_source_frame_number_);
     EXPECT_EQ(is_mask_, layer->is_mask_);
-    EXPECT_EQ(nearest_neighbor_, layer->nearest_neighbor_);
+    EXPECT_EQ(inputs_.nearest_neighbor, layer->inputs_.nearest_neighbor);
   }
 
   std::vector<uint32_t> GetPictureIds() {

@@ -37,7 +37,7 @@ class CC_EXPORT PictureLayer : public Layer {
 
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;
 
-  ContentLayerClient* client() { return client_; }
+  ContentLayerClient* client() { return inputs_.client; }
 
   RecordingSource* GetRecordingSourceForTesting() {
     return recording_source_.get();
@@ -63,7 +63,6 @@ class CC_EXPORT PictureLayer : public Layer {
 
   void DropRecordingSourceContentIfInvalid();
 
-  ContentLayerClient* client_;
   std::unique_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
@@ -72,7 +71,14 @@ class CC_EXPORT PictureLayer : public Layer {
 
   int update_source_frame_number_;
   bool is_mask_;
-  bool nearest_neighbor_;
+
+  // Encapsulates all data, callbacks or interfaces received from the embedder.
+  struct Inputs {
+    ContentLayerClient* client = nullptr;
+    bool nearest_neighbor = false;
+  };
+
+  Inputs inputs_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };
