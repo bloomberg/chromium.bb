@@ -9,12 +9,12 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
 namespace storage {
@@ -32,10 +32,9 @@ namespace sync_file_system {
 //
 // An entry can have multiple writers but sync is exclusive and cannot overwrap
 // with any writes or syncs.
-class LocalFileSyncStatus
-    : public base::NonThreadSafe {
+class LocalFileSyncStatus {
  public:
-  typedef std::pair<GURL, storage::FileSystemType> OriginAndType;
+  using OriginAndType = std::pair<GURL, storage::FileSystemType>;
 
   class Observer {
    public:
@@ -82,16 +81,16 @@ class LocalFileSyncStatus
   FRIEND_TEST_ALL_PREFIXES(LocalFileSyncStatusTest, WritingOnPathsWithPeriod);
   FRIEND_TEST_ALL_PREFIXES(LocalFileSyncStatusTest, SyncingOnPathsWithPeriod);
 
-  typedef std::set<base::FilePath> PathSet;
-  typedef std::map<OriginAndType, PathSet> URLSet;
+  using PathSet = std::set<base::FilePath>;
+  using URLSet = std::map<OriginAndType, PathSet>;
 
-  typedef std::map<base::FilePath, int64_t> PathBucket;
-  typedef std::map<OriginAndType, PathBucket> URLBucket;
+  using PathBucket = std::map<base::FilePath, int64_t>;
+  using URLBucket = std::map<OriginAndType, PathBucket>;
 
   bool IsChildOrParentWriting(const storage::FileSystemURL& url) const;
   bool IsChildOrParentSyncing(const storage::FileSystemURL& url) const;
 
-  // If this count is non-zero positive there're ongoing write operations.
+  // If this count is non-zero, then there are ongoing write operations.
   URLBucket writing_;
 
   // If this flag is set sync process is running on the file.

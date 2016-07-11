@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -29,8 +28,7 @@ class SyncableFileOperationRunner;
 
 // A wrapper class of FileSystemOperation for syncable file system.
 class SyncableFileSystemOperation
-    : public NON_EXPORTED_BASE(storage::FileSystemOperation),
-      public base::NonThreadSafe {
+    : public NON_EXPORTED_BASE(storage::FileSystemOperation) {
  public:
   ~SyncableFileSystemOperation() override;
 

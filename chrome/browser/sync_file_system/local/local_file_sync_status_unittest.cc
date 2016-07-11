@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -27,7 +28,16 @@ FileSystemURL URL(const char* spec) {
 
 }  // namespace
 
-TEST(LocalFileSyncStatusTest, WritingSimple) {
+class LocalFileSyncStatusTest : public testing::Test {
+ public:
+  LocalFileSyncStatusTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+
+ private:
+  content::TestBrowserThreadBundle thread_bundle_;
+};
+
+TEST_F(LocalFileSyncStatusTest, WritingSimple) {
   LocalFileSyncStatus status;
 
   status.StartWriting(URL(kFile));
@@ -61,7 +71,7 @@ TEST(LocalFileSyncStatusTest, WritingSimple) {
   EXPECT_FALSE(status.IsWriting(URL(kChild)));
 }
 
-TEST(LocalFileSyncStatusTest, SyncingSimple) {
+TEST_F(LocalFileSyncStatusTest, SyncingSimple) {
   LocalFileSyncStatus status;
 
   status.StartSyncing(URL(kFile));
@@ -86,7 +96,7 @@ TEST(LocalFileSyncStatusTest, SyncingSimple) {
   EXPECT_TRUE(status.IsWritable(URL(kChild)));
 }
 
-TEST(LocalFileSyncStatusTest, WritingOnPathsWithPeriod) {
+TEST_F(LocalFileSyncStatusTest, WritingOnPathsWithPeriod) {
   LocalFileSyncStatus status;
 
   status.StartWriting(URL(kParent));
@@ -100,7 +110,7 @@ TEST(LocalFileSyncStatusTest, WritingOnPathsWithPeriod) {
   EXPECT_TRUE(status.IsChildOrParentWriting(URL(kParent)));
 }
 
-TEST(LocalFileSyncStatusTest, SyncingOnPathsWithPeriod) {
+TEST_F(LocalFileSyncStatusTest, SyncingOnPathsWithPeriod) {
   LocalFileSyncStatus status;
 
   status.StartSyncing(URL(kParent));

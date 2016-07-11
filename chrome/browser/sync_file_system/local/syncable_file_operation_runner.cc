@@ -7,23 +7,16 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <functional>
 
 #include "base/callback.h"
 #include "base/stl_util.h"
+#include "content/public/browser/browser_thread.h"
 
 using storage::FileSystemURL;
 
 namespace sync_file_system {
 
 // SyncableFileOperationRunner::Task -------------------------------------------
-
-// static
-void SyncableFileOperationRunner::Task::CancelAndDelete(
-    SyncableFileOperationRunner::Task* task) {
-  task->Cancel();
-  delete task;
-}
 
 bool SyncableFileOperationRunner::Task::IsRunnable(
     LocalFileSyncStatus* status) const {
@@ -50,39 +43,41 @@ SyncableFileOperationRunner::SyncableFileOperationRunner(
     : sync_status_(sync_status),
       max_inflight_tasks_(max_inflight_tasks),
       num_inflight_tasks_(0) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   sync_status_->AddObserver(this);
 }
 
 SyncableFileOperationRunner::~SyncableFileOperationRunner() {
-  DCHECK(CalledOnValidThread());
-  for_each(pending_tasks_.begin(), pending_tasks_.end(),
-           SyncableFileOperationRunner::Task::CancelAndDelete);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  for (auto& task : pending_tasks_)
+    task->Cancel();
+  pending_tasks_.clear();
 }
 
 void SyncableFileOperationRunner::OnSyncEnabled(const FileSystemURL& url) {
 }
 
 void SyncableFileOperationRunner::OnWriteEnabled(const FileSystemURL& url) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   RunNextRunnableTask();
 }
 
 void SyncableFileOperationRunner::PostOperationTask(
     std::unique_ptr<Task> task) {
-  DCHECK(CalledOnValidThread());
-  pending_tasks_.push_back(task.release());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  pending_tasks_.push_back(std::move(task));
   RunNextRunnableTask();
 }
 
 void SyncableFileOperationRunner::RunNextRunnableTask() {
-  DCHECK(CalledOnValidThread());
-  for (std::list<Task*>::iterator iter = pending_tasks_.begin();
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  for (auto iter = pending_tasks_.begin();
        iter != pending_tasks_.end() && ShouldStartMoreTasks();) {
     if ((*iter)->IsRunnable(sync_status())) {
       ++num_inflight_tasks_;
       DCHECK_GE(num_inflight_tasks_, 1);
-      std::unique_ptr<Task> task(*iter);
+      std::unique_ptr<Task> task = std::move(*iter);
       pending_tasks_.erase(iter++);
       task->Start(sync_status());
       continue;

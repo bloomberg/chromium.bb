@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "storage/common/fileapi/file_system_util.h"
 
 using storage::FileSystemURL;
@@ -15,7 +16,7 @@ namespace sync_file_system {
 
 namespace {
 
-typedef LocalFileSyncStatus::OriginAndType OriginAndType;
+using OriginAndType = LocalFileSyncStatus::OriginAndType;
 
 OriginAndType GetOriginAndType(const storage::FileSystemURL& url) {
   return std::make_pair(url.origin(), url.type());
@@ -78,13 +79,13 @@ LocalFileSyncStatus::LocalFileSyncStatus() {}
 LocalFileSyncStatus::~LocalFileSyncStatus() {}
 
 void LocalFileSyncStatus::StartWriting(const FileSystemURL& url) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!IsChildOrParentSyncing(url));
   writing_[GetOriginAndType(url)][NormalizePath(url.path())]++;
 }
 
 void LocalFileSyncStatus::EndWriting(const FileSystemURL& url) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath normalized_path = NormalizePath(url.path());
   OriginAndType origin_and_type = GetOriginAndType(url);
 
@@ -98,14 +99,14 @@ void LocalFileSyncStatus::EndWriting(const FileSystemURL& url) {
 }
 
 void LocalFileSyncStatus::StartSyncing(const FileSystemURL& url) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!IsChildOrParentWriting(url));
   DCHECK(!IsChildOrParentSyncing(url));
   syncing_[GetOriginAndType(url)].insert(NormalizePath(url.path()));
 }
 
 void LocalFileSyncStatus::EndSyncing(const FileSystemURL& url) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::FilePath normalized_path = NormalizePath(url.path());
   OriginAndType origin_and_type = GetOriginAndType(url);
 
@@ -117,33 +118,33 @@ void LocalFileSyncStatus::EndSyncing(const FileSystemURL& url) {
 }
 
 bool LocalFileSyncStatus::IsWriting(const FileSystemURL& url) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return IsChildOrParentWriting(url);
 }
 
 bool LocalFileSyncStatus::IsWritable(const FileSystemURL& url) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return !IsChildOrParentSyncing(url);
 }
 
 bool LocalFileSyncStatus::IsSyncable(const FileSystemURL& url) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return !IsChildOrParentSyncing(url) && !IsChildOrParentWriting(url);
 }
 
 void LocalFileSyncStatus::AddObserver(Observer* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   observer_list_.AddObserver(observer);
 }
 
 void LocalFileSyncStatus::RemoveObserver(Observer* observer) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   observer_list_.RemoveObserver(observer);
 }
 
 bool LocalFileSyncStatus::IsChildOrParentWriting(
     const FileSystemURL& url) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   URLBucket::const_iterator found = writing_.find(GetOriginAndType(url));
   if (found == writing_.end())
@@ -154,7 +155,7 @@ bool LocalFileSyncStatus::IsChildOrParentWriting(
 
 bool LocalFileSyncStatus::IsChildOrParentSyncing(
     const FileSystemURL& url) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   URLSet::const_iterator found = syncing_.find(GetOriginAndType(url));
   if (found == syncing_.end())
     return false;
