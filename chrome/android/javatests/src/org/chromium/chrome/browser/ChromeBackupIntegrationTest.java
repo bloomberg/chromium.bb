@@ -116,7 +116,7 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
 
         // Set up the mocked account as the signed in account.
         preferenceEditor.putString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, TEST_ACCOUNT_1);
-        preferenceEditor.commit();
+        preferenceEditor.apply();
 
         // Run Chrome's restore code.
         new ChromeTestBackupAgent(mTargetContext).onRestoreFinished();
@@ -148,7 +148,7 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
 
         // Use an account that hasn't been created by the mocks as the signed in account.
         preferenceEditor.putString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, TEST_ACCOUNT_2);
-        preferenceEditor.commit();
+        preferenceEditor.apply();
 
         String chromeInputPrefs = "{}";
 

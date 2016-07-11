@@ -145,8 +145,7 @@ public class FontSizePrefsTest extends NativeLibraryTestBase {
         // Delete PREF_USER_FONT_SCALE_FACTOR. This simulates the condition just after upgrading to
         // M51, when userFontScaleFactor was added.
         SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
-        editor.remove(FontSizePrefs.PREF_USER_FONT_SCALE_FACTOR);
-        editor.commit();
+        editor.remove(FontSizePrefs.PREF_USER_FONT_SCALE_FACTOR).apply();
 
         // Intial userFontScaleFactor should be set to fontScaleFactor / systemFontScale.
         assertEquals(1.5f, getUserFontScaleFactor(), EPSILON);

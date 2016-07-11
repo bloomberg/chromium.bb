@@ -73,7 +73,7 @@ public class WebappDataStorageTest {
                 .getSharedPreferences("webapp_test", Context.MODE_PRIVATE);
 
         // Set the last_used as if the web app had been registered by WebappRegistry.
-        mSharedPreferences.edit().putLong("last_used", 0).commit();
+        mSharedPreferences.edit().putLong("last_used", 0).apply();
 
         mCallbackCalled = false;
     }
@@ -101,9 +101,7 @@ public class WebappDataStorageTest {
     @Test
     @Feature({"Webapp"})
     public void testLastUsedRetrieval() throws Exception {
-        mSharedPreferences.edit()
-                .putLong(WebappDataStorage.KEY_LAST_USED, 100L)
-                .commit();
+        mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, 100L).apply();
 
         WebappDataStorage.getLastUsedTime(Robolectric.application, "test",
                 new FetchCallback<Long>(new Long(100L)));
@@ -120,7 +118,7 @@ public class WebappDataStorageTest {
         mSharedPreferences.edit()
                 .putString(WebappDataStorage.KEY_SPLASH_ICON,
                         ShortcutHelper.encodeBitmapAsString(expected))
-                .commit();
+                .apply();
         WebappDataStorage.open(Robolectric.application, "test")
                 .getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
                     @Override
@@ -155,9 +153,7 @@ public class WebappDataStorageTest {
     @Feature({"Webapp"})
     public void testScopeRetrieval() throws Exception {
         final String scope = "http://drive.google.com";
-        mSharedPreferences.edit()
-                .putString(WebappDataStorage.KEY_SCOPE, scope)
-                .commit();
+        mSharedPreferences.edit().putString(WebappDataStorage.KEY_SCOPE, scope).apply();
 
         WebappDataStorage.getScope(Robolectric.application, "test",
                 new FetchCallback<String>(scope));
@@ -171,9 +167,7 @@ public class WebappDataStorageTest {
     @Feature({"Webapp"})
     public void testUrlRetrieval() throws Exception {
         final String url = "https://www.google.com";
-        mSharedPreferences.edit()
-                .putString(WebappDataStorage.KEY_URL, url)
-                .commit();
+        mSharedPreferences.edit().putString(WebappDataStorage.KEY_URL, url).apply();
 
         WebappDataStorage.getUrl(Robolectric.application, "test",
                 new FetchCallback<String>(url));
@@ -210,29 +204,29 @@ public class WebappDataStorageTest {
         // Move the last used time one day in the past.
         mSharedPreferences.edit()
                 .putLong(WebappDataStorage.KEY_LAST_USED, lastUsedTime - TimeUnit.DAYS.toMillis(1L))
-                .commit();
+                .apply();
         assertTrue(storage.wasLaunchedRecently());
 
         // Move the last used time three days in the past.
         mSharedPreferences.edit()
                 .putLong(WebappDataStorage.KEY_LAST_USED, lastUsedTime - TimeUnit.DAYS.toMillis(3L))
-                .commit();
+                .apply();
         assertTrue(storage.wasLaunchedRecently());
 
         // Move the last used time one week in the past.
         mSharedPreferences.edit()
                 .putLong(WebappDataStorage.KEY_LAST_USED, lastUsedTime - TimeUnit.DAYS.toMillis(7L))
-                .commit();
+                .apply();
         assertTrue(storage.wasLaunchedRecently());
 
         // Move the last used time just under ten days in the past.
         mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED,
-                lastUsedTime - TimeUnit.DAYS.toMillis(10L) + 1).commit();
+                lastUsedTime - TimeUnit.DAYS.toMillis(10L) + 1).apply();
         assertTrue(storage.wasLaunchedRecently());
 
         // Move the last used time to exactly ten days in the past.
         mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED,
-                lastUsedTime - TimeUnit.DAYS.toMillis(10L)).commit();
+                lastUsedTime - TimeUnit.DAYS.toMillis(10L)).apply();
         assertTrue(!storage.wasLaunchedRecently());
     }
 
@@ -289,7 +283,7 @@ public class WebappDataStorageTest {
                 .remove(WebappDataStorage.KEY_THEME_COLOR)
                 .remove(WebappDataStorage.KEY_BACKGROUND_COLOR)
                 .remove(WebappDataStorage.KEY_IS_ICON_GENERATED)
-                .commit();
+                .apply();
 
         assertEquals(null, mSharedPreferences.getString(WebappDataStorage.KEY_ACTION, null));
         assertEquals(null, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));

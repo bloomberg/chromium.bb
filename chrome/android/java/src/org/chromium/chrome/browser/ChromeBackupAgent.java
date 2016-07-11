@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.backup.BackupAgent;
 import android.app.backup.BackupDataInput;
@@ -187,12 +188,16 @@ public class ChromeBackupAgent extends BackupAgent {
         Log.d(TAG, "onRestoreFinished complete");
     }
 
+    @SuppressLint("CommitPrefEdits")
     private void clearAllPrefs(SharedPreferences sharedPrefs, File prefsFile) {
         deleteFileIfPossible(prefsFile);
+        // Android restore closes down the process immediately, so we want to make sure that the
+        // prefs changes are committed to disk before exiting.
         sharedPrefs.edit().clear().commit();
     }
 
-    private boolean restoreAndroidPrefs(SharedPreferences sharedPrefs, String userName) {
+    @SuppressLint("CommitPrefEdits")
+    private void restoreAndroidPrefs(SharedPreferences sharedPrefs, String userName) {
         Set<String> prefNames = sharedPrefs.getAll().keySet();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         // Throw away prefs we don't want to restore.
@@ -204,8 +209,9 @@ public class ChromeBackupAgent extends BackupAgent {
         // will sign in the user on first run to the account in FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME
         // if any. If the rest of FRE has been completed this will happen silently.
         editor.putString(FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_ACCOUNT_NAME, userName);
-        boolean commitResult = editor.commit();
-        return commitResult;
+        // Android restore closes down the process immediately, so we want to make sure that the
+        // prefs changes are committed to disk before exiting.
+        editor.commit();
     }
 
     private boolean filterChromePrefs(File prefsFile) {

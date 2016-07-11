@@ -486,7 +486,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
                 assertEquals(AsyncTask.Status.FINISHED, store.mPrefetchActiveTabTask.getStatus());
 
                 // Confirm that the correct active tab ID is updated when saving state.
-                mPreferences.edit().putInt(TabPersistentStore.PREF_ACTIVE_TAB_ID, -1);
+                mPreferences.edit().putInt(TabPersistentStore.PREF_ACTIVE_TAB_ID, -1).apply();
                 store.saveState();
                 assertEquals(info.selectedTabId,
                         mPreferences.getInt(TabPersistentStore.PREF_ACTIVE_TAB_ID, -1));

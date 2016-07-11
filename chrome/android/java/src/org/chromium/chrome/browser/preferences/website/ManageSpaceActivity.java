@@ -133,6 +133,10 @@ public class ManageSpaceActivity extends AppCompatActivity implements View.OnCli
                 return;
             }
 
+            // If the native library crashes and kills the browser process, there is no guarantee
+            // java-side the pref will be written before the process dies. We want to make sure we
+            // don't attempt to start the browser process and have it kill chrome. This activity is
+            // used to clear data for the chrome app, so it must be particularly error resistant.
             ContextUtils.getAppSharedPreferences().edit()
                     .putString(PREF_FAILED_BUILD_VERSION, productVersion)
                     .commit();

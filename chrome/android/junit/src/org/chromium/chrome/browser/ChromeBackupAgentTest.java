@@ -93,7 +93,7 @@ public class ChromeBackupAgentTest {
         editor.putBoolean("crash_dump_upload", false);
         editor.putString("google.services.username", "user1");
         editor.putString("junk", "junk");
-        editor.commit();
+        editor.apply();
 
         String chromeInputPrefs =
                 "{\"junk1\":\"abc\", "
@@ -128,7 +128,7 @@ public class ChromeBackupAgentTest {
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putBoolean("crash_dump_upload", false);
         editor.putString("junk", "junk");
-        editor.commit();
+        editor.apply();
 
         String chromeInputPrefs =
                 "{\"junk1\":\"abc\", "
@@ -158,7 +158,7 @@ public class ChromeBackupAgentTest {
         editor.putBoolean("crash_dump_upload", false);
         editor.putString("google.services.username", "wrong_user");
         editor.putString("junk", "junk");
-        editor.commit();
+        editor.apply();
 
         String chromeInputPrefs =
                 "{\"junk1\":\"abc\", "

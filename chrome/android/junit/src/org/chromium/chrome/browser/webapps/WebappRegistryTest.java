@@ -245,9 +245,7 @@ public class WebappRegistryTest {
         addWebappsToRegistry("test");
         SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
-        webAppPrefs.edit()
-                .putLong(WebappDataStorage.KEY_LAST_USED, 100L)
-                .commit();
+        webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, 100L).apply();
 
         WebappRegistry.unregisterAllWebapps(Robolectric.application, null);
         BackgroundShadowAsyncTask.runBackgroundTasks();
@@ -265,9 +263,7 @@ public class WebappRegistryTest {
         addWebappsToRegistry("oldWebapp");
         SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "oldWebapp", Context.MODE_PRIVATE);
-        webAppPrefs.edit()
-                .putLong(WebappDataStorage.KEY_LAST_USED, Long.MIN_VALUE)
-                .commit();
+        webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, Long.MIN_VALUE).apply();
 
         WebappRegistry.unregisterOldWebapps(Robolectric.application, currentTime);
         BackgroundShadowAsyncTask.runBackgroundTasks();
@@ -296,9 +292,7 @@ public class WebappRegistryTest {
         SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "recentWebapp", Context.MODE_PRIVATE);
         long lastUsed = currentTime - WebappRegistry.WEBAPP_UNOPENED_CLEANUP_DURATION + 1;
-        webAppPrefs.edit()
-                .putLong(WebappDataStorage.KEY_LAST_USED, lastUsed)
-                .commit();
+        webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
 
         // Because the time is just inside the window, there should be a cleanup but the web app
         // should not be deleted as it was used recently. The last cleanup time should also be
@@ -329,9 +323,7 @@ public class WebappRegistryTest {
         SharedPreferences webAppPrefs = Robolectric.application.getSharedPreferences(
                 WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "oldWebapp", Context.MODE_PRIVATE);
         long lastUsed = currentTime - WebappRegistry.WEBAPP_UNOPENED_CLEANUP_DURATION;
-        webAppPrefs.edit()
-                .putLong(WebappDataStorage.KEY_LAST_USED, lastUsed)
-                .commit();
+        webAppPrefs.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
 
         // Because the time is just inside the window, there should be a cleanup of old web apps and
         // the last cleaned up time should be set to the current time.
@@ -688,9 +680,7 @@ public class WebappRegistryTest {
 
     private Set<String> addWebappsToRegistry(String... webapps) {
         final Set<String> expected = new HashSet<String>(Arrays.asList(webapps));
-        mSharedPreferences.edit()
-                .putStringSet(WebappRegistry.KEY_WEBAPP_SET, expected)
-                .commit();
+        mSharedPreferences.edit().putStringSet(WebappRegistry.KEY_WEBAPP_SET, expected).apply();
         return expected;
     }
 
