@@ -8,6 +8,7 @@ unstable_protocols =								\
 	unstable/relative-pointer/relative-pointer-unstable-v1.xml		\
 	unstable/pointer-constraints/pointer-constraints-unstable-v1.xml	\
 	unstable/tablet/tablet-unstable-v1.xml			                \
+	unstable/tablet/tablet-unstable-v2.xml			                \
 	$(NULL)
 
 stable_protocols =								\
