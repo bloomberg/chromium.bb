@@ -23,14 +23,13 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
     private final MessageLoop mMessageLoop;
     private final ByteBuffer mBuffer;
     private final UploadDataProvider mUploadDataProvider = new UploadDataProviderImpl();
-    private long mBytesWritten;
     private boolean mLastChunk = false;
 
     /**
      * Package protected constructor.
      * @param connection The CronetHttpURLConnection object.
-     * @param contentLength The content length of the request body. Non-zero for
-     *            non-chunked upload.
+     * @param chunkLength The chunk length of the request body in bytes. It must
+     *            be a positive number.
      */
     CronetChunkedOutputStream(
             CronetHttpURLConnection connection, int chunkLength, MessageLoop messageLoop) {
@@ -43,18 +42,12 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
         mBuffer = ByteBuffer.allocate(chunkLength);
         mConnection = connection;
         mMessageLoop = messageLoop;
-        mBytesWritten = 0;
     }
 
     @Override
     public void write(int oneByte) throws IOException {
-        checkNotClosed();
-        while (mBuffer.position() == mBuffer.limit()) {
-            // Wait until buffer is consumed.
-            mMessageLoop.loop();
-        }
+        ensureBufferHasRemaining();
         mBuffer.put((byte) oneByte);
-        mBytesWritten++;
     }
 
     @Override
@@ -63,29 +56,25 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
         if (buffer.length - offset < count || offset < 0 || count < 0) {
             throw new IndexOutOfBoundsException();
         }
-        if (count == 0) {
-            return;
-        }
         int toSend = count;
-        // TODO(xunjieli): refactor commond code with CronetFixedModeOutputStream.
         while (toSend > 0) {
-            if (mBuffer.position() == mBuffer.limit()) {
-                checkNotClosed();
-                // Wait until buffer is consumed.
-                mMessageLoop.loop();
-            }
-            int sent = Math.min(toSend, mBuffer.limit() - mBuffer.position());
+            int sent = Math.min(toSend, mBuffer.remaining());
             mBuffer.put(buffer, offset + count - toSend, sent);
             toSend -= sent;
+            // Upload mBuffer now if an entire chunk is written.
+            ensureBufferHasRemaining();
         }
-        mBytesWritten += count;
     }
 
     @Override
     public void close() throws IOException {
         super.close();
-        // Last chunk is written.
-        mLastChunk = true;
+        if (!mLastChunk) {
+            // Consumer can only call close() when message loop is not running.
+            // Set mLastChunk to be true and flip mBuffer to upload its contents.
+            mLastChunk = true;
+            mBuffer.flip();
+        }
     }
 
     // Below are CronetOutputStream implementations:
@@ -113,27 +102,20 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
 
         @Override
         public void read(final UploadDataSink uploadDataSink, final ByteBuffer byteBuffer) {
-            final int availableSpace = byteBuffer.remaining();
-            if (availableSpace < mBuffer.position()) {
-                // byteBuffer does not have enough capacity, so only put a portion
-                // of mBuffer in it.
-                byteBuffer.put(mBuffer.array(), 0, availableSpace);
-                mBuffer.position(availableSpace);
-                // Move remaining buffer to the head of the buffer for use in the
-                // next read call.
-                mBuffer.compact();
-                uploadDataSink.onReadSucceeded(false);
-            } else {
-                // byteBuffer has enough capacity to hold the content of mBuffer.
-                mBuffer.flip();
+            if (byteBuffer.remaining() >= mBuffer.remaining()) {
                 byteBuffer.put(mBuffer);
-                // Reuse this buffer.
                 mBuffer.clear();
                 uploadDataSink.onReadSucceeded(mLastChunk);
                 if (!mLastChunk) {
                     // Quit message loop so embedder can write more data.
                     mMessageLoop.quit();
                 }
+            } else {
+                int oldLimit = mBuffer.limit();
+                mBuffer.limit(mBuffer.position() + byteBuffer.remaining());
+                byteBuffer.put(mBuffer);
+                mBuffer.limit(oldLimit);
+                uploadDataSink.onReadSucceeded(false);
             }
         }
 
@@ -142,5 +124,26 @@ final class CronetChunkedOutputStream extends CronetOutputStream {
             uploadDataSink.onRewindError(
                     new HttpRetryException("Cannot retry streamed Http body", -1));
         }
+    }
+
+    /**
+     * If {@code mBuffer} is full, wait until it is consumed and there is
+     * space to write more data to it.
+     */
+    private void ensureBufferHasRemaining() throws IOException {
+        if (!mBuffer.hasRemaining()) {
+            uploadBufferInternal();
+        }
+    }
+
+    /**
+     * Helper function to upload {@code mBuffer} to the native stack. This
+     * function blocks until {@code mBuffer} is consumed and there is space to
+     * write more data.
+     */
+    private void uploadBufferInternal() throws IOException {
+        checkNotClosed();
+        mBuffer.flip();
+        mMessageLoop.loop();
     }
 }

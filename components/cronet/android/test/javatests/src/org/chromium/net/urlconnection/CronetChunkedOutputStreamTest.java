@@ -225,4 +225,24 @@ public class CronetChunkedOutputStreamTest extends CronetTestBase {
         TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
         connection.disconnect();
     }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunCronetHttpURLConnection
+    // Regression testing for crbug.com/618872.
+    public void testOneMassiveWriteLargerThanInternalBuffer() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        // Use a super big chunk size so that it exceeds the UploadDataProvider
+        // read buffer size.
+        byte[] largeData = TestUtil.getLargeData();
+        connection.setChunkedStreamingMode(largeData.length);
+        OutputStream out = connection.getOutputStream();
+        out.write(largeData);
+        assertEquals(200, connection.getResponseCode());
+        TestUtil.checkLargeData(TestUtil.getResponseAsString(connection));
+        connection.disconnect();
+    }
 }
