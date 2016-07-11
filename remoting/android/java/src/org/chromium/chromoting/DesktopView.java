@@ -87,6 +87,8 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
         mRepaintPending = false;
 
         getHolder().addCallback(this);
+
+        attachRedrawCallback();
     }
 
     @Override
@@ -140,6 +142,9 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
         }
 
         Bitmap image = mDisplay.getVideoFrame();
+        synchronized (mRenderData) {
+            mRepaintPending = false;
+        }
         if (image == null) {
             // This can happen if the client is connected, but a complete video frame has not yet
             // been decoded.
@@ -167,7 +172,6 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
         Point cursorPosition;
         boolean drawCursor;
         synchronized (mRenderData) {
-            mRepaintPending = false;
             // Don't try to lock the canvas before it is ready, as the implementation of
             // lockCanvas() may throttle these calls to a slow rate in order to avoid consuming CPU.
             // Note that a successful call to lockCanvas() will prevent the framework from
@@ -240,7 +244,6 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
             mRenderData.screenHeight = height;
         }
 
-        attachRedrawCallback();
         mOnClientSizeChanged.raise(new SizeChangedEventParameter(width, height));
         requestRepaint();
     }
