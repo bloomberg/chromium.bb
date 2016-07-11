@@ -248,6 +248,10 @@ class BlinkTestController : public base::NonThreadSafe,
   gfx::Size initial_size_;
   GURL test_url_;
 
+  // Stores the default test-adapted WebPreferences which is then used to fully
+  // reset the main window's preferences if and when it is reused.
+  WebPreferences default_prefs_;
+
   // True if the WebPreferences of newly created RenderViewHost should be
   // overridden with prefs_.
   bool should_override_prefs_;

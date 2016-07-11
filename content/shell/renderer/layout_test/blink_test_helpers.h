@@ -16,9 +16,9 @@ struct TestPreferences;
 namespace content {
 struct WebPreferences;
 
-// The TestRunner library keeps its settings in a WebPreferenes object.
+// The TestRunner library keeps its settings in a TestPreferences object.
 // The content_shell, however, uses WebPreferences. This method exports the
-// settings from the WebTestRunner library which are relevant for layout tests.
+// settings from the TestRunner library which are relevant for layout tests.
 void ExportLayoutTestSpecificPreferences(
     const test_runner::TestPreferences& from,
     WebPreferences* to);

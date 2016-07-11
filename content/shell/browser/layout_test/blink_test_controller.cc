@@ -292,6 +292,8 @@ bool BlinkTestController::PrepareForLayoutTest(
         initial_size_);
     WebContentsObserver::Observe(main_window_->web_contents());
     current_pid_ = base::kNullProcessId;
+    default_prefs_ =
+      main_window_->web_contents()->GetRenderViewHost()->GetWebkitPreferences();
     main_window_->LoadURL(test_url);
   } else {
 #if defined(OS_MACOSX)
@@ -309,9 +311,7 @@ bool BlinkTestController::PrepareForLayoutTest(
         ->WasResized();
     RenderViewHost* render_view_host =
         main_window_->web_contents()->GetRenderViewHost();
-    WebPreferences prefs = render_view_host->GetWebkitPreferences();
-    OverrideWebkitPrefs(&prefs);
-    render_view_host->UpdateWebkitPreferences(prefs);
+    render_view_host->UpdateWebkitPreferences(default_prefs_);
     HandleNewRenderFrameHost(render_view_host->GetMainFrame());
 
     NavigationController::LoadURLParams params(test_url);
@@ -757,6 +757,15 @@ void BlinkTestController::OnPrintMessage(const std::string& message) {
 void BlinkTestController::OnOverridePreferences(const WebPreferences& prefs) {
   should_override_prefs_ = true;
   prefs_ = prefs;
+
+  // Notifies the main RenderViewHost that Blink preferences changed so
+  // immediately apply the new settings and to avoid re-usage of cached
+  // preferences that are now stale. RenderViewHost::UpdateWebkitPreferences is
+  // not used here because it would send an unneeded preferences update to the
+  // renderer.
+  RenderViewHost* main_render_view_host =
+      main_window_->web_contents()->GetRenderViewHost();
+  main_render_view_host->OnWebkitPreferencesChanged();
 }
 
 void BlinkTestController::OnClearDevToolsLocalStorage() {

@@ -51,7 +51,7 @@ var resultMap = [
 
 if (window.testRunner) {
     testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-    window.internals.settings.setSpatialNavigationEnabled(true);
+    testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
 }
 
 function runTest()
