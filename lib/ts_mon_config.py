@@ -41,6 +41,7 @@ def SetupTsMonGlobalState(service_name):
         '--ts-mon-task-service-name', service_name,
         '--ts-mon-task-job-name', service_name,
     ]))
+    logging.notice('ts_mon was set up.')
     _WasSetup = True
   except Exception as e:
     logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,
@@ -55,5 +56,5 @@ class TsMonFlusher(object):
 
   def __exit__(self, _type, _value, _traceback):
     if interface and _WasSetup:
-      logging.info('Forcing flush of ts_mon metrics due to end of context.')
+      logging.notice('Forcing flush of ts_mon metrics due to end of context.')
       interface.flush()
