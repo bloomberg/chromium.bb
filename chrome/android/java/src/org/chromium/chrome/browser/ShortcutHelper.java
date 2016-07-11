@@ -249,18 +249,6 @@ public class ShortcutHelper {
     }
 
     /**
-     * Creates an intent that will add a shortcut to the home screen.
-     * @param url Url of the shortcut.
-     * @param title Title of the shortcut.
-     * @param icon Image that represents the shortcut.
-     * @return Intent for the shortcut.
-     */
-    public static Intent createAddToHomeIntent(String url, String title, Bitmap icon) {
-        Intent shortcutIntent = createShortcutIntent(url);
-        return createAddToHomeIntent(url, title, icon, shortcutIntent);
-    }
-
-    /**
      * Creates a shortcut to launch a web app on the home screen.
      * @param id              Id of the web app.
      * @param action          Intent action to open a full screen activity.
