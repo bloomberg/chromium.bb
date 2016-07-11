@@ -1485,7 +1485,11 @@ def _CheckIpcOwners(input_api, output_api):
 
   results = []
   if errors:
-    results.append(output_api.PresubmitError(
+    if input_api.is_committing:
+      output = output_api.PresubmitError
+    else:
+      output = output_api.PresubmitPromptWarning
+    results.append(output(
         'Found changes to IPC files without a security OWNER!',
         long_text='\n\n'.join(errors)))
 
