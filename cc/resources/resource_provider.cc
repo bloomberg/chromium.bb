@@ -1186,9 +1186,13 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     sk_bitmap.setImmutable();
     sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
   } else {
-    // TODO(enne): fix race condition of shared bitmap manager going away
-    // that can cause this to happen.  This will cause the read lock
-    // to not be valid.
+    // During render process shutdown, ~RenderMessageFilter which calls
+    // ~HostSharedBitmapClient (which deletes shared bitmaps from child)
+    // can race with OnBeginFrameDeadline which draws a frame.
+    // In these cases, shared bitmaps (and this read lock) won't be valid.
+    // Renderers need to silently handle locks failing until this race
+    // is fixed.  DCHECK that this is the only case where there are no pixels.
+    DCHECK(!resource->shared_bitmap_id.IsZero());
   }
 }
 
