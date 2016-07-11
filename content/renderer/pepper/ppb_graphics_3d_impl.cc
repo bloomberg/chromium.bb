@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/web_preferences.h"
 #include "content/renderer/pepper/host_globals.h"
@@ -51,6 +53,11 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool use_image_chromium =
       !command_line->HasSwitch(switches::kDisablePepper3DImageChromium);
+
+  if (use_image_chromium) {
+    use_image_chromium =
+        base::FeatureList::IsEnabled(features::kPepper3DImageChromium);
+  }
   use_image_chromium_ = use_image_chromium;
 #endif
 }
