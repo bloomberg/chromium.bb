@@ -60,12 +60,9 @@ window.addEventListener('DOMContentLoaded', function() {
         // If no external thumbnail fallback (etfb), and have domain.
         if (!params.etfb && data.domain) {
           showDomainElement();
-          logEvent(NTP_LOGGING_EVENT_TYPE.NTP_GRAY_TILE_FALLBACK);
         } else {
           showEmptyTile();
-          logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE_FALLBACK);
         }
-        logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ERROR);
         logEvent(NTP_LOGGING_EVENT_TYPE.NTP_TILE_LOADED);
       };
       image.src = src;
@@ -74,19 +71,15 @@ window.addEventListener('DOMContentLoaded', function() {
     var useIcons = params['icons'] == '1';
     if (data.dummy) {
       showEmptyTile();
-      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE);
     } else if (useIcons && data.largeIconUrl) {
       createThumbnail(data.largeIconUrl, 'large-icon');
       // TODO(huangs): Log event for large icons.
     } else if (!useIcons && data.thumbnailUrls && data.thumbnailUrls.length) {
       createThumbnail(data.thumbnailUrls[0], 'thumbnail');
-      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_TILE);
     } else if (data.domain) {
       showDomainElement();
-      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_GRAY_TILE);
     } else {
       showEmptyTile();
-      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE);
     }
     logEvent(NTP_LOGGING_EVENT_TYPE.NTP_TILE);
 

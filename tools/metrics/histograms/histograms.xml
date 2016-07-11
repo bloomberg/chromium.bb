@@ -34656,6 +34656,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfExternalTileFallbacks">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of tiles for which we relied on external tiles as a fallback
@@ -34668,6 +34671,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfExternalTiles">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of external tiles that are displayed on the NTP. External tiles
@@ -34679,6 +34685,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfGrayTileFallbacks">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of tiles for which we displayed a gray tile with the domain name
@@ -34690,6 +34699,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfGrayTiles">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of tiles for which no thumbnail was specified, but a domain was
@@ -34726,6 +34738,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfThumbnailErrors">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of thumbnails for which a local screenshot was not available so
@@ -34736,6 +34751,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.NumberOfThumbnailTiles">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     The number of tiles for which we attempted to use a local screenshot as a
@@ -35135,6 +35153,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NewTabPage.SuggestionsType" enum="NtpSuggestionsType">
+  <obsolete>
+    Deprecated 2016-07.
+  </obsolete>
   <owner>beaudoin@chromium.org</owner>
   <summary>
     Indicate, for each impression of the New Tab Page, whether the suggestions

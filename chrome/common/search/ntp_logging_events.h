@@ -22,24 +22,24 @@ enum NTPLoggingEventType {
   NTP_TILE = 2,
 
   // The tile uses a local thumbnail image.
-  NTP_THUMBNAIL_TILE = 3,
+  // Deleted: NTP_THUMBNAIL_TILE = 3,
 
   // Used when no thumbnail is specified and a gray tile with the domain is used
   // as the main tile.
-  NTP_GRAY_TILE = 4,
+  // Deleted: NTP_GRAY_TILE = 4,
 
   // The visuals of that tile are handled externally by the page itself.
-  NTP_EXTERNAL_TILE = 5,
+  // Deleted: NTP_EXTERNAL_TILE = 5,
 
   // There was an error in loading both the thumbnail image and the fallback
   // (if it was provided), resulting in a grey tile.
-  NTP_THUMBNAIL_ERROR = 6,
+  // Deleted: NTP_THUMBNAIL_ERROR = 6,
 
   // Used a gray tile with the domain as the fallback for a failed thumbnail.
-  NTP_GRAY_TILE_FALLBACK = 7,
+  // Deleted: NTP_GRAY_TILE_FALLBACK = 7,
 
   // The visuals of that tile's fallback are handled externally.
-  NTP_EXTERNAL_TILE_FALLBACK = 8,
+  // Deleted: NTP_EXTERNAL_TILE_FALLBACK = 8,
 
   // Deleted: NTP_MOUSEOVER = 9
 

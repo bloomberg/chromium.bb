@@ -50,47 +50,16 @@ TEST_F(NTPUserDataLoggerTest, TestLogging) {
 
   for (int i = 0; i < 8; ++i)
     logger.LogEvent(NTP_TILE, delta);
-  for (int i = 0; i < 4; ++i)
-    logger.LogEvent(NTP_THUMBNAIL_TILE, delta);
-  for (int i = 0; i < 2; ++i)
-    logger.LogEvent(NTP_THUMBNAIL_ERROR, delta);
-  logger.LogEvent(NTP_GRAY_TILE_FALLBACK, delta);
-  logger.LogEvent(NTP_EXTERNAL_TILE_FALLBACK, delta);
-  for (int i = 0; i < 2; ++i)
-    logger.LogEvent(NTP_EXTERNAL_TILE, delta);
-  for (int i = 0; i < 2; ++i)
-    logger.LogEvent(NTP_GRAY_TILE, delta);
   logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION, delta);
 
   logger.EmitNtpStatistics(NTPUserDataLogger::EmitReason::NAVIGATED_AWAY);
 
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfTiles", 8));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailTiles"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfThumbnailTiles", 4));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailErrors"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfThumbnailErrors", 2));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfGrayTileFallbacks"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfGrayTileFallbacks", 1));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfExternalTileFallbacks"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfExternalTileFallbacks", 1));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfExternalTiles"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfExternalTiles", 2));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfGrayTiles"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfGrayTiles", 2));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.SuggestionsType"));
-  EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsType", 1));
 
   // Statistics should be reset to 0, so we should not log anything else.
   logger.EmitNtpStatistics(NTPUserDataLogger::EmitReason::NAVIGATED_AWAY);
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailTiles"));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailErrors"));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfGrayTileFallbacks"));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfExternalTileFallbacks"));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfExternalTiles"));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfGrayTiles"));
-  EXPECT_EQ(1, GetTotalCount("NewTabPage.SuggestionsType"));
 }
 
 TEST_F(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {

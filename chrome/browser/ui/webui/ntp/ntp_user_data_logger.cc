@@ -5,13 +5,12 @@
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/search/search_urls.h"
@@ -24,18 +23,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 
-// Macro to log UMA statistics related to the 8 tiles shown on the NTP.
-#define UMA_HISTOGRAM_NTP_TILES(name, sample) \
-    UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 0, 8, 9)
-
 namespace {
-
-// Used to track if suggestions were issued by the client or the server.
-enum SuggestionsType {
-  CLIENT_SIDE = 0,
-  SERVER_SIDE = 1,
-  SUGGESTIONS_TYPE_COUNT = 2
-};
 
 // Number of Most Visited elements on the NTP for logging purposes.
 const int kNumMostVisited = 8;
@@ -128,24 +116,6 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_TILE:
       number_of_tiles_++;
       break;
-    case NTP_THUMBNAIL_TILE:
-      number_of_thumbnail_tiles_++;
-      break;
-    case NTP_GRAY_TILE:
-      number_of_gray_tiles_++;
-      break;
-    case NTP_EXTERNAL_TILE:
-      number_of_external_tiles_++;
-      break;
-    case NTP_THUMBNAIL_ERROR:
-      number_of_thumbnail_errors_++;
-      break;
-    case NTP_GRAY_TILE_FALLBACK:
-      number_of_gray_tile_fallbacks_++;
-      break;
-    case NTP_EXTERNAL_TILE_FALLBACK:
-      number_of_external_tile_fallbacks_++;
-      break;
     case NTP_TILE_LOADED:
       // The time at which the last tile has loaded (title, thumbnail or single)
       // is a good proxy for the total load time of the NTP, therefore we keep
@@ -195,17 +165,6 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
   content::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
 }
 
-// content::WebContentsObserver override
-void NTPUserDataLogger::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  if (!load_details.previous_url.is_valid())
-    return;
-
-  if (search::MatchesOriginAndPath(ntp_url_, load_details.previous_url)) {
-    EmitNtpStatistics(EmitReason::NAVIGATED_AWAY);
-  }
-}
-
 void NTPUserDataLogger::TabDeactivated() {
   EmitNtpStatistics(EmitReason::CLOSED);
 }
@@ -219,12 +178,6 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       has_server_side_suggestions_(false),
       has_client_side_suggestions_(false),
       number_of_tiles_(0),
-      number_of_thumbnail_tiles_(0),
-      number_of_gray_tiles_(0),
-      number_of_external_tiles_(0),
-      number_of_thumbnail_errors_(0),
-      number_of_gray_tile_fallbacks_(0),
-      number_of_external_tile_fallbacks_(0),
       has_emitted_(false),
       during_startup_(false) {
   during_startup_ = !AfterStartupTaskUtils::IsBrowserStartupComplete();
@@ -246,6 +199,16 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       }
     }
   }
+}
+
+// content::WebContentsObserver override
+void NTPUserDataLogger::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  if (!load_details.previous_url.is_valid())
+    return;
+
+  if (search::MatchesOriginAndPath(ntp_url_, load_details.previous_url))
+    EmitNtpStatistics(EmitReason::NAVIGATED_AWAY);
 }
 
 void NTPUserDataLogger::EmitNtpStatistics(EmitReason reason) {
@@ -272,32 +235,12 @@ void NTPUserDataLogger::EmitNtpStatistics(EmitReason reason) {
 
     load_time_ = base::TimeDelta::FromMilliseconds(0);
   }
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.SuggestionsType",
-      has_server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
-      SUGGESTIONS_TYPE_COUNT);
   has_server_side_suggestions_ = false;
   has_client_side_suggestions_ = false;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfTiles", number_of_tiles_);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "NewTabPage.NumberOfTiles", number_of_tiles_, 0, kNumMostVisited,
+      kNumMostVisited + 1);
   number_of_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailTiles",
-                          number_of_thumbnail_tiles_);
-  number_of_thumbnail_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTiles",
-                          number_of_gray_tiles_);
-  number_of_gray_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTiles",
-                          number_of_external_tiles_);
-  number_of_external_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailErrors",
-                          number_of_thumbnail_errors_);
-  number_of_thumbnail_errors_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTileFallbacks",
-                          number_of_gray_tile_fallbacks_);
-  number_of_gray_tile_fallbacks_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTileFallbacks",
-                          number_of_external_tile_fallbacks_);
-  number_of_external_tile_fallbacks_ = 0;
   has_emitted_ = true;
   during_startup_ = false;
 }

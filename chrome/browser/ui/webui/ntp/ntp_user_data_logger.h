@@ -7,11 +7,8 @@
 
 #include <stddef.h>
 
-#include <string>
-
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/common/search/ntp_logging_events.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -42,10 +39,6 @@ class NTPUserDataLogger
   // Logs a navigation on one of the NTP tiles by a given source.
   void LogMostVisitedNavigation(int position, NTPLoggingTileSource tile_source);
 
-  // content::WebContentsObserver override
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
-
   // Called when the tab is closed. Logs statistics.
   void TabDeactivated();
 
@@ -64,6 +57,10 @@ class NTPUserDataLogger
                            OnMostVisitedItemsChangedFromClient);
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest,
                            TestLogging);
+
+  // content::WebContentsObserver override
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
 
   // To clarify at the call site whether we are calling EmitNtpStatistics() for
   // a good reason (CLOSED, NAVIGATED_AWAY) or a questionable one (MV_CHANGED,
@@ -85,30 +82,6 @@ class NTPUserDataLogger
   // Total number of tiles rendered, no matter if it's a thumbnail, a gray tile
   // or an external tile.
   size_t number_of_tiles_;
-
-  // Total number of tiles using a local thumbnail image for this NTP session.
-  size_t number_of_thumbnail_tiles_;
-
-  // Total number of tiles for which no thumbnail is specified and a gray tile
-  // with the domain is used as the main tile.
-  size_t number_of_gray_tiles_;
-
-  // Total number of tiles for which the visual appearance is handled externally
-  // by the page itself.
-  size_t number_of_external_tiles_;
-
-  // Total number of errors that occurred when trying to load thumbnail images
-  // for this NTP session. When these errors occur a grey tile is shown instead
-  // of a thumbnail image.
-  size_t number_of_thumbnail_errors_;
-
-  // The number of times a gray tile with the domain was used as the fallback
-  // for a failed thumbnail.
-  size_t number_of_gray_tile_fallbacks_;
-
-  // The number of times an external tile, for which the visual appearance is
-  // handled by the page itself, was the fallback for a failed thumbnail.
-  size_t number_of_external_tile_fallbacks_;
 
   // Time from navigation start it took to load the NTP in milliseconds.
   base::TimeDelta load_time_;

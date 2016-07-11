@@ -23,11 +23,6 @@ var LOG_TYPE = {
   // Indicates a tile was rendered, no matter if it's a thumbnail, a gray tile
   // or an external tile.
   NTP_TILE: 2,
-  // The tile uses a local thumbnail image.
-  NTP_THUMBNAIL_TILE: 3,
-  // There was an error in loading both the thumbnail image and the fallback
-  // (if it was provided), resulting in a gray tile.
-  NTP_THUMBNAIL_ERROR: 6,
   // A NTP Tile has finished loading (successfully or failing).
   NTP_TILE_LOADED: 10,
 };
@@ -470,10 +465,8 @@ var renderTile = function(data) {
       img.addEventListener('error', function(ev) {
         thumb.classList.add('failed-img');
         thumb.removeChild(img);
-        logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
       });
       thumb.appendChild(img);
-      logEvent(LOG_TYPE.NTP_THUMBNAIL_TILE);
     } else {
       thumb.classList.add('failed-img');
     }
@@ -506,7 +499,6 @@ var renderTile = function(data) {
       }
       thumb.classList.add('failed-img');
       thumb.removeChild(img);
-      logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
       countLoad();
     };
 
@@ -532,10 +524,8 @@ var renderTile = function(data) {
     img.addEventListener('error', function(ev) {
       thumb.classList.add('failed-img');
       thumb.removeChild(img);
-      logEvent(LOG_TYPE.NTP_THUMBNAIL_ERROR);
     });
     thumb.appendChild(img);
-    logEvent(LOG_TYPE.NTP_THUMBNAIL_TILE);
 
     if (data.thumbnailUrl) {
       img.src = data.thumbnailUrl;
