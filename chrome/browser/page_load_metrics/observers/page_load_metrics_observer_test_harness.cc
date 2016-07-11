@@ -29,6 +29,8 @@ class TestPageLoadMetricsEmbedderInterface
     return false;
   }
 
+  bool IsNewTabPageUrl(const GURL& url) override { return false; }
+
   // Forward the registration logic to the test class so that derived classes
   // can override the logic there without depending on the embedder interface.
   void RegisterObservers(PageLoadTracker* tracker) override {

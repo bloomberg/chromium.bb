@@ -16,15 +16,6 @@ namespace chrome {
 void InitializePageLoadMetricsForWebContents(
     content::WebContents* web_contents);
 
-class PageLoadMetricsEmbedder
-    : public page_load_metrics::PageLoadMetricsEmbedderInterface {
- public:
-  // PageLoadMetricsEmbedderInterface:
-  ~PageLoadMetricsEmbedder() override;
-  bool IsPrerendering(content::WebContents* web_contents) override;
-  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override;
-};
-
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_INITIALIZE_H_

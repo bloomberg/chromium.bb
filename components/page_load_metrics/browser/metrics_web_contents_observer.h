@@ -107,6 +107,7 @@ class PageLoadMetricsEmbedderInterface {
  public:
   virtual ~PageLoadMetricsEmbedderInterface() {}
   virtual bool IsPrerendering(content::WebContents* web_contents) = 0;
+  virtual bool IsNewTabPageUrl(const GURL& url) = 0;
   virtual void RegisterObservers(PageLoadTracker* metrics) = 0;
 };
 
@@ -319,7 +320,7 @@ class MetricsWebContentsObserver
   // True if the web contents is currently in the foreground.
   bool in_foreground_;
 
-  // The PageLoadTrackers must be deleted before the |embedded_interface_|,
+  // The PageLoadTrackers must be deleted before the |embedder_interface_|,
   // because they hold a pointer to the |embedder_interface_|.
   std::unique_ptr<PageLoadMetricsEmbedderInterface> embedder_interface_;
 

@@ -648,6 +648,8 @@ void MetricsWebContentsObserver::DidStartNavigation(
     return;
   if (embedder_interface_->IsPrerendering(web_contents()))
     return;
+  if (embedder_interface_->IsNewTabPageUrl(navigation_handle->GetURL()))
+    return;
   if (navigation_handle->GetURL().spec().compare(url::kAboutBlankURL) == 0)
     return;
 
