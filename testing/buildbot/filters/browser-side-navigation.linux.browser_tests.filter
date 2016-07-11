@@ -99,7 +99,7 @@
 -FindInPageControllerTest.SearchWithinSpecialURL
 -FirstRunMasterPrefsImportNothing.ImportNothingAndShowNewTabPage
 -InlineLoginUISafeIframeBrowserTest.ConfirmationRequiredForNonsecureSignin
--InputImeApiTest.SendKeyEvntsOnNormalPage
+-InputImeApiTest*
 -IsolatedAppTest.CookieIsolation
 -LoadTimingBrowserTest.Basic
 -LoadTimingBrowserTest.EverythingAtOnce

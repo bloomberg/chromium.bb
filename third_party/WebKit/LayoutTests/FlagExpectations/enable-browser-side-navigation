@@ -46,7 +46,6 @@
   http/tests/navigation/back-to-redirect-with-frame.php [ Failure ]
   http/tests/navigation/history-back-across-form-submission-to-fragment.html [ Timeout ]
   http/tests/navigation/redirect-on-reload-updates-history-item.html [ Failure ]
-  http/tests/navigation/same-and-different-back.html [ Crash ]
   imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Crash Failure Timeout ]
   imported/wpt/html/browsers/browsing-the-web/history-traversal/popstate_event.html [ Timeout ]
   imported/wpt/html/browsers/history/the-history-interface/004.html [ Failure ]
@@ -156,6 +155,7 @@
 
 # Untriaged security
   http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
+  http/tests/security/frame-loading-via-document-write.html [ Crash Crash Pass ]
 
 # Untriaged other
   css3/fonts/font-style-matching-7.html [ Failure ]
@@ -200,7 +200,7 @@
   http/tests/fetch/serviceworker-proxied/thorough/redirect-credentials-other-https.html [ Failure ]
   http/tests/fetch/serviceworker-proxied/thorough/redirect-credentials.html [ Failure ]
   http/tests/inspector/service-workers/service-workers-force-update-on-page-load.html [ Timeout Failure ]
-  http/tests/local/serviceworker/fetch-request-body-file.html [ Failure ]
+  http/tests/local/serviceworker/fetch-request-body-file.html [ Timeout Failure ]
   http/tests/serviceworker/ServiceWorkerGlobalScope/registration-attribute.html [ Failure ]
   http/tests/serviceworker/ServiceWorkerGlobalScope/unregister.html [ Failure ]
   http/tests/serviceworker/ServiceWorkerGlobalScope/update.html [ Failure ]
