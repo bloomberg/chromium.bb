@@ -175,13 +175,6 @@ const Vector<SVGTransformType>& getTransformTypes(const InterpolationValue& valu
     return toSVGTransformNonInterpolableValue(*value.nonInterpolableValue).transformTypes();
 }
 
-bool transformTypesMatch(const InterpolationValue& first, const InterpolationValue& second)
-{
-    const Vector<SVGTransformType>& firstTransformTypes = getTransformTypes(first);
-    const Vector<SVGTransformType>& secondTransformTypes = getTransformTypes(second);
-    return firstTransformTypes == secondTransformTypes;
-}
-
 class SVGTransformListChecker : public InterpolationType::ConversionChecker {
 public:
     static std::unique_ptr<SVGTransformListChecker> create(const InterpolationValue& underlying)
@@ -288,7 +281,7 @@ SVGPropertyBase* SVGTransformListInterpolationType::appliedSVGValue(const Interp
 
 PairwiseInterpolationValue SVGTransformListInterpolationType::maybeMergeSingles(InterpolationValue&& start, InterpolationValue&& end) const
 {
-    if (!transformTypesMatch(start, end))
+    if (getTransformTypes(start) != getTransformTypes(end))
         return nullptr;
 
     return PairwiseInterpolationValue(std::move(start.interpolableValue), std::move(end.interpolableValue), end.nonInterpolableValue.release());
