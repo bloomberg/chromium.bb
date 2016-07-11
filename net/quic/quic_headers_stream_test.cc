@@ -858,7 +858,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
   // multiple HTTP/2 DATA frames.
   const int kMinDataFrames = 4;
   const size_t data_len =
-      SpdyConstants::GetFrameMaximumSize(HTTP2) * kMinDataFrames + 1024;
+      kSpdyInitialFrameSizeLimit * kMinDataFrames + 1024;
   // Set headers stream send window large enough for data written below.
   headers_stream_->flow_controller()->UpdateSendWindowOffset(data_len * 2 * 4);
   test::GenerateBody(&data, data_len);

@@ -382,7 +382,7 @@ QuicConsumedData QuicHeadersStream::WritevStreamData(
     QuicStreamOffset offset,
     bool fin,
     QuicAckListenerInterface* ack_notifier_delegate) {
-  const size_t max_len = SpdyConstants::GetFrameMaximumSize(HTTP2) -
+  const size_t max_len = kSpdyInitialFrameSizeLimit -
                          SpdyConstants::GetDataFrameMinimumSize(HTTP2);
 
   QuicConsumedData result(0, false);
