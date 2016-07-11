@@ -650,6 +650,8 @@ private:
     void setInlineStyleFromString(const AtomicString&);
 
     StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
+    // TODO(nainar): Make this const ComputedStyle&.
+    StyleRecalcChange buildOwnLayout(ComputedStyle&);
 
     inline void checkForEmptyStyleChange();
 

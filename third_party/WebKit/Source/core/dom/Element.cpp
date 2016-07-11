@@ -1771,13 +1771,10 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     }
 
     if (localChange == Reattach) {
-        AttachContext reattachContext;
-        reattachContext.resolvedStyle = newStyle.get();
-        bool layoutObjectWillChange = needsAttach() || layoutObject();
-        reattach(reattachContext);
-        if (layoutObjectWillChange || layoutObject())
-            return Reattach;
-        return ReattachNoLayoutObject;
+        // TODO(nainar): Remove the style parameter being passed into buildOwnLayout().
+        // ComputedStyle will now be stored on Node and accessed in buildOwnLayout()
+        // using mutableComputedStyle().
+        return buildOwnLayout(*newStyle);
     }
 
     DCHECK(oldStyle);
@@ -1814,6 +1811,17 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     }
 
     return localChange;
+}
+
+StyleRecalcChange Element::buildOwnLayout(ComputedStyle& newStyle)
+{
+    AttachContext reattachContext;
+    reattachContext.resolvedStyle = &newStyle;
+    bool layoutObjectWillChange = needsAttach() || layoutObject();
+    reattach(reattachContext);
+    if (layoutObjectWillChange || layoutObject())
+        return Reattach;
+    return ReattachNoLayoutObject;
 }
 
 void Element::updateCallbackSelectors(const ComputedStyle* oldStyle, const ComputedStyle* newStyle)
