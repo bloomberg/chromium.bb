@@ -326,19 +326,9 @@ template("mac_toolchain") {
       # using pwd would requires a sub-shell to be created.
       _copydir = "mkdir -p {{output}} && cd {{source}} && " +
                  "pax -rwl . \"\$OLDPWD\"/{{output}}"
-      _command = "if [[ -d {{source}} ]]; then " + _copydir + "; else " +
-                 copy_command + "; fi"
+      command = "rm -rf {{output}} && if [[ -d {{source}} ]]; then " +
+                _copydir + "; else " + copy_command + "; fi"
 
-      # TODO(crbug.com/625578): Remove this conversion on iOS once all the
-      # bundle_data target have been fixed to reference converted files.
-      _convert_strings = is_ios
-      if (_convert_strings) {
-        _convert = "plutil -convert binary1 -o {{output}} {{source}}"
-        _command = "case {{source}} in " + "*.strings) " + _convert + ";; " +
-                   "*) " + _command + ";; esac"
-      }
-
-      command = "rm -rf {{output}} && " + _command
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = ":bundle_pool($default_toolchain)"
     }
