@@ -164,8 +164,6 @@ private:
     const KURL& virtualURL() const final;
     KURL virtualCompleteURL(const String&) const final;
 
-    void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-
     EventTarget* errorEventTarget() final;
     void didUpdateSecurityOrigin() final { }
 

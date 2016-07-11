@@ -19,6 +19,7 @@
 
 #include "core/page/Page.h"
 
+#include "bindings/core/v8/ScriptController.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/StyleChangeReason.h"
@@ -418,6 +419,20 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
                 Document* doc = toLocalFrame(frame)->document();
                 if (doc)
                     HTMLMediaElement::setTextTrackKindUserPreferenceForAllMediaElements(doc);
+            }
+        }
+        break;
+    case SettingsDelegate::DOMWorldsChange:
+        {
+            if (!settings().forceMainWorldInitialization())
+                break;
+            if (!mainFrame() || !mainFrame()->isLocalFrame())
+                break;
+            if (!toLocalFrame(mainFrame())->loader().stateMachine()->committedFirstRealDocumentLoad())
+                break;
+            for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
+                if (frame->isLocalFrame())
+                    toLocalFrame(frame)->script().initializeMainWorld();
             }
         }
         break;

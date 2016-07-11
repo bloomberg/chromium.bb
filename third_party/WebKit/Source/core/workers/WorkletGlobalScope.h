@@ -54,8 +54,6 @@ public:
         NOTREACHED();
     }
 
-    void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-
     DECLARE_VIRTUAL_TRACE();
 
 protected:

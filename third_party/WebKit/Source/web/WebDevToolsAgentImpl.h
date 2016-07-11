@@ -90,6 +90,7 @@ public:
 
     // Instrumentation from web/ layer.
     void didCommitLoadForLocalFrame(LocalFrame*);
+    void didStartProvisionalLoad(LocalFrame*);
     bool screencastEnabled();
     void willAddPageOverlay(const GraphicsLayer*);
     void didRemovePageOverlay(const GraphicsLayer*);

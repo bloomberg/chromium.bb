@@ -285,6 +285,10 @@ layerSquashingEnabled initial=false
 # HTML sandbox, plugin sandboxing, and other important details.
 scriptEnabled initial=false
 
+# Forces initialization of main world, even if no scripts will be executed.
+# Used by inspector to report all contexts.
+forceMainWorldInitialization initial=false, invalidate=DOMWorlds
+
 # Compensates for poor text legibility on mobile devices. This value is
 # multiplied by the font scale factor when performing text autosizing of
 # websites that do not set an explicit viewport description.

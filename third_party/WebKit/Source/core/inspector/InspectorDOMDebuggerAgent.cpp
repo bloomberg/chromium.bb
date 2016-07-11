@@ -63,6 +63,7 @@ namespace blink {
 static const char webglErrorFiredEventName[] = "webglErrorFired";
 static const char webglWarningFiredEventName[] = "webglWarningFired";
 static const char webglErrorNameProperty[] = "webglErrorName";
+static const char scriptBlockedByCSPEventName[] = "scriptBlockedByCSP";
 
 namespace DOMDebuggerAgentState {
 static const char eventListenerBreakpoints[] = "eventListenerBreakpoints";
@@ -629,6 +630,15 @@ void InspectorDOMDebuggerAgent::didFireWebGLErrorOrWarning(const String& message
 void InspectorDOMDebuggerAgent::cancelNativeBreakpoint()
 {
     m_v8Session->cancelPauseOnNextStatement();
+}
+
+void InspectorDOMDebuggerAgent::scriptExecutionBlockedByCSP(const String& directiveText)
+{
+    std::unique_ptr<protocol::DictionaryValue> eventData = preparePauseOnNativeEventData(scriptBlockedByCSPEventName, 0);
+    if (!eventData)
+        return;
+    eventData->setString("directiveText", directiveText);
+    pauseOnNativeEventIfNeeded(std::move(eventData), true);
 }
 
 void InspectorDOMDebuggerAgent::setXHRBreakpoint(ErrorString* errorString, const String& url)

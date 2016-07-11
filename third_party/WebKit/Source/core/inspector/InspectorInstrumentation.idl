@@ -69,8 +69,7 @@ class WebSocketHandshakeResponse;
 class WorkerInspectorProxy;
 class XMLHttpRequest;
 
-    // We should call PageDebuggerAgent method first otherwise this method resets script cache and removes scripts executed by other agents.
-    [V8, Page, Animation]
+    [Page, Animation]
     void didClearDocumentOfWindowObject([Keep] LocalFrame*);
 
     [DOMDebugger]
@@ -205,14 +204,11 @@ class XMLHttpRequest;
     [Network]
     void scriptImported(ExecutionContext*, unsigned long identifier, const String& sourceString);
 
-    [V8]
+    [DOMDebugger]
     void scriptExecutionBlockedByCSP(ExecutionContext*, const String& directiveText);
 
     [Network]
     void didReceiveScriptResponse(ExecutionContext*, unsigned long identifier);
-
-    [V8]
-    void didStartProvisionalLoad([Keep] LocalFrame*);
 
     [DOM, Page]
     void domContentLoadedEventFired([Keep] LocalFrame*);

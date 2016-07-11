@@ -37,7 +37,6 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     , m_debugger(debugger)
     , m_client(client)
     , m_customObjectFormatterEnabled(false)
-    , m_instrumentationCounter(0)
     , m_dispatcher(channel)
     , m_state(nullptr)
     , m_runtimeAgent(nullptr)
@@ -246,16 +245,6 @@ void V8InspectorSessionImpl::reportAllContexts(V8RuntimeAgentImpl* agent)
         agent->reportExecutionContextCreated(idContext.second.get());
 }
 
-void V8InspectorSessionImpl::changeInstrumentationCounter(int delta)
-{
-    DCHECK_GE(m_instrumentationCounter + delta, 0);
-    if (!m_instrumentationCounter)
-        m_client->startInstrumenting();
-    m_instrumentationCounter += delta;
-    if (!m_instrumentationCounter)
-        m_client->stopInstrumenting();
-}
-
 void V8InspectorSessionImpl::dispatchProtocolMessage(const String16& message)
 {
     m_dispatcher.dispatch(message);
@@ -293,11 +282,6 @@ void V8InspectorSessionImpl::cancelPauseOnNextStatement()
 void V8InspectorSessionImpl::breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
 {
     m_debuggerAgent->breakProgram(breakReason, std::move(data));
-}
-
-void V8InspectorSessionImpl::breakProgramOnException(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)
-{
-    m_debuggerAgent->breakProgramOnException(breakReason, std::move(data));
 }
 
 void V8InspectorSessionImpl::setSkipAllPauses(bool skip)

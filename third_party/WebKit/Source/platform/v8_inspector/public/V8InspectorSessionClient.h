@@ -16,8 +16,8 @@ class PLATFORM_EXPORT V8InspectorSessionClient
 {
 public:
     virtual ~V8InspectorSessionClient() { }
-    virtual void startInstrumenting() = 0;
-    virtual void stopInstrumenting() = 0;
+    virtual void runtimeEnabled() = 0;
+    virtual void runtimeDisabled() = 0;
     virtual void resumeStartup() = 0;
     virtual bool canExecuteScripts() = 0;
     virtual void profilingStarted() = 0;

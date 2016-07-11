@@ -40,7 +40,6 @@ public:
     virtual void schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) = 0;
     virtual void cancelPauseOnNextStatement() = 0;
     virtual void breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) = 0;
-    virtual void breakProgramOnException(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) = 0;
     virtual void setSkipAllPauses(bool) = 0;
     virtual void resume() = 0;
     virtual void stepOver() = 0;

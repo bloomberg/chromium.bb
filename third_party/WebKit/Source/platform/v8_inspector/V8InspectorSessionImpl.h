@@ -48,7 +48,6 @@ public:
     void discardInjectedScripts();
     void reportAllContexts(V8RuntimeAgentImpl*);
     void setCustomObjectFormatterEnabled(bool);
-    void changeInstrumentationCounter(int delta);
 
     // V8InspectorSession implementation.
     void dispatchProtocolMessage(const String16& message) override;
@@ -57,7 +56,6 @@ public:
     void schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
     void cancelPauseOnNextStatement() override;
     void breakProgram(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
-    void breakProgramOnException(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data) override;
     void setSkipAllPauses(bool) override;
     void resume() override;
     void stepOver() override;
@@ -77,7 +75,6 @@ private:
     V8DebuggerImpl* m_debugger;
     V8InspectorSessionClient* m_client;
     bool m_customObjectFormatterEnabled;
-    int m_instrumentationCounter;
 
     protocol::UberDispatcher m_dispatcher;
     std::unique_ptr<protocol::DictionaryValue> m_state;

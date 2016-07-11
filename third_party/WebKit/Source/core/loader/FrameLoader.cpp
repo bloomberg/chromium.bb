@@ -1437,8 +1437,6 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     m_provisionalDocumentLoader->setReplacesCurrentHistoryItem(type == FrameLoadTypeReplaceCurrentItem);
     m_provisionalDocumentLoader->setIsClientRedirect(frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect);
 
-    InspectorInstrumentation::didStartProvisionalLoad(m_frame);
-
     m_frame->navigationScheduler().cancel();
     m_checkTimer.stop();
 

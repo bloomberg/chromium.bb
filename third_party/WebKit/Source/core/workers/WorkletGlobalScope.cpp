@@ -64,11 +64,6 @@ bool WorkletGlobalScope::isSecureContext(String& errorMessage, const SecureConte
     return false;
 }
 
-void WorkletGlobalScope::reportBlockedScriptExecutionToInspector(const String& directiveText)
-{
-    InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
-}
-
 KURL WorkletGlobalScope::virtualCompleteURL(const String& url) const
 {
     // Always return a null URL when passed a null string.

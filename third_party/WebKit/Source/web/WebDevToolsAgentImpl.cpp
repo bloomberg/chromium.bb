@@ -483,6 +483,12 @@ void WebDevToolsAgentImpl::didCommitLoadForLocalFrame(LocalFrame* frame)
         m_session->didCommitLoadForLocalFrame(frame);
 }
 
+void WebDevToolsAgentImpl::didStartProvisionalLoad(LocalFrame* frame)
+{
+    if (m_session && m_inspectedFrames->root() == frame)
+        m_session->v8Session()->resume();
+}
+
 bool WebDevToolsAgentImpl::screencastEnabled()
 {
     return m_pageAgent && m_pageAgent->screencastEnabled();

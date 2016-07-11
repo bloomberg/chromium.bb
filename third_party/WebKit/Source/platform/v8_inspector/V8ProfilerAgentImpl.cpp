@@ -185,14 +185,12 @@ void V8ProfilerAgentImpl::enable(ErrorString*)
         return;
     m_enabled = true;
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, true);
-    m_session->changeInstrumentationCounter(+1);
 }
 
 void V8ProfilerAgentImpl::disable(ErrorString* errorString)
 {
     if (!m_enabled)
         return;
-    m_session->changeInstrumentationCounter(-1);
     for (size_t i = m_startedProfiles.size(); i > 0; --i)
         stopProfiling(m_startedProfiles[i - 1].m_id, false);
     m_startedProfiles.clear();
@@ -217,7 +215,6 @@ void V8ProfilerAgentImpl::restore()
     if (!m_state->booleanProperty(ProfilerAgentState::profilerEnabled, false))
         return;
     m_enabled = true;
-    m_session->changeInstrumentationCounter(+1);
     int interval = 0;
     m_state->getNumber(ProfilerAgentState::samplingInterval, &interval);
     if (interval)

@@ -266,8 +266,14 @@ void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, Se
 
 void ScriptController::updateDocument()
 {
+    bool forceMainWorldInitialization = false;
+    if (canExecuteScripts(NotAboutToExecuteScript) && !frame()->loader().stateMachine()->creatingInitialEmptyDocument()) {
+        Settings* settings = frame()->settings();
+        forceMainWorldInitialization = settings && settings->forceMainWorldInitialization();
+    }
+
     // For an uninitialized main window windowProxy, do not incur the cost of context initialization.
-    if (!m_windowProxyManager->mainWorldProxy()->isGlobalInitialized())
+    if (!forceMainWorldInitialization && !m_windowProxyManager->mainWorldProxy()->isGlobalInitialized())
         return;
 
     if (!initializeMainWorld())

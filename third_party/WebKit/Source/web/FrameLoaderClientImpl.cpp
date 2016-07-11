@@ -468,6 +468,8 @@ void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad(double triggeringEve
 {
     if (m_webFrame->client())
         m_webFrame->client()->didStartProvisionalLoad(m_webFrame, triggeringEventTime);
+    if (WebDevToolsAgentImpl* devTools = devToolsAgent())
+        devTools->didStartProvisionalLoad(m_webFrame->frame());
 }
 
 void FrameLoaderClientImpl::dispatchDidReceiveTitle(const String& title)
@@ -496,9 +498,8 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryComm
 
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, WebHistoryItem(item), static_cast<WebHistoryCommitType>(commitType));
-    WebDevToolsAgentImpl* devToolsAgent = WebLocalFrameImpl::fromFrame(m_webFrame->frame()->localFrameRoot())->devToolsAgentImpl();
-    if (devToolsAgent)
-        devToolsAgent->didCommitLoadForLocalFrame(m_webFrame->frame());
+    if (WebDevToolsAgentImpl* devTools = devToolsAgent())
+        devTools->didCommitLoadForLocalFrame(m_webFrame->frame());
 }
 
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
@@ -1035,6 +1036,11 @@ WebEffectiveConnectionType FrameLoaderClientImpl::getEffectiveConnectionType()
     if (m_webFrame->client())
         return m_webFrame->client()->getEffectiveConnectionType();
     return WebEffectiveConnectionType::TypeUnknown;
+}
+
+WebDevToolsAgentImpl* FrameLoaderClientImpl::devToolsAgent()
+{
+    return WebLocalFrameImpl::fromFrame(m_webFrame->frame()->localFrameRoot())->devToolsAgentImpl();
 }
 
 } // namespace blink

@@ -5185,11 +5185,6 @@ NodeIntersectionObserverData& Document::ensureIntersectionObserverData()
     return *m_intersectionObserverData;
 }
 
-void Document::reportBlockedScriptExecutionToInspector(const String& directiveText)
-{
-    InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
-}
-
 static void runAddConsoleMessageTask(MessageSource source, MessageLevel level, const String& message, ExecutionContext* context)
 {
     context->addConsoleMessage(ConsoleMessage::create(source, level, message));

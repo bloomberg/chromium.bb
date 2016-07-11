@@ -61,6 +61,7 @@ public:
         MediaQueryChange,
         AccessibilityStateChange,
         TextTrackKindUserPreferenceChange,
+        DOMWorldsChange,
     };
 
     virtual void settingsChanged(ChangeType) = 0;

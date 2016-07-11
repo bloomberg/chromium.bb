@@ -54,11 +54,6 @@ public:
     void dispatchProtocolMessage(const String& method, const String& message);
     void flushProtocolNotifications() override;
 
-    // Instrumentation methods marked by [V8]
-    void scriptExecutionBlockedByCSP(const String& directiveText);
-    void didStartProvisionalLoad(LocalFrame*);
-    void didClearDocumentOfWindowObject(LocalFrame*);
-
     DECLARE_TRACE();
 
 private:
@@ -67,17 +62,14 @@ private:
     void sendProtocolNotification(const protocol::String16& message) override;
 
     // V8InspectorSessionClient implementation.
-    void startInstrumenting() override;
-    void stopInstrumenting() override;
+    void runtimeEnabled() override;
+    void runtimeDisabled() override;
     void resumeStartup() override;
     bool canExecuteScripts() override;
     void profilingStarted() override;
     void profilingStopped() override;
     void consoleEnabled() override;
     void consoleCleared() override;
-
-    void forceContextsInAllFrames();
-    bool isInstrumenting();
 
     Client* m_client;
     std::unique_ptr<V8InspectorSession> m_v8Session;

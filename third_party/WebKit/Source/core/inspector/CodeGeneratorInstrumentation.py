@@ -350,8 +350,6 @@ def generate_param_name(param_type):
 
 
 def agent_class_name(agent):
-    if agent == "V8":
-        return "InspectorSession"
     return "Inspector%sAgent" % agent
 
 

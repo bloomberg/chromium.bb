@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorBaseAgent.h"
@@ -75,7 +76,6 @@ void InspectorSession::dispose()
         m_agents[i - 1]->dispose();
     m_agents.clear();
     m_v8Session.reset();
-    DCHECK(!isInstrumenting());
     InspectorInstrumentation::frontendDeleted();
 }
 
@@ -129,38 +129,18 @@ void InspectorSession::flushProtocolNotifications()
     m_notificationQueue.clear();
 }
 
-void InspectorSession::scriptExecutionBlockedByCSP(const String& directiveText)
+void InspectorSession::runtimeEnabled()
 {
-    DCHECK(isInstrumenting());
-    std::unique_ptr<protocol::DictionaryValue> directive = protocol::DictionaryValue::create();
-    directive->setString("directiveText", directiveText);
-    m_v8Session->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::CSPViolation, std::move(directive));
+    if (!m_inspectedFrames)
+        return;
+    m_inspectedFrames->root()->settings()->setForceMainWorldInitialization(true);
 }
 
-void InspectorSession::didStartProvisionalLoad(LocalFrame* frame)
+void InspectorSession::runtimeDisabled()
 {
-    DCHECK(isInstrumenting());
-    if (m_inspectedFrames && m_inspectedFrames->root() == frame)
-        m_v8Session->resume();
-}
-
-void InspectorSession::didClearDocumentOfWindowObject(LocalFrame* frame)
-{
-    DCHECK(isInstrumenting());
-    frame->script().initializeMainWorld();
-}
-
-void InspectorSession::startInstrumenting()
-{
-    DCHECK(!isInstrumenting());
-    m_instrumentingAgents->addInspectorSession(this);
-    forceContextsInAllFrames();
-}
-
-void InspectorSession::stopInstrumenting()
-{
-    DCHECK(isInstrumenting());
-    m_instrumentingAgents->removeInspectorSession(this);
+    if (!m_inspectedFrames)
+        return;
+    m_inspectedFrames->root()->settings()->setForceMainWorldInitialization(false);
 }
 
 void InspectorSession::resumeStartup()
@@ -191,21 +171,6 @@ void InspectorSession::consoleEnabled()
 void InspectorSession::consoleCleared()
 {
     m_client->consoleCleared();
-}
-
-void InspectorSession::forceContextsInAllFrames()
-{
-    if (!m_inspectedFrames)
-        return;
-    if (!m_inspectedFrames->root()->loader().stateMachine()->committedFirstRealDocumentLoad())
-        return;
-    for (const LocalFrame* frame : *m_inspectedFrames)
-        frame->script().initializeMainWorld();
-}
-
-bool InspectorSession::isInstrumenting()
-{
-    return m_instrumentingAgents->inspectorSessions().contains(this);
 }
 
 DEFINE_TRACE(InspectorSession)

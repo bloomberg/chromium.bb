@@ -272,11 +272,6 @@ void WorkerGlobalScope::exceptionThrown(const String& errorMessage, std::unique_
     thread()->workerReportingProxy().reportException(errorMessage, std::move(location));
 }
 
-void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& directiveText)
-{
-    InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
-}
-
 void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());

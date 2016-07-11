@@ -32,7 +32,6 @@ public:
     bool tasksNeedSuspension() override { return m_tasksNeedSuspension; }
     void setTasksNeedSuspension(bool flag) { m_tasksNeedSuspension = flag; }
 
-    void reportBlockedScriptExecutionToInspector(const String& directiveText) override { }
     void didUpdateSecurityOrigin() override { }
     SecurityContext& securityContext() override { return *this; }
     DOMTimerCoordinator* timers() override { return nullptr; }

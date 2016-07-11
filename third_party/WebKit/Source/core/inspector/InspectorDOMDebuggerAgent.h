@@ -86,6 +86,7 @@ public:
     void didFireWebGLErrorOrWarning(const String& message);
     void allowNativeBreakpoint(const String& breakpointName, const String* targetName, bool sync);
     void cancelNativeBreakpoint();
+    void scriptExecutionBlockedByCSP(const String& directiveText);
 
     void disable(ErrorString*) override;
     void restore() override;

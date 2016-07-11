@@ -1159,8 +1159,6 @@ private:
     const KURL& virtualURL() const final; // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
     KURL virtualCompleteURL(const String&) const final; // Same as completeURL() for the same reason as above.
 
-    void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
-
     void updateTitle(const String&);
     void updateFocusAppearanceTimerFired(Timer<Document>*);
     void updateBaseURL();

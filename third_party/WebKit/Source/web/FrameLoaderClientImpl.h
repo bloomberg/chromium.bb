@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class WebDevToolsAgentImpl;
 class WebLocalFrameImpl;
 
 class FrameLoaderClientImpl final : public FrameLoaderClient {
@@ -188,6 +189,7 @@ private:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
 
     bool isFrameLoaderClientImpl() const override { return true; }
+    WebDevToolsAgentImpl* devToolsAgent();
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.

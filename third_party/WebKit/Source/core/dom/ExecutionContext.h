@@ -97,8 +97,6 @@ public:
     // not be used after the ExecutionContext is destroyed.
     virtual DOMTimerCoordinator* timers() = 0;
 
-    virtual void reportBlockedScriptExecutionToInspector(const String& directiveText) = 0;
-
     virtual SecurityContext& securityContext() = 0;
     KURL contextURL() const { return virtualURL(); }
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
