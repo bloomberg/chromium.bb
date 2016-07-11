@@ -206,6 +206,10 @@ public class ChromeApplication extends ContentApplication {
     @Override
     public void onCreate() {
         UmaUtils.recordMainEntryPointTime();
+        initCommandLine();
+        TraceEvent.maybeEnableEarlyTracing();
+        TraceEvent.begin("ChromeApplication.onCreate");
+
         super.onCreate();
         ContextUtils.initApplicationContext(this);
 
@@ -244,6 +248,7 @@ public class ChromeApplication extends ContentApplication {
         // in the SyncController constructor.
         UniqueIdentificationGeneratorFactory.registerGenerator(SyncController.GENERATOR_ID,
                 new UuidBasedUniqueIdentificationGenerator(this, SESSIONS_UUID_PREF_KEY), false);
+        TraceEvent.end("ChromeApplication.onCreate");
     }
 
     /**
