@@ -8,9 +8,9 @@
 
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/chooser_controller/chooser_controller.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/l10n/l10n_util_mac.h"

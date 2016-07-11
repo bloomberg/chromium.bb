@@ -1090,6 +1090,8 @@ static_library("test_support") {
     "browsing_data/mock_browsing_data_quota_helper.h",
     "browsing_data/mock_browsing_data_service_worker_helper.cc",
     "browsing_data/mock_browsing_data_service_worker_helper.h",
+    "chooser_controller/mock_chooser_controller.cc",
+    "chooser_controller/mock_chooser_controller.h",
     "download/download_test_file_activity_observer.cc",
     "download/download_test_file_activity_observer.h",
     "download/test_download_shelf.cc",
@@ -1174,6 +1176,13 @@ static_library("test_support") {
       "sessions/session_restore_test_helper.h",
       "sessions/session_service_test_helper.cc",
       "sessions/session_service_test_helper.h",
+    ]
+  }
+
+  if (is_android || is_ios) {
+    sources -= [
+      "chooser_controller/mock_chooser_controller.cc",
+      "chooser_controller/mock_chooser_controller.h",
     ]
   }
 

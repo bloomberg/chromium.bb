@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/extensions/chooser_dialog_view.h"
 
 #include "base/macros.h"
+#include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/chooser_controller/mock_chooser_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"

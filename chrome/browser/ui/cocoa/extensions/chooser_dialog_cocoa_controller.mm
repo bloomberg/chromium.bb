@@ -6,10 +6,10 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/chooser_controller/chooser_controller.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"

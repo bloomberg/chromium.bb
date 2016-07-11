@@ -8,12 +8,12 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller.h"
-#include "components/chooser_controller/chooser_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 
 ChooserDialogCocoa::ChooserDialogCocoa(

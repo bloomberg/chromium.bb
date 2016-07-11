@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/extensions/chooser_dialog_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/ui/views/chooser_content_view.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/chooser_controller/chooser_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"

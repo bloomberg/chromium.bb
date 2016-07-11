@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "components/chooser_controller/chooser_controller.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/array.h"

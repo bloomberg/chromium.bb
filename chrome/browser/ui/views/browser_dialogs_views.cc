@@ -6,12 +6,12 @@
 
 #include <memory>
 
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/views/new_task_manager_view.h"
-#include "components/chooser_controller/chooser_controller.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/intent_picker_bubble_view.h"

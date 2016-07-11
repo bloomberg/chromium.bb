@@ -208,7 +208,6 @@ split_static_library("ui") {
     deps += [
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/common:features",
-      "//components/chooser_controller:chooser_controller",
       "//components/feedback/proto",
       "//components/proximity_auth/webui",
       "//device/bluetooth",

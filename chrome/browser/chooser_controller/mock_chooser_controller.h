@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CHOOSER_CONTROLLER_MOCK_CHOOSER_CONTROLLER_H_
-#define COMPONENTS_CHOOSER_CONTROLLER_MOCK_CHOOSER_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHOOSER_CONTROLLER_MOCK_CHOOSER_CONTROLLER_H_
+#define CHROME_BROWSER_CHOOSER_CONTROLLER_MOCK_CHOOSER_CONTROLLER_H_
 
 #include <vector>
 
 #include "base/macros.h"
-#include "components/chooser_controller/chooser_controller.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class MockChooserController : public ChooserController {
@@ -33,4 +33,4 @@ class MockChooserController : public ChooserController {
   DISALLOW_COPY_AND_ASSIGN(MockChooserController);
 };
 
-#endif  // COMPONENTS_CHOOSER_CONTROLLER_MOCK_CHOOSER_CONTROLLER_H_
+#endif  // CHROME_BROWSER_CHOOSER_CONTROLLER_MOCK_CHOOSER_CONTROLLER_H_

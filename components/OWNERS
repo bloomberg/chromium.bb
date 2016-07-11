@@ -30,8 +30,6 @@ per-file cdm.gypi=file://components/cdm/OWNERS
 
 per-file certificate_transparency.gypi=file://components/certificate_transparency/OWNERS
 
-per-file chooser_controller.gypi=file://components/chooser_controller/OWNERS
-
 per-file chrome_apps.gypi=file://components/chrome_apps/OWNERS
 
 per-file cloud_devices.gypi=file://components/cloud_devices/OWNERS

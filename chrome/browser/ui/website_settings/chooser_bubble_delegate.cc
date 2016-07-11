@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "components/chooser_controller/chooser_controller.h"
 #include "content/public/browser/web_contents.h"
 
 ChooserBubbleDelegate::ChooserBubbleDelegate(

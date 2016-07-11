@@ -152,7 +152,6 @@
     ['OS != "ios" and OS != "android"', {
       'includes': [
         'audio_modem.gypi',
-        'chooser_controller.gypi',
         'feedback.gypi',
         'proximity_auth.gypi',
         'storage_monitor.gypi',

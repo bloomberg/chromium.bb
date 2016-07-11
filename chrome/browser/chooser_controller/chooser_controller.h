@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
-#define COMPONENTS_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
+#define CHROME_BROWSER_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -89,4 +89,4 @@ class ChooserController {
   DISALLOW_COPY_AND_ASSIGN(ChooserController);
 };
 
-#endif  // COMPONENTS_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
+#endif  // CHROME_BROWSER_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_

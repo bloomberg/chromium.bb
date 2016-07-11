@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
-#include "components/chooser_controller/mock_chooser_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"

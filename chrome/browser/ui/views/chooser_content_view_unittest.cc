@@ -8,8 +8,8 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/chooser_controller/mock_chooser_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"

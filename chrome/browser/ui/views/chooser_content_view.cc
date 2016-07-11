@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/views/chooser_content_view.h"
 
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/chooser_controller/chooser_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/controls/styled_label.h"

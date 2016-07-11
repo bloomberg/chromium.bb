@@ -3359,7 +3359,6 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             '../components/components.gyp:bubble',
-            '../components/components.gyp:chooser_controller',
             '../components/components.gyp:feedback_proto',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',

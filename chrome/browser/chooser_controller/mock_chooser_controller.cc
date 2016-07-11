@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/chooser_controller/mock_chooser_controller.h"
+#include "chrome/browser/chooser_controller/mock_chooser_controller.h"
 
 MockChooserController::MockChooserController(content::RenderFrameHost* owner)
     : ChooserController(owner) {}

@@ -1758,6 +1758,8 @@
         'browser/browsing_data/mock_browsing_data_quota_helper.h',
         'browser/browsing_data/mock_browsing_data_service_worker_helper.cc',
         'browser/browsing_data/mock_browsing_data_service_worker_helper.h',
+        'browser/chooser_controller/mock_chooser_controller.cc',
+        'browser/chooser_controller/mock_chooser_controller.h',
         'browser/download/download_test_file_activity_observer.cc',
         'browser/download/download_test_file_activity_observer.h',
         'browser/download/test_download_shelf.cc',
@@ -1894,7 +1896,6 @@
             '../content/content.gyp:content_utility',
             '../components/components.gyp:autofill_core_test_support',
             '../components/components.gyp:captive_portal_test_support',
-            '../components/components.gyp:chooser_controller_test_support',
             '../components/components.gyp:gcm_driver_crypto_test_support',
             '../components/components.gyp:rappor_test_support',
             '../components/components.gyp:sessions_test_support',
@@ -1924,6 +1925,8 @@
         }],
         ['OS=="ios" or OS=="android"', {
           'sources!': [
+            'browser/chooser_controller/mock_chooser_controller.cc',
+            'browser/chooser_controller/mock_chooser_controller.h',
             'browser/ui/passwords/manage_passwords_ui_controller_mock.cc',
             'browser/ui/passwords/manage_passwords_ui_controller_mock.h',
             'browser/ui/passwords/password_dialog_controller_mock.cc',

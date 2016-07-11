@@ -1201,6 +1201,8 @@
       'browser/bookmarks/bookmark_html_writer.h',
       'browser/certificate_viewer.cc',
       'browser/certificate_viewer.h',
+      'browser/chooser_controller/chooser_controller.cc',
+      'browser/chooser_controller/chooser_controller.h',
       'browser/chrome_browser_field_trials_desktop.cc',
       'browser/chrome_browser_field_trials_desktop.h',
       'browser/chrome_browser_main_posix.cc',

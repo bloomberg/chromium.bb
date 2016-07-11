@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/chooser_controller/chooser_controller.h"
+#include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "content/public/browser/bluetooth_chooser.h"
 
 // BluetoothChooserController is a chooser that presents a list of
