@@ -700,7 +700,7 @@ Shell::~Shell() {
 #if defined(OS_CHROMEOS)
   // VideoActivityNotifier must be deleted before |video_detector_| is
   // deleted because it's observing video activity through
-  // VideoDetectorObserver interface.
+  // VideoDetector::Observer interface.
   video_activity_notifier_.reset();
 #endif  // defined(OS_CHROMEOS)
   video_detector_.reset();

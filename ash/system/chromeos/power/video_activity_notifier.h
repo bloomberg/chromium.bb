@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_CHROMEOS_POWER_VIDEO_ACTIVITY_NOTIFIER_H_
 #define ASH_SYSTEM_CHROMEOS_POWER_VIDEO_ACTIVITY_NOTIFIER_H_
 
+#include "ash/ash_export.h"
 #include "ash/wm/video_detector.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -13,26 +14,46 @@
 namespace ash {
 
 // Notifies the power manager when a video is playing.
-class VideoActivityNotifier : public VideoDetectorObserver,
-                              public ShellObserver {
+class ASH_EXPORT VideoActivityNotifier : public VideoDetector::Observer,
+                                         public ShellObserver {
  public:
   explicit VideoActivityNotifier(VideoDetector* detector);
   ~VideoActivityNotifier() override;
 
-  // VideoDetectorObserver implementation.
-  void OnVideoDetected(bool is_fullscreen) override;
+  // VideoDetector::Observer implementation.
+  void OnVideoStateChanged(VideoDetector::State state) override;
 
   // ShellObserver implementation.
   void OnLockStateChanged(bool locked) override;
 
+  // If |notify_timer_| is running, calls MaybeNotifyPowerManager() and returns
+  // true. Returns false otherwise.
+  bool TriggerTimeoutForTest() WARN_UNUSED_RESULT;
+
  private:
+  bool should_notify_power_manager() {
+    return video_state_ != VideoDetector::State::NOT_PLAYING &&
+           !screen_is_locked_;
+  }
+
+  // Starts or stops |notify_timer_| as needed.
+  void UpdateTimer();
+
+  // Notifies powerd about video activity if should_notify_power_manager() is
+  // true.
+  void MaybeNotifyPowerManager();
+
   VideoDetector* detector_;  // not owned
 
-  // Last time that the power manager was notified.
-  base::TimeTicks last_notify_time_;
+  // Most-recently-observed video state.
+  VideoDetector::State video_state_;
 
   // True if the screen is currently locked.
   bool screen_is_locked_;
+
+  // Periodically calls MaybeNotifyPowerManager() while
+  // should_notify_power_manager() is true.
+  base::RepeatingTimer notify_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoActivityNotifier);
 };

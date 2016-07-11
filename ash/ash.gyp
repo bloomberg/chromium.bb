@@ -967,6 +967,7 @@
       'system/chromeos/media_security/multi_profile_media_tray_item_unittest.cc',
       'system/chromeos/multi_user/user_switch_util_unittest.cc',
       'system/chromeos/power/power_event_observer_unittest.cc',
+      'system/chromeos/power/video_activity_notifier_unittest.cc',
       'system/chromeos/rotation/tray_rotation_lock_unittest.cc',
       'system/chromeos/tray_display_unittest.cc',
       'system/overview/overview_button_tray_unittest.cc',

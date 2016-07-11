@@ -4,6 +4,7 @@
 
 #include "ash/wm/video_detector.h"
 
+#include <deque>
 #include <memory>
 
 #include "ash/common/wm/window_state.h"
@@ -24,42 +25,32 @@
 namespace ash {
 namespace test {
 
-// Implementation that just counts the number of times we've been told that a
-// video is playing.
-class TestVideoDetectorObserver : public VideoDetectorObserver {
+// Implementation that just records video state changes.
+class TestObserver : public VideoDetector::Observer {
  public:
-  TestVideoDetectorObserver()
-      : num_invocations_(0), num_fullscreens_(0), num_not_fullscreens_(0) {}
+  TestObserver() {}
 
-  int num_invocations() const { return num_invocations_; }
-  int num_fullscreens() const { return num_fullscreens_; }
-  int num_not_fullscreens() const { return num_not_fullscreens_; }
-  void reset_stats() {
-    num_invocations_ = 0;
-    num_fullscreens_ = 0;
-    num_not_fullscreens_ = 0;
+  bool empty() const { return states_.empty(); }
+  void reset() { states_.clear(); }
+
+  // Pops and returns the earliest-received state.
+  VideoDetector::State PopState() {
+    CHECK(!states_.empty());
+    VideoDetector::State first_state = states_.front();
+    states_.pop_front();
+    return first_state;
   }
 
-  // VideoDetectorObserver implementation.
-  void OnVideoDetected(bool is_fullscreen) override {
-    num_invocations_++;
-    if (is_fullscreen)
-      num_fullscreens_++;
-    else
-      num_not_fullscreens_++;
+  // VideoDetector::Observer implementation.
+  void OnVideoStateChanged(VideoDetector::State state) override {
+    states_.push_back(state);
   }
 
  private:
-  // Number of times that OnVideoDetected() has been called.
-  int num_invocations_;
-  // Number of times that OnVideoDetected() has been called with is_fullscreen
-  // == true.
-  int num_fullscreens_;
-  // Number of times that OnVideoDetected() has been called with is_fullscreen
-  // == false.
-  int num_not_fullscreens_;
+  // States in the order they were received.
+  std::deque<VideoDetector::State> states_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestVideoDetectorObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
 class VideoDetectorTest : public AshTestBase {
@@ -69,7 +60,7 @@ class VideoDetectorTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    observer_.reset(new TestVideoDetectorObserver);
+    observer_.reset(new TestObserver);
     detector_ = Shell::GetInstance()->video_detector();
     detector_->AddObserver(observer_.get());
 
@@ -91,7 +82,7 @@ class VideoDetectorTest : public AshTestBase {
 
   VideoDetector* detector_;  // not owned
 
-  std::unique_ptr<TestVideoDetectorObserver> observer_;
+  std::unique_ptr<TestObserver> observer_;
 
   base::TimeTicks now_;
 
@@ -110,34 +101,38 @@ TEST_F(VideoDetectorTest, Basic) {
                                     VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(0, observer_->num_invocations());
+  EXPECT_TRUE(observer_->empty());
+
+  // The inactivity timer shouldn't be running yet.
+  EXPECT_FALSE(detector_->TriggerTimeoutForTest());
+  EXPECT_TRUE(observer_->empty());
 
   // Send not-quite-enough adaquately-sized updates.
-  observer_->reset_stats();
+  observer_->reset();
   AdvanceTime(base::TimeDelta::FromSeconds(2));
   update_region.set_size(gfx::Size(VideoDetector::kMinUpdateWidth,
                                    VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond - 1; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(0, observer_->num_invocations());
+  EXPECT_TRUE(observer_->empty());
 
   // We should get notified after the next update, but not in response to
   // additional updates.
   detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(0, observer_->num_fullscreens());
-  EXPECT_EQ(1, observer_->num_not_fullscreens());
+  EXPECT_EQ(VideoDetector::State::PLAYING_WINDOWED, observer_->PopState());
   detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(0, observer_->num_fullscreens());
-  EXPECT_EQ(1, observer_->num_not_fullscreens());
+  EXPECT_TRUE(observer_->empty());
+
+  // Wait and check that the observer is notified about inactivity.
+  AdvanceTime(base::TimeDelta::FromSeconds(VideoDetector::kVideoTimeoutMs));
+  ASSERT_TRUE(detector_->TriggerTimeoutForTest());
+  EXPECT_EQ(VideoDetector::State::NOT_PLAYING, observer_->PopState());
 
   // Spread out the frames over a longer period of time, but send enough
   // over a one-second window that the observer should be notified.
-  observer_->reset_stats();
-  AdvanceTime(base::TimeDelta::FromSeconds(2));
+  observer_->reset();
   detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(0, observer_->num_invocations());
+  EXPECT_TRUE(observer_->empty());
 
   AdvanceTime(base::TimeDelta::FromMilliseconds(500));
   const int kNumFrames = VideoDetector::kMinFramesPerSecond + 1;
@@ -147,23 +142,22 @@ TEST_F(VideoDetectorTest, Basic) {
     AdvanceTime(kInterval);
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
   }
-  EXPECT_EQ(1, observer_->num_invocations());
+  EXPECT_EQ(VideoDetector::State::PLAYING_WINDOWED, observer_->PopState());
 
-  // Keep going and check that the observer is notified again.
-  for (int i = 0; i < kNumFrames; ++i) {
-    AdvanceTime(kInterval);
-    detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  }
-  EXPECT_EQ(2, observer_->num_invocations());
+  // Let the activity time out again.
+  AdvanceTime(base::TimeDelta::FromSeconds(VideoDetector::kVideoTimeoutMs));
+  ASSERT_TRUE(detector_->TriggerTimeoutForTest());
+  EXPECT_EQ(VideoDetector::State::NOT_PLAYING, observer_->PopState());
 
   // Send updates at a slower rate and check that the observer isn't notified.
+  observer_->reset();
   base::TimeDelta kSlowInterval = base::TimeDelta::FromMilliseconds(
       1000 / (VideoDetector::kMinFramesPerSecond - 2));
   for (int i = 0; i < kNumFrames; ++i) {
     AdvanceTime(kSlowInterval);
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
   }
-  EXPECT_EQ(2, observer_->num_invocations());
+  EXPECT_TRUE(observer_->empty());
 }
 
 TEST_F(VideoDetectorTest, Shutdown) {
@@ -178,7 +172,7 @@ TEST_F(VideoDetectorTest, Shutdown) {
   Shell::GetInstance()->OnAppTerminating();
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(0, observer_->num_invocations());
+  EXPECT_TRUE(observer_->empty());
 }
 
 TEST_F(VideoDetectorTest, WindowNotVisible) {
@@ -197,21 +191,22 @@ TEST_F(VideoDetectorTest, WindowNotVisible) {
                                     VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(0, observer_->num_invocations());
+  EXPECT_TRUE(observer_->empty());
 
   // Make the window visible and send more updates.
-  observer_->reset_stats();
+  observer_->reset();
   AdvanceTime(base::TimeDelta::FromSeconds(2));
   window->Show();
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(0, observer_->num_fullscreens());
-  EXPECT_EQ(1, observer_->num_not_fullscreens());
+  EXPECT_EQ(VideoDetector::State::PLAYING_WINDOWED, observer_->PopState());
+
+  AdvanceTime(base::TimeDelta::FromSeconds(VideoDetector::kVideoTimeoutMs));
+  ASSERT_TRUE(detector_->TriggerTimeoutForTest());
+  EXPECT_EQ(VideoDetector::State::NOT_PLAYING, observer_->PopState());
 
   // We also shouldn't report video in a window that's fully offscreen.
-  observer_->reset_stats();
-  AdvanceTime(base::TimeDelta::FromSeconds(2));
+  observer_->reset();
   gfx::Rect offscreen_bounds(
       gfx::Point(Shell::GetPrimaryRootWindow()->bounds().width(), 0),
       window_bounds.size());
@@ -219,7 +214,7 @@ TEST_F(VideoDetectorTest, WindowNotVisible) {
   ASSERT_EQ(offscreen_bounds, window->bounds());
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(0, observer_->num_invocations());
+  EXPECT_TRUE(observer_->empty());
 }
 
 TEST_F(VideoDetectorTest, MultipleWindows) {
@@ -239,37 +234,11 @@ TEST_F(VideoDetectorTest, MultipleWindows) {
     detector_->OnDelegatedFrameDamage(window1.get(), update_region);
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window2.get(), update_region);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(0, observer_->num_fullscreens());
-  EXPECT_EQ(1, observer_->num_not_fullscreens());
+  EXPECT_EQ(VideoDetector::State::PLAYING_WINDOWED, observer_->PopState());
 }
 
-// Test that the observer receives repeated notifications.
-TEST_F(VideoDetectorTest, RepeatedNotifications) {
-  gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
-
-  gfx::Rect update_region(gfx::Point(),
-                          gfx::Size(VideoDetector::kMinUpdateWidth,
-                                    VideoDetector::kMinUpdateHeight));
-  for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(0, observer_->num_fullscreens());
-  EXPECT_EQ(1, observer_->num_not_fullscreens());
-  // Let enough time pass that a second notification should be sent.
-  observer_->reset_stats();
-  AdvanceTime(base::TimeDelta::FromSeconds(
-      static_cast<int64_t>(VideoDetector::kNotifyIntervalSec + 1)));
-  for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnDelegatedFrameDamage(window.get(), update_region);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(0, observer_->num_fullscreens());
-  EXPECT_EQ(1, observer_->num_not_fullscreens());
-}
-
-// Test that the observer receives a true value when the window is fullscreen.
+// Test that the observer receives the appropriate notification when the window
+// is fullscreen.
 TEST_F(VideoDetectorTest, FullscreenWindow) {
   if (!SupportsMultipleDisplays())
     return;
@@ -289,44 +258,33 @@ TEST_F(VideoDetectorTest, FullscreenWindow) {
                                           VideoDetector::kMinUpdateHeight));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), kUpdateRegion);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(1, observer_->num_fullscreens());
-  EXPECT_EQ(0, observer_->num_not_fullscreens());
+  EXPECT_EQ(VideoDetector::State::PLAYING_FULLSCREEN, observer_->PopState());
 
-  // Make the first window non-fullscreen and open a second fullscreen window on
-  // a different desktop.
+  // Make the first window non-fullscreen.
   window_state->OnWMEvent(&toggle_fullscreen_event);
   ASSERT_FALSE(window_state->IsFullscreen());
+  EXPECT_EQ(VideoDetector::State::PLAYING_WINDOWED, observer_->PopState());
+
+  // Open a second, fullscreen window. Fullscreen video should still be reported
+  // due to the second window being fullscreen. This avoids situations where
+  // non-fullscreen video could be reported when multiple videos are playing in
+  // fullscreen and non-fullscreen windows.
   const gfx::Rect kRightBounds(gfx::Point(1024, 0), gfx::Size(1024, 768));
   std::unique_ptr<aura::Window> other_window(
       CreateTestWindowInShell(SK_ColorBLUE, 6789, kRightBounds));
   wm::WindowState* other_window_state = wm::GetWindowState(other_window.get());
   other_window_state->OnWMEvent(&toggle_fullscreen_event);
   ASSERT_TRUE(other_window_state->IsFullscreen());
-
-  // When video is detected in the first (now non-fullscreen) window, fullscreen
-  // video should still be reported due to the second window being fullscreen.
-  // This avoids situations where non-fullscreen video could be reported when
-  // multiple videos are playing in fullscreen and non-fullscreen windows.
-  observer_->reset_stats();
-  AdvanceTime(base::TimeDelta::FromSeconds(2));
   for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
     detector_->OnDelegatedFrameDamage(window.get(), kUpdateRegion);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(1, observer_->num_fullscreens());
-  EXPECT_EQ(0, observer_->num_not_fullscreens());
+  EXPECT_EQ(VideoDetector::State::PLAYING_FULLSCREEN, observer_->PopState());
 
-  // Make the second window non-fullscreen and check that the next video report
-  // is non-fullscreen.
+  // Make the second window non-fullscreen and check that the observer is
+  // immediately notified about windowed video.
+  observer_->reset();
   other_window_state->OnWMEvent(&toggle_fullscreen_event);
   ASSERT_FALSE(other_window_state->IsFullscreen());
-  observer_->reset_stats();
-  AdvanceTime(base::TimeDelta::FromSeconds(2));
-  for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
-    detector_->OnDelegatedFrameDamage(window.get(), kUpdateRegion);
-  EXPECT_EQ(1, observer_->num_invocations());
-  EXPECT_EQ(0, observer_->num_fullscreens());
-  EXPECT_EQ(1, observer_->num_not_fullscreens());
+  EXPECT_EQ(VideoDetector::State::PLAYING_WINDOWED, observer_->PopState());
 }
 
 }  // namespace test

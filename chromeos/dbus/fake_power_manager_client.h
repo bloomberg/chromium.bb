@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
 #define CHROMEOS_DBUS_FAKE_POWER_MANAGER_CLIENT_H_
 
+#include <deque>
 #include <string>
 
 #include "base/macros.h"
@@ -35,6 +36,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
     return num_set_is_projecting_calls_;
   }
   bool is_projecting() const { return is_projecting_; }
+  bool have_video_activity_report() const {
+    return !video_activity_reports_.empty();
+  }
 
   // PowerManagerClient overrides
   void Init(dbus::Bus* bus) override;
@@ -61,6 +65,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void SetPowerSource(const std::string& id) override;
   base::Closure GetSuspendReadinessCallback() override;
   int GetNumPendingSuspendReadinessCallbacks() override;
+
+  // Pops the first report from |video_activity_reports_|, returning whether the
+  // activity was fullscreen or not. There must be at least one report.
+  bool PopVideoActivityReport();
 
   // Emulates the power manager announcing that the system is starting or
   // completing a suspend attempt.
@@ -102,6 +110,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
 
   // Last projecting state set in SetIsProjecting().
   bool is_projecting_;
+
+  // Video activity reports that we were requested to send, in the order they
+  // were requested. True if fullscreen.
+  std::deque<bool> video_activity_reports_;
 
   // Delegate for managing power consumption of Chrome's renderer processes.
   base::WeakPtr<RenderProcessManagerDelegate> render_process_manager_delegate_;

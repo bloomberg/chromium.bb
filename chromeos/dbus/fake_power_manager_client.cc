@@ -103,6 +103,7 @@ void FakePowerManagerClient::NotifyUserActivity(
 }
 
 void FakePowerManagerClient::NotifyVideoActivity(bool is_fullscreen) {
+  video_activity_reports_.push_back(is_fullscreen);
 }
 
 void FakePowerManagerClient::SetPolicy(
@@ -142,6 +143,13 @@ base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {
 
 int FakePowerManagerClient::GetNumPendingSuspendReadinessCallbacks() {
   return num_pending_suspend_readiness_callbacks_;
+}
+
+bool FakePowerManagerClient::PopVideoActivityReport() {
+  CHECK(!video_activity_reports_.empty());
+  bool fullscreen = video_activity_reports_.front();
+  video_activity_reports_.pop_front();
+  return fullscreen;
 }
 
 void FakePowerManagerClient::SendSuspendImminent() {
