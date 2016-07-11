@@ -1087,10 +1087,11 @@ IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_DestroyTransferBuffer,
 // after this message is sent.
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_TakeFrontBuffer,
                     ppapi::HostResource /* graphics_3d */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBGraphics3D_SwapBuffers,
                     ppapi::HostResource /* graphics_3d */,
                     gpu::SyncToken /* sync_token */,
-                    gfx::Size /* size */)
+                    int32_t /* width*/,
+                    int32_t /* height*/)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible,
                     ppapi::HostResource /* context */)
 

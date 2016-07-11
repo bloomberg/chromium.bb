@@ -39,7 +39,7 @@ class PpapiCommandBufferProxy;
 
 class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
  public:
-  Graphics3D(const HostResource& resource, const gfx::Size& size);
+  explicit Graphics3D(const HostResource& resource);
   ~Graphics3D() override;
 
   bool Init(gpu::gles2::GLES2Implementation* share_gles2,
@@ -65,7 +65,8 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   gpu::CommandBuffer* GetCommandBuffer() override;
   gpu::GpuControl* GetGpuControl() override;
   int32_t DoSwapBuffers(const gpu::SyncToken& sync_token,
-                        const gfx::Size& size) override;
+                        int32_t width,
+                        int32_t height) override;
 
   std::unique_ptr<PpapiCommandBufferProxy> command_buffer_;
 
@@ -115,7 +116,8 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgDestroyTransferBuffer(const HostResource& context, int32_t id);
   void OnMsgSwapBuffers(const HostResource& context,
                         const gpu::SyncToken& sync_token,
-                        const gfx::Size& size);
+                        int32_t width,
+                        int32_t height);
   void OnMsgTakeFrontBuffer(const HostResource& context);
   void OnMsgEnsureWorkVisible(const HostResource& context);
   // Renderer->plugin message handlers.

@@ -47,8 +47,6 @@
             '../ppapi/ppapi_shared_nacl.gyp:ppapi_shared_nacl',
             '../third_party/WebKit/public/blink_headers.gyp:blink_headers',
             '../third_party/khronos/khronos.gyp:khronos_headers',
-            '../ui/gfx/gfx_nacl.gyp:gfx_geometry_nacl',
-            '../ui/gfx/ipc/geometry/gfx_ipc_geometry_nacl.gyp:gfx_ipc_geometry_nacl',
           ],
         },
       ],

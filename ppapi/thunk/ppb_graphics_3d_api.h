@@ -13,10 +13,6 @@
 #include "ppapi/c/ppb_graphics_3d.h"
 #include "ppapi/thunk/ppapi_thunk_export.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace gpu {
 struct SyncToken;
 }
@@ -40,7 +36,8 @@ class PPAPI_THUNK_EXPORT PPB_Graphics3D_API {
   virtual int32_t SwapBuffersWithSyncToken(
       scoped_refptr<TrackedCallback> callback,
       const gpu::SyncToken& sync_token,
-      const gfx::Size& size) = 0;
+      int32_t width,
+      int32_t height) = 0;
   virtual int32_t GetAttribMaxValue(int32_t attribute, int32_t* value) = 0;
 
   // Graphics3DTrusted API.
