@@ -53,8 +53,8 @@ class EmbeddedApplicationRunner::Instance
   void ShutDown() {
     DCHECK(runner_thread_checker_.CalledOnValidThread());
     if (thread_) {
-      application_task_runner_ = nullptr;
       thread_.reset();
+      application_task_runner_ = nullptr;
     }
   }
 
