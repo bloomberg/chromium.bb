@@ -21,3 +21,9 @@ include_rules = [
   "-ipc",
   "-media/blink",
 ]
+
+specific_include_rules = {
+  "audio_manager_unittest.cc": [
+    "+chromeos/dbus"
+  ],
+}
