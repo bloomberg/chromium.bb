@@ -240,8 +240,7 @@ TEST_F(GenericHuffmanTableTest, ValidateInternalsWithSmallCode) {
 
   string buffer_out;
   HpackInputStream input_stream(buffer_in);
-  EXPECT_TRUE(
-      table_.GenericDecodeString(&input_stream, input.size(), &buffer_out));
+  EXPECT_TRUE(table_.GenericDecodeString(&input_stream, &buffer_out));
   EXPECT_EQ(buffer_out, input);
 }
 
@@ -299,14 +298,13 @@ TEST_F(GenericHuffmanTableTest, DecodeWithBadInput) {
   EXPECT_TRUE(table_.Initialize(code, arraysize(code)));
 
   string buffer;
-  const size_t capacity = 4;
   {
     // This example works: (2) 00 (3) 010 (2) 00 (6) 100110 (pad) 100.
     char input_storage[] = {bits8("00010001"), bits8("00110100")};
     StringPiece input(input_storage, arraysize(input_storage));
 
     HpackInputStream input_stream(input);
-    EXPECT_TRUE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
+    EXPECT_TRUE(table_.GenericDecodeString(&input_stream, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02\x06");
   }
   {
@@ -316,20 +314,8 @@ TEST_F(GenericHuffmanTableTest, DecodeWithBadInput) {
     StringPiece input(input_storage, arraysize(input_storage));
 
     HpackInputStream input_stream(input);
-    EXPECT_FALSE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
+    EXPECT_FALSE(table_.GenericDecodeString(&input_stream, &buffer));
     EXPECT_EQ(buffer, "\x02\x03\x02");
-  }
-  {
-    // Repeat the shortest 0b00 code to overflow |buffer|. Expect to fail.
-    std::vector<char> input_storage(1 + capacity / 4, '\0');
-    StringPiece input(&input_storage[0], input_storage.size());
-
-    HpackInputStream input_stream(input);
-    EXPECT_FALSE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
-
-    std::vector<char> expected(capacity, '\x02');
-    EXPECT_THAT(buffer, ElementsAreArray(expected));
-    EXPECT_EQ(capacity, buffer.size());
   }
   {
     // Expect to fail if more than a byte of unconsumed input remains.
@@ -338,7 +324,7 @@ TEST_F(GenericHuffmanTableTest, DecodeWithBadInput) {
     StringPiece input(input_storage, arraysize(input_storage));
 
     HpackInputStream input_stream(input);
-    EXPECT_FALSE(table_.GenericDecodeString(&input_stream, capacity, &buffer));
+    EXPECT_FALSE(table_.GenericDecodeString(&input_stream, &buffer));
     EXPECT_EQ(buffer, "\x06");
   }
 }
@@ -353,13 +339,11 @@ class HpackHuffmanTableTest : public GenericHuffmanTableTest {
     EXPECT_TRUE(table_.IsInitialized());
   }
 
-  void DecodeStringTwice(const string& encoded,
-                         size_t out_capacity,
-                         string* out) {
+  void DecodeStringTwice(const string& encoded, string* out) {
     // First decode with HpackHuffmanTable.
     {
       HpackInputStream input_stream(encoded);
-      EXPECT_TRUE(table_.GenericDecodeString(&input_stream, out_capacity, out));
+      EXPECT_TRUE(table_.GenericDecodeString(&input_stream, out));
     }
     // And decode again with the fixed decoder, confirming that the result is
     // the same.
@@ -392,7 +376,7 @@ TEST_F(HpackHuffmanTableTest, SpecRequestExamples) {
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
     const string& encodedFixture(test_table[i]);
     const string& decodedFixture(test_table[i + 1]);
-    DecodeStringTwice(encodedFixture, decodedFixture.size(), &buffer);
+    DecodeStringTwice(encodedFixture, &buffer);
     EXPECT_EQ(decodedFixture, buffer);
     buffer = EncodeString(decodedFixture);
     EXPECT_EQ(encodedFixture, buffer);
@@ -417,7 +401,7 @@ TEST_F(HpackHuffmanTableTest, SpecResponseExamples) {
   for (size_t i = 0; i != arraysize(test_table); i += 2) {
     const string& encodedFixture(test_table[i]);
     const string& decodedFixture(test_table[i + 1]);
-    DecodeStringTwice(encodedFixture, decodedFixture.size(), &buffer);
+    DecodeStringTwice(encodedFixture, &buffer);
     EXPECT_EQ(decodedFixture, buffer);
     buffer = EncodeString(decodedFixture);
     EXPECT_EQ(encodedFixture, buffer);
@@ -431,8 +415,7 @@ TEST_F(HpackHuffmanTableTest, RoundTripIndividualSymbols) {
     StringPiece input(storage, arraysize(storage));
     string buffer_in = EncodeString(input);
     string buffer_out;
-
-    DecodeStringTwice(buffer_in, input.size(), &buffer_out);
+    DecodeStringTwice(buffer_in, &buffer_out);
     EXPECT_EQ(input, buffer_out);
   }
 }
@@ -447,7 +430,7 @@ TEST_F(HpackHuffmanTableTest, RoundTripSymbolSequence) {
 
   string buffer_in = EncodeString(input);
   string buffer_out;
-  DecodeStringTwice(buffer_in, input.size(), &buffer_out);
+  DecodeStringTwice(buffer_in, &buffer_out);
   EXPECT_EQ(input, buffer_out);
 }
 
