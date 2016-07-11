@@ -56,6 +56,8 @@ using MediaQueryResultList = HeapVector<Member<MediaQueryResult>>;
 class CORE_EXPORT MediaQueryEvaluator final : public GarbageCollectedFinalized<MediaQueryEvaluator> {
     WTF_MAKE_NONCOPYABLE(MediaQueryEvaluator);
 public:
+    static void init();
+
     // Creates evaluator which evaluates only simple media queries
     // Evaluator returns true for "all", and returns value of \mediaFeatureResult
     // for any media features.

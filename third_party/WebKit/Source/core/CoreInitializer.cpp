@@ -44,6 +44,7 @@
 #include "core/XLinkNames.h"
 #include "core/XMLNSNames.h"
 #include "core/XMLNames.h"
+#include "core/css/MediaQueryEvaluator.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/dom/Document.h"
 #include "core/dom/StyleChangeReason.h"
@@ -126,6 +127,7 @@ void CoreInitializer::initialize()
     MediaFeatureNames::init();
     MediaTypeNames::init();
 
+    MediaQueryEvaluator::init();
     CSSParserTokenRange::initStaticEOFToken();
 
     StyleChangeExtraData::init();

@@ -657,7 +657,7 @@ static bool scanMediaFeatureEval(const MediaQueryExpValue& value, MediaFeaturePr
     return (value.id == CSSValueProgressive);
 }
 
-static void createFunctionMap()
+void MediaQueryEvaluator::init()
 {
     // Create the table.
     gFunctionMap = new FunctionMap;
@@ -672,8 +672,7 @@ bool MediaQueryEvaluator::eval(const MediaQueryExp* expr) const
     if (!m_mediaValues || !m_mediaValues->hasValues())
         return m_expectedResult;
 
-    if (!gFunctionMap)
-        createFunctionMap();
+    DCHECK(gFunctionMap);
 
     // Call the media feature evaluation function. Assume no prefix and let
     // trampoline functions override the prefix if prefix is used.
