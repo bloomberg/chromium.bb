@@ -608,19 +608,12 @@ _base_layout_boards = _lakitu_boards
 _no_unittest_boards = frozenset((
 ))
 
-_no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
+_no_vmtest_boards = _arm_boards | _brillo_boards | _cheets_boards | frozenset((
+    'cave',
     'cyan',
-    'cyan-cheets',
-    'elm-cheets',
-    'glados-cheets',
-    'glimmer-cheets',
-    'oak-cheets',
+    'lulu',
+    'reef',
     'samus',
-    'samus-cheets',
-    'smaug-cheets',
-    'celes-cheets',
-    'chell-cheets',
-    'lulu-cheets',
 ))
 
 # This is a list of configs that should be included on the main waterfall, but
