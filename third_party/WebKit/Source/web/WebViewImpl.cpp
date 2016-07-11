@@ -2026,22 +2026,23 @@ void WebViewImpl::updateAllLifecyclePhases()
 
     if (FrameView* view = mainFrameImpl()->frameView()) {
         LocalFrame* frame = mainFrameImpl()->frame();
+        WebWidgetClient* client = WebLocalFrameImpl::fromFrame(frame)->frameWidget()->client();
 
         if (m_shouldDispatchFirstVisuallyNonEmptyLayout && view->isVisuallyNonEmpty()) {
             m_shouldDispatchFirstVisuallyNonEmptyLayout = false;
             // TODO(esprehn): Move users of this callback to something
             // better, the heuristic for "visually non-empty" is bad.
-            client()->didMeaningfulLayout(WebMeaningfulLayout::VisuallyNonEmpty);
+            client->didMeaningfulLayout(WebMeaningfulLayout::VisuallyNonEmpty);
         }
 
         if (m_shouldDispatchFirstLayoutAfterFinishedParsing && frame->document()->hasFinishedParsing())  {
             m_shouldDispatchFirstLayoutAfterFinishedParsing = false;
-            client()->didMeaningfulLayout(WebMeaningfulLayout::FinishedParsing);
+            client->didMeaningfulLayout(WebMeaningfulLayout::FinishedParsing);
         }
 
         if (m_shouldDispatchFirstLayoutAfterFinishedLoading && frame->document()->isLoadCompleted()) {
             m_shouldDispatchFirstLayoutAfterFinishedLoading = false;
-            client()->didMeaningfulLayout(WebMeaningfulLayout::FinishedLoading);
+            client->didMeaningfulLayout(WebMeaningfulLayout::FinishedLoading);
         }
     }
 }

@@ -40,6 +40,7 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
+#include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginDocument.h"
@@ -530,6 +531,8 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   blink::WebLocalFrame* frame =
       blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, NULL);
   web_view->setMainFrame(frame);
+  blink::WebFrameWidget* widget =
+      blink::WebFrameWidget::create(nullptr, web_view, frame);
 
   base::StringValue html(ResourceBundle::GetSharedInstance().GetLocalizedString(
       IDR_PRINT_PREVIEW_PAGE));
@@ -559,6 +562,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   frame->printPage(0, canvas);
   frame->printEnd();
 
+  widget->close();
   web_view->close();
   frame->close();
 }
@@ -745,8 +749,10 @@ void PrepareFrameAndViewForPrint::CopySelection(
       blink::WebView::create(this, blink::WebPageVisibilityStateVisible);
   owns_web_view_ = true;
   content::RenderView::ApplyWebPreferences(prefs, web_view);
-  web_view->setMainFrame(
-      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this));
+  blink::WebLocalFrame* main_frame =
+      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, this);
+  web_view->setMainFrame(main_frame);
+  blink::WebFrameWidget::create(this, web_view, main_frame);
   frame_.Reset(web_view->mainFrame()->toWebLocalFrame());
   node_to_print_.reset();
 
@@ -818,6 +824,7 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
     if (owns_web_view_) {
       DCHECK(!frame->isLoading());
       owns_web_view_ = false;
+      frame->frameWidget()->close();
       web_view->close();
     }
   }

@@ -259,7 +259,6 @@ public:
     void didFocus() override {}
     void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override {}
     void didInvalidateRect(const WebRect&) override {}
-    void didMeaningfulLayout(WebMeaningfulLayout) override {}
     void didOverscroll(const WebFloatSize& overscrollDelta, const WebFloatSize& accumulatedOverscroll, const WebFloatPoint& positionInViewport, const WebFloatSize& velocityInViewport) override {}
     void didUpdateTextOfFocusedElementByNonUserInput() override {}
     void hasTouchEventHandlers(bool) override {}

@@ -135,6 +135,7 @@ public:
     void initializeLayerTreeView() override;
     WebLayerTreeView* layerTreeView() override;
     void scheduleAnimation() override;
+    void didMeaningfulLayout(WebMeaningfulLayout) override;
 
 private:
     TestWebViewClient* m_testWebViewClient;
@@ -161,6 +162,8 @@ public:
     TestWebWidgetClient* widgetClient() { return &m_testWebWidgetClient; }
 
 private:
+    friend class TestWebViewWidgetClient;
+
     TestWebViewWidgetClient m_testWebWidgetClient;
     std::unique_ptr<WebLayerTreeView> m_layerTreeView;
     bool m_animationScheduled;

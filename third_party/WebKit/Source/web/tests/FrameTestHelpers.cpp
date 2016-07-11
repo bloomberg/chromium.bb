@@ -338,5 +338,10 @@ void TestWebViewWidgetClient::scheduleAnimation()
     m_testWebViewClient->scheduleAnimation();
 }
 
+void TestWebViewWidgetClient::didMeaningfulLayout(WebMeaningfulLayout layoutType)
+{
+    m_testWebViewClient->didMeaningfulLayout(layoutType);
+}
+
 } // namespace FrameTestHelpers
 } // namespace blink

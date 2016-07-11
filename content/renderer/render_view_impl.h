@@ -300,7 +300,6 @@ class CONTENT_EXPORT RenderViewImpl
   void didAutoResize(const blink::WebSize& newSize) override;
   void didChangeCursor(const blink::WebCursorInfo& info) override;
   void didInvalidateRect(const blink::WebRect& rect) override;
-  void didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
   void didOverscroll(const blink::WebFloatSize& overscrollDelta,
                      const blink::WebFloatSize& accumulatedOverscroll,
                      const blink::WebFloatPoint& positionInViewport,

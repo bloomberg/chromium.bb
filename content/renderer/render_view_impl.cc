@@ -2028,11 +2028,6 @@ void RenderViewImpl::didInvalidateRect(const blink::WebRect& rect) {
   RenderWidget::didInvalidateRect(rect);
 }
 
-void RenderViewImpl::didMeaningfulLayout(
-    blink::WebMeaningfulLayout layout_type) {
-  RenderWidget::didMeaningfulLayout(layout_type);
-}
-
 void RenderViewImpl::didOverscroll(
     const blink::WebFloatSize& overscrollDelta,
     const blink::WebFloatSize& accumulatedOverscroll,
