@@ -35,7 +35,6 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalFrame.h"
-#include "wtf/debug/CrashLogging.h"
 
 namespace blink {
 
@@ -91,28 +90,6 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(ScriptState* scriptSt
     // TODO(jochen): Consider moving this check into canExecuteScripts. http://crbug.com/608641
     if (scriptState->world().isMainWorld() && !frame->script().canExecuteScripts(AboutToExecuteScript))
         return v8::Local<v8::Value>();
-
-    // Temporary instrumentation for http://crbug.com/621730.
-    String scriptInfo;
-    if (event->type() == EventTypeNames::message) {
-        v8::HandleScope handleScope(isolate());
-        StringBuilder scriptInfoBuilder;
-        V8StringResource<> functionName = handlerFunction->GetDebugName();
-        if (functionName.prepare()) {
-            scriptInfoBuilder.append(static_cast<String>(functionName));
-        }
-        scriptInfoBuilder.append(':');
-        scriptInfoBuilder.appendNumber(handlerFunction->GetScriptLineNumber());
-        scriptInfoBuilder.append(':');
-        scriptInfoBuilder.appendNumber(handlerFunction->GetScriptColumnNumber());
-        scriptInfoBuilder.append(':');
-        V8StringResource<> scriptName = handlerFunction->GetScriptOrigin().ResourceName();
-        if (scriptName.prepare()) {
-            scriptInfoBuilder.append(static_cast<String>(scriptName));
-        }
-        scriptInfo = scriptInfoBuilder.toString();
-    }
-    WTF::debug::ScopedCrashKey("postmessage_script_info", scriptInfo.utf8().data());
 
     v8::Local<v8::Value> parameters[1] = { jsEvent };
     v8::Local<v8::Value> result;

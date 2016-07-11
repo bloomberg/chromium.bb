@@ -79,7 +79,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
-#include "wtf/debug/CrashLogging.h"
 #include <memory>
 
 namespace blink {
@@ -687,11 +686,6 @@ void LocalDOMWindow::postMessageTimerFired(PostMessageTimer* timer)
     UserGestureIndicator gestureIndicator(timer->userGestureToken());
 
     event->entangleMessagePorts(document());
-
-    // Temporary instrumentation for http://crbug.com/621730.
-    WTF::debug::ScopedCrashKey("postmessage_src_origin", event->origin().utf8().data());
-    WTF::debug::ScopedCrashKey("postmessage_dst_origin", document()->getSecurityOrigin()->toRawString().utf8().data());
-    WTF::debug::ScopedCrashKey("postmessage_dst_url", document()->url().getString().utf8().data());
 
     dispatchMessageEventWithOriginCheck(timer->targetOrigin(), event, timer->takeLocation());
 }

@@ -73,12 +73,6 @@ size_t RegisterEngineCrashKeys() {
       // Temporary for https://crbug.com/612711.
       { "aci_wrong_sp_extension_id", crash_keys::kSmallSize },
 
-      // Temporary for http://crbug.com/621730.
-      { "postmessage_src_origin", crash_keys::kMediumSize },
-      { "postmessage_dst_origin", crash_keys::kMediumSize },
-      { "postmessage_dst_url", crash_keys::kLargeSize },
-      { "postmessage_script_info", crash_keys::kLargeSize },
-
       // Temporary for https://crbug.com/616149.
       { "existing_extension_pref_value_type", crash_keys::kSmallSize },
 
