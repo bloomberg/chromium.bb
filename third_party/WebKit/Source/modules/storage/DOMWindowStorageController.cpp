@@ -6,23 +6,21 @@
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 #include "modules/storage/DOMWindowStorage.h"
 
 namespace blink {
 
 DOMWindowStorageController::DOMWindowStorageController(Document& document)
-    : DOMWindowLifecycleObserver(document.domWindow())
-    , m_document(document)
+    : m_document(document)
 {
+    document.domWindow()->registerEventListenerObserver(this);
 }
 
 DEFINE_TRACE(DOMWindowStorageController)
 {
     visitor->trace(m_document);
     Supplement<Document>::trace(visitor);
-    DOMWindowLifecycleObserver::trace(visitor);
 }
 
 // static

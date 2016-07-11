@@ -26,8 +26,8 @@
 #ifndef NavigatorGamepad_h
 #define NavigatorGamepad_h
 
-#include "core/frame/DOMWindowLifecycleObserver.h"
 #include "core/frame/DOMWindowProperty.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/ModulesExport.h"
 #include "platform/AsyncMethodRunner.h"
@@ -42,7 +42,7 @@ class Gamepad;
 class GamepadList;
 class Navigator;
 
-class MODULES_EXPORT NavigatorGamepad final : public GarbageCollectedFinalized<NavigatorGamepad>, public Supplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public DOMWindowLifecycleObserver {
+class MODULES_EXPORT NavigatorGamepad final : public GarbageCollectedFinalized<NavigatorGamepad>, public Supplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public LocalDOMWindow::EventListenerObserver {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
     static NavigatorGamepad* from(Document&);
@@ -76,7 +76,7 @@ private:
     void didUpdateData() override;
     void pageVisibilityChanged() override;
 
-    // DOMWindowLifecycleObserver
+    // LocalDOMWindow::EventListenerObserver
     void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
     void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
     void didRemoveAllEventListeners(LocalDOMWindow*) override;

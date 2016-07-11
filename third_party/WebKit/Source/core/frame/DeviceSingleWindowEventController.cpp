@@ -6,17 +6,16 @@
 
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 
 namespace blink {
 
 DeviceSingleWindowEventController::DeviceSingleWindowEventController(Document& document)
     : PlatformEventController(document.page())
-    , DOMWindowLifecycleObserver(document.domWindow())
     , m_needsCheckingNullEvents(true)
     , m_document(document)
 {
+    document.domWindow()->registerEventListenerObserver(this);
 }
 
 DeviceSingleWindowEventController::~DeviceSingleWindowEventController()
@@ -73,7 +72,6 @@ DEFINE_TRACE(DeviceSingleWindowEventController)
 {
     visitor->trace(m_document);
     PlatformEventController::trace(visitor);
-    DOMWindowLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

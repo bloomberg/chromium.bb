@@ -6,7 +6,7 @@
 #define DeviceSingleWindowEventController_h
 
 #include "core/CoreExport.h"
-#include "core/frame/DOMWindowLifecycleObserver.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PlatformEventController.h"
 #include "platform/heap/Handle.h"
 
@@ -15,7 +15,7 @@ namespace blink {
 class Document;
 class Event;
 
-class CORE_EXPORT DeviceSingleWindowEventController : public GarbageCollectedFinalized<DeviceSingleWindowEventController>, public PlatformEventController, public DOMWindowLifecycleObserver {
+class CORE_EXPORT DeviceSingleWindowEventController : public GarbageCollectedFinalized<DeviceSingleWindowEventController>, public PlatformEventController, public LocalDOMWindow::EventListenerObserver {
 public:
     virtual ~DeviceSingleWindowEventController();
 
@@ -23,7 +23,7 @@ public:
     void didUpdateData() override;
     DECLARE_VIRTUAL_TRACE();
 
-    // Inherited from DOMWindowLifecycleObserver.
+    // Inherited from LocalDOMWindow::EventListenerObserver.
     void didAddEventListener(LocalDOMWindow*, const AtomicString&) override;
     void didRemoveEventListener(LocalDOMWindow*, const AtomicString&) override;
     void didRemoveAllEventListeners(LocalDOMWindow*) override;

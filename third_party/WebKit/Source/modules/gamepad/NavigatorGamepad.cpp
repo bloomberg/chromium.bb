@@ -26,7 +26,6 @@
 #include "modules/gamepad/NavigatorGamepad.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/page/Page.h"
@@ -109,7 +108,6 @@ DEFINE_TRACE(NavigatorGamepad)
     Supplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
     PlatformEventController::trace(visitor);
-    DOMWindowLifecycleObserver::trace(visitor);
 }
 
 bool NavigatorGamepad::startUpdatingIfAttached()
@@ -168,9 +166,10 @@ void NavigatorGamepad::dispatchOneEvent()
 NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
     : DOMWindowProperty(frame)
     , PlatformEventController(frame ? frame->page() : 0)
-    , DOMWindowLifecycleObserver(frame ? frame->localDOMWindow() : 0)
     , m_dispatchOneEventRunner(AsyncMethodRunner<NavigatorGamepad>::create(this, &NavigatorGamepad::dispatchOneEvent))
 {
+    if (frame)
+        frame->localDOMWindow()->registerEventListenerObserver(this);
 }
 
 NavigatorGamepad::~NavigatorGamepad()
