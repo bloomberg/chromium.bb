@@ -14,15 +14,12 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
 
   VideoCaptureDevice::Names names;
   video_capture_device_factory.GetDeviceNames(&names);
-  if (!names.size()) {
+  if (names.empty()) {
     DVLOG(1) << "No camera available. Exiting test.";
     return;
   }
-  std::string device_vid;
-  for (VideoCaptureDevice::Names::const_iterator it = names.begin();
-       it != names.end(); ++it) {
-    EXPECT_EQ(it->capture_api_type(), VideoCaptureDevice::Name::AVFOUNDATION);
-  }
+  for (const auto& name : names)
+    EXPECT_EQ(VideoCaptureDevice::Name::AVFOUNDATION, name.capture_api_type());
 }
 
 };  // namespace media

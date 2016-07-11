@@ -463,7 +463,7 @@ TEST_P(ProofTest, VerifyECDSAKnownAnswerTest) {
     // An ECDSA signature is DER-encoded. Corrupt the last byte so that the
     // signature can still be DER-decoded correctly.
     string corrupt_signature = signature;
-    corrupt_signature[corrupt_signature.size() - 1] += 1;
+    corrupt_signature.back()++;
     RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                     chlo_hash, certs, corrupt_signature, false);
 

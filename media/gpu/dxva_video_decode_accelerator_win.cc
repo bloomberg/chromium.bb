@@ -191,7 +191,7 @@ static const DWORD g_IntelLegacyGPUList[] = {
 // instance.
 class MediaBufferScopedPointer {
  public:
-  MediaBufferScopedPointer(IMFMediaBuffer* media_buffer)
+  explicit MediaBufferScopedPointer(IMFMediaBuffer* media_buffer)
       : media_buffer_(media_buffer),
         buffer_(nullptr),
         max_length_(0),
@@ -1779,7 +1779,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::ProcessPendingSamples");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  if (!output_picture_buffers_.size())
+  if (output_picture_buffers_.empty())
     return;
 
   RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
@@ -1859,7 +1859,6 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
               this, surface.get(), d3d11_texture.get(),
               pending_sample->input_buffer_id),
           "Failed to copy output sample", PLATFORM_FAILURE, );
-
     }
   }
 }

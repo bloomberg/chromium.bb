@@ -61,7 +61,7 @@ std::string FtpUtil::UnixFilePathToVMS(const std::string& unix_path) {
       for (size_t i = 2; i < tokens.size() - 1; i++)
         result.append("." + tokens[i]);
     }
-    result.append("]" + tokens[tokens.size() - 1]);
+    result.append("]" + tokens.back());
     return result;
   }
 
@@ -71,7 +71,7 @@ std::string FtpUtil::UnixFilePathToVMS(const std::string& unix_path) {
   std::string result("[");
   for (size_t i = 0; i < tokens.size() - 1; i++)
     result.append("." + tokens[i]);
-  result.append("]" + tokens[tokens.size() - 1]);
+  result.append("]" + tokens.back());
   return result;
 }
 
@@ -373,4 +373,4 @@ base::string16 FtpUtil::GetStringPartAfterColumns(const base::string16& text,
   return result;
 }
 
-}  // namespace
+}  // namespace net

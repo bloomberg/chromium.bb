@@ -405,7 +405,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                            base::SPLIT_WANT_ALL)) {
       DCHECK(!token.empty());
 
-      bool is_secure = token[token.size() - 1] == 'S';
+      bool is_secure = token.back() == 'S';
 
       // The second-to-last character is the priority. Grab and discard it.
       CookiePriority priority = CharToPriority(token[token.size() - 2]);

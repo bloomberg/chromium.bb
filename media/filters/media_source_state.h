@@ -114,9 +114,9 @@ class MEDIA_EXPORT MediaSourceState {
   void SetMemoryLimits(DemuxerStream::Type type, size_t memory_limit);
   bool IsSeekWaitingForData() const;
 
-  typedef std::list<Ranges<TimeDelta>> RangesList;
+  using RangesList = std::vector<Ranges<TimeDelta>>;
   static Ranges<TimeDelta> ComputeRangesIntersection(
-      const RangesList& activeRanges,
+      const RangesList& active_ranges,
       bool ended);
 
   void SetTracksWatcher(const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb);

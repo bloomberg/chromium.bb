@@ -322,7 +322,7 @@ class AudioRendererMixerTest
 
     // Stop the last input in case the number of inputs is odd
     if (mixer_inputs_.size() % 2)
-      mixer_inputs_[mixer_inputs_.size() - 1]->Stop();
+      mixer_inputs_.back()->Stop();
 
     ASSERT_TRUE(RenderAndValidateAudioData(
         std::max(1.f, static_cast<float>(floor(mixer_inputs_.size() / 2.f)))));

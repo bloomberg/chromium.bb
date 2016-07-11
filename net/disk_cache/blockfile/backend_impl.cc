@@ -1421,9 +1421,7 @@ void BackendImpl::AdjustMaxCacheSize(int table_len) {
     return;
 
   // If we already have a table, adjust the size to it.
-  int current_max_size = MaxStorageSizeForTable(table_len);
-  if (max_size_ > current_max_size)
-    max_size_= current_max_size;
+  max_size_ = std::min(max_size_, MaxStorageSizeForTable(table_len));
 }
 
 bool BackendImpl::InitStats() {
@@ -1493,7 +1491,7 @@ void BackendImpl::RestartCache(bool failure) {
   PrepareForRestart();
   if (failure) {
     DCHECK(!num_refs_);
-    DCHECK(!open_entries_.size());
+    DCHECK(open_entries_.empty());
     DelayedCacheCleanup(path_);
   } else {
     DeleteCache(path_, false);
@@ -1501,9 +1499,9 @@ void BackendImpl::RestartCache(bool failure) {
 
   // Don't call Init() if directed by the unit test: we are simulating a failure
   // trying to re-enable the cache.
-  if (unit_test_)
+  if (unit_test_) {
     init_ = true;  // Let the destructor do proper cleanup.
-  else if (SyncInit() == net::OK) {
+  } else if (SyncInit() == net::OK) {
     stats_.SetCounter(Stats::FATAL_ERROR, errors);
     stats_.SetCounter(Stats::DOOM_CACHE, full_dooms);
     stats_.SetCounter(Stats::DOOM_RECENT, partial_dooms);

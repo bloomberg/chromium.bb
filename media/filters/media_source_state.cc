@@ -1,4 +1,4 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,7 +28,7 @@ static TimeDelta EndTimestamp(const StreamParser::BufferQueue& queue) {
 // List of time ranges for each SourceBuffer.
 // static
 Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
-    const RangesList& activeRanges,
+    const RangesList& active_ranges,
     bool ended) {
   // TODO(servolk): Perhaps this can be removed in favor of blink implementation
   // (MediaSource::buffered)? Currently this is only used on Android and for
@@ -39,7 +39,7 @@ Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
 
   // Step 1: If activeSourceBuffers.length equals 0 then return an empty
   //  TimeRanges object and abort these steps.
-  if (activeRanges.empty())
+  if (active_ranges.empty())
     return Ranges<TimeDelta>();
 
   // Step 2: Let active ranges be the ranges returned by buffered for each
@@ -47,12 +47,11 @@ Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
   // Step 3: Let highest end time be the largest range end time in the active
   //  ranges.
   TimeDelta highest_end_time;
-  for (RangesList::const_iterator itr = activeRanges.begin();
-       itr != activeRanges.end(); ++itr) {
-    if (!itr->size())
+  for (const auto& range : active_ranges) {
+    if (!range.size())
       continue;
 
-    highest_end_time = std::max(highest_end_time, itr->end(itr->size() - 1));
+    highest_end_time = std::max(highest_end_time, range.end(range.size() - 1));
   }
 
   // Step 4: Let intersection ranges equal a TimeRange object containing a
@@ -62,15 +61,14 @@ Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
 
   // Step 5: For each SourceBuffer object in activeSourceBuffers run the
   //  following steps:
-  for (RangesList::const_iterator itr = activeRanges.begin();
-       itr != activeRanges.end(); ++itr) {
+  for (const auto& range : active_ranges) {
     // Step 5.1: Let source ranges equal the ranges returned by the buffered
     //  attribute on the current SourceBuffer.
-    Ranges<TimeDelta> source_ranges = *itr;
+    Ranges<TimeDelta> source_ranges = range;
 
     // Step 5.2: If readyState is "ended", then set the end time on the last
     //  range in source ranges to highest end time.
-    if (ended && source_ranges.size() > 0u) {
+    if (ended && source_ranges.size()) {
       source_ranges.Add(source_ranges.start(source_ranges.size() - 1),
                         highest_end_time);
     }

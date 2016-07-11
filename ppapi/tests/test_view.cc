@@ -90,10 +90,9 @@ std::string TestView::TestPageHideShow() {
 
   // Wait until we get a hide event, being careful to handle spurious
   // notifications of ViewChanged.
-  while (WaitUntilViewChanged() &&
-         page_visibility_log_[page_visibility_log_.size() - 1]) {
+  while (WaitUntilViewChanged() && page_visibility_log_.back()) {
   }
-  if (page_visibility_log_[page_visibility_log_.size() - 1]) {
+  if (page_visibility_log_.back()) {
     // Didn't get a view changed event that changed visibility (though there
     // may have been some that didn't change visibility).
     // Add more error message since this test has some extra requirements.
@@ -108,10 +107,9 @@ std::string TestView::TestPageHideShow() {
   instance_->ReportProgress("TestPageHideShow:Hidden");
 
   // Wait until we get a show event.
-  while (WaitUntilViewChanged() &&
-         !page_visibility_log_[page_visibility_log_.size() - 1]) {
+  while (WaitUntilViewChanged() && !page_visibility_log_.back()) {
   }
-  ASSERT_TRUE(page_visibility_log_[page_visibility_log_.size() - 1]);
+  ASSERT_TRUE(page_visibility_log_.back());
 
   PASS();
 }

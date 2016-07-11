@@ -272,8 +272,8 @@ ReceiveSerializedVarVectorOutParam::ReceiveSerializedVarVectorOutParam(
 
 ReceiveSerializedVarVectorOutParam::~ReceiveSerializedVarVectorOutParam() {
   *output_count_ = static_cast<uint32_t>(vector_.size());
-  if (!vector_.size()) {
-    *output_ = NULL;
+  if (vector_.empty()) {
+    *output_ = nullptr;
     return;
   }
 

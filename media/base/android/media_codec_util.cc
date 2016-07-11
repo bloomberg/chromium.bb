@@ -153,7 +153,7 @@ bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& android_mime_type,
       GetDefaultCodecName(android_mime_type, direction, false);
   DVLOG(1) << __FUNCTION__ << "Default codec for " << android_mime_type << " : "
            << codec_name << ", direction: " << direction;
-  if (!codec_name.size())
+  if (codec_name.empty())
     return true;
 
   // MediaTek hardware vp8 is known slower than the software implementation.

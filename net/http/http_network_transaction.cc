@@ -401,7 +401,7 @@ bool HttpNetworkTransaction::GetLoadTimingInfo(
 }
 
 bool HttpNetworkTransaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
-  if (!remote_endpoint_.address().size())
+  if (remote_endpoint_.address().empty())
     return false;
 
   *endpoint = remote_endpoint_;

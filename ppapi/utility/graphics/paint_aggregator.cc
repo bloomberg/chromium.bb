@@ -140,10 +140,9 @@ void PaintAggregator::InvalidateRect(const Rect& rect) {
     if (ShouldInvalidateScrollRect(rect)) {
       InvalidateScrollRect();
     } else if (update_.scroll_rect.Contains(rect)) {
-      update_.paint_rects[update_.paint_rects.size() - 1] =
-          rect.Subtract(update_.GetScrollDamage());
-      if (update_.paint_rects[update_.paint_rects.size() - 1].IsEmpty())
-        update_.paint_rects.erase(update_.paint_rects.end() - 1);
+      update_.paint_rects.back() = rect.Subtract(update_.GetScrollDamage());
+      if (update_.paint_rects.back().IsEmpty())
+        update_.paint_rects.pop_back();
     }
   }
 
@@ -235,10 +234,8 @@ bool PaintAggregator::ShouldInvalidateScrollRect(const Rect& rect) const {
       paint_area += existing_rect.size().GetArea();
   }
   int scroll_area = update_.scroll_rect.size().GetArea();
-  if (float(paint_area) / float(scroll_area) > max_redundant_paint_to_scroll_area_)
-    return true;
-
-  return false;
+  return static_cast<float>(paint_area) / static_cast<float>(scroll_area) >
+         max_redundant_paint_to_scroll_area_;
 }
 
 void PaintAggregator::InvalidateScrollRect() {

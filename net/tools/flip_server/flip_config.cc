@@ -46,9 +46,9 @@ FlipAcceptor::FlipAcceptor(enum FlipHandlerType flip_handler_type,
       idle_socket_timeout_s_(300) {
   VLOG(1) << "Attempting to listen on " << listen_ip_.c_str() << ":"
           << listen_port_.c_str();
-  if (!https_server_ip_.size())
+  if (https_server_ip_.empty())
     https_server_ip_ = http_server_ip_;
-  if (!https_server_port_.size())
+  if (https_server_port_.empty())
     https_server_port_ = http_server_port_;
 
   while (1) {
@@ -61,17 +61,19 @@ FlipAcceptor::FlipAcceptor(enum FlipHandlerType flip_handler_type,
                                     wait_for_iface,
                                     disable_nagle_,
                                     &listen_fd_);
-    if (ret == 0) {
+    if (ret == 0)
       break;
-    } else if (ret == -3 && wait_for_iface) {
-      // Binding error EADDRNOTAVAIL was encounted. We need
-      // to wait for the interfaces to raised. try again.
+
+    if (ret == -3 && !wait_for_iface) {
+      // -3 means binding error EADDRNOTAVAIL was encountered. We need to wait
+      // for the interfaces to come up and then try again.
       usleep(200000);
-    } else {
-      LOG(ERROR) << "Unable to create listening socket for: ret = " << ret
-                 << ": " << listen_ip_.c_str() << ":" << listen_port_.c_str();
-      return;
+      continue;
     }
+
+    LOG(ERROR) << "Unable to create listening socket for: ret = " << ret << ": "
+               << listen_ip_.c_str() << ":" << listen_port_.c_str();
+    return;
   }
 
   if (!base::SetNonBlocking(listen_fd_)) {
