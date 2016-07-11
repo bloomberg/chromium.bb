@@ -26,7 +26,6 @@ tests:
   - 'p>4 #d4b4b'
 - - 4 500 000
   - '#d"ejj"jjj'
-  - xfail: true
 - - ⅜
   - '#c/h'
 - - 5⅜
@@ -144,19 +143,15 @@ tests:
 
 - - 'population: 3 245 000'
   - 'popula;n3 #c"bde"jjj'
-  - xfail: true
 - - 'ISBN: 978 1 55468 513 4'
   - ',,isbn3 #igh"a"eedfh"eac"d'
   - xfail: true
 - - 'phone: (61) 3 1234 5678'
   - 'ph"o3 "<#fa"> #c"abcd"efgh'
-  - xfail: true
 - - 'date: 1947 08 31'
   - 'date3 #aidg"jh"ca'
-  - xfail: true
 - - 'time: 16 00'
   - '"t3 #af"jj'
-  - xfail: true
 
 # 6.7.1 page 64
 
@@ -196,6 +191,7 @@ tests:
   - ',w#a,n #i,,lf'
 - - N12 7BT
   - ',n#ab #g,,bt'
+  - xfail: true
 - - (416) 486-2500
   - '"<#daf"> #dhf-#bejj'
 - - For a taxi call 13-cabs.

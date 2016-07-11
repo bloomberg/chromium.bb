@@ -155,6 +155,7 @@ tests:
   - '! `l rose'
 - - £7 8s 9d
   - '`l#g #hs #i;d'
+  - xfail: true
 - - £7/8/9
   - '`l#g_/#h_/#i'
 - - £7-8-9

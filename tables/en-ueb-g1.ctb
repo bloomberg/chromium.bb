@@ -34,7 +34,7 @@ nocontractsign 56
 numericnocontchars abcdefghij
 
 #   add numeric space indicator
-#context _$d["\s"]$d @5
+context _$d["\s"]$d @5
 
 #   remove numeric indicator from numeric space indicator
 pass2 @245-5-3456-245 @245-5-245       0 0
