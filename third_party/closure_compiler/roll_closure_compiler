@@ -6,6 +6,18 @@
 # Download the newest version of Closure Compiler, build it and put into Chrome
 # source tree. Also update externs/chrome_extensions.js.
 
+java -version 2>&1 | head -1 | egrep -q '\b1\.7'
+if [[ $? -ne 0 ]]; then
+  echo "This script requires Java 1.7" >&2
+  exit 1
+fi
+
+javac -version 2>&1 | egrep -q '\b1\.7'
+if [[ $? -ne 0 ]]; then
+  echo "This script requires JDK 1.7" >&2
+  exit 1
+fi
+
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TEMP_DIR=$(mktemp -d)
 readonly EXTERNS_DIR="${SCRIPT_DIR}/externs"
