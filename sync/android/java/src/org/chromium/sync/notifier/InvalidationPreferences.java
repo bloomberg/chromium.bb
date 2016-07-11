@@ -7,11 +7,11 @@ package org.chromium.sync.notifier;
 import android.accounts.Account;
 import android.content.SharedPreferences;
 import android.util.Base64;
-import android.util.Log;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.Collection;
@@ -47,6 +47,9 @@ public class InvalidationPreferences {
         }
     }
 
+    /**
+     * Internal class to wrap constants for preference keys.
+     */
     @VisibleForTesting
     public static class PrefKeys {
         /**
