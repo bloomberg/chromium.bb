@@ -1444,13 +1444,7 @@ static int CountRenderProcessHosts() {
   return result;
 }
 
-// Flaky timeouts on CrOS: http://crbug.com/387045
-#if defined(OS_CHROMEOS)
-#define MAYBE_Registration DISABLED_Registration
-#else
-#define MAYBE_Registration Registration
-#endif
-IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, MAYBE_Registration) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
   // Close the only window to be sure we're not re-using its RenderProcessHost.
   shell()->Close();
   EXPECT_EQ(0, CountRenderProcessHosts());
