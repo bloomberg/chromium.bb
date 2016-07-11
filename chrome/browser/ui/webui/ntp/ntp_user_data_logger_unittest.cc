@@ -62,7 +62,7 @@ TEST_F(NTPUserDataLoggerTest, TestLogging) {
     logger.LogEvent(NTP_GRAY_TILE, delta);
   logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION, delta);
 
-  logger.EmitNtpStatistics();
+  logger.EmitNtpStatistics(NTPUserDataLogger::EmitReason::NAVIGATED_AWAY);
 
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfTiles", 8));
@@ -82,7 +82,7 @@ TEST_F(NTPUserDataLoggerTest, TestLogging) {
   EXPECT_EQ(1, GetBinCount("NewTabPage.SuggestionsType", 1));
 
   // Statistics should be reset to 0, so we should not log anything else.
-  logger.EmitNtpStatistics();
+  logger.EmitNtpStatistics(NTPUserDataLogger::EmitReason::NAVIGATED_AWAY);
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailTiles"));
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfThumbnailErrors"));

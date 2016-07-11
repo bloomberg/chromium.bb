@@ -109,60 +109,6 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
   return logger;
 }
 
-void NTPUserDataLogger::EmitNtpStatistics() {
-  // We only send statistics once per page.
-  // And we don't send if there are no tiles recorded.
-  if (has_emitted_ || !number_of_tiles_)
-    return;
-
-  // LoadTime only gets update once per page, so we don't have it on reloads.
-  if (load_time_ > base::TimeDelta::FromMilliseconds(0)) {
-    logLoadTimeHistogram("NewTabPage.LoadTime", load_time_);
-
-    // Split between ML and MV.
-    std::string type = has_server_side_suggestions_ ?
-        "MostLikely" : "MostVisited";
-    logLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time_);
-    // Split between Web and Local.
-    std::string source = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
-    logLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time_);
-
-    // Split between Startup and non-startup.
-    std::string status = during_startup_ ? "Startup" : "NewTab";
-    logLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time_);
-
-    load_time_ = base::TimeDelta::FromMilliseconds(0);
-  }
-  UMA_HISTOGRAM_ENUMERATION(
-      "NewTabPage.SuggestionsType",
-      has_server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
-      SUGGESTIONS_TYPE_COUNT);
-  has_server_side_suggestions_ = false;
-  has_client_side_suggestions_ = false;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfTiles", number_of_tiles_);
-  number_of_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailTiles",
-                          number_of_thumbnail_tiles_);
-  number_of_thumbnail_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTiles",
-                          number_of_gray_tiles_);
-  number_of_gray_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTiles",
-                          number_of_external_tiles_);
-  number_of_external_tiles_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailErrors",
-                          number_of_thumbnail_errors_);
-  number_of_thumbnail_errors_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTileFallbacks",
-                          number_of_gray_tile_fallbacks_);
-  number_of_gray_tile_fallbacks_ = 0;
-  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTileFallbacks",
-                          number_of_external_tile_fallbacks_);
-  number_of_external_tile_fallbacks_ = 0;
-  has_emitted_ = true;
-  during_startup_ = false;
-}
-
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
   switch (event) {
@@ -171,12 +117,12 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     // In either case, we want to flush our stats before recounting again.
     case NTP_SERVER_SIDE_SUGGESTION:
       if (has_client_side_suggestions_)
-        EmitNtpStatistics();
+        EmitNtpStatistics(EmitReason::INTERNAL_FLUSH);
       has_server_side_suggestions_ = true;
       break;
     case NTP_CLIENT_SIDE_SUGGESTION:
       if (has_server_side_suggestions_)
-        EmitNtpStatistics();
+        EmitNtpStatistics(EmitReason::INTERNAL_FLUSH);
       has_client_side_suggestions_ = true;
       break;
     case NTP_TILE:
@@ -256,8 +202,16 @@ void NTPUserDataLogger::NavigationEntryCommitted(
     return;
 
   if (search::MatchesOriginAndPath(ntp_url_, load_details.previous_url)) {
-    EmitNtpStatistics();
+    EmitNtpStatistics(EmitReason::NAVIGATED_AWAY);
   }
+}
+
+void NTPUserDataLogger::TabDeactivated() {
+  EmitNtpStatistics(EmitReason::CLOSED);
+}
+
+void NTPUserDataLogger::MostVisitedItemsChanged() {
+  EmitNtpStatistics(EmitReason::MV_CHANGED);
 }
 
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
@@ -292,4 +246,58 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
       }
     }
   }
+}
+
+void NTPUserDataLogger::EmitNtpStatistics(EmitReason reason) {
+  // We only send statistics once per page.
+  // And we don't send if there are no tiles recorded.
+  if (has_emitted_ || !number_of_tiles_)
+    return;
+
+  // LoadTime only gets update once per page, so we don't have it on reloads.
+  if (load_time_ > base::TimeDelta::FromMilliseconds(0)) {
+    logLoadTimeHistogram("NewTabPage.LoadTime", load_time_);
+
+    // Split between ML and MV.
+    std::string type = has_server_side_suggestions_ ?
+        "MostLikely" : "MostVisited";
+    logLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time_);
+    // Split between Web and Local.
+    std::string source = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
+    logLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time_);
+
+    // Split between Startup and non-startup.
+    std::string status = during_startup_ ? "Startup" : "NewTab";
+    logLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time_);
+
+    load_time_ = base::TimeDelta::FromMilliseconds(0);
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.SuggestionsType",
+      has_server_side_suggestions_ ? SERVER_SIDE : CLIENT_SIDE,
+      SUGGESTIONS_TYPE_COUNT);
+  has_server_side_suggestions_ = false;
+  has_client_side_suggestions_ = false;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfTiles", number_of_tiles_);
+  number_of_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailTiles",
+                          number_of_thumbnail_tiles_);
+  number_of_thumbnail_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTiles",
+                          number_of_gray_tiles_);
+  number_of_gray_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTiles",
+                          number_of_external_tiles_);
+  number_of_external_tiles_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfThumbnailErrors",
+                          number_of_thumbnail_errors_);
+  number_of_thumbnail_errors_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfGrayTileFallbacks",
+                          number_of_gray_tile_fallbacks_);
+  number_of_gray_tile_fallbacks_ = 0;
+  UMA_HISTOGRAM_NTP_TILES("NewTabPage.NumberOfExternalTileFallbacks",
+                          number_of_external_tile_fallbacks_);
+  number_of_external_tile_fallbacks_ = 0;
+  has_emitted_ = true;
+  during_startup_ = false;
 }

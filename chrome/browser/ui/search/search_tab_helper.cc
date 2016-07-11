@@ -387,7 +387,7 @@ void SearchTabHelper::MostVisitedItemsChanged(
     const std::vector<InstantMostVisitedItem>& items) {
   // When most visited change, the NTP usually reloads the tiles. This means
   // our metrics get inconsistent. So we'd rather emit stats now.
-  InstantTab::EmitNtpStatistics(web_contents_);
+  InstantTab::MostVisitedItemsChanged(web_contents_);
   ipc_router_.SendMostVisitedItems(items);
   LogMostVisitedItemsSource(items);
 }

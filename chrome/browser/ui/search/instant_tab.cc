@@ -21,8 +21,14 @@ void InstantTab::Init(content::WebContents* contents) {
 }
 
 // static
-void InstantTab::EmitNtpStatistics(content::WebContents* contents) {
-  NTPUserDataLogger::GetOrCreateFromWebContents(contents)->EmitNtpStatistics();
+void InstantTab::TabDeactivated(content::WebContents* contents) {
+  NTPUserDataLogger::GetOrCreateFromWebContents(contents)->TabDeactivated();
+}
+
+// static
+void InstantTab::MostVisitedItemsChanged(content::WebContents* contents) {
+  NTPUserDataLogger::GetOrCreateFromWebContents(contents)
+      ->MostVisitedItemsChanged();
 }
 
 bool InstantTab::ShouldProcessAboutToNavigateMainFrame() {

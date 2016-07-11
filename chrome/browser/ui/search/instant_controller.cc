@@ -108,10 +108,9 @@ void InstantController::ActiveTabChanged() {
 }
 
 void InstantController::TabDeactivated(content::WebContents* contents) {
-  // If user is deactivating an NTP tab, log the number of mouseovers for this
-  // NTP session.
+  // If user is deactivating an NTP tab, give it a change to log stats.
   if (search::IsInstantNTP(contents))
-    InstantTab::EmitNtpStatistics(contents);
+    InstantTab::TabDeactivated(contents);
 }
 
 void InstantController::LogDebugEvent(const std::string& info) const {
