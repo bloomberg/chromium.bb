@@ -87,6 +87,7 @@
 <translation id="3622797965165704966">無論是登入 Google 帳戶使用 Chrome，還是以 Google 帳戶使用共用電腦，現在都變得更容易了。</translation>
 <translation id="3735758079232443276">擴充功能「<ph name="EXTENSION_NAME" />」已變更 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="3738139272394829648">輕觸搜尋</translation>
+<translation id="3780814664026482060">Chrome - <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">從 Chrome 中移除...</translation>
 <translation id="3847841918622877581">Google Chrome 會使用網路服務來改善瀏覽品質。</translation>
 <translation id="386202838227397562">請關閉所有 Google Chrome 視窗，並再試一次</translation>
@@ -152,7 +153,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5832596086758878896">{NUM_ITEMS,plural, =1{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}other{這會將 $1 個項目從這個裝置上永久刪除。如果日後想要擷取資料，請以「$2」的身分登入 Chrome。}}</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
-<translation id="5906655207909574370">即將更新成最新版本！重新啟動您的裝置即可完成更新程序。</translation>
+<translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5931853610562009806">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="5940385492829620908">您瀏覽的網頁、書籤和其他 Chrome 設定都在這裡。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 做為我的預設瀏覽器</translation>
@@ -217,7 +218,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7808348361785373670">從 Chrome 中移除...</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="7890208801193284374">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
-<translation id="7908168227788431038">即將更新成最新版本！重新啟動 Google Chrome 即可完成更新程序。</translation>
+<translation id="7908168227788431038">即將更新為最新版本！重新啟動 Google Chrome 即可完成更新程序。</translation>
 <translation id="795025003224538582">不要重新啟動</translation>
 <translation id="8005540215158006229">Chrome 即將準備就緒。</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>

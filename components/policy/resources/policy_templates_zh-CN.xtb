@@ -6,15 +6,15 @@
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
 <translation id="102492767056134033">设置屏幕键盘在登录屏幕上的默认状态</translation>
-<translation id="1027000705181149370">指定在用户登录期间 SAML IdP 设置的身份验证 Cookie 是否应转移到用户的个人资料中。
+<translation id="1027000705181149370">指定在用户登录期间由 SAML IdP 设置的身份验证 Cookie 是否应转移到用户的个人资料中。
 
-      当用户在登录期间通过 SAML IdP 进行身份验证时，IdP 设置的 Cookie 会先写入到临时的个人资料中。这些 Cookie 可以转移到用户的个人资料中，以便更新身份验证状态。
+      当用户在登录期间通过 SAML IdP 进行身份验证时，由 IdP 设置的 Cookie 会先写入到临时的个人资料中。这些 Cookie 可以转移到用户的个人资料中，以便更新身份验证状态。
 
-      如果此政策设为 true，用户每次在登录期间通过 SAML IdP 进行身份验证时，IdP 设置的 Cookie 都会被转移到用户的个人资料中。
+      如果此政策设为 true，用户每次在登录期间针对 SAML IdP 进行身份验证时，由 IdP 设置的 Cookie 都会被转移到用户的个人资料中。
 
-      如果此政策设为 false 或未设置，仅当用户首次在设备上登录时，IdP 设置的 Cookie 才会被转移到其个人资料中。
+      如果此政策设为 false 或未设置，仅当用户首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。
 
-      此政策只会影响所在网域与设备注册网域匹配的用户。对于所有其他用户，仅当他们首次在设备上登录时，IdP 设置的 Cookie 才会被转移到其个人资料中。</translation>
+      此政策只会影响所在网域与设备注册网域匹配的用户。对于所有其他用户，仅当他们首次在设备上登录时，由 IdP 设置的 Cookie 才会被转移到其个人资料中。</translation>
 <translation id="1040446814317236570">启用 PAC 网址剔除功能（适用于 https:// 类网址）</translation>
 <translation id="1044878202534415707">报告硬件统计数据，例如 CPU/RAM 使用情况。
 
@@ -415,6 +415,13 @@
 <translation id="2466131534462628618">进行强制门户身份验证时忽略代理服务器</translation>
 <translation id="2482676533225429905">本地消息传递</translation>
 <translation id="2483146640187052324">采用任何网络连接时，均预测网络操作</translation>
+<translation id="2486371469462493753">不强制规定列出的网址必须满足证书透明度要求。
+
+      如果此政策处于启用状态，指定网址中的主机名的证书可以不通过证书透明度政策进行披露。这样一来，原本不受信任的证书（因为相应证书并未适当地公开披露）将可以继续使用，但会导致更难以检测到针对这些主机误颁发的证书。
+
+      网址必须采用 https://www.chromium.org/administrators/url-blacklist-filter-format 格式。不过，由于证书对指定主机名有效，而与架构、端口或路径无关，因此系统将仅考虑相应网址的主机名部分。不支持采用通配符的主机名。
+
+      如果此政策未设置，那么需要通过证书透明度政策披露但未按照该政策披露的任何证书都将被视为不受信任的证书。</translation>
 <translation id="2488010520405124654">离线时，弹出网络配置提示。
 
       如果该政策未设置或设置为True，而设备本地帐户又配置为零延迟自动登录，则当设备无法访问互联网时，<ph name="PRODUCT_OS_NAME" />将显示网络配置提示。
@@ -438,6 +445,13 @@
 <translation id="2529880111512635313">配置强制安装的应用和扩展程序的列表</translation>
 <translation id="253135976343875019">使用交流电源供电时的闲置警告延迟时间</translation>
 <translation id="2552966063069741410">时区</translation>
+<translation id="2562339630163277285">指定用于提供即搜即得结果的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户输入的文字。
+
+          此政策是可选的，如果未设置，系统将不会提供任何即搜即得结果。
+
+          您可以按以下格式指定 Google 的即搜即得结果网址：<ph name="GOOGLE_INSTANT_SEARCH_URL" />。
+
+          仅当“DefaultSearchProviderEnabled”政策处于启用状态时，此政策才能发挥作用。</translation>
 <translation id="2571066091915960923">启用或停用数据压缩代理，并防止用户更改该设置。
 
       如果您启用或停用了该设置，用户将无法更改或覆盖该设置。
@@ -449,10 +463,21 @@
 <translation id="262740370354162807">允许将文档提交到 <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
 <translation id="2650049181907741121">当用户合上屏幕时执行的操作</translation>
+<translation id="2655233147335439767">指定要在执行默认搜索时使用的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户搜索的字词。
+
+          您可以按以下格式指定 Google 的搜索网址：<ph name="GOOGLE_SEARCH_URL" />。
+
+          “DefaultSearchProviderEnabled”政策处于启用状态时，必须设置此选项，并且只有在这种情况下此选项才能发挥作用。</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="2682225790874070339">在<ph name="PRODUCT_OS_NAME" />的“文件”应用中停用Google云端硬盘</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
+<translation id="2692168654831544772">停用屏幕截图功能。
+
+      此政策处于启用状态时，用户将无法使用键盘快捷键或扩展程序 API 截取屏幕截图。
+      此外，系统会针对 ARC 应用停用屏幕截图功能。
+
+      如果此政策处于停用状态或未指定，用户将可以截取屏幕截图。</translation>
 <translation id="2731627323327011390">禁止 ARC 应用使用 <ph name="PRODUCT_OS_NAME" /> 证书</translation>
 <translation id="2742843273354638707">在“打开新的标签页”页面和 <ph name="PRODUCT_OS_NAME" />应用启动器中不显示“Chrome 网上应用店”应用和页脚链接。
 
@@ -522,7 +547,7 @@
           如果您未设置此政策，用户将可以自行选择代理设置。</translation>
 <translation id="2818551149761607847">指定用户头像图片。
 
-      通过此政策，您可以指定用来在登录屏幕上代表用户的头像图片。要设置此政策，请指定可供 <ph name="PRODUCT_OS_NAME" />下载相应头像图片的网址，并指定用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过 512kB。网址必须可直接访问，而无需进行任何身份验证。
+      通过此政策，您可以配置用来在登录屏幕上代表用户的头像图片。要设置此政策，请指定可供 <ph name="PRODUCT_OS_NAME" />下载相应头像图片的网址，并指定用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过 512kB。网址必须可直接访问，而无需进行任何身份验证。
 
       系统会下载并缓存相应的头像图片。网址或哈希值只要有任何变化，系统都会重新下载相应的头像图片。
 
@@ -615,6 +640,11 @@
 <translation id="3072847235228302527">为设备本地帐户设置服务条款</translation>
 <translation id="3096595567015595053">已启用插件的列表</translation>
 <translation id="3101501961102569744">选择如何指定代理服务器设置</translation>
+<translation id="3117676313396757089">警告：从 57 版开始（2017 年 3 月左右），<ph name="PRODUCT_NAME" /> 中将彻底移除 DHE。届时，此政策将不再发挥作用。
+
+       如果此政策未设置或设为 false，系统将不会在 TLS 中启用 DHE 加密套件。您也可以将此政策设为 true，以便启用 DHE 加密套件，并与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确的做法。
+
+      我们建议您让服务器改用 ECDHE 加密套件。如果这些加密套件不可用，请确保使用 RSA 密钥交换机制的加密套件处于启用状态。</translation>
 <translation id="3153348162326497318">可让您指定哪些扩展程序是用户无法安装的。已安装的扩展程序如果列入黑名单，就会遭到删除。黑名单中的“*”值表示：除了在白名单中明确列出的扩展程序，其他所有扩展程序均列入黑名单。如果未设置此政策，用户就可以在 <ph name="PRODUCT_NAME" />中安装任何扩展程序。</translation>
 <translation id="316778957754360075">此设置从 <ph name="PRODUCT_NAME" />版本 29 起开始弃用。我们建议您将托管 CRX 软件包的网站包含在 ExtensionInstallSources 中，然后将上述软件包的直接下载链接放在某网页上，从而建立一个由企业托管的扩展程序/应用包。相关网页的启动器可使用 ExtensionInstallForcelist 政策创建。</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION" /> 开始</translation>
@@ -695,6 +725,11 @@
 <translation id="3322771899429619102">可让您设置一个网址格式列表，以便指定哪些网站可以使用密钥生成功能。对于同时还包含在“KeygenBlockedForUrls”中的网址格式，系统将应用“KeygenBlockedForUrls”政策而忽略此政策。
 
           如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
+<translation id="3337150554416948435">可让您设置是否允许网站跟踪用户的地理位置信息。可以设为默认允许或默认拒绝跟踪用户的地理位置信息，也可以设为在每次网站请求地理位置信息时均询问用户。
+
+          如果此政策设为“BlockGeolocation”，系统将针对 ARC 应用禁用位置信息分享功能。
+
+          如果此政策未设置，系统将使用“AskGeolocation”，并且用户能够更改此设置。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3417418267404583991">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将启用访客登录。访客登录是匿名用户会话，不需要密码。
 
@@ -818,6 +853,13 @@
 
       如果未指定，则不会修改变体种子网址。</translation>
 <translation id="3863409707075047163">启用最低 SSL 版本</translation>
+<translation id="3864020628639910082">指定用于提供搜索建议的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户输入的文字。
+
+          此政策是可选的，如果未设置，系统将不会使用任何搜索建议网址。
+
+          您可以按以下格式指定 Google 的搜索建议网址：<ph name="GOOGLE_SUGGEST_SEARCH_URL" />。
+
+          仅当“DefaultSearchProviderEnabled”政策处于启用状态时，此政策才能发挥作用。</translation>
 <translation id="3864818549971490907">默认插件设置</translation>
 <translation id="3866249974567520381">说明</translation>
 <translation id="3866530186104388232">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将在登录屏幕上显示现有用户，并允许用户选择。如果将此政策设置为 false，<ph name="PRODUCT_OS_NAME" />就会显示用户名/密码登录提示。</translation>
@@ -830,6 +872,14 @@
 
       每个列表条目都包含一个字典，其“extension-id”字段必须包含扩展程序 ID，而其“update-url”字段必须包含更新网址。</translation>
 <translation id="3891357445869647828">启用 JavaScript</translation>
+<translation id="3898060089412156345">允许或拒绝捕获音频。
+
+      如果此政策处于启用状态或未配置（默认），系统会在收到音频捕获设备使用请求时提示用户；但对于 AudioCaptureAllowedUrls 列表中指定的网址，系统将不会提示用户，而是直接授予使用权限。
+
+      如果此政策处于停用状态，系统将一律不提示用户，并且只有 AudioCaptureAllowedUrls 中指定的网址可以使用音频捕获设备。
+      对于 ARC 应用，麦克风将永久静音。
+
+      此政策会影响所有类型的音频输入设备（而不仅仅是内置麦克风）。</translation>
 <translation id="3907986150060929099">为公用自助终端设置建议的语言区域</translation>
 <translation id="391531815696899618">当此政策设为 True 时，在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，系统不会将任何数据上传到 Google 云端硬盘。
 
@@ -877,6 +927,7 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位。</translation>
+<translation id="4105989332710272578">对于指定的一系列网址，不强制要求必须符合证书透明度政策</translation>
 <translation id="4115096483386877940">允许锁定屏幕。
 
       如果此政策设为 false，用户将无法锁定屏幕（只能退出用户会话）。如果此设置设为 true 或未设置，则使用密码通过身份验证的用户可以锁定屏幕。</translation>
@@ -914,6 +965,7 @@
           此为可选政策。如果未设置此政策，系统将使用 GET 方法发送图片搜索请求。
 
           此政策只在启用了“DefaultSearchProviderEnabled”政策的前提下才会生效。</translation>
+<translation id="4309640770189628899">是否在 TLS 中启用 DHE 加密套件</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更高版本</translation>
 <translation id="4322842393287974810">允许自动启动零延迟的自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本</translation>
 <translation id="4325690621216251241">向系统任务栏添加退出按钮</translation>
@@ -1851,6 +1903,15 @@
       确定在登录屏幕上用作屏幕保护程序的扩展程序的 ID。该扩展程序必须属于通过 DeviceAppPack 策略为此域配置的 AppPack。</translation>
 <translation id="7882890448959833986">禁止显示“操作系统不受支持”警告</translation>
 <translation id="7912255076272890813">配置允许的应用/扩展程序类型</translation>
+<translation id="7914271217607102111">允许或拒绝捕获视频。
+
+      如果此政策处于启用状态或未配置（默认），系统会在收到视频捕获设备使用请求时提示用户；但对于 VideoCaptureAllowedUrls 列表中指定的网址，系统将不会提示用户，而是直接授予使用权限。
+      ARC 应用只有在获得相应权限的情况下才能使用摄像头。
+
+      如果此政策处于停用状态，系统将一律不提示用户，并且只有 VideoCaptureAllowedUrls 中指定的网址可以使用视频捕获设备。
+      ARC 应用将无法使用摄像头。
+
+      在 ARC 应用之外，此政策会影响所有类型的视频输入设备（而不仅仅是内置摄像头）。</translation>
 <translation id="7915236031252389808">您可以在此指定代理 .pac 文件的网址。
 
           只有当您在“选择如何指定代理服务器设置”中选择手动代理设置后，此政策才会生效。

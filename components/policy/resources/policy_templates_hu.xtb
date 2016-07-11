@@ -439,6 +439,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="2466131534462628618">A hitelesítési portál a hitelesítéskor figyelmen kívül hagyja a proxyt</translation>
 <translation id="2482676533225429905">Natív üzenetküldő</translation>
 <translation id="2483146640187052324">Hálózati műveletek előrejelzése minden hálózati kapcsolaton</translation>
+<translation id="2486371469462493753">Kikapcsolja A tanúsítványok átláthatósága keretrendszer követelményeinek betartását a listában szereplő URL-eknél.
+
+      A házirend lehetővé teszi a tanúsítványok számára, hogy a megadott URL-ekben található gazdagépneveket ne osszák meg A tanúsítványok átláthatósága keretrendszeren keresztül. Ez lehetővé teszi a tanúsítványok számára, amelyek egyébként a nem megfelelő nyilvánosságra hozatal miatt nem megbízhatónak minősülnének, hogy továbbra is használják őket, de az adott gazdagépek számára megnehezíti a hibásan kiadott tanúsítványok felismerését.
+
+      Az URL-minták formázása a https://www.chromium.org/administrators/url-blacklist-filter-format szerint történik. Mivel azonban a tanúsítványok a sémától, porttól vagy elérési úttól függő adott gazdagépnévre érvényesek, a rendszer csak az URL gazdagépnévi részét veszi figyelembe. A helyettesítő karakterrel megadott gazdagépek nem támogatottak.
+
+      Ha nincs beállítva ez a házirend, akkor a rendszer minden olyan tanúsítványt, amelyet A tanúsítványok átláthatósága keretrendszeren keresztül kellett volna közzétenni, nem megbízhatóként kezel, ha azt nem A tanúsítványok átláthatósága keretrendszer házirendje alapján tették közzé.</translation>
 <translation id="2488010520405124654">Hálózati konfigurációs értesítés offline állapotban való megjelenítésének engedélyezése.
 
       Ha nincs beállítva ez a házirend, vagy pedig Igaz az értéke, és a késleltetés nélküli automatikus bejelentkezéshez az eszközön lévő helyi fiók van beállítva, az eszköz pedig nem fér hozzá az internethez, akkor a <ph name="PRODUCT_OS_NAME" /> a hálózati konfigurációval kapcsolatos értesítést jelenít meg.
@@ -462,6 +469,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="2529880111512635313">Állítsa be a kényszerített telepítésű alkalmazások és bővítmények listáját</translation>
 <translation id="253135976343875019">Tétlenségi figyelmeztetés késleltetése hálózati áramról való működés során</translation>
 <translation id="2552966063069741410">Időzóna</translation>
+<translation id="2562339630163277285">Megadja az azonnali eredményekhez használt keresőmotor URL-jét. Az URL-nek tartalmaznia kell a <ph name="SEARCH_TERM_MARKER" /> karakterláncot, amelynek helyébe a lekérdezés időpontjában a felhasználó által addig megadott szöveg lép.
+
+          Nem kötelező házirend. Ha nincs beállítva, nem jelennek meg azonnali keresési eredmények.
+
+          A Google azonnali eredmény URL-je a következőként adható meg: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Ez a házirend csak akkor teljesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="2571066091915960923">Engedélyezi vagy letiltja az adattömörítő proxyt, és megakadályozza, hogy a felhasználók módosíthassák ezt a beállítást.
 
       Ha engedélyezi vagy letiltja ezt a beállítást, a felhasználók nem tudják módosítani vagy felülírni azt.
@@ -473,10 +487,21 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="262740370354162807">A dokumentumok <ph name="CLOUD_PRINT_NAME" /> szolgáltatás részére való benyújtásának engedélyezése</translation>
 <translation id="2633084400146331575">Hangos visszajelzések engedélyezése</translation>
 <translation id="2650049181907741121">Az a művelet, amelyet akkor végez a rendszer, ha a felhasználó lezárja a fedelet</translation>
+<translation id="2655233147335439767">Meghatározza az alapértelmezett keresés esetén használatos keresőmotor URL-jét. Az URL-nek tartalmaznia kell a(z) „<ph name="SEARCH_TERM_MARKER" />” karakterláncot, amelyet kereséskor a felhasználó által keresett kifejezések helyettesítenek.
+
+          A Google azonnali eredmény URL-je a következőként adható meg: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Ezt a beállítást akkor kell megadni, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van, és csak ebben az esetben veszi figyelembe a rendszer.</translation>
 <translation id="2660846099862559570">Soha ne használjon proxyt</translation>
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="2682225790874070339">Letiltja a Google Drive szolgáltatást a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
+<translation id="2692168654831544772">Letiltja a képernyőfelvételek készítését.
+
+      Ha engedélyezve van, nem lehet képernyőfelvételt készíteni billentyűparancsokkal vagy bővítmény API-kkal.
+      Továbbá a képernyőrögzítés le van tiltva az ARC-alkalmazásoknál.
+
+      Ha le van tiltva vagy nincs megadva, a képernyőfelvételek készítése engedélyezett.</translation>
 <translation id="2731627323327011390">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok használatának letiltása</translation>
 <translation id="2742843273354638707">A Chrome Internetes áruház alkalmazásnak és a láblécben lévő linkjének elrejtése az Új lap oldalon és a <ph name="PRODUCT_OS_NAME" /> alkalmazásindítóban.
 
@@ -639,6 +664,11 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="3072847235228302527">Általános Szerződési Feltételek beállítása egy eszközszinten helyi fiók számára</translation>
 <translation id="3096595567015595053">Engedélyezett bővítmények listája</translation>
 <translation id="3101501961102569744">Válassza ki, hogyan adja meg a proxyszerver beállításait</translation>
+<translation id="3117676313396757089">Figyelem: A DHE teljes mértékben eltávolításra kerül a <ph name="PRODUCT_NAME" /> 57-es verziója után (2017 márciusa körül), és ez a házirend onnantól kezdve nem lesz használható.
+
+      Ha a házirend nincs beállítva, illetve értéke hamis, akkor a TLS protokoll DHE rejtjelezési csomagjai nem lesznek engedélyezve. Igaz értékre állítva engedélyezve lesznek a DHE rejtjelezési csomagjai, és megmarad a kompatibilitás az elavult szerverekkel. Ez átmeneti intézkedés, a szervert újra kell konfigurálni.
+
+      Javasoljuk a szerverek áttelepítését ECDHE rejtjelezési csomagokra. Ha ezek nem állnak rendelkezésre, gondoskodjon róla, hogy engedélyezve legyen egy RSA kulcscserélést használó rejtjelezési csomag.</translation>
 <translation id="3153348162326497318">Lehetővé teszi annak meghatározását, hogy melyek azok a bővítmények, amelyeket NEM telepíthetnek a felhasználók. A már telepített, de a tiltólistán szereplő bővítményeket a rendszer eltávolítja. A tiltólista "*" értéke azt jelenti, hogy az összes bővítmény tiltólistás, kivéve, ha az adott bővítményt az engedélyezőlista tartalmazza. Ha ez a házirend beállítatlanul marad, a felhasználó bármilyen bővítményt telepíthet a(z) <ph name="PRODUCT_NAME" /> alkalmazásban.</translation>
 <translation id="316778957754360075">Ez a házirend többé nincs jelen a <ph name="PRODUCT_NAME" /> 29-es verziójától kezdve. A szervezet által tárolt bővítmény- és alkalmazásgyűjtemények beállításához azt javasoljuk, hogy a CRX-csomagokat tartalmazó webhelyet vegye fel az ExtensionInstallSources házirendbe, és helyezzen el a csomagokra mutató közvetlen letöltési linkeket egy weboldalon. A weboldalhoz az ExtensionInstallForcelist házirend használatával lehet indítót létrehozni.</translation>
 <translation id="3185009703220253572">a(z) <ph name="SINCE_VERSION" /> verzió óta</translation>
@@ -719,6 +749,11 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="3322771899429619102">Lehetővé teszi, hogy létrehozza az olyan webhelyeket megadó URL-minták egy listáját, ahol engedélyezett a kulcslétrehozás. Ha valamelyik URL-minta a „KeygenBlockedForUrls” házirendben található, akkor az felülírja ezen kivételeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
+<translation id="3337150554416948435">Lehetővé teszi, hogy megadja azon weboldalak listáját, amelyek követhetik a felhasználók fizikai tartózkodási helyét. A felhasználók fizikai tartózkodási helyének követése lehet alapértelmezetten engedélyezett, alapértelmezetten tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor az adott webhely a fizikai tartózkodási helyét szeretné megismerni.
+
+          Ha a házirend beállítása „BlockGeolocation”, a helymegosztás le van tiltva az ARC-alkalmazások számára.
+
+          Ha a házirend konfigurálatlanul marad, a rendszer az „AskGeolocation” értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
 <translation id="3417418267404583991">Ha a házirend beállítása igaz, vagy nincs megadva az értéke, akkor a(z) <ph name="PRODUCT_OS_NAME" /> engedélyezi a Vendég módban való bejelentkezéseket. A vendégbejelentkezések névtelen felhasználói munkamenetek, amelyek nem kérik jelszó magadását.
 
@@ -842,6 +877,13 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha nincs meghatározva, akkor nem módosul a változatok seed URL-je.</translation>
 <translation id="3863409707075047163">Minimálisan engedélyezett SSL-verzió</translation>
+<translation id="3864020628639910082">A keresési javaslatok biztosításához használt keresőmotor URL-jét határozza meg. Az URL-nek tartalmaznia kell a „<ph name="SEARCH_TERM_MARKER" />” karakterláncot, amelynek helyébe a lekérdezéskor a felhasználó által addig beírt szöveg kerül.
+
+          Ez a házirend nem kötelező. Ha nincs beállítva, akkor a rendszer nem használ javasolt URL-t.
+
+          A Google javaslat URL-je a következőként adható meg: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Ez a házirend csak akkor teljesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="3864818549971490907">Alapértelmezett bővítménybeállítások</translation>
 <translation id="3866249974567520381">Leírás</translation>
 <translation id="3866530186104388232">Ha ez igazra van állítva vagy nincs beállítva, akkor a(z) <ph name="PRODUCT_OS_NAME" /> megjeleníti a meglévő felhasználókat a bejelentkezési képernyőn, és lehetővé teszi, hogy a felhasználó kiválassza a saját nevét. Ha beállítása hamis, akkor a(z) <ph name="PRODUCT_OS_NAME" /> felhasználónevet/jelszót kérő ablakot jelenít meg a bejelentkezésnél.</translation>
@@ -856,6 +898,16 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       A listabejegyzések szótárának tartalmaznia kell a bővítményazonosítót az „extension-id” mezőben, valamint annak frissített URL-jét az „update-url” mezőben.</translation>
 <translation id="3891357445869647828">JavaScript engedélyezése</translation>
+<translation id="3898060089412156345">Hangrögzítés engedélyezése vagy tiltása.
+
+      Ha engedélyezett, vagy ha nincs beállítva (ez az alapértelmezett),
+      a rendszer hangrögzítési hozzáférést kér az AudioCaptureAllowedUrls
+      listában beállított URL-ek kivételével, amelyek kérdés nélkül hozzáférést kapnak.
+
+      Ha a házirend le van tiltva, a felhasználót sosem kérdezik meg, és a
+      hangrögzítés csak az AudioCaptureAllowedUrls listában szereplő URL-ek esetében áll rendelkezésre.
+
+      Ez a házirend minden hangbemenetre érvényes, nem csak a beépített mikrofonra.</translation>
 <translation id="3907986150060929099">Beállítja a nyilvános munkamenet ajánlott nyelv- és országkódjait</translation>
 <translation id="391531815696899618">Igaz érték esetén letiltja a Google Drive szinkronizálását a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában. Ebben az esetben nem lesznek feltöltve adatok a Google Drive-ra.
 
@@ -912,6 +964,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ha a házirend nincs beállítva, a rendszer az alapértelmezett időtartamot használja.
 
           A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="4105989332710272578">A tanúsítványok átláthatósága keretrendszer végrehajtásának kikapcsolása az URL-ek egy listájánál</translation>
 <translation id="4115096483386877940">A képernyő zárolásának engedélyezése.
 
       Ha a házirend értéke hamis, a felhasználók nem tudják zárolni a képernyőt (csak a felhasználói munkamenetből való kijelentkezés lesz lehetséges). Ha a beállítás igaz, vagy ha nincs megadva, a jelszóval hitelesített felhasználók zárolhatják a képernyőt.</translation>
@@ -949,6 +1002,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ez egy opcionális házirend. Ha nincs beállítva, a képkeresési kérelmet a rendszer a GET metódus segítségével továbbítja.
 
           Ez a házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
+<translation id="4309640770189628899">Engedélyezve vannak-e a DHE rejtjelezési csomagok a TLS protokollban</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vagy újabb</translation>
 <translation id="4322842393287974810">Annak engedélyezése, hogy a <ph name="PRODUCT_OS_NAME" /> verziójának ellenőrzését a késés nélkül, automatikusan indított kioszkalkalmazás végezze.</translation>
 <translation id="4325690621216251241">Kijelentkezés gomb elhelyezése a tálcán</translation>
@@ -1891,6 +1945,20 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
 <translation id="7882890448959833986">A nem támogatott operációs rendszerre vonatkozó figyelmeztetés elrejtése</translation>
 <translation id="7912255076272890813">Engedélyezett alkalmazás-/bővítménytípusok konfigurálása</translation>
+<translation id="7914271217607102111">Videórögzítés engedélyezése vagy tiltása.
+
+      Ha a házirend engedélyezett, vagy ha nincs beállítva (alapértelmezett), a böngésző
+      videórögzítési hozzáférést kér (a VideoCaptureAllowedUrls listában beállított 
+      URL-ek kivételével, amelyek kérdés nélkül megkapják
+      a felhasználótól). Az ARC-alkalmazások akkor férhetnek hozzá a
+      kamerához, ha erre engedélyt kaptak.
+
+      Ha a házirend le van tiltva, akkor a felhasználó soha nem kap kérdést,
+      és a videórögzítés csak a VideoCaptureAllowedUrls listában beállított URL-ek
+      számára hozzáférhető. Az ARC-alkalmazások nem férhetnek hozzá a kamerához.
+
+      Ez a házirend az ARC-alkalmazásokon kívül minden videóbemenet-típust
+      befolyásol; nem csupán a beépített kamerát.</translation>
 <translation id="7915236031252389808">Itt adhatja meg a proxy .pac fájlok URL-jét.
 
           Ez a házirend csak akkor lép érvénybe, ha a manuális proxybeállításokat választotta a „Válassza ki, hogyan adja meg a proxyszerver beállításait” résznél.

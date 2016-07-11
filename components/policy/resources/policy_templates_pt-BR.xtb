@@ -8,11 +8,11 @@
 <translation id="102492767056134033">Definir o estado padrão do teclado na tela, na tela de login</translation>
 <translation id="1027000705181149370">Especifica se os cookies de autenticação definidos por um IdP de SAML durante o login devem ser transferidos para o perfil do usuário.
 
-      Quando um usuário é autenticado por um IdP de SAML durante o login, os cookies definidos pelo IdP são, a princípio, gravados em um perfil temporário. Esses cookies podem ser transferidos para o perfil do usuário a fim de levar o estado de autenticação adiante.
+      Quando um usuário é autenticado por um IdP de SAML durante o login, os cookies definidos pelo IdP são, a princípio, gravados em um perfil temporário. Esses cookies podem ser transferidos para o perfil do usuário, seguindo o processo de autenticação.
 
       Quando esta política é definida como true, os cookies configurados pelo IdP são transferidos para o perfil do usuário sempre que ele faz autenticação no IdP do SAML durante o login.
 
-      Quando esta política é definida como false ou não é configurada, os cookies definidos pelo IdP são transferidos para o perfil do usuário durante o primeiro login dele apenas em um dispositivo.
+      Quando esta política é definida como false ou não é configurada, os cookies definidos pelo IdP são transferidos para o perfil do usuário apenas durante o primeiro login dele em um dispositivo.
 
       Esta política afeta os usuários cujo domínio corresponde apenas ao domínio de inscrição do dispositivo. Para todos os outros usuários, os cookies definidos pelo IdP são transferidos para o perfil do usuário somente durante o primeiro login no dispositivo.</translation>
 <translation id="1040446814317236570">Ativar a retirada de URL PAC (para https://)</translation>
@@ -432,6 +432,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2466131534462628618">A autenticação de portal cativo ignora o proxy</translation>
 <translation id="2482676533225429905">Mensagens nativas</translation>
 <translation id="2483146640187052324">Prever ações da rede em qualquer conexão de rede</translation>
+<translation id="2486371469462493753">Desativa a aplicação dos requisitos de Transparência dos certificados para os URLs listados.
+
+      Esta política permite que os certificados dos nomes de host nos URLs especificados não sejam divulgados pela Transparência dos certificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados, mas dificultam a detecção de certificados usados erroneamente por esses hosts.
+
+      Um padrão de URL é formatado de acordo com https://www.chromium.org/administrators/url-blacklist-filter-format. No entanto, como os certificados são válidos para um nome de host específico independente do esquema, porta ou caminho, apenas a parte do nome do host do URL é considerada. Hosts curingas não são compatíveis.
+
+      Se esta política não for definida, qualquer certificado que deva ser divulgado por meio da Transparência dos certificados será tratado como não confiável, se não for divulgado de acordo com a política de Transparência dos certificados.</translation>
 <translation id="2488010520405124654">Ativar o prompt de configuração de rede quando estiver off-line.
 
       Se esta política não for definida ou for definida como Verdadeira, uma conta local de dispositivo for configurada para login automático com atraso zero e o dispositivo não tiver acesso à Internet, o <ph name="PRODUCT_OS_NAME" /> mostrará um prompt de configuração de rede.
@@ -455,6 +462,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2529880111512635313">Configurar a lista de extensões e aplicativos instalados forçadamente</translation>
 <translation id="253135976343875019">Intervalo da advertência de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2552966063069741410">Fuso horário</translation>
+<translation id="2562339630163277285">Especifica o URL do mecanismo de pesquisa usado para fornecer resultados instantâneos. O URL deve conter a string <ph name="SEARCH_TERM_MARKER" />, que será substituída no instante da consulta pelo texto que o usuário digitou até o momento.
+
+          Esta política é opcional. Se ela não for definida, nenhum resultado de pesquisa instantânea será fornecido.
+
+          O URL de resultados instantâneos do Google pode ser especificado como: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Esta política só é respeitada se a política "DefaultSearchProviderEnabled" está ativada.</translation>
 <translation id="2571066091915960923">Ativa ou desativa o proxy de compactação de dados e impede que os usuários alterem essa configuração.
 
       Se você ativar ou desativar essa configuração, os usuários não poderão alterá-la ou substituí-la.
@@ -466,10 +480,21 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="262740370354162807">Ativar o envio de documentos para <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ativar feedback falado</translation>
 <translation id="2650049181907741121">Ação a ser realizada quando o usuário fecha a tampa</translation>
+<translation id="2655233147335439767">Especifica o URL do mecanismo de pesquisa usado durante uma pesquisa padrão. O URL deve conter a string "<ph name="SEARCH_TERM_MARKER" />", que será substituída no momento da consulta pelos termos que o usuário está pesquisando.
+
+          O URL de pesquisa do Google pode ser especificado como: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Esta opção deve ser definida quando a política "DefaultSearchProviderEnabled" estiver ativada e será respeitada somente se este for o caso.</translation>
 <translation id="2660846099862559570">Nunca usar um proxy</translation>
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2682225790874070339">Desativa o Google Drive no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
+<translation id="2692168654831544772">Desativa o recurso de captura de tela.
+
+      Se for ativada, não será possível capturar telas usando atalhos do teclado ou APIs de extensão.
+      Além disso, capturas de tela são desativadas para apps ARC.
+
+      Se for desativada ou não for especificada, a captura de tela será permitida.</translation>
 <translation id="2731627323327011390">Desativar o uso de certificados do <ph name="PRODUCT_OS_NAME" /> para apps Arc</translation>
 <translation id="2742843273354638707">Oculta o link do aplicativo e do rodapé da Chrome Web Store na página "Nova guia" e no iniciador de aplicativos do <ph name="PRODUCT_OS_NAME" />.
 
@@ -541,7 +566,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Esta política permite configurar a imagem do avatar que representa o usuário na tela de login. A política é definida especificando o URL no qual o <ph name="PRODUCT_OS_NAME" /> pode fazer o download da imagem do avatar e de um hash criptográfico, usado para verificar a integridade do download. A imagem deve estar no formato JPEG, e seu tamanho não deve ultrapassar 512 kB. O URL deve ser acessado sem nenhuma autenticação.
 
-      É feito o download da imagem do avatar, e ela é armazenada em cache. Sempre que o URL ou o hash muda, o download é feito novamente.
+      A imagem do avatar é transferida por download e armazenada em cache. Sempre que o URL ou o hash mudar, o download será feito novamente.
 
       A política deve ser especificada como uma string que expresse o URL e o hash em formato JSON, conforme o esquema abaixo:
       {
@@ -632,6 +657,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3072847235228302527">Definir os Termos de Serviço para uma conta local do dispositivo</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher o modo de especificar as configurações do servidor proxy</translation>
+<translation id="3117676313396757089">Atenção: o DHE será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 57 (por volta de março de 2017), e esta política parará de funcionar.
+
+      Se a política não for definida ou for definida como false, os pacotes de criptografia DHE em TLS não serão ativados. Caso contrário, ela poderá ser configurada como true para ativar os pacotes de criptografia DHE e manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária, e o servidor deve ser reconfigurado.
+
+      Os servidores são incentivados a migrar para pacotes de criptografia ECDHE. Se eles não estiverem disponíveis, ative um pacote de criptografia que use troca de chaves RSA.</translation>
 <translation id="3153348162326497318">Permite que você especifique quais extensões os usuários NÃO podem instalar. Extensões já instaladas serão removidas se adicionadas à lista negra. Um valor "*" na lista negra significa que todas as extensões são proibidas a menos que sejam listadas explicitamente na lista de permissões. Se esta política for deixada sem definição, o usuário pode instalar qualquer extensão em <ph name="PRODUCT_NAME" /> .</translation>
 <translation id="316778957754360075">Esta configuração foi descontinuada a partir da versão 29 do <ph name="PRODUCT_NAME" />. O modo recomendado de configurar as coleções de extensões/aplicativos hospedados pela organização é incluir na hospedagem do site os pacotes CRX em ExtensionInstallSources e colocar links de download direto para os pacotes em uma página da Web. É possível criar um iniciador da página da Web usando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
@@ -712,6 +742,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3322771899429619102">Permite que você defina uma lista de padrões de URL que especificam sites que têm permissão para usar a geração de chaves. Se um padrão de URL está na política "KeygenBlockedForUrls", essa política substitui essas exceções.
 
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
+<translation id="3337150554416948435">Permite que você defina se os websites estão autorizados a rastrear a localização física dos usuários. O rastreamento da localização física dos usuários pode ser permitido ou bloqueado por padrão, ou o usuário receberá uma solicitação sempre que um website quiser saber a localização física dele.
+
+          Se esta política for definida como "BlockGeolocation", o compartilhamento de localização ficará bloqueado para apps ARC.
+
+          Se esta política for deixada sem definição, "AskGeolocation" será utilizada, e o usuário será capaz de modificá-la.</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de visitantes.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
@@ -833,6 +868,13 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se não especificada, não modificará o URL do termo-semente "Variações".</translation>
 <translation id="3863409707075047163">Versão de SSL mínima ativada</translation>
+<translation id="3864020628639910082">Especifica o URL do mecanismo de pesquisa usado para fornecer sugestões de pesquisa. O URL deve conter a string "<ph name="SEARCH_TERM_MARKER" />", que será substituída no instante da consulta pelo texto que o usuário digitou até o momento.
+
+          Esta política é opcional. Se ela não for definida, nenhuma sugestão de URL será usada.
+
+          A sugestão de URL do Google pode ser especificada como: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Esta política só é respeitada se a política "DefaultSearchProviderEnabled" está ativada.</translation>
 <translation id="3864818549971490907">Configuração padrão de plug-ins</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3866530186104388232">Se esta política for configurada como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> mostrará os usuários existentes na tela de login e permitirá a escolha de um deles. Se a política for configurada como false, o <ph name="PRODUCT_OS_NAME" /> usará o prompt de nome de usuário/senha no login.</translation>
@@ -847,6 +889,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Cada entrada da lista contém um dicionário que deve incluir a identificação de extensão no campo 'extensão-id', e o URL de atualização no campo 'update-url'.</translation>
 <translation id="3891357445869647828">Ativar o JavaScript</translation>
+<translation id="3898060089412156345">Permitir ou negar a captura de áudio.
+
+      Se esta opção estiver ativada ou não configurada (padrão), o usuário receberá uma solicitação
+      para acesso de captura de áudio, exceto para URLs configurados na
+      lista AudioCaptureAllowedUrls, os quais terão acesso sem solicitação.
+
+      Quando esta política está desativada, o usuário nunca recebe solicitações. A
+      captura de áudio fica disponível apenas para URLs configurados em AudioCaptureAllowedUrls.
+      Em apps ARC, o microfone é permanentemente silenciado.
+
+      Esta política afeta todos os tipos de entradas de áudio, não somente o microfone integrado.</translation>
 <translation id="3907986150060929099">Definir as localidades recomendadas para uma sessão pública</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando definida como "true". Nesse caso, nenhum dado é transferido por upload para o Google Drive.
 
@@ -902,6 +955,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Quando esta política não está definida, é usado um período padrão.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="4105989332710272578">Desativar a aplicação da Transparência dos certificados para uma lista de URLs</translation>
 <translation id="4115096483386877940">Autorizar bloqueio da tela.
 
       Se esta política for definida como false, os usuários não poderão bloquear a tela (só será possível sair da sessão do usuário). Se esta configuração for definida como true ou não for definida, os usuários que fizeram a autenticação com uma senha poderão bloquear a tela.</translation>
@@ -939,6 +993,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Esta política é opcional. Se não for definida, a solicitação de pesquisa de imagens será enviada usando o método GET.
 
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="4309640770189628899">Se os pacotes de criptografia DHE em TLS estão ativados ou não</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4322842393287974810">Permitir que o app em Kiosk aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
@@ -1595,8 +1650,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se esta política não for definida e HomepageIsNewTabPage também não, o usuário poderá, ele mesmo, escolher a página inicial.
 
-          Esta política não está disponível em instâncias do Windows que não estejam vinculadas
-          a um domínio Active Directory.</translation>
+          Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio Active Directory.</translation>
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
@@ -1869,6 +1923,20 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Remover o aviso de SO não compatível</translation>
 <translation id="7912255076272890813">Configurar tipos permitidos de aplicativo/extensão</translation>
+<translation id="7914271217607102111">Permitir ou negar capturas de vídeo.
+
+      Se esta política está ativada ou não configurada (padrão), o usuário recebe uma solicitação para
+      acessar a captura de vídeo, exceto no caso de URLs configurados na lista
+      VideoCaptureAllowedUrls, os quais terão acesso sem solicitação.
+      Apps ARC terão acesso à câmera, caso tenham recebido
+      permissão.
+
+      Quando esta política está desativada, o usuário nunca recebe solicitações. A captura
+      de vídeo fica disponível apenas para URLs configurados em VideoCaptureAllowedUrls.
+      Apps ARC não terão acesso à câmera.
+
+      Fora dos apps ARC, esta política afeta todos os tipos de entrada de vídeo, e
+      não apenas a câmera integrada.</translation>
 <translation id="7915236031252389808">É possível especificar um URL para um arquivo proxy .pac aqui.
 
           Esta política só entrará em vigor se você tiver selecionado as configurações manuais de proxy em "Escolha como especificar as configurações do servidor proxy".
@@ -1945,9 +2013,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
           Se essa política não for definida, o modo de alto contraste ficará desativado inicialmente, mas o usuário poderá ativá-lo a qualquer momento.</translation>
-<translation id="815061180603915310">Se estiver ativada, esta política forçará a alteração do perfil para o modo temporário. Se esta política for especificada como uma política de SO (por exemplo GPO no Windows) ela será aplicada a todos os perfis no sistema. Se a política for definida como uma política de Nuvem, ela será aplicada apenas a um perfil acessado com uma conta gerenciada.
+<translation id="815061180603915310">Se estiver ativada, esta política forçará a alteração do perfil para o modo temporário. Se esta política for especificada como uma política de SO (por exemplo GPO no Windows) ela será aplicada a todos os perfis no sistema. Se a política for definida como uma política de nuvem, ela será aplicada apenas a um perfil acessado com uma conta gerenciada.
 
-      Neste modo, os dados de perfil são mantidos no disco apenas durante a sessão do usuário. Recursos como o histórico do navegador, as extensões e seus dados, os dados da Web, como cookies e bancos de dados da Web, não são preservados após o navegador ser fechado. No entanto, isso não impede que o usuário faça o download de dados para o disco manualmente, salve páginas ou as imprima.
+      Neste modo, os dados de perfil são mantidos no disco apenas durante a sessão do usuário. Recursos como o histórico do navegador, as extensões e as informações nelas contidas, os dados da Web, como cookies e bancos de dados não são mantidos após o navegador ser fechado. No entanto, isso não impede que o usuário faça o download de dados para o disco manualmente, salve páginas ou as imprima.
 
       Se o usuário tiver ativado a sincronização, todos esses dados serão preservados no perfil de sincronização dele, assim como acontece nos perfis regulares. O modo de navegação anônima também estará disponível, se não for explicitamente desativado pela política.
 
@@ -2014,7 +2082,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8312129124898414409">Permite que você defina se os websites estão autorizados a usar a geração de chaves. O uso da geração de chaves pode ser permitido para todos os websites ou negado para todos eles.
 
           Se esta política não for definida, será usada a política "BlockKeygen", mas o usuário poderá modificá-la.</translation>
-<translation id="8316806736175990584">Configura o tipo da página inicial padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as preferências dela. A página inicial pode ser definida como um URL especificado ou como uma página "Nova guia".
+<translation id="8316806736175990584">Configura o tipo da página inicial padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as preferências nela configuradas. A página inicial pode ser definida como um URL especificado ou como uma página "Nova guia".
 
           Se você ativar esta configuração, a página "Nova guia" sempre será usada como a página inicial, e o local do URL será ignorado.
 
@@ -2024,8 +2092,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se esta política não for definida, o usuário poderá, ele mesmo, escolher se a página inicial será a "Nova guia".
 
-          Esta política não está disponível em instâncias do Windows que não estejam vinculadas
-          a um domínio Active Directory.</translation>
+          Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio Active Directory.</translation>
 <translation id="8329984337216493753">Esta política é ativa somente no modo de varejo. Quando o DeviceIdleLogoutTimeout for especificado, esta política definirá a duração da caixa de aviso com contagem regressiva que será mostrada ao usuário antes da desconexão. O valor da política deve ser especificado em milésimos de segundos.</translation>
 <translation id="8344454543174932833">Importar favoritos do navegador padrão na primeira execução</translation>
 <translation id="8359734107661430198">Ativar a API ExampleDeprecatedFeature até 02/09/2008</translation>

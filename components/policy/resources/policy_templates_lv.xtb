@@ -465,6 +465,13 @@
 <translation id="2466131534462628618">Starpniekservera ignorēšana caurlaides lapas autentificēšanā</translation>
 <translation id="2482676533225429905">Vietējā ziņojumapmaiņa</translation>
 <translation id="2483146640187052324">Prognozēt tīkla darbības neatkarīgi no tīkla savienojuma</translation>
+<translation id="2486371469462493753">Atspējo Certificate Transparency prasību piemērošanu norādītajiem vietrāžiem URL.
+
+      Ar šo politiku tiek atļauts, ka saimniekdatoru nosaukumu sertifikāti norādītajos vietrāžos URL netiek atklāti, izmantojot Certificate Transparency. Tādējādi tiek atļauti sertifikāti, kas citādi būtu neuzticami, jo tie tika nepareizi publiski atklāti, lai turpinātu lietošanu, taču šādi ir grūtāk noteikt nepareizi izdotus sertifikātus šiem saimniekdatoriem.
+
+      URL šablons tiek formatēts atbilstoši šiem norādījumiem: https://www.chromium.org/administrators/url-blacklist-filter-format. Tomēr tiek ņemta vērā tikai saimniekdatora nosaukuma URL daļa, jo sertifikāti ir derīgi noteiktam saimniekdatora nosaukumam neatkarīgi no shēmas, porta vai ceļa. Saimniekdatoru aizstājējzīmes netiek pieņemtas.
+
+      Neesot iestatītai šai politikai, jebkurš sertifikāts, kura atklāšana tiek pieprasīta, izmantojot Certificate Transparency, tiks uzskatīts par neuzticamu, kad tas nav atklāts atbilstoši Certificate Transparency politikai.</translation>
 <translation id="2488010520405124654">Iespējot tīkla konfigurācijas uzvedni, kad dators darbojas bezsaistes režīmā.
 
       Ja šī politika nav iestatīta vai tai ir norādīta vērtība “True” un ierīces lokālajam kontam ir konfigurēta nulles aizkaves automātiskā pieteikšanās, kā arī ierīcei nav piekļuves internetam, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks rādīta tīkla konfigurācijas uzvedne.
@@ -492,6 +499,13 @@
 <translation id="2529880111512635313">Konfigurēt piespiedu kārtā instalēto lietotņu un paplašinājumu sarakstu</translation>
 <translation id="253135976343875019">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2552966063069741410">Laika josla</translation>
+<translation id="2562339630163277285">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota dinamiskās meklēšanas rezultātu iegūšanai. Vietrādī URL ir jābūt virknei <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja ievadīto tekstu.
+
+          Šī politika nav obligāta. Ja tā nav iestatīta, netiks nodrošināti dinamiskās meklēšanas rezultāti.
+
+          Google dinamiskās meklēšanas rezultātu vietrādi URL var norādīt šādi: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="2571066091915960923">Iespējo vai atspējo datu saspiešanas starpniekserveri un neļauj lietotājiem mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots vai atspējots, lietotāji nevar mainīt vai ignorēt šo iestatījumu.
@@ -503,6 +517,11 @@
 <translation id="262740370354162807">Iespējo dokumentu iesniegšanu pakalpojumā <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Iespējot izrunu</translation>
 <translation id="2650049181907741121">Pēc vāka aizvēršanas veicamā darbība</translation>
+<translation id="2655233147335439767">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota noklusējuma meklēšanai. Vietrādī URL ir jābūt virknei “<ph name="SEARCH_TERM_MARKER" />”, kas vaicājuma ievadīšanas brīdī tiks aizstāta ar lietotāja meklētajiem vārdiem.
+
+          Google meklēšanas vietrādi URL var norādīt šādi: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Šī opcija ir jāiestata tikai tad, kad ir iespējota politika DefaultSearchProviderEnabled (tikai tad tā tiks ievērota).</translation>
 <translation id="2660846099862559570">Nekad nelietot starpniekserveri</translation>
 <translation id="267596348720209223">Norāda meklētājprogrammas atbalstītos rakstzīmju kodējumus. Kodējumi ir kodu lapu nosaukumi, piemēram, UTF-8, GB2312 un ISO-8859-1. Tie tiek izmēģināti ievadītajā secībā.
 
@@ -511,6 +530,12 @@
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Tiek atspējota Diska izmantošana operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili.</translation>
 <translation id="268577405881275241">Iespējot datu saspiešanas starpniekservera funkciju</translation>
+<translation id="2692168654831544772">Atspējo ekrānuzņēmumu veidošanu.
+
+      Ja šī politika ir iespējota, ekrānuzņēmumus nevar veidot, izmantojot īsinājumtaustiņus vai paplašinājumu API.
+      Turklāt ekrānuzņēmumu veidošana ir atspējota ARC lietotnēm.
+
+      Ja šī politika ir atspējota vai nav norādīta, ekrānuzņēmumu veidošana ir atļauta.</translation>
 <translation id="2731627323327011390">Atspējot <ph name="PRODUCT_OS_NAME" /> sertifikātu izmantošanu ARC lietotnēm</translation>
 <translation id="2742843273354638707">Paslēpt Chrome interneta veikala lietotnes un kājenes saiti Jaunas cilnes lapā un <ph name="PRODUCT_OS_NAME" /> lietotņu palaidējā.
 
@@ -675,6 +700,11 @@
 <translation id="3072847235228302527">Ierīces lokālā konta pakalpojumu sniegšanas noteikumu iestatīšana</translation>
 <translation id="3096595567015595053">Iespējoto spraudņu saraksts</translation>
 <translation id="3101501961102569744">Izvēlas, kā jānorāda starpniekservera iestatījumi</translation>
+<translation id="3117676313396757089">Brīdinājums: DHE tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 57. versijas (aptuveni 2017. gada martā), un šī politika vairs nebūs spēkā.
+
+      Ja politika nav iestatīta vai ir iestatīta vērtība Nepatiesa, DHE šifra komplekti standartā TLS netiks iespējoti. Politikai var iestatīt vērtību Patiesa, lai iespējotu DHE šifra komplektus un saglabātu saderību ar novecojušu serveri. Tas ir pagaidu risinājums, un serveris ir jākonfigurē atkārtoti.
+
+      Ieteicams migrēt serveru datus uz ECDHE šifra komplektiem. Ja tie nav pieejami, ir jābūt iespējotam šifra komplektam, izmantojot RSA atslēgu apmaiņu.</translation>
 <translation id="3153348162326497318">Ļauj norādīt, kurus paplašinājumus lietotājiem NAV atļauts instalēt. Jau instalētie paplašinājumi, ja tie ir iekļauti melnajā sarakstā, tiks noņemti.
 
           Melnā saraksta vērtība * nozīmē to, ka melnajā sarakstā ir iekļauti visi paplašinājumi, ja vien tie nav īpaši iekļauti baltajā sarakstā.
@@ -763,6 +793,11 @@
 <translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
+<translation id="3337150554416948435">Ļauj iestatīt, vai vietnēm ir atļauts izsekot lietotāju fizisko atrašanās vietu. Lietotāju fiziskās atrašanās vietas izsekošana var tikt atļauta pēc noklusējuma, noraidīta pēc noklusējuma vai lietotājam var tikt vaicāts katru reizi, kad vietne pieprasa datus par fizisko atrašanās vietu.
+
+          Ja šai politikai ir iestatīta vērtība BlockGeolocation, atrašanās vietas datu kopīgošana ir aizliegta ARC lietotnēm.
+
+          Ja šī politika nav iestatīta, tiek lietota vērtība AskGeolocation un lietotājs to var mainīt.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
 
@@ -894,6 +929,13 @@
 
       Ja nav norādīts, variantu sēkas URL netiks mainīts.</translation>
 <translation id="3863409707075047163">Minimālā iespējotā SSL versija</translation>
+<translation id="3864020628639910082">Norāda tās meklētājprogrammas vietrādi URL, kas tiek izmantota ieteikumu rādīšanai. Vietrādī URL ir jābūt virknei <ph name="SEARCH_TERM_MARKER" />, kas vaicājuma ievadīšanas brīdī tiks aizvietota ar lietotāja tobrīd ievadīto tekstu.
+
+          Šī politika nav obligāta. Ja tā nav iestatīta, ieteikumu vietrādis URL netiks lietots.
+
+          Google ieteikumu vietrādi URL var norādīt šādi: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="3864818549971490907">Noklusējuma spraudņu iestatījums</translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="3866530186104388232">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> rāda esošos lietotājus pieteikšanās ekrānā un ļauj kādu izvēlēties. Ja politika ir iestatīta uz Aplama, produkts <ph name="PRODUCT_OS_NAME" /> pieteikšanās sesijai izmanto lietotājvārda/paroles uzvedni.</translation>
@@ -906,6 +948,17 @@
 
       Katrā saraksta ierakstā ir ietverta vārdnīca, kurai laukā “extension-id” ir jāiekļauj paplašinājuma ID, bet laukā “update-url”  — tā atjaunināšanas URL.</translation>
 <translation id="3891357445869647828">Iespējo JavaScript</translation>
+<translation id="3898060089412156345">Atļaujiet vai noraidiet audio ierakstīšanu.
+
+      Ja šī politika ir iespējota vai nav konfigurēta (noklusējuma iestatījums), lietotājam tiks pieprasīta piekļuve
+      audio ierakstīšanai, izņemot vietrāžus URL, kas konfigurēti sarakstā
+      AudioCaptureAllowedUrls, — piekļuve tiem tiks nodrošināta bez uzvednes parādīšanas.
+
+      Ja šī politika ir atspējota, lietotājam netiks parādīta uzvedne un audio
+      ierakstīšana būs pieejama tikai vietrāžiem URL, kas konfigurēti sarakstā AudioCaptureAllowedUrls.
+      ARC lietotnēm mikrofona skaņa ir pastāvīgi izslēgta.
+
+      Šī politika attiecas uz visiem audio ievades veidiem, nevis tikai uz iebūvēto mikrofonu.</translation>
 <translation id="3907986150060929099">Ieteikto lokalizāciju iestatīšana publiskai sesijai</translation>
 <translation id="391531815696899618">Tiek atspējota Google diska sinhronizēšana operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili, ja ir iestatīta vērtība Patiesa. Šajā gadījumā Google diskā netiek augšupielādēti dati.
 
@@ -961,6 +1014,7 @@
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
+<translation id="4105989332710272578">Atspējot Certificate Transparency piemērošanu norādītajiem vietrāžiem URL</translation>
 <translation id="4115096483386877940">Atļaut ekrāna bloķēšanu.
 
       Ja šai politikai ir iestatīta vērtība “Aplams”, lietotāji nevarēs bloķēt ekrānu (varēs tikai izrakstīties no lietotāja sesijas). Ja šī iestatījuma statuss ir “Patiess” vai tas nav iestatīts, lietotāji, kuri būs autentificējušies ar paroli, varēs atbloķēt ekrānu.</translation>
@@ -998,6 +1052,7 @@
           Šī politika nav obligāta. Ja tā nav iestatīta, attēla meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.
 
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
+<translation id="4309640770189628899">DHE šifra komplektu iespējošana standartā TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vai jaunāka versija</translation>
 <translation id="4322842393287974810">Atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
@@ -2043,6 +2098,20 @@
       Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku DeviceAppPack.</translation>
 <translation id="7882890448959833986">Brīdinājuma par neatbalstītu OS rādīšanas apturēšana</translation>
 <translation id="7912255076272890813">Atļauto lietotņu/paplašinājumu veidu konfigurēšana</translation>
+<translation id="7914271217607102111">Atļaujiet vai noraidiet video ierakstīšanu.
+
+      Ja šī politika ir iespējota vai nav konfigurēta (noklusējuma iestatījums), lietotājam tiks pieprasīta piekļuve
+      video ierakstīšanai, izņemot vietrāžus URL, kas konfigurēti sarakstā
+      VideoCaptureAllowedUrls, — piekļuve tiem tiks nodrošināta bez uzvednes parādīšanas.
+      ARC lietotnes varēs piekļūt kamerai, ja tām būs piešķirta attiecīga
+      atļauja.
+
+      Ja šī politika ir atspējota, lietotājam nekad netiks parādīta uzvedne un video
+      ierakstīšana būs pieejama tikai vietrāžiem URL, kas konfigurēti sarakstā VideoCaptureAllowedUrls.
+      ARC lietotnes nevarēs piekļūt kamerai.
+
+      Neskaitot ARC lietotnes, šī politika attiecas uz visiem video ievades veidiem,
+      nevis tikai uz iebūvēto kameru.</translation>
 <translation id="7915236031252389808">Šeit varat norādīt starpniekservera .pac faila vietrādi URL.
 
           Šī politika ir spēkā tikai tad, ja iestatījumā “Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi” ir atlasīti manuālie starpniekserveru iestatījumi.

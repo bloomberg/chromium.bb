@@ -14,7 +14,7 @@
 
       Pokud je tato zásada nastavena na hodnotu False nebo nastavena není, soubory cookie vytvořené poskytovatelem identity se do profilu uživatele přenesou pouze při prvním přihlášení do zařízení.
 
-      Tato zásada má vliv pouze na uživatele, jejichž doména odpovídá doméně, ve které je zařízení zaregistrováno.  V případě ostatních uživatelů se soubory cookie vytvořené poskytovatelem identity do profilu uživatele přenesou pouze při prvním přihlášení do zařízení.</translation>
+      Tato zásada má vliv pouze na uživatele, jejichž doména odpovídá doméně, ve které je zařízení zaregistrováno. V případě ostatních uživatelů se soubory cookie vytvořené poskytovatelem identity do profilu uživatele přenesou pouze při prvním přihlášení do zařízení.</translation>
 <translation id="1040446814317236570">Před odesláním skriptu PAC z adres se schématem https:// odstraňovat citlivá data</translation>
 <translation id="1044878202534415707">Nahlášení statistik hardwaru, například využití CPU/RAM.
 
@@ -432,6 +432,13 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="2466131534462628618">Ověření captive portálu ignoruje proxy server</translation>
 <translation id="2482676533225429905">Zasílání nativních zpráv</translation>
 <translation id="2483146640187052324">Předvídat síťové akce u všech síťových připojení</translation>
+<translation id="2486371469462493753">Deaktivuje vynucování požadavků zásad Certificate Transparency pro uvedené adresy URL.
+
+      Tato zásada povolí použití certifikátů pro názvy hostitelů v uvedených adresách URL bez zveřejnění prostřednictvím Certificate Transparency. Bude tak možné používat certifikáty, které by jinak byly považovány za nedůvěryhodné, protože nebyly zveřejněny. Bude však obtížnější odhalit zneužití certifikátů těchto hostitelů.
+
+      Vzor adres URL musí být naformátován podle pokynů na stránce https://www.chromium.org/administrators/url-blacklist-filter-format. Protože jsou však certifikáty pro určitý název hostitele platné bez ohledu na schéma, port nebo cestu, uvažuje se z adresy URL pouze část s názvem hostitele. V názvu hostitele nejsou podporovány zástupné znaky.
+
+      Pokud tato zásada není nastavena, každý certifikát, u kterého je vyžadováno zveřejnění prostřednictvím Certificate Transparency, ale který není zveřejněn v souladu se zásadou Certificate Transparency, bude považován za nedůvěryhodný.</translation>
 <translation id="2488010520405124654">Povolit zobrazení výzvy ke konfiguraci sítě v režimu offline.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu Pravda, v zařízení je nakonfigurován místní účet s automatickým přihlašováním bez prodlevy a zařízení není připojeno k internetu, zobrazí systém <ph name="PRODUCT_OS_NAME" /> výzvu ke konfiguraci sítě.
@@ -459,6 +466,13 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="2529880111512635313">Konfigurace seznamu aplikací a rozšíření, jejichž instalace je vynucena</translation>
 <translation id="253135976343875019">Prodleva upozornění na nečinnost při napájení ze sítě</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
+<translation id="2562339630163277285">Určuje adresu URL vyhledávače, který bude použit k získání výsledků dynamického vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />. Tento řetězec bude během dotazování nahrazen textem, který do daného okamžiku zadal uživatel.
+
+          Tato zásada je volitelná. Pokud ji nenastavíte, výsledky dynamického vyhledávání se nebudou zobrazovat.
+
+          Adresu URL Googlu pro výsledky dynamického vyhledávání lze zadat takto: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="2571066091915960923">Aktivuje nebo deaktivuje datovou kompresi na proxy serveru a zabrání uživatelům toto nastavení změnit.
 
       Pokud tuto zásadu aktivujete nebo deaktivujete, uživatelé je nebudou moci změnit ani přepsat.
@@ -470,6 +484,11 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
 <translation id="262740370354162807">Povolí odesílání dokumentů do služby <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivovat hlasovou odezvu</translation>
 <translation id="2650049181907741121">Akce při zavření víka</translation>
+<translation id="2655233147335439767">Určuje adresu URL vyhledávače, který bude použit při výchozím vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />, který bude během dotazování nahrazen vyhledávacími dotazy uživatele.
+
+          Adresu URL Googlu pro vyhledávání lze zadat takto: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Tato možnost bude respektována, pouze pokud je aktivována zásada DefaultSearchProviderEnabled, a v tomto případě musí být nastavena.</translation>
 <translation id="2660846099862559570">Nikdy nepoužívat proxy server</translation>
 <translation id="267596348720209223">Určuje kódování znaků podporovaná poskytovatelem vyhledávání. Kódování jsou názvy stránek kódů, například UTF-8, GB2312 nebo ISO-8859-1. Budou vyzkoušena v uvedeném pořadí.
 
@@ -478,6 +497,12 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
           Zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Zakáže v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> přístup k Disku.</translation>
 <translation id="268577405881275241">Aktivace funkce datové komprese proxy serveru</translation>
+<translation id="2692168654831544772">Zakáže pořizování snímků obrazovky.
+
+      Je-li tato zásada povolena, nelze pořizovat snímky obrazovky pomocí klávesových zkratek ani pomocí rozhraní API rozšíření.
+      Pořizování snímků obrazovky je zakázáno i u aplikací ARC.
+
+      Pokud je tato zásada zakázána nebo není nastavena, je pořizování snímků obrazovky povoleno.</translation>
 <translation id="2731627323327011390">Zakázat aplikacím ARC používání certifikátů systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="2742843273354638707">Skryje ze stránky Nová karta a ze spouštěče aplikací systému <ph name="PRODUCT_OS_NAME" /> aplikaci Internetový obchod Chrome a odkaz na zápatí.
 
@@ -641,6 +666,11 @@ Pokud toto nastavení zakážete nebo ponecháte bez nastavení, stránky ověř
 <translation id="3072847235228302527">Nastavit smluvní podmínky pro účet v zařízení</translation>
 <translation id="3096595567015595053">Seznam aktivovaných pluginů</translation>
 <translation id="3101501961102569744">Zvolit způsob konfigurace nastavení proxy serveru</translation>
+<translation id="3117676313396757089">Upozornění: Po verzi 57 (přibližně v březnu 2017) bude šifrovací algoritmus DHE z prohlížeče <ph name="PRODUCT_NAME" /> zcela odstraněn a tato zásada přestane fungovat.
+
+      Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, v protokolu TLS nebudou povoleny šifrovací sady DHE. Nastavením této zásady na hodnotu true je možné šifrovací sady DHE povolit a zajistit tak kompatibilitu se zastaralým serverem. Toto nastavení by však mělo být použito pouze jako dočasné nouzové opatření a server by měl být překonfigurován.
+
+      Doporučujeme migrovat servery na šifrovací sady ECDHE. Pokud nejsou k dispozici, měla by být aktivována šifrovací sada s výměnou klíčů RSA.</translation>
 <translation id="3153348162326497318">Umožňuje určit rozšíření, která uživatelé NEMOHOU nainstalovat. Pokud se na seznamu zakázaných vyskytne rozšíření, které již bylo nainstalováno, bude odebráno.
 
           Pokud je na seznamu zakázaných rozšíření uvedena hodnota *, znamená to, že jsou zakázána všechna rozšíření, která nejsou explicitně uvedena na seznamu povolených rozšíření.
@@ -729,6 +759,11 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
 <translation id="3322771899429619102">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno generovat klíče. Vzory adres URL uvedené v zásadě KeygenBlockedForUrls tyto výjimky přepíšou.
 
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
+<translation id="3337150554416948435">Umožňuje nastavit, zda weby mohou sledovat fyzickou polohu uživatelů. Sledování fyzické polohy uživatelů lze ve výchozím nastavení povolit nebo zakázat a také lze nastavit, aby se při každém pokusu webových stránek o sledování fyzické polohy uživateli zobrazila výzva.
+
+          Pokud je tato zásada nastavena na hodnotu „BlockGeolocation“, je sdílení polohy pro aplikace ARC zakázáno.
+
+          Je-li tato zásada ponechána nenastavená, použije se hodnota „AskGeolocation“ a uživatel ji bude moci změnit.</translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
 <translation id="3417418267404583991">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, povolí systém <ph name="PRODUCT_OS_NAME" /> přihlášení hosta. Přihlášení hosta jsou anonymní uživatelské relace a nevyžadují heslo.
 
@@ -861,6 +896,13 @@ Pokud je toto nastavení ponecháno nenakonfigurované, nebudou ohledně přijat
 
       Pokud tato zásada není nastavena, zůstane adresa URL počáteční hodnoty variant nezměněna.</translation>
 <translation id="3863409707075047163">Minimální aktivovaná verze protokolu SSL</translation>
+<translation id="3864020628639910082">Určuje adresu URL vyhledávače, který bude použit k získání návrhů pro vyhledávání. Adresa URL by měla obsahovat řetězec <ph name="SEARCH_TERM_MARKER" />. Tento řetězec bude během dotazování nahrazen textem, který do daného okamžiku zadal uživatel.
+
+          Tato zásada je volitelná. Pokud není nastavena, nebude použita žádná adresa URL pro návrhy.
+
+          Adresu URL Googlu pro návrhy lze zadat takto: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="3864818549971490907">Výchozí nastavení pluginů</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3866530186104388232">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, zobrazí systém <ph name="PRODUCT_OS_NAME" /> na přihlašovací obrazovce existující uživatele a umožní vybrat jednoho z nich. Je-li tato zásada nastavena na hodnotu False, zobrazí systém <ph name="PRODUCT_OS_NAME" /> výzvu k zadání uživatelského jména a hesla.</translation>
@@ -873,6 +915,14 @@ Není-li tato zásada nastavena, výchozí frekvence jsou tři minuty. Minimáln
 
       Každý záznam v seznamu obsahuje adresář, který musí zahrnovat ID rozšíření v poli „extension-id“ a jeho webovou adresu pro aktualizace v poli „update-url“.</translation>
 <translation id="3891357445869647828">Povolit JavaScript</translation>
+<translation id="3898060089412156345">Povoluje nebo zakazuje záznam zvuku.
+
+Pokud je tato zásada aktivována nebo není nakonfigurována (výchozí nastavení), bude uživatel vyzván k udělení přístupu pro záznam zvuku (s výjimkou adres URL nakonfigurovaných v seznamu AudioCaptureAllowedUrls, kterým bude přístup udělen bez vyzvání).
+
+Pokud je tato zásada deaktivována, uživateli se výzva nikdy nezobrazí a záznam zvuku bude k dispozici pouze u adres URL uvedených na seznamu AudioCaptureAllowedUrls.
+U aplikací ARC je mikrofon trvale ztlumen.
+
+Tato zásada ovlivňuje kromě integrovaného mikrofonu i všechny ostatní zvukové vstupy.</translation>
 <translation id="3907986150060929099">Nastavit doporučené jazyky pro veřejnou relaci</translation>
 <translation id="391531815696899618">Pokud má hodnotu True, deaktivuje synchronizaci aplikace Soubory systému <ph name="PRODUCT_OS_NAME" /> s Diskem Google. Na Disk Google se v tomto případě nebudou nahrávat žádná data.
 
@@ -928,6 +978,7 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
           Není-li tato zásada nastavena, bude použita výchozí doba.
 
           Hodnota zásady se zadává v milisekundách.</translation>
+<translation id="4105989332710272578">Deaktivovat vynucování zásad Certificate Transparency pro seznam adres URL</translation>
 <translation id="4115096483386877940">Povolit uzamknutí obrazovky.
 
 Pokud je tato zásada nastavena na hodnotu false, uživatelé nebudou moci uzamknout obrazovku (k dispozici bude pouze odhlášení od uživatelské relace). Pokud je tato zásada nastavena na hodnotu true nebo není nastavena, uživatelé ověření pomocí hesla budou moci obrazovku uzamknout.</translation>
@@ -964,6 +1015,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání podle obrázku bude odeslán pomocí metody GET.
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
+<translation id="4309640770189628899">Zda jsou v protokolu TLS povoleny šifrovací sady DHE</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 nebo novější</translation>
 <translation id="4322842393287974810">Povolit automaticky spouštěné terminálové aplikaci s nulovým zpožděním ovládat verzi systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
@@ -1994,6 +2046,15 @@ Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
 <translation id="7882890448959833986">Potlačit upozornění ohledně nepodporovaného operačního systému</translation>
 <translation id="7912255076272890813">Konfigurovat povolené typy aplikací nebo rozšíření</translation>
+<translation id="7914271217607102111">Povoluje nebo zakazuje záznam videa.
+
+Pokud je tato zásada aktivní nebo není nakonfigurována (výchozí nastavení), bude uživatel vyzván k udělení přístupu pro záznam videa (s výjimkou adres URL nakonfigurovaných v seznamu VideoCaptureAllowedUrls, kterým bude přístup udělen bez vyzvání).
+Aplikace ARC budou moci získat přístup ke kameře, pokud jste jim udělili oprávnění.
+
+Pokud je tato zásada deaktivována, uživateli se výzva nikdy nezobrazí a záznam videa bude k dispozici pouze u adres URL uvedených na seznamu VideoCaptureAllowedUrls.
+Aplikace ARC ke kameře přístup mít nebudou.
+
+Mimo aplikace ARC má tato zásada dopad na všechny typy vstupů videa, nejen na integrovanou kameru.</translation>
 <translation id="7915236031252389808">Zde můžete zadat adresu URL souboru PAC proxy serveru.
 
           Tato zásada bude použita pouze v případě, že jste v části „Zvolte způsob konfigurace nastavení proxy serveru“ zvolili ruční nastavení proxy serveru.

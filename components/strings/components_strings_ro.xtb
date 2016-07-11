@@ -34,6 +34,7 @@
 <translation id="1228893227497259893">Identificator greșit pentru entitate</translation>
 <translation id="1232569758102978740">Fără titlu</translation>
 <translation id="1254117744268754948">Alegeți dosarul</translation>
+<translation id="1264126396475825575">Raport de blocare creat <ph name="CRASH_TIME" /> (nu a fost încă încărcat sau ignorat)</translation>
 <translation id="1285320974508926690">Nu traduce niciodată acest site</translation>
 <translation id="129553762522093515">Închise recent</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Șterge cookie-urile<ph name="END_LINK" /></translation>
@@ -65,12 +66,14 @@
 <translation id="1655462015569774233">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat ieri. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat acum # zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Certificatul său de securitate a expirat acum # de zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}}</translation>
 <translation id="1676269943528358898">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Google Chrome a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Google Chrome a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
+<translation id="1701955595840307032">Obține sugestii de conținut</translation>
 <translation id="1706954506755087368">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este mâine. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este în viitor, peste # zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Data de emitere a certificatului său de securitate este în viitor, peste # de zile. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator.}}</translation>
 <translation id="1710259589646384581">Sistem de operare</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Încearcă să contactezi administratorul sistemului.</translation>
 <translation id="17513872634828108">File deschise</translation>
 <translation id="1753706481035618306">Numărul paginii</translation>
+<translation id="1761412452051366565">Pentru a obține sugestii de conținut personalizat de la Google, activează sincronizarea.</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualizează expresia de acces pentru sincronizare.</translation>
@@ -92,6 +95,7 @@
 <translation id="2065985942032347596">Autentificare obligatorie</translation>
 <translation id="2079545284768500474">Anulează</translation>
 <translation id="20817612488360358">Setările proxy de sistem sunt setate pentru a fi utilizate, dar o configurație explicită pentru proxy este, de asemenea, specificată.</translation>
+<translation id="2086652334978798447">Pentru a obține sugestii de conținut personalizat de la Google, conectează-te la Chrome.</translation>
 <translation id="2089090684895656482">Mai puține</translation>
 <translation id="2094505752054353250">Nepotrivire domeniu</translation>
 <translation id="2096368010154057602">Departament</translation>
@@ -120,6 +124,7 @@
 <translation id="2354001756790975382">Alte marcaje</translation>
 <translation id="2357783041215512127">Plătește cu <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Continuă</translation>
+<translation id="2365563543831475020">Raportul de blocare creat <ph name="CRASH_TIME" /> nu a fost încărcat</translation>
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="237718015863234333">Nu sunt disponibile interfețe de utilizare alternative</translation>
 <translation id="2384307209577226199">Setare prestabilită la nivel de companie</translation>
@@ -230,6 +235,7 @@
 <translation id="3452404311384756672">Interval de preluare:</translation>
 <translation id="3462200631372590220">Ascundeți detaliile avansate</translation>
 <translation id="3479539252931486093">A fost o situație neașteptată? <ph name="BEGIN_LINK" />Anunță-ne<ph name="END_LINK" /></translation>
+<translation id="348000606199325318">ID blocare <ph name="CRASH_LOCAL_ID" /> (ID server: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">Momentan, nu ți-am putut contacta părintele. Încearcă din nou.</translation>
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
@@ -385,6 +391,7 @@
 <translation id="5430298929874300616">Elimină marcajul</translation>
 <translation id="5431657950005405462">Fișierul nu a fost găsit</translation>
 <translation id="5435775191620395718">Se afișează istoricul de pe acest dispozitiv. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" />.</translation>
+<translation id="5437003064129843501">Momentan, sugestiile de conținut personalizat sunt dezactivate, deoarece datele sincronizate sunt protejate cu o expresie de acces personalizată.</translation>
 <translation id="5439770059721715174">Eroare de validare a schemei la „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">Această pagină de pe <ph name="HOST_NAME" /> nu poate fi găsită</translation>
 <translation id="5455374756549232013">Marcaj temporal greșit pentru politică</translation>
@@ -430,6 +437,7 @@
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="5990559369517809815">Solicitările trimise la server au fost blocate de o extensie.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}few{Pagina #}other{Pagina #}}</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="604124094241169006">Automat</translation>
 <translation id="6042308850641462728">Mai multe</translation>
@@ -522,7 +530,9 @@
 <translation id="7269802741830436641">Această pagină web are o buclă de redirecționare</translation>
 <translation id="7275334191706090484">Marcaje gestionate</translation>
 <translation id="7298195798382681320">Recomandate</translation>
+<translation id="7301833672208172928">Activează sincronizarea istoricului</translation>
 <translation id="7334320624316649418">&amp;Repetați reordonarea</translation>
+<translation id="733923710415886693">Certificatul serverului nu a fost dezvăluit folosind Transparența certificatului.</translation>
 <translation id="7353601530677266744">Linie de comandă</translation>
 <translation id="7372973238305370288">rezultat al căutării</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -587,6 +597,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7951415247503192394">(32 de biți)</translation>
 <translation id="7956713633345437162">Marcaje mobile</translation>
 <translation id="7961015016161918242">Niciodată</translation>
+<translation id="7962083544045318153">ID blocare <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Tradu întotdeauna din <ph name="ORIGINAL_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nespecificată</translation>
 <translation id="8012647001091218357">Momentan, nu ți-am putut contacta părinții. Încearcă din nou.</translation>
@@ -638,6 +649,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresa DNS&lt;/abbr&gt; pentru <ph name="HOST_NAME" /> nu a putut fi găsită. Se diagnostichează problema.</translation>
 <translation id="8741995161408053644">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
+<translation id="8790687370365610530">Pentru a obține sugestii de conținut personalizat de la Google, activează sincronizarea istoricului.</translation>
 <translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8804164990146287819">Politica de confidențialitate</translation>
 <translation id="8820817407110198400">Marcaje</translation>
@@ -660,6 +672,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8987927404178983737">Lună</translation>
 <translation id="8988760548304185580">Introdu data de expirare și codul CVC alcătuit din 3 cifre înscris pe spatele cardului</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
+<translation id="8997023839087525404">Serverul a prezentat un certificat care nu a fost dezvăluit public folosind politica privind Transparența certificatului. Aceasta este o cerință pentru anumite certificate, pentru a se asigura că sunt de încredere și pentru protecție împotriva atacatorilor.</translation>
 <translation id="9001074447101275817">Pentru a accesa proxy-ul <ph name="DOMAIN" />, trebuie să introduci un nume de utilizator și o parolă.</translation>
 <translation id="901974403500617787">Marcajele care se aplică la nivel de sistem pot fi create numai de proprietar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Această pagină a fost tradusă în <ph name="TARGET_LANGUAGE" /></translation>

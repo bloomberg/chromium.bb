@@ -14,7 +14,7 @@
 
       Wanneer dit beleid is ingesteld op 'onwaar' of wanneer er geen waarde voor dit beleid is opgegeven, worden cookies die door de IdP zijn ingesteld, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.
 
-      Dit beleid is alleen van invloed op gebruikers waarvan het domein overeenkomst met het inschrijvingsdomein van het apparaat. Voor alle overige gebruikers worden cookies die zijn ingesteld door de IdP, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.</translation>
+      Dit beleid is alleen van invloed op gebruikers waarvan het domein overeenkomt met het inschrijvingsdomein van het apparaat. Voor alle overige gebruikers worden cookies die zijn ingesteld door de IdP, alleen de eerste keer dat de gebruiker inlogt op een apparaat, overgedragen naar het profiel van de gebruiker.</translation>
 <translation id="1040446814317236570">Verwijderen van gegevens uit PAC-URL's toestaan (voor https://)</translation>
 <translation id="1044878202534415707">Hardwarestatistieken melden, zoals CPU-/RAM-gebruik.
 
@@ -459,6 +459,13 @@
 <translation id="2466131534462628618">Captive portal-verificatie negeert proxyserver</translation>
 <translation id="2482676533225429905">Systeemeigen berichten</translation>
 <translation id="2483146640187052324">Netwerkacties voorspellen voor elke netwerkverbinding</translation>
+<translation id="2486371469462493753">Hiermee schakel je de handhaving van de Certificaattransparantie-vereisten voor de vermelde URL's uit.
+
+      Dit beleid staat toe dat de certificaten voor de hostnamen in de opgegeven URL's niet bekend worden gemaakt via Certificaattransparantie. Zodoende kun je certificaten blijven gebruiken die anders niet zouden worden vertrouwd omdat ze niet goed openbaar zijn gemaakt. Hierdoor is het echter wel moeilijker om verkeerd uitgegeven certificaten voor deze hosts te detecteren.
+
+      Een URL-patroon wordt ingedeeld overeenkomstig https://www.chromium.org/administrators/url-blacklist-filter-format. Aangezien de certificaten geldig zijn voor een bepaalde hostnaam (los van het schema, de poort of het pad), wordt alleen rekening gehouden met het hostnaamgedeelte van de URL. Hosts met jokertekens worden niet ondersteund.
+
+      Als dit beleid niet is ingesteld, worden alle certificaten die bekend moeten worden gemaakt via Certificaattransparantie, niet vertrouwd als ze niet bekend zijn gemaakt overeenkomstig het beleid voor Certificaattransparantie.</translation>
 <translation id="2488010520405124654">Prompt voor netwerkconfiguratie inschakelen als je offline bent.
 
       Als dit beleid niet is ingesteld of is ingesteld op 'waar' en een lokaal account op het apparaat is geconfigureerd om automatisch en zonder vertraging in te loggen en het apparaat geen toegang heeft tot internet, geeft <ph name="PRODUCT_OS_NAME" /> een prompt weer voor netwerkconfiguratie.
@@ -486,6 +493,13 @@
 <translation id="2529880111512635313">De lijst met automatisch geïnstalleerde apps en extensies configureren</translation>
 <translation id="253135976343875019">Inactieve waarschuwingsvertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2552966063069741410">Tijdzone</translation>
+<translation id="2562339630163277285">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instantresultaten te leveren. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
+
+          Dit beleid is optioneel. Als het beleid niet is ingesteld, worden er geen instantresultaten geleverd.
+
+          De URL voor de instantresultaten van Google kan worden opgegeven als: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="2571066091915960923">Schakelt de proxy voor het comprimeren van gegevens in of uit en voorkomt dat gebruikers deze instelling kunnen wijzigen.
 
       Als je deze instelling in- of uitschakelt, kunnen gebruikers deze instelling niet wijzigen of overschrijven.
@@ -497,6 +511,11 @@
 <translation id="262740370354162807">Verzenden van documenten naar <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>
 <translation id="2633084400146331575">Gesproken feedback inschakelen</translation>
 <translation id="2650049181907741121">Actie die wordt ondernomen wanneer de gebruiker de klep sluit</translation>
+<translation id="2655233147335439767">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt wanneer je een standaardzoekopdracht uitvoert. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER" />' bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de termen waarnaar de gebruiker zoekt.
+
+          De zoek-URL van Google kan worden opgegeven als: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Deze optie moet worden ingesteld wanneer het beleid 'DefaultSearchProviderEnabled' is ingeschakeld en wordt alleen gerespecteerd als dit het geval is.</translation>
 <translation id="2660846099862559570">Nooit een proxy gebruiken</translation>
 <translation id="267596348720209223">Hiermee worden de tekencoderingen gespecificeerd die door de zoekprovider worden ondersteund. Deze coderingen zijn codepaginanamen zoals UTF-8, GB2312 en ISO-8859-1. Ze worden getest in de volgorde waarin ze worden opgegeven.
 
@@ -505,6 +524,12 @@
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="2682225790874070339">Schakelt Drive uit in de app Bestanden van <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">De proxyfunctie voor het comprimeren van gegevens inschakelen</translation>
+<translation id="2692168654831544772">Hiermee schakel je het maken van screenshots uit.
+
+      Als deze optie is ingeschakeld, kunnen er geen screenshots worden gemaakt met de sneltoetsen op het toetsenbord of de extensie-API's.
+      Daarnaast is de screenshotfunctie uitgeschakeld voor ARC-apps.
+
+      Als deze optie is uitgeschakeld of niet is opgegeven, mogen er screenshots worden gemaakt.</translation>
 <translation id="2731627323327011390">Gebruik van certificaten van <ph name="PRODUCT_OS_NAME" /> voor ARC-apps uitschakelen</translation>
 <translation id="2742843273354638707">De app en voettekstlink voor de Chrome Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher van <ph name="PRODUCT_OS_NAME" />.
 
@@ -669,6 +694,11 @@
 <translation id="3072847235228302527">De Servicevoorwaarden instellen voor een apparaat-lokaal account</translation>
 <translation id="3096595567015595053">Lijst met ingeschakelde plug-ins</translation>
 <translation id="3101501961102569744">Kies hoe je proxyserverinstellingen wilt specificeren</translation>
+<translation id="3117676313396757089">Waarschuwing: DHE wordt na versie 57 (rond maart 2017) volledig van <ph name="PRODUCT_NAME" /> verwijderd en dit beleid werkt vanaf dat moment niet meer.
+
+      Als het beleid niet is ingesteld of is ingesteld op 'onwaar', worden de DHE-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'waar' om DHE-coderingssuites in te schakelen en de compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.
+
+      Servers kunnen het beste worden gemigreerd naar ECDHE-coderingssuites. Indien deze niet beschikbaar zijn, moet je ervoor zorgen dat er een coderingssuite is ingeschakeld die gebruikmaakt van RSA-sleuteluitwisseling.</translation>
 <translation id="3153348162326497318">Hiermee kun je specificeren welke extensies gebruikers NIET kunnen installeren. Als geïnstalleerde extensies op de zwarte lijst voorkomen, worden ze verwijderd.
 
           De waarde '*' van een zwarte lijst houdt in dat alle extensies op de zwarte lijst worden geplaatst, tenzij ze expliciet op de witte lijst worden vermeld.
@@ -757,6 +787,11 @@
 <translation id="3322771899429619102">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die sleutels mogen genereren. Als een URL-patroon in 'KeygenBlockedForUrls' staat, worden deze uitzonderingen daardoor overschreven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultKeygenSetting' (als dit is ingesteld), of anders op basis van de persoonlijke configuratie van de gebruiker.</translation>
+<translation id="3337150554416948435">Hiermee kun je instellen of websites de fysieke locatie van gebruikers mogen bijhouden. Het bijhouden van de fysieke locatie van gebruikers kan standaard worden toegestaan, standaard worden geweigerd of dit kan de gebruiker elke keer worden gevraagd wanneer een website zijn fysieke locatie opvraagt.
+
+          Als dit beleid is ingesteld op 'BlockGeolocation', is het voor ARC-apps niet toegestaan om de locatie delen.
+
+          Als dit beleid niet wordt ingesteld, wordt 'AskGeolocation' gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
 <translation id="3417418267404583991">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> gasten toe zich aan te melden. Gastensessies zijn anonieme sessies waar geen wachtwoord voor hoeft te worden ingevoerd.
 
@@ -888,6 +923,13 @@
 
       Indien deze niet is opgegeven, wordt de URL van de varianten-seed niet gewijzigd.</translation>
 <translation id="3863409707075047163">Minimale SSL-versie ingeschakeld</translation>
+<translation id="3864020628639910082">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om zoeksuggesties te leveren. De URL moet de tekenreeks '<ph name="SEARCH_TERM_MARKER" />' bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
+
+          Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt er geen suggestie-URL gebruikt.
+
+          De suggestie-URL van Google kan worden opgegeven als: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="3864818549971490907">Standaardinstelling voor plug-ins</translation>
 <translation id="3866249974567520381">Beschrijving</translation>
 <translation id="3866530186104388232">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, worden in het aanmeldscherm van <ph name="PRODUCT_OS_NAME" /> bestaande gebruikers weergegeven die kunnen worden geselecteerd. Als dit beleid is ingesteld op 'false', krijgt de gebruiker bij aanmelding op <ph name="PRODUCT_OS_NAME" /> de vraag de combinatie van gebruikersnaam/wachtwoord in te voeren.</translation>
@@ -902,6 +944,20 @@
 
       Elke lijstvermelding bevat een woordenboek dat de extensie-ID moet bevatten in het veld 'Extensie-ID' en de update-URL in het veld 'Update-URL'.</translation>
 <translation id="3891357445869647828">JavaScript inschakelen</translation>
+<translation id="3898060089412156345">Het vastleggen van audio toestaan of weigeren.
+
+      Als deze optie is ingeschakeld of niet is geconfigureerd (standaard),
+      wordt de gebruiker gevraagd om toegang voor het vastleggen van audio,
+      met uitzondering van URL's die in de lijst AudioCaptureAllowedUrls zijn
+      geconfigureerd. Deze krijgen toegang zonder prompt.
+
+      Als dit beleid is uitgeschakeld, wordt de gebruiker hier nooit naar gevraagd
+      en is het vastleggen van audio alleen beschikbaar voor URL's die in
+      AudioCaptureAllowedUrls zijn geconfigureerd.
+      Voor ARC-apps is de microfoon permanent gedempt.
+
+      Dit beleid is van invloed op alle typen audio-invoer en niet alleen op de
+      ingebouwde microfoon.</translation>
 <translation id="3907986150060929099">De aanbevolen talen instellen voor een openbare sessie</translation>
 <translation id="391531815696899618">Hiermee wordt synchronisatie van Google Drive in de app Bestanden van <ph name="PRODUCT_OS_NAME" /> uitgeschakeld wanneer de optie is ingesteld op 'waar'. In dat geval worden geen gegevens naar Google Drive geüpload.
 
@@ -965,6 +1021,7 @@
           Als dit beleid niet is ingesteld, wordt een standaardtijdsduur gebruikt.
 
           De beleidswaarde moet in milliseconden worden opgegeven.</translation>
+<translation id="4105989332710272578">Handhaving van Certificaattransparantie voor een lijst met URL's uitschakelen</translation>
 <translation id="4115096483386877940">Schermvergrendeling toestaan.
 
       Als dit beleid wordt ingesteld op 'false' (onwaar), kunnen gebruikers het scherm niet vergrendelen (alleen afmelden bij de gebruikerssessie is mogelijk). Als deze instelling wordt ingesteld op 'true' (waar) of niet wordt ingesteld, kunnen gebruikers die verificatie met een wachtwoord hebben uitgevoerd, het scherm vergrendelen.</translation>
@@ -1002,6 +1059,7 @@
           Dit beleid is optioneel. Als het beleid niet is ingesteld, wordt de voorgestelde zoekopdracht verzonden met de GET-methode.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="4309640770189628899">Of DHE-coderingssuites in TLS zijn ingeschakeld</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 of hoger</translation>
 <translation id="4322842393287974810">Toestaan dat de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie beheert</translation>
 <translation id="4325690621216251241">Een afmeldknop toevoegen aan de systeembalk</translation>
@@ -2034,6 +2092,21 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Hiermee bepaal je de ID van de extensie die moet worden gebruikt als schermbeveiliging voor het inlogvenster. De extensie moet onderdeel zijn van het AppPack dat is geconfigureerd voor dit domein via het beleid DeviceAppPack.</translation>
 <translation id="7882890448959833986">De waarschuwing voor een niet-ondersteund besturingssysteem negeren</translation>
 <translation id="7912255076272890813">Toegestane typen apps/extensies configureren</translation>
+<translation id="7914271217607102111">Het vastleggen van video toestaan of weigeren.
+
+      Als dit beleid is ingeschakeld of niet is geconfigureerd (standaard), wordt de
+      gebruiker gevraagd om toegang voor het vastleggen van video, met
+      uitzondering van URL's die in de lijst VideoCaptureAllowedUrls zijn
+      geconfigureerd. Deze krijgen toegang zonder prompt. ARC-apps kunnen
+      toegang tot de camera krijgen als de benodigde rechten zijn verleend.
+
+      Als dit beleid is uitgeschakeld, wordt de gebruiker hier nooit naar gevraagd
+      en is het vastleggen van video alleen beschikbaar voor URL's die in
+      VideoCaptureAllowedUrls zijn geconfigureerd. ARC-apps hebben geen
+      toegang tot de camera.
+
+      Los van ARC-apps is dit beleid van invloed op alle typen video-invoer en
+      niet alleen op de ingebouwde camera.</translation>
 <translation id="7915236031252389808">Je kunt hier een URL naar een PAC-bestand voor de proxy opgeven.
 
           Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt opgeven'.

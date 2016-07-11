@@ -34,6 +34,7 @@
 <translation id="1228893227497259893">El identificador de la entidad es incorrecto.</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1254117744268754948">Seleccionar carpeta</translation>
+<translation id="1264126396475825575">El informe de fallos se capturó el <ph name="CRASH_TIME" /> (todavía no se cargó ni se ignoró)</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Intenta borrar tus cookies<ph name="END_LINK" /></translation>
@@ -65,12 +66,14 @@
 <translation id="1655462015569774233">{1,plural, =1{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; el certificado de seguridad venció ayer. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión. Actualmente, el reloj de la computadora está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, a continuación, actualiza la página.}other{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; el certificado de seguridad venció hace # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión. Actualmente, el reloj de la computadora está configurado en la siguiente fecha: <ph name="CURRENT_DATE" />. ¿Es correcto? De no ser así, corrige el reloj del sistema y, a continuación, actualiza la página.}}</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Google Chrome intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco comunes. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Google Chrome detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="168841957122794586">El certificado del servidor contiene una clave criptográfica no segura.</translation>
+<translation id="1701955595840307032">Obtener contenido sugerido</translation>
 <translation id="1706954506755087368">{1,plural, =1{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia mañana. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}other{El servidor no logró comprobar si el dominio es <ph name="DOMAIN" />; supuestamente, el certificado de seguridad entra en vigencia en # días. Es posible que esto se deba a una configuración incorrecta o a que un atacante haya interceptado la conexión.}}</translation>
 <translation id="1710259589646384581">SO</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">Intenta comunicarte con el administrador del sistema.</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1753706481035618306">Número de página</translation>
+<translation id="1761412452051366565">Para obtener contenido personalizado y sugerido por Google, activa la sincronización.</translation>
 <translation id="1763864636252898013">Este servidor no pudo probar que su dominio es <ph name="DOMAIN" />; el sistema operativo del dispositivo no confía en el certificado de seguridad. Es posible que esto se deba a una configuración incorrecta o a que un atacante interceptó la conexión.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Intenta ejecutar el Diagnóstico de red de Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Actualiza tu frase de contraseña de sincronización.</translation>
@@ -92,6 +95,7 @@
 <translation id="2065985942032347596">Se requiere autenticación</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="20817612488360358">Se ha establecido la configuración de proxy del sistema, pero también se ha especificado una configuración explícita de proxy.</translation>
+<translation id="2086652334978798447">Para obtener contenido personalizado y sugerido por Google, accede a tu cuenta en Chrome.</translation>
 <translation id="2089090684895656482">Menos</translation>
 <translation id="2094505752054353250">El dominio no coincide.</translation>
 <translation id="2096368010154057602">Departamento</translation>
@@ -120,6 +124,7 @@
 <translation id="2354001756790975382">Otros marcadores</translation>
 <translation id="2357783041215512127">Pagar con la tarjeta <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">Continuar</translation>
+<translation id="2365563543831475020">El informe de fallos que se capturó a las <ph name="CRASH_TIME" /> no se cargó</translation>
 <translation id="2367567093518048410">Nivel</translation>
 <translation id="237718015863234333">No hay alternativas de interfaz de usuario disponibles.</translation>
 <translation id="2384307209577226199">Empresa (predeterminada)</translation>
@@ -231,6 +236,7 @@
 <translation id="3452404311384756672">Obtener intervalo:</translation>
 <translation id="3462200631372590220">Ocultar detalles avanzados</translation>
 <translation id="3479539252931486093">¿Ocurrió algo inesperado? <ph name="BEGIN_LINK" />Cuéntanos<ph name="END_LINK" /></translation>
+<translation id="348000606199325318">ID de fallo <ph name="CRASH_LOCAL_ID" /> (ID de servidor: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">No pudimos comunicarnos con ninguno de tus padres. Vuelve a intentarlo.</translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3528171143076753409">El certificado del servidor no es de confianza.</translation>
@@ -386,6 +392,7 @@
 <translation id="5430298929874300616">Eliminar marcador</translation>
 <translation id="5431657950005405462">No se encontró tu archivo</translation>
 <translation id="5435775191620395718">Se muestra el historial de este dispositivo. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" />.</translation>
+<translation id="5437003064129843501">Las sugerencias de contenido personalizado están inhabilitadas, porque tus datos sincronizados están protegidos con una frase de contraseña personalizada.</translation>
 <translation id="5439770059721715174">Error de validación de esquema en "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">No se encuentra esta página <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Marca de tiempo de política incorrecta</translation>
@@ -431,6 +438,7 @@
 <translation id="5989320800837274978">No se especifican servidores proxy fijos ni URL de secuencias de comandos .pac.</translation>
 <translation id="5990559369517809815">Una extensión bloqueó las solicitudes al servidor.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6016158022840135739">{COUNT,plural, =1{Página 1}other{Página #}}</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Más</translation>
@@ -523,7 +531,9 @@
 <translation id="7269802741830436641">Esta página web tiene un bucle de redirección</translation>
 <translation id="7275334191706090484">Marcadores administrados</translation>
 <translation id="7298195798382681320">Recomendada</translation>
+<translation id="7301833672208172928">Activar la sincronización del historial</translation>
 <translation id="7334320624316649418">&amp;Rehacer Reorganizar</translation>
+<translation id="733923710415886693">El certificado del servidor no se divulgó mediante el Certificado de transparencia.</translation>
 <translation id="7353601530677266744">Línea de comandos</translation>
 <translation id="7372973238305370288">resultado de búsqueda</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -588,6 +598,7 @@
 <translation id="7951415247503192394">(32 bits)</translation>
 <translation id="7956713633345437162">Marcadores del celular</translation>
 <translation id="7961015016161918242">Nunca</translation>
+<translation id="7962083544045318153">ID del fallo <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Siempre traducir del <ph name="ORIGINAL_LANGUAGE" /> al <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Sin especificar</translation>
 <translation id="8012647001091218357">No pudimos comunicarnos con tus padres. Vuelve a intentarlo.</translation>
@@ -639,6 +650,7 @@
 <translation id="8740359287975076522">No se encontró <ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS address&lt;/abbr&gt;. Se está diagnosticando el problema.</translation>
 <translation id="8741995161408053644">Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Rehacer Eliminar</translation>
+<translation id="8790687370365610530">Para obtener contenido personalizado y sugerido por Google, activa la sincronización del historial.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8804164990146287819">Política de privacidad</translation>
 <translation id="8820817407110198400">Marcadores</translation>
@@ -661,6 +673,7 @@
 <translation id="8987927404178983737">Mes</translation>
 <translation id="8988760548304185580">Ingresa la fecha de vencimiento y el CVC de 3 dígitos que figura en el dorso de la tarjeta.</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
+<translation id="8997023839087525404">El servidor presentó un certificado que no se divulgó de forma pública con la política Certificado de transparencia. Este es un requisito para algunos certificados que permite garantizar su confiabilidad y protegerte de atacantes.</translation>
 <translation id="9001074447101275817">El proxy <ph name="DOMAIN" /> requiere un nombre de usuario y una contraseña.</translation>
 <translation id="901974403500617787">El propietario es el único que puede especificar las marcas que se aplican a todo el sistema: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">Esta página se tradujo al <ph name="TARGET_LANGUAGE" />.</translation>

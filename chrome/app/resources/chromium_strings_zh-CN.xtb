@@ -162,6 +162,7 @@
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
 <translation id="6838494703713445896">Chromium 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了有效的 Certificate Transparency 信息。</translation>
+<translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您已经至少 30 天未使用它了。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>

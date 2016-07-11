@@ -34,6 +34,7 @@
 <translation id="1228893227497259893">‏شناسه entity نادرست</translation>
 <translation id="1232569758102978740">بدون عنوان</translation>
 <translation id="1254117744268754948">انتخاب پوشه</translation>
+<translation id="1264126396475825575">گزارش خرابی ثبت‌شده در <ph name="CRASH_TIME" /> (هنوز بارگذاری نشده است یا نادیده‌ گرفته شده است)</translation>
 <translation id="1285320974508926690">این سایت هرگز ترجمه نشود</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />کوکی‌ها را پاک کنید<ph name="END_LINK" /></translation>
@@ -65,12 +66,14 @@
 <translation id="1655462015569774233">{1,plural, =1{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن دیروز به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}one{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}other{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است. اعتبار گواهی امنیتی آن # روز قبل به پایان رسیده است. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند. ساعت رایانه‌تان درحال‌حاضر روی <ph name="CURRENT_DATE" /> تنظیم شده است. آیا درست است؟ اگر پاسخ منفی است، باید ساعت سیستمتان را درست کنید و سپس این صفحه را بازخوانی کنید.}}</translation>
 <translation id="1676269943528358898">‏<ph name="SITE" /> معمولاً برای محافظت از اطلاعات شما از رمزگذاری استفاده می‌کند. اما این بار که Chrome تلاش کرد به <ph name="SITE" /> متصل شود، وب‌سایت اعتبارنامه‌ای نامعمول و نادرست را برگرداند. ممکن است مهاجمی در تلاش باشد خود را به‌جای <ph name="SITE" /> معرفی کند یا یک صفحه ورود به سیستم Wi-Fi در ارتباط اختلال ایجاد کرده باشد. اطلاعات شما همچنان ایمن است، زیرا Google Chrome قبل از هرگونه تبادل داده، اتصال را متوقف کرد.</translation>
 <translation id="168841957122794586">گواهی‌نامه سرور دارای یک کلید رمزنگاری ضعیف است.</translation>
+<translation id="1701955595840307032">دریافت محتوای پیشنهادی</translation>
 <translation id="1706954506755087368">{1,plural, =1{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً فردا شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}one{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً # روز دیگر شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}other{این سرور نتوانست ثابت کند این <ph name="DOMAIN" /> است؛ اعتبار گواهی امنیتی آن ظاهراً # روز دیگر شروع می‌شود. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصالتان را قطع می‌کند.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">با سرپرست سیستم تماس بگیرید.</translation>
 <translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1753706481035618306">شماره صفحه</translation>
+<translation id="1761412452051366565">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، همگام‌سازی را روشن کنید.</translation>
 <translation id="1763864636252898013">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ گواهی امنیتی آن مورداعتماد سیستم عامل دستگاه شما نیست. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجی اتصال شما را قطع کرده است.</translation>
 <translation id="1768211456781949159">‏<ph name="BEGIN_LINK" />Windows Network Diagnostics را اجرا کنید<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">لطفاً «رمز عبارتی همگام‌سازی» خود را به‌روزرسانی کنید.</translation>
@@ -92,6 +95,7 @@
 <translation id="2065985942032347596">راستی‌آزمایی لازم است</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
+<translation id="2086652334978798447">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، به Chrome وارد شوید.</translation>
 <translation id="2089090684895656482">کمتر</translation>
 <translation id="2094505752054353250">عدم تطابق دامنه</translation>
 <translation id="2096368010154057602">حوزه</translation>
@@ -120,6 +124,7 @@
 <translation id="2354001756790975382">نشانک‌های دیگر</translation>
 <translation id="2357783041215512127">پرداخت با <ph name="CREDIT_CARD" /></translation>
 <translation id="2359808026110333948">ادامه</translation>
+<translation id="2365563543831475020">گزارش خرابی ثبت‌شده در <ph name="CRASH_TIME" /> بارگذاری نشد</translation>
 <translation id="2367567093518048410">سطح</translation>
 <translation id="237718015863234333">هیچ گزینه واسط کاربری موجود نیست</translation>
 <translation id="2384307209577226199">پیش‌فرض شرکتی</translation>
@@ -230,6 +235,7 @@
 <translation id="3452404311384756672">فاصله زمانی واکشی:</translation>
 <translation id="3462200631372590220">پنهان کردن پیشرفته</translation>
 <translation id="3479539252931486093">غیرمنتظره بود؟ <ph name="BEGIN_LINK" />به ما اطلاع دهید<ph name="END_LINK" /></translation>
+<translation id="348000606199325318">شناسه خرابی <ph name="CRASH_LOCAL_ID" /> (شناسه سرور: <ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">در حال حاضر نمی‌توانیم با والدینتان تماس برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3527085408025491307">پوشه</translation>
 <translation id="3528171143076753409">گواهی سرور مطمئن نیست.</translation>
@@ -385,6 +391,7 @@
 <translation id="5430298929874300616">حذف نشانک</translation>
 <translation id="5431657950005405462">فایل شما پیدا نشد</translation>
 <translation id="5435775191620395718">در حال نمایش سابقه از این دستگاه. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
+<translation id="5437003064129843501">پیشنهاد محتوای شخصی‌سازی‌شده درحال حاضر غیرفعال است، چون داده‌های همگام‌سازی‌شده‌تان با عبارت عبور سفارشی محافظت می‌شود.</translation>
 <translation id="5439770059721715174">خطای تأیید طرح در «<ph name="ERROR_PATH" />»:‏ <ph name="ERROR" /></translation>
 <translation id="5452270690849572955">صفحه <ph name="HOST_NAME" /> پیدا نمی‌شود</translation>
 <translation id="5455374756549232013">مهر زمان خط‌مشی نادرست است</translation>
@@ -430,6 +437,7 @@
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="5990559369517809815">درخواست‌های ارسالی به سرور توسط یک برنامهٔ افزودنی مسدود شد.</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6016158022840135739">{COUNT,plural, =1{صفحه ۱}one{صفحه #}other{صفحه #}}</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="604124094241169006">خودکار</translation>
 <translation id="6042308850641462728">بیشتر</translation>
@@ -522,7 +530,9 @@
 <translation id="7269802741830436641">این صفحهٔ وب دارای یک دور هدایت مجدد است</translation>
 <translation id="7275334191706090484">نشانک‌های مدیریت شده</translation>
 <translation id="7298195798382681320">توصیه می‌شود</translation>
+<translation id="7301833672208172928">روشن کردن همگام‌سازی سابقه</translation>
 <translation id="7334320624316649418">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
+<translation id="733923710415886693">گواهی سرور از طریق شفافیت گواهینامه نشان داده نشده بود.</translation>
 <translation id="7353601530677266744">خط فرمان</translation>
 <translation id="7372973238305370288">نتیجه جستجو</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -587,6 +597,7 @@
 <translation id="7951415247503192394">(۳۲ بیت)</translation>
 <translation id="7956713633345437162">نشانک‌های تلفن‌ همراه</translation>
 <translation id="7961015016161918242">هرگز</translation>
+<translation id="7962083544045318153">شناسه خرابی <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">همیشه <ph name="ORIGINAL_LANGUAGE" /> به <ph name="TARGET_LANGUAGE" /> ترجمه شود</translation>
 <translation id="7995512525968007366">تعیین نشده</translation>
 <translation id="8012647001091218357">در حال حاضر نمی‌توانیم با والدینتان ارتباط برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
@@ -638,6 +649,7 @@
 <translation id="8740359287975076522">‏<ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;آدرس DNS&lt;/abbr&gt; پیدا نشد. درحال بررسی برای تشخیص مشکل.</translation>
 <translation id="8741995161408053644">‏ممکن است حساب Google شما اشکال سابقه مرور دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
+<translation id="8790687370365610530">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، همگام‌سازی سابقه را روشن کنید.</translation>
 <translation id="8798099450830957504">پیش‌فرض</translation>
 <translation id="8804164990146287819">خط‌مشی رازداری</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
@@ -660,6 +672,7 @@
 <translation id="8987927404178983737">ماه</translation>
 <translation id="8988760548304185580">‏تاریخ انقضا و کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
+<translation id="8997023839087525404">سرور گواهی‌ای را ارائه کرده است که با استفاده از خط‌مشی شفافیت گواهینامه به‌صورت عمومی نشان داده نشده است. برای برخی گواهی‌ها این یک مسئله ضروری است تا از قابل اعتماد بودن آن‌ها و محافظت دربرابر مهاجمین اطمینان حاصل شود.</translation>
 <translation id="9001074447101275817">پروکسی <ph name="DOMAIN" /> به نام کاربری و گذرواژه نیاز دارد.</translation>
 <translation id="901974403500617787">پرچم‌هایی که در تمام سیستم اعمال می‌شوند فقط توسط مالک قابل تنظیم هستند: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE" /> ترجمه شده است</translation>

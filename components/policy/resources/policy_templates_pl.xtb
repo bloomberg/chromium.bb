@@ -37,13 +37,13 @@
           Ta zasada jest aktualnie wyłączona po stronie serwera.</translation>
 <translation id="1096105751829466145">Domyślny dostawca wyszukiwania</translation>
 <translation id="1103860406762205913">Włącza stary mechanizm logowania internetowego</translation>
-<translation id="1128903365609589950">Pozwala skonfigurować katalog używany w przeglądarce <ph name="PRODUCT_NAME" /> do przechowywania plików z pamięci podręcznej na dysku urządzenia.
+<translation id="1128903365609589950">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać na dysku urządzenia pliki z pamięci podręcznej.
 
-      Jeśli włączysz tę zasadę, podany katalog będzie używany w przeglądarce <ph name="PRODUCT_NAME" /> bez względu na to, czy użytkownik określi parametr „--disk-cache-dir”. Aby uniknąć utraty danych i innych nieoczekiwanych błędów, nie należy podawać w tej zasadzie głównego katalogu woluminu ani katalogu używanego do innych celów, ponieważ jego zawartością zarządza przeglądarka <ph name="PRODUCT_NAME" />.
+      Jeśli włączysz tę zasadę, przeglądarka <ph name="PRODUCT_NAME" /> będzie używać wybranego katalogu bez względu na to, czy użytkownik określi parametr „--disk-cache-dir”. Aby uniknąć utraty danych i innych nieoczekiwanych błędów, nie należy podawać w tej zasadzie głównego katalogu woluminu ani katalogu używanego do innych celów, ponieważ zawartością zarządza przeglądarka <ph name="PRODUCT_NAME" />.
 
       Listę dostępnych zmiennych znajdziesz na stronie https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
-      W przypadku nieskonfigurowania tej zasady będzie używany domyślny katalog pamięci podręcznej, a użytkownik będzie mógł zmienić to ustawienie za pomocą parametru wiersza polecenia „--disk-cache-dir”.</translation>
+      W przypadku nieskonfigurowania tej zasady będzie używany domyślny katalog pamięci podręcznej, a użytkownik będzie mógł zmienić to ustawienie za pomocą parametru wiersza polecenia „--disk-cache-dir”.</translation>
 <translation id="1138294736309071213">Ta zasada jest aktywna tylko w trybie sklepu.
 
       W przypadku urządzeń w trybie sklepu określa czas, po upływie którego na ekranie logowania jest wyświetlany wygaszacz ekranu.
@@ -200,7 +200,7 @@
       Jeśli utrzymanie zgodności z wadliwie działającym serwerem jest konieczne, można wybrać „tls1.1”. To jednak tylko rozwiązanie tymczasowe – serwer trzeba jak najszybciej naprawić.</translation>
 <translation id="1861037019115362154">Pozwala określić listę wtyczek wyłączonych w <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom zmianę tego ustawienia. Możesz użyć symboli wieloznacznych „*” i „?”, by dopasować sekwencje dowolnych znaków. Symbol „*” odpowiada dowolnej liczbie znaków, natomiast „?” oznacza jeden opcjonalny znak (czyli jeden lub zero znaków). Znakiem zmiany znaczenia jest „\”, dlatego by wprowadzić faktyczny znak „*”, „?” lub „\”, musisz umieścić przed nim znak „\”. Jeśli włączysz to ustawienie, wtyczki wymienione na liście nigdy nie będą używane w <ph name="PRODUCT_NAME" />. Wtyczki są oznaczone jako wyłączone na stronie „about:plugins”, a użytkownicy nie mogą ich włączyć. Pamiętaj, że ta zasada jest zastępowana przez zasady EnabledPlugins i DisabledPluginsExceptions. Jeśli zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać ze wszystkich wtyczek zainstalowanych w systemie oprócz przestarzałych, niebezpiecznych i niezgodnych wbudowanych wtyczek.</translation>
 <translation id="1864269674877167562">Jeśli ta zasada jest pusta lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> nie będzie wyświetlać opcji autouzupełniania podczas logowania użytkownika.
-      Jeśli zasada jest ustawiona na nazwę domeny, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać opcję autouzupełniania podczas logowania użytkownika, umożliwiając mu wpisanie tylko jego nazwy, bez konieczności podawania rozszerzenia nazwy domeny. Użytkownik będzie mógł nadpisać rozszerzenie nazwy domeny.</translation>
+      Jeśli zasada jest ustawiona na nazwę domeny, <ph name="PRODUCT_OS_NAME" /> będzie wyświetlać opcję autouzupełniania podczas logowania użytkownika, umożliwiając mu wpisanie tylko jego nazwy, bez konieczności podawania rozszerzenia nazwy domeny. Użytkownik będzie mógł zastąpić rozszerzenie nazwy domeny.</translation>
 <translation id="1865417998205858223">Uprawnienia klucza</translation>
 <translation id="186719019195685253">Działanie, jakie ma zostać podjęte po osiągnięciu opóźnienia bezczynności przy zasilaniu prądem zmiennym</translation>
 <translation id="187819629719252111">Umożliwia dostęp do plików lokalnych na komputerze, zezwalając <ph name="PRODUCT_NAME" /> na wyświetlanie okien dialogowych wyboru pliku. Po włączeniu tego ustawienia użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku. Jeśli wyłączysz ustawienie, w momencie wykonania przez użytkownika czynności powodującej wywołanie okna dialogowego wyboru pliku (np. zaimportowanie zakładek, przesłanie plików, zapisanie linków itp.) zostanie wyświetlony komunikat, a działanie przeglądarki będzie kontynuowane, tak jakby użytkownik kliknął przycisk Anuluj w oknie dialogowym wyboru pliku. Jeśli ustawienie jest nieskonfigurowane, użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku.</translation>
@@ -438,6 +438,13 @@
 <translation id="2466131534462628618">Uwierzytelnianie w portalu przechwytującym ignoruje serwer proxy</translation>
 <translation id="2482676533225429905">Wiadomości natywne</translation>
 <translation id="2483146640187052324">Przewiduj działania w sieci dla każdego połączenia sieciowego</translation>
+<translation id="2486371469462493753">Wyłącza egzekwowanie wymogów protokołu Certificate Transparency dla wymienionych adresów URL.
+
+      Ta zasada umożliwia pominięcie ujawniania przez protokół Certificate Transparency certyfikatów nazw hosta w określonych adresach URL. Dzięki temu certyfikaty, które zostałyby uznane za niezaufane z powodu nieujawnienia publicznego, mogą być nadal używane. Trudniej jest jednak wykryć certyfikaty, które zostały wydane nieprawidłowo.
+
+      Wzorzec adresu URL jest sformatowany zgodnie ze schematem na stronie: https://www.chromium.org/administrators/url-blacklist-filter-format. Ponieważ jednak certyfikaty są ważne dla określonej nazwy hosta niezależnej od schematu, portu czy ścieżki, pod uwagę brany jest tylko fragment adresu URL zawierający nazwę hosta. Hosty zawierające symbole wieloznaczne nie są obsługiwane.
+
+      Jeśli ta zasada nie jest skonfigurowana, każdy certyfikat, który musi zostać ujawniony przez protokół Certificate Transparency, będzie traktowany jako niezaufany, jeśli nie zostanie ujawniony zgodnie z zasadami tego protokołu.</translation>
 <translation id="2488010520405124654">Włącza pytanie o konfigurację sieci wyświetlane w trybie offline.
 
       Jeśli ta zasada nie jest ustawiona lub ma wartość Prawda, lokalne konto na urządzeniu jest skonfigurowane do automatycznego logowania się z zerowym opóźnieniem, a urządzenie nie ma dostępu do internetu, <ph name="PRODUCT_OS_NAME" /> pokazuje pytanie o konfigurację sieci.
@@ -461,6 +468,13 @@
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2552966063069741410">Strefa czasowa</translation>
+<translation id="2562339630163277285">Określa URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wpisanym przez użytkownika
+
+          Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, wyniki wyszukiwania dynamicznego nie będą dostarczane.
+
+          URL wyszukiwania dynamicznego Google to: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Ta zasada jest egzekwowana tylko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="2571066091915960923">Włącza i wyłącza serwer proxy kompresowania danych i uniemożliwia użytkownikom zmienianie tego ustawienia.
 
       Jeśli włączysz lub wyłączysz to ustawienie, użytkownicy nie będą mogli go zmienić ani zastąpić.
@@ -472,10 +486,21 @@
 <translation id="262740370354162807">Włącz wysyłanie dokumentów do <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2633084400146331575">Włącz potwierdzenia głosowe</translation>
 <translation id="2650049181907741121">Działanie, jakie ma zostać wykonane po zamknięciu pokrywy przez użytkownika</translation>
+<translation id="2655233147335439767">Określa URL wyszukiwarki używanej podczas wyszukiwania domyślnego. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który podczas zapytania zostanie zastąpiony słowami wyszukiwanymi przez użytkownika.
+
+          URL wyszukiwania Google to: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie egzekwowana.</translation>
 <translation id="2660846099862559570">Nigdy nie używaj serwera proxy</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="2682225790874070339">Wyłącz Dysk w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Włącz serwer proxy kompresowania danych</translation>
+<translation id="2692168654831544772">Wyłącza wykonywanie zrzutów ekranu.
+
+      W przypadku włączenia tej zasady nie będzie można tworzyć zrzutów ekranu, używając skrótów klawiszowych ani interfejsów API rozszerzeń.
+      Niemożliwe jest też wykonywanie zrzutów ekranu w aplikacjach ARC.
+
+      W przypadku wyłączenia lub nieskonfigurowania tej zasady wykonywanie zrzutów ekranu będzie dozwolone.</translation>
 <translation id="2731627323327011390">Wyłącz korzystanie z certyfikatów <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
 <translation id="2742843273354638707">Ukrywa aplikację Chrome Web Store i link w stopce na stronie Nowa karta oraz w menu z aplikacjami <ph name="PRODUCT_OS_NAME" />.
 
@@ -638,6 +663,11 @@
 <translation id="3072847235228302527">Określ Warunki korzystania z usługi dla lokalnego konta na urządzeniu</translation>
 <translation id="3096595567015595053">Lista włączonych wtyczek</translation>
 <translation id="3101501961102569744">Wybierz sposób określenia ustawień serwera proxy</translation>
+<translation id="3117676313396757089">Ostrzeżenie: DHE zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 57 (około marca 2017 r.) i wtedy ta zasada przestanie działać.
+
+      Jeśli ta zasada nie jest ustawiona lub jest wyłączona, mechanizmy szyfrowania DHE w TLS będą wyłączone. Można ją włączyć, by mechanizmy szyfrowania pozostały aktywne oraz w celu zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.
+
+      Zalecamy wdrożenie na serwerach mechanizmów szyfrowania ECDHE. Jeśli nie ma takiej możliwości, upewnij się, że włączony jest mechanizm szyfrowania obsługujący wymianę kluczy RSA.</translation>
 <translation id="3153348162326497318">Pozwala określić rozszerzenia, których użytkownicy NIE mogą instalować. Zainstalowane rozszerzenia zostaną usunięte w przypadku umieszczenia ich na tej liście. Wartość „*” na liście blokad oznacza, że zablokowane są wszystkie rozszerzenia, które nie znajdują się na liście dozwolonych rozszerzeń. Jeśli zasada ta nie zostanie skonfigurowana, użytkownicy mogą instalować dowolne rozszerzenia w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">To ustawienie zostało wycofane w <ph name="PRODUCT_NAME" /> w wersji 29. Zalecany sposób konfigurowania kolekcji rozszerzeń lub aplikacji udostępnianych przez organizację polega na tym, że witrynę z pakietami CRX umieszcza się w zasadzie ExtensionInstallSources, a na stronie internetowej udostępnia się bezpośrednie linki do pakietów do pobrania. Program uruchamiający tę stronę internetową można utworzyć, korzystając z zasady ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od wersji <ph name="SINCE_VERSION" /></translation>
@@ -718,6 +748,11 @@
 <translation id="3322771899429619102">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenBlockedForUrls”, zastępuje to te wyjątki.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
+<translation id="3337150554416948435">Umożliwia określenie, czy witryny mogą śledzić fizyczną lokalizację użytkownika. Działanie to może być domyślnie dozwolone lub zabronione albo użytkownik może być o to pytany za każdym razem, gdy witryna zażąda informacji o lokalizacji.
+
+          Jeśli ta zasada jest ustawiona na „BlockGeolocation”, udostępnianie lokalizacji będzie zabronione w aplikacjach ARC.
+
+          W przypadku nieskonfigurowania tej zasady używane będzie ustawienie „AskGeolocation”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
@@ -841,6 +876,13 @@
 
       Jeśli zasada nie jest określona, adres URL nie zostanie zmieniony.</translation>
 <translation id="3863409707075047163">Najniższa włączona wersja protokołu SSL</translation>
+<translation id="3864020628639910082">Określa URL wyszukiwarki dostarczającej sugestie wyszukiwania. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który w trakcie przesyłania zapytania zostanie zastąpiony tekstem dotychczas wpisanym przez użytkownika.
+
+          Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, URL sugestii nie będzie używany.
+
+          URL sugestii Google to: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Ta zasada jest egzekwowana tylko wtedy, gdy jest włączona zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="3864818549971490907">Domyślne ustawienie wtyczek</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał wybranie nazwy użytkownika spośród zarejestrowanych nazw wyświetlanych na ekranie logowania. W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> będzie prosił o podanie nazwy użytkownika i hasła.</translation>
@@ -855,6 +897,17 @@
 
        Każda pozycja listy zawiera słownik, w którym obowiązkowe pola „extension-id” i „update-url” muszą zawierać odpowiednio identyfikator rozszerzenia i adres URL aktualizacji.</translation>
 <translation id="3891357445869647828">Włącz obsługę języka JavaScript</translation>
+<translation id="3898060089412156345">Zezwala (lub nie) na rejestrowanie dźwięku.
+
+      Jeśli ta zasada jest włączona lub nie jest skonfigurowana (ustawienie domyślne),
+      użytkownik jest pytany o pozwolenie na rejestrowanie dźwięku, chyba że dany URL
+      jest na liście AudioCaptureAllowedUrls – wtedy pozwolenie jest udzielane bez pytania.
+
+      Gdy zasada jest wyłączona, użytkownik nigdy nie jest pytany, a rejestrowanie dźwięku
+      jest dostępne tylko dla stron, których adresy URL są na liście
+      AudioCaptureAllowedUrls. W przypadku aplikacji ARC mikrofon jest stale wyciszony.
+
+      Zasada dotyczy wszystkich typów wejść audio, a nie tylko wbudowanego mikrofonu.</translation>
 <translation id="3907986150060929099">Ustaw zalecane języki dla sesji publicznej</translation>
 <translation id="391531815696899618">Po ustawieniu wartości prawda wyłącza synchronizację Dysku Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" />. Żadne dane nie są przesyłane na Dysk Google.
 
@@ -913,6 +966,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
+<translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
 <translation id="4115096483386877940">Uprawnienie do blokowania ekranu.
 
       Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą blokować ekranu (mogą się tylko wylogować z sesji użytkownika). Jeśli ustawiona jest wartość prawda lub zasada nie została skonfigurowana, użytkownicy, którzy przeprowadzili uwierzytelnianie hasłem, mogą blokować ekran.</translation>
@@ -950,6 +1004,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwania obrazem są wysyłane przy użyciu metody GET.
 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
+<translation id="4309640770189628899">Czy włączone są mechanizmy szyfrowania DHE w TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
 <translation id="4322842393287974810">Zezwalaj aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
@@ -980,7 +1035,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4449545651113180484">Obróć ekran w prawo o 270 stopni</translation>
 <translation id="4467952432486360968">Blokuj pliki cookie innych firm</translation>
 <translation id="4474167089968829729">Włącz zapisywanie haseł w menedżerze haseł</translation>
-<translation id="447686899376429408">Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli przesyłać karty, witryny lub pulpit z przeglądarki. Jeśli ustawisz tu wartość fałsz, ta opcja zostanie wyłączona.</translation>
+<translation id="447686899376429408">Jeśli nie skonfigurujesz tej zasady lub ustawisz dla niej wartość prawda, użytkownicy będą mogli przesyłać karty, witryny lub pulpit z przeglądarki. Jeśli ustawisz tu wartość fałsz, ta opcja zostanie wyłączona.</translation>
 <translation id="4480694116501920047">Wymuś stosowanie filtra SafeSearch</translation>
 <translation id="4482640907922304445">Powoduje pokazanie przycisku strony startowej na pasku narzędzi <ph name="PRODUCT_NAME" />. Jeśli włączysz to ustawienie, przycisk strony startowej będzie zawsze widoczny. W przypadku wyłączenia ustawienia przycisk nigdy nie jest widoczny. Jeśli ustawienie jest włączone lub wyłączone, użytkownicy nie mogą go zmienić ani zastąpić w <ph name="PRODUCT_NAME" />. W przypadku nieskonfigurowania tej zasady użytkownik będzie mógł wybrać, czy chce, aby przycisk strony startowej był pokazywany.</translation>
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
@@ -1585,13 +1640,13 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Ustawienia treści</translation>
-<translation id="7007671350884342624">Pozwala skonfigurować katalog używany w przeglądarce <ph name="PRODUCT_NAME" /> do przechowywania danych użytkownika.
+<translation id="7007671350884342624">Pozwala skonfigurować katalog, w którym przeglądarka <ph name="PRODUCT_NAME" /> będzie przechowywać dane użytkownika.
 
-      Jeśli włączysz tę zasadę, podany katalog będzie używany w przeglądarce <ph name="PRODUCT_NAME" /> bez względu na to, czy użytkownik określi parametr „--user-data-dir”. Aby uniknąć utraty danych i innych nieoczekiwanych błędów, nie należy podawać w tej zasadzie głównego katalogu woluminu ani katalogu używanego do innych celów, ponieważ jego zawartością zarządza przeglądarka <ph name="PRODUCT_NAME" />.
+      Jeśli włączysz tę zasadę, przeglądarka <ph name="PRODUCT_NAME" /> będzie używać wybranego katalogu bez względu na to, czy użytkownik określi parametr „--user-data-dir”. Aby uniknąć utraty danych i innych nieoczekiwanych błędów, nie należy podawać w tej zasadzie głównego katalogu woluminu ani katalogu używanego do innych celów, ponieważ zawartością zarządza przeglądarka <ph name="PRODUCT_NAME" />.
 
       Listę dostępnych zmiennych znajdziesz na stronie https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
-      W przypadku nieskonfigurowania tej zasady będzie używana domyślna ścieżka do profilu, a użytkownik będzie mógł ją zmienić za pomocą parametru wiersza polecenia „--user-data-dir”.</translation>
+      W przypadku nieskonfigurowania tej zasady będzie używana domyślna ścieżka do profilu, a użytkownik będzie mógł ją zmienić za pomocą parametru wiersza polecenia „--user-data-dir”.</translation>
 <translation id="7027785306666625591">Konfiguruje zarządzanie energią w <ph name="PRODUCT_OS_NAME" />.
 
       Te zasady umożliwiają określenie, jak <ph name="PRODUCT_OS_NAME" /> ma się zachować, gdy użytkownik przez pewien czas nie wykona żadnej czynności.</translation>
@@ -1616,7 +1671,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7091198954851103976">Zawsze uruchamiaj wtyczki wymagające autoryzacji</translation>
 <translation id="7106631983877564505">Powoduje włączenie blokady w przypadku bezczynności lub zawieszenia działania urządzenia z systemem operacyjnym <ph name="PRODUCT_OS_NAME" />.
 
-      Jeśli włączysz to ustawienie, użytkownik w celu odblokowania uśpionego urządzenia będzie musiał podać hasło.
+      Jeśli włączysz to ustawienie, użytkownik będzie musiał podać hasło w celu odblokowania uśpionego urządzenia.
 
       Po wyłączeniu ustawienia wybudzenie nie wymaga podawania hasła.
 
@@ -1882,6 +1937,22 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Określa identyfikator rozszerzenia używanego jako wygaszacz ekranu na ekranie logowania. Rozszerzenie musi być częścią pakietu aplikacji skonfigurowanego dla tej domeny przez zasadę DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ukryj ostrzeżenie o nieobsługiwanym systemie operacyjnym</translation>
 <translation id="7912255076272890813">Skonfiguruj dozwolone typy aplikacji/rozszerzeń</translation>
+<translation id="7914271217607102111">Zezwala (lub nie) na rejestrowanie wideo.
+
+      Jeśli ta zasada jest włączona lub nie jest skonfigurowana
+      (ustawienie domyślne), użytkownik jest pytany o pozwolenie
+      na rejestrowanie wideo, chyba że dany URL jest na liście
+      VideoCaptureAllowedUrls – wtedy pozwolenie jest udzielane bez pytania.
+      Aplikacje ARC mogą uzyskiwać dostęp do kamery, jeśli otrzymały
+      pozwolenie.
+
+      Gdy zasada jest wyłączona, użytkownik nigdy nie jest pytany,
+      a rejestrowanie wideo jest dostępne tylko dla stron,
+      których adresy URL są na liście VideoCaptureAllowedUrls.
+      Aplikacje ARC nie mogą uzyskiwać dostępu do kamery.
+
+      Poza aplikacjami ARC ta zasada dotyczy wszystkich typów wejść wideo,
+      nie tylko wbudowanej kamery.</translation>
 <translation id="7915236031252389808">W tym miejscu możesz podać URL pliku PAC serwera proxy.
 
           Ta zasada obowiązuje tylko po wybraniu ręcznego konfigurowania ustawień proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”.
@@ -1993,30 +2064,30 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Jeśli ta opcja nie zostanie ustawiona, <ph name="PRODUCT_OS_NAME" /> użyje identyfikatora konta e-mail lokalnego konta na urządzeniu jako nazwy wyświetlanej na ekranie logowania.
 
       Ta zasada jest ignorowana w przypadku zwykłych kont użytkownika.</translation>
-<translation id="8279832363395120715">Wycina poufne pod względem prywatności i bezpieczeństwa fragmenty adresów URL https:// przed przekazaniem tych adresów do skryptów PAC (Proxy Auto Config), których <ph name="PRODUCT_NAME" /> używa podczas rozpoznawania serwerów proxy.
+<translation id="8279832363395120715">Wycina poufne pod względem prywatności i bezpieczeństwa fragmenty adresów URL https:// przed przekazaniem tych adresów do skryptów PAC (Proxy Auto Config), których <ph name="PRODUCT_NAME" /> używa podczas rozpoznawania serwerów proxy.
 
       Jeśli ustawisz wartość prawda, funkcja zabezpieczeń zostanie
-      włączona, a adresy URL https:// zostaną usunięte przed
-      przekazaniem ich do skryptów PAC. W ten sposób skrypt PAC nie
+      włączona, a fragmenty adresów URL https:// będą usuwane przed
+      przekazaniem tych adresów do skryptów PAC. w ten sposób skrypt PAC nie
       będzie mógł odczytać danych, które są zwykle chronione przez
-      szyfrowany kanał (np. ścieżkę lub zapytanie adresu URL).
+      szyfrowany kanał (np. ścieżki lub zapytania adresu URL).
 
       Jeśli ustawisz wartość fałsz, funkcja zabezpieczeń zostanie wyłączona,
-      a skrypty PAC będą domyślnie mogły odczytać wszystkie składniki 
+      a skrypty PAC będą domyślnie mogły odczytać wszystkie składniki 
       adresu URL https://. Dotyczy to wszystkich skryptów PAC bez względu
       na ich pochodzenie (włączając te pobrane przez niezabezpieczony
-      kanał lub odkryte w niezabezpieczony sposób przez protokół WPAD).
+      kanał lub odkryte w niezabezpieczony sposób przez protokół WPAD).
 
       Domyślne ustawienie to prawda (włączona funkcja zabezpieczeń).
-      Wyjątek stanowią firmowi użytkownicy Chrome OS, w przypadku
+      Wyjątek stanowią użytkownicy korporacyjni Chrome OS, w przypadku
       których ta zasada jest domyślnie ustawiona na fałsz.
 
 
       Zaleca się ustawienie tej zasady na wartość prawda. Wartość fałsz
       należy ustawić tylko wtedy, gdy występuje problem ze zgodnością
-      z istniejącymi skryptami PAC.
+      z istniejącymi skryptami PAC.
 
-      Planujemy usunąć ten problem w przyszłości.</translation>
+      Planujemy usunąć ten problem w przyszłości.</translation>
 <translation id="8285435910062771358">Pełnoekranowa lupa włączona</translation>
 <translation id="8294750666104911727">Normalnie strony, które w tagu X-UA-Compatible mają wartość chrome=1, będą renderowane w <ph name="PRODUCT_FRAME_NAME" /> niezależnie od ustawienia zasady „ChromeFrameRendererSettings”.
 

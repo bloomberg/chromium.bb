@@ -441,6 +441,13 @@
 <translation id="2466131534462628618">A autenticação de portal cativo ignora proxy</translation>
 <translation id="2482676533225429905">Mensagens nativas</translation>
 <translation id="2483146640187052324">Prever ações de rede em qualquer ligação de rede</translation>
+<translation id="2486371469462493753">Desativa a imposição dos requisitos da Transparência de certificados aos URLs listados.
+
+      Esta política permite que os certificados para os nomes de anfitrião nos URLs especificados não sejam divulgados através da Transparência de certificados. Isto permite que os certificados que seriam de outra forma considerados não fidedignos, por não terem sido divulgados publicamente de forma correta, continuem a ser utilizados, mas dificulta a deteção de certificados emitidos incorretamente para esses anfitriões.
+
+      Um padrão de URL é formatado em conformidade com https://www.chromium.org/administrators/url-blacklist-filter-format. No entanto, uma vez que os certificados são válidos para um determinado nome de anfitrião independente do esquema, da porta ou do caminho, apenas é considerada a parte do nome do anfitrião do URL. Os anfitriões com carateres universais não são suportados.
+
+      Se esta política não estiver definida, quaisquer certificados que tenham de ser divulgados através da Transparência de certificados serão considerados não fidedignos, se não forem divulgados em conformidade com a política de Transparência de certificados.</translation>
 <translation id="2488010520405124654">Ativar o pedido de configuração da rede quando estiver offline.
 
       Se esta política não estiver definida ou estiver definida como Verdadeiro e uma conta local do dispositivo estiver configurada para início de sessão automático com atraso zero e o dispositivo não tiver acesso à Internet, o <ph name="PRODUCT_OS_NAME" /> apresentará um pedido de configuração da rede.
@@ -464,6 +471,13 @@
 <translation id="2529880111512635313">Configurar a lista de aplicações e extensões de instalação forçada</translation>
 <translation id="253135976343875019">Atraso do aviso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2552966063069741410">Fuso Horário</translation>
+<translation id="2562339630163277285">Especifica o URL do motor de pesquisa utilizado para apresentar resultados instantâneos. O URL deve incluir a string <ph name="SEARCH_TERM_MARKER" />, que, no momento da consulta, será substituída pelo texto que o utilizador tenha introduzido.
+
+          Esta política é opcional. Se não for definida, não são apresentados resultados da pesquisa instantâneos.
+
+          O URL dos resultados instantâneos do Google pode ser especificado como <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2571066091915960923">Ativar ou desativar o proxy de compressão de dados e impedir os utilizadores de alterar esta definição.
 
       Se ativar ou desativar esta definição, os utilizadores não podem alterar nem substituir esta definição.
@@ -475,10 +489,21 @@
 <translation id="262740370354162807">Permitir o envio de documentos para o <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ativar comentários falados</translation>
 <translation id="2650049181907741121">Ação a realizar quando o utilizador fecha a tampa</translation>
+<translation id="2655233147335439767">Especifica o URL do motor de pesquisa utilizado para efetuar uma pesquisa predefinida. O URL deve incluir a string "<ph name="SEARCH_TERM_MARKER" />", que, no momento da consulta, será substituída pelos termos que o utilizador estiver a pesquisar.
+
+          O URL de pesquisa do Google pode ser especificado como <ph name="GOOGLE_SEARCH_URL" />.
+
+          Esta opção tem de estar definida quando a política "DefaultSearchProviderEnabled" estiver ativada e apenas é aplicada nestas condições.</translation>
 <translation id="2660846099862559570">Nunca utilizar proxy</translation>
 <translation id="267596348720209223">Especifica as codificações de caracteres suportadas pelo fornecedor de pesquisas. As codificações são nomes de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1, e são selecionadas por esta ordem. Esta política é opcional. Se não for definida, a codificação predefinida será UTF-8. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2682225790874070339">Desativa o Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Ativar a funcionalidade proxy de compressão de dados</translation>
+<translation id="2692168654831544772">Desativa a criação de capturas de ecrã.
+
+      Se estiver ativada, as capturas de ecrã não podem ser criadas através de atalhos de teclado ou de APIs de extensões.
+      Além disso, a captura de ecrã está desativada para aplicações ARC.
+
+      Se estiver desativada ou não for especificada, a criação de capturas de ecrã é permitida.</translation>
 <translation id="2731627323327011390">Desativar a utilização de certificados do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="2742843273354638707">Oculta a aplicação da Web Store do Chrome e o link do rodapé da página Novo separador e do iniciador de aplicações do <ph name="PRODUCT_OS_NAME" />.
 
@@ -640,6 +665,11 @@
 <translation id="3072847235228302527">Definir os Termos de Utilização para uma conta local do dispositivo</translation>
 <translation id="3096595567015595053">Lista de plug-ins ativados</translation>
 <translation id="3101501961102569744">Escolher como indicar as definições do servidor proxy</translation>
+<translation id="3117676313396757089">Aviso: o DHE será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 57 (por volta de março de 2017) e esta política deixa de funcionar nessa altura.
+
+      Se a política não for definida ou for definida como falsa, os conjuntos de cifras DHE no TLS não estão ativados. Caso contrário, pode ser definida como verdadeira para ativar os conjuntos de cifras DHE e manter a compatibilidade com um servidor desatualizado. Esta é uma medida temporária e é necessário voltar a configurar o servidor.
+
+      É recomendado migrar os servidores para os conjuntos de cifras ECDHE. Se não estiverem disponíveis, certifique-se de que está ativado um conjunto de cifras que utilize a troca de chaves RSA.</translation>
 <translation id="3153348162326497318">Permite especificar as extensões que NÃO podem ser instaladas pelos utilizadores. Se constarem da lista negra, as extensões já instaladas serão removidas. Um valor de lista negra "*" significa que todas as extensões constam da lista negra, a menos que estejam expressamente indicadas na lista de autorizações. Se esta política não for definida, o utilizador pode instalar qualquer extensão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Esta definição foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />. A forma recomendada de configurar coleções de extensões/aplicações alojadas na entidade é incluir no alojamento do site os pacotes CRX em ExtensionInstallSources e colocar links de transferência diretos para os pacotes numa página Web. Pode ser criado um iniciador para essa página Web utilizando a política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
@@ -720,6 +750,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3322771899429619102">Permite definir uma lista de padrões de URL que especificam os sites autorizados a utilizar a geração de chaves. Se um padrão do URL estiver incluído em "KeygenBlockedForUrls", tal substitui estas exceções.
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
+<translation id="3337150554416948435">Permite definir se os Websites têm autorização para monitorizar a localização física dos utilizadores. A monitorização da localização física dos utilizadores pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Website solicitar a localização física.
+
+          Se esta política for definida como "BlockGeolocation", a partilha da localização não é permitida para aplicações ARC.
+
+          Se esta política não for definida, é utilizada a definição "AskGeolocation" e o utilizador pode alterá-la.</translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
 <translation id="3417418267404583991">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá ativar os inícios de sessão de convidado. Os inícios de sessão de convidado são sessões de utilizadores anónimos e não necessitam de uma palavra-passe.
 
@@ -843,6 +878,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se não estiver especificada, não modificará o URL da semente Variações.</translation>
 <translation id="3863409707075047163">Versão SSL mínima ativada</translation>
+<translation id="3864020628639910082">Especifica o URL do motor de pesquisa utilizado para fornecer sugestões de pesquisa. O URL deve incluir a string "<ph name="SEARCH_TERM_MARKER" />", que, no momento da consulta, será substituída pelo texto que o utilizador tenha introduzido.
+
+          Esta política é opcional. Caso não seja definida, não será utilizado um URL de sugestão.
+
+          O URL de sugestão do Google pode ser especificado como <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="3864818549971490907">Definição de plug-ins predefinida</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3866530186104388232">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá mostrar os utilizadores existentes no ecrã de início de sessão e permitir que se escolha um. Se esta política estiver definida como falsa, o <ph name="PRODUCT_OS_NAME" /> utilizará o pedido de nome de utilizador/palavra-passe para o início de sessão.</translation>
@@ -857,6 +899,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Cada entrada da lista contém um dicionário que tem de incluir o ID da extensão no campo "extension-id" e o respetivo URL de atualização no campo "update-url".</translation>
 <translation id="3891357445869647828">Ativar JavaScript</translation>
+<translation id="3898060089412156345">Permitir ou negar a captura de áudio.
+
+      Se esta política estiver ativada ou não estiver configurada (predefinição), é solicitado ao utilizador
+      acesso de captura de áudio, exceto para os URLs configurados na
+      lista AudioCaptureAllowedUrls, à qual será concedido acesso sem pedido.
+
+      Quando esta política está desativada, nunca é solicitado acesso ao utilizador e a captura de
+      áudio está disponível apenas para os URLs configurados em AudioCaptureAllowedUrls.
+      Para aplicações ARC, o som do microfone está permanentemente desativado.
+
+      Esta política afeta todos os tipos de entrada de áudio e não apenas o microfone incorporado.</translation>
 <translation id="3907986150060929099">Definir os locais recomendados para uma sessão pública</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /> quando definida como verdadeira. Nesse caso, os dados não são carregados para o Google Drive.
 
@@ -913,6 +966,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="4105989332710272578">Desativar a imposição da Transparência de certificados para uma lista de URLs</translation>
 <translation id="4115096483386877940">Permitir o bloqueio do ecrã.
 
       Se esta política estiver definida como falsa, os utilizadores não podem bloquear o ecrã (podem apenas terminar a sessão de utilizador). Se esta política estiver definida como verdadeira ou não estiver definida, os utilizadores que efetuaram a autenticação com uma palavra-passe podem bloquear o ecrã.</translation>
@@ -950,6 +1004,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política é opcional. Se não for definida, será enviado um pedido de pesquisa de imagens através do método GET.
 
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
+<translation id="4309640770189628899">Determinar se os conjuntos de cifras DHE no TLS estão ativados</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4322842393287974810">Permitir que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adicionar um botão para terminar sessão ao tabuleiro do sistema</translation>
@@ -1892,6 +1947,20 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Suprimir o aviso de SO não suportado</translation>
 <translation id="7912255076272890813">Configurar tipos de aplicações/extensões permitidos</translation>
+<translation id="7914271217607102111">Permitir ou negar a captura de vídeo.
+
+      Se esta política estiver ativada ou não estiver configurada (predefinição), é solicitado ao utilizador
+      acesso de captura de vídeo, exceto para os URLs configurados na lista
+      VideoCaptureAllowedUrls, à qual é concedido acesso sem pedido.
+      As aplicações ARC podem aceder à câmara se lhes tiver sido dada
+      autorização.
+
+      Quando esta política está desativada, nunca é solicitado acesso ao utilizador e a captura
+      de vídeo está disponível apenas para os URLs configurados em VideoCaptureAllowedUrls.
+      As aplicações ARC não podem aceder à câmara.
+
+      Além das aplicações ARC, esta política afeta todos os tipos de entrada de vídeo e
+      não apenas a câmara incorporada.</translation>
 <translation id="7915236031252389808">Pode especificar um URL para um ficheiro .pac de proxy aqui.
 
           Esta política só é aplicada se tiver selecionado as definições de proxy manuais em "Escolher como especificar as definições do servidor proxy".

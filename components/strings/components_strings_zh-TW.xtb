@@ -34,6 +34,7 @@
 <translation id="1228893227497259893">實體識別碼錯誤</translation>
 <translation id="1232569758102978740">未命名</translation>
 <translation id="1254117744268754948">選擇資料夾</translation>
+<translation id="1264126396475825575">當機報告擷取時間：<ph name="CRASH_TIME" /> (尚未上傳或略過)</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />試試看清除 Cookie<ph name="END_LINK" /></translation>
@@ -65,12 +66,14 @@
 <translation id="1655462015569774233">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在昨天過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證已在 # 天前過期。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。您電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}}</translation>
 <translation id="1676269943528358898"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Google Chrome 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Google Chrome 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="168841957122794586">伺服器憑證含有防護力薄弱的加密編譯金鑰。</translation>
+<translation id="1701955595840307032">取得推薦內容</translation>
 <translation id="1706954506755087368">{1,plural, =1{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定明天才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}other{這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；伺服器的安全性憑證預定 # 天後才生效。這可能是因為設定錯誤，或是有攻擊者攔截您的連線。}}</translation>
 <translation id="1710259589646384581">作業系統</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1734878702283171397">建議您與系統管理員聯絡。</translation>
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1753706481035618306">頁碼</translation>
+<translation id="1761412452051366565">如要取得個人化的 Google 推薦內容，請開啟同步處理功能。</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線所致。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網路診斷<ph name="END_LINK" />。</translation>
 <translation id="1783075131180517613">請更新您的同步通關密語。</translation>
@@ -92,6 +95,7 @@
 <translation id="2065985942032347596">需要驗證</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="20817612488360358">雖然系統 Proxy 設定已設為使用，不過也指定了明確 Proxy 設定。</translation>
+<translation id="2086652334978798447">如要取得個人化的 Google 推薦內容，請登入 Chrome。</translation>
 <translation id="2089090684895656482">摘要資訊</translation>
 <translation id="2094505752054353250">網域不符</translation>
 <translation id="2096368010154057602">省</translation>
@@ -120,6 +124,7 @@
 <translation id="2354001756790975382">其他書籤</translation>
 <translation id="2357783041215512127">使用 <ph name="CREDIT_CARD" /> 付款</translation>
 <translation id="2359808026110333948">繼續</translation>
+<translation id="2365563543831475020">當機報告擷取時間：<ph name="CRASH_TIME" /> (尚未上傳)</translation>
 <translation id="2367567093518048410">等級</translation>
 <translation id="237718015863234333">沒有可用的替代使用者介面</translation>
 <translation id="2384307209577226199">企業預設</translation>
@@ -230,6 +235,7 @@
 <translation id="3452404311384756672">擷取間隔：</translation>
 <translation id="3462200631372590220">隱藏詳細資料</translation>
 <translation id="3479539252931486093">這是未預期的情況嗎？<ph name="BEGIN_LINK" />通知我們<ph name="END_LINK" /></translation>
+<translation id="348000606199325318">當機 ID：<ph name="CRASH_LOCAL_ID" /> (伺服器 ID：<ph name="CRASH_ID" />)</translation>
 <translation id="3498215018399854026">我們暫時無法與您的家長聯絡，請再試一次。</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3528171143076753409">伺服器憑證授權不可靠。</translation>
@@ -385,6 +391,7 @@
 <translation id="5430298929874300616">移除書籤</translation>
 <translation id="5431657950005405462">找不到您的檔案</translation>
 <translation id="5435775191620395718">目前顯示這個裝置的歷史紀錄。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
+<translation id="5437003064129843501">您的同步處理資料受到自訂通關密語保護，因此系統目前無法為您提供個人化的推薦內容。</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」發生架構驗證錯誤：<ph name="ERROR" /></translation>
 <translation id="5452270690849572955">找不到 <ph name="HOST_NAME" /> 網頁</translation>
 <translation id="5455374756549232013">政策時間戳記有誤</translation>
@@ -430,6 +437,7 @@
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="5990559369517809815">擴充功能已封鎖要傳送至伺服器的要求。</translation>
 <translation id="6008256403891681546">JCB</translation>
+<translation id="6016158022840135739">{COUNT,plural, =1{第 1 頁}other{第 # 頁}}</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="604124094241169006">自動</translation>
 <translation id="6042308850641462728">詳細資訊</translation>
@@ -522,7 +530,9 @@
 <translation id="7269802741830436641">這個網頁含有重新導向迴圈</translation>
 <translation id="7275334191706090484">受管理書籤</translation>
 <translation id="7298195798382681320">建議採用</translation>
+<translation id="7301833672208172928">開啟歷史紀錄同步處理功能</translation>
 <translation id="7334320624316649418">重做重新排序(&amp;R)</translation>
+<translation id="733923710415886693">伺服器憑證未依憑證透明化政策公開。</translation>
 <translation id="7353601530677266744">命令列</translation>
 <translation id="7372973238305370288">搜尋結果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -587,6 +597,7 @@
 <translation id="7951415247503192394">(32 位元)</translation>
 <translation id="7956713633345437162">行動版書籤</translation>
 <translation id="7961015016161918242">一律不要</translation>
+<translation id="7962083544045318153">當機 ID：<ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">一律將網頁內容由<ph name="ORIGINAL_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="8012647001091218357">我們暫時無法與您的家長聯絡，請再試一次。</translation>
@@ -638,6 +649,7 @@
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 位址&lt;/abbr&gt;，正在診斷問題。</translation>
 <translation id="8741995161408053644">您仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽紀錄。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
+<translation id="8790687370365610530">如要取得個人化的 Google 推薦內容，請開啟歷史紀錄同步處理功能。</translation>
 <translation id="8798099450830957504">預設</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
 <translation id="8820817407110198400">書籤</translation>
@@ -660,6 +672,7 @@
 <translation id="8987927404178983737">月</translation>
 <translation id="8988760548304185580">請輸入有效期限和信用卡背面的三位數信用卡安全碼</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
+<translation id="8997023839087525404">該伺服器的憑證並未根據憑證透明化政策對外公開。部分憑證必須符合這項規定，以確保憑證值得信任，不會讓使用者遭到攻擊。</translation>
 <translation id="9001074447101275817"><ph name="DOMAIN" /> Proxy 要求提供使用者名稱和密碼。</translation>
 <translation id="901974403500617787">這些設定會套用至整個系統，只有以下使用者可設定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020542370529661692">此網頁內容已翻譯成<ph name="TARGET_LANGUAGE" /></translation>

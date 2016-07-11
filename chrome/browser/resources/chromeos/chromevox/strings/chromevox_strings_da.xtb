@@ -6,6 +6,7 @@
 <translation id="1023866615269196768">Overlappet.</translation>
 <translation id="1025074108959230262">Sticky-tilstand er deaktiveret</translation>
 <translation id="1031961866430398710">og derefter</translation>
+<translation id="1038795173450935438">Tryk på Søg+højrepil for at bladre fremad mellem elementerne på en side, eller tryk på Søg+venstrepil for at hoppe tilbage. Tryk på Søg+pil ned for at gå til næste linje. Tryk på Søg+pil op for at gå til forrige linje. Klik på Søg+mellemrum for at klikke på et element.</translation>
 <translation id="1044777062731150180">Ingen overskrifter</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Ugyldigt input</translation>
@@ -43,6 +44,7 @@
 <translation id="1452236308086741652">Adgangskodetekstfeltet <ph name="VALUE" /></translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1474557363159888097">Ingen tidligere ankre.</translation>
+<translation id="1487494366197411587">På en Chromebook finder du tasten Søg lige over Shift-tasten.</translation>
 <translation id="1499041187027566160">lydstyrke op</translation>
 <translation id="1502086903961450562">Forrige grafik</translation>
 <translation id="1506187449813838456">Skru op for toneleje</translation>
@@ -71,6 +73,7 @@
 <translation id="174268867904053074">Næste grafik</translation>
 <translation id="1781173782405573156">Ignorer-tast</translation>
 <translation id="1787176709638001873">Tekst om redigering af adgangskode</translation>
+<translation id="1802710350767629429">Vis bemærkninger om opdateringer</translation>
 <translation id="1810107444790159527">Listefelt</translation>
 <translation id="1828385960365606039">Maj</translation>
 <translation id="1834891354138622109">Kolonne</translation>
@@ -113,12 +116,14 @@
 <translation id="241124561063364910">efterfulgt af</translation>
 <translation id="2417569100218200841">Indholdsoplysninger</translation>
 <translation id="2422937916923936891">Afkrydsningsfelt til menupunkt</translation>
+<translation id="2428534162001909979">Kommandomenuer</translation>
 <translation id="2429669115401274487">e.m.</translation>
 <translation id="2435413342408885429"><ph name="KEY" /> er nu den nye ChromeVox-ændringstast.</translation>
 <translation id="2450814015951372393">Afkrydsningsfelt</translation>
 <translation id="2462626033734746142">Gruppe af alternativknapper</translation>
 <translation id="2471138580042810658">Overskrift 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{stjerne}one{# stjerner}other{# stjerner}}</translation>
+<translation id="2525706221823668172">Tastaturgenveje på Chromebook</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> er blevet nulstillet.</translation>
 <translation id="2553108862507765288">grammatisk fejl</translation>
 <translation id="257674075312929031">Gruppe</translation>
@@ -132,6 +137,7 @@
 <translation id="2644542693584024604">stavefejl</translation>
 <translation id="2667291555398229137">Klik på elementet under en routing-tast</translation>
 <translation id="267442004702508783">opdater</translation>
+<translation id="2684412629217766642">Luk ChromeVox-selvstudie</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{venstre parentes}one{# venstre parentes}other{# venstre parenteser}}</translation>
 <translation id="2705875883745373140">Ikke trykket på</translation>
@@ -145,14 +151,17 @@
 <translation id="2777845298774924149">Lukket</translation>
 <translation id="2800204403141299078">Ikke flere anderledes elementer.</translation>
 <translation id="2800780099804980316">Ingen tidligere niveau 1-overskrifter.</translation>
+<translation id="2811019999044652585">Tryk på Ctrl+frem for at gå til andre områder på skærmen, som f.eks. værktøjslinjer eller systembakken. På Chromebook finder du tasten Frem lige over tasten med totallet.</translation>
 <translation id="2811204574343810641">Række</translation>
 <translation id="2816654101880605877">Ikke flere ​​skydere.</translation>
 <translation id="2841013758207633010">Tid</translation>
 <translation id="2843837985843789981">Forrige gruppe</translation>
 <translation id="2844995807198708617">Genvejsmenu</translation>
 <translation id="2849332794118375855">Ikke flere afkrydsningsfelter.</translation>
+<translation id="2858017024918511904">Tryk på Søg+punktum for at udforske alle kommandoerne og genvejene i ChromeVox. Brug derefter piletasterne til at navigere rundt i menuerne, og tryk på Enter for at aktivere en kommando.</translation>
 <translation id="2864481629947106776">Forrige link</translation>
 <translation id="2873259058405069099">Gå til starten af ​​tabellen</translation>
+<translation id="288178314850623291">Brug hoppekommandoer til at springe til bestemte typer elementer. Tryk på Søg+H for at hoppe fremad mellem overskrifter, og tryk på Søg+Shift+H for at hoppe tilbage.</translation>
 <translation id="2894654529758326923">Oplysninger</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{venstre klammeparentes}one{# venstre klammeparenteser}other{# venstre klammeparenteser}}</translation>
 <translation id="2911433807131383493">Åbn ChromeVox-selvstudie</translation>
@@ -181,6 +190,7 @@
 <translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">advar.dlg</translation>
 <translation id="3109724472072898302">Skjult</translation>
+<translation id="3112457281078985179">Tryk på Ctrl+Alt+Z for at slå ChromeVox til eller fra.</translation>
 <translation id="3134461040845705080">skrv.bsk</translation>
 <translation id="3138767756593758860">Vis liste med orienteringspunkter</translation>
 <translation id="3143851963874289911">cll</translation>
@@ -189,6 +199,8 @@
 <translation id="3163593631834463955">Tom kolonneoverskrift</translation>
 <translation id="316542773973815724">Navigation</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{mellemrum}one{# mellemrum}other{# mellemrum}}</translation>
+<translation id="3183233191569362040">Du har nu fået de grundlæggende oplysninger for at kunne bruge ChromeVox Next (beta). Husk, at du til enhver tid kan åbne kommandomenuerne i ChromeVox ved at trykke på Søg+punktum. Gå til følgende artikler for at få flere oplysninger om ChromeVox og Chrome OS.
+Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og klikke på den.</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> er indtastet</translation>
 <translation id="3223701887221307104">Fanen <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
@@ -201,9 +213,11 @@
 <translation id="3307886118343381874">Gå til slutningen af ​​tabellen</translation>
 <translation id="3311969765485641742">Tryk på Alt+Shift+A for at gennemse underretninger</translation>
 <translation id="3312997241656799641">Næste besøgte link</translation>
+<translation id="3313245066383501820">Ændringstasten til ChromeVox</translation>
 <translation id="3321460131042519426">Aktivér tekstombrydning</translation>
 <translation id="3322936298410871309">Forrige niveau 1-overskrift</translation>
 <translation id="3323447499041942178">Tekstfelt</translation>
+<translation id="3329854757664111426">Tryk på Enter for at gå frem.</translation>
 <translation id="3353420241558113817">{"ar": "arabisk",
         "bg": "bulgarsk",
         "ca": "catalansk",
@@ -291,6 +305,7 @@
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909320334364316587">Forrige niveau 6-overskrift</translation>
 <translation id="3914173277599553213">Påkrævet</translation>
+<translation id="3951424903203718058">Er det første gang, du bruger oplæsning i ChromeVox Next? Dette hurtige selvstudie giver dig de grundlæggende oplysninger, du skal bruge for at komme godt i gang med ChromeVox Next.</translation>
 <translation id="3962990492275676168">Start læsning fra nuværende position</translation>
 <translation id="4004802134384979325">markeret</translation>
 <translation id="4006140876663370126">bidl</translation>
@@ -301,6 +316,7 @@
 <translation id="4047216625641135770">Marker</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
+<translation id="4065205963140826639">Prøv nu at finde Next-knappen ved at trykke på Søg+højrepil. Tryk derefter på Søg+mellemrum for at klikke på den.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}one{# tilder}other{# tilder}}</translation>
 <translation id="409334809956508737">Forrige objekt</translation>
 <translation id="4099274309791143834">med undermenu</translation>
@@ -372,6 +388,7 @@
 <translation id="4842108708071771135">Ikke flere blockquotes.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Forrige lignende element.</translation>
+<translation id="485011152882364255">I CromeVox Next bruges tasten Søg som ændringstast. De fleste genveje i ChromeVox begynder med tasten Søg. Du bruger også piletasterne til at navigere med.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Aktivér TTS-logføring</translation>
 <translation id="4877261390094455813">Indtast en søgeforespørgsel.</translation>
@@ -437,12 +454,13 @@
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre end}one{# mindre end-tegn}other{# mindre end-tegn}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
 <translation id="5455441614648621694">Supplerende</translation>
+<translation id="5458780372341732962">Brug ChromeVox Next (beta)</translation>
 <translation id="5485036206801896268">Ingen tidligere grafikker.</translation>
 <translation id="5486947920110100234">Ikke flere hoppunkter.</translation>
 <translation id="549602578321198708">Ord</translation>
 <translation id="5500932716852106146">Ingen tidligere redigerbare tekstfelter.</translation>
 <translation id="5502713021410870035">September</translation>
-<translation id="5507663321906818013">Udgangspunkt for fejlfinding</translation>
+<translation id="5507663321906818013">Fejlfind benchmark</translation>
 <translation id="5518443085409638729">Placer markøren mellem tegn, når du redigerer tekst (ligesom Mac OS X).</translation>
 <translation id="552195134157544755">Alternativknap</translation>
 <translation id="5534303576632885660">si.ho</translation>
@@ -462,6 +480,7 @@
 <translation id="5623842676595125836">Log</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">Ingen tidligere tabeller.</translation>
+<translation id="5653397561111110475">Brug hjælpefunktioner til touchskærm på Chromebook</translation>
 <translation id="5655682562155942719">Hopkommandoer</translation>
 <translation id="56637627897541303">Tekstområde</translation>
 <translation id="5678161956734658133">mled</translation>
@@ -469,6 +488,14 @@
 <translation id="5682113568322255809">Orienteringspunkt</translation>
 <translation id="5683155931978483559">Forrige afkrydsningsfelt</translation>
 <translation id="5684277895745049190">Liste</translation>
+<translation id="5684905390246898631">Velkommen til ChromeVox Next</translation>
+<translation id="5695831708991916435">Følgende genveje er ikke kommandoer i ChromeVox, men de kan stadig hjælpe dig med at optimere din Chrome-oplevelse.
+Tryk på tabulatortasten for at gå fremad mellem elementer, der ved tryk eller klik medfører en handling, f.eks. knapper og links. Tryk på Shift+tabulatortast for at gå tilbage.
+Tryk på Ctrl+L for at indtaste Chrome-browserens adressefelt, der også kaldes omnifeltet.
+Tryk på Ctrl+T for automatisk at åbne og gå til en ny fane. Markøren er i omnifeltet.
+Tryk på Ctrl+W for at lukke en fane.
+Tryk på Ctrl+tabulatortast for at gå fremad mellem åbne faner.
+Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="5700650669149824506">Ingen tidligere niveau 4-overskrifter.</translation>
 <translation id="5703716265115423771">lydstyrke ned</translation>
 <translation id="5709192780268610569">Ingen lang beskrivelse</translation>
@@ -486,6 +513,7 @@
 <translation id="5851548754964597211">Faneliste</translation>
 <translation id="5859752971144398932">Søgefunktion på siden lukket.</translation>
 <translation id="5866042630553435010">Delvist kontrolleret</translation>
+<translation id="5867591286054666064">Undervejs i dette selvstudie kan du trykke på en given tast for at høre, hvad den hedder.</translation>
 <translation id="5869546221129391014">Gitter</translation>
 <translation id="5876817486144482042">Skru ned for talevolumen</translation>
 <translation id="5887397643266327462">Brailletekst er aktiveret.</translation>
@@ -504,6 +532,7 @@
 <translation id="6006050241733874051">Formular</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{omvendt skråstreg}one{ # omvendte skråstreger}other{# omvendte skråstreger}}</translation>
 <translation id="6037602951055904232">Panorer fremad</translation>
+<translation id="6082768461603900813">Grundlæggende navigation</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Slut på celle.</translation>
 <translation id="6122013438240733403">knp</translation>
@@ -565,6 +594,7 @@
 <translation id="6897341342232909480">Flyt til venstre</translation>
 <translation id="6901540140423170855">dato</translation>
 <translation id="6910211073230771657">Slettet</translation>
+<translation id="6910969481785184048">Til, Fra, og Afbryd</translation>
 <translation id="6911965441508464308">Ingen celle ovenfor.</translation>
 <translation id="6919104639734799681">Vis tabelliste</translation>
 <translation id="6964088412282673743">Ingen tidligere kontrolelementer.</translation>
@@ -619,8 +649,10 @@
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">fane</translation>
 <translation id="7492049978501397201">Indtastet dialog</translation>
+<translation id="7518543783849163354">Tryk på Ctrl for midlertidigt at afbryde oplæsning i ChromeVox.</translation>
 <translation id="7532613204005497612">Juni</translation>
 <translation id="7540083713905917247">Skyderen <ph name="VALUE" />, <ph name="NAME" /></translation>
+<translation id="7552432549459840808">Nyttige genveje i Chrome</translation>
 <translation id="7586163296341959563">sæt ind.</translation>
 <translation id="7596919493010894443">markering er ryddet</translation>
 <translation id="7604026522577407655">Gå til starten af ​​den aktuelle kolonne</translation>
@@ -667,6 +699,7 @@
 <translation id="8065607967589909823">Det valgte er</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Faner</translation>
+<translation id="8104178626892949749">Tryk på ChromeVox o, n for at få flere oplysninger om ChromeVox Next.</translation>
 <translation id="8110647606445335195">Ingen ARIA-orienteringspunkter.</translation>
 <translation id="8153880621934657047">Ikke i tabel.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understregning}one{# understregninger}other{# understregninger}}</translation>
@@ -676,6 +709,7 @@
 <translation id="8199231515320852133">Offentliggør overskrifterne for den aktuelle celle</translation>
 <translation id="820417203470636242">Tom celle.</translation>
 <translation id="8215202828671303819">Valg af flere</translation>
+<translation id="8224171046658870249">Skiftet til ChromeVox Next</translation>
 <translation id="8276439074553447000">Gå til forrige element, der kan fokuseres på</translation>
 <translation id="8278417001922463147">Ingen tidligere artikel.</translation>
 <translation id="8283603667300770666">Næste formularfelt</translation>
@@ -715,6 +749,7 @@
 <translation id="8664519043722036194">sekunder</translation>
 <translation id="867187640362843212">Overskrift 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{streg}one{# lodrette streger}other{# lodrette streger}}</translation>
+<translation id="8721861170709424373">Kommandoreference i ChromeVox Next</translation>
 <translation id="8735450637152821465">Det valgte startes</translation>
 <translation id="8743786158317878347">indtast struktureret indhold, f.eks. tabeller</translation>
 <translation id="8747966237988593539">Sorteret liste</translation>
@@ -764,6 +799,7 @@
 <translation id="923331726185079994">ChromeVox blev opdateret</translation>
 <translation id="930275611743429116">Start eller afslut det valgte.</translation>
 <translation id="948171205378458592">Skru ned for talehastighed</translation>
+<translation id="955917170449423694">Skiftet til den tidligere version af ChromeVox</translation>
 <translation id="962913030769097253">Næste niveau 1-overskrift</translation>
 <translation id="973955474346881951">Aktivér/deaktiver sticky-tilstand</translation>
 <translation id="976849232629612000">Ingen elementer.</translation>

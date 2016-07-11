@@ -191,7 +191,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questa norma non viene impostata, gli utenti potranno utilizzare qualsiasi plug-in installato sul sistema, tranne i plug-in hard-coded, non compatibili, obsoleti o pericolosi.</translation>
 <translation id="1864269674877167562">Se questa norma non viene configurata o se viene impostata una stringa vuota, non verrà mostrata un'opzione di completamento automatico durante il flusso di accesso dell'utente in <ph name="PRODUCT_OS_NAME" />.
-      Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio. L'utente potrà sostituire l'estensione del nome di dominio.</translation>
+      Se per questa norma viene impostata una stringa che rappresenta un nome di dominio, durante l'accesso dell'utente in <ph name="PRODUCT_OS_NAME" /> verrà mostrata un'opzione di completamento automatico che consentirà all'utente di digitare soltanto il nome utente senza l'estensione del nome di dominio. L'utente potrà sovrascrivere l'estensione del nome di dominio.</translation>
 <translation id="1865417998205858223">Autorizzazioni chiave</translation>
 <translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
 <translation id="187819629719252111">Consente di accedere ai file locali presenti sul computer, permettendo a <ph name="PRODUCT_NAME" /> di visualizzare le finestre di dialogo di selezione dei file. Se attivi questa impostazione, gli utenti potranno aprire le finestre di dialogo di selezione dei file come di consueto. Se disattivi questa impostazione, ogni volta che l'utente eseguirà un'azione che apre una finestra di dialogo di selezione file (ad esempio importazione di Preferiti, caricamento di file, salvataggio di link e così via), verrà visualizzato un messaggio e il sistema presupporrà che l'utente abbia fatto clic sul pulsante Annulla della finestra di dialogo stessa. Se questa impostazione non viene impostata, gli utenti potranno aprire le finestre di dialogo di selezione file come di consueto.</translation>
@@ -419,6 +419,13 @@ Se l'azione viene sospesa, <ph name="PRODUCT_OS_NAME" /> può essere configurato
 <translation id="2466131534462628618">L'autenticazione tramite captive portal ignora il proxy</translation>
 <translation id="2482676533225429905">Messaggi nativi</translation>
 <translation id="2483146640187052324">Prevedi le azioni di rete su qualsiasi connessione di rete</translation>
+<translation id="2486371469462493753">Disattiva l'imposizione dei requisiti di Certificate Transparency per gli URL elencati.
+
+      Questa norma consente ai certificati per i nomi host negli URL specificati di non essere resi pubblici tramite Certificate Transparency. Consente ai certificati che altimenti sarebbero considerati inattendibili, in quanto non appropriatamente resi pubblici, di continuare a essere utilizzati. Tuttavia, la norma rende più difficile il rilevamento di certificati emessi in modo scorretto per questi host.
+
+      Un pattern URL è nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format. Tuttavia, siccome i certificati sono validi per un determinato nome host indipendente dallo schema, dalla porta o dal percorso, viene considerata solo la parte del nome host dell'URL. Gli host jolly non sono supportati.
+
+      Se questa norma non viene impostata, i certificati che devono essere resi pubblici tramite Certificate Transparency verrranno considerati come inaffidabili in quanto non sono sono resi pubblici come previsto dalle norme di Certificate Transparency.</translation>
 <translation id="2488010520405124654">Consente di attivare la richiesta di configurazione della rete in modalità offline.
 
       Se questa norma non viene impostata o viene impostata su True, se un account locale sul dispositivo è configurato per l'accesso automatico senza ritardo e il dispositivo non ha accesso a Internet, in <ph name="PRODUCT_OS_NAME" /> viene visualizzata una richiesta di configurazione della rete.
@@ -442,6 +449,13 @@ Se l'azione viene sospesa, <ph name="PRODUCT_OS_NAME" /> può essere configurato
 <translation id="2529880111512635313">Configura l'elenco di estensioni e app con installazione imposta</translation>
 <translation id="253135976343875019">Ritardo avviso inattività in caso di utilizzo di CA</translation>
 <translation id="2552966063069741410">Fuso orario</translation>
+<translation id="2562339630163277285">Consente di specificare l'URL del motore di ricerca utilizzato per fornire risultati immediati. L'URL deve contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che sarà sostituita in fase di query dal testo inserito dall'utente fino a quel momento.
+
+          Questa norma è facoltativa. Se non viene impostata, non verranno restituiti risultati di ricerca immediati.
+
+          L'URL per i risultati immediati di Google può essere specificato come segue: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2571066091915960923">Consente di attivare o disattivare il proxy di compressione dei dati e di impedire agli utenti di cambiare questa impostazione.
 
 Se attivi o disattivi questa impostazione, gli utenti non potranno cambiarla o ignorarla.
@@ -453,10 +467,21 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="262740370354162807">Attiva l'invio di documenti a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Attiva la funzione di lettura vocale</translation>
 <translation id="2650049181907741121">Azione da compiere quando l'utente chiude il coperchio</translation>
+<translation id="2655233147335439767">Consente di specificare l'URL del motore di ricerca utilizzato per eseguire una ricerca per impostazione predefinita. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />",che verrà sostituita in fase di query dai termini di ricerca inseriti dall'utente.
+
+          L'URL per la ricerca di Google può essere specificato come segue: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Questa opzione deve essere impostata quando la norma "DefaultSearchProviderEnabled" è attiva e verrà rispettata soltanto in questo caso.</translation>
 <translation id="2660846099862559570">Non utilizzare mai un proxy</translation>
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Consente di disattivare Drive nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
+<translation id="2692168654831544772">Disabilita l'acquisizione di screenshot.
+
+      Se questa norma è abilitata, non è possibile acquisire screenshot utilizzando scorciatoie da tastiera o API di estensioni.
+      Inoltre, l'acquisizione di schermate è disattivata per le app ARC.
+
+      Se questa norma è disabilitata o non specificata, l'acquisizione di screenshot è consentita.</translation>
 <translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
 <translation id="2742843273354638707">Consente di nascondere l'app Chrome Web Store e il link nel piè di pagina nella pagina Nuova scheda e in Avvio applicazioni di <ph name="PRODUCT_OS_NAME" />.
 
@@ -619,6 +644,11 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="3072847235228302527">Imposta i Termini di servizio di un account locale del dispositivo</translation>
 <translation id="3096595567015595053">Elenco dei plug-in attivati</translation>
 <translation id="3101501961102569744">Scegli come specificare le impostazioni del server proxy</translation>
+<translation id="3117676313396757089">Avviso. DHE sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 57 (nel periodo di marzo 2017), dopodiché questa norma non sarà più attiva.
+
+      Se la norma non viene impostata o se viene impostata su false, i pacchetti di crittografia DHE in TLS non saranno attivati. In alternativa, la norma può essere impostata su true per attivare i pacchetti di crittografia DHE e per mantenere la compatibilità con un server obsoleto. Si tratta di una soluzione temporanea ed è necessario configurare nuovamente il server.
+
+      Si consiglia di effettuare la migrazione dei server ai pacchetti di crittografia ECDHE. Se non sono disponibili, assicurati che siano attivati i pacchetti di crittografia con l'utilizzo dello scambio delle chiavi RSA.</translation>
 <translation id="3153348162326497318">Consente di specificare le estensioni che gli utenti NON possono installare. Se presenti nella blacklist, le estensioni precedentemente installate verranno rimosse. Un valore "*" riportato nella blacklist indica che tutte le estensioni sono state inserite nella blacklist a meno che non siano espressamente elencate nella whitelist. Se questa norma non viene impostata, gli utenti potranno installare qualsiasi estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Questa impostazione non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />. Il metodo consigliato per la configurazione di raccolte di estensioni/app ospitate dall'organizzazione consiste nell'includere il sito che ospita i pacchetti CRX in ExtensionInstallSources e inserire link di download diretti per i pacchetti in una pagina web. È possibile creare una funzione Avvio applicazioni per la pagina web utilizzando la norma ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">a partire dalla versione <ph name="SINCE_VERSION" /></translation>
@@ -699,6 +729,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="3322771899429619102">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentito l'utilizzo della generazione di chiavi. Se un pattern URL è indicato nella norma "KeygenBlockedForUrls", quest'ultima ha la precedenza su queste eccezioni.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultKeygenSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
+<translation id="3337150554416948435">Permette di stabilire se consentire o meno il monitoraggio della posizione fisica degli utenti da parte dei siti web. Il monitoraggio della posizione fisica degli utenti può essere consentito o negato per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera conoscere la posizione fisica.
+
+          Se questa norma viene impostata su "BlockGeolocation", la condivisione della posizione non viene consentita per le app ARC.
+
+          Se questa norma non viene impostata, verrà utilizzato il valore "AskGeolocation"', che potrà essere modificato dagli utenti.</translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
 <translation id="3417418267404583991">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_OS_NAME" /> verranno attivati gli accessi come ospite. Gli accessi come ospite sono sessioni utente anonime che non richiedono password.
 
@@ -822,6 +857,13 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Se la norma non è specificata, l'URL di recupero del numero di inizializzazione delle varianti non verrà modificato.</translation>
 <translation id="3863409707075047163">Versione SSL minima attivata</translation>
+<translation id="3864020628639910082">Consente di specificare l'URL del motore di ricerca utilizzato per fornire suggerimenti di ricerca. L'URL deve contenere la stringa "<ph name="SEARCH_TERM_MARKER" />", che verrà sostituita in fase di query dal testo inserito fino a quel momento dall'utente.
+
+          Questa norma è facoltativa. Se non viene impostata, non verranno utilizzati URL di suggerimento.
+
+          L'URL per i suggerimenti di Google può essere specificato come segue: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="3864818549971490907">Impostazione plug-in predefiniti</translation>
 <translation id="3866249974567520381">Descrizione</translation>
 <translation id="3866530186104388232">Se questa norma viene impostata su true o non viene configurata, nella schermata di accesso di <ph name="PRODUCT_OS_NAME" /> verranno visualizzati gli utenti esistenti tra cui sarà possibile selezionare un utente. Se la norma viene impostata su false, per accedere a <ph name="PRODUCT_OS_NAME" /> verranno richiesti nome utente e password.</translation>
@@ -834,6 +876,17 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Ogni voce dell'elenco contiene un dizionario che deve includere l'ID dell'estensione nel campo "extension-id" e il relativo URL di aggiornamento nel campo "update-url".</translation>
 <translation id="3891357445869647828">Abilita JavaScript</translation>
+<translation id="3898060089412156345">Consente di permettere o negare l'acquisizione audio.
+
+      Se la norma viene attivata o non viene configurata (impostazione predefinita), all'utente verrà richiesto
+      l'accesso all'acquisizione audio, ad eccezione degli URL configurati nell'elenco
+      AudioCaptureAllowedUrls per cui verrà concesso l'accesso senza richieste.
+
+      Se questa norma viene disattivata, all'utente non verrà mai chiesto nulla
+      e l'acquisizione audio sarà disponibile soltanto per gli URL configurati in AudioCaptureAllowedUrls.
+      Per le app ARC il microfono è sempre disattivato.
+
+      Questa norma viene applicata per tutti i tipi di ingressi audio e non soltanto per il microfono integrato.</translation>
 <translation id="3907986150060929099">Consente di impostare le impostazioni internazionali consigliate per una sessione pubblica</translation>
 <translation id="391531815696899618">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> quando è impostata su True. In tal caso, non vengono caricati dati in Google Drive.
 
@@ -882,6 +935,7 @@ Se questa norma viene impostata, consente di specificare il periodo di tempo per
 Se questa norma non viene impostata, viene utilizzato un periodo di tempo predefinito.
 
 Il valore della norma deve essere specificato in millisecondi.</translation>
+<translation id="4105989332710272578">Disattiva l'imposizione di Certificate Transparency per un elenco di URL</translation>
 <translation id="4115096483386877940">Consenti blocco dello schermo.
 
 Se la norma viene impostata su false, gli utenti non potranno bloccare lo schermo (sarà possibile solo la disconnessione dalla sessione utente). Se la norma viene impostata su true o non viene del tutto impostata, gli utenti autenticati mediante password potranno bloccare lo schermo.</translation>
@@ -919,6 +973,7 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di immagini verrà inviata utilizzando il metodo GET.
 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
+<translation id="4309640770189628899">Attiva o meno i pacchetti di crittografia DHE in TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o versione successiva</translation>
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
@@ -1571,7 +1626,8 @@ Vedi anche RemoteAccessHostClientDomain.</translation>
 
           Se questa norma non viene impostata, e non viene impostata neanche la norma HomepageIsNewTabPage, l'utente potrà scegliere la pagina iniziale che preferisce.
 
-          Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
+          Questa norma non è disponibile su istanze di Windows che non fanno
+          parte di un dominio Active Directory.</translation>
 <translation id="7063895219334505671">Consenti popup su questi siti</translation>
 <translation id="706669471845501145">Consenti la visualizzazione di notifiche desktop da parte dei siti</translation>
 <translation id="7079519252486108041">Blocca popup su questi siti</translation>
@@ -1774,6 +1830,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 
           Se questa impostazione è disabilitata o non è impostata, l'autenticazione a due fattori non sarà attiva e verrà utilizzato il comportamento predefinito che prevede l'uso di un PIN definito dall'utente.</translation>
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
+<translation id="7761446981238915769">Configura l'elenco di app installate nella schermata di accesso</translation>
 <translation id="7761526206824804472">Consente di selezionare una o più impostazioni internazionali per una sessione pubblica, consentendo agli utenti di sceglierne facilmente una.
 
       L'utente può scegliere un'impostazione internazionale e un layout tastiera prima di iniziare una sessione pubblica. Per impostazione predefinita, tutte le impostazioni internazionali supportate da <ph name="PRODUCT_OS_NAME" /> sono elencate in ordine alfabetico. È possibile utilizzare questa norma per spostare un set di impostazioni internazionali consigliate nella parte superiore dell'elenco.
@@ -1839,6 +1896,20 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
 <translation id="7882890448959833986">Elimina l'avviso di sistema operativo non supportato</translation>
 <translation id="7912255076272890813">Configura tipi di app/estensioni consentiti</translation>
+<translation id="7914271217607102111">Consente di permettere o negare l'acquisizione video.
+
+      Se la norma viene attivata o non viene configurata (impostazione predefinita), all'utente verrà richiesto
+      l'accesso all'acquisizione video, a eccezione degli URL configurati nell'elenco
+      VideoCaptureAllowedUrls per cui verrà concesso l'accesso senza richieste.
+      Le app ARC potranno accedere alla videocamera se è stata concessa
+      l'autorizzazione.
+
+      Se questa norma viene disattivata, all'utente non verrà mai chiesto nulla e l'acquisizione
+      video sarà disponibile soltanto per gli URL configurati in VideoCaptureAllowedUrls.
+      Le app ARC non potranno accedere alla videocamera.
+
+      A eccezione delle app ARC, questa norma viene applicata per tutti i tipi di ingressi video e
+      e non soltanto per la videocamera integrata.</translation>
 <translation id="7915236031252389808">Qui puoi specificare un URL che rimanda a un file proxy .pac.
 
           Questa norma viene applicata soltanto se sono state selezionate le impostazioni proxy manuali in "Scegli come specificare le impostazioni del server proxy".
@@ -1912,9 +1983,9 @@ Se la norma viene impostata su false, la modalità ad alto contrasto sarà sempr
 Se la norma viene impostata, gli utenti non potranno modificarla o ignorarla.
 
 Se la norma non viene configurata, la modalità ad alto contrasto viene inizialmente disattivata ma potrà essere attivata dagli utenti in qualsiasi momento.</translation>
-<translation id="815061180603915310">Se viene attivata, questa norma forza l'attivazione della modalità temporanea per il profilo. Se viene specificata come norma del sistema operativo (ad esempio GPO su Windows) viene applicata a ogni profilo nel sistema; se la norma viene impostata come norma Cloud, viene applicata soltanto a un profilo a cui viene eseguito l'accesso con un account gestito.
+<translation id="815061180603915310">Se viene attivata, questa norma forza l'attivazione della modalità temporanea per il profilo. Se viene specificata come norma del sistema operativo (ad esempio GPO su Windows), la norma viene applicata a ogni profilo nel sistema; se la norma viene impostata come norma Cloud, viene applicata soltanto a un profilo a cui viene eseguito l'accesso con un account gestito.
 
-      In questa modalità, i dati del profilo rimangono memorizzati su disco soltanto per la durata della sessione utente. Funzionalità quali cronologia del browser, estensioni e relativi dati, dati web quali cookie e database web, non rimangono memorizzate alla chiusura del browser. L'utente può comunque scaricare i dati su disco manualmente, salvare pagine o stamparle.
+      In questa modalità, i dati del profilo rimangono memorizzati su disco soltanto per la durata della sessione utente. Funzionalità quali cronologia del browser, estensioni e relativi dati, dati web quali cookie e database web non rimangono memorizzati alla chiusura del browser. L'utente può comunque scaricare i dati su disco manualmente, salvare pagine o stamparle.
 
       Se l'utente ha attivato la sincronizzazione, tutti i dati rimangono memorizzati nel suo profilo sincronizzato così come avviene per i profili normali. È disponibile anche la modalità di navigazione in incognito se non è disattivata esplicitamente dalla norma.
 
@@ -1982,7 +2053,8 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Se questa norma non viene impostata, l'utente potrà scegliere se impostare o meno la pagina Nuova scheda come pagina iniziale.
 
-          Questa norma non è disponibile su istanze di Windows che non fanno parte di un dominio Active Directory.</translation>
+          Questa norma non è disponibile su istanze di Windows che non fanno
+          parte di un dominio Active Directory.</translation>
 <translation id="8329984337216493753">Questa norma è attiva soltanto in modalità retail.
 
       Se viene specificata la norma DeviceIdleLogoutTimeout, questa norma consente di definire la durata della casella di avviso con un timer per il conto alla rovescia che viene mostrato all'utente prima dell'esecuzione dell'uscita.
@@ -2112,6 +2184,15 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 <translation id="8858642179038618439">Forza la Modalità di protezione di YouTube</translation>
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Pagina iniziale</translation>
+<translation id="88890388118515381">
+      Consente di specificare un elenco di app che verranno installate automaticamente nella schermata di accesso (senza interazione dell'utente) e che non possono essere disinstallate.
+      Tutte le autorizzazioni richieste dalle app vengono concesse implicitamente senza interazione dell'utente, comprese le eventuali autorizzazioni aggiuntive richieste dalle future versioni delle app.
+
+      Se un'app di cui era stata precedentemente forzata l'installazione viene rimossa dall'elenco, l'app viene disinstallata automaticamente da <ph name="PRODUCT_NAME" />.
+
+      Ogni voce della norma è una stringa contenente un ID estensione e un URL di "aggiornamento" separati da punto e virgola (<ph name="SEMICOLON" />). L'ID estensione è la stringa di 32 lettere trovata, ad esempio, all'indirizzo <ph name="CHROME_EXTENSIONS_LINK" /> in modalità sviluppatore. L'URL di "aggiornamento" dovrebbe rimandare a un documento XML Manifest di aggiornamento, come descritto all'indirizzo <ph name="LINK_TO_EXTENSION_DOC1" />. L'URL di aggiornamento impostato in questa norma viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento indicato nel file manifest dell'estensione.
+
+      Ad esempio, <ph name="EXTENSION_POLICY_EXAMPLE" /> installa l'app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> dall'URL di "aggiornamento" del Chrome Web Store standard. Per ulteriori informazioni sulle estensioni in hosting, visitare il sito all'indirizzo: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server fornisce file di configurazione specifici per l'hardware, ad esempio profili ICC per regolare la calibrazione dei monitor.
 
       Se questa norma viene impostata su false, il dispositivo non tenterà di contattare Quirks Server per scaricare i file di configurazione.

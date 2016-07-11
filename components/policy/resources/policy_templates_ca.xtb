@@ -12,9 +12,9 @@
 
       Quan aquesta política s'estableix en "true", les galetes establertes per l'IdP es transfereixen al perfil de l'usuari cada vegada que s'autentica amb l'IdP SAML durant l'inici de sessió.
 
-      Quan aquesta política s'estableix en "false" o no s'estableix, les galetes establertes per l'IdP es transfereixen al perfil de l'usuari durant el seu primer inici de sessió només en un dispositiu.
+      Quan aquesta política s'estableix en "false" o no s'estableix, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió en un dispositiu.
 
-      Aquesta política afecta els usuaris amb dominis que coincideixen només amb el domini de registre del dispositiu. Per a la resta d'usuaris, les galetes establertes per l'IdP es transfereixen al perfil de l'usuari durant el seu primer inici de sessió només en un dispositiu.</translation>
+      Aquesta política només afecta els usuaris amb dominis que coincideixen amb el domini de registre del dispositiu. Per a la resta d'usuaris, les galetes establertes per l'IdP només es transfereixen al perfil de l'usuari durant el seu primer inici de sessió al dispositiu.</translation>
 <translation id="1040446814317236570">Activeu la retirada de l'URL de PAC (per a https://)</translation>
 <translation id="1044878202534415707">Informa d'estadístiques del maquinari com ara l'ús de CPU o de RAM.
 
@@ -437,6 +437,13 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2466131534462628618">L'autenticació de portals captius ignora el servidor intermediari</translation>
 <translation id="2482676533225429905">Missatgeria nativa</translation>
 <translation id="2483146640187052324">Prediu accions de xarxa en qualsevol connexió de xarxa</translation>
+<translation id="2486371469462493753">Desactiva l'aplicació dels requisits de Transparència de certificats als URL esmentats.
+
+      Aquesta política permet que els certificats dels noms d'amfitrió dels URL que especifiqueu no es divulguin mitjançant Transparència de certificats. Això permet que es puguin continuar utilitzant certificats que, en cas contrari, podrien no ser de confiança perquè no s'han divulgat públicament de la manera adequada, però fa que sigui més difícil detectar l'emissió inadequada de certificats per a aquests amfitrions.
+
+      Un patró d'URL ha de tenir el format que s'indica a la pàgina https://www.chromium.org/administrators/url-blacklist-filter-format. Tanmateix, atès que els certificats són vàlids per a un nom d'amfitrió determinat independent de l'esquema, el port o camí, només es té en compte la part de l'URL corresponent al nom d'amfitrió. No s'admeten amfitrions comodí.
+
+      Si no s'estableix aquesta política, qualsevol certificat que s'hagi de divulgar mitjançant la Transparència de certificats es considerarà que no és de confiança si no es divulga d'acord amb la política Transparència de certificats.</translation>
 <translation id="2488010520405124654">Activeu la sol·licitud de configuració de la xarxa quan estigueu fora de línia.
 
       Si aquesta política no es defineix o si es defineix com a True, en cas que un compte de dispositiu local s'hagi configurat per iniciar la sessió automàticament sense retard i el dispositiu no tingui accés a Internet, <ph name="PRODUCT_OS_NAME" /> mostrarà una sol·licitud de configuració de la xarxa.
@@ -460,6 +467,13 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2529880111512635313">Configura la llista d'aplicacions i d'extensions instal·lades per força</translation>
 <translation id="253135976343875019">Retard d'advertiment d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2552966063069741410">Zona horària</translation>
+<translation id="2562339630163277285">Especifica l'URL del motor de cerca utilitzat per proporcionar resultats immediats. L'URL ha de contenir la cadena <ph name="SEARCH_TERM_MARKER" />, que se substituirà, en el moment de fer la consulta, pel text que l'usuari hagi introduït fins al moment.
+
+          Aquesta política és opcional i, si no s'estableix, no es proporcionaran resultats de cerca immediats.
+
+          L'URL de resultats immediats de Google es pot especificar de la manera següent: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Aquesta política només es respecta si la política DefaultSearchProviderEnabled està activada.</translation>
 <translation id="2571066091915960923">Permet activar o desactivar el servidor intermediari de compressió de dades i evitar que els usuaris canvien aquesta configuració.
 
       Si activeu o desactiveu aquesta política, els usuaris no la podran canviar ni anul·lar.
@@ -471,10 +485,21 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="262740370354162807">Activa l'enviament de documents a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activa els comentaris per veu</translation>
 <translation id="2650049181907741121">Acció que cal dur a terme quan l'usuari tanca la tapa</translation>
+<translation id="2655233147335439767">Especifica l'URL del motor de cerca utilitzat en fer una cerca predeterminada. L'URL ha de contenir la cadena "<ph name="SEARCH_TERM_MARKER" />", que se substituirà, en el moment de fer la consulta, pels termes que l'usuari estigui cercant.
+
+          L'URL de cerca de Google es pot especificar de la manera següent: <ph name="GOOGLE_SEARCH_URL" />.
+ 
+          Aquesta opció s'ha d'establir quan s'activa la política DefaultSearchProviderEnabled i només es respectarà si és així.</translation>
 <translation id="2660846099862559570">No facis servir mai un servidor intermediari</translation>
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2682225790874070339">Desactiva Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
+<translation id="2692168654831544772">Desactiva les captures de pantalla.
+
+      Si està activada, no es podran fer captures de pantalla amb tecles de drecera ni APIs d'extensió.
+      A més, les captures de pantalla també estan desactivades per a les aplicacions ARC.
+
+      Si està desactivada o no s'estableix, es podran fer captures de pantalla.</translation>
 <translation id="2731627323327011390">Desactiva l'ús de certificats de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="2742843273354638707">Amaga l'aplicació Chrome Web Store i l'enllaç de la part inferior de la pàgina a la pàgina Pestanya nova i al Menú d'aplicacions de <ph name="PRODUCT_OS_NAME" />.
 
@@ -542,9 +567,9 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           Si activeu aquesta opció de configuració, <ph name="PRODUCT_NAME" /> ignora totes les opcions relacionades amb el servidor intermediari que s'han especificat des de la línia d'ordres.
 
           Si deixeu aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
-<translation id="2818551149761607847">Configureu la imatge d'avatar de l'usuari.
+<translation id="2818551149761607847">Permet configurar la imatge d'avatar de l'usuari.
 
-      Aquesta política us permet configurar la imatge d'avatar que representa l'usuari a la pantalla d'inici de sessió. Per establir aquesta política, s'especifica l'URL des del qual <ph name="PRODUCT_OS_NAME" /> pot baixar la imatge d'avatar i un hash criptogràfic que s'utilitza per verificar la integritat de la baixada. La imatge ha de tenir el format JPEG i no pot superar els 512 kB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació.
+      Aquesta política us permet configurar la imatge d'avatar que representa l'usuari a la pantalla d'inici de sessió. Per establir aquesta política, s'especifica l'URL des del qual <ph name="PRODUCT_OS_NAME" /> pot baixar la imatge d'avatar i un hash criptogràfic que s'utilitza per verificar la integritat de la baixada. La imatge ha de tenir el format JPEG i no pot superar els 512 kB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació.
 
       La imatge d'avatar es baixa i es desa a la memòria cau. Es tornarà a baixar quan l'URL o el hash canviïn.
 
@@ -637,6 +662,11 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="3072847235228302527">Defineix els Termes i condicions d'un compte local del dispositiu</translation>
 <translation id="3096595567015595053">Llista dels connectors activats</translation>
 <translation id="3101501961102569744">Tria com vols especificar la configuració del servidor intermediari</translation>
+<translation id="3117676313396757089">Advertiment: DHE se suprimirà completament de <ph name="PRODUCT_NAME" /> després de la versió 57 (aproximadament al març de 2017), i aquesta política deixarà de funcionar en aquell moment.
+
+      Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge DHE de TLS no s'activaran. En cas contrari, es pot establir en "true" per activar els sistemes de xifratge DHE i conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.
+
+      Es recomana migrar els servidors a sistemes de xifratge ECDHE. Si no estan disponibles, assegureu-vos que s'activi un sistema de xifratge que utilitzi un intercanvi de clau RSA.</translation>
 <translation id="3153348162326497318">Us permet especificar quines extensions NO poden instal·lar els usuaris. Les extensions ja instal·lades s'eliminaran si apareixen a la llista negra. Un valor de llista negra de "*" significa que totes les extensions apareixen a la llista negra llevat que apareguin explícitament a la llista blanca. Si no s'ha definit aquesta política, l'usuari podrà instal·lar qualsevol extensió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
@@ -718,6 +748,11 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
+<translation id="3337150554416948435">Us permet establir si els llocs web poden fer un seguiment de la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web sol·liciti la ubicació física.
+
+          Si aquesta política s'estableix en BlockGeolocation, es denegarà la ubicació compartida per a les aplicacions ARC.
+
+          Si aquesta política es deixa sense establir, s'utilitzarà l'opció AskGeolocation i l'usuari la podrà canviar.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
@@ -841,6 +876,13 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Si no s'especifica, no es modificarà l'URL de la propagació de variacions.</translation>
 <translation id="3863409707075047163">Versió SSL mínima activada</translation>
+<translation id="3864020628639910082">Especifica l'URL del motor de cerca que s'utilitza per proporcionar suggeriments de cerca. L'URL ha de contenir la cadena "<ph name="SEARCH_TERM_MARKER" />", que se substituirà, en el moment de la consulta, pel text que l'usuari hagi introduït fins al moment.
+
+          Aquesta política és opcional i si no s'estableix no s'utilitzarà cap URL de suggeriment.
+
+          L'URL de suggeriment de Google es pot especificar de la manera següent: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Aquesta política només es respecta si la política DefaultSearchProviderEnabled està activada.</translation>
 <translation id="3864818549971490907">Configuració de connectors predeterminada</translation>
 <translation id="3866249974567520381">Descripció</translation>
 <translation id="3866530186104388232">Si aquesta política es defineix a «true» (cert) o ​​es deixa sense configurar, <ph name="PRODUCT_OS_NAME" /> mostrarà els usuaris existents a la pantalla d'inici de sessió i deixarà triar-ne un. Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME" /> farà servir la petició de nom d'usuari i de contrasenya per iniciar la sessió.</translation>
@@ -855,6 +897,17 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
+<translation id="3898060089412156345">Permeteu o rebutgeu la captura d'àudio.
+
+      Si la política està activada o no està configurada (opció predeterminada), es demanarà a l'usuari
+      que confirmi l'accés a les captures d'àudio amb excepció dels URL configurats a la
+      llista AudioCaptureAllowedUrls, als quals es podrà accedir sense sol·licitar-ho.
+
+      Quan aquesta política estigui desactivada, no es demanarà mai a l'usuari que confirmi l'accés, i la captura
+      d'àudio només estarà disponible als URL configurats a AudioCaptureAllowedUrls.
+      Per a les aplicacions ARC, el micròfon se silenciarà permanentment.
+
+      Aquesta política afecta tots els tipus d'entrada d'àudio i no només els del micròfon integrat.</translation>
 <translation id="3907986150060929099">Estableix les configuracions regionals recomanades per a una sessió pública</translation>
 <translation id="391531815696899618">Quan aquesta política s'estableix en True, desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" />. En aquest cas, no es pengen dades a Google Drive.
 
@@ -911,6 +964,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
+<translation id="4105989332710272578">Desactiva l'aplicació de la Transparència de certificats per a una llista d'URL</translation>
 <translation id="4115096483386877940">Permet bloquejar la pantalla.
 
       Si aquesta política s'estableix en "false", els usuaris no poden bloquejar la pantalla (només poden tancar la sessió d'usuari). Si s'estableix en "true" o no s'estableix, els usuaris que s'han autenticat amb una contrasenya poden bloquejar la pantalla.</translation>
@@ -949,6 +1003,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca d'imatges s'enviarà mitjançant el mètode GET.
 
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
+<translation id="4309640770189628899">Si els sistemes de xifratge DHE de TLS estan activats</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
 <translation id="4322842393287974810">Permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
@@ -1594,17 +1649,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Configuració del contingut</translation>
-<translation id="7007671350884342624">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar dades d'usuari.
-
-
+<translation id="7007671350884342624">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar les dades de l'usuari.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--user-data-dir" o no. Per evitar la pèrdua de dades o altres errors inesperats, aquesta política no s'ha d'establir al directori arrel del volum ni en un directori utilitzat per a altres finalitats, ja que <ph name="PRODUCT_NAME" /> n'administra els continguts.
 
-
-
       Aneu a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per veure una llista de les variables que es poden utilitzar.
-
-
 
       Si no es defineix aquesta política, s'utilitzarà el camí de perfil predeterminat i l'usuari podrà substituir-lo per la marca de la línia d'ordres "--user-data-dir".</translation>
 <translation id="7027785306666625591">Configureu la gestió de l'alimentació de <ph name="PRODUCT_OS_NAME" />.
@@ -1617,7 +1666,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           La pàgina d'inici és la pàgina que s'obre amb el botó Inici. Les polítiques RestoreOnStartup controlen les pàgines que s'obren en iniciar el dispositiu.
 
-          El tipus de pàgina d'inici es pot establir en un URL que especifiqueu o a la pàgina Pestanya nova. Si seleccioneu aquesta pàgina, aquesta política no s'aplicarà.
+          Es pot establir que la pàgina d'inici sigui un URL que especifiqueu o a la pàgina Pestanya nova. Si seleccioneu la pàgina Pestanya nova, aquesta política no s'aplicarà.
 
           Si activeu aquesta opció de configuració, els usuaris no podran canviar el seu URL de pàgina d'inici a <ph name="PRODUCT_NAME" />, però sí que podran triar la pàgina Pestanya nova com a pàgina d'inici.
 
@@ -1629,7 +1678,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
 <translation id="7079519252486108041">Bloqueja les finestres emergents en aquests llocs</translation>
 <translation id="7091198954851103976">Executa sempre els connectors que requereixen autorització</translation>
-<translation id="7106631983877564505">Activeu el bloqueig quan els dispositius de <ph name="PRODUCT_OS_NAME" /> estiguin inactius o suspesos.
+<translation id="7106631983877564505">Permet activar el bloqueig quan els dispositius de <ph name="PRODUCT_OS_NAME" /> estiguin inactius o suspesos.
 
       Si activeu aquesta opció de configuració, es demanarà als usuaris una contrasenya per desbloquejar el dispositiu que estigui inactiu.
 
@@ -1903,6 +1952,20 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Suprimeix l'advertiment de sistema operatiu no compatible</translation>
 <translation id="7912255076272890813">Configuració dels tipus d'aplicacions i d'extensions permeses</translation>
+<translation id="7914271217607102111">Permet o rebutja la captura de vídeo.
+
+      Si aquesta política està activada o no està configurada (opció predeterminada), es demanarà a l'usuari
+      que confirmi l'accés a la captura de vídeo, amb excepció dels URL configurats a la
+      llista VideoCaptureAllowedUrls, als quals es podrà accedir sense sol·licitar-ho.
+      Si se'ls ha donat permís, les aplicacions ARC poden accedir a la
+      càmera.
+
+      Si aquesta política està desactivada, no es demanarà mai a l'usuari que confirmi l'accés, i la captura
+      de vídeo només estarà disponible als URL configurats a VideoCaptureAllowedUrls.
+      Les aplicacions ARC no podran accedir a la càmera.
+
+      Tret de les aplicacions ARC, aquesta política afecta tots els tipus d'entrada de vídeo,
+      no només la càmera integrada.</translation>
 <translation id="7915236031252389808">Permet especificar l'URL d'un fitxer .pac del servidor intermediari.
 
           Aquesta política només té efecte si heu seleccionat la configuració manual del servidor intermediari a Tria com vols especificar la configuració del servidor intermediari.
@@ -1981,7 +2044,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si no s'estableix aquesta política, el mode de contrast elevat es desactivarà inicialment, però l'usuari el podrà activar en qualsevol moment.</translation>
 <translation id="815061180603915310">Si s'estableix com a activada, aquesta política obliga a canviar el perfil al mode efímer. Si aquesta política s'estableix com una política de sistema operatiu (per exemple, GPO a Windows), s'aplicarà a tots els perfils del sistema; si s'estableix com una política en núvol, s'aplicarà només a un perfil amb la sessió iniciada com un compte gestionat.
 
-      En aquest mode, les dades del perfil només són presents al disc durant el temps que dura la sessió. Un cop tancat el navegador, no es conserven característiques com l'historial de navegació, les extensions i les seves dades, les dades web com ara galetes i les bases de dades web. Tanmateix, això no impedeix que l'usuari baixi manualment qualsevol dada al disc, desi pàgines o n'imprimeixi.
+      En aquest mode, les dades del perfil només són presents al disc durant el temps que dura la sessió. Un cop tancat el navegador, no es conserven característiques com l'historial de navegació, les extensions i les seves dades, ni les dades web com ara galetes o bases de dades web. Tanmateix, això no impedeix que l'usuari baixi manualment qualsevol dada al disc, desi pàgines o n'imprimeixi.
 
        Si l'usuari ha activat la sincronització, totes aquestes dades es conservaran al seu perfil de sincronització, igual que es fa amb els perfils normals. El mode d'incògnit també estarà disponible si la política no el desactiva expressament.
 
@@ -2029,7 +2092,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       amb l'optimització WPAD).
 
       S'estableix com a "true" de manera predeterminada (funció de seguretat activada), excepte en el cas dels usuaris d'empreses
-      que utilitzen Chrome OS, que s'estableix de manera predeterminada com a "false".
+      que utilitzen Chrome OS, per als quals s'estableix de manera predeterminada com a "false".
 
       Es recomana establir-la com a "true". L'única raó per establir-la com a
       "false" és que hi hagi problemes de compatibilitat amb els scripts PAC existents.

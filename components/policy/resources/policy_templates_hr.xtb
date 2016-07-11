@@ -440,6 +440,13 @@
 <translation id="2466131534462628618">Autentifikacija putem obaveznog portala zanemaruje proxy</translation>
 <translation id="2482676533225429905">Lokalno slanje poruka</translation>
 <translation id="2483146640187052324">Predvidi mrežne radnje na bilo kojoj mrežnoj vezi</translation>
+<translation id="2486371469462493753">Onemogućuje provedbu zahtjeva Transparentnosti certifikata za navedene URL-ove.
+
+      To pravilo omogućuje da se certifikati za nazive hostova na navedenim URL-ovima ne otkrivaju putem Transparentnosti certifikata. Tako se omogućuje nastavak upotrebe certifikata koji se inače ne bi smatrali pouzdanima jer nisu pravilno javno otkriveni, ali se otežava otkrivanje zloupotrijebljenih certifikata za te hostove.
+
+      Uzorak URL-ova oblikovan je u skladu s uputama na stranici https://www.chromium.org/administrators/url-blacklist-filter-format. No s obzirom da su certifikati važeći za dani naziv hosta neovisno o shemi, priključku ili putu, u obzir se uzima samo dio URL-a s nazivom hosta. Zamjenski znakovi nisu podržani.
+
+      Ako se to pravilo ne postavi, sa svim certifikatima koji se moraju otkriti putem Transparentnosti certifikata postupat će se kao da nisu pouzdani ako se ne otkriju u skladu s pravilom Transparentnost certifikata.</translation>
 <translation id="2488010520405124654">Omogući odzivnu poruku za konfiguraciju mreže tijekom izvanmrežnog rada.
 
       Ako to pravilo nije postavljeno ili je postavljeno na točno, a račun na uređaju konfiguriran je za automatsku prijavu bez odgode i uređaj nema pristup internetu, sustav <ph name="PRODUCT_OS_NAME" /> prikazat će odzivnu poruku za konfiguraciju mreže.
@@ -463,6 +470,13 @@
 <translation id="2529880111512635313">Konfiguriranje popisa prisilno instaliranih aplikacija i proširenja</translation>
 <translation id="253135976343875019">Odgoda upozorenja o neaktivnosti dok je uređaj priključen na struju</translation>
 <translation id="2552966063069741410">Vremenska zona</translation>
+<translation id="2562339630163277285">Određuje URL tražilice koja se upotrebljava za davanje instant rezultata. URL treba sadržavati niz <ph name="SEARCH_TERM_MARKER" /> koji će se u trenutku postavljanja upita zamijeniti tekstom koji je korisnik dotad unio.
+
+          To pravilo nije obavezno. Ako se ne postavi, rezultati instant pretraživanja neće se prikazivati.
+
+          Googleov URL instant rezultata može se navesti kao: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          To će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2571066091915960923">Omogućuje ili onemogućuje proxy za kompresiju podataka i sprječava korisnike da promjene tu postavku.
 
       Ako omogućite ili onemogućite tu postavku, korisnici je ne mogu promijeniti niti premostiti.
@@ -474,10 +488,21 @@
 <translation id="262740370354162807">Omogući slanje dokumenata na uslugu <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Omogućavanje govornih povratnih informacija</translation>
 <translation id="2650049181907741121">Radnja koja će se izvršiti kada korisnik spusti poklopac</translation>
+<translation id="2655233147335439767">Određuje URL tražilice koja se upotrebljava za zadano pretraživanje. URL treba sadržavati niz "<ph name="SEARCH_TERM_MARKER" />" koji će se u trenutku upita zamijeniti pojmovima koje korisnik traži.
+
+          Googleov URL pretraživanja može se navesti kao: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Ta se opcija mora postaviti kada je omogućeno pravilo "DefaultSearchProviderEnabled" i poštovat će se samo u tom slučaju.</translation>
 <translation id="2660846099862559570">Nikad ne upotrebljavaj proxy</translation>
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Onemogućuje Disk u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
+<translation id="2692168654831544772">Onemogućuje snimanje zaslona.
+
+      Ako je omogućeno, snimke zaslona ne mogu se snimiti tipkovnim prečacima ili API-jima proširenja.
+      Osim toga, snimanje zaslona onemogućeno je za ARC aplikacije.
+
+      Ako je onemogućeno ili nije određeno, dopušteno je snimanje zaslona.</translation>
 <translation id="2731627323327011390">Onemogući upotrebu <ph name="PRODUCT_OS_NAME" /> certifikata za ARC aplikacije</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Chrome web-trgovine i veze u podnožju na web-stranici nove kartice i pokretača aplikacija za <ph name="PRODUCT_OS_NAME" />.
 
@@ -640,6 +665,11 @@
 <translation id="3072847235228302527">Postavi Uvjete pružanja usluge za lokalni račun na uređaju</translation>
 <translation id="3096595567015595053">Popis omogućenih dodataka</translation>
 <translation id="3101501961102569744">Odaberi način određivanja postavki proxy poslužitelja</translation>
+<translation id="3117676313396757089">Upozorenje: DHE potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 57 (oko ožujka 2017.) i ovo će pravilo tada prestati funkcionirati.
+
+      Ako se to pravilo ne postavi ili se postavi na "False", DHE paketi šifri u TLS-u neće biti omogućeni. U protivnom se može postaviti na "True" radi omogućivanja DHE paketa šifri i održanja kompatibilnosti sa zastarjelim poslužiteljem. To je privremena mjera i poslužitelj se treba ponovo konfigurirati.
+
+      Potiče se premještanje poslužitelja na ECDHE pakete šifri. Ako oni nisu dostupni, pomoću RSA razmjene ključeva provjerite je li omogućen paket šifri.</translation>
 <translation id="3153348162326497318">Omogućuje da odredite koja proširenja korisnici NE mogu instalirati. Proširenja koja su već instalirana bit će uklonjena ako se nalaze na popisu zabranjenih proširenja. Vrijednost popisa zabranjenih proširenja "*" znači da nije dopušteno nijedno proširenje, osim ako nisu izričito navedena na popisu dopuštenih. Ako pravilo nije postavljeno, korisnik može instalirati bilo koje proširenje u <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />. Preporučuje se da se pri postavljanju zbirki proširenja ili aplikacija koje hostira određena organizacija web-lokacija koja hostira CRX pakete uključi u pravilo ExtensionInstallSources te da se u pakete na web-stanici postave izravne veze za preuzimanje. Pokretač za tu web-stranicu može se izraditi pomoću pravila ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">od verzije <ph name="SINCE_VERSION" /></translation>
@@ -716,6 +746,11 @@
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
+<translation id="3337150554416948435">Ovim pravilom možete postaviti smiju li web-lokacije pratiti fizičku lokaciju korisnika. Praćenje fizičke lokacije korisnika može se dopustiti prema zadanim postavkama, zabraniti prema zadanim postavkama ili se korisniku može postaviti upit svaki put kad web-lokacija zahtijeva fizičku lokaciju.
+
+          Ako se pravilo postavi na "BlockGeolocation", dijeljenje lokacije nije omogućeno za ARC aplikacije.
+
+          Ako se to pravilo ne postavi, upotrebljavat će se pravilo "AskGeolocation" i korisnik će to moći promijeniti.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
@@ -839,6 +874,13 @@
 
       Ako nije navedeno, neće mijenjati URL početne vrijednosti Varijacija.</translation>
 <translation id="3863409707075047163">Minimalna omogućena verzija SSL-a</translation>
+<translation id="3864020628639910082">Određuje URL tražilice koja se upotrebljava za davanje prijedloga pretraživanja. URL treba sadržavati niz "<ph name="SEARCH_TERM_MARKER" />" koji će se u trenutku upita zamijeniti tekstom koji je korisnik dotad unio.
+
+          To pravilo nije obavezno. Ako se ne postavi, URL-ovi prijedloga neće se upotrebljavati.
+
+          Googleov URL prijedloga može se navesti kao: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          To će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="3864818549971490907">Zadana postavka dodataka</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> prikazat će postojeće korisnike na zaslonu prijave i dopustiti biranje jednog korisnika. Ako je to pravilo postavljeno na "lažno", sustav <ph name="PRODUCT_OS_NAME" /> upotrebljavat će korisničko ime i zaporku za prijavu.</translation>
@@ -853,6 +895,17 @@
 
       Svaki unos popisa sadrži rječnik koji mora uključivati ID proširenja u polju "extension-id" i njegov URL za ažuriranje u polju "update-url".</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
+<translation id="3898060089412156345">Omogućuje ili onemogućuje snimanje audiozapisa.
+
+      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), od korisnika će se
+      tražiti pristup za snimanje audiozapisa osim za URL-ove konfigurirane na popisu
+      AudioCaptureAllowedUrls kojima će se pristup odobravati bez postavljanja upita.
+
+      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i
+      snimanje će biti dostupno samo URL-ovima na popisu AudioCaptureAllowedUrls.
+      Za ARC aplikacije mikrofon je trajno utišan.
+
+      To pravilo utječe na sve vrste audioulaza, a ne samo na ugrađeni mikrofon.</translation>
 <translation id="3907986150060929099">Postavi preporučene jezike za javnu sesiju</translation>
 <translation id="391531815696899618">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> kada je postavljeno na točno. U tom se slučaju nikakvi podaci ne prenose na Google disk.
 
@@ -909,6 +962,7 @@
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
+<translation id="4105989332710272578">Onemogući provedbu Transparentnosti certifikata za popis URL-ova</translation>
 <translation id="4115096483386877940">Dopusti zaključavanje zaslona.
 
       Ako se to pravilo postavi na False, korisnici neće moći zaključati zaslon (bit će moguća samo odjava s korisničke sesije). Ako se to pravilo postavi na True ili se ne postavi, korisnici koji su se autentificirali zaporkom moći će zaključati zaslon.</translation>
@@ -946,6 +1000,7 @@
           To je pravilo izborno. Ako nije postavljeno, zahtjev za pretraživanje slika poslat će se pomoću GET metode.
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
+<translation id="4309640770189628899">Omogući DHE pakete šifri u TLS-u</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ili noviji</translation>
 <translation id="4322842393287974810">Dopusti kiosk aplikaciji pokrenutoj automatski bez odgode da upravlja verzijom proizvoda <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
@@ -1819,6 +1874,7 @@
 
           Ako je ta postavka onemogućena ili ako nije postavljena, autentifikacija s dva čimbenika neće biti omogućena i upotrebljavat će se zadani postupak s PIN-om koji određuje korisnik.</translation>
 <translation id="7750991880413385988">Otvori stranicu Nova kartica</translation>
+<translation id="7761446981238915769">Konfiguriranje popisa instaliranih aplikacija na zaslonu za prijavu</translation>
 <translation id="7761526206824804472">Postavlja jedan ili više preporučenih jezika za javne sesije, tako da korisnici mogu jednostavno odabrati neki od tih jezika.
 
       Korisnik može odabrati jezik i raspored tipkovnice prije pokretanja javne sesije. Svi jezici koje <ph name="PRODUCT_OS_NAME" /> podržava prema zadanim su postavkama poredani abecednim redom. Tim pravilom možete premjestiti skup preporučenih jezika na vrh popisa.
@@ -1887,6 +1943,19 @@
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
 <translation id="7882890448959833986">Spriječi upozorenje o nepodržanom OS-u</translation>
 <translation id="7912255076272890813">Konfiguriraj dopuštene vrste aplikacija/proširenja</translation>
+<translation id="7914271217607102111">Omogućuje ili onemogućuje snimanje videozapisa.
+
+      Ako je to pravilo omogućeno ili nije konfigurirano (zadano), od korisnika će se
+      tražiti pristup za snimanje videozapisa osim za URL-ove konfigurirane na popisu
+      VideoCaptureAllowedUrls kojima će se pristup odobravati bez postavljanja upita.
+      ARC aplikacije moći će pristupati kameri ako dobiju dopuštenje.
+
+      Kada je to pravilo onemogućeno, korisniku se nikad neće postaviti upit i snimanje
+      će biti dostupno samo URL-ovima na popisu VideoCaptureAllowedUrls.
+      ARC aplikacije neće imati pristup kameri.
+
+      Pored ARC aplikacija to pravilo utječe na sve vrste videoulaza, a
+      ne samo na ugrađenu kameru.</translation>
 <translation id="7915236031252389808">Ovdje možete navesti URL za .pac datoteku proxy poslužitelja.
 
           To će pravilo vrijediti samo ako odaberete ručne postavke proxyja pod stavkom "Odaberi način određivanja postavki proxy poslužitelja".
@@ -2187,6 +2256,17 @@
 <translation id="8858642179038618439">Nametni Siguran način rada na YouTubeu</translation>
 <translation id="8864975621965365890">Zaustavlja upit za odbijanje koji se pojavljuje kada web-lokaciju generira <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Početna stranica</translation>
+<translation id="88890388118515381">
+      Određuje popis aplikacija koje su instalirane u pozadini na zaslonu za prijavu, bez interakcije korisnika te se ne mogu deinstalirati.
+      Sva dopuštenja koja aplikacije zahtijevaju dodjeljuju se implicitno, bez interakcije korisnika, uključujući sva dodatna dopuštenja koja bi buduće verzije aplikacije mogle zahtijevati.
+
+      Ako s ovog popisa uklonite aplikaciju koja je prethodno prisilno instalirana, <ph name="PRODUCT_NAME" /> automatski će je deinstalirati.
+
+      
+Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje odvojene točka-zarezom (<ph name="SEMICOLON" />). ID proširenja jest niz od 32 slova koji se može pronaći na stranici <ph name="CHROME_EXTENSIONS_LINK" /> u načinu rada razvojnog programera. URL za ažuriranje trebao bi usmjeravati na XML dokument Manifest ažuriranja, kao što je opisano na stranici <ph name="LINK_TO_EXTENSION_DOC1" />. URL za ažuriranje postavljen u tim pravilima upotrebljava se samo za početnu instalaciju, a za naknadna ažuriranja proširenja upotrijebit će se URL za ažuriranje naveden u manifestu proširenja.
+
+      Primjerice, pravilo <ph name="EXTENSION_POLICY_EXAMPLE" />
+      instalira aplikaciju <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> sa standardnog URL-a za ažuriranje Chrome web-trgovine. Više informacija o hostingu proširenja potražite na stranici <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server pruža konfiguracijske datoteke za hardver, primjerice
       profile ICC zaslona za kalibriranje monitora.
 

@@ -6,6 +6,7 @@
 <translation id="1023866615269196768">Rastegnuto.</translation>
 <translation id="1025074108959230262">Ljepljiv način onemogućen</translation>
 <translation id="1031961866430398710">pa</translation>
+<translation id="1038795173450935438">Za pomicanje prema naprijed po stavkama na stranici pritišćite tipku za pretraživanje i desnu strelicu, odnosno tipku za pretraživanje i lijevu strelicu za vraćanje na prethodne stavke. Za prelazak na sljedeći redak pritisnite tipku za pretraživanje i strelicu prema dolje, a za povratak na prethodni redak pritisnite tipku za pretraživanje i strelicu prema gore. Kad dođete na stavku koju želite kliknuti, pritisnite tipku za pretraživanje i razmaknicu.</translation>
 <translation id="1044777062731150180">Nema zaglavlja</translation>
 <translation id="106222400312645156">zglvljrtk</translation>
 <translation id="1065552602950927991">Unos nije važeći</translation>
@@ -43,6 +44,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, tekstualni okvir zaporke</translation>
 <translation id="1467432559032391204">Ulijevo</translation>
 <translation id="1474557363159888097">Nema prethodnog sidra.</translation>
+<translation id="1487494366197411587">Tipka za pretraživanje na Chromebooku nalazi se neposredno iznad lijeve tipke Shift.</translation>
 <translation id="1499041187027566160">pojačavanje glasnoće</translation>
 <translation id="1502086903961450562">Prethodna slika</translation>
 <translation id="1506187449813838456">Povećanje visine tona</translation>
@@ -71,6 +73,7 @@
 <translation id="174268867904053074">Sljedeća slika</translation>
 <translation id="1781173782405573156">Tipka za izravni pristup</translation>
 <translation id="1787176709638001873">Tekst uređivanja zaporke</translation>
+<translation id="1802710350767629429">Prikaz napomena o ažuriranju</translation>
 <translation id="1810107444790159527">Okvir s popisom</translation>
 <translation id="1828385960365606039">svibanj</translation>
 <translation id="1834891354138622109">Stupac</translation>
@@ -113,12 +116,14 @@
 <translation id="241124561063364910">a zatim</translation>
 <translation id="2417569100218200841">Informacije o sadržaju</translation>
 <translation id="2422937916923936891">Potvrdni okvir stavke izbornika</translation>
+<translation id="2428534162001909979">Naredbeni izbornici</translation>
 <translation id="2429669115401274487">PM</translation>
 <translation id="2435413342408885429">Tipka <ph name="KEY" /> postala je novi modifikator ChromeVoxa.</translation>
 <translation id="2450814015951372393">Potvrdni okvir</translation>
 <translation id="2462626033734746142">Grupa izbornog gumba</translation>
 <translation id="2471138580042810658">Naslov 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{zvjezdica}one{# zvjezdica}few{# zvjezdice}other{# zvjezdica}}</translation>
+<translation id="2525706221823668172">Tipkovni prečaci na Chromebooku</translation>
 <translation id="2549392850788122959">Tipka <ph name="KEY" /> poništena je.</translation>
 <translation id="2553108862507765288">gramatička pogreška</translation>
 <translation id="257674075312929031">Grupa</translation>
@@ -132,6 +137,7 @@
 <translation id="2644542693584024604">pravopisna pogreška</translation>
 <translation id="2667291555398229137">Kliknite stavku ispod tipke za usmjeravanje</translation>
 <translation id="267442004702508783">osvježavanje</translation>
+<translation id="2684412629217766642">Zatvaranje vodiča za ChromeVox</translation>
 <translation id="2697408785920771974">autougr</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{otvoreni navodnik}one{# otvoreni navodnik}few{# otvorena navodnika}other{# otvorenih navodnika}}</translation>
 <translation id="2705875883745373140">Nije pritisnut</translation>
@@ -145,14 +151,17 @@
 <translation id="2777845298774924149">Izašli ste</translation>
 <translation id="2800204403141299078">Nema više različitih elemenata.</translation>
 <translation id="2800780099804980316">Nema prethodnog naslova razine 1.</translation>
+<translation id="2811019999044652585">Za prelazak na ostale dijelove zaslona, primjerice alatne trake ili traku sustava, pritisnite tipke Control i naprijed. Tipka  za naprijed na Chromebooku nalazi se neposredno iznad tipke broja 2.</translation>
 <translation id="2811204574343810641">Redak</translation>
 <translation id="2816654101880605877">Nema sljedećeg klizača.</translation>
 <translation id="2841013758207633010">Vrijeme</translation>
 <translation id="2843837985843789981">Prethodna grupa</translation>
 <translation id="2844995807198708617">Kontekstni izbornik</translation>
 <translation id="2849332794118375855">Nema sljedećeg potvrdnog okvira.</translation>
+<translation id="2858017024918511904">Da biste istražili sve naredbe i prečace ChromeVoxa, pritisnite tipku za pretraživanje i točku, a zatim se pomičite izbornicima pomoću tipki sa strelicama. Željenu naredbu aktivirajte tipkom Enter.</translation>
 <translation id="2864481629947106776">Prethodna veza</translation>
 <translation id="2873259058405069099">Prelazak na početak tablice</translation>
+<translation id="288178314850623291">Za prelazak na određene vrste elemenata koristite skočne naredbe. Za pomicanje unaprijed po naslovima pritišćite tipku za pretraživanje i H, a za preskakanje unatrag pritisnite tipku za pretraživanje + Shift + H.</translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{lijeva vitičasta zagrada}one{# lijeva vitičasta zagrada}few{# lijeve vitičaste zagrade}other{# lijevih vitičasta zagrada}}</translation>
 <translation id="2911433807131383493">Otvaranje vodiča za ChromeVox</translation>
@@ -181,6 +190,7 @@
 <translation id="3096671415663099226">kmbokv</translation>
 <translation id="3104705064753753826">dij upoz</translation>
 <translation id="3109724472072898302">Sažeto</translation>
+<translation id="3112457281078985179">ChromeVox možete uključiti ili isključiti pritiskom tipki Control + Alt + Z.</translation>
 <translation id="3134461040845705080">samozačitanje</translation>
 <translation id="3138767756593758860">Prikaži popis orijentira</translation>
 <translation id="3143851963874289911">ćl</translation>
@@ -189,6 +199,8 @@
 <translation id="3163593631834463955">Prazno zaglavlje stupca</translation>
 <translation id="316542773973815724">Navigacija</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{razmak}one{# razmak}few{# razmaka}other{# razmaka}}</translation>
+<translation id="3183233191569362040">Odlično! Sada znate osnove o upotrebi ChromeVoxa Next (beta). Naredbeni izbornik ChromeVoxa uvijek možete otvoriti pritiskom tipki za pretraživanje i točke. Još više informacija o ChromeVoxu i OS-u Chrome pronaći ćete u sljedećim člancima.
+Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknite ga.</translation>
 <translation id="320961988183078793">unesen je sadržaj: <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, kartica</translation>
 <translation id="3226035351387556942">ptvrd</translation>
@@ -201,9 +213,11 @@
 <translation id="3307886118343381874">Prelazak na kraj tablice</translation>
 <translation id="3311969765485641742">Pritisnite Alt + Shift + A da biste pregledali upozorenja</translation>
 <translation id="3312997241656799641">Sljedeća posjećena veza</translation>
+<translation id="3313245066383501820">Modifikatorska tipka ChromeVoxa</translation>
 <translation id="3321460131042519426">Omogući prelazak riječi u drugi redak</translation>
 <translation id="3322936298410871309">Prethodni naslov razine 1</translation>
 <translation id="3323447499041942178">Tekstni okvir</translation>
+<translation id="3329854757664111426">Za prelazak na sljedeću stranicu pritisnite Enter.</translation>
 <translation id="3353420241558113817">{"ar": "arapski",
         "bg": "bugarski",
         "ca": "katalonski",
@@ -291,6 +305,7 @@
 <translation id="3897092660631435901">Izbornik</translation>
 <translation id="3909320334364316587">Prethodni naslov razine 6</translation>
 <translation id="3914173277599553213">Obavezno</translation>
+<translation id="3951424903203718058">Prvi put upotrebljavate govorne povratne informacije ChromeVox Next? Ovaj će vam brzi vodič pokazati osnovne upute za početak upotrebe ChromeVoxa Next.</translation>
 <translation id="3962990492275676168">Počni čitati od trenutačne lokacije</translation>
 <translation id="4004802134384979325">označen</translation>
 <translation id="4006140876663370126">img</translation>
@@ -301,6 +316,7 @@
 <translation id="4047216625641135770">Oznaka</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4054936709456751127">stat</translation>
+<translation id="4065205963140826639">Sada pokušajte pritisnuti tipku za pretraživanje i desnu strelicu da biste pronašli gumb Sljedeća, a zatim pritisnite tipku za pretraživanje i razmaknicu da biste ga kliknuli.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDA}one{# tilda}few{# tilde}other{# tildi}}</translation>
 <translation id="409334809956508737">Prethodni objekt</translation>
 <translation id="4099274309791143834">s podizbornikom</translation>
@@ -372,6 +388,7 @@
 <translation id="4842108708071771135">Nema sljedećeg navoda bloka.</translation>
 <translation id="4848993367330139335">mjerač</translation>
 <translation id="4850023505158945298">Prethodni sličan element.</translation>
+<translation id="485011152882364255">U ChromeVoxu Next tipka za pretraživanje ujedno služi kao modifikatorska tipka. Za većinu prečaca ChromeVoxa prvo trebate pritisnuti tipku za pretraživanje, a za kretanje koristite tipke strelica.</translation>
 <translation id="4866956062845190338">rdstizb</translation>
 <translation id="4867316986324544967">Omogući TTS prijave</translation>
 <translation id="4877261390094455813">Unesite upit za pretraživanje.</translation>
@@ -437,6 +454,7 @@
 <translation id="5436105723448703439">{COUNT,plural, =1{znak "manje od"}one{# znak "manje od"}few{# znaka "manje od"}other{# znakova "manje od"}}</translation>
 <translation id="5444587279251314700">(aktivno)</translation>
 <translation id="5455441614648621694">Dopunski</translation>
+<translation id="5458780372341732962">Upotreba ChromeVoxa Next (beta)</translation>
 <translation id="5485036206801896268">Nema prethodne slike.</translation>
 <translation id="5486947920110100234">Nema sljedeće točke skoka.</translation>
 <translation id="549602578321198708">Riječ</translation>
@@ -462,6 +480,7 @@
 <translation id="5623842676595125836">Zapisnik</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">Nema prethodne tablice.</translation>
+<translation id="5653397561111110475">Upotreba značajki pristupačnosti dodirnog zaslona Chromebooka</translation>
 <translation id="5655682562155942719">Naredbe za skok</translation>
 <translation id="56637627897541303">Područje teksta</translation>
 <translation id="5678161956734658133">mled</translation>
@@ -469,6 +488,14 @@
 <translation id="5682113568322255809">Orijentir</translation>
 <translation id="5683155931978483559">Prethodni potvrdni okvir</translation>
 <translation id="5684277895745049190">Popis</translation>
+<translation id="5684905390246898631">Dobro došli u ChromeVox Next!</translation>
+<translation id="5695831708991916435">Sljedećih nekoliko prečaca nisu naredbe ChromeVoxa, ali su također vrlo korisni za najbolju moguću upotrebu Chromea.
+Za kretanje po stavkama koje omogućuju radnju, kao što su gumbi i veze, pritišćite tipku Tab. Za pomicanje unatrag pritišćite tipke Shift i Tab. 
+Za ulazak u adresni okvir preglednika Chrome, ili višenamjenski okvir kako se još naziva, pritisnite tipke Control i L. 
+Za otvaranje nove kartice i automatski prelazak na nju pritisnite tipke Control i T. Pokazivač će biti u višenamjenskom okviru. 
+Da biste zatvorili karticu, pritisnite tipke Control i W. 
+Za pomicanje unaprijed kroz otvorene kartice koristite tipke Control i Tab. 
+Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation>
 <translation id="5700650669149824506">Nema prethodnog naslova razine 4.</translation>
 <translation id="5703716265115423771">smanjivanje glasnoće</translation>
 <translation id="5709192780268610569">Nema dugačkih opisa</translation>
@@ -486,6 +513,7 @@
 <translation id="5851548754964597211">Popis kartica</translation>
 <translation id="5859752971144398932">Izašli ste iz traženja na stranici.</translation>
 <translation id="5866042630553435010">Djelomično označeno</translation>
+<translation id="5867591286054666064">Dok je otvoren vodič, pritisnite bilo koju tipku da biste čuli njezin naziv.</translation>
 <translation id="5869546221129391014">Rešetka</translation>
 <translation id="5876817486144482042">Stišavanje glasnoće govora</translation>
 <translation id="5887397643266327462">Omogućeni su opisi na brajici.</translation>
@@ -504,6 +532,7 @@
 <translation id="6006050241733874051">Obrazac</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{kosa crta ulijevo}one{# kosa crta ulijevo}few{# kose crte ulijevo}other{# kosih crta ulijevo}}</translation>
 <translation id="6037602951055904232">Pomiči se prema naprijed</translation>
+<translation id="6082768461603900813">Osnovno kretanje</translation>
 <translation id="611827076493383239">psjćn</translation>
 <translation id="6119955456199054975">Kraj ćelije.</translation>
 <translation id="6122013438240733403">gmb</translation>
@@ -565,6 +594,7 @@
 <translation id="6897341342232909480">Pomakni lijevo</translation>
 <translation id="6901540140423170855">datum</translation>
 <translation id="6910211073230771657">Izbrisano</translation>
+<translation id="6910969481785184048">Uključivanje, isključivanje i zaustavljanje</translation>
 <translation id="6911965441508464308">Iznad nema ćelije.</translation>
 <translation id="6919104639734799681">Prikaz popisa tablica</translation>
 <translation id="6964088412282673743">Nema prethodne kontrole.</translation>
@@ -619,8 +649,10 @@
 <translation id="744163271241493234">zprk</translation>
 <translation id="7491962110804786152">kart</translation>
 <translation id="7492049978501397201">Otvorili ste dijaloški okvir</translation>
+<translation id="7518543783849163354">Da biste privremeno zaustavili govorne povratne informacije ChromeVoxa, pritisnite tipku Control.</translation>
 <translation id="7532613204005497612">lipanj</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, klizač</translation>
+<translation id="7552432549459840808">Korisni prečaci Chromea</translation>
 <translation id="7586163296341959563">lijepljenje.</translation>
 <translation id="7596919493010894443">odabir je izbrisan</translation>
 <translation id="7604026522577407655">Prelazak na početak trenutačnog stupca</translation>
@@ -667,6 +699,7 @@
 <translation id="8065607967589909823">Odabir je</translation>
 <translation id="8066678206530322333">Natpis</translation>
 <translation id="8076492880354921740">Kartice</translation>
+<translation id="8104178626892949749">Pritisnite ChromeVox o, n da biste saznali više o ChromeVoxu Next.</translation>
 <translation id="8110647606445335195">Nema ARIA orijentira.</translation>
 <translation id="8153880621934657047">Niste unutar tablice.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{donja crta}one{# donja crta}few{# donje crte}other{# donjih crta}}</translation>
@@ -676,6 +709,7 @@
 <translation id="8199231515320852133">Izgovaranje zaglavlja trenutačne ćelije</translation>
 <translation id="820417203470636242">Prazna ćelija.</translation>
 <translation id="8215202828671303819">Višestruki odabir</translation>
+<translation id="8224171046658870249">Prebačeno na ChromeVox Next</translation>
 <translation id="8276439074553447000">Skok na prethodnu stavku s mogućnošću fokusiranja</translation>
 <translation id="8278417001922463147">Nema prethodnog članka.</translation>
 <translation id="8283603667300770666">Sljedeće polje obrasca</translation>
@@ -715,6 +749,7 @@
 <translation id="8664519043722036194">sekunde</translation>
 <translation id="867187640362843212">Naslov 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{okomita crta}one{# okomita crta}few{# okomite crte}other{# okomitih crta}}</translation>
+<translation id="8721861170709424373">Reference za naredbe ChromeVoxa Next</translation>
 <translation id="8735450637152821465">Početak odabira</translation>
 <translation id="8743786158317878347">unos strukturiranog sadržaja, na primjer, tablica</translation>
 <translation id="8747966237988593539">Uređeni popis</translation>
@@ -764,6 +799,7 @@
 <translation id="923331726185079994">ChromeVox je ažuriran</translation>
 <translation id="930275611743429116">Početak ili kraj odabira.</translation>
 <translation id="948171205378458592">Smanjenje brzine govora</translation>
+<translation id="955917170449423694">Prebačeno na klasični ChromeVox</translation>
 <translation id="962913030769097253">Sljedeći naslov razine  1</translation>
 <translation id="973955474346881951">Omogućivanje/onemogućivanje ljepljivog načina</translation>
 <translation id="976849232629612000">Nema stavki.</translation>

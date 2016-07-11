@@ -107,7 +107,7 @@
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入，可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="457845228957001925">Chromium 資料的相關重要資訊</translation>
 <translation id="459535195905078186">Chromium 應用程式</translation>
-<translation id="4621240073146040695">即將更新成最新版本！重新啟動 Chromium 即可完成更新程序。</translation>
+<translation id="4621240073146040695">即將更新為最新版本！重新啟動 Chromium 即可完成更新程序。</translation>
 <translation id="4677944499843243528">另一台電腦 (<ph name="HOST_NAME" />) 的 Chromium 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chromium 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chromium。</translation>
 <translation id="4743926867934016338">接受並搜尋</translation>
 <translation id="4888717733111232871">允許 mDNS 流量的 Chromium 輸入規則。</translation>
@@ -132,7 +132,7 @@
 <translation id="5859963531214966875">日後發佈的 Chromium 版本將不再支援這種 Linux 系統。</translation>
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
-<translation id="5906655207909574370">即將更新成最新版本！重新啟動您的裝置即可完成更新程序。</translation>
+<translation id="5906655207909574370">即將更新為最新版本！重新啟動您的裝置即可完成更新程序。</translation>
 <translation id="5942225298871134766">Chromium 會使用「<ph name="SAVED_PASSWORD_LINK" />」儲存此密碼，讓您在下次需要使用時套用。</translation>
 <translation id="5942520288919337908">已將「<ph name="EXTENSION_NAME" />」加到 Chromium。</translation>
 <translation id="59625444380784159">利用您的通訊錄詳細資料，快速在 Chromium 中填寫表單。</translation>
@@ -162,6 +162,7 @@
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="6810143991807788455">只要回報目前的設定，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
 <translation id="6838494703713445896">Chromium 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器提供了有效的 Certificate Transparency 資訊。</translation>
+<translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6883876366448858277">將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片和其他搜尋結果。</translation>
 <translation id="6893813176749746474">Chromium 已更新，但您至少超過 30 天沒有使用 Chromium 了。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>

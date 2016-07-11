@@ -8,7 +8,7 @@
 <translation id="102492767056134033">Itakda ang default na estado ng on-screen na keyboard sa screen sa pag-login</translation>
 <translation id="1027000705181149370">Tinutukoy kung dapat bang ilipat sa profile ng user ang cookies sa pagpapatotoo na itinatakda ng SAML IdP sa pag-log in.
 
-      Kapag nagpatotoo ang isang user sa pamamagitan ng SAML IdP sa pag-log in, inilalagay muna ang cookies na itinakda ng IdP sa isang pansamantalang profile. Maaaring ilipat ang cookies na ito sa profile ng user upang mapanatili ang katayuan ng pagpapatotoo.
+      Kapag nagpatotoo ang isang user sa pamamagitan ng SAML IdP sa pag-log in, inilalagay muna ang cookies na itinakda ng IdP sa isang pansamantalang profile. Maaaring ilipat ang cookies na ito sa profile ng user upang mailipat ang katayuan ng pagpapatotoo.
 
       Kapag itinakda ang patakarang ito sa true, ililipat ang cookies na itatakda ng IdP sa profile ng user sa tuwing magpapatotoo siya sa SAML IdP sa pag-log in.
 
@@ -461,6 +461,13 @@
 <translation id="2466131534462628618">Binabalewala ng pagpapatotoo ng captive portal ang proxy</translation>
 <translation id="2482676533225429905">Native na Pagmemensahe</translation>
 <translation id="2483146640187052324">Hulaan ang mga pagkilos sa network sa anumang koneksyon sa network</translation>
+<translation id="2486371469462493753">Dini-disable ang pagpapatupad ng mga kinakailangan sa Transparency ng Certificate sa mga nakalistang URL.
+
+      Pinapayagan ng patakarang ito na hindi ibunyag ang mga certificate para sa mga hostname sa mga natukoy na URL sa pamamagitan ng Transparency ng Certificate. Nagbibigay-daan ito sa mga certificate, na maaaring maituring na hindi mapagkakatiwalaan dahil hindi maayos na naibunyag sa publiko, upang patuloy na magamit, ngunit mas nagiging mahirap na matukoy ang mga certificate na hindi nagamit nang maayos para sa mga host na iyon.
+
+      Naka-format ang isang pattern ng URL alinsunod sa https://www.chromium.org/administrators/url-blacklist-filter-format. Gayunpaman, dahil may bisa ang mga certificate para sa naturang hostname na hiwalay sa scheme, port o path, ang bahagi ng hostname lang ng URL ang kinikilala. Hindi sinusuportahan ang mga wildcard host.
+
+      Kung hindi nakatakda ang patakarang ito, ang anumang certificate na kinakailangang ibunyag sa pamamagitan ng Transparency ng Certificate ay ituturing na hindi pinagkakatiwalaan kung hindi ito ibinunyag alinsunod sa patakaran sa Transparency ng Certificate.</translation>
 <translation id="2488010520405124654">I-enable ang prompt ng configuration ng network kapag offline.
 
       Kung hindi nakatakda o nakatakda sa True ang patakarang ito at naka-configure ang isang account na lokal sa device para sa zero-delay na auto-login at walang access sa Internet ang device, magpapakita ang <ph name="PRODUCT_OS_NAME" /> ng prompt ng configuration ng network.
@@ -488,6 +495,13 @@
 <translation id="2529880111512635313">I-configure ang listahan ng mga puwersahang na-install na app at extension</translation>
 <translation id="253135976343875019">Delay ng babala bago mag-idle kapag gumagamit ng AC power</translation>
 <translation id="2552966063069741410">Timezone</translation>
+<translation id="2562339630163277285">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga instant na resulta. Ang URL ay dapat na maglaman ng string na <ph name="SEARCH_TERM_MARKER" />, na papalitan sa panahon ng query ng text na inilagay ng user sa panahong iyon.
+
+          Opsyonal ang patakarang ito. Kung hindi nakatakda, walang ibibigay na mga instant na resulta sa paghahanap.
+
+          Ang mga instant na resulta na URL ng Google ay maaaring tukuyin bilang: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Kinikilala lang ang patakarang ito kung naka-enable ang patakaran na 'DefaultSearchProviderEnabled.'</translation>
 <translation id="2571066091915960923">Ine-enable o dini-disable ang proxy ng compression ng data at pinipigilan ang mga user na palitan ang setting na ito.
 
       Kung i-e-enable o idi-disable mo ang setting na ito, hindi maaaring palitan o i-override ng mga user ang setting na ito.
@@ -499,6 +513,11 @@
 <translation id="262740370354162807">Paganahin ang pagsusumite ng mga dokumento sa <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Paganahin ang pasalitang feedback</translation>
 <translation id="2650049181907741121">Pagkilos na gagawin kapag isinara ng user ang takip</translation>
+<translation id="2655233147335439767">Tinutukoy ang URL ng search engine na ginagamit kapag nagsasagawa ng isang default na paghahanap. Ang URL ay dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />,' na papalitan sa panahon ng query ng mga terminong hinahanap ng user.
+
+          Ang URL sa paghahanap ng Google ay maaaring tukuyin bilang: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Dapat na itakda ang opsyong ito kapag naka-enable ang patakaran na 'DefaultSearchProviderEnabled' at kikilalanin lang kung ganito ang sitwasyon.</translation>
 <translation id="2660846099862559570">Huwag kailanman gumamit ng proxy</translation>
 <translation id="267596348720209223">Tinutukoy ang mga pag-encode ng character na sinusuportahan ng provider ng paghahanap. Ang mga pag-encode ay mga pangalan ng pahina ng code tulad ng UTF-8, GB2312, at ISO-8859-1. Sinusubukan ang mga ito sa pagkakasunud-sunod na ibinigay.
 
@@ -507,6 +526,12 @@
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="2682225790874070339">Dini-disable ang Drive sa <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Ine-enable ang feature na proxy ng compression ng data</translation>
+<translation id="2692168654831544772">Dini-disable ang pagkuha ng mga screenshot.
+
+      Kung naka-enable, hindi makakakuha ng mga screenshot gamit ang mga keyboard shortcut o extension API.
+      Dagdag pa rito, naka-disable ang screen capture para sa mga ARC app.
+
+      Kung naka-disable o hindi natukoy, pinapayagan ang pagkuha ng mga screenshot.</translation>
 <translation id="2731627323327011390">I-disable ang paggamit ng mga certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
 <translation id="2742843273354638707">Itago ang Chrome Web Store app at link ng footer mula sa Page ng Bagong Tab at sa app launcher ng <ph name="PRODUCT_OS_NAME" />.
 
@@ -671,6 +696,11 @@
 <translation id="3072847235228302527">Itakda ang Mga Tuntunin ng Serbisyo para sa isang account na lokal sa device</translation>
 <translation id="3096595567015595053">Listahan ng mga pinaganang plugin</translation>
 <translation id="3101501961102569744">Pumili kung paano tukuyin ang mga setting ng proxy server</translation>
+<translation id="3117676313396757089">Babala: Tuluyan nang maaalis ang DHE sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 57 (na tinatayang lalabas sa Marso 2017) at hindi na gagana ang patakarang ito.
+
+      Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa false, hindi mae-enable ang mga DHE na cipher suite sa TLS. Kung hindi naman ay maaari itong itakda sa true upang i-enable ang mga DHE na cipher suite at mapanatili ang compatibility sa isang lumang server. Isa itong pansamantalang solusyon at dapat na i-configure muli ang server.
+
+      Hinihimok ang mga server na mag-migrate sa mga ECDHE na cipher suite. Kung hindi available ang mga ito, tiyaking naka-enable ang isang cipher suite gamit ang RSA key exchange.</translation>
 <translation id="3153348162326497318">Binibigyang-daan kang tukuyin kung aling mga extension ang HINDI maaaring i-install ng mga user. Aalisin ang mga extension na na-install na kung na-blacklist.
 
           Nangangahulugan ang isang halaga ng blacklist na '*' na ang lahat ng extension ay na-blacklist maliban kung tahasang nakalista sa whitelist ang mga ito.
@@ -759,6 +789,11 @@
 <translation id="3322771899429619102">Binibigyang-daan ka na magtakda ng isang listahan ng mga pattern ng URL na tumutukoy sa mga site na pinapayagang gumamit ng pagbuo ng key. Kung ang isang pattern ng URL ay nasa 'KeygenBlockedForUrls,' ino-override nito ang mga pagbubukod na ito.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
+<translation id="3337150554416948435">Binibigyang-daan kang itakda kung papayagan o hindi ang mga website na subaybayan ang pisikal na lokasyon ng mga user. Maaaring payagan bilang default o tanggihan bilang default ang pagsubaybay sa pisikal na lokasyon ng mga user, o maaaring tanungin ang user sa tuwing hihingin ng isang website ang pisikal na lokasyon.
+
+          Kung nakatakda ang patakarang ito sa 'BlockGeolocation', hindi pinapayagan ang pagbabahagi ng lokasyon para sa mga ARC app.
+
+          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AskGeolocation' at mababago ito ng user.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
@@ -884,6 +919,13 @@
 
       Kung hindi tinukoy, hindi nito babaguhin ang URL ng seed ng Mga Variation.</translation>
 <translation id="3863409707075047163">Naka-enable ang minimum na bersyon ng SSL</translation>
+<translation id="3864020628639910082">Tinutukoy ang URL ng search engine na ginagamit upang magbigay ng mga suhestyon sa paghahanap. Ang URL ay dapat na maglaman ng string na '<ph name="SEARCH_TERM_MARKER" />,' na papalitan sa panahon ng query ng text na inilagay ng user sa panahong iyon.
+
+          Opsyonal ang patakarang ito. Kung hindi nakatakda, walang gagamiting suhestyong URL.
+
+          Ang suhestyong URL ng Google ay maaaring matukoy bilang: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Kikilalanin lang ang patakaran kung naka-enable ang patakaran na 'DefaultSearchProviderEnabled.'</translation>
 <translation id="3864818549971490907">Default na setting ng mga plugin</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="3866530186104388232">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME" /> ang mga umiiral nang user sa screen ng pag-login at papayag na pumili ng isa. Kung nakatakda sa false ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang prompt ng username/password para sa pag-login.</translation>
@@ -898,6 +940,17 @@
 
       Ang bawat entry sa listahan ay naglalaman ng diksyunaryong dapat kabilangan ng ID ng extension sa field na 'extension-id,' at ng URL ng update nito sa field na 'update-url.'</translation>
 <translation id="3891357445869647828">Paganahin ang JavaScript</translation>
+<translation id="3898060089412156345">Pahintulutan o tanggihan ang pagkuha ng audio.
+
+       Kung naka-enable o hindi naka-configure (default), ipo-prompt ang user para sa
+      access para sa pagkuha ng audio maliban sa mga URL na naka-configure sa
+      listahan na AudioCaptureAllowedUrls na mabibigyan ng access nang hindi pino-prompt.
+
+      Kapag naka-disable ang patakarang ito, hindi kailanman ipo-prompt ang user at magiging available lang ang pagkuha ng
+      audio sa mga URL na naka-configure sa AudioCaptureAllowedUrls.
+      Para sa mga ARC app, permanenteng naka-mute ang mikropono.
+
+      Nakakaapekto ang patakarang ito sa lahat ng uri ng audio input at hindi lang sa built-in na mikropono.</translation>
 <translation id="3907986150060929099">Itakda ang mga inirerekumendang lokal para sa isang pampublikong session</translation>
 <translation id="391531815696899618">Dini-disable ang pagsi-sync ng Google Drive sa <ph name="PRODUCT_OS_NAME" /> Files app kapag nakatakda sa True. Sa sitwasyong iyon, walang data na maa-upload sa Google Drive.
 
@@ -962,6 +1015,7 @@
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond.</translation>
+<translation id="4105989332710272578">I-disable ang pagpapatupad ng Transparency ng Certificate para sa isang listahan ng mga URL</translation>
 <translation id="4115096483386877940">Payagan ang pagla-lock ng screen.
 
       Kung nakatakda sa false ang patakarang ito, hindi mala-lock ng mga user ang screen (ang posible lang ay ang pagsa-sign out mula sa session ng user). Kung nakatakda sa true o hindi naitakda ang setting na ito, mala-lock ang screen ng mga user na napatotohanan gamit ang isang password.</translation>
@@ -999,6 +1053,7 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, ipapadala ang kahilingan sa paghahanap ng larawan gamit ang GET na paraan.
 
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
+<translation id="4309640770189628899">Kung naka-enable ang mga DHE na cipher suite sa TLS o hindi</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o mas bago</translation>
 <translation id="4322842393287974810">Payagan ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Magdagdag ng button sa pag-logout sa tray ng system</translation>
@@ -2038,6 +2093,20 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
 <translation id="7882890448959833986">Pigilan ang babala ng hindi sinusuportahang OS</translation>
 <translation id="7912255076272890813">I-configure ang mga pinapayagang uri ng app/extension</translation>
+<translation id="7914271217607102111">Pahintulutan o tanggihan ang pagkuha ng video.
+
+      Kung naka-enable o hindi naka-configure (default), ipo-prompt ang user para sa
+      access sa pagkuha ng video maliban sa mga URL na naka-configure sa
+      VideoCaptureAllowedUrls na mabibigyan ng access nang hindi pino-prompt.
+      Maa-access ng mga ARC app ang camera kung nabigyan ng
+      pahintulot ang mga ito.
+
+      Kapag naka-disable ang patakarang ito, hindi kailanman ipo-prompt ang user at ang pagkuha ng video
+      ay magiging available lang sa mga URL na naka-configure sa VideoCaptureAllowedUrls.
+      Hindi maa-access ng mga ARC app ang camera.
+
+      Sa labas ng mga ARC app, nakakaapekto ang patakarang ito sa lahat ng uri ng video input at
+      hindi lang sa built-in na camera.</translation>
 <translation id="7915236031252389808">Makakapagtakda ka rito ng URL sa isang proxy .pac file.
 
           Magkakaroon lang ng bisa ang patakarang ito kung pinili mo ang mga setting ng manual na proxy sa 'Piliin kung paano itatakda ang mga setting ng proxy server.'

@@ -36,13 +36,13 @@
           Denne funksjonen er for øyeblikket slått av på tjenersiden.</translation>
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
 <translation id="1103860406762205913">Slår på den tidligere nettbaserte påloggingen</translation>
-<translation id="1128903365609589950">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> kommer til å bruke for å lagre bufrede filer på disken.
+<translation id="1128903365609589950">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke for å lagre bufrede filer på disken.
 
-      Hvis du angir disse retningslinjene, kommer <ph name="PRODUCT_NAME" /> til å bruke den oppgitte katalogen uavhengig av om brukeren har spesifisert «--disk-cache-dir»-flagget eller ikke. For å unngå tap av data eller andre uventede feil skal ikke disse retningslinjene angis til rotkatalogen til et volum eller en katalog som brukes til andre hensikter, fordi <ph name="PRODUCT_NAME" /> administrerer innholdet.
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uavhengig av om brukeren har spesifisert flagget «--disk-cache-dir» eller ikke. For å unngå tap av data eller andre uventede feil skal ikke denne regelen settes til rotkatalogen for et volum eller til en katalog som brukes til andre formål, fordi <ph name="PRODUCT_NAME" /> administrerer innholdet.
 
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.
 
-      Hvis disse retningslinjene ikke blir angitt, brukes bufferkatalogen, og brukeren kommer til å kunne overstyre den med «--disk-cache-dir»-kommandolinjeflagget.</translation>
+      Hvis denne regelen ikke blir angitt, brukes bufferkatalogen, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
 <translation id="1138294736309071213">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Avgjør varighet før skjermspareren vises på påloggingssiden for enheter i detaljistmodus.
@@ -332,7 +332,7 @@
 
       Hvis denne regelen spesifiseres, kan ikke brukerne endre eller overstyre den.
 
-      Når Bluetooth er slått på, må enheten startes på nytt for at endringene skal tre i kraft. (Det er ikke nødvendig å starte enheten på nytt når Bluetooth slås av).</translation>
+      Når Bluetooth er slått på, må enheten startes på nytt for at endringene skal tre i kraft. (Det er ikke nødvendig å starte enheten på nytt når Bluetooth slås av.)</translation>
 <translation id="2366415278352956652">Slår på cast</translation>
 <translation id="2371309782685318247">Spesifiserer perioden i millisekunder – angir frekvens for hvor ofte tjenesten for enhetsadministrasjon blir kontaktet for informasjon om brukeretningslinjer.
 
@@ -452,6 +452,13 @@
 <translation id="2466131534462628618">Autentisering via obligatoriske sider ignorerer proxy-tjenere</translation>
 <translation id="2482676533225429905">Innebygde meldinger</translation>
 <translation id="2483146640187052324">Forutsi nettverkshandlinger på alle nettverkstilkoblinger</translation>
+<translation id="2486371469462493753">Slår av bruk av krav om sertifikatåpenhet for de angitte nettadressene.
+
+      Denne regelen tillater at sertifikater for vertsnavnene i de angitte nettadressene ikke vises i henhold til regelen om sertifikatåpenhet. Dermed kan sertifikater som ellers hadde blitt vurdert som upålitelige (fordi de ikke er tilstrekkelig vist offentlig), fortsatt brukes. Dette gjør det vanskeligere for verter å oppdage sertifikater som ikke er korrekt utstedt.
+
+      Et nettadressemønster formateres i henhold til https://www.chromium.org/administrators/url-blacklist-filter-format. Bare vertsnavn-delen av nettadressen vurderes, ettersom sertifikater er gyldige for et gitt vertsnavn uavhengig av skjema, port eller bane. Verter som er angitt med jokertegn, støttes ikke.
+
+      Hvis denne regelen ikke er angitt, behandles alle sertifikater som skal vises i henhold til regelen om sertifikatåpenhet, som upålitelige hvis de ikke vises i henhold til regelen om sertifikatåpenhet.</translation>
 <translation id="2488010520405124654">Aktiver melding om nettverkskonfigurasjon når du er uten nett.
 
       Hvis denne innstillingen ikke er angitt, eller er angitt som True, og en enhetslokal konto er konfigurert for auto-pålogging uten forsinkelser, og enheten ikke har tilgang til Internett, viser <ph name="PRODUCT_OS_NAME" /> en melding om nettverkskonfigurasjon.
@@ -479,6 +486,13 @@
 <translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
 <translation id="2552966063069741410">Tidssone</translation>
+<translation id="2562339630163277285">Spesifiserer nettadressen for søkemotoren som brukes, for å gi umiddelbare resultater. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med teksten brukeren har skrevet inn hittil, når søket utføres.
+
+          Denne regelen er ikke valgfri. Hvis den ikke angis, kommer det ikke opp noen umiddelbare søkeresultater.
+
+          Nettadressen til Googles umiddelbare søkeresultater kan spesifiseres slik: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Denne regelen følges bare hvis regelen DefaultSearchProviderEnabledpolicy er slått på.</translation>
 <translation id="2571066091915960923">Aktiver eller deaktiver proxy-tjener for datakomprimering og forhindre brukere fra å endre denne innstillingen.
 
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukere endre eller overkjøre denne innstillingen.
@@ -490,6 +504,11 @@
 <translation id="262740370354162807">Aktiver sending av dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktiverer talerespons</translation>
 <translation id="2650049181907741121">Handling som skal utføres når brukeren lukker lokket</translation>
+<translation id="2655233147335439767">Spesifiserer nettadressen for søkemotoren som brukes ved standardsøk. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med ordene brukeren søker etter, når søket utføres.
+
+          Googles nettadresse for søk kan spesifiseres slik: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Dette alternativet må spesifiseres når regelen DefaultSearchProviderEnabled er slått på. Hvis ikke ignoreres det.</translation>
 <translation id="2660846099862559570">Aldri bruk mellomtjener</translation>
 <translation id="267596348720209223">Angir tegnkodingen som støttes av søkeleverandøren. Kodingene er kodesidenavn som UTF-8, GB2312 og ISO-8859-1. De prøves i oppgitt rekkefølge.
 
@@ -498,6 +517,12 @@
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="2682225790874070339">Deaktiverer Google Disk i Filer-appen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
+<translation id="2692168654831544772">Slår av muligheten for å ta skjermdumper.
+
+      Hvis dette er slått på, kan ikke skjermdumper tas med hurtigtaster eller API-utvidelser.
+      Skjermdumper slås også av for ARC-apper.
+
+      Hvis regelen er slått av eller ikke er spesifisert, kan skjermdumper tas.</translation>
 <translation id="2731627323327011390">Slå av bruken av <ph name="PRODUCT_OS_NAME" />-sertifikater for ARC-apper</translation>
 <translation id="2742843273354638707">Skjul Chrome Nettmarked-appen og linken fra ny fane-siden og <ph name="PRODUCT_OS_NAME" /> OS-appvelgeren.
 
@@ -567,9 +592,9 @@
           Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="2818551149761607847">Konfigurer brukerbildet.
 
-      Med denne regelen kan du konfigurere brukerbildet som representerer brukeren på påloggingsskjermen. Innstillingen konfigureres ved å angi nettadressen <ph name="PRODUCT_OS_NAME" /> kan laste ned brukerbildet fra, og en kryptografisk hash-kode brukes for å sikre integriteten til nedlastingen. Bildet må være i JPEG format, og størrelsen må ikke overskride 512 kB. Nettadressen må være tilgjengelig uten autentisering.
+      Med denne regelen kan du konfigurere brukerbildet som representerer brukeren på påloggingsskjermen. Innstillingen konfigureres ved å angi nettadressen der <ph name="PRODUCT_OS_NAME" /> kan laste ned brukerbildet samt en kryptografisk hash-kode som brukes til å sikre nedlastingens integritet. Bildet må være i JPEG-format, og størrelsen må ikke overskride 512 kB. Nettadressen må være tilgjengelig uten autentisering.
 
-      Brukerbildet er lastet ned og bufret. Det kommer til å bli lastet ned på nytt hver gang nettadressen eller hash-koden endres.
+      Brukerbildet lastes ned og bufres. Det lastes ned på nytt hver gang nettadressen eller hash-koden endres.
 
       Regelen skal spesifiseres som en streng som inneholder nettadressen og hash-koden i JSON-format, og den må følge følgende skjema:
       {
@@ -580,7 +605,7 @@
             "type": "string"
           },
           "hash": {
-            "description": "SHA-256-hash-koden til brukerbildet.",
+            "description": "SHA-256-hash-koden for brukerbildet.",
             "type": "string"
           }
         }
@@ -662,6 +687,11 @@
 <translation id="3072847235228302527">Angi bruksvilkårene for en konto på enheten</translation>
 <translation id="3096595567015595053">Liste over aktiverte programtillegg</translation>
 <translation id="3101501961102569744">Velg hvordan innstillinger for proxy-tjener angis</translation>
+<translation id="3117676313396757089">Advarsel: DHE fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 57 (rundt mars 2017), og da slutter denne regelen å fungere.
+
+      Hvis regelen ikke er angitt eller er satt til false (usann), er ikke DHE-chifferserier i TLS slått på. Den kan angis som true (sann) for å sikre kompatibilitet med utdaterte tjenere. Dette er en midlertidig løsning, og eventuelle slike tjenere bør konfigureres på nytt.
+
+      Vi anbefaler at tjenere overføres til ECDHE-chifferserier. Hvis det ikke er mulig, bør du sikre at nøkkelutveksling er slått på for chifferserien.</translation>
 <translation id="3153348162326497318">Gjør at du kan angi hvilke utvidelser brukerne IKKE kan installere. Utvidelser som allerede er installert, fjernes eller svartelistes.
 
           En svartelisteverdi på * betyr at alle utvidelser er svartelistet med mindre de er uttrykkelig oppført på godkjenningslisten.
@@ -742,6 +772,11 @@
 <translation id="3322771899429619102">Gjør det mulig å definere en liste med nettadressemønstre for å spesifisere nettsteder som har tillatelse til å bruke nøkkelgenerering. Hvis det er et nettadressemønster i «KeygenBlockedForUrls», overstyrer det disse unntakene.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettstedene, enten fra regelen «DefaultKeygenSetting» hvis den er angitt, eller fra brukerens personlige konfigurasjon.</translation>
+<translation id="3337150554416948435">Gjør at du kan angi om du vil gi nettsteder tillatelse til å spore brukernes fysiske posisjon. Du kan tillate sporing av brukeres fysiske posisjon som standard, nekte som standard eller spørre brukerne hver gang et nettsted spør om den fysiske posisjonen.
+
+          Hvis denne regelen angis som BlockGeolocation, tillates ikke posisjonsdeling for ARC-apper.
+
+          Hvis denne regelen ikke er angitt, brukes AskGeolocation som standard, og brukerne kan endre den.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME" /> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
@@ -865,6 +900,13 @@
 
       Hvis dette ikke er angitt, endres ikke nettadressen for Variasjoner-utgangsverdien.</translation>
 <translation id="3863409707075047163">Den laveste SSL-versjonen som er på</translation>
+<translation id="3864020628639910082">Angir nettadressen for søkemotoren som brukes for søkeforslag. Nettadressen må inneholde strengen <ph name="SEARCH_TERM_MARKER" />, som erstattes med teksten brukeren har skrevet inn hittil, når søket utføres.
+
+          Denne regelen er valgfri. Hvis den ikke angis, brukes det ikke noen forslagsnettadresser.
+
+          Googles forslagsnettadresse kan spesifiseres slik: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Denne regelen gjelder bare hvis regelen DefaultSearchProviderEnabledpolicy er slått på.</translation>
 <translation id="3864818549971490907">Standardinnstilling for programtillegg</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3866530186104388232">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brukere på påloggingssiden og tillate valg av én. Hvis denne retningslinjen er angitt som Usann, ber <ph name="PRODUCT_OS_NAME" /> om brukernavn og passord ved pålogging.</translation>
@@ -879,6 +921,13 @@
 
       Hver oppføring på listen inneholder en ordliste som må inkludere utvidelse-ID-en i feltet for utvidelse-ID samt dets oppdateringsnettadresse i feltet for oppdateringsnettadresse.</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
+<translation id="3898060089412156345">Tillat eller nekt lydopptak.
+
+      Hvis denne regelen er slått på eller ikke er konfigurert (standard), blir brukerne spurt om tilgang til lydopptak, bortsett fra for eventuelle nettadresser som er konfigurert i AudioCaptureAllowedUrls-listen. Disse får tilgang uten forespørsel på forhånd.
+
+      Når denne regelen er slått av, blir brukeren aldri spurt, og lydopptak er bare tilgjengelig for nettadresser som er konfigurert i AudioCaptureAllowedUrls. Mikrofonlyden er permanent kuttet for ARC-apper.
+
+      Denne regelen har innvirkning på alle typer lydinndata – ikke bare den innebygde mikrofonen.</translation>
 <translation id="3907986150060929099">Spesifiser de anbefalte lokalitetene for offentlige økter</translation>
 <translation id="391531815696899618">Slår av Google Disk-synkronisering i Filer-appen for <ph name="PRODUCT_OS_NAME" /> ved bruk av mobiltilkobling når den har verdien true (sann). I disse tilfellene lastes ikke noen data opp til Google Disk.
 
@@ -937,6 +986,7 @@
           Når innstillingen ikke er konfigurert, brukes standard tidslengde.
 
           Innstillingsverdien må angis i millisekunder.</translation>
+<translation id="4105989332710272578">Slå av tvungen sertifikatåpenhet for en liste med nettadresser</translation>
 <translation id="4115096483386877940">Tillat låsing av skjermen.
 
       Hvis denne regelen settes til false (usann), kan ikke brukerne låse skjermen (det er bare mulig å logge av fra brukerøkten). Hvis denne regelen settes til true (sann) eller ikke angis, kan brukere som har autentisert med et passord, låse skjermen.</translation>
@@ -974,6 +1024,7 @@
           Denne innstillingen er valgfri. Hvis den ikke er angitt, blir forespørsler om bildesøk sendt via GET-metoden.
 
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
+<translation id="4309640770189628899">Definerer om DHE-chifferserier i TLS er slått på</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4322842393287974810">La den automatisk startede kioskappen uten forsinkelse kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
@@ -1008,7 +1059,7 @@
 <translation id="4449545651113180484">Rotér skjermen 270 grader med klokken</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
 <translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
-<translation id="447686899376429408">Hvis denne er angitt som sann eller ikke er angitt, kommer brukerne til å kunne caste faner, nettsteder eller skrivebordet fra nettleseren. Hvis den er angitt som usann, slås dette alternativet av.</translation>
+<translation id="447686899376429408">Hvis denne regelen er angitt som sann eller ikke er angitt, kommer brukerne til å kunne caste faner, nettsteder eller skrivebordet fra nettleseren. Hvis den er angitt som usann, slås dette alternativet av.</translation>
 <translation id="4480694116501920047">Tving Sikkert Søk</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME" />.
 
@@ -1685,13 +1736,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis den ikke er angitt, kan det hende brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importen skje automatisk.</translation>
 <translation id="7003746348783715221">Valg for <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Innstillinger for innhold</translation>
-<translation id="7007671350884342624">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> kommer til å bruke for å lagre bufrede filer på disken.
+<translation id="7007671350884342624">Konfigurerer katalogen som <ph name="PRODUCT_NAME" /> skal bruke til å lagre bufrede filer på disken.
 
-      Hvis du angir disse retningslinjene, kommer <ph name="PRODUCT_NAME" /> til å bruke den oppgitte katalogen uavhengig av om brukeren har spesifisert «--disk-cache-dir»-flagget eller ikke. For å unngå tap av data eller andre uventede feil skal ikke disse retningslinjene angis til rotkatalogen til et volum eller en katalog som brukes til andre hensikter, fordi <ph name="PRODUCT_NAME" /> administrerer innholdet.
+      Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uavhengig av om brukeren har spesifisert flagget «--disk-cache-dir» eller ikke. For å unngå tap av data eller andre uventede feil skal ikke denne regelen settes til rotkatalogen for et volum eller til en katalog som brukes til andre formål, fordi <ph name="PRODUCT_NAME" /> administrerer innholdet.
 
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.
 
-      Hvis disse retningslinjene ikke blir angitt, brukes bufferkatalogen, og brukeren kommer til å kunne overstyre den med «--disk-cache-dir»-kommandolinjeflagget.</translation>
+      Hvis denne regelen ikke blir angitt, brukes bufferkatalogen, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
 <translation id="7027785306666625591">Konfigurer strømstyring i <ph name="PRODUCT_OS_NAME" />.
 
       Disse innstillingene lar deg konfigurere hvordan <ph name="PRODUCT_OS_NAME" /> oppfører seg når brukeren er inaktiv i en periode.</translation>
@@ -1708,9 +1759,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Startsidetypen kan enten angis til en nettadresse du spesifiserer her, eller angis til Ny fane-siden. Hvis du velger Ny fane-siden, aktiveres ikke denne regelen.
 
-          Hvis du slår på denne regelen, kan ikke brukere endre nettadressen til startsidene sine i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge Ny fane-siden som startsiden sin.
+          Hvis du slår på denne regelen, kan ikke brukere endre nettadressen til startsiden i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge Ny fane-siden som startside.
 
-          Hvis du ikke angir denne regelen, kommer brukeren til å kunne velge startsiden sin selv om ikke HomepageIsNewTabPage er angitt heller.
+          Hvis du ikke angir denne regelen, kan brukerne velge startside selv, forutsatt at ikke HomepageIsNewTabPage er angitt heller.
 
           Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er
           tilknyttet et Active Directory-domene.</translation>
@@ -1718,7 +1769,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="706669471845501145">Tillat nettsteder å vise varsler på skrivebordet</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
 <translation id="7091198954851103976">Kjører alltid programtillegg som krever godkjenning</translation>
-<translation id="7106631983877564505">Slå på lås når <ph name="PRODUCT_OS_NAME" />-enheter blir inaktive eller suspenderte.
+<translation id="7106631983877564505">Slå på lås når <ph name="PRODUCT_OS_NAME" />-enheter blir inaktive eller suspenderes.
 
       Hvis du slår på denne innstillingen, må brukere angi passord for å låse opp enheten fra hvilemodus.
 
@@ -2003,6 +2054,20 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
 <translation id="7882890448959833986">Ignorer advarselen om at operativsystemet ikke støttes</translation>
 <translation id="7912255076272890813">Konfigurer tillatte typer apper og utvidelser</translation>
+<translation id="7914271217607102111">Tillat eller nekt videoopptak.
+
+      Hvis denne regelen er slått på eller ikke er konfigurert (standard),
+      blir brukerne spurt om tilgang for videoopptak – med unntak av for
+      eventuelle nettadresser som er spesifisert i VideoCaptureAllowedUrls-listen.
+      Disse gis det tilgang til uten at brukeren blir vist noen melding.
+      ARC-apper kan få tilgang til kameraet hvis de har fått tillatelse til det.
+
+      Når denne regelen er slått av, blir brukerne aldri spurt, og videoopptak
+      er bare tilgjengelig for nettadressene i VideoCaptureAllowedUrls.
+      ARC-apper har ikke tilgang til kameraet.
+
+      I tillegg til ARC-apper har denne regelen innvirkning på alle typer
+      innenheter for video – ikke bare det innebygde kameraet.</translation>
 <translation id="7915236031252389808">Du kan angi nettadressen til en .pac-fil for en proxy-tjener her.
 
           Denne regelen trer bare i kraft hvis du har valgt manuelle innstillinger for proxy-tjenere under «Velg hvordan innstillinger for proxy-tjener angis».
@@ -2079,7 +2144,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
 
           Hvis denne innstillingen ikke angis, deaktiveres høykontrastmodus til å begynne med, men brukere kan aktivere den når som helst.</translation>
-<translation id="815061180603915310">Hvis denne regelen er angitt som aktivert, tvinger den profilen til å bytte til engangsmodus. Hvis denne regelen er spesifisert som en OS-regel (f.eks. GPO på Windows), gjelder den for alle profilene på systemet. Hvis regelen er angitt som en Nettsky-regel, gjelder den bare for profiler som er logget på med en administrert konto.
+<translation id="815061180603915310">Hvis denne regelen er angitt som aktivert, tvinger den profilen til å bytte til engangsmodus. Hvis denne regelen er spesifisert som en OS-regel (f.eks. GPO på Windows), gjelder den for alle profilene på systemet. Hvis regelen er angitt som en nettskyregel, gjelder den bare for profiler som er logget på med en administrert konto.
 
       I denne modusen blir profildataene bare lagret på disk til brukerøkten er avsluttet. Funksjoner som nettlogg, utvidelser med tilhørende data, nettdata – som informasjonskapsler – og nettdatabaser lagres ikke når nettleseren lukkes. Dette hindrer derimot ikke brukeren i å manuelt laste ned data til disk, lagre sider eller skrive dem ut.
 
@@ -2129,17 +2194,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       PAC-skriptet se data som vanligvis er beskyttet av en kryptert kanal (for
       eksempel banen og søket).
 
-      Når den er satt til False (usann),slås sikkerhetsfunksjonen av, og PAC-skript får
+      Når den er satt til False (usann), slås sikkerhetsfunksjonen av, og PAC-skript får
       implisitt muligheten til å se alle komponentene til en https://-nettadresse. Dette
       gjelder for alle PAC-skript, uansett opprinnelse (inkludert de som innhentes over
       usikre transportkanaler, eller som oppdages usikkert via WPAD).
 
-      Denne er som standard True (sann) (sikkerhetsfunksjon er slått på), unntatt for
-      brukere av Chrome OS for bedrifter, som for øyeblikket har denne angitt som
-      False (usann) som standard.
+      Denne er som standard True (sann) (sikkerhetsfunksjonen er på), unntatt for
+      brukere av Chrome OS for bedrifter, som for øyeblikket har standardverdien
+      False (usann).
 
       Det anbefales at denne angis som True (sann). Den eneste grunnen til å angi
-      den som False (usann), er hvis den fører til kompatibilitetsproblemer med
+      den som False (usann) er hvis den fører til kompatibilitetsproblemer med
       eksisterende PAC-skript.
 
 
@@ -2168,7 +2233,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis denne regelen ikke angis, kommer brukere selv til å kunne velge om den nye fanen skal være startsiden deres.
 
-          
           Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er
           tilknyttet et Active Directory-domene.</translation>
 <translation id="8329984337216493753">Denne retningslinjen er aktiv bare i detaljistmodus.

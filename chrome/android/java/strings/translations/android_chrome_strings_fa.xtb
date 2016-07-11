@@ -46,9 +46,11 @@
 <translation id="1477626028522505441">به‌دلیل مشکلاتی در سرور، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="1506061864768559482">موتور جستجو</translation>
 <translation id="1513352483775369820">نشانک‌ها و سابقه وب</translation>
+<translation id="1517433312004943670">شماره تلفن ضروری است</translation>
 <translation id="1549000191223877751">انتقال به پنجره دیگر</translation>
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1557201757634521564">شناسایی خودکار کدبندی</translation>
+<translation id="1612196535745283361">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. دسترسی به مکان <ph name="BEGIN_LINK" />برای این دستگاه خاموش است<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">دوربین</translation>
 <translation id="1623104350909869708">جلوگیری از ایجاد پنجره‌های اضافی توسط این صفحه</translation>
 <translation id="1639239467298939599">بارگیری</translation>
@@ -60,12 +62,14 @@
 <translation id="1657479659644194568">‏راه‌اندازی Chrome</translation>
 <translation id="169033420419426091">‏به‌دلیل موجود نبودن کارت SD، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="1692118695553449118">همگام‌سازی روشن است</translation>
+<translation id="1701955595840307032">دریافت محتوای پیشنهادی</translation>
 <translation id="1709438864123551175">صرفه‌جویی داده</translation>
 <translation id="1731273018720599993">کل فضای ذخیره‌سازی</translation>
 <translation id="1742134235943978220">به <ph name="TARGET_LANGUAGE" /> ترجمه شد.</translation>
 <translation id="1749561566933687563">همگام‌سازی نشانک‌ها</translation>
 <translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1756600373018374892">برای دسترسی سریع به برگه‌هایتان، روی این دکمه ضربه بزنید.</translation>
+<translation id="1761412452051366565">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، همگام‌سازی را روشن کنید.</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1825719650605518411">اولین تجربه اجرا</translation>
 <translation id="1826516787628120939">در حال بررسی</translation>
@@ -73,6 +77,7 @@
 <translation id="1832521218263067499">حوادث امنیتی</translation>
 <translation id="1842969606798536927">پرداخت</translation>
 <translation id="1853692000353488670">برگه جدید ناشناس</translation>
+<translation id="1871284979644508959">قسمت الزامی</translation>
 <translation id="189172778771606813">بستن کشوی پیمایش</translation>
 <translation id="1924956916668006832">انتخاب آدرس تحویل کالا</translation>
 <translation id="1933845786846280168">برگه انتخاب‌شده</translation>
@@ -90,6 +95,7 @@
 <translation id="2073235970478114994">بارگیری تصاویر</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2082238445998314030"><ph name="RESULT_NUMBER" /> نتیجه از <ph name="TOTAL_RESULTS" /></translation>
+<translation id="2086652334978798447">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، به Chrome وارد شوید.</translation>
 <translation id="2095887075102408547">‏وقتی این قابلیت روشن است، Chrome از سرورهای Google استفاده می‌کند تا صفحاتی را که بازدید می‌کنید قبل از دانلود آن‌ها فشرده کند. Google صفحه‌هایی را که از طریق اتصالات خصوصی (HTTPS) یا برگه‌های حالت ناشناس به آن‌ها می‌روید بهینه‌سازی یا مشاهده نمی‌کند.</translation>
 <translation id="2096396629993765042">‏از حساب Google خود خارج نمی‌شوید. ممکن است اشکال دیگری از سابقه مرور در حساب Google شما در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> وجود داشته باشد.</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
@@ -113,6 +119,7 @@
 
 <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">در حال نصب…</translation>
+<translation id="2346253980530904022">‏سرورهای Google صفحه‌هایی را که بازدید می‌کنید بهینه می‌کنند، مگر در صورت استفاده از HTTPS و درحالت ناشناس.</translation>
 <translation id="2349710944427398404">‏کل داده‌های استفاده‌شده توسط Chrome، شامل حساب‌ها، نشانک‌ها و تنظیمات ذخیره‌شده</translation>
 <translation id="2351097562818989364">تنظیمات ترجمه شما بازنشانی شده است.</translation>
 <translation id="2359808026110333948">ادامه</translation>
@@ -125,6 +132,7 @@
 <translation id="2440823041667407902">دسترسی به موقعیت مکانی</translation>
 <translation id="2476578072172137802">تنظیمات سایت</translation>
 <translation id="2482878487686419369">اعلان‌ها</translation>
+<translation id="24943777258388405">شماره تلفن نامعتبر</translation>
 <translation id="2496180316473517155">سابقه مرور</translation>
 <translation id="2498359688066513246">راهنمایی و بازخورد</translation>
 <translation id="2501278716633472235">بازگشت</translation>
@@ -203,6 +211,7 @@
 <translation id="3358663646935160692">‏<ph name="DOMAIN_NAME" /> این حساب را مدیریت می‌کند.
 
 شما با یک حساب مدیریت شده وارد سیستم می‌شوید و به سرپرست این حساب اجازه کنترل نمایه Chrome خود را می‌دهید. داده‌های Chrome شما به‌طور ثابت با این حساب مرتبط می‌شود. با قطع ارتباط از این حساب، کلیه داده‌های Chrome شما در دستگاه حذف می‌شود.</translation>
+<translation id="3365671512111106261">در صورت روشن بودن «صرفه‌جویی داده»، در دسترس نیست</translation>
 <translation id="3384347053049321195">اشتراک‌گذاری تصویر</translation>
 <translation id="3386292677130313581">قبل از اجازه به سایت‌ها برای اطلاع از مکانتان، ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="3387650086002190359">به‌دلیل خطاهای سیستم فایل، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
@@ -241,6 +250,7 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3931947361983910192">۴ هفته گذشته</translation>
 <translation id="393697183122708255">هیچ جستجوی فعال صوتی در دسترس نیست</translation>
+<translation id="3946611741043634542">‏با ادامه دادن، با <ph name="BEGIN_LINK1" />شرایط و ضوابط<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلان حریم خصوصی<ph name="END_LINK2" /> Chrome موافقت می‌کنید.</translation>
 <translation id="3950820424414687140">ورود به سیستم</translation>
 <translation id="3988213473815854515">مکان مجاز است</translation>
 <translation id="3992315671621218278">ذخیره پیوند</translation>
@@ -289,6 +299,7 @@
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">انتخاب پوشه</translation>
 <translation id="4543661749405994812">کپی آدرس رایانامه</translation>
+<translation id="4572422548854449519">به حساب مدیریت‌شده وارد شوید</translation>
 <translation id="4581964774250883625">به حالت ناشناس وارد شدید.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# دقیقه قبل}one{# دقیقه قبل}other{# دقیقه قبل}}</translation>
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
@@ -301,7 +312,9 @@
 <translation id="4698413471314543145">‏یکی از قابلیت‌های مهم برای اجرای Chrome موجود نیست؛ ممکن است نصب Chrome شما به‌ صورت ناقص انجام شده باشد یا اینکه با این نسخه از Android سازگار نباشد.</translation>
 <translation id="4699172675775169585">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
 <translation id="4710672574193412565">‏از صفحه «حساب‌ها» در برنامه «تنظیمات» دستگاه، یک حساب Google اضافه کنید.</translation>
+<translation id="4714588616299687897">صرفه‌جویی تا ۶۰ درصد داده‌ها</translation>
 <translation id="4720023427747327413">بازکردن در <ph name="PRODUCT_NAME" /></translation>
+<translation id="4730876730346568982">‏هم‌اکنون حساب‌های همگام‌سازی را از <ph name="ACCOUNT_EMAIL_OLD" /> به <ph name="ACCOUNT_EMAIL_NEW" /> تغییر می‌دهید. داده‌های موجود Chrome شما توسط <ph name="MANAGED_DOMAIN" /> مدیریت می‌شود. با این کار، داده‌هایتان از این دستگاه حذف می‌شود اما همچنان در <ph name="ACCOUNT_EMAIL_OLD" /> باقی می‌ماند.</translation>
 <translation id="473775607612524610">به‌روزرسانی</translation>
 <translation id="4738836084190194332">آخرین همگام‌سازی: <ph name="WHEN" /></translation>
 <translation id="4758311279753947758">افزودن اطلاعات تماس</translation>
@@ -316,7 +329,9 @@
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4885273946141277891">‏این تعداد از نسخه‌های Chrome پشتیبانی نمی‌شود.</translation>
 <translation id="4923459931733593730">پرداخت</translation>
+<translation id="4941291666397027948">* نشانگر قسمت الزامی است</translation>
 <translation id="4943872375798546930">نتیجه‌ای پیدا نشد</translation>
+<translation id="4961700429721424617">‏هم‌اکنون از حسابی که توسط <ph name="MANAGED_DOMAIN" /> مدیریت می‌شود، خارج می‌شوید. با این کار داده‌های Chrome شما از این دستگاه حذف می‌شود اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="497421865427891073">جلو رفتن</translation>
 <translation id="4986920000862467124">همه خوانده شده‌اند</translation>
 <translation id="4988526792673242964">صفحات</translation>
@@ -367,12 +382,14 @@
 <translation id="5414836363063783498">در حال تأیید...</translation>
 <translation id="5423934151118863508">صفحاتی که بیشترین بازدید را از آنها داشته‌اید در اینجا نمایان می‌شوند</translation>
 <translation id="5424715742813396254">ویرایش نام/گذرواژه ذخیره شده یا مورد استثنا</translation>
+<translation id="5437003064129843501">پیشنهاد محتوای شخصی‌سازی‌شده درحال حاضر غیرفعال است، چون داده‌های همگام‌سازی‌شده‌تان با عبارت عبور سفارشی محافظت می‌شود.</translation>
 <translation id="544291274896356069">اگر این پیوند در یک برنامه خارجی باز شود از حالت ناشناس خارج می‌شوید. ادامه می‌دهید؟</translation>
 <translation id="5447201525962359567">همه فضای ذخیره سایت‌ها، ازجمله کوکی‌ها و سایر داده‌های ذخیره‌شده در دستگاه</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
 <translation id="5487729733663684359">‏به‌روزرسانی‌های Chrome دیگر در این نسخه Android پشتیبانی نمی‌شود.</translation>
 <translation id="5511351932351731210">همیشه ارسال شود</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> این حساب را مدیریت می‌کند.</translation>
+<translation id="5527082711130173040">‏Chrome برای جستجوی دستگاه‌ها باید به مکان دسترسی داشته باشد. <ph name="BEGIN_LINK1" />به‌روزرسانی مجوزها<ph name="END_LINK1" /> . دسترسی به مکان نیز <ph name="BEGIN_LINK2" />برای این دستگاه خاموش است<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">بستن برگه‌های ناشناس</translation>
 <translation id="554327794654007401">وب فیزیکی</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
@@ -397,6 +414,7 @@
 <translation id="5763382633136178763">برگه‌های ناشناس</translation>
 <translation id="5765780083710877561">توضیح:</translation>
 <translation id="5771382037724542929">آیا می‌خواهید <ph name="FILE_NAME" /> موجود در <ph name="DIRECTORY_NAME" /> را جایگرین کنید؟</translation>
+<translation id="5777170031995031090">‏نحوه استفاده Google را از سابقه مرورتان برای شخصی‌سازی جستجو، آگهی‌ها و سایر سرویس‌های Google کنترل کنید.</translation>
 <translation id="579919059055796498">پاک کردن فضای ذخیره سایت</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
@@ -412,6 +430,7 @@
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
+<translation id="5950380453936610378">آدرس رایانامه ضروری است</translation>
 <translation id="5961742032223302715">انتخاب جزئیات تماس</translation>
 <translation id="5968595432776860642">در حال پخش «<ph name="VIDEO_TITLE" />»</translation>
 <translation id="6010869025736512584">در حال دسترسی به ورودی ویدیویی</translation>
@@ -451,11 +470,13 @@
 <translation id="6406506848690869874">همگام‌سازی</translation>
 <translation id="6409731863280057959">پنجره‌های بازشو</translation>
 <translation id="641643625718530986">چاپ...</translation>
+<translation id="6433490469411711332">ویرایش اطلاعات تماس</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
 <translation id="6448273550210938826">پیشنهادات جستجو و نشانی وب</translation>
 <translation id="6458785801851713928">همگام‌سازی برای دامنه شما در دسترس نیست.</translation>
 <translation id="6464825623202322042">این دستگاه</translation>
 <translation id="6476911854266661814">«<ph name="VIDEO_TITLE" />» موقتاً متوقف است</translation>
+<translation id="6477460825583319731">آدرس رایانامه نامعتبر</translation>
 <translation id="6482749332252372425">به‌دلیل نبودن فضای ذخیره‌سازی، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="6541922744811587456">‏نشانک‌های Chrome</translation>
 <translation id="654446541061731451">برگه‌ای برای انتقال با پرتو انتخاب کنید</translation>
@@ -479,6 +500,7 @@
 <translation id="6710213216561001401">قبلی</translation>
 <translation id="6738867403308150051">در حال بارگیری…</translation>
 <translation id="6762156594045689028">برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
+<translation id="6770367468896190154">از <ph name="TOTAL_SPACE" /> استفاده شده است</translation>
 <translation id="6770414673596662518">‏همچنین از سیستم مرور ایمن Chrome برای تشخیص صفحات مخرب و محافظت از شما در برابر فیشینگ، بدافزار و بارگیری‌های خطرناک استفاده می‌شود.</translation>
 <translation id="6784675033504223784">جستجوی «<ph name="SEARCH_TERM" />»</translation>
 <translation id="6790428901817661496">پخش</translation>
@@ -528,6 +550,7 @@
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> از موقعیت مکانی شما برای نمایش نتایج جستجوی محلی استفاده می‌کند</translation>
 <translation id="7299441085833132046"><ph name="BEGIN_LINK" />راهنما<ph name="END_LINK" /></translation>
 <translation id="7299721129597238157">حذف نشانک</translation>
+<translation id="7301833672208172928">روشن کردن همگام‌سازی سابقه</translation>
 <translation id="7327835590071894791">اکنون برگه‌تان در پس‌زمینه قرار دارد.</translation>
 <translation id="7347770551817603360">محتوای آفلاین</translation>
 <translation id="7358452246665489050">درحال محاسبه...</translation>
@@ -540,6 +563,7 @@
 <translation id="7408644312175185557">برگه‌ها و سایر برنامه‌های اخیرتان را در صفحه نمای کلی تلفن ببینید.</translation>
 <translation id="7423098979219808738">ابتدا سؤال شود</translation>
 <translation id="7437998757836447326">‏خروج از سیستم Chrome</translation>
+<translation id="7445411102860286510">اجازه به سایت‌ها برای پخش خودکار ویدیوهای صامت‌شده (توصیه می‌شود)</translation>
 <translation id="7464701184726199289">با این کار داده‌های همگام‌سازی‌شده در همه دستگاه‌ها پاک می‌شوند. تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="7473891865547856676">نه متشکرم</translation>
 <translation id="7475192538862203634">درصورتی‌که این مورد را مکرراً مشاهده می‌کنید، این <ph name="BEGIN_LINK" />پیشنهادات<ph name="END_LINK" /> را امتحان کنید.</translation>
@@ -616,6 +640,7 @@
 <translation id="8218346974737627104">تأیید ورود به سیستم</translation>
 <translation id="8218934717680664417">اکنون می‌توانید با یک لمس جستجو کنید</translation>
 <translation id="8223946939421658889">پاک کردن داده‌ها از</translation>
+<translation id="8250920743982581267">اسناد</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8275818695183729150">اجازه دادن (برای جستجوهای نوار آدرس)</translation>
 <translation id="8283853025636624853">در حال همگام‌سازی در <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
@@ -645,6 +670,7 @@
 
 برای بدست آوردن مجوزهای جدید، به اینترنت وصل شوید و محتوای بارگیری‌شده خودتان را پخش کنید.</translation>
 <translation id="8636825310635137004">برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، همگام‌سازی را روشن کنید.</translation>
+<translation id="8639651215196239211">همه اسناد</translation>
 <translation id="8660471606262461360">‏از Google Payments</translation>
 <translation id="8676374126336081632">پاک کردن ورودی</translation>
 <translation id="869891660844655955">تاریخ انقضا</translation>
@@ -652,6 +678,7 @@
 <translation id="8719023831149562936">انتقال برگه کنونی با پرتو ممکن نیست</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
+<translation id="8790687370365610530">‏برای دریافت محتوای شخصی‌سازی‌شده پیشنهادی Google، همگام‌سازی سابقه را روشن کنید.</translation>
 <translation id="8798099450830957504">پیش‌فرض</translation>
 <translation id="8812942424849541387">کنترل نحوه عملکرد آن در <ph name="BEGIN_LINK1" />تنظیمات<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
@@ -673,6 +700,7 @@
 <translation id="8981454092730389528">‏کنترل‌های فعالیت Google</translation>
 <translation id="8986494364107987395">‏ارسال خودکار آمار مصرف و گزارش‌های خرابی به Google</translation>
 <translation id="8987061207681586800">‏Chrome را برای خود اختصاصی کنید</translation>
+<translation id="8998729206196772491">‏هم‌اکنون درحال ورود به سیستم با یک حساب مدیریت‌شده توسط <ph name="MANAGED_DOMAIN" /> و ارائه کنترل داده‌های Chrome خودتان به سرپرست این حساب هستید. داده‌هایتان به‌طور دائم به این حساب مرتبط می‌شوند. با خروج از Chrome، داده‌هایتان از این دستگاه حذف می‌شوند اما همچنان در حساب Google شما باقی می‌ماند.</translation>
 <translation id="9019902583201351841">مدیریت شده توسط والدین شما</translation>
 <translation id="9020607083536754075">بستن برگه کنونی و برگشت و به برنامه قبلی</translation>
 <translation id="9038649477754266430">استفاده از یک سرویس پیش‌بینی برای بار کردن سریع‌تر صفحه‌ها</translation>
@@ -685,6 +713,7 @@
 <translation id="9099292894781394535">ذخیره داده‌ها</translation>
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9133515669113036225">بازنشانی اعتبارنامه‌های دستگاه</translation>
+<translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9139068048179869749">قبل از اجازه به سایت‌ها برای ارسال اعلان ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="9141510419986760385">در حال تغییر دادن حساب‌های همگام‌سازی از <ph name="FROM_ACCOUNT" /> به <ph name="TO_ACCOUNT" /> هستید. با نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات موجودتان چه می‌کنید؟</translation>
@@ -701,5 +730,6 @@
 <translation id="969096075394517431">تغییر زبان‌ها</translation>
 <translation id="970715775301869095"><ph name="MINUTES" /> دقیقه باقی‌مانده است</translation>
 <translation id="981121421437150478">آفلاین</translation>
+<translation id="982182592107339124">با این کار داده‌های همه سایت‌ها پاک می‌شود، از جمله:</translation>
 <translation id="983192555821071799">بستن همه برگه‌ها</translation>
 </translationbundle>

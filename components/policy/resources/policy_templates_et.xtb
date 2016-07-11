@@ -462,6 +462,13 @@
 <translation id="2466131534462628618">Hõiveportaali autentimisel puhverserveri eiramine</translation>
 <translation id="2482676533225429905">Omasõnumside</translation>
 <translation id="2483146640187052324">Ennusta võrgutoiminguid iga võrguühenduse puhul</translation>
+<translation id="2486371469462493753">Keelab sertifikaadi läbipaistvuse nõuete jõustamise loetletud URL-idel.
+
+      Reegel lubab määratud URL-ide hostinimede sertifikaadid, mis ei ole sertifikaadi läbipaistvuse reegli kaudu avalikustatud. See lubab ka edaspidi kasutada sertifikaate, mida peetaks muidu ebausaldusväärseks, kuna need ei ole sobival moel avalikustatud, ent muudab hostide valesti väljastatud sertifikaatide tuvastamise keerulisemaks.
+
+      URL-i muster vormindatakse aadressil https://www.chromium.org/administrators/url-blacklist-filter-format kirjeldatud moel. Kuna aga sertifikaadid kehtivad konkreetse hostinime puhul olenemata skeemist, pordist või teest, võetakse arvesse ainult URL-i hostinime osa. Metamärkidega hoste ei toetata.
+
+      Kui jätate reegli määramata, peetakse ebausaldusväärseks kõiki sertifikaate, mis ei ole sertifikaadi läbipaistvuse reegli kaudu avalikustatud, ent mille puhul see on kohustuslik.</translation>
 <translation id="2488010520405124654">Võrguseadistuse viiba lubamine, kui seade on võrguühenduseta.
 
       Kui seda reeglit pole määratud või on määratud valikule Tõene ja seadme kohalik konto on seadistatud viivituseta automaatsele sisselogimisele ning seadmel puudub Interneti-ühendus, siis kuvab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> võrguseadistuse viiba.
@@ -489,6 +496,14 @@
 <translation id="2529880111512635313">Sunniviisiliselt installitud rakenduste ja laienduste loendi seadistamine</translation>
 <translation id="253135976343875019">Tegevusetuse hoiatuse viivitus vahelduvvoolutoite kasutamisel</translation>
 <translation id="2552966063069741410">Ajavöönd</translation>
+<translation id="2562339630163277285">Määrab otsingumootori URL-i, mida kasutatakse vahetute otsingutulemuste esitamiseks. URL peab sisaldama stringi <ph name="SEARCH_TERM_MARKER" />, mis asendatakse päringu tegemisel kasutaja sisestatud tekstiga.
+
+          Reegel on valikuline. Kui jätate selle määramata, siis ei esitata vahetuid otsingutulemusi.
+
+          Google'i vahetute otsingutulemuste URL-iks võib määrata: <ph name="GOOGLE_INSTANT_SEARCH_URL" />
+
+
+         See reegel kehtib vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="2571066091915960923">Lubab või keelab andmete tihendamise puhverserveri ja takistab kasutajatel seadet muuta.
 
       Selle seade lubamisel või keelamisel ei saa kasutajad seadet muuta ega üle kirjutada.
@@ -500,6 +515,11 @@
 <translation id="262740370354162807">Luba dokumentide saatmine teenusesse <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Luba suuline tagasiside</translation>
 <translation id="2650049181907741121">Tehtav toiming, kui kasutaja kaane sulgeb</translation>
+<translation id="2655233147335439767">Määrab vaikeotsingu puhul kasutatava otsingumootori URL-i. URL peab sisaldama stringi „<ph name="SEARCH_TERM_MARKER" />”, mis asendatakse päringu ajal kasutaja sisestatud terminitega.
+
+          Google'i otsingu URL-iks võib määrata: <ph name="GOOGLE_SEARCH_URL" />
+
+          Valik tuleb määrata ja seda rakendatakse vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="2660846099862559570">Ära kunagi kasuta puhverserverit</translation>
 <translation id="267596348720209223">Määrab tähemärkide kodeeringu, mida otsingupakkuja toetab. Kodeeringud on koodilehtede nimed, näiteks UTF-8, GB2312 või ISO-8859-1. Neid proovitakse sisestatud järjestuses.
 
@@ -508,6 +528,12 @@
           See reegel kehtivad vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="2682225790874070339">Keelab Drive'i operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid</translation>
 <translation id="268577405881275241">Andmete tihendamise puhverserveri funktsiooni lubamine</translation>
+<translation id="2692168654831544772">Keelab ekraanipiltide tegemise.
+
+      Kui reegel on lubatud, ei saa ekraanipiltide tegemiseks kasutada klaviatuuri otseteid ega laienduse API-sid.
+      Peale selle on keelatud ekraani jäädvustamine ARC-rakenduste puhul.
+
+      Kui reegel on keelatud või määramata, on ekraanipiltide jäädvustamine lubatud.</translation>
 <translation id="2731627323327011390">Keela ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaatide kasutamine</translation>
 <translation id="2742843273354638707">Peitke Chrome'i veebipoe rakendus ja jaluse link uuel vahelehel ja operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduse käivitajas.
 
@@ -672,6 +698,11 @@
 <translation id="3072847235228302527">Teenusetingimuste määramine seadmes kasutatava konto jaoks</translation>
 <translation id="3096595567015595053">Lubatud pistikprogrammide loend</translation>
 <translation id="3101501961102569744">Valimine, kuidas määrata puhverserveri seaded</translation>
+<translation id="3117676313396757089">Hoiatus. DHE eemaldatakse teenusest <ph name="PRODUCT_NAME" /> pärast versiooni 57 täielikult (umbes 2017. aasta märtsis) ja edaspidi see reegel enam ei tööta.
+
+      Kui reegel on määramata või selle väärtuseks on määratud Väär, ei ole DHE šifreerimiskomplektid TLS-is lubatud. Selle väärtuseks võib olla määratud ka Tõene, et lubada DHE šifreerimiskomplektid ja et säilitada ühilduvus aegunud serveriga. See on ajutine meede ja server tuleks ümber seadistada.
+
+      Serverid on soovitatav üle viia ECDHE šifreerimiskomplektidele. Kui need ei ole saadaval, lubage kindlasti RSA võtmevahetust kasutav šifreerimiskomplekt.</translation>
 <translation id="3153348162326497318">Võimaldab määrata, milliseid laiendusi kasutajad EI saa installida. Juba installitud rakendused eemaldatakse, kui need on mustas nimekirjas. Kui mustas nimekirjas on väärtus „*”, siis kantakse kõik laiendused musta nimekirja, kui need ei ole eraldi lisatud lubatud nimekirja. Kui reeglit ei määrata, siis saab kasutaja rakenduses <ph name="PRODUCT_NAME" /> installida kõik laiendused.</translation>
 <translation id="316778957754360075">See seade on alates rakenduse <ph name="PRODUCT_NAME" /> versioonist 29 kasutusest kõrvaldatud. Organisatsiooni majutatud laienduse-/rakendusekogude seadistamiseks on soovitatav kaasata sait, mis hostib üksuses ExtensionInstallSources CRX-pakette ja paneb pakettide allalaadimise otselingid veebilehele. Selle veebilehe käivitaja saab luua reegliga ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">alates versioonist <ph name="SINCE_VERSION" /></translation>
@@ -752,6 +783,11 @@
 <translation id="3322771899429619102">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kasutada võtmete loomist. Kui URL-i muster on loendis „KeygenBlockedForUrls”, alistab see need erandid.
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
+<translation id="3337150554416948435">Võimaldab määrata, kas veebisaitidel on lubatud jälgida kasutajate füüsilist asukohta. Kasutajate füüsilise asukoha jälgimine võib olla vaikimisi lubatud või keelatud või kasutajalt võidakse luba küsida iga kord, kui veebisait taotleb teavet füüsilise asukoha kohta.
+
+          Kui määrate reegli seadeks „BlockGeolocation”, keelatakse asukoha jagamine ARC-rakenduste puhul.
+
+          Kui jätate selle reegli määramata, siis kasutatakse reeglit „AskGeolocation” ja kasutaja saab seda muuta.</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
 <translation id="3417418267404583991">Kui lubate selle reegli või jätate seadistamata, siis lubab <ph name="PRODUCT_OS_NAME" /> külastajatel sisse logida. Külastajana sisse logides kasutatakse anonüümseid seansse ja selleks ei ole vaja parooli sisestada.
 
@@ -877,6 +913,13 @@
 
       Kui seda pole määratud, siis see variatsioonide lähteväärtuse URL-i ei muuda.</translation>
 <translation id="3863409707075047163">Minimaalne lubatud SSL-i versioon</translation>
+<translation id="3864020628639910082">Määrab otsingumootori URL-i, mida kasutatakse otsingusoovituste näitamiseks. URL peab hõlmama stringi „<ph name="SEARCH_TERM_MARKER" />”, mis asendatakse päringu esitamisel kasutaja sisestatud tekstiga.
+
+          See reegel on valikuline. Kui see jäetakse määramata, siis soovituse URL-i ei kasutata.
+
+          Google'i soovituste URL-iks võib määrata: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />
+
+          Reegel on jõus vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="3864818549971490907">Pistikprogrammide vaikeseade</translation>
 <translation id="3866249974567520381">Kirjeldus</translation>
 <translation id="3866530186104388232">Kui lubate selle reegli või jätate määramata, siis kuvab <ph name="PRODUCT_OS_NAME" /> olemasolevad kasutajad sisselogimiskuval ja võimaldab neid valida. Selle reegli keelamisel kasutab <ph name="PRODUCT_OS_NAME" /> sisselogimiseks kasutajanime ja parooli viipa.</translation>
@@ -891,6 +934,18 @@
 
       Iga loendi kirje sisaldab sõnastikku, mis peab väljal „extension-id” sisaldama laienduse ID-d ja väljal „update-url” värskenduse URL-i.</translation>
 <translation id="3891357445869647828">Luba JavaScript</translation>
+<translation id="3898060089412156345">Lubage või keelake heli jäädvustamine.
+
+      Kui reegel on lubatud või seadistamata (vaikimisi), küsitakse kasutajalt
+      heli jäädvustamiseks juurdepääsu, v.a loendis AudioCaptureAllowedUrls
+      seadistatud URL-ide puhul, millele antakse juurdepääs ilma luba küsimata.
+
+      Kui reegel on keelatud, ei küsita kasutajalt kunagi luba ja heli
+      jäädvustamine on saadaval ainult loendis AudioCaptureAllowedUrls
+      seadistatud URL-ide puhul.
+      ARC-rakenduste puhul on mikrofon jäädavalt vaigistatud.
+
+      Reegel mõjutab igat tüüpi helisisendeid, mitte ainult sisseehitatud mikrofone.</translation>
 <translation id="3907986150060929099">Avaliku seansi soovitatud lokaatide määramine</translation>
 <translation id="391531815696899618">Keelab Google Drive'i sünkroonimise operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid, kui väärtuse olekuks on määratud Tõene. Sellisel juhul ei laadita Google Drive'i üles mingeid andmeid.
 
@@ -955,6 +1010,7 @@
           Kui jätate selle reegli määramata, kasutatakse vaikeaega.
 
           Reegli väärtus tuleb määrata millisekundites.</translation>
+<translation id="4105989332710272578">Sertifikaadi läbipaistvuse jõustamise keelamine URL-ide loendi jaoks</translation>
 <translation id="4115096483386877940">Keela ekraani lukustamine.
 
       Kui selle reegli väärtuseks määratakse Väär, ei saa kasutajad ekraani lukustada (võimalik on ainult kasutajaseansist väljalogimine). Kui selle seade väärtuseks määratakse Tõene või väärtust ei määrata, saavad parooliga autentinud kasutajad ekraani lukustada.</translation>
@@ -992,6 +1048,7 @@
           See reegel on valikuline. Kui see pole määratud, siis saadetakse soovituse otsingu taotlus GET-meetodiga.
 
           Reeglit järgitakse ainult siis, kui lubatud on reegel „DefaultSearchProviderEnabled”.</translation>
+<translation id="4309640770189628899">Näitab, kas DHE šifreerimiskomplektid on TLS-is lubatud</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 või uuem</translation>
 <translation id="4322842393287974810">Luba automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni</translation>
 <translation id="4325690621216251241">Lisa väljalogimisnupp süsteemisalve</translation>
@@ -1737,7 +1794,7 @@
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="7055358889740598917">Seadistab teenuse <ph name="PRODUCT_NAME" /> avalehe vaike-URL-i ega luba kasutajatel seda muuta.
 
-          Avaleht on leht, mille saate avada on nupuga Avaleht. Käivitamisel avanevad lehed põhinevad reeglitel RestoreOnStartup.
+          Avaleht on leht, mille saate avada nupuga Avaleht. Käivitamisel avanevad lehed põhinevad reeglitel RestoreOnStartup.
 
           Avaleheks võib määrata siin sisestatud URL-i või uue vahelehe. Kui valite uue vahelehe, siis reegel ei jõustu.
 
@@ -2029,6 +2086,19 @@
       Määrab laienduse ID, mida kasutatakse sisselogimisekraani ekraanisäästjana. Laiendus peab kuuluma AppPacki, mis on seadistatud domeenile DeviceAppPack-reegliga.</translation>
 <translation id="7882890448959833986">Toetuseta OS-is hoiatuse blokeerimine</translation>
 <translation id="7912255076272890813">Seadista lubatud rakenduste/laienduste tüübid</translation>
+<translation id="7914271217607102111">Lubage või keelake video jäädvustamine.
+
+      Kui reegel on lubatud või seadistamata (vaikeseade), küsitakse kasutajalt
+      video jäädvustamiseks juurdepääsu, v.a loendis VideoCaptureAllowedUrls seadistatud
+      URL-ide puhul, millele antakse juurdepääs luba küsimata.
+      ARC-rakendustel on juurdepääs kaamerale juhul, kui neile on antud luba.
+
+      Kui reegel on keelatud, ei küsita kasutajalt kunagi luba ja videote
+      jäädvustamine on saadaval ainult loendis VideoCaptureAllowedUrls seadistatud URL-ide puhul.
+      ARC-rakendustel ei ole juurdepääsu kaamerale.
+
+      Peale ARC-rakenduste mõjutab reegel kõiki videosisendi tüüpe,
+      mitte ainult sisseehitatud kaamerat.</translation>
 <translation id="7915236031252389808">Siin saate määrata puhverserveri PAC-faili URL-i.
 
           Reegel kehtib vaid juhul, kui valisite jaotises „Valige puhverserveri seadete määramise viis” puhverserveri käsitsi seadistamise.

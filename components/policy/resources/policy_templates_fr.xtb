@@ -468,6 +468,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2466131534462628618">L'authentification de portail captif ignore le proxy</translation>
 <translation id="2482676533225429905">Messagerie native</translation>
 <translation id="2483146640187052324">Prédire les actions réseau lors d'une connexion au réseau</translation>
+<translation id="2486371469462493753">Désactive l'application des règles de transparence des certificats pour les URL répertoriées.
+
+      Cette règle autorise à ne pas communiquer les certificats associés aux noms d'hôte dans la liste d'URL répertoriées, contrairement à ce que prévoient les règles de transparence des certificats. Ainsi, les certificats qui n'auraient pas été jugés fiables pour ne pas avoir été communiqués au public comme il se doit, peuvent continuer d'être utilisés, même si cela rend plus difficile la détection des certificats ayant été indiqués ou non concernant ces hôtes.
+
+      Le format d'une URL doit être conforme aux règles stipulées à l'adresse https://www.chromium.org/administrators/url-blacklist-filter-format. Toutefois, étant donné que des certificats sont valables pour un nom d'hôte donné, indépendamment du schéma, du port ou du chemin d'accès, seule la partie du nom d'hôte de l'URL est prise en compte. Les hôtes génériques ne sont pas acceptés.
+
+      Si cette politique n'est pas configurée, tout certificat qui doit être communiqué tel que le prévoient les règles de transparence des certificats est considéré comme n'étant pas fiable s'il n'est pas communiqué comme il se doit.</translation>
 <translation id="2488010520405124654">Activez l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté.
 
           Si cette règle n'est pas définie ou qu'elle est associée à la valeur "true", que le compte local d'un appareil est configuré avec une connexion automatique zéro retard et que l'appareil n'a pas accès à Internet, <ph name="PRODUCT_OS_NAME" /> affiche une invite de configuration réseau.
@@ -495,6 +502,13 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2529880111512635313">Configurer la liste des applications et des extensions dont l'installation est forcée</translation>
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
+<translation id="2562339630163277285">Spécifie l'URL du moteur de recherche utilisé pour fournir des résultats instantanés. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur.
+
+          Cette règle est facultative. Si elle n'est pas configurée, aucun résultat de recherche instantanée n'est fourni.
+
+          L'URL en question peut être spécifiée comme suit : <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="2571066091915960923">Activer ou désactiver le proxy pour la compression de données et empêcher les utilisateurs de modifier ce paramètre
 
       Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas le modifier ni le remplacer.
@@ -506,6 +520,11 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="262740370354162807">Activer l'envoi de documents à <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activer les commentaires audio</translation>
 <translation id="2650049181907741121">Action à effectuer lorsque l'utilisateur ferme le couvercle</translation>
+<translation id="2655233147335439767">Spécifie l'URL du moteur de recherche utilisé lorsque vous faites une recherche par défaut. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée au moment de la requête par les termes que l'utilisateur recherche.
+
+          L'URL en question peut être spécifiée comme suit : <ph name="GOOGLE_SEARCH_URL" />.
+
+          Cette option doit être définie lorsque la règle "DefaultSearchProviderEnabled" est activée et ne sera respectée que si c'est le cas.</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
 <translation id="267596348720209223">Spécifie les codages de caractères compatibles avec le moteur de recherche. Les codages sont des noms de page de code, comme UTF-8, GB2312 et ISO-8859-1. Ils sont testés dans l'ordre indiqué. 
 
@@ -514,6 +533,12 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="2682225790874070339">Désactiver Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
+<translation id="2692168654831544772">Désactive l'option de capture d'écran.
+
+      Si cette règle est activée, l'utilisateur ne peut pas effectuer de captures d'écran à l'aide de raccourcis clavier ou d'API d'extension.
+      En outre, l'option de capture d'écran est désactivée pour les applications ARC.
+
+      Si cette règle est désactivée ou n'est pas spécifiée, l'utilisateur est autorisé à effectuer des captures d'écran.</translation>
 <translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="2742843273354638707">Masque l'application Chrome Web Store et le lien de bas de page sur la page Nouvel onglet et dans le lanceur d'applications de <ph name="PRODUCT_OS_NAME" />.
 
@@ -678,6 +703,11 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 <translation id="3072847235228302527">Définir les conditions d'utilisation d'un compte local de l'appareil</translation>
 <translation id="3096595567015595053">Liste des plug-ins activés</translation>
 <translation id="3101501961102569744">Sélectionner le mode de spécification des paramètres de serveur proxy</translation>
+<translation id="3117676313396757089">Avertissement : DHE sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 57 (autour de mars 2017) et cette règle ne sera plus valable.
+
+      Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement DHE dans TLS ne seront pas activées. Sinon, elle peut être définie sur "True" pour activer ces mêmes suites de chiffrement et assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.
+
+      Les serveurs sont encouragés à effectuer une migration vers des suites de chiffrement ECDHE. Si celles-ci ne sont pas disponibles, veillez à ce qu'une suite de chiffrement utilisant l'échange de clés RSA soit activée.</translation>
 <translation id="3153348162326497318">Vous permet de spécifier les extensions que les utilisateurs ne peuvent PAS installer. Les extensions déjà installées seront supprimées si elles sont ajoutées à la liste noire. 
 
 La valeur "*" en liste noire signifie que toutes les extensions sont sur la liste noire, sauf si elles sont explicitement répertoriées dans la liste blanche. 
@@ -766,6 +796,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3322771899429619102">Permet de définir une liste de formats d'URL qui déterminent les sites autorisés à utiliser la génération de clé. Si la règle "KeygenBlockedForUrls" est appliquée à un format d'URL, elle a priorité sur ces exceptions.
 
           Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites, et déterminée à partir de la règle "DefaultKeygenSetting" si celle-ci est définie, ou à partir de la configuration personnelle de l'utilisateur.</translation>
+<translation id="3337150554416948435">Vous permet de définir si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Ce suivi peut être autorisé par défaut, refusé par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site Web demande sa position géographique.
+
+          Si cette règle n'est pas définie sur "BlockGeolocation", le partage de position n'est pas autorisé pour les applications ARC.
+
+          Si cette règle n'est pas configurée, le paramètre "AskGeolocation" prévaut, et l'utilisateur peut le modifier.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
 
@@ -897,6 +932,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette option n'est pas spécifiée, l'URL de la valeur de départ des variantes n'est pas modifiée.</translation>
 <translation id="3863409707075047163">Version SSL minimale activée</translation>
+<translation id="3864020628639910082">Spécifie l'URL du moteur de recherche utilisé pour fournir des suggestions de recherche. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur.
+
+          Cette règle est facultative. Si elle n'est pas configurée, aucune URL de moteur de recherche fournissant des suggestions n'est utilisé.
+
+          L'URL en question peut être spécifiée comme suit : <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="3864818549971490907">Paramètre de plug-ins par défaut</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3866530186104388232">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> affiche les utilisateurs existants sur l'écran de connexion et permet d'en choisir un. Si cette règle est définie sur "false", <ph name="PRODUCT_OS_NAME" /> affiche une boîte de dialogue demandant le nom d'utilisateur et le mot de passe pour se connecter.</translation>
@@ -911,6 +953,17 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
        Chaque entrée de la liste contient un dictionnaire qui doit inclure l'identifiant d'extension dans le champ "extension-id", ainsi que son adresse URL dans le champ "update-url".</translation>
 <translation id="3891357445869647828">Activer JavaScript</translation>
+<translation id="3898060089412156345">Permet d'autoriser ou d'interdire la capture audio.
+
+      Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur
+      est invité à accepter l'accès à la capture audio, excepté pour les URL
+      configurées dans la liste AudioCaptureAllowedUrls qui bénéficient d'un accès instantané.
+
+      Lorsque cette règle est désactivée, aucune invite ne s'affiche
+      et la capture audio n'est disponible qu'avec les URL de la liste AudioCaptureAllowedUrls.
+      Pour les applications ARC, le son du micro est coupé de façon permanente.
+
+      Cette règle a une incidence sur tous les types d'entrée audio, et pas uniquement sur le micro intégré.</translation>
 <translation id="3907986150060929099">Définir les paramètres régionaux recommandés pour une session publique</translation>
 <translation id="391531815696899618">Désactive la synchronisation de Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> lorsque ce paramètre est défini sur "True". Dans ce cas, aucune donnée n'est importée dans Google Drive.
 
@@ -977,6 +1030,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
                       Si cette règle n'est pas définie, une durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
+<translation id="4105989332710272578">Désactiver l'application des règles de transparence des certificats pour une liste d'URL</translation>
 <translation id="4115096483386877940">Autoriser le verrouillage de l'écran.
 
       Si cette règle est définie sur "False", les utilisateurs ne peuvent pas verrouiller l'écran (seule la déconnexion de la session de l'utilisateur est possible). Si ce paramètre est défini sur "True", ou s'il n'est pas configuré, les utilisateurs ayant procédé à l'authentification avec un mot de passe peuvent verrouiller l'écran.</translation>
@@ -1015,6 +1069,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           Cette règle est facultative. Si elle n'est pas définie, la suggestion de requête de recherche d'image sera envoyée à l'aide la méthode GET.
 
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
+<translation id="4309640770189628899">Activation ou non des suites de chiffrement DHE dans TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou version ultérieure</translation>
 <translation id="4322842393287974810">Autoriser l'application kiosque lancée automatiquement sans délai à contrôler la version de l'application <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Ajouter un bouton de déconnexion dans la barre d'état système</translation>
@@ -1051,15 +1106,15 @@ Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur 
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
 <translation id="447686899376429408">Si vous définissez cette règle sur "true" ou si vous ne la définissez pas, les utilisateurs pourront caster des onglets, des sites ou leur bureau depuis le navigateur. Si vous la définissez sur "false", cette option sera désactivée.</translation>
 <translation id="4480694116501920047">Forcer SafeSearch</translation>
-<translation id="4482640907922304445">Affiche le bouton "Accueil" sur la barre d'outils <ph name="PRODUCT_NAME" />. 
+<translation id="4482640907922304445">Affiche le bouton d'accueil sur la barre d'outils <ph name="PRODUCT_NAME" />. 
 
-Si vous activez ce paramètre, le bouton "Accueil" est toujours affiché. 
+Si vous activez ce paramètre, le bouton d'accueil est toujours affiché. 
 
-Si vous le désactivez, le bouton "Accueil" ne s'affiche jamais. 
+Si vous le désactivez, le bouton d'accueil ne s'affiche jamais. 
 
 Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME" />. 
 
-Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou non le bouton "Accueil".</translation>
+Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou non le bouton d'accueil.</translation>
 <translation id="4492287494009043413">Désactiver les captures d'écran</translation>
 <translation id="450537894712826981">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers multimédias en cache sur le disque.
 
@@ -1249,7 +1304,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
-<translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
+<translation id="5365946944967967336">Afficher le bouton d'accueil sur la barre d'outils</translation>
 <translation id="5366977351895725771">Si cette règle est associée à la valeur "false", la création de comptes utilisateur supervisés par cet utilisateur est désactivée. Les utilisateurs supervisés existants restent disponibles.
 
           Si elle est associée à la valeur "true" ou si elle n'est pas configurée, cet utilisateur peut créer et gérer des comptes utilisateur supervisés.</translation>
@@ -1762,7 +1817,7 @@ Si elle est désactivée, les favoris ne sont pas importés.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7055358889740598917">Configurer l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de la modifier
 
-          La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton Accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
+          La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton d'accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
 
           La page d'accueil peut être une URL que vous définissez ici, ou une page Nouvel onglet. Dans ce dernier cas, cette règle ne s'applique pas.
 
@@ -2059,6 +2114,20 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
 <translation id="7882890448959833986">Supprimer l'avertissement relatif au système d'exploitation non compatible</translation>
 <translation id="7912255076272890813">Configurer les types d'applications ou d'extensions autorisés</translation>
+<translation id="7914271217607102111">Permet d'autoriser ou d'interdire la capture vidéo.
+
+      Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur
+      est invité à accepter l'accès à la capture vidéo, excepté pour les URL
+      configurées dans la liste VideoCaptureAllowedUrls qui bénéficient d'un accès
+      instantané. Les applications ARC ont accès à l'appareil photo si elles y ont
+      été autorisées.
+
+      Si cette règle est désactivée, aucune invite ne s'affiche et la capture vidéo
+      n'est disponible qu'avec les URL de la liste VideoCaptureAllowedUrls.
+      Les applications ARC n'ont pas accès à l'appareil photo.
+
+      En dehors des applications ARC, cette règle concerne tous les types
+      d'entrées vidéo et pas seulement l'appareil photo intégré.</translation>
 <translation id="7915236031252389808">Vous pouvez indiquer ici une URL pointant vers un fichier .pac de proxy.
 
           Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".

@@ -87,6 +87,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="3622797965165704966">Ara resulta més fàcil utilitzar Chrome amb el vostre compte de Google i en ordinadors compartits.</translation>
 <translation id="3735758079232443276">L'extensió <ph name="EXTENSION_NAME" /> ha canviat la pàgina que es mostra quan inicieu Chrome.</translation>
 <translation id="3738139272394829648">Toca per cercar</translation>
+<translation id="3780814664026482060">Chrome: <ph name="PAGE_TITLE" /></translation>
 <translation id="3784527566857328444">Suprimeix de Chrome...</translation>
 <translation id="3847841918622877581">Google Chrome pot utilitzar serveis web per millorar l'experiència de navegació dels usuaris.</translation>
 <translation id="386202838227397562">Tanqueu totes les finestres de Google Chrome i torneu-ho a provar.</translation>
@@ -243,7 +244,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="870251953148363156">Actualitza &amp;Google Chrome</translation>
 <translation id="8796108026289707191">Reinicieu Google Chrome ara.</translation>
 <translation id="8823341990149967727">Chrome no està actualitzat</translation>
-<translation id="884296878221830158">També controla la pàgina que es mostra quan inicieu Chrome o quan feu clic al botó Inici.</translation>
+<translation id="884296878221830158">També controla la pàgina que es mostra quan inicieu Chrome o quan feu clic al botó d'inici.</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
 <translation id="9026991721384951619">Chrome OS no ha pogut sincronitzar les vostres dades perquè les dades d'inici de sessió del compte no estan actualitzades.</translation>

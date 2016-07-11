@@ -440,6 +440,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2466131534462628618">Captive portal-godkendelse ignorerer proxy</translation>
 <translation id="2482676533225429905">Indbyggede beskedhosts</translation>
 <translation id="2483146640187052324">Forudse netværkshandlinger på enhver netværksforbindelse</translation>
+<translation id="2486371469462493753">Deaktiverer håndhævelse af krav vedrørende Certifikatsgennemsigtighed for de angivne webadresser.
+
+      Denne politik tillader, at certifikater til hostnames i de angivne webadresser ikke fremvises via Certifikatsgennemsigtighed. Dette tillader, at certifikater, der ellers ville være usikre, fordi de ikke blev fremvist korrekt offentligt, fortsat kan bruges. Det gør det dog sværere at registrere certifikater, der er udstedt ved en fejl, for disse hosts.
+
+      Et webadressemønster formateres i overensstemmelse med https://www.chromium.org/administrators/url-blacklist-filter-format. Da certifikater er gyldige for et givent hostname uafhængigt af ordningen, porten eller stien, er det dog kun hostnamedelen af webadressen, der tages i betragtning. Hosts for jokertegn understøttes ikke.
+
+      Hvis denne politik ikke angives, behandles certifikater, der skal fremvises via Certifikatsgennemsigtighed, som usikre, hvis de ikke fremvises i overensstemmelse med politikken for Certifikatsgennemsigtighed.</translation>
 <translation id="2488010520405124654">Aktivér meddelelse om netværkskonfiguration, når du er offline. 
 
       Hvis denne politik er deaktiveret eller indstillet til True, en enhedslokal konto er konfigureret til automatisk login med nul-forsinkelse og enheden ikke har adgang til internettet, viser <ph name="PRODUCT_OS_NAME" /> en meddelelse om netværkskonfiguration.
@@ -463,6 +470,13 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2529880111512635313">Konfigurer listen over udvidelser og apps med tvungen installation</translation>
 <translation id="253135976343875019">Advarsel om inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2552966063069741410">Tidszone</translation>
+<translation id="2562339630163277285">Angiver webadressen for den søgemaskine, der bruges til at give direkte resultater. Webadressen skal indeholde strengen <ph name="SEARCH_TERM_MARKER" />, som på forespørgselstidspunktet erstattes af den tekst, som brugeren har indtastet hidtil.
+
+          Denne politik er valgfri. Hvis den ikke angives, gives der ikke direkte søgeresultater.
+
+          Webadressen for Googles direkte søgeresultater kan angives som: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="2571066091915960923">Aktivér eller deaktiver proxyen til datakomprimering for at forhindre brugerne i at ændre denne indstilling.
 
       Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte indstillingen.
@@ -474,10 +488,21 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Aktivér talefeedback</translation>
 <translation id="2650049181907741121">Handling, der skal udføres, når brugeren slår skærmen ned</translation>
+<translation id="2655233147335439767">Angiver webadressen for den søgemaskine, der bruges ved standardsøgninger. Webadressen skal indeholde strengen "<ph name="SEARCH_TERM_MARKER" />", som på forespørgselstidspunktet erstattes af søgeord, når brugeren foretager en søgning.
+
+          Googles søgewebadresse kan angives som: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Denne indstilling skal aktiveres, når politikken "DefaultSearchProviderEnabled" er aktiveret, og den vil kun blive respekteret, hvis dette er tilfældet.</translation>
 <translation id="2660846099862559570">Brug aldrig en proxy</translation>
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="2682225790874070339">Deaktiverer Drev i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
+<translation id="2692168654831544772">Deaktiverer funktionen til at tage skærmbilleder.
+
+      Hvis funktionen er aktiveret, kan du ikke tage skærmbilleder ved hjælp af tastaturgenveje eller udvidelses-API'er.
+      Derudover er skærmbilleder deaktiveret i ARC-apps.
+
+      Hvis funktionen er deaktiveret eller ikke er angivet, kan du tage skærmbilleder.</translation>
 <translation id="2731627323327011390">Deaktiver brug af certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
 <translation id="2742843273354638707">Skjul appen Chrome Webshop og linket i sidefoden på siden Ny fane og applisten for <ph name="PRODUCT_OS_NAME" />.
 
@@ -640,6 +665,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3072847235228302527">Konfigurer servicevilkårene for en enhedslokal konto</translation>
 <translation id="3096595567015595053">Liste over aktiverede plugins</translation>
 <translation id="3101501961102569744">Vælg, hvordan du vil angive indstillinger for proxyserveren</translation>
+<translation id="3117676313396757089">Advarsel! DHE fjernes helt fra <ph name="PRODUCT_NAME" /> efter version 57 (omkring marts 2017), og på det tidspunkt holder denne politik op med at virke.
+
+      Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres DHE-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at aktivere DHE-krypteringsprogrammer og for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør konfigureres igen.
+
+      Servere bør migreres til ECDHE-krypteringsprogrammer. Hvis disse ikke er tilgængelige, skal du sørge for, at et krypteringsprogram, der bruger RSA-hovedudveksling, er aktiveret.</translation>
 <translation id="3153348162326497318">Giver dig mulighed for at angive, hvilke udvidelser brugerne IKKE kan installere. Udvidelser, der allerede er installeret, fjernes, hvis de bliver sortlistet.
 
           Sortlisteværdien "*" betyder, at alle udvidelser er sortlistet, medmindre de er tydeligt angivet på hvidlisten.
@@ -724,6 +754,11 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
+<translation id="3337150554416948435">Giver dig mulighed for at angive, om websites skal have tilladelse til at spore brugernes fysiske placering. Sporing af brugernes fysiske placering kan tillades eller nægtes som standard, eller brugeren kan blive spurgt, hver gang et website anmoder om den fysiske placering.
+
+          Hvis denne politik er angivet til "BlockGeolocation", tillades placeringsdeling ikke for ARC-apps.
+
+          Hvis denne politik ikke angives, anvendes "AskGeolocation", og brugeren vil kunne ændre den.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
@@ -853,6 +888,13 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
      Hvis denne politik ikke er angivet, ændres webadressen for variationsbasistallet ikke.</translation>
 <translation id="3863409707075047163">Minimumsversionen af SSL/TLS er aktiveret.</translation>
+<translation id="3864020628639910082">Angiver webadressen for den søgemaskine, der anvendes til at give søgeforslag. Webadressen bør indeholde strengen "<ph name="SEARCH_TERM_MARKER" />", som på forespørgselstidspunktet erstattes af den tekst, som brugeren har indtastet hidtil.
+
+          Denne politik er valgfri. Hvis den ikke er angivet, anvendes der ikke webadresseforslag.
+
+          Googles foreslåede webadresser kan angives som: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="3864818549971490907">Standardindstillinger for plugins</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3866530186104388232">Hvis denne politik er angivet til sand eller ikke er konfigureret, vil <ph name="PRODUCT_OS_NAME" /> vise eksisterende brugere på loginskærmen og gøre det muligt at vælge en af dem. Hvis denne politik er angivet til falsk, vil <ph name="PRODUCT_OS_NAME" /> bruge meddelelsen brugernavn/adgangskode til login.</translation>
@@ -865,6 +907,16 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
       Alle poster på listen indeholder en ordbog, der skal indeholde udvidelses-id'et i feltet "udvidelses-id" samt webadressen til opdatering i feltet "opdateringswebadresse".</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
+<translation id="3898060089412156345">Tillad eller afvis lydoptagelse.
+
+      Hvis denne funktion er aktiveret eller ikke er konfigureret (standard), vil brugeren blive bedt om at give
+      adgang til lydoptagelse, undtagen for webadresser, der er konfigureret på listen 
+      AudioCaptureAllowedUrls, som får adgang, uden at brugeren skal give tilladelse.
+
+      Hvis denne politik er deaktiveret, vil brugeren aldrig blive bedt om at give tilladelse, og lydoptagelse
+      vil kun være mulig for webadresser, der er konfigureret i AudioCaptureAllowedUrls. Ved ARC-apps er mikrofonen slået fra permanent.
+
+      Denne politik påvirker alle typer af lydinput, og ikke kun den indbyggede mikrofon.</translation>
 <translation id="3907986150060929099">Indstil de anbefalede landestandarder for en offentlig session</translation>
 <translation id="391531815696899618">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />, når den er angivet til Sand. I dette tilfælde uploades der ingen data til Google Drev.
 
@@ -921,6 +973,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Hvis denne politik ikke indstilles, anvendes standardindstillingen.
 
           Værdien for politikken bør angives i millisekunder.</translation>
+<translation id="4105989332710272578">Deaktiver håndhævelse af Certifikatsgennemsigtighed for en række webadresser</translation>
 <translation id="4115096483386877940">Tillad låsning af skærmen.
 
       Hvis denne politik er angivet som falsk, kan brugerne ikke låse skærmen (de kan kun logge ud fra brugersessionen). Hvis indstillingen er angivet som sand eller ikke er angivet, kan brugere, der har godkendt med en adgangskode, låse skærmen.</translation>
@@ -958,6 +1011,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om billedsøgninger ved hjælp af GET-metoden.
 
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
+<translation id="4309640770189628899">Afgør, om DHE-krypteringsprogrammerne i TLS aktiveres</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4322842393287974810">Tillad, at den automatisk startede terminalapp uden forsinkelse kontrollerer <ph name="PRODUCT_OS_NAME" />-versionen</translation>
 <translation id="4325690621216251241">Tilføj en log ud-knap til systembakken</translation>
@@ -1907,6 +1961,20 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ignorer advarslen om manglende understøttelse af OS</translation>
 <translation id="7912255076272890813">Konfigurer tilladte app-/udvidelsestyper</translation>
+<translation id="7914271217607102111">Tillad eller afvis videooptagelse.
+
+      Hvis denne er aktiveret eller ikke er konfigureret (standard), bliver
+      brugeren bedt om at give tilladelse til videooptagelse, medmindre der er tale
+      om webadresser, der er konfigureret på listen VideoCaptureAllowedUrls, som
+      automatisk gives adgang. ARC-apps kan få adgang til kameraet, hvis de har
+      fået tilladelse til det.
+
+      Når denne politik er deaktiveret, bliver brugeren aldrig bedt om at tillade
+      den, og videooptagelse er kun mulig for webadresser, der er konfigureret i
+      VideoCaptureAllowedUrls. ARC-apps kan ikke få adgang til kameraet.
+
+      Uden for ARC-apps påvirker denne politik alle typer videoinput og ikke
+      kun det indbyggede kamera.</translation>
 <translation id="7915236031252389808">Du kan angive en webadresse til en proxyfil af typen .pac her.
 
           Denne politik fungerer kun, hvis du har valgt manuelle proxyindstillinger i "Vælg, hvordan indstillinger for proxyservere skal angives".

@@ -436,6 +436,13 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
 <translation id="2466131534462628618">Captive portal -todennus ohittaa välityspalvelimen</translation>
 <translation id="2482676533225429905">Laitteen oma viestijärjestelmä</translation>
 <translation id="2483146640187052324">Ennakoi verkon toimia millä tahansa verkkoyhteydellä</translation>
+<translation id="2486371469462493753">Poistaa Certificate Transparency ‑noudattamisvaatimukset luettelon URL-osoitteilta.
+
+      Tähän käytäntöön listattujen URL-osoitteiden isäntänimien ei tarvitse luovuttaa tietoja Certificate Transparency ‑menettelyllä. Tämän seurauksena myös sellaisia varmenteita, jotka estettäisiin puutteellisten tietojen vuoksi, voidaan jatkossa käyttää. Samalla näiden isäntänimien vilpillisesti myönnettyjen varmenteiden tunnistaminen vaikeutuu.
+
+      Luettelon URL-osoitteiden muotoa kuvaillaan osoitteessa https://www.chromium.org/administrators/url-blacklist-filter-format. Koska varmenteet koskevat isäntänimeä alkuosasta, portista tai polusta huolimatta, vain URL-osoitteen isäntänimi-osio huomioidaan. Isäntänimessä ei voi käyttää jokerimerkkiä.
+
+      Jos tätä käytäntöä ei aseteta, varmennetta ei pidetä koskaan luotettavana, jos siltä vaaditaan Certificate Transparency ‑tietojen antamista, mutta tietoja ei ole annettu Certificate Transparency ‑käytännön mukaisesti.</translation>
 <translation id="2488010520405124654">Ota käyttöön verkon määrityskehote offline-tilassa.
 
       Jos tätä käytäntöä ei ole asetettu tai käytännöksi on asetettu True ja laitteeseen lisätty tili on määritetty viiveettömään automaattiseen kirjautumiseen eikä laitteella ole internetyhteyttä käytössä, <ph name="PRODUCT_OS_NAME" /> näyttää verkon määrityskehotteen.
@@ -459,6 +466,13 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="2529880111512635313">Määritä sovellukset ja laajennukset, joiden asennus pakotetaan.</translation>
 <translation id="253135976343875019">Käyttämättömyysvaroituksen viive käytettäessä laitetta verkkovirralla</translation>
 <translation id="2552966063069741410">Aikavyöhyke</translation>
+<translation id="2562339630163277285">Määrittää Instant-hakuihin käytettävän hakukoneen URL-osoitteen. Osoitteen on sisällettävä merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän kirjoittamalla tekstillä.
+
+          Tämä käytäntö on valinnainen. Jos sitä ei ole asetettu, Instant-hakutuloksia ei tarjota.
+
+          Googlen Instant-hakutulosten URL-osoitteen voi antaa muodossa <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Tämä käytäntö toteutetaan vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="2571066091915960923">Ottaa käyttöön tai poistaa käytöstä tietojen pakkauksen välityksen ja estää käyttäjiä muuttamasta tätä asetusta.
 
       Jos otat tämän asetuksen käyttöön tai pois käytöstä, käyttäjät eivät voi muuttaa tätä asetusta.
@@ -470,10 +484,21 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="262740370354162807">Salli asiakirjojen lähettäminen palveluun <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Ota äänipalaute käyttöön</translation>
 <translation id="2650049181907741121">Toiminto, kun käyttäjä sulkee kannen</translation>
+<translation id="2655233147335439767">Määrittää oletushaussa käytettävän hakukoneen URL-osoitteen. Osoitteen on sisällettävä merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän kirjoittamalla tekstillä.
+
+          Google-haun URL-osoitteen voi antaa muodossa <ph name="GOOGLE_SEARCH_URL" />.
+
+          Tämä käytäntö täytyy asettaa, jos käytäntö DefaultSearchProviderEnabled on käytössä. Se toteutetaan vain, jos kyseinen käytäntö on käytössä.</translation>
 <translation id="2660846099862559570">Älä käytä välityspalvelinta</translation>
 <translation id="267596348720209223">Määrittää hakupalvelun tukemat merkkikoodaukset. Koodaukset ovat koodisivun nimiä, kuten UTF-8, GB2312 ja ISO-8859-1. Koodauksia yritetään käyttää määritetyssä järjestyksessä. Tämä käytäntö on valinnainen, ja jos sitä ei ole määritetty, käytetään oletusasetusta (UTF-8). Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="2682225790874070339">Poistaa Google Driven käytöstä tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksesta</translation>
 <translation id="268577405881275241">Ota käyttöön tietojen pakkauksen välitysominaisuus</translation>
+<translation id="2692168654831544772">Estää kuvakaappauksien ottamisen.
+
+      Jos asetus on käytössä, kuvakaappauksia ei voi ottaa pikanäppäimien tai laajennuksien sovellusliittymien avulla.
+      Kuvakaappauksien ottamista ei sallita myöskään ARC-sovelluksille.
+
+      Jos asetus ei ole käytössä tai sitä ei ole määritetty, kuvakaappauksia saa ottaa.</translation>
 <translation id="2731627323327011390">Estä ARC-sovelluksia käyttämästä <ph name="PRODUCT_OS_NAME" /> -varmenteita</translation>
 <translation id="2742843273354638707">Piilota Chrome Web Store -sovellus ja linkki Uusi välilehti -sivulla sekä tuotteen <ph name="PRODUCT_OS_NAME" /> sovellusten käynnistysohjelmassa.
 
@@ -636,6 +661,11 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 <translation id="3072847235228302527">Aseta laitteen paikallisen tilin käyttöehdot</translation>
 <translation id="3096595567015595053">Luettelo käytössä olevista laajennuksista</translation>
 <translation id="3101501961102569744">Valitse, miten välityspalvelimen asetukset määritetään</translation>
+<translation id="3117676313396757089">Varoitus: DHE poistetaan tuotteesta <ph name="PRODUCT_NAME" /> version 57 jälkeen (arviolta maaliskuussa 2017), eikä tämä käytäntö enää toimi sen jälkeen.
+
+      Jos tätä käytäntöä ei aseteta tai jos sen arvo on epätosi, TLS:n DHE-salaustekniikoita ei oteta käyttöön. Jos yhteensopivuus vanhentuneen palvelimen kanssa täytyy varmistaa, arvoksi voidaan asettaa tosi. Tämä on kuitenkin tilapäinen toimenpide, ja palvelimen määritykset tulee tehdä uudelleen.
+
+      ECDHE-salaustekniikoihin siirtymistä suositellaan palvelimille. Jos näitä tekniikoita ei ole saatavilla, varmista, että käytössä on RSA-avainvaihtoa käyttävä salaustekniikka.</translation>
 <translation id="3153348162326497318">Voit määrittää, mitä laajennuksia käyttäjät EIVÄT saa asentaa. Jo asennetut laajennukset poistetaan, jos ne ovat kiellettyjen luettelossa. Kiellettyjen luettelon arvo * tarkoittaa, että kaikki laajennukset ovat kiellettyjen luettelossa, ellei niitä ole mainittu sallittujen luettelossa. Jos tätä käytäntöä ei ole määritetty, käyttäjä voi asentaa tuotteeseen <ph name="PRODUCT_NAME" /> mitä tahansa laajennuksia.</translation>
 <translation id="316778957754360075">Tämä asetus on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien. Suositeltu tapa määrittää organisaation isännöimiä laajennuksia tai sovelluskokoelmia on sisällyttää CRX-paketteja sisältävä sivusto ExtensionInstallSources-luetteloon ja lisätä suorat latauslinkit paketteihin verkkosivulle. Kyseisen verkkosivun käynnistysohjelma voidaan luoda ExtensionInstallForcelist-käytännön avulla.</translation>
 <translation id="3185009703220253572">versiosta <ph name="SINCE_VERSION" /> alkaen</translation>
@@ -716,6 +746,11 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3322771899429619102">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat luoda avaimia. Jos URL-malli on KeygenBlockedForUrls-käytännössä, se ohittaa nämä poikkeukset.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
+<translation id="3337150554416948435">Voit määrittää, voivatko sivustot seurata käyttäjän fyysistä sijaintia. Voit sallia tai kieltää käyttäjien sijainnin seuraamisen oletuksena, tai kysyä käyttäjältä aina sivuston pyytäessä sijaintitietoja.
+
+          Jos käytännön arvo on BlockGeolocation, sijainnin jakamista ei sallita ARC-sovelluksille,
+
+          Jos tätä käytäntöä ei ole määritetty, AskGeolocation-arvoa käytetään ja käyttäjä voi muuttaa asetusta.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
 
@@ -839,6 +874,13 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Jos arvoa ei ole määritetty, muunnelmasiemenarvon nouto-osoitetta ei muokata.</translation>
 <translation id="3863409707075047163">Käytössä oleva SSL-vähimmäisversio</translation>
+<translation id="3864020628639910082">Määrittää oletushaussa käytettävän hakukoneen URL-osoitteen. Osoitteen on sisällettävä merkkijono <ph name="SEARCH_TERM_MARKER" />, joka korvataan kyselyn aikana käyttäjän kirjoittamalla tekstillä.
+
+          Tämä käytäntö on valinnainen. Jos sitä ei ole asetettu, mitään ehdotus-URL-osoitetta ei käytetä.
+
+          Googlen ehdotus-URL-osoitteen voi antaa muodossa <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Tämä käytäntö toteutetaan vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="3864818549971490907">Laajennuksien oletusasetus</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
 <translation id="3866530186104388232">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> näyttää määritetyt käyttäjät valittavissa kirjautumisruudulla. Jos tälle käytännölle asetetaan epätosi-arvo, <ph name="PRODUCT_OS_NAME" /> näyttää kirjautumisruudulla käyttäjänimen ja salasanan kehotteen.</translation>
@@ -853,6 +895,17 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
       Luettelon jokainen merkintä sisältää sanakirjan, jonka tulee sisältää laajennuksen tunnus (extension-id-kenttä) sekä sen päivitysosoite (update-url-kenttä).</translation>
 <translation id="3891357445869647828">Ota JavaScript käyttöön</translation>
+<translation id="3898060089412156345">Sallii tai estää äänikaappauksen.
+
+      Jos äänikaappaus on käytössä tai sitä ei ole määritetty (oletus), käyttäjää
+      pyydetään hyväksymään äänikaappauksen käyttö, paitsi silloin jos URL-osoite
+      on määritetty AudioCaptureAllowedUrls-luettelossa. Näille osoitteille käyttö sallitaan kysymättä erikseen.
+
+      Kun tämä käytäntö on poistettu käytöstä, käyttäjältä ei koskaan kysytä asiasta
+      ja äänikaappaus on käytettävissä vain AudioCaptureAllowedUrls-luettelossa määritellyille URL-osoitteille.
+      Mikrofoni on aina mykistettynä ARC-sovelluksille.
+
+      Tätä käytäntöä sovelletaan kaikentyyppisiin äänilähteisiin, eikä vain sisäänrakennettuun mikrofoniin.</translation>
 <translation id="3907986150060929099">Asettaa julkisten käyttökertojen suositellut kielet</translation>
 <translation id="391531815696899618">Jos arvo on tosi, Google Driven synkronointi tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksen kanssa poistetaan käytöstä. Tällöin mitään tietoja ei lähetetä Google Driveen.
 
@@ -909,6 +962,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Kun tälle käytännölle ei ole asetettu arvoa, se käyttää ajan oletusarvoa.
 
           Tämän käytännön arvo täytyy määrittää millisekunteina.</translation>
+<translation id="4105989332710272578">Poista Certificate Transparency ‑vaatimus tietyiltä URL-osoitteilta</translation>
 <translation id="4115096483386877940">Salli näytön lukitseminen
 
       Jos tämän käytännön arvo on Epätosi, käyttäjät voivat lukita näytön (vain istunnosta uloskirjautuminen on mahdollista). Jos käytännön arvo on Tosi tai sitä ei aseteta, salasanatodennuksen tehneet käyttäjät voivat lukita näytön.</translation>
@@ -947,6 +1001,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Tämä käytäntö on valinnainen. Jos sitä ei ole määritetty, kuvahakupyyntö lähetetään GET-metodin avulla.
 
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
+<translation id="4309640770189628899">TLS:n DHE-salaustekniikoiden käyttöönotto</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 tai uudempi</translation>
 <translation id="4322842393287974810">Salli automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota</translation>
 <translation id="4325690621216251241">Lisää uloskirjautumispainike järjestelmäpalkkiin</translation>
@@ -1887,6 +1942,20 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Määrittää tunnuksen perusteella laajennuksen, jota käytetään kirjautumisruudulla näytönsäästäjänä. Laajennuksen täytyy kuulua AppPack-sovelluspakettiin, joka on määritetty käytössä olevalle toimialueelle DeviceAppPack-käytännön kautta.</translation>
 <translation id="7882890448959833986">Älä näytä varoitusta käyttöjärjestelmän tuen päättymisestä</translation>
 <translation id="7912255076272890813">Määritä sallitut sovellus- ja laajennustyypit</translation>
+<translation id="7914271217607102111">Sallii tai estää videon kaappaamisen.
+
+      Jos tämä on käytössä tai tätä ei ole määritetty (oletus), käyttäjältä pyydetään lupaa
+      videokaappauksen tekemiseen, paitsi VideoCaptureAllowedUrls-luettelossa listattujen
+      URL-osoitteiden tapauksessa. Nämä osoitteet sallitaan ilman erillistä lupaa.
+      ARC-sovellukset saavat käyttää kameraa, jos niille on annettu
+      lupa.
+
+      Jos tämä ei ole käytössä, käyttäjältä ei koskaan kysytä lupaa ja videokaappaus
+      on käytössä vain VideoCaptureAllowedUrls-luettelossa mainituille URL-osoitteille.
+      ARC-sovelluksille ei silloin anneta lupaa käyttää kameraa.
+
+      Tämä käytäntö vaikuttaa kaikentyyppisiin videotuloihin, ARC-sovelluksia
+      lukuun ottamatta, ei ainoastaan sisäänrakennettuun kameraan.</translation>
 <translation id="7915236031252389808">Voit määrittää välityspalvelimen .pac-tiedoston URL-osoitteen tässä.
 
           Tämä käytäntö otetaan käyttöön vain, jos olet valinnut manuaaliset välityspalvelinasetukset Valitse, miten välityspalvelimen asetukset määritetään -kohdassa.

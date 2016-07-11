@@ -38,6 +38,7 @@
 <translation id="1096105751829466145">Furnizor de căutare prestabilit</translation>
 <translation id="1103860406762205913">Activează vechea conectare online</translation>
 <translation id="1128903365609589950">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca fișierele din memoria cache pe disc.
+
       Dacă configurezi această politică, <ph name="PRODUCT_NAME" /> va folosi directorul indicat, indiferent dacă utilizatorul a specificat semnalizatorul „--disk-cache-dir”. Pentru a evita pierderea de date sau alte erori neașteptate, această politică nu ar trebui setată la un director rădăcină al volumului sau la un director folosit pentru alte scopuri, deoarece <ph name="PRODUCT_NAME" /> îi gestionează conținutul.
 
       Pentru a vedea o listă cu variabilele care pot fi folosite, accesează  https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
@@ -446,6 +447,13 @@
 <translation id="2466131534462628618">Autentificarea prin portalul captiv ignoră proxy-ul</translation>
 <translation id="2482676533225429905">Mesagerie nativă</translation>
 <translation id="2483146640187052324">Anticipează acțiunile în rețea pentru orice conexiune la rețea</translation>
+<translation id="2486371469462493753">Dezactivează aplicarea cerințelor privind Transparența certificatului pentru adresele URL menționate.
+
+      Această politică permite ca certificatele pentru numele de gazdă din adresele URL specificate să nu fie dezvăluite folosind Transparența certificatului. Astfel, certificatele care altfel nu ar fi de încredere, deoarece nu au fost dezvăluite public corespunzător, pot fi folosite în continuare, dar detectarea certificatelor emise greșit pentru gazdele respective este mai dificilă.
+
+      Un șablon de adrese URL se formatează conform instrucțiunilor de la https://www.chromium.org/administrators/url-blacklist-filter-format. Cu toate acestea, întrucât certificatele sunt valide pentru un anumit nume de gazdă independent de schemă, port sau cale, se ia în considerare numai porțiunea cu numele de gazdă din adresa URL. Gazdele care conțin metacaractere nu sunt acceptate.
+
+      Dacă această politică nu este configurată, orice certificat pentru care este necesară dezvăluirea folosind Transparența certificatului va fi considerat a nu fi de încredere dacă nu este dezvăluit conform politicii privind Transparența certificatului.</translation>
 <translation id="2488010520405124654">Activați solicitarea privind configurația rețelei, în modul offline.
 
       Dacă această politică nu este configurată sau este activată și un cont local de pe dispozitiv este configurat pentru conectare automată fără întârziere, iar dispozitivul nu are acces la internet, <ph name="PRODUCT_OS_NAME" /> va afișa o solicitare privind configurația rețelei.
@@ -469,6 +477,13 @@
 <translation id="2529880111512635313">Configurează lista aplicațiilor și a extensiilor cu instalare forțată</translation>
 <translation id="253135976343875019">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2552966063069741410">Fus orar</translation>
+<translation id="2562339630163277285">Specifică adresa URL a motorului de căutare folosit pentru a oferi rezultate instantanee. Adresa URL trebuie să conțină șirul <ph name="SEARCH_TERM_MARKER" />, care va fi înlocuit în momentul interogării cu textul pe care utilizatorul l-a introdus până atunci.
+
+          Această politică este opțională. Dacă nu este configurată, nu vor fi afișate rezultate ale căutării instantanee.
+
+          Adresa URL pentru rezultatele instantanee de la Google poate fi specificată ca: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+           Această politică este urmată numai dacă politica „DefaultSearchProviderEnabled” este activată.</translation>
 <translation id="2571066091915960923">Activează sau dezactivează serverul proxy pentru comprimarea datelor și împiedică utilizatorii să modifice această setare.
 
       Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau înlocui.
@@ -480,10 +495,21 @@
 <translation id="262740370354162807">Activează trimiterea documentelor la <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Activați feedbackul vocal</translation>
 <translation id="2650049181907741121">Măsura care se va lua atunci când utilizatorul închide capacul</translation>
+<translation id="2655233147335439767">Specifică adresa URL a motorului de căutare folosit la o căutare prestabilită. Adresa URL trebuie să conțină șirul „<ph name="SEARCH_TERM_MARKER" />”, care va fi înlocuit în momentul interogării cu termenii căutați de utilizator.
+
+          Adresa URL pentru căutarea Google poate fi specificată ca: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Această opțiune trebuie setată dacă politica „DefaultSearchProviderEnabled” este activată și va fi urmată numai în acest caz.</translation>
 <translation id="2660846099862559570">Nu utiliza niciodată un proxy</translation>
 <translation id="267596348720209223">Specifică codificările de caractere acceptate de furnizorul de căutare. Codificările reprezintă nume ale paginilor cu coduri cum ar fi UTF-8, GB2312 și ISO-8859-1. Acestea sunt încercate în ordinea furnizată. Politica este opțională. Dacă nu este setată, va fi utilizată codificarea standard, care este UTF-8. Această politică este urmată numai în cazul în care este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="2682225790874070339">Dezactivează Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activează funcția proxy de comprimare a datelor</translation>
+<translation id="2692168654831544772">Dezactivează capturile de ecran.
+
+      Dacă este activată, capturile de ecran nu pot fi făcute folosind comenzile rapide de la tastatură sau API-urile extensiei.
+      În plus, captura de ecran este dezactivată pentru aplicațiile ARC.
+
+      Dacă este dezactivată sau nu este specificată, capturile de ecran sunt permise.</translation>
 <translation id="2731627323327011390">Dezactivează folosirea certificatelor <ph name="PRODUCT_OS_NAME" /> pentru aplicațiile ARC</translation>
 <translation id="2742843273354638707">Ascunde aplicația Magazin web Chrome și linkul notei de subsol din pagina Filă nouă și din lansatorul de aplicații pentru <ph name="PRODUCT_OS_NAME" />.
 
@@ -646,6 +672,11 @@
 <translation id="3072847235228302527">Setați Termenii și condițiile pentru un cont local de pe dispozitiv</translation>
 <translation id="3096595567015595053">Lista de pluginuri activate</translation>
 <translation id="3101501961102569744">Alege modul de specificare a setărilor serverului proxy</translation>
+<translation id="3117676313396757089">Avertisment: compatibilitatea cu DHE va fi eliminată complet din <ph name="PRODUCT_NAME" /> după versiunea 57 (aproximativ în martie 2017), iar această politică nu va mai funcționa de la momentul respectiv.
+
+      Dacă această politică nu este configurată sau dacă este dezactivată, suitele de codificare DHE din TLS nu vor fi activate. În caz contrar, politica poate fi activată pentru a activa suitele de codificare DHE și pentru a se menține compatibilitatea cu un server învechit. Aceasta este o măsură temporară, iar serverul trebuie să fie reconfigurat.
+
+      Se recomandă ca serverele să fie migrate la suitele de codificare ECDHE. Dacă acestea nu sunt disponibile, asigură-te că este activată o suită de codificare care folosește schimbul de chei RSA.</translation>
 <translation id="3153348162326497318">Vă permite să specificați extensiile pe care utilizatorii NU le pot instala. Extensiile deja instalate vor fi eliminate, dacă sunt pe lista neagră. O valoare „*” din lista neagră înseamnă că toate extensiile apar în lista neagră, cu excepția cazului în care acestea sunt explicit specificate în lista albă. Dacă această politică este lăsată nesetată, utilizatorul poate instala orice extensie în <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29. Pentru a crea colecții de extensii/aplicații găzduite la nivel de organizație, se recomandă să includeți site-ul care găzduiește pachetele CRX în ExtensionInstallSources și să afișați pe o pagină web linkuri de descărcare directă spre pachete. Puteți crea un lansator pentru respectiva pagină web utilizând politica ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">de la versiunea <ph name="SINCE_VERSION" /></translation>
@@ -726,6 +757,11 @@
 <translation id="3322771899429619102">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile ce au permisiunea să folosească generarea cheilor. Dacă în „KeygenBlockedForUrls” este specificat un șablon de adresă URL, această politică va modifica aceste excepții.
 
           Dacă politica nu este configurată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultKeygenSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
+<translation id="3337150554416948435">Îți permite să setezi dacă site-urile au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site solicită locația fizică.
+
+          Dacă politica este setată ca „BlockGeolocation”, afișarea locației nu este permisă pentru aplicațiile ARC.
+
+          Dacă politica nu este configurată, va fi folosită politica „AskGeolocation”, iar utilizatorul va putea să o modifice.</translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3417418267404583991">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va permite invitaților să se conecteze. Conectările invitaților sunt sesiuni de utilizator anonime și nu necesită o parolă.
 
@@ -855,6 +891,13 @@
 
       Dacă politica nu este activată, nu se va modifica adresa URL a valorii inițiale Variante.</translation>
 <translation id="3863409707075047163">Versiunea minimă SSL activată</translation>
+<translation id="3864020628639910082">Specifică adresa URL a motorului de căutare folosit pentru a oferi sugestii de căutare. Adresa URL trebuie să conțină șirul „<ph name="SEARCH_TERM_MARKER" />”, care va fi înlocuit în momentul interogării cu textul pe care utilizatorul l-a introdus până atunci.
+
+          Această politică este opțională. Dacă nu este configurată, nu se va folosi nicio adresă URL pentru sugestii.
+
+          Adresa URL pentru sugestiile de la Google poate fi specificată ca: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Această politică este urmată numai dacă politica „DefaultSearchProviderEnabled” este activată.</translation>
 <translation id="3864818549971490907">Setare prestabilită pentru pluginuri</translation>
 <translation id="3866249974567520381">Descriere</translation>
 <translation id="3866530186104388232">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va afișa utilizatorii existenți pe ecranul de conectare și va permite alegerea unuia. Dacă această politică nu este configurată, <ph name="PRODUCT_OS_NAME" /> va utiliza pentru conectare un ecran pentru nume de utilizator/parolă.</translation>
@@ -869,6 +912,17 @@
 
       Fiecare intrare din listă conține un dicționar care trebuie să includă codul extensiei în câmpul „extension-id”, precum și adresa URL pentru actualizare în câmpul „update-url”.</translation>
 <translation id="3891357445869647828">Activează JavaScript</translation>
+<translation id="3898060089412156345">Permite sau refuză capturarea conținutului audio.
+
+      Dacă politica este activată sau nu este configurată (setarea prestabilită), utilizatorului i se va solicita
+      accesul pentru capturarea conținutului audio, cu excepția adreselor URL configurate în
+      lista AudioCaptureAllowedUrls, pentru care accesul va fi acordat fără nicio solicitare.
+
+      Dacă această politică este dezactivată, utilizatorului nu i se va solicita niciodată permisiunea, iar capturarea
+      conținutului audio va fi disponibilă numai pentru adresele URL configurate în AudioCaptureAllowedUrls.
+      Pentru aplicațiile ARC, microfonul este dezactivat permanent.
+
+      Această politică afectează toate tipurile de intrări audio, nu numai microfonul încorporat.</translation>
 <translation id="3907986150060929099">Setează limbile recomandate pentru o sesiune publică</translation>
 <translation id="391531815696899618">Dacă este activată, dezactivează sincronizarea cu Google Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" />. În acest caz, datele nu sunt încărcate în Google Drive.
 
@@ -925,6 +979,7 @@
           Dacă politica nu este setată, se utilizează un interval de timp prestabilit.
 
           Valoarea politicii trebuie să fie specificată în milisecunde.</translation>
+<translation id="4105989332710272578">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de adrese URL</translation>
 <translation id="4115096483386877940">Permite blocarea ecranului.
 
       Dacă această politică este dezactivată, utilizatorii nu vor putea bloca ecranul (va fi posibilă numai deconectarea de la sesiunea pentru utilizatori). Dacă această setare este activată sau nu este configurată, utilizatorii care s-au autentificat folosind o parolă vor putea bloca ecranul.</translation>
@@ -962,6 +1017,7 @@
           Această politică este opțională. Dacă nu este setată, solicitarea de căutare a imaginilor va fi trimisă prin metoda GET.
 
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
+<translation id="4309640770189628899">Specifică dacă suitele de codificare DHE din TLS sunt activate</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 sau o versiune ulterioară</translation>
 <translation id="4322842393287974810">Permite aplicației chioșc lansate automat fără nicio întârziere să controleze versiunea <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
@@ -1612,6 +1668,7 @@
 <translation id="7003746348783715221">Preferințe <ph name="PRODUCT_NAME" /></translation>
 <translation id="7006788746334555276">Setări privind conținutul</translation>
 <translation id="7007671350884342624">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca datele utilizatorului.
+
       Dacă configurezi această politică, <ph name="PRODUCT_NAME" /> va folosi directorul indicat, indiferent dacă utilizatorul a specificat semnalizatorul „--user-data-dir”. Pentru a evita pierderea de date sau alte erori neașteptate, această politică nu ar trebui setată la un director rădăcină al volumului sau la un director folosit pentru alte scopuri, deoarece <ph name="PRODUCT_NAME" /> îi gestionează conținutul.
 
       Pentru a vedea o listă cu variabilele care pot fi folosite, accesează  https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
@@ -1910,6 +1967,20 @@ nu poate fi stabilit de utilizator din setările browserului.
       Politica stabilește codul extensiei de utilizat ca screen saver pentru ecranul de conectare. Extensia trebuie să facă parte din pachetul de aplicații care este configurat pentru acest domeniu prin intermediul politicii DeviceAppPack.</translation>
 <translation id="7882890448959833986">Elimină avertismentul privind sistemul de operare neacceptat</translation>
 <translation id="7912255076272890813">Configurați tipurile de aplicații/extensii permise</translation>
+<translation id="7914271217607102111">Permite sau refuză capturarea conținutului video.
+
+      Dacă politica este activată sau nu este configurată (setare prestabilită), utilizatorului i se va solicita
+      accesul pentru capturarea conținutului video, cu excepția adreselor URL configurate în
+      lista VideoCaptureAllowedUrls, pentru care accesul va fi acordat fără nicio solicitare.
+      Aplicațiile ARC vor putea accesa camera dacă au primit
+      permisiunea.
+
+      Când această politică este dezactivată, utilizatorului nu i se va solicita niciodată permisiunea, iar
+      capturarea conținutului video va fi disponibilă numai pentru adresele URL configurate în VideoCaptureAllowedUrls.
+      Aplicațiile ARC nu vor avea permisiunea să acceseze camera.
+
+      Pe lângă aplicațiile ARC, această politică afectează toate tipurile de intrări video,
+      nu numai camera încorporată.</translation>
 <translation id="7915236031252389808">Poți specifica adresa URL a unui fișier .pac pentru proxy aici.
 
           Această politică are efect doar dacă ai selectat setările de proxy manuale la „Alege modul de specificare a setărilor serverului proxy”.

@@ -464,6 +464,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2466131534462628618">Captive portal authentication ignores proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="2483146640187052324">Predict network actions on any network connection</translation>
+<translation id="2486371469462493753">Disables enforcing Certificate Transparency requirements to the listed URLs.
+
+      This policy allows certificates for the hostnames in the specified URLs to not be disclosed via Certificate Transparency. This allows certificates that would otherwise be untrusted, because they were not properly publicly disclosed, to continue to be used, but makes it harder to detect miss-isued certificates for those hosts.
+
+      A URL pattern is formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format. However, because certificates are valid for a given hostname independent of the scheme, port or path, only the hostname portion of the URL is considered. Wildcard hosts are not supported.
+
+      If this policy is not set, any certificate that is required to be disclosed via Certificate Transparency will be treated as untrusted if it is not disclosed according to the Certificate Transparency policy.</translation>
 <translation id="2488010520405124654">Enable network configuration prompt when offline.
 
       If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login and the device does not have access to the Internet, <ph name="PRODUCT_OS_NAME" /> will show a network configuration prompt.
@@ -491,6 +498,13 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2552966063069741410">Timezone</translation>
+<translation id="2562339630163277285">Specifies the URL of the search engine used to provide instant results. The URL should contain the string <ph name="SEARCH_TERM_MARKER" />, which will be replaced at query time by the text the user has entered so far.
+
+          This policy is optional. If not set, no instant search results will be provided.
+
+          Google's instant results URL can be specified as: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="2571066091915960923">Enable or disable the data compression proxy and prevent users from changing this setting.
 
       If you enable or disable this setting, users cannot change or override this setting.
@@ -502,6 +516,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="262740370354162807">Enable submission of documents to <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
 <translation id="2650049181907741121">Action to take when the user closes the lid</translation>
+<translation id="2655233147335439767">Specifies the URL of the search engine used when doing a default search. The URL should contain the string '<ph name="SEARCH_TERM_MARKER" />', which will be replaced at query time by the terms the user is searching for.
+
+          Google's search URL can be specified as: <ph name="GOOGLE_SEARCH_URL" />.
+
+          This option must be set when the 'DefaultSearchProviderEnabled' policy is enabled and will only be respected if this is the case.</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
 <translation id="267596348720209223">Specifies the character encodings supported by the search provider. Encodings are code page names like UTF-8, GB2312, and ISO-8859-1. They are tried in the order provided.
 
@@ -510,6 +529,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="2682225790874070339">Disables Drive in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
+<translation id="2692168654831544772">Disables taking screenshots.
+
+      If enabled, screenshots cannot be taken using keyboard shortcuts or extension APIs.
+      Additionally, screen capture is disabled for ARC apps.
+
+      If disabled or not specified, taking screenshots is allowed.</translation>
 <translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
 <translation id="2742843273354638707">Hide the Chrome Web Store app and footer link from the New Tab Page and <ph name="PRODUCT_OS_NAME" /> app launcher.
 
@@ -674,6 +699,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3072847235228302527">Set the Terms of Service for a device-local account</translation>
 <translation id="3096595567015595053">List of enabled plug-ins</translation>
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
+<translation id="3117676313396757089">Warning: DHE will be completely removed from <ph name="PRODUCT_NAME" /> after version 57 (around March 2017) and this policy will stop working then.
+
+      If the policy is not set, or is set to false, then DHE cipher suites in TLS will not be enabled. Otherwise it may be set to true to enable DHE cipher suites and retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.
+
+      Servers are encouraged to migrate to ECDHE cipher suites. If these are unavailable, ensure a cipher suite using RSA key exchange is enabled.</translation>
 <translation id="3153348162326497318">Allows you to specify which extensions the users CANNOT install. Extensions already installed will be removed if blacklisted.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
@@ -762,6 +792,11 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3322771899429619102">Allows you to set a list of URL patterns that specify sites which are allowed to use key generation. If a URL pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
+<translation id="3337150554416948435">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
+
+          If this policy is set to 'BlockGeo-location', location sharing is disallowed for ARC apps.
+
+          If this policy is left not set, 'AskGeo-location' will be used and the user will be able to change it.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
@@ -893,6 +928,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If not specified, will not modify the Variations seed URL.</translation>
 <translation id="3863409707075047163">Minimum SSL version enabled</translation>
+<translation id="3864020628639910082">Specifies the URL of the search engine used to provide search suggestions. The URL should contain the string '<ph name="SEARCH_TERM_MARKER" />', which will be replaced at query time by the text the user has entered so far.
+
+          This policy is optional. If not set, no suggest URL will be used.
+
+          Google's suggest URL can be specified as: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="3864818549971490907"> setting</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3866530186104388232">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will show existing users on the login screen and allow the user to pick one. If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will use the username/password prompt for login.</translation>
@@ -908,6 +950,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       Each list entry contains a dictionary that must include the extension ID in the 'extension-id' field, and its update URL in the 'update-url' field.</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
+<translation id="3898060089412156345">Allow or deny audio capture.
+
+      If enabled or not configured (default), the user will be prompted for
+      audio capture access except for URLs configured in the
+      AudioCaptureAllowedUrls list which will be granted access without prompting.
+
+      When this policy is disabled, the user will never be prompted and audio
+      capture will only be available to URLs configured in AudioCaptureAllowedUrls.
+      For ARC apps, the microphone is permanently muted.
+
+      This policy affects all types of audio inputs and not only the built-in microphone.</translation>
 <translation id="3907986150060929099">Set the recommended locales for a public session</translation>
 <translation id="391531815696899618">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when set to True. In that case, no data is uploaded to Google Drive.
 
@@ -972,6 +1025,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
+<translation id="4105989332710272578">Disable Certificate Transparency enforcement for a list of URLs</translation>
 <translation id="4115096483386877940">Permit locking the screen.
 
       If this policy is set to false, users will not be able to lock the screen (only signing out from the user session will be possible). If this setting is set to true or not set, users who authenticated with a password can lock the screen.</translation>
@@ -1009,6 +1063,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           This policy is optional. If not set, image search request will be sent using the GET method.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
+<translation id="4309640770189628899">Whether DHE cipher suites in TLS are enabled</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
 <translation id="4322842393287974810">Allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
@@ -1981,6 +2036,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled or not set, then two-factor will not be enabled and the default behaviour of having a user-defined PIN will be used.</translation>
 <translation id="7750991880413385988">Open New Tab Page</translation>
+<translation id="7761446981238915769">Configure the list of installed apps on the login screen</translation>
 <translation id="7761526206824804472">Sets one or more recommended locales for a public session, allowing users to easily choose one of these locales.
 
       The user can choose a locale and a keyboard layout before starting a public session. By default, all locales supported by <ph name="PRODUCT_OS_NAME" /> are listed in alphabetic order. You can use this policy to move a set of recommended locales to the top of the list.
@@ -2055,6 +2111,20 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
 <translation id="7882890448959833986">Suppress the unsupported OS warning</translation>
 <translation id="7912255076272890813">Configure allowed app/extension types</translation>
+<translation id="7914271217607102111">Allow or deny video capture.
+
+      If enabled or not configured (default), the user will be prompted for
+      video capture access except for URLs configured in the
+      VideoCaptureAllowedUrls list which will be granted access without prompting.
+      ARC apps will be able to access the camera if they have been given
+      permission.
+
+      When this policy is disabled, the user will never be prompted and video
+      capture will only be available to URLs configured in VideoCaptureAllowedUrls.
+      ARC apps will not be able to access the camera.
+
+      Outside of ARC-apps, this policy affects all types of video inputs and
+      not only the built-in camera.</translation>
 <translation id="7915236031252389808">You can specify a URL to a proxy .pac file here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -2383,6 +2453,28 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8858642179038618439">Force YouTube Safety Mode</translation>
 <translation id="8864975621965365890">Suppresses the turn-down prompt that appears when a site is rendered by <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
+<translation id="88890388118515381">
+      Specifies a list of apps that are installed silently on the login screen,
+      without user interaction, and which cannot be uninstalled.
+      All permissions requested by the apps are granted
+      implicitly, without user interaction, including any additional
+      permissions requested by future versions of the app.
+
+      If an app, which previously had been force-installed, is removed from
+      this list, it is automatically uninstalled by <ph name="PRODUCT_NAME" />.
+
+      Each list item of the policy is a string that contains an extension ID
+      and an "update" URL separated by a semicolon (<ph name="SEMICOLON" />). The extension ID is the 32-letter string
+      found, e.g. on <ph name="CHROME_EXTENSIONS_LINK" /> when in
+      developer mode. The "update" URL should point to an Update Manifest
+      XML document as described at <ph name="LINK_TO_EXTENSION_DOC1" />. Note
+      that the "update" URL set in this policy is only used for the initial
+      installation; subsequent updates of the extension employ the update
+      URL indicated in the extension's manifest.
+
+      For example, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      installs the <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app from the standard Chrome Web Store "update"
+      URL. For more information about hosting extensions, see: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">The Quirks Server provides hardware-specific configuration files, like ICC display profiles to adjust monitor calibration. When this policy is set to false, the device will not attempt to contact the Quirks Server to download configuration files. If this policy is true or not configured then <ph name="PRODUCT_OS_NAME" /> will automatically contact the Quirks Server and download configuration files, if available, and store them on the device. Such files might, for example, be used to improve display quality of attached monitors.</translation>
 <translation id="8905426178924715309">This policy is deprecated, please use ForceGoogleSafeSearch and ForceYouTubeSafetyMode instead. This policy will be ignored if either the ForceGoogleSafeSearch or ForceYouTubeSafetyMode policies are set.
 

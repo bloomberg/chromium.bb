@@ -459,6 +459,13 @@
 <translation id="2466131534462628618">Xác thực cổng cố định bỏ qua proxy</translation>
 <translation id="2482676533225429905">Nhắn tin gốc</translation>
 <translation id="2483146640187052324">Dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
+<translation id="2486371469462493753">Tắt buộc thực thi yêu cầu Tính minh bạch của chứng chỉ cho các URL được liệt kê.
+
+      Chính sách này cho phép chứng chỉ cho tên máy chủ trong URL được chỉ định không bị tiết lộ qua Tính minh bạch của chứng chỉ. Điều này cho phép các chứng chỉ lẽ ra không được tin cậy vì không được tiết lộ công khai một cách thích hợp, vẫn tiếp tục được sử dụng. Tuy nhiên, điều này cũng khiến việc phát hiện các chứng chỉ bị sử dụng sai cho các máy chủ này trở nên khó khăn hơn.
+
+      Mẫu URL được định dạng theo https://www.chromium.org/administrators/url-blacklist-filter-format. Tuy nhiên, vì chứng chỉ có giá trị cho tên máy chủ đã cho độc lập với giao thức, cổng hoặc đường dẫn nên chỉ phần tên máy chủ của URL mới được xem xét. Không hỗ trợ các máy chủ trong tên có ký tự đại diện.
+
+      Nếu chính sách không được đặt, mọi chứng chỉ được yêu cầu phải tiết lộ qua Tính minh bạch của chứng chỉ sẽ bị coi là không đáng tin cậy nếu không được tiết lộ theo chính sách Tính minh bạch của chứng chỉ.</translation>
 <translation id="2488010520405124654">Bật lời nhắc về cấu hình mạng khi ngoại tuyến.
 
       Nếu chính sách này chưa được đặt hoặc được đặt thành Đúng đồng thời tài khoản trên thiết bị được định cấu hình để tự động đăng nhập mà không có độ trễ và thiết bị không có quyền truy cập Internet, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị lời nhắc về cấu hình mạng.
@@ -486,6 +493,13 @@
 <translation id="2529880111512635313">Định cấu hình danh sách các ứng dụng và tiện ích buộc phải cài đặt</translation>
 <translation id="253135976343875019">Thời gian chờ cảnh báo trạng thái không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2552966063069741410">Múi giờ</translation>
+<translation id="2562339630163277285">Chỉ định URL của công cụ tìm kiếm được sử dụng để cung cấp kết quả tức thì. URL phải chứa chuỗi <ph name="SEARCH_TERM_MARKER" />. Chuỗi này sẽ được thay thế tại thời điểm truy vấn bằng văn bản mà người dùng đã nhập từ trước tới nay.
+
+          Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có kết quả tìm kiếm tức thì nào được cung cấp.
+
+          Có thể chỉ định URL kết quả tức thì của Google dưới dạng: <ph name="GOOGLE_INSTANT_SEARCH_URL" />.
+
+          Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="2571066091915960923">Bật hoặc tắt proxy nén dữ liệu và ngăn người dùng thay đổi cài đặt này.
 
       Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này.
@@ -497,6 +511,11 @@
 <translation id="262740370354162807">Cho phép gửi tài liệu tới <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Bật tính năng phản hồi bằng giọng nói</translation>
 <translation id="2650049181907741121">Hành động sẽ thực hiện khi người dùng đóng nắp</translation>
+<translation id="2655233147335439767">Chỉ định URL của công cụ tìm kiếm được sử dụng khi thực hiện tìm kiếm mặc định. URL phải chứa chuỗi '<ph name="SEARCH_TERM_MARKER" />'. Chuỗi này sẽ được thay thế tại thời điểm truy vấn bằng các cụm từ người dùng đang tìm kiếm.
+
+          Có thể chỉ định URL tìm kiếm của Google dưới dạng: <ph name="GOOGLE_SEARCH_URL" />.
+
+          Phải đặt tùy chọn này khi chính sách 'DefaultSearchProviderEnabled' được bật và sẽ chỉ được áp dụng nếu chính sách này được bật.</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
 <translation id="267596348720209223">Chỉ định các mã hóa ký tự được nhà cung cấp dịch vụ tìm kiếm hỗ trợ. Mã hóa là các tên trang mã như UTF-8, GB2312  và ISO-8859-1. Các mã này được thử theo thứ tự cung cấp.
 
@@ -505,6 +524,12 @@
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="2682225790874070339">Tắt Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
+<translation id="2692168654831544772">Tắt tính năng chụp ảnh chụp màn hình.
+
+      Nếu được bật, không thể chụp các ảnh chụp màn hình bằng phím tắt hoặc các API tiện ích.
+      Ngoài ra, tính năng chụp màn hình bị tắt đối với các ứng dụng ARC.
+
+      Nếu bị tắt hoặc không được chỉ định, tính năng chụp ảnh chụp màn hình vẫn được phép.</translation>
 <translation id="2731627323327011390">Tắt sử dụng chứng chỉ <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
 <translation id="2742843273354638707">Ẩn ứng dụng Cửa hàng Chrome trực tuyến và liên kết chân trang khỏi Trang tab mới và trình chạy ứng dụng <ph name="PRODUCT_OS_NAME" />.
 
@@ -669,6 +694,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3072847235228302527">Đặt Điều khoản dịch vụ cho một tài khoản cục bộ trên thiết bị</translation>
 <translation id="3096595567015595053">Danh sách plugin được kích hoạt</translation>
 <translation id="3101501961102569744">Chọn cách chỉ định cài đặt máy chủ proxy</translation>
+<translation id="3117676313396757089">Cảnh báo: DHE sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 57 (khoảng tháng 3 năm 2017) và chính sách này sẽ ngừng hoạt động sau đó.
+
+      Nếu chính sách này không được đặt hoặc được đặt thành false thì bộ mã hóa DHE trong TLS sẽ không được bật. Ngoài ra, chính sách có thể được đặt thành true để bật bộ mã hóa DHE và duy trì khả năng tương thích với các máy chủ lỗi thời. Đây là một biện pháp tạm thời và cần phải định cấu hình lại máy chủ.
+
+      Nên di chuyển máy chủ sang bộ mã hóa ECDHE. Nếu các bộ mã hóa này không khả dụng, hãy đảm bảo bộ mã hóa sử dụng trao đổi khóa RSA được bật.</translation>
 <translation id="3153348162326497318">Cho phép bạn chỉ định những tiện ích mà người dùng KHÔNG thể cài đặt. Các tiện ích đã được cài đặt sẽ bị xóa nếu nằm trong danh sách đen.
 
           Giá trị danh sách đen của '*' có nghĩa là tất cả tiện ích đều nằm trong danh sách đen trừ khi chúng được liệt kê rõ ràng trong danh sách trắng.
@@ -757,6 +787,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3322771899429619102">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenBlockedForUrls', chính sách đó sẽ ghi đè các ngoại lệ này.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
+<translation id="3337150554416948435">Cho phép bạn đặt liệu trang web có được phép theo dõi vị trí thực của người dùng hay không. Việc theo dõi vị trí thực của người dùng có thể được cho phép theo mặc định, bị từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web yêu cầu vị trí thực.
+
+          Nếu chính sách này được đặt thành 'BlockGeolocation', tính năng chia sẻ vị trí không được phép đối với các ứng dụng ARC.
+
+          Nếu chính sách này không được đặt, 'AskGeolocation' sẽ được sử dụng và người dùng sẽ có thể thay đổi cài đặt này.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
 
@@ -882,6 +917,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không được chỉ định, sẽ không sửa đổi URL khởi đầu Biến thể.</translation>
 <translation id="3863409707075047163">Đã bật phiên bản SSL tối thiểu</translation>
+<translation id="3864020628639910082">Chỉ định URL của công cụ tìm kiếm dùng để cung cấp đề xuất tìm kiếm. URL phải chứa chuỗi '<ph name="SEARCH_TERM_MARKER" />'. Chuỗi này sẽ được thay thế tại thời điểm truy vấn bằng văn bản người dùng đã nhập từ trước đến nay.
+
+          Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có URL đề xuất nào được sử dụng.
+
+          Có thể chỉ định URL đề xuất của Google dưới dạng: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
+
+          Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="3864818549971490907">Cài đặt plugin mặc định</translation>
 <translation id="3866249974567520381">Mô tả</translation>
 <translation id="3866530186104388232">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị những người dùng hiện có trên màn hình đăng nhập và cho phép chọn một người dùng. Nếu chính sách này được đặt thành sai, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng lời nhắc nhập tên người dùng/mật khẩu để đăng nhập.</translation>
@@ -896,6 +938,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Mỗi mục nhập trong danh sách chứa một từ điển. Từ điển này phải bao gồm ID tiện ích trong trường 'extension-id' và URL cập nhật trong trường 'update-url'.</translation>
 <translation id="3891357445869647828">Bật JavaScript</translation>
+<translation id="3898060089412156345">Cho phép hoặc từ chối ghi âm.
+
+      Nếu được bật hoặc không được định cấu hình (mặc định), người dùng sẽ được nhắc cấp
+      quyền truy cập ghi âm, ngoại trừ các URL được định cấu hình trong danh sách
+      AudioCaptureAllowedUrls sẽ được cấp quyền truy cập mà không hiển thị lời nhắc.
+
+      Khi tắt chính sách này, người dùng sẽ không bao giờ được nhắc và ghi âm
+      chỉ khả dụng đối với các URL được định cấu hình trong AudioCaptureAllowedUrls.
+      Đối với các ứng dụng ARC, micrô bị tắt tiếng vĩnh viễn.
+
+      Chính sách này ảnh hưởng đến tất cả các loại thiết bị thu âm, không chỉ micrô được tích hợp sẵn.</translation>
 <translation id="3907986150060929099">Đặt ngôn ngữ được đề xuất cho phiên công khai</translation>
 <translation id="391531815696899618">Tắt đồng bộ hóa Google Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /> khi được đặt thành True. Trong trường hợp đó, không có dữ liệu nào được tải lên Google Drive.
 
@@ -960,6 +1013,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
 
           Phải chỉ định giá trị chính sách bằng mili giây.</translation>
+<translation id="4105989332710272578">Tắt buộc thực thi Tính minh bạch của chứng chỉ cho danh sách URL</translation>
 <translation id="4115096483386877940">Cho phép khóa màn hình.
 
       Nếu chính sách này được đặt thành false, người dùng sẽ không thể khóa màn hình (chỉ có thể đăng xuất khỏi phiên người dùng). Nếu cài đặt này được đặt thành true hoặc không được đặt, người dùng đã xác thực bằng mật khẩu có thể khóa màn hình.</translation>
@@ -996,6 +1050,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không đặt, yêu cầu tìm kiếm theo hình ảnh sẽ được gửi bằng phương thức GET.
 
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
+<translation id="4309640770189628899">Bộ mã hóa DHE trong TLS có được bật hay không</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 hoặc mới hơn</translation>
 <translation id="4322842393287974810">Cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
@@ -2025,6 +2080,22 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Xác định id của tiện ích được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
 <translation id="7882890448959833986">Ẩn cảnh báo hệ điều hành không được hỗ trợ</translation>
 <translation id="7912255076272890813">Định cấu hình loại ứng dụng/tiện ích được cho phép</translation>
+<translation id="7914271217607102111">Cho phép hoặc từ chối quay video.
+
+      Nếu được bật hoặc không được định cấu hình (mặc định), người dùng sẽ
+      được nhắc cấp quyền truy cập quay video, ngoại trừ các URL được định cấu hình
+      trong danh sách VideoCaptureAllowedUrls sẽ được cấp quyền truy cập mà
+      không hiển thị lời nhắc.
+      Các ứng dụng ARC có thể truy cập máy ảnh nếu được
+      cấp quyền.
+
+      Khi chính sách này bị tắt, người dùng sẽ không bao giờ được nhắc và
+      quay video chỉ khả dụng với các URL đã được định cấu hình trong.
+      VideoCaptureAllowedUrls.
+      Các ứng dụng ARC không thể truy cập máy ảnh.
+
+      Ngoài các ứng dụng ARC, chính sách này ảnh hưởng đến tất cả các loại
+      thiết bị quay video chứ không chỉ máy ảnh được tích hợp sẵn.</translation>
 <translation id="7915236031252389808">Bạn có thể chỉ định URL cho tệp .pac proxy tại đây.
 
           Chính sách này chỉ có hiệu lực nếu bạn đã chọn cài đặt proxy thủ công tại 'Chọn cách chỉ định cài đặt máy chủ proxy'.
