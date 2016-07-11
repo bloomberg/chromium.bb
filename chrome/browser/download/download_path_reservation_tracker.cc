@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -81,13 +82,13 @@ bool IsPathReserved(const base::FilePath& path) {
   // No reservation map => no reservations.
   if (g_reservation_map == NULL)
     return false;
-  // Unfortunately path normalization doesn't work reliably for non-existant
-  // files. So given a FilePath, we can't derive a normalized key that we can
-  // use for lookups. We only expect a small number of concurrent downloads at
-  // any given time, so going through all of them shouldn't be too slow.
+
+  // We only expect a small number of concurrent downloads at any given time, so
+  // going through all of them shouldn't be too slow.
   for (ReservationMap::const_iterator iter = g_reservation_map->begin();
        iter != g_reservation_map->end(); ++iter) {
-    if (iter->second == path)
+    if (base::FilePath::CompareEqualIgnoreCase(iter->second.value(),
+                                               path.value()))
       return true;
   }
   return false;
@@ -169,7 +170,6 @@ bool CreateReservation(
   // deleted when all the reservations are revoked.
   if (g_reservation_map == NULL)
     g_reservation_map = new ReservationMap;
-  ReservationMap& reservations = *g_reservation_map;
 
   // Erase the reservation if it already exists. This can happen during
   // automatic resumption where a new target determination request may be issued
@@ -177,7 +177,7 @@ bool CreateReservation(
   //
   // Revoking and re-acquiring the reservation forces us to re-verify the claims
   // we are making about the path.
-  reservations.erase(key);
+  g_reservation_map->erase(key);
 
   base::FilePath target_path(suggested_path.NormalizePathSeparators());
   base::FilePath target_dir = target_path.DirName();
@@ -253,7 +253,7 @@ bool CreateReservation(
     }
   }
 
-  reservations[key] = target_path;
+  (*g_reservation_map)[key] = target_path;
   bool verified = (is_path_writeable && !has_conflicts && !name_too_long);
   *reserved_path = target_path;
   return verified;

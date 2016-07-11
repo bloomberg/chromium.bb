@@ -383,6 +383,40 @@ TEST_F(DownloadPathReservationTrackerTest, ConflictingReservations) {
   SetDownloadItemState(item3.get(), DownloadItem::COMPLETE);
 }
 
+// Two active downloads shouldn't be able to reserve paths that only differ by
+// case.
+TEST_F(DownloadPathReservationTrackerTest, ConflictingCaseReservations) {
+  std::unique_ptr<MockDownloadItem> item1(CreateDownloadItem(1));
+  std::unique_ptr<MockDownloadItem> item2(CreateDownloadItem(2));
+
+  base::FilePath path_foo =
+      GetPathInDownloadsDirectory(FILE_PATH_LITERAL("foo.txt"));
+  base::FilePath path_Foo =
+      GetPathInDownloadsDirectory(FILE_PATH_LITERAL("Foo.txt"));
+
+  base::FilePath first_reservation;
+  bool verified = false;
+  CallGetReservedPath(item1.get(), path_foo, false,
+                      DownloadPathReservationTracker::UNIQUIFY,
+                      &first_reservation, &verified);
+  EXPECT_TRUE(IsPathInUse(path_foo));
+  EXPECT_TRUE(verified);
+  EXPECT_EQ(path_foo, first_reservation);
+
+  // Foo should also be in use at this point.
+  EXPECT_TRUE(IsPathInUse(path_Foo));
+
+  base::FilePath second_reservation;
+  CallGetReservedPath(item2.get(), path_Foo, false,
+                      DownloadPathReservationTracker::UNIQUIFY,
+                      &second_reservation, &verified);
+  EXPECT_TRUE(verified);
+  EXPECT_EQ(GetPathInDownloadsDirectory(FILE_PATH_LITERAL("Foo (1).txt")),
+            second_reservation);
+  SetDownloadItemState(item1.get(), DownloadItem::COMPLETE);
+  SetDownloadItemState(item2.get(), DownloadItem::COMPLETE);
+}
+
 // If a unique path cannot be determined after trying kMaxUniqueFiles
 // uniquifiers, then the callback should notified that verification failed, and
 // the returned path should be set to the original requested path.
@@ -675,4 +709,4 @@ TEST_F(DownloadPathReservationTrackerTest, TruncationFail) {
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
 }
 
-#endif
+#endif  // Platforms that support filename truncation.
