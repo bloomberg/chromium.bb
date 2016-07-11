@@ -3233,7 +3233,11 @@ bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
 
 void SpdyFramer::SetDecoderHeaderTableDebugVisitor(
     std::unique_ptr<HpackHeaderTable::DebugVisitorInterface> visitor) {
-  GetHpackDecoder()->SetHeaderTableDebugVisitor(std::move(visitor));
+  if (decoder_adapter_ != nullptr) {
+    decoder_adapter_->SetDecoderHeaderTableDebugVisitor(std::move(visitor));
+  } else {
+    GetHpackDecoder()->SetHeaderTableDebugVisitor(std::move(visitor));
+  }
 }
 
 void SpdyFramer::SetEncoderHeaderTableDebugVisitor(
