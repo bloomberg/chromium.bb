@@ -1700,17 +1700,6 @@ UNINITIALIZED READ
 name=bug_399842
 skia.dll!S32A_Opaque_BlitRow32_SSE4
 
-HANDLE LEAK
-name=bug_403544
-system call NtCreateSemaphore
-KERNELBASE.dll!CreateSemaphoreExW
-...
-v8.dll!v8::internal::SweeperThread::SweeperThread
-...
-blink_web.dll!blink::WorkerScriptController::WorkerScriptController
-blink_web.dll!blink::WorkerGlobalScope::WorkerGlobalScope
-blink_web.dll!blink::ServiceWorkerGlobalScope::ServiceWorkerGlobalScope
-
 UNINITIALIZED READ
 name=bug_414268
 pdf.dll!chrome_pdf::PDFiumEngine::OnMouseMove
