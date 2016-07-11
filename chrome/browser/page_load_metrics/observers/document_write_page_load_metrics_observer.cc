@@ -103,6 +103,9 @@ const char
         [] = "PageLoad.Clients.DocWrite.Evaluator.ParseTiming."
              "ParseBlockedOnScriptLoadFromDocumentWrite.Background";
 
+const char kHistogramDocWriteBlockFirstContentfulPaintImmediate[] =
+    "PageLoad.Clients.DocWrite.Block.PaintTiming."
+    "NavigationToFirstContentfulPaint";
 const char kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate[] =
     "PageLoad.Clients.DocWrite.Block.PaintTiming."
     "ParseStartToFirstContentfulPaint";
@@ -310,6 +313,9 @@ void DocumentWritePageLoadMetricsObserver::
         const page_load_metrics::PageLoadExtraInfo& info) {
   if (WasStartedInForegroundOptionalEventInForeground(
           timing.first_contentful_paint, info)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramDocWriteBlockFirstContentfulPaintImmediate,
+        timing.first_contentful_paint.value());
     PAGE_LOAD_HISTOGRAM(
         internal::
             kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate,
