@@ -56,10 +56,6 @@ android_java_prebuilt("android_support_design_java") {
   jar_path = "$android_sdk_root/extras/android/support/design/libs/android-support-design.jar"
 }
 
-android_java_prebuilt("android_support_annotations_javalib") {
-  jar_path = "$android_sdk_root/extras/android/support/annotations/android-support-annotations.jar"
-}
-
 java_prebuilt("android_support_multidex_java") {
   supports_android = true
   jar_path = "$android_sdk_root/extras/android/support/multidex/library/libs/android-support-multidex.jar"

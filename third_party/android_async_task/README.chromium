@@ -11,4 +11,4 @@ This contains a copy of Android sdk 23's AsyncTask.java.
 Local Modifications:
 - Renamed package to org.chromium.third_party.android.os.
 - Explicitly import android.os objects.
-- Switch to using android.support.annotations.
+- Switch to using android.support.annotations (from android.support.v13).
