@@ -157,12 +157,9 @@ void LayoutMenuList::updateOptionsWidth() const
 {
     float maxOptionWidth = 0;
 
-    for (const auto& element : selectElement()->listItems()) {
-        if (!isHTMLOptionElement(element))
-            continue;
-
-        String text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-        const ComputedStyle* itemStyle = element->computedStyle() ? element->computedStyle() : style();
+    for (const auto& option : selectElement()->optionList()) {
+        String text = option->textIndentedToRespectGroupLabel();
+        const ComputedStyle* itemStyle = option->computedStyle() ? option->computedStyle() : style();
         applyTextTransform(itemStyle, text, ' ');
         TextRun textRun = constructTextRun(itemStyle->font(), text, *itemStyle);
 
@@ -184,26 +181,16 @@ void LayoutMenuList::updateFromElement()
     m_optionStyle.clear();
 
     if (select->multiple()) {
-        const HeapVector<Member<HTMLElement>>& listItems = select->listItems();
-        const int size = listItems.size();
         unsigned selectedCount = 0;
-        int firstSelectedIndex = -1;
-        for (int i = 0; i < size; ++i) {
-            Element* element = listItems[i];
-            if (!isHTMLOptionElement(*element))
-                continue;
-
-            if (toHTMLOptionElement(element)->selected()) {
+        HTMLOptionElement* selectedOptionElement = nullptr;
+        for (const auto& option : select->optionList()) {
+            if (option->selected()) {
                 if (++selectedCount == 1)
-                    firstSelectedIndex = i;
+                    selectedOptionElement = option;
             }
         }
 
         if (selectedCount == 1) {
-            ASSERT(0 <= firstSelectedIndex);
-            ASSERT(firstSelectedIndex < size);
-            HTMLOptionElement* selectedOptionElement = toHTMLOptionElement(listItems[firstSelectedIndex]);
-            ASSERT(selectedOptionElement->selected());
             text = selectedOptionElement->textIndentedToRespectGroupLabel();
             m_optionStyle = selectedOptionElement->mutableComputedStyle();
         } else {

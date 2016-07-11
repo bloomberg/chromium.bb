@@ -115,10 +115,8 @@ void AXMenuListPopup::addChildren()
     if (m_activeIndex == -1)
         m_activeIndex = getSelectedIndex();
 
-    const HeapVector<Member<HTMLElement>>& listItems = htmlSelectElement->listItems();
-    unsigned length = listItems.size();
-    for (unsigned i = 0; i < length; i++) {
-        AXMenuListOption* option = menuListOptionAXObject(listItems[i]);
+    for (const auto& optionElement : htmlSelectElement->optionList()) {
+        AXMenuListOption* option = menuListOptionAXObject(optionElement);
         if (option) {
             option->setParent(this);
             m_children.append(option);

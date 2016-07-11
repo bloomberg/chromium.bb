@@ -280,29 +280,17 @@ String HTMLSelectElement::value() const
 
 void HTMLSelectElement::setValue(const String &value, bool sendEvents)
 {
-    // We clear the previously selected option(s) when needed, to guarantee
-    // calling setSelectedIndex() only once.
-    int optionIndex = 0;
     HTMLOptionElement* option = nullptr;
-    if (value.isNull()) {
-        optionIndex = -1;
-    } else {
-        // Find the option with value() matching the given parameter and make it
-        // the current selection.
-        for (auto& item : listItems()) {
-            if (!isHTMLOptionElement(item))
-                continue;
-            if (toHTMLOptionElement(item)->value() == value) {
-                option = toHTMLOptionElement(item);
-                break;
-            }
-            optionIndex++;
+    // Find the option with value() matching the given parameter and make it the
+    // current selection.
+    for (const auto& item : optionList()) {
+        if (item->value() == value) {
+            option = item;
+            break;
         }
-        if (optionIndex >= static_cast<int>(listItems().size()))
-            optionIndex = -1;
     }
 
-    int previousSelectedIndex = selectedIndex();
+    HTMLOptionElement* previousSelectedOption = selectedOption();
     setSuggestedOption(nullptr);
     if (m_isAutofilledByPreview)
         setAutofilled(false);
@@ -311,7 +299,7 @@ void HTMLSelectElement::setValue(const String &value, bool sendEvents)
         flags |= DispatchInputAndChangeEvent;
     selectOption(option, flags);
 
-    if (sendEvents && previousSelectedIndex != selectedIndex() && !usesMenuList())
+    if (sendEvents && previousSelectedOption != option && !usesMenuList())
         listBoxOnChange();
 }
 
@@ -327,11 +315,9 @@ void HTMLSelectElement::setSuggestedValue(const String& value)
         return;
     }
 
-    for (auto& item : listItems()) {
-        if (!isHTMLOptionElement(item))
-            continue;
-        if (toHTMLOptionElement(item)->value() == value) {
-            setSuggestedOption(toHTMLOptionElement(item));
+    for (const auto& option : optionList()) {
+        if (option->value() == value) {
+            setSuggestedOption(option);
             m_isAutofilledByPreview = true;
             return;
         }
@@ -497,12 +483,12 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
         // Removing children fires mutation events, which might mutate the DOM
         // further, so we first copy out a list of elements that we intend to
         // remove then attempt to remove them one at a time.
-        HeapVector<Member<Element>> itemsToRemove;
+        HeapVector<Member<HTMLOptionElement>> itemsToRemove;
         size_t optionIndex = 0;
-        for (auto& item : listItems()) {
-            if (isHTMLOptionElement(item) && optionIndex++ >= newLen) {
-                ASSERT(item->parentNode());
-                itemsToRemove.append(item.get());
+        for (const auto& option : optionList()) {
+            if (optionIndex++ >= newLen) {
+                DCHECK(option->parentNode());
+                itemsToRemove.append(option);
             }
         }
 
@@ -888,10 +874,8 @@ int HTMLSelectElement::selectedIndex() const
     unsigned index = 0;
 
     // Return the number of the first option selected.
-    for (auto& element : listItems()) {
-        if (!isHTMLOptionElement(*element))
-            continue;
-        if (toHTMLOptionElement(*element).selected())
+    for (const auto& option : optionList()) {
+        if (option->selected())
             return index;
         ++index;
     }
@@ -1257,18 +1241,15 @@ void HTMLSelectElement::appendToFormData(FormData& formData)
     if (name.isEmpty())
         return;
 
-    for (auto& element : listItems()) {
-        if (isHTMLOptionElement(*element) && toHTMLOptionElement(*element).selected() && !toHTMLOptionElement(*element).isDisabledFormControl())
-            formData.append(name, toHTMLOptionElement(*element).value());
+    for (const auto& option : optionList()) {
+        if (option->selected() && !option->isDisabledFormControl())
+            formData.append(name, option->value());
     }
 }
 
 void HTMLSelectElement::resetImpl()
 {
-    for (auto& item : listItems()) {
-        if (!isHTMLOptionElement(item))
-            continue;
-        HTMLOptionElement* option = toHTMLOptionElement(item);
+    for (const auto& option : optionList()) {
         option->setSelectedState(option->fastHasAttribute(selectedAttr));
         option->setDirty(false);
     }
@@ -1787,9 +1768,9 @@ void HTMLSelectElement::accessKeySetSelectedIndex(int index)
 unsigned HTMLSelectElement::length() const
 {
     unsigned options = 0;
-    for (auto& item : listItems()) {
-        if (isHTMLOptionElement(*item))
-            ++options;
+    for (const auto& option : optionList()) {
+        ALLOW_UNUSED_LOCAL(option);
+        ++options;
     }
     return options;
 }

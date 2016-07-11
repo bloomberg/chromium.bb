@@ -102,12 +102,8 @@ HTMLFormControlElement* buttonToActivate(const HTMLFormElement& form)
 // selected state.
 bool isSelectInDefaultState(const HTMLSelectElement& select)
 {
-    const HeapVector<Member<HTMLElement>>& listItems = select.listItems();
     if (select.multiple() || select.size() > 1) {
-        for (const auto& item : listItems) {
-            if (!isHTMLOptionElement(*item))
-                continue;
-            HTMLOptionElement* optionElement = toHTMLOptionElement(item);
+        for (const auto& optionElement : select.optionList()) {
             if (optionElement->selected() != optionElement->fastHasAttribute(selectedAttr))
                 return false;
         }
@@ -117,10 +113,7 @@ bool isSelectInDefaultState(const HTMLSelectElement& select)
     // The select is rendered as a combobox (called menulist in WebKit). At
     // least one item is selected, determine which one.
     HTMLOptionElement* initialSelected = nullptr;
-    for (const auto& item : listItems) {
-        if (!isHTMLOptionElement(*item))
-            continue;
-        HTMLOptionElement* optionElement = toHTMLOptionElement(item);
+    for (const auto& optionElement : select.optionList()) {
         if (optionElement->fastHasAttribute(selectedAttr)) {
             // The page specified the option to select.
             initialSelected = optionElement;
