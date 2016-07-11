@@ -80,16 +80,16 @@ BUILDERS = {
     "linux_chromium_rel_ng": {
         "port_name": "linux-precise",
         "specifiers": ['Precise', 'Release'],
-        "is_try_bot": True,
+        "is_try_builder": True,
     },
     "mac_chromium_rel_ng": {
         "port_name": "mac-mac10.9",
         "specifiers": ['Mac10.9', 'Release'],
-        "is_try_bot": True,
+        "is_try_builder": True,
     },
     "win_chromium_rel_ng": {
         "port_name": "win-win7",
         "specifiers": ['Win7', 'Release'],
-        "is_try_bot": True,
+        "is_try_builder": True,
     },
 }
