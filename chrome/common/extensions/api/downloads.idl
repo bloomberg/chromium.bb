@@ -134,8 +134,13 @@ namespace downloads {
     // An identifier that is persistent across browser sessions.
     long id;
 
-    // Absolute URL.
+    // The absolute URL that this download initiated from, before any
+    // redirects.
     DOMString url;
+
+    // The absolute URL that this download is being made from, after all
+    // redirects.
+    DOMString finalUrl;
 
     // Absolute URL.
     DOMString referrer;
@@ -226,9 +231,9 @@ namespace downloads {
 
   [inline_doc] dictionary DownloadQuery {
     // This array of search terms limits results to $(ref:DownloadItem) whose
-    // <code>filename</code> or <code>url</code> contain all of the search terms
-    // that do not begin with a dash '-' and none of the search terms that do
-    // begin with a dash.
+    // <code>filename</code> or <code>url</code> or <code>finalUrl</code>
+    // contain all of the search terms that do not begin with a dash '-' and
+    // none of the search terms that do begin with a dash.
     DOMString[]? query;
 
     // Limits results to $(ref:DownloadItem) that
@@ -263,6 +268,10 @@ namespace downloads {
     // <code>url</code> matches the given regular expression.
     DOMString? urlRegex;
 
+    // Limits results to $(ref:DownloadItem) whose
+    // <code>finalUrl</code> matches the given regular expression.
+    DOMString? finalUrlRegex;
+
     // The maximum number of matching $(ref:DownloadItem) returned. Defaults to
     // 1000. Set to 0 in order to return all matching $(ref:DownloadItem). See
     // $(ref:search) for how to page through results.
@@ -278,8 +287,13 @@ namespace downloads {
     // The <code>id</code> of the $(ref:DownloadItem) to query.
     long? id;
 
-    // Absolute URL.
+    // The absolute URL that this download initiated from, before any
+    // redirects.
     DOMString? url;
+
+    // The absolute URL that this download is being made from, after all
+    // redirects.
+    DOMString? finalUrl;
 
     // Absolute local path.
     DOMString? filename;
@@ -345,6 +359,9 @@ namespace downloads {
 
     // The change in <code>url</code>, if any.
     StringDelta? url;
+
+    // The change in <code>finalUrl</code>, if any.
+    StringDelta? finalUrl;
 
     // The change in <code>filename</code>, if any.
     StringDelta? filename;

@@ -173,6 +173,8 @@ const char kTotalBytesKey[] = "totalBytes";
 const char kTotalBytesLessKey[] = "totalBytesLess";
 const char kUrlKey[] = "url";
 const char kUrlRegexKey[] = "urlRegex";
+const char kFinalUrlKey[] = "finalUrl";
+const char kFinalUrlRegexKey[] = "finalUrlRegex";
 
 // Note: Any change to the danger type strings, should be accompanied by a
 // corresponding change to downloads.json.
@@ -254,6 +256,9 @@ std::unique_ptr<base::DictionaryValue> DownloadItemToJSON(
   json->SetInteger(kIdKey, download_item->GetId());
   const GURL& url = download_item->GetOriginalUrl();
   json->SetString(kUrlKey, (url.is_valid() ? url.spec() : std::string()));
+  const GURL& finalUrl = download_item->GetURL();
+  json->SetString(kFinalUrlKey,
+                  (finalUrl.is_valid() ? finalUrl.spec() : std::string()));
   const GURL& referrer = download_item->GetReferrerUrl();
   json->SetString(kReferrerUrlKey, (referrer.is_valid() ? referrer.spec()
                                                         : std::string()));
@@ -375,8 +380,10 @@ void InitFilterTypeMap(FilterTypeMap* filter_types_ptr) {
   filter_types[kTotalBytesGreaterKey] =
     DownloadQuery::FILTER_TOTAL_BYTES_GREATER;
   filter_types[kTotalBytesLessKey] = DownloadQuery::FILTER_TOTAL_BYTES_LESS;
-  filter_types[kUrlKey] = DownloadQuery::FILTER_URL;
-  filter_types[kUrlRegexKey] = DownloadQuery::FILTER_URL_REGEX;
+  filter_types[kUrlKey] = DownloadQuery::FILTER_ORIGINAL_URL;
+  filter_types[kUrlRegexKey] = DownloadQuery::FILTER_ORIGINAL_URL_REGEX;
+  filter_types[kFinalUrlKey] = DownloadQuery::FILTER_URL;
+  filter_types[kFinalUrlRegexKey] = DownloadQuery::FILTER_URL_REGEX;
 }
 
 typedef base::hash_map<std::string, DownloadQuery::SortType> SortTypeMap;
@@ -393,7 +400,8 @@ void InitSortTypeMap(SortTypeMap* sorter_types_ptr) {
   sorter_types[kStartTimeKey] = DownloadQuery::SORT_START_TIME;
   sorter_types[kStateKey] = DownloadQuery::SORT_STATE;
   sorter_types[kTotalBytesKey] = DownloadQuery::SORT_TOTAL_BYTES;
-  sorter_types[kUrlKey] = DownloadQuery::SORT_URL;
+  sorter_types[kUrlKey] = DownloadQuery::SORT_ORIGINAL_URL;
+  sorter_types[kFinalUrlKey] = DownloadQuery::SORT_URL;
 }
 
 bool IsNotTemporaryDownloadFilter(const DownloadItem& download_item) {
@@ -906,6 +914,7 @@ bool InvalidId(DownloadItem* valid_item, std::string* message_out) {
 
 bool IsDownloadDeltaField(const std::string& field) {
   return ((field == kUrlKey) ||
+          (field == kFinalUrlKey) ||
           (field == kFilenameKey) ||
           (field == kDangerKey) ||
           (field == kMimeKey) ||

@@ -69,6 +69,8 @@ class DownloadQuery {
     FILTER_TOTAL_BYTES,          // double
     FILTER_TOTAL_BYTES_GREATER,  // double
     FILTER_TOTAL_BYTES_LESS,     // double
+    FILTER_ORIGINAL_URL,         // string
+    FILTER_ORIGINAL_URL_REGEX,   // string
     FILTER_URL,                  // string
     FILTER_URL_REGEX,            // string
   };
@@ -85,6 +87,7 @@ class DownloadQuery {
     SORT_START_TIME,
     SORT_STATE,
     SORT_TOTAL_BYTES,
+    SORT_ORIGINAL_URL,
     SORT_URL,
   };
 

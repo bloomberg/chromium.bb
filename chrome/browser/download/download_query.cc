@@ -70,11 +70,11 @@ template<> bool GetAs(const base::Value& in, std::vector<base::string16>* out) {
 // The next several functions are helpers for making Callbacks that access
 // DownloadItem fields.
 
-static int64_t GetStartTimeMsEpoch(const DownloadItem& item) {
+int64_t GetStartTimeMsEpoch(const DownloadItem& item) {
   return (item.GetStartTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
 
-static int64_t GetEndTimeMsEpoch(const DownloadItem& item) {
+int64_t GetEndTimeMsEpoch(const DownloadItem& item) {
   return (item.GetEndTime() - base::Time::UnixEpoch()).InMilliseconds();
 }
 
@@ -87,58 +87,62 @@ std::string TimeToISO8601(const base::Time& t) {
       exploded.millisecond);
 }
 
-static std::string GetStartTime(const DownloadItem& item) {
+std::string GetStartTime(const DownloadItem& item) {
   return TimeToISO8601(item.GetStartTime());
 }
 
-static std::string GetEndTime(const DownloadItem& item) {
+std::string GetEndTime(const DownloadItem& item) {
   return TimeToISO8601(item.GetEndTime());
 }
 
-static bool GetDangerAccepted(const DownloadItem& item) {
+bool GetDangerAccepted(const DownloadItem& item) {
   return (item.GetDangerType() ==
           content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED);
 }
 
-static bool GetExists(const DownloadItem& item) {
+bool GetExists(const DownloadItem& item) {
   return !item.GetFileExternallyRemoved();
 }
 
-static base::string16 GetFilename(const DownloadItem& item) {
+base::string16 GetFilename(const DownloadItem& item) {
   // This filename will be compared with strings that could be passed in by the
   // user, who only sees LossyDisplayNames.
   return item.GetTargetFilePath().LossyDisplayName();
 }
 
-static std::string GetFilenameUTF8(const DownloadItem& item) {
+std::string GetFilenameUTF8(const DownloadItem& item) {
   return base::UTF16ToUTF8(GetFilename(item));
 }
 
-static std::string GetUrl(const DownloadItem& item) {
+std::string GetOriginalUrl(const DownloadItem& item) {
   return item.GetOriginalUrl().spec();
 }
 
-static DownloadItem::DownloadState GetState(const DownloadItem& item) {
+std::string GetUrl(const DownloadItem& item) {
+  return item.GetURL().spec();
+}
+
+DownloadItem::DownloadState GetState(const DownloadItem& item) {
   return item.GetState();
 }
 
-static DownloadDangerType GetDangerType(const DownloadItem& item) {
+DownloadDangerType GetDangerType(const DownloadItem& item) {
   return item.GetDangerType();
 }
 
-static double GetReceivedBytes(const DownloadItem& item) {
+double GetReceivedBytes(const DownloadItem& item) {
   return item.GetReceivedBytes();
 }
 
-static double GetTotalBytes(const DownloadItem& item) {
+double GetTotalBytes(const DownloadItem& item) {
   return item.GetTotalBytes();
 }
 
-static std::string GetMimeType(const DownloadItem& item) {
+std::string GetMimeType(const DownloadItem& item) {
   return item.GetMimeType();
 }
 
-static bool IsPaused(const DownloadItem& item) {
+bool IsPaused(const DownloadItem& item) {
   return item.IsPaused();
 }
 
@@ -149,7 +153,7 @@ enum ComparisonType {LT, EQ, GT};
 // DownloadItem and returns one of its fields, which is then compared to
 // |value|.
 template<typename ValueType>
-static bool FieldMatches(
+bool FieldMatches(
     const ValueType& value,
     ComparisonType cmptype,
     const base::Callback<ValueType(const DownloadItem&)>& accessor,
@@ -174,7 +178,7 @@ template <typename ValueType> DownloadQuery::FilterCallback BuildFilter(
 }
 
 // Returns true if |accessor.Run(item)| matches |pattern|.
-static bool FindRegex(
+bool FindRegex(
     RE2* pattern,
     const base::Callback<std::string(const DownloadItem&)>& accessor,
     const DownloadItem& item) {
@@ -196,7 +200,7 @@ DownloadQuery::FilterCallback BuildRegexFilter(
 // Returns a ComparisonType to indicate whether a field in |left| is less than,
 // greater than or equal to the same field in |right|.
 template<typename ValueType>
-static ComparisonType Compare(
+ComparisonType Compare(
     const base::Callback<ValueType(const DownloadItem&)>& accessor,
     const DownloadItem& left, const DownloadItem& right) {
   ValueType left_value = accessor.Run(left);
@@ -215,16 +219,27 @@ bool DownloadQuery::MatchesQuery(const std::vector<base::string16>& query_terms,
   if (query_terms.empty())
     return true;
 
-  base::string16 url_raw(base::UTF8ToUTF16(item.GetOriginalUrl().spec()));
-  base::string16 url_formatted = url_raw;
-  if (item.GetBrowserContext())
-    url_formatted = url_formatter::FormatUrl(item.GetOriginalUrl());
+  base::string16 original_url_raw(
+      base::UTF8ToUTF16(item.GetOriginalUrl().spec()));
+  base::string16 url_raw(base::UTF8ToUTF16(item.GetURL().spec()));
+  // Try to also match query with above URLs formatted in user display friendly
+  // way. This will unescape characters (including spaces) and trim all extra
+  // data (like username and password) from raw url so that for example raw url
+  // "http://some.server.org/example%20download/file.zip" will be matched with
+  // search term "example download".
+  base::string16 original_url_formatted(
+      url_formatter::FormatUrl(item.GetOriginalUrl()));
+  base::string16 url_formatted(url_formatter::FormatUrl(item.GetURL()));
   base::string16 path(item.GetTargetFilePath().LossyDisplayName());
 
   for (std::vector<base::string16>::const_iterator it = query_terms.begin();
        it != query_terms.end(); ++it) {
     base::string16 term = base::i18n::ToLower(*it);
     if (!base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, original_url_raw, NULL, NULL) &&
+        !base::i18n::StringSearchIgnoringCaseAndAccents(
+            term, original_url_formatted, NULL, NULL) &&
+        !base::i18n::StringSearchIgnoringCaseAndAccents(
             term, url_raw, NULL, NULL) &&
         !base::i18n::StringSearchIgnoringCaseAndAccents(
             term, url_formatted, NULL, NULL) &&
@@ -301,6 +316,10 @@ bool DownloadQuery::AddFilter(DownloadQuery::FilterType type,
       return AddFilter(BuildFilter<double>(value, GT, &GetTotalBytes));
     case FILTER_TOTAL_BYTES_LESS:
       return AddFilter(BuildFilter<double>(value, LT, &GetTotalBytes));
+    case FILTER_ORIGINAL_URL:
+      return AddFilter(BuildFilter<std::string>(value, EQ, &GetOriginalUrl));
+    case FILTER_ORIGINAL_URL_REGEX:
+      return AddFilter(BuildRegexFilter(value, &GetOriginalUrl));
     case FILTER_URL:
       return AddFilter(BuildFilter<std::string>(value, EQ, &GetUrl));
     case FILTER_URL_REGEX:
@@ -390,6 +409,10 @@ void DownloadQuery::AddSorter(DownloadQuery::SortType type,
     case SORT_START_TIME:
       sorters_.push_back(
           Sorter::Build<int64_t>(direction, &GetStartTimeMsEpoch));
+      break;
+    case SORT_ORIGINAL_URL:
+      sorters_.push_back(
+          Sorter::Build<std::string>(direction, &GetOriginalUrl));
       break;
     case SORT_URL:
       sorters_.push_back(Sorter::Build<std::string>(direction, &GetUrl));

@@ -1518,8 +1518,61 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
                           "  \"incognito\": false,"
                           "  \"mime\": \"text/plain\","
                           "  \"paused\": false,"
+                          "  \"finalUrl\": \"%s\","
                           "  \"url\": \"%s\"}]",
+                          download_url.c_str(),
                           download_url.c_str())));
+  ASSERT_TRUE(
+      WaitFor(downloads::OnChanged::kEventName,
+              base::StringPrintf("[{\"id\": %d,"
+                                 "  \"filename\": {"
+                                 "    \"previous\": \"\","
+                                 "    \"current\": \"%s\"}}]",
+                                 result_id, GetFilename("slow.txt").c_str())));
+  ASSERT_TRUE(WaitFor(downloads::OnChanged::kEventName,
+                      base::StringPrintf(
+                          "[{\"id\": %d,"
+                          "  \"state\": {"
+                          "    \"previous\": \"in_progress\","
+                          "    \"current\": \"complete\"}}]",
+                          result_id)));
+}
+
+// Test that we can start a download that gets redirected and that the correct
+// sequence of events is fired for it.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
+                       DownloadExtensionTest_Download_Redirect) {
+  LoadExtension("downloads_split");
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  GURL download_final_url(embedded_test_server()->GetURL("/slow?0"));
+  GURL download_url(embedded_test_server()->GetURL(
+      "/server-redirect?" + download_final_url.spec()));
+
+  GoOnTheRecord();
+
+  // Start downloading a file.
+  std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(
+      new DownloadsDownloadFunction(),
+      base::StringPrintf("[{\"url\": \"%s\"}]", download_url.spec().c_str())));
+  ASSERT_TRUE(result.get());
+  int result_id = -1;
+  ASSERT_TRUE(result->GetAsInteger(&result_id));
+  DownloadItem* item = GetCurrentManager()->GetDownload(result_id);
+  ASSERT_TRUE(item);
+  ScopedCancellingItem canceller(item);
+  ASSERT_EQ(download_url, item->GetOriginalUrl());
+  ASSERT_EQ(GetExtensionURL(), item->GetSiteUrl().spec());
+
+  ASSERT_TRUE(WaitFor(downloads::OnCreated::kEventName,
+                      base::StringPrintf(
+                          "[{\"danger\": \"safe\","
+                          "  \"incognito\": false,"
+                          "  \"mime\": \"text/plain\","
+                          "  \"paused\": false,"
+                          "  \"finalUrl\": \"%s\","
+                          "  \"url\": \"%s\"}]",
+                          download_final_url.spec().c_str(),
+                          download_url.spec().c_str())));
   ASSERT_TRUE(
       WaitFor(downloads::OnChanged::kEventName,
               base::StringPrintf("[{\"id\": %d,"
