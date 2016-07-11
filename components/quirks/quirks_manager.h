@@ -57,10 +57,6 @@ class QUIRKS_EXPORT QuirksManager {
   using FakeQuirksFetcherCreator = base::Callback<
       std::unique_ptr<net::URLFetcher>(const GURL&, net::URLFetcherDelegate*)>;
 
-  // Callback after getting days since OOBE on blocking pool.
-  // Parameter is returned number of days.
-  using DaysSinceOobeCallback = base::Callback<void(int)>;
-
   // Delegate class, so implementation can access browser functionality.
   class Delegate {
    public:
@@ -79,9 +75,6 @@ class QUIRKS_EXPORT QuirksManager {
 
     // Whether downloads are allowed by enterprise device policy.
     virtual bool DevicePolicyEnabled() const = 0;
-
-    // Gets days since first login, returned via callback.
-    virtual void GetDaysSinceOobe(DaysSinceOobeCallback callback) const = 0;
 
    private:
     DISALLOW_ASSIGN(Delegate);
@@ -138,16 +131,6 @@ class QUIRKS_EXPORT QuirksManager {
       int64_t product_id,
       const RequestFinishedCallback& on_request_finished,
       base::FilePath path);
-
-  // Callback after checking OOBE date; launch client if appropriate.
-  void OnDaysSinceOobeReceived(
-      int64_t product_id,
-      const RequestFinishedCallback& on_request_finished,
-      int days_since_oobe);
-
-  // Create and start a client to download file.
-  void CreateClient(int64_t product_id,
-                    const RequestFinishedCallback& on_request_finished);
 
   // Whether downloads allowed by cmd line flag and device policy.
   bool QuirksEnabled();

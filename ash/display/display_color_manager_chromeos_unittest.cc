@@ -95,10 +95,6 @@ class QuirksManagerDelegateTestImpl : public quirks::QuirksManager::Delegate {
   // |false| prevents attempts at Quirks Server contact.
   bool DevicePolicyEnabled() const override { return false; }
 
-  // Unused by these tests.
-  void GetDaysSinceOobe(
-      quirks::QuirksManager::DaysSinceOobeCallback callback) const override {}
-
  private:
   ~QuirksManagerDelegateTestImpl() override = default;
 

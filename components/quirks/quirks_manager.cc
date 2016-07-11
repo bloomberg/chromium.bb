@@ -10,7 +10,6 @@
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
-#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -46,7 +45,6 @@ base::FilePath CheckForIccFile(base::FilePath built_in_path,
                                bool quirks_enabled) {
   // First, look for icc file in old read-only location.  If there, we don't use
   // the Quirks server.
-  // TODO(glevin): Awaiting final decision on how to handle old read-only files.
   if (CheckAndLogFile(built_in_path))
     return built_in_path;
 
@@ -189,14 +187,6 @@ void QuirksManager::OnIccFilePathRequestCompleted(
   local_state_->GetDictionary(prefs::kQuirksClientLastServerCheck)
       ->GetDouble(IdToHexString(product_id), &last_check);
 
-  // If never checked server before, need to check for new device.
-  if (last_check == 0.0) {
-    delegate_->GetDaysSinceOobe(base::Bind(
-        &QuirksManager::OnDaysSinceOobeReceived, weak_ptr_factory_.GetWeakPtr(),
-        product_id, on_request_finished));
-    return;
-  }
-
   const base::TimeDelta time_since =
       base::Time::Now() - base::Time::FromDoubleT(last_check);
 
@@ -209,38 +199,7 @@ void QuirksManager::OnIccFilePathRequestCompleted(
     return;
   }
 
-  CreateClient(product_id, on_request_finished);
-}
-
-void QuirksManager::OnDaysSinceOobeReceived(
-    int64_t product_id,
-    const RequestFinishedCallback& on_request_finished,
-    int days_since_oobe) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // On newer devices, we want to check server immediately (after OOBE/login).
-  if (days_since_oobe <= kDaysBetweenServerChecks) {
-    CreateClient(product_id, on_request_finished);
-    return;
-  }
-
-  // Otherwise, for the first check on an older device, we want to stagger
-  // it over 30 days, so artificially set last check accordingly.
-  // TODO(glevin): I believe that it makes sense to remove this random delay
-  // in the next Chrome release.
-  const int rand_days = base::RandInt(0, kDaysBetweenServerChecks);
-  const base::Time fake_last_check =
-      base::Time::Now() - base::TimeDelta::FromDays(rand_days);
-  SetLastServerCheck(product_id, fake_last_check);
-  VLOG(2) << "Delaying first Quirks Server check by "
-          << kDaysBetweenServerChecks - rand_days << " days.";
-
-  on_request_finished.Run(base::FilePath(), false);
-}
-
-void QuirksManager::CreateClient(
-    int64_t product_id,
-    const RequestFinishedCallback& on_request_finished) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // Create and start a client to download file.
   QuirksClient* client =
       new QuirksClient(product_id, on_request_finished, this);
   clients_.insert(base::WrapUnique(client));

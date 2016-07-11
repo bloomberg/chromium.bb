@@ -21,8 +21,6 @@ class QuirksManagerDelegateImpl : public QuirksManager::Delegate {
   base::FilePath GetBuiltInDisplayProfileDirectory() const override;
   base::FilePath GetDownloadDisplayProfileDirectory() const override;
   bool DevicePolicyEnabled() const override;
-  void GetDaysSinceOobe(
-      QuirksManager::DaysSinceOobeCallback callback) const override;
 
  private:
   ~QuirksManagerDelegateImpl() override = default;
