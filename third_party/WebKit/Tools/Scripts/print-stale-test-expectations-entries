@@ -28,39 +28,80 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Prints lists of bug numbers / tests whose bugs haven't been modified recently."""
+"""Prints a list of test expectations for tests whose bugs haven't been modified recently."""
 
 import datetime
 import json
 import optparse
-import re
 import sys
-import time
 import urllib2
 
 from webkitpy.common.host import Host
-from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 
-google_code_url = 'https://www.googleapis.com/projecthosting/v2/projects/chromium/issues/%s?key=AIzaSyDgCqT1Dt5AZWLHo4QJjyMHaCjhnFacGF0'
-crbug_prefix = 'crbug.com/'
+# FIXME: Make this a direct request to Monorail.
+GOOGLE_CODE_URL = 'https://www.googleapis.com/projecthosting/v2/projects/chromium/issues/%s?key=AIzaSyDgCqT1Dt5AZWLHo4QJjyMHaCjhnFacGF0'
+CRBUG_PREFIX = 'crbug.com/'
 
 
 class StaleTestPrinter(object):
 
     def __init__(self, options):
         self.days = options.days
-        self.create_csv = options.create_csv
+        self.csv_filename = options.create_csv
+        self.host = Host()
         self.is_stale_results = {}
+
+    def print_stale_tests(self):
+        port = self.host.port_factory.get()
+        expectations = port.expectations_dict()
+        parser = TestExpectationParser(port, all_tests=(), is_lint_mode=False)
+        expectations_file, expectations_contents = expectations.items()[0]
+        expectation_lines = parser.parse(expectations_file, expectations_contents)
+        csv_rows = []
+        for line in expectation_lines:
+            row = self.check_expectations_line(line)
+            if row:
+                csv_rows.append(row)
+        if self.csv_filename:
+            self.write_csv(csv_rows)
+
+    def write_csv(self, rows):
+        row_strings = [', '.join(r) for r in rows]
+        contents = '\n'.join(row_strings) + '\n'
+        self.host.filesystem.write_text_file(self.csv_filename, contents)
+
+    def check_expectations_line(self, line):
+        """Checks the bugs in one test expectations line to see if they're stale.
+
+        Args:
+            line: A TestExpectationsLine instance.
+
+        Returns:
+            A CSV row (a list of strings), or None if there are no stale bugs.
+        """
+        bug_links, test_name = line.bugs, line.name
+        try:
+            if bug_links and all(self.is_stale(bug_link) for bug_link in bug_links):
+                print line.original_string.strip()
+                return [bug_links[0], test_name]
+        except urllib2.HTTPError as error:
+            if error.code == 404:
+                message = 'got 404, bug does not exist.'
+            elif error.code == 403:
+                message = 'got 403, not accessible. Not able to tell if it\'s stale.'
+            else:
+                message = str(error)
+            print >> sys.stderr, 'Error when checking %s: %s' % (','.join(bug_links), message)
+        return None
 
     def is_stale(self, bug_link):
         if bug_link in self.is_stale_results:
             return self.is_stale_results[bug_link]
         # In case there's an error in the request, don't make the same request again.
         self.is_stale_results[bug_link] = False
-        bug_number = bug_link.strip(crbug_prefix)
-        url = google_code_url % bug_number
+        bug_number = bug_link.strip(CRBUG_PREFIX)
+        url = GOOGLE_CODE_URL % bug_number
         response = urllib2.urlopen(url)
         parsed = json.loads(response.read())
         last_updated = parsed['updated']
@@ -69,43 +110,20 @@ class StaleTestPrinter(object):
         self.is_stale_results[bug_link] = time_delta.days > self.days
         return self.is_stale_results[bug_link]
 
-    def print_stale_tests(self):
-        host = Host()
-        port = host.port_factory.get()
-        exps = port.expectations_dict()
-        csv_contents = ''
-        parser = TestExpectationParser(port, all_tests=(), is_lint_mode=False)
-        for line in parser.parse(*exps.items()[0]):
-            bugs, name = line.bugs, line.name
-            try:
-                if bugs and all(self.is_stale(bug) for bug in bugs):
-                    print line.original_string.strip()
-                    csv_contents += "%s, %s\n" % (bugs[0], name)
-            except urllib2.HTTPError as error:
-                if error.code == 404:
-                    print 'Does not exist.'
-                elif error.code == 403:
-                    print 'Is not accessible. Not able to tell if it\'s stale.'
-                    is_bug_stale = False
-                else:
-                    print error
-        if self.create_csv:
-            host.filesystem.write_text_file(self.create_csv, csv_contents)
-
 
 def main(argv):
     option_parser = optparse.OptionParser()
-    option_parser.add_option('--days', type='int', default=90, help='Number of days to consider a bug stale.'),
     option_parser.add_option(
-        '--create-csv',
-        type='string',
-        default=0,
-        help='Generate a CSV of the stale entries as well. Followed by the filename.'),
-    options, args = option_parser.parse_args(argv)
-
+        '--days', type='int', default=90,
+        help='Number of days to consider a bug stale.')
+    option_parser.add_option(
+        '--create-csv', type='string', default='',
+        help='Filename of CSV file to write stale entries to. No file will be written if no name specified.')
+    options, _ = option_parser.parse_args(argv)
     printer = StaleTestPrinter(options)
     printer.print_stale_tests()
     return 0
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
