@@ -5,6 +5,9 @@
 // TestBrowserThreadBundle is a convenience class for creating a set of
 // TestBrowserThreads in unit tests.  For most tests, it is sufficient to
 // just instantiate the TestBrowserThreadBundle as a member variable.
+// It is a good idea to put the TestBrowserThreadBundle as the first member
+// variable in test classes, so it is destroyed last, and the test threads
+// always exist from the perspective of other classes.
 //
 // By default, all of the created TestBrowserThreads will be backed by a single
 // shared MessageLoop. If a test truly needs separate threads, it can do

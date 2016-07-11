@@ -13,15 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "net/base/ip_address.h"
 #include "net/log/net_log.h"
 #include "net/udp/udp_socket.h"
 
 namespace net {
-class IPEndPoint;
 class IOBuffer;
+class IPEndPoint;
 class StringIOBuffer;
 struct NetworkInterface;
 }
@@ -96,8 +95,8 @@ class DialService {
 // associated with a single discovery cycle into its own |DiscoveryOperation|
 // object.  This would also simplify lifetime of the object w.r.t. DialRegistry;
 // the Registry would not need to create/destroy the Service on demand.
-class DialServiceImpl : public DialService,
-                        public base::SupportsWeakPtr<DialServiceImpl> {
+// DialServiceImpl lives on the IO thread.
+class DialServiceImpl : public DialService {
  public:
   explicit DialServiceImpl(net::NetLog* net_log);
   ~DialServiceImpl() override;
@@ -110,6 +109,7 @@ class DialServiceImpl : public DialService,
 
  private:
   // Represents a socket binding to a single network interface.
+  // DialSocket lives on the IO thread.
   class DialSocket {
    public:
     // TODO(imcheng): Consider writing a DialSocket::Delegate interface that
@@ -174,9 +174,6 @@ class DialServiceImpl : public DialService,
 
     // The source of of the last socket read.
     net::IPEndPoint recv_address_;
-
-    // Thread checker.
-    base::ThreadChecker thread_checker_;
 
     // The callback to be invoked when a discovery request was made.
     base::Closure discovery_request_cb_;
@@ -244,7 +241,7 @@ class DialServiceImpl : public DialService,
   std::vector<std::unique_ptr<DialSocket>> dial_sockets_;
 
   // The NetLog for this service.
-  net::NetLog* net_log_;
+  net::NetLog* const net_log_;
 
   // The NetLog source for this service.
   net::NetLog::Source net_log_source_;
@@ -281,8 +278,7 @@ class DialServiceImpl : public DialService,
   // List of observers.
   base::ObserverList<Observer> observer_list_;
 
-  // Thread checker.
-  base::ThreadChecker thread_checker_;
+  base::WeakPtrFactory<DialServiceImpl> weak_factory_;
 
   friend class DialServiceTest;
   FRIEND_TEST_ALL_PREFIXES(DialServiceTest, TestSendMultipleRequests);
