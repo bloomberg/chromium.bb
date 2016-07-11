@@ -261,21 +261,3 @@ bool GetDeletionPreferenceFromDataType(
   NOTREACHED();
   return false;
 }
-
-browsing_data::BrowsingDataCounter* CreateCounterForPreference(
-    std::string pref_name,
-    Profile* profile) {
-  if (!AreCountersEnabled())
-    return nullptr;
-
-  if (pref_name == prefs::kDeleteBrowsingHistory)
-    return new HistoryCounter(profile);
-  if (pref_name == prefs::kDeleteCache)
-    return new CacheCounter(profile);
-  if (pref_name == prefs::kDeletePasswords)
-    return new PasswordsCounter(profile);
-  if (pref_name == prefs::kDeleteFormData)
-    return new AutofillCounter(profile);
-
-  return nullptr;
-}

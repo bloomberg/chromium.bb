@@ -24,10 +24,4 @@ bool GetDeletionPreferenceFromDataType(
     browsing_data::BrowsingDataType data_type,
     std::string* out_pref);
 
-// Creates a new instance of BrowsingDataCounter that is counting the data
-// related to a given deletion preference |pref_name|.
-browsing_data::BrowsingDataCounter* CreateCounterForPreference(
-    std::string pref_name,
-    Profile* profile);
-
 #endif  // CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_COUNTER_UTILS_H_

@@ -10,16 +10,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "chrome/browser/browsing_data/autofill_counter.h"
+#include "chrome/browser/browsing_data/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/cache_counter.h"
-#include "chrome/browser/browsing_data/downloads_counter.h"
-#include "chrome/browser/browsing_data/history_counter.h"
-#include "chrome/browser/browsing_data/hosted_apps_counter.h"
-#include "chrome/browser/browsing_data/media_licenses_counter.h"
-#include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -33,7 +27,18 @@ namespace {
 
 const int kMaxTimesHistoryNoticeShown = 1;
 
-}
+// TODO(msramek): Get the list of deletion preferences from the JS side.
+const char* kCounterPrefs[] = {
+  prefs::kDeleteBrowsingHistory,
+  prefs::kDeleteCache,
+  prefs::kDeleteDownloadHistory,
+  prefs::kDeleteFormData,
+  prefs::kDeleteHostedAppsData,
+  prefs::kDeleteMediaLicenses,
+  prefs::kDeletePasswords,
+};
+
+} // namespace
 
 namespace settings {
 
@@ -215,14 +220,10 @@ void ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged() {
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   AllowJavascript();
 
-  // TODO(msramek): Simplify this using a factory.
-  AddCounter(base::WrapUnique(new AutofillCounter(profile_)));
-  AddCounter(base::WrapUnique(new CacheCounter(profile_)));
-  AddCounter(base::WrapUnique(new DownloadsCounter(profile_)));
-  AddCounter(base::WrapUnique(new HistoryCounter(profile_)));
-  AddCounter(base::WrapUnique(new HostedAppsCounter(profile_)));
-  AddCounter(base::WrapUnique(new PasswordsCounter(profile_)));
-  AddCounter(base::WrapUnique(new MediaLicensesCounter(profile_)));
+  for (const std::string& pref : kCounterPrefs) {
+    AddCounter(
+        BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref));
+  }
 
   OnStateChanged();
   RefreshHistoryNotice();

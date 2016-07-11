@@ -71,6 +71,8 @@
       'browser/browsing_data/browsing_data_channel_id_helper.h',
       'browser/browsing_data/browsing_data_cookie_helper.cc',
       'browser/browsing_data/browsing_data_cookie_helper.h',
+      'browser/browsing_data/browsing_data_counter_factory.cc',
+      'browser/browsing_data/browsing_data_counter_factory.h',
       'browser/browsing_data/browsing_data_counter_utils.cc',
       'browser/browsing_data/browsing_data_counter_utils.h',
       'browser/browsing_data/browsing_data_database_helper.cc',

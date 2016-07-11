@@ -21,15 +21,11 @@
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/browsing_data/autofill_counter.h"
+#include "chrome/browser/browsing_data/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
-#include "chrome/browser/browsing_data/cache_counter.h"
-#include "chrome/browser/browsing_data/history_counter.h"
-#include "chrome/browser/browsing_data/media_licenses_counter.h"
-#include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -63,6 +59,14 @@ const char kMyActivityUrlInDialog[] =
 
 const int kMaxTimesHistoryNoticeShown = 1;
 
+const char* kCounterPrefs[] = {
+  prefs::kDeleteBrowsingHistory,
+  prefs::kDeleteCache,
+  prefs::kDeleteFormData,
+  prefs::kDeleteMediaLicenses,
+  prefs::kDeletePasswords,
+};
+
 }  // namespace
 
 namespace options {
@@ -93,11 +97,10 @@ void ClearBrowserDataHandler::InitializeHandler() {
 
   if (AreCountersEnabled()) {
     Profile* profile = Profile::FromWebUI(web_ui());
-    AddCounter(base::WrapUnique(new PasswordsCounter(profile)));
-    AddCounter(base::WrapUnique(new HistoryCounter(profile)));
-    AddCounter(base::WrapUnique(new CacheCounter(profile)));
-    AddCounter(base::WrapUnique(new AutofillCounter(profile)));
-    AddCounter(base::WrapUnique(new MediaLicensesCounter(profile)));
+    for (const std::string& pref : kCounterPrefs) {
+      AddCounter(
+          BrowsingDataCounterFactory::GetForProfileAndPref(profile, pref));
+    }
 
     sync_service_ = ProfileSyncServiceFactory::GetForProfile(profile);
     if (sync_service_)

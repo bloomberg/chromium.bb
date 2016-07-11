@@ -5,6 +5,7 @@
 #include "chrome/browser/android/browsing_data/browsing_data_counter_bridge.h"
 
 #include "base/android/jni_string.h"
+#include "chrome/browser/browsing_data/browsing_data_counter_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -26,7 +27,7 @@ BrowsingDataCounterBridge::BrowsingDataCounterBridge(
 
   Profile* profile =
       ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
-  counter_.reset(CreateCounterForPreference(pref, profile));
+  counter_ = BrowsingDataCounterFactory::GetForProfileAndPref(profile, pref);
 
   if (!counter_)
     return;
