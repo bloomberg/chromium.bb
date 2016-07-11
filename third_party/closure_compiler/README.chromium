@@ -3,7 +3,7 @@ Short Name: closure-compiler
 URL: http://github.com/google/closure-compiler
 Version: v20150729-236-gad656a1
 Date: 2015/08/26 08:46
-Revision: 66f6fa7964cd09c905e2a273a62adf5b40965a78
+Revision: 774c055e8fe560540003e41a0eff824f931d35d6
 License: Apache 2.0
 License File: LICENSE
 Security Critical: no

@@ -235,23 +235,23 @@ public class ChromePassTest extends CompilerTestCase {
     }
 
     public void testCrDefineWrongNumberOfArguments() throws Exception {
-        test("cr.define('namespace', function() { return {}; }, 'invalid argument')\n",
-            null, ChromePass.CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS);
+        testError("cr.define('namespace', function() { return {}; }, 'invalid argument')\n",
+            ChromePass.CR_DEFINE_WRONG_NUMBER_OF_ARGUMENTS);
     }
 
     public void testCrDefineInvalidFirstArgument() throws Exception {
-        test("cr.define(42, function() { return {}; })\n",
-            null, ChromePass.CR_DEFINE_INVALID_FIRST_ARGUMENT);
+        testError("cr.define(42, function() { return {}; })\n",
+            ChromePass.CR_DEFINE_INVALID_FIRST_ARGUMENT);
     }
 
     public void testCrDefineInvalidSecondArgument() throws Exception {
-        test("cr.define('namespace', 42)\n",
-            null, ChromePass.CR_DEFINE_INVALID_SECOND_ARGUMENT);
+        testError("cr.define('namespace', 42)\n",
+            ChromePass.CR_DEFINE_INVALID_SECOND_ARGUMENT);
     }
 
     public void testCrDefineInvalidReturnInFunction() throws Exception {
-        test("cr.define('namespace', function() {})\n",
-            null, ChromePass.CR_DEFINE_INVALID_RETURN_IN_FUNCTION);
+        testError("cr.define('namespace', function() {})\n",
+            ChromePass.CR_DEFINE_INVALID_RETURN_IN_FUNCTION);
     }
 
     public void testObjectDefinePropertyDefinesUnquotedProperty() throws Exception {
@@ -309,9 +309,9 @@ public class ChromePassTest extends CompilerTestCase {
 
     public void testCrDefinePropertyInvalidPropertyKind()
             throws Exception {
-        test(
+        testError(
             "cr.defineProperty(a.b, 'c', cr.PropertyKind.INEXISTENT_KIND);",
-            null, ChromePass.CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND);
+            ChromePass.CR_DEFINE_PROPERTY_INVALID_PROPERTY_KIND);
     }
 
     public void testCrExportPath() throws Exception {
@@ -375,7 +375,7 @@ public class ChromePassTest extends CompilerTestCase {
     }
 
     public void testCrExportPathInvalidNumberOfArguments() throws Exception {
-        test("cr.exportPath();", null, ChromePass.CR_EXPORT_PATH_WRONG_NUMBER_OF_ARGUMENTS);
+        testError("cr.exportPath();", ChromePass.CR_EXPORT_PATH_TOO_FEW_ARGUMENTS);
     }
 
     public void testCrMakePublicWorksOnOneMethodDefinedInPrototypeObject() throws Exception {
@@ -438,14 +438,14 @@ public class ChromePassTest extends CompilerTestCase {
     }
 
     public void testCrMakePublicRequiresMethodsToHaveJSDoc() throws Exception {
-        test("/** @constructor */\n" +
+        testError("/** @constructor */\n" +
             "function Class() {}\n" +
             "\n" +
             "Class.prototype = {\n" +
             "  method_: function() {}\n" +
             "}\n" +
             "\n" +
-            "cr.makePublic(Class, ['method']);", null, ChromePass.CR_MAKE_PUBLIC_HAS_NO_JSDOC);
+            "cr.makePublic(Class, ['method']);", ChromePass.CR_MAKE_PUBLIC_HAS_NO_JSDOC);
     }
 
     public void testCrMakePublicDoesNothingWithMethodsNotInAPI() throws Exception {
@@ -469,14 +469,14 @@ public class ChromePassTest extends CompilerTestCase {
     }
 
     public void testCrMakePublicRequiresExportedMethodToBeDeclared() throws Exception {
-        test(
+        testError(
             "/** @constructor */\n" +
             "function Class() {}\n" +
             "\n" +
             "Class.prototype = {\n" +
             "}\n" +
             "\n" +
-            "cr.makePublic(Class, ['method']);", null,
+            "cr.makePublic(Class, ['method']);",
             ChromePass.CR_MAKE_PUBLIC_MISSED_DECLARATION);
     }
 
@@ -523,20 +523,20 @@ public class ChromePassTest extends CompilerTestCase {
     }
 
     public void testCrMakePublicReportsInvalidSecondArgumentMissing() throws Exception {
-        test(
-            "cr.makePublic(Class);", null,
+        testError(
+            "cr.makePublic(Class);",
             ChromePass.CR_MAKE_PUBLIC_INVALID_SECOND_ARGUMENT);
     }
 
     public void testCrMakePublicReportsInvalidSecondArgumentNotAnArray() throws Exception {
-        test(
-            "cr.makePublic(Class, 42);", null,
+        testError(
+            "cr.makePublic(Class, 42);",
             ChromePass.CR_MAKE_PUBLIC_INVALID_SECOND_ARGUMENT);
     }
 
     public void testCrMakePublicReportsInvalidSecondArgumentArrayWithNotAString() throws Exception {
-        test(
-            "cr.makePublic(Class, [42]);", null,
+        testError(
+            "cr.makePublic(Class, [42]);",
             ChromePass.CR_MAKE_PUBLIC_INVALID_SECOND_ARGUMENT);
     }
 
