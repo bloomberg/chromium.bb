@@ -36,26 +36,27 @@ const char* const kSupportedImageTypes[] = {"image/jpeg",
                                             "image/x-xbitmap",           // xbm
                                             "image/x-png"};
 
-//  Mozilla 1.8 and WinIE 7 both accept text/javascript and text/ecmascript.
-//  Mozilla 1.8 accepts application/javascript, application/ecmascript, and
-// application/x-javascript, but WinIE 7 doesn't.
-//  WinIE 7 accepts text/javascript1.1 - text/javascript1.3, text/jscript, and
-// text/livescript, but Mozilla 1.8 doesn't.
-//  Mozilla 1.8 allows leading and trailing whitespace, but WinIE 7 doesn't.
-//  Mozilla 1.8 and WinIE 7 both accept the empty string, but neither accept a
-// whitespace-only string.
-//  We want to accept all the values that either of these browsers accept, but
-// not other values.
-const char* const kSupportedJavascriptTypes[] = {"text/javascript",
-                                                 "text/ecmascript",
-                                                 "application/javascript",
-                                                 "application/ecmascript",
-                                                 "application/x-javascript",
-                                                 "text/javascript1.1",
-                                                 "text/javascript1.2",
-                                                 "text/javascript1.3",
-                                                 "text/jscript",
-                                                 "text/livescript"};
+//  Support every script type mentioned in the spec, as it notes that "User
+//  agents must recognize all JavaScript MIME types." See
+//  https://html.spec.whatwg.org/#javascript-mime-type.
+const char* const kSupportedJavascriptTypes[] = {
+    "application/ecmascript",
+    "application/javascript",
+    "application/x-ecmascript",
+    "application/x-javascript",
+    "text/ecmascript",
+    "text/javascript",
+    "text/javascript1.0",
+    "text/javascript1.1",
+    "text/javascript1.2",
+    "text/javascript1.3",
+    "text/javascript1.4",
+    "text/javascript1.5",
+    "text/jscript",
+    "text/livescript",
+    "text/x-ecmascript",
+    "text/x-javascript",
+};
 
 // These types are excluded from the logic that allows all text/ types because
 // while they are technically text, it's very unlikely that a user expects to

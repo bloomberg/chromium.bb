@@ -12,12 +12,18 @@ TEXT/JAVASCRIPT executed
 text/jscript executed
 text/ecmascript executed
 text/livescript executed
+text/javascript1.0 executed
 text/javascript1.1 executed
 text/javascript1.2 executed
 text/javascript1.3 executed
+text/javascript1.4 executed
+text/javascript1.5 executed
+text/x-javascript executed
+text/x-ecmascript executed
 application/javascript executed
 application/ecmascript executed
 application/x-javascript executed
+application/x-ecmascript executed
 These scripts should not execute
 
 one space
@@ -26,15 +32,11 @@ text/vbscript
 text/vbs
 text/xml
 text/javascript1
-text/javascript1.0
-text/javascript1.4
-text/javascript1.5
 text/javascript1.6
 application/jscript
 application/x-jscript
 application/livescript
 application/x-livescript
-application/x-ecmascript
 application/javascript1.2
 application/x-javascript1.2
 javascript
