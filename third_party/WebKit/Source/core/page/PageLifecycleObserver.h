@@ -38,7 +38,6 @@ class LocalFrame;
 class CORE_EXPORT PageLifecycleObserver : public LifecycleObserver<Page, PageLifecycleObserver> {
 public:
     virtual void pageVisibilityChanged() { }
-    virtual void didCommitLoad(LocalFrame*) { }
 
     Page* page() const { return lifecycleContext(); }
 

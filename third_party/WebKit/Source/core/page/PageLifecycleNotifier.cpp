@@ -37,11 +37,4 @@ void PageLifecycleNotifier::notifyPageVisibilityChanged()
         observer->pageVisibilityChanged();
 }
 
-void PageLifecycleNotifier::notifyDidCommitLoad(LocalFrame* frame)
-{
-    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
-    for (PageLifecycleObserver* observer : m_observers)
-        observer->didCommitLoad(frame);
-}
-
 } // namespace blink

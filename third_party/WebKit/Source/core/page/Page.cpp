@@ -451,7 +451,6 @@ void Page::updateAcceleratedCompositingSettings()
 
 void Page::didCommitLoad(LocalFrame* frame)
 {
-    notifyDidCommitLoad(frame);
     if (m_mainFrame == frame) {
         useCounter().didCommitLoad();
         deprecation().clearSuppression();

@@ -38,7 +38,6 @@ class PageLifecycleObserver;
 class CORE_EXPORT PageLifecycleNotifier : public LifecycleNotifier<Page, PageLifecycleObserver> {
 public:
     void notifyPageVisibilityChanged();
-    void notifyDidCommitLoad(LocalFrame*);
 };
 
 } // namespace blink
