@@ -356,25 +356,24 @@ void ChannelMojo::OnPipeError() {
 }
 
 bool ChannelMojo::Send(Message* message) {
-  bool sent = false;
-  {
-    base::AutoLock lock(lock_);
-    if (!message_reader_) {
-      pending_messages_.push_back(base::WrapUnique(message));
-      // Counts as OK before the connection is established, but it's an
-      // error otherwise.
-      return waiting_connect_;
-    }
-
-    sent = message_reader_->Send(base::WrapUnique(message));
+  base::AutoLock lock(lock_);
+  if (!message_reader_) {
+    pending_messages_.push_back(base::WrapUnique(message));
+    // Counts as OK before the connection is established, but it's an
+    // error otherwise.
+    return waiting_connect_;
   }
 
-  if (!sent) {
-    OnPipeError();
-    return false;
-  }
-
-  return true;
+  // Comment copied from ipc_channel_posix.cc:
+  // We can't close the pipe here, because calling OnChannelError may destroy
+  // this object, and that would be bad if we are called from Send(). Instead,
+  // we return false and hope the caller will close the pipe. If they do not,
+  // the pipe will still be closed next time OnFileCanReadWithoutBlocking is
+  // called.
+  //
+  // With Mojo, there's no OnFileCanReadWithoutBlocking, but we expect the
+  // pipe's connection error handler will be invoked in its place.
+  return message_reader_->Send(base::WrapUnique(message));
 }
 
 bool ChannelMojo::IsSendThreadSafe() const {
