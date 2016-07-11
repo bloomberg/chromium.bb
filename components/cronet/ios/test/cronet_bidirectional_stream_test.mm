@@ -438,6 +438,55 @@ TEST_P(CronetBidirectionalStreamTest, SimplePostWithFlushAfterOneWrite) {
   cronet_bidirectional_stream_destroy(test.stream);
 }
 
+TEST_P(CronetBidirectionalStreamTest, TestDelayedFlush) {
+  class CustomTestBidirectionalStreamCallback
+      : public TestBidirectionalStreamCallback {
+    void MaybeWriteNextData(cronet_bidirectional_stream* stream) override {
+      DCHECK_EQ(stream, this->stream);
+      if (write_data.empty())
+        return;
+      // Write all buffers when stream is ready.
+      // Flush after "3" and "5".
+      // EndOfStream is set with "6" but not flushed, so it is not sent.
+      if (write_data.front()->buffer == "1") {
+        for (const auto& data : write_data) {
+          cronet_bidirectional_stream_write(stream, data->buffer.c_str(),
+                                            data->buffer.size(),
+                                            data == write_data.back());
+          if (data->flush) {
+            cronet_bidirectional_stream_flush(stream);
+          }
+        }
+      }
+      // Flush the final buffer with endOfStream flag.
+      if (write_data.front()->buffer == "6")
+        cronet_bidirectional_stream_flush(stream);
+    }
+  };
+
+  CustomTestBidirectionalStreamCallback test;
+  test.AddWriteData("1", false);
+  test.AddWriteData("2", false);
+  test.AddWriteData("3", true);
+  test.AddWriteData("4", false);
+  test.AddWriteData("5", true);
+  test.AddWriteData("6", false);
+  test.stream =
+      cronet_bidirectional_stream_create(engine(), &test, test.callback());
+  DCHECK(test.stream);
+  cronet_bidirectional_stream_disable_auto_flush(test.stream, true);
+  cronet_bidirectional_stream_delay_request_headers_until_flush(test.stream,
+                                                                GetParam());
+  // Flush before start is ignored.
+  cronet_bidirectional_stream_flush(test.stream);
+  cronet_bidirectional_stream_start(test.stream, kTestServerUrl, 0, "POST",
+                                    &kTestHeadersArray, false);
+  test.BlockForDone();
+  // Flush after done is ignored.
+  cronet_bidirectional_stream_flush(test.stream);
+  cronet_bidirectional_stream_destroy(test.stream);
+}
+
 TEST_P(CronetBidirectionalStreamTest, CancelOnRead) {
   TestBidirectionalStreamCallback test;
   test.stream =

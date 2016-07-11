@@ -220,9 +220,10 @@ void CronetBidirectionalStream::OnDataSent() {
     SendFlushingWriteData();
     return;
   }
-  if (write_end_of_stream_ && pending_write_data_->Empty())
+  if (write_end_of_stream_ && pending_write_data_->Empty()) {
     write_state_ = WRITING_DONE;
-  MaybeOnSucceded();
+    MaybeOnSucceded();
+  }
 }
 
 void CronetBidirectionalStream::OnTrailersReceived(
@@ -333,7 +334,8 @@ void CronetBidirectionalStream::SendFlushingWriteData() {
   write_state_ = WRITING;
   flushing_write_data_->MoveTo(sending_write_data_.get());
   bidi_stream_->SendvData(sending_write_data_->buffers(),
-                          sending_write_data_->lengths(), write_end_of_stream_);
+                          sending_write_data_->lengths(),
+                          write_end_of_stream_ && pending_write_data_->Empty());
 }
 
 void CronetBidirectionalStream::CancelOnNetworkThread() {
