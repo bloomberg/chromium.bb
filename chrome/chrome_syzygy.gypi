@@ -23,7 +23,7 @@
         {
           'action_name': 'Reorder Chrome with Syzygy',
           'inputs': [
-            '<(DEPTH)/chrome/tools/build/win/syzygy/reorder.py',
+            '<(DEPTH)/build/win/syzygy/reorder.py',
             '<(PRODUCT_DIR)/<(dll_name).dll',
             '<(PRODUCT_DIR)/<(dll_name).dll.pdb',
           ],
@@ -33,7 +33,7 @@
           ],
           'action': [
             'python',
-            '<(DEPTH)/chrome/tools/build/win/syzygy/reorder.py',
+            '<(DEPTH)/build/win/syzygy/reorder.py',
             '--input_executable', '<(PRODUCT_DIR)/<(dll_name).dll',
             '--input_symbol', '<(PRODUCT_DIR)/<(dll_name).dll.pdb',
             '--destination_dir', '<(dest_dir)',
@@ -47,8 +47,8 @@
         {
           'action_name': 'Instrument Chrome with SyzyAsan',
           'inputs': [
-            '<(DEPTH)/chrome/tools/build/win/syzygy/instrument.py',
-            '<(DEPTH)/chrome/tools/build/win/syzygy/'
+            '<(DEPTH)/build/win/syzygy/instrument.py',
+            '<(DEPTH)/build/win/syzygy/'
                 'syzyasan-instrumentation-filter.txt',
             '<(PRODUCT_DIR)/<(dll_name).dll',
           ],
@@ -59,13 +59,12 @@
           ],
           'action': [
             'python',
-            '<(DEPTH)/chrome/tools/build/win/syzygy/instrument.py',
+            '<(DEPTH)/build/win/syzygy/instrument.py',
             '--mode', 'asan',
             '--input_executable', '<(PRODUCT_DIR)/<(dll_name).dll',
             '--input_symbol', '<(PRODUCT_DIR)/<(dll_name).dll.pdb',
             '--filter',
-            '<(DEPTH)/chrome/tools/build/win/syzygy/'
-                'syzyasan-instrumentation-filter.txt',
+            '<(DEPTH)/build/win/syzygy/syzyasan-instrumentation-filter.txt',
             '--output-filter-file',
             '<(dest_dir)/win-syzyasan-filter-<(dll_name).txt.json',
             '--destination_dir', '<(dest_dir)',

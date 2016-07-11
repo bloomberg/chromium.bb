@@ -905,7 +905,7 @@
               ],
               'action': [
                 'python',
-                '<(DEPTH)/chrome/tools/build/win/syzygy/instrument.py',
+                '<(DEPTH)/build/win/syzygy/instrument.py',
                 '--mode', 'asan',
                 '--input_executable', '<(PRODUCT_DIR)/content_shell.exe',
                 '--input_symbol', '<(PRODUCT_DIR)/content_shell.exe.pdb',

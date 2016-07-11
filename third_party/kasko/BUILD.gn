@@ -15,8 +15,11 @@ buildflag_header("kasko_features") {
 if (enable_kasko) {
   assert(is_win, "Kasko only support Windows.")
   assert(target_cpu == "x86", "Kasko only support 32 bits.")
-  assert(is_chrome_branded,
-         "The Kasko client is only initialized in Chrome-branded builds.")
+
+  # TODO(sebmarchand): Fix this once the Kasko dependency in SyzyAsan has been
+  #     removed for the non-official builds.
+  #assert(is_chrome_branded,
+  #       "The Kasko client is only initialized in Chrome-branded builds.")
 
   config("kasko_config") {
     visibility = [ ":*" ]
