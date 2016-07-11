@@ -24,9 +24,7 @@ constexpr int kMinInstanceVersion = 7;
 scoped_refptr<ActivityIconLoader> GetIconLoader() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ArcServiceManager* arc_service_manager = ArcServiceManager::Get();
-  if (!arc_service_manager)
-    return nullptr;
-  return arc_service_manager->icon_loader();
+  return arc_service_manager ? arc_service_manager->icon_loader() : nullptr;
 }
 
 mojom::IntentHelperInstance* GetIntentHelper() {
@@ -90,9 +88,9 @@ ArcNavigationThrottle::WillRedirectRequest() {
 void ArcNavigationThrottle::OnAppCandidatesReceived(
     mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if ((handlers.size() == 1 && ArcIntentHelperBridge::IsIntentHelperPackage(
-                                   handlers[0]->package_name)) ||
-      handlers.size() == 0) {
+  if (handlers.empty() ||
+      (handlers.size() == 1 && ArcIntentHelperBridge::IsIntentHelperPackage(
+                                   handlers[0]->package_name))) {
     // This scenario shouldn't be accesed as ArcNavigationThrottle is created
     // iff there are ARC apps which can actually handle the given URL.
     DVLOG(1) << "There are no app candidates for this URL: "
@@ -147,11 +145,8 @@ void ArcNavigationThrottle::OnAppIconsReceived(
                                                     handler->activity_name);
     const auto it = icons->find(activity);
 
-    if (it != icons->end()) {
-      app_info.emplace_back(handler->name, it->second.icon20);
-    } else {
-      app_info.emplace_back(handler->name, gfx::Image());
-    }
+    app_info.emplace_back(
+        handler->name, it != icons->end() ? it->second.icon20 : gfx::Image());
   }
 
   show_disambig_dialog_callback_.Run(
@@ -215,11 +210,9 @@ bool ArcNavigationThrottle::ShouldOverrideUrlLoading(
     content::NavigationHandle* navigation_handle) {
   GURL previous_url = navigation_handle->GetReferrer().url;
   GURL current_url = navigation_handle->GetURL();
-  if (net::registry_controlled_domains::SameDomainOrHost(
-          current_url, previous_url,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
-    return false;
-  return true;
+  return !net::registry_controlled_domains::SameDomainOrHost(
+      current_url, previous_url,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
 }  // namespace arc

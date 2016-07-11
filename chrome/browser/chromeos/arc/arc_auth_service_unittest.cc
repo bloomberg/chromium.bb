@@ -45,7 +45,6 @@ namespace arc {
 
 namespace {
 
-const int kThreadOptions = content::TestBrowserThreadBundle::IO_MAINLOOP;
 const char kTestAuthCode[] = "4/Qa3CPIhh-WcMfWSf9HZaYcGUhEeax-F9sQK9CNRhZWs";
 
 }  // namespace
@@ -53,7 +52,7 @@ const char kTestAuthCode[] = "4/Qa3CPIhh-WcMfWSf9HZaYcGUhEeax-F9sQK9CNRhZWs";
 class ArcAuthServiceTest : public testing::Test {
  public:
   ArcAuthServiceTest()
-      : thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         user_manager_enabler_(new chromeos::FakeChromeUserManager) {}
   ~ArcAuthServiceTest() override = default;
 
@@ -74,7 +73,7 @@ class ArcAuthServiceTest : public testing::Test {
 
     // Check initial conditions.
     EXPECT_EQ(bridge_service_.get(), ArcBridgeService::Get());
-    EXPECT_EQ(true, !ArcBridgeService::Get()->available());
+    EXPECT_FALSE(ArcBridgeService::Get()->available());
     EXPECT_EQ(ArcBridgeService::State::STOPPED,
               ArcBridgeService::Get()->state());
 
@@ -109,9 +108,9 @@ class ArcAuthServiceTest : public testing::Test {
                                        new syncer::SyncErrorFactoryMock()));
   }
 
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
-  std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
-  std::unique_ptr<arc::ArcAuthService> auth_service_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<FakeArcBridgeService> bridge_service_;
+  std::unique_ptr<ArcAuthService> auth_service_;
   std::unique_ptr<TestingProfile> profile_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
@@ -123,7 +122,7 @@ TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
   ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
 
   PrefService* const pref = profile()->GetPrefs();
-  DCHECK_EQ(false, pref->GetBoolean(prefs::kArcEnabled));
+  ASSERT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   ASSERT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
@@ -296,8 +295,7 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
   EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
 
   // Report failure.
-  auth_service()->OnSignInFailed(
-      arc::mojom::ArcSignInFailureReason::NETWORK_ERROR);
+  auth_service()->OnSignInFailed(mojom::ArcSignInFailureReason::NETWORK_ERROR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
   EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
@@ -343,7 +341,7 @@ TEST_F(ArcAuthServiceTest, DisabledForNonPrimaryProfile) {
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
 
   // Create a second profile and set it as the active profile.
-  const std::string email = "test@exmaple.com";
+  const std::string email = "test@example.com";
   TestingProfile::Builder profile_builder;
   profile_builder.SetProfileName(email);
   std::unique_ptr<TestingProfile> second_profile(profile_builder.Build());

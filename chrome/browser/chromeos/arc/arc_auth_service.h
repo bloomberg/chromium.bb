@@ -39,7 +39,7 @@ class ArcAndroidManagementChecker;
 class ArcAuthContext;
 
 // This class proxies the request from the client to fetch an auth code from
-// LSO.
+// LSO. It lives on the UI thread.
 class ArcAuthService : public ArcService,
                        public mojom::AuthHost,
                        public ArcBridgeService::Observer,

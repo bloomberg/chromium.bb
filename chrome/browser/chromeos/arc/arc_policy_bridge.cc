@@ -143,22 +143,23 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
     if (cert_type != ::onc::certificate::kAuthority)
       continue;
 
-    const base::ListValue* trust_list = NULL;
-    bool web_trust_flag = false;
-    if (certificate->GetListWithoutPathExpansion(::onc::certificate::kTrustBits,
-                                                 &trust_list)) {
-      for (base::ListValue::const_iterator it = trust_list->begin();
-           it != trust_list->end(); ++it) {
-        std::string trust_type;
-        if (!(*it)->GetAsString(&trust_type))
-          NOTREACHED();
+    const base::ListValue* trust_list = nullptr;
+    if (!certificate->GetListWithoutPathExpansion(
+            ::onc::certificate::kTrustBits, &trust_list)) {
+      continue;
+    }
 
-        if (trust_type == ::onc::certificate::kWeb) {
-          // "Web" implies that the certificate is to be trusted for SSL
-          // identification.
-          web_trust_flag = true;
-          break;
-        }
+    bool web_trust_flag = false;
+    for (const auto& list_val : *trust_list) {
+      std::string trust_type;
+      if (!list_val->GetAsString(&trust_type))
+        NOTREACHED();
+
+      if (trust_type == ::onc::certificate::kWeb) {
+        // "Web" implies that the certificate is to be trusted for SSL
+        // identification.
+        web_trust_flag = true;
+        break;
       }
     }
     if (!web_trust_flag)

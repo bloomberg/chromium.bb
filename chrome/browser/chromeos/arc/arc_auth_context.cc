@@ -22,7 +22,7 @@ namespace arc {
 
 namespace {
 
-constexpr int kRefreshTokenTimeoutMs = 10 * 1000;  // 10 sec.
+constexpr int kRefreshTokenTimeoutSeconds = 10;
 
 }  // namespace
 
@@ -102,7 +102,7 @@ void ArcAuthContext::PrepareContext() {
   if (!token_service_->RefreshTokenIsAvailable(account_id_)) {
     token_service_->AddObserver(this);
     refresh_token_timeout_.Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(kRefreshTokenTimeoutMs),
+        FROM_HERE, base::TimeDelta::FromSeconds(kRefreshTokenTimeoutSeconds),
         this, &ArcAuthContext::OnRefreshTokenTimeout);
     return;
   }

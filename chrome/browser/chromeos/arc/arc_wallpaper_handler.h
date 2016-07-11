@@ -7,18 +7,18 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
-#include "chrome/browser/image_decoder.h"
 #include "components/arc/set_wallpaper_delegate.h"
 
 class SkBitmap;
 
 namespace arc {
 
+// Lives on the UI thread.
 class ArcWallpaperHandler : public SetWallpaperDelegate {
  public:
   ArcWallpaperHandler();
@@ -34,10 +34,8 @@ class ArcWallpaperHandler : public SetWallpaperDelegate {
   void OnImageDecoded(ImageRequestImpl* request, const SkBitmap& bitmap);
   void OnDecodeImageFailed(ImageRequestImpl* request);
 
-  base::ThreadChecker thread_checker_;
-
-  // The set of in-flight decode requests. Pointers are owned.
-  std::set<ImageRequestImpl*> inflight_requests_;
+  // The set of in-flight decode requests.
+  std::set<std::unique_ptr<ImageRequestImpl>> inflight_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcWallpaperHandler);
 };

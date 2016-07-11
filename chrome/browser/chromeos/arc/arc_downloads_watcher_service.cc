@@ -25,12 +25,12 @@ using content::BrowserThread;
 // Mapping from Android file paths to last modified timestamps.
 using TimestampMap = std::map<base::FilePath, base::Time>;
 
-static const base::FilePath::CharType kAndroidDownloadDir[] =
-    FILE_PATH_LITERAL("/storage/emulated/0/Download");
-
 namespace arc {
 
 namespace {
+
+const base::FilePath::CharType kAndroidDownloadDir[] =
+    FILE_PATH_LITERAL("/storage/emulated/0/Download");
 
 // Compares two TimestampMaps and returns the list of file paths added/removed
 // or whose timestamp have changed.
@@ -182,7 +182,7 @@ ArcDownloadsWatcherService::~ArcDownloadsWatcherService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   arc_bridge_service()->RemoveObserver(this);
   StopWatchingDownloads();
-  DCHECK(!watcher_.get());
+  DCHECK(!watcher_);
 }
 
 void ArcDownloadsWatcherService::OnFileSystemInstanceReady() {
@@ -198,7 +198,7 @@ void ArcDownloadsWatcherService::OnFileSystemInstanceClosed() {
 void ArcDownloadsWatcherService::StartWatchingDownloads() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StopWatchingDownloads();
-  DCHECK(!watcher_.get());
+  DCHECK(!watcher_);
   watcher_ = base::MakeUnique<DownloadsWatcher>(
       base::Bind(&ArcDownloadsWatcherService::OnDownloadsChanged,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -209,7 +209,7 @@ void ArcDownloadsWatcherService::StartWatchingDownloads() {
 
 void ArcDownloadsWatcherService::StopWatchingDownloads() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (watcher_.get()) {
+  if (watcher_) {
     BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
                               watcher_.release());
   }
@@ -219,10 +219,9 @@ void ArcDownloadsWatcherService::OnDownloadsChanged(
     const std::vector<base::FilePath>& paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  auto instance = arc_bridge_service()->file_system_instance();
-  if (!instance) {
+  auto* instance = arc_bridge_service()->file_system_instance();
+  if (!instance)
     return;
-  }
 
   mojo::Array<mojo::String> mojo_paths(paths.size());
   for (size_t i = 0; i < paths.size(); ++i) {

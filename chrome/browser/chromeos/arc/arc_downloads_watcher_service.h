@@ -14,10 +14,8 @@
 #include "components/arc/arc_service.h"
 
 namespace base {
-
 class FilePath;
-
-}  // namespace base
+}
 
 namespace arc {
 
