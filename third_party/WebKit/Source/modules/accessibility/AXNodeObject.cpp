@@ -578,8 +578,15 @@ void AXNodeObject::accessibilityChildrenFromAttribute(QualifiedName attr, AXObje
 
     AXObjectCacheImpl& cache = axObjectCache();
     for (const auto& element : elements) {
-        if (AXObject* child = cache.getOrCreate(element))
+        if (AXObject* child = cache.getOrCreate(element)) {
+            // Only aria-labelledby and aria-describedby can target hidden elements.
+            if (child->accessibilityIsIgnored()
+                && attr != aria_labelledbyAttr && attr != aria_labeledbyAttr
+                && attr != aria_describedbyAttr) {
+                continue;
+            }
             children.append(child);
+        }
     }
 }
 
