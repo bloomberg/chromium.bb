@@ -30,7 +30,6 @@ namespace blink {
 
 enum ParserContentPolicy {
     DisallowScriptingAndPluginContent,
-    DisallowScriptingContent,
     AllowScriptingContent,
     AllowScriptingContentAndDoNotMarkAlreadyStarted,
 };
