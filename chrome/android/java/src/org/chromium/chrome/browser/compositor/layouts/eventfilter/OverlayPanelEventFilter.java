@@ -434,6 +434,11 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      * @return Whether the event has been consumed.
      */
     protected boolean handleScroll(MotionEvent e1, MotionEvent e2, float distanceY) {
+        // TODO(mdjones): It seems impossible that either of the two MotionEvents passed into this
+        // function would be null provided the InternalGestureDetector checks them. However, it
+        // still seems to be possible...
+        if (e1 == null || e2 == null) return false;
+
         // Only determines the gesture orientation if it hasn't been determined yet,
         // affectively "locking" the orientation once the gesture has started.
         if (!mHasDeterminedGestureOrientation && isDistanceGreaterThanTouchSlop(e1, e2)) {
