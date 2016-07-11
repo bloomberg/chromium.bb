@@ -154,10 +154,6 @@ class TestDelegate : public URLRequest::Delegate {
   // Enables quitting the message loop in response to auth requests, as opposed
   // to returning credentials or cancelling the request.
   void set_quit_on_auth_required(bool val) { quit_on_auth_required_ = val; }
-  void set_quit_on_network_start(bool val) {
-    quit_on_before_network_start_ = val;
-  }
-
   void set_allow_certificate_errors(bool val) {
     allow_certificate_errors_ = val;
   }
@@ -170,9 +166,6 @@ class TestDelegate : public URLRequest::Delegate {
   int bytes_received() const { return static_cast<int>(data_received_.size()); }
   int response_started_count() const { return response_started_count_; }
   int received_redirect_count() const { return received_redirect_count_; }
-  int received_before_network_start_count() const {
-    return received_before_network_start_count_;
-  }
   bool received_data_before_response() const {
     return received_data_before_response_;
   }
@@ -192,7 +185,6 @@ class TestDelegate : public URLRequest::Delegate {
   void OnReceivedRedirect(URLRequest* request,
                           const RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
-  void OnBeforeNetworkStart(URLRequest* request, bool* defer) override;
   void OnAuthRequired(URLRequest* request,
                       AuthChallengeInfo* auth_info) override;
   // NOTE: |fatal| causes |certificate_errors_are_fatal_| to be set to true.
@@ -217,7 +209,6 @@ class TestDelegate : public URLRequest::Delegate {
   bool quit_on_complete_;
   bool quit_on_redirect_;
   bool quit_on_auth_required_;
-  bool quit_on_before_network_start_;
   bool allow_certificate_errors_;
   AuthCredentials credentials_;
 
@@ -225,7 +216,6 @@ class TestDelegate : public URLRequest::Delegate {
   int response_started_count_;
   int received_bytes_count_;
   int received_redirect_count_;
-  int received_before_network_start_count_;
   bool received_data_before_response_;
   bool request_failed_;
   bool have_certificate_errors_;

@@ -480,28 +480,6 @@ INSTANTIATE_TEST_CASE_P(ProtoPlusDepend,
 
 namespace {
 
-class BeforeNetworkStartHandler {
- public:
-  explicit BeforeNetworkStartHandler(bool defer)
-      : defer_on_before_network_start_(defer),
-        observed_before_network_start_(false) {}
-
-  void OnBeforeNetworkStart(bool* defer) {
-    *defer = defer_on_before_network_start_;
-    observed_before_network_start_ = true;
-  }
-
-  bool observed_before_network_start() const {
-    return observed_before_network_start_;
-  }
-
- private:
-  const bool defer_on_before_network_start_;
-  bool observed_before_network_start_;
-
-  DISALLOW_COPY_AND_ASSIGN(BeforeNetworkStartHandler);
-};
-
 class BeforeHeadersSentHandler {
  public:
   BeforeHeadersSentHandler()
@@ -1686,83 +1664,83 @@ TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionEOF) {
                                               arraysize(data_reads));
   EXPECT_THAT(out.rv, IsError(ERR_EMPTY_RESPONSE));
 }
-
-// Test that network access can be deferred and resumed.
-TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("http://www.example.org/");
-  request.load_flags = 0;
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  std::unique_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
-  // Defer on OnBeforeNetworkStart.
-  BeforeNetworkStartHandler net_start_handler(true);  // defer
-  trans->SetBeforeNetworkStartCallback(
-      base::Bind(&BeforeNetworkStartHandler::OnBeforeNetworkStart,
-                 base::Unretained(&net_start_handler)));
-
-  MockRead data_reads[] = {
-    MockRead("HTTP/1.0 200 OK\r\n"),
-    MockRead("Content-Length: 5\r\n\r\n"),
-    MockRead("hello"),
-    MockRead(SYNCHRONOUS, 0),
-  };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  TestCompletionCallback callback;
-
-  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  base::RunLoop().RunUntilIdle();
-
-  // Should have deferred for network start.
-  EXPECT_TRUE(net_start_handler.observed_before_network_start());
-  EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
-
-  trans->ResumeNetworkStart();
-  rv = callback.WaitForResult();
-  EXPECT_THAT(rv, IsOk());
-  EXPECT_TRUE(trans->GetResponseInfo());
-
-  scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
-  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
-  EXPECT_EQ(5, rv);
-  trans.reset();
-}
-
-// Test that network use can be deferred and canceled.
-TEST_P(HttpNetworkTransactionTest, ThrottleAndCancelBeforeNetworkStart) {
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("http://www.example.org/");
-  request.load_flags = 0;
-
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  std::unique_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
-
-  // Defer on OnBeforeNetworkStart.
-  BeforeNetworkStartHandler net_start_handler(true);  // defer
-  trans->SetBeforeNetworkStartCallback(
-      base::Bind(&BeforeNetworkStartHandler::OnBeforeNetworkStart,
-                 base::Unretained(&net_start_handler)));
-
-  TestCompletionCallback callback;
-
-  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
-  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
-  base::RunLoop().RunUntilIdle();
-
-  // Should have deferred for network start.
-  EXPECT_TRUE(net_start_handler.observed_before_network_start());
-  EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
-}
+//
+//// Test that network access can be deferred and resumed.
+// TEST_P(HttpNetworkTransactionTest, ThrottleBeforeNetworkStart) {
+//  HttpRequestInfo request;
+//  request.method = "GET";
+//  request.url = GURL("http://www.example.org/");
+//  request.load_flags = 0;
+//
+//  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+//  std::unique_ptr<HttpTransaction> trans(
+//      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+//
+//  // Defer on OnBeforeNetworkStart.
+//  BeforeNetworkStartHandler net_start_handler(true);  // defer
+//  trans->SetBeforeNetworkStartCallback(
+//      base::Bind(&BeforeNetworkStartHandler::OnBeforeNetworkStart,
+//                 base::Unretained(&net_start_handler)));
+//
+//  MockRead data_reads[] = {
+//    MockRead("HTTP/1.0 200 OK\r\n"),
+//    MockRead("Content-Length: 5\r\n\r\n"),
+//    MockRead("hello"),
+//    MockRead(SYNCHRONOUS, 0),
+//  };
+//  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+//  session_deps_.socket_factory->AddSocketDataProvider(&data);
+//
+//  TestCompletionCallback callback;
+//
+//  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+//  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+//  base::RunLoop().RunUntilIdle();
+//
+//  // Should have deferred for network start.
+//  EXPECT_TRUE(net_start_handler.observed_before_network_start());
+//  EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
+//
+//  trans->ResumeNetworkStart();
+//  rv = callback.WaitForResult();
+//  EXPECT_THAT(rv, IsOk());
+//  EXPECT_TRUE(trans->GetResponseInfo());
+//
+//  scoped_refptr<IOBufferWithSize> io_buf(new IOBufferWithSize(100));
+//  rv = trans->Read(io_buf.get(), io_buf->size(), callback.callback());
+//  if (rv == ERR_IO_PENDING)
+//    rv = callback.WaitForResult();
+//  EXPECT_EQ(5, rv);
+//  trans.reset();
+//}
+//
+//// Test that network use can be deferred and canceled.
+// TEST_P(HttpNetworkTransactionTest, ThrottleAndCancelBeforeNetworkStart) {
+//  HttpRequestInfo request;
+//  request.method = "GET";
+//  request.url = GURL("http://www.example.org/");
+//  request.load_flags = 0;
+//
+//  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+//  std::unique_ptr<HttpTransaction> trans(
+//      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+//
+//  // Defer on OnBeforeNetworkStart.
+//  BeforeNetworkStartHandler net_start_handler(true);  // defer
+//  trans->SetBeforeNetworkStartCallback(
+//      base::Bind(&BeforeNetworkStartHandler::OnBeforeNetworkStart,
+//                 base::Unretained(&net_start_handler)));
+//
+//  TestCompletionCallback callback;
+//
+//  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+//  EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
+//  base::RunLoop().RunUntilIdle();
+//
+//  // Should have deferred for network start.
+//  EXPECT_TRUE(net_start_handler.observed_before_network_start());
+//  EXPECT_EQ(LOAD_STATE_WAITING_FOR_DELEGATE, trans->GetLoadState());
+//}
 
 // Next 2 cases (KeepAliveEarlyClose and KeepAliveEarlyClose2) are regression
 // tests. There was a bug causing HttpNetworkTransaction to hang in the

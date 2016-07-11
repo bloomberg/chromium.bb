@@ -74,7 +74,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& info,
                              bool fatal) override;
-  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override;
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 

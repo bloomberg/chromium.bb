@@ -396,7 +396,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
 
   EXPECT_TRUE(request1->status().is_success());
   EXPECT_EQ("test.html", delegate1.data_received());
-  EXPECT_EQ(1, delegate1.received_before_network_start_count());
   EXPECT_EQ(1, manager_.GetNumberOfEntriesForTests());
 
   // Issue another request, and backoff logic should apply.
@@ -410,7 +409,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
 
   EXPECT_FALSE(request2->status().is_success());
   EXPECT_THAT(request2->status().error(), IsError(ERR_TEMPORARY_BACKOFF));
-  EXPECT_EQ(0, delegate2.received_before_network_start_count());
 }
 
 // Tests that a user-initiated request is not throttled.
@@ -459,7 +457,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
 
   EXPECT_TRUE(request1->status().is_success());
   EXPECT_EQ("test.html", delegate1.data_received());
-  EXPECT_EQ(1, delegate1.received_before_network_start_count());
   EXPECT_EQ(1, manager_.GetNumberOfEntriesForTests());
 
   // Issue a user-initiated request, backoff logic should not apply.
@@ -475,7 +472,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
   EXPECT_NE(0, request2->load_flags() & LOAD_MAYBE_USER_GESTURE);
   EXPECT_TRUE(request2->status().is_success());
   EXPECT_EQ("test.html", delegate2.data_received());
-  EXPECT_EQ(1, delegate2.received_before_network_start_count());
   EXPECT_EQ(1, manager_.GetNumberOfEntriesForTests());
 }
 
@@ -501,7 +497,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderNotSecure) {
 
   EXPECT_TRUE(request->status().is_success());
   EXPECT_EQ("test.html", delegate.data_received());
-  EXPECT_EQ(1, delegate.received_before_network_start_count());
   // Backoff logic does not apply to plain HTTP request.
   EXPECT_EQ(0, manager_.GetNumberOfEntriesForTests());
 }
@@ -535,7 +530,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
 
   EXPECT_TRUE(request1->status().is_success());
   EXPECT_EQ("test.html", delegate1.data_received());
-  EXPECT_EQ(1, delegate1.received_before_network_start_count());
   EXPECT_EQ(1, manager_.GetNumberOfEntriesForTests());
 
   // Backoff logic does not apply to a second request, since it is fetched
@@ -549,7 +543,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderCachedResponse) {
   base::RunLoop().Run();
   EXPECT_TRUE(request2->was_cached());
   EXPECT_TRUE(request2->status().is_success());
-  EXPECT_EQ(0, delegate2.received_before_network_start_count());
 }
 
 TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
@@ -566,7 +559,6 @@ TEST_F(URLRequestHttpJobTest, TestCancelWhileReadingCookies) {
   request->Cancel();
   base::RunLoop().Run();
 
-  DCHECK_EQ(0, delegate.received_before_network_start_count());
   EXPECT_EQ(URLRequestStatus::CANCELED, request->status().status());
 }
 

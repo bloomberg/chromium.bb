@@ -337,21 +337,6 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
       info->GetWebContentsGetterForRequest(), ssl_info, fatal);
 }
 
-void ResourceLoader::OnBeforeNetworkStart(net::URLRequest* unused,
-                                          bool* defer) {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
-               "ResourceLoader::OnBeforeNetworkStart");
-  DCHECK_EQ(request_.get(), unused);
-
-  // Give the handler a chance to delay the URLRequest from using the network.
-  if (!handler_->OnBeforeNetworkStart(request_->url(), defer)) {
-    Cancel();
-    return;
-  } else if (*defer) {
-    deferred_stage_ = DEFERRED_NETWORK_START;
-  }
-}
-
 void ResourceLoader::OnResponseStarted(net::URLRequest* unused) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "ResourceLoader::OnResponseStarted");

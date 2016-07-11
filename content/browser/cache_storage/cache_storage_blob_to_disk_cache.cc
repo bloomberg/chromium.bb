@@ -114,10 +114,6 @@ void CacheStorageBlobToDiskCache::OnSSLCertificateError(
     bool fatal) {
   NOTREACHED();
 }
-void CacheStorageBlobToDiskCache::OnBeforeNetworkStart(net::URLRequest* request,
-                                                       bool* defer) {
-  NOTREACHED();
-}
 
 void CacheStorageBlobToDiskCache::OnContextShuttingDown() {
   DCHECK(blob_request_);

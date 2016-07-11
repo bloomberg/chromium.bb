@@ -129,7 +129,6 @@ class URLRequestDataJobFuzzerHarness : public net::URLRequest::Delegate {
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override {}
-  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override {}
   void OnResponseStarted(net::URLRequest* request) override {
     DCHECK(!request->status().is_io_pending());
     DCHECK(buf_.get());

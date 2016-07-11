@@ -271,15 +271,6 @@ void ServiceWorkerWriteToCacheJob::OnSSLCertificateError(
                          kSSLError);
 }
 
-void ServiceWorkerWriteToCacheJob::OnBeforeNetworkStart(
-    net::URLRequest* request,
-    bool* defer) {
-  DCHECK_EQ(net_request_.get(), request);
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerWriteToCacheJob::OnBeforeNetworkStart");
-  NotifyBeforeNetworkStart(defer);
-}
-
 void ServiceWorkerWriteToCacheJob::OnResponseStarted(
     net::URLRequest* request) {
   DCHECK_EQ(net_request_.get(), request);

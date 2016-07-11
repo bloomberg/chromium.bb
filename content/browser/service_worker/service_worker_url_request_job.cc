@@ -412,11 +412,6 @@ void ServiceWorkerURLRequestJob::OnSSLCertificateError(
   NOTREACHED();
 }
 
-void ServiceWorkerURLRequestJob::OnBeforeNetworkStart(net::URLRequest* request,
-                                                      bool* defer) {
-  NOTREACHED();
-}
-
 void ServiceWorkerURLRequestJob::OnResponseStarted(net::URLRequest* request) {
   // TODO(falken): Add Content-Length, Content-Type if they were not provided in
   // the ServiceWorkerResponse.

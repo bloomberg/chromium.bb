@@ -183,12 +183,10 @@ TestDelegate::TestDelegate()
       quit_on_complete_(true),
       quit_on_redirect_(false),
       quit_on_auth_required_(false),
-      quit_on_before_network_start_(false),
       allow_certificate_errors_(false),
       response_started_count_(0),
       received_bytes_count_(0),
       received_redirect_count_(0),
-      received_before_network_start_count_(0),
       received_data_before_response_(false),
       request_failed_(false),
       have_certificate_errors_(false),
@@ -220,15 +218,6 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   } else if (cancel_in_rr_) {
     request->Cancel();
-  }
-}
-
-void TestDelegate::OnBeforeNetworkStart(URLRequest* request, bool* defer) {
-  received_before_network_start_count_++;
-  if (quit_on_before_network_start_) {
-    *defer = true;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 }
 

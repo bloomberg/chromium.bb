@@ -113,7 +113,6 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override;
-  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override;
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 

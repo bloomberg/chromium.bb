@@ -440,7 +440,6 @@ void URLRequestHttpJob::NotifyBeforeNetworkStart(bool* defer) {
       return;
     }
   }
-  URLRequestJob::NotifyBeforeNetworkStart(defer);
 }
 
 void URLRequestHttpJob::NotifyHeadersComplete() {

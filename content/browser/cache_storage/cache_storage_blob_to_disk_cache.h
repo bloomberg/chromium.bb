@@ -65,7 +65,6 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override;
-  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override;
 
   // URLRequestContextGetterObserver override for canceling requests just
   // before the URLRequestContext is destroyed.

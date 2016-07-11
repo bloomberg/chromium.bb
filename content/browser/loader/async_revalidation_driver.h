@@ -61,7 +61,6 @@ class CONTENT_EXPORT AsyncRevalidationDriver : public net::URLRequest::Delegate,
                           bool* defer) override;
   void OnAuthRequired(net::URLRequest* request,
                       net::AuthChallengeInfo* info) override;
-  void OnBeforeNetworkStart(net::URLRequest* request, bool* defer) override;
   void OnResponseStarted(net::URLRequest* request) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 

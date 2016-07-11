@@ -4795,21 +4795,6 @@ class AsyncDelegateLogger : public base::RefCounted<AsyncDelegateLogger> {
     return log_position + 1;
   }
 
-  // Find delegate request begin and end messages for OnBeforeNetworkStart.
-  // Returns the position of the end message.
-  static size_t ExpectBeforeNetworkEvents(const TestNetLogEntry::List& entries,
-                                          size_t log_position) {
-    log_position =
-        ExpectLogContainsSomewhereAfter(entries,
-                                        log_position,
-                                        NetLog::TYPE_URL_REQUEST_DELEGATE,
-                                        NetLog::PHASE_BEGIN);
-    EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE,
-              entries[log_position + 1].type);
-    EXPECT_EQ(NetLog::PHASE_END, entries[log_position + 1].phase);
-    return log_position + 1;
-  }
-
  private:
   friend class base::RefCounted<AsyncDelegateLogger>;
 
@@ -5122,11 +5107,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
     ASSERT_LT(log_position, entries.size());
     EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
     EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
-
-    if (i == 1) {
-      log_position = AsyncDelegateLogger::ExpectBeforeNetworkEvents(
-          entries, log_position + 1);
-    }
   }
 
   EXPECT_FALSE(LogContainsEntryWithTypeAfter(
@@ -5181,11 +5161,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
     ASSERT_LT(log_position, entries.size());
     EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
     EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
-
-    if (i == 1) {
-      log_position = AsyncDelegateLogger::ExpectBeforeNetworkEvents(
-          entries, log_position + 1);
-    }
   }
 
   // The URLRequest::Delegate then gets informed about the redirect.
@@ -5265,11 +5240,6 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoAuth) {
     ASSERT_LT(log_position, entries.size());
     EXPECT_EQ(NetLog::TYPE_URL_REQUEST_DELEGATE, entries[log_position].type);
     EXPECT_EQ(NetLog::PHASE_END, entries[log_position].phase);
-
-    if (i == 1) {
-      log_position = AsyncDelegateLogger::ExpectBeforeNetworkEvents(
-          entries, log_position + 1);
-    }
   }
 
   EXPECT_FALSE(LogContainsEntryWithTypeAfter(
@@ -5314,9 +5284,6 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfo) {
   net_log_.GetEntries(&entries);
 
   size_t log_position = 0;
-
-  log_position = AsyncDelegateLogger::ExpectBeforeNetworkEvents(
-      entries, log_position);
 
   // The delegate info should only have been logged on header complete.  Other
   // times it should silently be ignored.
@@ -5371,11 +5338,6 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
   // OnResponseStarted.
   size_t log_position = 0;
   for (int i = 0; i < 2; ++i) {
-    if (i == 0) {
-      log_position = AsyncDelegateLogger::ExpectBeforeNetworkEvents(
-                         entries, log_position) + 1;
-    }
-
     log_position = ExpectLogContainsSomewhereAfter(
             entries,
             log_position,
@@ -5435,11 +5397,6 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
     // still currently supported in that call.
     size_t log_position = 0;
     for (int i = 0; i < 2; ++i) {
-      if (i == 0) {
-        log_position = AsyncDelegateLogger::ExpectBeforeNetworkEvents(
-                           entries, log_position) + 1;
-      }
-
       log_position = ExpectLogContainsSomewhereAfter(
               entries,
               log_position,
@@ -6886,96 +6843,6 @@ TEST_F(URLRequestTestHTTP, EmptyReferrerAfterValidReferrer) {
   base::RunLoop().Run();
 
   EXPECT_EQ(std::string("None"), d.data_received());
-}
-
-// Defer network start and then resume, checking that the request was a success
-// and bytes were received.
-TEST_F(URLRequestTestHTTP, DeferredBeforeNetworkStart) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  {
-    d.set_quit_on_network_start(true);
-    GURL test_url(http_test_server()->GetURL("/echo"));
-    std::unique_ptr<URLRequest> req(
-        default_context_.CreateRequest(test_url, DEFAULT_PRIORITY, &d));
-
-    req->Start();
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, d.received_before_network_start_count());
-    EXPECT_EQ(0, d.response_started_count());
-
-    req->ResumeNetworkStart();
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_NE(0, d.bytes_received());
-    EXPECT_EQ(URLRequestStatus::SUCCESS, req->status().status());
-  }
-}
-
-// Check that OnBeforeNetworkStart is only called once even if there is a
-// redirect.
-TEST_F(URLRequestTestHTTP, BeforeNetworkStartCalledOnce) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  {
-    d.set_quit_on_redirect(true);
-    d.set_quit_on_network_start(true);
-    std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
-        http_test_server()->GetURL("/server-redirect?echo"), DEFAULT_PRIORITY,
-        &d));
-
-    req->Start();
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, d.received_before_network_start_count());
-    EXPECT_EQ(0, d.response_started_count());
-    EXPECT_EQ(0, d.received_redirect_count());
-
-    req->ResumeNetworkStart();
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, d.received_redirect_count());
-    req->FollowDeferredRedirect();
-    base::RunLoop().Run();
-
-    // Check that the redirect's new network transaction does not get propagated
-    // to a second OnBeforeNetworkStart() notification.
-    EXPECT_EQ(1, d.received_before_network_start_count());
-
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_NE(0, d.bytes_received());
-    EXPECT_EQ(URLRequestStatus::SUCCESS, req->status().status());
-  }
-}
-
-// Cancel the request after learning that the request would use the network.
-TEST_F(URLRequestTestHTTP, CancelOnBeforeNetworkStart) {
-  ASSERT_TRUE(http_test_server()->Start());
-
-  TestDelegate d;
-  {
-    d.set_quit_on_network_start(true);
-    GURL test_url(http_test_server()->GetURL("/echo"));
-    std::unique_ptr<URLRequest> req(
-        default_context_.CreateRequest(test_url, DEFAULT_PRIORITY, &d));
-
-    req->Start();
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, d.received_before_network_start_count());
-    EXPECT_EQ(0, d.response_started_count());
-
-    req->Cancel();
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, d.response_started_count());
-    EXPECT_EQ(0, d.bytes_received());
-    EXPECT_EQ(URLRequestStatus::CANCELED, req->status().status());
-  }
 }
 
 TEST_F(URLRequestTestHTTP, CancelRedirect) {
@@ -9927,25 +9794,6 @@ TEST_F(URLRequestTestFTP, RawBodyBytes) {
 }
 
 #endif  // !defined(DISABLE_FTP_SUPPORT)
-
-TEST_F(URLRequestTest, NetworkAccessedClearBeforeNetworkStart) {
-  TestDelegate d;
-  std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
-      GURL("http://test_intercept/foo"), DEFAULT_PRIORITY, &d));
-  d.set_quit_on_network_start(true);
-
-  EXPECT_FALSE(req->response_info().network_accessed);
-
-  req->Start();
-  base::RunLoop().Run();
-
-  EXPECT_EQ(1, d.received_before_network_start_count());
-  EXPECT_EQ(0, d.response_started_count());
-  EXPECT_FALSE(req->response_info().network_accessed);
-
-  req->ResumeNetworkStart();
-  base::RunLoop().Run();
-}
 
 TEST_F(URLRequestTest, NetworkAccessedClearOnDataRequest) {
   TestDelegate d;

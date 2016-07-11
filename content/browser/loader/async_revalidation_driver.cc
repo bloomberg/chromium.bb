@@ -83,22 +83,6 @@ void AsyncRevalidationDriver::OnAuthRequired(
   CancelRequestInternal(net::ERR_ACCESS_DENIED, RESULT_AUTH_FAILED);
 }
 
-void AsyncRevalidationDriver::OnBeforeNetworkStart(net::URLRequest* request,
-                                                   bool* defer) {
-  DCHECK_EQ(request_.get(), request);
-
-  // Verify that the ResourceScheduler does not defer here.
-  throttle_->WillStartUsingNetwork(defer);
-  DCHECK(!*defer);
-
-  // Start the response timer. This use of base::Unretained() is guaranteed safe
-  // by the semantics of base::OneShotTimer.
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromSeconds(kResponseTimeoutInSeconds),
-               base::Bind(&AsyncRevalidationDriver::OnTimeout,
-                          base::Unretained(this), RESULT_RESPONSE_TIMEOUT));
-}
-
 void AsyncRevalidationDriver::OnResponseStarted(net::URLRequest* request) {
   DCHECK_EQ(request_.get(), request);
 
@@ -188,6 +172,12 @@ void AsyncRevalidationDriver::StartRequestInternal() {
   DCHECK(request_);
   DCHECK(!request_->is_pending());
 
+  // Start the response timer. This use of base::Unretained() is guaranteed safe
+  // by the semantics of base::OneShotTimer.
+  timer_.Start(FROM_HERE,
+               base::TimeDelta::FromSeconds(kResponseTimeoutInSeconds),
+               base::Bind(&AsyncRevalidationDriver::OnTimeout,
+                          base::Unretained(this), RESULT_RESPONSE_TIMEOUT));
   request_->Start();
 }
 

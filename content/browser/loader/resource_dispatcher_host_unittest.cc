@@ -322,31 +322,6 @@ class ForwardingFilter : public TestFilter {
   DISALLOW_COPY_AND_ASSIGN(ForwardingFilter);
 };
 
-// This class is a variation on URLRequestTestJob that will call
-// URLRequest::WillStartUsingNetwork before starting.
-class URLRequestTestDelayedNetworkJob : public net::URLRequestTestJob {
- public:
-  URLRequestTestDelayedNetworkJob(net::URLRequest* request,
-                                  net::NetworkDelegate* network_delegate)
-      : net::URLRequestTestJob(request, network_delegate) {}
-
-  // Only start if not deferred for network start.
-  void Start() override {
-    bool defer = false;
-    NotifyBeforeNetworkStart(&defer);
-    if (defer)
-      return;
-    net::URLRequestTestJob::Start();
-  }
-
-  void ResumeNetworkStart() override { net::URLRequestTestJob::StartAsync(); }
-
- private:
-  ~URLRequestTestDelayedNetworkJob() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(URLRequestTestDelayedNetworkJob);
-};
-
 // This class is a variation on URLRequestTestJob in that it does
 // not complete start upon entry, only when specifically told to.
 class URLRequestTestDelayedStartJob : public net::URLRequestTestJob {
@@ -549,7 +524,6 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
         hang_after_start_(false),
         delay_start_(false),
         delay_complete_(false),
-        network_start_notification_(false),
         url_request_jobs_created_count_(0) {
   }
 
@@ -572,10 +546,6 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
 
   void SetDelayedCompleteJobGeneration(bool delay_job_complete) {
     delay_complete_ = delay_job_complete;
-  }
-
-  void SetNetworkStartNotificationJobGeneration(bool notification) {
-    network_start_notification_ = notification;
   }
 
   net::URLRequestJob* MaybeCreateJobWithProtocolHandler(
@@ -609,7 +579,6 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
   bool hang_after_start_;
   bool delay_start_;
   bool delay_complete_;
-  bool network_start_notification_;
   mutable int url_request_jobs_created_count_;
   std::set<std::string> supported_schemes_;
 
@@ -643,8 +612,7 @@ enum GenericResourceThrottleFlags {
   NONE                      = 0,
   DEFER_STARTING_REQUEST    = 1 << 0,
   DEFER_PROCESSING_RESPONSE = 1 << 1,
-  CANCEL_BEFORE_START       = 1 << 2,
-  DEFER_NETWORK_START       = 1 << 3
+  CANCEL_BEFORE_START       = 1 << 2
 };
 
 // Throttle that tracks the current throttle blocking a request.  Only one
@@ -686,15 +654,6 @@ class GenericResourceThrottle : public ResourceThrottle {
   void WillProcessResponse(bool* defer) override {
     ASSERT_EQ(NULL, active_throttle_);
     if (flags_ & DEFER_PROCESSING_RESPONSE) {
-      active_throttle_ = this;
-      *defer = true;
-    }
-  }
-
-  void WillStartUsingNetwork(bool* defer) override {
-    ASSERT_EQ(NULL, active_throttle_);
-
-    if (flags_ & DEFER_NETWORK_START) {
       active_throttle_ = this;
       *defer = true;
     }
@@ -1780,33 +1739,6 @@ TEST_P(ResourceDispatcherHostTest, PausedStartError) {
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(0, host_.pending_requests());
-}
-
-// Test the WillStartUsingNetwork throttle.
-TEST_P(ResourceDispatcherHostTest, ThrottleNetworkStart) {
-  // Arrange to have requests deferred before processing response headers.
-  TestResourceDispatcherHostDelegate delegate;
-  delegate.set_flags(DEFER_NETWORK_START);
-  host_.SetDelegate(&delegate);
-
-  job_factory_->SetNetworkStartNotificationJobGeneration(true);
-  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_2());
-
-  // Should have deferred for network start.
-  GenericResourceThrottle* first_throttle =
-      GenericResourceThrottle::active_throttle();
-  ASSERT_TRUE(first_throttle);
-  EXPECT_EQ(0, network_delegate()->completed_requests());
-  EXPECT_EQ(1, host_.pending_requests());
-
-  first_throttle->Resume();
-
-  // Flush all the pending requests.
-  while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1, network_delegate()->completed_requests());
   EXPECT_EQ(0, host_.pending_requests());
 }
 
@@ -3851,8 +3783,6 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
     } else if (delay_complete_) {
       return new URLRequestTestDelayedCompletionJob(request,
                                                     network_delegate);
-    } else if (network_start_notification_) {
-      return new URLRequestTestDelayedNetworkJob(request, network_delegate);
     } else if (scheme == "big-job") {
       return new URLRequestBigJob(request, network_delegate);
     } else {
