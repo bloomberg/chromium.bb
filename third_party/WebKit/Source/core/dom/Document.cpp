@@ -5898,6 +5898,17 @@ WebTaskRunner* Document::timerTaskRunner() const
     return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
 }
 
+WebTaskRunner* Document::unthrottledTaskRunner() const
+{
+    if (frame())
+        return m_frame->frameScheduler()->unthrottledTaskRunner();
+    if (m_importsController)
+        return m_importsController->master()->unthrottledTaskRunner();
+    if (m_contextDocument)
+        return m_contextDocument->unthrottledTaskRunner();
+    return Platform::current()->currentThread()->getWebTaskRunner();
+}
+
 void Document::enforceInsecureRequestPolicy(WebInsecureRequestPolicy policy)
 {
     // Combine the new policy with the existing policy, as a base policy may be

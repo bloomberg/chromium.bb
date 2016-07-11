@@ -1074,6 +1074,7 @@ public:
 
     WebTaskRunner* loadingTaskRunner() const;
     WebTaskRunner* timerTaskRunner() const;
+    WebTaskRunner* unthrottledTaskRunner() const;
 
     void enforceInsecureRequestPolicy(WebInsecureRequestPolicy);
 
