@@ -3038,15 +3038,21 @@ void FrameView::trackObjectPaintInvalidation(const DisplayItemClient& client, Pa
 
 PassRefPtr<JSONArray> FrameView::trackedObjectPaintInvalidationsAsJSON() const
 {
-    if (!m_trackedObjectPaintInvalidations || m_trackedObjectPaintInvalidations->isEmpty())
+    if (!m_trackedObjectPaintInvalidations)
         return nullptr;
 
     RefPtr<JSONArray> result = JSONArray::create();
-    for (const auto& item : *m_trackedObjectPaintInvalidations) {
-        RefPtr<JSONObject> itemJSON = JSONObject::create();
-        itemJSON->setString("object", item.name);
-        itemJSON->setString("reason", paintInvalidationReasonToString(item.reason));
-        result->pushObject(itemJSON);
+    for (Frame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
+        if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem()) {
+            for (const auto& item : *layoutView.frameView()->m_trackedObjectPaintInvalidations) {
+                RefPtr<JSONObject> itemJSON = JSONObject::create();
+                itemJSON->setString("object", item.name);
+                itemJSON->setString("reason", paintInvalidationReasonToString(item.reason));
+                result->pushObject(itemJSON);
+            }
+        }
     }
     return result;
 }

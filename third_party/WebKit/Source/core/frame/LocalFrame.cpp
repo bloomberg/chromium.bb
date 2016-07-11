@@ -780,7 +780,7 @@ String LocalFrame::layerTreeAsText(unsigned flags) const
 
     if (flags & LayerTreeIncludesPaintInvalidations) {
         RefPtr<JSONArray> objectPaintInvalidations = m_view->trackedObjectPaintInvalidationsAsJSON();
-        if (objectPaintInvalidations) {
+        if (objectPaintInvalidations && objectPaintInvalidations->length()) {
             if (!layerTree)
                 layerTree = JSONObject::create();
             layerTree->setArray("objectPaintInvalidations", objectPaintInvalidations);
