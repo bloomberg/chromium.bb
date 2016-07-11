@@ -121,7 +121,7 @@ def PostUploadHook(cl, change, output_api):
   issue = cl.issue
   original_description = rietveld_obj.get_description(issue)
   if not benchmarks_modified or re.search(
-      r'^CQ_EXTRA_TRYBOTS=.*', original_description, re.M | re.I):
+      r'^CQ_INCLUDE_TRYBOTS=.*', original_description, re.M | re.I):
     return []
 
   results = []
@@ -134,7 +134,7 @@ def PostUploadHook(cl, change, output_api):
   bots = ['tryserver.chromium.perf:%s' % s for s in bots]
   bots_string = ';'.join(bots)
   description = original_description
-  description += '\nCQ_EXTRA_TRYBOTS=%s' % bots_string
+  description += '\nCQ_INCLUDE_TRYBOTS=%s' % bots_string
   results.append(output_api.PresubmitNotifyResult(
       'Automatically added Perf trybots to run Telemetry benchmarks on CQ.'))
 
