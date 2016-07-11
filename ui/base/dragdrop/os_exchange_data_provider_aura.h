@@ -61,6 +61,10 @@ class UI_BASE_EXPORT OSExchangeDataProviderAura
  private:
   typedef std::map<Clipboard::FormatType, base::Pickle> PickleData;
 
+  // Returns true if |formats_| contains a file format and the file name can be
+  // parsed as a URL.
+  bool GetFileURL(GURL* url) const;
+
   // Returns true if |formats_| contains a string format and the string can be
   // parsed as a URL.
   bool GetPlainTextURL(GURL* url) const;

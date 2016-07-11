@@ -117,25 +117,15 @@ TEST_F(OSExchangeDataTest, TestFileToURLConversion) {
   }
 
   {
-// Filename to URL conversion is not implemented on ChromeOS or on non-X11 Linux
-// builds.
-#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && !defined(USE_X11))
-    const bool expected_success = false;
-    const GURL expected_url;
-#else
-    const bool expected_success = true;
-    const GURL expected_url(net::FilePathToFileURL(current_directory));
-#endif
-    EXPECT_EQ(expected_success, data.HasURL(OSExchangeData::CONVERT_FILENAMES));
+    EXPECT_TRUE(data.HasURL(OSExchangeData::CONVERT_FILENAMES));
     GURL actual_url;
     base::string16 actual_title;
-    EXPECT_EQ(
-        expected_success,
-        data.GetURLAndTitle(
-            OSExchangeData::CONVERT_FILENAMES, &actual_url, &actual_title));
+    EXPECT_TRUE(data.GetURLAndTitle(OSExchangeData::CONVERT_FILENAMES,
+                                    &actual_url, &actual_title));
     // Some Mac OS versions return the URL in file://localhost form instead
     // of file:///, so we compare the url's path not its absolute string.
-    EXPECT_EQ(expected_url.path(), actual_url.path());
+    EXPECT_EQ(net::FilePathToFileURL(current_directory).path(),
+              actual_url.path());
     EXPECT_EQ(base::string16(), actual_title);
   }
   EXPECT_TRUE(data.HasFile());
