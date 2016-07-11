@@ -493,8 +493,10 @@ class TestRunner : public WebTestRunner {
   // Sets the default quota for all origins
   void SetDatabaseQuota(int quota);
 
-  // Changes the cookie policy from the default to allow all cookies.
-  void SetAlwaysAcceptCookies(bool accept);
+  // Sets the cookie policy to:
+  // - allow all cookies when |block| is false
+  // - block only third-party cookies when |block| is true
+  void SetBlockThirdPartyCookies(bool block);
 
   // Converts a URL starting with file:///tmp/ to the local mapping.
   std::string PathToLocalResource(const std::string& path);

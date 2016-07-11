@@ -1,5 +1,5 @@
 if (window.testRunner) {
-    testRunner.setAlwaysAcceptCookies(true);
+    testRunner.setBlockThirdPartyCookies(false);
 }
 
 var ORIGINAL_HOST  = "example.test";

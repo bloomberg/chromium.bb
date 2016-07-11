@@ -116,7 +116,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument) override;
   void SetFocus(blink::WebView* web_view, bool focus) override;
-  void SetAcceptAllCookies(bool accept) override;
+  void SetBlockThirdPartyCookies(bool block) override;
   std::string PathToLocalResource(const std::string& resource) override;
   void SetLocale(const std::string& locale) override;
   void OnLayoutTestRuntimeFlagsChanged(

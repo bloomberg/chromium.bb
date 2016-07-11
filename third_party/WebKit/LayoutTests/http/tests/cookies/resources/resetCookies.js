@@ -1,7 +1,7 @@
 function resetCookies()
 {
     if (window.testRunner)
-        testRunner.setAlwaysAcceptCookies(true);
+        testRunner.setBlockThirdPartyCookies(false);
 
     // Due to cross-origin restrictions, we can only (simply) reset cookies for our current origin.
     var url = "http://" + window.location.hostname +":8000/cookies/resources/cookie-utility.php?queryfunction=deleteCookies";
@@ -14,5 +14,5 @@ function resetCookies()
     }
     
     if (window.testRunner)
-        testRunner.setAlwaysAcceptCookies(false);
+        testRunner.setBlockThirdPartyCookies(true);
 }

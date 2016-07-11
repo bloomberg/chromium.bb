@@ -13,7 +13,7 @@ if (window.testRunner) {
   //testRunner.overridePreference('WebKitAllowDisplayingInsecureContent', true);
 
   // Accept all cookies.
-  testRunner.setAlwaysAcceptCookies(true);
+  testRunner.setBlockThirdPartyCookies(false);
 }
 
 // How tests starts:

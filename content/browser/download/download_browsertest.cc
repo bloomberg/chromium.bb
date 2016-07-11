@@ -2238,7 +2238,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
   ASSERT_TRUE(origin_two.Start());
 
   // Block third-party cookies.
-  ShellNetworkDelegate::SetAcceptAllCookies(false);
+  ShellNetworkDelegate::SetBlockThirdPartyCookies(true);
 
   // |url| redirects to a different origin |download| which tries to set a
   // cookie.

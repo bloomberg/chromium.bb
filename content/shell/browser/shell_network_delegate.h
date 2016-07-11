@@ -16,7 +16,7 @@ class ShellNetworkDelegate : public net::NetworkDelegateImpl {
   ShellNetworkDelegate();
   ~ShellNetworkDelegate() override;
 
-  static void SetAcceptAllCookies(bool accept);
+  static void SetBlockThirdPartyCookies(bool block);
 
  private:
   // net::NetworkDelegate implementation.

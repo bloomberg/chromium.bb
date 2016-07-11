@@ -537,8 +537,8 @@ void BlinkTestRunner::SetFocus(blink::WebView* web_view, bool focus) {
     SetFocusAndActivate(render_view, focus);
 }
 
-void BlinkTestRunner::SetAcceptAllCookies(bool accept) {
-  Send(new LayoutTestHostMsg_AcceptAllCookies(routing_id(), accept));
+void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
+  Send(new LayoutTestHostMsg_BlockThirdPartyCookies(routing_id(), block));
 }
 
 std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {

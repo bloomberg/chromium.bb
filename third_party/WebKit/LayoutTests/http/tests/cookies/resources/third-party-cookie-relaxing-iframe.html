@@ -32,7 +32,7 @@ function sendXHR(queryCommand)
 {
     if (window.testRunner) {
         // setAlwaysAcceptCookies() takes effect asynchronously (IPC is involved).
-        testRunner.setAlwaysAcceptCookies(true);
+        testRunner.setBlockThirdPartyCookies(false);
     }
 
     var baseurl = "http://localhost:8000/cookies/resources/cookie-utility.php";
@@ -48,7 +48,7 @@ function sendXHR(queryCommand)
         alert("xhr error");
 
     if (window.testRunner) {
-        testRunner.setAlwaysAcceptCookies(false);
+        testRunner.setBlockThirdPartyCookies(true);
     }
     
     parent.window.postMessage("done", "*");    

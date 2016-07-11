@@ -14,7 +14,7 @@ if (window.testRunner) {
     if (testRunner.setPrivateBrowsingEnabled)
         testRunner.setPrivateBrowsingEnabled(true);
 
-    testRunner.setAlwaysAcceptCookies(false);
+    testRunner.setBlockThirdPartyCookies(true);
 }
       </script>
       <body>

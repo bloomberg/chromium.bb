@@ -197,7 +197,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetAllowRunningOfInsecureContent(bool allowed);
   void SetAutoplayAllowed(bool allowed);
   void SetAllowUniversalAccessFromFileURLs(bool allow);
-  void SetAlwaysAcceptCookies(bool accept);
+  void SetBlockThirdPartyCookies(bool block);
   void SetAudioData(const gin::ArrayBufferView& view);
   void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
   void SetBluetoothFakeAdapter(const std::string& adapter_name,
@@ -492,8 +492,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setAutoplayAllowed", &TestRunnerBindings::SetAutoplayAllowed)
       .SetMethod("setAllowUniversalAccessFromFileURLs",
                  &TestRunnerBindings::SetAllowUniversalAccessFromFileURLs)
-      .SetMethod("setAlwaysAcceptCookies",
-                 &TestRunnerBindings::SetAlwaysAcceptCookies)
+      .SetMethod("setBlockThirdPartyCookies",
+                 &TestRunnerBindings::SetBlockThirdPartyCookies)
       .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
       .SetMethod("setBackingScaleFactor",
                  &TestRunnerBindings::SetBackingScaleFactor)
@@ -1264,9 +1264,9 @@ void TestRunnerBindings::SetDatabaseQuota(int quota) {
     runner_->SetDatabaseQuota(quota);
 }
 
-void TestRunnerBindings::SetAlwaysAcceptCookies(bool accept) {
+void TestRunnerBindings::SetBlockThirdPartyCookies(bool block) {
   if (runner_)
-    runner_->SetAlwaysAcceptCookies(accept);
+    runner_->SetBlockThirdPartyCookies(block);
 }
 
 void TestRunnerBindings::SetWindowIsKey(bool value) {
@@ -1602,7 +1602,7 @@ void TestRunner::Reset() {
     delegate_->SetDatabaseQuota(5 * 1024 * 1024);
     delegate_->SetDeviceColorProfile("reset");
     delegate_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
-    delegate_->SetAcceptAllCookies(false);
+    delegate_->SetBlockThirdPartyCookies(true);
     delegate_->SetLocale("");
     delegate_->UseUnfortunateSynchronousResizeMode(false);
     delegate_->DisableAutoResizeMode(WebSize());
@@ -2606,8 +2606,8 @@ void TestRunner::SetDatabaseQuota(int quota) {
   delegate_->SetDatabaseQuota(quota);
 }
 
-void TestRunner::SetAlwaysAcceptCookies(bool accept) {
-  delegate_->SetAcceptAllCookies(accept);
+void TestRunner::SetBlockThirdPartyCookies(bool block) {
+  delegate_->SetBlockThirdPartyCookies(block);
 }
 
 void TestRunner::SetFocus(blink::WebView* web_view, bool focus) {

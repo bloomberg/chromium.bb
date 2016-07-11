@@ -75,7 +75,8 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnSimulateWebNotificationClick)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SimulateWebNotificationClose,
                         OnSimulateWebNotificationClose)
-    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_AcceptAllCookies, OnAcceptAllCookies)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_BlockThirdPartyCookies,
+                        OnBlockThirdPartyCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_DeleteAllCookies, OnDeleteAllCookies)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_SetPermission, OnSetPermission)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_ResetPermissions, OnResetPermissions)
@@ -139,8 +140,8 @@ void LayoutTestMessageFilter::OnSimulateWebNotificationClose(
     manager->SimulateClose(title, by_user);
 }
 
-void LayoutTestMessageFilter::OnAcceptAllCookies(bool accept) {
-  ShellNetworkDelegate::SetAcceptAllCookies(accept);
+void LayoutTestMessageFilter::OnBlockThirdPartyCookies(bool block) {
+  ShellNetworkDelegate::SetBlockThirdPartyCookies(block);
 }
 
 void LayoutTestMessageFilter::OnDeleteAllCookies() {

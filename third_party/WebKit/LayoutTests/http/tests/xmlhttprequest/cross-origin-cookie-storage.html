@@ -5,7 +5,7 @@ if (window.testRunner) {
     testRunner.dumpAsText();
     testRunner.waitUntilDone();
     testRunner.setCanOpenWindows();
-    testRunner.setAlwaysAcceptCookies(1);
+    testRunner.setBlockThirdPartyCookies(false);
 }
 
 function log(message)
@@ -108,4 +108,3 @@ function testSyncCookiesWithCredentials()
 if (window.testRunner)
     testSyncCookiesNoCredentials();
 </script>
-
