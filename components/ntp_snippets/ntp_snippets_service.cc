@@ -204,9 +204,6 @@ NTPSnippetsService::NTPSnippetsService(
       database_(std::move(database)),
       snippets_status_service_(std::move(status_service)),
       fetch_after_load_(false) {
-  // TODO(dgn) should be removed after branch point (https://crbug.com/617585).
-  ClearDeprecatedPrefs();
-
   if (!enabled || database_->IsErrorState()) {
     // Don't even bother loading the database.
     EnterState(State::SHUT_DOWN);
@@ -228,8 +225,6 @@ NTPSnippetsService::~NTPSnippetsService() {
 
 // static
 void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  registry->RegisterListPref(prefs::kDeprecatedSnippets);
-  registry->RegisterListPref(prefs::kDeprecatedDiscardedSnippets);
   registry->RegisterListPref(prefs::kSnippetHosts);
 }
 
@@ -760,11 +755,6 @@ void NTPSnippetsService::EnterState(State state) {
       EnterStateShutdown();
       return;
   }
-}
-
-void NTPSnippetsService::ClearDeprecatedPrefs() {
-  pref_service_->ClearPref(prefs::kDeprecatedSnippets);
-  pref_service_->ClearPref(prefs::kDeprecatedDiscardedSnippets);
 }
 
 }  // namespace ntp_snippets

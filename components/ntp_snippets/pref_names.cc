@@ -7,9 +7,6 @@
 namespace ntp_snippets {
 namespace prefs {
 
-const char kDeprecatedSnippets[] = "ntp_snippets.snippets";
-const char kDeprecatedDiscardedSnippets[] = "ntp_snippets.discarded_snippets";
-
 const char kSnippetHosts[] = "ntp_snippets.hosts";
 
 }  // namespace prefs

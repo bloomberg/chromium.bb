@@ -8,10 +8,6 @@
 namespace ntp_snippets {
 namespace prefs {
 
-// TODO(treib): Completely remove these after M53.
-extern const char kDeprecatedSnippets[];
-extern const char kDeprecatedDiscardedSnippets[];
-
 extern const char kSnippetHosts[];
 
 }  // namespace prefs

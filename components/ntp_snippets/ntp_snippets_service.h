@@ -252,8 +252,6 @@ class NTPSnippetsService : public KeyedService,
   // directly, use |EnterState| instead.
   void EnterStateShutdown();
 
-  void ClearDeprecatedPrefs();
-
   State state_;
 
   PrefService* pref_service_;
