@@ -345,27 +345,14 @@ class PropertyTreeManager {
 public:
     PropertyTreeManager(cc::PropertyTrees& propertyTrees, cc::Layer* rootLayer)
         : m_propertyTrees(propertyTrees)
-        , m_rootLayer(rootLayer)
-#if DCHECK_IS_ON()
-        , m_isFirstEffectEver(true)
-#endif
-    {
-        m_effectStack.append(BlinkEffectAndCcIdPair{nullptr, kSecondaryRootNodeId});
-    }
+        , m_rootLayer(rootLayer) {}
 
     int compositorIdForTransformNode(const TransformPaintPropertyNode*);
     int compositorIdForClipNode(const ClipPaintPropertyNode*);
-    int switchToEffectNode(const EffectPaintPropertyNode& nextEffect);
-    int compositorIdForCurrentEffectNode() const { return m_effectStack.last().id; }
 
 private:
-    void buildEffectNodesRecursively(const EffectPaintPropertyNode* nextEffect);
-
     cc::TransformTree& transformTree() { return m_propertyTrees.transform_tree; }
     cc::ClipTree& clipTree() { return m_propertyTrees.clip_tree; }
-    cc::EffectTree& effectTree() { return m_propertyTrees.effect_tree; }
-
-    const EffectPaintPropertyNode* currentEffectNode() const { return m_effectStack.last().effect; }
 
     // Property trees which should be updated by the manager.
     cc::PropertyTrees& m_propertyTrees;
@@ -377,17 +364,6 @@ private:
     // Maps from Blink-side property tree nodes to cc property node indices.
     HashMap<const TransformPaintPropertyNode*, int> m_transformNodeMap;
     HashMap<const ClipPaintPropertyNode*, int> m_clipNodeMap;
-
-    struct BlinkEffectAndCcIdPair {
-        const EffectPaintPropertyNode* effect;
-        int id;
-    };
-    Vector<BlinkEffectAndCcIdPair> m_effectStack;
-
-#if DCHECK_IS_ON()
-    HashSet<const EffectPaintPropertyNode*> m_effectNodesConverted;
-    bool m_isFirstEffectEver;
-#endif
 };
 
 int PropertyTreeManager::compositorIdForTransformNode(const TransformPaintPropertyNode* transformNode)
@@ -466,91 +442,6 @@ int PropertyTreeManager::compositorIdForClipNode(const ClipPaintPropertyNode* cl
     return id;
 }
 
-unsigned depth(const EffectPaintPropertyNode* node)
-{
-    unsigned result = 0;
-    for (; node; node = node->parent())
-        result++;
-    return result;
-}
-
-const EffectPaintPropertyNode* lowestCommonAncestor(const EffectPaintPropertyNode* nodeA, const EffectPaintPropertyNode* nodeB)
-{
-    // Optimized common case.
-    if (nodeA == nodeB)
-        return nodeA;
-
-    unsigned depthA = depth(nodeA), depthB = depth(nodeB);
-    while (depthA > depthB) {
-        nodeA = nodeA->parent();
-        depthA--;
-    }
-    while (depthB > depthA) {
-        nodeB = nodeB->parent();
-        depthB--;
-    }
-    DCHECK_EQ(depthA, depthB);
-    while (nodeA != nodeB) {
-        nodeA = nodeA->parent();
-        nodeB = nodeB->parent();
-    }
-    return nodeA;
-}
-
-int PropertyTreeManager::switchToEffectNode(const EffectPaintPropertyNode& nextEffect)
-{
-    const EffectPaintPropertyNode* ancestor = lowestCommonAncestor(currentEffectNode(), &nextEffect);
-    while (currentEffectNode() != ancestor)
-        m_effectStack.removeLast();
-
-#if DCHECK_IS_ON()
-    DCHECK(m_isFirstEffectEver || currentEffectNode()) << "Malformed effect tree. Nodes in the same property tree should have common root.";
-    m_isFirstEffectEver = false;
-#endif
-    buildEffectNodesRecursively(&nextEffect);
-
-    return compositorIdForCurrentEffectNode();
-}
-
-void PropertyTreeManager::buildEffectNodesRecursively(const EffectPaintPropertyNode* nextEffect)
-{
-    if (nextEffect == currentEffectNode())
-        return;
-    DCHECK(nextEffect);
-
-    buildEffectNodesRecursively(nextEffect->parent());
-    DCHECK_EQ(nextEffect->parent(), currentEffectNode());
-
-#if DCHECK_IS_ON()
-    DCHECK(!m_effectNodesConverted.contains(nextEffect)) << "Malformed paint artifact. Paint chunks under the same effect should be contiguous.";
-    m_effectNodesConverted.add(nextEffect);
-#endif
-
-    // We currently create dummy layers to host effect nodes and corresponding render surface.
-    // This should be removed once cc implements better support for freestanding property trees.
-    scoped_refptr<cc::Layer> dummyLayer = cc::Layer::Create();
-    m_rootLayer->AddChild(dummyLayer);
-
-    // Also cc assumes a clip node is always created by a layer that creates render surface.
-    cc::ClipNode& dummyClip = *clipTree().Node(clipTree().Insert(cc::ClipNode(), kSecondaryRootNodeId));
-    dummyClip.owner_id = dummyLayer->id();
-    dummyClip.transform_id = kRealRootNodeId;
-    dummyClip.target_transform_id = kRealRootNodeId;
-
-    cc::EffectNode& effectNode = *effectTree().Node(effectTree().Insert(cc::EffectNode(), compositorIdForCurrentEffectNode()));
-    effectNode.owner_id = dummyLayer->id();
-    effectNode.clip_id = dummyClip.id;
-    effectNode.has_render_surface = true;
-    effectNode.opacity = nextEffect->opacity();
-    m_effectStack.append(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
-
-    dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
-    dummyLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
-    dummyLayer->SetClipTreeIndex(dummyClip.id);
-    dummyLayer->SetEffectTreeIndex(effectNode.id);
-    dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
-}
-
 } // namespace
 
 void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintArtifact)
@@ -574,7 +465,6 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
 
         int transformId = propertyTreeManager.compositorIdForTransformNode(paintChunk.properties.transform.get());
         int clipId = propertyTreeManager.compositorIdForClipNode(paintChunk.properties.clip.get());
-        int effectId = propertyTreeManager.switchToEffectNode(*paintChunk.properties.effect.get());
 
         layer->set_offset_to_transform_parent(layerOffset);
 
@@ -582,7 +472,7 @@ void PaintArtifactCompositor::updateInLayerListMode(const PaintArtifact& paintAr
         layer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
         layer->SetTransformTreeIndex(transformId);
         layer->SetClipTreeIndex(clipId);
-        layer->SetEffectTreeIndex(effectId);
+        layer->SetEffectTreeIndex(kSecondaryRootNodeId);
         layer->SetScrollTreeIndex(kRealRootNodeId);
 
         if (m_extraDataForTestingEnabled)
