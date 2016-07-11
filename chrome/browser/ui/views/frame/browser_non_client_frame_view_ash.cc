@@ -440,8 +440,8 @@ bool BrowserNonClientFrameViewAsh::DoesIntersectRect(
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
   const int avatar_right = profile_indicator_icon()
-                               ? (insets.left() + GetOTRAvatarIcon().width())
-                               : 0;
+      ? (insets.left() + GetIncognitoAvatarIcon().width())
+      : 0;
   return avatar_right + insets.right();
 }
 
@@ -478,7 +478,7 @@ void BrowserNonClientFrameViewAsh::LayoutProfileIndicatorIcon() {
   DCHECK(browser_view()->IsTabStripVisible());
 #endif
 
-  const gfx::ImageSkia incognito_icon = GetOTRAvatarIcon();
+  const gfx::ImageSkia incognito_icon = GetIncognitoAvatarIcon();
   const gfx::Insets avatar_insets = GetLayoutInsets(AVATAR_ICON);
   const int avatar_bottom = GetTopInset(false) +
       browser_view()->GetTabStripHeight() - avatar_insets.bottom();

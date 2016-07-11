@@ -553,7 +553,7 @@ void GlassBrowserFrameView::LayoutProfileSwitcher() {
 void GlassBrowserFrameView::LayoutIncognitoIcon() {
   const bool md = ui::MaterialDesignController::IsModeMaterial();
   const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
-  const gfx::Size size(GetOTRAvatarIcon().size());
+  const gfx::Size size(GetIncognitoAvatarIcon().size());
   int x = ClientBorderThickness(false);
   // In RTL, the icon needs to start after the caption buttons.
   if (CaptionButtonsOnLeadingEdge()) {

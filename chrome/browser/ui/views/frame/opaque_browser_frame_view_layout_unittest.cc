@@ -60,7 +60,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     return show_caption_buttons_;
   }
   bool IsRegularOrGuestSession() const override { return true; }
-  gfx::ImageSkia GetOTRAvatarIcon() const override {
+  gfx::ImageSkia GetIncognitoAvatarIcon() const override {
     return gfx::ImageSkia(gfx::ImageSkiaRep(gfx::Size(40, 29), 1.0f));
   }
   bool IsMaximized() const override { return maximized_; }

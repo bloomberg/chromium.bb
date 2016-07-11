@@ -36,7 +36,7 @@ class OpaqueBrowserFrameViewLayoutDelegate {
 
   // We don't have a ThemeProvider in the layout manager, so plumb in the icon
   // source here.
-  virtual gfx::ImageSkia GetOTRAvatarIcon() const = 0;
+  virtual gfx::ImageSkia GetIncognitoAvatarIcon() const = 0;
 
   // Controls window state.
   virtual bool IsMaximized() const = 0;

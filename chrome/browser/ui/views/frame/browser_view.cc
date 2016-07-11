@@ -1973,8 +1973,8 @@ void BrowserView::GetAccessibleState(ui::AXViewState* state) {
 void BrowserView::OnThemeChanged() {
   if (!IsRegularOrGuestSession() &&
       ui::MaterialDesignController::IsModeMaterial()) {
-    // When the theme changes, the native theme may also change (in OTR, the
-    // usage of dark or normal hinges on the browser theme), so we have to
+    // When the theme changes, the native theme may also change (in incognito,
+    // the usage of dark or normal hinges on the browser theme), so we have to
     // propagate both kinds of change.
     base::AutoReset<bool> reset(&handling_theme_changed_, true);
 #if defined(OS_WIN)

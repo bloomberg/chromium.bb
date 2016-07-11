@@ -55,7 +55,7 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {}
 
-gfx::ImageSkia BrowserNonClientFrameView::GetOTRAvatarIcon() const {
+gfx::ImageSkia BrowserNonClientFrameView::GetIncognitoAvatarIcon() const {
   if (!ui::MaterialDesignController::IsModeMaterial())
     return *GetThemeProviderForProfile()->GetImageSkiaNamed(IDR_OTR_ICON);
   const SkColor icon_color = color_utils::PickContrastingColor(
@@ -170,7 +170,7 @@ void BrowserNonClientFrameView::UpdateProfileIndicatorIcon() {
   gfx::Image icon;
   const Profile* profile = browser_view()->browser()->profile();
   if (profile->GetProfileType() == Profile::INCOGNITO_PROFILE) {
-    icon = gfx::Image(GetOTRAvatarIcon());
+    icon = gfx::Image(GetIncognitoAvatarIcon());
     if (!ui::MaterialDesignController::IsModeMaterial())
       profile_indicator_icon_->EnableCanvasFlippingForRTLUI(true);
   } else {

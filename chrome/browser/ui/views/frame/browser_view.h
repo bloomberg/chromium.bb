@@ -150,8 +150,8 @@ class BrowserView : public BrowserWindow,
   // window.
   gfx::Rect GetFindBarBoundingBox() const;
 
-  // Returns the preferred height of the TabStrip. Used to position the OTR
-  // avatar icon.
+  // Returns the preferred height of the TabStrip. Used to position the
+  // incognito avatar icon.
   int GetTabStripHeight() const;
 
   // Takes some view's origin (relative to this BrowserView) and offsets it such

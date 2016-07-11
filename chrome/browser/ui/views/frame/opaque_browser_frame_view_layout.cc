@@ -381,7 +381,7 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
 
   if (incognito_icon_) {
     const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
-    const gfx::Size size(delegate_->GetOTRAvatarIcon().size());
+    const gfx::Size size(delegate_->GetIncognitoAvatarIcon().size());
     const int incognito_width = insets.left() + size.width();
     int x;
     if (ShouldIncognitoIconBeOnRight()) {

@@ -384,8 +384,8 @@ bool OpaqueBrowserFrameView::IsRegularOrGuestSession() const {
   return browser_view()->IsRegularOrGuestSession();
 }
 
-gfx::ImageSkia OpaqueBrowserFrameView::GetOTRAvatarIcon() const {
-  return BrowserNonClientFrameView::GetOTRAvatarIcon();
+gfx::ImageSkia OpaqueBrowserFrameView::GetIncognitoAvatarIcon() const {
+  return BrowserNonClientFrameView::GetIncognitoAvatarIcon();
 }
 
 bool OpaqueBrowserFrameView::IsMaximized() const {
