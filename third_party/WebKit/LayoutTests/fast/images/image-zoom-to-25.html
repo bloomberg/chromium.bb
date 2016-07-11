@@ -39,8 +39,10 @@ function zoomPage()
                 var w = Math.round(image.clientWidth);
                 var h = Math.round(image.clientHeight);
                 log("Size at zoom level" + (count) + " : "  + w + " x " + h);
-                if (++count == 6)
+                if (++count == 6) {
+                    newwindow.onresize = undefined;
                     testRunner.notifyDone();
+                }
             }
         };
 

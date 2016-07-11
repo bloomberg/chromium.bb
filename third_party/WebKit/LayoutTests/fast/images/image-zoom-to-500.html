@@ -37,8 +37,10 @@ function zoomPage()
                 eventSender.zoomPageIn();
                 log("Size at zoom level" + (count) + " : "  + image.clientWidth + "x" + image.clientHeight);
                 ++count;
-                if (count == 10)
+                if (count == 10) {
+                    newwindow.onresize = undefined;
                     testRunner.notifyDone();
+                }
             }
         };
 
