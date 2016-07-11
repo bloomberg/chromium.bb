@@ -911,6 +911,7 @@ void HTMLTreeBuilder::processTemplateStartTag(AtomicHTMLToken* token)
 {
     m_tree.activeFormattingElements()->appendMarker();
     m_tree.insertHTMLElement(token);
+    m_framesetOk = false;
     m_templateInsertionModes.append(TemplateContentsMode);
     setInsertionMode(TemplateContentsMode);
 }
