@@ -259,9 +259,10 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
       EmbeddedWorkerInstance* worker =
           GetContext()->embedded_worker_registry()->GetWorkerForMessage(
               render_process_id_, message.routing_id());
-      base::debug::ScopedCrashKey("swdh_not_handled_message_type",
-                                  GetIPCMessageTypeAsString(message.type()));
-      base::debug::ScopedCrashKey(
+      base::debug::ScopedCrashKey type_key(
+          "swdh_not_handled_message_type",
+          GetIPCMessageTypeAsString(message.type()));
+      base::debug::ScopedCrashKey status_key(
           "swdh_not_handled_worker_status",
           EmbeddedWorkerInstance::StatusToString(worker->status()));
       bad_message::ReceivedBadMessage(this, bad_message::SWDH_NOT_HANDLED);
