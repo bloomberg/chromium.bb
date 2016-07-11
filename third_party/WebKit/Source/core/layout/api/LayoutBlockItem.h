@@ -38,6 +38,11 @@ public:
         return toBlock()->recalcOverflowAfterStyleChange();
     }
 
+    LayoutItem firstChild() const
+    {
+        return LayoutItem(toBlock()->firstChild());
+    }
+
 private:
     LayoutBlock* toBlock() { return toLayoutBlock(layoutObject()); }
     const LayoutBlock* toBlock() const { return toLayoutBlock(layoutObject()); }

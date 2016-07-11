@@ -1113,7 +1113,7 @@ AtomicString Document::contentType() const
 
 Element* Document::elementFromPoint(int x, int y) const
 {
-    if (!layoutView())
+    if (layoutViewItem().isNull())
         return 0;
 
     return TreeScope::elementFromPoint(x, y);
@@ -1121,14 +1121,14 @@ Element* Document::elementFromPoint(int x, int y) const
 
 HeapVector<Member<Element>> Document::elementsFromPoint(int x, int y) const
 {
-    if (!layoutView())
+    if (layoutViewItem().isNull())
         return HeapVector<Member<Element>>();
     return TreeScope::elementsFromPoint(x, y);
 }
 
 Range* Document::caretRangeFromPoint(int x, int y)
 {
-    if (!layoutView())
+    if (layoutViewItem().isNull())
         return nullptr;
 
     HitTestResult result = hitTestInDocument(this, x, y);
@@ -1424,7 +1424,7 @@ bool Document::needsLayoutTreeUpdate() const
         return true;
     if (childNeedsStyleInvalidation())
         return true;
-    if (layoutView()->wasNotifiedOfSubtreeChange())
+    if (layoutViewItem().wasNotifiedOfSubtreeChange())
         return true;
     return false;
 }
@@ -1601,7 +1601,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     ScrollSnapType snapType = overflowStyle->getScrollSnapType();
     const LengthPoint& snapDestination = overflowStyle->scrollSnapDestination();
 
-    RefPtr<ComputedStyle> documentStyle = layoutView()->mutableStyle();
+    RefPtr<ComputedStyle> documentStyle = layoutViewItem().mutableStyle();
     if (documentStyle->getWritingMode() != rootWritingMode
         || documentStyle->direction() != rootDirection
         || documentStyle->visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor
@@ -1623,7 +1623,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         newStyle->setColumnGap(columnGap);
         newStyle->setScrollSnapType(snapType);
         newStyle->setScrollSnapDestination(snapDestination);
-        layoutView()->setStyle(newStyle);
+        layoutViewItem().setStyle(newStyle);
         setupFontBuilder(*newStyle);
     }
 
@@ -1731,7 +1731,7 @@ void Document::updateStyleAndLayoutTree()
 
     if (m_focusedElement && !m_focusedElement->isFocusable())
         clearFocusedElementSoon();
-    layoutView()->clearHitTestCache();
+    layoutViewItem().clearHitTestCache();
 
     DCHECK(!DocumentAnimations::needsAnimationTimingUpdate(*this));
 
@@ -1767,9 +1767,9 @@ void Document::updateStyle()
     if (change == Force) {
         m_hasNodesWithPlaceholderStyle = false;
         RefPtr<ComputedStyle> documentStyle = StyleResolver::styleForDocument(*this);
-        StyleRecalcChange localChange = ComputedStyle::stylePropagationDiff(documentStyle.get(), layoutView()->style());
+        StyleRecalcChange localChange = ComputedStyle::stylePropagationDiff(documentStyle.get(), layoutViewItem().style());
         if (localChange != NoChange)
-            layoutView()->setStyle(documentStyle.release());
+            layoutViewItem().setStyle(documentStyle.release());
     }
 
     clearNeedsStyleRecalc();
@@ -1814,13 +1814,13 @@ void Document::updateStyle()
 
 void Document::notifyLayoutTreeOfSubtreeChanges()
 {
-    if (!layoutView()->wasNotifiedOfSubtreeChange())
+    if (!layoutViewItem().wasNotifiedOfSubtreeChange())
         return;
 
     m_lifecycle.advanceTo(DocumentLifecycle::InLayoutSubtreeChange);
 
-    layoutView()->handleSubtreeModifications();
-    DCHECK(!layoutView()->wasNotifiedOfSubtreeChange());
+    layoutViewItem().handleSubtreeModifications();
+    DCHECK(!layoutViewItem().wasNotifiedOfSubtreeChange());
 
     m_lifecycle.advanceTo(DocumentLifecycle::LayoutSubtreeChangeClean);
 }
@@ -2637,13 +2637,13 @@ void Document::implicitClose()
         updateStyleAndLayoutTree();
 
         // Always do a layout after loading if needed.
-        if (view() && layoutView() && (!layoutView()->firstChild() || layoutView()->needsLayout()))
+        if (view() && !layoutViewItem().isNull() && (!layoutViewItem().firstChild() || layoutViewItem().needsLayout()))
             view()->layout();
     }
 
     m_loadEventProgress = LoadEventCompleted;
 
-    if (frame() && layoutView() && settings()->accessibilityEnabled()) {
+    if (frame() && !layoutViewItem().isNull() && settings()->accessibilityEnabled()) {
         if (AXObjectCache* cache = axObjectCache()) {
             if (this == &axObjectCacheOwner())
                 cache->handleLoadComplete(this);
@@ -3160,11 +3160,11 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& r
     // mousemove events before the first layout should not lead to a premature layout()
     // happening, which could show a flash of white.
     // See also the similar code in EventHandler::hitTestResultAtPoint.
-    if (!layoutView() || !view() || !view()->didFirstLayout())
+    if (layoutViewItem().isNull() || !view() || !view()->didFirstLayout())
         return MouseEventWithHitTestResults(event, HitTestResult(request, LayoutPoint()));
 
     HitTestResult result(request, documentPoint);
-    layoutView()->hitTest(result);
+    layoutViewItem().hitTest(result);
 
     if (!request.readOnly())
         updateHoverActiveState(request, result.innerElement());
@@ -3421,9 +3421,9 @@ void Document::styleResolverMayHaveChanged()
         // recalc while sheets are still loading to avoid FOUC.
         m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
 
-        DCHECK(layoutView() || importsController());
-        if (layoutView())
-            layoutView()->invalidatePaintForViewAndCompositedLayers();
+        DCHECK(!layoutViewItem().isNull() || importsController());
+        if (!layoutViewItem().isNull())
+            layoutViewItem().invalidatePaintForViewAndCompositedLayers();
     }
 }
 
@@ -4406,8 +4406,8 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
     if (shouldUseVisualOrdering != m_visuallyOrdered) {
         m_visuallyOrdered = shouldUseVisualOrdering;
         // FIXME: How is possible to not have a layoutObject here?
-        if (layoutView())
-            layoutView()->mutableStyleRef().setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
+        if (!layoutViewItem().isNull())
+            layoutViewItem().mutableStyleRef().setRTLOrdering(m_visuallyOrdered ? VisualOrder : LogicalOrder);
         setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::VisuallyOrdered));
     }
 }

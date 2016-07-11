@@ -178,9 +178,19 @@ public:
         return m_layoutObject->styleRef();
     }
 
+    ComputedStyle* mutableStyle() const
+    {
+        return m_layoutObject->mutableStyle();
+    }
+
     ComputedStyle& mutableStyleRef() const
     {
         return m_layoutObject->mutableStyleRef();
+    }
+
+    void setStyle(PassRefPtr<ComputedStyle> style)
+    {
+        m_layoutObject->setStyle(style);
     }
 
     LayoutSize offsetFromContainer(const LayoutItem& item) const
@@ -241,6 +251,16 @@ public:
     void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
     {
         m_layoutObject->setNeedsLayoutAndPrefWidthsRecalc(reason);
+    }
+
+    bool wasNotifiedOfSubtreeChange() const
+    {
+        return m_layoutObject->wasNotifiedOfSubtreeChange();
+    }
+
+    void handleSubtreeModifications()
+    {
+        m_layoutObject->handleSubtreeModifications();
     }
 
     bool needsOverflowRecalcAfterStyleChange() const
