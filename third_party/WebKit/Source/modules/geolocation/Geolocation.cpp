@@ -92,7 +92,7 @@ Geolocation* Geolocation::create(ExecutionContext* context)
 
 Geolocation::Geolocation(ExecutionContext* context)
     : ContextLifecycleObserver(context)
-    , PageLifecycleObserver(document()->page())
+    , PageVisibilityObserver(document()->page())
     , m_geolocationPermission(PermissionUnknown)
 {
 }
@@ -109,7 +109,7 @@ DEFINE_TRACE(Geolocation)
     visitor->trace(m_pendingForPermissionNotifiers);
     visitor->trace(m_lastPosition);
     ContextLifecycleObserver::trace(visitor);
-    PageLifecycleObserver::trace(visitor);
+    PageVisibilityObserver::trace(visitor);
 }
 
 Document* Geolocation::document() const
@@ -131,7 +131,7 @@ void Geolocation::contextDestroyed()
     m_pendingForPermissionNotifiers.clear();
     m_lastPosition = nullptr;
     ContextLifecycleObserver::clearContext();
-    PageLifecycleObserver::clearContext();
+    PageVisibilityObserver::clearContext();
 }
 
 void Geolocation::recordOriginTypeAccess() const

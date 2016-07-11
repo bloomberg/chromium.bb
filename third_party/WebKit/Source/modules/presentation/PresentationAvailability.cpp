@@ -42,7 +42,7 @@ PresentationAvailability* PresentationAvailability::take(ScriptPromiseResolver* 
 PresentationAvailability::PresentationAvailability(ExecutionContext* executionContext, const KURL& url, bool value)
     : ActiveScriptWrappable(this)
     , ActiveDOMObject(executionContext)
-    , PageLifecycleObserver(toDocument(executionContext)->page())
+    , PageVisibilityObserver(toDocument(executionContext)->page())
     , m_url(url)
     , m_value(value)
     , m_state(State::Active)
@@ -138,7 +138,7 @@ bool PresentationAvailability::value() const
 DEFINE_TRACE(PresentationAvailability)
 {
     EventTargetWithInlineData::trace(visitor);
-    PageLifecycleObserver::trace(visitor);
+    PageVisibilityObserver::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
 

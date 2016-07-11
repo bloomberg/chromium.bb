@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/events/EventTarget.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
@@ -27,7 +27,7 @@ class MODULES_EXPORT PresentationAvailability final
     : public EventTargetWithInlineData
     , public ActiveScriptWrappable
     , public ActiveDOMObject
-    , public PageLifecycleObserver
+    , public PageVisibilityObserver
     , public WebPresentationAvailabilityObserver {
     USING_GARBAGE_COLLECTED_MIXIN(PresentationAvailability);
     DEFINE_WRAPPERTYPEINFO();
@@ -51,7 +51,7 @@ public:
     void resume() override;
     void stop() override;
 
-    // PageLifecycleObserver implementation.
+    // PageVisibilityObserver implementation.
     void pageVisibilityChanged() override;
 
     bool value() const;

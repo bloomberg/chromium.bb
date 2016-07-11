@@ -490,7 +490,7 @@ DEFINE_TRACE(Page)
     visitor->trace(m_validationMessageClient);
     visitor->trace(m_frameHost);
     Supplementable<Page>::trace(visitor);
-    PageLifecycleNotifier::trace(visitor);
+    PageVisibilityNotifier::trace(visitor);
 }
 
 void Page::layerTreeViewInitialized(WebLayerTreeView& layerTreeView)
@@ -528,7 +528,7 @@ void Page::willBeDestroyed()
         m_validationMessageClient->willBeDestroyed();
     m_mainFrame = nullptr;
 
-    PageLifecycleNotifier::notifyContextDestroyed();
+    PageVisibilityNotifier::notifyContextDestroyed();
 }
 
 void Page::compressStrings(Timer<Page>* timer)

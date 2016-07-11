@@ -9,7 +9,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/StringOrArrayBufferOrNFCMessage.h"
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/page/PageVisibilityObserver.h"
 #include "device/nfc/nfc.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -25,7 +25,7 @@ class ServiceRegistry;
 class NFC final
     : public GarbageCollectedFinalized<NFC>
     , public ScriptWrappable
-    , public PageLifecycleObserver
+    , public PageVisibilityObserver
     , public ContextLifecycleObserver
     , public device::nfc::blink::NFCClient {
     DEFINE_WRAPPERTYPEINFO();
@@ -57,7 +57,7 @@ public:
     // Cancels all watch operations.
     ScriptPromise cancelWatch(ScriptState*);
 
-    // Implementation of PageLifecycleObserver.
+    // Implementation of PageVisibilityObserver.
     void pageVisibilityChanged() override;
 
     // Interface required by garbage collection.

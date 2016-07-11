@@ -74,7 +74,7 @@ VibrationController::VibrationPattern VibrationController::sanitizeVibrationPatt
 
 VibrationController::VibrationController(Document& document)
     : ContextLifecycleObserver(&document)
-    , PageLifecycleObserver(document.page())
+    , PageVisibilityObserver(document.page())
     , m_timerDoVibrate(this, &VibrationController::doVibrate)
     , m_isRunning(false)
     , m_isCallingCancel(false)
@@ -188,7 +188,7 @@ void VibrationController::contextDestroyed()
 
     // Page outlives ExecutionContext so stop observing it to avoid having
     // |pageVisibilityChanged| or |contextDestroyed| called again.
-    PageLifecycleObserver::clearContext();
+    PageVisibilityObserver::clearContext();
 }
 
 void VibrationController::pageVisibilityChanged()
@@ -200,7 +200,7 @@ void VibrationController::pageVisibilityChanged()
 DEFINE_TRACE(VibrationController)
 {
     ContextLifecycleObserver::trace(visitor);
-    PageLifecycleObserver::trace(visitor);
+    PageVisibilityObserver::trace(visitor);
 }
 
 } // namespace blink

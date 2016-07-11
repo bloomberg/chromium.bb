@@ -23,18 +23,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef PageVisibilityNotifier_h
+#define PageVisibilityNotifier_h
 
-#include "core/page/PageLifecycleNotifier.h"
-
-#include "core/page/PageLifecycleObserver.h"
+#include "core/CoreExport.h"
+#include "platform/LifecycleNotifier.h"
 
 namespace blink {
 
-void PageLifecycleNotifier::notifyPageVisibilityChanged()
-{
-    TemporaryChange<IterationState> scope(m_iterationState, AllowingNone);
-    for (PageLifecycleObserver* observer : m_observers)
-        observer->pageVisibilityChanged();
-}
+class LocalFrame;
+class Page;
+class PageVisibilityObserver;
+
+class CORE_EXPORT PageVisibilityNotifier : public LifecycleNotifier<Page, PageVisibilityObserver> {
+public:
+    void notifyPageVisibilityChanged();
+};
 
 } // namespace blink
+
+#endif // PageVisibilityNotifier_h

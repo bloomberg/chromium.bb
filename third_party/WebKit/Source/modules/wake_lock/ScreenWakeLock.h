@@ -6,7 +6,7 @@
 #define ScreenWakeLock_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
 #include "public/platform/modules/wake_lock/wake_lock_service.mojom-blink.h"
 #include "wtf/Noncopyable.h"
@@ -17,7 +17,7 @@ class LocalFrame;
 class Screen;
 class ServiceRegistry;
 
-class MODULES_EXPORT ScreenWakeLock final : public GarbageCollectedFinalized<ScreenWakeLock>, public Supplement<LocalFrame>, public ContextLifecycleObserver, public PageLifecycleObserver {
+class MODULES_EXPORT ScreenWakeLock final : public GarbageCollectedFinalized<ScreenWakeLock>, public Supplement<LocalFrame>, public ContextLifecycleObserver, public PageVisibilityObserver {
     USING_GARBAGE_COLLECTED_MIXIN(ScreenWakeLock);
     WTF_MAKE_NONCOPYABLE(ScreenWakeLock);
 public:
@@ -34,7 +34,7 @@ public:
 private:
     explicit ScreenWakeLock(LocalFrame&);
 
-    // Inherited from PageLifecycleObserver.
+    // Inherited from PageVisibilityObserver.
     void pageVisibilityChanged() override;
     void contextDestroyed() override;
 

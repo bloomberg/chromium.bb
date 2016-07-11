@@ -30,8 +30,8 @@
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
 #include "core/page/PageAnimator.h"
-#include "core/page/PageLifecycleNotifier.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/page/PageVisibilityNotifier.h"
+#include "core/page/PageVisibilityObserver.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
@@ -69,7 +69,7 @@ typedef uint64_t LinkHash;
 
 float deviceScaleFactor(LocalFrame*);
 
-class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>, public Supplementable<Page>, public PageLifecycleNotifier, public SettingsDelegate {
+class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>, public Supplementable<Page>, public PageVisibilityNotifier, public SettingsDelegate {
     USING_GARBAGE_COLLECTED_MIXIN(Page);
     WTF_MAKE_NONCOPYABLE(Page);
     friend class Settings;

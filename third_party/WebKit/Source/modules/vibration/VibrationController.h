@@ -21,7 +21,7 @@
 #define VibrationController_h
 
 #include "core/dom/ContextLifecycleObserver.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/page/PageVisibilityObserver.h"
 #include "device/vibration/vibration_manager.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/Timer.h"
@@ -39,7 +39,7 @@ class UnsignedLongOrUnsignedLongSequence;
 class MODULES_EXPORT VibrationController final
     : public GarbageCollectedFinalized<VibrationController>
     , public ContextLifecycleObserver
-    , public PageLifecycleObserver {
+    , public PageVisibilityObserver {
     USING_GARBAGE_COLLECTED_MIXIN(VibrationController);
     WTF_MAKE_NONCOPYABLE(VibrationController);
 public:
@@ -67,10 +67,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    // Inherited from ContextLifecycleObserver AND PageLifecycleObserver.
+    // Inherited from ContextLifecycleObserver AND PageVisibilityObserver.
     void contextDestroyed() override;
 
-    // Inherited from PageLifecycleObserver.
+    // Inherited from PageVisibilityObserver.
     void pageVisibilityChanged() override;
 
     // The VibrationManager mojo service. This is reset in |contextDestroyed|

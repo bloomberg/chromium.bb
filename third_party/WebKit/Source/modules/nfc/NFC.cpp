@@ -438,7 +438,7 @@ bool setURL(const String& origin, nfc::NFCMessagePtr& message)
 } // anonymous namespace
 
 NFC::NFC(LocalFrame* frame)
-    : PageLifecycleObserver(frame->page())
+    : PageVisibilityObserver(frame->page())
     , ContextLifecycleObserver(frame->document())
     , m_client(this)
 {
@@ -581,7 +581,7 @@ void NFC::OnWatch(mojo::WTFArray<uint32_t> ids, nfc::NFCMessagePtr)
 
 DEFINE_TRACE(NFC)
 {
-    PageLifecycleObserver::trace(visitor);
+    PageVisibilityObserver::trace(visitor);
     ContextLifecycleObserver::trace(visitor);
     visitor->trace(m_requests);
 }

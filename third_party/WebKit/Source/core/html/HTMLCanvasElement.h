@@ -38,7 +38,7 @@
 #include "core/html/canvas/CanvasDrawListener.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
-#include "core/page/PageLifecycleObserver.h"
+#include "core/page/PageVisibilityObserver.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/CanvasSurfaceLayerBridge.h"
@@ -68,7 +68,7 @@ class IntSize;
 class CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext;
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext RenderingContext;
 
-class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public ContextLifecycleObserver, public PageLifecycleObserver, public CanvasImageSource, public ImageBufferClient, public ImageBitmapSource {
+class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public ContextLifecycleObserver, public PageVisibilityObserver, public CanvasImageSource, public ImageBufferClient, public ImageBitmapSource {
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
     USING_PRE_FINALIZER(HTMLCanvasElement, dispose);
@@ -157,10 +157,10 @@ public:
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
 
-    // ContextLifecycleObserver (and PageLifecycleObserver!!!) implementation
+    // ContextLifecycleObserver (and PageVisibilityObserver!!!) implementation
     void contextDestroyed() override;
 
-    // PageLifecycleObserver implementation
+    // PageVisibilityObserver implementation
     void pageVisibilityChanged() override;
 
     // CanvasImageSource implementation

@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PageLifecycleObserver_h
-#define PageLifecycleObserver_h
+#ifndef PageVisibilityObserver_h
+#define PageVisibilityObserver_h
 
 #include "core/CoreExport.h"
 #include "core/page/Page.h"
@@ -35,14 +35,14 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT PageLifecycleObserver : public LifecycleObserver<Page, PageLifecycleObserver> {
+class CORE_EXPORT PageVisibilityObserver : public LifecycleObserver<Page, PageVisibilityObserver> {
 public:
     virtual void pageVisibilityChanged() { }
 
     Page* page() const { return lifecycleContext(); }
 
 protected:
-    explicit PageLifecycleObserver(Page* page)
+    explicit PageVisibilityObserver(Page* page)
         : LifecycleObserver(page)
     {
     }
@@ -51,4 +51,4 @@ protected:
 
 } // namespace blink
 
-#endif // PageLifecycleObserver_h
+#endif // PageVisibilityObserver_h
