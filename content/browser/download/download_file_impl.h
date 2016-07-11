@@ -113,6 +113,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // handled.
   void StreamActive();
 
+  net::BoundNetLog bound_net_log_;
+
   // The base file instance.
   BaseFile file_;
 
@@ -138,8 +140,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta disk_writes_time_;
   base::TimeTicks download_start_;
   RateEstimator rate_estimator_;
-
-  net::BoundNetLog bound_net_log_;
 
   base::WeakPtr<DownloadDestinationObserver> observer_;
 

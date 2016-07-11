@@ -22,6 +22,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log.h"
 
 namespace content {
 
@@ -95,6 +96,7 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   size_t write_count = 0;
   size_t len = data_len;
   const char* current_data = data;
+  bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_WRITTEN);
   while (len > 0) {
     write_count++;
     int write_result = file_.WriteAtCurrentPos(current_data, len);
@@ -111,6 +113,8 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
     current_data += write_size;
     bytes_so_far_ += write_size;
   }
+  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_WRITTEN,
+                          net::NetLog::Int64Callback("bytes", data_len));
 
   RecordDownloadWriteSize(data_len);
   RecordDownloadWriteLoopCount(write_count);
@@ -134,15 +138,19 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   // it will be overwritten by closing the file.
   bool was_in_progress = in_progress();
 
+  Close();
+
   bound_net_log_.BeginEvent(
       net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED,
       base::Bind(&FileRenamedNetLogCallback, &full_path_, &new_path));
-  Close();
+
   base::CreateDirectory(new_path.DirName());
 
   // A simple rename wouldn't work here since we want the file to have
   // permissions / security descriptors that makes sense in the new directory.
   rename_result = MoveFileAndAdjustPermissions(new_path);
+
+  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED);
 
   if (rename_result == DOWNLOAD_INTERRUPT_REASON_NONE)
     full_path_ = new_path;
@@ -153,7 +161,6 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   if (was_in_progress)
     open_result = Open(std::string());
 
-  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED);
   return rename_result == DOWNLOAD_INTERRUPT_REASON_NONE ? open_result
                                                          : rename_result;
 }
@@ -328,8 +335,6 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
 
 void BaseFile::Close() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-
-  bound_net_log_.AddEvent(net::NetLog::TYPE_DOWNLOAD_FILE_CLOSED);
 
   if (file_.IsValid()) {
     // Currently we don't really care about the return value, since if it fails

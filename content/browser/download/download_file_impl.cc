@@ -40,19 +40,28 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream,
-    const net::BoundNetLog& bound_net_log,
+    const net::BoundNetLog& download_item_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
-    : file_(bound_net_log),
+    : bound_net_log_(net::BoundNetLog::Make(download_item_net_log.net_log(),
+                                            net::NetLog::SOURCE_DOWNLOAD_FILE)),
+      file_(bound_net_log_),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
       stream_reader_(std::move(stream)),
       bytes_seen_(0),
-      bound_net_log_(bound_net_log),
       observer_(observer),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  download_item_net_log.AddEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_CREATED,
+      bound_net_log_.source().ToEventParametersCallback());
+  bound_net_log_.BeginEvent(
+      net::NetLog::TYPE_DOWNLOAD_FILE_ACTIVE,
+      download_item_net_log.source().ToEventParametersCallback());
+}
 
 DownloadFileImpl::~DownloadFileImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  bound_net_log_.EndEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ACTIVE);
 }
 
 void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
