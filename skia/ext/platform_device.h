@@ -62,16 +62,6 @@ class SK_API PlatformDevice {
                                         const SkIRect& clip_bounds) = 0;
 #endif
 
-#if defined(OS_WIN)
-  // Draws to the given screen DC, if the bitmap DC doesn't exist, this will
-  // temporarily create it. However, if you have created the bitmap DC, it will
-  // be more efficient if you don't free it until after this call so it doesn't
-  // have to be created twice.  If src_rect is null, then the entirety of the
-  // source device will be copied.
-  virtual void DrawToHDC(HDC source_dc, HDC destination_dc, int x, int y,
-                         const RECT* src_rect, const SkMatrix& transform);
-#endif
-
  private:
   // The DC that corresponds to the bitmap, used for GDI operations drawing
   // into the bitmap. This is possibly heavyweight, so it should be existant

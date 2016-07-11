@@ -52,7 +52,9 @@ enum OnFailureType {
                                         OnFailureType failure_type);
 
   // Draws the top layer of the canvas into the specified HDC. Only works
-  // with a SkCanvas with a BitmapPlatformDevice.
+  // with a SkCanvas with a BitmapPlatformDevice. Will create a temporary
+  // HDC to back the canvas if one doesn't already exist, tearing it down
+  // before returning. If |src_rect| is null, copies the entire canvas.
   SK_API void DrawToNativeContext(SkCanvas* canvas,
                                   HDC hdc,
                                   int x,

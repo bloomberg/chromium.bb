@@ -97,5 +97,56 @@ void InitializeDC(HDC context) {
   SkASSERT(res != 0);
 }
 
+void LoadTransformToDC(HDC dc, const SkMatrix& matrix) {
+  XFORM xf;
+  xf.eM11 = matrix[SkMatrix::kMScaleX];
+  xf.eM21 = matrix[SkMatrix::kMSkewX];
+  xf.eDx = matrix[SkMatrix::kMTransX];
+  xf.eM12 = matrix[SkMatrix::kMSkewY];
+  xf.eM22 = matrix[SkMatrix::kMScaleY];
+  xf.eDy = matrix[SkMatrix::kMTransY];
+  SetWorldTransform(dc, &xf);
+}
+
+void CopyHDC(HDC source, HDC destination, int x, int y, bool is_opaque,
+             const RECT& src_rect, const SkMatrix& transform) {
+
+  int copy_width = src_rect.right - src_rect.left;
+  int copy_height = src_rect.bottom - src_rect.top;
+
+  // We need to reset the translation for our bitmap or (0,0) won't be in the
+  // upper left anymore
+  SkMatrix identity;
+  identity.reset();
+
+  LoadTransformToDC(source, identity);
+  if (is_opaque) {
+    BitBlt(destination,
+           x,
+           y,
+           copy_width,
+           copy_height,
+           source,
+           src_rect.left,
+           src_rect.top,
+           SRCCOPY);
+  } else {
+    SkASSERT(copy_width != 0 && copy_height != 0);
+    BLENDFUNCTION blend_function = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
+    GdiAlphaBlend(destination,
+                  x,
+                  y,
+                  copy_width,
+                  copy_height,
+                  source,
+                  src_rect.left,
+                  src_rect.top,
+                  copy_width,
+                  copy_height,
+                  blend_function);
+  }
+  LoadTransformToDC(source, transform);
+}
+
 }  // namespace skia
 

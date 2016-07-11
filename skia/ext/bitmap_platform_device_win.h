@@ -39,9 +39,6 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
 
   ~BitmapPlatformDevice() override;
 
-  void DrawToHDC(HDC source_dc, HDC destination_dc, int x, int y,
-                 const RECT* src_rect, const SkMatrix& transform) override;
-
  protected:
   // Flushes the Windows device context so that the pixel data can be accessed
   // directly by Skia. Overridden from SkBaseDevice, this is called when Skia

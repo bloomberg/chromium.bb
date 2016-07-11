@@ -6,6 +6,7 @@
 #define SKIA_EXT_SKIA_UTILS_WIN_H_
 
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkMatrix.h"
 
 #include "build/build_config.h"
 #include <windows.h>
@@ -48,6 +49,16 @@ SK_API COLORREF SkColorToCOLORREF(SkColor color);
 
 // Initializes the default settings and colors in a device context.
 SK_API void InitializeDC(HDC context);
+
+// Converts scale, skew, and translation to Windows format and sets it on the
+// HDC.
+SK_API void LoadTransformToDC(HDC dc, const SkMatrix& matrix);
+
+// Copies |src_rect| from source into destination.
+//   Takes a potentially-slower path if |is_opaque| is false.
+//   Sets |transform| on source afterwards!
+SK_API void CopyHDC(HDC source, HDC destination, int x, int y, bool is_opaque,
+                    const RECT& src_rect, const SkMatrix& transform);
 
 }  // namespace skia
 
