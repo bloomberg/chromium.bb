@@ -1,0 +1,3 @@
+Tests that we don't crash when detaching on pause from instrumentation call.
+Paused on the innerHTML assignment: modifyHTML@:7
+
