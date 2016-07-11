@@ -123,7 +123,7 @@ void LocationArbitratorImpl::RegisterProvider(
 
 void LocationArbitratorImpl::RegisterSystemProvider() {
   std::unique_ptr<LocationProvider> provider =
-      base::WrapUnique(delegate_->OverrideSystemLocationProvider());
+      delegate_->OverrideSystemLocationProvider();
   if (!provider)
     provider = NewSystemLocationProvider();
   RegisterProvider(std::move(provider));

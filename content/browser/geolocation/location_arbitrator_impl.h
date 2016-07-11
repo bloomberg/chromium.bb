@@ -69,9 +69,9 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
   virtual std::unique_ptr<LocationProvider> NewSystemLocationProvider();
   virtual base::Time GetTimeNow() const;
 
-  GeolocationDelegate* GetDelegateForTesting() { return delegate_; }
-
  private:
+  friend class TestingLocationArbitrator;
+
   // Provider will either be added to |providers_| or
   // deleted on error (e.g. it fails to start).
   void RegisterProvider(std::unique_ptr<LocationProvider> provider);

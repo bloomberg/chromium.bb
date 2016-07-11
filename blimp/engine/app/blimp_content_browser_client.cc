@@ -21,15 +21,12 @@ class BlimpGeolocationDelegate : public content::GeolocationDelegate {
 
   bool UseNetworkLocationProviders() final { return false; }
 
-  content::LocationProvider* OverrideSystemLocationProvider() final {
-    if (!location_provider_)
-      location_provider_ = base::WrapUnique(new BlimpLocationProvider());
-    return location_provider_.get();
+  std::unique_ptr<content::LocationProvider> OverrideSystemLocationProvider()
+      final {
+    return base::WrapUnique(new BlimpLocationProvider());
   }
 
  private:
-  std::unique_ptr<BlimpLocationProvider> location_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(BlimpGeolocationDelegate);
 };
 

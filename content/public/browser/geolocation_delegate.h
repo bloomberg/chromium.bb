@@ -17,20 +17,22 @@ class LocationProvider;
 // specific functionality.
 class CONTENT_EXPORT GeolocationDelegate {
  public:
+  virtual ~GeolocationDelegate() {}
+
   // Returns true if the location API should use network-based location
   // approximation in addition to the system provider, if any.
   virtual bool UseNetworkLocationProviders();
-   // Creates a new AccessTokenStore for geolocation. May return nullptr.
+
+  // Creates a new AccessTokenStore for geolocation. May return nullptr.
   // TODO(mcasas): consider changing it return type to std::unique_ptr<> to
   // clarify ownership, https://crbug.com/623114.
   virtual AccessTokenStore* CreateAccessTokenStore();
-   // Allows an embedder to return its own LocationProvider implementation.
+
+  // Allows an embedder to return its own LocationProvider implementation.
   // Return nullptr to use the default one for the platform to be created.
-  // Caller takes ownership of the returned LocationProvider. FYI: Used by an
-  // external project; please don't remove. Contact Viatcheslav Ostapenko at
-  // sl.ostapenko@samsung.com for more information.
-  // TODO(mcasas): return std::unique_ptr<> instead, https://crbug.com/623132.
-  virtual LocationProvider* OverrideSystemLocationProvider();
+  // FYI: Used by an external project; please don't remove. Contact Viatcheslav
+  // Ostapenko at sl.ostapenko@samsung.com for more information.
+  virtual std::unique_ptr<LocationProvider> OverrideSystemLocationProvider();
 };
 
 }  // namespace content

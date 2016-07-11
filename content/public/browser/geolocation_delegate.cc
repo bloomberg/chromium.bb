@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/browser/geolocation_delegate.h"
+#include "content/public/browser/location_provider.h"
 
 namespace content {
 
@@ -14,7 +15,8 @@ AccessTokenStore* GeolocationDelegate::CreateAccessTokenStore() {
   return nullptr;
 }
 
-LocationProvider* GeolocationDelegate::OverrideSystemLocationProvider() {
+std::unique_ptr<LocationProvider>
+GeolocationDelegate::OverrideSystemLocationProvider() {
   return nullptr;
 }
 
