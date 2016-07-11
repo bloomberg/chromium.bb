@@ -478,21 +478,21 @@
     <event name="tilt">
       <description summary="tilt change event">
 	Sent whenever one or both of the tilt axes on a tool change. Each tilt
-	value is in 0.01 of a degree, relative to the z-axis of the tablet.
+	value is in degrees, relative to the z-axis of the tablet.
 	The angle is positive when the top of a tool tilts along the
 	positive x or y axis.
       </description>
-      <arg name="tilt_x" type="int" summary="The current value of the X tilt axis"/>
-      <arg name="tilt_y" type="int" summary="The current value of the Y tilt axis"/>
+      <arg name="tilt_x" type="fixed" summary="The current value of the X tilt axis"/>
+      <arg name="tilt_y" type="fixed" summary="The current value of the Y tilt axis"/>
     </event>
 
     <event name="rotation">
       <description summary="z-rotation change event">
 	Sent whenever the z-rotation axis on the tool changes. The
-	rotation value is in 0.01 of a degree clockwise from the tool's
+	rotation value is in degrees clockwise from the tool's
 	logical neutral position.
       </description>
-      <arg name="degrees" type="int" summary="The current rotation of the Z axis"/>
+      <arg name="degrees" type="fixed" summary="The current rotation of the Z axis"/>
     </event>
 
     <event name="slider">
@@ -510,10 +510,10 @@
       <description summary="Wheel delta event">
 	Sent whenever the wheel on the tool emits an event. This event
 	contains two values for the same axis change. The degrees value is
-	in 0.01 of a degree in the same orientation as the
-	wl_pointer.vertical_scroll axis. The clicks value is in discrete
-	logical clicks of the mouse wheel. This value may be zero if the
-	movement of the wheel was less than one logical click.
+	in the same orientation as the wl_pointer.vertical_scroll axis. The
+	clicks value is in discrete logical clicks of the mouse wheel. This
+	value may be zero if the movement of the wheel was less
+	than one logical click.
 
 	Clients should choose either value and avoid mixing degrees and
 	clicks. The compositor may accumulate values smaller than a logical
@@ -521,7 +521,7 @@
 	Thus, wl_tablet_tool.wheel events with non-zero clicks values may
 	have different degrees values.
       </description>
-      <arg name="degrees" type="int" summary="The wheel delta in 0.01 of a degree"/>
+      <arg name="degrees" type="fixed" summary="The wheel delta in degrees"/>
       <arg name="clicks" type="int" summary="The wheel delta in discrete clicks"/>
     </event>
 
