@@ -94,10 +94,9 @@ class BrowsingDataRemover : public KeyedService
     // REMOVE_NOCHECKS intentionally does not check if the Profile's prohibited
     // from deleting history or downloads.
     REMOVE_NOCHECKS = 1 << 16,
-    REMOVE_WEBRTC_IDENTITY = 1 << 17,
-    REMOVE_CACHE_STORAGE = 1 << 18,
+    REMOVE_CACHE_STORAGE = 1 << 17,
 #if BUILDFLAG(ANDROID_JAVA_UI)
-    REMOVE_WEBAPP_DATA = 1 << 19,
+    REMOVE_WEBAPP_DATA = 1 << 18,
 #endif
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
@@ -115,11 +114,10 @@ class BrowsingDataRemover : public KeyedService
                        REMOVE_CACHE_STORAGE |
                        REMOVE_WEBSQL |
                        REMOVE_CHANNEL_IDS |
-                       REMOVE_SITE_USAGE_DATA |
 #if BUILDFLAG(ANDROID_JAVA_UI)
                        REMOVE_WEBAPP_DATA |
 #endif
-                       REMOVE_WEBRTC_IDENTITY,
+                       REMOVE_SITE_USAGE_DATA,
 
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it

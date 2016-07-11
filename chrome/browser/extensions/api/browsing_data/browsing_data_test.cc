@@ -209,8 +209,7 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
                   BrowsingDataRemover::REMOVE_APPCACHE) |
         GetAsMask(data_to_remove, "cache", BrowsingDataRemover::REMOVE_CACHE) |
         GetAsMask(data_to_remove, "cookies",
-                  BrowsingDataRemover::REMOVE_COOKIES |
-                      BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY) |
+                  BrowsingDataRemover::REMOVE_COOKIES) |
         GetAsMask(data_to_remove, "downloads",
                   BrowsingDataRemover::REMOVE_DOWNLOADS) |
         GetAsMask(data_to_remove, "fileSystems",
@@ -365,8 +364,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "cache", BrowsingDataRemover::REMOVE_CACHE);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
-      "cookies", BrowsingDataRemover::REMOVE_COOKIES |
-                     BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY);
+      "cookies", BrowsingDataRemover::REMOVE_COOKIES);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
       "downloads", BrowsingDataRemover::REMOVE_DOWNLOADS);
   RunBrowsingDataRemoveWithKeyAndCompareRemovalMask(
@@ -400,7 +398,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
        "{\"appcache\": true, \"cookies\": true, \"history\": true}",
        BrowsingDataRemover::REMOVE_APPCACHE |
            BrowsingDataRemover::REMOVE_COOKIES |
-           BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY |
            BrowsingDataRemover::REMOVE_HISTORY);
 }
 
@@ -456,8 +453,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, ShortcutFunctionRemovalMask) {
       BrowsingDataRemover::REMOVE_CACHE);
   RunAndCompareRemovalMask<BrowsingDataRemoveCookiesFunction>(
       BrowsingDataRemover::REMOVE_COOKIES |
-      BrowsingDataRemover::REMOVE_CHANNEL_IDS |
-      BrowsingDataRemover::REMOVE_WEBRTC_IDENTITY);
+      BrowsingDataRemover::REMOVE_CHANNEL_IDS);
   RunAndCompareRemovalMask<BrowsingDataRemoveDownloadsFunction>(
       BrowsingDataRemover::REMOVE_DOWNLOADS);
   RunAndCompareRemovalMask<BrowsingDataRemoveFileSystemsFunction>(
