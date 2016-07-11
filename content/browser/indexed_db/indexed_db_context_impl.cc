@@ -259,8 +259,7 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
 
           std::unique_ptr<base::ListValue> scope(new base::ListValue());
           for (const auto& id : transaction->scope()) {
-            IndexedDBDatabaseMetadata::ObjectStoreMap::const_iterator it =
-                db->metadata().object_stores.find(id);
+            const auto& it = db->metadata().object_stores.find(id);
             if (it != db->metadata().object_stores.end())
               scope->AppendString(it->second.name);
           }

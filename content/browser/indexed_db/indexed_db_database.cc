@@ -252,8 +252,7 @@ std::unique_ptr<IndexedDBConnection> IndexedDBDatabase::CreateConnection(
 
 IndexedDBTransaction* IndexedDBDatabase::GetTransaction(
     int64_t transaction_id) const {
-  TransactionMap::const_iterator trans_iterator =
-      transactions_.find(transaction_id);
+  const auto& trans_iterator = transactions_.find(transaction_id);
   if (trans_iterator == transactions_.end())
     return NULL;
   return trans_iterator->second;
@@ -553,12 +552,11 @@ void IndexedDBDatabase::AddPendingObserver(int64_t transaction_id,
 void IndexedDBDatabase::RemovePendingObservers(
     IndexedDBConnection* connection,
     const std::vector<int32_t>& pending_observer_ids) {
-  TransactionMap::iterator it;
-  for (it = transactions_.begin(); it != transactions_.end(); it++) {
+  for (const auto& it : transactions_) {
     // Avoid call to RemovePendingObservers for transactions on other
     // connections.
-    if (it->second->connection() == connection)
-      it->second->RemovePendingObservers(pending_observer_ids);
+    if (it.second->connection() == connection)
+      it.second->RemovePendingObservers(pending_observer_ids);
   }
 }
 
@@ -1932,7 +1930,7 @@ void IndexedDBDatabase::DeleteDatabaseFinal(
 void IndexedDBDatabase::ForceClose() {
   // IndexedDBConnection::ForceClose() may delete this database, so hold ref.
   scoped_refptr<IndexedDBDatabase> protect(this);
-  ConnectionSet::const_iterator it = connections_.begin();
+  auto it = connections_.begin();
   while (it != connections_.end()) {
     IndexedDBConnection* connection = *it++;
     connection->ForceClose();
@@ -1964,7 +1962,7 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   // as the front-end defers the close until all transactions are
   // complete, but can occur on process termination or forced close.
   {
-    TransactionMap transactions(transactions_);
+    auto transactions(transactions_);
     for (const auto& it : transactions) {
       if (it.second->callbacks() == connection->callbacks())
         it.second->Abort(

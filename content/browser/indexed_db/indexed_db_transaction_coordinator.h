@@ -40,8 +40,6 @@ class IndexedDBTransactionCoordinator {
   std::vector<const IndexedDBTransaction*> GetTransactions() const;
 
  private:
-  typedef list_set<scoped_refptr<IndexedDBTransaction> > TransactionSet;
-
   void ProcessQueuedTransactions();
   bool CanStartTransaction(IndexedDBTransaction* const transaction,
                            const std::set<int64_t>& locked_scope) const;
@@ -49,8 +47,8 @@ class IndexedDBTransactionCoordinator {
   // Transactions in different states are grouped below.
   // list_set is used to provide stable ordering; required by spec
   // for the queue, convenience for diagnostics for the rest.
-  TransactionSet queued_transactions_;
-  TransactionSet started_transactions_;
+  list_set<scoped_refptr<IndexedDBTransaction>> queued_transactions_;
+  list_set<scoped_refptr<IndexedDBTransaction>> started_transactions_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionCoordinator);
 };

@@ -135,7 +135,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ForceCloseOpenDatabasesOnDelete);
   friend class IndexedDBQuotaClientTest;
 
-  typedef std::map<url::Origin, int64_t> OriginToSizeMap;
   class IndexedDBGetUsageAndQuotaCallback;
 
   base::FilePath GetBlobStorePath(const url::Origin& origin) const;
@@ -165,7 +164,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<std::set<url::Origin>> origin_set_;
-  OriginToSizeMap origin_size_map_;
+  std::map<url::Origin, int64_t> origin_size_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBContextImpl);
 };

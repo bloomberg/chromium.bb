@@ -36,7 +36,7 @@ IndexedDBFactoryImpl::~IndexedDBFactoryImpl() {
 
 void IndexedDBFactoryImpl::RemoveDatabaseFromMaps(
     const IndexedDBDatabase::Identifier& identifier) {
-  IndexedDBDatabaseMap::iterator it = database_map_.find(identifier);
+  const auto& it = database_map_.find(identifier);
   DCHECK(it != database_map_.end());
   IndexedDBDatabase* database = it->second;
   database_map_.erase(it);
@@ -68,8 +68,7 @@ void IndexedDBFactoryImpl::ReleaseDatabase(
 void IndexedDBFactoryImpl::ReleaseBackingStore(const Origin& origin,
                                                bool immediate) {
   if (immediate) {
-    IndexedDBBackingStoreMap::iterator it =
-        backing_stores_with_active_blobs_.find(origin);
+    const auto& it = backing_stores_with_active_blobs_.find(origin);
     if (it != backing_stores_with_active_blobs_.end()) {
       it->second->active_blob_registry()->ForceShutdown();
       backing_stores_with_active_blobs_.erase(it);
@@ -104,7 +103,7 @@ void IndexedDBFactoryImpl::MaybeCloseBackingStore(const Origin& origin) {
 }
 
 void IndexedDBFactoryImpl::CloseBackingStore(const Origin& origin) {
-  IndexedDBBackingStoreMap::iterator it = backing_store_map_.find(origin);
+  const auto& it = backing_store_map_.find(origin);
   DCHECK(it != backing_store_map_.end());
   // Stop the timer (if it's running) - this may happen if the timer was started
   // and then a forced close occurs.
@@ -117,8 +116,7 @@ bool IndexedDBFactoryImpl::HasLastBackingStoreReference(
   IndexedDBBackingStore* ptr;
   {
     // Scope so that the implicit scoped_refptr<> is freed.
-    IndexedDBBackingStoreMap::const_iterator it =
-        backing_store_map_.find(origin);
+    const auto& it = backing_store_map_.find(origin);
     DCHECK(it != backing_store_map_.end());
     ptr = it->second.get();
   }
@@ -156,14 +154,13 @@ void IndexedDBFactoryImpl::ReportOutstandingBlobs(const Origin& origin,
     return;
   if (blobs_outstanding) {
     DCHECK(!backing_stores_with_active_blobs_.count(origin));
-    IndexedDBBackingStoreMap::iterator it = backing_store_map_.find(origin);
+    const auto& it = backing_store_map_.find(origin);
     if (it != backing_store_map_.end())
       backing_stores_with_active_blobs_.insert(*it);
     else
       DCHECK(false);
   } else {
-    IndexedDBBackingStoreMap::iterator it =
-        backing_stores_with_active_blobs_.find(origin);
+    const auto& it = backing_stores_with_active_blobs_.find(origin);
     if (it != backing_stores_with_active_blobs_.end()) {
       backing_stores_with_active_blobs_.erase(it);
       ReleaseBackingStore(origin, false /* immediate */);
@@ -219,7 +216,7 @@ void IndexedDBFactoryImpl::DeleteDatabase(
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactoryImpl::DeleteDatabase");
   IndexedDBDatabase::Identifier unique_identifier(origin, name);
-  IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
+  const auto& it = database_map_.find(unique_identifier);
   if (it != database_map_.end()) {
     // If there are any connections to the database, directly delete the
     // database.
@@ -338,7 +335,7 @@ bool IndexedDBFactoryImpl::IsBackingStoreOpen(const Origin& origin) const {
 
 bool IndexedDBFactoryImpl::IsBackingStorePendingClose(
     const Origin& origin) const {
-  IndexedDBBackingStoreMap::const_iterator it = backing_store_map_.find(origin);
+  const auto& it = backing_store_map_.find(origin);
   if (it == backing_store_map_.end())
     return false;
   return it->second->close_timer()->IsRunning();
@@ -369,7 +366,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactoryImpl::OpenBackingStore(
     leveldb::Status* status) {
   const bool open_in_memory = data_directory.empty();
 
-  IndexedDBBackingStoreMap::iterator it2 = backing_store_map_.find(origin);
+  const auto& it2 = backing_store_map_.find(origin);
   if (it2 != backing_store_map_.end()) {
     it2->second->close_timer()->Stop();
     return it2->second;
@@ -414,9 +411,8 @@ void IndexedDBFactoryImpl::Open(const base::string16& name,
   IDB_TRACE("IndexedDBFactoryImpl::Open");
   scoped_refptr<IndexedDBDatabase> database;
   IndexedDBDatabase::Identifier unique_identifier(origin, name);
-  IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
-  blink::WebIDBDataLoss data_loss =
-      blink::WebIDBDataLossNone;
+  const auto& it = database_map_.find(unique_identifier);
+  blink::WebIDBDataLoss data_loss = blink::WebIDBDataLossNone;
   std::string data_loss_message;
   bool disk_full = false;
   bool was_open = (it != database_map_.end());

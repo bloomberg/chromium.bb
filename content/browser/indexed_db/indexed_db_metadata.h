@@ -35,7 +35,6 @@ struct CONTENT_EXPORT IndexedDBIndexMetadata {
 };
 
 struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
-  typedef std::map<int64_t, IndexedDBIndexMetadata> IndexMap;
 
   static const int64_t kInvalidId = -1;
 
@@ -56,14 +55,12 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
   bool auto_increment;
   int64_t max_index_id;
 
-  IndexMap indexes;
+  std::map<int64_t, IndexedDBIndexMetadata> indexes;
 };
 
 struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
   // TODO(jsbell): These can probably be collapsed into 0.
   enum { NO_VERSION = -1, DEFAULT_VERSION = 0 };
-
-  typedef std::map<int64_t, IndexedDBObjectStoreMetadata> ObjectStoreMap;
 
   IndexedDBDatabaseMetadata();
   IndexedDBDatabaseMetadata(const base::string16& name,
@@ -79,7 +76,7 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
   int64_t version;
   int64_t max_object_store_id;
 
-  ObjectStoreMap object_stores;
+  std::map<int64_t, IndexedDBObjectStoreMetadata> object_stores;
 };
 }  // namespace content
 

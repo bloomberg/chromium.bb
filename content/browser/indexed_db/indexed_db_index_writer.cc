@@ -135,8 +135,7 @@ bool MakeIndexWriters(
   *completed = false;
 
   for (const auto& it : index_keys) {
-    IndexedDBObjectStoreMetadata::IndexMap::const_iterator found =
-        object_store.indexes.find(it.first);
+    const auto& found = object_store.indexes.find(it.first);
     if (found == object_store.indexes.end())
       continue;
     const IndexedDBIndexMetadata& index = found->second;

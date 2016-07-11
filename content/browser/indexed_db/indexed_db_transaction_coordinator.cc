@@ -96,7 +96,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
     }
   }
 
-  TransactionSet::const_iterator it = queued_transactions_.begin();
+  auto it = queued_transactions_.begin();
   while (it != queued_transactions_.end()) {
     scoped_refptr<IndexedDBTransaction> transaction = *it;
     ++it;

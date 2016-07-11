@@ -1506,7 +1506,7 @@ static bool CheckObjectStoreAndMetaDataType(const LevelDBIterator* it,
 // plowing ahead when bad data is encountered.
 leveldb::Status IndexedDBBackingStore::GetObjectStores(
     int64_t database_id,
-    IndexedDBDatabaseMetadata::ObjectStoreMap* object_stores) {
+    std::map<int64_t, IndexedDBObjectStoreMetadata>* object_stores) {
   IDB_TRACE("IndexedDBBackingStore::GetObjectStores");
   if (!KeyPrefix::IsValidDatabaseId(database_id))
     return InvalidDBKeyStatus();
@@ -2558,7 +2558,7 @@ static bool CheckIndexAndMetaDataKey(const LevelDBIterator* it,
 leveldb::Status IndexedDBBackingStore::GetIndexes(
     int64_t database_id,
     int64_t object_store_id,
-    IndexedDBObjectStoreMetadata::IndexMap* indexes) {
+    std::map<int64_t, IndexedDBIndexMetadata>* indexes) {
   IDB_TRACE("IndexedDBBackingStore::GetIndexes");
   if (!KeyPrefix::ValidIds(database_id, object_store_id))
     return InvalidDBKeyStatus();
@@ -2709,8 +2709,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::GetBlobInfoForRecord(
     const std::string& object_store_data_key,
     IndexedDBValue* value) {
   BlobChangeRecord* change_record = NULL;
-  BlobChangeMap::const_iterator blob_iter =
-      blob_change_map_.find(object_store_data_key);
+  auto blob_iter = blob_change_map_.find(object_store_data_key);
   if (blob_iter != blob_change_map_.end()) {
     change_record = blob_iter->second;
   } else {
@@ -4248,9 +4247,9 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
 
   if (backing_store_->is_incognito()) {
     if (!blob_change_map_.empty()) {
-      BlobChangeMap& target_map = backing_store_->incognito_blob_map_;
+      auto& target_map = backing_store_->incognito_blob_map_;
       for (auto& iter : blob_change_map_) {
-        BlobChangeMap::iterator target_record = target_map.find(iter.first);
+        auto target_record = target_map.find(iter.first);
         if (target_record != target_map.end()) {
           delete target_record->second;
           target_map.erase(target_record);
@@ -4433,7 +4432,7 @@ void IndexedDBBackingStore::Transaction::PutBlobInfo(
     database_id_ = database_id;
   DCHECK_EQ(database_id_, database_id);
 
-  BlobChangeMap::iterator it = blob_change_map_.find(object_store_data_key);
+  const auto& it = blob_change_map_.find(object_store_data_key);
   BlobChangeRecord* record = NULL;
   if (it == blob_change_map_.end()) {
     record = new BlobChangeRecord(object_store_data_key, object_store_id);

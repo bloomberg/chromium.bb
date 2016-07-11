@@ -264,9 +264,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   class PendingSuccessCall;
   class PendingUpgradeCall;
 
-  typedef std::map<int64_t, IndexedDBTransaction*> TransactionMap;
-  typedef list_set<IndexedDBConnection*> ConnectionSet;
-
   bool IsUpgradeRunning() const;
   bool IsUpgradePendingOrRunning() const;
 
@@ -309,7 +306,7 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   IndexedDBTransactionCoordinator transaction_coordinator_;
 
-  TransactionMap transactions_;
+  std::map<int64_t, IndexedDBTransaction*> transactions_;
 
   // An open request ends up here if:
   //  * There is a running or pending upgrade.
@@ -343,7 +340,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   // When no longer blocked, DeleteDatabaseFinal() calls are made.
   std::list<std::unique_ptr<PendingDeleteCall>> blocked_delete_calls_;
 
-  ConnectionSet connections_;
+  list_set<IndexedDBConnection*> connections_;
   bool experimental_web_platform_features_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBDatabase);

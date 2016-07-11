@@ -48,9 +48,6 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
   // Maps blob_key -> IsDeleted; if the record's absent, it's not in active use
   // and we don't care if it's deleted.
   typedef std::map<int64_t, bool> SingleDBMap;
-  // Maps DB ID -> SingleDBMap
-  typedef std::map<int64_t, SingleDBMap> AllDBsMap;
-  typedef std::set<int64_t> DeletedDBSet;
 
   void AddBlobRef(int64_t database_id, int64_t blob_key);
   void ReleaseBlobRef(int64_t database_id, int64_t blob_key);
@@ -61,8 +58,8 @@ class CONTENT_EXPORT IndexedDBActiveBlobRegistry {
       int64_t blob_key,
       const base::FilePath& unused);
 
-  AllDBsMap use_tracker_;
-  DeletedDBSet deleted_dbs_;
+  std::map<int64_t, SingleDBMap> use_tracker_;
+  std::set<int64_t> deleted_dbs_;
   // As long as we've got blobs registered in use_tracker_,
   // backing_store_->factory() will keep backing_store_ alive for us.  And
   // backing_store_ owns us, so we'll stay alive as long as we're needed.

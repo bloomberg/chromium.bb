@@ -120,7 +120,6 @@ class CONTENT_EXPORT IndexedDBBackingStore
     ScopedVector<storage::BlobDataHandle> handles_;
     DISALLOW_COPY_AND_ASSIGN(BlobChangeRecord);
   };
-  typedef std::map<std::string, BlobChangeRecord*> BlobChangeMap;
 
   class CONTENT_EXPORT Transaction {
    public:
@@ -259,8 +258,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
 
     IndexedDBBackingStore* backing_store_;
     scoped_refptr<LevelDBTransaction> transaction_;
-    BlobChangeMap blob_change_map_;
-    BlobChangeMap incognito_blob_map_;
+    std::map<std::string, BlobChangeRecord*> blob_change_map_;
+    std::map<std::string, BlobChangeRecord*> incognito_blob_map_;
     int64_t database_id_;
 
     // List of blob files being newly written as part of this transaction.
@@ -427,7 +426,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
                                    const std::string& message);
   leveldb::Status GetObjectStores(
       int64_t database_id,
-      IndexedDBDatabaseMetadata::ObjectStoreMap* map) WARN_UNUSED_RESULT;
+      std::map<int64_t, IndexedDBObjectStoreMetadata>* map) WARN_UNUSED_RESULT;
   virtual leveldb::Status CreateObjectStore(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t database_id,
@@ -621,7 +620,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       bool* found);
   leveldb::Status GetIndexes(int64_t database_id,
                              int64_t object_store_id,
-                             IndexedDBObjectStoreMetadata::IndexMap* map)
+                             std::map<int64_t, IndexedDBIndexMetadata>* map)
       WARN_UNUSED_RESULT;
 
   // Remove the blob directory for the specified database and all contained
@@ -654,7 +653,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   net::URLRequestContext* request_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::set<int> child_process_ids_granted_;
-  BlobChangeMap incognito_blob_map_;
+  std::map<std::string, BlobChangeRecord*> incognito_blob_map_;
   base::OneShotTimer journal_cleaning_timer_;
 
   std::unique_ptr<LevelDBDatabase> db_;
