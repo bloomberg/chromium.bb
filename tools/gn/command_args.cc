@@ -111,7 +111,8 @@ void PrintArgHelp(const base::StringPiece& name, const Value& value) {
     GetContextForValue(value, &location, &comment);
     OutputString("    " + location + "\n" + comment);
   } else {
-    OutputString("    (Internally set)\n");
+    OutputString("    (Internally set; try `gn help " + name.as_string() +
+                 "`.)\n");
   }
 }
 
