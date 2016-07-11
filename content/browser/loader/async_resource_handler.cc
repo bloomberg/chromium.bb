@@ -513,16 +513,6 @@ void AsyncResourceHandler::OnResponseCompleted(
   // the ERR_ABORTED error code).
   DCHECK(!was_ignored_by_handler || error_code == net::ERR_ABORTED);
 
-  // TODO(mkosiba): Fix up cases where we create a URLRequestStatus
-  // with a status() != SUCCESS and an error_code() == net::OK.
-  if (status.status() == net::URLRequestStatus::CANCELED &&
-      error_code == net::OK) {
-    error_code = net::ERR_ABORTED;
-  } else if (status.status() == net::URLRequestStatus::FAILED &&
-             error_code == net::OK) {
-    error_code = net::ERR_FAILED;
-  }
-
   ResourceRequestCompletionStatus request_complete_data;
   request_complete_data.error_code = error_code;
   request_complete_data.was_ignored_by_handler = was_ignored_by_handler;
