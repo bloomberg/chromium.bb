@@ -109,6 +109,13 @@ class StorageManagerHandler : public ::options::OptionsPageUIHandler {
   // Helper to compute the total size of all types of site date.
   std::unique_ptr<SiteDataSizeCollector> site_data_size_collector_;
 
+  // Flags indicating fetch operations for storage sizes are ongoing.
+  bool updating_downloads_size_;
+  bool updating_drive_cache_size_;
+  bool updating_browsing_data_size_;
+  bool updating_arc_size_;
+  bool updating_other_users_size_;
+
   base::WeakPtrFactory<StorageManagerHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageManagerHandler);

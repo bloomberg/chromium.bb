@@ -65,6 +65,11 @@ StorageManagerHandler::StorageManagerHandler()
       has_browser_cache_size_(false),
       browser_site_data_size_(-1),
       has_browser_site_data_size_(false),
+      updating_downloads_size_(false),
+      updating_drive_cache_size_(false),
+      updating_browsing_data_size_(false),
+      updating_arc_size_(false),
+      updating_other_users_size_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -238,6 +243,10 @@ void StorageManagerHandler::OnGetSizeStat(int64_t* total_size,
 }
 
 void StorageManagerHandler::UpdateDownloadsSize() {
+  if (updating_downloads_size_)
+    return;
+  updating_downloads_size_ = true;
+
   Profile* const profile = Profile::FromWebUI(web_ui());
   const base::FilePath downloads_path =
       file_manager::util::GetDownloadsFolderForProfile(profile);
@@ -251,12 +260,17 @@ void StorageManagerHandler::UpdateDownloadsSize() {
 }
 
 void StorageManagerHandler::OnGetDownloadsSize(int64_t size) {
+  updating_downloads_size_ = false;
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.StorageManager.setDownloadsSize",
       base::StringValue(ui::FormatBytes(size)));
 }
 
 void StorageManagerHandler::UpdateDriveCacheSize() {
+  if (updating_drive_cache_size_)
+    return;
+  updating_drive_cache_size_ = true;
+
   drive::FileSystemInterface* const file_system =
       drive::util::GetFileSystemByProfile(Profile::FromWebUI(web_ui()));
   file_system->CalculateCacheSize(
@@ -265,12 +279,17 @@ void StorageManagerHandler::UpdateDriveCacheSize() {
 }
 
 void StorageManagerHandler::OnGetDriveCacheSize(int64_t size) {
+  updating_drive_cache_size_ = false;
   web_ui()->CallJavascriptFunctionUnsafe(
       "options.StorageManager.setDriveCacheSize",
       base::StringValue(ui::FormatBytes(size)));
 }
 
 void StorageManagerHandler::UpdateBrowsingDataSize() {
+  if (updating_browsing_data_size_)
+    return;
+  updating_browsing_data_size_ = true;
+
   has_browser_cache_size_ = false;
   has_browser_site_data_size_ = false;
   Profile* const profile = Profile::FromWebUI(web_ui());
@@ -327,6 +346,7 @@ void StorageManagerHandler::OnGetBrowsingDataSize(bool is_site_data,
       size_string = l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
     }
+    updating_browsing_data_size_ = false;
     web_ui()->CallJavascriptFunctionUnsafe(
         "options.StorageManager.setBrowsingDataSize",
         base::StringValue(size_string));
@@ -334,6 +354,10 @@ void StorageManagerHandler::OnGetBrowsingDataSize(bool is_site_data,
 }
 
 void StorageManagerHandler::UpdateOtherUsersSize() {
+  if (updating_other_users_size_)
+    return;
+  updating_other_users_size_ = true;
+
   other_users_.clear();
   user_sizes_.clear();
   const user_manager::UserList& users =
@@ -361,6 +385,7 @@ void StorageManagerHandler::OnGetOtherUserSize(bool success, int64_t size) {
       size_string = l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
     }
+    updating_other_users_size_ = false;
     web_ui()->CallJavascriptFunctionUnsafe(
         "options.StorageManager.setOtherUsersSize",
         base::StringValue(size_string));
@@ -368,6 +393,10 @@ void StorageManagerHandler::OnGetOtherUserSize(bool success, int64_t size) {
 }
 
 void StorageManagerHandler::UpdateArcSize() {
+  if (updating_arc_size_)
+    return;
+  updating_arc_size_ = true;
+
   Profile* const profile = Profile::FromWebUI(web_ui());
   if (!arc::ArcAuthService::IsAllowedForProfile(profile) ||
       arc::ArcAuthService::IsOptInVerificationDisabled() ||
@@ -381,14 +410,8 @@ void StorageManagerHandler::UpdateArcSize() {
   bool success = arc::ArcStorageManager::Get()->GetApplicationsSize(
       base::Bind(&StorageManagerHandler::OnGetArcSize,
                  base::Unretained(this)));
-  if (!success) {
-    // TODO(fukino): Retry updating arc size later if the arc bridge service is
-    // not ready.
-    web_ui()->CallJavascriptFunctionUnsafe(
-        "options.StorageManager.setArcSize",
-        base::StringValue(l10n_util::GetStringUTF16(
-            IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN)));
-  }
+  if (!success)
+    updating_arc_size_ = false;
 }
 
 void StorageManagerHandler::OnGetArcSize(bool succeeded,
@@ -403,6 +426,7 @@ void StorageManagerHandler::OnGetArcSize(bool succeeded,
     size_string = l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
   }
+  updating_arc_size_ = false;
   web_ui()->CallJavascriptFunctionUnsafe("options.StorageManager.setArcSize",
                                          base::StringValue(size_string));
 }

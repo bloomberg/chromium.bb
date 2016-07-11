@@ -41,6 +41,12 @@ cr.define('options', function() {
   StorageManager.prototype = {
     __proto__: Page.prototype,
 
+    /**
+     * Timer ID for periodical update.
+     * @private {number}
+     */
+    updateTimerId_: -1,
+
     /** @override */
     initializePage: function() {
       Page.prototype.initializePage.call(this);
@@ -68,6 +74,13 @@ cr.define('options', function() {
       // Updating storage information can be expensive (e.g. computing directory
       // sizes recursively), so we delay this operation until the page is shown.
       chrome.send('updateStorageInfo');
+      // We periodically update the storage usage while the overlay is visible.
+      this.startPeriodicalUpdate_();
+    },
+
+    /** @override */
+    didClosePage: function() {
+      this.stopPeriodicalUpdate_();
     },
 
     /**
@@ -82,10 +95,10 @@ cr.define('options', function() {
       $('storage-manager-size-available').textContent = sizeStat.availableSize;
       $('storage-bar-progress').setAttribute('value', sizeStat.usedRatio);
       $('storageManagerPage').classList.toggle('low-space',
-          sizeStat.spaceState ===
+          sizeStat.spaceState ==
               options.StorageSpaceState.STORAGE_SPACE_LOW);
       $('storageManagerPage').classList.toggle('critically-low-space',
-          sizeStat.spaceState ===
+          sizeStat.spaceState ==
               options.StorageSpaceState.STORAGE_SPACE_CRITICALLY_LOW);
     },
 
@@ -143,6 +156,30 @@ cr.define('options', function() {
      */
     showArcItem_: function() {
       $('storage-manager-item-arc').hidden = false;
+    },
+
+    /**
+     * Starts periodical update for storage usage.
+     * @private
+     */
+    startPeriodicalUpdate_: function() {
+      // We update the storage usage every 5 seconds.
+      if (this.updateTimerId_ == -1) {
+        this.updateTimerId_ = window.setInterval(function() {
+          chrome.send('updateStorageInfo');
+        }, 5000);
+      }
+    },
+
+    /**
+     * Stops periodical update for storage usage.
+     * @private
+     */
+    stopPeriodicalUpdate_: function() {
+      if (this.updateTimerId_ != -1) {
+        window.clearInterval(this.updateTimerId_);
+        this.updateTimerId_ = -1;
+      }
     },
   };
 
