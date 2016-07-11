@@ -36,22 +36,26 @@ URL_PREFIX = 'https://commondatastorage.googleapis.com'
 URL_PATH = 'chrome-linux-sysroot/toolchain'
 REVISION_AMD64 = 'c52471d9dec240c8d0a88fa98aa1eefeee32e22f'
 REVISION_ARM = 'c52471d9dec240c8d0a88fa98aa1eefeee32e22f'
+REVISION_ARM64 = 'bd10c315594d2a20e31a94a7a6c7adb9a0961c56'
 REVISION_I386 = 'c52471d9dec240c8d0a88fa98aa1eefeee32e22f'
 REVISION_MIPS = 'c52471d9dec240c8d0a88fa98aa1eefeee32e22f'
 TARBALL_AMD64 = 'debian_wheezy_amd64_sysroot.tgz'
 TARBALL_ARM = 'debian_wheezy_arm_sysroot.tgz'
+TARBALL_ARM64 = 'debian_jessie_arm64_sysroot.tgz'
 TARBALL_I386 = 'debian_wheezy_i386_sysroot.tgz'
 TARBALL_MIPS = 'debian_wheezy_mips_sysroot.tgz'
 TARBALL_AMD64_SHA1SUM = 'ca4ed6e7c9e333b046be19d38584a11f6785eea6'
 TARBALL_ARM_SHA1SUM = '1fab0c2b1e93a933ddc593df3b43872b0ba5ded2'
+TARBALL_ARM64_SHA1SUM = '0db3be51912e0be46bb1b906fc196c5c1dfc090f'
 TARBALL_I386_SHA1SUM = '80c48c303319af2284e4a104c882d888af75ba81'
 TARBALL_MIPS_SHA1SUM = '01da32a35288627e05cfca193b7f3659531c6f7d'
 SYSROOT_DIR_AMD64 = 'debian_wheezy_amd64-sysroot'
 SYSROOT_DIR_ARM = 'debian_wheezy_arm-sysroot'
+SYSROOT_DIR_ARM64 = 'debian_jessie_arm64-sysroot'
 SYSROOT_DIR_I386 = 'debian_wheezy_i386-sysroot'
 SYSROOT_DIR_MIPS = 'debian_wheezy_mips-sysroot'
 
-valid_archs = ('arm', 'i386', 'amd64', 'mips')
+valid_archs = ('arm', 'arm64', 'i386', 'amd64', 'mips')
 
 
 class Error(Exception):
@@ -129,7 +133,7 @@ def InstallDefaultSysroots():
   # Don't attampt to install arm64 since this is currently and android-only
   # architecture.
   target_arch = DetectTargetArch()
-  if target_arch and target_arch not in (host_arch, 'i386', 'arm64'):
+  if target_arch and target_arch not in (host_arch, 'i386'):
     InstallSysroot(target_arch)
 
 
@@ -170,6 +174,11 @@ def InstallSysroot(target_arch):
     tarball_filename = TARBALL_ARM
     tarball_sha1sum = TARBALL_ARM_SHA1SUM
     revision = REVISION_ARM
+  elif target_arch == 'arm64':
+    sysroot = os.path.join(linux_dir, SYSROOT_DIR_ARM64)
+    tarball_filename = TARBALL_ARM64
+    tarball_sha1sum = TARBALL_ARM64_SHA1SUM
+    revision = REVISION_ARM64
   elif target_arch == 'i386':
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_I386)
     tarball_filename = TARBALL_I386

@@ -69,6 +69,7 @@ def FindFiles(input_api, root_dir, start_paths_list, excluded_dirs_list):
     # Don't check downloaded goma client binaries.
     path_join('build', 'goma', 'client'),
     # Ignore sysroots.
+    path_join('build', 'linux', 'debian_jessie_arm64-sysroot'),
     path_join('build', 'linux', 'debian_wheezy_amd64-sysroot'),
     path_join('build', 'linux', 'debian_wheezy_arm-sysroot'),
     path_join('build', 'linux', 'debian_wheezy_mips-sysroot'),

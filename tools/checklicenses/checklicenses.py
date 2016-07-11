@@ -648,6 +648,7 @@ EXCLUDED_PATHS = [
     'build/goma/client',
 
     # Don't check sysroot directories
+    'build/linux/debian_jessie_arm64-sysroot',
     'build/linux/debian_wheezy_amd64-sysroot',
     'build/linux/debian_wheezy_arm-sysroot',
     'build/linux/debian_wheezy_i386-sysroot',
