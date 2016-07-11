@@ -365,19 +365,6 @@ class TestPort(Port):
     port_name = 'test'
     default_port_name = 'test-mac-mac10.10'
 
-    # TODO(wkorman): The below constant is legacy code and is only referenced by a unit test. Find the modern way to do
-    # the same thing that test is doing and delete this.
-    #
-    # A list of platform names sufficient to cover all the baselines.
-    # The list should be sorted so that a later platform  will reuse
-    # an earlier platform's baselines if they are the same (e.g.,
-    # 'mac10.10' should precede 'mac10.9').
-    ALL_BASELINE_VARIANTS = (
-        'test-linux-trusty', 'test-linux-precise', 'test-linux-x86',
-        'test-mac-mac10.11', 'test-mac-mac10.10',
-        'test-win-win10', 'test-win-win7'
-    )
-
     FALLBACK_PATHS = {
         'win7': ['test-win-win7', 'test-win-win10'],
         'win10': ['test-win-win10'],

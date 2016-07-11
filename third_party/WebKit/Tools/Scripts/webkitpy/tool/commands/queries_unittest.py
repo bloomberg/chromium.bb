@@ -41,7 +41,11 @@ class PrintExpectationsTest(unittest.TestCase):
         options = MockOptions(all=False, csv=False, full=False, platform=platform,
                               include_keyword=[], exclude_keyword=[], paths=False).update(**args)
         tool = MockTool()
-        tool.port_factory.all_port_names = lambda: TestPort.ALL_BASELINE_VARIANTS
+        tool.port_factory.all_port_names = lambda: [
+            'test-linux-trusty', 'test-linux-precise',
+            'test-mac-mac10.11', 'test-mac-mac10.10',
+            'test-win-win10', 'test-win-win7'
+        ]
         command = PrintExpectations()
         command.bind_to_tool(tool)
 
@@ -111,7 +115,11 @@ class PrintBaselinesTest(unittest.TestCase):
         self.tool = MockTool()
         self.test_port = self.tool.port_factory.get('test-win-win7')
         self.tool.port_factory.get = lambda port_name=None: self.test_port
-        self.tool.port_factory.all_port_names = lambda: TestPort.ALL_BASELINE_VARIANTS
+        self.tool.port_factory.all_port_names = lambda: [
+            'test-linux-trusty', 'test-linux-precise',
+            'test-mac-mac10.11', 'test-mac-mac10.10',
+            'test-win-win10', 'test-win-win7'
+        ]
 
     def tearDown(self):
         if self.oc:
