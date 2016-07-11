@@ -250,7 +250,6 @@ if (enable_webrtc) {
       "../webrtc/api/audiotrack.h",
       "../webrtc/api/datachannel.cc",
       "../webrtc/api/datachannel.h",
-      "../webrtc/api/dtlsidentitystore.h",
       "../webrtc/api/dtmfsender.cc",
       "../webrtc/api/dtmfsender.h",
       "../webrtc/api/jsep.h",
