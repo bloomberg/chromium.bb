@@ -4,6 +4,7 @@
 
 #include "components/open_from_clipboard/clipboard_recent_content_ios.h"
 
+#import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
 
 #include <memory>
@@ -12,6 +13,20 @@
 #include "testing/platform_test.h"
 
 namespace {
+
+UIImage* TestUIImage() {
+  CGRect frame = CGRectMake(0, 0, 1.0, 1.0);
+  UIGraphicsBeginImageContext(frame.size);
+
+  CGContextRef context = UIGraphicsGetCurrentContext();
+  CGContextSetFillColorWithColor(context, [UIColor redColor].CGColor);
+  CGContextFillRect(context, frame);
+
+  UIImage* image = UIGraphicsGetImageFromCurrentImageContext();
+  UIGraphicsEndImageContext();
+
+  return image;
+}
 
 void SetPasteboardImage(UIImage* image) {
   [[UIPasteboard generalPasteboard] setImage:image];
@@ -154,7 +169,7 @@ TEST_F(ClipboardRecentContentIOSTest, AddingNonStringRemovesCachedString) {
 
   // Overwrite pasteboard with an image.
   base::scoped_nsobject<UIImage> image([[UIImage alloc] init]);
-  SetPasteboardImage(image);
+  SetPasteboardImage(TestUIImage());
 
   // Pasteboard should appear empty.
   EXPECT_FALSE(clipboard_content_->GetRecentURLFromClipboard(&gurl));
