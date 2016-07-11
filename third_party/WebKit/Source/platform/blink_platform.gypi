@@ -378,7 +378,6 @@
       'exported/WebURLRequest.cpp',
       'exported/WebURLRequestPrivate.h',
       'exported/WebURLResponse.cpp',
-      'exported/WebURLResponsePrivate.h',
       'exported/WrappedResourceRequest.h',
       'exported/WrappedResourceResponse.h',
       'fonts/AcceptLanguagesResolver.cpp',
