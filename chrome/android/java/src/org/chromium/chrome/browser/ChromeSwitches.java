@@ -80,11 +80,6 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_LOFI_SNACKBAR = "disable-lo-fi-snackbar";
 
     /**
-     * Enable interests on the NTP
-     */
-    public static final String ENABLE_INTERESTS = "enable-interests";
-
-    /**
      * Forces the update menu item to show.
      */
     public static final String FORCE_SHOW_UPDATE_MENU_ITEM = "force-show-update-menu-item";

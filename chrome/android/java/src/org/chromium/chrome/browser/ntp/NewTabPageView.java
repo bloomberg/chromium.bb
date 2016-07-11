@@ -128,9 +128,6 @@ public class NewTabPageView extends FrameLayout
         /** @return Whether voice search is enabled and the microphone should be shown. */
         boolean isVoiceSearchEnabled();
 
-        /** @return Whether the NTP Interests tab is enabled and its button should be shown. */
-        boolean isInterestsEnabled();
-
         /** @return Whether the toolbar at the bottom of the NTP is enabled and should be shown. */
         boolean isToolbarEnabled();
 
@@ -151,9 +148,6 @@ public class NewTabPageView extends FrameLayout
 
         /** Opens a url in the current tab. */
         void openUrl(String url);
-
-        /** Opens the interests dialog. */
-        void navigateToInterests();
 
         /**
          * Animates the search box up into the omnibox and bring up the keyboard.
@@ -351,17 +345,6 @@ public class NewTabPageView extends FrameLayout
                     mManager.navigateToBookmarks();
                 }
             });
-            toolbar.getInterestsButton().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mManager.navigateToInterests();
-                }
-            });
-
-            // Set up interests
-            if (manager.isInterestsEnabled()) {
-                toolbar.getInterestsButton().setVisibility(View.VISIBLE);
-            }
         } else {
             ((ViewGroup) toolbar.getParent()).removeView(toolbar);
             MarginLayoutParams params = (MarginLayoutParams) getWrapperView().getLayoutParams();
