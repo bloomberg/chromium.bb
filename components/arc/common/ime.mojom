@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -42,6 +42,7 @@ struct CompositionSegment {
   bool emphasized;
 };
 
+// Next method ID: 4
 interface ImeHost {
   // Notifies Chrome that the text input focus is changed.
   OnTextInputTypeChanged@0(TextInputType type);
@@ -56,6 +57,7 @@ interface ImeHost {
   [MinVersion=2] ShowImeIfNeeded@3();
 };
 
+// Next method ID: 6
 interface ImeInstance {
   Init@0(ImeHost host_ptr);
 
@@ -73,4 +75,8 @@ interface ImeInstance {
   // screen coordinate, physical pixel as a unit.
   // When all members are zero value, virtual keyboard is being hidden.
   [MinVersion=3] OnKeyboardBoundsChanging@4(ScreenRect new_bounds);
+
+  // Deletes current selection plus the specified number of char16 values
+  // before and after selection or caret.
+  [MinVersion=4] ExtendSelectionAndDelete@5(uint64 before, uint64 after);
 };

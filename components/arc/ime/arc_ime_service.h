@@ -100,7 +100,7 @@ class ArcImeService : public ArcService,
   void OnInputMethodChanged() override {}
   bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) override;
-  void ExtendSelectionAndDelete(size_t before, size_t after) override {}
+  void ExtendSelectionAndDelete(size_t before, size_t after) override;
   void EnsureCaretInRect(const gfx::Rect& rect) override {}
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override {

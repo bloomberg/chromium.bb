@@ -289,6 +289,10 @@ base::i18n::TextDirection ArcImeService::GetTextDirection() const {
   return base::i18n::UNKNOWN_DIRECTION;
 }
 
+void ArcImeService::ExtendSelectionAndDelete(size_t before, size_t after) {
+  ime_bridge_->SendExtendSelectionAndDelete(before, after);
+}
+
 int ArcImeService::GetTextInputFlags() const {
   return ui::TEXT_INPUT_FLAG_NONE;
 }
