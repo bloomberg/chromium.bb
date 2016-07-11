@@ -17,9 +17,27 @@ class Target(object):
   * TaskTarget to monitor a job or tasks running in (potentially) many places;
   * DeviceTarget to monitor a host machine that may be running a task.
   """
+
+  def __init__(self):
+    # Subclasses should list the updatable target fields here.
+    self._fields = tuple()
+
   def _populate_target_pb(self, metric):
     """Populate the 'target' embedded message field of a metric protobuf."""
     raise NotImplementedError()
+
+  def to_dict(self):
+    """Return target field values as a dictionary."""
+    return {field: getattr(self, field) for field in self._fields}
+
+  def update(self, target_fields):
+    """Update values of some target fields given as a dict."""
+    for field, value in target_fields.iteritems():
+      if field not in self._fields:
+        raise AttributeError('Bad target field: %s' % field)
+      # Make sure the attribute actually exists in the object.
+      getattr(self, field)
+      setattr(self, field, value)
 
 
 class DeviceTarget(Target):
@@ -30,6 +48,7 @@ class DeviceTarget(Target):
 
     Args:
       region (str): physical region in which the device is located.
+      role (str): role of the device.
       network (str): virtual network on which the device is located.
       hostname (str): name by which the device self-identifies.
     """
@@ -40,6 +59,7 @@ class DeviceTarget(Target):
     self.hostname = hostname
     self.realm = 'ACQ_CHROME'
     self.alertable = True
+    self._fields = ('region', 'role', 'network', 'hostname')
 
   def _populate_target_pb(self, metric):
     """Populate the 'network_device' embedded message of a metric protobuf.
@@ -75,6 +95,8 @@ class TaskTarget(Target):
     self.region = region
     self.hostname = hostname
     self.task_num = task_num
+    self._fields = ('service_name', 'job_name', 'region',
+                    'hostname', 'task_num')
 
   def _populate_target_pb(self, metric):
     """Populate the 'task' embedded message field of a metric protobuf.

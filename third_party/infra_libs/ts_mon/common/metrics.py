@@ -5,9 +5,6 @@
 """Classes representing individual metrics that can be sent."""
 
 import copy
-import operator
-import threading
-import time
 
 from infra_libs.ts_mon.protos import metrics_pb2
 
@@ -35,6 +32,12 @@ class Metric(object):
   set() or increment() methods to modify a particular value, or passed to the
   constructor in which case they will be used as the defaults for this Metric.
 
+  The unit of measurement for Metric data can be specified with MetricsDataUnits
+  when a Metric object is created:
+  e.g., MetricsDataUnits.SECONDS, MetricsDataUnits.BYTES, and etc..,
+  A full list of supported units can be found in the following protobuf file
+  : infra_libs/ts_mon/protos/metrics.proto
+
   Do not directly instantiate an object of this class.
   Use the concrete child classes instead:
   * StringMetric for metrics with string value
@@ -43,9 +46,11 @@ class Metric(object):
   * GaugeMetric for metrics with arbitrarily varying integer values
   * CumulativeMetric for metrics with monotonically increasing float values
   * FloatMetric for metrics with arbitrarily varying float values
+
+  See http://go/inframon-doc for help designing and using your metrics.
   """
 
-  def __init__(self, name, fields=None, description=None):
+  def __init__(self, name, fields=None, description=None, units=None):
     """Create an instance of a Metric.
 
     Args:
@@ -53,6 +58,9 @@ class Metric(object):
       fields (dict): a set of key-value pairs to be set as default metric fields
       description (string): help string for the metric. Should be enough to
                             know what the metric is about.
+      units (int): the unit used to measure data for given
+                   metric. Please use the attributes of MetricDataUnit to find
+                   valid integer values for this argument.
     """
     self._name = name.lstrip('/')
     self._start_time = None
@@ -61,9 +69,8 @@ class Metric(object):
       raise errors.MonitoringTooManyFieldsError(self._name, fields)
     self._fields = fields
     self._normalized_fields = self._normalize_fields(self._fields)
-    # pgervais: Yes, description is unused. Waiting for the rest of the pipeline
-    # to support it.
     self._description = description
+    self._units = units
 
     interface.register(self)
 
@@ -75,11 +82,13 @@ class Metric(object):
   def start_time(self):
     return self._start_time
 
+  def is_cumulative(self):
+    raise NotImplementedError()
+
   def __eq__(self, other):
-    name = self._name == other._name
-    field = self._fields == other._fields
-    instance_type = type(self) == type(other)
-    return name and field and instance_type
+    return (self.name == other.name and
+            self._fields == other._fields and
+            type(self) == type(other))
 
   def unregister(self):
     interface.unregister(self)
@@ -90,12 +99,17 @@ class Metric(object):
     Args:
       collection_pb (metrics_pb2.MetricsCollection): protocol buffer into which
         to add the current metric values.
+      start_time (int): timestamp in microseconds since UNIX epoch.
       target (Target): a Target to use.
     """
 
     metric_pb = collection_pb.data.add()
-    metric_pb.metric_name_prefix = '/chrome/infra/'
+    metric_pb.metric_name_prefix = interface.state.metric_name_prefix
     metric_pb.name = self._name
+    if self._description is not None:
+      metric_pb.description = self._description
+    if self._units is not None:
+      metric_pb.units = self._units
 
     self._populate_value(metric_pb, value, start_time)
     self._populate_fields(metric_pb, fields)
@@ -157,10 +171,11 @@ class Metric(object):
     Args:
       metric (metrics_pb2.MetricsData): a metrics protobuf to populate
       value (see concrete class): the value of the metric to be set
+      start_time (int): timestamp in microseconds since UNIX epoch.
     """
     raise NotImplementedError()
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     """Set a new value for this metric. Results in sending a new value.
 
     The subclass should do appropriate type checking on value and then call
@@ -169,16 +184,21 @@ class Metric(object):
     Args:
       value (see concrete class): the value of the metric to be set
       fields (dict): additional metric fields to complement those on self
+      target_fields (dict): overwrite some of the default target fields
     """
     raise NotImplementedError()
 
-  def get(self, fields=None):
+  def get(self, fields=None, target_fields=None):
     """Returns the current value for this metric.
 
     Subclasses should never use this to get a value, modify it and set it again.
     Instead use _incr with a modify_fn.
     """
-    return interface.state.store.get(self.name, self._normalize_fields(fields))
+    return interface.state.store.get(
+        self.name, self._normalize_fields(fields), target_fields)
+
+  def get_all(self):
+    return interface.state.store.iter_field_values(self.name)
 
   def reset(self):
     """Clears the values of this metric.  Useful in unit tests.
@@ -189,13 +209,13 @@ class Metric(object):
 
     interface.state.store.reset_for_unittest(self.name)
 
-  def _set(self, fields, value, enforce_ge=False):
-    interface.state.store.set(self.name, self._normalize_fields(fields), value,
-                              enforce_ge=enforce_ge)
+  def _set(self, fields, target_fields, value, enforce_ge=False):
+    interface.state.store.set(self.name, self._normalize_fields(fields),
+                              target_fields, value, enforce_ge=enforce_ge)
 
-  def _incr(self, fields, delta, modify_fn=None):
-    interface.state.store.incr(self.name, self._normalize_fields(fields), delta,
-                               modify_fn=modify_fn)
+  def _incr(self, fields, target_fields, delta, modify_fn=None):
+    interface.state.store.incr(self.name, self._normalize_fields(fields),
+                               target_fields, delta, modify_fn=modify_fn)
 
 
 class StringMetric(Metric):
@@ -204,10 +224,13 @@ class StringMetric(Metric):
   def _populate_value(self, metric, value, start_time):
     metric.string_value = value
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     if not isinstance(value, basestring):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
-    self._set(fields, value)
+    self._set(fields, target_fields, value)
+
+  def is_cumulative(self):
+    return False
 
 
 class BooleanMetric(Metric):
@@ -216,44 +239,51 @@ class BooleanMetric(Metric):
   def _populate_value(self, metric, value, start_time):
     metric.boolean_value = value
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     if not isinstance(value, bool):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
-    self._set(fields, value)
+    self._set(fields, target_fields, value)
+
+  def is_cumulative(self):
+    return False
 
 
 class NumericMetric(Metric):  # pylint: disable=abstract-method
   """Abstract base class for numeric (int or float) metrics."""
   # TODO(agable): Figure out if there's a way to send units with these metrics.
 
-  def increment(self, fields=None):
-    self._incr(fields, 1)
+  def increment(self, fields=None, target_fields=None):
+    self._incr(fields, target_fields, 1)
 
-  def increment_by(self, step, fields=None):
-    self._incr(fields, step)
+  def increment_by(self, step, fields=None, target_fields=None):
+    self._incr(fields, target_fields, step)
 
 
 class CounterMetric(NumericMetric):
   """A metric whose value type is a monotonically increasing integer."""
 
-  def __init__(self, name, fields=None, start_time=None, description=None):
+  def __init__(self, name, fields=None, start_time=None, description=None,
+               units=None):
     super(CounterMetric, self).__init__(
-        name, fields=fields, description=description)
+        name, fields=fields, description=description, units=units)
     self._start_time = start_time
 
   def _populate_value(self, metric, value, start_time):
     metric.counter = value
     metric.start_timestamp_us = int(start_time * MICROSECONDS_PER_SECOND)
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     if not isinstance(value, (int, long)):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
-    self._set(fields, value, enforce_ge=True)
+    self._set(fields, target_fields, value, enforce_ge=True)
 
-  def increment_by(self, step, fields=None):
+  def increment_by(self, step, fields=None, target_fields=None):
     if not isinstance(step, (int, long)):
       raise errors.MonitoringInvalidValueTypeError(self._name, step)
-    self._incr(fields, step)
+    self._incr(fields, target_fields, step)
+
+  def is_cumulative(self):
+    return True
 
 
 class GaugeMetric(NumericMetric):
@@ -262,28 +292,35 @@ class GaugeMetric(NumericMetric):
   def _populate_value(self, metric, value, start_time):
     metric.gauge = value
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     if not isinstance(value, (int, long)):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
-    self._set(fields, value)
+    self._set(fields, target_fields, value)
+
+  def is_cumulative(self):
+    return False
 
 
 class CumulativeMetric(NumericMetric):
   """A metric whose value type is a monotonically increasing float."""
 
-  def __init__(self, name, fields=None, start_time=None, description=None):
+  def __init__(self, name, fields=None, start_time=None, description=None,
+               units=None):
     super(CumulativeMetric, self).__init__(
-        name, fields=fields, description=description)
+        name, fields=fields, description=description, units=units)
     self._start_time = start_time
 
   def _populate_value(self, metric, value, start_time):
     metric.cumulative_double_value = value
     metric.start_timestamp_us = int(start_time * MICROSECONDS_PER_SECOND)
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     if not isinstance(value, (float, int)):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
-    self._set(fields, float(value), enforce_ge=True)
+    self._set(fields, target_fields, float(value), enforce_ge=True)
+
+  def is_cumulative(self):
+    return True
 
 
 class FloatMetric(NumericMetric):
@@ -292,10 +329,13 @@ class FloatMetric(NumericMetric):
   def _populate_value(self, metric, value, start_time):
     metric.noncumulative_double_value = value
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     if not isinstance(value, (float, int)):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
-    self._set(fields, float(value))
+    self._set(fields, target_fields, float(value))
+
+  def is_cumulative(self):
+    return False
 
 
 class DistributionMetric(Metric):
@@ -313,22 +353,23 @@ class DistributionMetric(Metric):
   }
 
   def __init__(self, name, is_cumulative=True, bucketer=None, fields=None,
-               start_time=None, description=None):
+               start_time=None, description=None, units=None):
     super(DistributionMetric, self).__init__(
-        name, fields=fields, description=description)
+        name, fields=fields, description=description, units=units)
     self._start_time = start_time
 
     if bucketer is None:
       bucketer = distribution.GeometricBucketer()
 
-    self.is_cumulative = is_cumulative
+    self._is_cumulative = is_cumulative
     self.bucketer = bucketer
 
   def _populate_value(self, metric, value, start_time):
     pb = metric.distribution
 
-    pb.is_cumulative = self.is_cumulative
-    metric.start_timestamp_us = int(start_time * MICROSECONDS_PER_SECOND)
+    pb.is_cumulative = self._is_cumulative
+    if self._is_cumulative:
+      metric.start_timestamp_us = int(start_time * MICROSECONDS_PER_SECOND)
 
     # Copy the bucketer params.
     if (value.bucketer.width == 0 and
@@ -373,16 +414,16 @@ class DistributionMetric(Metric):
           count = 0
         yield value
 
-  def add(self, value, fields=None):
+  def add(self, value, fields=None, target_fields=None):
     def modify_fn(dist, value):
       if dist == 0:
         dist = distribution.Distribution(self.bucketer)
       dist.add(value)
       return dist
 
-    self._incr(fields, value, modify_fn=modify_fn)
+    self._incr(fields, target_fields, value, modify_fn=modify_fn)
 
-  def set(self, value, fields=None):
+  def set(self, value, fields=None, target_fields=None):
     """Replaces the distribution with the given fields with another one.
 
     This only makes sense on non-cumulative DistributionMetrics.
@@ -391,37 +432,62 @@ class DistributionMetric(Metric):
       value: A infra_libs.ts_mon.Distribution.
     """
 
-    if self.is_cumulative:
+    if self._is_cumulative:
       raise TypeError(
           'Cannot set() a cumulative DistributionMetric (use add() instead)')
 
     if not isinstance(value, distribution.Distribution):
       raise errors.MonitoringInvalidValueTypeError(self._name, value)
 
-    self._set(fields, value)
+    self._set(fields, target_fields, value)
+
+  def is_cumulative(self):
+    raise NotImplementedError()  # Keep this class abstract.
 
 
 class CumulativeDistributionMetric(DistributionMetric):
   """A DistributionMetric with is_cumulative set to True."""
 
   def __init__(self, name, bucketer=None, fields=None,
-               description=None):
+               description=None, units=None):
     super(CumulativeDistributionMetric, self).__init__(
         name,
         is_cumulative=True,
         bucketer=bucketer,
         fields=fields,
-        description=description)
+        description=description,
+        units=units)
+
+  def is_cumulative(self):
+    return True
 
 
 class NonCumulativeDistributionMetric(DistributionMetric):
   """A DistributionMetric with is_cumulative set to False."""
 
   def __init__(self, name, bucketer=None, fields=None,
-               description=None):
+               description=None, units=None):
     super(NonCumulativeDistributionMetric, self).__init__(
         name,
         is_cumulative=False,
         bucketer=bucketer,
         fields=fields,
-        description=description)
+        description=description,
+        units=units)
+
+  def is_cumulative(self):
+    return False
+
+
+class MetaMetricsDataUnits(type):
+  """Metaclass to populate the enum values of metrics_pb2.MetricsData.Units."""
+  def __new__(mcs, name, bases, attrs):
+    attrs.update(metrics_pb2.MetricsData.Units.items())
+    return super(MetaMetricsDataUnits, mcs).__new__(mcs, name, bases, attrs)
+
+
+class MetricsDataUnits(object):
+  """An enumeration class for units of measurement for Metrics data.
+  See infra_libs/ts_mon/protos/metrics.proto for a full list of supported units.
+  """
+  __metaclass__ = MetaMetricsDataUnits
