@@ -5,7 +5,22 @@
 <script>
 function test()
 {
-    var commands = ["{a:1, b:2}", "{a:1}", "{var a = 1; eval(\"{a :1, b:2 }\");}", "{ for (var i = 0; i < 5; ++i); }"];
+    var commands = [
+        "{a:1, b:2}",
+        "{a:1}",
+        "{var a = 1; eval(\"{ a:1, b:2 }\");}",
+        "{ for (var i = 0; i < 5; ++i); }",
+        "{ a: 4 }),({ b: 7 }",
+        "{ let a = 4; a; }",
+        "{ let a = 4; }; { let b = 5; };",
+        "{ a: 4 } + { a: 5 }",
+        "{ a: 4 }, { a: 5 }",
+
+        // Test that detection doesn't incur side effects.
+        "var foo = 4;",
+        "{ a: foo++ }",
+        "foo;"
+    ];
     var current = -1;
     loopOverCommands();
     function loopOverCommands()
