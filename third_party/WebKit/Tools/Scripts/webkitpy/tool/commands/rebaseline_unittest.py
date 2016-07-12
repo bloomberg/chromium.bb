@@ -52,6 +52,7 @@ class BaseTestCase(unittest.TestCase):
         # we can make the default port also a "test" port.
         self.original_port_factory_get = self.tool.port_factory.get
         test_port = self.tool.port_factory.get('test')
+        self._builder_data = {}
 
         def get_test_port(port_name=None, options=None, **kwargs):
             if not port_name:
@@ -96,8 +97,14 @@ class BaseTestCase(unittest.TestCase):
                 }
             }
         })
-        for builder in ['MOCK Win7', 'MOCK Win7 (dbg)', 'MOCK Mac10.11']:
-            self.command._builder_data[builder] = data
+
+        def builder_data():
+            self._builder_data = {}
+            for builder in ['MOCK Win7', 'MOCK Win7 (dbg)', 'MOCK Mac10.11']:
+                self._builder_data[builder] = data
+            return self._builder_data
+
+        self.command.builder_data = builder_data
 
 class TestCopyExistingBaselinesInternal(BaseTestCase):
     command_constructor = CopyExistingBaselinesInternal
@@ -337,7 +344,7 @@ class TestRebaselineJson(BaseTestCase):
         self._setup_mock_builder_data()
 
         def builder_data():
-            self.command._builder_data['MOCK Win7'] = LayoutTestResults({
+            self._builder_data['MOCK Win7'] = LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "first-test.html": {
@@ -347,7 +354,7 @@ class TestRebaselineJson(BaseTestCase):
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -602,7 +609,7 @@ class TestRebaselineExpectations(BaseTestCase):
         self.tool.executive = MockExecutive2()
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.11'] = self.command._builder_data['MOCK Mac10.10'] = LayoutTestResults({
+            self._builder_data['MOCK Mac10.11'] = self._builder_data['MOCK Mac10.10'] = LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "another-test.html": {
@@ -616,7 +623,7 @@ class TestRebaselineExpectations(BaseTestCase):
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -659,7 +666,7 @@ class TestRebaselineExpectations(BaseTestCase):
         self.tool.executive = MockExecutive2()
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "reftest-text.html": {
@@ -677,7 +684,7 @@ class TestRebaselineExpectations(BaseTestCase):
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -745,7 +752,7 @@ class TestRebaselineExpectations(BaseTestCase):
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -758,7 +765,7 @@ class TestRebaselineExpectations(BaseTestCase):
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -785,7 +792,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
 
     def test_rebaseline_missing(self):
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = LayoutTestResults({
+            self._builder_data['MOCK Mac10.10'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -812,7 +819,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -1049,11 +1056,9 @@ TBR=foo@chromium.org
 
         test_port = self.tool.port_factory.get('test')
 
-        original_builder_data = self.command.builder_data
         def builder_data():
-            original_builder_data()
             # Have prototype-chocolate only fail on "MOCK Mac10.11".
-            self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1075,7 +1080,7 @@ TBR=foo@chromium.org
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -1109,31 +1114,22 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 
         self.assertEqual(self.tool.executive.calls, [
             [
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/prototype-chocolate.html'],
                 ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png',
                  '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-strawberry.html'],
                 ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/prototype-taco.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
                  '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html'],
             ],
             [
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/prototype-chocolate.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png', '--builder',
-                 'MOCK Mac10.11', '--test', 'fast/dom/prototype-strawberry.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
-                 '--builder', 'MOCK Mac10.10', '--test', 'fast/dom/prototype-taco.html'],
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png',
+                 '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-strawberry.html'],
                 ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
                  '--builder', 'MOCK Mac10.11', '--test', 'fast/dom/prototype-taco.html'],
             ],
             [
-                ['python', 'echo', 'optimize-baselines', '--no-modify-scm',
-                 '--suffixes', 'txt,png', 'fast/dom/prototype-chocolate.html'],
                 ['python', 'echo', 'optimize-baselines', '--no-modify-scm',
                  '--suffixes', 'png', 'fast/dom/prototype-strawberry.html'],
-                ['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
+                ['python', 'echo', 'optimize-baselines', '--no-modify-scm',
+                 '--suffixes', 'txt', 'fast/dom/prototype-taco.html'],
             ],
             ['git', 'cl', 'upload', '-f'],
             ['git', 'pull'],
@@ -1162,8 +1158,8 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
         original_builder_data = self.command.builder_data
         def builder_data():
             original_builder_data()
-            # have prototype-chocolate only fail on "MOCK Mac10.10".
-            self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            # Have prototype-chocolate only fail on "MOCK Mac10.11".
+            self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1176,7 +1172,7 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -1219,7 +1215,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1232,7 +1228,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -1273,7 +1269,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Win'] = LayoutTestResults({
+            self._builder_data['MOCK Win'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1286,7 +1282,7 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -1329,7 +1325,7 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Win'] = LayoutTestResults({
+            self._builder_data['MOCK Win'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1342,7 +1338,7 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 
@@ -1386,7 +1382,7 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
         test_port = self.tool.port_factory.get('test')
 
         def builder_data():
-            self.command._builder_data['MOCK Mac10.10'] = self.command._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1399,7 +1395,7 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self.command._builder_data
+            return self._builder_data
 
         self.command.builder_data = builder_data
 

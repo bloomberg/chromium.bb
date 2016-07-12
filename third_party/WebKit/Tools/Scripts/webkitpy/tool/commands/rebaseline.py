@@ -285,18 +285,18 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
     def __init__(self, options=None):
         super(AbstractParallelRebaselineCommand, self).__init__(options=options)
-        self._builder_data = {}
 
+    @memoized
     def builder_data(self):
-        if not self._builder_data:
-            for builder_name in self._release_builders():
-                builder = self._tool.buildbot.builder_with_name(builder_name)
-                builder_results = builder.latest_layout_test_results()
-                if builder_results:
-                    self._builder_data[builder_name] = builder_results
-                else:
-                    raise Exception("No result for builder %s." % builder_name)
-        return self._builder_data
+        builder_to_results = {}
+        for builder_name in self._release_builders():
+            builder = self._tool.buildbot.builder_with_name(builder_name)
+            builder_results = builder.latest_layout_test_results()
+            if builder_results:
+                builder_to_results[builder_name] = builder_results
+            else:
+                raise Exception("No result for builder %s." % builder_name)
+        return builder_to_results
 
     # The release builders cycle much faster than the debug ones and cover all the platforms.
     def _release_builders(self):
