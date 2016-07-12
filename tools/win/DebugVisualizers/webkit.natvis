@@ -52,6 +52,15 @@
       </ArrayItems>
     </Expand>
   </Type>
+  <Type Name="WTF::HashTable&lt;*&gt;">
+    <DisplayString>keyCount={m_keyCount}, tableSize={m_tableSize}</DisplayString>
+    <Expand>
+      <ArrayItems Condition="m_tableSize>0">
+        <Size>m_tableSize</Size>
+        <ValuePointer>m_table</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
   <Type Name="WTF::RefPtr&lt;*&gt;">
     <AlternativeType Name="WTF::PassRefPtr&lt;*&gt;"/>
     <DisplayString Condition="m_ptr == 0">null</DisplayString>
@@ -202,6 +211,27 @@
     <DisplayString>{*m_object} {m_start}-{m_stop}</DisplayString>
   </Type>
   <!-- Fonts -->
+  <Type Name="blink::Font">
+    <DisplayString>{m_fontDescription}</DisplayString>
+  </Type>
+  <Type Name="blink::FontDescription">
+    <DisplayString>{m_computedSize}px {m_familyList}</DisplayString>
+  </Type>
+  <Type Name="blink::FontFamily">
+    <DisplayString Condition="m_next.m_ptr == 0">{m_family,view(bare)}</DisplayString>
+    <DisplayString>{m_family,view(bare)}, {m_next}</DisplayString>
+  </Type>
+  <Type Name="blink::SharedFontFamily">
+    <DisplayString Condition="m_next.m_ptr == 0">{m_family,view(bare)}</DisplayString>
+    <DisplayString>{m_family,view(bare)}, {m_next}</DisplayString>
+    <Expand>
+      <LinkedListItems>
+        <HeadPointer>this</HeadPointer>
+        <NextPointer>m_next.m_ptr</NextPointer>
+        <ValueNode>this</ValueNode>
+      </LinkedListItems>
+    </Expand>
+  </Type>
   <Type Name="blink::SimpleFontData">
     <DisplayString>{m_platformData}</DisplayString>
   </Type>
