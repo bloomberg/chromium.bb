@@ -841,8 +841,8 @@ endemphphrase bold before 456-46
 @opcode{endemphphrase after, <emphasis class> after <dot pattern>}
 Braille dot pattern to indicate the end of a phrase. The closing
 indicator will be placed after the last word of the phrase. If both
-@code{endemphphrase <emphasis class> before} and @code{endemphphrase <emphasis
-class> after} are defined an error will be signaled.
+@code{endemphphrase <emphasis class> before} and @code{endemphphrase
+<emphasis class> after} are defined an error will be signaled.
 
 @example
 endemphphrase underline after 6-3
@@ -2213,17 +2213,17 @@ You use the liblouis library by calling the following functions,
 @code{lou_translate}, @code{lou_backTranslate},
 @code{lou_registerLogCallback}, @code{lou_setLogLevel},
 @code{lou_logFile}, @code{lou_logPrint}, @code{lou_logEnd},
-@code{lou_getTable}, @code{lou_checkTable},
-@code{lou_hyphenate}, @code{lou_charToDots}, @code{lou_dotsToChar},
-@code{lou_compileString}, @code{lou_getTypeformForEmphClass}, @code{lou_readCharFromFile},
-@code{lou_version} and @code{lou_free}.  These are described
-below. The header file, @file{liblouis.h}, also contains brief
-descriptions. Liblouis is written in straight C. It has four code
-modules, @file{compileTranslationTable.c}, @file{logging.c},
+@code{lou_getTable}, @code{lou_checkTable}, @code{lou_hyphenate},
+@code{lou_charToDots}, @code{lou_dotsToChar},
+@code{lou_compileString}, @code{lou_getTypeformForEmphClass},
+@code{lou_readCharFromFile}, @code{lou_version} and @code{lou_free}.
+These are described below. The header file, @file{liblouis.h}, also
+contains brief descriptions. Liblouis is written in straight C. It has
+four code modules, @file{compileTranslationTable.c}, @file{logging.c},
 @file{lou_translateString.c} and @file{lou_backTranslateString.c}. In
 addition, there are two header files, @file{liblouis.h}, which defines
-the API, and @file{louis.h}, used only internally and by liblouisutdml.
-The latter includes @file{liblouis.h}.
+the API, and @file{louis.h}, used only internally and by
+liblouisutdml. The latter includes @file{liblouis.h}.
 
 Persons who wish to use liblouis from Python may want to skip ahead to
 @ref{Python bindings}.
@@ -2235,8 +2235,8 @@ yet been compiled @file{compileTranslationTable.c} checks it for
 correctness and compiles it into an efficient internal representation.
 The main entry point is @code{lou_getTable}. Since it is the module
 that keeps track of memory usage, it also contains the @code{lou_free}
-function. In addition, it contains the @code{lou_checkTable} function, plus some utility functions which are
-used by the other modules.
+function. In addition, it contains the @code{lou_checkTable} function,
+plus some utility functions which are used by the other modules.
 
 By default, liblouis handles all characters internally as 16-bit
 unsigned integers. It can be compiled for 32-bit characters as
@@ -2453,35 +2453,34 @@ int lou_translate(
   int mode);
 @end example
 
-This function adds the parameters @code{outputPos}, @code{inputPos} and
-@code{cursorPos}, to facilitate use in screen reader programs. The
+This function adds the parameters @code{outputPos}, @code{inputPos}
+and @code{cursorPos}, to facilitate use in screen reader programs. The
 @code{outputPos} parameter must point to an array of integers with at
 least @code{inlen} elements. On return, this array will contain the
 position in @code{outbuf} corresponding to each input position.
 Similarly, @code{inputPos} must point to an array of integers of at
 least @code{outlen} elements. On return, this array will contain the
-position in @code{inbuf} corresponding to each position in 
-@code{outbuf}.
-@code{cursorPos} must point to an integer containing the position of the
-cursor in the input. On return, it will contain the cursor position in
-the output. Any parameter after @code{outlen} may be @code{NULL}. In
-this case, the actions corresponding to it will not be carried out. The
-@code{mode} parameter, however, must be present and must be an integer,
-not a pointer to an integer. If the @code{compbrlAtCursor} bit is set in
-the @code{mode} parameter the space-bounded characters containing the
-cursor will be translated in computer braille. If the
-@code{compbrlLeftCursor} bit is set only the characters to the left of
-the cursor will be in computer braille. This bit overrides
-@code{compbrlAtCursor}.
-When the @code{dotsIO} bit is set, during translation, produce output as dot patterns. During
+position in @code{inbuf} corresponding to each position in
+@code{outbuf}. @code{cursorPos} must point to an integer containing
+the position of the cursor in the input. On return, it will contain
+the cursor position in the output. Any parameter after @code{outlen}
+may be @code{NULL}. In this case, the actions corresponding to it will
+not be carried out. The @code{mode} parameter, however, must be
+present and must be an integer, not a pointer to an integer. If the
+@code{compbrlAtCursor} bit is set in the @code{mode} parameter the
+space-bounded characters containing the cursor will be translated in
+computer braille. If the @code{compbrlLeftCursor} bit is set only the
+characters to the left of the cursor will be in computer braille. This
+bit overrides @code{compbrlAtCursor}. When the @code{dotsIO} bit is
+set, during translation, produce output as dot patterns. During
 back-translation accept input as dot patterns. Note that the produced
 dot patterns are affected if you have any @opcoderef{display} defined
-in any of your tables. 
-The @code{ucBrl} (Unicode Braille) bit is used by @code{lou_charToDots} and @code{lou_translate}.  It causes the dot
-patterns to be Unicode Braille rather than the liblouis representation.
-Note that you will not notice any change when setting @code{ucBrl}  unless @code{dotsIO} is also set.
-@code{lou_dotsToChar} and @code{lou_backTranslate} recognize Unicode
-braille automatically.
+in any of your tables. The @code{ucBrl} (Unicode Braille) bit is used
+by @code{lou_charToDots} and @code{lou_translate}. It causes the dot
+patterns to be Unicode Braille rather than the liblouis
+representation. Note that you will not notice any change when setting
+@code{ucBrl} unless @code{dotsIO} is also set. @code{lou_dotsToChar}
+and @code{lou_backTranslate} recognize Unicode braille automatically.
 
 The @code{otherTrans} mode needs special description. If it is set 
 liblouis will attempt to call a wrapper for another translator. These 
@@ -2602,15 +2601,15 @@ will be produced if it is invalid. The function returns 1 on success and
 int lou_getTypeformForEmphClass (const char *tableList, const char *emphClass);
 @end example
 
-This function returns the typeform bit associated with the given emphasis
-class. If the emphasis class is undefined this function returns @code{0}. If
-errors are found error messages are logged to the log callback (see
-@code{lou_registerLogCallback}) and the return value is @code{0}.
-@code{tableList} is a list of names of table files separated by
-commas, as explained previously
+This function returns the typeform bit associated with the given
+emphasis class. If the emphasis class is undefined this function
+returns @code{0}. If errors are found error messages are logged to the
+log callback (see @code{lou_registerLogCallback}) and the return value
+is @code{0}. @code{tableList} is a list of names of table files
+separated by commas, as explained previously
 (@pxref{translation-tables,,@code{tableList} parameter in
-@code{lou_translateString}}). @code{emphClass} is the name of an emphasis
-class.
+@code{lou_translateString}}). @code{emphClass} is the name of an
+emphasis class.
 
 @node lou_dotsToChar
 @section lou_dotsToChar
@@ -2797,16 +2796,15 @@ pointer being returned.
 int lou_checkTable (const char *tableList);
 @end example
 
-This function does the same as @code{lou_getTable}
-but does not return a pointer to the resulting table.
-It is to be preferred if only the validity of a table needs to be checked.
-@code{tableList} is a list of names of table files separated by
-commas, as explained previously
+This function does the same as @code{lou_getTable} but does not return
+a pointer to the resulting table. It is to be preferred if only the
+validity of a table needs to be checked. @code{tableList} is a list of
+names of table files separated by commas, as explained previously
 (@pxref{translation-tables,,@code{tableList} parameter in
 @code{lou_translateString}}). If no errors are found this function
-returns a non-zero. If errors are found error
-messages are logged to the log callback (see
-@code{lou_registerLogCallback}) and the return value is @code{0}.
+returns a non-zero. If errors are found error messages are logged to
+the log callback (see @code{lou_registerLogCallback}) and the return
+value is @code{0}.
 
 @node lou_readCharFromFile
 @section lou_readCharFromFile
