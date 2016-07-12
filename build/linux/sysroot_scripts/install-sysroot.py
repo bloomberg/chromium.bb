@@ -3,18 +3,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Install Debian Wheezy sysroots for building chromium.
+"""Install Debian sysroots for building chromium.
 """
 
 # The sysroot is needed to ensure that binaries will run on Debian Wheezy,
-# the oldest supported linux distribution.  This script can be run manually but
-# is more often run as part of gclient hooks. When run from hooks this script
-# in a no-op on non-linux platforms.
+# the oldest supported linux distribution. For ARM64 linux, we have Debian
+# Jessie sysroot as Jessie is the first version with ARM64 support. This script
+# can be run manually but is more often run as part of gclient hooks. When run
+# from hooks this script is a no-op on non-linux platforms.
 
 # The sysroot image could be constructed from scratch based on the current
-# state or Debian Wheezy but for consistency we currently use a pre-built root
-# image. The image will normally need to be rebuilt every time chrome's build
-# dependencies are changed.
+# state or Debian Wheezy/Jessie but for consistency we currently use a
+# pre-built root image. The image will normally need to be rebuilt every time
+# chrome's build dependencies are changed.
 
 import hashlib
 import platform
@@ -164,6 +165,7 @@ def InstallSysroot(target_arch):
   # TODO(thestig) Consider putting this else where to avoid having to recreate
   # it on every build.
   linux_dir = os.path.dirname(SCRIPT_DIR)
+  debian_release = 'Wheezy'
   if target_arch == 'amd64':
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_AMD64)
     tarball_filename = TARBALL_AMD64
@@ -175,6 +177,7 @@ def InstallSysroot(target_arch):
     tarball_sha1sum = TARBALL_ARM_SHA1SUM
     revision = REVISION_ARM
   elif target_arch == 'arm64':
+    debian_release = 'Jessie'
     sysroot = os.path.join(linux_dir, SYSROOT_DIR_ARM64)
     tarball_filename = TARBALL_ARM64
     tarball_sha1sum = TARBALL_ARM64_SHA1SUM
@@ -198,11 +201,12 @@ def InstallSysroot(target_arch):
   if os.path.exists(stamp):
     with open(stamp) as s:
       if s.read() == url:
-        print 'Debian Wheezy %s root image already up to date: %s' % \
-            (target_arch, sysroot)
+        print 'Debian %s %s root image already up to date: %s' % \
+            (debian_release, target_arch, sysroot)
         return
 
-  print 'Installing Debian Wheezy %s root image: %s' % (target_arch, sysroot)
+  print 'Installing Debian %s %s root image: %s' % \
+      (debian_release, target_arch, sysroot)
   if os.path.isdir(sysroot):
     shutil.rmtree(sysroot)
   os.mkdir(sysroot)
