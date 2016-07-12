@@ -18,7 +18,7 @@ def main_run(args):
         os.path.join(common.SRC_DIR, 'third_party', 'WebKit',
                      'Tools', 'Scripts', 'test-webkitpy'),
         '--write-full-results-to', tempfile_path,
-    ])
+    ], cwd=args.paths['checkout'])
 
     with open(tempfile_path) as f:
       results = json.load(f)

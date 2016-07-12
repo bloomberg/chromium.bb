@@ -63,9 +63,9 @@ def run_script(argv, funcs):
   return args.func(args)
 
 
-def run_command(argv, env=None):
-  print 'Running %r' % argv
-  rc = subprocess.call(argv, env=env)
+def run_command(argv, env=None, cwd=None):
+  print 'Running %r in %r (env: %r)' % (argv, cwd, env)
+  rc = subprocess.call(argv, env=env, cwd=cwd)
   print 'Command %r returned exit code %d' % (argv, rc)
   return rc
 
