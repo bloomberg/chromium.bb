@@ -59,7 +59,6 @@ body {
 }
 </style>
 
-<script src="../../resources/js-test.js"></script>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/check-layout-th.js"></script>
@@ -145,8 +144,11 @@ document.querySelector('.flexbox').style.height = '101px';
 var afterPosition = absolute.getBoundingClientRect();
 
 // Positioned element should not change position when the height of it's parent flexbox is changed.
-for (key in beforePosition)
-    shouldBe('beforePosition[key]', 'afterPosition[key]');
+for (key in beforePosition) {
+    test(function() {
+        assert_equals(beforePosition[key], afterPosition[key]);
+    }, 'position of ' + key);
+}
 </script>
 </body>
 </html>
