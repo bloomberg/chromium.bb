@@ -517,24 +517,11 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
 
 bool HTMLPlugInElement::shouldUsePlugin(const KURL& url, const String& mimeType, bool hasFallback, bool& useFallback)
 {
-    // Allow other plugins to win over QuickTime because if the user has
-    // installed a plugin that can handle TIFF (which QuickTime can also
-    // handle) they probably intended to override QT.
-    if (document().frame()->page() && (mimeType == "image/tiff" || mimeType == "image/tif" || mimeType == "image/x-tiff")) {
-        const PluginData* pluginData = document().frame()->pluginData();
-        String pluginName = pluginData ? pluginData->pluginNameForMimeType(mimeType) : String();
-        if (!pluginName.isEmpty() && !pluginName.contains("QuickTime", TextCaseInsensitive)) {
-            useFallback = false;
-            return true;
-        }
-    }
-
     ObjectContentType objectType = document().frame()->loader().client()->getObjectContentType(url, mimeType, shouldPreferPlugInsForImages());
     // If an object's content can't be handled and it has no fallback, let
     // it be handled as a plugin to show the broken plugin icon.
     useFallback = objectType == ObjectContentNone && hasFallback;
     return objectType == ObjectContentNone || objectType == ObjectContentNetscapePlugin;
-
 }
 
 void HTMLPlugInElement::dispatchErrorEvent()
