@@ -527,6 +527,20 @@ bool VisualViewport::shouldUseIntegerScrollOffset() const
     return ScrollableArea::shouldUseIntegerScrollOffset();
 }
 
+void VisualViewport::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scrollType, ScrollBehavior scrollBehavior)
+{
+    // We clamp the position here, because the ScrollAnimator may otherwise be
+    // set to a non-clamped position by ScrollableArea::setScrollPosition,
+    // which may lead to incorrect scrolling behavior in RootFrameViewport down
+    // the line.
+    // TODO(eseckler): Solve this instead by ensuring that ScrollableArea and
+    // ScrollAnimator are kept in sync. This requires that ScrollableArea always
+    // stores fractional offsets and that truncation happens elsewhere, see
+    // crbug.com/626315.
+    DoublePoint newScrollPosition = clampScrollPosition(scrollPoint);
+    ScrollableArea::setScrollPosition(newScrollPosition, scrollType, scrollBehavior);
+}
+
 int VisualViewport::scrollSize(ScrollbarOrientation orientation) const
 {
     IntSize scrollDimensions = maximumScrollPosition() - minimumScrollPosition();
