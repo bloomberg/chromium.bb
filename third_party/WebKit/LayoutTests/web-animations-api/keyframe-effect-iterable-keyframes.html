@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<title>Test that KeyframeEffect can take iterable objects as keyframes</title>
+<link rel='help' href='https://w3c.github.io/web-animations/#processing-a-keyframes-argument'>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<body></body>
+<script>
+function assertAnimationEffect({keyframes, expect}) {
+  var effect = new KeyframeEffect(null, keyframes);
+  var frames = effect.getKeyframes();
+  for (let i = 0; i < expect.length; i++) {
+    assert_equals(frames[i].computedOffset, expect[i].at);
+    for (var property in expect[i].is)
+      assert_equals(frames[i][property], expect[i].is[property], 
+	  `${property} is ${expect[i].is[property]} at ${expect[i].at}`);
+  }
+  return frames;
+}
+
+function createIterable(iterations) {
+  return {
+    [Symbol.iterator]() {
+      var i = 0;
+      return {next: () => iterations[i++]};
+    },
+  };
+}
+
+test(() => {
+  assertAnimationEffect({
+    keyframes: createIterable([
+      {done: false, value: {left: '100px'}},
+      {done: false, value: {left: '300px'}},
+      {done: false, value: {left: '200px'}},
+      {done: true},
+    ]),
+    expect: [
+      {at: 0, is: {left: '100px'}},
+      {at: 0.5, is: {left: '300px'}},
+      {at: 1, is: {left: '200px'}},
+    ],
+  });
+}, 'Custom iterator with basic keyframes.');
+
+test(() => {
+  var keyframes = createIterable([
+    {done: false, value: {left: '100px'}},
+    {done: false, value: {left: '300px'}},
+    {done: false, value: {left: '200px'}},
+    {done: true},
+  ]);
+  keyframes.easing = 'ease-in-out';
+  keyframes.offset = '0.1';
+  let frames = assertAnimationEffect({
+    keyframes,
+    expect: [
+      {at: 0, is: {left: '100px'}},
+      {at: 0.5, is: {left: '300px'}},
+      {at: 1, is: {left: '200px'}},
+    ],
+  });
+  assert_equals(frames[0].easing, 'linear');
+  assert_equals(frames[0].offset, null);
+}, 'easing and offset are ignored on iterable objects.');
+
+test(() => {
+  assertAnimationEffect({
+    keyframes: createIterable([
+      {done: false, value: {left: '100px', top: '200px'}},
+      {done: false, value: {left: '300px'}},
+      {done: false, value: {left: '200px', top: '100px'}},
+      {done: true},
+    ]),
+    expect: [
+      {at: 0, is: {left: '100px', top: '200px'}},
+      {at: 0.5, is: {left: '300px'}},
+      {at: 1, is: {left: '200px', top: '100px'}},
+    ],
+  });
+}, 'Custom iterator with multiple properties specified.');
+
+test(() => {
+  assertAnimationEffect({
+    keyframes: createIterable([
+      {done: false, value: {left: '100px'}},
+      {done: false, value: {left: '250px', offset: 0.75}},
+      {done: false, value: {left: '200px'}},
+      {done: true},
+    ]),
+    expect: [
+      {at: 0, is: {left: '100px'}},
+      {at: 0.75, is: {left: '250px'}},
+      {at: 1, is: {left: '200px'}},
+    ],
+  });
+}, 'Custom iterator with offset specified.');
+
+test(() => {
+  assert_throws({name: 'TypeError'}, () => {
+    assertAnimationEffect({
+      keyframes: createIterable([
+        {done: false, value: {left: '100px'}},
+        {done: false, value: 1234},
+        {done: false, value: {left: '200px'}},
+        {done: true},
+      ]),
+      expect: [],
+    });
+  });
+}, 'Custom iterator with non object keyframe should throw.');
+
+test(() => {
+  assertAnimationEffect({
+    keyframes: createIterable([
+      {done: false, value: {left: ['100px', '200px']}},
+      {done: true},
+    ]),
+    expect: [{at: 1, is: {left: "100px,200px"}}],
+  });
+}, 'Custom iterator with value list in keyframe should give bizarre string representation of list.');
+</script>

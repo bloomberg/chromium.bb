@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL Custom iterator with basic keyframes. effect.getKeyframes is not a function
+FAIL easing and offset are ignored on iterable objects. effect.getKeyframes is not a function
+FAIL Custom iterator with multiple properties specified. effect.getKeyframes is not a function
+FAIL Custom iterator with offset specified. effect.getKeyframes is not a function
+PASS Custom iterator with non object keyframe should throw. 
+FAIL Custom iterator with value list in keyframe should give bizarre string representation of list. effect.getKeyframes is not a function
+Harness: the test ran to completion.
+
