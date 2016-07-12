@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.test.InstrumentationTestCase;
+import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
@@ -194,6 +195,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @UiThreadTest
     @Feature({"Precache"})
     public void testDeviceStateChangeCancels() {
         verifyBeginPrecaching();
@@ -233,6 +235,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @UiThreadTest
     @Feature({"Precache"})
     public void testTimeoutCancelsPrecaching() {
         verifyBeginPrecaching();

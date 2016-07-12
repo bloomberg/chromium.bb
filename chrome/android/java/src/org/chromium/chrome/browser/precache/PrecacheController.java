@@ -21,6 +21,7 @@ import com.google.android.gms.gcm.PeriodicTask;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
@@ -413,13 +414,20 @@ public class PrecacheController {
      * Cancels the current precache session.
      * @param event the failure reason.
      */
-    private void cancelPrecaching(int event) {
-        Log.v(TAG, "canceling precache session");
-        if (setIsPrecaching(false)) {
-            mPrecacheLauncher.cancel();
-            shutdownPrecaching(true);
-        }
-        PrecacheUMA.record(event);
+    private void cancelPrecaching(final int event) {
+        // cancelPrecaching() could be called from PrecacheManager::Shutdown(), precache GCM task,
+        // etc., where it could be a different thread.
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.v(TAG, "canceling precache session");
+                if (setIsPrecaching(false)) {
+                    mPrecacheLauncher.cancel();
+                    shutdownPrecaching(true);
+                }
+                PrecacheUMA.record(event);
+            }
+        });
     }
 
     /**
