@@ -164,7 +164,7 @@ create_lockfile(int display, char *lockfile, size_t lsize)
 			return -1;
 		}
 
-		other = strtol(pid, &end, 0);
+		other = strtol(pid, &end, 10);
 		if (end != pid + 10) {
 			weston_log("can't parse lock file %s\n",
 				lockfile);

@@ -170,7 +170,7 @@ weston_config_section_get_int(struct weston_config_section *section,
 	}
 
 	errno = 0;
-	*value = strtol(entry->value, &end, 0);
+	*value = strtol(entry->value, &end, 10);
 	if (errno != 0 || end == entry->value || *end != '\0') {
 		*value = default_value;
 		errno = EINVAL;
