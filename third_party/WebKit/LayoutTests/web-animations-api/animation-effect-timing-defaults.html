@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta charset='utf-8'>
+<title>Default values for AnimationEffectTiming objects</title>
+<link rel='help' href='https://w3c.github.io/web-animations/#the-animationeffecttimingproperties-dictionary'>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<body>
+    <div id='e'></div>
+</body>
+
+<script>
+var keyframeEffectBasic = new KeyframeEffect(null, []);
+var specifiedTimingBasic = keyframeEffectBasic.timing;
+
+test(function() {
+    assert_equals(specifiedTimingBasic.constructor, AnimationEffectTiming);
+    assert_equals(specifiedTimingBasic.delay, 0);
+    assert_equals(specifiedTimingBasic.endDelay, 0);
+    assert_equals(specifiedTimingBasic.fill, 'auto');
+    assert_equals(specifiedTimingBasic.iterationStart, 0);
+    assert_equals(specifiedTimingBasic.iterations, 1);
+    assert_equals(specifiedTimingBasic.duration, 'auto');
+    assert_equals(specifiedTimingBasic.direction, 'normal');
+    assert_equals(specifiedTimingBasic.easing, 'linear');
+}, 'AnimationEffectTiming objects should have the specified default values');
+
+</script>
