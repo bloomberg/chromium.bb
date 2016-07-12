@@ -102,72 +102,6 @@ class CORE_EXPORT InstrumentingAgents : public GarbageCollected<InstrumentingAge
 public:
     InstrumentingAgents();
     DECLARE_TRACE();
-
-    template <class T>
-    class AgentsList {
-        DISALLOW_NEW();
-    private:
-        using AgentsVector = HeapVector<Member<T>>;
-        using InnerIterator = typename AgentsVector::iterator;
-
-    public:
-        class Iterator {
-            STACK_ALLOCATED();
-        public:
-            Iterator operator++(int) { InnerIterator value = m_value; ++*this; return Iterator(value, m_list); }
-            Iterator& operator++() { if (!isEnd()) ++m_value; return *this; }
-            bool operator==(const Iterator& other) const { return (isEnd() && other.isEnd()) || m_value == other.m_value; }
-            bool operator!=(const Iterator& other) const { return !(*this == other); }
-            T* operator*() { return *m_value; }
-            T* operator->() { return *m_value; }
-
-        private:
-            friend class AgentsList;
-            Iterator(InnerIterator value, AgentsList* list) : m_value(value), m_list(list), m_version(m_list->m_version) { }
-            bool isEnd() const { return m_list->m_version != m_version || m_value == m_list->m_vector.end(); }
-
-            InnerIterator m_value;
-            Member<AgentsList> m_list;
-            int m_version;
-        };
-
-        Iterator begin() { return Iterator(m_vector.begin(), this); }
-        Iterator end() { return Iterator(m_vector.end(), this); }
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(m_vector);
-        }
-
-    private:
-        friend class InstrumentingAgents;
-        friend class Iterator;
-
-        AgentsList() : m_version(0) { }
-
-        bool isEmpty() const { return m_vector.isEmpty(); }
-
-        void add(T* value)
-        {
-            if (m_vector.contains(value))
-                return;
-            ++m_version;
-            m_vector.append(value);
-        }
-
-        void remove(T* value)
-        {
-            size_t index = m_vector.find(value);
-            if (index == WTF::kNotFound)
-                return;
-            ++m_version;
-            m_vector.remove(index);
-        }
-
-        AgentsVector m_vector;
-        int m_version;
-    };
-
 ${accessor_list}
 
 private:
@@ -181,7 +115,7 @@ ${member_list}
 
 template_instrumenting_agent_accessor = string.Template("""
     bool has${class_name}s() const { return ${has_member_name}; }
-    AgentsList<${class_name}>& ${getter_name}s() { return ${member_name}; }
+    const HeapHashSet<Member<${class_name}>>& ${getter_name}s() const { return ${member_name}; }
     void add${class_name}(${class_name}* agent);
     void remove${class_name}(${class_name}* agent);""")
 
@@ -189,7 +123,7 @@ template_instrumenting_agent_impl = string.Template("""
 void InstrumentingAgents::add${class_name}(${class_name}* agent)
 {
     ${member_name}.add(agent);
-    ${has_member_name} = !${member_name}.isEmpty();
+    ${has_member_name} = true;
 }
 
 void InstrumentingAgents::remove${class_name}(${class_name}* agent)
@@ -455,7 +389,7 @@ def generate_instrumenting_agents(used_agents):
             getter_name=getter_name,
             member_name=member_name,
             has_member_name=has_member_name))
-        member_list.append("    AgentsList<%s> %s;" % (class_name, member_name))
+        member_list.append("    HeapHashSet<Member<%s>> %s;" % (class_name, member_name))
         member_list.append("    bool %s;" % has_member_name)
         init_list.append("%s(false)" % has_member_name)
         trace_list.append("visitor->trace(%s);" % member_name)
