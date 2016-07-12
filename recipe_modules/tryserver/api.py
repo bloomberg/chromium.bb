@@ -149,7 +149,7 @@ class TryserverApi(recipe_api.RecipeApi):
       # Since this method is "maybe", we don't raise an Exception.
       pass
 
-  def get_files_affected_by_patch(self, patch_root=None):
+  def get_files_affected_by_patch(self, patch_root=None, **kwargs):
     """Returns list of paths to files affected by the patch.
 
     Argument:
@@ -166,12 +166,14 @@ class TryserverApi(recipe_api.RecipeApi):
     # removed.
     if patch_root is None:
       return self._old_get_files_affected_by_patch()
+    if not kwargs.get('cwd'):
+      kwargs['cwd'] = self.m.path['slave_build'].join(patch_root)
     step_result = self.m.git('diff', '--cached', '--name-only',
-                             cwd=self.m.path['slave_build'].join(patch_root),
                              name='git diff to analyze patch',
                              stdout=self.m.raw_io.output(),
                              step_test_data=lambda:
-                               self.m.raw_io.test_api.stream_output('foo.cc'))
+                               self.m.raw_io.test_api.stream_output('foo.cc'),
+                             **kwargs)
     paths = [self.m.path.join(patch_root, p) for p in
              step_result.stdout.split()]
     if self.m.platform.is_win:
