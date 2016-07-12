@@ -117,6 +117,7 @@ static struct zuc_fixture config_test_t1 = {
 	"# more comments\n"
 	"number=5252\n"
 	"zero=0\n"
+	"negative=-42\n"
 	"flag=false\n"
 	"\n"
 	"[stuff]\n"
@@ -459,6 +460,36 @@ ZUC_TEST_F(config_test_t1, test019, data)
 	ZUC_ASSERT_EQ(0, r);
 	ZUC_ASSERT_EQ(0, n);
 	ZUC_ASSERT_EQ(0, errno);
+}
+
+ZUC_TEST_F(config_test_t1, test020, data)
+{
+	int r;
+	int32_t n;
+	struct weston_config_section *section;
+	struct weston_config *config = data;
+
+	section = weston_config_get_section(config, "bar", NULL, NULL);
+	r = weston_config_section_get_int(section, "negative", &n, 600);
+
+	ZUC_ASSERT_EQ(0, r);
+	ZUC_ASSERT_EQ(-42, n);
+	ZUC_ASSERT_EQ(0, errno);
+}
+
+ZUC_TEST_F(config_test_t1, test021, data)
+{
+	int r;
+	uint32_t n;
+	struct weston_config_section *section;
+	struct weston_config *config = data;
+
+	section = weston_config_get_section(config, "bar", NULL, NULL);
+	r = weston_config_section_get_uint(section, "negative", &n, 600);
+
+	ZUC_ASSERT_EQ(-1, r);
+	ZUC_ASSERT_EQ(600, n);
+	ZUC_ASSERT_EQ(ERANGE, errno);
 }
 
 ZUC_TEST_F(config_test_t2, doesnt_parse, data)
