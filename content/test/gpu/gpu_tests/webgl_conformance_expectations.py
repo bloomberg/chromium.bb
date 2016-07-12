@@ -653,8 +653,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
-    self.Fail('conformance/textures/misc/tex-image-webgl.html',
-              ['linux', 'amd'], bug=626742)
 
     # AMD Radeon 6450
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
