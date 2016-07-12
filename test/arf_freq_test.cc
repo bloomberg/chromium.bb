@@ -211,9 +211,13 @@ TEST_P(ArfFreqTest, MinArfFreqTest) {
   delete (video);
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH || CONFIG_EXT_REFS
 #if CONFIG_AV1_ENCODER
 // TODO(angiebird): 25-29 fail in high bitdepth mode.
+// TODO(zoeliu): This ArfFreqTest does not work with BWDREF_FRAME, as
+// BWDREF_FRAME is also a non-show frame, and the minimum run between two
+// consecutive BWDREF_FRAME's may vary between 1 and any arbitrary positive
+// number as long as it does not exceed the gf_group interval.
 INSTANTIATE_TEST_CASE_P(
     DISABLED_AV1, ArfFreqTest,
     ::testing::Combine(
@@ -226,5 +230,5 @@ INSTANTIATE_TEST_CASE_P(
 AV1_INSTANTIATE_TEST_CASE(ArfFreqTest, ::testing::ValuesIn(kTestVectors),
                           ::testing::ValuesIn(kEncodeVectors),
                           ::testing::ValuesIn(kMinArfVectors));
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH || CONFIG_EXT_REFS
 }  // namespace
