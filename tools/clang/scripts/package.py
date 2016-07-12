@@ -288,6 +288,17 @@ def main():
               filter=PrintTarProgress)
     MaybeUpload(args, golddir, platform)
 
+  # Zip up llvm-objdump for sanitizer coverage.
+  objdumpdir = 'llvmobjdump-' + stamp
+  shutil.rmtree(objdumpdir, ignore_errors=True)
+  os.makedirs(os.path.join(objdumpdir, 'bin'))
+  shutil.copy(os.path.join(LLVM_RELEASE_DIR, 'bin', 'llvm-objdump' + exe_ext),
+              os.path.join(objdumpdir, 'bin'))
+  with tarfile.open(objdumpdir + '.tgz', 'w:gz') as tar:
+    tar.add(os.path.join(objdumpdir, 'bin'), arcname='bin',
+            filter=PrintTarProgress)
+  MaybeUpload(args, objdumpdir, platform)
+
   # FIXME: Warn if the file already exists on the server.
 
 
