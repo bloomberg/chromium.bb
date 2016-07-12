@@ -172,6 +172,7 @@ mojom("mojo_bindings") {
     "platform/modules/presentation/presentation.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
     "platform/modules/wake_lock/wake_lock_service.mojom",
+    "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
     ":android_mojo_bindings",

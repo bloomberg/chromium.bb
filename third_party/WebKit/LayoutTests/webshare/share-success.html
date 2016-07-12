@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-share-service.js"></script>
+<script>
+
+share_test((t, mock) => {
+  mock.pushShareResult('the title', 'the message', null);
+  return navigator.share('the title', 'the message');
+}, 'successful share');
+
+</script>

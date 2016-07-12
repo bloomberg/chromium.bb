@@ -4018,6 +4018,7 @@ interface Navigator
     method requestMIDIAccess
     method requestMediaKeySystemAccess
     method sendBeacon
+    method share
     method unregisterProtocolHandler
     method vibrate
     method webkitGetUserMedia

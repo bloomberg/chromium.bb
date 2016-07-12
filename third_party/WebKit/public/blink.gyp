@@ -46,6 +46,7 @@
             'platform/modules/presentation/presentation.mojom',
             'platform/modules/serviceworker/service_worker_event_status.mojom',
             'platform/modules/wake_lock/wake_lock_service.mojom',
+            'platform/modules/webshare/webshare.mojom',
         ],
         # Duplicated in GN: //third_party/WebKit/public:android_mojo_bindings
         'blink_android_mojo_sources': [

@@ -410,6 +410,7 @@
       'webgl/WebGL2RenderingContextBase.idl',
       'webgl/WebGLRenderingContextBase.idl',
       'webmidi/NavigatorWebMIDI.idl',
+      'webshare/NavigatorShare.idl',
       'webusb/NavigatorUSB.idl',
     ],
     # interfaces that inherit from Event
@@ -1936,6 +1937,8 @@
       'webmidi/MIDIPort.h',
       'webmidi/NavigatorWebMIDI.cpp',
       'webmidi/NavigatorWebMIDI.h',
+      'webshare/NavigatorShare.cpp',
+      'webshare/NavigatorShare.h',
       'websockets/CloseEvent.cpp',
       'websockets/CloseEvent.h',
       'websockets/DOMWebSocket.cpp',
