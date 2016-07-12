@@ -130,8 +130,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
-crbug.com/620618 svg/custom/alignment-baseline-modes.svg [ NeedsRebaseline ]
-
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Failure Pass ]
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
