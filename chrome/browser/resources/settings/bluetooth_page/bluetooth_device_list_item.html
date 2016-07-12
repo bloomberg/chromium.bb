@@ -5,9 +5,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="bluetooth-device-list-item">
-  <style>
+  <style include="settings-shared">
     iron-icon {
       -webkit-padding-start: 10px;
     }
@@ -18,12 +19,6 @@
 
     span.name[connected] {
       font-weight: 500;
-    }
-
-    /* TODO(dbeam): combine with other similar styles. */
-    .dropdown-content {
-      background: white;
-      box-shadow: 0 2px 6px grey;
     }
   </style>
   <template>
@@ -36,16 +31,13 @@
       </iron-icon>
       <span class="flex"></span>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
-      <!-- This <div on-tap> is not [actionable] because its effect is not user
-           visible. -->
+      <!-- <div on-tap> is usually [actionable], but this on-tap is just to
+           prevent triggering |itemTapped_| in the containing div. -->
       <div hidden$="[[!device.paired]]" on-tap="doNothing_">
         <paper-icon-button icon="cr:more-vert" toggles
             active="{{dropdownOpened}}">
         </paper-icon-button>
-        <!-- TODO(dbeam): does this need [actionable] if all the controls are
-             paper-items. Conversely, should the on-tap be at this level? -->
-        <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_"
-            actionable>
+        <iron-dropdown opened="{{dropdownOpened}}" on-tap="menuSelected_">
           <div class="dropdown-content">
             <paper-item id="connect" hidden$="[[device.connected]]">
               $i18n{bluetoothConnect}

@@ -55,6 +55,19 @@
         outline: none;
       }
 
+      iron-dropdown .dropdown-content {
+        background-color: white;
+        box-shadow: 0 2px 6px var(--paper-grey-500);
+      }
+
+      iron-dropdown .dropdown-content paper-item {
+        @apply(--settings-actionable);
+      }
+
+      iron-dropdown .dropdown-content paper-item:hover {
+        background-color: var(--settings-hover-color);
+      }
+
       span ~ a {
         -webkit-margin-start: 4px;
       }
