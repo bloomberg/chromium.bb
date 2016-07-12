@@ -1,16 +1,11 @@
 <svg id="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="load()">
 <g id="g"/>
-<text x="50" y="50" id="log"/>
-<script xlink:href="../../resources/js-test.js"></script>
 <script id="script">
+<script xlink:href="../../resources/js-test.js"></script>
 <![CDATA[
+// This test relies on --enable-leak-detection to catch leaks
 
 var g = document.getElementById("g");
-
-function log(message) {
-    var logDiv = document.getElementById('log');
-    logDiv.appendChild(document.createTextNode(message));
-}
 
 function createAnimatedRect() {
     var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -31,41 +26,9 @@ function createAnimatedRect() {
     return rect;
 }
 
-function cleanup() {
-    // Collect garbage before recording starting live node count, in case there are live elements from previous tests.
-    asyncGC(function() {
-        var originalLiveElements = internals.numberOfLiveNodes();
-
-        while (g.hasChildNodes())
-            g.removeChild(g.lastChild);
-        asyncGC(function() {
-            var liveDelta = originalLiveElements - internals.numberOfLiveNodes() - 200;
-            if (liveDelta == 0)
-                log("PASS");
-            else
-                log("FAIL: " + liveDelta + " extra live node(s)");
-            testRunner.notifyDone();
-        });
-    });
-}
-
-function startTest() {
+function load() {
     for (var i = 0; i < 100; i++)
         g.appendChild(createAnimatedRect());
-
-    setTimeout(cleanup, 0);
-}
-
-function load() {
-    if (window.testRunner && window.GCController && window.internals) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    } else {
-        log("This test only works when run with the testRunner, GCController, and internals available.");
-        return;
-    }
-
-    setTimeout(startTest, 0);
 }
 ]]>
 </script>
