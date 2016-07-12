@@ -16,8 +16,8 @@ import org.chromium.base.annotations.JNINamespace;
  * Java mirror of Chrome trace event API. See base/trace_event/trace_event.h. Unlike the native
  * version, Java does not have stack objects, so a TRACE_EVENT() which does both TRACE_EVENT_BEGIN()
  * and TRACE_EVENT_END() in ctor/dtor is not possible.
- * It is OK to use tracing before the native library has loaded, in a slightly restricted fashion.
- * @see EarlyTraceEvent for details.
+ * It is OK to use tracing before the native library has loaded, but such traces will
+ * be ignored. (Perhaps we could devise to buffer them up in future?).
  */
 @JNINamespace("base::android")
 public class TraceEvent {
@@ -179,21 +179,11 @@ public class TraceEvent {
      */
     @CalledByNative
     public static void setEnabled(boolean enabled) {
-        if (enabled) EarlyTraceEvent.disable();
         sEnabled = enabled;
         // Android M+ systrace logs this on its own. Only log it if not writing to Android systrace.
         if (sATraceEnabled) return;
         ThreadUtils.getUiThreadLooper().setMessageLogging(
                 enabled ? LooperMonitorHolder.sInstance : null);
-    }
-
-    /**
-     * May enable early tracing depending on the environment.
-     *
-     * Must be called after the command-line has been read.
-     */
-    public static void maybeEnableEarlyTracing() {
-        EarlyTraceEvent.maybeEnable();
     }
 
     /**
@@ -264,7 +254,7 @@ public class TraceEvent {
      * @param name The name of the event.
      */
     public static void begin(String name) {
-        begin(name, null);
+        if (sEnabled) nativeBegin(name, null);
     }
 
     /**
@@ -273,7 +263,6 @@ public class TraceEvent {
      * @param arg  The arguments of the event.
      */
     public static void begin(String name, String arg) {
-        EarlyTraceEvent.begin(name);
         if (sEnabled) nativeBegin(name, arg);
     }
 
@@ -282,7 +271,7 @@ public class TraceEvent {
      * @param name The name of the event.
      */
     public static void end(String name) {
-        end(name, null);
+        if (sEnabled) nativeEnd(name, null);
     }
 
     /**
@@ -291,7 +280,6 @@ public class TraceEvent {
      * @param arg  The arguments of the event.
      */
     public static void end(String name, String arg) {
-        EarlyTraceEvent.end(name);
         if (sEnabled) nativeEnd(name, arg);
     }
 

@@ -201,12 +201,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     @Override
     protected final void onCreate(Bundle savedInstanceState) {
-        TraceEvent.begin("AsyncInitializationActivity.onCreate()");
-        onCreateInternal(savedInstanceState);
-        TraceEvent.end("AsyncInitializationActivity.onCreate()");
-    }
-
-    private final void onCreateInternal(Bundle savedInstanceState) {
         if (DocumentModeAssassin.getInstance().isMigrationNecessary()) {
             super.onCreate(null);
 

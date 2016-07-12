@@ -13,7 +13,6 @@
 #include "base/android/content_uri_utils.h"
 #include "base/android/context_utils.h"
 #include "base/android/cpu_features.h"
-#include "base/android/early_trace_event_binding.h"
 #include "base/android/event_log.h"
 #include "base/android/field_trial_list.h"
 #include "base/android/important_file_writer_android.h"
@@ -51,7 +50,6 @@ static RegistrationMethod kBaseRegisteredMethods[] = {
     {"ContentUriUtils", base::RegisterContentUriUtils},
     {"ContextUtils", base::android::RegisterContextUtils},
     {"CpuFeatures", base::android::RegisterCpuFeatures},
-    {"EarlyTraceEvent", base::android::RegisterEarlyTraceEvent},
     {"EventLog", base::android::RegisterEventLog},
     {"FieldTrialList", base::android::RegisterFieldTrialList},
     {"ImportantFileWriterAndroid",

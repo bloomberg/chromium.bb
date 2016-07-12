@@ -116,22 +116,16 @@ public class ChromeLauncherActivity extends Activity
     public void onCreate(Bundle savedInstanceState) {
         // Third-party code adds disk access to Activity.onCreate. http://crbug.com/619824
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        TraceEvent.begin("ChromeLauncherActivity");
-        TraceEvent.begin("ChromeLauncherActivity.onCreate");
         try {
-            doOnCreate(savedInstanceState);
+            super.onCreate(savedInstanceState);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
-            TraceEvent.end("ChromeLauncherActivity.onCreate");
         }
-    }
-
-    private final void doOnCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         // This Activity is only transient. It launches another activity and
         // terminates itself. However, some of the work is performed outside of
         // {@link Activity#onCreate()}. To capture this, the TraceEvent starts
         // in onCreate(), and ends in onPause().
+        TraceEvent.begin("ChromeLauncherActivity");
         // Needs to be called as early as possible, to accurately capture the
         // time at which the intent was received.
         IntentHandler.addTimestampToIntent(getIntent());
@@ -237,8 +231,8 @@ public class ChromeLauncherActivity extends Activity
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
         TraceEvent.end("ChromeLauncherActivity");
     }
 
