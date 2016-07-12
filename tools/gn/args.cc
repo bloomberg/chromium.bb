@@ -89,7 +89,8 @@ Args::Args(const Args& other)
     : overrides_(other.overrides_),
       all_overrides_(other.all_overrides_),
       declared_arguments_per_toolchain_(
-          other.declared_arguments_per_toolchain_) {
+          other.declared_arguments_per_toolchain_),
+      toolchain_overrides_(other.toolchain_overrides_) {
 }
 
 Args::~Args() {
@@ -131,8 +132,14 @@ void Args::SetupRootScope(Scope* dest,
   base::AutoLock lock(lock_);
 
   SetSystemVarsLocked(dest);
+
+  // Apply overrides for already declared args.
+  // (i.e. the system vars we set above)
   ApplyOverridesLocked(overrides_, dest);
   ApplyOverridesLocked(toolchain_overrides, dest);
+
+  OverridesForToolchainLocked(dest) = toolchain_overrides;
+
   SaveOverrideRecordLocked(toolchain_overrides);
 }
 
@@ -143,6 +150,10 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
 
   Scope::KeyValueMap& declared_arguments(
       DeclaredArgumentsForToolchainLocked(scope_to_set));
+
+  const Scope::KeyValueMap& toolchain_overrides(
+      OverridesForToolchainLocked(scope_to_set));
+
   for (const auto& arg : args) {
     // Verify that the value hasn't already been declared. We want each value
     // to be declared only once.
@@ -173,13 +184,30 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
       declared_arguments.insert(arg);
     }
 
-    // Only set on the current scope to the new value if it hasn't been already
-    // set. Mark the variable used so the build script can override it in
-    // certain cases without getting unused value errors.
-    if (!scope_to_set->GetValue(arg.first)) {
-      scope_to_set->SetValue(arg.first, arg.second, arg.second.origin());
-      scope_to_set->MarkUsed(arg.first);
+    // Check whether this argument has been overridden on the toolchain level
+    // and use the override instead.
+    Scope::KeyValueMap::const_iterator toolchain_override =
+        toolchain_overrides.find(arg.first);
+    if (toolchain_override != toolchain_overrides.end()) {
+      scope_to_set->SetValue(toolchain_override->first,
+                             toolchain_override->second,
+                             toolchain_override->second.origin());
+      continue;
     }
+
+    // Check whether this argument has been overridden and use the override
+    // instead.
+    Scope::KeyValueMap::const_iterator override = overrides_.find(arg.first);
+    if (override != overrides_.end()) {
+      scope_to_set->SetValue(override->first, override->second,
+                             override->second.origin());
+      continue;
+    }
+
+    // Mark the variable used so the build script can override it in
+    // certain cases without getting unused value errors.
+    scope_to_set->SetValue(arg.first, arg.second, arg.second.origin());
+    scope_to_set->MarkUsed(arg.first);
   }
 
   return true;
@@ -286,8 +314,20 @@ void Args::SetSystemVarsLocked(Scope* dest) const {
 void Args::ApplyOverridesLocked(const Scope::KeyValueMap& values,
                                 Scope* scope) const {
   lock_.AssertAcquired();
-  for (const auto& val : values)
+
+  const Scope::KeyValueMap& declared_arguments(
+      DeclaredArgumentsForToolchainLocked(scope));
+
+  // Only set a value if it has been declared.
+  for (const auto& val : values) {
+    Scope::KeyValueMap::const_iterator declared =
+        declared_arguments.find(val.first);
+
+    if (declared == declared_arguments.end())
+      continue;
+
     scope->SetValue(val.first, val.second, val.second.origin());
+  }
 }
 
 void Args::SaveOverrideRecordLocked(const Scope::KeyValueMap& values) const {
@@ -300,4 +340,10 @@ Scope::KeyValueMap& Args::DeclaredArgumentsForToolchainLocked(
     Scope* scope) const {
   lock_.AssertAcquired();
   return declared_arguments_per_toolchain_[scope->settings()];
+}
+
+Scope::KeyValueMap& Args::OverridesForToolchainLocked(
+    Scope* scope) const {
+  lock_.AssertAcquired();
+  return toolchain_overrides_[scope->settings()];
 }

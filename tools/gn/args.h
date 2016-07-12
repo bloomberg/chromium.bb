@@ -40,8 +40,8 @@ class Args {
   Scope::KeyValueMap GetAllOverrides() const;
 
   // Sets up the root scope for a toolchain. This applies the default system
-  // flags, then any overrides stored in this object, then applies any
-  // toolchain overrides specified in the argument.
+  // flags and saves the toolchain overrides so they can be applied to
+  // declare_args blocks that appear when loading files in that toolchain.
   void SetupRootScope(Scope* dest,
                       const Scope::KeyValueMap& toolchain_overrides) const;
 
@@ -68,13 +68,13 @@ class Args {
   void MergeDeclaredArguments(Scope::KeyValueMap* dest) const;
 
  private:
-  using DeclaredArgumentsPerToolchain =
+  using ArgumentsPerToolchain =
       base::hash_map<const Settings*, Scope::KeyValueMap>;
 
   // Sets the default config based on the current system.
   void SetSystemVarsLocked(Scope* scope) const;
 
-  // Sets the given vars on the given scope.
+  // Sets the given already declared vars on the given scope.
   void ApplyOverridesLocked(const Scope::KeyValueMap& values,
                             Scope* scope) const;
 
@@ -83,6 +83,10 @@ class Args {
   // Returns the KeyValueMap used for arguments declared for the specified
   // toolchain.
   Scope::KeyValueMap& DeclaredArgumentsForToolchainLocked(Scope* scope) const;
+
+  // Returns the KeyValueMap used for overrides for the specified
+  // toolchain.
+  Scope::KeyValueMap& OverridesForToolchainLocked(Scope* scope) const;
 
   // Since this is called during setup which we assume is single-threaded,
   // this is not protected by the lock. It should be set only during init.
@@ -100,7 +104,12 @@ class Args {
   // buildfile. This is so we can see if the user set variables on the command
   // line that are not used anywhere. Each map is toolchain specific as each
   // toolchain may define variables in different locations.
-  mutable DeclaredArgumentsPerToolchain declared_arguments_per_toolchain_;
+  mutable ArgumentsPerToolchain declared_arguments_per_toolchain_;
+
+  // Overrides for individual toolchains. This is necessary so we
+  // can apply the correct override for the current toolchain, once
+  // we see an argument declaration.
+  mutable ArgumentsPerToolchain toolchain_overrides_;
 
   DISALLOW_ASSIGN(Args);
 };
