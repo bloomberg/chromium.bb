@@ -1,6 +1,9 @@
 <!DOCTYPE html>
+<title>Things</title>
+<link rel="https://w3c.github.io/web-animations/#the-computedtimingproperties-dictionary">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
 
 <body>
     <div id='e'></div>
@@ -20,18 +23,18 @@ test(function() {
     var animation = element.animate(keyframes, {fill: 'both', duration: 2000, iterations: 3});
     var keyframeEffect = animation.effect;
     animation.currentTime = -1000;
-    assert_equals(keyframeEffect.getComputedTiming().localTime, -1000, 'localTime');
+    assert_times_equal(keyframeEffect.getComputedTiming().localTime, -1000, 'localTime');
     assert_equals(keyframeEffect.getComputedTiming().currentIteration, 0);
     animation.currentTime = 1000;
-    assert_equals(keyframeEffect.getComputedTiming().localTime, 1000);
+    assert_times_equal(keyframeEffect.getComputedTiming().localTime, 1000);
     assert_equals(keyframeEffect.getComputedTiming().currentIteration, 0);
     animation.currentTime = 5000;
-    assert_equals(keyframeEffect.getComputedTiming().localTime, 5000);
+    assert_times_equal(keyframeEffect.getComputedTiming().localTime, 5000);
     assert_equals(keyframeEffect.getComputedTiming().currentIteration, 2);
     animation.currentTime = 7000;
-    assert_equals(keyframeEffect.getComputedTiming().localTime, 7000);
+    assert_times_equal(keyframeEffect.getComputedTiming().localTime, 7000);
     assert_equals(keyframeEffect.getComputedTiming().currentIteration, 2);
-}, 'TimedItem.localTime and TimedItem.currentIteration return reasonable values when an keyframeEffect is in effect');
+}, 'ComputedTimingProperties.localTime and ComputedTimingProperties.currentIteration return reasonable values when an keyframeEffect is in effect');
 
 test(function() {
     var animation = element.animate(keyframes);
@@ -40,26 +43,26 @@ test(function() {
     assert_equals(keyframeEffect.getComputedTiming().currentIteration, null);
     animation.currentTime = 1;
     assert_equals(keyframeEffect.getComputedTiming().currentIteration, null);
-}, 'TimedItem.currentIteration is null when keyframeEffect is not in effect');
+}, 'ComputedTimingProperties.currentIteration is null when keyframeEffect is not in effect');
 
 test(function() {
     var keyframeEffect = new KeyframeEffect(element, keyframes, 2);
-    assert_equals(keyframeEffect.getComputedTiming().endTime, 2);
-    assert_equals(keyframeEffect.getComputedTiming().duration, 2);
-    assert_equals(keyframeEffect.getComputedTiming().activeDuration, 2);
-}, 'TimedItem startTime, endTime, duration, activeDuration are sensible for a simple keyframeEffect');
+    assert_times_equal(keyframeEffect.getComputedTiming().endTime, 2);
+    assert_times_equal(keyframeEffect.getComputedTiming().duration, 2);
+    assert_times_equal(keyframeEffect.getComputedTiming().activeDuration, 2);
+}, 'ComputedTimingProperties startTime, endTime, duration, activeDuration are sensible for a simple keyframeEffect');
 
 test(function() {
   var keyframeEffect = new KeyframeEffect(element, keyframes, {duration: 3, iterations: 4, delay: 5});
-  assert_equals(keyframeEffect.getComputedTiming().endTime, 17);
-  assert_equals(keyframeEffect.getComputedTiming().duration, 3);
-  assert_equals(keyframeEffect.getComputedTiming().activeDuration, 12);
-}, 'TimedItem startTime, endTime, duration, activeDuration are sensible for keyframeEffects with delays and iterations');
+  assert_times_equal(keyframeEffect.getComputedTiming().endTime, 17);
+  assert_times_equal(keyframeEffect.getComputedTiming().duration, 3);
+  assert_times_equal(keyframeEffect.getComputedTiming().activeDuration, 12);
+}, 'ComputedTimingProperties startTime, endTime, duration, activeDuration are sensible for keyframeEffects with delays and iterations');
 
 test(function() {
   var keyframeEffect = new KeyframeEffect(element, keyframes, {delay: 1});
-  assert_equals(keyframeEffect.getComputedTiming().duration, 0);
-}, 'TimedItem duration is calculated when no duration is specified');
+  assert_times_equal(keyframeEffect.getComputedTiming().duration, 0);
+}, 'ComputedTimingProperties duration is calculated when no duration is specified');
 
 test(function() {
   var timing = new KeyframeEffect(element, keyframes).timing;
@@ -67,6 +70,6 @@ test(function() {
     assert_throws(new TypeError, function() { timing[attr] = NaN; }, attr);
     assert_throws(new TypeError, function() { timing[attr] = Infinity; }, attr);
   }
-}, 'Restricted double attributes on the Timing interface throws for non-finite values.');
+}, 'Restricted double attributes on the AnimationEffectTiming interface throws for non-finite values.');
 
 </script>
