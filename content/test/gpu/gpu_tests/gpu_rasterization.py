@@ -68,7 +68,7 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
         device_pixel_ratio)
 
 
-class GpuRasterization(cloud_storage_test_base.TestBase):
+class GpuRasterization(cloud_storage_test_base.CloudStorageTestBase):
   """Tests that GPU rasterization produces valid content"""
   test = GpuRasterizationValidator
 

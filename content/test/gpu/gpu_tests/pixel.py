@@ -165,7 +165,7 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
       json_contents = json.load(f)
     return json_contents
 
-class Pixel(cloud_storage_test_base.TestBase):
+class Pixel(cloud_storage_test_base.CloudStorageTestBase):
   test = PixelValidator
 
   @classmethod

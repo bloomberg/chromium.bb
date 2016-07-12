@@ -265,7 +265,7 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
       raise
 
 
-class TestBase(gpu_test_base.TestBase):
+class CloudStorageTestBase(gpu_test_base.TestBase):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, group):
     group.add_option('--build-revision',

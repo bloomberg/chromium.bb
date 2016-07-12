@@ -103,7 +103,7 @@ class MapsPage(gpu_test_base.PageBase):
         'window.testDone', timeout_in_seconds=180)
 
 
-class Maps(cloud_storage_test_base.TestBase):
+class Maps(cloud_storage_test_base.CloudStorageTestBase):
   """Google Maps pixel tests.
 
   Note: the WPR for this test was recorded from the smoothness.maps
