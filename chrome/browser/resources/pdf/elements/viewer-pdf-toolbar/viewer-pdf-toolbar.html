@@ -25,31 +25,35 @@
 
         <div id="pageselector-container">
           <viewer-page-selector id="pageselector" class="invisible"
-              doc-length="{{docLength}}" page-no="{{pageNo}}">
+              doc-length="{{docLength}}" page-no="{{pageNo}}"
+              strings="{{strings}}">
           </viewer-page-selector>
         </div>
 
         <div id="buttons" class="invisible">
           <paper-icon-button id="rotate-right" icon="pdf:rotate-right"
               on-click="rotateRight"
-              i18n-values="aria-label:tooltipRotateCW;title:tooltipRotateCW">
+              aria-label$="{{strings.tooltipRotateCW}}"
+              title$="{{strings.tooltipRotateCW}}">
           </paper-icon-button>
 
           <paper-icon-button id="download" icon="cr:file-download"
               on-click="download"
-              i18n-values="aria-label:tooltipDownload;title:tooltipDownload">
+              aria-label$="{{strings.tooltipDownload}}"
+              title$="{{strings.tooltipDownload}}">
           </paper-icon-button>
 
           <paper-icon-button id="print" icon="cr:print"
               on-click="print"
-              i18n-values="aria-label:tooltipPrint;title:tooltipPrint">
+              aria-label$="{{strings.tooltipPrint}}"
+              title$="{{strings.tooltipPrint}}">
           </paper-icon-button>
 
           <viewer-toolbar-dropdown id="bookmarks"
                                    hidden$="[[!bookmarks.length]]"
                                    open-icon="pdf:bookmark"
                                    closed-icon="pdf:bookmark-border"
-                                   i18n-values="header:bookmarks">
+                                   header="{{strings.bookmarks}}">
               <viewer-bookmarks-content bookmarks="{{bookmarks}}">
               </viewer-bookmarks-content>
           </viewer-toolbar-dropdown>

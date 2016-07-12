@@ -557,9 +557,13 @@ PDFViewer.prototype = {
    * @param {Object} strings Dictionary of translated strings
    */
   handleStrings_: function(strings) {
-    window.loadTimeData.data = strings;
-    i18nTemplate.process(document, loadTimeData);
-    this.zoomToolbar_.updateTooltips();
+    document.documentElement.dir = strings.textdirection;
+    document.documentElement.lang = strings.language;
+
+    $('toolbar').strings = strings;
+    $('zoom-toolbar').strings = strings;
+    $('password-screen').strings = strings;
+    $('error-screen').strings = strings;
   },
 
   /**

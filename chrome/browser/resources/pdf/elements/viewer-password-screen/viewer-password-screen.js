@@ -12,7 +12,9 @@ Polymer({
       type: Boolean,
       value: false,
       observer: 'activeChanged'
-    }
+    },
+
+    strings: Object,
   },
 
   ready: function() {

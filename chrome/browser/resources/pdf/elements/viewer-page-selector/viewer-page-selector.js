@@ -23,7 +23,9 @@ Polymer({
     pageNo: {
       type: Number,
       value: 1
-    }
+    },
+
+    strings: Object,
   },
 
   pageNoCommitted: function() {

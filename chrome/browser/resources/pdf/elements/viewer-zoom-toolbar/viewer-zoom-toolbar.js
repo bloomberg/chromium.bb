@@ -11,6 +11,11 @@
     is: 'viewer-zoom-toolbar',
 
     properties: {
+      strings: {
+        type: Object,
+        observer: 'updateTooltips_'
+      },
+
       visible_: {
         type: Boolean,
         value: true
@@ -22,17 +27,15 @@
     },
 
     /**
-     * Change button tooltips to match any changes to loadTimeData.
+     * Change button tooltips to match any changes to localized strings.
      */
-    updateTooltips: function() {
+    updateTooltips_: function() {
       this.$['fit-button'].tooltips = [
-          loadTimeData.getString('tooltipFitToPage'),
-          loadTimeData.getString('tooltipFitToWidth')
+          this.strings.tooltipFitToPage,
+          this.strings.tooltipFitToWidth
       ];
-      this.$['zoom-in-button'].tooltips =
-          [loadTimeData.getString('tooltipZoomIn')];
-      this.$['zoom-out-button'].tooltips =
-          [loadTimeData.getString('tooltipZoomOut')];
+      this.$['zoom-in-button'].tooltips = [this.strings.tooltipZoomIn];
+      this.$['zoom-out-button'].tooltips = [this.strings.tooltipZoomOut];
     },
 
     fitToggle: function() {

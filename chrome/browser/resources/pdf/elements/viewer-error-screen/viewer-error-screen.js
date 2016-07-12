@@ -9,7 +9,9 @@ Polymer({
       type: Object,
       value: null,
       observer: 'reloadFnChanged_'
-    }
+    },
+
+    strings: Object,
   },
 
   reloadFnChanged_: function() {

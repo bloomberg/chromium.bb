@@ -8,7 +8,7 @@
     <paper-input-container id="pageselector" no-label-float>
       <input id="input" is="iron-input" value="{{pageNo}}"
           prevent-invalid-input allowed-pattern="\d" on-mouseup="select"
-          on-change="pageNoCommitted" i18n-values="aria-label:labelPageNumber">
+          on-change="pageNoCommitted" aria-label$="{{strings.labelPageNumber}}">
     </paper-input-container>
     <span id="slash"> / </span>
     <span id="pagelength-spacer">

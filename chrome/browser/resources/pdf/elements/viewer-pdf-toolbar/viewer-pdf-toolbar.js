@@ -49,6 +49,8 @@
         value: true
       },
 
+      strings: Object,
+
       animationConfig: {
         value: function() {
           return {
