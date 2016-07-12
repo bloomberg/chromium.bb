@@ -96,17 +96,8 @@ void CastContentRendererClient::RenderViewCreated(
     blink::WebFrameWidget* web_frame_widget = render_view->GetWebFrameWidget();
     web_frame_widget->setBaseBackgroundColor(kColorBlack);
 
-    // The following settings express consistent behaviors across Cast
-    // embedders, though Android has enabled by default for mobile browsers.
-    webview->settings()->setShrinksViewportContentToFit(false);
+    // Settings for ATV (Android defaults are not what we want):
     webview->settings()->setMediaControlsOverlayPlayButtonEnabled(false);
-
-    // Scale 1 ensures window.innerHeight/Width match application resolution.
-    // PageScaleOverride is the 'user agent' value which overrides page
-    // settings (from meta viewport tag) - thus preventing inconsistency
-    // between Android and non-Android cast_shell.
-    webview->setDefaultPageScaleLimits(1.f, 1.f);
-    webview->setInitialPageScaleOverride(1.f);
 
     // Disable application cache as Chromecast doesn't support off-line
     // application running.
