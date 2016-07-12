@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -19,8 +20,8 @@
 
 @interface TestNSNetService : NSNetService {
  @private
-  NSData* data_;
-  NSArray* addresses_;
+  base::scoped_nsobject<NSData> data_;
+  base::scoped_nsobject<NSArray> addresses_;
 }
 - (id)initWithData:(NSData*)data;
 - (void)setAddresses:(NSArray*)addresses;
@@ -30,13 +31,13 @@
 
 - (id)initWithData:(NSData*)data {
   if ((self = [super init])) {
-    data_ = data;
+    data_.reset([data retain]);
   }
   return self;
 }
 
 - (void)setAddresses:(NSArray*)addresses {
-  addresses_ = addresses;
+  addresses_.reset([addresses copy]);
 }
 
 - (NSArray*)addresses {
@@ -53,9 +54,10 @@ namespace local_discovery {
 
 class ServiceDiscoveryClientMacTest : public CocoaTest {
  public:
-  ServiceDiscoveryClientMacTest() : num_updates_(0), num_resolves_(0) {
-    client_mac_ = new ServiceDiscoveryClientMac();
-    client_ = client_mac_.get();
+  ServiceDiscoveryClientMacTest()
+      : client_(new ServiceDiscoveryClientMac()),
+        num_updates_(0),
+        num_resolves_(0) {
   }
 
   void OnServiceUpdated(
@@ -66,7 +68,6 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
     num_updates_++;
   }
 
-
   void OnResolveComplete(
       ServiceResolver::RequestStatus status,
       const ServiceDescription& service_description) {
@@ -75,11 +76,12 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
     num_resolves_++;
   }
 
+  ServiceDiscoveryClient* client() { return client_.get(); }
+
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  scoped_refptr<ServiceDiscoveryClientMac> client_mac_;
-  ServiceDiscoveryClient* client_;  // weak
+  scoped_refptr<ServiceDiscoveryClientMac> client_;
 
   ServiceWatcher::UpdateType last_update_;
   std::string last_service_name_;
@@ -93,7 +95,7 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceWatcher) {
   const std::string test_service_type = "_testing._tcp.local";
   const std::string test_service_name = "Test.123";
 
-  std::unique_ptr<ServiceWatcher> watcher = client_->CreateServiceWatcher(
+  std::unique_ptr<ServiceWatcher> watcher = client()->CreateServiceWatcher(
       test_service_type,
       base::Bind(&ServiceDiscoveryClientMacTest::OnServiceUpdated,
                  base::Unretained(this)));
@@ -115,15 +117,15 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceWatcher) {
 
 TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
   const std::string test_service_name = "Test.123._testing._tcp.local";
-  std::unique_ptr<ServiceResolver> resolver = client_->CreateServiceResolver(
+  std::unique_ptr<ServiceResolver> resolver = client()->CreateServiceResolver(
       test_service_name,
       base::Bind(&ServiceDiscoveryClientMacTest::OnResolveComplete,
                  base::Unretained(this)));
 
   const uint8_t record_bytes[] = {2, 'a', 'b', 3, 'd', '=', 'e'};
   base::scoped_nsobject<TestNSNetService> test_service([[TestNSNetService alloc]
-      initWithData:[[NSData alloc] initWithBytes:record_bytes
-                                          length:arraysize(record_bytes)]]);
+      initWithData:[NSData dataWithBytes:record_bytes
+                                  length:arraysize(record_bytes)]]);
 
   const std::string kIp = "2001:4860:4860::8844";
   const uint16_t kPort = 4321;
@@ -149,10 +151,101 @@ TEST_F(ServiceDiscoveryClientMacTest, ServiceResolver) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, num_resolves_);
-  EXPECT_EQ(2u, last_service_description_.metadata.size());
+
+  const std::vector<std::string>& metadata =
+      last_service_description_.metadata;
+  EXPECT_EQ(2u, metadata.size());
+  EXPECT_NE(metadata.end(),
+            std::find(metadata.begin(), metadata.end(), "ab"));
+  EXPECT_NE(metadata.end(),
+            std::find(metadata.begin(), metadata.end(), "d=e"));
+
   EXPECT_EQ(ip_address, last_service_description_.ip_address);
   EXPECT_EQ(kPort, last_service_description_.address.port());
   EXPECT_EQ(kIp, last_service_description_.address.host());
+}
+
+// https://crbug.com/586628
+TEST_F(ServiceDiscoveryClientMacTest, ResolveInvalidUnicodeRecord) {
+  const std::string test_service_name = "Test.123._testing._tcp.local";
+  std::unique_ptr<ServiceResolver> resolver = client()->CreateServiceResolver(
+      test_service_name,
+      base::Bind(&ServiceDiscoveryClientMacTest::OnResolveComplete,
+                 base::Unretained(this)));
+
+  const uint8_t record_bytes[] = {
+    3, 'a', '=', 'b',
+    // The bytes after name= are the UTF-8 encoded representation of
+    // U+1F4A9, with the first two bytes of the code unit sequence transposed.
+    9, 'n', 'a', 'm', 'e', '=', 0x9F, 0xF0, 0x92, 0xA9,
+    5, 'c', 'd', '=', 'e', '9',
+  };
+  base::scoped_nsobject<TestNSNetService> test_service([[TestNSNetService alloc]
+      initWithData:[NSData dataWithBytes:record_bytes
+                                  length:arraysize(record_bytes)]]);
+
+  const std::string kIp = "2001:4860:4860::8844";
+  const uint16_t kPort = 4321;
+  net::IPAddress ip_address;
+  ASSERT_TRUE(ip_address.AssignFromIPLiteral(kIp));
+  net::IPEndPoint endpoint(ip_address, kPort);
+  net::SockaddrStorage storage;
+  ASSERT_TRUE(endpoint.ToSockAddr(storage.addr, &storage.addr_len));
+  NSData* discovery_host =
+      [NSData dataWithBytes:storage.addr length:storage.addr_len];
+  NSArray* addresses = @[ discovery_host ];
+  [test_service setAddresses:addresses];
+
+  ServiceResolverImplMac* resolver_impl =
+      static_cast<ServiceResolverImplMac*>(resolver.get());
+  resolver_impl->GetContainerForTesting()->SetServiceForTesting(
+      base::scoped_nsobject<NSNetService>(test_service));
+  resolver->StartResolving();
+
+  resolver_impl->GetContainerForTesting()->OnResolveUpdate(
+      ServiceResolver::STATUS_SUCCESS);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, num_resolves_);
+
+  const std::vector<std::string>& metadata =
+      last_service_description_.metadata;
+  EXPECT_EQ(2u, metadata.size());
+  EXPECT_NE(metadata.end(),
+            std::find(metadata.begin(), metadata.end(), "a=b"));
+  EXPECT_NE(metadata.end(),
+            std::find(metadata.begin(), metadata.end(), "cd=e9"));
+
+  EXPECT_EQ(ip_address, last_service_description_.ip_address);
+  EXPECT_EQ(kPort, last_service_description_.address.port());
+  EXPECT_EQ(kIp, last_service_description_.address.host());
+}
+
+TEST_F(ServiceDiscoveryClientMacTest, ResolveInvalidServiceName) {
+  base::RunLoop run_loop;
+
+  // This is the same invalid U+1F4A9 code unit sequence as in
+  // ResolveInvalidUnicodeRecord.
+  const std::string test_service_name =
+      "Test\x9F\xF0\x92\xA9.123._testing._tcp.local";
+  std::unique_ptr<ServiceResolver> resolver = client()->CreateServiceResolver(
+      test_service_name,
+      base::Bind(
+          [](ServiceDiscoveryClientMacTest* test,
+             base::Closure quit_closure,
+             ServiceResolver::RequestStatus status,
+             const ServiceDescription& service_description) {
+            test->OnResolveComplete(status, service_description);
+            quit_closure.Run();
+          },
+          base::Unretained(this), run_loop.QuitClosure()));
+  resolver->StartResolving();
+
+  run_loop.Run();
+
+  EXPECT_EQ(1, num_resolves_);
+  EXPECT_EQ(ServiceResolver::STATUS_KNOWN_NONEXISTENT, last_status_);
 }
 
 }  // namespace local_discovery

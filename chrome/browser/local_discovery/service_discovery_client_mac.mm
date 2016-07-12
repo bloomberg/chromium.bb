@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/ip_address.h"
@@ -60,9 +61,9 @@ const NSTimeInterval kResolveTimeout = 10.0;
 // <name>._<type>._<sub>._<protocol2>._<protocol1>.<domain>.
 bool ExtractServiceInfo(const std::string& service,
                         bool is_service_name,
-                        std::string* instance,
-                        std::string* type,
-                        std::string* domain) {
+                        base::scoped_nsobject<NSString>* instance,
+                        base::scoped_nsobject<NSString>* type,
+                        base::scoped_nsobject<NSString>* domain) {
   if (service.empty())
     return false;
 
@@ -71,8 +72,8 @@ bool ExtractServiceInfo(const std::string& service,
     return false;
 
   if (!is_service_name) {
-    *instance = std::string();
-    *type = service.substr(0, last_period) + ".";
+    type->reset(base::SysUTF8ToNSString(service.substr(0, last_period) + "."),
+                base::scoped_policy::RETAIN);
   } else {
     // Find third last period that delimits type and instance name.
     size_t type_period = last_period;
@@ -82,39 +83,48 @@ bool ExtractServiceInfo(const std::string& service,
         return false;
     }
 
-    *instance = service.substr(0, type_period);
-    *type = service.substr(type_period + 1, last_period - type_period);
+    instance->reset(base::SysUTF8ToNSString(service.substr(0, type_period)),
+                    base::scoped_policy::RETAIN);
+    type->reset(
+        base::SysUTF8ToNSString(
+            service.substr(type_period + 1, last_period - type_period)),
+        base::scoped_policy::RETAIN);
   }
-  *domain = service.substr(last_period + 1) + ".";
+  domain->reset(base::SysUTF8ToNSString(service.substr(last_period + 1) + "."),
+                base::scoped_policy::RETAIN);
 
-  return !domain->empty() &&
-         !type->empty() &&
-         (!is_service_name || !instance->empty());
+  return [*domain length] > 0 &&
+         [*type length] > 0 &&
+         (!is_service_name || [*instance length] > 0);
 }
 
 void ParseTxtRecord(NSData* record, std::vector<std::string>* output) {
-  if (record == nil || [record length] <= 1)
+  if ([record length] <= 1)
     return;
 
   VLOG(1) << "ParseTxtRecord: " << [record length];
 
-  const char* record_bytes = reinterpret_cast<const char*>([record bytes]);
-  const char* const record_end = record_bytes + [record length];
-  // TODO(justinlin): More strict bounds checking.
-  while (record_bytes < record_end) {
-    uint8_t size = *record_bytes++;
-    if (size <= 0)
-      continue;
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>([record bytes]);
+  size_t size = [record length];
+  size_t offset = 0;
+  while (offset < size) {
+    uint8_t record_size = bytes[offset++];
+    if (offset > size - record_size)
+      break;
 
-    if (record_bytes + size <= record_end) {
-      VLOG(1) << "TxtRecord: "
-              << std::string(record_bytes, static_cast<size_t>(size));
-      output->push_back(
-          [[[NSString alloc] initWithBytes:record_bytes
-                             length:size
-                             encoding:NSUTF8StringEncoding] UTF8String]);
+    base::scoped_nsobject<NSString> txt_record(
+        [[NSString alloc] initWithBytes:&bytes[offset]
+                                 length:record_size
+                               encoding:NSUTF8StringEncoding]);
+    if (txt_record) {
+      std::string txt_record_string = base::SysNSStringToUTF8(txt_record);
+      VLOG(1) << "TxtRecord: " << txt_record_string;
+      output->push_back(std::move(txt_record_string));
+    } else {
+      VLOG(1) << "TxtRecord corrupted at offset " << offset;
     }
-    record_bytes += size;
+
+    offset += record_size;
   }
 }
 
@@ -204,20 +214,17 @@ ServiceWatcherImplMac::NetServiceBrowserContainer::StartOnDiscoveryThread() {
 void
 ServiceWatcherImplMac::NetServiceBrowserContainer::DiscoverOnDiscoveryThread() {
   DCHECK(IsOnServiceDiscoveryThread());
-  std::string instance;
-  std::string type;
-  std::string domain;
+  base::scoped_nsobject<NSString> instance, type, domain;
 
   if (!ExtractServiceInfo(service_type_, false, &instance, &type, &domain))
     return;
 
-  DCHECK(instance.empty());
-  DVLOG(1) << "Listening for service type '" << type
-           << "' on domain '" << domain << "'";
+  DCHECK(![instance length]);
+  DVLOG(1) << "Listening for service type '" << [type UTF8String]
+           << "' on domain '" << [domain UTF8String] << "'";
 
   base::Time start_time = base::Time::Now();
-  [browser_ searchForServicesOfType:[NSString stringWithUTF8String:type.c_str()]
-            inDomain:[NSString stringWithUTF8String:domain.c_str()]];
+  [browser_ searchForServicesOfType:type inDomain:domain];
   UMA_HISTOGRAM_TIMES("LocalDiscovery.MacBrowseCallTimes",
                       base::Time::Now() - start_time);
 }
@@ -308,9 +315,7 @@ void ServiceResolverImplMac::NetServiceContainer::DeleteSoon() {
 void
 ServiceResolverImplMac::NetServiceContainer::StartResolvingOnDiscoveryThread() {
   DCHECK(IsOnServiceDiscoveryThread());
-  std::string instance;
-  std::string type;
-  std::string domain;
+  base::scoped_nsobject<NSString> instance, type, domain;
 
   // The service object is set ahead of time by tests.
   if (service_)
@@ -323,18 +328,16 @@ ServiceResolverImplMac::NetServiceContainer::StartResolvingOnDiscoveryThread() {
           << "StartResolvingOnDiscoveryThread: Success";
   delegate_.reset([[NetServiceDelegate alloc] initWithContainer:this]);
   service_.reset(
-      [[NSNetService alloc]
-          initWithDomain:[[NSString alloc] initWithUTF8String:domain.c_str()]
-          type:[[NSString alloc] initWithUTF8String:type.c_str()]
-          name:[[NSString alloc] initWithUTF8String:instance.c_str()]]);
+      [[NSNetService alloc] initWithDomain:domain type:type name:instance]);
   [service_ setDelegate:delegate_];
 
   [service_ resolveWithTimeout:kResolveTimeout];
 
   VLOG(1) << "ServiceResolverImplMac::NetServiceContainer::"
           << "StartResolvingOnDiscoveryThread: " << service_name_
-          << ", instance: " << instance << ", type: " << type
-          << ", domain: " << domain;
+          << ", instance: " << [instance UTF8String]
+          << ", type: " << [type UTF8String]
+          << ", domain: " << [domain UTF8String];
 }
 
 void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
@@ -435,26 +438,26 @@ ServiceResolverImplMac::GetContainerForTesting() {
   return self;
 }
 
-- (void)netServiceBrowser:(NSNetServiceBrowser *)netServiceBrowser
-        didFindService:(NSNetService *)netService
-        moreComing:(BOOL)moreServicesComing {
+- (void)netServiceBrowser:(NSNetServiceBrowser*)netServiceBrowser
+           didFindService:(NSNetService*)netService
+               moreComing:(BOOL)moreServicesComing {
   // Start monitoring this service for updates.
   [netService setDelegate:self];
   [netService startMonitoring];
   [services_ addObject:netService];
 
   container_->OnServicesUpdate(local_discovery::ServiceWatcher::UPDATE_ADDED,
-                               [[netService name] UTF8String]);
+                               base::SysNSStringToUTF8([netService name]));
 }
 
-- (void)netServiceBrowser:(NSNetServiceBrowser *)netServiceBrowser
-        didRemoveService:(NSNetService *)netService
-        moreComing:(BOOL)moreServicesComing {
+- (void)netServiceBrowser:(NSNetServiceBrowser*)netServiceBrowser
+         didRemoveService:(NSNetService*)netService
+               moreComing:(BOOL)moreServicesComing {
   NSUInteger index = [services_ indexOfObject:netService];
   if (index != NSNotFound) {
     container_->OnServicesUpdate(
         local_discovery::ServiceWatcher::UPDATE_REMOVED,
-        [[netService name] UTF8String]);
+        base::SysNSStringToUTF8([netService name]));
 
     // Stop monitoring this service for updates.
     [[services_ objectAtIndex:index] stopMonitoring];
@@ -462,10 +465,10 @@ ServiceResolverImplMac::GetContainerForTesting() {
   }
 }
 
-- (void)netService:(NSNetService *)sender
-        didUpdateTXTRecordData:(NSData *)data {
+- (void)netService:(NSNetService*)sender
+    didUpdateTXTRecordData:(NSData*)data {
   container_->OnServicesUpdate(local_discovery::ServiceWatcher::UPDATE_CHANGED,
-                               [[sender name] UTF8String]);
+                               base::SysNSStringToUTF8([sender name]));
 }
 
 @end
@@ -480,12 +483,12 @@ ServiceResolverImplMac::GetContainerForTesting() {
   return self;
 }
 
-- (void)netServiceDidResolveAddress:(NSNetService *)sender {
+- (void)netServiceDidResolveAddress:(NSNetService*)sender {
   container_->OnResolveUpdate(local_discovery::ServiceResolver::STATUS_SUCCESS);
 }
 
-- (void)netService:(NSNetService *)sender
-        didNotResolve:(NSDictionary *)errorDict {
+- (void)netService:(NSNetService*)sender
+        didNotResolve:(NSDictionary*)errorDict {
   container_->OnResolveUpdate(
       local_discovery::ServiceResolver::STATUS_REQUEST_TIMEOUT);
 }
