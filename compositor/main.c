@@ -1499,7 +1499,7 @@ load_wayland_backend(struct weston_compositor *c,
 	int ret = 0;
 
 	ret = load_wayland_backend_config(c, argc, argv, wc, &config);
-	if(ret < 0) {
+	if (ret < 0) {
 		weston_wayland_backend_config_release(&config);
 		return ret;
 	}

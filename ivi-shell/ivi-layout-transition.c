@@ -439,7 +439,7 @@ ivi_layout_transition_move_resize_view(struct ivi_layout_surface *surface,
 		transition_move_resize_view_destroy,
 		duration);
 
-	if(transition && layout_transition_register(transition))
+	if (transition && layout_transition_register(transition))
 		return;
 	layout_transition_destroy(transition);
 }
