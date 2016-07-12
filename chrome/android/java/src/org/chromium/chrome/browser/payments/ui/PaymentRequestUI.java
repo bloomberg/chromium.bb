@@ -506,6 +506,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             // in JavaScript.
             dismissRunnable.run();
         } else {
+            mIsProcessingPayClicked = false;
+
             // Animate the bottom sheet going away.
             new DisappearingAnimator(false);
 
@@ -712,7 +714,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
     /** @return Whether or not the dialog can be closed via the X close button. */
     private boolean isAcceptingCloseButton() {
-        return mSheetAnimator == null && mSectionAnimator == null && mIsInitialLayoutComplete;
+        return mSheetAnimator == null && mSectionAnimator == null && mIsInitialLayoutComplete
+                && !mIsProcessingPayClicked;
     }
 
     /** @return Whether or not the dialog is accepting user input. */

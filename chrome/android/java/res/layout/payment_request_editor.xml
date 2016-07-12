@@ -4,48 +4,48 @@
      found in the LICENSE file. -->
 
 <!-- PaymentRequestUI editor dialog. -->
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:chrome="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical" >
+    xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
-    <!-- Toolbar and shadow. -->
+    <!-- Toolbar -->
     <org.chromium.chrome.browser.payments.ui.EditorDialogToolbar
         android:id="@+id/action_bar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:background="@color/dark_action_bar_color" />
-    <org.chromium.chrome.browser.widget.FadingShadowView
-        android:id="@+id/shadow"
-        android:layout_width="match_parent"
-        android:layout_height="10dp" />
     
     <!-- All the page content in scrollable form. -->
     <org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView
         android:id="@+id/scroll_view"
         android:layout_height="0dp"
         android:layout_width="match_parent"
-        android:layout_weight="1" >
+        android:layout_below="@id/action_bar"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" >
 
         <LinearLayout
             android:id="@+id/contents"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingTop="@dimen/payments_section_large_spacing"
             android:paddingStart="@dimen/pref_autofill_content_spacing"
             android:paddingEnd="@dimen/pref_autofill_content_spacing"
             android:orientation="vertical" />
 
     </org.chromium.chrome.browser.payments.ui.FadingEdgeScrollView>
 
-    <!-- CANCEL and DONE buttons. -->
-    <org.chromium.chrome.browser.widget.DualControlLayout
-        android:id="@+id/button_bar"
+    <!-- Shadow overlaps the FadingEdgeScrollView. -->
+    <org.chromium.chrome.browser.widget.FadingShadowView
+        android:id="@+id/shadow"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="@dimen/payments_section_large_spacing"
-        android:background="@android:color/white"
-        chrome:stackedMargin="@dimen/infobar_margin_between_stacked_buttons"
-        chrome:primaryButtonText="@string/done"
-        chrome:secondaryButtonText="@string/cancel" />
+        android:layout_height="10dp"
+        android:layout_below="@id/action_bar"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
 
-</LinearLayout>
+</RelativeLayout>

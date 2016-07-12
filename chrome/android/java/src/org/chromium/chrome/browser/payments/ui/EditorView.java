@@ -62,7 +62,7 @@ public class EditorView extends AlwaysDismissedDialog
     private final int mHalfRowMargin;
     private final List<EditorTextField> mEditorTextFields;
 
-    private ViewGroup mLayout;
+    private View mLayout;
     private EditorModel mEditorModel;
     private Button mDoneButton;
     private ViewGroup mDataView;
@@ -152,8 +152,6 @@ public class EditorView extends AlwaysDismissedDialog
                 R.color.toolbar_shadow_color), FadingShadow.POSITION_TOP);
 
         // The top shadow is handled by the toolbar, so hide the one used in the field editor.
-        // TODO(dfalcantara): Make the toolbar's shadow cover the field editor instead of pushing
-        //                    it down.  Maybe use a RelativeLayout with overlapping views?
         FadingEdgeScrollView scrollView =
                 (FadingEdgeScrollView) mLayout.findViewById(R.id.scroll_view);
         scrollView.setShadowVisibility(false, true);
@@ -312,16 +310,15 @@ public class EditorView extends AlwaysDismissedDialog
         setOnDismissListener(this);
         mEditorModel = editorModel;
 
-        mLayout = (LinearLayout) LayoutInflater.from(mContext).inflate(
-                R.layout.payment_request_editor, null);
+        mLayout = LayoutInflater.from(mContext).inflate(R.layout.payment_request_editor, null);
         setContentView(mLayout);
 
         mFooter = LayoutInflater.from(mContext).inflate(
                 R.layout.payment_request_editor_footer, null, false);
 
         prepareToolbar();
-        prepareButtons();
         prepareEditor();
+        prepareButtons();
         show();
 
         // Immediately focus the first invalid field to make it faster to edit.

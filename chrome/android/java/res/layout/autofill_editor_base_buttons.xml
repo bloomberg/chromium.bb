@@ -9,19 +9,18 @@
 
     <Space style="@style/ButtonBarTopSpacerLight" />
 
-    <!-- CANCEL and SAVE buttons.
-         paddingEnd is already handled by the ScrollView parent.     
-    -->
+    <!-- CANCEL and DONE buttons. -->
     <org.chromium.chrome.browser.widget.DualControlLayout
         android:id="@+id/button_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="@dimen/payments_section_large_spacing"
+        android:paddingStart="@dimen/pref_autofill_field_horizontal_padding"
+        android:paddingEnd="@dimen/pref_autofill_field_horizontal_padding"
         android:paddingTop="@dimen/payments_section_large_spacing"
         android:paddingBottom="@dimen/payments_section_large_spacing"
         android:background="@android:color/white"
         app:stackedMargin="@dimen/infobar_margin_between_stacked_buttons"
-        app:primaryButtonText="@string/save"
+        app:primaryButtonText="@string/done"
         app:secondaryButtonText="@string/cancel" />
 
 </merge>
