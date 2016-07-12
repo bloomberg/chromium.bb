@@ -9,7 +9,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-// Note this annotation may not do anything yet. Check crbug.com/622451
+// Note this annotation may not do anything yet. Check crbug.com/619055
 // for latest status.
 /**
  * Mark a test as flaky and should be retried on failure. The test is

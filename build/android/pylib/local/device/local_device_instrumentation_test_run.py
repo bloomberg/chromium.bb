@@ -331,6 +331,17 @@ class LocalDeviceInstrumentationTestRun(
     return results
 
   #override
+  def _ShouldRetry(self, test):
+    if 'RetryOnFailure' in test.get('annotations', {}):
+      return True
+
+    # TODO(jbudorick): Remove this log message and switch the return value to
+    # False after tests have been annotated with @RetryOnFailure.
+    # See crbug.com/619055 for more details.
+    logging.warning('Default retries are being phased out. crbug.com/619055')
+    return True
+
+  #override
   def _ShouldShard(self):
     return True
 

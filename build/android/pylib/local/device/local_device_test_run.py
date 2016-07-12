@@ -176,7 +176,7 @@ class LocalDeviceTestRun(test_run.TestRun):
 
   def _GetTestsToRetry(self, tests, try_results):
 
-    def is_failure(test_result):
+    def is_failure_result(test_result):
       return (
           test_result is None
           or test_result.GetType() not in (
@@ -185,15 +185,17 @@ class LocalDeviceTestRun(test_run.TestRun):
 
     all_test_results = {r.GetName(): r for r in try_results.GetAll()}
 
-    def should_retry(name):
+    def test_failed(name):
       # When specifying a test filter, names can contain trailing wildcards.
       # See local_device_gtest_run._ExtractTestsFromFilter()
       if name.endswith('*'):
-        return any(fnmatch.fnmatch(n, name) and is_failure(t)
+        return any(fnmatch.fnmatch(n, name) and is_failure_result(t)
                    for n, t in all_test_results.iteritems())
-      return is_failure(all_test_results.get(name))
+      return is_failure_result(all_test_results.get(name))
 
-    return [t for t in tests if should_retry(self._GetUniqueTestName(t))]
+    failed_tests = (t for t in tests if test_failed(self._GetUniqueTestName(t)))
+
+    return [t for t in failed_tests if self._ShouldRetry(t)]
 
   def GetTool(self, device):
     if not str(device) in self._tools:
@@ -204,9 +206,13 @@ class LocalDeviceTestRun(test_run.TestRun):
   def _CreateShards(self, tests):
     raise NotImplementedError
 
-  # pylint: disable=no-self-use
   def _GetUniqueTestName(self, test):
+    # pylint: disable=no-self-use
     return test
+
+  def _ShouldRetry(self, test):
+    # pylint: disable=no-self-use,unused-argument
+    return True
 
   def _GetTests(self):
     raise NotImplementedError
