@@ -318,6 +318,16 @@ class QuicNetworkTransactionTest
                                        least_unacked, true);
   }
 
+  std::unique_ptr<QuicEncryptedPacket> ConstructClientAckPacket(
+      QuicPacketNumber packet_number,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber ack_least_unacked,
+      QuicPacketNumber stop_least_unacked) {
+    return client_maker_.MakeAckPacket(packet_number, largest_received,
+                                       ack_least_unacked, stop_least_unacked,
+                                       true);
+  }
+
   std::unique_ptr<QuicEncryptedPacket> ConstructClientAckAndRstPacket(
       QuicPacketNumber num,
       QuicStreamId stream_id,
@@ -328,24 +338,6 @@ class QuicNetworkTransactionTest
     return client_maker_.MakeAckAndRstPacket(
         num, false, stream_id, error_code, largest_received, ack_least_unacked,
         stop_least_unacked, true);
-  }
-
-  std::unique_ptr<QuicEncryptedPacket> ConstructClientAckPacket(
-      QuicPacketNumber largest_received,
-      QuicPacketNumber least_unacked,
-      QuicTestPacketMaker* maker) {
-    return client_maker_.MakeAckPacket(2, largest_received, least_unacked,
-                                       least_unacked, true);
-  }
-
-  std::unique_ptr<QuicEncryptedPacket> ConstructClientAckPacket(
-      QuicPacketNumber packet_number,
-      QuicPacketNumber largest_received,
-      QuicPacketNumber ack_least_unacked,
-      QuicPacketNumber stop_least_unacked) {
-    return client_maker_.MakeAckPacket(packet_number, largest_received,
-                                       ack_least_unacked, stop_least_unacked,
-                                       true);
   }
 
   std::unique_ptr<QuicEncryptedPacket>
@@ -458,36 +450,10 @@ class QuicNetworkTransactionTest
       QuicStreamId stream_id,
       bool should_include_version,
       bool fin,
-      SpdyHeaderBlock headers,
-      QuicStreamOffset* offset,
-      QuicTestPacketMaker* maker) {
-    SpdyPriority priority =
-        ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
-    return client_maker_.MakeRequestHeadersPacketWithOffsetTracking(
-        packet_number, stream_id, should_include_version, fin, priority,
-        std::move(headers), offset);
-  }
-
-  std::unique_ptr<QuicEncryptedPacket> ConstructClientRequestHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
       SpdyHeaderBlock headers) {
-    return ConstructClientRequestHeadersPacket(
-        packet_number, stream_id, should_include_version, fin,
-        std::move(headers), nullptr, &client_maker_);
-  }
-  std::unique_ptr<QuicEncryptedPacket> ConstructClientRequestHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      SpdyHeaderBlock headers,
-      QuicTestPacketMaker* maker) {
-    return ConstructClientRequestHeadersPacket(
-        packet_number, stream_id, should_include_version, fin,
-        std::move(headers), nullptr, maker);
+    return ConstructClientRequestHeadersPacket(packet_number, stream_id,
+                                               should_include_version, fin,
+                                               std::move(headers), nullptr);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructServerPushPromisePacket(
@@ -509,21 +475,9 @@ class QuicNetworkTransactionTest
       bool should_include_version,
       bool fin,
       SpdyHeaderBlock headers) {
-    return ConstructServerResponseHeadersPacket(
-        packet_number, stream_id, should_include_version, fin,
-        std::move(headers), nullptr, &server_maker_);
-  }
-
-  std::unique_ptr<QuicEncryptedPacket> ConstructServerResponseHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      SpdyHeaderBlock headers,
-      QuicTestPacketMaker* maker) {
-    return ConstructServerResponseHeadersPacket(
-        packet_number, stream_id, should_include_version, fin,
-        std::move(headers), nullptr, maker);
+    return ConstructServerResponseHeadersPacket(packet_number, stream_id,
+                                                should_include_version, fin,
+                                                std::move(headers), nullptr);
   }
 
   std::unique_ptr<QuicEncryptedPacket> ConstructServerResponseHeadersPacket(
@@ -533,19 +487,6 @@ class QuicNetworkTransactionTest
       bool fin,
       SpdyHeaderBlock headers,
       QuicStreamOffset* offset) {
-    return server_maker_.MakeResponseHeadersPacketWithOffsetTracking(
-        packet_number, stream_id, should_include_version, fin,
-        std::move(headers), offset);
-  }
-
-  std::unique_ptr<QuicEncryptedPacket> ConstructServerResponseHeadersPacket(
-      QuicPacketNumber packet_number,
-      QuicStreamId stream_id,
-      bool should_include_version,
-      bool fin,
-      SpdyHeaderBlock headers,
-      QuicStreamOffset* offset,
-      QuicTestPacketMaker* maker) {
     return server_maker_.MakeResponseHeadersPacketWithOffsetTracking(
         packet_number, stream_id, should_include_version, fin,
         std::move(headers), offset);
@@ -1408,10 +1349,10 @@ TEST_P(QuicNetworkTransactionTest, PoolByDestination) {
   mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
       3, kClientDataStreamId2, false, true,
       GetRequestHeaders("GET", "https", "/", &client_maker2),
-      &request_header_offset, &client_maker2));
+      &request_header_offset));
   mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
       3, kClientDataStreamId2, false, false, GetResponseHeaders("200 OK"),
-      &response_header_offset, &server_maker2));
+      &response_header_offset));
   mock_quic_data.AddRead(ConstructServerDataPacket(4, kClientDataStreamId2,
                                                    false, true, 0, "hello!"));
   mock_quic_data.AddWrite(
@@ -1516,7 +1457,7 @@ TEST_P(QuicNetworkTransactionTest,
   mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
       3, kClientDataStreamId2, false, true,
       GetRequestHeaders("GET", "https", "/", &client_maker),
-      &request_header_offset, &client_maker));
+      &request_header_offset));
   mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
       3, kClientDataStreamId2, false, false, GetResponseHeaders("200 OK"),
       &response_header_offset));
