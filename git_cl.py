@@ -2483,11 +2483,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         # Gerrit will create additional CLs when uploading.
         if not parent or (RunGitSilent(['rev-parse', upstream_branch + ':']) !=
                           RunGitSilent(['rev-parse', parent + ':'])):
-          # TODO(tandrii): remove "old depot_tools" part on April 12, 2016.
           DieWithError(
               'Upload upstream branch %s first.\n'
-              'Note: maybe you\'ve uploaded it with --no-squash or with an old '
-              'version of depot_tools. If so, then re-upload it with:\n'
+              'Note: maybe you\'ve uploaded it with --no-squash. '
+              'If so, then re-upload it with:\n'
               '    git cl upload --squash\n' % upstream_branch_name)
       else:
         parent = self.GetCommonAncestorWithUpstream()
