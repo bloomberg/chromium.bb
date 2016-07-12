@@ -1,0 +1,35 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x421
+  LayoutBlockFlow {HTML} at (0,0) size 800x421
+    LayoutBlockFlow {BODY} at (8,8) size 784x405
+      LayoutBlockFlow {DIV} at (10,10) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (130,115) size 4x19
+        text run at (130,115) width 4: " "
+      LayoutBlockFlow {DIV} at (144,10) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (264,115) size 4x19
+        text run at (264,115) width 4: " "
+      LayoutBlockFlow {DIV} at (278,10) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (398,115) size 4x19
+        text run at (398,115) width 4: " "
+      LayoutBR {BR} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (10,145) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (130,250) size 4x19
+        text run at (130,250) width 4: " "
+      LayoutBlockFlow {DIV} at (144,145) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (264,250) size 4x19
+        text run at (264,250) width 4: " "
+      LayoutBlockFlow {DIV} at (278,145) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (398,250) size 4x19
+        text run at (398,250) width 4: " "
+      LayoutBR {BR} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (10,280) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (130,385) size 4x19
+        text run at (130,385) width 4: " "
+      LayoutBlockFlow {DIV} at (144,280) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (264,385) size 4x19
+        text run at (264,385) width 4: " "
+      LayoutBlockFlow {DIV} at (278,280) size 110x110 [bgcolor=#008000]
+      LayoutText {#text} at (398,385) size 4x19
+        text run at (398,385) width 4: " "
+      LayoutBR {BR} at (0,0) size 0x0
