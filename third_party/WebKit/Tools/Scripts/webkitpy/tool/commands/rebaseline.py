@@ -346,7 +346,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 builders_to_fallback_paths[builder] = fallback_path
         return builders_to_fallback_paths.keys()
 
-    def _rebaseline_commands(self, test_prefix_list, options):
+    def _rebaseline_commands(self, test_prefix_list, options, skip_checking_actual_results=False):
         path_to_webkit_patch = self._tool.path()
         cwd = self._tool.scm().checkout_root
         copy_baseline_commands = []
@@ -357,8 +357,13 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         for test_prefix in test_prefix_list:
             for test in port.tests([test_prefix]):
                 for builder in self._builders_to_fetch_from(test_prefix_list[test_prefix]):
-                    actual_failures_suffixes = self._suffixes_for_actual_failures(
-                        test, builder, test_prefix_list[test_prefix][builder])
+                    # TODO(qyearsley): Remove the parameter skip_checking_actual_results
+                    # and instead refactor the existing code so that this is not necessary.
+                    if skip_checking_actual_results:
+                        actual_failures_suffixes = test_prefix_list[test_prefix][builder]
+                    else:
+                        actual_failures_suffixes = self._suffixes_for_actual_failures(
+                            test, builder, test_prefix_list[test_prefix][builder])
                     if not actual_failures_suffixes:
                         # If we're not going to rebaseline the test because it's passing on this
                         # builder, we still want to remove the line from TestExpectations.
@@ -491,7 +496,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._tool.scm().add_list(files_to_add)
         return lines_to_remove
 
-    def _rebaseline(self, options, test_prefix_list):
+    def _rebaseline(self, options, test_prefix_list, skip_checking_actual_results=False):
         """Downloads new baselines in parallel, then updates expectations files
         and optimizes baselines.
 
@@ -507,13 +512,18 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 "some/test.html" on both builder-1 and builder-2, and new text
                 baselines should be downloaded for "some/other.html" but only
                 from builder-1.
+            skip_checking_actual_results: If True, then the lists of suffixes
+                to rebaseline from |test_prefix_list| will be used directly;
+                if False, then the list of suffixes will filtered to include
+                suffixes with mismatches in actual results.
         """
         for test, builders_to_check in sorted(test_prefix_list.items()):
             _log.info("Rebaselining %s" % test)
             for builder, suffixes in sorted(builders_to_check.items()):
                 _log.debug("  %s: %s" % (builder, ",".join(suffixes)))
 
-        copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(test_prefix_list, options)
+        copy_baseline_commands, rebaseline_commands, extra_lines_to_remove = self._rebaseline_commands(
+            test_prefix_list, options, skip_checking_actual_results)
         lines_to_remove = {}
 
         self._run_in_parallel_and_update_scm(copy_baseline_commands)

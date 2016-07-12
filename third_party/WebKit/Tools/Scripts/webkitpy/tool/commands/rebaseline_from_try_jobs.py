@@ -6,18 +6,15 @@
 
 This command interacts with the Rietveld API to get information about try jobs
 with layout test results.
-
-TODO(qyearsley): Finish this module. After getting a list of try bots:
-  - For each bot get the list of tests to rebaseline.
-  - Invoke webkit-patch rebaseline-test-internal to fetch the baselines.
 """
 
 import logging
 import optparse
 
 from webkitpy.common.net.rietveld import latest_try_jobs
-from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from webkitpy.common.net.web import Web
+from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
+from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 
 
 _log = logging.getLogger(__name__)
@@ -32,12 +29,65 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         super(RebaselineFromTryJobs, self).__init__(options=[
             optparse.make_option(
                 '--issue', type='int', default=None,
-                help="Rietveld issue number."),
+                help='Rietveld issue number.'),
+            optparse.make_option(
+                '--dry-run', action='store_true', default=False,
+                help='Dry run mode; list actions that would be performed but do not do anything.'),
+            self.no_optimize_option,
+            self.results_directory_option,
         ])
         self.web = Web()
 
+    def execute(self, options, args, tool):
+        if not options.issue:
+            # TODO(qyearsley): If no issue number is given, get the one for the current branch.
+            _log.info('No issue number provided.')
+            return
+
+        if args:
+            test_prefix_list = {}
+            try_jobs = latest_try_jobs(options.issue, self._try_bots(), self.web)
+            builders = [j.builder_name for j in try_jobs]
+            for t in args:
+                test_prefix_list[t] = {b: BASELINE_SUFFIX_LIST for b in builders}
+        else:
+            test_prefix_list = self._test_prefix_list(options.issue)
+        self._log_test_prefix_list(test_prefix_list)
+
+        if options.dry_run:
+            return
+        self._rebaseline(options, test_prefix_list, skip_checking_actual_results=True)
+
+    def _test_prefix_list(self, issue_number):
+        """Returns a collection of test, builder and file extensions to get new baselines for."""
+        builders_to_tests = self._builders_to_tests(issue_number)
+        result = {}
+        for builder, tests in builders_to_tests.iteritems():
+            for test in tests:
+                if test not in result:
+                    result[test] = {}
+                # TODO(qyearsley): Consider using TestExpectations.suffixes_for_test_result.
+                result[test][builder] = BASELINE_SUFFIX_LIST
+        return result
+
+    def _builders_to_tests(self, issue_number):
+        """Fetches a list of try bots, and for each, fetches tests with new baselines."""
+        _log.debug('Getting results for Rietveld issue %d.' % issue_number)
+        try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
+        if not try_jobs:
+            _log.debug('No try job results for builders in: %r.' % (self._try_bots(),))
+        builders_to_tests = {}
+        for job in try_jobs:
+            test_results = self._unexpected_mismatch_results(job)
+            builders_to_tests[job.builder_name] = sorted(r.test_name() for r in test_results)
+        return builders_to_tests
+
+    def _try_bots(self):
+        """Retuns a collection of try bot builders to fetch results for."""
+        return self._tool.builders.all_try_builder_names()
 
     def _unexpected_mismatch_results(self, try_job):
+        """Fetches a list of LayoutTestResult objects for unexpected results with new baselines."""
         results_url = self._results_url(try_job.builder_name, try_job.build_number)
         builder = self._tool.buildbot.builder_with_name(try_job.builder_name)
         layout_test_results = builder.fetch_layout_test_results(results_url)
@@ -46,28 +96,12 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
             return []
         return layout_test_results.unexpected_mismatch_results()
 
-    def try_bots(self):
-        return self._tool.builders.all_try_builder_names()
-
-    def execute(self, options, args, tool):
-        if not options.issue:
-            # TODO(qyearsley): Later, the default behavior will be to run
-            # git cl issue to get the issue number, then get lists of tests
-            # to rebaseline and download new baselines.
-            _log.info('No issue number provided.')
+    @staticmethod
+    def _log_test_prefix_list(test_prefix_list):
+        """Logs the tests to download new baselines for."""
+        if not test_prefix_list:
+            _log.info('No tests to rebaseline.')
             return
-        _log.info('Getting results for Rietveld issue %d.' % options.issue)
-
-        jobs = latest_try_jobs(options.issue, self.try_bots(), self.web)
-
-        for job in jobs:
-            _log.info('  Builder: %s', job.builder_name)
-            _log.info('  Build: %s', job.build_number)
-            test_results = self._unexpected_mismatch_results(job)
-            if test_results:
-                for result in test_results:
-                    _log.info(
-                        '%s (actual: %s, expected: %s)', result.test_name(),
-                        result.actual_results(), result.expected_results())
-            else:
-                _log.info('No unexpected test results.')
+        _log.info('Tests to rebaseline:')
+        for test, builders in test_prefix_list.iteritems():
+            _log.info('  %s: %s', test, ', '.join(sorted(builders)))
