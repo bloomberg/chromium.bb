@@ -21,6 +21,8 @@
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 #include "platform/v8_inspector/public/V8ToProtocolValue.h"
 
+#include <algorithm>
+
 using blink::protocol::Array;
 using blink::protocol::Maybe;
 using blink::protocol::Debugger::BreakpointId;

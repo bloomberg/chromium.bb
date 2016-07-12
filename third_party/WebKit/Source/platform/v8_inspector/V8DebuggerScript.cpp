@@ -5,6 +5,7 @@
 #include "platform/v8_inspector/V8DebuggerScript.h"
 
 #include "platform/inspector_protocol/Collections.h"
+#include "platform/inspector_protocol/Platform.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 
 namespace blink {

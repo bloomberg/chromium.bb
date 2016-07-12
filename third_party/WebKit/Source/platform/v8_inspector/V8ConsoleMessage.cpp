@@ -17,7 +17,7 @@ namespace blink {
 
 namespace {
 
-String messageSourceValue(MessageSource source)
+String16 messageSourceValue(MessageSource source)
 {
     switch (source) {
     case XMLMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Xml;
@@ -35,7 +35,7 @@ String messageSourceValue(MessageSource source)
 }
 
 
-String messageTypeValue(MessageType type)
+String16 messageTypeValue(MessageType type)
 {
     switch (type) {
     case LogMessageType: return protocol::Console::ConsoleMessage::TypeEnum::Log;
@@ -54,7 +54,7 @@ String messageTypeValue(MessageType type)
     return protocol::Console::ConsoleMessage::TypeEnum::Log;
 }
 
-String messageLevelValue(MessageLevel level)
+String16 messageLevelValue(MessageLevel level)
 {
     switch (level) {
     case DebugMessageLevel: return protocol::Console::ConsoleMessage::LevelEnum::Debug;
@@ -141,8 +141,10 @@ private:
 
     bool append(v8::Local<v8::Array> array)
     {
-        if (m_visitedArrays.contains(array))
-            return true;
+        for (const auto& it : m_visitedArrays) {
+            if (it == array)
+                return true;
+        }
         uint32_t length = array->Length();
         if (length > m_arrayLimit)
             return false;
@@ -151,7 +153,7 @@ private:
 
         bool result = true;
         m_arrayLimit -= length;
-        m_visitedArrays.append(array);
+        m_visitedArrays.push_back(array);
         for (uint32_t i = 0; i < length; ++i) {
             if (i)
                 m_builder.append(',');
@@ -160,7 +162,7 @@ private:
                 break;
             }
         }
-        m_visitedArrays.removeLast();
+        m_visitedArrays.pop_back();
         return result;
     }
 
@@ -191,7 +193,7 @@ private:
     uint32_t m_arrayLimit;
     v8::Isolate* m_isolate;
     String16Builder m_builder;
-    Vector<v8::Local<v8::Array>> m_visitedArrays;
+    std::vector<v8::Local<v8::Array>> m_visitedArrays;
     v8::TryCatch m_tryCatch;
 };
 
@@ -244,7 +246,7 @@ void V8ConsoleMessage::reportToFrontend(protocol::Console::Frontend* frontend, V
     result->setLine(static_cast<int>(m_lineNumber));
     result->setColumn(static_cast<int>(m_columnNumber));
     if (m_scriptId)
-        result->setScriptId(String::number(m_scriptId));
+        result->setScriptId(String16::number(m_scriptId));
     result->setUrl(m_url);
     if (m_source == NetworkMessageSource && !m_requestIdentifier.isEmpty())
         result->setNetworkRequestId(m_requestIdentifier);
@@ -303,7 +305,7 @@ void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V
         if (m_columnNumber)
             details->setColumnNumber(static_cast<int>(m_columnNumber) - 1);
         if (m_scriptId)
-            details->setScriptId(String::number(m_scriptId));
+            details->setScriptId(String16::number(m_scriptId));
         if (m_stackTrace)
             details->setStack(m_stackTrace->buildInspectorObject());
 

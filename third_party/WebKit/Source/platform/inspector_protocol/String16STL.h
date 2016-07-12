@@ -243,6 +243,17 @@ public:
 };
 } // namespace WTF
 
+
+namespace std {
+template<> struct hash<String16> {
+    std::size_t operator()(const String16& string) const
+    {
+        return string.hash();
+    }
+};
+
+} // namespace std
+
 using String = WTF::String;
 
 #endif // !defined(String16STL_h)

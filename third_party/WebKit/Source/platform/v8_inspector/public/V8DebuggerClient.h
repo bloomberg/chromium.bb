@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class V8StackTrace;
+
 class PLATFORM_EXPORT V8DebuggerClient {
 public:
     virtual ~V8DebuggerClient() { }

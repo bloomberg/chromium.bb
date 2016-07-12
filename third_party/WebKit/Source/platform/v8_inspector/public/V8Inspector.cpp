@@ -13,6 +13,7 @@
 namespace blink {
 
 V8Inspector::V8Inspector(v8::Isolate* isolate, v8::Local<v8::Context> context)
+    : m_context(context)
 {
     m_debugger = V8Debugger::create(isolate, this);
     m_debugger->contextCreated(V8ContextInfo(context, 1, true, "",
@@ -55,21 +56,17 @@ void V8Inspector::dispatchMessageFromFrontend(const String16& message)
         m_session->dispatchProtocolMessage(message);
 }
 
-int V8Inspector::ensureDefaultContextInGroup(int contextGroupId)
+v8::Local<v8::Context> V8Inspector::ensureDefaultContextInGroup(int)
 {
-    return 1;
-}
-
-void V8Inspector::muteConsole()
-{
-}
-
-void V8Inspector::unmuteConsole()
-{
-
+    return m_context;
 }
 
 bool V8Inspector::isExecutionAllowed()
+{
+    return true;
+}
+
+bool V8Inspector::canExecuteScripts()
 {
     return true;
 }

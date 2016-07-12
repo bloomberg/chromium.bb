@@ -42,36 +42,39 @@ private:
     void unmuteWarningsAndDeprecations() override { }
     double currentTimeMS() override { return 0; };
 
-    void muteConsole() override;
-    void unmuteConsole() override;
     bool isExecutionAllowed() override;
-    int ensureDefaultContextInGroup(int contextGroupId) override;
+    v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
     void beginUserGesture() override { }
     void endUserGesture() override { }
     bool isInspectableHeapObject(v8::Local<v8::Object>) override { return true; }
     void consoleTime(const String16& title) override { }
     void consoleTimeEnd(const String16& title) override { }
     void consoleTimeStamp(const String16& title) override { }
+    void messageAddedToConsole(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override { }
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override
     {
         return v8::MaybeLocal<v8::Value>();
     }
-    void reportMessageToConsole(v8::Local<v8::Context>, MessageType, MessageLevel, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount) override { }
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override { }
-
-    // V8InspectorSessionClient
-    void startInstrumenting() override { }
-    void stopInstrumenting() override { }
-    void resumeStartup() override { }
-    bool canExecuteScripts() override { return true; }
-    void profilingStarted() override { }
-    void profilingStopped() override { }
+    void enableAsyncInstrumentation() override { }
+    void disableAsyncInstrumentation() override { }
     void startRepeatingTimer(double, TimerCallback, void* data) override { }
     void cancelTimer(void* data) override { }
+
+    // V8InspectorSessionClient
+    void runtimeEnabled() override { };
+    void runtimeDisabled() override { };
+    void resumeStartup() override { };
+    bool canExecuteScripts() override;
+    void profilingStarted() override { };
+    void profilingStopped() override { };
+    void consoleEnabled() override { };
+    void consoleCleared() override { };
 
     std::unique_ptr<V8Debugger> m_debugger;
     std::unique_ptr<V8InspectorSession> m_session;
     String16 m_state;
+    v8::Local<v8::Context> m_context;
 };
 
 }
