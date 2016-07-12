@@ -1,16 +1,19 @@
 <!DOCTYPE html>
+<meta charset=utf-8>
+<title>Test combinations of delay and endDelay</title>
+<link rel="help" href="https://w3c.github.io/web-animations/#the-animationeffecttiming-interface">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<div id="container"></div>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
+<body></body>
 <script>
 function testTiming({timing, expectations}, description) {
-  test(() => {
+  test(t => {
     for (let {at, expect} of expectations) {
-      let target = document.createElement('div');
-      container.appendChild(target);
+      let target =  createDiv(t);
       let animation = target.animate({opacity: [0, 1]}, timing);
       animation.currentTime = at;
-      assert_equals(Number(getComputedStyle(target).opacity), expect, 'at ' + at);
+      assert_times_equal(Number(getComputedStyle(target).opacity), expect, 'at ' + at);
       animation.cancel();
     }
   }, description);
