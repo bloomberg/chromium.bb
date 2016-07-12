@@ -2661,16 +2661,6 @@
             'browser/ui/webui/log_web_ui_url_browsertest.cc',
           ],
         }],
-        ['OS!="android" and OS!="ios"', {
-          'sources': [
-            'browser/copresence/chrome_whispernet_client_browsertest.cc',
-          ],
-          'dependencies': [
-            '../components/components.gyp:audio_modem',
-            # build time dependency.
-            '../v8/samples/samples.gyp:v8_shell#host',
-          ],
-        }],
         ['enable_app_list==1', {
           'sources': [ '<@(chrome_browser_tests_app_list_sources)' ],
           'conditions': [

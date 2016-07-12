@@ -72954,8 +72954,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="19" label="APP_WINDOW_ON_MAXIMIZED"/>
   <int value="20" label="APP_WINDOW_ON_MINIMIZED"/>
   <int value="21" label="APP_WINDOW_ON_RESTORED"/>
-  <int value="22" label="AUDIO_MODEM_ON_RECEIVED"/>
-  <int value="23" label="AUDIO_MODEM_ON_TRANSMIT_FAIL"/>
+  <int value="22" label="DELETED_AUDIO_MODEM_ON_RECEIVED"/>
+  <int value="23" label="DELETED_AUDIO_MODEM_ON_TRANSMIT_FAIL"/>
   <int value="24" label="AUDIO_ON_DEVICE_CHANGED"/>
   <int value="25" label="AUDIO_ON_DEVICES_CHANGED"/>
   <int value="26" label="AUDIO_ON_LEVEL_CHANGED"/>
@@ -73001,9 +73001,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="66" label="COOKIES_ON_CHANGED"/>
   <int value="67" label="DELETED_COPRESENCE_ON_MESSAGES_RECEIVED"/>
   <int value="68" label="DELETED_COPRESENCE_ON_STATUS_UPDATED"/>
-  <int value="69" label="COPRESENCE_PRIVATE_ON_CONFIG_AUDIO"/>
-  <int value="70" label="COPRESENCE_PRIVATE_ON_DECODE_SAMPLES_REQUEST"/>
-  <int value="71" label="COPRESENCE_PRIVATE_ON_ENCODE_TOKEN_REQUEST"/>
+  <int value="69" label="DELETED_COPRESENCE_PRIVATE_ON_CONFIG_AUDIO"/>
+  <int value="70" label="DELETED_COPRESENCE_PRIVATE_ON_DECODE_SAMPLES_REQUEST"/>
+  <int value="71" label="DELETED_COPRESENCE_PRIVATE_ON_ENCODE_TOKEN_REQUEST"/>
   <int value="72" label="DEBUGGER_ON_DETACH"/>
   <int value="73" label="DEBUGGER_ON_EVENT"/>
   <int value="74" label="DECLARATIVE_CONTENT_ON_PAGE_CHANGED"/>
@@ -74244,10 +74244,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="861" label="NOTIFICATIONPROVIDER_GETALLNOTIFIERS"/>
   <int value="862" label="GCDPRIVATE_GETPREFETCHEDWIFINAMELIST"/>
   <int value="863" label="GUESTVIEWINTERNAL_SETAUTOSIZE"/>
-  <int value="864" label="COPRESENCEPRIVATE_SENDFOUND"/>
-  <int value="865" label="COPRESENCEPRIVATE_SENDSAMPLES"/>
-  <int value="866" label="COPRESENCEPRIVATE_SENDDETECT"/>
-  <int value="867" label="COPRESENCEPRIVATE_SENDINITIALIZED"/>
+  <int value="864" label="DELETED_COPRESENCEPRIVATE_SENDFOUND"/>
+  <int value="865" label="DELETED_COPRESENCEPRIVATE_SENDSAMPLES"/>
+  <int value="866" label="DELETED_COPRESENCEPRIVATE_SENDDETECT"/>
+  <int value="867" label="DELETED_COPRESENCEPRIVATE_SENDINITIALIZED"/>
   <int value="868" label="DELETED_COPRESENCE_EXECUTE"/>
   <int value="869" label="DELETED_COPRESENCE_SETAPIKEY"/>
   <int value="870" label="FILESYSTEM_OBSERVEDIRECTORY"/>
@@ -74346,10 +74346,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="961" label="WEBVIEWINTERNAL_SETALLOWSCALING"/>
   <int value="962" label="PLATFORMKEYSINTERNAL_GETPUBLICKEY"/>
   <int value="963" label="RUNTIME_OPENOPTIONSPAGE"/>
-  <int value="964" label="AUDIOMODEM_TRANSMIT"/>
-  <int value="965" label="AUDIOMODEM_STOPTRANSMIT"/>
-  <int value="966" label="AUDIOMODEM_RECEIVE"/>
-  <int value="967" label="AUDIOMODEM_STOPRECEIVE"/>
+  <int value="964" label="DELETED_AUDIOMODEM_TRANSMIT"/>
+  <int value="965" label="DELETED_AUDIOMODEM_STOPTRANSMIT"/>
+  <int value="966" label="DELETED_AUDIOMODEM_RECEIVE"/>
+  <int value="967" label="DELETED_AUDIOMODEM_STOPRECEIVE"/>
   <int value="968" label="WEBRTCLOGGINGPRIVATE_STORE"/>
   <int value="969" label="WEBRTCLOGGINGPRIVATE_UPLOADSTORED"/>
   <int value="970" label="FILEMANAGERPRIVATEINTERNAL_SETENTRYTAG"/>

@@ -83,7 +83,6 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
     IDR_SETTINGS_APP_MANIFEST,
     IDR_WALLPAPERMANAGER_MANIFEST,
     IDR_WEBSTORE_MANIFEST,
-    IDR_WHISPERNET_PROXY_MANIFEST,
 #if defined(IMAGE_LOADER_EXTENSION)
     IDR_IMAGE_LOADER_MANIFEST,
 #endif

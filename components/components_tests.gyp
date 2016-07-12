@@ -245,12 +245,6 @@
       'undo/bookmark_undo_service_test.cc',
       'undo/undo_manager_test.cc',
     ],
-
-    'audio_modem_unittest_sources': [
-      'audio_modem/audio_player_unittest.cc',
-      'audio_modem/audio_recorder_unittest.cc',
-      'audio_modem/modem_unittest.cc',
-    ],
     'data_use_measurement_unittest_sources': [
       'data_use_measurement/content/data_use_measurement_unittest.cc',
     ],
@@ -1522,7 +1516,6 @@
         }],
         ['OS != "ios" and OS != "android"', {
           'sources': [
-            '<@(audio_modem_unittest_sources)',
             '<@(feedback_unittest_sources)',
             '<@(proximity_auth_unittest_sources)',
             '<@(webusb_detector_unittest_sources)',
@@ -1540,8 +1533,6 @@
             '../device/usb/usb.gyp:device_usb_mocks',
             '../google_apis/google_apis.gyp:google_apis_test_support',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-            'components.gyp:audio_modem',
-            'components.gyp:audio_modem_test_support',
             'components.gyp:cryptauth',
             'components.gyp:cryptauth_proto',
             'components.gyp:cryptauth_test_support',

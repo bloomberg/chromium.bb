@@ -10,8 +10,6 @@ per-file app_modal_strings.grdp=file://components/app_modal/OWNERS
 
 per-file arc.gypi=file://components/arc/OWNERS
 
-per-file audio_modem.gypi=file://components/audio_modem/OWNERS
-
 per-file autofill.gypi=file://components/autofill/OWNERS
 per-file autofill_strings.grdp=file://components/autofill/OWNERS
 

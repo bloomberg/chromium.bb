@@ -1384,14 +1384,6 @@ test("browser_tests") {
     if (is_android || is_ios || is_chromeos) {
       sources -= [ "../browser/profiles/profile_statistics_browsertest.cc" ]
     }
-    if (!is_android && !is_ios) {
-      sources +=
-          [ "../browser/copresence/chrome_whispernet_client_browsertest.cc" ]
-      deps += [
-        "//components/audio_modem",
-        "//third_party/libaddressinput",
-      ]
-    }
     if (enable_app_list) {
       sources += rebase_path(
               chrome_tests_gypi_values.chrome_browser_tests_app_list_sources,
@@ -1941,7 +1933,6 @@ test("unit_tests") {
             "//chrome")
     deps += [
       "//chrome/common/extensions/api",
-      "//components/audio_modem:test_support",
       "//extensions:extensions_resources",
       "//extensions/strings",
     ]

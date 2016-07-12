@@ -414,7 +414,6 @@
       'browser/extensions/activity_log/database_string_table_unittest.cc',
       'browser/extensions/activity_log/fullstream_ui_policy_unittest.cc',
       'browser/extensions/api/activity_log_private/activity_log_private_api_unittest.cc',
-      'browser/extensions/api/audio_modem/audio_modem_api_unittest.cc',
       'browser/extensions/api/bookmarks/bookmark_api_helpers_unittest.cc',
       'browser/extensions/api/content_settings/content_settings_store_unittest.cc',
       'browser/extensions/api/content_settings/content_settings_unittest.cc',
@@ -2409,7 +2408,6 @@
           'dependencies': [
             'common/extensions/api/api.gyp:chrome_api',
             '../device/hid/hid.gyp:device_hid_mocks',
-            '../components/components.gyp:audio_modem_test_support',
             '../extensions/extensions_resources.gyp:extensions_resources',
             '../extensions/extensions_strings.gyp:extensions_strings',
           ],
