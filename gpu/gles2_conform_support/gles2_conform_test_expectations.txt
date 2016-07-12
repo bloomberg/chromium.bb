@@ -95,6 +95,10 @@
 393677 CHROMEOS INTEL 0xa011 : GL2FixedTests_point_rasterization_input_run = FAIL
 393677 CHROMEOS INTEL 0xa011 : GL2FixedTests_scissor_input_run = FAIL
 
+598902 LINUX OPENGL INTEL : GL2Tests_fixed_data_type_input_run = FAIL
+598902 LINUX OPENGL INTEL : GLCoverage_input_run = FAIL
+598902 LINUX OPENGL INTEL : GL2FixedTests_copy_texture_input_run = FAIL
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Temprory entries: they should be removed once the bugs are fixed.
