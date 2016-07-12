@@ -18,7 +18,7 @@ import shlex
 # while IDENT_RE matches all characters that are not valid in an "identifier"
 # value (used when applying the modifier).
 SUBST_RE = re.compile(r'\$\{(?P<id>[^}]*?)(?P<modifier>:[^}]*)?\}')
-IDENT_RE = re.compile(r'[/\s]')
+IDENT_RE = re.compile(r'[_/\s]')
 
 
 class ArgumentParser(argparse.ArgumentParser):
@@ -73,13 +73,13 @@ def InterpolateString(value, substitutions):
       return None
     # Some values need to be identifier and thus the variables references may
     # contains :modifier attributes to indicate how they should be converted
-    # to identifiers ("identifier" replaces all invalid characters by '-' and
-    # "rfc1034identifier" replaces them by "_" to make valid URI too).
+    # to identifiers ("identifier" replaces all invalid characters by '_' and
+    # "rfc1034identifier" replaces them by "-" to make valid URI too).
     modifier = match.group('modifier')
-    if modifier == 'identifier':
-      interpolated = IDENT_RE.sub('-', substitutions[variable])
-    elif modifier == 'rfc1034identifier':
+    if modifier == ':identifier':
       interpolated = IDENT_RE.sub('_', substitutions[variable])
+    elif modifier == ':rfc1034identifier':
+      interpolated = IDENT_RE.sub('-', substitutions[variable])
     else:
       interpolated = substitutions[variable]
     result = result[:match.start()] + interpolated + result[match.end():]
