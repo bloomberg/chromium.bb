@@ -120,11 +120,3 @@ def PostUploadHook(cl, change, output_api):
   rietveld_obj.update_description(cl.issue, new_description)
   return [output_api.PresubmitNotifyResult(
       'Automatically added optional Closure bots to run on CQ.')]
-
-
-def GetPreferredTryMasters(project, change):
-  return {
-    'tryserver.chromium.linux': {
-      'closure_compilation': set(['defaulttests']),
-    },
-  }
