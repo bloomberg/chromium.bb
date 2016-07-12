@@ -436,8 +436,8 @@ class ImageBackgroundFilter : public LayerTreeHostFiltersPixelTest {
     filters.Append(FilterOperation::CreateBlurFilter(5.0f));
     filter->SetBackgroundFilters(filters);
 
-#if defined(OS_WIN)
-    // Windows has 3.065% pixels off by at most 2: crbug.com/225027
+    // Allow some fuzziness so that this doesn't fail when Skia makes minor
+    // changes to blur or rectangle rendering.
     float percentage_pixels_large_error = 3.1f;
     float percentage_pixels_small_error = 0.0f;
     float average_error_allowed_in_bad_pixels = 2.f;
@@ -448,7 +448,6 @@ class ImageBackgroundFilter : public LayerTreeHostFiltersPixelTest {
         percentage_pixels_large_error, percentage_pixels_small_error,
         average_error_allowed_in_bad_pixels, large_error_allowed,
         small_error_allowed));
-#endif
 
     RunPixelTest(test_type, background, image_name);
   }
