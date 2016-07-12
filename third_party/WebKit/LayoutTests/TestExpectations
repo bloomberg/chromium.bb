@@ -15,6 +15,9 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
 
+crbug.com/602509 [ Precise ] fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ NeedsRebaseline ]
+crbug.com/602509 [ Precise ] fast/canvas/image-object-in-canvas.html [ NeedsRebaseline ]
+
 # TODO(yosin): We should convert following tests to use asynchronous spell checker.scroll-in
 crbug.com/563265 editing/spelling/context-menu-suggestions.html [ Skip ]
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [ Skip ]
