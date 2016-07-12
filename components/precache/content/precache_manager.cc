@@ -197,12 +197,12 @@ void PrecacheManager::CancelPrecaching() {
   if (precache_fetcher_) {
     std::unique_ptr<PrecacheUnfinishedWork> unfinished_work =
         precache_fetcher_->CancelPrecaching();
-    if (unfinished_work) {
-      BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
-                              base::Bind(&PrecacheDatabase::SaveUnfinishedWork,
-                                         precache_database_->GetWeakPtr(),
-                                         base::Passed(&unfinished_work)));
-    }
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(&PrecacheDatabase::SaveUnfinishedWork,
+                   precache_database_->GetWeakPtr(),
+                   base::Passed(&unfinished_work)));
     // Destroying the |precache_fetcher_| will cancel any fetch in progress.
     precache_fetcher_.reset();
   }

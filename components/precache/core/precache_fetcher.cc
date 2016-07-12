@@ -359,10 +359,6 @@ PrecacheFetcher::~PrecacheFetcher() {
 }
 
 std::unique_ptr<PrecacheUnfinishedWork> PrecacheFetcher::CancelPrecaching() {
-  // This could get called multiple times, and it should be handled gracefully.
-  if (!unfinished_work_)
-    return nullptr;
-
   unfinished_work_->clear_manifest();
   unfinished_work_->clear_resource();
   for (const auto& manifest : manifest_urls_to_fetch_)
