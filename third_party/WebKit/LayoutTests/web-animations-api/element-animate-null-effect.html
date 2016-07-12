@@ -1,11 +1,19 @@
 <!DOCTYPE html>
+<meta charset=utf-8>
+<title>element.animate() accepts a null effect</title>
+<link rel="help" href="http://w3c.github.io/web-animations/#animatable">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
+<body>
 <script>
-var element = document.documentElement;
-test(function() {
+"use strict";
+
+test(function(t) {
+  var element = createDiv(t);
   assert_true(element.animate(null) != null);
   assert_true(element.animate(null, 1) != null);
   assert_true(element.animate(null, {duration: 1}) != null);
 }, 'Animate should accept a null effect.');
 </script>
+</body>
