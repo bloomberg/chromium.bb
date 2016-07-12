@@ -1263,7 +1263,8 @@ rdp_backend_create(struct weston_compositor *compositor,
 		}
 
 		fd = strtoul(fd_str, &fd_tail, 10);
-		if (fd_tail == fd_str || rdp_peer_init(freerdp_peer_new(fd), b))
+		if (errno != 0 || fd_tail == fd_str || *fd_tail != '\0'
+		    || rdp_peer_init(freerdp_peer_new(fd), b))
 			goto err_output;
 	}
 
