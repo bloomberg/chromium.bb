@@ -205,6 +205,9 @@ class AbstractReportStageTestCase(
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
     retry_stats.SetupStats()
 
+    self.PatchObject(report_stages.ReportStage, '_GetBuildDuration',
+                     return_value=1000)
+
     # Set up a general purpose cidb mock. Tests with more specific
     # mock requirements can replace this with a separate call to
     # SetupMockCidb

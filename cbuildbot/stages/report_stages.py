@@ -31,6 +31,7 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import graphite
 from chromite.lib import git
 from chromite.lib import gs
+from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
@@ -767,6 +768,15 @@ class ReportStage(generic_stages.BuilderStage,
                      summary=build_data.failure_message,
                      metadata_url=metadata_url)
 
+      duration = self._GetBuildDuration()
+
+      mon_fields = {'status': status_for_db,
+                    'build_config': self._run.config.name}
+      metrics.Counter(constants.MON_BUILD_COMP_COUNT).increment(
+          fields=mon_fields)
+      metrics.SecondsDistribution(constants.MON_BUILD_DURATION).add(
+          duration, fields=mon_fields)
+
       # From this point forward, treat all exceptions as warnings.
       self._post_completion = True
 
@@ -779,6 +789,20 @@ class ReportStage(generic_stages.BuilderStage,
         self.CollectComparativeBuildTimings(output, build_id, db)
         # Bunch up our output, so it doesn't interleave with CIDB logs.
         sys.stdout.write(output.getvalue())
+
+  def _GetBuildDuration(self):
+    """Fetches the duration of this build in seconds, from cidb.
+
+    This method should be called only after the build has been Finished in
+    cidb.
+    """
+    build_id, db = self._run.GetCIDBHandle()
+    if db:
+      build_info = db.GetBuildStatus(build_id)
+      duration = (build_info['finish_time'] -
+                  build_info['start_time']).total_seconds()
+      return duration
+    return 0
 
   def _HandleStageException(self, exc_info):
     """Override and don't set status to FAIL but FORGIVEN instead."""

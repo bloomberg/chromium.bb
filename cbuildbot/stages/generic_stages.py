@@ -204,11 +204,13 @@ class BuilderStage(object):
     if self._build_stage_id is not None and db is not None:
       db.FinishBuildStage(self._build_stage_id, status)
 
+    fields = {'status': status,
+              'name': self.name,
+              'build_config': self._run.config.name}
+
     metrics.SecondsDistribution(constants.MON_STAGE_DURATION).add(
-        elapsed_time_seconds,
-        fields={'status': status,
-                'name': self.name,
-                'build_config': self._run.config.name})
+        elapsed_time_seconds, fields=fields)
+    metrics.Counter(constants.MON_STAGE_COMP_COUNT).increment(fields=fields)
 
   def _StartBuildStageInCIDB(self):
     """Mark the stage as inflight in cidb."""
