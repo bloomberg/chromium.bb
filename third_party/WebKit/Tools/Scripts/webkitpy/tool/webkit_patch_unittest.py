@@ -26,14 +26,14 @@ class WebKitPatchTest(unittest.TestCase):
             ('command', ['arg']))
 
     def test_command_by_name(self):
-        tool = WebKitPatch()
+        tool = WebKitPatch('path')
         self.assertEqual(tool.command_by_name('help').name, 'help')
         self.assertIsNone(tool.command_by_name('non-existent'))
 
     def test_help(self):
         oc = OutputCapture()
         oc.capture_output()
-        tool = WebKitPatch()
+        tool = WebKitPatch('path')
         tool.main(['tool', 'help'])
         out, err, logs = oc.restore_output()
         self.assertTrue(out.startswith('Usage: '))
@@ -41,6 +41,6 @@ class WebKitPatchTest(unittest.TestCase):
         self.assertEqual('', logs)
 
     def test_constructor_calls_bind_to_tool(self):
-        tool = WebKitPatch()
+        tool = WebKitPatch('path')
         self.assertEqual(tool.commands[0]._tool, tool)
         self.assertEqual(tool.commands[1]._tool, tool)

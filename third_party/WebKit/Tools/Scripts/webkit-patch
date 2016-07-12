@@ -30,10 +30,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import codecs
 import logging
+import os
 import signal
 import sys
-import codecs
 
 import webkitpy.common.version_check
 
@@ -77,7 +78,7 @@ def main():
     else:
         logging_level = logging.INFO
     configure_logging(logging_level=logging_level)
-    WebKitPatch().main()
+    WebKitPatch(os.path.abspath(__file__)).main()
 
 
 if __name__ == "__main__":

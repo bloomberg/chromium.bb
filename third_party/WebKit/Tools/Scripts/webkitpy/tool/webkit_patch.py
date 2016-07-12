@@ -74,8 +74,9 @@ class WebKitPatch(Host):
             help="Directory to look at for changed files"),
     ]
 
-    def __init__(self):
+    def __init__(self, path):
         super(WebKitPatch, self).__init__()
+        self._path = path
         self.commands = [
             AnalyzeBaselines(),
             AutoRebaseline(),
@@ -124,6 +125,9 @@ class WebKitPatch(Host):
 
         result = command.check_arguments_and_execute(options, args, self)
         return result
+
+    def path(self):
+        return self._path
 
     @staticmethod
     def _split_command_name_from_args(args):
