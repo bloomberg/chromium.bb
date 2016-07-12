@@ -200,7 +200,8 @@ void CleanUpGlobalPersistentHistogramStorage() {
 
   // Open (with delete) and then immediately close the file by going out of
   // scope. This is the only cross-platform safe way to delete a file that may
-  // be open elsewhere.
+  // be open elsewhere. Open handles will continue to operate normally but
+  // new opens will not be possible.
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                         base::File::FLAG_DELETE_ON_CLOSE);
 }
