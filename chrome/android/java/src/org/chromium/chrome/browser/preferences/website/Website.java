@@ -502,4 +502,18 @@ public class Website implements Serializable {
         }
         return usage;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Website) {
+            Website other = (Website) obj;
+            return mAddress.equals(other.mAddress);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return mAddress.hashCode();
+    }
 }

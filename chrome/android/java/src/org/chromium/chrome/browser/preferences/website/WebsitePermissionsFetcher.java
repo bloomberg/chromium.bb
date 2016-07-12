@@ -29,13 +29,9 @@ public class WebsitePermissionsFetcher {
     }
 
     // This is a 1 <--> 1..N mapping between origin and Website.
-    // TODO(mvanouwerkerk): The Website class has no equals or hashCode methods so storing them in
-    // a HashSet is really confusing to readers of this code. There is no deduplication at all.
     private final Map<String, Set<Website>> mSitesByOrigin = new HashMap<>();
 
     // This is a 1 <--> 1..N mapping between host and Website.
-    // TODO(mvanouwerkerk): The Website class has no equals or hashCode methods so storing them in
-    // a HashSet is really confusing to readers of this code. There is no deduplication at all.
     private final Map<String, Set<Website>> mSitesByHost = new HashMap<>();
 
     // The callback to run when the permissions have been fetched.
