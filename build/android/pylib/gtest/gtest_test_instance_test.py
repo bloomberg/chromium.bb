@@ -152,6 +152,19 @@ class GtestTestInstanceTests(unittest.TestCase):
     self.assertEquals(1, actual[1].GetDuration())
     self.assertEquals(base_test_result.ResultType.PASS, actual[1].GetType())
 
+  def testParseGTestOutput_deathTestCrashOk(self):
+    raw_output = [
+      '[ RUN      ] FooTest.Bar',
+      '[ CRASHED      ]',
+      '[       OK ] FooTest.Bar (1 ms)',
+    ]
+    actual = gtest_test_instance.ParseGTestOutput(raw_output)
+    self.assertEquals(1, len(actual))
+
+    self.assertEquals('FooTest.Bar', actual[0].GetName())
+    self.assertEquals(1, actual[0].GetDuration())
+    self.assertEquals(base_test_result.ResultType.PASS, actual[0].GetType())
+
 
 if __name__ == '__main__':
   unittest.main(verbosity=2)

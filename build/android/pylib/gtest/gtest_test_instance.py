@@ -90,8 +90,6 @@ _EXTRA_SHARD_SIZE_LIMIT = (
 _RE_TEST_STATUS = re.compile(
     r'\[ +((?:RUN)|(?:FAILED)|(?:OK)|(?:CRASHED)) +\]'
     r' ?([^ ]+)?(?: \((\d+) ms\))?$')
-_RE_TEST_RUN_STATUS = re.compile(
-    r'\[ +(PASSED|RUNNER_FAILED|CRASHED) \] ?[^ ]+')
 # Crash detection constants.
 _RE_TEST_ERROR = re.compile(r'FAILURES!!! Tests run: \d+,'
                                     r' Failures: \d+, Errors: 1')
@@ -139,6 +137,8 @@ def ParseGTestOutput(output):
   Returns:
     A list of base_test_result.BaseTestResults.
   """
+  duration = 0
+  fallback_result_type = None
   log = []
   result_type = None
   results = []
@@ -147,8 +147,9 @@ def ParseGTestOutput(output):
   def handle_possibly_unknown_test():
     if test_name is not None:
       results.append(base_test_result.BaseTestResult(
-          test_name, base_test_result.ResultType.UNKNOWN, 0,
-          log=('\n'.join(log) if log else '')))
+          test_name,
+          fallback_result_type or base_test_result.ResultType.UNKNOWN,
+          duration, log=('\n'.join(log) if log else '')))
 
   for l in output:
     logging.info(l)
@@ -156,13 +157,16 @@ def ParseGTestOutput(output):
     if matcher:
       if matcher.group(1) == 'RUN':
         handle_possibly_unknown_test()
+        duration = 0
+        fallback_result_type = None
         log = []
+        result_type = None
       elif matcher.group(1) == 'OK':
         result_type = base_test_result.ResultType.PASS
       elif matcher.group(1) == 'FAILED':
         result_type = base_test_result.ResultType.FAIL
       elif matcher.group(1) == 'CRASHED':
-        result_type = base_test_result.ResultType.CRASH
+        fallback_result_type = base_test_result.ResultType.CRASH
       # Be aware that test name and status might not appear on same line.
       test_name = matcher.group(2) if matcher.group(2) else test_name
       duration = int(matcher.group(3)) if matcher.group(3) else 0
@@ -182,8 +186,6 @@ def ParseGTestOutput(output):
       results.append(base_test_result.BaseTestResult(
           test_name, result_type, duration,
           log=('\n'.join(log) if log else '')))
-      log = None
-      result_type = None
       test_name = None
 
   handle_possibly_unknown_test()

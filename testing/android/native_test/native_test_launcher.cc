@@ -50,7 +50,7 @@ struct sigaction g_old_sa[NSIG];
 // This function runs in a compromised context. It should not allocate memory.
 void SignalHandler(int sig, siginfo_t* info, void* reserved) {
   // Output the crash marker.
-  write(STDOUT_FILENO, kCrashedMarker, sizeof(kCrashedMarker));
+  write(STDOUT_FILENO, kCrashedMarker, sizeof(kCrashedMarker) - 1);
   g_old_sa[sig].sa_sigaction(sig, info, reserved);
 }
 
