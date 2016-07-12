@@ -2845,8 +2845,6 @@
         'webcore_html_files': [
             'html/AutoplayExperimentHelper.cpp',
             'html/AutoplayExperimentHelper.h',
-            'html/AutoplayUmaHelper.cpp',
-            'html/AutoplayUmaHelper.h',
             'html/ClassList.cpp',
             'html/ClassList.h',
             'html/CrossOriginAttribute.cpp',
