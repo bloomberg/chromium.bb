@@ -792,7 +792,8 @@ class VEAClient : public VideoEncodeAccelerator::Client {
             bool test_perf,
             bool mid_stream_bitrate_switch,
             bool mid_stream_framerate_switch,
-            bool verify_output);
+            bool verify_output,
+            bool verify_output_timestamp);
   ~VEAClient() override;
   void CreateEncoder();
   void DestroyEncoder();
@@ -879,6 +880,9 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   // Called when the quality validator fails to decode a frame.
   void DecodeFailed();
 
+  // Verify that the output timestamp matches input timestamp.
+  void VerifyOutputTimestamp(base::TimeDelta timestamp);
+
   ClientState state_;
   std::unique_ptr<VideoEncodeAccelerator> encoder_;
 
@@ -956,6 +960,9 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   // Check the output frame quality of the encoder.
   bool verify_output_;
 
+  // Check whether the output timestamps match input timestamps.
+  bool verify_output_timestamp_;
+
   // Used to perform codec-specific sanity checks on the stream.
   std::unique_ptr<StreamValidator> stream_validator_;
 
@@ -985,6 +992,12 @@ class VEAClient : public VideoEncodeAccelerator::Client {
 
   // The timer used to feed the encoder with the input frames.
   std::unique_ptr<base::RepeatingTimer> input_timer_;
+
+  // The timestamps for each frame in the order of CreateFrame() invocation.
+  std::queue<base::TimeDelta> frame_timestamps_;
+
+  // The last timestamp popped from |frame_timestamps_|.
+  base::TimeDelta previous_timestamp_;
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
@@ -995,7 +1008,8 @@ VEAClient::VEAClient(TestStream* test_stream,
                      bool test_perf,
                      bool mid_stream_bitrate_switch,
                      bool mid_stream_framerate_switch,
-                     bool verify_output)
+                     bool verify_output,
+                     bool verify_output_timestamp)
     : state_(CS_CREATED),
       test_stream_(test_stream),
       note_(note),
@@ -1018,6 +1032,7 @@ VEAClient::VEAClient(TestStream* test_stream,
       encoded_stream_size_since_last_check_(0),
       test_perf_(test_perf),
       verify_output_(verify_output),
+      verify_output_timestamp_(verify_output_timestamp),
       requested_bitrate_(0),
       requested_framerate_(0),
       requested_subsequent_bitrate_(0),
@@ -1244,6 +1259,18 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   }
 }
 
+void VEAClient::VerifyOutputTimestamp(base::TimeDelta timestamp) {
+  // One input frame may be mapped to multiple output frames, so the current
+  // timestamp should be equal to previous timestamp or the top of
+  // frame_timestamps_.
+  if (timestamp != previous_timestamp_) {
+    ASSERT_TRUE(!frame_timestamps_.empty());
+    EXPECT_EQ(frame_timestamps_.front(), timestamp);
+    previous_timestamp_ = frame_timestamps_.front();
+    frame_timestamps_.pop();
+  }
+}
+
 void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
                                      size_t payload_size,
                                      bool key_frame,
@@ -1258,6 +1285,10 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
 
   if (state_ == CS_FINISHED || state_ == CS_VALIDATED)
     return;
+
+  if (verify_output_timestamp_) {
+    VerifyOutputTimestamp(timestamp);
+  }
 
   encoded_stream_size_since_last_check_ += payload_size;
 
@@ -1340,7 +1371,8 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
       test_stream_->visible_size, input_coded_size_.width(),
       input_coded_size_.width() / 2, input_coded_size_.width() / 2,
       frame_data_y, frame_data_u, frame_data_v,
-      base::TimeDelta().FromMilliseconds(next_input_id_ *
+      // Timestamp needs to avoid starting from 0.
+      base::TimeDelta().FromMilliseconds((next_input_id_ + 1) *
                                          base::Time::kMillisecondsPerSecond /
                                          current_framerate_));
   EXPECT_NE(nullptr, video_frame.get());
@@ -1395,6 +1427,7 @@ void VEAClient::FeedEncoderWithOneInput() {
   int32_t input_id;
   scoped_refptr<VideoFrame> video_frame =
       PrepareInputFrame(pos_in_input_stream_, &input_id);
+  frame_timestamps_.push(video_frame->timestamp());
   pos_in_input_stream_ += test_stream_->aligned_buffer_size;
 
   bool force_keyframe = false;
@@ -1488,6 +1521,12 @@ bool VEAClient::HandleEncodedFrame(bool keyframe) {
     SetState(CS_FINISHED);
     if (!quality_validator_)
       SetState(CS_VALIDATED);
+    if (verify_output_timestamp_) {
+      // There may be some timestamps left because we push extra frames to flush
+      // encoder.
+      EXPECT_LE(frame_timestamps_.size(),
+                static_cast<size_t>(next_input_id_ - num_frames_to_encode_));
+    }
     return false;
   }
 
@@ -1587,9 +1626,10 @@ void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
 // - If true, switch bitrate mid-stream.
 // - If true, switch framerate mid-stream.
 // - If true, verify the output frames of encoder.
+// - If true, verify the timestamps of output frames.
 class VideoEncodeAcceleratorTest
     : public ::testing::TestWithParam<
-          std::tuple<int, bool, int, bool, bool, bool, bool, bool>> {};
+          std::tuple<int, bool, int, bool, bool, bool, bool, bool, bool>> {};
 
 TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   size_t num_concurrent_encoders = std::get<0>(GetParam());
@@ -1601,6 +1641,7 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   const bool mid_stream_framerate_switch = std::get<6>(GetParam());
   const bool verify_output =
       std::get<7>(GetParam()) || g_env->verify_all_output();
+  const bool verify_output_timestamp = std::get<8>(GetParam());
 
   ScopedVector<ClientStateNotification<ClientState>> notes;
   ScopedVector<VEAClient> clients;
@@ -1622,7 +1663,8 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
     clients.push_back(new VEAClient(
         g_env->test_streams_[test_stream_index], notes.back(),
         encoder_save_to_file, keyframe_period, force_bitrate, test_perf,
-        mid_stream_bitrate_switch, mid_stream_framerate_switch, verify_output));
+        mid_stream_bitrate_switch, mid_stream_framerate_switch, verify_output,
+        verify_output_timestamp));
 
     encoder_thread.task_runner()->PostTask(
         FROM_HERE, base::Bind(&VEAClient::CreateEncoder,
@@ -1661,65 +1703,84 @@ INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, true, 0, false, false, false, false, false),
-        std::make_tuple(1, true, 0, false, false, false, false, true)));
+        std::make_tuple(1, true, 0, false, false, false, false, false, false),
+        std::make_tuple(1, true, 0, false, false, false, false, true, false)));
 
 INSTANTIATE_TEST_CASE_P(
     EncoderPerf,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, false, true, false, false, false)));
+        std::make_tuple(1, false, 0, false, true, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(
-    ForceKeyframes,
-    VideoEncodeAcceleratorTest,
-    ::testing::Values(
-        std::make_tuple(1, false, 10, false, false, false, false, false)));
+INSTANTIATE_TEST_CASE_P(ForceKeyframes,
+                        VideoEncodeAcceleratorTest,
+                        ::testing::Values(std::make_tuple(1,
+                                                          false,
+                                                          10,
+                                                          false,
+                                                          false,
+                                                          false,
+                                                          false,
+                                                          false,
+                                                          false)));
 
 INSTANTIATE_TEST_CASE_P(
     ForceBitrate,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, true, false, false, false, false)));
+        std::make_tuple(1, false, 0, true, false, false, false, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     MidStreamParamSwitchBitrate,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, true, false, true, false, false)));
+        std::make_tuple(1, false, 0, true, false, true, false, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     MidStreamParamSwitchFPS,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, true, false, false, true, false)));
+        std::make_tuple(1, false, 0, true, false, false, true, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     MultipleEncoders,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(3, false, 0, false, false, false, false, false),
-        std::make_tuple(3, false, 0, true, false, false, true, false),
-        std::make_tuple(3, false, 0, true, false, true, false, false)));
+        std::make_tuple(3, false, 0, false, false, false, false, false, false),
+        std::make_tuple(3, false, 0, true, false, false, true, false, false),
+        std::make_tuple(3, false, 0, true, false, true, false, false, false)));
+
+INSTANTIATE_TEST_CASE_P(
+    VerifyTimestamp,
+    VideoEncodeAcceleratorTest,
+    ::testing::Values(
+        std::make_tuple(1, false, 0, false, false, false, false, false, true)));
+
 #else
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, true, 0, false, false, false, false, false),
-        std::make_tuple(1, true, 0, false, false, false, false, true)));
+        std::make_tuple(1, true, 0, false, false, false, false, false, false),
+        std::make_tuple(1, true, 0, false, false, false, false, true, false)));
 
 INSTANTIATE_TEST_CASE_P(
     EncoderPerf,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, false, 0, false, true, false, false, false)));
+        std::make_tuple(1, false, 0, false, true, false, false, false, false)));
 
-INSTANTIATE_TEST_CASE_P(
-    MultipleEncoders,
-    VideoEncodeAcceleratorTest,
-    ::testing::Values(
-        std::make_tuple(3, false, 0, false, false, false, false, false)));
+INSTANTIATE_TEST_CASE_P(MultipleEncoders,
+                        VideoEncodeAcceleratorTest,
+                        ::testing::Values(std::make_tuple(3,
+                                                          false,
+                                                          0,
+                                                          false,
+                                                          false,
+                                                          false,
+                                                          false,
+                                                          false,
+                                                          false)));
 #endif
 
 // TODO(posciak): more tests:
