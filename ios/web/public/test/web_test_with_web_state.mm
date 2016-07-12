@@ -8,6 +8,7 @@
 #include "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
 #import "ios/web/navigation/crw_session_controller.h"
+#import "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "ios/web/web_state/web_state_impl.h"
 
@@ -171,6 +172,11 @@ id WebTestWithWebState::ExecuteJavaScript(NSString* script) {
     return executionCompleted;
   });
   return [[executionResult retain] autorelease];
+}
+
+std::string WebTestWithWebState::BaseUrl() const {
+  web::URLVerificationTrustLevel unused_level;
+  return web_state()->GetCurrentURL(&unused_level).spec();
 }
 
 web::WebState* WebTestWithWebState::web_state() {

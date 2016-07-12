@@ -51,6 +51,9 @@ class WebTestWithWebState : public WebTest,
   // Synchronously executes JavaScript and returns result as id.
   id ExecuteJavaScript(NSString* script);
 
+  // Returns the base URL of the loaded page.
+  std::string BaseUrl() const;
+
   // Returns web state for this web controller.
   web::WebState* web_state();
   const web::WebState* web_state() const;
