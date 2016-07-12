@@ -3466,8 +3466,86 @@ TEST_F(ChromeLauncherControllerImplTest, ArcManaged) {
                    "AppList, Chrome");
 }
 
-TEST_F(ChromeLauncherControllerImplTest, ArcOrientationLock) {
-  DCHECK(display::Display::HasInternalDisplay());
+namespace {
+
+class ChromeLauncherControllerOrientationTest
+    : public ChromeLauncherControllerImplTest {
+ public:
+  ChromeLauncherControllerOrientationTest() {}
+  ~ChromeLauncherControllerOrientationTest() override {}
+
+ protected:
+  void InitApps() {
+    appinfo_none_ =
+        CreateAppInfo("None", "None", "com.example.app", OrientationLock::NONE);
+    appinfo_landscape_ =
+        CreateAppInfo("Landscape", "Landscape", "com.example.app",
+                      OrientationLock::LANDSCAPE);
+    appinfo_portrait_ = CreateAppInfo("Portrait", "Portrait", "com.example.app",
+                                      OrientationLock::PORTRAIT);
+    appinfo_current_ = CreateAppInfo(
+        "LockCurrent", "current", "com.example.app", OrientationLock::CURRENT);
+
+    AddArcAppAndShortcut(appinfo_none_);
+    AddArcAppAndShortcut(appinfo_landscape_);
+    AddArcAppAndShortcut(appinfo_portrait_);
+    AddArcAppAndShortcut(appinfo_current_);
+
+    ash::ScreenOrientationController* controller =
+        ash::Shell::GetInstance()->screen_orientation_controller();
+
+    // Creating a window with NONE orientation will not lock the screen.
+    window_none_ = CreateArcWindow(window_app_id_none_);
+    NotifyOnTaskCreated(appinfo_none_, task_id_none_);
+    EXPECT_FALSE(controller->rotation_locked());
+    EXPECT_EQ(display::Display::ROTATE_0,
+              display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+    // Create a arc window with PORTRAIT orientation locks the screen to 90.
+    window_portrait_ = CreateArcWindow(window_app_id_portrait_);
+    NotifyOnTaskCreated(appinfo_portrait_, task_id_portrait_);
+    EXPECT_TRUE(controller->rotation_locked());
+    EXPECT_EQ(display::Display::ROTATE_90,
+              display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+    // Create a arc window with LANDSCAPE orientation locks the screen to 0.
+    window_landscape_ = CreateArcWindow(window_app_id_landscape_);
+    NotifyOnTaskCreated(appinfo_landscape_, task_id_landscape_);
+    EXPECT_TRUE(controller->rotation_locked());
+    EXPECT_EQ(display::Display::ROTATE_0,
+              display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+  }
+
+  int32_t task_id_none_ = 1;
+  int32_t task_id_landscape_ = 2;
+  int32_t task_id_portrait_ = 3;
+  int32_t task_id_current_ = 4;
+
+  // This needs to be kept on the instance because window's property has
+  // refeference to this.
+  std::string window_app_id_none_ = {"org.chromium.arc.1"};
+  std::string window_app_id_landscape_ = {"org.chromium.arc.2"};
+  std::string window_app_id_portrait_ = {"org.chromium.arc.3"};
+  std::string window_app_id_current_ = {"org.chromium.arc.4"};
+
+  arc::mojom::AppInfo appinfo_none_;
+  arc::mojom::AppInfo appinfo_landscape_;
+  arc::mojom::AppInfo appinfo_portrait_;
+  arc::mojom::AppInfo appinfo_current_;
+
+  views::Widget* window_none_ = nullptr;
+  views::Widget* window_landscape_ = nullptr;
+  views::Widget* window_portrait_ = nullptr;
+  views::Widget* window_current_ = nullptr;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerOrientationTest);
+};
+
+}  // namespace
+
+TEST_F(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
+  ASSERT_TRUE(display::Display::HasInternalDisplay());
 
   extension_service_->AddExtension(arc_support_host_.get());
   arc_test_.SetUp(profile());
@@ -3476,59 +3554,19 @@ TEST_F(ChromeLauncherControllerImplTest, ArcOrientationLock) {
 
   InitLauncherController();
   arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
-  arc::mojom::AppInfo appinfo_none =
-      CreateAppInfo("None", "None", "com.example.app", OrientationLock::NONE);
-  arc::mojom::AppInfo appinfo_landscape = CreateAppInfo(
-      "Landscape", "Landscape", "com.example.app", OrientationLock::LANDSCAPE);
-  arc::mojom::AppInfo appinfo_portrait = CreateAppInfo(
-      "Portrait", "Portrait", "com.example.app", OrientationLock::PORTRAIT);
 
-  const std::string app_id_none = AddArcAppAndShortcut(appinfo_none);
-  const std::string app_id_landscape = AddArcAppAndShortcut(appinfo_landscape);
-  const std::string app_id_portrait = AddArcAppAndShortcut(appinfo_portrait);
-
-  int32_t task_id_none = 1;
-  int32_t task_id_landscape = 2;
-  int32_t task_id_portrait = 3;
-
-  // This needs to be kept on stack because window's property has
-  // refeference to this.
-  std::string window_app_id_none("org.chromium.arc.1");
-  std::string window_app_id_landscape("org.chromium.arc.2");
-  std::string window_app_id_portrait("org.chromium.arc.3");
-
+  InitApps();
   ash::ScreenOrientationController* controller =
       ash::Shell::GetInstance()->screen_orientation_controller();
 
-  // Creating a window with NONE orientation will not lock the screen.
-  views::Widget* window_none = CreateArcWindow(window_app_id_none);
-  NotifyOnTaskCreated(appinfo_none, task_id_none);
-  EXPECT_FALSE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Create a arc window with PORTRAIT orientation locks the screen to 90.
-  views::Widget* window_portrait = CreateArcWindow(window_app_id_portrait);
-  NotifyOnTaskCreated(appinfo_portrait, task_id_portrait);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_90,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
-  // Create a arc window with LANDSCAPE orientation locks the screen to 0.
-  views::Widget* window_landscape = CreateArcWindow(window_app_id_landscape);
-  NotifyOnTaskCreated(appinfo_landscape, task_id_landscape);
-  EXPECT_TRUE(controller->rotation_locked());
-  EXPECT_EQ(display::Display::ROTATE_0,
-            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
-
   // Activating a window with NON orientation unlocks the screen.
-  window_none->Activate();
+  window_none_->Activate();
   EXPECT_FALSE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // Activating a window with PORTRAIT orientation locks the screen to 90.
-  window_portrait->Activate();
+  window_portrait_->Activate();
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_90,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
@@ -3545,38 +3583,38 @@ TEST_F(ChromeLauncherControllerImplTest, ArcOrientationLock) {
   EXPECT_EQ(display::Display::ROTATE_90,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
-  window_portrait->Activate();
+  window_portrait_->Activate();
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_90,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
-  window_landscape->Activate();
+  window_landscape_->Activate();
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // OnTaskOrientationLockRequested can overwrite the current lock.
-  NotifyOnTaskOrientationLockRequested(task_id_landscape,
+  NotifyOnTaskOrientationLockRequested(task_id_landscape_,
                                        OrientationLock::NONE);
   EXPECT_FALSE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
-  NotifyOnTaskOrientationLockRequested(task_id_landscape,
+  NotifyOnTaskOrientationLockRequested(task_id_landscape_,
                                        OrientationLock::PORTRAIT);
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_90,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // Non active window won't change the lock.
-  NotifyOnTaskOrientationLockRequested(task_id_none,
+  NotifyOnTaskOrientationLockRequested(task_id_none_,
                                        OrientationLock::LANDSCAPE);
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_90,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
   // But activating it will change the locked orinetation.
-  window_none->Activate();
+  window_none_->Activate();
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
@@ -3587,7 +3625,8 @@ TEST_F(ChromeLauncherControllerImplTest, ArcOrientationLock) {
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 
-  NotifyOnTaskOrientationLockRequested(task_id_none, OrientationLock::PORTRAIT);
+  NotifyOnTaskOrientationLockRequested(task_id_none_,
+                                       OrientationLock::PORTRAIT);
   EXPECT_FALSE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
@@ -3597,5 +3636,72 @@ TEST_F(ChromeLauncherControllerImplTest, ArcOrientationLock) {
   EnableTabletMode(true);
   EXPECT_TRUE(controller->rotation_locked());
   EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Manually unlock first.
+  NotifyOnTaskOrientationLockRequested(task_id_none_, OrientationLock::NONE);
+  EXPECT_FALSE(controller->rotation_locked());
+}
+
+TEST_F(ChromeLauncherControllerOrientationTest, CurrentWithLandscapeDisplay) {
+  ASSERT_TRUE(display::Display::HasInternalDisplay());
+
+  extension_service_->AddExtension(arc_support_host_.get());
+  arc_test_.SetUp(profile());
+  EnableArc(true);
+  EnableTabletMode(true);
+
+  InitLauncherController();
+  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+
+  InitApps();
+  ash::ScreenOrientationController* controller =
+      ash::Shell::GetInstance()->screen_orientation_controller();
+
+  // Start with portrait.
+  window_portrait_->Activate();
+
+  // Create a arc window to lock the CURRENT orientation.
+  views::Widget* window_current = CreateArcWindow(window_app_id_current_);
+  NotifyOnTaskCreated(appinfo_current_, task_id_current_);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Re-activating changes the orientation to previously locked orientation.
+  window_landscape_->Activate();
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+  window_current->Activate();
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Exitting and re-entering tablet mode re-locks the orientation.
+  EnableTabletMode(false);
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  EnableTabletMode(true);
+  EXPECT_TRUE(window_current->IsActive());
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Manually unlock, and lock again at landscape.
+  NotifyOnTaskOrientationLockRequested(task_id_current_, OrientationLock::NONE);
+  window_landscape_->Activate();
+  EXPECT_TRUE(controller->rotation_locked());
+  window_current->Activate();
+  EXPECT_FALSE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  NotifyOnTaskOrientationLockRequested(task_id_current_,
+                                       OrientationLock::CURRENT);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
             display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
 }

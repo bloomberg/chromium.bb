@@ -6,6 +6,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
+#include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_util.h"
@@ -28,6 +29,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/base/base_window.h"
+#include "ui/display/display.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -38,8 +40,29 @@ enum class FullScreenMode {
   NON_ACTIVE,   // Fullscreen was not activated for an app.
 };
 
+arc::mojom::OrientationLock GetCurrentOrientation() {
+  if (!display::Display::HasInternalDisplay())
+    return arc::mojom::OrientationLock::NONE;
+  display::Display internal_display =
+      ash::Shell::GetInstance()->display_manager()->GetDisplayForId(
+          display::Display::InternalDisplayId());
+
+  // ChromeOS currently assumes that the internal panel is always
+  // landscape (ROTATE_0 == landscape).
+  switch (internal_display.rotation()) {
+    case display::Display::ROTATE_0:
+    case display::Display::ROTATE_180:
+      return arc::mojom::OrientationLock::LANDSCAPE;
+    case display::Display::ROTATE_90:
+    case display::Display::ROTATE_270:
+      return arc::mojom::OrientationLock::PORTRAIT;
+  }
+  return arc::mojom::OrientationLock::NONE;
+}
+
 blink::WebScreenOrientationLockType BlinkOrientationLockFromMojom(
     arc::mojom::OrientationLock orientation_lock) {
+  DCHECK_NE(arc::mojom::OrientationLock::CURRENT, orientation_lock);
   if (orientation_lock == arc::mojom::OrientationLock::PORTRAIT) {
     return blink::WebScreenOrientationLockPortrait;
   } else if (orientation_lock == arc::mojom::OrientationLock::LANDSCAPE) {
@@ -572,6 +595,13 @@ void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
       return;
     orientation_lock = app_info->orientation_lock;
   }
+
+  if (orientation_lock == arc::mojom::OrientationLock::CURRENT) {
+    // Resolve the orientation when it first resolved.
+    orientation_lock = GetCurrentOrientation();
+    app_window->set_requested_orientation_lock(orientation_lock);
+  }
+
   shell->screen_orientation_controller()->LockOrientationForWindow(
       window, BlinkOrientationLockFromMojom(orientation_lock));
 }

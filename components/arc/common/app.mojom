@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 12
+// Next MinVersion: 13
 
 module arc.mojom;
 
@@ -15,6 +15,7 @@ enum OrientationLock {
   NONE = 0,
   PORTRAIT = 1,
   LANDSCAPE = 2,
+  CURRENT = 3,
 };
 
 // Describes ARC app.
@@ -24,7 +25,7 @@ struct AppInfo {
   string activity;
   [MinVersion=2] bool sticky;  // true if the app cannot be uninstalled
   [MinVersion=7] bool notifications_enabled;
-  [MinVersion=11] OrientationLock orientation_lock;
+  [MinVersion=12] OrientationLock orientation_lock;
 };
 
 // Describes ARC package.
@@ -107,7 +108,7 @@ interface AppHost {
   [MinVersion=9] OnInstallShortcut@11(ShortcutInfo shortcut);
 
   // Notifies that task requested orientation lock.
-  [MinVersion=11] OnTaskOrientationLockRequested@12(int32 task_id,
+  [MinVersion=12] OnTaskOrientationLockRequested@12(int32 task_id,
                                                     OrientationLock lock);
 };
 
