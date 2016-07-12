@@ -18,6 +18,7 @@ EXPORTS
 	lou_setDataPath
 	lou_getTable
 	lou_checkTable
+	lou_getTypeformForEmphClass
 	lou_getDataPath
 	lou_registerLogCallback
 	lou_setLogLevel

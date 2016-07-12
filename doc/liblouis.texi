@@ -170,6 +170,7 @@ Programming with liblouis
 * lou_backTranslate::
 * lou_hyphenate::
 * lou_compileString::
+* lou_getTypeformForEmphClass::
 * lou_dotsToChar::
 * lou_charToDots::
 * lou_registerLogCallback::
@@ -2187,6 +2188,7 @@ the doctest directory in the source distribution.
 * lou_backTranslate::
 * lou_hyphenate::
 * lou_compileString::
+* lou_getTypeformForEmphClass::
 * lou_dotsToChar::
 * lou_charToDots::
 * lou_registerLogCallback::
@@ -2213,7 +2215,7 @@ You use the liblouis library by calling the following functions,
 @code{lou_logFile}, @code{lou_logPrint}, @code{lou_logEnd},
 @code{lou_getTable}, @code{lou_checkTable},
 @code{lou_hyphenate}, @code{lou_charToDots}, @code{lou_dotsToChar},
-@code{lou_compileString}, @code{lou_readCharFromFile},
+@code{lou_compileString}, @code{lou_getTypeformForEmphClass}, @code{lou_readCharFromFile},
 @code{lou_version} and @code{lou_free}.  These are described
 below. The header file, @file{liblouis.h}, also contains brief
 descriptions. Liblouis is written in straight C. It has four code
@@ -2233,9 +2235,7 @@ yet been compiled @file{compileTranslationTable.c} checks it for
 correctness and compiles it into an efficient internal representation.
 The main entry point is @code{lou_getTable}. Since it is the module
 that keeps track of memory usage, it also contains the @code{lou_free}
-function. In addition, it contains the @code{lou_checkTable}, @code{lou_registerLogCallback},
-@code{lou_setLogLevel}, @code{lou_logFile}, @code{lou_logPrint} and
-@code{lou_logEnd} functions, plus some utility functions which are
+function. In addition, it contains the @code{lou_checkTable} function, plus some utility functions which are
 used by the other modules.
 
 By default, liblouis handles all characters internally as 16-bit
@@ -2594,6 +2594,24 @@ table entry to be added. It may be anything valid. Error messages
 will be produced if it is invalid. The function returns 1 on success and 
 0 on failure.
 
+@node lou_getTypeformForEmphClass
+@section lou_getTypeformForEmphClass
+@findex lou_getTypeformForEmphClass
+
+@example
+int lou_getTypeformForEmphClass (const char *tableList, const char *emphClass);
+@end example
+
+This function returns the typeform bit associated with the given emphasis
+class. If the emphasis class is undefined this function returns @code{0}. If
+errors are found error messages are logged to the log callback (see
+@code{lou_registerLogCallback}) and the return value is @code{0}.
+@code{tableList} is a list of names of table files separated by
+commas, as explained previously
+(@pxref{translation-tables,,@code{tableList} parameter in
+@code{lou_translateString}}). @code{emphClass} is the name of an emphasis
+class.
+
 @node lou_dotsToChar
 @section lou_dotsToChar
 @findex lou_dotsToChar
@@ -2776,7 +2794,7 @@ pointer being returned.
 @findex lou_checkTable
 
 @example
-int lou_checkTable (char *tableList);
+int lou_checkTable (const char *tableList);
 @end example
 
 This function does the same as @code{lou_getTable}

@@ -1,7 +1,7 @@
 emphclass italic     // typeform 0x1
 emphclass underline  // typeform 0x2
 emphclass bold       // typeform 0x4
-emphclass foo        // typeform 0x40
+emphclass foo        // typeform 0x8
 
 uplow Aa 1
 uplow Bb 12
