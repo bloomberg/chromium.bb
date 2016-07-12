@@ -44,6 +44,7 @@ extern "C" {
 }
 
 #include "third_party/libyuv/include/libyuv/convert.h"
+#include "third_party/libyuv/include/libyuv/planar_functions.h"
 
 namespace media {
 
