@@ -23,13 +23,6 @@ from telemetry.testing import progress_reporter
 from benchmarks import system_health
 
 
-# We only cover memory system health
-_SH_BENCHMARKS_TO_SMOKE_TEST = [
-  system_health.DesktopMemorySystemHealth,
-  system_health.MobileMemorySystemHealth,
-]
-
-
 def GetSystemHealthBenchmarksToSmokeTest():
   sh_benchmark_classes = discover.DiscoverClassesInModule(
       system_health, perf_benchmark.PerfBenchmark,
