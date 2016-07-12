@@ -166,7 +166,9 @@ def process_command(command, out_dir, bot_file):
     replace_slash = False
     if ISOLATED_OUTDIR_PARAMETER in arg:
       if not out_dir:
-        raise ValueError('out_dir is requested in command, but not provided')
+        raise ValueError(
+            'output directory is requested in command, but not provided; '
+            'please specify one')
       arg = arg.replace(ISOLATED_OUTDIR_PARAMETER, out_dir)
       replace_slash = True
     if SWARMING_BOT_FILE_PARAMETER in arg:

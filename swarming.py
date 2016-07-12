@@ -1409,7 +1409,7 @@ def CMDreproduce(parser, args):
   them after --.
   """
   parser.add_option(
-      '--output-dir', metavar='DIR', default='',
+      '--output-dir', metavar='DIR', default='out',
       help='Directory that will have results stored into')
   options, args = parser.parse_args(args)
   extra_args = []
