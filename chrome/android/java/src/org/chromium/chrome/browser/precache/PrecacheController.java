@@ -105,17 +105,23 @@ public class PrecacheController {
     /** Receiver that will be notified when conditions become wrong for precaching. */
     private final BroadcastReceiver mDeviceStateReceiver = new BroadcastReceiver() {
         @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.v(TAG, "conditions changed: precaching(%s), powered(%s), unmetered(%s)",
-                    isPrecaching(), mDeviceState.isPowerConnected(context),
-                    mDeviceState.isUnmeteredNetworkAvailable(context));
-            if (isPrecaching() && (!mDeviceState.isPowerConnected(context)
-                    || !mDeviceState.isUnmeteredNetworkAvailable(context))) {
-                recordFailureReasons(context);
-                cancelPrecaching(!mDeviceState.isPowerConnected(context)
-                        ? PrecacheUMA.Event.PRECACHE_CANCEL_NO_POWER
-                        : PrecacheUMA.Event.PRECACHE_CANCEL_NO_UNMETERED_NETWORK);
-            }
+        public void onReceive(final Context context, Intent intent) {
+            runOnInstanceThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.v(TAG, "conditions changed: precaching(%s), powered(%s), unmetered(%s)",
+                            isPrecaching(), mDeviceState.isPowerConnected(context),
+                            mDeviceState.isUnmeteredNetworkAvailable(context));
+                    if (isPrecaching()
+                            && (!mDeviceState.isPowerConnected(context)
+                                       || !mDeviceState.isUnmeteredNetworkAvailable(context))) {
+                        recordFailureReasons(context);
+                        cancelPrecaching(!mDeviceState.isPowerConnected(context)
+                                ? PrecacheUMA.Event.PRECACHE_CANCEL_NO_POWER
+                                : PrecacheUMA.Event.PRECACHE_CANCEL_NO_UNMETERED_NETWORK);
+                    }
+                }
+            });
         }
     };
 
@@ -276,12 +282,7 @@ public class PrecacheController {
             cancelPrecacheCompletionTask(appContext);
         }
         if (cancelRequired) {
-            sInstance.runOnInstanceThread(new Runnable() {
-                @Override
-                public void run() {
-                    sInstance.cancelPrecaching(PrecacheUMA.Event.PRECACHE_CANCEL_DISABLED_PREF);
-                }
-            });
+            sInstance.cancelPrecaching(PrecacheUMA.Event.PRECACHE_CANCEL_DISABLED_PREF);
         }
     }
 
@@ -413,13 +414,20 @@ public class PrecacheController {
      * Cancels the current precache session.
      * @param event the failure reason.
      */
-    private void cancelPrecaching(int event) {
-        Log.v(TAG, "canceling precache session");
-        if (setIsPrecaching(false)) {
-            mPrecacheLauncher.cancel();
-            shutdownPrecaching(true);
-        }
-        PrecacheUMA.record(event);
+    private void cancelPrecaching(final int event) {
+        // cancelPrecaching() could be called from PrecacheManager::Shutdown(), precache GCM task,
+        // etc., where it could be a different thread.
+        runOnInstanceThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.v(TAG, "canceling precache session");
+                if (setIsPrecaching(false)) {
+                    mPrecacheLauncher.cancel();
+                    shutdownPrecaching(true);
+                }
+                PrecacheUMA.record(event);
+            }
+        });
     }
 
     /**
