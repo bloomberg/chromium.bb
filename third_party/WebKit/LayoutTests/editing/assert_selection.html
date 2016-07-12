@@ -104,4 +104,14 @@ test(() => {
     assert_equals(checked_assert_selection('|foo', 'noop', 'b^|az'),
         'You should have focus marker and should not have anchor marker if and only if selection is a caret in "b^|az".');
 }, 'anchor == foucs in output');
+
+// TODO: It's better to have more powerful diff like
+// |CreateUnifiedDiff()| in gtest or "Longest common substring"
+test(() => {
+    assert_equals(checked_assert_selection('foo', 'noop', 'foz'),
+        `LayoutTests/editing/assert_selection.html:8:9)\n` +
+        `\t expected foz,\n` +
+        `\t but got  foo,\n` +
+        `\t sameupto fo`);
+}, 'Compare result');
 </script>
