@@ -537,7 +537,7 @@ void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
     return;
   }
 
-  DCHECK(HasValidFrame());
+  DCHECK_GT(locks_on_frame_count_, 0u);
   locks_on_frame_count_--;
   frame_evictor_->UnlockFrame();
 
