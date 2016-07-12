@@ -175,7 +175,7 @@ class MacTool(object):
 
     # Go through all the environment variables and replace them as variables in
     # the file.
-    IDENT_RE = re.compile(r'[/\s]')
+    IDENT_RE = re.compile(r'[_/\s]')
     for key in os.environ:
       if key.startswith('_'):
         continue
