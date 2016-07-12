@@ -95,8 +95,6 @@ void MaybeWriteUma(int number_of_devices, int number_of_suspended_devices) {
   }
 }
 
-}  // anonymous namespace
-
 // This function translates Mac Core Video pixel formats to Chromium pixel
 // formats.
 media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
@@ -111,6 +109,26 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
       return media::PIXEL_FORMAT_UNKNOWN;
   }
 }
+
+// Extracts |base_address| and |length| out of a SampleBuffer.
+void ExtractBaseAddressAndLength(
+    char** base_address,
+    size_t* length,
+    CoreMediaGlue::CMSampleBufferRef sample_buffer) {
+  CoreMediaGlue::CMBlockBufferRef block_buffer =
+      CoreMediaGlue::CMSampleBufferGetDataBuffer(sample_buffer);
+  DCHECK(block_buffer);
+
+  size_t length_at_offset;
+  const OSStatus status = CoreMediaGlue::CMBlockBufferGetDataPointer(
+      block_buffer, 0, &length_at_offset, length, base_address);
+  DCHECK_EQ(noErr, status);
+  // Expect the (M)JPEG data to be available as a contiguous reference, i.e.
+  // not covered by multiple memory blocks.
+  DCHECK_EQ(length_at_offset, *length);
+}
+
+}  // anonymous namespace
 
 @implementation VideoCaptureDeviceAVFoundation
 
@@ -217,6 +235,8 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
       // No need to release |captureDeviceInput_|, is owned by the session.
       captureDeviceInput_ = nil;
     }
+    if (stillImageOutput_)
+      [captureSession_ removeOutput:stillImageOutput_];
     return YES;
   }
 
@@ -261,6 +281,13 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
                         queue:dispatch_get_global_queue(
                                   DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
   [captureSession_ addOutput:captureVideoDataOutput_];
+
+  // Create and plug the still image capture output. This should happen in
+  // advance of the actual picture to allow for the 3A to stabilize.
+  stillImageOutput_.reset(
+      [[AVFoundationGlue::AVCaptureStillImageOutputClass() alloc] init]);
+  [captureSession_ addOutput:stillImageOutput_];
+
   return YES;
 }
 
@@ -359,6 +386,48 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)takePhoto {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK([captureSession_ isRunning]);
+
+  DCHECK_EQ(1u, [[stillImageOutput_ connections] count]);
+  CrAVCaptureConnection* const connection =
+      [[stillImageOutput_ connections] firstObject];
+  if (!connection) {
+    base::AutoLock lock(lock_);
+    frameReceiver_->OnPhotoError();
+    return;
+  }
+
+  const auto handler = ^(CoreMediaGlue::CMSampleBufferRef sampleBuffer,
+                         NSError* error) {
+    base::AutoLock lock(lock_);
+    if (!frameReceiver_)
+      return;
+    if (error != nil) {
+      frameReceiver_->OnPhotoError();
+      return;
+    }
+
+    // Recommended compressed pixel format is JPEG, we don't expect surprises.
+    // TODO(mcasas): Consider using [1] for merging EXIF output information:
+    // [1] +(NSData*)jpegStillImageNSDataRepresentation:jpegSampleBuffer;
+    DCHECK_EQ(
+        CoreMediaGlue::kCMVideoCodecType_JPEG,
+        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
+            CoreMediaGlue::CMSampleBufferGetFormatDescription(sampleBuffer)));
+
+    char* baseAddress = 0;
+    size_t length = 0;
+    ExtractBaseAddressAndLength(&baseAddress, &length, sampleBuffer);
+    frameReceiver_->OnPhotoTaken(reinterpret_cast<uint8_t*>(baseAddress),
+                                 length, "image/jpeg");
+  };
+
+  [stillImageOutput_ captureStillImageAsynchronouslyFromConnection:connection
+                                                 completionHandler:handler];
+}
+
 #pragma mark Private methods
 
 // |captureOutput| is called by the capture device to deliver a new frame.
@@ -381,17 +450,7 @@ didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
   size_t frameSize = 0;
   CVImageBufferRef videoFrame = nil;
   if (fourcc == CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML) {
-    // If MJPEG, use block buffer instead of pixel buffer.
-    CoreMediaGlue::CMBlockBufferRef blockBuffer =
-        CoreMediaGlue::CMSampleBufferGetDataBuffer(sampleBuffer);
-    if (blockBuffer) {
-      size_t lengthAtOffset;
-      CoreMediaGlue::CMBlockBufferGetDataPointer(
-          blockBuffer, 0, &lengthAtOffset, &frameSize, &baseAddress);
-      // Expect the MJPEG data to be available as a contiguous reference, i.e.
-      // not covered by multiple memory blocks.
-      CHECK_EQ(lengthAtOffset, frameSize);
-    }
+    ExtractBaseAddressAndLength(&baseAddress, &frameSize, sampleBuffer);
   } else {
     videoFrame = CoreMediaGlue::CMSampleBufferGetImageBuffer(sampleBuffer);
     // Lock the frame and calculate frame size.
