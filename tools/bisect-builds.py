@@ -894,7 +894,7 @@ def GetBlinkDEPSRevisionForChromiumRevision(self, rev):
     m = blink_re.search(url.read())
     url.close()
     if m:
-      return m.group(1)]
+      return m.group(1)
 
   url = urllib.urlopen(DEPS_FILE % GetGitHashFromSVNRevision(rev))
   if url.getcode() == 200:
