@@ -11,8 +11,6 @@ if (!window.internals)
     testFailed('This test requires window.internals.');
 
 var input = document.createElement('input');
-var invalidStateErr = '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."';
-
 document.body.appendChild(input);
 
 function keyDown(key, modifiers)
@@ -22,16 +20,21 @@ function keyDown(key, modifiers)
     eventSender.keyDown(key, modifiers);
 }
 
-function setDateTimeFormat(pattern) {
-    getElementByPseudoId(internals.youngestShadowRoot(input), '-webkit-datetime-edit').setAttribute('pattern', pattern);
-    input.value = '';  // Updates the element for new format
+function maybeUpdateAttribute(name, value) {
+    if (value) {
+        if (input.getAttribute(name) != value)
+            input.setAttribute(name, value);
+    } else {
+        if (input.hasAttribute(name))
+            input.removeAttribute(name);
+    }
 }
 
 function setInputAttributes(value, min, max, step) {
     input.value = value;
-    input.min = min;
-    input.max = max;
-    input.step = step;
+    maybeUpdateAttribute('min', min);
+    maybeUpdateAttribute('max', max);
+    maybeUpdateAttribute('step', step);
 }
 
 function test(value, step, min, max, keySequence) {
@@ -170,177 +173,6 @@ shouldBeEqualToString('stepDown("07:35", 600, "07:10", "07:35")', '07:30');
 shouldBeEqualToString('stepUp("07:10", 1, "07:10", "08:20")', '07:11');
 shouldBeEqualToString('stepDown("07:10", 1, "07:10", "08:20")', '07:09');
 
-debug('Hours, 1-12');
-keyDown('ArrowLeft');
-shouldBeEqualToString('stepUp("07:00", 1, null, null)', '08:00');
-shouldBeEqualToString('stepDown("07:00", 1, null, null)', '06:00');
-shouldBeEqualToString('stepUp("11:00", 1, null, null)', '00:00');
-shouldBeEqualToString('stepDown("00:00", 1, null, null)', '11:00');
-shouldBeEqualToString('stepUp("06:00", 7200, null, null)', '08:00');
-shouldBeEqualToString('stepDown("06:00", 7200, null, null)', '04:00');
-shouldBeEqualToString('stepUp("10:00", 7200, null, null)', '00:00');
-shouldBeEqualToString('stepDown("00:00", 7200, null, null)', '10:00');
-shouldBeEqualToString('stepUp("07:00", 7200, null, null)', '08:00');
-shouldBeEqualToString('stepDown("07:00", 7200, null, null)', '06:00');
-shouldBeEqualToString('stepUp("06:00", 3601, null, null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 3601, null, null)', '05:00');
-shouldBeEqualToString('stepUp("06:00", 0, null, null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 0, null, null)', '05:00');
-shouldBeEqualToString('stepUp("06:00", 86400, null, null)', '00:00');
-shouldBeEqualToString('stepDown("06:00", 86400, null, null)', '00:00');
-shouldBeEqualToString('stepUp("06:00", 36000, null, null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 36000, null, null)', '05:00');
-shouldBeEqualToString('stepUp("06:00", 7200, "01:00", null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 7200, "01:00", null)', '05:00');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowUp"])', '02:00');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowDown"])', '00:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '12:00 AM');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowUp"])', '01:00');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowDown"])', '11:00');
-shouldBeEqualToString('stepUp("17:00", 1, "17:00", "20:00")', '18:00');
-shouldBeEqualToString('stepDown("17:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("17:00", 1, "15:00", "17:00")', '15:00');
-shouldBeEqualToString('stepDown("17:00", 1, "15:00", "17:00")', '16:00');
-shouldBeEqualToString('stepUp("15:00", 1, "17:00", "20:00")', '17:00');
-shouldBeEqualToString('stepDown("15:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepDown("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepUp("12:00", 1, "12:00", "15:00")', '13:00');
-shouldBeEqualToString('stepDown("12:00", 1, "12:00", "15:00")', '23:00');
-shouldBeEqualToString('stepUp("15:00", 1, "12:00", "15:00")', '16:00');
-shouldBeEqualToString('stepDown("15:00", 1, "12:00", "15:00")', '14:00');
-shouldBeEqualToString('stepUp("12:00", 1, "10:00", "12:00")', '13:00');
-shouldBeEqualToString('stepDown("12:00", 1, "10:00", "12:00")', '23:00');
-shouldBeEqualToString('stepUp("00:00", 1, "00:00", "03:00")', '01:00');
-shouldBeEqualToString('stepDown("00:00", 1, "00:00", "03:00")', '11:00');
-shouldBeEqualToString('stepUp("15:00", 1, "10:00", "15:00")', '16:00');
-shouldBeEqualToString('stepDown("10:00", 1, "10:00", "15:00")', '09:00');
-shouldBeEqualToString('stepUp("17:00", 7200, "17:00", "20:00")', '19:00');
-shouldBeEqualToString('stepDown("17:00", 7200, "17:00", "20:00")', '19:00');
-shouldBeEqualToString('stepUp("17:00", 7200, "17:00", "18:00")', '17:00');
-shouldBeEqualToString('stepDown("17:00", 7200, "17:00", "18:00")', '17:00');
-
-debug('Hours, 0-11');
-setDateTimeFormat('KK:mm a');
-shouldBeEqualToString('stepUp("11:00", 1, null, null)', '00:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '00:00 AM');
-shouldBeEqualToString('stepDown("00:00", 1, null, null)', '11:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '11:00 AM');
-shouldBeEqualToString('stepUp("23:00", 1, null, null)', '12:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '00:00 PM');
-shouldBeEqualToString('stepDown("12:00", 1, null, null)', '23:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '11:00 PM');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowUp"])', '00:00');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowDown"])', '10:00');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowUp"])', '01:00');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowDown"])', '11:00');
-shouldBeEqualToString('stepUp("17:00", 1, "17:00", "20:00")', '18:00');
-shouldBeEqualToString('stepDown("17:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("17:00", 1, "15:00", "17:00")', '15:00');
-shouldBeEqualToString('stepDown("17:00", 1, "15:00", "17:00")', '16:00');
-shouldBeEqualToString('stepUp("15:00", 1, "17:00", "20:00")', '17:00');
-shouldBeEqualToString('stepDown("15:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepDown("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepUp("12:00", 1, "12:00", "15:00")', '13:00');
-shouldBeEqualToString('stepDown("12:00", 1, "12:00", "15:00")', '15:00');
-shouldBeEqualToString('stepUp("15:00", 1, "12:00", "15:00")', '12:00');
-shouldBeEqualToString('stepDown("15:00", 1, "12:00", "15:00")', '14:00');
-shouldBeEqualToString('stepUp("12:00", 1, "10:00", "12:00")', '13:00');
-shouldBeEqualToString('stepDown("12:00", 1, "10:00", "12:00")', '23:00');
-shouldBeEqualToString('stepUp("00:00", 1, "00:00", "03:00")', '01:00');
-shouldBeEqualToString('stepDown("00:00", 1, "00:00", "03:00")', '03:00');
-shouldBeEqualToString('stepUp("15:00", 1, "10:00", "15:00")', '16:00');
-shouldBeEqualToString('stepDown("10:00", 1, "10:00", "15:00")', '09:00');
-shouldBeEqualToString('stepUp("20:00", 7200, "17:00", "20:00")', '17:00');
-shouldBeEqualToString('stepDown("20:00", 7200, "17:00", "20:00")', '19:00');
-
-debug('Hours, 0-23');
-setDateTimeFormat('HH:mm');
-shouldBeEqualToString('stepUp("07:00", 1, null, null)', '08:00');
-shouldBeEqualToString('stepDown("07:00", 1, null, null)', '06:00');
-shouldBeEqualToString('stepUp("23:00", 1, null, null)', '00:00');
-shouldBeEqualToString('stepDown("00:00", 1, null, null)', '23:00');
-shouldBeEqualToString('stepUp("06:00", 7200, null, null)', '08:00');
-shouldBeEqualToString('stepDown("06:00", 7200, null, null)', '04:00');
-shouldBeEqualToString('stepUp("22:00", 7200, null, null)', '00:00');
-shouldBeEqualToString('stepDown("00:00", 7200, null, null)', '22:00');
-shouldBeEqualToString('stepUp("07:00", 7200, null, null)', '08:00');
-shouldBeEqualToString('stepDown("07:00", 7200, null, null)', '06:00');
-shouldBeEqualToString('stepUp("06:00", 3601, null, null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 3601, null, null)', '05:00');
-shouldBeEqualToString('stepUp("06:00", 0, null, null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 0, null, null)', '05:00');
-shouldBeEqualToString('stepUp("06:00", 86400, null, null)', '00:00');
-shouldBeEqualToString('stepDown("06:00", 86400, null, null)', '00:00');
-shouldBeEqualToString('stepUp("06:00", 36000, null, null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 36000, null, null)', '05:00');
-shouldBeEqualToString('stepUp("06:00", 7200, "01:00", null)', '07:00');
-shouldBeEqualToString('stepDown("06:00", 7200, "01:00", null)', '05:00');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowUp"])', '00:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '00:00');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowDown"])', '22:00');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowUp"])', '01:00');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowDown"])', '23:00');
-shouldBeEqualToString('stepUp("17:00", 1, "17:00", "20:00")', '18:00');
-shouldBeEqualToString('stepDown("17:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("17:00", 1, "15:00", "17:00")', '15:00');
-shouldBeEqualToString('stepDown("17:00", 1, "15:00", "17:00")', '16:00');
-shouldBeEqualToString('stepUp("15:00", 1, "17:00", "20:00")', '17:00');
-shouldBeEqualToString('stepDown("15:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepDown("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepUp("00:00", 1, "00:00", "03:00")', '01:00');
-shouldBeEqualToString('stepDown("00:00", 1, "00:00", "03:00")', '03:00');
-shouldBeEqualToString('stepUp("03:00", 1, "00:00", "03:00")', '00:00');
-shouldBeEqualToString('stepDown("03:00", 1, "00:00", "03:00")', '02:00');
-shouldBeEqualToString('stepUp("12:00", 1, "10:00", "12:00")', '10:00');
-shouldBeEqualToString('stepDown("12:00", 1, "10:00", "12:00")', '11:00');
-shouldBeEqualToString('stepUp("00:00", 1, "00:00", "03:00")', '01:00');
-shouldBeEqualToString('stepDown("00:00", 1, "00:00", "03:00")', '03:00');
-shouldBeEqualToString('stepUp("15:00", 1, "10:00", "15:00")', '10:00');
-shouldBeEqualToString('stepDown("10:00", 1, "10:00", "15:00")', '15:00');
-shouldBeEqualToString('stepUp("20:00", 7200, "17:00", "20:00")', '17:00');
-shouldBeEqualToString('stepDown("20:00", 7200, "17:00", "20:00")', '19:00');
-
-debug('Hours, 1-24');
-setDateTimeFormat('kk:mm');
-shouldBeEqualToString('stepUp("11:00", 1, null, null)', '12:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '12:00');
-shouldBeEqualToString('stepDown("00:00", 1, null, null)', '23:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '23:00');
-shouldBeEqualToString('stepUp("23:00", 1, null, null)', '00:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '24:00');
-shouldBeEqualToString('stepDown("12:00", 1, null, null)', '11:00');
-shouldBeEqualToString('getUserAgentShadowTextContent(input)', '11:00');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowUp"])', '02:00');
-shouldBeEqualToString('test("06:00", 7200, null, null, ["Delete", "ArrowDown"])', '00:00');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowUp"])', '01:00');
-shouldBeEqualToString('test("06:00", 7200, "01:00", null, ["Delete", "ArrowDown"])', '23:00');
-shouldBeEqualToString('stepUp("17:00", 1, "17:00", "20:00")', '18:00');
-shouldBeEqualToString('stepDown("17:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("17:00", 1, "15:00", "17:00")', '15:00');
-shouldBeEqualToString('stepDown("17:00", 1, "15:00", "17:00")', '16:00');
-shouldBeEqualToString('stepUp("15:00", 1, "17:00", "20:00")', '17:00');
-shouldBeEqualToString('stepDown("15:00", 1, "17:00", "20:00")', '20:00');
-shouldBeEqualToString('stepUp("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepDown("15:00", 1, "13:00", "13:00")', '13:00');
-shouldBeEqualToString('stepUp("00:00", 1, "00:00", "03:00")', '01:00');
-shouldBeEqualToString('stepDown("00:00", 1, "00:00", "03:00")', '23:00');
-shouldBeEqualToString('stepUp("03:00", 1, "00:00", "03:00")', '04:00');
-shouldBeEqualToString('stepDown("03:00", 1, "00:00", "03:00")', '02:00');
-shouldBeEqualToString('stepUp("12:00", 1, "10:00", "12:00")', '10:00');
-shouldBeEqualToString('stepDown("12:00", 1, "10:00", "12:00")', '11:00');
-shouldBeEqualToString('stepUp("00:00", 1, "00:00", "03:00")', '01:00');
-shouldBeEqualToString('stepDown("00:00", 1, "00:00", "03:00")', '23:00');
-shouldBeEqualToString('stepUp("15:00", 1, "10:00", "15:00")', '10:00');
-shouldBeEqualToString('stepDown("10:00", 1, "10:00", "15:00")', '15:00');
-shouldBeEqualToString('stepUp("17:00", 7200, "17:00", "20:00")', '19:00');
-shouldBeEqualToString('stepDown("17:00", 7200, "17:00", "20:00")', '19:00');
-shouldBeEqualToString('stepUp("17:00", 7200, "17:00", "18:00")', '17:00');
-shouldBeEqualToString('stepDown("17:00", 7200, "17:00", "18:00")', '17:00');
-
-setDateTimeFormat('');
 debug('');
 document.body.removeChild(input);
 </script>
