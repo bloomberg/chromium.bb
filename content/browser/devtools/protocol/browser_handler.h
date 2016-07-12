@@ -37,7 +37,7 @@ class BrowserHandler : public DevToolsAgentHostClient {
   Response CreateBrowserContext(std::string* out_context_id);
   Response DisposeBrowserContext(const std::string& context_id,
                                  bool* out_success);
-  Response CreateTarget(const std::string& url,
+  Response CreateTarget(const std::string& initial_url,
                         const int* width,
                         const int* height,
                         const std::string* context_id,

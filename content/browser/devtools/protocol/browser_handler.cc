@@ -56,7 +56,7 @@ Response BrowserHandler::DisposeBrowserContext(const std::string& context_id,
   return Response::ServerError("Not supported");
 }
 
-Response BrowserHandler::CreateTarget(const std::string& url,
+Response BrowserHandler::CreateTarget(const std::string& initial_url,
                                       const int* width,
                                       const int* height,
                                       const std::string* context_id,
