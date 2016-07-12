@@ -22,7 +22,6 @@
 #include "content/gpu/gpu_watchdog_thread.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_shell_connection.h"
 #include "content/public/gpu/content_gpu_client.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -37,7 +36,6 @@
 #include "media/gpu/ipc/service/gpu_video_decode_accelerator.h"
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_service.h"
-#include "services/shell/public/cpp/interface_registry.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -223,18 +221,6 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   // Only set once per process instance.
   process_control_.reset(new GpuProcessControlImpl());
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(
-      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
-
-  if (GetContentClient()->gpu()) {  // NULL in tests.
-    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
-        GetInterfaceRegistry());
-  }
-
-  // We don't want to process any incoming interface requests until
-  // OnInitialize() is invoked.
-  GetInterfaceRegistry()->PauseBinding();
-
   if (GetContentClient()->gpu())  // NULL in tests.
     GetContentClient()->gpu()->Initialize(this);
 }
@@ -304,6 +290,37 @@ bool GpuChildThread::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
+bool GpuChildThread::OnConnect(shell::Connection* connection) {
+  // Use of base::Unretained(this) is safe here because |service_registry()|
+  // will be destroyed before GpuChildThread is destructed.
+  connection->GetInterfaceRegistry()->AddInterface(base::Bind(
+      &GpuChildThread::BindProcessControlRequest, base::Unretained(this)));
+
+  if (GetContentClient()->gpu()) {  // NULL in tests.
+    GetContentClient()->gpu()->ExposeInterfacesToBrowser(
+        connection->GetInterfaceRegistry());
+  }
+
+  // We don't want to process any incoming interface requests until
+  // OnInitialize().
+  if (!gpu_channel_manager_) {
+    connection->GetInterfaceRegistry()->PauseBinding();
+    resume_interface_bindings_callback_ = base::Bind(
+        &shell::InterfaceRegistry::ResumeBinding,
+        connection->GetInterfaceRegistry()->GetWeakPtr());
+  }
+
+  return true;
+}
+
+shell::InterfaceRegistry* GpuChildThread::GetInterfaceRegistryForConnection() {
+  return nullptr;
+}
+
+shell::InterfaceProvider* GpuChildThread::GetInterfaceProviderForConnection() {
+  return nullptr;
+}
+
 void GpuChildThread::SetActiveURL(const GURL& url) {
   GetContentClient()->SetActiveURL(url);
 }
@@ -347,7 +364,8 @@ void GpuChildThread::StoreShaderToDisk(int32_t client_id,
 }
 
 void GpuChildThread::OnInitialize(const gpu::GpuPreferences& gpu_preferences) {
-  GetInterfaceRegistry()->ResumeBinding();
+  if (!resume_interface_bindings_callback_.is_null())
+    base::ResetAndReturn(&resume_interface_bindings_callback_).Run();
 
   gpu_preferences_ = gpu_preferences;
 
@@ -566,7 +584,7 @@ void GpuChildThread::OnLoseAllContexts() {
 }
 
 void GpuChildThread::BindProcessControlRequest(
-    mojom::ProcessControlRequest request) {
+    mojo::InterfaceRequest<mojom::ProcessControl> request) {
   DVLOG(1) << "GPU: Binding ProcessControl request";
   DCHECK(process_control_);
   process_control_bindings_.AddBinding(process_control_.get(),

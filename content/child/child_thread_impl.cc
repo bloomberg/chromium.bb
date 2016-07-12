@@ -68,8 +68,6 @@
 #include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_ipc_support.h"
-#include "services/shell/public/cpp/interface_provider.h"
-#include "services/shell/public/cpp/interface_registry.h"
 #include "services/shell/runner/common/client_util.h"
 
 #if defined(OS_POSIX)
@@ -333,18 +331,14 @@ bool ChildThreadImpl::ChildThreadMessageRouter::RouteMessage(
 
 ChildThreadImpl::ChildThreadImpl()
     : router_(this),
-      channel_connected_factory_(
-          new base::WeakPtrFactory<ChildThreadImpl>(this)),
-      weak_factory_(this) {
+      channel_connected_factory_(this) {
   Init(Options::Builder().Build());
 }
 
 ChildThreadImpl::ChildThreadImpl(const Options& options)
     : router_(this),
       browser_process_io_runner_(options.browser_process_io_runner),
-      channel_connected_factory_(
-          new base::WeakPtrFactory<ChildThreadImpl>(this)),
-      weak_factory_(this) {
+      channel_connected_factory_(this) {
   Init(options);
 }
 
@@ -419,18 +413,8 @@ void ChildThreadImpl::Init(const Options& options) {
         mojo::edk::CreateChildMessagePipe(mojo_application_token);
     DCHECK(handle.is_valid());
     mojo_shell_connection_ = MojoShellConnection::Create(
-        mojo::MakeRequest<shell::mojom::Service>(std::move(handle)),
-        GetIOTaskRunner());
-
-    // TODO(rockot): Remove this once all child-to-browser interface connections
-    // are made via a Connector rather than directly through an
-    // InterfaceProvider, and all exposed interfaces are exposed via a
-    // ConnectionFilter.
-    mojo_shell_connection_->SetupInterfaceRequestProxies(
-        GetInterfaceRegistry(), GetRemoteInterfaces());
-
-    AddConnectionFilters(mojo_shell_connection_.get());
-    mojo_shell_connection_->Start();
+        mojo::MakeRequest<shell::mojom::Service>(std::move(handle)));
+    mojo_shell_connection_->MergeService(this);
   }
 
   sync_message_filter_ = channel_->CreateSyncMessageFilter();
@@ -515,7 +499,7 @@ void ChildThreadImpl::Init(const Options& options) {
 
   message_loop_->task_runner()->PostDelayedTask(
       FROM_HERE, base::Bind(&ChildThreadImpl::EnsureConnected,
-                            channel_connected_factory_->GetWeakPtr()),
+                            channel_connected_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(connection_timeout));
 
 #if defined(OS_ANDROID)
@@ -533,6 +517,9 @@ void ChildThreadImpl::Init(const Options& options) {
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
+  if (MojoShellConnection::GetForProcess())
+    MojoShellConnection::DestroyForProcess();
+
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
@@ -569,7 +556,7 @@ void ChildThreadImpl::ShutdownDiscardableSharedMemoryManager() {
 }
 
 void ChildThreadImpl::OnChannelConnected(int32_t peer_pid) {
-  channel_connected_factory_.reset();
+  channel_connected_factory_.InvalidateWeakPtrs();
 }
 
 void ChildThreadImpl::OnChannelError() {
@@ -619,6 +606,14 @@ shell::InterfaceProvider* ChildThreadImpl::GetRemoteInterfaces() {
   if (!remote_interfaces_.get())
     remote_interfaces_.reset(new shell::InterfaceProvider);
   return remote_interfaces_.get();
+}
+
+shell::InterfaceRegistry* ChildThreadImpl::GetInterfaceRegistryForConnection() {
+  return GetInterfaceRegistry();
+}
+
+shell::InterfaceProvider* ChildThreadImpl::GetInterfaceProviderForConnection() {
+  return GetRemoteInterfaces();
 }
 
 IPC::MessageRouter* ChildThreadImpl::GetRouter() {
@@ -695,8 +690,6 @@ bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
 
   return router_.OnMessageReceived(msg);
 }
-
-void ChildThreadImpl::AddConnectionFilters(MojoShellConnection* connection) {}
 
 bool ChildThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
   return false;

@@ -6,72 +6,67 @@
 #define CONTENT_COMMON_MOJO_SHELL_CONNECTION_IMPL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/shell/public/cpp/identity.h"
-#include "services/shell/public/interfaces/service.mojom.h"
-
-namespace shell {
-class Connector;
-}
+#include "services/shell/public/cpp/service.h"
+#include "services/shell/public/cpp/service_context.h"
+#include "services/shell/public/interfaces/service_factory.mojom.h"
 
 namespace content {
 
 class EmbeddedApplicationRunner;
 
-class MojoShellConnectionImpl : public MojoShellConnection {
+class MojoShellConnectionImpl
+    : public MojoShellConnection,
+      public shell::Service,
+      public shell::InterfaceFactory<shell::mojom::ServiceFactory>,
+      public shell::mojom::ServiceFactory {
+
  public:
-  explicit MojoShellConnectionImpl(
-      shell::mojom::ServiceRequest request,
-      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  explicit MojoShellConnectionImpl(shell::mojom::ServiceRequest request);
   ~MojoShellConnectionImpl() override;
 
  private:
-  class IOThreadContext;
-
   // MojoShellConnection:
-  void Start() override;
-  void SetInitializeHandler(const base::Closure& handler) override;
+  shell::ServiceContext* GetShellConnection() override;
   shell::Connector* GetConnector() override;
   const shell::Identity& GetIdentity() const override;
   void SetConnectionLostClosure(const base::Closure& closure) override;
-  void SetupInterfaceRequestProxies(
-      shell::InterfaceRegistry* registry,
-      shell::InterfaceProvider* provider) override;
-  void AddConnectionFilter(std::unique_ptr<ConnectionFilter> filter) override;
+  void MergeService(std::unique_ptr<shell::Service> service) override;
+  void MergeService(shell::Service* service) override;
   void AddEmbeddedService(const std::string& name,
                           const MojoApplicationInfo& info) override;
   void AddServiceRequestHandler(
       const std::string& name,
       const ServiceRequestHandler& handler) override;
 
-  void OnContextInitialized(const shell::Identity& identity);
-  void OnConnectionLost();
+  // shell::Service:
+  void OnStart(shell::Connector* connector,
+               const shell::Identity& identity,
+               uint32_t id) override;
+  bool OnConnect(shell::Connection* connection) override;
+  shell::InterfaceRegistry* GetInterfaceRegistryForConnection() override;
+  shell::InterfaceProvider* GetInterfaceProviderForConnection() override;
+
+  // shell::InterfaceFactory<shell::mojom::ServiceFactory>:
+  void Create(shell::Connection* connection,
+              shell::mojom::ServiceFactoryRequest request) override;
+
+  // shell::mojom::ServiceFactory:
   void CreateService(shell::mojom::ServiceRequest request,
-                     const mojo::String& name);
-  void GetInterface(shell::mojom::InterfaceProvider* provider,
-                    const mojo::String& interface_name,
-                    mojo::ScopedMessagePipeHandle request_handle);
+                         const mojo::String& name) override;
 
-  shell::Identity identity_;
-
-  std::unique_ptr<shell::Connector> connector_;
-  scoped_refptr<IOThreadContext> context_;
-
-  base::Closure initialize_handler_;
-  base::Closure connection_lost_handler_;
-
+  std::unique_ptr<shell::ServiceContext> shell_connection_;
+  mojo::BindingSet<shell::mojom::ServiceFactory> factory_bindings_;
+  std::vector<shell::Service*> embedded_services_;
+  std::vector<std::unique_ptr<shell::Service>> owned_services_;
   std::unordered_map<std::string, std::unique_ptr<EmbeddedApplicationRunner>>
       embedded_apps_;
   std::unordered_map<std::string, ServiceRequestHandler> request_handlers_;
-
-  base::WeakPtrFactory<MojoShellConnectionImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoShellConnectionImpl);
 };

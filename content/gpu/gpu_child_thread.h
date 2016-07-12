@@ -28,6 +28,7 @@
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/x_util.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -86,6 +87,9 @@ class GpuChildThread : public ChildThreadImpl,
   bool Send(IPC::Message* msg) override;
   bool OnControlMessageReceived(const IPC::Message& msg) override;
   bool OnMessageReceived(const IPC::Message& msg) override;
+  bool OnConnect(shell::Connection* connection) override;
+  shell::InterfaceRegistry* GetInterfaceRegistryForConnection() override;
+  shell::InterfaceProvider* GetInterfaceProviderForConnection() override;
 
   // gpu::GpuChannelManagerDelegate:
   void SetActiveURL(const GURL& url) override;
@@ -134,7 +138,8 @@ class GpuChildThread : public ChildThreadImpl,
 #endif
   void OnLoseAllContexts();
 
-  void BindProcessControlRequest(mojom::ProcessControlRequest request);
+  void BindProcessControlRequest(
+      mojo::InterfaceRequest<mojom::ProcessControl> request);
 
   gpu::GpuPreferences gpu_preferences_;
 
@@ -173,6 +178,8 @@ class GpuChildThread : public ChildThreadImpl,
 
   // Bindings to the mojom::ProcessControl impl.
   mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;
+
+  base::Closure resume_interface_bindings_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

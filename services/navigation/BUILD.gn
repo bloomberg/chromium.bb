@@ -58,17 +58,12 @@ static_library("lib") {
     "view_impl.h",
   ]
 
-  public_deps = [
+  deps = [
     "//base",
-    "//content/public/common",
-    "//mojo/public/cpp/bindings",
+    "//content/public/browser",
     "//services/navigation/public/interfaces",
     "//services/shell/public/cpp",
     "//services/ui/public/cpp",
-  ]
-
-  deps = [
-    "//content/public/browser",
     "//skia",
     "//ui/gfx/geometry/mojo",
     "//ui/views",

@@ -270,6 +270,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // interfaces exposed to it from the renderer.
   virtual shell::InterfaceProvider* GetRemoteInterfaces() = 0;
 
+  // Returns the shell connection for this process.
+  virtual shell::Connection* GetChildConnection() = 0;
+
   // Extracts any persistent-memory-allocator used for renderer metrics.
   // Ownership is passed to the caller. To support sharing of histogram data
   // between the Renderer and the Browser, the allocator is created when the
