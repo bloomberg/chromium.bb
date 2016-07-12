@@ -67,6 +67,9 @@ _VERSION_SPECIFIC_FILTER = {}
 _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://code.google.com/p/chromedriver/issues/detail?id=992
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1431
+    'ChromeDriverTest.testAutoReporting',
+    'ChromeDriverTest.testConsoleLogSources',
 ]
 
 _OS_SPECIFIC_FILTER = {}
