@@ -2595,8 +2595,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def SetCQState(self, new_state):
     """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""
-    # TODO(tandrii): maybe allow configurability in codereview.settings or by
-    # self-discovery of label config for this CL using REST API.
     vote_map = {
         _CQState.NONE:    0,
         _CQState.DRY_RUN: 1,
