@@ -6,6 +6,7 @@ import unittest
 
 from webkitpy.w3c.deps_updater import DepsUpdater
 from webkitpy.common.host_mock import MockHost
+from webkitpy.common.system.filesystem_mock import MockFileSystem
 
 
 class DepsUpdaterTest(unittest.TestCase):
@@ -41,3 +42,29 @@ Total: 8 tryjobs
                 'chromeos_daisy'
             ])
         })
+
+    def test_is_manual_test_regular_test(self):
+        updater = DepsUpdater(MockHost())
+        fs = MockFileSystem()
+        dirname = '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/a'
+        self.assertFalse(updater.is_manual_test(fs, dirname, 'test.html'))
+        self.assertFalse(updater.is_manual_test(fs, dirname, 'manual-foo.htm'))
+        self.assertFalse(updater.is_manual_test(fs, dirname, 'script.js'))
+
+    def test_is_manual_test_no_automation_file(self):
+        updater = DepsUpdater(MockHost())
+        fs = MockFileSystem()
+        dirname = '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/a'
+        self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.html'))
+        self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.htm'))
+        self.assertTrue(updater.is_manual_test(fs, dirname, 'test-manual.xht'))
+
+    def test_is_manual_test_with_corresponding_automation_file(self):
+        updater = DepsUpdater(MockHost())
+        imported_dir = '/mock-checkout/third_party/WebKit/LayoutTests/imported/'
+        fs = MockFileSystem(files={
+            imported_dir + 'wpt_automation/a/x-manual-input.js': '',
+            imported_dir + 'wpt_automation/a/y-manual-automation.js': '',
+        })
+        self.assertFalse(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'y-manual.html'))
+        self.assertFalse(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'x-manual.html'))

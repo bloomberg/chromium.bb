@@ -191,9 +191,23 @@ class DepsUpdater(object):
         else:
             self.print_('## Done: no changes to import.')
 
-    def is_manual_test(self, fs, dirname, basename):  # Callback for FileSystem.files_under; not all arguments used - pylint: disable=unused-argument
-        # We are importing manual pointer event tests and we are automating them.
-        return ("pointerevents" not in dirname) and (basename.endswith('-manual.html') or basename.endswith('-manual.htm'))
+    def is_manual_test(self, fs, dirname, basename):
+        """Returns True if the file should be removed because it's a manual test.
+
+        Tests with "-manual" in the name are not considered manual tests
+        if there is a corresponding JS automation file.
+        """
+        basename_without_extension, _ = basename.rsplit('.', 1)
+        if not basename_without_extension.endswith('-manual'):
+            return False
+        dir_from_wpt = fs.relpath(dirname, self.path_from_webkit_base('LayoutTests', 'imported', 'wpt'))
+        automation_dir = self.path_from_webkit_base('LayoutTests', 'imported', 'wpt_automation', dir_from_wpt)
+        # TODO(qyearsley): Update this when all *-input.js are renamed to *-automation.js.
+        if fs.isfile(fs.join(automation_dir, '%s-input.js' % basename_without_extension)):
+            return False
+        if fs.isfile(fs.join(automation_dir, '%s-automation.js' % basename_without_extension)):
+            return False
+        return True
 
     def is_baseline(self, fs, dirname, basename):  # Callback for FileSystem.files_under; not all arguments used - pylint: disable=unused-argument
         return basename.endswith('-expected.txt')
