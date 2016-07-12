@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Animation.currentTime doesn't update if playbackRate is 0</title>
+<link rel="help" href="http://w3c.github.io/web-animations/#the-current-time-of-an-animation">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
+
+<div id="div"></div>
+
+<script>
+
+promise_test(function(t) {
+  var animation = div.animate(null, 100 * MS_PER_SEC);
+  animation.playbackRate = 0;
+
+  return animation.ready.then(function() {
+    return waitForAnimationFrames(1);
+  }).then(function() {
+    assert_times_equal(animation.currentTime, 0);
+  });
+}, 'animation.currentTime should be constant if there is a 0 playback rate');
+
+</script>
