@@ -123,8 +123,10 @@ ASH_EXPORT std::string DisplayIdListToString(
 // 2) output index of id1 < output index of id2 and id2 isn't internal.
 ASH_EXPORT bool CompareDisplayIds(int64_t id1, int64_t id2);
 
+#if defined(OS_CHROMEOS)
 // Shows the notification message for display related issues.
 void ShowDisplayErrorNotification(int message_id);
+#endif
 
 ASH_EXPORT base::string16 GetDisplayErrorNotificationMessageForTest();
 

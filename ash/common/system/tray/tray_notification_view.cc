@@ -30,8 +30,10 @@ gfx::VectorIconId ResourceIdToVectorIconId(int resource_id) {
   switch (resource_id) {
     case IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK:
       return gfx::VectorIconId::SYSTEM_MENU_ACCESSIBILITY;
+#if defined(OS_CHROMEOS)
     case IDR_AURA_UBER_TRAY_SMS:
       return gfx::VectorIconId::SYSTEM_MENU_SMS;
+#endif
     default:
       NOTREACHED();
       break;

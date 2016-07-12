@@ -48,7 +48,7 @@ class DisplayErrorNotificationDelegate
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    ash::Shell::GetInstance()->new_window_delegate()->OpenFeedbackPage();
+    Shell::GetInstance()->new_window_delegate()->OpenFeedbackPage();
   }
 
  private:
@@ -126,17 +126,16 @@ bool GetDisplayModeForUIScale(const DisplayInfo& info,
   return true;
 }
 
-void FindNextMode(std::vector<DisplayMode>::const_iterator& iter,
-                  const std::vector<DisplayMode>& modes,
-                  bool up,
-                  DisplayMode* out) {
-  DCHECK(iter != modes.end());
-  if (up && (iter + 1) != modes.end())
-    *out = *(iter + 1);
-  else if (!up && iter != modes.begin())
-    *out = *(iter - 1);
-  else
-    *out = *iter;
+DisplayMode FindNextMode(const std::vector<DisplayMode>& modes,
+                         size_t index,
+                         bool up) {
+  DCHECK_LT(index, modes.size());
+  size_t new_index = index;
+  if (up && (index + 1 < modes.size()))
+    ++new_index;
+  else if (!up && index != 0)
+    --new_index;
+  return modes[new_index];
 }
 
 }  // namespace
@@ -214,7 +213,7 @@ bool GetDisplayModeForNextUIScale(const DisplayInfo& info,
   const std::vector<DisplayMode>& modes = info.display_modes();
   ScaleComparator comparator(info.configured_ui_scale());
   auto iter = std::find_if(modes.begin(), modes.end(), comparator);
-  FindNextMode(iter, modes, up, out);
+  *out = FindNextMode(modes, iter - modes.begin(), up);
   return true;
 }
 
@@ -231,7 +230,7 @@ bool GetDisplayModeForNextResolution(const DisplayInfo& info,
                            [resolution](const DisplayMode& mode) {
                              return mode.GetSizeInDIP(false) == resolution;
                            });
-  FindNextMode(iter, modes, up, out);
+  *out = FindNextMode(modes, iter - modes.begin(), up);
   return true;
 }
 
@@ -439,6 +438,7 @@ bool CompareDisplayIds(int64_t id1, int64_t id2) {
          (index_1 < index_2 && !display::Display::IsInternalDisplayId(id2));
 }
 
+#if defined(OS_CHROMEOS)
 void ShowDisplayErrorNotification(int message_id) {
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
@@ -461,6 +461,7 @@ void ShowDisplayErrorNotification(int message_id) {
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
+#endif
 
 base::string16 GetDisplayErrorNotificationMessageForTest() {
   message_center::NotificationList::Notifications notifications =

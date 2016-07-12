@@ -3,7 +3,8 @@
 <!-- Strings for all extensions.  Each message should be named with the
      name of the extension as a prefix, e.g. IDS_ALT_APP_NAME. -->
 
-<grit base_dir="." current_release="1" enc_check="möl" latest_public_release="0" source_lang_id="en">
+<grit base_dir="." latest_public_release="0" current_release="1"
+      output_all_resource_defines="false" enc_check="möl" source_lang_id="en">
   <outputs>
     <output filename="_locales/am/messages.json" type="chrome_messages_json" lang="am"/>
     <output filename="_locales/ar/messages.json" type="chrome_messages_json" lang="ar"/>

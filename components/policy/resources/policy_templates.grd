@@ -4,7 +4,7 @@
 templates and will be translated for each locale. -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
-      source_lang_id="en" enc_check="möl">
+      output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
   <outputs>
     <output filename="app/policy/common/html/am/chrome_policy_list.html" type="doc" lang="am" />
     <output filename="app/policy/common/html/ar/chrome_policy_list.html" type="doc" lang="ar" />

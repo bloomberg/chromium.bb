@@ -28,20 +28,22 @@ namespace {
 gfx::VectorIconId ResourceIdToVectorIconId(int resource_id) {
   gfx::VectorIconId vector_id = gfx::VectorIconId::VECTOR_ICON_NONE;
   switch (resource_id) {
-    case IDR_AURA_UBER_TRAY_VOLUME_MUTE:
-      return gfx::VectorIconId::SYSTEM_TRAY_VOLUME_MUTE;
-    case IDR_AURA_UBER_TRAY_TRACING:
-      // TODO(tdanderson): Update the icon used for tracing or remove it from
-      // the system tray. See crbug.com/625691.
-      return gfx::VectorIconId::CODE;
     case IDR_AURA_UBER_TRAY_ACCESSIBILITY:
       return gfx::VectorIconId::SYSTEM_TRAY_ACCESSIBILITY;
     case IDR_AURA_UBER_TRAY_UPDATE:
       return gfx::VectorIconId::SYSTEM_TRAY_UPDATE;
+    case IDR_AURA_UBER_TRAY_VOLUME_MUTE:
+      return gfx::VectorIconId::SYSTEM_TRAY_VOLUME_MUTE;
+#if defined(OS_CHROMEOS)
     case IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED:
       return gfx::VectorIconId::SYSTEM_TRAY_ROTATION_LOCK_LOCKED;
     case IDR_AURA_UBER_TRAY_CAPS_LOCK:
       return gfx::VectorIconId::SYSTEM_TRAY_CAPS_LOCK;
+    case IDR_AURA_UBER_TRAY_TRACING:
+      // TODO(tdanderson): Update the icon used for tracing or remove it from
+      // the system tray. See crbug.com/625691.
+      return gfx::VectorIconId::CODE;
+#endif
     default:
       NOTREACHED();
       break;
@@ -55,7 +57,7 @@ gfx::VectorIconId ResourceIdToVectorIconId(int resource_id) {
 TrayImageItem::TrayImageItem(SystemTray* system_tray, int resource_id)
     : SystemTrayItem(system_tray),
       resource_id_(resource_id),
-      tray_view_(NULL) {}
+      tray_view_(nullptr) {}
 
 TrayImageItem::~TrayImageItem() {}
 
@@ -64,7 +66,7 @@ views::View* TrayImageItem::tray_view() {
 }
 
 views::View* TrayImageItem::CreateTrayView(LoginStatus status) {
-  CHECK(tray_view_ == NULL);
+  CHECK(!tray_view_);
   tray_view_ = new TrayItemView(this);
   tray_view_->CreateImageView();
 
@@ -98,7 +100,7 @@ void TrayImageItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayImageItem::DestroyTrayView() {
-  tray_view_ = NULL;
+  tray_view_ = nullptr;
 }
 
 void TrayImageItem::DestroyDefaultView() {}
