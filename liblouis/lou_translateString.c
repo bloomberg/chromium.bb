@@ -2070,15 +2070,11 @@ isRepeatedWord ()
 static int
 checkEmphasisChange(const int skip)
 {
-	int r, i;	
-	r = 0;
+	int i;	
 	for(i = src + (skip + 1); i < src + transRule->charslen; i++)
 	if(emphasisBuffer[i] || transNoteBuffer[i])
-	{
-		r = 1;
-		break;
-	}
-	return r;
+		return 1;
+	return 0;
 }
 
 static int
