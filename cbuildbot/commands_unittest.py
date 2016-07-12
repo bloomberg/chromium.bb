@@ -706,12 +706,6 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
          '--breakpad_root', '/breakpad',
          '--product_name', 'CoolProduct'])
 
-  def testFailedUploadSymbols(self):
-    """Test when uploading fails"""
-    self.rc.SetDefaultCmdResult(returncode=1, error='i am sad')
-    # This should not throw an exception.
-    commands.UploadSymbols(self.tempdir)
-
   def testPushImages(self):
     """Test PushImages Command."""
     m = self.PatchObject(pushimage, 'PushImage')

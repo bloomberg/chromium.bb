@@ -14,7 +14,6 @@ import sys
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages_unittest
@@ -339,11 +338,10 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testUploadCrashStillNotifies(self):
     """Crashes in symbol upload should still notify external events."""
-    class TestError(failures_lib.CrashCollectionFailure):
-      """Unique test exception"""
-
-    self.upload_mock.side_effect = TestError('mew')
-    self.assertRaises(TestError, self._TestPerformStage)
+    self.upload_mock.side_effect = \
+        artifact_stages.DebugSymbolsUploadException('mew')
+    self.assertRaises(artifact_stages.DebugSymbolsUploadException,
+                      self._TestPerformStage)
 
     self.assertEqual(self.gen_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 1)
