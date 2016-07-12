@@ -659,6 +659,7 @@ public class CustomTabActivity extends ChromeActivity {
             }
             return true;
         } else if (id == R.id.info_menu_id) {
+            if (getTabModelSelector().getCurrentTab() == null) return false;
             WebsiteSettingsPopup.show(
                     this, getTabModelSelector().getCurrentTab(),
                     getToolbarManager().getContentPublisher(),
