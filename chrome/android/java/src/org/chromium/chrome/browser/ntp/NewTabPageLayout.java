@@ -61,10 +61,9 @@ public class NewTabPageLayout extends LinearLayout {
         mBottomSpacerIdealHeight = Math.round(density * BOTTOM_SPACER_HEIGHT_DP);
         mTotalSpacerIdealHeight = Math.round(density * TOTAL_SPACER_HEIGHT_DP);
         mMostVisitedLayoutBleed = res.getDimensionPixelSize(R.dimen.most_visited_layout_bleed);
-
-        mPeekingCardHeight = getResources()
-                .getDimensionPixelSize(R.dimen.snippets_padding_and_peeking_card_height);
-        mTabStripHeight = getResources().getDimensionPixelSize(R.dimen.tab_strip_height);
+        mPeekingCardHeight =
+                res.getDimensionPixelSize(R.dimen.snippets_padding_and_peeking_card_height);
+        mTabStripHeight = res.getDimensionPixelSize(R.dimen.tab_strip_height);
     }
 
     @Override
@@ -102,6 +101,8 @@ public class NewTabPageLayout extends LinearLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        // Remove the scroll spacer from the layout so the weighted children can be measured
+        // correctly.
         mScrollCompensationSpacer.setVisibility(View.GONE);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
@@ -110,8 +111,11 @@ public class NewTabPageLayout extends LinearLayout {
             // to see all of it. Extra spacing should be added at the bottom so the user can scroll
             // until Most Visited is at the top.
 
-            // All the spacers have height 0 since they use weights to set height.
+            // The top, middle, and bottom spacers should have a measured height of 0 at this point
+            // since they use weights to set height, and there was no extra space.
             assert mTopSpacer.getMeasuredHeight() == 0;
+            assert mMiddleSpacer.getMeasuredHeight() == 0;
+            assert mBottomSpacer.getMeasuredHeight() == 0;
 
             final int topOfMostVisited = calculateTopOfMostVisited();
             final int belowTheFoldHeight = getMeasuredHeight() - mParentViewportHeight;
@@ -124,15 +128,20 @@ public class NewTabPageLayout extends LinearLayout {
                     mScrollCompensationSpacer.getLayoutParams().height -= mPeekingCardHeight;
                 }
 
+                // Include the scroll spacer in the layout and call super.onMeasure again so it is
+                // measured.
                 mScrollCompensationSpacer.setVisibility(View.INVISIBLE);
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             }
         } else {
-            // This layout is smaller than it's parent viewport, redistribute the extra space.
+            // This layout is smaller than or equal to its parent viewport. Redistribute any
+            // weighted space.
             if (mCardsUiEnabled) {
-                getLayoutParams().height = Math.max(getMeasuredHeight(),
+                // Call super.onMeasure with mode EXACTLY and the target height to allow the top
+                // spacer (which has a weight of 1) to grow and take up the remaining space.
+                int targetHeight = Math.max(getMeasuredHeight(),
                         mParentViewportHeight - mPeekingCardHeight - mTabStripHeight);
-                // Call onMeasure to update mTopScaper's height.
+                heightMeasureSpec = MeasureSpec.makeMeasureSpec(targetHeight, MeasureSpec.EXACTLY);
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             }
             distributeExtraSpace(mTopSpacer.getMeasuredHeight());
@@ -141,9 +150,10 @@ public class NewTabPageLayout extends LinearLayout {
         // Make the search box and logo as wide as the most visited items.
         if (mMostVisitedLayout.getVisibility() != GONE) {
             final int width = mMostVisitedLayout.getMeasuredWidth() - mMostVisitedLayoutBleed;
-            setMeasure(mSearchBoxView, width + mSearchboxViewShadowWidth,
+            measureExactly(mSearchBoxView, width + mSearchboxViewShadowWidth,
                     mSearchBoxView.getMeasuredHeight());
-            setMeasure(mSearchProviderLogoView, width, mSearchProviderLogoView.getMeasuredHeight());
+            measureExactly(
+                    mSearchProviderLogoView, width, mSearchProviderLogoView.getMeasuredHeight());
         }
     }
 
@@ -197,7 +207,8 @@ public class NewTabPageLayout extends LinearLayout {
     }
 
     /**
-     * Distribute extra vertical space between the three spacer views.
+     * Distribute extra vertical space between the three spacer views. Doing this here allows for
+     * more sophisticated constraints than in xml.
      * @param extraHeight The amount of extra space, in pixels.
      */
     private void distributeExtraSpace(int extraHeight) {
@@ -220,17 +231,16 @@ public class NewTabPageLayout extends LinearLayout {
             bottomSpacerHeight = mBottomSpacerIdealHeight + extraHeight / 2;
         }
 
-        setMeasure(mTopSpacer, 0, topSpacerHeight);
-        setMeasure(mMiddleSpacer, 0, middleSpacerHeight);
-        setMeasure(mBottomSpacer, 0, bottomSpacerHeight);
+        measureExactly(mTopSpacer, 0, topSpacerHeight);
+        measureExactly(mMiddleSpacer, 0, middleSpacerHeight);
+        measureExactly(mBottomSpacer, 0, bottomSpacerHeight);
     }
 
-
     /**
-     * Convenience method to call |measure| on the given View with MeasureSpecs converted from the
+     * Convenience method to call measure() on the given View with MeasureSpecs converted from the
      * given dimensions (in pixels) with MeasureSpec.EXACTLY.
      */
-    private void setMeasure(View view, int widthPx, int heightPx) {
+    private static void measureExactly(View view, int widthPx, int heightPx) {
         view.measure(MeasureSpec.makeMeasureSpec(widthPx, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(heightPx, MeasureSpec.EXACTLY));
     }
