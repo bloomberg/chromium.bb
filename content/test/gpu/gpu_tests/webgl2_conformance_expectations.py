@@ -46,6 +46,11 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
 
+    self.Fail('conformance2/rendering/attrib-type-match.html', bug=627193)
+
+    self.Fail('conformance2/transform_feedback/' +
+        'unwritten-output-defaults-to-zero.html', bug=1441) # ANGLE bug
+
     # Avoid a conflict with a Mac expectation by setting
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['d3d9', 'd3d11', 'opengl'], bug=483282)
