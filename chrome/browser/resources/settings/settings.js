@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.exportPath('settings');
+assert(!settings.defaultResourceLoaded,
+       'settings.js run twice. You probably have an invalid import.');
+/** Global defined when the main Settings script runs. */
+settings.defaultResourceLoaded = true;
+
 /**
  * @fileoverview
  * 'cr-settings' is the main MD-Settings element, combining the UI and models.
