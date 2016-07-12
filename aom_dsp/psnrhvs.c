@@ -243,6 +243,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
       }
     }
   }
+  if (pixels <= 0) return 0;
   ret /= pixels;
   return ret;
 }
