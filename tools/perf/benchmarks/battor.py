@@ -17,7 +17,7 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
     options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = True
     options.config.chrome_trace_config.SetDefaultOverheadFilter()
-    options.SetTimelineBasedMetrics(['powerMetric'])
+    options.SetTimelineBasedMetrics(['powerMetric', 'clockSyncLatencyMetric'])
     return options
 
   @classmethod
@@ -105,7 +105,7 @@ class BattOrPowerCasesNoChromeTrace(_BattOrBenchmark):
     options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = False
     options.config.chrome_trace_config.SetDefaultOverheadFilter()
-    options.SetTimelineBasedMetrics(['powerMetric'])
+    options.SetTimelineBasedMetrics(['powerMetric', 'clockSyncLatencyMetric'])
     return options
 
   @classmethod
