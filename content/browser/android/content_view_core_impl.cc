@@ -839,7 +839,7 @@ void ContentViewCoreImpl::AttachLayer(scoped_refptr<cc::Layer> layer) {
 void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
   layer->RemoveFromParent();
 
-  if (!view_.GetLayer()->children().empty())
+  if (view_.GetLayer()->children().empty())
     view_.GetLayer()->SetIsDrawable(true);
 }
 
