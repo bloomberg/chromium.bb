@@ -934,7 +934,6 @@ static int pattern_compile_expression(const widechar *input,
 		return *expr_crs += 5;
 	}
 
-	return 0;
 }
 
 static int pattern_insert_alternate(const widechar *input,

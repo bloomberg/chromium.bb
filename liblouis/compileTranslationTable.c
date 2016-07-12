@@ -541,14 +541,14 @@ getAChar (FileInfo * nested)
 	  ch2 = fgetc (nested->in);
 	  if (ch2 == EOF)
 	    break;
-	  character = (ch1 << 8) | ch2;
+	  character = (widechar) (ch1 << 8) | ch2;
 	  return (int) character;
 	  break;
 	case littleEndian:
 	  ch2 = fgetc (nested->in);
 	  if (ch2 == EOF)
 	    break;
-	  character = (ch2 << 8) | ch1;
+	  character = (widechar) (ch2 << 8) | ch1;
 	  return (int) character;
 	  break;
 	}
@@ -1161,7 +1161,7 @@ makeRuleChain (TranslationTableOffset * offsetPtr)
 }
 
 static int
-addPassRule (FileInfo * nested)
+addPassRule ()
 {
   TranslationTableOffset *offsetPtr;
   switch (newRule->opcode)
@@ -1229,7 +1229,7 @@ static int
   if (opcode == CTO_SwapCc || opcode == CTO_SwapCd || opcode == CTO_SwapDd)
     return 1;
   if (opcode >= CTO_Context && opcode <= CTO_Pass4 && newRule->charslen == 0)
-    return addPassRule (nested);
+    return addPassRule ();
   if (newRule->charslen == 0 || nofor)
     direction = 1;
   while (direction < 2)

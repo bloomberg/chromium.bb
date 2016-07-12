@@ -2785,7 +2785,7 @@ markSyllables ()
 
 static void
 resolveEmphasisWords(
-	int *buffer,
+	unsigned int *buffer,
 	const unsigned int bit_begin,
 	const unsigned int bit_end,
 	const unsigned int bit_word,
@@ -2902,7 +2902,7 @@ convertToPassage(
 	const int pass_start,
 	const int pass_end,
 	const int word_start,
-	int *buffer,
+	unsigned int *buffer,
 	const EmphRuleNumber emphRule,
 	const unsigned int bit_begin,
 	const unsigned int bit_end,
@@ -2928,7 +2928,7 @@ convertToPassage(
 
 static void
 resolveEmphasisPassages(
-	int *buffer,
+	unsigned int *buffer,
 	const EmphRuleNumber emphRule,
 	const unsigned int bit_begin,
 	const unsigned int bit_end,
@@ -3020,7 +3020,7 @@ resolveEmphasisPassages(
 
 static void
 resolveEmphasisSymbols(
-	int *buffer,
+	unsigned int *buffer,
 	const unsigned int bit_begin,
 	const unsigned int bit_end,
 	const unsigned int bit_symbol)
@@ -3041,13 +3041,13 @@ resolveEmphasisSymbols(
 
 static void
 resolveEmphasisResets(
-	int *buffer,
+	unsigned int *buffer,
 	const unsigned int bit_begin,
 	const unsigned int bit_end,
 	const unsigned int bit_word,
 	const unsigned int bit_symbol)
 {
-	int in_word = 0, in_pass = 0, word_start = -1, word_reset = 0, orig_reset = -1, letter_cnt;
+	int in_word = 0, in_pass = 0, word_start = -1, word_reset = 0, orig_reset = -1, letter_cnt = 0;
 	int i, j;
 	
 	for(i = 0; i < srcmax; i++)
@@ -3347,7 +3347,7 @@ markEmphases()
 
 static void
 insertEmphasisSymbol(
-	const int *buffer,
+	unsigned int *buffer,
 	const int at,
 	const EmphRuleNumber emphRule,
 	const unsigned int bit_symbol)
@@ -3362,7 +3362,7 @@ insertEmphasisSymbol(
 
 static void
 insertEmphasisBegin(
-	const int *buffer,
+	unsigned int *buffer,
 	const int at,
 	const EmphRuleNumber emphRule,
 	const unsigned int bit_begin,
@@ -3391,7 +3391,7 @@ insertEmphasisBegin(
 
 static void
 insertEmphasisEnd(
-	const int *buffer,
+	unsigned int *buffer,
 	const int at,
 	const EmphRuleNumber emphRule,
 	const unsigned int bit_end,
@@ -3422,7 +3422,7 @@ insertEmphasisEnd(
 
 static int
 endCount(
-	const int *buffer,
+	unsigned int *buffer,
 	const int at,
 	const unsigned int bit_end,
 	const unsigned int bit_begin,
@@ -3441,7 +3441,7 @@ endCount(
 
 static int
 beginCount(
-	const int *buffer,
+	unsigned int *buffer,
 	const int at,
 	const unsigned int bit_end,
 	const unsigned int bit_begin,
