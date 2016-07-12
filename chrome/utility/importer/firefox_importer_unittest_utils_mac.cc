@@ -20,11 +20,15 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/importer/firefox_importer_utils.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_multiprocess_test.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "testing/multiprocess_func_list.h"
 
 #define IPC_MESSAGE_IMPL
@@ -32,16 +36,17 @@
 
 namespace {
 
-// Name of IPC Channel to use for Server<-> Child Communications.
-const char kTestChannelID[] = "T1";
-
 // Launch the child process:
 // |nss_path| - path to the NSS directory holding the decryption libraries.
-// |channel| - IPC Channel to use for communication.
-base::Process LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
-                                             IPC::Channel* channel) {
+// |mojo_handle| - platform handle for Mojo transport.
+// |mojo_channel_token| - token for creating the IPC channel over Mojo.
+base::Process LaunchNSSDecrypterChildProcess(
+    const base::FilePath& nss_path,
+    mojo::edk::ScopedPlatformHandle mojo_handle,
+    const std::string& mojo_channel_token) {
   base::CommandLine cl(*base::CommandLine::ForCurrentProcess());
   cl.AppendSwitchASCII(switches::kTestChildProcess, "NSSDecrypterChildProcess");
+  cl.AppendSwitchASCII(switches::kMojoChannelToken, mojo_channel_token);
 
   // Set env variable needed for FF encryption libs to load.
   // See "chrome/utility/importer/nss_decryptor_mac.mm" for an explanation of
@@ -49,12 +54,8 @@ base::Process LaunchNSSDecrypterChildProcess(const base::FilePath& nss_path,
   base::LaunchOptions options;
   options.environ["DYLD_FALLBACK_LIBRARY_PATH"] = nss_path.value();
 
-  base::ScopedFD ipcfd(channel->TakeClientFileDescriptor());
-  if (!ipcfd.is_valid())
-    return base::Process();
-
   base::FileHandleMappingVector fds_to_map;
-  fds_to_map.push_back(std::pair<int,int>(ipcfd.get(),
+  fds_to_map.push_back(std::pair<int,int>(mojo_handle.get().handle,
       kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
   options.fds_to_remap = &fds_to_map;
@@ -141,12 +142,29 @@ bool FFUnitTestDecryptorProxy::Setup(const base::FilePath& nss_path) {
   message_loop_.reset(new base::MessageLoopForIO());
 
   listener_.reset(new FFDecryptorServerChannelListener());
-  channel_ = IPC::Channel::CreateServer(kTestChannelID, listener_.get());
+
+  // Set up IPC channel using ChannelMojo.
+  const std::string mojo_child_token = mojo::edk::GenerateRandomToken();
+  const std::string mojo_channel_token = mojo::edk::GenerateRandomToken();
+  mojo::ScopedMessagePipeHandle parent_handle =
+      mojo::edk::CreateParentMessagePipe(mojo_channel_token, mojo_child_token);
+  channel_ = IPC::Channel::CreateServer(parent_handle.release(),
+                                        listener_.get());
   CHECK(channel_->Connect());
   listener_->SetSender(channel_.get());
 
   // Spawn child and set up sync IPC connection.
-  child_process_ = LaunchNSSDecrypterChildProcess(nss_path, channel_.get());
+  mojo::edk::PlatformChannelPair channel_pair;
+  child_process_ = LaunchNSSDecrypterChildProcess(
+      nss_path, channel_pair.PassClientHandle(), mojo_channel_token);
+  if (child_process_.IsValid()) {
+    mojo::edk::ChildProcessLaunched(child_process_.Handle(),
+                                    channel_pair.PassServerHandle(),
+                                    mojo_child_token);
+  } else {
+    mojo::edk::ChildProcessLaunchFailed(mojo_child_token);
+  }
+
   return child_process_.IsValid();
 }
 
@@ -287,8 +305,16 @@ MULTIPROCESS_IPC_TEST_MAIN(NSSDecrypterChildProcess) {
   base::MessageLoopForIO main_message_loop;
   FFDecryptorClientChannelListener listener;
 
+  mojo::edk::SetParentPipeHandle(
+      mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
+          base::GlobalDescriptors::GetInstance()->Get(kPrimaryIPCChannel))));
+  mojo::ScopedMessagePipeHandle mojo_handle =
+      mojo::edk::CreateChildMessagePipe(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kMojoChannelToken));
+
   std::unique_ptr<IPC::Channel> channel =
-      IPC::Channel::CreateClient(kTestChannelID, &listener);
+      IPC::Channel::CreateClient(mojo_handle.release(), &listener);
   CHECK(channel->Connect());
   listener.SetSender(channel.get());
 

@@ -5,3 +5,9 @@ include_rules = [
   "+components/search_engines",
   "+components/strings/grit",
 ]
+
+specific_include_rules = {
+  "firefox_importer_unittest_utils_mac\.cc": [
+    "+mojo/edk/embedder",
+  ],
+}
