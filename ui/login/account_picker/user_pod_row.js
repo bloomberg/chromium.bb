@@ -748,11 +748,6 @@ cr.define('login', function() {
       this.passwordElement.addEventListener('keypress',
           this.handlePasswordKeyPress_.bind(this));
 
-      if (this.pinKeyboard) {
-        this.pinKeyboard.addEventListener('submit',
-            this.handlePinSubmitted_.bind(this));
-      }
-
       this.imageElement.addEventListener('load',
           this.parentNode.handlePodImageLoad.bind(this.parentNode, this));
 
@@ -770,16 +765,6 @@ cr.define('login', function() {
       // Note: the |mainInput| can be the pod itself.
       this.mainInput.tabIndex = -1;
       this.tabIndex = UserPodTabOrder.POD_INPUT;
-    },
-
-    /**
-     * Handles the user hitting 'submit' on the PIN keyboard.
-     * @param {Event} e Submit event object.
-     * @private
-     */
-    handlePinSubmitted_: function(e) {
-      var pin = e.detail.pin;
-      chrome.send('authenticateUser', [this.user.username, pin]);
     },
 
     /**
@@ -1188,6 +1173,8 @@ cr.define('login', function() {
      */
     get mainInput() {
       if (this.isAuthTypePassword) {
+        if (this.pinContainer.classList.contains('pin-enabled'))
+          return this.pinKeyboard.inputElement;
         return this.passwordElement;
       } else if (this.isAuthTypeOnlineSignIn) {
         return this;
@@ -1354,11 +1341,11 @@ cr.define('login', function() {
         this.classList.toggle('signing-in', true);
         chrome.send('attemptUnlock', [this.user.username]);
       } else if (this.isAuthTypePassword) {
-        if (!this.passwordElement.value)
+        var password = this.passwordElement.value || this.pinKeyboard.value;
+        if (!password)
           return false;
         Oobe.disableSigninUI();
-        chrome.send('authenticateUser',
-                    [this.user.username, this.passwordElement.value]);
+        chrome.send('authenticateUser', [this.user.username, password]);
       } else {
         console.error('Activating user pod with invalid authentication type: ' +
             this.authType);
@@ -1420,6 +1407,7 @@ cr.define('login', function() {
      */
     reset: function(takeFocus) {
       this.passwordElement.value = '';
+      this.pinKeyboard.value = '';
       this.classList.toggle('signing-in', false);
       if (takeFocus) {
         if (!this.multiProfilesPolicyApplied)
@@ -1816,6 +1804,11 @@ cr.define('login', function() {
         } else if (this.isAuthTypeUserClick && this.userClickAuthAllowed_) {
           // Note that this.userClickAuthAllowed_ is set in mouse down event
           // handler.
+          this.parentNode.setActivatedPod(this);
+        } else if (this.pinKeyboard.submitButton &&
+                   e.target == this.pinKeyboard.submitButton) {
+          // Sets the pod as activated if the submit button is clicked so that
+          // it simulates what the enter button does for the password/pin.
           this.parentNode.setActivatedPod(this);
         }
 
@@ -3413,6 +3406,7 @@ cr.define('login', function() {
           if (this.focusedPod_) {
             var targetTag = e.target.tagName;
             if (e.target == this.focusedPod_.passwordElement ||
+                e.target == this.focusedPod_.pinKeyboard.inputElement ||
                 (targetTag != 'INPUT' &&
                  targetTag != 'BUTTON' &&
                  targetTag != 'A')) {

@@ -102,13 +102,13 @@
 
       #pin-input {
         -webkit-text-security: disc;
+        background-color: white;
         border: 0;
         font-size: 18px;
         height: 64px;
         left: 20px;
         padding: 28px 3px 12px 3px;
         position: relative;
-        text-align: center;
         width: 180px;
       }
 
@@ -170,6 +170,7 @@
             <inner-text>$i18n{pinKeyboard7}</inner-text>
           </paper-button>
           <paper-button class="digit-button center-button" on-tap="onNumberTap_"
+                        value="8">
             <inner-text>$i18n{pinKeyboard8}</inner-text>
           </paper-button>
           <paper-button class="digit-button" on-tap="onNumberTap_" value="9">
