@@ -24,6 +24,12 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "style change"
+    }
   ]
 }
 

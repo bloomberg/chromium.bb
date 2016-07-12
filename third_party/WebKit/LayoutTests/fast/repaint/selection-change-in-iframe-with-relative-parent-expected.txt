@@ -50,6 +50,120 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'Foo'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'Bar'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'Bazz'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    }
   ]
 }
 

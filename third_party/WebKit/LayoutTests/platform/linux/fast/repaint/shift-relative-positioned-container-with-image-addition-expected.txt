@@ -103,6 +103,26 @@
     {
       "object": "LayoutText #text",
       "reason": "bounds change"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
     }
   ]
 }

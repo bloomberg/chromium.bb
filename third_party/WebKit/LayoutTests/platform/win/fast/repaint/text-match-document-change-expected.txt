@@ -40,6 +40,40 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='to-be-changed'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "InlineTextBox 'After change'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "bounds change"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    }
   ]
 }
 

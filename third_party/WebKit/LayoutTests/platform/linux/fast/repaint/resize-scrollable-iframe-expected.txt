@@ -73,6 +73,26 @@
     {
       "object": "LayoutIFrame IFRAME id='iframe'",
       "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
     }
   ]
 }

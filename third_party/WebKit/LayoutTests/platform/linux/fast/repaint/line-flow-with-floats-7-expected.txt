@@ -25,6 +25,44 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'for'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'turns,\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'quarrelling all the while, and fighting for the'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'hedgehogs; and in\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'a very short time '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='theQueen'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'the Queen'",
+      "reason": "style change"
+    }
   ]
 }
 

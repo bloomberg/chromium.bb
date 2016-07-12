@@ -15,6 +15,12 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV id='target'",
+      "reason": "style change"
+    }
   ]
 }
 

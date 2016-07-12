@@ -25,6 +25,64 @@
         }
       ]
     }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'for turns,\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'quarrelling all the while, and fighting'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'for the hedgehogs; and in\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'a very short time '",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='theQueen'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'the'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineTextBox 'Queen'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox ' was in a furious passion, and went\n'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'stamping'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'about, and shouting \u2018Off with his head!\u2019 or \u2018Off with'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'her head!\u2019 about once in a minute.\n'",
+      "reason": "forced by layout"
+    }
   ]
 }
 
