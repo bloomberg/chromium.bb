@@ -1813,7 +1813,16 @@ public class ToolbarPhone extends ToolbarLayout
         mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
         mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
 
-        boolean useTabStackDrawableLight = isIncognito();
+        int themeColor;
+        if (getToolbarDataProvider() != null) {
+            themeColor = getToolbarDataProvider().getPrimaryColor();
+        } else {
+            themeColor = getToolbarColorForVisualState(
+                    isIncognito() ? VisualState.INCOGNITO : VisualState.NORMAL);
+        }
+
+        boolean useTabStackDrawableLight = isIncognito()
+                || ColorUtils.shouldUseLightForegroundOnBackground(themeColor);
         if (mTabSwitcherAnimationTabStackDrawable == null
                 || mIsOverlayTabStackDrawableLight != useTabStackDrawableLight) {
             mTabSwitcherAnimationTabStackDrawable =
