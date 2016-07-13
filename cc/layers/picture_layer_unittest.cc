@@ -448,7 +448,7 @@ TEST(PictureLayerTest, SuitableForGpuRasterization) {
   EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
 
   // Veto gpu rasterization.
-  recording_source->SetUnsuitableForGpuRasterization();
+  recording_source->SetForceUnsuitableForGpuRasterization(true);
   EXPECT_FALSE(recording_source->IsSuitableForGpuRasterization());
   EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
 }

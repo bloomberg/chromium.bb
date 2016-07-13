@@ -4968,7 +4968,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is relevant as well.
-    recording_source_->SetUnsuitableForGpuRasterization();
+    recording_source_->SetForceUnsuitableForGpuRasterization(true);
 
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.
@@ -5005,6 +5005,90 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
 
+class LayerTreeHostTestGpuRasterizationReenabled : public LayerTreeHostTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    EXPECT_FALSE(settings->gpu_rasterization_enabled);
+    settings->gpu_rasterization_enabled = true;
+    settings->wait_for_beginframe_interval = false;
+    settings->renderer_settings.disable_display_vsync = true;
+  }
+
+  void SetupTree() override {
+    LayerTreeHostTest::SetupTree();
+
+    std::unique_ptr<FakeRecordingSource> recording_source(
+        new FakeRecordingSource);
+    recording_source_ = recording_source.get();
+
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::CreateWithRecordingSource(
+            &layer_client_, std::move(recording_source));
+    layer_ = layer.get();
+    layer->SetBounds(gfx::Size(10, 10));
+    layer->SetIsDrawable(true);
+    layer_tree_host()->root_layer()->AddChild(layer);
+    layer_client_.set_bounds(layer_->bounds());
+  }
+
+  void BeginTest() override {
+    // Verify default value.
+    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
+
+    // Gpu rasterization trigger is relevant.
+    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
+    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
+
+    // Content-based veto is relevant as well.
+    recording_source_->SetForceUnsuitableForGpuRasterization(true);
+
+    // Veto will take effect when layers are updated.
+    // The results will be verified after commit is completed below.
+    // Since we are manually marking the source as unsuitable,
+    // make sure that the layer gets a chance to update.
+    layer_->SetNeedsDisplay();
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    SCOPED_TRACE(base::StringPrintf("commit %d", num_commits_));
+    if (expected_gpu_enabled_) {
+      EXPECT_TRUE(host_impl->use_gpu_rasterization());
+    } else {
+      EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    }
+
+    ++num_commits_;
+    switch (num_commits_) {
+      case 1:
+        recording_source_->SetForceUnsuitableForGpuRasterization(false);
+        break;
+      case 30:
+        recording_source_->SetForceUnsuitableForGpuRasterization(true);
+        break;
+      case 31:
+        recording_source_->SetForceUnsuitableForGpuRasterization(false);
+        break;
+      case 90:
+        expected_gpu_enabled_ = true;
+        break;
+    }
+    PostSetNeedsCommitToMainThread();
+    if (num_commits_ > 100)
+      EndTest();
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient layer_client_;
+  FakePictureLayer* layer_;
+  FakeRecordingSource* recording_source_;
+  int num_commits_ = 0;
+  bool expected_gpu_enabled_ = false;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationReenabled);
+
 class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
@@ -5039,7 +5123,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // Content-based veto is irrelevant as well.
-    recording_source_->SetUnsuitableForGpuRasterization();
+    recording_source_->SetForceUnsuitableForGpuRasterization(true);
 
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.

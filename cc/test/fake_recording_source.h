@@ -119,8 +119,8 @@ class FakeRecordingSource : public RecordingSource {
     client_.set_bounds(size_);
   }
 
-  void SetUnsuitableForGpuRasterization() {
-    force_unsuitable_for_gpu_rasterization_ = true;
+  void SetForceUnsuitableForGpuRasterization(bool flag) {
+    force_unsuitable_for_gpu_rasterization_ = flag;
   }
 
   void SetPlaybackAllowedEvent(base::WaitableEvent* event) {

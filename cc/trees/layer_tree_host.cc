@@ -1050,10 +1050,21 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
 
   base::AutoReset<bool> painting(&in_paint_layer_contents_, true);
   bool did_paint_content = false;
+  bool content_is_suitable_for_gpu = true;
   for (const auto& layer : update_layer_list) {
     did_paint_content |= layer->Update();
-    content_is_suitable_for_gpu_rasterization_ &=
-        layer->IsSuitableForGpuRasterization();
+    content_is_suitable_for_gpu &= layer->IsSuitableForGpuRasterization();
+  }
+
+  if (content_is_suitable_for_gpu) {
+    ++num_consecutive_frames_suitable_for_gpu_;
+    if (num_consecutive_frames_suitable_for_gpu_ >=
+        kNumFramesToConsiderBeforeGpuRasterization) {
+      content_is_suitable_for_gpu_rasterization_ = true;
+    }
+  } else {
+    num_consecutive_frames_suitable_for_gpu_ = 0;
+    content_is_suitable_for_gpu_rasterization_ = false;
   }
   return did_paint_content;
 }
