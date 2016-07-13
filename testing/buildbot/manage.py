@@ -224,6 +224,7 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
       raise Error(
           '%s: %s is broken: %s' % (filename, builder, data['gtest_tests']))
 
+    seen = set()
     for d in data['gtest_tests']:
       if (d['test'] not in ninja_targets and
           d['test'] not in SKIP_GN_ISOLATE_MAP_TARGETS):
@@ -231,6 +232,12 @@ def process_file(mode, test_name, tests_location, filepath, ninja_targets,
                     (filename, builder, d['test']))
       elif d['test'] in ninja_targets:
         ninja_targets_seen.add(d['test'])
+
+      name = d.get('name', d['test'])
+      if name in seen:
+        raise Error('%s: %s / %s is listed multiple times.' %
+                    (filename, builder, name))
+      seen.add(name)
 
     config[builder]['gtest_tests'] = sorted(
         data['gtest_tests'], key=lambda x: x['test'])
