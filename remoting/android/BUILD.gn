@@ -26,6 +26,7 @@ shared_library("remoting_client_jni") {
     "//remoting/android:jni_headers",
     "//remoting/base",
     "//remoting/client",
+    "//remoting/client:opengl_renderer",
     "//remoting/protocol",
     "//ui/events:dom_keycode_converter",
     "//ui/gfx",

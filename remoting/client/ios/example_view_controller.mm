@@ -8,7 +8,7 @@
 
 #import "remoting/client/ios/example_view_controller.h"
 
-#import "remoting/client/opengl_wrapper.h"
+#import "remoting/client/sys_opengl.h"
 
 @interface ExampleViewController()
 

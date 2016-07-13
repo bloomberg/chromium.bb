@@ -41,6 +41,27 @@ source_set("client") {
   }
 }
 
+if (is_android || is_ios) {
+  source_set("opengl_renderer") {
+    sources = [
+      "gl_canvas.cc",
+      "gl_canvas.h",
+      "gl_desktop.cc",
+      "gl_desktop.h",
+      "gl_helpers.cc",
+      "gl_helpers.h",
+      "gl_render_layer.cc",
+      "gl_render_layer.h",
+    ]
+
+    deps = [
+      "//third_party/webrtc",
+    ]
+
+    configs += [ "//third_party/khronos:khronos_headers" ]
+  }
+}
+
 source_set("test_support") {
   testonly = true
 

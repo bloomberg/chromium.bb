@@ -186,4 +186,22 @@
       'includes': [ 'remoting_webapp.gypi', ],
     },  # end of target 'remoting_webapp'
   ],  # end of targets
+  
+  'conditions': [
+    ['OS=="ios" or OS=="android"', {
+      'targets': [
+        {
+          'target_name': 'remoting_opengl_renderer',
+          'type': '<(component)',
+          'sources': [
+            '<@(remoting_opengl_renderer_sources)',
+          ],
+          'dependencies': [
+            '../third_party/khronos/khronos.gyp:khronos_headers',
+            '../third_party/webrtc/webrtc.gyp:webrtc'
+          ]
+        }  # end of target 'remoting_opengl_renderer'
+      ]
+    }]  # end of conditions 'OS=="ios" or OS=="android"'
+  ]
 }

@@ -349,5 +349,16 @@
       'client/plugin/pepper_video_renderer_3d.cc',
       'client/plugin/pepper_video_renderer_3d.h',
     ],
+    
+    'remoting_opengl_renderer_sources': [
+      'client/gl_canvas.cc',
+      'client/gl_canvas.h',
+      'client/gl_desktop.cc',
+      'client/gl_desktop.h',
+      'client/gl_helpers.cc',
+      'client/gl_helpers.h',
+      'client/gl_render_layer.cc',
+      'client/gl_render_layer.h'
+    ],
   }
 }
