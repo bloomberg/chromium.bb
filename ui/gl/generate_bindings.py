@@ -1869,7 +1869,7 @@ GLES2_HEADERS_WITH_ENUMS = [
 SELF_LOCATION = os.path.dirname(os.path.abspath(__file__))
 
 LICENSE_AND_HEADER = """\
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -2036,6 +2036,51 @@ def GenerateMockHeader(file, functions, set_name):
           (func['known_as'], arg_count))
 
   file.write('\n')
+
+def GenerateStubHeader(file, functions):
+  """Generates gl_stub_autogen_gl.h"""
+
+  # Write file header.
+  file.write(LICENSE_AND_HEADER)
+
+  # Write API declaration.
+  for func in functions:
+    args = func['arguments']
+    if args == 'void':
+      args = ''
+    return_type = func['return_type'];
+    file.write('  %s gl%sFn(%s) override' % (return_type, func['known_as'][2:],
+                                             args))
+    if return_type == 'void':
+      file.write(' {}\n');
+    else:
+      file.write(';\n');
+
+  file.write('\n')
+
+def GenerateStubSource(file, functions):
+  """Generates gl_stub_autogen_gl.cc"""
+
+  # Write file header.
+  file.write(LICENSE_AND_HEADER)
+  file.write('\n#include "ui/gl/gl_stub_api_base.h"\n\n')
+  file.write('namespace gl {\n\n')
+
+  # Write API declaration.
+  for func in functions:
+    return_type = func['return_type'];
+    if return_type == 'void':
+      continue
+    args = func['arguments']
+    if args == 'void':
+      args = ''
+    file.write('%s GLStubApiBase::gl%sFn(%s) {\n' % (return_type,
+                                                     func['known_as'][2:],
+                                                     args))
+    file.write('  return 0;\n');
+    file.write('}\n\n');
+
+  file.write('\n}  // namespace gl\n')
 
 
 def GenerateSource(file, functions, set_name, used_extensions,
@@ -2876,6 +2921,18 @@ def main(argv):
                                     'gl_enums_implementation_autogen.h'),
                        'wb')
     GenerateEnumUtils(header_file, enum_header_filenames)
+    header_file.close()
+    ClangFormat(header_file.name)
+
+    header_file = open(
+        os.path.join(directory, 'gl_stub_autogen_gl.h'), 'wb')
+    GenerateStubHeader(header_file, GL_FUNCTIONS)
+    header_file.close()
+    ClangFormat(header_file.name)
+
+    header_file = open(
+        os.path.join(directory, 'gl_stub_autogen_gl.cc'), 'wb')
+    GenerateStubSource(header_file, GL_FUNCTIONS)
     header_file.close()
     ClangFormat(header_file.name)
   return 0

@@ -12,14 +12,12 @@
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 #include "ipc/ipc_test_sink.h"
 #include "ui/gl/gl_context_stub_with_extensions.h"
-#include "ui/gl/gl_mock.h"
+#include "ui/gl/gl_stub_api.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace gpu {
-
-static constexpr int kFakeTextureIds[] = {1, 2};
 
 class GpuChannelTest : public GpuChannelTestCommon {
  public:
@@ -28,95 +26,8 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
   void SetUp() override {
     // We need GL bindings to actually initialize command buffers.
-    gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-
-    // This GLInterface is a stub for the gl driver.
-    gl_interface_.reset(new testing::NiceMock<gl::MockGLInterface>);
-    gl::MockGLInterface::SetGLInterface(gl_interface_.get());
-
-    using testing::AnyNumber;
-    using testing::NotNull;
-    using testing::Return;
-    using testing::SetArgPointee;
-    using testing::SetArrayArgument;
-    // We need it to return non-null strings in order for things to not crash.
-    EXPECT_CALL(*gl_interface_, GetString(GL_RENDERER))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>("")));
-    EXPECT_CALL(*gl_interface_, GetString(GL_VERSION))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>("2.0")));
-    EXPECT_CALL(*gl_interface_, GetString(GL_EXTENSIONS))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(
-            reinterpret_cast<const GLubyte*>("GL_EXT_framebuffer_object ")));
-    // And we need some values to be large enough to initialize ContextGroup.
-    EXPECT_CALL(*gl_interface_,
-                GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(512));
-    EXPECT_CALL(*gl_interface_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(8));
-    EXPECT_CALL(*gl_interface_,
-                GetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(8));
-    EXPECT_CALL(*gl_interface_,
-                GetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(8));
-    EXPECT_CALL(*gl_interface_, GetIntegerv(GL_MAX_TEXTURE_SIZE, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(2048));
-    EXPECT_CALL(*gl_interface_,
-                GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(2048));
-    EXPECT_CALL(*gl_interface_, GetIntegerv(GL_MAX_VARYING_FLOATS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(8 * 4));
-    EXPECT_CALL(*gl_interface_,
-                GetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(128 * 4));
-    EXPECT_CALL(*gl_interface_,
-                GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(16 * 4));
-    EXPECT_CALL(*gl_interface_,
-                GetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(32));
-    EXPECT_CALL(*gl_interface_, GetIntegerv(GL_MAX_VIEWPORT_DIMS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(1024 << 8));
-    EXPECT_CALL(*gl_interface_, GetIntegerv(GL_ALPHA_BITS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(8));
-    EXPECT_CALL(*gl_interface_, GetIntegerv(GL_DEPTH_BITS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(24));
-    EXPECT_CALL(*gl_interface_, GetIntegerv(GL_STENCIL_BITS, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(8));
-    // Allow generating non-0 resources so code does not DCHECK.
-    EXPECT_CALL(*gl_interface_, GenFramebuffersEXT(1, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(SetArgPointee<1>(1));
-    EXPECT_CALL(*gl_interface_, GenTextures(1, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(
-            SetArrayArgument<1>(kFakeTextureIds, kFakeTextureIds + 1));
-    EXPECT_CALL(*gl_interface_, GenTextures(2, NotNull()))
-        .Times(AnyNumber())
-        .WillRepeatedly(
-            SetArrayArgument<1>(kFakeTextureIds, kFakeTextureIds + 2));
-    // And errors should be squashed.
-    EXPECT_CALL(*gl_interface_, CheckFramebufferStatusEXT(GL_FRAMEBUFFER))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(GL_FRAMEBUFFER_COMPLETE));
+    gl::SetStubGLApi(&api_);
 
     GpuChannelTestCommon::SetUp();
   }
@@ -124,9 +35,7 @@ class GpuChannelTest : public GpuChannelTestCommon {
   void TearDown() override {
     GpuChannelTestCommon::TearDown();
 
-    gl::MockGLInterface::SetGLInterface(nullptr);
     gl::init::ClearGLBindings();
-    gl_interface_ = nullptr;
   }
 
   GpuChannel* CreateChannel(int32_t client_id,
@@ -180,7 +89,7 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
  private:
   base::TestMessageLoop message_loop_;
-  std::unique_ptr<gl::MockGLInterface> gl_interface_;
+  gl::GLStubApi api_;
 };
 
 #if defined(OS_WIN)

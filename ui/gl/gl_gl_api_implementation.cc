@@ -28,6 +28,8 @@ static RealGLApi* g_real_gl = NULL;
 static NoContextGLApi* g_no_context_gl = NULL;
 // A GL Api that calls TRACE and then calls another GL api.
 static TraceGLApi* g_trace_gl = NULL;
+// The GL Api being used for stub contexts. If null, g_gl is used instead.
+static GLApi* g_stub_gl = NULL;
 // GL version used when initializing dynamic bindings.
 static GLVersionInfo* g_version_info = NULL;
 
@@ -380,8 +382,16 @@ void SetGLToRealGLApi() {
   SetGLApi(g_gl);
 }
 
+void SetGLToStubGLApi() {
+  SetGLApi(g_stub_gl ? g_stub_gl : g_gl);
+}
+
 void SetGLApiToNoContext() {
   SetGLApi(g_no_context_gl);
+}
+
+void SetStubGLApi(GLApi* api) {
+  g_stub_gl = api;
 }
 
 const GLVersionInfo* GetGLVersionInfo() {
@@ -430,6 +440,7 @@ void ClearGLBindingsGL() {
     g_no_context_gl = NULL;
   }
   g_gl = NULL;
+  g_stub_gl = NULL;
   g_driver_gl.ClearBindings();
   if (g_current_gl_context_tls) {
     delete g_current_gl_context_tls;

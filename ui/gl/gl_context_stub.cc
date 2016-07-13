@@ -4,6 +4,8 @@
 
 #include "ui/gl/gl_context_stub.h"
 
+#include "ui/gl/gl_gl_api_implementation.h"
+
 namespace gl {
 
 GLContextStub::GLContextStub() : GLContextReal(nullptr) {}
@@ -16,7 +18,7 @@ bool GLContextStub::Initialize(
 }
 
 bool GLContextStub::MakeCurrent(GLSurface* surface) {
-  SetRealGLApi();
+  SetGLToStubGLApi();
   SetCurrent(surface);
   InitializeDynamicBindings();
   return true;

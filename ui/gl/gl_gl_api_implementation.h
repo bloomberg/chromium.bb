@@ -34,9 +34,11 @@ bool HasInitializedNullDrawGLBindingsGL();
 bool SetNullDrawGLBindingsEnabledGL(bool enabled);
 GL_EXPORT void ClearGLBindingsGL();
 void SetGLToRealGLApi();
+void SetGLToStubGLApi();
 void SetGLApi(GLApi* api);
 void SetGLApiToNoContext();
 GLApi* GetCurrentGLApi();
+GL_EXPORT void SetStubGLApi(GLApi* api);
 const GLVersionInfo* GetGLVersionInfo();
 
 class GL_EXPORT GLApiBase : public GLApi {

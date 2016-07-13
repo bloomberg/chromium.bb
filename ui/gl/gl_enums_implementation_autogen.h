@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -650,9 +650,6 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
     },
     {
         0x78FC, "GL_RGB_YCBCR_420V_CHROMIUM",
-    },
-    {
-        0x78FD, "GL_GPU_MEMORY_BUFFER_ID",
     },
     {
         0x8, "GL_CA_LAYER_EDGE_TOP_CHROMIUM",
