@@ -20,13 +20,6 @@ class TestNetworkQualityRttListener extends NetworkQualityRttListener {
 
     private Thread mExecutorThread;
 
-    // TODO(tbansal):  http://crbug.com/618034 Reomve this constructor once all
-    // embedders start providing a non-null executor, and the tests for legacy
-    // API are removed.
-    TestNetworkQualityRttListener() {
-        super();
-    }
-
     TestNetworkQualityRttListener(Executor executor) {
         super(executor);
     }

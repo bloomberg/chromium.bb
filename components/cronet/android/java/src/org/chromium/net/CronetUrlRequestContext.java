@@ -308,9 +308,6 @@ class CronetUrlRequestContext extends CronetEngine {
         if (!mNetworkQualityEstimatorEnabled) {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
-        if (mNetworkQualityExecutor == null && listener.getExecutor() == null) {
-            throw new IllegalStateException("Executor must not be null");
-        }
         synchronized (mNetworkQualityLock) {
             if (mRttListenerList.isEmpty()) {
                 synchronized (mLock) {
@@ -496,14 +493,7 @@ class CronetUrlRequestContext extends CronetEngine {
                         listener.onRttObservation(rttMs, whenMs, source);
                     }
                 };
-                // Use the executor provided by the listener. If not available,
-                // use the network quality executor.
-                // TODO(tbansal): Change this to always use the executor
-                // provided by the listener, once all embedders start providing
-                // a non-null executor.
-                Executor executor = listener.getExecutor() != null ? listener.getExecutor()
-                                                                   : mNetworkQualityExecutor;
-                postObservationTaskToExecutor(executor, task);
+                postObservationTaskToExecutor(listener.getExecutor(), task);
             }
         }
     }

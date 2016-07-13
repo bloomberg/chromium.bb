@@ -20,11 +20,6 @@ public abstract class NetworkQualityRttListener {
      */
     private final Executor mExecutor;
 
-    // TODO(tbansal):  http://crbug.com/618034 Remove this constructor.
-    public NetworkQualityRttListener() {
-        mExecutor = null;
-    }
-
     /**
      * @param executor The executor on which the observations are reported.
      */
