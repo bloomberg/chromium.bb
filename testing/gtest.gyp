@@ -64,8 +64,7 @@
                 },
                 'mac_bundle': 1,
                 'xcode_settings': {
-                  'BUNDLE_ID_TEST_NAME':
-                    '>!(echo ">(_target_name)" | sed -e "s/_//g")',
+                  'BUNDLE_ID_TEST_NAME': '>(_target_name)',
                   'INFOPLIST_FILE': '>(ios_unittest_info_plist_path)',
                 },
                 'mac_bundle_resources': [

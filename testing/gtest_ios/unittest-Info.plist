@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.google.gtest.${BUNDLE_ID_TEST_NAME}</string>
+	<string>com.google.gtest.${BUNDLE_ID_TEST_NAME:rfc1034identifier}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -57,8 +57,8 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	       <key>NSAllowsArbitraryLoads</key>
-	       <true/>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
 	</dict>
 	<key>NSMainNibFile</key>
 	<string>${MAIN_NIB_FILE}</string>
@@ -151,10 +151,10 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>${BUNDLE_ID_TEST_NAME}.http</string>
-				<string>${BUNDLE_ID_TEST_NAME}.https</string>
-				<string>${BUNDLE_ID_TEST_NAME}-x-callback</string>
-                                <string>com.google.sso.${BUNDLE_ID_TEST_NAME}</string>
+				<string>${BUNDLE_ID_TEST_NAME:rfc1034identifier}.http</string>
+				<string>${BUNDLE_ID_TEST_NAME:rfc1034identifier}.https</string>
+				<string>${BUNDLE_ID_TEST_NAME:rfc1034identifier}-x-callback</string>
+				<string>com.google.sso.${BUNDLE_ID_TEST_NAME:rfc1034identifier}</string>
 			</array>
 		</dict>
 	</array>
@@ -186,7 +186,7 @@
 	<array>
 		<string>fetch</string>
 	</array>
-        <key>SSOAuthURLScheme</key>
-        <string>com.google.sso.${BUNDLE_ID_TEST_NAME}</string>
+	<key>SSOAuthURLScheme</key>
+	<string>com.google.sso.${BUNDLE_ID_TEST_NAME:rfc1034identifier}</string>
 </dict>
 </plist>
