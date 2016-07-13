@@ -17,6 +17,8 @@ if (is_android) {
   import("//build/config/mac/rules.gni")
   import("//build_overrides/v8.gni")
   import("//build/mac/tweak_info_plist.gni")
+} else if (is_win) {
+  import("//build/win/syzygy/syzygy.gni")
 }
 
 declare_args() {
@@ -531,6 +533,17 @@ if (is_win) {
 
     configs -= [ "//build/config/win:console" ]
     configs += [ "//build/config/win:windowed" ]
+  }
+
+  if (is_syzyasan) {
+    syzygy_asan("content_shell_syzyasan") {
+      binary_name = "content_shell.exe"
+      dest_dir = "$root_out_dir/syzygy"
+      deps = [
+        "//content/shell:content_shell",
+      ]
+      testonly = true
+    }
   }
 }
 

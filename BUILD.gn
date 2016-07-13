@@ -985,8 +985,7 @@ if (!is_ios && !is_android && !is_chromecast) {
     if (is_win && symbol_level == 2 && target_cpu == "x86" && is_syzyasan) {
       deps += [
         "//chrome/tools/build/win/syzygy:chrome_dll_syzygy",
-        # TODO(GYP): Add this once it exists, https://crbug.com/619086
-        # "//content/shell:content_shell_syzyasan
+        "//content/shell:content_shell_syzyasan",
       ]
     }
   }
