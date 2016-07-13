@@ -966,7 +966,7 @@
         }],
 
         ['chromeos==1', {
-          'enable_basic_printing%': 0,
+          'enable_basic_printing%': 1,
           'enable_print_preview%': 1,
         }],
 

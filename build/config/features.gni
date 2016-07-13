@@ -110,7 +110,7 @@ declare_args() {
   use_gio = is_linux && !is_chromeos && !is_chromecast
 
   # Enable basic printing support and UI.
-  enable_basic_printing = !is_chromeos && !is_chromecast && !is_ios
+  enable_basic_printing = !is_chromecast && !is_ios
 
   # Enable printing with print preview. It does not imply
   # enable_basic_printing. It's possible to build Chrome with preview only.
