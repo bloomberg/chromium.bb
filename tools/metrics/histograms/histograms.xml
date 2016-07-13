@@ -98473,7 +98473,8 @@ To add a new entry, add it with any value and run test to compute valid value.
              data reduction proxy."/>
   <suffix name="Clients.DataReductionProxy.LoFiOn"
       label="PageLoadMetrics that are a result of a navigation through the
-             data reduction proxy with LoFi requested."/>
+             data reduction proxy with session in LoFi enabled or control
+             field trial, and when the connection was slow."/>
   <suffix name="Clients.DocWrite.Evaluator"
       label="PageLoadMetrics from a page that could have been evaluated by
              the DocumentWriteEvaluator"/>

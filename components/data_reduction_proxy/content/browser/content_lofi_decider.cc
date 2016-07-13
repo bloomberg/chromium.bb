@@ -88,4 +88,17 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
   return true;
 }
 
+bool ContentLoFiDecider::ShouldRecordLoFiUMA(
+    const net::URLRequest& request) const {
+  const content::ResourceRequestInfo* request_info =
+      content::ResourceRequestInfo::ForRequest(&request);
+
+  // User is not using Lo-Fi.
+  if (!request_info || !request_info->IsUsingLoFi())
+    return false;
+
+  return params::IsIncludedInLoFiEnabledFieldTrial() ||
+         params::IsIncludedInLoFiControlFieldTrial();
+}
+
 }  // namespace data_reduction_proxy

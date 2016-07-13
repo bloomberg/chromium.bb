@@ -210,15 +210,16 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   if (data_reduction_proxy_io_data_ &&
       data_reduction_proxy_io_data_->lofi_decider()) {
     LoFiDecider* lofi_decider = data_reduction_proxy_io_data_->lofi_decider();
-    bool is_using_lofi_mode =
+    const bool is_using_lofi_mode =
         lofi_decider->MaybeAddLoFiDirectiveToHeaders(*request, headers);
 
     if ((request->load_flags() & net::LOAD_MAIN_FRAME)) {
       data_reduction_proxy_io_data_->SetLoFiModeActiveOnMainFrame(
           is_using_lofi_mode);
     }
+
     if (data)
-      data->set_lofi_requested(is_using_lofi_mode);
+      data->set_lofi_requested(lofi_decider->ShouldRecordLoFiUMA(*request));
   }
 
   if (data_reduction_proxy_request_options_) {

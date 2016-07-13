@@ -30,7 +30,9 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
     used_data_reduction_proxy_ = used_data_reduction_proxy;
   }
 
-  // Whether Lo-Fi was requested for this request or navigation.
+  // Whether Lo-Fi was requested for this request or navigation. True if the
+  // session is in Lo-Fi control or enabled group, and the network quality is
+  // slow.
   bool lofi_requested() const { return lofi_requested_; }
   void set_lofi_requested(bool lofi_requested) {
     lofi_requested_ = lofi_requested;
@@ -65,7 +67,9 @@ class DataReductionProxyData : public base::SupportsUserData::Data {
   // Whether the DataReductionProxy was used for this request or navigation.
   bool used_data_reduction_proxy_;
 
-  // Whether Lo-Fi was requested for this request or navigation.
+  // Whether Lo-Fi was requested for this request or navigation. True if the
+  // session is in Lo-Fi control or enabled group, and the network quality is
+  // slow.
   bool lofi_requested_;
 
   // The session key used for this request or navigation.

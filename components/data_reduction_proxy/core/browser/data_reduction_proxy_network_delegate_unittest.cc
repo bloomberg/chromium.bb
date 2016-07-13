@@ -115,6 +115,10 @@ class TestLoFiDecider : public LoFiDecider {
     return false;
   }
 
+  bool ShouldRecordLoFiUMA(const net::URLRequest& request) const override {
+    return should_request_lofi_resource_;
+  }
+
  private:
   bool should_request_lofi_resource_;
 };
@@ -187,6 +191,17 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   void VerifyLoFiPreviewResponse(bool is_preview) const {
     EXPECT_EQ(is_preview, lofi_ui_service_->is_preview());
+  }
+
+  void VerifyDataReductionProxyData(const net::URLRequest& request,
+                                    bool data_reduction_proxy_used,
+                                    bool lofi_used) {
+    DataReductionProxyData* data = DataReductionProxyData::GetData(request);
+    if (!data_reduction_proxy_used) {
+      EXPECT_EQ(nullptr, data);
+    } else {
+      EXPECT_EQ(lofi_used, data->lofi_requested());
+    }
   }
 
   // Each line in |response_headers| should end with "\r\n" and not '\0', and
@@ -362,6 +377,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
                                                   proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
       VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
+      VerifyDataReductionProxyData(
+          *fake_request, tests[i].is_data_reduction_proxy,
+          config()->ShouldEnableLoFiMode(*fake_request.get()));
     }
 
     {
@@ -378,6 +396,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
       // true if the proxy is a Data Reduction Proxy.
       VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
+      VerifyDataReductionProxyData(*fake_request,
+                                   tests[i].is_data_reduction_proxy, false);
     }
 
     {
@@ -395,6 +415,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
       // true if the proxy is a Data Reduction Proxy.
       VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
+      VerifyDataReductionProxyData(*fake_request,
+                                   tests[i].is_data_reduction_proxy, true);
     }
 
     {
@@ -411,6 +433,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
                                                   proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, false, headers);
       VerifyWasLoFiModeActiveOnMainFrame(false);
+      VerifyDataReductionProxyData(*fake_request,
+                                   tests[i].is_data_reduction_proxy, false);
     }
 
     {
@@ -427,6 +451,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       // Not a mainframe request, WasLoFiModeActiveOnMainFrame should still be
       // false.
       VerifyWasLoFiModeActiveOnMainFrame(false);
+      VerifyDataReductionProxyData(*fake_request,
+                                   tests[i].is_data_reduction_proxy, false);
     }
 
     {
@@ -443,6 +469,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
                                                   proxy_retry_info, &headers);
       VerifyHeaders(tests[i].is_data_reduction_proxy, true, headers);
       VerifyWasLoFiModeActiveOnMainFrame(tests[i].is_data_reduction_proxy);
+      VerifyDataReductionProxyData(
+          *fake_request, tests[i].is_data_reduction_proxy,
+          config()->ShouldEnableLoFiMode(*fake_request.get()));
     }
   }
 }

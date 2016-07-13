@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_network_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -220,6 +221,10 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
                                                tests[i].is_using_previews &&
                                                tests[i].is_main_frame,
                                            headers);
+    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+    // |lofi_requested| should be set to false when Lo-Fi is enabled using
+    // flags.
+    EXPECT_FALSE(data->lofi_requested());
 
     // The Lo-Fi flag is "always-on" and Lo-Fi is being used. Lo-Fi header
     // should be added.
@@ -242,6 +247,10 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    data = DataReductionProxyData::GetData(*request);
+    // |lofi_requested| should be set to false when Lo-Fi is enabled using
+    // flags.
+    EXPECT_FALSE(data->lofi_requested());
 
     // The Lo-Fi flag is "slow-connections-only" and Lo-Fi is being used. Lo-Fi
     // header should be added.
@@ -254,6 +263,10 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    data = DataReductionProxyData::GetData(*request);
+    // |lofi_requested| should be set to false when Lo-Fi is enabled using
+    // flags.
+    EXPECT_FALSE(data->lofi_requested());
   }
 }
 
@@ -278,6 +291,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+    EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
   }
 }
 
@@ -301,6 +316,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
     VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(false, headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+    EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
   }
 }
 
@@ -327,6 +344,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
     VerifyLoFiPreviewHeader(tests[i].is_using_lofi && tests[i].is_main_frame,
                             headers);
     VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
+    EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
   }
 }
 
