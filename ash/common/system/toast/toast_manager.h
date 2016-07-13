@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
-#define ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
+#ifndef ASH_COMMON_SYSTEM_TOAST_TOAST_MANAGER_H_
+#define ASH_COMMON_SYSTEM_TOAST_TOAST_MANAGER_H_
 
 #include <deque>
 #include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
-#include "ash/system/toast/toast_data.h"
-#include "ash/system/toast/toast_overlay.h"
+#include "ash/common/system/toast/toast_data.h"
+#include "ash/common/system/toast/toast_overlay.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
 
 namespace ash {
 
@@ -57,4 +55,4 @@ class ASH_EXPORT ToastManager : public ToastOverlay::Delegate {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TOAST_TOAST_MANAGER_H_
+#endif  // ASH_COMMON_SYSTEM_TOAST_TOAST_MANAGER_H_

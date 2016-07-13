@@ -4,8 +4,8 @@
 
 #include "ui/arc/notification/arc_notification_manager.h"
 
+#include "ash/common/system/toast/toast_manager.h"
 #include "ash/shell.h"
-#include "ash/system/toast/toast_manager.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/arc/notification/arc_custom_notification_item.h"

@@ -2,16 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/toast/toast_overlay.h"
+#include "ash/common/system/toast/toast_overlay.h"
 
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
-#include "ash/screen_util.h"
-#include "ash/shell.h"
-#include "ash/wm/window_animations.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,6 +26,7 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace ash {
 
@@ -53,12 +52,14 @@ const int kToastVerticalSpacing = 16;
 const int kToastMaximumWidth = 568;
 const int kToastMinimumWidth = 288;
 
-// Returns the shelf for the primary display.
-WmShelf* GetPrimaryShelf() {
+// Returns the work area bounds for the root window where new windows are added
+// (including new toasts).
+gfx::Rect GetUserWorkAreaBounds() {
   return WmShell::Get()
-      ->GetPrimaryRootWindow()
+      ->GetRootWindowForNewWindows()
       ->GetRootWindowController()
-      ->GetShelf();
+      ->GetShelf()
+      ->GetUserWorkAreaBounds();
 }
 
 }  // anonymous namespace
@@ -194,7 +195,7 @@ gfx::Size ToastOverlayView::GetMinimumSize() const {
 }
 
 gfx::Size ToastOverlayView::GetMaximumSize() const {
-  gfx::Rect work_area_bounds = GetPrimaryShelf()->GetUserWorkAreaBounds();
+  gfx::Rect work_area_bounds = GetUserWorkAreaBounds();
   return gfx::Size(kToastMaximumWidth, work_area_bounds.height() - kOffset * 2);
 }
 
@@ -211,10 +212,12 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
     : delegate_(delegate),
       text_(text),
       dismiss_text_(dismiss_text),
+      overlay_widget_(new views::Widget),
       overlay_view_(new ToastOverlayView(this, text, dismiss_text)),
       widget_size_(overlay_view_->GetPreferredSize()) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
+  params.name = "ToastOverlay";
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = true;
@@ -222,22 +225,21 @@ ToastOverlay::ToastOverlay(Delegate* delegate,
   params.remove_standard_frame = true;
   params.bounds = CalculateOverlayBounds();
   // Show toasts above the app list and below the lock screen.
-  // TODO(jamescook): Either this should be the primary root window, or the
-  // work area bounds computation should be for the target root window.
-  params.parent = Shell::GetContainer(Shell::GetTargetRootWindow(),
-                                      kShellWindowId_SystemModalContainer);
-  overlay_widget_.reset(new views::Widget);
+  WmShell::Get()
+      ->GetRootWindowForNewWindows()
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          overlay_widget_.get(), kShellWindowId_SystemModalContainer, &params);
   overlay_widget_->Init(params);
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(true);
   overlay_widget_->SetContentsView(overlay_view_.get());
   overlay_widget_->SetBounds(CalculateOverlayBounds());
-  overlay_widget_->GetNativeView()->SetName("ToastOverlay");
 
-  gfx::NativeWindow native_view = overlay_widget_->GetNativeView();
-  ::wm::SetWindowVisibilityAnimationType(
-      native_view, ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  ::wm::SetWindowVisibilityAnimationDuration(
-      native_view,
+  WmWindow* overlay_window =
+      WmLookup::Get()->GetWindowForWidget(overlay_widget_.get());
+  overlay_window->SetVisibilityAnimationType(
+      ::wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+  overlay_window->SetVisibilityAnimationDuration(
       base::TimeDelta::FromMilliseconds(kSlideAnimationDurationMs));
 }
 
@@ -271,7 +273,7 @@ void ToastOverlay::Show(bool visible) {
 }
 
 gfx::Rect ToastOverlay::CalculateOverlayBounds() {
-  gfx::Rect bounds = GetPrimaryShelf()->GetUserWorkAreaBounds();
+  gfx::Rect bounds = GetUserWorkAreaBounds();
   int target_y = bounds.bottom() - widget_size_.height() - kOffset;
   bounds.ClampToCenteredSize(widget_size_);
   bounds.set_y(target_y);

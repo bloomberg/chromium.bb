@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_TOAST_TOAST_OVERLAY_H_
-#define ASH_SYSTEM_TOAST_TOAST_OVERLAY_H_
+#ifndef ASH_COMMON_SYSTEM_TOAST_TOAST_OVERLAY_H_
+#define ASH_COMMON_SYSTEM_TOAST_TOAST_OVERLAY_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/ash_export.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/view.h"
 
 namespace gfx {
 class Rect;
@@ -53,6 +53,7 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
   // Returns the current bounds of the overlay, which is based on visibility.
   gfx::Rect CalculateOverlayBounds();
 
+  // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsScheduled() override;
   void OnImplicitAnimationsCompleted() override;
 
@@ -71,4 +72,4 @@ class ASH_EXPORT ToastOverlay : public ui::ImplicitAnimationObserver {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_TOAST_TOAST_OVERLAY_H_
+#endif  // ASH_COMMON_SYSTEM_TOAST_TOAST_OVERLAY_H_
