@@ -646,6 +646,10 @@ class AutofillMetrics {
   // Log how many profiles were removed as part of the deduplication process.
   static void LogNumberOfProfilesRemovedDuringDedupe(size_t num_removed);
 
+  // Log whether the Autofill query on a credit card form is made in a secure
+  // context.
+  static void LogIsQueriedCreditCardFormSecure(bool is_secure);
+
   // Utility to autofill form events in the relevant histograms depending on
   // the presence of server and/or local data.
   class FormEventLogger {

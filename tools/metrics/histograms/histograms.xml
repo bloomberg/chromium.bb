@@ -3074,6 +3074,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.QueriedCreditCardFormIsSecure" enum="BooleanSecure">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    For credit card forms that are queried for Autofill, a ratio of how many are
+    within secure contexts (which includes mixed passive content).
+  </summary>
+</histogram>
+
 <histogram name="Autofill.SaveCreditCardPrompt"
     enum="AutofillSaveCreditCardPrompt">
   <owner>jdonnelly@chromium.org</owner>

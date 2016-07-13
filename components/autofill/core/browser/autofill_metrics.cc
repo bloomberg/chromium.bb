@@ -641,6 +641,11 @@ void AutofillMetrics::LogNumberOfProfilesRemovedDuringDedupe(
                             std::min(int(num_removed), 50));
 }
 
+// static
+void AutofillMetrics::LogIsQueriedCreditCardFormSecure(bool is_secure) {
+  UMA_HISTOGRAM_BOOLEAN("Autofill.QueriedCreditCardFormIsSecure", is_secure);
+}
+
 AutofillMetrics::FormEventLogger::FormEventLogger(bool is_for_credit_card)
     : is_for_credit_card_(is_for_credit_card),
       is_server_data_available_(false),

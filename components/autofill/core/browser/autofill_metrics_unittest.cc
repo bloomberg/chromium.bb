@@ -155,7 +155,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     local_credit_cards_.clear();
     server_credit_cards_.clear();
     if (include_local_credit_card) {
-      CreditCard* credit_card = new CreditCard;
+      CreditCard* credit_card =
+          new CreditCard(base::ASCIIToUTF16("4111111111111111"), 12, 24);
       credit_card->set_guid("10000000-0000-0000-0000-000000000001");
       local_credit_cards_.push_back(credit_card);
     }
@@ -1810,6 +1811,56 @@ TEST_F(AutofillMetricsTest, PolledCreditCardSuggestions_DebounceLogs) {
                                               gfx::RectF());
   EXPECT_EQ(3, user_action_tester.GetActionCount(
                    "Autofill_PolledCreditCardSuggestions"));
+}
+
+// Tests that the Autofill.QueriedCreditCardFormIsSecure histogram is logged
+// properly.
+TEST_F(AutofillMetricsTest, QueriedCreditCardFormIsSecure) {
+  personal_data_->RecreateCreditCards(
+      true /* include_local_credit_card */,
+      false /* include_masked_server_credit_card */,
+      false /* include_full_server_credit_card */);
+
+  // Set up the form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.origin = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  FormFieldData field;
+  std::vector<ServerFieldType> field_types;
+  test::CreateTestFormField("Month", "card_month", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_MONTH);
+  test::CreateTestFormField("Year", "card_year", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_EXP_2_DIGIT_YEAR);
+  test::CreateTestFormField("Credit card", "card", "", "text", &field);
+  form.fields.push_back(field);
+  field_types.push_back(CREDIT_CARD_NUMBER);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, field_types, field_types);
+
+  {
+    // Simulate an Autofill query on a credit card field.
+    autofill_client_.set_is_context_secure(true);
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[1],
+                                                gfx::RectF());
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.QueriedCreditCardFormIsSecure", true, 1);
+  }
+
+  {
+    // Simulate an Autofill query on a credit card field.
+    autofill_client_.set_is_context_secure(false);
+    base::HistogramTester histogram_tester;
+    autofill_manager_->OnQueryFormFieldAutofill(0, form, form.fields[1],
+                                                gfx::RectF());
+    histogram_tester.ExpectUniqueSample(
+        "Autofill.QueriedCreditCardFormIsSecure", false, 1);
+  }
 }
 
 // Tests that the Autofill_PolledProfileSuggestions user action is only logged
