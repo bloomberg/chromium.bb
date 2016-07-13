@@ -315,13 +315,19 @@ void HTMLDocumentParser::notifyPendingParsedChunks()
         // after the document element is created in documentElementAvailable().
         ASSERT(m_queuedPreloads.isEmpty());
         ASSERT(m_queuedDocumentWriteScripts.isEmpty());
+        // Loop through the chunks to generate preloads before any
+        // document.write script evaluation takes place. Preloading these
+        // scripts is valuable and comparably cheap, while evaluating JS can be
+        // expensive.
+        for (auto& chunk : pendingChunks) {
+            m_preloader->takeAndPreload(chunk->preloads);
+        }
         for (auto& chunk : pendingChunks) {
             for (auto& index : chunk->likelyDocumentWriteScriptIndices) {
                 const CompactHTMLToken& token = chunk->tokens->at(index);
                 ASSERT(token.type() == HTMLToken::TokenType::Character);
                 evaluateAndPreloadScriptForDocumentWrite(token.data());
             }
-            m_preloader->takeAndPreload(chunk->preloads);
         }
     }
 
@@ -1069,13 +1075,14 @@ void HTMLDocumentParser::documentElementAvailable()
 {
     TRACE_EVENT0("blink,loader", "HTMLDocumentParser::documentElementAvailable");
     DCHECK(document()->documentElement());
+    if (!m_queuedPreloads.isEmpty())
+        m_preloader->takeAndPreload(m_queuedPreloads);
+
     for (const String& scriptSource : m_queuedDocumentWriteScripts) {
         evaluateAndPreloadScriptForDocumentWrite(scriptSource);
     }
 
     m_queuedDocumentWriteScripts.clear();
-    if (!m_queuedPreloads.isEmpty())
-        m_preloader->takeAndPreload(m_queuedPreloads);
 }
 
 std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::createPreloadScanner()
