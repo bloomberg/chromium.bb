@@ -186,7 +186,6 @@ weston_config_section_get_uint(struct weston_config_section *section,
 			       const char *key,
 			       uint32_t *value, uint32_t default_value)
 {
-	long int ret;
 	struct weston_config_entry *entry;
 	char *end;
 
@@ -198,21 +197,12 @@ weston_config_section_get_uint(struct weston_config_section *section,
 	}
 
 	errno = 0;
-	ret = strtol(entry->value, &end, 0);
+	*value = strtoul(entry->value, &end, 0);
 	if (errno != 0 || end == entry->value || *end != '\0') {
 		*value = default_value;
 		errno = EINVAL;
 		return -1;
 	}
-
-	/* check range */
-	if (ret < 0 || ret > INT_MAX) {
-		*value = default_value;
-		errno = ERANGE;
-		return -1;
-	}
-
-	*value = ret;
 
 	return 0;
 }
