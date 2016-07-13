@@ -74,8 +74,7 @@ class ArcAuthServiceTest : public testing::Test {
     // Check initial conditions.
     EXPECT_EQ(bridge_service_.get(), ArcBridgeService::Get());
     EXPECT_FALSE(ArcBridgeService::Get()->available());
-    EXPECT_EQ(ArcBridgeService::State::STOPPED,
-              ArcBridgeService::Get()->state());
+    EXPECT_TRUE(ArcBridgeService::Get()->stopped());
 
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId("user@gmail.com", "1234567890"));
@@ -178,7 +177,7 @@ TEST_F(ArcAuthServiceTest, DisabledForEphemeralDataUsers) {
 }
 
 TEST_F(ArcAuthServiceTest, BaseWorkflow) {
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
+  ASSERT_FALSE(bridge_service()->ready());
   ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
@@ -195,14 +194,14 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
 
   ASSERT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
-  ASSERT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
+  ASSERT_TRUE(bridge_service()->ready());
   // Auth code valid only for one call.
   ASSERT_EQ(kTestAuthCode, auth_service()->GetAndResetAuthCode());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   auth_service()->Shutdown();
   ASSERT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
+  ASSERT_FALSE(bridge_service()->ready());
   ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   // Send profile and don't provide a code.
@@ -278,27 +277,27 @@ TEST_F(ArcAuthServiceTest, SignInStatus) {
   EXPECT_EQ(ArcAuthService::State::FETCHING_CODE, auth_service()->state());
   auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
-  EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
+  EXPECT_TRUE(bridge_service()->ready());
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   auth_service()->OnSignInComplete();
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
-  EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
+  EXPECT_TRUE(bridge_service()->ready());
 
   // Second start, no fetching code is expected.
   auth_service()->Shutdown();
   EXPECT_EQ(ArcAuthService::State::NOT_INITIALIZED, auth_service()->state());
-  EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
+  EXPECT_FALSE(bridge_service()->ready());
   auth_service()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
-  EXPECT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
+  EXPECT_TRUE(bridge_service()->ready());
 
   // Report failure.
   auth_service()->OnSignInFailed(mojom::ArcSignInFailureReason::NETWORK_ERROR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
-  EXPECT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
+  EXPECT_FALSE(bridge_service()->ready());
 
   // Correctly stop service.
   auth_service()->Shutdown();

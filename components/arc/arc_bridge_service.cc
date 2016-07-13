@@ -576,11 +576,9 @@ void ArcBridgeService::CloseWindowManagerChannel() {
 
 void ArcBridgeService::SetState(State state) {
   DCHECK(CalledOnValidThread());
-  // DCHECK on enum classes not supported.
-  DCHECK(state_ != state);
+  DCHECK_NE(state_, state);
   state_ = state;
   VLOG(2) << "State: " << static_cast<uint32_t>(state_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnStateChanged(state_));
   if (state_ == State::READY)
     FOR_EACH_OBSERVER(Observer, observer_list(), OnBridgeReady());
   else if (state == State::STOPPED)
@@ -589,7 +587,7 @@ void ArcBridgeService::SetState(State state) {
 
 void ArcBridgeService::SetAvailable(bool available) {
   DCHECK(CalledOnValidThread());
-  DCHECK(available_ != available);
+  DCHECK_NE(available_, available);
   available_ = available;
   FOR_EACH_OBSERVER(Observer, observer_list(), OnAvailableChanged(available_));
 }

@@ -206,7 +206,7 @@ class ArcAppListPrefs : public KeyedService,
   ArcAppListPrefs(const base::FilePath& base_path, PrefService* prefs);
 
   // arc::ArcBridgeService::Observer:
-  void OnStateChanged(arc::ArcBridgeService::State state) override;
+  void OnBridgeStopped() override;
   void OnAppInstanceReady() override;
   void OnAppInstanceClosed() override;
 

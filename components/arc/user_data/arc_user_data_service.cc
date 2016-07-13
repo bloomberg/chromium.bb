@@ -47,7 +47,7 @@ void ArcUserDataService::OnBridgeStopped() {
 
 void ArcUserDataService::ClearIfDisabled() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (arc_bridge_service()->state() != ArcBridgeService::State::STOPPED) {
+  if (!arc_bridge_service()->stopped()) {
     LOG(ERROR) << "ARC instance not stopped, user data can't be cleared";
     return;
   }

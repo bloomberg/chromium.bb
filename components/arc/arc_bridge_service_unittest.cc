@@ -20,25 +20,23 @@ namespace arc {
 
 namespace {
 
+class DummyObserver : public ArcBridgeService::Observer {};
+
+}  // namespace
+
 class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
  public:
   ArcBridgeTest() : ready_(false) {}
   ~ArcBridgeTest() override {}
 
-  void OnStateChanged(ArcBridgeService::State state) override {
-    state_ = state;
-    switch (state) {
-      case ArcBridgeService::State::READY:
-        ready_ = true;
-        break;
+  void OnBridgeReady() override {
+    state_ = ArcBridgeService::State::READY;
+    ready_ = true;
+  }
 
-      case ArcBridgeService::State::STOPPED:
-        message_loop_.PostTask(FROM_HERE, message_loop_.QuitWhenIdleClosure());
-        break;
-
-      default:
-        break;
-    }
+  void OnBridgeStopped() override {
+    state_ = ArcBridgeService::State::STOPPED;
+    message_loop_.PostTask(FROM_HERE, message_loop_.QuitWhenIdleClosure());
   }
 
   bool ready() const { return ready_; }
@@ -76,10 +74,6 @@ class ArcBridgeTest : public testing::Test, public ArcBridgeService::Observer {
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeTest);
 };
-
-class DummyObserver : public ArcBridgeService::Observer {};
-
-}  // namespace
 
 // Exercises the basic functionality of the ARC Bridge Service.  A message from
 // within the instance should cause the observer to be notified.

@@ -3950,7 +3950,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
       = arc::ArcBridgeService::Get();
 
   // ARC is switched off by default.
-  EXPECT_EQ(arc::ArcBridgeService::State::STOPPED, arc_bridge_service->state());
+  EXPECT_TRUE(arc_bridge_service->stopped());
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Enable ARC.
@@ -3960,7 +3960,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
                base::WrapUnique(new base::FundamentalValue(true)), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
-  EXPECT_EQ(arc::ArcBridgeService::State::READY, arc_bridge_service->state());
+  EXPECT_TRUE(arc_bridge_service->ready());
 
   // Disable ARC.
   policies.Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -3968,7 +3968,7 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
                base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
-  EXPECT_EQ(arc::ArcBridgeService::State::STOPPED, arc_bridge_service->state());
+  EXPECT_TRUE(arc_bridge_service->stopped());
 
   TearDownTest();
 }

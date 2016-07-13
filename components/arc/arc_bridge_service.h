@@ -22,53 +22,17 @@ class CommandLine;
 namespace arc {
 
 class ArcBridgeBootstrap;
+class ArcBridgeTest;
 
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
 // This service handles the lifetime of ARC instances and sets up the
 // communication channel (the ARC bridge) used to send and receive messages.
 class ArcBridgeService : public mojom::ArcBridgeHost {
  public:
-  // The possible states of the bridge.  In the normal flow, the state changes
-  // in the following sequence:
-  //
-  // STOPPED
-  //   PrerequisitesChanged() ->
-  // CONNECTING
-  //   OnConnectionEstablished() ->
-  // READY
-  //
-  // The ArcBridgeBootstrap state machine can be thought of being substates of
-  // ArcBridgeService's CONNECTING state.
-  //
-  // *
-  //   StopInstance() ->
-  // STOPPING
-  //   OnStopped() ->
-  // STOPPED
-  enum class State {
-    // ARC is not currently running.
-    STOPPED,
-
-    // The request to connect has been sent.
-    CONNECTING,
-
-    // The instance has started, and the bridge is fully established.
-    CONNECTED,
-
-    // The ARC instance has finished initializing and is now ready for user
-    // interaction.
-    READY,
-
-    // The ARC instance has started shutting down.
-    STOPPING,
-  };
-
   // Notifies life cycle events of ArcBridgeService.
   class Observer {
    public:
     // Called whenever the state of the bridge has changed.
-    // TODO(lchavez): Rename to OnStateChangedForTest
-    virtual void OnStateChanged(State state) {}
     virtual void OnBridgeReady() {}
     virtual void OnBridgeStopped() {}
 
@@ -283,14 +247,56 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   void OnWindowManagerInstanceReady(
       mojom::WindowManagerInstancePtr window_manager_ptr) override;
 
-  // Gets the current state of the bridge service.
-  State state() const { return state_; }
-
   // Gets if ARC is available in this system.
   bool available() const { return available_; }
 
+  // Gets if ARC is currently running.
+  bool ready() const { return state() == State::READY; }
+
+  // Gets if ARC is currently stopped. This is not exactly !ready() since there
+  // are transient states between ready() and stopped().
+  bool stopped() const { return state() == State::STOPPED; }
+
  protected:
+  // The possible states of the bridge.  In the normal flow, the state changes
+  // in the following sequence:
+  //
+  // STOPPED
+  //   PrerequisitesChanged() ->
+  // CONNECTING
+  //   OnConnectionEstablished() ->
+  // READY
+  //
+  // The ArcBridgeBootstrap state machine can be thought of being substates of
+  // ArcBridgeService's CONNECTING state.
+  //
+  // *
+  //   StopInstance() ->
+  // STOPPING
+  //   OnStopped() ->
+  // STOPPED
+  enum class State {
+    // ARC is not currently running.
+    STOPPED,
+
+    // The request to connect has been sent.
+    CONNECTING,
+
+    // The instance has started, and the bridge is fully established.
+    CONNECTED,
+
+    // The ARC instance has finished initializing and is now ready for user
+    // interaction.
+    READY,
+
+    // The ARC instance has started shutting down.
+    STOPPING,
+  };
+
   ArcBridgeService();
+
+  // Gets the current state of the bridge service.
+  State state() const { return state_; }
 
   // Changes the current state and notifies all observers.
   void SetState(State state);
