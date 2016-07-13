@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/values.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browsing_data/browsing_data_utils.h"
 #include "components/browsing_data/pref_names.h"
@@ -98,7 +97,8 @@ class HostedAppsCounterTest : public testing::Test {
   // Setting preferences. ------------------------------------------------------
 
   void SetHostedAppsDeletionPref(bool value) {
-    GetProfile()->GetPrefs()->SetBoolean(prefs::kDeleteHostedAppsData, value);
+    GetProfile()->GetPrefs()->SetBoolean(
+        browsing_data::prefs::kDeleteHostedAppsData, value);
   }
 
   void SetDeletionPeriodPref(browsing_data::TimePeriod period) {

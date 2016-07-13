@@ -8,7 +8,18 @@
 namespace browsing_data {
 
 namespace prefs {
+
 extern const char kDeleteTimePeriod[];
+
+extern const char kDeleteBrowsingHistory[];
+extern const char kDeleteDownloadHistory[];
+extern const char kDeleteCache[];
+extern const char kDeleteCookies[];
+extern const char kDeletePasswords[];
+extern const char kDeleteFormData[];
+extern const char kDeleteHostedAppsData[];
+extern const char kDeleteMediaLicenses[];
+
 }  // namespace prefs
 
 }  // namespace browsing_data

@@ -6,11 +6,12 @@
 
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/browsing_data/pref_names.h"
 #include "content/public/browser/download_manager.h"
 
 DownloadsCounter::DownloadsCounter(Profile* profile)
-    : BrowsingDataCounter(prefs::kDeleteDownloadHistory), profile_(profile) {}
+    : BrowsingDataCounter(browsing_data::prefs::kDeleteDownloadHistory),
+      profile_(profile) {}
 
 DownloadsCounter::~DownloadsCounter() {
 }

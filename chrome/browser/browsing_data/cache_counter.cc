@@ -4,12 +4,12 @@
 
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "net/base/net_errors.h"
 
 CacheCounter::CacheCounter(Profile* profile)
-    : BrowsingDataCounter(prefs::kDeleteCache),
+    : BrowsingDataCounter(browsing_data::prefs::kDeleteCache),
       profile_(profile),
       pending_(false),
       weak_ptr_factory_(this) {}

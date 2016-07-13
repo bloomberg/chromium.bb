@@ -15,7 +15,6 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browsing_data/browsing_data_utils.h"
 #include "components/browsing_data/pref_names.h"
@@ -165,7 +164,7 @@ class DownloadsCounterTest : public InProcessBrowserTest,
 
   void SetDownloadsDeletionPref(bool value) {
     browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kDeleteDownloadHistory, value);
+        browsing_data::prefs::kDeleteDownloadHistory, value);
   }
 
   void SetDeletionPeriodPref(browsing_data::TimePeriod period) {

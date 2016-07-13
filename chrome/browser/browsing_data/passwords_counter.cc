@@ -5,11 +5,12 @@
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
 
 PasswordsCounter::PasswordsCounter(Profile* profile)
-    : BrowsingDataCounter(prefs::kDeletePasswords), profile_(profile) {}
+    : BrowsingDataCounter(browsing_data::prefs::kDeletePasswords),
+      profile_(profile) {}
 
 PasswordsCounter::~PasswordsCounter() {
   store_->RemoveObserver(this);

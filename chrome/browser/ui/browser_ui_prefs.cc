@@ -49,36 +49,28 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kShowHomeButton, false,
                                 GetHomeButtonAndHomePageIsNewTabPageFlags());
   registry->RegisterBooleanPref(
-      prefs::kDeleteBrowsingHistory,
-      true,
+      browsing_data::prefs::kDeleteBrowsingHistory, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kDeleteDownloadHistory,
-      true,
+      browsing_data::prefs::kDeleteDownloadHistory, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kDeleteCache,
-      true,
+      browsing_data::prefs::kDeleteCache, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kDeleteCookies,
-      true,
+      browsing_data::prefs::kDeleteCookies, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kDeletePasswords,
-      false,
+      browsing_data::prefs::kDeletePasswords, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kDeleteFormData,
-      false,
+      browsing_data::prefs::kDeleteFormData, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kDeleteHostedAppsData,
-      false,
+      browsing_data::prefs::kDeleteHostedAppsData, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kDeleteMediaLicenses,
-      false,
+      browsing_data::prefs::kDeleteMediaLicenses, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       browsing_data::prefs::kDeleteTimePeriod, 0,

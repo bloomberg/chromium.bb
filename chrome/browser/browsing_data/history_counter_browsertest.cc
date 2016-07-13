@@ -11,7 +11,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browsing_data/browsing_data_utils.h"
 #include "components/browsing_data/pref_names.h"
@@ -59,7 +58,7 @@ class HistoryCounterTest : public SyncTest {
 
   void SetHistoryDeletionPref(bool value) {
     browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kDeleteBrowsingHistory, value);
+        browsing_data::prefs::kDeleteBrowsingHistory, value);
   }
 
   void SetDeletionPeriodPref(browsing_data::TimePeriod period) {

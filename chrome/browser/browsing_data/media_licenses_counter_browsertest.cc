@@ -8,8 +8,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -33,8 +33,8 @@ class MediaLicensesCounterTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override { SetMediaLicenseDeletionPref(true); }
 
   void SetMediaLicenseDeletionPref(bool value) {
-    browser()->profile()->GetPrefs()->SetBoolean(prefs::kDeleteMediaLicenses,
-                                                 value);
+    browser()->profile()->GetPrefs()->SetBoolean(
+        browsing_data::prefs::kDeleteMediaLicenses, value);
   }
 
   // Create some test data for origin |kOrigin|.

@@ -164,20 +164,20 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
                                  int expected_origin_type_mask,
                                  int expected_removal_mask) {
     PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kDeleteCache,
+    prefs->SetBoolean(browsing_data::prefs::kDeleteCache,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_CACHE));
-    prefs->SetBoolean(prefs::kDeleteCookies,
+    prefs->SetBoolean(browsing_data::prefs::kDeleteCookies,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_COOKIES));
-    prefs->SetBoolean(prefs::kDeleteBrowsingHistory,
+    prefs->SetBoolean(browsing_data::prefs::kDeleteBrowsingHistory,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_HISTORY));
-    prefs->SetBoolean(prefs::kDeleteFormData,
+    prefs->SetBoolean(browsing_data::prefs::kDeleteFormData,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_FORM_DATA));
-    prefs->SetBoolean(prefs::kDeleteDownloadHistory,
+    prefs->SetBoolean(browsing_data::prefs::kDeleteDownloadHistory,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_DOWNLOADS));
-    prefs->SetBoolean(prefs::kDeleteHostedAppsData,
+    prefs->SetBoolean(browsing_data::prefs::kDeleteHostedAppsData,
         !!(data_type_flags &
            BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY));
-    prefs->SetBoolean(prefs::kDeletePasswords,
+    prefs->SetBoolean(browsing_data::prefs::kDeletePasswords,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_PASSWORDS));
     prefs->SetBoolean(prefs::kClearPluginLSODataEnabled,
         !!(data_type_flags & BrowsingDataRemover::REMOVE_PLUGIN_DATA));
@@ -405,13 +405,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
                        BrowsingDataRemovalInputFromSettings) {
   PrefService* prefs = browser()->profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kDeleteCache, true);
-  prefs->SetBoolean(prefs::kDeleteBrowsingHistory, true);
-  prefs->SetBoolean(prefs::kDeleteDownloadHistory, true);
-  prefs->SetBoolean(prefs::kDeleteCookies, false);
-  prefs->SetBoolean(prefs::kDeleteFormData, false);
-  prefs->SetBoolean(prefs::kDeleteHostedAppsData, false);
-  prefs->SetBoolean(prefs::kDeletePasswords, false);
+  prefs->SetBoolean(browsing_data::prefs::kDeleteCache, true);
+  prefs->SetBoolean(browsing_data::prefs::kDeleteBrowsingHistory, true);
+  prefs->SetBoolean(browsing_data::prefs::kDeleteDownloadHistory, true);
+  prefs->SetBoolean(browsing_data::prefs::kDeleteCookies, false);
+  prefs->SetBoolean(browsing_data::prefs::kDeleteFormData, false);
+  prefs->SetBoolean(browsing_data::prefs::kDeleteHostedAppsData, false);
+  prefs->SetBoolean(browsing_data::prefs::kDeletePasswords, false);
   prefs->SetBoolean(prefs::kClearPluginLSODataEnabled, false);
   int expected_mask = BrowsingDataRemover::REMOVE_CACHE |
         BrowsingDataRemover::REMOVE_DOWNLOADS |

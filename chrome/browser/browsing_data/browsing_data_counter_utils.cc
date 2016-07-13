@@ -63,20 +63,20 @@ base::string16 GetCounterTextFromResult(
     // The counter is still counting.
     text = l10n_util::GetStringUTF16(IDS_CLEAR_BROWSING_DATA_CALCULATING);
 
-  } else if (pref_name == prefs::kDeletePasswords ||
-             pref_name == prefs::kDeleteDownloadHistory) {
+  } else if (pref_name == browsing_data::prefs::kDeletePasswords ||
+             pref_name == browsing_data::prefs::kDeleteDownloadHistory) {
     // Counters with trivially formatted result: passwords and downloads.
     browsing_data::BrowsingDataCounter::ResultInt count =
         static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
             result)
             ->Value();
     text = l10n_util::GetPluralStringFUTF16(
-        pref_name == prefs::kDeletePasswords
+        pref_name == browsing_data::prefs::kDeletePasswords
             ? IDS_DEL_PASSWORDS_COUNTER
             : IDS_DEL_DOWNLOADS_COUNTER,
         count);
 
-  } else if (pref_name == prefs::kDeleteCache) {
+  } else if (pref_name == browsing_data::prefs::kDeleteCache) {
     // Cache counter.
     browsing_data::BrowsingDataCounter::ResultInt cache_size_bytes =
         static_cast<const browsing_data::BrowsingDataCounter::FinishedResult*>(
@@ -101,7 +101,7 @@ base::string16 GetCounterTextFromResult(
       text = l10n_util::GetStringUTF16(IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
     }
 
-  } else if (pref_name == prefs::kDeleteBrowsingHistory) {
+  } else if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory) {
     // History counter.
     const HistoryCounter::HistoryResult* history_result =
         static_cast<const HistoryCounter::HistoryResult*>(result);
@@ -115,7 +115,7 @@ base::string16 GetCounterTextFromResult(
         : l10n_util::GetPluralStringFUTF16(
               IDS_DEL_BROWSING_HISTORY_COUNTER, local_item_count);
 
-  } else if (pref_name == prefs::kDeleteFormData) {
+  } else if (pref_name == browsing_data::prefs::kDeleteFormData) {
     // Autofill counter.
     const AutofillCounter::AutofillResult* autofill_result =
         static_cast<const AutofillCounter::AutofillResult*>(result);
@@ -178,7 +178,7 @@ base::string16 GetCounterTextFromResult(
         NOTREACHED();
     }
 
-  } else if (pref_name == prefs::kDeleteMediaLicenses) {
+  } else if (pref_name == browsing_data::prefs::kDeleteMediaLicenses) {
     const MediaLicensesCounter::MediaLicenseResult* media_license_result =
         static_cast<const MediaLicensesCounter::MediaLicenseResult*>(result);
     if (media_license_result->Value() > 0) {
@@ -191,7 +191,7 @@ base::string16 GetCounterTextFromResult(
     }
 
 #if defined(ENABLE_EXTENSIONS)
-  } else if (pref_name == prefs::kDeleteHostedAppsData) {
+  } else if (pref_name == browsing_data::prefs::kDeleteHostedAppsData) {
     // Hosted apps counter.
     const HostedAppsCounter::HostedAppsResult* hosted_apps_result =
         static_cast<const HostedAppsCounter::HostedAppsResult*>(result);
@@ -235,19 +235,19 @@ bool GetDeletionPreferenceFromDataType(
     std::string* out_pref) {
   switch (data_type) {
     case browsing_data::HISTORY:
-      *out_pref = prefs::kDeleteBrowsingHistory;
+      *out_pref = browsing_data::prefs::kDeleteBrowsingHistory;
       return true;
     case browsing_data::CACHE:
-      *out_pref = prefs::kDeleteCache;
+      *out_pref = browsing_data::prefs::kDeleteCache;
       return true;
     case browsing_data::COOKIES:
-      *out_pref = prefs::kDeleteCookies;
+      *out_pref = browsing_data::prefs::kDeleteCookies;
       return true;
     case browsing_data::PASSWORDS:
-      *out_pref = prefs::kDeletePasswords;
+      *out_pref = browsing_data::prefs::kDeletePasswords;
       return true;
     case browsing_data::FORM_DATA:
-      *out_pref = prefs::kDeleteFormData;
+      *out_pref = browsing_data::prefs::kDeleteFormData;
       return true;
     case browsing_data::BOOKMARKS:
       // Bookmarks are deleted on the Android side. No corresponding deletion

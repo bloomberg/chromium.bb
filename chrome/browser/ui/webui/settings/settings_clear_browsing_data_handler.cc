@@ -29,13 +29,13 @@ const int kMaxTimesHistoryNoticeShown = 1;
 
 // TODO(msramek): Get the list of deletion preferences from the JS side.
 const char* kCounterPrefs[] = {
-  prefs::kDeleteBrowsingHistory,
-  prefs::kDeleteCache,
-  prefs::kDeleteDownloadHistory,
-  prefs::kDeleteFormData,
-  prefs::kDeleteHostedAppsData,
-  prefs::kDeleteMediaLicenses,
-  prefs::kDeletePasswords,
+  browsing_data::prefs::kDeleteBrowsingHistory,
+  browsing_data::prefs::kDeleteCache,
+  browsing_data::prefs::kDeleteDownloadHistory,
+  browsing_data::prefs::kDeleteFormData,
+  browsing_data::prefs::kDeleteHostedAppsData,
+  browsing_data::prefs::kDeleteMediaLicenses,
+  browsing_data::prefs::kDeletePasswords,
 };
 
 } // namespace
@@ -102,31 +102,31 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
 
   int remove_mask = 0;
   if (prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
-    if (prefs->GetBoolean(prefs::kDeleteBrowsingHistory))
+    if (prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory))
       remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
-    if (prefs->GetBoolean(prefs::kDeleteDownloadHistory))
+    if (prefs->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory))
       remove_mask |= BrowsingDataRemover::REMOVE_DOWNLOADS;
   }
 
-  if (prefs->GetBoolean(prefs::kDeleteCache))
+  if (prefs->GetBoolean(browsing_data::prefs::kDeleteCache))
     remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
 
   int origin_mask = 0;
-  if (prefs->GetBoolean(prefs::kDeleteCookies)) {
+  if (prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
     remove_mask |= site_data_mask;
     origin_mask |= BrowsingDataHelper::UNPROTECTED_WEB;
   }
 
-  if (prefs->GetBoolean(prefs::kDeletePasswords))
+  if (prefs->GetBoolean(browsing_data::prefs::kDeletePasswords))
     remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
 
-  if (prefs->GetBoolean(prefs::kDeleteFormData))
+  if (prefs->GetBoolean(browsing_data::prefs::kDeleteFormData))
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
 
-  if (prefs->GetBoolean(prefs::kDeleteMediaLicenses))
+  if (prefs->GetBoolean(browsing_data::prefs::kDeleteMediaLicenses))
     remove_mask |= BrowsingDataRemover::REMOVE_MEDIA_LICENSES;
 
-  if (prefs->GetBoolean(prefs::kDeleteHostedAppsData)) {
+  if (prefs->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData)) {
     remove_mask |= site_data_mask;
     origin_mask |= BrowsingDataHelper::PROTECTED_WEB;
   }
@@ -134,11 +134,11 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
   // Record the deletion of cookies and cache.
   BrowsingDataRemover::CookieOrCacheDeletionChoice choice =
       BrowsingDataRemover::NEITHER_COOKIES_NOR_CACHE;
-  if (prefs->GetBoolean(prefs::kDeleteCookies)) {
-    choice = prefs->GetBoolean(prefs::kDeleteCache)
+  if (prefs->GetBoolean(browsing_data::prefs::kDeleteCookies)) {
+    choice = prefs->GetBoolean(browsing_data::prefs::kDeleteCache)
                  ? BrowsingDataRemover::BOTH_COOKIES_AND_CACHE
                  : BrowsingDataRemover::ONLY_COOKIES;
-  } else if (prefs->GetBoolean(prefs::kDeleteCache)) {
+  } else if (prefs->GetBoolean(browsing_data::prefs::kDeleteCache)) {
     choice = BrowsingDataRemover::ONLY_CACHE;
   }
 
@@ -147,15 +147,15 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
       BrowsingDataRemover::MAX_CHOICE_VALUE);
 
   // Record the circumstances under which passwords are deleted.
-  if (prefs->GetBoolean(prefs::kDeletePasswords)) {
+  if (prefs->GetBoolean(browsing_data::prefs::kDeletePasswords)) {
     static const char* other_types[] = {
-        prefs::kDeleteBrowsingHistory,
-        prefs::kDeleteDownloadHistory,
-        prefs::kDeleteCache,
-        prefs::kDeleteCookies,
-        prefs::kDeleteFormData,
-        prefs::kDeleteHostedAppsData,
-        prefs::kDeleteMediaLicenses,
+        browsing_data::prefs::kDeleteBrowsingHistory,
+        browsing_data::prefs::kDeleteDownloadHistory,
+        browsing_data::prefs::kDeleteCache,
+        browsing_data::prefs::kDeleteCookies,
+        browsing_data::prefs::kDeleteFormData,
+        browsing_data::prefs::kDeleteHostedAppsData,
+        browsing_data::prefs::kDeleteMediaLicenses,
     };
     static size_t num_other_types = arraysize(other_types);
     int checked_other_types = std::count_if(
@@ -191,7 +191,7 @@ void ClearBrowsingDataHandler::OnBrowsingDataRemoverDone() {
       // 2. The notice has been shown less than |kMaxTimesHistoryNoticeShown|.
       notice_shown_times < kMaxTimesHistoryNoticeShown &&
       // 3. The selected data types contained browsing history.
-      prefs->GetBoolean(prefs::kDeleteBrowsingHistory);
+      prefs->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory);
 
   if (show_notice) {
     // Increment the preference.

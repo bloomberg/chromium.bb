@@ -9,12 +9,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/browsing_data/pref_names.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 HostedAppsCounter::HostedAppsCounter(Profile* profile)
-    : BrowsingDataCounter(prefs::kDeleteHostedAppsData), profile_(profile) {}
+    : BrowsingDataCounter(browsing_data::prefs::kDeleteHostedAppsData),
+      profile_(profile) {}
 
 HostedAppsCounter::~HostedAppsCounter() {}
 

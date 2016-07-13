@@ -13,8 +13,8 @@
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browsing_data/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,7 +24,7 @@ static const int64_t kWebHistoryTimeoutSeconds = 10;
 }
 
 HistoryCounter::HistoryCounter(Profile* profile)
-    : BrowsingDataCounter(prefs::kDeleteBrowsingHistory),
+    : BrowsingDataCounter(browsing_data::prefs::kDeleteBrowsingHistory),
       profile_(profile),
       has_synced_visits_(false),
       local_counting_finished_(false),

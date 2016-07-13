@@ -13,8 +13,8 @@
 #include "chrome/browser/browsing_data/media_licenses_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/browsing_data/counters/browsing_data_counter.h"
+#include "components/browsing_data/pref_names.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/browsing_data/hosted_apps_counter.h"
@@ -27,26 +27,26 @@ BrowsingDataCounterFactory::GetForProfileAndPref(Profile* profile,
   if (!AreCountersEnabled())
     return nullptr;
 
-  if (pref_name == prefs::kDeleteBrowsingHistory)
+  if (pref_name == browsing_data::prefs::kDeleteBrowsingHistory)
     return base::MakeUnique<HistoryCounter>(profile);
 
-  if (pref_name == prefs::kDeleteCache)
+  if (pref_name == browsing_data::prefs::kDeleteCache)
     return base::MakeUnique<CacheCounter>(profile);
 
-  if (pref_name == prefs::kDeletePasswords)
+  if (pref_name == browsing_data::prefs::kDeletePasswords)
     return base::MakeUnique<PasswordsCounter>(profile);
 
-  if (pref_name == prefs::kDeleteFormData)
+  if (pref_name == browsing_data::prefs::kDeleteFormData)
     return base::MakeUnique<AutofillCounter>(profile);
 
-  if (pref_name == prefs::kDeleteDownloadHistory)
+  if (pref_name == browsing_data::prefs::kDeleteDownloadHistory)
     return base::MakeUnique<DownloadsCounter>(profile);
 
-  if (pref_name == prefs::kDeleteMediaLicenses)
+  if (pref_name == browsing_data::prefs::kDeleteMediaLicenses)
     return base::MakeUnique<MediaLicensesCounter>(profile);
 
 #if defined(ENABLE_EXTENSIONS)
-  if (pref_name == prefs::kDeleteHostedAppsData)
+  if (pref_name == browsing_data::prefs::kDeleteHostedAppsData)
     return base::MakeUnique<HostedAppsCounter>(profile);
 #endif
 

@@ -11,13 +11,13 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_data_service_factory.h"
-#include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/browsing_data/pref_names.h"
 
 AutofillCounter::AutofillCounter(Profile* profile)
-    : BrowsingDataCounter(prefs::kDeleteFormData),
+    : BrowsingDataCounter(browsing_data::prefs::kDeleteFormData),
       profile_(profile),
       web_data_service_(nullptr),
       suggestions_query_(0),

@@ -9,7 +9,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browsing_data/browsing_data_utils.h"
@@ -65,7 +64,7 @@ class PasswordsCounterTest : public InProcessBrowserTest,
 
   void SetPasswordsDeletionPref(bool value) {
     browser()->profile()->GetPrefs()->SetBoolean(
-        prefs::kDeletePasswords, value);
+        browsing_data::prefs::kDeletePasswords, value);
   }
 
   void SetDeletionPeriodPref(browsing_data::TimePeriod period) {
