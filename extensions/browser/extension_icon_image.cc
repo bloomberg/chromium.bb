@@ -43,13 +43,13 @@
 namespace {
 
 extensions::ExtensionResource GetExtensionIconResource(
-    const extensions::Extension* extension,
+    const extensions::Extension& extension,
     const ExtensionIconSet& icons,
     int size,
     ExtensionIconSet::MatchType match_type) {
   const std::string& path = icons.Get(size, match_type);
   return path.empty() ? extensions::ExtensionResource()
-                      : extension->GetResource(path);
+                      : extension.GetResource(path);
 }
 
 class BlankImageSource : public gfx::CanvasImageSource {
@@ -180,15 +180,15 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
   extensions::ExtensionResource resource;
 
   // Find extension resource for non bundled component extensions.
-  resource = GetExtensionIconResource(extension_,
-                                      icon_set_,
-                                      resource_size_in_pixel,
-                                      ExtensionIconSet::MATCH_BIGGER);
+  resource =
+      GetExtensionIconResource(*extension_, icon_set_, resource_size_in_pixel,
+                               ExtensionIconSet::MATCH_BIGGER);
 
   // If resource is not found by now, try matching smaller one.
   if (resource.empty()) {
-    resource = GetExtensionIconResource(extension_, icon_set_,
-        resource_size_in_pixel, ExtensionIconSet::MATCH_SMALLER);
+    resource =
+        GetExtensionIconResource(*extension_, icon_set_, resource_size_in_pixel,
+                                 ExtensionIconSet::MATCH_SMALLER);
   }
 
   // If there is no resource found, return default icon.
@@ -204,10 +204,9 @@ gfx::ImageSkiaRep IconImage::LoadImageForScaleFactor(
 
   extensions::ImageLoader* loader =
       extensions::ImageLoader::Get(browser_context_);
-  loader->LoadImagesAsync(extension_, info_list,
+  loader->LoadImagesAsync(extension_.get(), info_list,
                           base::Bind(&IconImage::OnImageLoaded,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     scale));
+                                     weak_ptr_factory_.GetWeakPtr(), scale));
 
   return gfx::ImageSkiaRep();
 }
@@ -258,8 +257,8 @@ void IconImage::Observe(int type,
 
   const Extension* extension = content::Details<const Extension>(details).ptr();
 
-  if (extension_ == extension)
-    extension_ = NULL;
+  if (extension_.get() == extension)
+    extension_ = nullptr;
 }
 
 }  // namespace extensions
