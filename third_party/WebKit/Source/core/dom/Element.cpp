@@ -599,6 +599,10 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
 
 void Element::callApplyScroll(ScrollState& scrollState)
 {
+    // Hits ASSERTs when trying to determine whether we need to scroll on main
+    // or CC. http://crbug.com/625676.
+    DisableCompositingQueryAsserts disabler;
+
     ScrollStateCallback* callback = scrollCustomizationCallbacks().getApplyScroll(this);
 
     // TODO(bokan): Need to add tests before we allow calling custom callbacks

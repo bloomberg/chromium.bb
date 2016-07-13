@@ -195,10 +195,6 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(const PlatformGestur
     if (document->layoutViewItem().isNull())
         return WebInputEventResult::NotHandled;
 
-    FrameView* view = m_frame->view();
-    if (!view)
-        return WebInputEventResult::NotHandled;
-
     // If there's no layoutObject on the node, send the event to the nearest ancestor with a layoutObject.
     // Needed for <option> and <optgroup> elements so we can touch scroll <select>s
     while (m_scrollGestureHandlingNode && !m_scrollGestureHandlingNode->layoutObject())
@@ -357,6 +353,9 @@ bool ScrollManager::isEffectiveRootScroller(const Node& node) const
 
 WebInputEventResult ScrollManager::handleGestureScrollEvent(const PlatformGestureEvent& gestureEvent)
 {
+    if (!m_frame->view())
+        return WebInputEventResult::NotHandled;
+
     Node* eventTarget = nullptr;
     Scrollbar* scrollbar = nullptr;
     if (gestureEvent.type() != PlatformEvent::GestureScrollBegin) {
