@@ -484,7 +484,6 @@ split_static_library("ui") {
       "//ui/views/controls/webview",
     ]
     deps += [
-      "//chrome/installer/util:strings",
       "//components/search_engines",
       "//google_update",
       "//third_party/iaccessible2",

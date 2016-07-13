@@ -56,6 +56,32 @@ if (is_win) {
   }
 }
 
+# This target exists above chrome and it's main components in the dependency
+# tree as a central place to put assert_no_deps annotations. Since this depends
+# on Chrome and the main DLLs it uses, it will transitively assert that those
+# targets also have no deps on disallowed things.
+group("assert_no_deps") {
+  deps = []
+
+  if (is_android) {
+    deps += [ "//chrome/android:chrome_public_apk" ]
+  } else {
+    deps += [ ":chrome" ]
+  }
+
+  if (is_win) {
+    deps += [
+      ":chrome_dll",
+      ":main_dll",
+    ]
+  }
+
+  # This should not pull in installer strings. This is will bloat the binary
+  # for no reason and is easy to mess up. See the comment at the top of
+  # //chrome/installer/util/BUILD.gn.
+  assert_no_deps = [ "//chrome/installer/util:strings" ]
+}
+
 if (!is_android && !is_mac) {
   group("chrome") {
     public_deps = [
