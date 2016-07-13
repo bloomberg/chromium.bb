@@ -22,6 +22,7 @@ const int VideoDetector::kMinUpdateWidth = 333;
 const int VideoDetector::kMinUpdateHeight = 250;
 const int VideoDetector::kMinFramesPerSecond = 15;
 const int VideoDetector::kVideoTimeoutMs = 1000;
+const int VideoDetector::kMinVideoDurationMs = 3000;
 
 // Stores information about updates to a window and determines whether it's
 // likely that a video is playing in it.
@@ -45,14 +46,28 @@ class VideoDetector::WindowInfo {
     update_times_[(buffer_start_ + buffer_size_) % kMinFramesPerSecond] = now;
     buffer_size_++;
 
-    return buffer_size_ == static_cast<size_t>(kMinFramesPerSecond) &&
-           (now - update_times_[buffer_start_]).InSecondsF() <= 1.0;
+    const bool in_video =
+        (buffer_size_ == static_cast<size_t>(kMinFramesPerSecond)) &&
+        ((now - update_times_[buffer_start_]).InSecondsF() <= 1.0);
+
+    if (in_video && video_start_time_.is_null())
+      video_start_time_ = update_times_[buffer_start_];
+    else if (!in_video && !video_start_time_.is_null())
+      video_start_time_ = base::TimeTicks();
+
+    const base::TimeDelta elapsed = now - video_start_time_;
+    return in_video &&
+           elapsed >= base::TimeDelta::FromMilliseconds(kMinVideoDurationMs);
   }
 
  private:
   // Circular buffer containing update times of the last (up to
   // |kMinFramesPerSecond|) video-sized updates to this window.
   base::TimeTicks update_times_[kMinFramesPerSecond];
+
+  // Time at which the current sequence of updates that looks like video
+  // started. Empty if video isn't currently playing.
+  base::TimeTicks video_start_time_;
 
   // Index into |update_times_| of the oldest update.
   size_t buffer_start_;
@@ -90,7 +105,7 @@ bool VideoDetector::TriggerTimeoutForTest() {
   if (!video_inactive_timer_.IsRunning())
     return false;
 
-  video_inactive_timer_.Reset();
+  video_inactive_timer_.Stop();
   HandleVideoInactive();
   return true;
 }

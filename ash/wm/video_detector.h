@@ -72,6 +72,10 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   // Timeout after which video is no longer considered to be playing.
   static const int kVideoTimeoutMs;
 
+  // Duration video must be playing in a window before it is reported to
+  // observers.
+  static const int kMinVideoDurationMs;
+
   VideoDetector();
   ~VideoDetector() override;
 
