@@ -120,8 +120,8 @@ public class MostVisitedSites {
      * @param index The index of the item that was opened.
      * @param tileType The visual type of the item. Valid values are listed in MostVisitedTileType.
      */
-    public void recordOpenedMostVisitedItem(int index, int tileType) {
-        nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, index, tileType);
+    public void recordOpenedMostVisitedItem(int index, int tileType, int source) {
+        nativeRecordOpenedMostVisitedItem(mNativeMostVisitedSitesBridge, index, tileType, source);
     }
 
     private native long nativeInit(Profile profile);
@@ -134,6 +134,5 @@ public class MostVisitedSites {
     private native void nativeRecordTileTypeMetrics(long nativeMostVisitedSitesBridge,
             int[] tileTypes, int[] sources);
     private native void nativeRecordOpenedMostVisitedItem(
-            long nativeMostVisitedSitesBridge, int index, int tileType);
-
+            long nativeMostVisitedSitesBridge, int index, int tileType, int source);
 }

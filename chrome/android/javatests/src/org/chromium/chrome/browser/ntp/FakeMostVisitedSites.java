@@ -73,7 +73,7 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     }
 
     @Override
-    public void recordOpenedMostVisitedItem(int index, int tileType) {
+    public void recordOpenedMostVisitedItem(int index, int tileType, int source) {
         //  Metrics are stubbed out.
     }
 }

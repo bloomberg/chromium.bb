@@ -47,7 +47,8 @@ class MostVisitedSitesBridge {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint index,
-      jint tile_type);
+      jint tile_type,
+      jint source);
 
   // Registers JNI methods.
   static bool Register(JNIEnv* env);

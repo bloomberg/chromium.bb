@@ -247,23 +247,17 @@ void MostVisitedSites::RecordTileTypeMetrics(
                               counts_per_type[ICON_DEFAULT]);
 }
 
-void MostVisitedSites::RecordOpenedMostVisitedItem(int index, int tile_type) {
-  // TODO(treib): |current_suggestions_| could be updated before this function
-  // is called, leading to DCHECKs and/or memory corruption.  Adjust this
-  // function to work with asynchronous UI.
-  DCHECK_GE(index, 0);
-  DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
-
+void MostVisitedSites::RecordOpenedMostVisitedItem(int index,
+                                                   int tile_type,
+                                                   int source) {
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", index, num_sites_);
 
   std::string histogram = base::StringPrintf(
-      "NewTabPage.MostVisited.%s",
-      GetSourceHistogramName(current_suggestions_[index].source).c_str());
+      "NewTabPage.MostVisited.%s", GetSourceHistogramName(source).c_str());
   LogHistogramEvent(histogram, index, num_sites_);
 
-  histogram = base::StringPrintf(
-      "NewTabPage.TileTypeClicked.%s",
-      GetSourceHistogramName(current_suggestions_[index].source).c_str());
+  histogram = base::StringPrintf("NewTabPage.TileTypeClicked.%s",
+                                 GetSourceHistogramName(source).c_str());
   LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 

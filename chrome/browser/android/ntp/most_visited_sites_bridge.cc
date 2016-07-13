@@ -214,8 +214,9 @@ void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint index,
-    jint tile_type) {
-  most_visited_.RecordOpenedMostVisitedItem(index, tile_type);
+    jint tile_type,
+    jint source) {
+  most_visited_.RecordOpenedMostVisitedItem(index, tile_type, source);
 }
 
 // static

@@ -172,7 +172,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void RecordTileTypeMetrics(const std::vector<int>& tile_types,
                              const std::vector<int>& sources);
-  void RecordOpenedMostVisitedItem(int index, int tile_type);
+  void RecordOpenedMostVisitedItem(int index, int tile_type, int source);
 
   // MostVisitedSitesSupervisor::Observer implementation.
   void OnBlockedSitesChanged() override;
