@@ -298,7 +298,6 @@ class CONTENT_EXPORT RenderViewImpl
   void convertViewportToWindow(blink::WebRect* rect) override;
   void convertWindowToViewport(blink::WebFloatRect* rect) override;
   void didAutoResize(const blink::WebSize& newSize) override;
-  void didChangeCursor(const blink::WebCursorInfo& info) override;
   void didInvalidateRect(const blink::WebRect& rect) override;
   void didOverscroll(const blink::WebFloatSize& overscrollDelta,
                      const blink::WebFloatSize& accumulatedOverscroll,

@@ -117,7 +117,7 @@ public:
     DateTimeChooser* openDateTimeChooser(DateTimeChooserClient*, const DateTimeChooserParameters&) override;
     void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) override;
     void enumerateChosenDirectory(FileChooser*) override;
-    void setCursor(const Cursor&, LocalFrame* localRoot) override;
+    void setCursor(const Cursor&, LocalFrame*) override;
     Cursor lastSetCursorForTesting() const override;
     void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) override;
     WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const override;
@@ -144,7 +144,7 @@ public:
     String acceptLanguages() override;
 
     // ChromeClientImpl:
-    void setCursorForPlugin(const WebCursorInfo&, LocalFrame* localRoot);
+    void setCursorForPlugin(const WebCursorInfo&, LocalFrame*);
     void setNewWindowNavigationPolicy(WebNavigationPolicy);
     void setCursorOverridden(bool);
 
@@ -197,7 +197,7 @@ private:
     void registerPopupOpeningObserver(PopupOpeningObserver*) override;
     void unregisterPopupOpeningObserver(PopupOpeningObserver*) override;
 
-    void setCursor(const WebCursorInfo&, LocalFrame* localRoot);
+    void setCursor(const WebCursorInfo&, LocalFrame*);
 
     WebViewImpl* m_webView; // Weak pointer.
     WindowFeatures m_windowFeatures;

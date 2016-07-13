@@ -732,13 +732,13 @@ Cursor ChromeClientImpl::lastSetCursorForTesting() const
     return m_lastSetMouseCursorForTesting;
 }
 
-void ChromeClientImpl::setCursor(const Cursor& cursor, LocalFrame* localRoot)
+void ChromeClientImpl::setCursor(const Cursor& cursor, LocalFrame* localFrame)
 {
     m_lastSetMouseCursorForTesting = cursor;
-    setCursor(WebCursorInfo(cursor), localRoot);
+    setCursor(WebCursorInfo(cursor), localFrame);
 }
 
-void ChromeClientImpl::setCursor(const WebCursorInfo& cursor, LocalFrame* localRoot)
+void ChromeClientImpl::setCursor(const WebCursorInfo& cursor, LocalFrame* localFrame)
 {
     if (m_cursorOverridden)
         return;
@@ -749,25 +749,15 @@ void ChromeClientImpl::setCursor(const WebCursorInfo& cursor, LocalFrame* localR
     if (m_webView->hasOpenedPopup())
         return;
 #endif
-    if (!m_webView->client())
-        return;
-    // TODO(kenrb, dcheng): For top-level frames we still use the WebView as
-    // a WebWidget. This special case will be removed when top-level frames
-    // get WebFrameWidgets.
-    if (localRoot->isMainFrame()) {
-        m_webView->client()->didChangeCursor(cursor);
-    } else {
-        WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(localRoot);
-        DCHECK(webFrame);
-        DCHECK(webFrame->frameWidget());
-        if (toWebFrameWidgetImpl(webFrame->frameWidget())->client())
-            toWebFrameWidgetImpl(webFrame->frameWidget())->client()->didChangeCursor(cursor);
-    }
+
+    LocalFrame* localRoot = localFrame->localFrameRoot();
+    if (WebFrameWidget* widget = WebLocalFrameImpl::fromFrame(localRoot)->frameWidget())
+        widget->client()->didChangeCursor(cursor);
 }
 
-void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor, LocalFrame* localRoot)
+void ChromeClientImpl::setCursorForPlugin(const WebCursorInfo& cursor, LocalFrame* localFrame)
 {
-    setCursor(cursor, localRoot);
+    setCursor(cursor, localFrame);
 }
 
 void ChromeClientImpl::setCursorOverridden(bool overridden)

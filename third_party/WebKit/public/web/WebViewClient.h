@@ -255,7 +255,6 @@ public:
     void convertViewportToWindow(WebRect* rect) override {}
     void convertWindowToViewport(WebFloatRect* rect) override {}
     void didAutoResize(const WebSize& newSize) override {}
-    void didChangeCursor(const WebCursorInfo&) override {}
     void didFocus() override {}
     void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override {}
     void didInvalidateRect(const WebRect&) override {}

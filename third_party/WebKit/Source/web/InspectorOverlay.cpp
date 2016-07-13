@@ -142,7 +142,7 @@ public:
     void setCursor(const Cursor& cursor, LocalFrame* localRoot) override
     {
         toChromeClientImpl(m_client)->setCursorOverridden(false);
-        toChromeClientImpl(m_client)->setCursor(cursor, localRoot);
+        toChromeClientImpl(m_client)->setCursor(cursor, m_overlay->m_webViewImpl->mainFrameImpl()->frame());
         bool overrideCursor = m_overlay->m_layoutEditor;
         toChromeClientImpl(m_client)->setCursorOverridden(overrideCursor);
     }

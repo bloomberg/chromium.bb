@@ -160,10 +160,9 @@ private:
         return IntSize(0, 0);
     }
 
-    void setCursor(const Cursor& cursor, LocalFrame* localRoot) override
+    void setCursor(const Cursor& cursor, LocalFrame* localFrame) override
     {
-        if (m_popup->m_webView->client())
-            m_popup->m_webView->client()->didChangeCursor(WebCursorInfo(cursor));
+        m_popup->m_widgetClient->didChangeCursor(WebCursorInfo(cursor));
     }
 
     void setEventListenerProperties(WebEventListenerClass eventClass, WebEventListenerProperties properties) override
