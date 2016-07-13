@@ -86,11 +86,6 @@ private:
     static void updateSvgLocalToBorderBoxTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateScrollTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateOutOfFlowContext(const LayoutObject&, PaintPropertyTreeBuilderContext&);
-
-    // Holds references to root property nodes to keep them alive during tree walk.
-    RefPtr<TransformPaintPropertyNode> transformRoot;
-    RefPtr<ClipPaintPropertyNode> clipRoot;
-    RefPtr<EffectPaintPropertyNode> effectRoot;
 };
 
 } // namespace blink

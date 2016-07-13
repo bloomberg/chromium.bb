@@ -21,19 +21,17 @@ namespace blink {
 
 void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPropertyTreeBuilderContext& context)
 {
-    // Only create extra root clip and transform nodes when RLS is enabled, because the main frame
-    // unconditionally create frame translation / clip nodes otherwise.
-    if (rootFrame.frame().settings() && rootFrame.frame().settings()->rootLayerScrolls()) {
-        transformRoot = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
-        context.currentTransform = context.transformForAbsolutePosition = context.transformForFixedPosition = transformRoot.get();
+    RefPtr<TransformPaintPropertyNode> transformRoot = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
+    context.currentTransform = context.transformForAbsolutePosition = context.transformForFixedPosition = transformRoot.get();
+    rootFrame.setRootTransform(std::move(transformRoot));
 
-        clipRoot = ClipPaintPropertyNode::create(transformRoot, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
-        context.currentClip = context.clipForAbsolutePosition = context.clipForFixedPosition = clipRoot.get();
-    }
+    RefPtr<ClipPaintPropertyNode> clipRoot = ClipPaintPropertyNode::create(transformRoot, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
+    context.currentClip = context.clipForAbsolutePosition = context.clipForFixedPosition = clipRoot.get();
+    rootFrame.setRootClip(std::move(clipRoot));
 
-    // The root frame never creates effect node so we unconditionally create a root node here.
-    effectRoot = EffectPaintPropertyNode::create(1.0, nullptr);
+    RefPtr<EffectPaintPropertyNode> effectRoot = EffectPaintPropertyNode::create(1.0, nullptr);
     context.currentEffect = effectRoot.get();
+    rootFrame.setRootEffect(std::move(effectRoot));
 }
 
 void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropertyTreeBuilderContext& context)

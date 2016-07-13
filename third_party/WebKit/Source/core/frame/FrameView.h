@@ -40,6 +40,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
+#include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
@@ -599,6 +600,15 @@ public:
     void setContentClip(PassRefPtr<ClipPaintPropertyNode> contentClip) { m_contentClip = contentClip; }
     ClipPaintPropertyNode* contentClip() const { return m_contentClip.get(); }
 
+    void setRootTransform(PassRefPtr<TransformPaintPropertyNode> rootTransform) { m_rootTransform = rootTransform; }
+    TransformPaintPropertyNode* rootTransform() const { return m_rootTransform.get(); }
+
+    void setRootClip(PassRefPtr<ClipPaintPropertyNode> rootClip) { m_rootClip = rootClip; }
+    ClipPaintPropertyNode* rootClip() const { return m_rootClip.get(); }
+
+    void setRootEffect(PassRefPtr<EffectPaintPropertyNode> rootEffect) { m_rootEffect = rootEffect; }
+    EffectPaintPropertyNode* rootEffect() const { return m_rootEffect.get(); }
+
     // TODO(ojan): Merge this with IntersectionObserver once it lands.
     IntRect computeVisibleArea();
 
@@ -907,6 +917,12 @@ private:
     // The content clip clips the document (= LayoutView) but not the scrollbars.
     // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is enabled.
     RefPtr<ClipPaintPropertyNode> m_contentClip;
+
+    // These nodes represent the root nodes of each property tree.
+    // Only the root frame should create them and they will be no-op.
+    RefPtr<TransformPaintPropertyNode> m_rootTransform;
+    RefPtr<ClipPaintPropertyNode> m_rootClip;
+    RefPtr<EffectPaintPropertyNode> m_rootEffect;
 
     // This is set on the local root frame view only.
     DocumentLifecycle::LifecycleState m_currentUpdateLifecyclePhasesTargetState;

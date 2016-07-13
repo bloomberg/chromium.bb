@@ -145,12 +145,14 @@ TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     FrameView* frameView = document().view();
     frameView->updateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix(), frameView->preTranslation()->matrix());
-    EXPECT_EQ(nullptr, frameView->preTranslation()->parent());
+    EXPECT_EQ(frameView->rootTransform(), frameView->preTranslation()->parent());
+    EXPECT_EQ(nullptr, frameView->rootTransform()->parent());
     EXPECT_EQ(TransformationMatrix().translate(0, -100), frameView->scrollTranslation()->matrix());
     EXPECT_EQ(frameView->preTranslation(), frameView->scrollTranslation()->parent());
     EXPECT_EQ(frameView->preTranslation(), frameView->contentClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameView->contentClip()->clipRect());
-    EXPECT_EQ(nullptr, frameView->contentClip()->parent());
+    EXPECT_EQ(frameView->rootClip(), frameView->contentClip()->parent());
+    EXPECT_EQ(nullptr, frameView->rootClip()->parent());
 
     LayoutViewItem layoutViewItem = document().layoutViewItem();
     ObjectPaintProperties* layoutViewProperties = layoutViewItem.objectPaintProperties();

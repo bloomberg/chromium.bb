@@ -2636,8 +2636,21 @@ void FrameView::synchronizedPaint()
 
 void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
 {
-    if (graphicsLayer->drawsContent())
+    if (graphicsLayer->drawsContent()) {
+        // Usually this is not needed because the PaintLayer will setup the chunk properties
+        // altogether. However in debug builds the GraphicsLayer could paint debug background before
+        // we ever reach the PaintLayer.
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            PaintChunkProperties properties;
+            properties.transform = m_rootTransform;
+            properties.clip = m_rootClip;
+            properties.effect = m_rootEffect;
+            graphicsLayer->getPaintController().updateCurrentPaintChunkProperties(properties);
+        }
         graphicsLayer->paint(nullptr);
+        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+            graphicsLayer->getPaintController().updateCurrentPaintChunkProperties(PaintChunkProperties());
+    }
 
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
