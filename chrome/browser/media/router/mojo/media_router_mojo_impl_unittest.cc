@@ -1289,6 +1289,9 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
   void TearDown() override {
     media_router_.reset();
     profile_.reset();
+    // Explicitly delete the TestingBrowserProcess before |thread_bundle_|.
+    // This allows it to do cleanup before |thread_bundle_| goes away.
+    TestingBrowserProcess::DeleteInstance();
   }
 
   // Constructs bindings so that |media_router_| delegates calls to
