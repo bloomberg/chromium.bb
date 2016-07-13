@@ -1203,8 +1203,7 @@
     ],
 
     'gn_windows_analyze': [
-      'gn', 'no_symbols', 'disable_precompiled_headers',
-      'shared', 'x86', 'win_analyze',
+      'gn', 'no_symbols', 'no_pch', 'shared', 'x86', 'win_analyze',
     ],
 
     'gn_ubsan_vptr_release_bot': [
@@ -2023,11 +2022,6 @@
     'disable_nacl': {
       'gn_args': 'enable_nacl=false',
       'gyp_defines': 'disable_nacl=1',
-    },
-
-    'disable_precompiled_headers': {
-      'gn_args': 'disable_precompiled_headers=true',
-      'gyp_defines': 'chromium_win_pch=0',
     },
 
     'edge': {
