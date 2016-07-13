@@ -74,10 +74,11 @@ GetUpdatesCallerInfo::GetUpdatesSource GetSourceFromReason(
       return GetUpdatesCallerInfo::NEW_CLIENT;
     case CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE:
     case CONFIGURE_REASON_CRYPTO:
+    case CONFIGURE_REASON_CATCH_UP:
       return GetUpdatesCallerInfo::NEWLY_SUPPORTED_DATATYPE;
     case CONFIGURE_REASON_PROGRAMMATIC:
       return GetUpdatesCallerInfo::PROGRAMMATIC;
-    default:
+    case CONFIGURE_REASON_UNKNOWN:
       NOTREACHED();
   }
   return GetUpdatesCallerInfo::UNKNOWN;
