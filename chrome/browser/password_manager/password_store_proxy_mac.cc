@@ -190,8 +190,9 @@ PasswordStoreChangeList PasswordStoreProxyMac::RemoveLoginsSyncedBetweenImpl(
 }
 
 PasswordStoreChangeList
-PasswordStoreProxyMac::DisableAutoSignInForAllLoginsImpl() {
-  return GetBackend()->DisableAutoSignInForAllLoginsImpl();
+PasswordStoreProxyMac::DisableAutoSignInForOriginsImpl(
+    const base::Callback<bool(const GURL&)>& origin_filter) {
+  return GetBackend()->DisableAutoSignInForOriginsImpl(origin_filter);
 }
 
 bool PasswordStoreProxyMac::RemoveStatisticsCreatedBetweenImpl(

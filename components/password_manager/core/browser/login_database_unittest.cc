@@ -88,18 +88,19 @@ template<> std::string GetFirstColumn(const sql::Statement& s) {
 }
 
 bool AddZeroClickableLogin(LoginDatabase* db,
-                           const std::string& unique_string) {
+                           const std::string& unique_string,
+                           const GURL& origin) {
   // Example password form.
   PasswordForm form;
-  form.origin = GURL("https://example.com/");
+  form.origin = origin;
   form.username_element = ASCIIToUTF16(unique_string);
   form.username_value = ASCIIToUTF16(unique_string);
   form.password_element = ASCIIToUTF16(unique_string);
   form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = form.origin.spec();
   form.display_name = ASCIIToUTF16(unique_string);
-  form.icon_url = GURL("https://example.com/");
-  form.federation_origin = url::Origin(GURL("https://example.com/"));
+  form.icon_url = origin;
+  form.federation_origin = url::Origin(origin);
   form.date_created = base::Time::Now();
 
   form.skip_zero_click = false;
@@ -854,37 +855,47 @@ TEST_F(LoginDatabaseTest, RemoveLoginsSyncedBetween) {
 TEST_F(LoginDatabaseTest, GetAutoSignInLogins) {
   ScopedVector<autofill::PasswordForm> result;
 
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1"));
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo2"));
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3"));
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4"));
+  GURL origin("https://example.com");
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1", origin));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo2", origin));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3", origin));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4", origin));
 
   EXPECT_TRUE(db().GetAutoSignInLogins(&result));
   EXPECT_EQ(4U, result.size());
   for (const auto& form : result)
     EXPECT_FALSE(form->skip_zero_click);
 
-  EXPECT_TRUE(db().DisableAutoSignInForAllLogins());
+  EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin));
   EXPECT_TRUE(db().GetAutoSignInLogins(&result));
   EXPECT_EQ(0U, result.size());
 }
 
-TEST_F(LoginDatabaseTest, DisableAutoSignInForAllLogins) {
+TEST_F(LoginDatabaseTest, DisableAutoSignInForOrigin) {
   ScopedVector<autofill::PasswordForm> result;
 
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1"));
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo2"));
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3"));
-  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4"));
+  GURL origin1("https://google.com");
+  GURL origin2("https://chrome.com");
+  GURL origin3("http://example.com");
+  GURL origin4("http://localhost");
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo1", origin1));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo2", origin2));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo3", origin3));
+  EXPECT_TRUE(AddZeroClickableLogin(&db(), "foo4", origin4));
 
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   for (const auto& form : result)
     EXPECT_FALSE(form->skip_zero_click);
 
-  EXPECT_TRUE(db().DisableAutoSignInForAllLogins());
+  EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin1));
+  EXPECT_TRUE(db().DisableAutoSignInForOrigin(origin3));
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
-  for (const auto& form : result)
-    EXPECT_TRUE(form->skip_zero_click);
+  for (const auto* form : result) {
+    if (form->origin == origin1 || form->origin == origin3)
+      EXPECT_TRUE(form->skip_zero_click);
+    else
+      EXPECT_FALSE(form->skip_zero_click);
+  }
 }
 
 TEST_F(LoginDatabaseTest, BlacklistedLogins) {

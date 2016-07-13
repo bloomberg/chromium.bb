@@ -77,8 +77,8 @@ class LoginDatabase {
   bool RemoveLoginsSyncedBetween(base::Time delete_begin,
                                  base::Time delete_end);
 
-  // Sets the 'skip_zero_click' flag to 'true' for all logins.
-  bool DisableAutoSignInForAllLogins();
+  // Sets the 'skip_zero_click' flag on all forms on |origin| to 'true'.
+  bool DisableAutoSignInForOrigin(const GURL& origin);
 
   // All Get* methods below overwrite |forms| with the returned credentials. On
   // success, those methods return true.

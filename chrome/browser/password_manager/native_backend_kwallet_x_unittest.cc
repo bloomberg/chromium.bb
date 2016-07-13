@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
@@ -1000,12 +1001,17 @@ TEST_P(NativeBackendKWalletTest, RemoveLoginsSyncedBetween) {
   TestRemoveLoginsBetween(SYNCED);
 }
 
-TEST_P(NativeBackendKWalletTest, DisableAutoSignInForAllLogins) {
+TEST_P(NativeBackendKWalletTest, DisableAutoSignInForOrigins) {
   NativeBackendKWalletStub backend(42, desktop_env_);
   EXPECT_TRUE(backend.InitWithBus(mock_session_bus_));
 
+  form_isc_.skip_zero_click = false;
   form_google_.skip_zero_click = false;
 
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
+                 base::Unretained(&backend), form_isc_));
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(base::IgnoreResult(&NativeBackendKWallet::AddLogin),
@@ -1022,8 +1028,11 @@ TEST_P(NativeBackendKWalletTest, DisableAutoSignInForAllLogins) {
   PasswordStoreChangeList changes;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendKWallet::DisableAutoSignInForAllLogins,
-                 base::Unretained(&backend), &changes),
+      base::Bind(&NativeBackendKWallet::DisableAutoSignInForOrigins,
+                 base::Unretained(&backend),
+                 base::Bind(&GURL::operator==,
+                            base::Unretained(&form_google_.origin)),
+                 &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
   RunDBThread();
 
@@ -1031,6 +1040,9 @@ TEST_P(NativeBackendKWalletTest, DisableAutoSignInForAllLogins) {
   forms.push_back(&form_google_);
   ExpectationArray expected;
   expected.push_back(make_pair(std::string(form_google_.signon_realm), forms));
+  forms.clear();
+  forms.push_back(&form_isc_);
+  expected.push_back(make_pair(std::string(form_isc_.signon_realm), forms));
   CheckPasswordForms("Chrome Form Data (42)", expected);
 }
 

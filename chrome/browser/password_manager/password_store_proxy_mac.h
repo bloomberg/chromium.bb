@@ -86,8 +86,8 @@ class PasswordStoreProxyMac : public password_manager::PasswordStore {
   password_manager::PasswordStoreChangeList RemoveLoginsSyncedBetweenImpl(
       base::Time delete_begin,
       base::Time delete_end) override;
-  password_manager::PasswordStoreChangeList DisableAutoSignInForAllLoginsImpl()
-      override;
+  password_manager::PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
+      const base::Callback<bool(const GURL&)>& origin_filter) override;
   bool RemoveStatisticsCreatedBetweenImpl(base::Time delete_begin,
                                           base::Time delete_end) override;
   ScopedVector<autofill::PasswordForm> FillMatchingLogins(

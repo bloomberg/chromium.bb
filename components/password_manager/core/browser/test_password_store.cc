@@ -118,7 +118,8 @@ PasswordStoreChangeList TestPasswordStore::RemoveLoginsSyncedBetweenImpl(
   return PasswordStoreChangeList();
 }
 
-PasswordStoreChangeList TestPasswordStore::DisableAutoSignInForAllLoginsImpl() {
+PasswordStoreChangeList TestPasswordStore::DisableAutoSignInForOriginsImpl(
+    const base::Callback<bool(const GURL&)>& origin_filter) {
   return PasswordStoreChangeList();
 }
 

@@ -1778,7 +1778,7 @@ TEST_F(PasswordStoreMacTest, TestRemoveLoginsSyncedBetween) {
   CheckRemoveLoginsBetween(this, false);
 }
 
-TEST_F(PasswordStoreMacTest, TestDisableAutoSignInForAllLogins) {
+TEST_F(PasswordStoreMacTest, TestDisableAutoSignInForOrigins) {
   PasswordFormData www_form_data_facebook = {
       PasswordForm::SCHEME_HTML,
       "http://www.facebook.com/",
@@ -1796,22 +1796,45 @@ TEST_F(PasswordStoreMacTest, TestDisableAutoSignInForAllLogins) {
       CreatePasswordFormFromDataForTesting(www_form_data_facebook);
   form_facebook->skip_zero_click = false;
 
-  // Add the zero-clickable form to the database.
+  PasswordFormData www_form_data_google = {
+      PasswordForm::SCHEME_HTML,
+      "http://www.google.com/",
+      "http://www.google.com/foo/bar/index.html",
+      "login",
+      L"submit",
+      L"username",
+      L"password",
+      L"joe_user",
+      L"sekrit",
+      true,
+      false,
+      0};
+  std::unique_ptr<PasswordForm> form_google =
+      CreatePasswordFormFromDataForTesting(www_form_data_google);
+  form_google->skip_zero_click = false;
+
+  // Add the zero-clickable forms to the database.
   PasswordsChangeObserver observer(store());
   store()->AddLogin(*form_facebook);
+  store()->AddLogin(*form_google);
   EXPECT_CALL(observer, OnLoginsChanged(GetAddChangeList(*form_facebook)));
+  EXPECT_CALL(observer, OnLoginsChanged(GetAddChangeList(*form_google)));
   observer.WaitAndVerify(this);
 
   ScopedVector<autofill::PasswordForm> forms;
   EXPECT_TRUE(login_db()->GetAutoSignInLogins(&forms));
-  EXPECT_EQ(1u, forms.size());
+  EXPECT_EQ(2u, forms.size());
   EXPECT_FALSE(forms[0]->skip_zero_click);
+  EXPECT_FALSE(forms[1]->skip_zero_click);
 
-  store()->DisableAutoSignInForAllLogins(base::Closure());
+  store()->DisableAutoSignInForOrigins(
+    base::Bind(&GURL::operator==, base::Unretained(&form_google->origin)),
+    base::Closure());
   FinishAsyncProcessing();
 
   EXPECT_TRUE(login_db()->GetAutoSignInLogins(&forms));
-  EXPECT_EQ(0u, forms.size());
+  EXPECT_EQ(1u, forms.size());
+  EXPECT_EQ(form_facebook->origin, forms[0]->origin);
 }
 
 TEST_F(PasswordStoreMacTest, TestRemoveLoginsMultiProfile) {

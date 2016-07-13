@@ -161,14 +161,16 @@ PasswordStoreChangeList PasswordStoreX::RemoveLoginsSyncedBetweenImpl(
   return changes;
 }
 
-PasswordStoreChangeList PasswordStoreX::DisableAutoSignInForAllLoginsImpl() {
+PasswordStoreChangeList PasswordStoreX::DisableAutoSignInForOriginsImpl(
+    const base::Callback<bool(const GURL&)>& origin_filter) {
   CheckMigration();
   PasswordStoreChangeList changes;
   if (use_native_backend() &&
-      backend_->DisableAutoSignInForAllLogins(&changes)) {
+      backend_->DisableAutoSignInForOrigins(origin_filter, &changes)) {
     allow_fallback_ = false;
   } else if (allow_default_store()) {
-    changes = PasswordStoreDefault::DisableAutoSignInForAllLoginsImpl();
+    changes =
+        PasswordStoreDefault::DisableAutoSignInForOriginsImpl(origin_filter);
   }
   return changes;
 }

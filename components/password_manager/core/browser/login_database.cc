@@ -1047,9 +1047,11 @@ bool LoginDatabase::GetAutoSignInLogins(
   return StatementToForms(&s, nullptr, forms);
 }
 
-bool LoginDatabase::DisableAutoSignInForAllLogins() {
+bool LoginDatabase::DisableAutoSignInForOrigin(const GURL& origin) {
   sql::Statement s(db_.GetCachedStatement(
-      SQL_FROM_HERE, "UPDATE logins SET skip_zero_click = 1;"));
+      SQL_FROM_HERE,
+      "UPDATE logins SET skip_zero_click = 1 WHERE origin_url = ?;"));
+  s.BindString(0, origin.spec());
 
   return s.Run();
 }

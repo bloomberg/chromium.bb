@@ -784,7 +784,8 @@ void BrowsingDataRemover::RemoveImpl(
       base::Closure on_cleared_auto_sign_in =
           base::Bind(&BrowsingDataRemover::OnClearedAutoSignIn,
                      weak_ptr_factory_.GetWeakPtr());
-      password_store->DisableAutoSignInForAllLogins(on_cleared_auto_sign_in);
+      password_store->DisableAutoSignInForOrigins(
+          filter, on_cleared_auto_sign_in);
     }
   }
 

@@ -107,7 +107,8 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
       base::Time delete_begin,
       base::Time delete_end,
       password_manager::PasswordStoreChangeList* changes) override;
-  bool DisableAutoSignInForAllLogins(
+  bool DisableAutoSignInForOrigins(
+      const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override;
   bool GetLogins(const autofill::PasswordForm& form,
                  ScopedVector<autofill::PasswordForm>* forms) override;

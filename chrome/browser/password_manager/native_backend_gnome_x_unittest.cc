@@ -1177,7 +1177,7 @@ TEST_F(NativeBackendGnomeTest, RemoveLoginsSyncedBetween) {
   CheckRemoveLoginsBetween(SYNCED);
 }
 
-TEST_F(NativeBackendGnomeTest, DisableAutoSignInForAllLogins) {
+TEST_F(NativeBackendGnomeTest, DisableAutoSignInForOrigins) {
   NativeBackendGnome backend(42);
   backend.Init();
   form_google_.skip_zero_click = false;
@@ -1204,20 +1204,25 @@ TEST_F(NativeBackendGnomeTest, DisableAutoSignInForAllLogins) {
   PasswordStoreChangeList expected_changes;
   expected_changes.push_back(
       PasswordStoreChange(PasswordStoreChange::UPDATE, form_facebook_));
-  expected_changes.push_back(
-      PasswordStoreChange(PasswordStoreChange::UPDATE, form_google_));
 
   PasswordStoreChangeList changes;
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::DB, FROM_HERE,
-      base::Bind(&NativeBackendGnome::DisableAutoSignInForAllLogins,
-                 base::Unretained(&backend), &changes),
+      base::Bind(&NativeBackendGnome::DisableAutoSignInForOrigins,
+                 base::Unretained(&backend),
+                 base::Bind(&GURL::operator==,
+                            base::Unretained(&form_facebook_.origin)),
+                 &changes),
       base::Bind(&CheckPasswordChangesWithResult, &expected_changes, &changes));
   RunBothThreads();
 
   EXPECT_EQ(2u, mock_keyring_items.size());
-  for (const auto& item : mock_keyring_items)
-    CheckUint32Attribute(&item, "should_skip_zero_click", 1);
+  CheckStringAttribute(
+      &mock_keyring_items[0], "origin_url", form_google_.origin.spec());
+  CheckUint32Attribute(&mock_keyring_items[0], "should_skip_zero_click", 0);
+  CheckStringAttribute(
+      &mock_keyring_items[1], "origin_url", form_facebook_.origin.spec());
+  CheckUint32Attribute(&mock_keyring_items[1], "should_skip_zero_click", 1);
 }
 
 TEST_F(NativeBackendGnomeTest, ReadDuplicateForms) {

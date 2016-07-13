@@ -2384,8 +2384,12 @@ TEST_F(BrowsingDataRemoverTest, RemovePasswordsByOrigin) {
 
 TEST_F(BrowsingDataRemoverTest, DisableAutoSignIn) {
   RemovePasswordsTester tester(GetProfile());
+  base::Callback<bool(const GURL&)> empty_filter =
+      BrowsingDataFilterBuilder::BuildNoopFilter();
 
-  EXPECT_CALL(*tester.store(), DisableAutoSignInForAllLoginsImpl())
+  EXPECT_CALL(
+      *tester.store(),
+      DisableAutoSignInForOriginsImpl(ProbablySameFilter(empty_filter)))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
 
   BlockUntilBrowsingDataRemoved(browsing_data::EVERYTHING,
@@ -2394,10 +2398,14 @@ TEST_F(BrowsingDataRemoverTest, DisableAutoSignIn) {
 
 TEST_F(BrowsingDataRemoverTest, DisableAutoSignInAfterRemovingPasswords) {
   RemovePasswordsTester tester(GetProfile());
+  base::Callback<bool(const GURL&)> empty_filter =
+      BrowsingDataFilterBuilder::BuildNoopFilter();
 
   EXPECT_CALL(*tester.store(), RemoveLoginsByURLAndTimeImpl(_, _, _))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
-  EXPECT_CALL(*tester.store(), DisableAutoSignInForAllLoginsImpl())
+  EXPECT_CALL(
+      *tester.store(),
+      DisableAutoSignInForOriginsImpl(ProbablySameFilter(empty_filter)))
       .WillOnce(Return(password_manager::PasswordStoreChangeList()));
 
   BlockUntilBrowsingDataRemoved(browsing_data::EVERYTHING,

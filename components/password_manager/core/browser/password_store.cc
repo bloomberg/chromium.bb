@@ -149,10 +149,12 @@ void PasswordStore::RemoveStatisticsCreatedBetween(
                  delete_begin, delete_end, completion));
 }
 
-void PasswordStore::DisableAutoSignInForAllLogins(
+void PasswordStore::DisableAutoSignInForOrigins(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     const base::Closure& completion) {
-  ScheduleTask(base::Bind(&PasswordStore::DisableAutoSignInForAllLoginsInternal,
-                          this, completion));
+  ScheduleTask(
+      base::Bind(&PasswordStore::DisableAutoSignInForOriginsInternal, this,
+                 base::Callback<bool(const GURL&)>(origin_filter), completion));
 }
 
 void PasswordStore::TrimAffiliationCache() {
@@ -417,9 +419,10 @@ void PasswordStore::RemoveStatisticsCreatedBetweenInternal(
     main_thread_runner_->PostTask(FROM_HERE, completion);
 }
 
-void PasswordStore::DisableAutoSignInForAllLoginsInternal(
+void PasswordStore::DisableAutoSignInForOriginsInternal(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     const base::Closure& completion) {
-  DisableAutoSignInForAllLoginsImpl();
+  DisableAutoSignInForOriginsImpl(origin_filter);
   if (!completion.is_null())
     main_thread_runner_->PostTask(FROM_HERE, completion);
 }

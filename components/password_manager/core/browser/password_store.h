@@ -136,10 +136,13 @@ class PasswordStore : protected PasswordStoreSync,
                                       base::Time delete_end,
                                       const base::Closure& completion);
 
-  // Sets the 'skip_zero_click' flag for all logins in the database to 'true'.
-  // |completion| will be posted to the |main_thread_runner_| after these
-  // modifications are completed and notifications are sent out.
-  void DisableAutoSignInForAllLogins(const base::Closure& completion);
+  // Sets the 'skip_zero_click' flag for all logins in the database that match
+  // |origin_filter| to 'true'. |completion| will be posted to
+  // the |main_thread_runner_| after these modifications are completed
+  // and notifications are sent out.
+  void DisableAutoSignInForOrigins(
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::Closure& completion);
 
   // Removes cached affiliation data that is no longer needed; provided that
   // affiliation-based matching is enabled.
@@ -269,7 +272,8 @@ class PasswordStore : protected PasswordStoreSync,
                                                   base::Time delete_end) = 0;
 
   // Synchronous implementation to disable auto sign-in.
-  virtual PasswordStoreChangeList DisableAutoSignInForAllLoginsImpl() = 0;
+  virtual PasswordStoreChangeList DisableAutoSignInForOriginsImpl(
+      const base::Callback<bool(const GURL&)>& origin_filter) = 0;
 
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with
@@ -371,7 +375,9 @@ class PasswordStore : protected PasswordStoreSync,
   void RemoveStatisticsCreatedBetweenInternal(base::Time delete_begin,
                                               base::Time delete_end,
                                               const base::Closure& completion);
-  void DisableAutoSignInForAllLoginsInternal(const base::Closure& completion);
+  void DisableAutoSignInForOriginsInternal(
+      const base::Callback<bool(const GURL&)>& origin_filter,
+      const base::Closure& completion);
 
   // Finds all non-blacklist PasswordForms, and notifies the consumer.
   void GetAutofillableLoginsImpl(std::unique_ptr<GetLoginsRequest> request);

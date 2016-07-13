@@ -84,7 +84,8 @@ class FailingBackend : public PasswordStoreX::NativeBackend {
     return false;
   }
 
-  bool DisableAutoSignInForAllLogins(
+  bool DisableAutoSignInForOrigins(
+      const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override {
     return false;
   }
@@ -191,7 +192,8 @@ class MockBackend : public PasswordStoreX::NativeBackend {
     return true;
   }
 
-  bool DisableAutoSignInForAllLogins(
+  bool DisableAutoSignInForOrigins(
+      const base::Callback<bool(const GURL&)>& origin_filter,
       password_manager::PasswordStoreChangeList* changes) override {
     return true;
   }

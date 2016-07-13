@@ -281,14 +281,15 @@ bool NativeBackendLibsecret::RemoveLoginsSyncedBetween(
   return RemoveLoginsBetween(delete_begin, delete_end, SYNC_TIMESTAMP, changes);
 }
 
-bool NativeBackendLibsecret::DisableAutoSignInForAllLogins(
+bool NativeBackendLibsecret::DisableAutoSignInForOrigins(
+    const base::Callback<bool(const GURL&)>& origin_filter,
     password_manager::PasswordStoreChangeList* changes) {
   ScopedVector<autofill::PasswordForm> all_forms;
   if (!GetLoginsList(nullptr, ALL_LOGINS, &all_forms))
     return false;
 
   for (auto& form : all_forms) {
-    if (!form->skip_zero_click) {
+    if (origin_filter.Run(form->origin) && !form->skip_zero_click) {
       form->skip_zero_click = true;
       if (!UpdateLogin(*form, changes))
         return false;
