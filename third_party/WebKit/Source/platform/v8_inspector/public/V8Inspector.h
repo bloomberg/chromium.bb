@@ -68,7 +68,6 @@ private:
     bool canExecuteScripts() override;
     void profilingStarted() override { };
     void profilingStopped() override { };
-    void consoleEnabled() override { };
     void consoleCleared() override { };
 
     std::unique_ptr<V8Debugger> m_debugger;

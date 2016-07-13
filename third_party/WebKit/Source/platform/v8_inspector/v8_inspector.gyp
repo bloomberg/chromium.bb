@@ -214,6 +214,8 @@
         'V8InjectedScriptHost.h',
         'V8InspectorSessionImpl.cpp',
         'V8InspectorSessionImpl.h',
+        'V8InternalValueType.cpp',
+        'V8InternalValueType.h',
         'V8ProfilerAgentImpl.cpp',
         'V8ProfilerAgentImpl.h',
         'V8Regex.cpp',
