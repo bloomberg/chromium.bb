@@ -68,12 +68,7 @@ class InstanceHolder {
     ptr_.reset();
     raw_ptr_ = nullptr;
     version_ = 0;
-    if (observer_list_.might_have_observers()) {
-      typename base::ObserverList<Observer>::Iterator it(&observer_list_);
-      Observer* obs;
-      while ((obs = it.GetNext()) != nullptr)
-        obs->OnInstanceClosed();
-    }
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceClosed());
   }
 
   // Sets the interface pointer to |ptr|, once the version is determined. This
@@ -91,12 +86,7 @@ class InstanceHolder {
   void SetInstance(T* raw_ptr, uint32_t raw_version = T::Version_) {
     raw_ptr_ = raw_ptr;
     version_ = raw_version;
-    if (observer_list_.might_have_observers()) {
-      typename base::ObserverList<Observer>::Iterator it(&observer_list_);
-      Observer* obs;
-      while ((obs = it.GetNext()) != nullptr)
-        obs->OnInstanceReady();
-    }
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnInstanceReady());
   }
 
  private:
