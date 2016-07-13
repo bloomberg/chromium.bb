@@ -955,7 +955,8 @@ void GpuBenchmarking::GetGpuDriverBugWorkarounds(gin::Arguments* args) {
   std::vector<std::string> gpu_driver_bug_workarounds;
   gpu::GpuChannelHost* gpu_channel =
       RenderThreadImpl::current()->GetGpuChannel();
-  if (!gpu_channel->Send(new GpuChannelMsg_GetDriverBugWorkArounds(
+  if (!gpu_channel ||
+      !gpu_channel->Send(new GpuChannelMsg_GetDriverBugWorkArounds(
           &gpu_driver_bug_workarounds))) {
     return;
   }
