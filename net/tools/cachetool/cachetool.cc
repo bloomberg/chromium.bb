@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,48 +25,295 @@ using disk_cache::Entry;
 
 namespace {
 
-int kResponseInfoIndex = 0;
+constexpr int kResponseInfoIndex = 0;
 
-// Get the cache's size.
-bool GetSize(Backend* cache_backend) {
-  net::TestCompletionCallback cb;
-  int rv = cache_backend->CalculateSizeOfAllEntries(cb.callback());
-  rv = cb.GetResult(rv);
-  if (rv < 0) {
-    std::cerr << "Couldn't get cache size." << std::endl;
-    return false;
-  }
-  std::cout << rv << std::endl;
-  return true;
+const char* const kCommandNames[] = {
+    "stop",          "get_size",   "list_keys",          "get_stream_for_key",
+    "delete_stream", "delete_key", "update_raw_headers",
+};
+
+// Prints the command line help.
+void PrintHelp() {
+  std::cout << "cachetool <cache_path> <cache_backend_type> <subcommand> "
+            << std::endl
+            << std::endl;
+  std::cout << "Available cache backend types: simple, blockfile" << std::endl;
+  std::cout << "Available subcommands:" << std::endl;
+  std::cout << "  batch: Starts cachetool to process serialized commands "
+            << "passed down by the standard input and return commands output "
+            << "in the stdout until the stop command is received." << std::endl;
+  std::cout << "  delete_key <key>: Delete key from cache." << std::endl;
+  std::cout << "  delete_stream <key> <index>: Delete a particular stream of a"
+            << " given key." << std::endl;
+  std::cout << "  get_size: Calculate the total size of the cache in bytes."
+            << std::endl;
+  std::cout << "  get_stream <key> <index>: Print a particular stream for a"
+            << " given key." << std::endl;
+  std::cout << "  list_keys: List all keys in the cache." << std::endl;
+  std::cout << "  update_raw_headers <key>: Update stdin as the key's raw "
+            << "response headers." << std::endl;
+  std::cout << "  stop: Verify that the cache can be opened and return, "
+            << "confirming the cache exists and is of the right type."
+            << std::endl;
+  std::cout << "Expected values of <index> are:" << std::endl;
+  std::cout << "  0 (HTTP response headers)" << std::endl;
+  std::cout << "  1 (transport encoded content)" << std::endl;
+  std::cout << "  2 (compiled content)" << std::endl;
 }
 
-// Print all of a cache's keys to stdout.
-bool ListKeys(Backend* cache_backend) {
+// Generic command input/output.
+class CommandMarshal {
+ public:
+  CommandMarshal(Backend* cache_backend)
+      : command_failed_(false), cache_backend_(cache_backend){};
+  virtual ~CommandMarshal(){};
+
+  // Reads the next command's name to execute.
+  virtual std::string ReadCommandName() = 0;
+
+  // Reads the next parameter as an integer.
+  virtual int ReadInt() = 0;
+
+  // Reads the next parameter as stream index.
+  int ReadStreamIndex() {
+    if (has_failed())
+      return -1;
+    int index = ReadInt();
+    if (index < 0 || index > 2) {
+      ReturnFailure("Invalid stream index.");
+      return -1;
+    }
+    return index;
+  }
+
+  // Reads the next parameter as an string.
+  virtual std::string ReadString() = 0;
+
+  // Reads the next parameter from stdin as string.
+  virtual std::string ReadBufferedString() = 0;
+
+  // Communicates back an integer.
+  virtual void ReturnInt(int integer) = 0;
+
+  // Communicates back a string.
+  virtual void ReturnString(const std::string& string) = 0;
+
+  // Communicates back a buffer.
+  virtual void ReturnBuffer(net::GrowableIOBuffer* buffer) = 0;
+
+  // Communicates back command failure.
+  virtual void ReturnFailure(const std::string& error_msg) = 0;
+
+  // Communicates back command success.
+  virtual void ReturnSuccess() { DCHECK(!command_failed_); };
+
+  // Returns whether the command has failed.
+  inline bool has_failed() { return command_failed_; }
+
+  // Returns the opened cache backend.
+  Backend* cache_backend() { return cache_backend_; }
+
+ protected:
+  bool command_failed_;
+  Backend* const cache_backend_;
+};
+
+// Command line input/output that is user readable.
+class ProgramArgumentCommandMarshal final : public CommandMarshal {
+ public:
+  ProgramArgumentCommandMarshal(Backend* cache_backend,
+                                base::CommandLine::StringVector args)
+      : CommandMarshal(cache_backend), command_line_args_(args), args_id_(0) {}
+
+  // Implements CommandMarshal.
+  std::string ReadCommandName() override {
+    if (args_id_ == 0)
+      return ReadString();
+    else if (args_id_ == command_line_args_.size())
+      return "stop";
+    else if (!has_failed())
+      ReturnFailure("Command line arguments to long.");
+    return "";
+  }
+
+  // Implements CommandMarshal.
+  int ReadInt() override {
+    std::string interger_str = ReadString();
+    int interger = -1;
+    if (!base::StringToInt(interger_str, &interger)) {
+      ReturnFailure("Couldn't parse integer.");
+      return 0;
+    }
+    return interger;
+  }
+
+  // Implements CommandMarshal.
+  std::string ReadString() override {
+    if (args_id_ < command_line_args_.size())
+      return command_line_args_[args_id_++];
+    if (!has_failed())
+      ReturnFailure("Command line arguments to short.");
+    return "";
+  }
+
+  // Implements CommandMarshal.
+  std::string ReadBufferedString() override {
+    std::ostringstream raw_headers_stream;
+    for (std::string line; std::getline(std::cin, line);)
+      raw_headers_stream << line << std::endl;
+    return raw_headers_stream.str();
+  }
+
+  // Implements CommandMarshal.
+  void ReturnInt(int integer) override {
+    DCHECK(!has_failed());
+    std::cout << integer << std::endl;
+  }
+
+  // Implements CommandMarshal.
+  void ReturnString(const std::string& string) override {
+    DCHECK(!has_failed());
+    std::cout << string << std::endl;
+  }
+
+  // Implements CommandMarshal.
+  void ReturnBuffer(net::GrowableIOBuffer* buffer) override {
+    DCHECK(!has_failed());
+    std::cout.write(buffer->data(), buffer->offset());
+  }
+
+  // Implements CommandMarshal.
+  void ReturnFailure(const std::string& error_msg) override {
+    DCHECK(!has_failed());
+    std::cerr << error_msg << std::endl;
+    command_failed_ = true;
+  }
+
+ private:
+  const base::CommandLine::StringVector command_line_args_;
+  size_t args_id_;
+};
+
+// Online command input/output that receives pickled commands from stdin and
+// returns their results back in stdout. Send the stop command to properly exit
+// cachetool's main loop.
+class StreamCommandMarshal final : public CommandMarshal {
+ public:
+  StreamCommandMarshal(Backend* cache_backend)
+      : CommandMarshal(cache_backend) {}
+
+  // Implements CommandMarshal.
+  std::string ReadCommandName() override {
+    if (has_failed())
+      return "";
+    std::cout.flush();
+    size_t command_id = static_cast<size_t>(std::cin.get());
+    if (command_id >= arraysize(kCommandNames)) {
+      ReturnFailure("Unknown command.");
+      return "";
+    }
+    return kCommandNames[command_id];
+  }
+
+  // Implements CommandMarshal.
+  int ReadInt() override {
+    if (has_failed())
+      return -1;
+    int integer = -1;
+    std::cin.read(reinterpret_cast<char*>(&integer), sizeof(integer));
+    return integer;
+  }
+
+  // Implements CommandMarshal.
+  std::string ReadString() override {
+    if (has_failed())
+      return "";
+    int string_size = ReadInt();
+    if (string_size <= 0) {
+      if (string_size < 0)
+        ReturnFailure("Size of string is negative.");
+      return "";
+    }
+    std::vector<char> tmp_buffer(string_size + 1);
+    std::cin.read(&tmp_buffer[0], string_size);
+    tmp_buffer[string_size] = 0;
+    return std::string(&tmp_buffer[0], string_size);
+  }
+
+  // Implements CommandMarshal.
+  std::string ReadBufferedString() override { return ReadString(); }
+
+  // Implements CommandMarshal.
+  void ReturnInt(int integer) override {
+    DCHECK(!command_failed_);
+    std::cout.write(reinterpret_cast<char*>(&integer), sizeof(integer));
+  }
+
+  // Implements CommandMarshal.
+  void ReturnString(const std::string& string) override {
+    ReturnInt(string.size());
+    std::cout.write(string.c_str(), string.size());
+  }
+
+  // Implements CommandMarshal.
+  void ReturnBuffer(net::GrowableIOBuffer* buffer) override {
+    ReturnInt(buffer->offset());
+    std::cout.write(buffer->StartOfBuffer(), buffer->offset());
+  }
+
+  // Implements CommandMarshal.
+  void ReturnFailure(const std::string& error_msg) override {
+    ReturnString(error_msg);
+    command_failed_ = true;
+  }
+
+  // Implements CommandMarshal.
+  void ReturnSuccess() override { ReturnInt(0); }
+};
+
+// Gets the cache's size.
+void GetSize(CommandMarshal* command_marshal) {
+  net::TestCompletionCallback cb;
+  int rv = command_marshal->cache_backend()->CalculateSizeOfAllEntries(
+      cb.callback());
+  rv = cb.GetResult(rv);
+  if (rv < 0)
+    return command_marshal->ReturnFailure("Couldn't get cache size.");
+  command_marshal->ReturnSuccess();
+  command_marshal->ReturnInt(rv);
+}
+
+// Prints all of a cache's keys to stdout.
+bool ListKeys(CommandMarshal* command_marshal) {
   std::unique_ptr<Backend::Iterator> entry_iterator =
-      cache_backend->CreateIterator();
+      command_marshal->cache_backend()->CreateIterator();
   Entry* entry = nullptr;
   net::TestCompletionCallback cb;
   int rv = entry_iterator->OpenNextEntry(&entry, cb.callback());
+  command_marshal->ReturnSuccess();
   while (cb.GetResult(rv) == net::OK) {
     std::string url = entry->GetKey();
-    std::cout << url << std::endl;
+    command_marshal->ReturnString(url);
     entry->Close();
     entry = nullptr;
     rv = entry_iterator->OpenNextEntry(&entry, cb.callback());
   }
+  command_marshal->ReturnString("");
   return true;
 }
 
-// Get a key's stream to a buffer.
+// Gets a key's stream to a buffer.
 scoped_refptr<net::GrowableIOBuffer> GetStreamForKeyBuffer(
-    Backend* cache_backend,
+    CommandMarshal* command_marshal,
     const std::string& key,
     int index) {
+  DCHECK(!command_marshal->has_failed());
   Entry* cache_entry;
   net::TestCompletionCallback cb;
-  int rv = cache_backend->OpenEntry(key, &cache_entry, cb.callback());
+  int rv = command_marshal->cache_backend()->OpenEntry(key, &cache_entry,
+                                                       cb.callback());
   if (cb.GetResult(rv) != net::OK) {
-    std::cerr << "Couldn't find key's entry." << std::endl;
+    command_marshal->ReturnFailure("Couldn't find key's entry.");
     return nullptr;
   }
 
@@ -79,7 +327,7 @@ scoped_refptr<net::GrowableIOBuffer> GetStreamForKeyBuffer(
     rv = cb.GetResult(rv);
     if (rv < 0) {
       cache_entry->Close();
-      std::cerr << "Stream read error." << std::endl;
+      command_marshal->ReturnFailure("Stream read error.");
       return nullptr;
     }
     buffer->set_offset(buffer->offset() + rv);
@@ -91,138 +339,134 @@ scoped_refptr<net::GrowableIOBuffer> GetStreamForKeyBuffer(
   return buffer;
 }
 
-// Print a key's stream to stdout.
-bool GetStreamForKey(Backend* cache_backend,
-                     const std::string& key,
-                     int index) {
+// Prints a key's stream to stdout.
+void GetStreamForKey(CommandMarshal* command_marshal) {
+  std::string key = command_marshal->ReadString();
+  int index = command_marshal->ReadInt();
+  if (command_marshal->has_failed())
+    return;
   scoped_refptr<net::GrowableIOBuffer> buffer(
-      GetStreamForKeyBuffer(cache_backend, key, index));
-  if (!buffer)
-    return false;
+      GetStreamForKeyBuffer(command_marshal, key, index));
+  if (command_marshal->has_failed())
+    return;
   if (index == kResponseInfoIndex) {
     net::HttpResponseInfo response_info;
     bool truncated_response_info = false;
     net::HttpCache::ParseResponseInfo(buffer->StartOfBuffer(), buffer->offset(),
                                       &response_info, &truncated_response_info);
-    if (truncated_response_info) {
-      std::cerr << "Truncated HTTP response." << std::endl;
-      return false;
-    }
-    std::cout << net::HttpUtil::ConvertHeadersBackToHTTPResponse(
-        response_info.headers->raw_headers());
+    if (truncated_response_info)
+      return command_marshal->ReturnFailure("Truncated HTTP response.");
+    command_marshal->ReturnSuccess();
+    command_marshal->ReturnString(
+        net::HttpUtil::ConvertHeadersBackToHTTPResponse(
+            response_info.headers->raw_headers()));
   } else {
-    std::cout.write(buffer->StartOfBuffer(), buffer->offset());
+    command_marshal->ReturnSuccess();
+    command_marshal->ReturnBuffer(buffer.get());
   }
-  return true;
 }
 
-// Set stdin as the key's raw response headers.
-bool UpdateRawResponseHeaders(Backend* cache_backend, const std::string& key) {
+// Sets stdin as the key's raw response headers.
+void UpdateRawResponseHeaders(CommandMarshal* command_marshal) {
+  std::string key = command_marshal->ReadString();
+  std::string raw_headers = command_marshal->ReadBufferedString();
+  if (command_marshal->has_failed())
+    return;
   scoped_refptr<net::GrowableIOBuffer> buffer(
-      GetStreamForKeyBuffer(cache_backend, key, kResponseInfoIndex));
-  if (!buffer)
-    return false;
+      GetStreamForKeyBuffer(command_marshal, key, kResponseInfoIndex));
+  if (command_marshal->has_failed())
+    return;
   net::HttpResponseInfo response_info;
   bool truncated_response_info = false;
   net::HttpCache::ParseResponseInfo(buffer->StartOfBuffer(), buffer->offset(),
                                     &response_info, &truncated_response_info);
-  if (truncated_response_info) {
-    std::cerr << "Truncated HTTP response." << std::endl;
-    return false;
-  }
-  std::ostringstream raw_headers_stream;
-  for (std::string line; std::getline(std::cin, line);)
-    raw_headers_stream << line << std::endl;
-  response_info.headers =
-      new net::HttpResponseHeaders(raw_headers_stream.str());
+  if (truncated_response_info)
+    return command_marshal->ReturnFailure("Truncated HTTP response.");
+
+  response_info.headers = new net::HttpResponseHeaders(raw_headers);
   scoped_refptr<net::PickledIOBuffer> data(new net::PickledIOBuffer());
   response_info.Persist(data->pickle(), false, false);
   data->Done();
   Entry* cache_entry;
   net::TestCompletionCallback cb;
-  int rv = cache_backend->OpenEntry(key, &cache_entry, cb.callback());
+  int rv = command_marshal->cache_backend()->OpenEntry(key, &cache_entry,
+                                                       cb.callback());
   CHECK(cb.GetResult(rv) == net::OK);
   int data_len = data->pickle()->size();
   rv = cache_entry->WriteData(kResponseInfoIndex, 0, data.get(), data_len,
                               cb.callback(), true);
-  if (cb.GetResult(rv) != data_len) {
-    std::cerr << "Couldn't write headers." << std::endl;
-    return false;
-  }
+  if (cb.GetResult(rv) != data_len)
+    return command_marshal->ReturnFailure("Couldn't write headers.");
+  command_marshal->ReturnSuccess();
   cache_entry->Close();
-  return true;
 }
 
-// Delete a specified key stream from the cache.
-bool DeleteStreamForKey(Backend* cache_backend,
-                        const std::string& key,
-                        int index) {
+// Deletes a specified key stream from the cache.
+void DeleteStreamForKey(CommandMarshal* command_marshal) {
+  std::string key = command_marshal->ReadString();
+  int index = command_marshal->ReadInt();
+  if (command_marshal->has_failed())
+    return;
   Entry* cache_entry;
   net::TestCompletionCallback cb;
-  int rv = cache_backend->OpenEntry(key, &cache_entry, cb.callback());
-  if (cb.GetResult(rv) != net::OK) {
-    std::cerr << "Couldn't find key's entry." << std::endl;
-    return false;
-  }
+  int rv = command_marshal->cache_backend()->OpenEntry(key, &cache_entry,
+                                                       cb.callback());
+  if (cb.GetResult(rv) != net::OK)
+    return command_marshal->ReturnFailure("Couldn't find key's entry.");
 
   scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(""));
   rv = cache_entry->WriteData(index, 0, buffer.get(), 0, cb.callback(), true);
-  if (cb.GetResult(rv) != 0) {
-    std::cerr << "Couldn't delete key stream." << std::endl;
-    return false;
-  }
+  if (cb.GetResult(rv) != net::OK)
+    return command_marshal->ReturnFailure("Couldn't delete key stream.");
+  command_marshal->ReturnSuccess();
   cache_entry->Close();
-  return true;
 }
 
-// Delete a specified key from the cache.
-bool DeleteKey(Backend* cache_backend, const std::string& key) {
+// Deletes a specified key from the cache.
+void DeleteKey(CommandMarshal* command_marshal) {
+  std::string key = command_marshal->ReadString();
+  if (command_marshal->has_failed())
+    return;
   net::TestCompletionCallback cb;
-  int rv = cache_backend->DoomEntry(key, cb.callback());
-  if (cb.GetResult(rv) != net::OK) {
-    std::cerr << "Couldn't delete key." << std::endl;
-    return false;
-  }
-  return true;
+  int rv = command_marshal->cache_backend()->DoomEntry(key, cb.callback());
+  if (cb.GetResult(rv) != net::OK)
+    command_marshal->ReturnFailure("Couldn't delete key.");
+  else
+    command_marshal->ReturnSuccess();
 }
 
-// Parse stream index from command line argument string.
-int ParseStreamIndex(const std::string& index_arg) {
-  int index = -1;
-  if (!base::StringToInt(index_arg, &index)) {
-    std::cerr << "<index> must be an integer." << std::endl;
-    return -1;
-  } else if (index < 0 || index > 2) {
-    std::cerr << "Invalid stream index." << std::endl;
-    return -1;
+// Executes all command from the |command_marshal|.
+bool ExecuteCommands(CommandMarshal* command_marshal) {
+  while (!command_marshal->has_failed()) {
+    std::string subcommand(command_marshal->ReadCommandName());
+    if (command_marshal->has_failed())
+      break;
+    if (subcommand == "stop") {
+      command_marshal->ReturnSuccess();
+      return true;
+    } else if (subcommand == "batch") {
+      StreamCommandMarshal stream_command_marshal(
+          command_marshal->cache_backend());
+      return ExecuteCommands(&stream_command_marshal);
+    } else if (subcommand == "delete_key") {
+      DeleteKey(command_marshal);
+    } else if (subcommand == "delete_stream") {
+      DeleteStreamForKey(command_marshal);
+    } else if (subcommand == "get_size") {
+      GetSize(command_marshal);
+    } else if (subcommand == "get_stream") {
+      GetStreamForKey(command_marshal);
+    } else if (subcommand == "list_keys") {
+      ListKeys(command_marshal);
+    } else if (subcommand == "update_raw_headers") {
+      UpdateRawResponseHeaders(command_marshal);
+    } else {
+      // The wrong subcommand is originated from the command line.
+      command_marshal->ReturnFailure("Unknown command.");
+      PrintHelp();
+    }
   }
-  return index;
-}
-
-// Print the command line help.
-void PrintHelp() {
-  std::cout << "cachetool <cache_path> <cache_backend_type> <subcommand> ..."
-            << std::endl
-            << std::endl;
-  std::cout << "Available cache backend types: simple, blockfile" << std::endl;
-  std::cout << "Available subcommands:" << std::endl;
-  std::cout << "  delete_key <key>: Delete key from cache." << std::endl;
-  std::cout << "  delete_stream <key> <index>: Delete a particular stream of a"
-            << " given key." << std::endl;
-  std::cout << "  get_size: Calculate the total size of the cache in bytes."
-            << std::endl;
-  std::cout << "  get_stream <key> <index>: Print a particular stream for a"
-            << " given key." << std::endl;
-  std::cout << "  list_keys: List all keys in the cache." << std::endl;
-  std::cout << "  update_raw_headers <key>: Update stdin as the key's raw "
-            << "response headers." << std::endl;
-  std::cout << "  validate: Verify that the cache can be opened and return, "
-            << "confirming the cache exists and is of the right type."
-            << std::endl;
-  std::cout << "Expected values of <index> are:" << std::endl;
-  std::cout << "  0 (HTTP response headers)" << std::endl;
-  std::cout << "  1 (transport encoded content)" << std::endl;
-  std::cout << "  2 (compiled content)" << std::endl;
+  return false;
 }
 
 }  // namespace
@@ -242,7 +486,6 @@ int main(int argc, char* argv[]) {
 
   base::FilePath cache_path(args[0]);
   std::string cache_backend_type(args[1]);
-  std::string subcommand(args[2]);
 
   net::BackendType backend_type;
   if (cache_backend_type == "simple") {
@@ -265,34 +508,13 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  bool successful_command;
-  if (subcommand == "delete_key" && args.size() == 4) {
-    successful_command = DeleteKey(cache_backend.get(), args[3]);
-  } else if (subcommand == "delete_stream" && args.size() == 5) {
-    int index = ParseStreamIndex(args[4]);
-    if (index < 0)
-      return 1;
-    successful_command =
-        DeleteStreamForKey(cache_backend.get(), args[3], index);
-  } else if (subcommand == "get_size" && args.size() == 3) {
-    successful_command = GetSize(cache_backend.get());
-  } else if (subcommand == "get_stream" && args.size() == 5) {
-    int index = ParseStreamIndex(args[4]);
-    if (index < 0)
-      return 1;
-    successful_command = GetStreamForKey(cache_backend.get(), args[3], index);
-  } else if (subcommand == "list_keys" && args.size() == 3) {
-    successful_command = ListKeys(cache_backend.get());
-  } else if (subcommand == "update_raw_headers" && args.size() == 4) {
-    successful_command = UpdateRawResponseHeaders(cache_backend.get(), args[3]);
-  } else if (subcommand == "validate" && args.size() == 3) {
-    successful_command = true;
-  } else {
-    successful_command = false;
-    PrintHelp();
-  }
+  ProgramArgumentCommandMarshal program_argument_marshal(
+      cache_backend.get(),
+      base::CommandLine::StringVector(args.begin() + 2, args.end()));
+  bool successful_commands = ExecuteCommands(&program_argument_marshal);
+
   base::RunLoop().RunUntilIdle();
   cache_backend = nullptr;
   base::RunLoop().RunUntilIdle();
-  return !successful_command;
+  return !successful_commands;
 }
