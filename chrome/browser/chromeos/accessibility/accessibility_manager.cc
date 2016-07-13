@@ -10,7 +10,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/audio/sounds.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -96,6 +95,13 @@ using extensions::api::braille_display_private::StubBrailleController;
 namespace chromeos {
 
 namespace {
+
+// When this flag is set, system sounds will not be played.
+const char kAshDisableSystemSounds[] = "ash-disable-system-sounds";
+
+// When this flag is set, system sounds will be played whether the
+// ChromeVox is enabled or not.
+const char kAshEnableSystemSounds[] = "ash-enable-system-sounds";
 
 static chromeos::AccessibilityManager* g_accessibility_manager = NULL;
 
@@ -772,9 +778,16 @@ void AccessibilityManager::OnLocaleChanged() {
   EnableSpokenFeedback(true, ash::A11Y_NOTIFICATION_NONE);
 }
 
-void AccessibilityManager::PlayEarcon(int sound_key) {
+bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
   DCHECK(sound_key < chromeos::SOUND_COUNT);
-  ash::PlaySystemSoundIfSpokenFeedback(sound_key);
+  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
+  if (cl->HasSwitch(kAshDisableSystemSounds))
+    return false;
+  if (option == PlaySoundOption::SPOKEN_FEEDBACK_ENABLED &&
+      !IsSpokenFeedbackEnabled() && !cl->HasSwitch(kAshEnableSystemSounds)) {
+    return false;
+  }
+  return media::SoundsManager::Get()->Play(sound_key);
 }
 
 void AccessibilityManager::HandleAccessibilityGesture(ui::AXGesture gesture) {
@@ -1305,7 +1318,7 @@ base::TimeDelta AccessibilityManager::PlayShutdownSound() {
   if (!system_sounds_enabled_)
     return base::TimeDelta();
   system_sounds_enabled_ = false;
-  if (!ash::PlaySystemSoundIfSpokenFeedback(SOUND_SHUTDOWN))
+  if (!PlayEarcon(SOUND_SHUTDOWN, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED))
     return base::TimeDelta();
   return media::SoundsManager::Get()->GetDuration(SOUND_SHUTDOWN);
 }
@@ -1467,7 +1480,7 @@ void AccessibilityManager::OnShutdown(extensions::ExtensionRegistry* registry) {
 
 void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
   // Do any setup work needed immediately after ChromeVox actually loads.
-  ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_ENABLED);
+  PlayEarcon(SOUND_SPOKEN_FEEDBACK_ENABLED, PlaySoundOption::ALWAYS);
 
   if (chrome_vox_loaded_on_lock_screen_ ||
       should_speak_chrome_vox_announcements_on_user_screen_) {
@@ -1497,7 +1510,7 @@ void AccessibilityManager::PostLoadChromeVox(Profile* profile) {
 
 void AccessibilityManager::PostUnloadChromeVox(Profile* profile) {
   // Do any teardown work needed immediately after ChromeVox actually unloads.
-  ash::PlaySystemSoundAlways(SOUND_SPOKEN_FEEDBACK_DISABLED);
+  PlayEarcon(SOUND_SPOKEN_FEEDBACK_DISABLED, PlaySoundOption::ALWAYS);
   // Clear the accessibility focus ring.
   AccessibilityFocusRingController::GetInstance()->SetFocusRing(
       std::vector<gfx::Rect>(),

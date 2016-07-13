@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 
-#include "ash/audio/sounds.h"
 #include "ash/common/ash_switches.h"
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/extensions/api/system_private/system_private_api.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "chromeos/chromeos_switches.h"
@@ -29,8 +29,11 @@ bool VolumeAdjustSoundEnabled() {
 }
 
 void PlayVolumeAdjustSound() {
-  if (VolumeAdjustSoundEnabled())
-    ash::PlaySystemSoundIfSpokenFeedback(chromeos::SOUND_VOLUME_ADJUST);
+  if (VolumeAdjustSoundEnabled()) {
+    chromeos::AccessibilityManager::Get()->PlayEarcon(
+        chromeos::SOUND_VOLUME_ADJUST,
+        chromeos::PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+  }
 }
 
 }  // namespace

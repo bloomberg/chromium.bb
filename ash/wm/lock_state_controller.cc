@@ -31,11 +31,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
-#include "media/audio/sounds/sounds_manager.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-using media::SoundsManager;
 #endif
 
 #define UMA_HISTOGRAM_LOCK_TIMES(name, sample)                     \

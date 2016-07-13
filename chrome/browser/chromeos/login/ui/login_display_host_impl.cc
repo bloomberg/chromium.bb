@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/audio/sounds.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_shell.h"
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -1221,13 +1220,15 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
   }
 
   if (!startup_sound_honors_spoken_feedback_ &&
-      !ash::PlaySystemSoundAlways(SOUND_STARTUP)) {
+      !AccessibilityManager::Get()->PlayEarcon(SOUND_STARTUP,
+                                               PlaySoundOption::ALWAYS)) {
     EnableSystemSoundsForAccessibility();
     return;
   }
 
   if (startup_sound_honors_spoken_feedback_ &&
-      !ash::PlaySystemSoundIfSpokenFeedback(SOUND_STARTUP)) {
+      !AccessibilityManager::Get()->PlayEarcon(
+          SOUND_STARTUP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED)) {
     EnableSystemSoundsForAccessibility();
     return;
   }

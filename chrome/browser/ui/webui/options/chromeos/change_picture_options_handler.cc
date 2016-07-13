@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/change_picture_options_handler.h"
 
-#include "ash/audio/sounds.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -14,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -35,6 +35,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
 #include "grit/browser_resources.h"
+#include "media/audio/sounds/sounds_manager.h"
 #include "net/base/data_url.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -214,13 +215,15 @@ void ChangePictureOptionsHandler::HandleChooseFile(
 void ChangePictureOptionsHandler::HandleTakePhoto(
     const base::ListValue* args) {
   DCHECK(args->empty());
-  ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
+  AccessibilityManager::Get()->PlayEarcon(
+      SOUND_CAMERA_SNAP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 }
 
 void ChangePictureOptionsHandler::HandleDiscardPhoto(
     const base::ListValue* args) {
   DCHECK(args->empty());
-  ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
+  AccessibilityManager::Get()->PlayEarcon(
+      SOUND_OBJECT_DELETE, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 }
 
 void ChangePictureOptionsHandler::HandlePhotoTaken(

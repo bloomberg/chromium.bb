@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/audio/sounds.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -29,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_factory.h"
@@ -151,11 +151,12 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   manager->Initialize(SOUND_UNLOCK,
                       bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
 
-  ash::Shell::GetInstance()->
-      lock_state_controller()->SetLockScreenDisplayedCallback(
-          base::Bind(base::IgnoreResult(&ash::PlaySystemSoundIfSpokenFeedback),
-                     static_cast<media::SoundsManager::SoundKey>(
-                         chromeos::SOUND_LOCK)));
+  ash::Shell::GetInstance()
+      ->lock_state_controller()
+      ->SetLockScreenDisplayedCallback(base::Bind(
+          base::IgnoreResult(&AccessibilityManager::PlayEarcon),
+          base::Unretained(AccessibilityManager::Get()), chromeos::SOUND_LOCK,
+          PlaySoundOption::SPOKEN_FEEDBACK_ENABLED));
 }
 
 void ScreenLocker::Init() {
@@ -464,7 +465,8 @@ void ScreenLocker::ScheduleDeletion() {
     return;
   VLOG(1) << "Deleting ScreenLocker " << screen_locker_;
 
-  ash::PlaySystemSoundIfSpokenFeedback(SOUND_UNLOCK);
+  AccessibilityManager::Get()->PlayEarcon(
+      SOUND_UNLOCK, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 
   delete screen_locker_;
   screen_locker_ = NULL;

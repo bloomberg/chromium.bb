@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/user_image_screen_handler.h"
 
-#include "ash/audio/sounds.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/user_image_model.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
@@ -166,11 +166,13 @@ void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
 }
 
 void UserImageScreenHandler::HandleTakePhoto() {
-  ash::PlaySystemSoundIfSpokenFeedback(SOUND_CAMERA_SNAP);
+  AccessibilityManager::Get()->PlayEarcon(
+      SOUND_CAMERA_SNAP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 }
 
 void UserImageScreenHandler::HandleDiscardPhoto() {
-  ash::PlaySystemSoundIfSpokenFeedback(SOUND_OBJECT_DELETE);
+  AccessibilityManager::Get()->PlayEarcon(
+      SOUND_OBJECT_DELETE, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
 }
 
 void UserImageScreenHandler::HandleSelectImage(const std::string& image_url,
