@@ -36,7 +36,7 @@ bool g_dump_message_as_text = false;
 
 // Make a sample |Foo|.
 FooPtr MakeFoo() {
-  mojo::String name("foopy");
+  std::string name("foopy");
 
   BarPtr bar(Bar::New());
   bar->alpha = 20;
@@ -44,7 +44,7 @@ FooPtr MakeFoo() {
   bar->gamma = 60;
   bar->type = Bar::Type::VERTICAL;
 
-  mojo::Array<BarPtr> extra_bars(3);
+  std::vector<BarPtr> extra_bars(3);
   for (size_t i = 0; i < extra_bars.size(); ++i) {
     Bar::Type type = i % 2 == 0 ? Bar::Type::VERTICAL : Bar::Type::HORIZONTAL;
     BarPtr bar(Bar::New());
@@ -56,12 +56,12 @@ FooPtr MakeFoo() {
     extra_bars[i] = std::move(bar);
   }
 
-  mojo::Array<uint8_t> data(10);
+  std::vector<uint8_t> data(10);
   for (size_t i = 0; i < data.size(); ++i)
     data[i] = static_cast<uint8_t>(data.size() - i);
 
-  mojo::Array<mojo::ScopedDataPipeConsumerHandle> input_streams(2);
-  mojo::Array<mojo::ScopedDataPipeProducerHandle> output_streams(2);
+  std::vector<mojo::ScopedDataPipeConsumerHandle> input_streams(2);
+  std::vector<mojo::ScopedDataPipeProducerHandle> output_streams(2);
   for (size_t i = 0; i < input_streams.size(); ++i) {
     MojoCreateDataPipeOptions options;
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
@@ -75,9 +75,9 @@ FooPtr MakeFoo() {
     output_streams[i] = std::move(producer);
   }
 
-  mojo::Array<mojo::Array<bool>> array_of_array_of_bools(2);
+  std::vector<std::vector<bool>> array_of_array_of_bools(2);
   for (size_t i = 0; i < 2; ++i) {
-    mojo::Array<bool> array_of_bools(2);
+    std::vector<bool> array_of_bools(2);
     for (size_t j = 0; j < 2; ++j)
       array_of_bools[j] = j;
     array_of_array_of_bools[i] = std::move(array_of_bools);
@@ -105,14 +105,13 @@ FooPtr MakeFoo() {
 // Check that the given |Foo| is identical to the one made by |MakeFoo()|.
 void CheckFoo(const Foo& foo) {
   const std::string kName("foopy");
-  ASSERT_FALSE(foo.name.is_null());
   EXPECT_EQ(kName.size(), foo.name.size());
   for (size_t i = 0; i < std::min(kName.size(), foo.name.size()); i++) {
     // Test both |operator[]| and |at|.
     EXPECT_EQ(kName[i], foo.name.at(i)) << i;
     EXPECT_EQ(kName[i], foo.name[i]) << i;
   }
-  EXPECT_EQ(kName, foo.name.get());
+  EXPECT_EQ(kName, foo.name);
 
   EXPECT_EQ(1, foo.x);
   EXPECT_EQ(2, foo.y);
@@ -125,32 +124,32 @@ void CheckFoo(const Foo& foo) {
   EXPECT_EQ(60, foo.bar->gamma);
   EXPECT_EQ(Bar::Type::VERTICAL, foo.bar->type);
 
-  EXPECT_EQ(3u, foo.extra_bars.size());
-  for (size_t i = 0; i < foo.extra_bars.size(); i++) {
+  EXPECT_EQ(3u, foo.extra_bars->size());
+  for (size_t i = 0; i < foo.extra_bars->size(); i++) {
     uint8_t base = static_cast<uint8_t>(i * 100);
     Bar::Type type = i % 2 == 0 ? Bar::Type::VERTICAL : Bar::Type::HORIZONTAL;
-    EXPECT_EQ(base, foo.extra_bars[i]->alpha) << i;
-    EXPECT_EQ(base + 20, foo.extra_bars[i]->beta) << i;
-    EXPECT_EQ(base + 40, foo.extra_bars[i]->gamma) << i;
-    EXPECT_EQ(type, foo.extra_bars[i]->type) << i;
+    EXPECT_EQ(base, (*foo.extra_bars)[i]->alpha) << i;
+    EXPECT_EQ(base + 20, (*foo.extra_bars)[i]->beta) << i;
+    EXPECT_EQ(base + 40, (*foo.extra_bars)[i]->gamma) << i;
+    EXPECT_EQ(type, (*foo.extra_bars)[i]->type) << i;
   }
 
-  EXPECT_EQ(10u, foo.data.size());
-  for (size_t i = 0; i < foo.data.size(); ++i) {
-    EXPECT_EQ(static_cast<uint8_t>(foo.data.size() - i), foo.data[i]) << i;
+  EXPECT_EQ(10u, foo.data->size());
+  for (size_t i = 0; i < foo.data->size(); ++i) {
+    EXPECT_EQ(static_cast<uint8_t>(foo.data->size() - i), (*foo.data)[i]) << i;
   }
 
-  EXPECT_FALSE(foo.input_streams.is_null());
-  EXPECT_EQ(2u, foo.input_streams.size());
+  EXPECT_TRUE(foo.input_streams);
+  EXPECT_EQ(2u, foo.input_streams->size());
 
-  EXPECT_FALSE(foo.output_streams.is_null());
-  EXPECT_EQ(2u, foo.output_streams.size());
+  EXPECT_TRUE(foo.output_streams);
+  EXPECT_EQ(2u, foo.output_streams->size());
 
-  EXPECT_EQ(2u, foo.array_of_array_of_bools.size());
-  for (size_t i = 0; i < foo.array_of_array_of_bools.size(); ++i) {
-    EXPECT_EQ(2u, foo.array_of_array_of_bools[i].size());
-    for (size_t j = 0; j < foo.array_of_array_of_bools[i].size(); ++j) {
-      EXPECT_EQ(bool(j), foo.array_of_array_of_bools[i][j]);
+  EXPECT_EQ(2u, foo.array_of_array_of_bools->size());
+  for (size_t i = 0; i < foo.array_of_array_of_bools->size(); ++i) {
+    EXPECT_EQ(2u, (*foo.array_of_array_of_bools)[i].size());
+    for (size_t j = 0; j < (*foo.array_of_array_of_bools)[i].size(); ++j) {
+      EXPECT_EQ(bool(j), (*foo.array_of_array_of_bools)[i][j]);
     }
   }
 }
@@ -183,9 +182,9 @@ void Print(int depth,
   std::cout << name << ": 0x" << std::hex << value.get().value() << std::endl;
 }
 
-void Print(int depth, const char* name, const mojo::String& str) {
+void Print(int depth, const char* name, const std::string& str) {
   PrintSpacer(depth);
-  std::cout << name << ": \"" << str.get() << "\"" << std::endl;
+  std::cout << name << ": \"" << str << "\"" << std::endl;
 }
 
 void Print(int depth, const char* name, const BarPtr& bar) {
@@ -202,18 +201,26 @@ void Print(int depth, const char* name, const BarPtr& bar) {
 }
 
 template <typename T>
-void Print(int depth, const char* name, const mojo::Array<T>& array) {
+void Print(int depth, const char* name, const std::vector<T>& array) {
   PrintSpacer(depth);
   std::cout << name << ":" << std::endl;
-  if (!array.is_null()) {
-    ++depth;
-    for (size_t i = 0; i < array.size(); ++i) {
-      std::stringstream buf;
-      buf << i;
-      Print(depth, buf.str().data(), array.at(i));
-    }
-    --depth;
+  ++depth;
+  for (size_t i = 0; i < array.size(); ++i) {
+    std::stringstream buf;
+    buf << i;
+    Print(depth, buf.str().data(), array.at(i));
   }
+  --depth;
+}
+
+template <typename T>
+void Print(int depth,
+           const char* name,
+           const base::Optional<std::vector<T>>& array) {
+  if (array)
+    Print(depth, name, *array);
+  else
+    Print(depth, name, std::vector<T>());
 }
 
 void Print(int depth, const char* name, const FooPtr& foo) {
@@ -358,8 +365,8 @@ TEST_F(BindingsSampleTest, DefaultValues) {
   EXPECT_DOUBLE_EQ(1E10, defaults->a15);
   EXPECT_DOUBLE_EQ(-1.2E+20, defaults->a16);
   EXPECT_DOUBLE_EQ(1.23E-20, defaults->a17);
-  EXPECT_TRUE(defaults->a18.is_null());
-  EXPECT_TRUE(defaults->a19.is_null());
+  EXPECT_TRUE(defaults->a18.empty());
+  EXPECT_TRUE(defaults->a19.empty());
   EXPECT_EQ(Bar::Type::BOTH, defaults->a20);
   EXPECT_TRUE(defaults->a21.is_null());
   ASSERT_FALSE(defaults->a22.is_null());

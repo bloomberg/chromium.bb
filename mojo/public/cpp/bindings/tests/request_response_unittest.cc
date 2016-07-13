@@ -22,7 +22,7 @@ class ProviderImpl : public sample::Provider {
   explicit ProviderImpl(InterfaceRequest<sample::Provider> request)
       : binding_(this, std::move(request)) {}
 
-  void EchoString(const String& a,
+  void EchoString(const std::string& a,
                   const EchoStringCallback& callback) override {
     EchoStringCallback callback_copy;
     // Make sure operator= is used.
@@ -30,8 +30,8 @@ class ProviderImpl : public sample::Provider {
     callback_copy.Run(a);
   }
 
-  void EchoStrings(const String& a,
-                   const String& b,
+  void EchoStrings(const std::string& a,
+                   const std::string& b,
                    const EchoStringsCallback& callback) override {
     callback.Run(a, b);
   }
@@ -55,16 +55,16 @@ class ProviderImpl : public sample::Provider {
 
 void RecordString(std::string* storage,
                   const base::Closure& closure,
-                  String str) {
+                  const std::string& str) {
   *storage = str;
   closure.Run();
 }
 
 void RecordStrings(std::string* storage,
                    const base::Closure& closure,
-                   String a,
-                   String b) {
-  *storage = a.get() + b.get();
+                   const std::string& a,
+                   const std::string& b) {
+  *storage = a + b;
   closure.Run();
 }
 
@@ -99,7 +99,7 @@ TEST_F(RequestResponseTest, EchoString) {
 
   std::string buf;
   base::RunLoop run_loop;
-  provider->EchoString(String::From("hello"),
+  provider->EchoString("hello",
                        base::Bind(&RecordString, &buf, run_loop.QuitClosure()));
 
   run_loop.Run();
@@ -113,9 +113,8 @@ TEST_F(RequestResponseTest, EchoStrings) {
 
   std::string buf;
   base::RunLoop run_loop;
-  provider->EchoStrings(
-      String::From("hello"), String::From(" world"),
-      base::Bind(&RecordStrings, &buf, run_loop.QuitClosure()));
+  provider->EchoStrings("hello", " world", base::Bind(&RecordStrings, &buf,
+                                                      run_loop.QuitClosure()));
 
   run_loop.Run();
 

@@ -144,7 +144,8 @@ class MojomProcessor(object):
         generator = generator_module.Generator(
             module, args.output_dir, typemap=self._typemap.get(language, {}),
             variant=args.variant, bytecode_path=args.bytecode_path,
-            for_blink=args.for_blink)
+            for_blink=args.for_blink,
+            use_new_wrapper_types=args.use_new_wrapper_types)
         filtered_args = []
         if hasattr(generator_module, 'GENERATOR_PREFIX'):
           prefix = '--' + generator_module.GENERATOR_PREFIX + '_'
@@ -256,6 +257,10 @@ def main():
   generate_parser.add_argument("--for_blink", action="store_true",
                                help="Use WTF types as generated types for mojo "
                                "string/array/map.")
+  generate_parser.add_argument(
+      "--use_new_wrapper_types", action="store_true",
+      help="Map mojom array/map/string to STL (for chromium variant) or WTF "
+      "(for blink variant) types directly.")
   generate_parser.set_defaults(func=_Generate)
 
   precompile_parser = subparsers.add_parser("precompile",

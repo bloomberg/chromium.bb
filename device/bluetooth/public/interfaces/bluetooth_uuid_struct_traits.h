@@ -7,42 +7,30 @@
 
 #include <string>
 
-#include "base/optional.h"
-#include "base/strings/string_piece.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/public/interfaces/bluetooth_uuid.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<device::mojom::BluetoothUUID,
-                    base::Optional<device::BluetoothUUID>> {
-  static bool IsNull(const base::Optional<device::BluetoothUUID>& uuid) {
-    return !uuid;
-  }
-
-  static void SetToNull(base::Optional<device::BluetoothUUID>* output) {
-    *output = base::nullopt;
-  }
-
-  static std::string uuid(const base::Optional<device::BluetoothUUID>& uuid) {
-    DCHECK(uuid);
-    return uuid->canonical_value();
+struct StructTraits<device::mojom::BluetoothUUID, device::BluetoothUUID> {
+  static const std::string& uuid(const device::BluetoothUUID& uuid) {
+    return uuid.canonical_value();
   }
 
   static bool Read(device::mojom::BluetoothUUIDDataView input,
-                   base::Optional<device::BluetoothUUID>* output) {
+                   device::BluetoothUUID* output) {
     std::string result;
     if (!input.ReadUuid(&result))
       return false;
-    *output = base::make_optional(device::BluetoothUUID(result));
+    *output = device::BluetoothUUID(result);
 
     // If the format isn't 128-bit, .value() would return a different answer
     // than .canonical_value(). Then if browser-side code accidentally checks
     // .value() against a 128-bit string literal, a hostile renderer could use
     // the 16- or 32-bit format and evade the check.
-    return output->value().IsValid() &&
-           output->value().format() == device::BluetoothUUID::kFormat128Bit;
+    return output->IsValid() &&
+           output->format() == device::BluetoothUUID::kFormat128Bit;
   }
 };
 

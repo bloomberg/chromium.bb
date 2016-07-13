@@ -36,6 +36,7 @@ _kind_to_cpp_literal_suffix = {
 # generator library code so that filters can use the generator as context.
 _current_typemap = {}
 _for_blink = False
+_use_new_wrapper_types = False
 # TODO(rockot, yzshen): The variant handling is kind of a hack currently. Make
 # it right.
 _variant = None
@@ -106,16 +107,20 @@ class _NameFormatter(object):
 def ConstantValue(constant):
   return ExpressionToText(constant.value, kind=constant.kind)
 
+# TODO(yzshen): Revisit the default value feature. It was designed prior to
+# custom type mapping.
 def DefaultValue(field):
   if field.default:
     if mojom.IsStructKind(field.kind):
       assert field.default == "default"
-      return "%s::New()" % GetNameForKind(field.kind)
+      if not IsTypemappedKind(field.kind):
+        return "%s::New()" % GetNameForKind(field.kind)
     return ExpressionToText(field.default, kind=field.kind)
-  if mojom.IsArrayKind(field.kind) or mojom.IsMapKind(field.kind):
-    return "nullptr";
-  if mojom.IsStringKind(field.kind):
-    return "" if _for_blink else "nullptr"
+  if not _use_new_wrapper_types:
+    if mojom.IsArrayKind(field.kind) or mojom.IsMapKind(field.kind):
+      return "nullptr";
+    if mojom.IsStringKind(field.kind):
+      return "" if _for_blink else "nullptr"
   return ""
 
 def NamespaceToArray(namespace):
@@ -155,10 +160,27 @@ def GetCppWrapperType(kind):
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return "%sPtr" % GetNameForKind(kind)
   if mojom.IsArrayKind(kind):
-    pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
+    pattern = None
+    if _use_new_wrapper_types:
+      if mojom.IsNullableKind(kind):
+        pattern = ("WTF::Optional<WTF::Vector<%s>>" if _for_blink else
+            "base::Optional<std::vector<%s>>")
+      else:
+        pattern = "WTF::Vector<%s>" if _for_blink else "std::vector<%s>"
+    else:
+      pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
     return pattern % GetCppWrapperType(kind.kind)
   if mojom.IsMapKind(kind):
-    pattern = "mojo::WTFMap<%s, %s>" if _for_blink else "mojo::Map<%s, %s>"
+    pattern = None
+    if _use_new_wrapper_types:
+      if mojom.IsNullableKind(kind):
+        pattern = ("WTF::Optional<WTF::HashMap<%s, %s>>" if _for_blink else
+                   "base::Optional<std::unordered_map<%s, %s>>")
+      else:
+        pattern = ("WTF::HashMap<%s, %s>" if _for_blink else
+                   "std::unordered_map<%s, %s>")
+    else:
+      pattern = "mojo::WTFMap<%s, %s>" if _for_blink else "mojo::Map<%s, %s>"
     return pattern % (GetCppWrapperType(kind.key_kind),
                       GetCppWrapperType(kind.value_kind))
   if mojom.IsInterfaceKind(kind):
@@ -170,7 +192,12 @@ def GetCppWrapperType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "%sAssociatedRequest" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
-    return "WTF::String" if _for_blink else "mojo::String"
+    if _for_blink:
+      return "WTF::String"
+    if not _use_new_wrapper_types:
+      return "mojo::String"
+    return ("base::Optional<std::string>" if mojom.IsNullableKind(kind) else
+            "std::string")
   if mojom.IsGenericHandleKind(kind):
     return "mojo::ScopedHandle"
   if mojom.IsDataPipeConsumerKind(kind):
@@ -185,12 +212,24 @@ def GetCppWrapperType(kind):
     raise Exception("Unrecognized kind %s" % kind.spec)
   return _kind_to_cpp_type[kind]
 
-def ShouldPassParamByValue(kind):
+def IsMoveOnlyKind(kind):
   if IsTypemappedKind(kind):
     if mojom.IsEnumKind(kind):
-      return True
+      return False
+    # TODO(yzshen): Change the attribute to "move_only".
     return _current_typemap[GetFullMojomNameForKind(kind)]["pass_by_value"]
-  return not mojom.IsStringKind(kind)
+  if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
+    return True
+  if mojom.IsArrayKind(kind):
+    return IsMoveOnlyKind(kind.kind) if _use_new_wrapper_types else True
+  if mojom.IsMapKind(kind):
+    return IsMoveOnlyKind(kind.value_kind) if _use_new_wrapper_types else True
+  if mojom.IsAnyHandleOrInterfaceKind(kind):
+    return True
+  return False
+
+def ShouldPassParamByValue(kind):
+  return (not mojom.IsReferenceKind(kind)) or IsMoveOnlyKind(kind)
 
 def GetCppWrapperParamType(kind):
   cpp_wrapper_type = GetCppWrapperType(kind)
@@ -309,12 +348,14 @@ def ShouldInlineStruct(struct):
   if len(struct.fields) > 4:
     return False
   for field in struct.fields:
-    if mojom.IsMoveOnlyKind(field.kind):
+    if mojom.IsReferenceKind(field.kind) and not mojom.IsStringKind(field.kind):
       return False
   return True
 
 def ShouldInlineUnion(union):
-  return not any(mojom.IsMoveOnlyKind(field.kind) for field in union.fields)
+  return not any(
+      mojom.IsReferenceKind(field.kind) and not mojom.IsStringKind(field.kind)
+           for field in union.fields)
 
 def GetContainerValidateParamsCtorArgs(kind):
   if mojom.IsStringKind(kind):
@@ -428,6 +469,7 @@ class Generator(generator.Generator):
       "extra_traits_headers": self.GetExtraTraitsHeaders(),
       "extra_public_headers": self.GetExtraPublicHeaders(),
       "for_blink": self.for_blink,
+      "use_new_wrapper_types": self.use_new_wrapper_types,
     }
 
   @staticmethod
@@ -455,6 +497,8 @@ class Generator(generator.Generator):
     _current_typemap = self.typemap
     global _for_blink
     _for_blink = self.for_blink
+    global _use_new_wrapper_types
+    _use_new_wrapper_types = self.use_new_wrapper_types
     global _variant
     _variant = self.variant
     suffix = "-%s" % self.variant if self.variant else ""

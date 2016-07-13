@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/bindings/lib/wtf_clone_equals_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/WebKit/Source/wtf/HashMap.h"
 #include "third_party/WebKit/Source/wtf/text/StringHash.h"
@@ -156,9 +157,7 @@ class WTFMap {
   WTFMap Clone() const {
     WTFMap result;
     result.is_null_ = is_null_;
-    auto map_end = map_.end();
-    for (auto it = map_.begin(); it != map_end; ++it)
-      result.map_.add(internal::Clone(it->key), internal::Clone(it->value));
+    result.map_ = internal::Clone(map_);
     return result;
   }
 
@@ -168,20 +167,7 @@ class WTFMap {
   bool Equals(const WTFMap& other) const {
     if (is_null() != other.is_null())
       return false;
-    if (size() != other.size())
-      return false;
-
-    auto this_end = map_.end();
-    auto other_end = other.map_.end();
-
-    for (auto iter = map_.begin(); iter != this_end; ++iter) {
-      auto other_iter = other.map_.find(iter->key);
-      if (other_iter == other_end ||
-          !internal::Equals(iter->value, other_iter->value)) {
-        return false;
-      }
-    }
-    return true;
+    return internal::Equals(map_, other.map_);
   }
 
   ConstIterator begin() const { return map_.begin(); }

@@ -114,54 +114,6 @@ struct Conditional<false, T, F> {
   typedef F type;
 };
 
-template <typename T>
-struct HasCloneMethod {
-  template <typename U>
-  static char Test(decltype(&U::Clone));
-  template <typename U>
-  static int Test(...);
-  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
-
- private:
-  EnsureTypeIsComplete<T> check_t_;
-};
-
-template <typename T,
-          typename std::enable_if<HasCloneMethod<T>::value>::type* = nullptr>
-T Clone(const T& input) {
-  return input.Clone();
-};
-
-template <typename T,
-          typename std::enable_if<!HasCloneMethod<T>::value>::type* = nullptr>
-T Clone(const T& input) {
-  return input;
-}
-
-template <typename T>
-struct HasEqualsMethod {
-  template <typename U>
-  static char Test(decltype(&U::Equals));
-  template <typename U>
-  static int Test(...);
-  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
-
- private:
-  EnsureTypeIsComplete<T> check_t_;
-};
-
-template <typename T,
-          typename std::enable_if<HasEqualsMethod<T>::value>::type* = nullptr>
-bool Equals(const T& a, const T& b) {
-  return a.Equals(b);
-};
-
-template <typename T,
-          typename std::enable_if<!HasEqualsMethod<T>::value>::type* = nullptr>
-bool Equals(const T& a, const T& b) {
-  return a == b;
-}
-
 }  // namespace internal
 }  // namespace mojo
 

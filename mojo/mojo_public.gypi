@@ -36,6 +36,7 @@
       'public/cpp/bindings/lib/bindings_internal.cc',
       'public/cpp/bindings/lib/bindings_internal.h',
       'public/cpp/bindings/lib/buffer.h',
+      'public/cpp/bindings/lib/clone_equals_util.h',
       'public/cpp/bindings/lib/connector.cc',
       'public/cpp/bindings/lib/control_message_handler.cc',
       'public/cpp/bindings/lib/control_message_handler.h',

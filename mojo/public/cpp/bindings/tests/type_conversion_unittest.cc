@@ -69,8 +69,8 @@ template <>
 struct TypeConverter<test::NamedRegionPtr, RedmondNamedRegion> {
   static test::NamedRegionPtr Convert(const RedmondNamedRegion& input) {
     test::NamedRegionPtr region(test::NamedRegion::New());
-    region->name = input.name;
-    region->rects = Array<test::RectPtr>::From(input.rects);
+    region->name.emplace(input.name);
+    region->rects = Array<test::RectPtr>::From(input.rects).PassStorage();
     return region;
   }
 };
@@ -79,8 +79,13 @@ template <>
 struct TypeConverter<RedmondNamedRegion, test::NamedRegionPtr> {
   static RedmondNamedRegion Convert(const test::NamedRegionPtr& input) {
     RedmondNamedRegion region;
-    region.name = input->name;
-    region.rects = input->rects.To<std::vector<RedmondRect>>();
+    if (input->name)
+      region.name = input->name.value();
+    if (input->rects) {
+      region.rects.reserve(input->rects->size());
+      for (const auto& element : *input->rects)
+        region.rects.push_back(element.To<RedmondRect>());
+    }
     return region;
   }
 };

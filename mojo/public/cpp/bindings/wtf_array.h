@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
+#include "mojo/public/cpp/bindings/lib/wtf_clone_equals_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "third_party/WebKit/Source/wtf/Vector.h"
 
@@ -147,9 +148,7 @@ class WTFArray {
   WTFArray Clone() const {
     WTFArray result;
     result.is_null_ = is_null_;
-    result.vec_.reserveCapacity(vec_.size());
-    for (const auto& element : vec_)
-      result.vec_.append(internal::Clone(element));
+    result.vec_ = internal::Clone(vec_);
     return result;
   }
 
@@ -159,13 +158,7 @@ class WTFArray {
   bool Equals(const WTFArray& other) const {
     if (is_null() != other.is_null())
       return false;
-    if (size() != other.size())
-      return false;
-    for (size_t i = 0; i < size(); ++i) {
-      if (!internal::Equals(at(i), other.at(i)))
-        return false;
-    }
-    return true;
+    return internal::Equals(vec_, other.vec_);
   }
 
  private:

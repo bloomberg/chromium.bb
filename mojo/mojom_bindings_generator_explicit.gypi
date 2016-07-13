@@ -10,8 +10,10 @@
     'variables': {
       'variables': {
         'for_blink%': 'false',
+        'use_new_wrapper_types%': 'false',
       },
       'for_blink%': 'false',
+      'use_new_wrapper_types%': 'false',
       'conditions': [
         ['for_blink=="true"', {
           'mojom_output_languages%': 'c++',
@@ -29,11 +31,20 @@
           'mojom_generator_wtf_arg%': [],
           'wtf_dependencies%': [],
         }],
+        ['use_new_wrapper_types=="true"', {
+          'mojom_generator_new_wrappers_arg%': [
+            '--use_new_wrapper_types',
+          ],
+        }, {
+          'mojom_generator_new_wrappers_arg%': [],
+        }],
       ],
     },
     'for_blink%': '<(for_blink)',
+    'use_new_wrapper_types%': '<(use_new_wrapper_types)',
     'mojom_variant%': '<(mojom_variant)',
     'mojom_generator_wtf_arg%': '<(mojom_generator_wtf_arg)',
+    'mojom_generator_new_wrappers_arg%': '<(mojom_generator_new_wrappers_arg)',
     'wtf_dependencies%': '<(wtf_dependencies)',
     'mojom_output_languages%': '<(mojom_output_languages)',
     'mojom_typemaps%': [],
@@ -121,6 +132,7 @@
         '--typemap',
         '<(generated_typemap_file)',
         '<@(mojom_generator_wtf_arg)',
+        '<@(mojom_generator_new_wrappers_arg)',
         '--bytecode_path',
         '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings',
       ],

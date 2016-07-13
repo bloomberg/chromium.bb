@@ -792,11 +792,6 @@ def IsAssociatedKind(kind):
           IsAssociatedInterfaceRequestKind(kind))
 
 
-def IsMoveOnlyKind(kind):
-  return (not IsStringKind(kind) and IsObjectKind(kind)) or \
-      IsAnyHandleKind(kind) or IsInterfaceKind(kind) or IsAssociatedKind(kind)
-
-
 def HasCallbacks(interface):
   for method in interface.methods:
     if method.response_parameters != None:

@@ -22,12 +22,12 @@ const char kText2[] = "world";
 
 void RecordString(std::string* storage,
                   const base::Closure& closure,
-                  String str) {
-  *storage = str.PassStorage();
+                  const std::string& str) {
+  *storage = str;
   closure.Run();
 }
 
-base::Callback<void(mojo::String)> MakeStringRecorder(
+base::Callback<void(const std::string&)> MakeStringRecorder(
     std::string* storage,
     const base::Closure& closure) {
   return base::Bind(&RecordString, storage, closure);
@@ -58,7 +58,7 @@ class SampleNamedObjectImpl : public sample::NamedObject {
  public:
   explicit SampleNamedObjectImpl(InterfaceRequest<sample::NamedObject> request)
       : binding_(this, std::move(request)) {}
-  void SetName(const mojo::String& name) override { name_ = name; }
+  void SetName(const std::string& name) override { name_ = name; }
 
   void GetName(const GetNameCallback& callback) override {
     callback.Run(name_);
@@ -167,7 +167,7 @@ void DoStuff(bool* got_response,
              std::string* got_text_reply,
              const base::Closure& closure,
              sample::ResponsePtr response,
-             String text_reply) {
+             const std::string& text_reply) {
   *got_text_reply = text_reply;
 
   if (response->pipe.is_valid()) {
@@ -190,9 +190,9 @@ void DoStuff(bool* got_response,
 }
 
 void DoStuff2(bool* got_response,
-             std::string* got_text_reply,
-             const base::Closure& closure,
-             String text_reply) {
+              std::string* got_text_reply,
+              const base::Closure& closure,
+              const std::string& text_reply) {
   *got_response = true;
   *got_text_reply = text_reply;
   closure.Run();
@@ -304,7 +304,7 @@ TEST_F(HandlePassingTest, PipesAreClosed) {
   MojoHandle handle1_value = extra_pipe.handle1.get().value();
 
   {
-    Array<ScopedMessagePipeHandle> pipes(2);
+    std::vector<ScopedMessagePipeHandle> pipes(2);
     pipes[0] = std::move(extra_pipe.handle0);
     pipes[1] = std::move(extra_pipe.handle1);
 

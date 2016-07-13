@@ -43,6 +43,7 @@
           'public/cpp/bindings/tests/rect_chromium.typemap',
           'public/cpp/bindings/tests/test_native_types_chromium.typemap',
         ],
+        'use_new_wrapper_types': 'true',
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
@@ -53,6 +54,7 @@
         'mojom_typemaps': [
           'public/cpp/bindings/tests/struct_with_traits.typemap',
         ],
+        'use_new_wrapper_types': 'true',
       },
       'sources': [
         'public/interfaces/bindings/tests/struct_with_traits.mojom',
@@ -87,6 +89,7 @@
           'public/interfaces/bindings/tests/test_associated_interfaces.mojom',
           'public/interfaces/bindings/tests/validation_test_associated_interfaces.mojom',
         ],
+        'use_new_wrapper_types': 'true',
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
@@ -108,6 +111,9 @@
       'sources': [
         'public/interfaces/bindings/tests/test_wtf_types.mojom',
       ],
+      'variables': {
+        'use_new_wrapper_types': 'true',
+      },
       'includes': [ 'mojom_bindings_generator.gypi' ],
     },
   ],
@@ -124,6 +130,7 @@
               'public/cpp/bindings/tests/test_native_types_blink.typemap',
             ],
             'mojom_files': '<(mojo_public_test_interfaces_mojom_files)',
+            'use_new_wrapper_types': 'true',
           },
           'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
         },
@@ -149,6 +156,7 @@
           'type': 'static_library',
           'variables': {
             'for_blink': 'true',
+            'use_new_wrapper_types': 'true',
           },
           'sources': [
             'public/interfaces/bindings/tests/test_wtf_types.mojom',

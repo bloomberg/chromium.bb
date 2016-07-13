@@ -5,9 +5,10 @@
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro declare_responder_params(prefix, parameters, for_blink) %}
+{%- macro declare_responder_params(prefix, parameters, for_blink, use_new_wrapper_types) %}
 {%-   for param in parameters -%}
-{%-     if (not param.kind|is_string_kind) or for_blink -%}
+{%-     if (not param.kind|is_string_kind) or for_blink or
+           use_new_wrapper_types -%}
 {{param.kind|cpp_wrapper_param_type}} {{prefix}}{{param.name}}
 {%-     else %}
 mojo::String {{prefix}}{{param.name}}
@@ -16,17 +17,18 @@ mojo::String {{prefix}}{{param.name}}
 {%-   endfor %}
 {%- endmacro %}
 
-{%- macro declare_callback(method, for_blink) -%}
+{%- macro declare_callback(method, for_blink, use_new_wrapper_types) -%}
 base::Callback<void(
 {%-   for param in method.response_parameters -%}
 {#- TODO(yzshen): For historical reasons, we use mojo::String here (instead of
     const mojo::String&) inconsistently. Preserve the behavior temporarily. #}
-{%- if (not param.kind|is_string_kind) or for_blink -%}
+{%-     if (not param.kind|is_string_kind) or for_blink or
+           use_new_wrapper_types -%}
 {{param.kind|cpp_wrapper_param_type}}
-{%- else -%}
+{%-     else -%}
 mojo::String
-{%- endif %}
-{%- if not loop.last %}, {% endif %}
+{%-     endif %}
+{%-     if not loop.last %}, {% endif %}
 {%-   endfor -%}
 )>
 {%- endmacro -%}

@@ -12,15 +12,41 @@
         variant_path|upper|replace("/","_")|replace(".","_")|
             replace("-", "_")) %}
 
+{%- from "enum_macros.tmpl" import enum_decl %}
+{%- from "enum_macros.tmpl" import enum_stream_operator %}
+{%- from "enum_macros.tmpl" import is_known_enum_value %}
+{%- from "enum_macros.tmpl" import enum_hash %}
+
+{%- macro namespace_begin() %}
+{%-   for namespace in namespaces_as_array %}
+namespace {{namespace}} {
+{%-   endfor %}
+{%-   if variant %}
+namespace {{variant}} {
+{%-   endif %}
+{%- endmacro %}
+
+{%- macro namespace_end() %}
+{%-   if variant %}
+}  // namespace {{variant}}
+{%-   endif %}
+{%-   for namespace in namespaces_as_array|reverse %}
+}  // namespace {{namespace}}
+{%-   endfor %}
+{%- endmacro %}
+
 #ifndef {{header_guard}}
 #define {{header_guard}}
 
 #include <stdint.h>
+
+#include <functional>
 #include <ostream>
 #include <type_traits>
 #include <utility>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
@@ -51,6 +77,7 @@
 {%- else %}
 #include "mojo/public/cpp/bindings/wtf_array.h"
 #include "mojo/public/cpp/bindings/wtf_map.h"
+#include "third_party/WebKit/Source/wtf/Optional.h"
 #include "third_party/WebKit/Source/wtf/text/WTFString.h"
 {%- endif %}
 
@@ -58,26 +85,32 @@
 #include "{{header}}"
 {%- endfor %}
 
-{%- for namespace in namespaces_as_array %}
-namespace {{namespace}} {
-{%- endfor %}
-{%- if variant %}
-namespace {{variant}} {
-{%- endif %}
-
 {#--- Enums #}
-{% from "enum_macros.tmpl" import enum_decl -%}
-{% from "enum_macros.tmpl" import enum_stream_operator -%}
-{% from "enum_macros.tmpl" import is_known_enum_value -%}
-{%- for enum in enums %}
-{%-   if enum|is_native_only_kind %}
+{%- if enums %}
+{{namespace_begin()}}
+{%-   for enum in enums %}
+{%-     if enum|is_native_only_kind %}
 using {{enum.name}} = mojo::NativeEnum;
-{%-   else %}
+{%-     else %}
 {{enum_decl(enum)}}
 {{enum_stream_operator(enum)}}
 {{is_known_enum_value(enum)}}
-{%-   endif %}
-{%- endfor %}
+{%-     endif %}
+{%-   endfor %}
+{{namespace_end()}}
+
+namespace std {
+
+{%-   for enum in enums %}
+{%-     if not enum|is_native_only_kind %}
+{{enum_hash(enum)}}
+{%-     endif %}
+{%-   endfor %}
+
+}  // namespace std
+{%- endif %}
+
+{{namespace_begin()}}
 
 {#--- Constants #}
 {%- for constant in module.constants %}
@@ -133,6 +166,27 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {#--- Interfaces -#}
 {%  for interface in interfaces %}
 {%    include "interface_declaration.tmpl" %}
+
+{%-   if interface.enums %}
+{{namespace_end()}}
+namespace std {
+
+{%-     for enum in interface.enums %}
+{%-       if not enum|is_native_only_kind %}
+{{enum_hash(enum)}}
+{%-       endif %}
+{%-     endfor %}
+
+}  // namespace std
+{{namespace_begin()}}
+{%-   endif %}
+
+{%-   for enum in interface.enums %}
+{%-     if not enum|is_native_only_kind %}
+{{enum_stream_operator(enum)}}
+{{is_known_enum_value(enum)}}
+{%-     endif %}
+{%-   endfor %}
 {%- endfor %}
 
 {#--- Interface Proxies -#}
@@ -190,6 +244,20 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%      include "wrapper_class_template_definition.tmpl" %}
 {%-   endif %}
 
+{%-   if struct.enums %}
+{{namespace_end()}}
+namespace std {
+
+{%-     for enum in struct.enums %}
+{%-       if not enum|is_native_only_kind %}
+{{enum_hash(enum)}}
+{%-       endif %}
+{%-     endfor %}
+
+}  // namespace std
+{{namespace_begin()}}
+{%-   endif %}
+
 {%-   for enum in struct.enums %}
 {%-     if not enum|is_native_only_kind %}
 {{enum_stream_operator(enum)}}
@@ -198,21 +266,7 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%-   endfor %}
 {%- endfor %}
 
-{%- for interface in interfaces %}
-{%-   for enum in interface.enums %}
-{%-     if not enum|is_native_only_kind %}
-{{enum_stream_operator(enum)}}
-{{is_known_enum_value(enum)}}
-{%-     endif %}
-{%-   endfor %}
-{%- endfor %}
-
-{%- if variant %}
-}  // namespace {{variant}}
-{%- endif %}
-{%- for namespace in namespaces_as_array|reverse %}
-}  // namespace {{namespace}}
-{%- endfor %}
+{{namespace_end()}}
 
 namespace mojo {
 

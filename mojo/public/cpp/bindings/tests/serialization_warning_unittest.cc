@@ -119,12 +119,6 @@ TEST_F(SerializationWarningTest, StructInStruct) {
 
 TEST_F(SerializationWarningTest, ArrayOfStructsInStruct) {
   Struct4Ptr test_struct(Struct4::New());
-  EXPECT_TRUE(!test_struct->data);
-
-  TestWarning(std::move(test_struct),
-              mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
-
-  test_struct = Struct4::New();
   test_struct->data.resize(1);
 
   TestWarning(std::move(test_struct),
@@ -144,12 +138,6 @@ TEST_F(SerializationWarningTest, ArrayOfStructsInStruct) {
 
 TEST_F(SerializationWarningTest, FixedArrayOfStructsInStruct) {
   Struct5Ptr test_struct(Struct5::New());
-  EXPECT_TRUE(!test_struct->pair);
-
-  TestWarning(std::move(test_struct),
-              mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
-
-  test_struct = Struct5::New();
   test_struct->pair.resize(1);
   test_struct->pair[0] = Struct1::New();
 
@@ -160,19 +148,6 @@ TEST_F(SerializationWarningTest, FixedArrayOfStructsInStruct) {
   test_struct->pair.resize(2);
   test_struct->pair[0] = Struct1::New();
   test_struct->pair[1] = Struct1::New();
-
-  TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
-}
-
-TEST_F(SerializationWarningTest, StringInStruct) {
-  Struct6Ptr test_struct(Struct6::New());
-  EXPECT_TRUE(!test_struct->str);
-
-  TestWarning(std::move(test_struct),
-              mojo::internal::VALIDATION_ERROR_UNEXPECTED_NULL_POINTER);
-
-  test_struct = Struct6::New();
-  test_struct->str = "hello world";
 
   TestWarning(std::move(test_struct), mojo::internal::VALIDATION_ERROR_NONE);
 }

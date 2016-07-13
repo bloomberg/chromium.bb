@@ -43,7 +43,16 @@ struct ArrayTraits<std::vector<T>> {
   }
 
   static bool Resize(std::vector<T>& input, size_t size) {
-    input.resize(size);
+    if (input.size() != size) {
+      // This is a hack to make compilers for Mac and Android happy. They
+      // currently don't allow resizing types like
+      // std::vector<std::vector<MoveOnlyType>>.
+      // Because the deserialization code doesn't care about the original
+      // contents of |input|, we discard them directly.
+      std::vector<T> temp(size);
+      input.swap(temp);
+    }
+
     return true;
   }
 };

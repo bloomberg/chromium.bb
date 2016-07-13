@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "mojo/public/cpp/bindings/lib/clone_equals_util.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
@@ -137,13 +138,12 @@ class Array {
   const std::vector<T>& storage() const { return vec_; }
 
   // Passes the underlying storage and resets this array to null.
-  //
-  // TODO(yzshen): Consider changing this to a rvalue-ref-qualified conversion
-  // to std::vector<T> after we move to MSVC 2015.
   std::vector<T> PassStorage() {
     is_null_ = true;
     return std::move(vec_);
   }
+
+  operator const std::vector<T>&() const { return vec_; }
 
   void Swap(Array* other) {
     std::swap(is_null_, other->is_null_);
@@ -169,10 +169,8 @@ class Array {
   Array Clone() const {
     Array result;
     result.is_null_ = is_null_;
-    result.vec_.reserve(vec_.size());
-    for (const auto& element : vec_)
-      result.vec_.push_back(internal::Clone(element));
-    return std::move(result);
+    result.vec_ = internal::Clone(vec_);
+    return result;
   }
 
   // Indicates whether the contents of this array are equal to |other|. A null
@@ -181,13 +179,7 @@ class Array {
   bool Equals(const Array& other) const {
     if (is_null() != other.is_null())
       return false;
-    if (size() != other.size())
-      return false;
-    for (size_t i = 0; i < size(); ++i) {
-      if (!internal::Equals(at(i), other.at(i)))
-        return false;
-    }
-    return true;
+    return internal::Equals(vec_, other.vec_);
   }
 
  private:

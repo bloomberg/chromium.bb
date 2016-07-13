@@ -87,13 +87,13 @@ class InterfaceImpl : public sample::Provider {
     }
   }
 
-  void EchoString(const String& a,
+  void EchoString(const std::string& a,
                   const EchoStringCallback& callback) override {
     CHECK(false) << "Not implemented.";
   }
 
-  void EchoStrings(const String& a,
-                   const String& b,
+  void EchoStrings(const std::string& a,
+                   const std::string& b,
                    const EchoStringsCallback& callback) override {
     CHECK(false) << "Not implemented.";
   }

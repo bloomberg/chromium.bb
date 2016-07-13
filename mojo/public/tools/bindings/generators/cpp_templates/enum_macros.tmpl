@@ -75,3 +75,9 @@ inline bool IsKnownEnumValue({{enum|get_name_for_kind}} value) {
       static_cast<int32_t>(value));
 }
 {%- endmacro %}
+
+{%- macro enum_hash(enum) %}
+template <>
+struct hash<{{enum|get_qualified_name_for_kind}}>
+    : public mojo::internal::EnumHashImpl<{{enum|get_qualified_name_for_kind}}> {};
+{%- endmacro %}

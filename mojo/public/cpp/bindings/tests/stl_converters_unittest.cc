@@ -73,20 +73,20 @@ TEST_F(STLConvertersTest, RecursiveConversion) {
 TEST_F(STLConvertersTest, StopsAtMojoStruct) {
   Array<NamedRegionPtr> mojo_obj(1);
   mojo_obj[0] = NamedRegion::New();
-  mojo_obj[0]->name = "hello";
-  mojo_obj[0]->rects.resize(3);
+  mojo_obj[0]->name.emplace("hello");
+  mojo_obj[0]->rects.emplace(3);
 
   std::vector<NamedRegionPtr> stl_obj = UnwrapToSTLType(std::move(mojo_obj));
 
   ASSERT_EQ(1u, stl_obj.size());
-  ASSERT_EQ("hello", stl_obj[0]->name);
-  ASSERT_EQ(3u, stl_obj[0]->rects.size());
+  ASSERT_EQ("hello", stl_obj[0]->name.value());
+  ASSERT_EQ(3u, stl_obj[0]->rects->size());
 
   Array<NamedRegionPtr> mojo_obj2 = WrapSTLType(std::move(stl_obj));
 
   ASSERT_EQ(1u, mojo_obj2.size());
-  ASSERT_EQ("hello", mojo_obj2[0]->name);
-  ASSERT_EQ(3u, mojo_obj2[0]->rects.size());
+  ASSERT_EQ("hello", mojo_obj2[0]->name.value());
+  ASSERT_EQ(3u, mojo_obj2[0]->rects->size());
 }
 
 }  // namespace test

@@ -413,15 +413,15 @@ TEST(UnionTest, StringValidateOOB) {
 // Array tests
 TEST(UnionTest, PodUnionInArray) {
   SmallStructPtr small_struct(SmallStruct::New());
-  small_struct->pod_union_array = Array<PodUnionPtr>(2);
-  small_struct->pod_union_array[0] = PodUnion::New();
-  small_struct->pod_union_array[1] = PodUnion::New();
+  small_struct->pod_union_array.emplace(2);
+  small_struct->pod_union_array.value()[0] = PodUnion::New();
+  small_struct->pod_union_array.value()[1] = PodUnion::New();
 
-  small_struct->pod_union_array[0]->set_f_int8(10);
-  small_struct->pod_union_array[1]->set_f_int16(12);
+  small_struct->pod_union_array.value()[0]->set_f_int8(10);
+  small_struct->pod_union_array.value()[1]->set_f_int16(12);
 
-  EXPECT_EQ(10, small_struct->pod_union_array[0]->get_f_int8());
-  EXPECT_EQ(12, small_struct->pod_union_array[1]->get_f_int16());
+  EXPECT_EQ(10, small_struct->pod_union_array.value()[0]->get_f_int8());
+  EXPECT_EQ(12, small_struct->pod_union_array.value()[1]->get_f_int16());
 }
 
 TEST(UnionTest, PodUnionInArraySerialization) {
@@ -669,15 +669,15 @@ TEST(UnionTest, Validation_NullableUnion) {
 // Map Tests
 TEST(UnionTest, PodUnionInMap) {
   SmallStructPtr small_struct(SmallStruct::New());
-  small_struct->pod_union_map = Map<String, PodUnionPtr>();
-  small_struct->pod_union_map.insert("one", PodUnion::New());
-  small_struct->pod_union_map.insert("two", PodUnion::New());
+  small_struct->pod_union_map.emplace();
+  small_struct->pod_union_map.value()["one"] = PodUnion::New();
+  small_struct->pod_union_map.value()["two"] = PodUnion::New();
 
-  small_struct->pod_union_map["one"]->set_f_int8(8);
-  small_struct->pod_union_map["two"]->set_f_int16(16);
+  small_struct->pod_union_map.value()["one"]->set_f_int8(8);
+  small_struct->pod_union_map.value()["two"]->set_f_int16(16);
 
-  EXPECT_EQ(8, small_struct->pod_union_map["one"]->get_f_int8());
-  EXPECT_EQ(16, small_struct->pod_union_map["two"]->get_f_int16());
+  EXPECT_EQ(8, small_struct->pod_union_map.value()["one"]->get_f_int8());
+  EXPECT_EQ(16, small_struct->pod_union_map.value()["two"]->get_f_int16());
 }
 
 TEST(UnionTest, PodUnionInMapSerialization) {
@@ -892,9 +892,9 @@ TEST(UnionTest, ArrayInUnionValidation) {
 }
 
 TEST(UnionTest, MapInUnionGetterSetter) {
-  Map<String, int8_t> map;
-  map.insert("one", 1);
-  map.insert("two", 2);
+  std::unordered_map<std::string, int8_t> map;
+  map.insert({"one", 1});
+  map.insert({"two", 2});
 
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_map_int8(std::move(map));
@@ -904,9 +904,9 @@ TEST(UnionTest, MapInUnionGetterSetter) {
 }
 
 TEST(UnionTest, MapInUnionSerialization) {
-  Map<String, int8_t> map;
-  map.insert("one", 1);
-  map.insert("two", 2);
+  std::unordered_map<std::string, int8_t> map;
+  map.insert({"one", 1});
+  map.insert({"two", 2});
 
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_map_int8(std::move(map));
@@ -928,9 +928,9 @@ TEST(UnionTest, MapInUnionSerialization) {
 }
 
 TEST(UnionTest, MapInUnionValidation) {
-  Map<String, int8_t> map;
-  map.insert("one", 1);
-  map.insert("two", 2);
+  std::unordered_map<std::string, int8_t> map;
+  map.insert({"one", 1});
+  map.insert({"two", 2});
 
   ObjectUnionPtr obj(ObjectUnion::New());
   obj->set_f_map_int8(std::move(map));

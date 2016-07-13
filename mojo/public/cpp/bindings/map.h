@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <map>
+#include <unordered_map>
 #include <utility>
 
 #include "base/logging.h"
@@ -135,13 +136,12 @@ class Map {
   const std::map<Key, Value>& storage() const { return map_; }
 
   // Passes the underlying storage and resets this map to null.
-  //
-  // TODO(yzshen): Consider changing this to a rvalue-ref-qualified conversion
-  // to std::map<Key, Value> after we move to MSVC 2015.
   std::map<Key, Value> PassStorage() {
     is_null_ = true;
     return std::move(map_);
   }
+
+  operator const std::map<Key, Value>&() const { return map_; }
 
   // Swaps the contents of this Map with another Map of the same type (including
   // nullness).
