@@ -70,16 +70,21 @@ struct UDIFResourceFile {
   uint64_t plist_offset;  // Offset and length of the blkx plist.
   uint64_t plist_length;
 
-  uint8_t  reserved1[120];
+  uint8_t  reserved1[64];
+
+  uint64_t code_signature_offset;
+  uint64_t code_signature_length;
+
+  uint8_t  reserved2[40];
 
   UDIFChecksum master_checksum;
 
   uint32_t image_variant;
   uint64_t sector_count;
 
-  uint32_t reserved2;
   uint32_t reserved3;
   uint32_t reserved4;
+  uint32_t reserved5;
 };
 
 static void ConvertBigEndian(uuid_t* uuid) {
@@ -102,6 +107,8 @@ static void ConvertBigEndian(UDIFResourceFile* file) {
   ConvertBigEndian(&file->data_checksum);
   ConvertBigEndian(&file->plist_offset);
   ConvertBigEndian(&file->plist_length);
+  ConvertBigEndian(&file->code_signature_offset);
+  ConvertBigEndian(&file->code_signature_length);
   ConvertBigEndian(&file->master_checksum);
   ConvertBigEndian(&file->image_variant);
   ConvertBigEndian(&file->sector_count);
