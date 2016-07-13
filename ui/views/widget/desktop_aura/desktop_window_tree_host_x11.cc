@@ -1173,7 +1173,7 @@ void DesktopWindowTreeHostX11::InitX11Window(
                            depth, InputOutput, visual, attribute_mask, &swa);
   if (ui::PlatformEventSource::GetInstance())
     ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  open_windows().push_back(xwindow_);
+  open_windows().push_front(xwindow_);
 
   // TODO(erg): Maybe need to set a ViewProp here like in RWHL::RWHL().
 
