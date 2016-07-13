@@ -2,12 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// AVFoundation API is only introduced in Mac OS X > 10.6, and there is only one
-// build of Chromium, so the (potential) linking with AVFoundation has to happen
-// in runtime. For this to be clean, an AVFoundationGlue class is defined to try
-// and load these AVFoundation system libraries. If it succeeds, subsequent
-// clients can use AVFoundation via the rest of the classes declared in this
-// file.
+// TODO(mcasas): Remove this whole glue, https://crbug.com/579648. This glue was
+// introduced to support Mac OS X <= 10.6 where AVFoundation was not available,
+// and had to happen in runtime.
 
 #ifndef MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_
 #define MEDIA_BASE_MAC_AVFOUNDATION_GLUE_H_
@@ -51,6 +48,7 @@ class MEDIA_EXPORT AVFoundationGlue {
 
   static Class AVCaptureSessionClass();
   static Class AVCaptureVideoDataOutputClass();
+  static Class AVCaptureStillImageOutputClass();
 #endif  // defined(__OBJC__)
 
  private:
@@ -95,6 +93,9 @@ MEDIA_EXPORT
 
 MEDIA_EXPORT
 @interface CrAVCaptureOutput : NSObject  // Originally from AVCaptureOutput.h.
+
+- (NSArray*)connections;
+
 @end
 
 // Originally AVCaptureSession and coming from AVCaptureSession.h.
@@ -104,6 +105,8 @@ MEDIA_EXPORT
 - (void)release;
 - (void)addInput:(CrAVCaptureInput*)input;
 - (void)removeInput:(CrAVCaptureInput*)input;
+- (NSArray*)outputs;
+- (BOOL)canAddOutput:(CrAVCaptureOutput*)output;
 - (void)addOutput:(CrAVCaptureOutput*)output;
 - (void)removeOutput:(CrAVCaptureOutput*)output;
 - (BOOL)isRunning;
@@ -153,6 +156,17 @@ MEDIA_EXPORT
 - (void)setVideoSettings:(NSDictionary*)videoSettings;
 - (NSDictionary*)videoSettings;
 - (CrAVCaptureConnection*)connectionWithMediaType:(NSString*)mediaType;
+
+@end
+
+// Originally AVCaptureStillImageOutput and coming from AVCaptureOutput.h.
+MEDIA_EXPORT
+@interface CrAVCaptureStillImageOutput : CrAVCaptureOutput
+
+typedef void (^CompletionHandler)(CoreMediaGlue::CMSampleBufferRef, NSError*);
+- (void)
+captureStillImageAsynchronouslyFromConnection:(CrAVCaptureConnection*)connection
+                            completionHandler:(CompletionHandler)handler;
 
 @end
 

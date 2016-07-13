@@ -21,8 +21,9 @@ class VideoCaptureDeviceMac;
 @class CrAVCaptureDevice;
 @class CrAVCaptureSession;
 @class CrAVCaptureVideoDataOutput;
+@class CrAVCaptureStillImageOutput;
 
-// Class used by VideoCaptureDeviceMac (VCDM) for video capture using
+// Class used by VideoCaptureDeviceMac (VCDM) for video and image capture using
 // AVFoundation API. This class lives inside the thread created by its owner
 // VCDM.
 //
@@ -62,7 +63,7 @@ class VideoCaptureDeviceMac;
   int frameHeight_;
   float frameRate_;
 
-  base::Lock lock_;  // Protects concurrent setting and using of frameReceiver_.
+  base::Lock lock_;  // Protects concurrent setting and using |frameReceiver_|.
   media::VideoCaptureDeviceMac* frameReceiver_;  // weak.
 
   base::scoped_nsobject<CrAVCaptureSession> captureSession_;
@@ -73,6 +74,9 @@ class VideoCaptureDeviceMac;
   // |captureDeviceInput_| is owned by |captureSession_|.
   CrAVCaptureDeviceInput* captureDeviceInput_;
   base::scoped_nsobject<CrAVCaptureVideoDataOutput> captureVideoDataOutput_;
+
+  // An AVDataOutput specialized for taking pictures out of |captureSession_|.
+  base::scoped_nsobject<CrAVCaptureStillImageOutput> stillImageOutput_;
 
   base::ThreadChecker main_thread_checker_;
 }
@@ -113,6 +117,10 @@ class VideoCaptureDeviceMac;
 
 // Stops video capturing and stops listening to notifications.
 - (void)stopCapture;
+
+// Takes a photo. This method should only be called between -startCapture and
+// -stopCapture.
+- (void)takePhoto;
 
 @end
 
