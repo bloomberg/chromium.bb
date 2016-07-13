@@ -4,6 +4,7 @@
 
 #include "components/omnibox/browser/verbatim_match.h"
 
+#include "base/logging.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
@@ -17,6 +18,7 @@ AutocompleteMatch VerbatimMatchForURL(
     const GURL& destination_url,
     HistoryURLProvider* history_url_provider,
     int verbatim_relevance) {
+  DCHECK(!input.text().empty());
   AutocompleteMatch match;
   // If query-in-the-omnibox is not enabled (and thus the verbatim match for
   // a URL is guaranteed to be a URL) and the caller already knows where the

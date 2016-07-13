@@ -30,24 +30,29 @@ ClipboardURLProvider::~ClipboardURLProvider() {}
 void ClipboardURLProvider::Start(const AutocompleteInput& input,
                                  bool minimal_changes) {
   matches_.clear();
+
+  // If the user started typing, do not offer clipboard based match.
   if (!input.from_omnibox_focus())
     return;
 
   GURL url;
+  // If the clipboard does not contain any URL, or the URL on the page is the
+  // same as the URL in the clipboard, early return.
   if (!clipboard_content_->GetRecentURLFromClipboard(&url) ||
       url == input.current_url())
     return;
 
   DCHECK(url.is_valid());
-  // Adds a default match. This match will be opened when the user presses "Go".
-  AutocompleteMatch verbatim_match = VerbatimMatchForURL(
-      client_, input, input.current_url(), history_url_provider_, -1);
-  if (verbatim_match.destination_url.is_valid())
+  // If the omnibox is not empty, add a default match.
+  // This match will be opened when the user presses "Enter".
+  if (!input.text().empty()) {
+    AutocompleteMatch verbatim_match = VerbatimMatchForURL(
+        client_, input, input.current_url(), history_url_provider_, -1);
     matches_.push_back(verbatim_match);
+  }
 
-  // Add a clipboard match just below the verbatim match.
-  AutocompleteMatch match(this, verbatim_match.relevance - 1, false,
-                          AutocompleteMatchType::CLIPBOARD);
+  // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
+  AutocompleteMatch match(this, 800, false, AutocompleteMatchType::CLIPBOARD);
   match.destination_url = url;
   match.contents.assign(url_formatter::FormatUrl(
       url, url_formatter::kFormatUrlOmitAll, net::UnescapeRule::SPACES,
