@@ -14,7 +14,6 @@
 
 #include "./aom_config.h"
 #include "aom/aom_integer.h"
-#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
 
 #ifdef __cplusplus
