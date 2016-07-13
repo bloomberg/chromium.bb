@@ -570,6 +570,9 @@ public class TouchInputHandler {
             }
 
             if (!mInputStrategy.isIndirectInputMode()) {
+                if (!mapScreenPointToImage(x, y)) {
+                    return false;
+                }
                 moveCursorToScreenPoint(x, y);
             }
 
@@ -592,6 +595,9 @@ public class TouchInputHandler {
             }
 
             if (!mInputStrategy.isIndirectInputMode()) {
+                if (!mapScreenPointToImage(x, y)) {
+                    return;
+                }
                 moveCursorToScreenPoint(x, y);
             }
 
@@ -618,6 +624,23 @@ public class TouchInputHandler {
                 default:
                     return InputStub.BUTTON_UNDEFINED;
             }
+        }
+
+        /** Verifies the given point maps to a valid location within the desktop image. */
+        private boolean mapScreenPointToImage(float screenX, float screenY) {
+            float[] mappedPoints = {screenX, screenY};
+            int imageWidth;
+            int imageHeight;
+            Matrix screenToImage = new Matrix();
+            synchronized (mRenderData) {
+                mRenderData.transform.invert(screenToImage);
+                imageWidth = mRenderData.imageWidth;
+                imageHeight = mRenderData.imageHeight;
+            }
+            screenToImage.mapPoints(mappedPoints);
+
+            return (mappedPoints[0] >= 0 && mappedPoints[0] <= imageWidth)
+                    && (mappedPoints[1] >= 0 && mappedPoints[1] <= imageHeight);
         }
     }
 }
