@@ -189,10 +189,12 @@ private:
         Asynchronous,
     };
 
-    // Setting |sync| to true will just call the closure. Note, this method is
-    // completely temporary as we need to maintain both threading
-    // implementations until the ParseHTMLOnMainThread experiment finishes.
-    void postTaskToLookaheadParser(std::unique_ptr<CrossThreadClosure>, LookaheadParserTaskSynchrony = Asynchronous);
+    // Setting |synchronyPolicy| to Synchronous will just call the function
+    // with the given parameters. Note, this method is completely temporary
+    // as we need to maintain both threading implementations until the
+    // ParseHTMLOnMainThread experiment finishes.
+    template <typename FunctionType, typename... Ps>
+    void postTaskToLookaheadParser(LookaheadParserTaskSynchrony synchronyPolicy, FunctionType, Ps&&... parameters);
 
     HTMLToken& token() { return *m_token; }
 

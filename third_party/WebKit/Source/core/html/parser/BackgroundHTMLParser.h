@@ -98,7 +98,8 @@ private:
     void sendTokensToMainThread();
     void updateDocument(const String& decodedData);
 
-    void runOnMainThread(std::unique_ptr<CrossThreadClosure>);
+    template <typename FunctionType, typename... Ps>
+    void runOnMainThread(FunctionType, Ps&&...);
 
     WeakPtrFactory<BackgroundHTMLParser> m_weakFactory;
     BackgroundHTMLInputStream m_input;

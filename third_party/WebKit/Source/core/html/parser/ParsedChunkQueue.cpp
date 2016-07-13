@@ -4,12 +4,38 @@
 
 #include "core/html/parser/ParsedChunkQueue.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include <algorithm>
 #include <memory>
 
 namespace blink {
 
+namespace {
+
+// TODO(csharrison): Remove this temporary class when the ParseHTMLOnMainThread
+// experiment ends.
+class MaybeLocker {
+public:
+    MaybeLocker(Mutex* mutex)
+        : m_mutex(mutex)
+    {
+        if (m_mutex)
+            m_mutex->lock();
+    }
+    ~MaybeLocker()
+    {
+        if (m_mutex)
+            m_mutex->unlock();
+    }
+
+private:
+    Mutex* m_mutex;
+};
+
+} // namespace
+
 ParsedChunkQueue::ParsedChunkQueue()
+    : m_mutex(RuntimeEnabledFeatures::parseHTMLOnMainThreadEnabled() ? nullptr : new Mutex)
 {
 }
 
@@ -19,7 +45,7 @@ ParsedChunkQueue::~ParsedChunkQueue()
 
 bool ParsedChunkQueue::enqueue(std::unique_ptr<HTMLDocumentParser::ParsedChunk> chunk)
 {
-    MutexLocker locker(m_mutex);
+    MaybeLocker locker(m_mutex.get());
 
     m_pendingTokenCount += chunk->tokens->size();
     m_peakPendingTokenCount = std::max(m_peakPendingTokenCount, m_pendingTokenCount);
@@ -33,7 +59,7 @@ bool ParsedChunkQueue::enqueue(std::unique_ptr<HTMLDocumentParser::ParsedChunk> 
 
 void ParsedChunkQueue::clear()
 {
-    MutexLocker locker(m_mutex);
+    MaybeLocker locker(m_mutex.get());
 
     m_pendingTokenCount = 0;
     m_pendingChunks.clear();
@@ -41,7 +67,7 @@ void ParsedChunkQueue::clear()
 
 void ParsedChunkQueue::takeAll(Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>>& vector)
 {
-    MutexLocker locker(m_mutex);
+    MaybeLocker locker(m_mutex.get());
 
     ASSERT(vector.isEmpty());
     m_pendingChunks.swap(vector);
@@ -49,13 +75,13 @@ void ParsedChunkQueue::takeAll(Vector<std::unique_ptr<HTMLDocumentParser::Parsed
 
 size_t ParsedChunkQueue::peakPendingChunkCount()
 {
-    MutexLocker locker(m_mutex);
+    MaybeLocker locker(m_mutex.get());
     return m_peakPendingChunkCount;
 }
 
 size_t ParsedChunkQueue::peakPendingTokenCount()
 {
-    MutexLocker locker(m_mutex);
+    MaybeLocker locker(m_mutex.get());
     return m_peakPendingTokenCount;
 }
 

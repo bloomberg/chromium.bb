@@ -159,7 +159,7 @@ void BackgroundHTMLParser::updateDocument(const String& decodedData)
         m_lastSeenEncodingData = encodingData;
 
         m_xssAuditor->setEncoding(encodingData.encoding());
-        runOnMainThread(crossThreadBind(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, m_parser, encodingData));
+        runOnMainThread(&HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser, m_parser, encodingData);
     }
 
     if (decodedData.isEmpty())
@@ -317,7 +317,7 @@ void BackgroundHTMLParser::sendTokensToMainThread()
     chunkEnqueueTime.count(monotonicallyIncreasingTimeMS() - chunkStartTime);
 
     if (isEmpty) {
-        runOnMainThread(crossThreadBind(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser));
+        runOnMainThread(&HTMLDocumentParser::notifyPendingParsedChunks, m_parser);
     }
 
     m_pendingTokens = wrapUnique(new CompactHTMLTokenStream);
@@ -328,12 +328,14 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 // main parser deals with chunking up its own work.
 // TODO(csharrison): This is a pretty big hack because we don't actually need a
 // CrossThreadClosure in these cases. This is just experimental.
-void BackgroundHTMLParser::runOnMainThread(std::unique_ptr<CrossThreadClosure> closure)
+template <typename FunctionType, typename... Ps>
+void BackgroundHTMLParser::runOnMainThread(FunctionType function, Ps&&... parameters)
 {
-    if (isMainThread())
-        (*closure)();
-    else
-        m_loadingTaskRunner->postTask(BLINK_FROM_HERE, std::move(closure));
+    if (isMainThread()) {
+        (*WTF::bind(function, std::forward<Ps>(parameters)...))();
+    } else {
+        m_loadingTaskRunner->postTask(BLINK_FROM_HERE, crossThreadBind(function, std::forward<Ps>(parameters)...));
+    }
 }
 
 } // namespace blink

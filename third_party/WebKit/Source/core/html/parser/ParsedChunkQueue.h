@@ -42,7 +42,7 @@ public:
 private:
     ParsedChunkQueue();
 
-    Mutex m_mutex;
+    std::unique_ptr<Mutex> m_mutex;
     Vector<std::unique_ptr<HTMLDocumentParser::ParsedChunk>> m_pendingChunks;
     size_t m_peakPendingChunkCount = 0;
     size_t m_peakPendingTokenCount = 0;
