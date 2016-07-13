@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 13: 'SVGZoomEvent' is deprecated and will be removed in M52, around July 2016. See https://www.chromestatus.com/features/5760883808534528 for more details.
 This is a testharness.js-based test.
 PASS AnimationEvent should be an alias for AnimationEvent. 
 PASS createEvent('AnimationEvent') should be initialized correctly. 
@@ -164,14 +163,14 @@ FAIL svgevents should be an alias for Event. Failed to execute 'createEvent' on 
 FAIL createEvent('svgevents') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL SVGEVENTS should be an alias for Event. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGEVENTS') is invalid.
 FAIL createEvent('SVGEVENTS') should be initialized correctly. Cannot read property 'type' of undefined
-PASS SVGZoomEvent should be an alias for SVGZoomEvent. 
-PASS createEvent('SVGZoomEvent') should be initialized correctly. 
+FAIL SVGZoomEvent should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZoomEvent') is invalid.
+FAIL createEvent('SVGZoomEvent') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL svgzoomevent should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('svgzoomevent') is invalid.
 FAIL createEvent('svgzoomevent') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL SVGZOOMEVENT should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZOOMEVENT') is invalid.
 FAIL createEvent('SVGZOOMEVENT') should be initialized correctly. Cannot read property 'type' of undefined
-PASS SVGZoomEvents should be an alias for SVGZoomEvent. 
-PASS createEvent('SVGZoomEvents') should be initialized correctly. 
+FAIL SVGZoomEvents should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZoomEvents') is invalid.
+FAIL createEvent('SVGZoomEvents') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL svgzoomevents should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('svgzoomevents') is invalid.
 FAIL createEvent('svgzoomevents') should be initialized correctly. Cannot read property 'type' of undefined
 FAIL SVGZOOMEVENTS should be an alias for SVGZoomEvent. Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZOOMEVENTS') is invalid.

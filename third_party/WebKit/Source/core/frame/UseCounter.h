@@ -1033,7 +1033,6 @@ public:
         HTMLMediaElement = 1229,
         HTMLMediaElementInDocument = 1230,
         HTMLMediaElementControlsAttribute = 1231,
-        SVGZoomEvent = 1232,
         V8Animation_Oncancel_AttributeGetter = 1233,
         V8Animation_Oncancel_AttributeSetter = 1234,
         V8HTMLCommentInExternalScript = 1235,

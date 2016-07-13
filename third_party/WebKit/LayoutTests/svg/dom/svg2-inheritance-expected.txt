@@ -84,7 +84,6 @@ PASS SVGTransformList inherits Object
 PASS SVGUseElement inherits SVGGraphicsElement
 PASS SVGViewElement inherits SVGElement
 PASS SVGViewSpec inherits Object
-PASS SVGZoomEvent inherits UIEvent
 FAIL TimeEvent is not defined
 PASS successfullyParsed is true
 

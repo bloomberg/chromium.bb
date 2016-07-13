@@ -166,16 +166,6 @@
     shouldBeTrue("document.createEvent('SVGEvents') instanceof window.Event");
     shouldBeTrue("document.createEvent('SVGEvents').constructor === window.Event");
 
-    // SVGZoomEvent
-    shouldBeTrue("document.createEvent('SVGZoomEvent') instanceof window.SVGZoomEvent");
-    shouldBeTrue("document.createEvent('SVGZoomEvent') instanceof window.Event");
-    shouldBeTrue("document.createEvent('SVGZoomEvent').constructor === window.SVGZoomEvent");
-
-    // SVGZoomEvents (SVGZoomEvent alternative)
-    shouldBeTrue("document.createEvent('SVGZoomEvents') instanceof window.SVGZoomEvent");
-    shouldBeTrue("document.createEvent('SVGZoomEvents') instanceof window.Event");
-    shouldBeTrue("document.createEvent('SVGZoomEvents').constructor === window.SVGZoomEvent");
-
     // CloseEvent
     shouldBeTrue("document.createEvent('CloseEvent') instanceof window.CloseEvent");
     shouldBeTrue("document.createEvent('CloseEvent') instanceof window.Event");

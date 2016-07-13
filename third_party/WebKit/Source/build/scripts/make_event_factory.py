@@ -68,19 +68,8 @@ def create_event_whitelist(name):
             or name == 'TouchEvent')
 
 
-def create_event_deprecate_list(name):
-    return (name == 'SVGZoomEvent'
-            or name == 'SVGZoomEvents')
-
-
 def measure_name(name):
     return 'DocumentCreateEvent' + name
-
-
-def deprecate_name(name):
-    if (name.startswith('SVGZoomEvent')):
-        return 'SVGZoomEvent'
-    return None
 
 
 class EventFactoryWriter(in_generator.Writer):
@@ -98,9 +87,7 @@ class EventFactoryWriter(in_generator.Writer):
         'lower_first': name_utilities.lower_first,
         'script_name': name_utilities.script_name,
         'create_event_whitelist': create_event_whitelist,
-        'create_event_deprecate_list': create_event_deprecate_list,
         'measure_name': measure_name,
-        'deprecate_name': deprecate_name,
     }
 
     def __init__(self, in_file_path):

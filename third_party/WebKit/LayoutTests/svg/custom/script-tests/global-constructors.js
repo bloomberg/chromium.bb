@@ -105,7 +105,6 @@ shouldBeDefined("SVGAElement");
 shouldBeDefined("SVGViewElement");
 shouldBeDefined("SVGScriptElement");
 shouldBeDefined("SVGEvent");
-shouldBeDefined("SVGZoomEvent");
 shouldBeDefined("SVGAnimationElement");
 shouldBeDefined("SVGAnimateElement");
 shouldBeDefined("SVGSetElement");

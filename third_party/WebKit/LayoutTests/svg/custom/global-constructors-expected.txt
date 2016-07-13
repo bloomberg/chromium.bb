@@ -102,7 +102,6 @@ PASS SVGAElement.toString() is 'function SVGAElement() { [native code] }'
 PASS SVGViewElement.toString() is 'function SVGViewElement() { [native code] }'
 PASS SVGScriptElement.toString() is 'function SVGScriptElement() { [native code] }'
 FAIL SVGEvent.toString() should be function SVGEvent() { [native code] }. Threw exception ReferenceError: SVGEvent is not defined
-PASS SVGZoomEvent.toString() is 'function SVGZoomEvent() { [native code] }'
 PASS SVGAnimationElement.toString() is 'function SVGAnimationElement() { [native code] }'
 PASS SVGAnimateElement.toString() is 'function SVGAnimateElement() { [native code] }'
 PASS SVGSetElement.toString() is 'function SVGSetElement() { [native code] }'

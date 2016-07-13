@@ -22,11 +22,7 @@ namespace blink {
     if (type == "{{event|script_name}}"{% if event.RuntimeEnabled %} && RuntimeEnabledFeatures::{{event.RuntimeEnabled|lower_first}}(){% endif %}) {
     {% endif %}
         {% if not event|script_name|create_event_whitelist %}
-        {% if event|script_name|create_event_deprecate_list %}
-        Deprecation::countDeprecation(executionContext, UseCounter::{{event|script_name|deprecate_name}});
-        {% else %}
         UseCounter::count(executionContext, UseCounter::{{event|script_name|measure_name}});
-        {% endif %}
         {% endif %}
         return {{event|cpp_name}}::create();
     }

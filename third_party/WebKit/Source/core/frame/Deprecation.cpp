@@ -343,9 +343,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::V8TouchEvent_InitTouchEvent_Method:
         return replacedWillBeRemoved("'TouchEvent.initTouchEvent'", "the TouchEvent constructor", 53, "5730982598541312");
 
-    case UseCounter::SVGZoomEvent:
-        return willBeRemoved("'SVGZoomEvent'", 52, "5760883808534528");
-
     case UseCounter::WebAnimationHyphenatedProperty:
         return "Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.";
 

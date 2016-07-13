@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 1: 'SVGZoomEvent' is deprecated and will be removed in M52, around July 2016. See https://www.chromestatus.com/features/5760883808534528 for more details.
 This tests that document.createEvent is hooked up for all Event interfaces (and alternatives) and creates the right instance.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -111,12 +110,6 @@ PASS document.createEvent('StorageEvent') instanceof window.Event is true
 PASS document.createEvent('StorageEvent').constructor === window.StorageEvent is true
 PASS document.createEvent('SVGEvents') instanceof window.Event is true
 PASS document.createEvent('SVGEvents').constructor === window.Event is true
-PASS document.createEvent('SVGZoomEvent') instanceof window.SVGZoomEvent is true
-PASS document.createEvent('SVGZoomEvent') instanceof window.Event is true
-PASS document.createEvent('SVGZoomEvent').constructor === window.SVGZoomEvent is true
-PASS document.createEvent('SVGZoomEvents') instanceof window.SVGZoomEvent is true
-PASS document.createEvent('SVGZoomEvents') instanceof window.Event is true
-PASS document.createEvent('SVGZoomEvents').constructor === window.SVGZoomEvent is true
 PASS document.createEvent('CloseEvent') instanceof window.CloseEvent is true
 PASS document.createEvent('CloseEvent') instanceof window.Event is true
 PASS document.createEvent('CloseEvent').constructor === window.CloseEvent is true

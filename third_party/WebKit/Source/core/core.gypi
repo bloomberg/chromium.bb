@@ -368,7 +368,6 @@
             'svg/SVGUseElement.idl',
             'svg/SVGViewElement.idl',
             'svg/SVGViewSpec.idl',
-            'svg/SVGZoomEvent.idl',
             'timing/MemoryInfo.idl',
             'timing/Performance.idl',
             'timing/PerformanceCompositeTiming.idl',
@@ -494,7 +493,6 @@
             'events/UIEvent.idl',
             'events/WheelEvent.idl',
             'html/track/TrackEvent.idl',
-            'svg/SVGZoomEvent.idl',
         ],
         # IDL files that only have typedefs/enums.
         'core_typedefs_enums_only_idl_files': [
@@ -3696,8 +3694,6 @@
             'svg/SVGViewSpec.h',
             'svg/SVGZoomAndPan.cpp',
             'svg/SVGZoomAndPan.h',
-            'svg/SVGZoomEvent.cpp',
-            'svg/SVGZoomEvent.h',
             'svg/animation/SMILTime.cpp',
             'svg/animation/SMILTimeContainer.cpp',
             'svg/animation/SMILTimeContainer.h',

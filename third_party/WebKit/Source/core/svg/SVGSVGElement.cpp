@@ -177,9 +177,6 @@ void SVGSVGElement::parseAttribute(const QualifiedName& name, const AtomicString
             document().setWindowAttributeEventListener(EventTypeNames::resize, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
         } else if (name == HTMLNames::onscrollAttr) {
             document().setWindowAttributeEventListener(EventTypeNames::scroll, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
-        } else if (name == SVGNames::onzoomAttr) {
-            Deprecation::countDeprecation(document(), UseCounter::SVGZoomEvent);
-            document().setWindowAttributeEventListener(EventTypeNames::zoom, createAttributeEventListener(document().frame(), name, value, eventParameterName()));
         } else {
             setListener = false;
         }
