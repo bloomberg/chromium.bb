@@ -87,13 +87,11 @@ void OpenSLESOutputStream::Start(AudioSourceCallback* callback) {
   base::AutoLock lock(lock_);
   DCHECK(!callback_);
   callback_ = callback;
-  delay_calculator_.SetBaseTimestamp(base::TimeDelta());
 
   // Fill audio data with silence to avoid start-up glitches. Don't use
   // FillBufferQueueNoLock() since it can trigger recursive entry if an error
   // occurs while writing into the stream. See http://crbug.com/624877.
   memset(audio_data_[active_buffer_index_], 0, buffer_size_bytes_);
-  delay_calculator_.AddFrames(audio_bus_->frames());
   LOG_ON_FAILURE_AND_RETURN((*simple_buffer_queue_)
                                 ->Enqueue(simple_buffer_queue_,
                                           audio_data_[active_buffer_index_],
@@ -105,6 +103,15 @@ void OpenSLESOutputStream::Start(AudioSourceCallback* callback) {
   // state, adding buffers will implicitly start playback.
   LOG_ON_FAILURE_AND_RETURN(
       (*player_)->SetPlayState(player_, SL_PLAYSTATE_PLAYING));
+
+  // On older version of Android, the position may not be reset even though we
+  // call Clear() during Stop(), in this case the best we can do is assume that
+  // we're continuing on from this previous position.
+  uint32_t position_in_ms = 0;
+  LOG_ON_FAILURE_AND_RETURN((*player_)->GetPosition(player_, &position_in_ms));
+  delay_calculator_.SetBaseTimestamp(
+      base::TimeDelta::FromMilliseconds(position_in_ms));
+  delay_calculator_.AddFrames(audio_bus_->frames());
 
   started_ = true;
 }
