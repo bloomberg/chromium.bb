@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/common/content_constants_internal.h"
 #include "content/renderer/media/audio_input_message_filter.h"
@@ -128,6 +129,8 @@ AudioDeviceFactory::NewAudioRendererSink(SourceType source_type,
     return NewMixableSink(source_type, render_frame_id, session_id, device_id,
                           security_origin);
 
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.Render.SinkCache.UsedForSinkCreation",
+                        false);
   return NewFinalAudioRendererSink(render_frame_id, session_id, device_id,
                                    security_origin);
 }

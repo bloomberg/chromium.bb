@@ -21356,6 +21356,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Media.Audio.Render.SinkCache.GetOutputDeviceInfoCacheUtilization"
+    enum="GetOutputDeviceInfoCacheHit">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Whether a cached sink was used to get audio output device information, or a
+    new sink was created for that.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.SinkCache.InfoSinkReusedForOutput"
+    enum="BooleanReused">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    When a new sink is created to get output device information, it is cached.
+    This metric shows if such a sink is later reused for audio output (can
+    happen no more than once) or deleted unused after timeout expires. Logged
+    when one of the abovementioned events takes place.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audio.Render.SinkCache.UsedForSinkCreation"
+    enum="BooleanUsage">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Whether a sink was created through the sink cache or directly.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.RenderFailsWhenBufferSizeChangesMac"
     enum="BooleanChanged">
   <owner>henrika@chromium.org</owner>
@@ -78379,6 +78408,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Gesture occured and was predicted"/>
   <int value="1" label="Gesture occured but was not predicted"/>
   <int value="2" label="Gesture predicted but didn't occur"/>
+</enum>
+
+<enum name="GetOutputDeviceInfoCacheHit" type="int">
+  <int value="0" label="Miss: no cached sink found">
+    Output parmeters for a device are requested, and there is no corresponding
+    sink cached; new sink is created and cached.
+  </int>
+  <int value="1" label="Miss: cannot lookup by session id">
+    If session id is used to specify a device, we always have to create and
+    cache a new sink.
+  </int>
+  <int value="2" label="Hit">
+    Output parmeters for a device are requested, and there is a corresponding
+    sink cached.
+  </int>
 </enum>
 
 <enum name="GetPerfDataOutcome" type="int">
