@@ -156,7 +156,7 @@ void FullscreenController::enterFullScreenForElement(Element* element)
     // We need to transition to fullscreen mode.
     WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(element->document().frame());
     if (frame && frame->client()) {
-        if (!Fullscreen::from(element->document()).forCrossProcessAncestor())
+        if (!Fullscreen::from(element->document()).forCrossProcessDescendant())
             frame->client()->enterFullscreen();
         m_provisionalFullScreenElement = element;
     }

@@ -198,7 +198,7 @@ Fullscreen::Fullscreen(Document& document)
     : ContextLifecycleObserver(&document)
     , m_fullScreenLayoutObject(nullptr)
     , m_eventQueueTimer(this, &Fullscreen::eventQueueTimerFired)
-    , m_forCrossProcessAncestor(false)
+    , m_forCrossProcessDescendant(false)
 {
     document.setHasFullscreenSupplement();
 }
@@ -224,11 +224,11 @@ void Fullscreen::contextDestroyed()
 
 }
 
-void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bool forCrossProcessAncestor)
+void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bool forCrossProcessDescendant)
 {
     // Use counters only need to be incremented in the process of the actual
     // fullscreen element.
-    if (!forCrossProcessAncestor) {
+    if (!forCrossProcessDescendant) {
         if (document()->isSecureContext()) {
             UseCounter::count(document(), UseCounter::FullscreenSecureOrigin);
         } else {
@@ -259,10 +259,10 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
         //   - an activation behavior is currently being processed whose click event was trusted, or
         //   - the event listener for a trusted click event is being handled.
         //
-        // If |forCrossProcessAncestor| is true, requestFullscreen was already
-        // called on an element in another process, and getting here means that
-        // it already passed the user gesture check.
-        if (!UserGestureIndicator::utilizeUserGesture() && !forCrossProcessAncestor) {
+        // If |forCrossProcessDescendant| is true, requestFullscreen
+        // was already called on a descendant element in another process, and
+        // getting here means that it already passed the user gesture check.
+        if (!UserGestureIndicator::utilizeUserGesture() && !forCrossProcessDescendant) {
             String message = ExceptionMessages::failedToExecute("requestFullScreen",
                 "Element", "API can only be initiated by a user gesture.");
             document()->addConsoleMessage(
@@ -331,7 +331,7 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType, bo
             // 4. Otherwise, do nothing for this document. It stays the same.
         } while (++current != docs.end());
 
-        m_forCrossProcessAncestor = forCrossProcessAncestor;
+        m_forCrossProcessDescendant = forCrossProcessDescendant;
 
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
@@ -505,13 +505,18 @@ void Fullscreen::didEnterFullscreenForElement(Element* element)
         m_savedPlaceholderComputedStyle = ComputedStyle::clone(layoutObject->styleRef());
     }
 
-    // TODO(alexmos): When |m_forCrossProcessAncestor| is true, some of
+    // TODO(alexmos): When |m_forCrossProcessDescendant| is true, some of
     // this layout work has already been done in another process, so it should
     // not be necessary to repeat it here.
     if (m_fullScreenElement != document()->documentElement())
         LayoutFullScreen::wrapLayoutObject(layoutObject, layoutObject ? layoutObject->parent() : 0, document());
 
-    if (m_forCrossProcessAncestor) {
+    // When |m_forCrossProcessDescendant| is true, m_fullScreenElement
+    // corresponds to the HTMLFrameOwnerElement for the out-of-process iframe
+    // that contains the actual fullscreen element.   Hence, it must also set
+    // the ContainsFullScreenElement flag (so that it gains the
+    // -webkit-full-screen-ancestor style).
+    if (m_forCrossProcessDescendant) {
         DCHECK(m_fullScreenElement->isFrameOwnerElement());
         DCHECK(toHTMLFrameOwnerElement(m_fullScreenElement)->contentFrame()->isRemoteFrame());
         m_fullScreenElement->setContainsFullScreenElement(true);
@@ -543,7 +548,7 @@ void Fullscreen::didExitFullscreen()
 
     m_fullScreenElement->willStopBeingFullscreenElement();
 
-    if (m_forCrossProcessAncestor)
+    if (m_forCrossProcessDescendant)
         m_fullScreenElement->setContainsFullScreenElement(false);
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
@@ -567,7 +572,7 @@ void Fullscreen::didExitFullscreen()
     DCHECK(exitingDocument);
     from(*exitingDocument).m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 
-    m_forCrossProcessAncestor = false;
+    m_forCrossProcessDescendant = false;
 }
 
 void Fullscreen::setFullScreenLayoutObject(LayoutFullScreen* layoutObject)
