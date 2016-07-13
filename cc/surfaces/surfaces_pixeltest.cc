@@ -21,6 +21,8 @@
 namespace cc {
 namespace {
 
+static constexpr uint32_t kArbitraryClientId = 1u;
+
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
   void ReturnResources(const ReturnedResourceArray& resources) override {}
@@ -29,7 +31,8 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
 
 class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
  public:
-  SurfacesPixelTest() : allocator_(1u), factory_(&manager_, &client_) {}
+  SurfacesPixelTest()
+      : allocator_(kArbitraryClientId), factory_(&manager_, &client_) {}
 
  protected:
   SurfaceManager manager_;

@@ -103,7 +103,7 @@ class DirectOutputSurface : public cc::OutputSurface {
 InProcessContextFactory::InProcessContextFactory(
     bool context_factory_for_test,
     cc::SurfaceManager* surface_manager)
-    : next_surface_id_namespace_(1u),
+    : next_surface_client_id_(1u),
       use_test_surface_(true),
       context_factory_for_test_(context_factory_for_test),
       surface_manager_(surface_manager) {
@@ -179,7 +179,7 @@ void InProcessContextFactory::CreateOutputSurface(
     per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
         surface_manager_, GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
         compositor->GetRendererSettings(),
-        compositor->surface_id_allocator()->id_namespace(),
+        compositor->surface_id_allocator()->client_id(),
         std::move(begin_frame_source), std::move(display_output_surface),
         std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
                                   compositor->task_runner().get()));
@@ -252,9 +252,9 @@ cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
 std::unique_ptr<cc::SurfaceIdAllocator>
 InProcessContextFactory::CreateSurfaceIdAllocator() {
   std::unique_ptr<cc::SurfaceIdAllocator> allocator(
-      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+      new cc::SurfaceIdAllocator(next_surface_client_id_++));
   if (surface_manager_)
-    allocator->RegisterSurfaceIdNamespace(surface_manager_);
+    allocator->RegisterSurfaceClientId(surface_manager_);
   return allocator;
 }
 

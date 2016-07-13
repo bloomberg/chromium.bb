@@ -219,17 +219,16 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // Returns the compositing surface ID namespace, or 0 if Surfaces are not
   // enabled.
-  virtual uint32_t GetSurfaceIdNamespace();
+  virtual uint32_t GetSurfaceClientId();
 
   // When there are multiple RenderWidgetHostViews for a single page, input
   // events need to be targeted to the correct one for handling. The following
   // methods are invoked on the RenderWidgetHostView that should be able to
   // properly handle the event (i.e. it has focus for keyboard events, or has
   // been identified by hit testing mouse, touch or gesture events).
-  virtual uint32_t SurfaceIdNamespaceAtPoint(
-      cc::SurfaceHittestDelegate* delegate,
-      const gfx::Point& point,
-      gfx::Point* transformed_point);
+  virtual uint32_t SurfaceClientIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                          const gfx::Point& point,
+                                          gfx::Point* transformed_point);
   virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void ProcessMouseEvent(const blink::WebMouseEvent& event,
                                  const ui::LatencyInfo& latency) {}

@@ -70,8 +70,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                          const blink::WebGestureEvent& event);
   void CancelScrollBubbling(RenderWidgetHostViewBase* target_view);
 
-  void AddSurfaceIdNamespaceOwner(uint32_t id, RenderWidgetHostViewBase* owner);
-  void RemoveSurfaceIdNamespaceOwner(uint32_t id);
+  void AddSurfaceClientIdOwner(uint32_t id, RenderWidgetHostViewBase* owner);
+  void RemoveSurfaceClientIdOwner(uint32_t id);
 
   bool is_registered(uint32_t id) {
     return owner_map_.find(id) != owner_map_.end();
@@ -98,7 +98,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
         hittest_data_;
   };
 
-  using SurfaceIdNamespaceOwnerMap =
+  using SurfaceClientIdOwnerMap =
       base::hash_map<uint32_t, RenderWidgetHostViewBase*>;
   struct TargetData {
     RenderWidgetHostViewBase* target;
@@ -129,7 +129,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   void SendGestureScrollEnd(RenderWidgetHostViewBase* view,
                             const blink::WebGestureEvent& event);
 
-  SurfaceIdNamespaceOwnerMap owner_map_;
+  SurfaceClientIdOwnerMap owner_map_;
   TargetQueue touchscreen_gesture_target_queue_;
   TargetData touch_target_;
   TargetData touchscreen_gesture_target_;

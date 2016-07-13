@@ -211,7 +211,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   host_->animation_host()->AddAnimationTimeline(animation_timeline_.get());
 
   host_->SetRootLayer(root_web_layer_);
-  host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
+  host_->set_surface_client_id(surface_id_allocator_->client_id());
   host_->SetVisible(true);
 }
 

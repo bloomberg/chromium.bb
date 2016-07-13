@@ -70,11 +70,11 @@ class TestDisplayScheduler : public DisplayScheduler {
 
   void DisplayResized() override { display_resized_ = true; }
 
-  void SetNewRootSurface(SurfaceId root_surface_id) override {
+  void SetNewRootSurface(const SurfaceId& root_surface_id) override {
     has_new_root_surface = true;
   }
 
-  void SurfaceDamaged(SurfaceId surface_id) override {
+  void SurfaceDamaged(const SurfaceId& surface_id) override {
     damaged = true;
     needs_draw_ = true;
   }
@@ -97,9 +97,9 @@ class DisplayTest : public testing::Test {
  public:
   DisplayTest()
       : factory_(&manager_, &surface_factory_client_),
-        id_allocator_(kArbitrarySurfaceNamespace),
+        id_allocator_(kArbitraryClientId),
         task_runner_(new base::NullTaskRunner) {
-    id_allocator_.RegisterSurfaceIdNamespace(&manager_);
+    id_allocator_.RegisterSurfaceClientId(&manager_);
   }
 
   void SetUpDisplay(const RendererSettings& settings,
@@ -125,13 +125,14 @@ class DisplayTest : public testing::Test {
     display_ = base::MakeUnique<Display>(
         &manager_, &shared_bitmap_manager_,
         nullptr /* gpu_memory_buffer_manager */, settings,
-        id_allocator_.id_namespace(), std::move(begin_frame_source),
+        id_allocator_.client_id(), std::move(begin_frame_source),
         std::move(output_surface), std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
   }
 
  protected:
-  void SubmitCompositorFrame(RenderPassList* pass_list, SurfaceId surface_id) {
+  void SubmitCompositorFrame(RenderPassList* pass_list,
+                             const SurfaceId& surface_id) {
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list->swap(frame_data->render_pass_list);
 
@@ -142,7 +143,7 @@ class DisplayTest : public testing::Test {
                                    SurfaceFactory::DrawCallback());
   }
 
-  static constexpr int kArbitrarySurfaceNamespace = 3;
+  static constexpr int kArbitraryClientId = 3;
 
   SurfaceManager manager_;
   FakeSurfaceFactoryClient surface_factory_client_;

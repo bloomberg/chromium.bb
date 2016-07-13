@@ -40,8 +40,8 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   void SetRootSurfaceResourcesLocked(bool locked);
   void ForceImmediateSwapIfPossible();
   virtual void DisplayResized();
-  virtual void SetNewRootSurface(SurfaceId root_surface_id);
-  virtual void SurfaceDamaged(SurfaceId surface_id);
+  virtual void SetNewRootSurface(const SurfaceId& root_surface_id);
+  virtual void SurfaceDamaged(const SurfaceId& surface_id);
 
   virtual void DidSwapBuffers();
   void DidSwapBuffersComplete();

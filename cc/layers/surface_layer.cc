@@ -57,7 +57,7 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(destroy_sequence_.is_null());
 }
 
-void SurfaceLayer::SetSurfaceId(SurfaceId surface_id,
+void SurfaceLayer::SetSurfaceId(const SurfaceId& surface_id,
                                 float scale,
                                 const gfx::Size& size) {
   SatisfyDestroySequence();

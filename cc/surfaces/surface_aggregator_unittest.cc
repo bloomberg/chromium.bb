@@ -37,8 +37,10 @@
 namespace cc {
 namespace {
 
+static constexpr uint32_t kArbitraryClientId = 0;
+
 SurfaceId InvalidSurfaceId() {
-  static SurfaceId invalid(0, 0xdeadbeef, 0);
+  static SurfaceId invalid(kArbitraryClientId, 0xdeadbeef, 0);
   return invalid;
 }
 
@@ -79,7 +81,7 @@ class SurfaceAggregatorTest : public testing::Test {
 };
 
 TEST_F(SurfaceAggregatorTest, ValidSurfaceNoFrame) {
-  SurfaceId one_id(0, 7, 0);
+  SurfaceId one_id(kArbitraryClientId, 7, 0);
   factory_.Create(one_id);
 
   CompositorFrame frame = aggregator_.Aggregate(one_id);
@@ -138,7 +140,8 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
     }
   }
 
-  void SubmitPassListAsFrame(SurfaceId surface_id, RenderPassList* pass_list) {
+  void SubmitPassListAsFrame(const SurfaceId& surface_id,
+                             RenderPassList* pass_list) {
     std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
     pass_list->swap(frame_data->render_pass_list);
 
@@ -151,14 +154,14 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
   void SubmitCompositorFrame(test::Pass* passes,
                              size_t pass_count,
-                             SurfaceId surface_id) {
+                             const SurfaceId& surface_id) {
     RenderPassList pass_list;
     AddPasses(&pass_list, gfx::Rect(SurfaceSize()), passes, pass_count);
     SubmitPassListAsFrame(surface_id, &pass_list);
   }
 
   void QueuePassAsFrame(std::unique_ptr<RenderPass> pass,
-                        SurfaceId surface_id) {
+                        const SurfaceId& surface_id) {
     std::unique_ptr<DelegatedFrameData> delegated_frame_data(
         new DelegatedFrameData);
     delegated_frame_data->render_pass_list.push_back(std::move(pass));
@@ -1917,7 +1920,7 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface_id(0, 7u, 0);
+  SurfaceId surface_id(kArbitraryClientId, 7u, 0);
   factory.Create(surface_id);
 
   ResourceId ids[] = {11, 12, 13};
@@ -1947,7 +1950,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface_id(0, 7u, 0);
+  SurfaceId surface_id(kArbitraryClientId, 7u, 0);
   factory.Create(surface_id);
 
   std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
@@ -1981,10 +1984,10 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
 TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface1_id(0, 7u, 0);
+  SurfaceId surface1_id(kArbitraryClientId, 7u, 0);
   factory.Create(surface1_id);
 
-  SurfaceId surface2_id(0, 8u, 0);
+  SurfaceId surface2_id(kArbitraryClientId, 8u, 0);
   factory.Create(surface2_id);
 
   ResourceId ids[] = {11, 12, 13};
@@ -2022,11 +2025,11 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId root_surface_id(0, 7u, 0);
+  SurfaceId root_surface_id(kArbitraryClientId, 7u, 0);
   factory.Create(root_surface_id);
-  SurfaceId middle_surface_id(0, 8u, 0);
+  SurfaceId middle_surface_id(kArbitraryClientId, 8u, 0);
   factory.Create(middle_surface_id);
-  SurfaceId child_surface_id(0, 9u, 0);
+  SurfaceId child_surface_id(kArbitraryClientId, 9u, 0);
   factory.Create(child_surface_id);
 
   ResourceId ids[] = {14, 15, 16};
@@ -2070,10 +2073,10 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
 TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface1_id(0, 7u, 0);
+  SurfaceId surface1_id(kArbitraryClientId, 7u, 0);
   factory.Create(surface1_id);
 
-  SurfaceId surface2_id(0, 8u, 0);
+  SurfaceId surface2_id(kArbitraryClientId, 8u, 0);
   factory.Create(surface2_id);
 
   ResourceId ids[] = {11, 12, 13};

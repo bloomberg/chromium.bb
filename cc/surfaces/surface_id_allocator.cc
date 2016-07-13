@@ -11,24 +11,23 @@
 
 namespace cc {
 
-SurfaceIdAllocator::SurfaceIdAllocator(uint32_t id_namespace)
-    : id_namespace_(id_namespace), next_id_(1u), manager_(nullptr) {
-}
+SurfaceIdAllocator::SurfaceIdAllocator(uint32_t client_id)
+    : client_id_(client_id), next_id_(1u), manager_(nullptr) {}
 
-void SurfaceIdAllocator::RegisterSurfaceIdNamespace(SurfaceManager* manager) {
+void SurfaceIdAllocator::RegisterSurfaceClientId(SurfaceManager* manager) {
   DCHECK(!manager_);
   manager_ = manager;
-  manager_->RegisterSurfaceIdNamespace(id_namespace_);
+  manager_->RegisterSurfaceClientId(client_id_);
 }
 
 SurfaceIdAllocator::~SurfaceIdAllocator() {
   if (manager_)
-    manager_->InvalidateSurfaceIdNamespace(id_namespace_);
+    manager_->InvalidateSurfaceClientId(client_id_);
 }
 
 SurfaceId SurfaceIdAllocator::GenerateId() {
   uint64_t nonce = base::RandUint64();
-  SurfaceId id(id_namespace_, next_id_, nonce);
+  SurfaceId id(client_id_, next_id_, nonce);
   next_id_++;
   return id;
 }

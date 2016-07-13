@@ -330,10 +330,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
 
-  uint32_t GetSurfaceIdNamespace() override;
-  uint32_t SurfaceIdNamespaceAtPoint(cc::SurfaceHittestDelegate* delegate,
-                                     const gfx::Point& point,
-                                     gfx::Point* transformed_point) override;
+  uint32_t GetSurfaceClientId() override;
+  uint32_t SurfaceClientIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                  const gfx::Point& point,
+                                  gfx::Point* transformed_point) override;
   // Returns true when we can do SurfaceHitTesting for the event type.
   bool ShouldRouteEvent(const blink::WebInputEvent& event) const;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,

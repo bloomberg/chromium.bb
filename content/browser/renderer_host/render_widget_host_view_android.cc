@@ -99,7 +99,7 @@ void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
-  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+  manager->DidSatisfySequences(sequence.client_id, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
@@ -1678,9 +1678,9 @@ void RenderWidgetHostViewAndroid::DidStopFlinging() {
     content_view_core_->DidStopFlinging();
 }
 
-uint32_t RenderWidgetHostViewAndroid::GetSurfaceIdNamespace() {
+uint32_t RenderWidgetHostViewAndroid::GetSurfaceClientId() {
   if (id_allocator_)
-    return id_allocator_->id_namespace();
+    return id_allocator_->client_id();
   return 0;
 }
 

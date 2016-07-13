@@ -6,7 +6,7 @@
 
 namespace ui {
 
-SurfacesState::SurfacesState() : next_id_namespace_(1u) {}
+SurfacesState::SurfacesState() : next_client_id_(1u) {}
 
 SurfacesState::~SurfacesState() {}
 

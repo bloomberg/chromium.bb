@@ -60,7 +60,7 @@ message LayerTreeHost {
   optional int32 outer_viewport_scroll_layer_id = 29;
   optional LayerSelection selection = 30;
   optional PropertyTrees property_trees = 31;
-  optional uint32 surface_id_namespace = 32;
+  optional uint32 surface_client_id = 32;
   optional uint32 next_surface_sequence = 33;
   optional uint32 wheel_event_listener_properties = 34;
   optional bool have_scroll_event_handlers = 35;

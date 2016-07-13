@@ -32,7 +32,7 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
       last_submitted_output_surface_id_(0u) {
   DCHECK(last_egl_context_);
   surfaces_->GetSurfaceManager()->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace(), this);
+      surface_id_allocator_->client_id(), this);
 }
 
 HardwareRenderer::~HardwareRenderer() {
@@ -42,7 +42,7 @@ HardwareRenderer::~HardwareRenderer() {
     DestroySurface();
   surface_factory_.reset();
   surfaces_->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace());
+      surface_id_allocator_->client_id());
 
   // Reset draw constraints.
   render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(

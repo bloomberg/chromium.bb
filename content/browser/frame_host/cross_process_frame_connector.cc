@@ -97,7 +97,7 @@ void CrossProcessFrameConnector::OnSatisfySequence(
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   cc::SurfaceManager* manager = GetSurfaceManager();
-  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+  manager->DidSatisfySequences(sequence.client_id, &sequences);
 }
 
 void CrossProcessFrameConnector::OnRequireSequence(

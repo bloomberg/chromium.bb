@@ -65,25 +65,25 @@ void SurfaceManager::Destroy(std::unique_ptr<Surface> surface) {
   GarbageCollectSurfaces();
 }
 
-void SurfaceManager::DidSatisfySequences(uint32_t id_namespace,
+void SurfaceManager::DidSatisfySequences(uint32_t client_id,
                                          std::vector<uint32_t>* sequence) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (std::vector<uint32_t>::iterator it = sequence->begin();
        it != sequence->end();
        ++it) {
-    satisfied_sequences_.insert(SurfaceSequence(id_namespace, *it));
+    satisfied_sequences_.insert(SurfaceSequence(client_id, *it));
   }
   sequence->clear();
   GarbageCollectSurfaces();
 }
 
-void SurfaceManager::RegisterSurfaceIdNamespace(uint32_t id_namespace) {
-  bool inserted = valid_surface_id_namespaces_.insert(id_namespace).second;
+void SurfaceManager::RegisterSurfaceClientId(uint32_t client_id) {
+  bool inserted = valid_surface_client_ids_.insert(client_id).second;
   DCHECK(inserted);
 }
 
-void SurfaceManager::InvalidateSurfaceIdNamespace(uint32_t id_namespace) {
-  valid_surface_id_namespaces_.erase(id_namespace);
+void SurfaceManager::InvalidateSurfaceClientId(uint32_t client_id) {
+  valid_surface_client_ids_.erase(client_id);
   GarbageCollectSurfaces();
 }
 
@@ -98,7 +98,7 @@ void SurfaceManager::GarbageCollectSurfaces() {
   // their destruction dependencies satisfied.
   for (auto& map_entry : surface_map_) {
     map_entry.second->SatisfyDestructionDependencies(
-        &satisfied_sequences_, &valid_surface_id_namespaces_);
+        &satisfied_sequences_, &valid_surface_client_ids_);
     if (!map_entry.second->destroyed() ||
         map_entry.second->GetDestructionDependencyCount()) {
       live_surfaces_set.insert(map_entry.first);
@@ -143,16 +143,16 @@ void SurfaceManager::GarbageCollectSurfaces() {
 }
 
 void SurfaceManager::RegisterSurfaceFactoryClient(
-    uint32_t id_namespace,
+    uint32_t client_id,
     SurfaceFactoryClient* client) {
   DCHECK(client);
-  DCHECK(!namespace_client_map_[id_namespace].client);
-  DCHECK_EQ(valid_surface_id_namespaces_.count(id_namespace), 1u);
+  DCHECK(!namespace_client_map_[client_id].client);
+  DCHECK_EQ(valid_surface_client_ids_.count(client_id), 1u);
 
-  auto iter = namespace_client_map_.find(id_namespace);
+  auto iter = namespace_client_map_.find(client_id);
   if (iter == namespace_client_map_.end()) {
     auto insert_result = namespace_client_map_.insert(
-        std::make_pair(id_namespace, ClientSourceMapping()));
+        std::make_pair(client_id, ClientSourceMapping()));
     DCHECK(insert_result.second);
     iter = insert_result.first;
   }
@@ -163,11 +163,11 @@ void SurfaceManager::RegisterSurfaceFactoryClient(
     client->SetBeginFrameSource(iter->second.source);
 }
 
-void SurfaceManager::UnregisterSurfaceFactoryClient(uint32_t id_namespace) {
-  DCHECK_EQ(valid_surface_id_namespaces_.count(id_namespace), 1u);
-  DCHECK_EQ(namespace_client_map_.count(id_namespace), 1u);
+void SurfaceManager::UnregisterSurfaceFactoryClient(uint32_t client_id) {
+  DCHECK_EQ(valid_surface_client_ids_.count(client_id), 1u);
+  DCHECK_EQ(namespace_client_map_.count(client_id), 1u);
 
-  auto iter = namespace_client_map_.find(id_namespace);
+  auto iter = namespace_client_map_.find(client_id);
   if (iter->second.source)
     iter->second.client->SetBeginFrameSource(nullptr);
   iter->second.client = nullptr;
@@ -180,28 +180,28 @@ void SurfaceManager::UnregisterSurfaceFactoryClient(uint32_t id_namespace) {
 }
 
 void SurfaceManager::RegisterBeginFrameSource(BeginFrameSource* source,
-                                              uint32_t id_namespace) {
+                                              uint32_t client_id) {
   DCHECK(source);
   DCHECK_EQ(registered_sources_.count(source), 0u);
-  DCHECK_EQ(valid_surface_id_namespaces_.count(id_namespace), 1u);
+  DCHECK_EQ(valid_surface_client_ids_.count(client_id), 1u);
 
-  registered_sources_[source] = id_namespace;
-  RecursivelyAttachBeginFrameSource(id_namespace, source);
+  registered_sources_[source] = client_id;
+  RecursivelyAttachBeginFrameSource(client_id, source);
 }
 
 void SurfaceManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
   DCHECK(source);
   DCHECK_EQ(registered_sources_.count(source), 1u);
 
-  uint32_t id_namespace = registered_sources_[source];
+  uint32_t client_id = registered_sources_[source];
   registered_sources_.erase(source);
 
-  if (namespace_client_map_.count(id_namespace) == 0u)
+  if (namespace_client_map_.count(client_id) == 0u)
     return;
 
   // TODO(enne): these walks could be done in one step.
   // Remove this begin frame source from its subtree.
-  RecursivelyDetachBeginFrameSource(id_namespace, source);
+  RecursivelyDetachBeginFrameSource(client_id, source);
   // Then flush every remaining registered source to fix any sources that
   // became null because of the previous step but that have an alternative.
   for (auto source_iter : registered_sources_)
@@ -209,9 +209,9 @@ void SurfaceManager::UnregisterBeginFrameSource(BeginFrameSource* source) {
 }
 
 void SurfaceManager::RecursivelyAttachBeginFrameSource(
-    uint32_t id_namespace,
+    uint32_t client_id,
     BeginFrameSource* source) {
-  ClientSourceMapping& mapping = namespace_client_map_[id_namespace];
+  ClientSourceMapping& mapping = namespace_client_map_[client_id];
   if (!mapping.source) {
     mapping.source = source;
     if (mapping.client)
@@ -222,9 +222,9 @@ void SurfaceManager::RecursivelyAttachBeginFrameSource(
 }
 
 void SurfaceManager::RecursivelyDetachBeginFrameSource(
-    uint32_t id_namespace,
+    uint32_t client_id,
     BeginFrameSource* source) {
-  auto iter = namespace_client_map_.find(id_namespace);
+  auto iter = namespace_client_map_.find(client_id);
   if (iter == namespace_client_map_.end())
     return;
   if (iter->second.source == source) {
@@ -263,8 +263,8 @@ bool SurfaceManager::ChildContains(uint32_t child_namespace,
 void SurfaceManager::RegisterSurfaceNamespaceHierarchy(
     uint32_t parent_namespace,
     uint32_t child_namespace) {
-  DCHECK_EQ(valid_surface_id_namespaces_.count(parent_namespace), 1u);
-  DCHECK_EQ(valid_surface_id_namespaces_.count(child_namespace), 1u);
+  DCHECK_EQ(valid_surface_client_ids_.count(parent_namespace), 1u);
+  DCHECK_EQ(valid_surface_client_ids_.count(child_namespace), 1u);
 
   // If it's possible to reach the parent through the child's descendant chain,
   // then this will create an infinite loop.  Might as well just crash here.

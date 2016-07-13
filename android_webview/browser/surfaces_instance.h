@@ -68,7 +68,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   void SetEmptyRootFrame();
 
-  uint32_t next_surface_id_namespace_;
+  uint32_t next_surface_client_id_;
 
   scoped_refptr<AwGLSurface> gl_surface_;
   std::unique_ptr<cc::SurfaceManager> surface_manager_;

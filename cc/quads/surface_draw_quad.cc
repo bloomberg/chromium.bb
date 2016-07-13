@@ -16,7 +16,7 @@ SurfaceDrawQuad::SurfaceDrawQuad() {
 void SurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& visible_rect,
-                             SurfaceId surface_id) {
+                             const SurfaceId& surface_id) {
   gfx::Rect opaque_rect;
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,
@@ -29,7 +29,7 @@ void SurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,
                              bool needs_blending,
-                             SurfaceId surface_id) {
+                             const SurfaceId& surface_id) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::SURFACE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->surface_id = surface_id;

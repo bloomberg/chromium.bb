@@ -15,11 +15,11 @@ namespace ws {
 ServerWindowSurfaceManager::ServerWindowSurfaceManager(ServerWindow* window)
     : window_(window),
       surface_id_allocator_(
-          window->delegate()->GetSurfacesState()->next_id_namespace()),
+          window->delegate()->GetSurfacesState()->next_client_id()),
       waiting_for_initial_frames_(
           window_->properties().count(ui::mojom::kWaitForUnderlay_Property) >
           0) {
-  surface_id_allocator_.RegisterSurfaceIdNamespace(GetSurfaceManager());
+  surface_id_allocator_.RegisterSurfaceClientId(GetSurfaceManager());
 }
 
 ServerWindowSurfaceManager::~ServerWindowSurfaceManager() {

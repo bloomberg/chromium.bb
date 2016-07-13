@@ -69,7 +69,7 @@ void OffscreenCanvasSurfaceImpl::Satisfy(const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   cc::SurfaceManager* manager = GetSurfaceManager();
-  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+  manager->DidSatisfySequences(sequence.client_id, &sequences);
 }
 
 // TODO(619136): Implement cc::SurfaceFactoryClient functions for resources

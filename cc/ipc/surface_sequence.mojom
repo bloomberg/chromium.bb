@@ -7,9 +7,8 @@ module cc.mojom;
 // A per-surface-namespace sequence number that's used to coordinate
 // dependencies between frames. A sequence number may be satisfied once, and
 // may be depended on once.
-// A surface sequence consists of an id namespace and a local sequence number.
 struct SurfaceSequence {
-  uint32 id_namespace;
+  uint32 client_id;
   uint32 sequence;
 };
  

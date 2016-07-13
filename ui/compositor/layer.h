@@ -297,7 +297,7 @@ class COMPOSITOR_EXPORT Layer
   void SetTextureScale(float x_scale, float y_scale);
 
   // Begins showing content from a surface with a particular id.
-  void SetShowSurface(cc::SurfaceId surface_id,
+  void SetShowSurface(const cc::SurfaceId& surface_id,
                       const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
                       const cc::SurfaceLayer::RequireCallback& require_callback,
                       gfx::Size surface_size,

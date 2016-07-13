@@ -79,7 +79,7 @@ class InProcessContextFactory : public ContextFactory {
   cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   cc::TestImageFactory image_factory_;
   cc::TestTaskGraphRunner task_graph_runner_;
-  uint32_t next_surface_id_namespace_;
+  uint32_t next_surface_client_id_;
   bool use_test_surface_;
   bool context_factory_for_test_;
   cc::SurfaceManager* surface_manager_;

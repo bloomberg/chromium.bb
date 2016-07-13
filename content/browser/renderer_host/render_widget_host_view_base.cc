@@ -377,11 +377,11 @@ RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
-uint32_t RenderWidgetHostViewBase::GetSurfaceIdNamespace() {
+uint32_t RenderWidgetHostViewBase::GetSurfaceClientId() {
   return 0;
 }
 
-uint32_t RenderWidgetHostViewBase::SurfaceIdNamespaceAtPoint(
+uint32_t RenderWidgetHostViewBase::SurfaceClientIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {

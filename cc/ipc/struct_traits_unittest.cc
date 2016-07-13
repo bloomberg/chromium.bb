@@ -729,26 +729,26 @@ TEST_F(StructTraitsTest, Selection) {
 }
 
 TEST_F(StructTraitsTest, SurfaceId) {
-  const uint32_t id_namespace = 1337;
+  const uint32_t client_id = 1337;
   const uint32_t local_id = 0xfbadbeef;
   const uint64_t nonce = 0xdeadbeef;
-  SurfaceId input(id_namespace, local_id, nonce);
+  SurfaceId input(client_id, local_id, nonce);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   SurfaceId output;
   proxy->EchoSurfaceId(input, &output);
-  EXPECT_EQ(id_namespace, output.id_namespace());
+  EXPECT_EQ(client_id, output.client_id());
   EXPECT_EQ(local_id, output.local_id());
   EXPECT_EQ(nonce, output.nonce());
 }
 
 TEST_F(StructTraitsTest, SurfaceSequence) {
-  const uint32_t id_namespace = 2016;
+  const uint32_t client_id = 2016;
   const uint32_t sequence = 0xfbadbeef;
-  SurfaceSequence input(id_namespace, sequence);
+  SurfaceSequence input(client_id, sequence);
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   SurfaceSequence output;
   proxy->EchoSurfaceSequence(input, &output);
-  EXPECT_EQ(id_namespace, output.id_namespace);
+  EXPECT_EQ(client_id, output.client_id);
   EXPECT_EQ(sequence, output.sequence);
 }
 

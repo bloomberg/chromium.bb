@@ -298,7 +298,7 @@ static bool g_initialized = false;
 base::LazyInstance<cc::SurfaceManager> g_surface_manager =
     LAZY_INSTANCE_INITIALIZER;
 
-int g_surface_id_namespace = 0;
+int g_surface_client_id = 0;
 
 class SingleThreadTaskGraphRunner : public cc::SingleThreadTaskGraphRunner {
  public:
@@ -342,10 +342,10 @@ cc::SurfaceManager* CompositorImpl::GetSurfaceManager() {
 std::unique_ptr<cc::SurfaceIdAllocator>
 CompositorImpl::CreateSurfaceIdAllocator() {
   std::unique_ptr<cc::SurfaceIdAllocator> allocator(
-      new cc::SurfaceIdAllocator(++g_surface_id_namespace));
+      new cc::SurfaceIdAllocator(++g_surface_client_id));
   cc::SurfaceManager* manager = GetSurfaceManager();
   DCHECK(manager);
-  allocator->RegisterSurfaceIdNamespace(manager);
+  allocator->RegisterSurfaceClientId(manager);
   return allocator;
 }
 
@@ -475,7 +475,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_ = cc::LayerTreeHost::CreateSingleThreaded(this, &params);
   DCHECK(!host_->visible());
   host_->SetRootLayer(root_layer_);
-  host_->set_surface_id_namespace(surface_id_allocator_->id_namespace());
+  host_->set_surface_client_id(surface_id_allocator_->client_id());
   host_->SetViewportSize(size_);
   host_->set_has_transparent_background(has_transparent_background_);
   host_->SetDeviceScaleFactor(device_scale_factor_);
@@ -705,9 +705,9 @@ void CompositorImpl::CreateOutputSurface() {
   display_.reset(new cc::Display(
       manager, HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
-      host_->settings().renderer_settings,
-      surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
-      std::move(display_output_surface), std::move(scheduler),
+      host_->settings().renderer_settings, surface_id_allocator_->client_id(),
+      std::move(begin_frame_source), std::move(display_output_surface),
+      std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> delegated_output_surface(

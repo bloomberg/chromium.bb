@@ -145,7 +145,7 @@ void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
-  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+  manager->DidSatisfySequences(sequence.client_id, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
@@ -610,7 +610,7 @@ void Surface::OnLayerRecreated(ui::Layer* old_layer, ui::Layer* new_layer) {
   SetSurfaceLayerContents(new_layer);
 }
 
-void Surface::WillDraw(cc::SurfaceId id) {
+void Surface::WillDraw(const cc::SurfaceId& id) {
   while (!active_frame_callbacks_.empty()) {
     active_frame_callbacks_.front().Run(base::TimeTicks::Now());
     active_frame_callbacks_.pop_front();

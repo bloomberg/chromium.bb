@@ -816,7 +816,7 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ReclaimCompositorResources,
 
 // Sent by browser to give renderer compositor a new namespace ID for any
 // SurfaceSequences it has to create.
-IPC_MESSAGE_ROUTED1(ViewMsg_SetSurfaceIdNamespace,
+IPC_MESSAGE_ROUTED1(ViewMsg_SetSurfaceClientId,
                     uint32_t /* surface_id_namespace */)
 
 IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)

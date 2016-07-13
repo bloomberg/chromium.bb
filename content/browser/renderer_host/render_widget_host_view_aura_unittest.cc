@@ -3863,20 +3863,20 @@ TEST_F(RenderWidgetHostViewAuraTest, ForwardMouseEvent) {
 
 // Tests the RenderWidgetHostImpl sends the correct surface ID namespace to
 // the renderer process.
-TEST_F(RenderWidgetHostViewAuraTest, SurfaceIdNamespaceInitialized) {
+TEST_F(RenderWidgetHostViewAuraTest, SurfaceClientIdInitialized) {
   gfx::Size size(5, 5);
 
   const IPC::Message* msg =
-      sink_->GetUniqueMessageMatching(ViewMsg_SetSurfaceIdNamespace::ID);
+      sink_->GetUniqueMessageMatching(ViewMsg_SetSurfaceClientId::ID);
   EXPECT_TRUE(msg);
-  ViewMsg_SetSurfaceIdNamespace::Param params;
-  ViewMsg_SetSurfaceIdNamespace::Read(msg, &params);
+  ViewMsg_SetSurfaceClientId::Param params;
+  ViewMsg_SetSurfaceClientId::Read(msg, &params);
   view_->InitAsChild(NULL);
   view_->Show();
   view_->SetSize(size);
   view_->OnSwapCompositorFrame(0,
                                MakeDelegatedFrame(1.f, size, gfx::Rect(size)));
-  EXPECT_EQ(view_->GetSurfaceIdNamespace(), std::get<0>(params));
+  EXPECT_EQ(view_->GetSurfaceClientId(), std::get<0>(params));
 }
 
 // This class provides functionality to test a RenderWidgetHostViewAura

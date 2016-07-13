@@ -39,8 +39,7 @@ scoped_refptr<SurfacesInstance> SurfacesInstance::GetOrCreateInstance() {
 }
 
 SurfacesInstance::SurfacesInstance()
-  : next_surface_id_namespace_(1u),
-    gl_surface_(new AwGLSurface) {
+    : next_surface_client_id_(1u), gl_surface_(new AwGLSurface) {
   cc::RendererSettings settings;
 
   // Should be kept in sync with compositor_impl_android.cc.
@@ -52,8 +51,8 @@ SurfacesInstance::SurfacesInstance()
 
   surface_manager_.reset(new cc::SurfaceManager);
   surface_id_allocator_.reset(
-      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
-  surface_id_allocator_->RegisterSurfaceIdNamespace(surface_manager_.get());
+      new cc::SurfaceIdAllocator(next_surface_client_id_++));
+  surface_id_allocator_->RegisterSurfaceClientId(surface_manager_.get());
 
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
       new cc::StubBeginFrameSource);
@@ -69,7 +68,7 @@ SurfacesInstance::SurfacesInstance()
   display_.reset(new cc::Display(
       surface_manager_.get(), nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings,
-      surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
+      surface_id_allocator_->client_id(), std::move(begin_frame_source),
       std::move(output_surface_holder), std::move(scheduler),
       std::move(texture_mailbox_deleter)));
   display_->Initialize(this);
@@ -92,9 +91,9 @@ SurfacesInstance::~SurfacesInstance() {
 
 std::unique_ptr<cc::SurfaceIdAllocator>
 SurfacesInstance::CreateSurfaceIdAllocator() {
-  std::unique_ptr<cc::SurfaceIdAllocator> allocator = base::WrapUnique(
-      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
-  allocator->RegisterSurfaceIdNamespace(surface_manager_.get());
+  std::unique_ptr<cc::SurfaceIdAllocator> allocator =
+      base::WrapUnique(new cc::SurfaceIdAllocator(next_surface_client_id_++));
+  allocator->RegisterSurfaceClientId(surface_manager_.get());
   return allocator;
 }
 

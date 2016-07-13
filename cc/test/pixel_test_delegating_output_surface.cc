@@ -21,7 +21,7 @@
 #include "cc/test/pixel_test_software_output_device.h"
 #include "cc/test/test_in_process_context_provider.h"
 
-static constexpr uint32_t kCompositorSurfaceNamespace = 1;
+static constexpr uint32_t kCompositorClientId = 1;
 
 namespace cc {
 
@@ -46,14 +46,13 @@ PixelTestDelegatingOutputSurface::PixelTestDelegatingOutputSurface(
       renderer_settings_(renderer_settings),
       display_context_provider_(std::move(display_context_provider)),
       surface_manager_(new SurfaceManager),
-      surface_id_allocator_(
-          new SurfaceIdAllocator(kCompositorSurfaceNamespace)),
+      surface_id_allocator_(new SurfaceIdAllocator(kCompositorClientId)),
       surface_factory_(new SurfaceFactory(surface_manager_.get(), this)),
       weak_ptrs_(this) {
   capabilities_.delegated_rendering = true;
   capabilities_.can_force_reclaim_resources = allow_force_reclaim_resources_;
 
-  surface_id_allocator_->RegisterSurfaceIdNamespace(surface_manager_.get());
+  surface_id_allocator_->RegisterSurfaceClientId(surface_manager_.get());
 }
 
 PixelTestDelegatingOutputSurface::~PixelTestDelegatingOutputSurface() {}
@@ -64,7 +63,7 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
     return false;
 
   surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace(), this);
+      surface_id_allocator_->client_id(), this);
 
   // The PixelTestOutputSurface is owned by the Display.
   std::unique_ptr<PixelTestOutputSurface> output_surface;
@@ -98,7 +97,7 @@ bool PixelTestDelegatingOutputSurface::BindToClient(
   display_.reset(new Display(
       surface_manager_.get(), shared_bitmap_manager_,
       gpu_memory_buffer_manager_, renderer_settings_,
-      surface_id_allocator_->id_namespace(), std::move(begin_frame_source),
+      surface_id_allocator_->client_id(), std::move(begin_frame_source),
       std::move(output_surface), std::move(scheduler),
       base::MakeUnique<TextureMailboxDeleter>(task_runner)));
   display_->SetEnlargePassTextureAmountForTesting(enlarge_pass_texture_amount_);
@@ -111,7 +110,7 @@ void PixelTestDelegatingOutputSurface::DetachFromClient() {
   if (!delegated_surface_id_.is_null())
     surface_factory_->Destroy(delegated_surface_id_);
   surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace());
+      surface_id_allocator_->client_id());
 
   display_ = nullptr;
   surface_factory_ = nullptr;

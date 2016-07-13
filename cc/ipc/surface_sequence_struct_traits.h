@@ -14,8 +14,8 @@ namespace mojo {
 // .mojom-blink.h respectively.
 template <typename T>
 struct StructTraits<T, cc::SurfaceSequence> {
-  static uint32_t id_namespace(const cc::SurfaceSequence& id) {
-    return id.id_namespace;
+  static uint32_t client_id(const cc::SurfaceSequence& id) {
+    return id.client_id;
   }
 
   static uint32_t sequence(const cc::SurfaceSequence& id) {
@@ -23,7 +23,7 @@ struct StructTraits<T, cc::SurfaceSequence> {
   }
 
   static bool Read(typename T::DataView data, cc::SurfaceSequence* out) {
-    *out = cc::SurfaceSequence(data.id_namespace(), data.sequence());
+    *out = cc::SurfaceSequence(data.client_id(), data.sequence());
     return true;
   }
 };

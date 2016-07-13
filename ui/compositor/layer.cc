@@ -590,7 +590,7 @@ void Layer::SetTextureScale(float x_scale, float y_scale) {
 }
 
 void Layer::SetShowSurface(
-    cc::SurfaceId surface_id,
+    const cc::SurfaceId& surface_id,
     const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
     const cc::SurfaceLayer::RequireCallback& require_callback,
     gfx::Size surface_size,

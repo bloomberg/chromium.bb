@@ -73,12 +73,12 @@ class SurfaceManagerTest : public testing::Test {
 
   SurfaceManagerTest() {
     for (size_t i = 0; i < MAX_NAMESPACE; ++i)
-      manager_.RegisterSurfaceIdNamespace(i);
+      manager_.RegisterSurfaceClientId(i);
   }
 
   ~SurfaceManagerTest() override {
     for (size_t i = 0; i < MAX_NAMESPACE; ++i)
-      manager_.InvalidateSurfaceIdNamespace(i);
+      manager_.InvalidateSurfaceClientId(i);
   }
 
  protected:

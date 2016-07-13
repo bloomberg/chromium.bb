@@ -381,8 +381,8 @@ bool RenderViewHostImpl::CreateRenderView(
   // If the RWHV has not yet been set, the surface ID namespace will get
   // passed down by the call to SetView().
   if (GetWidget()->GetView()) {
-    Send(new ViewMsg_SetSurfaceIdNamespace(
-        GetRoutingID(), GetWidget()->GetView()->GetSurfaceIdNamespace()));
+    Send(new ViewMsg_SetSurfaceClientId(
+        GetRoutingID(), GetWidget()->GetView()->GetSurfaceClientId()));
   }
 
   // If it's enabled, tell the renderer to set up the Javascript bindings for

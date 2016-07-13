@@ -103,7 +103,7 @@ class GpuProcessTransportFactory
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  uint32_t next_surface_id_namespace_;
+  uint32_t next_surface_client_id_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
 

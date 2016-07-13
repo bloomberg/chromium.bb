@@ -29,7 +29,7 @@ std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
   return SurfaceLayerImpl::Create(tree_impl, id());
 }
 
-void SurfaceLayerImpl::SetSurfaceId(SurfaceId surface_id) {
+void SurfaceLayerImpl::SetSurfaceId(const SurfaceId& surface_id) {
   if (surface_id_ == surface_id)
     return;
 

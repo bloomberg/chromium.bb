@@ -475,8 +475,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
   // Let the page-level input event router know about our surface ID
   // namespace for surface-based hit testing.
   if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    host_->delegate()->GetInputEventRouter()->AddSurfaceIdNamespaceOwner(
-        GetSurfaceIdNamespace(), this);
+    host_->delegate()->GetInputEventRouter()->AddSurfaceClientIdOwner(
+        GetSurfaceClientId(), this);
   }
 
   // We should start observing the TextInputManager for IME-related events as
@@ -1994,7 +1994,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     event->SetHandled();
 }
 
-uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
+uint32_t RenderWidgetHostViewAura::SurfaceClientIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
@@ -2012,8 +2012,8 @@ uint32_t RenderWidgetHostViewAura::SurfaceIdNamespaceAtPoint(
   // It is possible that the renderer has not yet produced a surface, in which
   // case we return our current namespace.
   if (id.is_null())
-    return GetSurfaceIdNamespace();
-  return id.id_namespace();
+    return GetSurfaceClientId();
+  return id.client_id();
 }
 
 void RenderWidgetHostViewAura::ProcessMouseEvent(
@@ -2957,8 +2957,8 @@ void RenderWidgetHostViewAura::UnlockCompositingSurface() {
   NOTIMPLEMENTED();
 }
 
-uint32_t RenderWidgetHostViewAura::GetSurfaceIdNamespace() {
-  return delegated_frame_host_->GetSurfaceIdNamespace();
+uint32_t RenderWidgetHostViewAura::GetSurfaceClientId() {
+  return delegated_frame_host_->GetSurfaceClientId();
 }
 
 cc::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {

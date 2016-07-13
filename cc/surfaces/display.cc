@@ -92,8 +92,8 @@ void Display::Initialize(DisplayClient* client) {
   DCHECK(ok);
 }
 
-void Display::SetSurfaceId(SurfaceId id, float device_scale_factor) {
-  DCHECK_EQ(id.id_namespace(), compositor_surface_namespace_);
+void Display::SetSurfaceId(const SurfaceId& id, float device_scale_factor) {
+  DCHECK_EQ(id.client_id(), compositor_surface_namespace_);
   if (current_surface_id_ == id && device_scale_factor_ == device_scale_factor)
     return;
 
@@ -402,7 +402,7 @@ void Display::SetFullRootLayerDamage() {
     aggregator_->SetFullDamageForSurface(current_surface_id_);
 }
 
-void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
+void Display::OnSurfaceDamaged(const SurfaceId& surface_id, bool* changed) {
   if (aggregator_ &&
       aggregator_->previous_contained_surfaces().count(surface_id)) {
     Surface* surface = surface_manager_->GetSurfaceForId(surface_id);
@@ -426,7 +426,7 @@ void Display::OnSurfaceDamaged(SurfaceId surface_id, bool* changed) {
     UpdateRootSurfaceResourcesLocked();
 }
 
-SurfaceId Display::CurrentSurfaceId() {
+const SurfaceId& Display::CurrentSurfaceId() {
   return current_surface_id_;
 }
 

@@ -44,7 +44,7 @@ ServerWindowSurface::~ServerWindowSurface() {
 
   if (registered_surface_factory_client_) {
     cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-    surface_manager->UnregisterSurfaceFactoryClient(manager_->id_namespace());
+    surface_manager->UnregisterSurfaceFactoryClient(manager_->client_id());
   }
 }
 
@@ -87,7 +87,7 @@ void ServerWindowSurface::RegisterForBeginFrames() {
   DCHECK(!registered_surface_factory_client_);
   registered_surface_factory_client_ = true;
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-  surface_manager->RegisterSurfaceFactoryClient(manager_->id_namespace(), this);
+  surface_manager->RegisterSurfaceFactoryClient(manager_->client_id(), this);
 }
 
 ServerWindow* ServerWindowSurface::window() {

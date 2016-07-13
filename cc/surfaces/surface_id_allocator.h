@@ -20,7 +20,7 @@ class SurfaceManager;
 // class in a mutex.
 class CC_SURFACES_EXPORT SurfaceIdAllocator {
  public:
-  explicit SurfaceIdAllocator(uint32_t id_namespace);
+  explicit SurfaceIdAllocator(uint32_t client_id);
   ~SurfaceIdAllocator();
 
   SurfaceId GenerateId();
@@ -31,16 +31,16 @@ class CC_SURFACES_EXPORT SurfaceIdAllocator {
   // automatically invalidated and any remaining sequences with that
   // namespace will be ignored. This method does not need to be called in
   // contexts where there is no SurfaceManager (e.g. a renderer process).
-  void RegisterSurfaceIdNamespace(SurfaceManager* manager);
+  void RegisterSurfaceClientId(SurfaceManager* manager);
 
-  uint32_t id_namespace() const { return id_namespace_; }
+  uint32_t client_id() const { return client_id_; }
 
   // SurfaceIdAllocator's owner can call this when it find out that
   // SurfaceManager is no longer alive during destruction.
   void DidDestroySurfaceManager() { manager_ = nullptr; }
 
  private:
-  const uint32_t id_namespace_;
+  const uint32_t client_id_;
   uint32_t next_id_;
   SurfaceManager* manager_;
 

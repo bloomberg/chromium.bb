@@ -44,7 +44,7 @@ namespace content {
 namespace {
 
 const int64_t kFallbackTickTimeoutInMilliseconds = 100;
-const uint32_t kCompositorSurfaceNamespace = 1;
+const uint32_t kCompositorClientId = 1;
 
 // Do not limit number of resources, so use an unrealistically high value.
 const size_t kNumResourcesLimit = 10 * 1000 * 1000;
@@ -97,8 +97,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
       surface_manager_(new cc::SurfaceManager),
-      surface_id_allocator_(
-          new cc::SurfaceIdAllocator(kCompositorSurfaceNamespace)),
+      surface_id_allocator_(new cc::SurfaceIdAllocator(kCompositorClientId)),
       surface_factory_(new cc::SurfaceFactory(surface_manager_.get(), this)) {
   DCHECK(registry_);
   DCHECK(sender_);
@@ -107,7 +106,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
   capabilities_.delegated_rendering = true;
   memory_policy_.priority_cutoff_when_visible =
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
-  surface_id_allocator_->RegisterSurfaceIdNamespace(surface_manager_.get());
+  surface_id_allocator_->RegisterSurfaceClientId(surface_manager_.get());
 }
 
 SynchronousCompositorOutputSurface::~SynchronousCompositorOutputSurface() {}
@@ -145,7 +144,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   registered_ = true;
 
   surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace(), this);
+      surface_id_allocator_->client_id(), this);
 
   cc::RendererSettings software_renderer_settings;
 
@@ -156,7 +155,7 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   display_.reset(new cc::Display(
       surface_manager_.get(), nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      surface_id_allocator_->id_namespace(), nullptr /* begin_frame_source */,
+      surface_id_allocator_->client_id(), nullptr /* begin_frame_source */,
       base::MakeUnique<SoftwareOutputSurface>(
           base::MakeUnique<SoftwareDevice>(&current_sw_canvas_)),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
@@ -173,7 +172,7 @@ void SynchronousCompositorOutputSurface::DetachFromClient() {
   if (!delegated_surface_id_.is_null())
     surface_factory_->Destroy(delegated_surface_id_);
   surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace());
+      surface_id_allocator_->client_id());
   display_ = nullptr;
   surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;

@@ -44,7 +44,7 @@ void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
-  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+  manager->DidSatisfySequences(sequence.client_id, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
@@ -78,7 +78,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
   factory->GetContextFactory()->AddObserver(this);
   id_allocator_ = factory->GetContextFactory()->CreateSurfaceIdAllocator();
   factory->GetSurfaceManager()->RegisterSurfaceFactoryClient(
-      id_allocator_->id_namespace(), this);
+      id_allocator_->client_id(), this);
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -204,8 +204,8 @@ void DelegatedFrameHost::EndFrameSubscription() {
   frame_subscriber_.reset();
 }
 
-uint32_t DelegatedFrameHost::GetSurfaceIdNamespace() {
-  return id_allocator_->id_namespace();
+uint32_t DelegatedFrameHost::GetSurfaceClientId() {
+  return id_allocator_->client_id();
 }
 
 cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
@@ -820,7 +820,7 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   if (!surface_id_.is_null())
     surface_factory_->Destroy(surface_id_);
   factory->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
-      id_allocator_->id_namespace());
+      id_allocator_->client_id());
 
   DCHECK(!vsync_manager_.get());
 }
@@ -836,9 +836,9 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
   vsync_manager_->AddObserver(this);
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  uint32_t parent = compositor->surface_id_allocator()->id_namespace();
+  uint32_t parent = compositor->surface_id_allocator()->client_id();
   factory->GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
-      parent, id_allocator_->id_namespace());
+      parent, id_allocator_->client_id());
 }
 
 void DelegatedFrameHost::ResetCompositor() {
@@ -856,9 +856,9 @@ void DelegatedFrameHost::ResetCompositor() {
   }
 
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  uint32_t parent = compositor_->surface_id_allocator()->id_namespace();
+  uint32_t parent = compositor_->surface_id_allocator()->client_id();
   factory->GetSurfaceManager()->UnregisterSurfaceNamespaceHierarchy(
-      parent, id_allocator_->id_namespace());
+      parent, id_allocator_->client_id());
 
   compositor_ = nullptr;
 }

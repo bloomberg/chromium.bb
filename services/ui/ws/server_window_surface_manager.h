@@ -46,7 +46,7 @@ class ServerWindowSurfaceManager {
   bool HasSurfaceOfType(mojom::SurfaceType type) const;
   bool HasAnySurface() const;
 
-  uint32_t id_namespace() const { return surface_id_allocator_.id_namespace(); }
+  uint32_t client_id() const { return surface_id_allocator_.client_id(); }
   cc::SurfaceManager* GetSurfaceManager();
 
  private:

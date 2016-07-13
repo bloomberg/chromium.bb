@@ -189,10 +189,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnDidNavigateMainFrameToNewPage() override;
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
-  uint32_t GetSurfaceIdNamespace() override;
-  uint32_t SurfaceIdNamespaceAtPoint(cc::SurfaceHittestDelegate* delegate,
-                                     const gfx::Point& point,
-                                     gfx::Point* transformed_point) override;
+  uint32_t GetSurfaceClientId() override;
+  uint32_t SurfaceClientIdAtPoint(cc::SurfaceHittestDelegate* delegate,
+                                  const gfx::Point& point,
+                                  gfx::Point* transformed_point) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
                          const ui::LatencyInfo& latency) override;
   void ProcessMouseWheelEvent(const blink::WebMouseWheelEvent& event,

@@ -205,11 +205,11 @@ bool TestRenderWidgetHostView::LockMouse() {
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 
-uint32_t TestRenderWidgetHostView::GetSurfaceIdNamespace() {
+uint32_t TestRenderWidgetHostView::GetSurfaceClientId() {
   // See constructor.  If a test needs this, its harness needs to construct an
   // ImageTransportFactory.
   DCHECK(surface_id_allocator_);
-  return surface_id_allocator_->id_namespace();
+  return surface_id_allocator_->client_id();
 }
 
 TestRenderViewHost::TestRenderViewHost(

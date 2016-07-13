@@ -155,7 +155,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void ClearCompositorFrame() override;
   void DidOverscroll(const DidOverscrollParams& params) override;
   void DidStopFlinging() override;
-  uint32_t GetSurfaceIdNamespace() override;
+  uint32_t GetSurfaceClientId() override;
   void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                const SkBitmap& zoomed_bitmap) override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()

@@ -86,7 +86,7 @@ bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace(), this);
+      surface_id_allocator_->client_id(), this);
 
   if (!OutputSurface::BindToClient(client))
     return false;
@@ -115,7 +115,7 @@ void SurfaceDisplayOutputSurface::DetachFromClient() {
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
   surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->id_namespace());
+      surface_id_allocator_->client_id());
   if (!delegated_surface_id_.is_null())
     factory_.Destroy(delegated_surface_id_);
 

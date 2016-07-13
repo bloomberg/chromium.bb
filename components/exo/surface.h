@@ -102,7 +102,7 @@ class Surface : public ui::LayerOwnerDelegate,
 
   aura::Window* window() { return window_.get(); }
 
-  cc::SurfaceId surface_id() const { return surface_id_; }
+  const cc::SurfaceId& surface_id() const { return surface_id_; }
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
@@ -215,7 +215,7 @@ class Surface : public ui::LayerOwnerDelegate,
   // Overridden from ui::ContextFactoryObserver.
   void OnLostResources() override;
 
-  void WillDraw(cc::SurfaceId surface_id);
+  void WillDraw(const cc::SurfaceId& surface_id);
 
   // Check whether this Surface and its children need to create new cc::Surface
   // IDs for their contents next time they get new buffer contents.

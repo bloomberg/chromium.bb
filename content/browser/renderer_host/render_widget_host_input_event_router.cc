@@ -122,10 +122,10 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
   // hit testing, and reflect transformations that would normally be applied in
   // the renderer process if the event was being routed between frames within a
   // single process with only one RenderWidgetHost.
-  uint32_t surface_id_namespace =
-      root_view->SurfaceIdNamespaceAtPoint(&delegate, point, transformed_point);
-  const SurfaceIdNamespaceOwnerMap::iterator iter =
-      owner_map_.find(surface_id_namespace);
+  uint32_t surface_client_id =
+      root_view->SurfaceClientIdAtPoint(&delegate, point, transformed_point);
+  const SurfaceClientIdOwnerMap::iterator iter =
+      owner_map_.find(surface_client_id);
   // If the point hit a Surface whose namspace is no longer in the map, then
   // it likely means the RenderWidgetHostView has been destroyed but its
   // parent frame has not sent a new compositor frame since that happened.
@@ -345,7 +345,7 @@ void RenderWidgetHostInputEventRouter::CancelScrollBubbling(
   }
 }
 
-void RenderWidgetHostInputEventRouter::AddSurfaceIdNamespaceOwner(
+void RenderWidgetHostInputEventRouter::AddSurfaceClientIdOwner(
     uint32_t id,
     RenderWidgetHostViewBase* owner) {
   DCHECK(owner_map_.find(id) == owner_map_.end());
@@ -355,8 +355,7 @@ void RenderWidgetHostInputEventRouter::AddSurfaceIdNamespaceOwner(
   owner_map_.insert(std::make_pair(id, owner));
 }
 
-void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
-    uint32_t id) {
+void RenderWidgetHostInputEventRouter::RemoveSurfaceClientIdOwner(uint32_t id) {
   auto it_to_remove = owner_map_.find(id);
   if (it_to_remove != owner_map_.end()) {
     it_to_remove->second->RemoveObserver(this);
@@ -364,7 +363,7 @@ void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
   }
 
   for (auto it = hittest_data_.begin(); it != hittest_data_.end();) {
-    if (it->first.id_namespace() == id)
+    if (it->first.client_id() == id)
       it = hittest_data_.erase(it);
     else
       ++it;
@@ -373,7 +372,7 @@ void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
 
 void RenderWidgetHostInputEventRouter::OnHittestData(
     const FrameHostMsg_HittestData_Params& params) {
-  if (owner_map_.find(params.surface_id.id_namespace()) == owner_map_.end()) {
+  if (owner_map_.find(params.surface_id.client_id()) == owner_map_.end()) {
     return;
   }
   HittestData data;

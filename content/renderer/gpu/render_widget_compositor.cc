@@ -1125,9 +1125,8 @@ void RenderWidgetCompositor::SendCompositorProto(
   delegate_->ForwardCompositorProto(serialized);
 }
 
-void RenderWidgetCompositor::SetSurfaceIdNamespace(
-    uint32_t surface_id_namespace) {
-  layer_tree_host_->set_surface_id_namespace(surface_id_namespace);
+void RenderWidgetCompositor::SetSurfaceClientId(uint32_t surface_client_id) {
+  layer_tree_host_->set_surface_client_id(surface_client_id);
 }
 
 void RenderWidgetCompositor::OnHandleCompositorProto(

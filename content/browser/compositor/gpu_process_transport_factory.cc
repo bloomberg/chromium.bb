@@ -180,7 +180,7 @@ struct GpuProcessTransportFactory::PerCompositorData {
 };
 
 GpuProcessTransportFactory::GpuProcessTransportFactory()
-    : next_surface_id_namespace_(1u),
+    : next_surface_client_id_(1u),
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
@@ -581,7 +581,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       surface_manager_.get(), HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
       compositor->GetRendererSettings(),
-      compositor->surface_id_allocator()->id_namespace(),
+      compositor->surface_id_allocator()->client_id(),
       std::move(begin_frame_source), std::move(display_output_surface),
       std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
                                 compositor->task_runner().get()));
@@ -692,10 +692,10 @@ ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
 
 std::unique_ptr<cc::SurfaceIdAllocator>
 GpuProcessTransportFactory::CreateSurfaceIdAllocator() {
-  std::unique_ptr<cc::SurfaceIdAllocator> allocator = base::WrapUnique(
-      new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+  std::unique_ptr<cc::SurfaceIdAllocator> allocator =
+      base::WrapUnique(new cc::SurfaceIdAllocator(next_surface_client_id_++));
   if (GetSurfaceManager())
-    allocator->RegisterSurfaceIdNamespace(GetSurfaceManager());
+    allocator->RegisterSurfaceClientId(GetSurfaceManager());
   return allocator;
 }
 

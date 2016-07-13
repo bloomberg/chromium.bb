@@ -26,6 +26,8 @@
 namespace cc {
 namespace {
 
+static constexpr uint32_t kArbitraryClientId = 0;
+
 class SurfaceLayerTest : public testing::Test {
  public:
   SurfaceLayerTest()
@@ -73,8 +75,9 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer->SetSurfaceId(SurfaceId(0, 1, 0), 1.f, gfx::Size(1, 1));
-  layer_tree_host_->set_surface_id_namespace(1);
+  layer->SetSurfaceId(SurfaceId(kArbitraryClientId, 1, 0), 1.f,
+                      gfx::Size(1, 1));
+  layer_tree_host_->set_surface_client_id(1);
   layer_tree_host_->SetRootLayer(layer);
 
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host2 =
@@ -82,8 +85,9 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer2->SetSurfaceId(SurfaceId(0, 1, 0), 1.f, gfx::Size(1, 1));
-  layer_tree_host2->set_surface_id_namespace(2);
+  layer2->SetSurfaceId(SurfaceId(kArbitraryClientId, 1, 0), 1.f,
+                       gfx::Size(1, 1));
+  layer_tree_host2->set_surface_client_id(2);
   layer_tree_host2->SetRootLayer(layer2);
 
   // Layers haven't been removed, so no sequence should be satisfied.
@@ -101,7 +105,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
 
   // Set of sequences that need to be satisfied should include sequences from
   // both trees.
-  EXPECT_TRUE(required_id == SurfaceId(0, 1, 0));
+  EXPECT_TRUE(required_id == SurfaceId(kArbitraryClientId, 1, 0));
   EXPECT_EQ(2u, required_seq.size());
   EXPECT_TRUE(required_seq.count(expected1));
   EXPECT_TRUE(required_seq.count(expected2));
@@ -125,11 +129,12 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
       : commit_count_(0), sequence_was_satisfied_(false) {}
 
   void BeginTest() override {
-    layer_tree_host()->set_surface_id_namespace(1);
+    layer_tree_host()->set_surface_client_id(1);
     layer_ = SurfaceLayer::Create(
         base::Bind(&SatisfyCallback, &satisfied_sequence_),
         base::Bind(&RequireCallback, &required_id_, &required_set_));
-    layer_->SetSurfaceId(SurfaceId(0, 1, 0), 1.f, gfx::Size(1, 1));
+    layer_->SetSurfaceId(SurfaceId(kArbitraryClientId, 1, 0), 1.f,
+                         gfx::Size(1, 1));
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());
@@ -138,7 +143,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
 
     // Should have SurfaceSequence from first tree.
     SurfaceSequence expected(1u, 1u);
-    EXPECT_TRUE(required_id_ == SurfaceId(0, 1, 0));
+    EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryClientId, 1, 0));
     EXPECT_EQ(1u, required_set_.size());
     EXPECT_TRUE(required_set_.count(expected));
 
@@ -208,7 +213,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
   }
 
   void AfterTest() override {
-    EXPECT_TRUE(required_id_ == SurfaceId(0, 1, 0));
+    EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryClientId, 1, 0));
     EXPECT_EQ(1u, required_set_.size());
     // Sequence should have been satisfied through Swap, not with the
     // callback.
@@ -249,7 +254,7 @@ class SurfaceLayerSwapPromiseWithoutDraw : public SurfaceLayerSwapPromise {
   }
 
   void AfterTest() override {
-    EXPECT_TRUE(required_id_ == SurfaceId(0, 1, 0));
+    EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryClientId, 1, 0));
     EXPECT_EQ(1u, required_set_.size());
     // Sequence should have been satisfied with the callback.
     EXPECT_TRUE(satisfied_sequence_ == SurfaceSequence(1u, 1u));

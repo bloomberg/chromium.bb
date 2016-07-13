@@ -20,14 +20,14 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
   void SetNew(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
-              SurfaceId surface_id);
+              const SurfaceId& surface_id);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
               bool needs_blending,
-              SurfaceId surface_id);
+              const SurfaceId& surface_id);
 
   SurfaceId surface_id;
 

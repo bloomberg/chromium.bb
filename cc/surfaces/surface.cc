@@ -89,7 +89,7 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
     // Notify the manager that sequences were satisfied either if some new
     // sequences were satisfied, or if the set of referenced surfaces changed
     // to force a GC to happen.
-    factory_->manager()->DidSatisfySequences(surface_id_.id_namespace(),
+    factory_->manager()->DidSatisfySequences(surface_id_.client_id(),
                                              &satisfies_sequences);
   }
 }
@@ -165,13 +165,13 @@ void Surface::AddDestructionDependency(SurfaceSequence sequence) {
 
 void Surface::SatisfyDestructionDependencies(
     std::unordered_set<SurfaceSequence, SurfaceSequenceHash>* sequences,
-    std::unordered_set<uint32_t>* valid_id_namespaces) {
+    std::unordered_set<uint32_t>* valid_client_ids) {
   destruction_dependencies_.erase(
       std::remove_if(destruction_dependencies_.begin(),
                      destruction_dependencies_.end(),
-                     [sequences, valid_id_namespaces](SurfaceSequence seq) {
+                     [sequences, valid_client_ids](SurfaceSequence seq) {
                        return (!!sequences->erase(seq) ||
-                               !valid_id_namespaces->count(seq.id_namespace));
+                               !valid_client_ids->count(seq.client_id));
                      }),
       destruction_dependencies_.end());
 }

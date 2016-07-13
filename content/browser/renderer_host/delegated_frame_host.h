@@ -159,7 +159,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();
   bool HasFrameSubscriber() const { return !!frame_subscriber_; }
-  uint32_t GetSurfaceIdNamespace();
+  uint32_t GetSurfaceClientId();
   // Returns a null SurfaceId if this DelegatedFrameHost has not yet created
   // a compositor Surface.
   cc::SurfaceId SurfaceIdAtPoint(cc::SurfaceHittestDelegate* delegate,

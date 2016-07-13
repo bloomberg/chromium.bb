@@ -69,7 +69,7 @@ void DisplayScheduler::DisplayResized() {
 
 // Notification that there was a resize or the root surface changed and
 // that we should just draw immediately.
-void DisplayScheduler::SetNewRootSurface(SurfaceId root_surface_id) {
+void DisplayScheduler::SetNewRootSurface(const SurfaceId& root_surface_id) {
   TRACE_EVENT0("cc", "DisplayScheduler::SetNewRootSurface");
   root_surface_id_ = root_surface_id;
   SurfaceDamaged(root_surface_id);
@@ -78,7 +78,7 @@ void DisplayScheduler::SetNewRootSurface(SurfaceId root_surface_id) {
 // Indicates that there was damage to one of the surfaces.
 // Has some logic to wait for multiple active surfaces before
 // triggering the deadline.
-void DisplayScheduler::SurfaceDamaged(SurfaceId surface_id) {
+void DisplayScheduler::SurfaceDamaged(const SurfaceId& surface_id) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamaged", "surface_id",
                surface_id.ToString());
 

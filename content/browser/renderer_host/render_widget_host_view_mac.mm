@@ -524,7 +524,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       render_widget_host_->delegate()->GetInputEventRouter()) {
     render_widget_host_->delegate()
         ->GetInputEventRouter()
-        ->AddSurfaceIdNamespaceOwner(GetSurfaceIdNamespace(), this);
+        ->AddSurfaceClientIdOwner(GetSurfaceClientId(), this);
   }
 }
 
@@ -920,7 +920,7 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMac::Destroy() {
-  // SurfaceIdNamespaces registered with RenderWidgetHostInputEventRouter
+  // SurfaceClientIds registered with RenderWidgetHostInputEventRouter
   // have already been cleared when RenderWidgetHostViewBase notified its
   // observers of our impending destruction.
   [[NSNotificationCenter defaultCenter]
@@ -1391,11 +1391,11 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetMac(host, cocoa_view_));
 }
 
-uint32_t RenderWidgetHostViewMac::GetSurfaceIdNamespace() {
-  return browser_compositor_->GetDelegatedFrameHost()->GetSurfaceIdNamespace();
+uint32_t RenderWidgetHostViewMac::GetSurfaceClientId() {
+  return browser_compositor_->GetDelegatedFrameHost()->GetSurfaceClientId();
 }
 
-uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
+uint32_t RenderWidgetHostViewMac::SurfaceClientIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
@@ -1413,8 +1413,8 @@ uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
   // It is possible that the renderer has not yet produced a surface, in which
   // case we return our current namespace.
   if (id.is_null())
-    return GetSurfaceIdNamespace();
-  return id.id_namespace();
+    return GetSurfaceClientId();
+  return id.client_id();
 }
 
 bool RenderWidgetHostViewMac::ShouldRouteEvent(

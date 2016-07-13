@@ -18,17 +18,17 @@ namespace cc {
 // dependencies between frames. A sequence number may be satisfied once, and
 // may be depended on once.
 struct SurfaceSequence {
-  SurfaceSequence() : id_namespace(0u), sequence(0u) {}
-  SurfaceSequence(uint32_t id_namespace, uint32_t sequence)
-      : id_namespace(id_namespace), sequence(sequence) {}
-  bool is_null() const { return id_namespace == 0u && sequence == 0u; }
+  SurfaceSequence() : client_id(0u), sequence(0u) {}
+  SurfaceSequence(uint32_t client_id, uint32_t sequence)
+      : client_id(client_id), sequence(sequence) {}
+  bool is_null() const { return client_id == 0u && sequence == 0u; }
 
-  uint32_t id_namespace;
+  uint32_t client_id;
   uint32_t sequence;
 };
 
 inline bool operator==(const SurfaceSequence& a, const SurfaceSequence& b) {
-  return a.id_namespace == b.id_namespace && a.sequence == b.sequence;
+  return a.client_id == b.client_id && a.sequence == b.sequence;
 }
 
 inline bool operator!=(const SurfaceSequence& a, const SurfaceSequence& b) {
@@ -36,13 +36,12 @@ inline bool operator!=(const SurfaceSequence& a, const SurfaceSequence& b) {
 }
 
 inline bool operator<(const SurfaceSequence& a, const SurfaceSequence& b) {
-  return std::tie(a.id_namespace, a.sequence) <
-         std::tie(b.id_namespace, b.sequence);
+  return std::tie(a.client_id, a.sequence) < std::tie(b.client_id, b.sequence);
 }
 
 struct SurfaceSequenceHash {
   size_t operator()(SurfaceSequence key) const {
-    return base::HashInts(key.id_namespace, key.sequence);
+    return base::HashInts(key.client_id, key.sequence);
   }
 };
 

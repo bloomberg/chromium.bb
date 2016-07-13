@@ -490,7 +490,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetSurfaceIdNamespace, OnSetSurfaceIdNamespace)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetSurfaceClientId, OnSetSurfaceClientId)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
 #if defined(OS_ANDROID)
@@ -1449,9 +1449,9 @@ void RenderWidget::OnUpdateWindowScreenRect(
   }
 }
 
-void RenderWidget::OnSetSurfaceIdNamespace(uint32_t surface_id_namespace) {
+void RenderWidget::OnSetSurfaceClientId(uint32_t surface_id_namespace) {
   if (compositor_)
-    compositor_->SetSurfaceIdNamespace(surface_id_namespace);
+    compositor_->SetSurfaceClientId(surface_id_namespace);
 }
 
 void RenderWidget::OnHandleCompositorProto(const std::vector<uint8_t>& proto) {
