@@ -28,7 +28,8 @@ RequestInfo::RequestInfo()
       do_not_prompt_for_login(false),
       report_raw_headers(false),
       extra_data(NULL),
-      loading_web_task_runner(nullptr) {}
+      loading_web_task_runner(nullptr),
+      lofi_state(LOFI_UNSPECIFIED) {}
 
 RequestInfo::~RequestInfo() {}
 

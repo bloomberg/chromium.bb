@@ -522,14 +522,17 @@ void ImageResource::updateImageAnimationPolicy()
 
 void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
 {
-    if (!m_response.httpHeaderField("chrome-proxy").contains("q=low"))
+    if (m_resourceRequest.loFiState() != WebURLRequest::LoFiOn)
+        return;
+    if (isLoaded() && !m_response.httpHeaderField("chrome-proxy").contains("q=low"))
         return;
     m_resourceRequest.setCachePolicy(WebCachePolicy::BypassingCache);
     m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
     if (isLoading())
         m_loader->cancel();
-    else
-        updateImageAndClearBuffer();
+    clear();
+    m_data.clear();
+    notifyObservers();
     setStatus(NotStarted);
     fetcher->startLoad(this);
 }
