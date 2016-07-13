@@ -390,6 +390,9 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
 void DelegatedFrameHost::SwapDelegatedFrame(uint32_t output_surface_id,
                                             cc::CompositorFrame frame) {
   DCHECK(frame.delegated_frame_data.get());
+#if defined(OS_CHROMEOS)
+  DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
+#endif
   cc::DelegatedFrameData* frame_data = frame.delegated_frame_data.get();
   float frame_device_scale_factor = frame.metadata.device_scale_factor;
 

@@ -463,6 +463,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const base::TimeTicks& timebase,
       const base::TimeDelta& interval) override;
   void SetBeginFrameSource(cc::BeginFrameSource* source) override;
+  bool IsAutoResizeEnabled() const override;
 
   // TextInputManager::Observer implementation.
   void OnUpdateTextInputStateCalled(TextInputManager* text_input_manager,

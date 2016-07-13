@@ -154,6 +154,8 @@ class ConstrainedWebDialogDelegateViewViews
         max_size_(max_size) {
     SetWebContents(GetWebContents());
     AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+    if (!max_size_.IsEmpty())
+      EnableAutoResize();
   }
   ~ConstrainedWebDialogDelegateViewViews() override {}
 
@@ -235,13 +237,10 @@ class ConstrainedWebDialogDelegateViewViews
       EnableAutoResize();
   }
   void DocumentOnLoadCompletedInMainFrame() override {
-    if (!max_size_.IsEmpty()) {
-      EnableAutoResize();
-      if (initiator_observer_.web_contents()) {
-        web_modal::WebContentsModalDialogManager::FromWebContents(
-            initiator_observer_.web_contents())
-            ->ShowModalDialog(GetWidget()->GetNativeWindow());
-      }
+    if (!max_size_.IsEmpty() && initiator_observer_.web_contents()) {
+      web_modal::WebContentsModalDialogManager::FromWebContents(
+          initiator_observer_.web_contents())
+          ->ShowModalDialog(GetWidget()->GetNativeWindow());
     }
   }
 
