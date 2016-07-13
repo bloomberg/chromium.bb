@@ -139,7 +139,7 @@ class WebNotificationButton : public views::CustomButton {
     unread_label_.set_owned_by_client();
     SetupLabelForTray(&unread_label_);
 
-    AddChildView(&unread_label_);
+    AddChildView(&no_unread_icon_);
   }
 
   void SetBubbleVisible(bool visible) {
