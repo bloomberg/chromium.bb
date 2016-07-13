@@ -763,9 +763,9 @@ void WebCryptoImpl::deriveKey(
   }
 }
 
-blink::WebCryptoDigestor* WebCryptoImpl::createDigestor(
+std::unique_ptr<blink::WebCryptoDigestor> WebCryptoImpl::createDigestor(
     blink::WebCryptoAlgorithmId algorithm_id) {
-  return webcrypto::CreateDigestor(algorithm_id).release();
+  return webcrypto::CreateDigestor(algorithm_id);
 }
 
 bool WebCryptoImpl::deserializeKeyForClone(

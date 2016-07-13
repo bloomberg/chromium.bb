@@ -38,6 +38,8 @@
 #include "WebString.h"
 #include "WebVector.h"
 
+#include <memory>
+
 #if INSIDE_BLINK
 #include "platform/heap/Handle.h"
 #endif
@@ -214,11 +216,8 @@ public:
     // This is the exception to the "Completing the request" guarantees
     // outlined above. This is useful for Blink internal crypto and is not part
     // of the WebCrypto standard. createDigestor must provide the result via
-    // the WebCryptoDigestor object synchronously. createDigestor may return 0
-    // if it fails to create a WebCryptoDigestor. If it succeeds, the
-    // WebCryptoDigestor returned by createDigestor must be freed by the
-    // caller.
-    virtual WebCryptoDigestor* createDigestor(WebCryptoAlgorithmId algorithmId) { return nullptr; }
+    // the WebCryptoDigestor object synchronously. This will never return null.
+    virtual std::unique_ptr<WebCryptoDigestor> createDigestor(WebCryptoAlgorithmId algorithmId) { return nullptr; }
 
     // -----------------------
     // Structured clone

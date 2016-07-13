@@ -7,7 +7,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
@@ -38,8 +37,9 @@ bool computeDigest(HashAlgorithm algorithm, const char* digestable, size_t lengt
 
     ASSERT(crypto);
 
-    std::unique_ptr<WebCryptoDigestor> digestor = wrapUnique(crypto->createDigestor(algorithmId));
-    if (!digestor.get() || !digestor->consume(reinterpret_cast<const unsigned char*>(digestable), length) || !digestor->finish(result, resultSize))
+    std::unique_ptr<WebCryptoDigestor> digestor = crypto->createDigestor(algorithmId);
+    DCHECK(digestor);
+    if (!digestor->consume(reinterpret_cast<const unsigned char*>(digestable), length) || !digestor->finish(result, resultSize))
         return false;
 
     digestResult.append(static_cast<uint8_t*>(result), resultSize);
@@ -48,7 +48,7 @@ bool computeDigest(HashAlgorithm algorithm, const char* digestable, size_t lengt
 
 std::unique_ptr<WebCryptoDigestor> createDigestor(HashAlgorithm algorithm)
 {
-    return wrapUnique(Platform::current()->crypto()->createDigestor(toWebCryptoAlgorithmId(algorithm)));
+    return Platform::current()->crypto()->createDigestor(toWebCryptoAlgorithmId(algorithm));
 }
 
 void finishDigestor(WebCryptoDigestor* digestor, DigestValue& digestResult)
