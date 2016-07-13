@@ -11,7 +11,9 @@
 #include "ui/gfx/text_constants.h"
 
 namespace views {
+class ImageView;
 class Label;
+class BoxLayout;
 }
 
 namespace ash {
@@ -43,7 +45,7 @@ class HoverHighlightView : public ActionableView {
                                bool highlight);
 
   // Convenience function for adding a label with padding on the left for a
-  // blank icon.  This also sets the accessible name. Returns label after
+  // blank icon. This also sets the accessible name. Returns label after
   // parenting it.
   views::Label* AddLabel(const base::string16& text,
                          gfx::HorizontalAlignment alignment,
@@ -56,9 +58,20 @@ class HoverHighlightView : public ActionableView {
                                   bool highlight,
                                   bool checked);
 
+  // Add an optional right icon to an already established view (call one of
+  // the other Add* functions first).
+  void AddRightIcon(const gfx::ImageSkia& image);
+
+  // Hide or show the right icon.
+  void SetRightIconVisible(bool visible);
+
   // Allows view to expand its height.
   // Size of unexapandable view is fixed and equals to kTrayPopupItemHeight.
   void SetExpandable(bool expandable);
+
+  // Enables or disable highlighting on the label, where a highlighted label
+  // just uses a bold font.
+  void SetHighlight(bool hightlight);
 
   void set_highlight_color(SkColor color) { highlight_color_ = color; }
   void set_default_color(SkColor color) { default_color_ = color; }
@@ -98,16 +111,18 @@ class HoverHighlightView : public ActionableView {
   void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnFocus() override;
 
-  ViewClickListener* listener_;
-  views::Label* text_label_;
-  SkColor highlight_color_;
-  SkColor default_color_;
-  SkColor text_highlight_color_;
-  SkColor text_default_color_;
-  bool hover_;
-  bool expandable_;
-  bool checkable_;
-  bool checked_;
+  ViewClickListener* listener_ = nullptr;
+  views::Label* text_label_ = nullptr;
+  views::BoxLayout* box_layout_ = nullptr;
+  views::ImageView* right_icon_ = nullptr;
+  SkColor highlight_color_ = 0;
+  SkColor default_color_ = 0;
+  SkColor text_highlight_color_ = 0;
+  SkColor text_default_color_ = 0;
+  bool hover_ = false;
+  bool expandable_ = false;
+  bool checkable_ = false;
+  bool checked_ = false;
   base::string16 tooltip_;
 
   DISALLOW_COPY_AND_ASSIGN(HoverHighlightView);

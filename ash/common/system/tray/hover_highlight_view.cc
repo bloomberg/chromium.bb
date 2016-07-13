@@ -34,16 +34,7 @@ const gfx::FontList& GetFontList(bool highlight) {
 namespace ash {
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
-    : listener_(listener),
-      text_label_(NULL),
-      highlight_color_(kHoverBackgroundColor),
-      default_color_(0),
-      text_highlight_color_(0),
-      text_default_color_(0),
-      hover_(false),
-      expandable_(false),
-      checkable_(false),
-      checked_(false) {
+    : listener_(listener), highlight_color_(kHoverBackgroundColor) {
   set_notify_enter_exit_on_child(true);
 }
 
@@ -57,26 +48,48 @@ bool HoverHighlightView::GetTooltipText(const gfx::Point& p,
   return true;
 }
 
+void HoverHighlightView::AddRightIcon(const gfx::ImageSkia& image) {
+  DCHECK(box_layout_);
+  DCHECK(!right_icon_);
+
+  right_icon_ = new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
+  right_icon_->SetImage(image);
+  right_icon_->SetEnabled(enabled());
+  AddChildView(right_icon_);
+}
+
+void HoverHighlightView::SetRightIconVisible(bool visible) {
+  if (!right_icon_)
+    return;
+
+  right_icon_->SetVisible(visible);
+  Layout();
+}
+
 void HoverHighlightView::AddIconAndLabel(const gfx::ImageSkia& image,
                                          const base::string16& text,
                                          bool highlight) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
-                                        kTrayPopupPaddingBetweenItems));
+  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 3,
+                                     kTrayPopupPaddingBetweenItems);
+  SetLayoutManager(box_layout_);
   DoAddIconAndLabel(image, text, highlight);
 }
 
 void HoverHighlightView::AddIndentedIconAndLabel(const gfx::ImageSkia& image,
                                                  const base::string16& text,
                                                  bool highlight) {
-  SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        kTrayPopupPaddingHorizontal, 0,
-                                        kTrayPopupPaddingBetweenItems));
+  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal,
+                                     kTrayPopupPaddingHorizontal, 0,
+                                     kTrayPopupPaddingBetweenItems);
+  SetLayoutManager(box_layout_);
   DoAddIconAndLabel(image, text, highlight);
 }
 
 void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
                                            const base::string16& text,
                                            bool highlight) {
+  DCHECK(box_layout_);
+
   views::ImageView* image_view =
       new FixedSizedImageView(kTrayPopupDetailsIconWidth, 0);
   image_view->SetImage(image);
@@ -90,6 +103,7 @@ void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
     text_label_->SetEnabledColor(text_default_color_);
   text_label_->SetEnabled(enabled());
   AddChildView(text_label_);
+  box_layout_->SetFlexForView(text_label_, 1);
 
   SetAccessibleName(text);
 }
@@ -97,7 +111,8 @@ void HoverHighlightView::DoAddIconAndLabel(const gfx::ImageSkia& image,
 views::Label* HoverHighlightView::AddLabel(const base::string16& text,
                                            gfx::HorizontalAlignment alignment,
                                            bool highlight) {
-  SetLayoutManager(new views::FillLayout());
+  box_layout_ = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
+  SetLayoutManager(box_layout_);
   text_label_ = new views::Label(text);
   int left_margin = kTrayPopupPaddingHorizontal;
   int right_margin = kTrayPopupPaddingHorizontal;
@@ -118,6 +133,7 @@ views::Label* HoverHighlightView::AddLabel(const base::string16& text,
     text_label_->SetEnabledColor(text_default_color_);
   text_label_->SetEnabled(enabled());
   AddChildView(text_label_);
+  box_layout_->SetFlexForView(text_label_, 1);
 
   SetAccessibleName(text);
   return text_label_;
@@ -162,6 +178,12 @@ void HoverHighlightView::SetExpandable(bool expandable) {
     expandable_ = expandable;
     InvalidateLayout();
   }
+}
+
+void HoverHighlightView::SetHighlight(bool highlight) {
+  DCHECK(text_label_);
+  text_label_->SetFontList(GetFontList(highlight));
+  text_label_->InvalidateLayout();
 }
 
 void HoverHighlightView::SetHoverHighlight(bool hover) {
