@@ -513,9 +513,11 @@ bool MainUIWindow::SpawnTarget() {
   policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
                   sandbox::TargetPolicy::FILES_ALLOW_ANY, dll_path_.c_str());
 
-  sandbox::ResultCode result = broker_->SpawnTarget(spawn_target_.c_str(),
-                                                    arguments, policy,
-                                                    &target_);
+  sandbox::ResultCode warning_result = sandbox::SBOX_ALL_OK;
+  DWORD last_error = ERROR_SUCCESS;
+  sandbox::ResultCode result =
+      broker_->SpawnTarget(spawn_target_.c_str(), arguments, policy,
+                           &warning_result, &last_error, &target_);
 
   policy->Release();
   policy = NULL;

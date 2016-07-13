@@ -797,10 +797,13 @@ sandbox::ResultCode StartSandboxedProcess(
   TRACE_EVENT_BEGIN0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
   PROCESS_INFORMATION temp_process_info = {};
+  sandbox::ResultCode last_warning = sandbox::SBOX_ALL_OK;
+  DWORD last_error = ERROR_SUCCESS;
   result = g_broker_services->SpawnTarget(
       cmd_line->GetProgram().value().c_str(),
-      cmd_line->GetCommandLineString().c_str(), policy, &temp_process_info);
-  DWORD last_error = ::GetLastError();
+      cmd_line->GetCommandLineString().c_str(), policy, &last_warning,
+      &last_error, &temp_process_info);
+
   base::win::ScopedProcessInformation target(temp_process_info);
 
   TRACE_EVENT_END0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
@@ -813,6 +816,12 @@ sandbox::ResultCode StartSandboxedProcess(
       DLOG(ERROR) << "Failed to launch process. Error: " << result;
 
     return result;
+  }
+
+  if (sandbox::SBOX_ALL_OK != last_warning) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.WarningResultCode",
+                                last_warning);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Process.Sandbox.Launch.Warning", last_error);
   }
 
   delegate->PostSpawnTarget(target.process_handle());

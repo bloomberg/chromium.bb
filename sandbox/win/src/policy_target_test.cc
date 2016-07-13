@@ -238,14 +238,17 @@ TEST(PolicyTargetTest, DesktopPolicy) {
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;
+  ResultCode warning_result = SBOX_ALL_OK;
+  DWORD last_error = ERROR_SUCCESS;
   base::win::ScopedProcessInformation target;
 
   TargetPolicy* policy = broker->CreatePolicy();
   policy->SetAlternateDesktop(false);
   policy->SetTokenLevel(USER_INTERACTIVE, USER_LOCKDOWN);
   PROCESS_INFORMATION temp_process_info = {};
-  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
-                               &temp_process_info);
+  result =
+      broker->SpawnTarget(prog_name, arguments.c_str(), policy, &warning_result,
+                          &last_error, &temp_process_info);
   base::string16 desktop_name = policy->GetAlternateDesktop();
   policy->Release();
 
@@ -302,14 +305,17 @@ TEST(PolicyTargetTest, WinstaPolicy) {
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;
+  ResultCode warning_result = SBOX_ALL_OK;
   base::win::ScopedProcessInformation target;
 
   TargetPolicy* policy = broker->CreatePolicy();
   policy->SetAlternateDesktop(true);
   policy->SetTokenLevel(USER_INTERACTIVE, USER_LOCKDOWN);
   PROCESS_INFORMATION temp_process_info = {};
-  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
-                               &temp_process_info);
+  DWORD last_error = ERROR_SUCCESS;
+  result =
+      broker->SpawnTarget(prog_name, arguments.c_str(), policy, &warning_result,
+                          &last_error, &temp_process_info);
   base::string16 desktop_name = policy->GetAlternateDesktop();
   policy->Release();
 
@@ -382,12 +388,15 @@ TEST(PolicyTargetTest, ShareHandleTest) {
 
   // Launch the app.
   ResultCode result = SBOX_ALL_OK;
+  ResultCode warning_result = SBOX_ALL_OK;
   base::win::ScopedProcessInformation target;
 
   policy->SetTokenLevel(USER_INTERACTIVE, USER_LOCKDOWN);
   PROCESS_INFORMATION temp_process_info = {};
-  result = broker->SpawnTarget(prog_name, arguments.c_str(), policy,
-                               &temp_process_info);
+  DWORD last_error = ERROR_SUCCESS;
+  result =
+      broker->SpawnTarget(prog_name, arguments.c_str(), policy, &warning_result,
+                          &last_error, &temp_process_info);
   policy->Release();
 
   EXPECT_EQ(SBOX_ALL_OK, result);

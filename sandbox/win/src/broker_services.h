@@ -49,6 +49,8 @@ class BrokerServicesBase final : public BrokerServices,
   ResultCode SpawnTarget(const wchar_t* exe_path,
                          const wchar_t* command_line,
                          TargetPolicy* policy,
+                         ResultCode* last_warning,
+                         DWORD* last_error,
                          PROCESS_INFORMATION* target) override;
   ResultCode WaitForAllTargets() override;
 

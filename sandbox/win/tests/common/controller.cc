@@ -222,6 +222,8 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
 
   // Launch the sandboxed process.
   ResultCode result = SBOX_ALL_OK;
+  ResultCode warning_result = SBOX_ALL_OK;
+  DWORD last_error = ERROR_SUCCESS;
   PROCESS_INFORMATION target = {0};
 
   base::string16 arguments(L"\"");
@@ -238,7 +240,7 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
     }
   } else {
     result = broker_->SpawnTarget(prog_name, arguments.c_str(), policy_,
-                                  &target);
+                                  &warning_result, &last_error, &target);
   }
 
   if (SBOX_ALL_OK != result)

@@ -72,7 +72,6 @@ void* GetBaseAddress(const wchar_t* exe_name, void* entry_point) {
 
 TargetProcess::TargetProcess(base::win::ScopedHandle initial_token,
                              base::win::ScopedHandle lockdown_token,
-                             base::win::ScopedHandle lowbox_token,
                              HANDLE job,
                              ThreadProvider* thread_pool)
     // This object owns everything initialized here except thread_pool and
@@ -80,7 +79,6 @@ TargetProcess::TargetProcess(base::win::ScopedHandle initial_token,
     // eventually in a call to our dtor.
     : lockdown_token_(std::move(lockdown_token)),
       initial_token_(std::move(initial_token)),
-      lowbox_token_(std::move(lowbox_token)),
       job_(job),
       thread_pool_(thread_pool),
       base_address_(NULL) {}
@@ -126,12 +124,6 @@ ResultCode TargetProcess::Create(
     const base::win::StartupInformation& startup_info,
     base::win::ScopedProcessInformation* target_info,
     DWORD* win_error) {
-  if (lowbox_token_.IsValid() &&
-      base::win::GetVersion() < base::win::VERSION_WIN8) {
-    // We don't allow lowbox_token below Windows 8.
-    return SBOX_ERROR_BAD_PARAMS;
-  }
-
   exe_name_.reset(_wcsdup(exe_path));
 
   // the command line needs to be writable by CreateProcess().
@@ -210,25 +202,6 @@ ResultCode TargetProcess::Create(
     *win_error = ::GetLastError();  // This may or may not be correct.
     ::TerminateProcess(process_info.process_handle(), 0);
     return SBOX_ERROR_DUPLICATE_TARGET_INFO;
-  }
-
-  if (lowbox_token_.IsValid()) {
-    PROCESS_ACCESS_TOKEN process_access_token;
-    process_access_token.thread = process_info.thread_handle();
-    process_access_token.token = lowbox_token_.Get();
-
-    NtSetInformationProcess SetInformationProcess = NULL;
-    ResolveNTFunctionPtr("NtSetInformationProcess", &SetInformationProcess);
-
-    NTSTATUS status = SetInformationProcess(
-        process_info.process_handle(),
-        static_cast<PROCESS_INFORMATION_CLASS>(NtProcessInformationAccessToken),
-        &process_access_token, sizeof(process_access_token));
-    if (!NT_SUCCESS(status)) {
-      *win_error = GetLastErrorFromNtStatus(status);
-      ::TerminateProcess(process_info.process_handle(), 0);  // exit code
-      return SBOX_ERROR_SET_LOW_BOX_TOKEN;
-    }
   }
 
   base_address_ = GetBaseAddress(exe_path, entry_point);
@@ -362,10 +335,30 @@ void TargetProcess::Terminate() {
   ::TerminateProcess(sandbox_process_info_.process_handle(), 0);
 }
 
+ResultCode TargetProcess::AssignLowBoxToken(
+    const base::win::ScopedHandle& token) {
+  if (!token.IsValid())
+    return SBOX_ALL_OK;
+  PROCESS_ACCESS_TOKEN process_access_token = {};
+  process_access_token.token = token.Get();
+
+  NtSetInformationProcess SetInformationProcess = NULL;
+  ResolveNTFunctionPtr("NtSetInformationProcess", &SetInformationProcess);
+
+  NTSTATUS status = SetInformationProcess(
+      sandbox_process_info_.process_handle(),
+      static_cast<PROCESS_INFORMATION_CLASS>(NtProcessInformationAccessToken),
+      &process_access_token, sizeof(process_access_token));
+  if (!NT_SUCCESS(status)) {
+    ::SetLastError(GetLastErrorFromNtStatus(status));
+    return SBOX_ERROR_SET_LOW_BOX_TOKEN;
+  }
+  return SBOX_ALL_OK;
+}
+
 TargetProcess* MakeTestTargetProcess(HANDLE process, HMODULE base_address) {
-  TargetProcess* target =
-      new TargetProcess(base::win::ScopedHandle(), base::win::ScopedHandle(),
-                        base::win::ScopedHandle(), NULL, NULL);
+  TargetProcess* target = new TargetProcess(
+      base::win::ScopedHandle(), base::win::ScopedHandle(), NULL, NULL);
   PROCESS_INFORMATION process_info = {};
   process_info.hProcess = process;
   target->sandbox_process_info_.Set(process_info);

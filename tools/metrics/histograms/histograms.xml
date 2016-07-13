@@ -43960,6 +43960,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Process.Sandbox.Launch.Warning" units="GetLastError">
+  <owner>forshaw@chromium.org</owner>
+  <summary>
+    Warnings returned while launching sandboxed process on Windows. For decoding
+    error code please refer to http://goo.gl/fJJiAv. This will only be logged
+    when SpawnTarget succeeds with SBOX_ALL_OK but the last warning result does
+    not equal SBOX_ALL_OK.
+  </summary>
+</histogram>
+
+<histogram name="Process.Sandbox.Launch.WarningResultCode"
+    units="LaunchErrorCodes">
+  <owner>forshaw@chromium.org</owner>
+  <summary>
+    The warning launch error returned while launching sandboxed process on
+    Windows. This will only be logged when SpawnTarget succeeds with SBOX_ALL_OK
+    but the last warning result does not equal SBOX_ALL_OK.
+  </summary>
+</histogram>
+
 <histogram name="Process.Sandbox.Lowbox.Launch.Error" units="GetLastError">
   <owner>shrikant@chromium.org</owner>
   <summary>

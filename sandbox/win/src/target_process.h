@@ -40,7 +40,6 @@ class TargetProcess {
   // and |lowbox_token|.
   TargetProcess(base::win::ScopedHandle initial_token,
                 base::win::ScopedHandle lockdown_token,
-                base::win::ScopedHandle lowbox_token,
                 HANDLE job,
                 ThreadProvider* thread_pool);
   ~TargetProcess();
@@ -59,6 +58,11 @@ class TargetProcess {
                     const base::win::StartupInformation& startup_info,
                     base::win::ScopedProcessInformation* target_info,
                     DWORD* win_error);
+
+  // Assign a new lowbox token to the process post creation. The process
+  // must still be in its initial suspended state, however this still
+  // might fail in the presence of third-party software.
+  ResultCode AssignLowBoxToken(const base::win::ScopedHandle& token);
 
   // Destroys the target process.
   void Terminate();
@@ -114,9 +118,6 @@ class TargetProcess {
   // The token given to the initial thread so that the target process can
   // start. It has more powers than the lockdown_token.
   base::win::ScopedHandle initial_token_;
-  // The lowbox token associated with the process. This token is set after the
-  // process creation.
-  base::win::ScopedHandle lowbox_token_;
   // Kernel handle to the shared memory used by the IPC server.
   base::win::ScopedHandle shared_section_;
   // Job object containing the target process.

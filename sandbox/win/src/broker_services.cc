@@ -37,13 +37,9 @@ bool AssociateCompletionPort(HANDLE job, HANDLE port, void* key) {
 
 // Utility function to do the cleanup necessary when something goes wrong
 // while in SpawnTarget and we must terminate the target process.
-sandbox::ResultCode SpawnCleanup(sandbox::TargetProcess* target, DWORD error) {
-  if (0 == error)
-    error = ::GetLastError();
-
+sandbox::ResultCode SpawnCleanup(sandbox::TargetProcess* target) {
   target->Terminate();
   delete target;
-  ::SetLastError(error);
   return sandbox::SBOX_ERROR_GENERIC;
 }
 
@@ -273,6 +269,8 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
 ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
                                            const wchar_t* command_line,
                                            TargetPolicy* policy,
+                                           ResultCode* last_warning,
+                                           DWORD* last_error,
                                            PROCESS_INFORMATION* target_info) {
   if (!exe_path)
     return SBOX_ERROR_BAD_PARAMS;
@@ -286,6 +284,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   // the child process.
   static DWORD thread_id = ::GetCurrentThreadId();
   DCHECK(thread_id == ::GetCurrentThreadId());
+  *last_warning = SBOX_ALL_OK;
 
   AutoLock lock(&lock_);
 
@@ -303,6 +302,11 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       policy_base->MakeTokens(&initial_token, &lockdown_token, &lowbox_token);
   if (SBOX_ALL_OK != result)
     return result;
+  if (lowbox_token.IsValid() &&
+      base::win::GetVersion() < base::win::VERSION_WIN8) {
+    // We don't allow lowbox_token below Windows 8.
+    return SBOX_ERROR_BAD_PARAMS;
+  }
 
   base::win::ScopedHandle job;
   result = policy_base->MakeJobObject(&job);
@@ -407,22 +411,31 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   base::win::ScopedProcessInformation process_info;
   TargetProcess* target =
       new TargetProcess(std::move(initial_token), std::move(lockdown_token),
-                        std::move(lowbox_token), job.Get(), thread_pool_);
+                        job.Get(), thread_pool_);
 
-  DWORD win_result;
   result = target->Create(exe_path, command_line, inherit_handles, startup_info,
-                          &process_info, &win_result);
+                          &process_info, last_error);
 
   if (result != SBOX_ALL_OK) {
-    SpawnCleanup(target, win_result);
+    SpawnCleanup(target);
     return result;
+  }
+
+  if (lowbox_token.IsValid()) {
+    *last_warning = target->AssignLowBoxToken(lowbox_token);
+    // If this fails we continue, but report the error as a warning.
+    // This is due to certain configurations causing the setting of the
+    // token to fail post creation, and we'd rather continue if possible.
+    if (*last_warning != SBOX_ALL_OK)
+      *last_error = ::GetLastError();
   }
 
   // Now the policy is the owner of the target.
   result = policy_base->AddTarget(target);
 
   if (result != SBOX_ALL_OK) {
-    SpawnCleanup(target, 0);
+    *last_error = ::GetLastError();
+    SpawnCleanup(target);
     return result;
   }
 
