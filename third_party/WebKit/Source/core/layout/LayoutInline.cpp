@@ -1062,9 +1062,15 @@ LayoutRect LayoutInline::visualOverflowRect() const
     LayoutUnit outlineOutset(style()->outlineOutsetExtent());
     if (outlineOutset) {
         Vector<LayoutRect> rects;
-        // We have already included outline extents of line boxes in linesVisualOverflowBoundingBox(),
-        // so the following just add outline rects for children and continuations.
-        addOutlineRectsForChildrenAndContinuations(rects, LayoutPoint(), outlineRectsShouldIncludeBlockVisualOverflow());
+        if (document().inNoQuirksMode()) {
+            // We have already included outline extents of line boxes in linesVisualOverflowBoundingBox(),
+            // so the following just add outline rects for children and continuations.
+            addOutlineRectsForChildrenAndContinuations(rects, LayoutPoint(), outlineRectsShouldIncludeBlockVisualOverflow());
+        } else {
+            // In non-standard mode, because the difference in LayoutBlock::minLineHeightForReplacedObject(),
+            // linesVisualOverflowBoundingBox() may not cover outline rects of lines containing replaced objects.
+            addOutlineRects(rects, LayoutPoint(), outlineRectsShouldIncludeBlockVisualOverflow());
+        }
         if (!rects.isEmpty()) {
             LayoutRect outlineRect = unionRectEvenIfEmpty(rects);
             outlineRect.inflate(outlineOutset);
