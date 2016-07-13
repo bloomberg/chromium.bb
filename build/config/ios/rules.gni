@@ -70,10 +70,6 @@ template("ios_info_plist") {
   }
 }
 
-# TODO(crbug.com/297668): refactor this template to extract common behaviour
-# between OS X and iOS bundle generation, then create a generic "app" template
-# that forward to "executable" on all platform except iOS/OS X.
-
 # Template to build an application bundle for iOS.
 #
 # This should be used instead of "executable" built-in target type on iOS.
@@ -122,155 +118,323 @@ template("ios_app_bundle") {
     _output_name = invoker.output_name
   }
 
-  _generate_info_plist = target_name + "_generate_info_plist"
-  _bundle_data_info_plist = target_name + "_bundle_data_info_plist"
+  # This template expands to multiple targets with some differences between
+  # the the different build configuration.
+  #
+  # For a thin build (i.e. when additional_target_cpus is an empty list),
+  # it compiles the final application binary with an "executable" target,
+  # performs variable expansions on the Info.plist, defines some "bundle_data"
+  # target to pack Info.plist and the executable into the .app bundle, and
+  # finally a "create_bundle" target that packs everything the bundle. If the
+  # bundle needs to be signed, then the binary is copied into the bundle by
+  # the "create_bundle" target and the intermediate "bundle_data" target is
+  # not generated.
+  #
+  # For a multi-architecture build (aka fat-build), the template expands to
+  # a simple "executable" target for non-default toolchain. This is because
+  # the real application bundle will contains a single binary that supports
+  # all the architectures and creating a separate .app bundle for every
+  # architecture would be a waste of time.
+  #
+  # The target for the default toolchain of a multi-architecture build will
+  # build the executable for current_cpu in a temporary location. The real
+  # fat binary will be created by "lipo" command from all those "executable"
+  # target (including those of the non-default toolchains). This additional
+  # target has the same role as the "executable" target of a thin build.
+  #
+  # The rest of the build, including the codesigning step, are the same for
+  # thin and fat builds.
 
-  ios_info_plist(_generate_info_plist) {
-    executable_name = _output_name
-    forward_variables_from(invoker,
-                           [
-                             "extra_substitutions",
-                             "info_plist",
-                             "info_plist_target",
-                           ])
+  _is_fat_build = additional_toolchains != []
+  if (_is_fat_build) {
+    _is_fat_build_main_target = current_toolchain == default_toolchain
   }
 
-  bundle_data(_bundle_data_info_plist) {
-    forward_variables_from(invoker, [ "testonly" ])
-    visibility = [ ":$_target_name" ]
-    sources = get_target_outputs(":$_generate_info_plist")
-    outputs = [
-      "{{bundle_root_dir}}/Info.plist",
-    ]
-    public_deps = [
-      ":$_generate_info_plist",
-    ]
-  }
+  if (_is_fat_build && !_is_fat_build_main_target) {
+    # For the non-default toolchain of a fat-build, the template expands to a
+    # single "executable" target that creates "$root_out_dir/$_output_name".
+    executable(_target_name) {
+      forward_variables_from(invoker,
+                             "*",
+                             [
+                               "bundle_extension",
+                               "entitlements_path",
+                               "extra_substitutions",
+                               "info_plist",
+                               "info_plist_target",
+                               "output_name",
+                               "product_type",
+                             ])
 
-  _generate_executable = target_name + "_generate_executable"
-  if (!ios_enable_code_signing) {
-    _bundle_data_executable = target_name + "_bundle_data_executable"
-  }
+      if (defined(visibility)) {
+        visibility += [ ":*($default_toolchain)" ]
+      }
 
-  executable(_generate_executable) {
-    if (ios_enable_code_signing) {
+      output_name = _output_name
+      if (!defined(libs)) {
+        libs = []
+      }
+      libs += [ "UIKit.framework" ]
+      if (!defined(ldflags)) {
+        ldflags = []
+      }
+      ldflags += [ "-ObjC" ]
+    }
+  } else {
+    # This is either a thin build or the default toolchain of a fat-build.
+    # The template will expand in many different target ($target_name is the
+    # create_bundle target) used as input to the create_bundle target.
+    _generate_info_plist = target_name + "_generate_info_plist"
+    _bundle_data_info_plist = target_name + "_bundle_data_info_plist"
+
+    ios_info_plist(_generate_info_plist) {
+      visibility = [ ":$_bundle_data_info_plist" ]
+      executable_name = _output_name
+      forward_variables_from(invoker,
+                             [
+                               "extra_substitutions",
+                               "info_plist",
+                               "info_plist_target",
+                             ])
+    }
+
+    bundle_data(_bundle_data_info_plist) {
       visibility = [ ":$_target_name" ]
-    } else {
-      visibility = [ ":$_bundle_data_executable" ]
-    }
-    forward_variables_from(invoker,
-                           "*",
-                           [
-                             "bundle_extension",
-                             "data_deps",
-                             "entitlements_path",
-                             "info_plist",
-                             "info_plist_target",
-                             "output_name",
-                             "product_type",
-                             "visibility",
-                           ])
-
-    output_name = rebase_path("$target_gen_dir/$_output_name", root_out_dir)
-    output_prefix_override = true
-
-    if (!defined(libs)) {
-      libs = []
-    }
-    libs += [ "UIKit.framework" ]
-    if (!defined(ldflags)) {
-      ldflags = []
-    }
-    ldflags += [ "-ObjC" ]
-  }
-
-  if (!ios_enable_code_signing) {
-    bundle_data(_bundle_data_executable) {
       forward_variables_from(invoker, [ "testonly" ])
-      visibility = [ ":$_target_name" ]
-      sources = [
-        "$target_gen_dir/$_output_name",
-      ]
+      sources = get_target_outputs(":$_generate_info_plist")
       outputs = [
-        "{{bundle_executable_dir}}/$_output_name",
+        "{{bundle_root_dir}}/Info.plist",
       ]
       public_deps = [
-        ":$_generate_executable",
+        ":$_generate_info_plist",
       ]
+    }
+
+    _link_executable = _target_name + "_link_executable"
+    _executable_path = "$target_out_dir/$_output_name"
+
+    if (ios_enable_code_signing) {
+      _link_executable_visibility = [ ":$_target_name" ]
+    } else {
+      _bundle_data_executable = target_name + "_bundle_data_executable"
+      _link_executable_visibility = [ ":$_bundle_data_executable" ]
+    }
+
+    # For a fat-build, the different "executable" outputs will be used to
+    # create the final binary using "lipo". As the corresponding target has
+    # the same role as the "executable" target in a thin build, copy the
+    # visibility and redefine some variables.
+    if (_is_fat_build) {
+      _lipo_executable = _target_name + "_lipo_executable"
+      _lipo_executable_visibility = _link_executable_visibility
+
+      _link_executable_visibility = []
+      _link_executable_visibility = [ ":$_lipo_executable" ]
+
+      _arch_executable_path = "$target_out_dir/$current_cpu/$_output_name"
+    }
+
+    executable(_link_executable) {
+      forward_variables_from(invoker,
+                             "*",
+                             [
+                               "bundle_extension",
+                               "data_deps",
+                               "entitlements_path",
+                               "extra_substitutions",
+                               "info_plist",
+                               "info_plist_target",
+                               "output_name",
+                               "product_type",
+                               "visibility",
+                             ])
+
+      visibility = _link_executable_visibility
+
+      output_prefix_override = true
+      if (_is_fat_build) {
+        output_name = rebase_path(_arch_executable_path, root_build_dir)
+      } else {
+        output_name = rebase_path(_executable_path, root_build_dir)
+      }
+
+      if (!defined(libs)) {
+        libs = []
+      }
+      libs += [ "UIKit.framework" ]
+      if (!defined(ldflags)) {
+        ldflags = []
+      }
+      ldflags += [ "-ObjC" ]
+    }
+
+    if (_is_fat_build) {
+      # Create the multi-architecture binary from all the single architecture
+      # binaries using "lipo". This target exists for the default toolchain
+      # of a fat-build only and depends on the expansion of "ios_app_bundle"
+      # for the other toolchains (i.e. a single "executable" target).
+      #
+      # This action only happens once per "ios_app_bundle" template (for the
+      # main toolchain).
+      action(_lipo_executable) {
+        forward_variables_from(invoker, [ "testonly" ])
+        visibility = _lipo_executable_visibility
+        script = "//build/config/mac/xcrun.py"
+        outputs = [
+          _executable_path,
+        ]
+        inputs = [
+          _arch_executable_path,
+        ]
+        deps = [
+          ":$_link_executable",
+        ]
+        foreach(_additional_toolchain, additional_toolchains) {
+          _additional_toolchain_target = "$_target_name($_additional_toolchain)"
+          deps += [ ":$_additional_toolchain_target" ]
+          inputs += [ get_label_info(_additional_toolchain_target,
+                                     "root_out_dir") + "/$_output_name" ]
+        }
+        args = [
+                 "lipo",
+                 "-create",
+                 "-output",
+                 rebase_path(outputs[0], root_build_dir),
+               ] + rebase_path(inputs, root_build_dir)
+      }
+    }
+
+    if (!ios_enable_code_signing) {
+      # If codesigning is enabled, the binary will be copied into the bundle
+      # by the codesigning script (as the binary is updated by the signature).
+      # Otherwise, this "bundle_data" declares the location of the binary in
+      # the .app bundle.
+      bundle_data(_bundle_data_executable) {
+        forward_variables_from(invoker, [ "testonly" ])
+        visibility = [ ":$_target_name" ]
+        outputs = [
+          "{{bundle_executable_dir}}/$_output_name",
+        ]
+        if (_is_fat_build) {
+          public_deps = [
+            ":$_lipo_executable",
+          ]
+        } else {
+          public_deps = [
+            ":$_link_executable",
+          ]
+        }
+        sources = [
+          "$target_out_dir/$_output_name",
+        ]
+      }
+    }
+
+    create_bundle(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "data_deps",
+                               "deps",
+                               "public_deps",
+                               "testonly",
+                               "visibility",
+                             ])
+
+      if (!defined(deps)) {
+        deps = []
+      }
+      deps += [ ":$_bundle_data_info_plist" ]
+      if (ios_enable_code_signing) {
+        if (_is_fat_build) {
+          deps += [ ":$_lipo_executable" ]
+        } else {
+          deps += [ ":$_link_executable" ]
+        }
+      } else {
+        deps += [ ":$_bundle_data_executable" ]
+      }
+
+      if (use_ios_simulator) {
+        if (!defined(data_deps)) {
+          data_deps = []
+        }
+        data_deps += [ "//testing/iossim" ]
+      }
+
+      if (defined(invoker.product_type)) {
+        product_type = invoker.product_type
+      } else {
+        product_type = "com.apple.product-type.application"
+      }
+
+      if (defined(invoker.bundle_extension)) {
+        _bundle_extension = invoker.bundle_extension
+      } else {
+        _bundle_extension = ".app"
+      }
+
+      bundle_root_dir = "$root_out_dir/$_output_name$_bundle_extension"
+      bundle_resources_dir = bundle_root_dir
+      bundle_executable_dir = bundle_root_dir
+      bundle_plugins_dir = "$bundle_root_dir/PlugIns"
+
+      if (ios_enable_code_signing) {
+        _entitlements_path = "$ios_sdk_path/Entitlements.plist"
+        if (defined(invoker.entitlements_path)) {
+          _entitlements_path = invoker.entitlements_path
+        }
+
+        code_signing_script = "//build/config/ios/codesign.py"
+        code_signing_sources = [
+          _entitlements_path,
+          "$target_out_dir/$_output_name",
+        ]
+        code_signing_outputs = [
+          "$bundle_root_dir/$_output_name",
+          "$bundle_root_dir/_CodeSignature/CodeResources",
+          "$bundle_root_dir/embedded.mobileprovision",
+        ]
+        code_signing_args = [
+          "-i=" + ios_code_signing_identity,
+          "-b=" + rebase_path("$target_out_dir/$_output_name", root_build_dir),
+          "-e=" + rebase_path(_entitlements_path, root_build_dir),
+          rebase_path(bundle_root_dir, root_build_dir),
+        ]
+      }
     }
   }
 
-  create_bundle(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "data_deps",
-                             "deps",
-                             "public_deps",
-                             "testonly",
-                             "visibility",
-                           ])
-
-    if (!defined(deps)) {
-      deps = []
-    }
-    deps += [ ":$_bundle_data_info_plist" ]
-    if (ios_enable_code_signing) {
-      deps += [ ":$_generate_executable" ]
-    } else {
-      deps += [ ":$_bundle_data_executable" ]
-    }
-
-    if (use_ios_simulator) {
-      if (!defined(data_deps)) {
-        data_deps = []
-      }
-      data_deps += [ "//testing/iossim" ]
-    }
-
-    if (defined(invoker.product_type)) {
-      product_type = invoker.product_type
-    } else {
-      product_type = "com.apple.product-type.application"
-    }
-
-    if (defined(invoker.bundle_extension)) {
-      _bundle_extension = invoker.bundle_extension
-    } else {
-      _bundle_extension = ".app"
-    }
-
-    bundle_root_dir = "$root_out_dir/$_output_name$_bundle_extension"
-    bundle_resources_dir = bundle_root_dir
-    bundle_executable_dir = bundle_root_dir
-    bundle_plugins_dir = "$bundle_root_dir/PlugIns"
-
-    if (defined(invoker.entitlements_path)) {
-      _entitlements_path = invoker.entitlements_path
-    } else {
-      _entitlements_path = "$ios_sdk_path/Entitlements.plist"
-    }
-
-    if (ios_enable_code_signing) {
-      code_signing_script = "//build/config/ios/codesign.py"
-      code_signing_sources = [
-        _entitlements_path,
-        "$target_gen_dir/$_output_name",
-      ]
-      code_signing_outputs = [
-        "$bundle_root_dir/$_output_name",
-        "$bundle_root_dir/_CodeSignature/CodeResources",
-        "$bundle_root_dir/embedded.mobileprovision",
-      ]
-      code_signing_args = [
-        "-i=" + ios_code_signing_identity,
-        "-b=" + rebase_path("$target_gen_dir/$_output_name", root_build_dir),
-        "-e=" + rebase_path(_entitlements_path, root_build_dir),
-        rebase_path(bundle_root_dir, root_build_dir),
-      ]
-    } else {
-      assert(_entitlements_path != "",
-             "force usage of _entitlements_path to avoid unused variable error")
-    }
+  # TODO(crbug.com/395883): ensure those variables are marked as used to
+  # avoid errors while running "gn gen".
+  if (defined(invoker.entitlements_path)) {
+    assert(invoker.entitlements_path != "",
+           "mark invoker.entitlements_path as used")
+  }
+  if (defined(invoker.bundle_extension)) {
+    assert(invoker.bundle_extension != "",
+           "mark invoker.bundle_extension as used")
+  }
+  if (defined(invoker.bundle_extension)) {
+    assert(invoker.bundle_extension != "",
+           "mark invoker.bundle_extension as used")
+  }
+  if (defined(invoker.entitlements_path)) {
+    assert(invoker.entitlements_path != "",
+           "mark invoker.entitlements_path as used")
+  }
+  if (defined(invoker.extra_substitutions)) {
+    assert(invoker.extra_substitutions != [],
+           "mark invoker.extra_substitutions as used")
+  }
+  if (defined(invoker.info_plist)) {
+    assert(invoker.info_plist != "", "mark invoker.info_plist as used")
+  }
+  if (defined(invoker.info_plist_target)) {
+    assert(invoker.info_plist_target != "",
+           "mark invoker.info_plist_target as used")
+  }
+  if (defined(invoker.product_type)) {
+    assert(invoker.product_type != "", "mark product_type as used")
   }
 }
 
