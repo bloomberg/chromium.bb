@@ -66,6 +66,8 @@ class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
   AudioInputStream* MakeInputStream(const AudioParameters& params,
                                     const std::string& device_id);
 
+  void GetAudioDeviceNamesImpl(bool is_input, AudioDeviceNames* device_names);
+
   void AddBeamformingDevices(AudioDeviceNames* device_names);
 
   // Stores the mic positions field from the device.

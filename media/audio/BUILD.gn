@@ -351,6 +351,10 @@ source_set("unittests") {
       "sounds/wav_audio_handler_unittest.cc",
     ]
 
+    if (!is_chromecast) {
+      deps += [ "//chromeos:chromeos" ]
+    }
+
     if (use_cras) {
       sources += [
         "cras/cras_input_unittest.cc",

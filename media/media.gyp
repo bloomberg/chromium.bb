@@ -1357,6 +1357,22 @@
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
         }],
+        ['use_cras==1', {
+          'dependencies': [
+            '../chromeos/chromeos.gyp:chromeos',
+          ],
+          'cflags': [
+            '<!@(<(pkg-config) --cflags libcras)',
+          ],
+          'link_settings': {
+            'libraries': [
+              '<!@(<(pkg-config) --libs libcras)',
+            ],
+          },
+          'defines': [
+            'USE_CRAS',
+          ],
+        }],
       ],
     },
     {

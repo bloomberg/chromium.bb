@@ -10,6 +10,7 @@
 #include "base/environment.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,6 +36,14 @@
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
 #endif  // defined(USE_PULSEAUDIO)
+
+#if defined(USE_CRAS)
+#include "chromeos/audio/audio_devices_pref_handler_stub.h"
+#include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cras_audio_client.h"
+#include "media/audio/cras/audio_manager_cras.h"
+#endif  // defined(USE_CRAS)
 
 namespace media {
 
@@ -69,6 +78,79 @@ struct TestAudioManagerFactory<std::nullptr_t> {
     return AudioManager::CreateForTesting(base::ThreadTaskRunnerHandle::Get());
   }
 };
+
+#if defined(USE_CRAS)
+using chromeos::AudioNode;
+using chromeos::AudioNodeList;
+
+const uint64_t kJabraSpeaker1Id = 30001;
+const uint64_t kJabraSpeaker1StableDeviceId = 80001;
+const uint64_t kJabraSpeaker2Id = 30002;
+const uint64_t kJabraSpeaker2StableDeviceId = 80002;
+const uint64_t kHDMIOutputId = 30003;
+const uint64_t kHDMIOutputStabeDevicelId = 80003;
+const uint64_t kJabraMic1Id = 40001;
+const uint64_t kJabraMic1StableDeviceId = 90001;
+const uint64_t kJabraMic2Id = 40002;
+const uint64_t kJabraMic2StableDeviceId = 90002;
+const uint64_t kWebcamMicId = 40003;
+const uint64_t kWebcamMicStableDeviceId = 90003;
+
+const AudioNode kJabraSpeaker1(false,
+                               kJabraSpeaker1Id,
+                               kJabraSpeaker1StableDeviceId,
+                               "Jabra Speaker",
+                               "USB",
+                               "Jabra Speaker 1",
+                               false,
+                               0);
+
+const AudioNode kJabraSpeaker2(false,
+                               kJabraSpeaker2Id,
+                               kJabraSpeaker2StableDeviceId,
+                               "Jabra Speaker",
+                               "USB",
+                               "Jabra Speaker 2",
+                               false,
+                               0);
+
+const AudioNode kHDMIOutput(false,
+                            kHDMIOutputId,
+                            kHDMIOutputStabeDevicelId,
+                            "HDMI output",
+                            "HDMI",
+                            "HDA Intel MID",
+                            false,
+                            0);
+
+const AudioNode kJabraMic1(true,
+                           kJabraMic1Id,
+                           kJabraMic1StableDeviceId,
+                           "Jabra Mic",
+                           "USB",
+                           "Jabra Mic 1",
+                           false,
+                           0);
+
+const AudioNode kJabraMic2(true,
+                           kJabraMic2Id,
+                           kJabraMic2StableDeviceId,
+                           "Jabra Mic",
+                           "USB",
+                           "Jabra Mic 2",
+                           false,
+                           0);
+
+const AudioNode kUSBCameraMic(true,
+                              kWebcamMicId,
+                              kWebcamMicStableDeviceId,
+                              "Webcam Mic",
+                              "USB",
+                              "Logitech Webcam",
+                              false,
+                              0);
+#endif  // defined(USE_CRAS)
+
 }  // namespace
 
 // Test fixture which allows us to override the default enumeration API on
@@ -114,6 +196,25 @@ class AudioManagerTest : public ::testing::Test {
     *output_device_id =
         audio_manager_->GetAssociatedOutputDeviceID(input_device_id);
   }
+
+#if defined(USE_CRAS)
+  void TearDown() override {
+    chromeos::CrasAudioHandler::Shutdown();
+    audio_pref_handler_ = nullptr;
+    chromeos::DBusThreadManager::Shutdown();
+  }
+
+  void SetUpCrasAudioHandlerWithTestingNodes(const AudioNodeList& audio_nodes) {
+    chromeos::DBusThreadManager::Initialize();
+    audio_client_ = static_cast<chromeos::FakeCrasAudioClient*>(
+        chromeos::DBusThreadManager::Get()->GetCrasAudioClient());
+    audio_client_->SetAudioNodesForTesting(audio_nodes);
+    audio_pref_handler_ = new chromeos::AudioDevicesPrefHandlerStub();
+    chromeos::CrasAudioHandler::Initialize(audio_pref_handler_);
+    cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
+    base::RunLoop().RunUntilIdle();
+  }
+#endif  // defined(USE_CRAS)
 
  protected:
   AudioManagerTest() { CreateAudioManagerForTesting(); }
@@ -185,6 +286,48 @@ class AudioManagerTest : public ::testing::Test {
     }
   }
 
+#if defined(USE_CRAS)
+  // Helper method for (USE_CRAS) which verifies that the device list starts
+  // with a valid default record followed by physical device names.
+  static void CheckDeviceNamesCras(
+      const AudioDeviceNames& device_names,
+      const std::map<uint64_t, std::string>& expectation) {
+    DVLOG(2) << "Got " << device_names.size() << " audio devices.";
+    if (!device_names.empty()) {
+      AudioDeviceNames::const_iterator it = device_names.begin();
+
+      // The first device in the list should always be the default device.
+      EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(),
+                it->device_name);
+      EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),
+                it->unique_id);
+
+      // |device_names|'size should be |expectation|'s size plus one because of
+      // default device.
+      EXPECT_EQ(device_names.size(), expectation.size() + 1);
+      ++it;
+      // Check other devices that should have non-empty name and id, and should
+      // be contained in expectation.
+      while (it != device_names.end()) {
+        EXPECT_FALSE(it->device_name.empty());
+        EXPECT_FALSE(it->unique_id.empty());
+        DVLOG(2) << "Device ID(" << it->unique_id
+                 << "), label: " << it->device_name;
+        uint64_t key;
+        EXPECT_TRUE(base::StringToUint64(it->unique_id, &key));
+        EXPECT_TRUE(expectation.find(key) != expectation.end());
+        EXPECT_EQ(expectation.find(key)->second, it->device_name);
+        ++it;
+      }
+    } else {
+      // Log a warning so we can see the status on the build bots. No need to
+      // break the test though since this does successfully test the code and
+      // some failure cases.
+      LOG(WARNING) << "No input devices detected";
+    }
+  }
+#endif  // defined(USE_CRAS)
+
   bool InputDevicesAvailable() {
     return audio_manager_->HasAudioInputDevices();
   }
@@ -212,7 +355,66 @@ class AudioManagerTest : public ::testing::Test {
   base::TestMessageLoop message_loop_;
   FakeAudioLogFactory fake_audio_log_factory_;
   ScopedAudioManagerPtr audio_manager_;
+
+#if defined(USE_CRAS)
+  chromeos::CrasAudioHandler* cras_audio_handler_ = nullptr;  // Not owned.
+  chromeos::FakeCrasAudioClient* audio_client_ = nullptr;     // Not owned.
+  scoped_refptr<chromeos::AudioDevicesPrefHandlerStub> audio_pref_handler_;
+#endif  // defined(USE_CRAS)
 };
+
+#if defined(USE_CRAS)
+TEST_F(AudioManagerTest, EnumerateInputDevicesCras) {
+  // Setup the devices without internal mic, so that it doesn't exist
+  // beamforming capable mic.
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kJabraMic1);
+  audio_nodes.push_back(kJabraMic2);
+  audio_nodes.push_back(kUSBCameraMic);
+  audio_nodes.push_back(kHDMIOutput);
+  audio_nodes.push_back(kJabraSpeaker1);
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+
+  ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
+
+  // Setup expectation with physical devices.
+  std::map<uint64_t, std::string> expectation;
+  expectation[kJabraMic1.id] = kJabraMic1.device_name;
+  expectation[kJabraMic2.id] = kJabraMic2.device_name;
+  expectation[kUSBCameraMic.id] = kUSBCameraMic.device_name;
+
+  DVLOG(2) << "Testing AudioManagerCras.";
+  CreateAudioManagerForTesting<AudioManagerCras>();
+  AudioDeviceNames device_names;
+  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  CheckDeviceNamesCras(device_names, expectation);
+}
+
+TEST_F(AudioManagerTest, EnumerateOutputDevicesCras) {
+  // Setup the devices without internal mic, so that it doesn't exist
+  // beamforming capable mic.
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kJabraMic1);
+  audio_nodes.push_back(kJabraMic2);
+  audio_nodes.push_back(kUSBCameraMic);
+  audio_nodes.push_back(kHDMIOutput);
+  audio_nodes.push_back(kJabraSpeaker1);
+  SetUpCrasAudioHandlerWithTestingNodes(audio_nodes);
+
+  ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
+
+  // Setup expectation with physical devices.
+  std::map<uint64_t, std::string> expectation;
+  expectation[kHDMIOutput.id] = kHDMIOutput.device_name;
+  expectation[kJabraSpeaker1.id] = kJabraSpeaker1.device_name;
+
+  DVLOG(2) << "Testing AudioManagerCras.";
+  CreateAudioManagerForTesting<AudioManagerCras>();
+  AudioDeviceNames device_names;
+  audio_manager_->GetAudioOutputDeviceNames(&device_names);
+  CheckDeviceNamesCras(device_names, expectation);
+}
+#else  // !defined(USE_CRAS)
 
 TEST_F(AudioManagerTest, HandleDefaultDeviceIDs) {
   // Use a fake manager so we can makeup device ids, this will still use the
@@ -431,5 +633,6 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
   EXPECT_TRUE(found_an_associated_device);
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
+#endif  // defined(USE_CRAS)
 
 }  // namespace media

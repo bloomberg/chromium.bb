@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/nix/xdg_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "media/audio/audio_device_description.h"
@@ -63,13 +64,6 @@ void RecordBeamformingDeviceState(CrosBeamformingDeviceState state) {
 bool IsBeamformingDefaultEnabled() {
   return base::FieldTrialList::FindFullName("ChromebookBeamforming") ==
          "Enabled";
-}
-
-void AddDefaultDevice(AudioDeviceNames* device_names) {
-  DCHECK(device_names->empty());
-
-  // Cras will route audio from a proper physical device automatically.
-  device_names->push_back(AudioDeviceName::CreateDefault());
 }
 
 // Returns a mic positions string if the machine has a beamforming capable
@@ -155,23 +149,35 @@ void AudioManagerCras::ShowAudioInputSettings() {
   NOTIMPLEMENTED();
 }
 
-void AudioManagerCras::GetAudioInputDeviceNames(
-    AudioDeviceNames* device_names) {
+void AudioManagerCras::GetAudioDeviceNamesImpl(bool is_input,
+                                               AudioDeviceNames* device_names) {
   DCHECK(device_names->empty());
-
-  mic_positions_ = ParsePointsFromString(MicPositions());
   // At least two mic positions indicates we have a beamforming capable mic
   // array. Add the virtual beamforming device to the list. When this device is
   // queried through GetInputStreamParameters, provide the cached mic positions.
-  if (mic_positions_.size() > 1)
+  if (is_input && mic_positions_.size() > 1)
     AddBeamformingDevices(device_names);
   else
-    AddDefaultDevice(device_names);
+    device_names->push_back(media::AudioDeviceName::CreateDefault());
+  chromeos::AudioDeviceList devices;
+  chromeos::CrasAudioHandler::Get()->GetAudioDevices(&devices);
+  for (const auto& device : devices) {
+    if (device.is_input == is_input && device.is_for_simple_usage()) {
+      device_names->emplace_back(device.display_name,
+                                 base::Uint64ToString(device.id));
+    }
+  }
+}
+
+void AudioManagerCras::GetAudioInputDeviceNames(
+    AudioDeviceNames* device_names) {
+  mic_positions_ = ParsePointsFromString(MicPositions());
+  GetAudioDeviceNamesImpl(true, device_names);
 }
 
 void AudioManagerCras::GetAudioOutputDeviceNames(
     AudioDeviceNames* device_names) {
-  AddDefaultDevice(device_names);
+  GetAudioDeviceNamesImpl(false, device_names);
 }
 
 AudioParameters AudioManagerCras::GetInputStreamParameters(
