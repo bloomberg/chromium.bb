@@ -162,6 +162,13 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("proxySettings", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON);
   builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
   builder->Add("debuggingFeaturesLink", IDS_NETWORK_ENABLE_DEV_FEATURES_LINK);
+
+  // MD-OOBE
+  builder->Add("networkSectionTitle", IDS_NETWORK_SECTION_TITE);
+  builder->Add("networkSectionHint", IDS_NETWORK_SECTION_HINT);
+  builder->Add("proxySettingsMenuName", IDS_PROXY_SETTINGS_MENU_NAME);
+  builder->Add("addWiFiNetworkMenuName", IDS_ADD_WI_FI_NETWORK_MENU_NAME);
+  builder->Add("addMobileNetworkMenuName", IDS_ADD_MOBILE_NETWORK_MENU_NAME);
 }
 
 void NetworkScreenHandler::GetAdditionalParameters(

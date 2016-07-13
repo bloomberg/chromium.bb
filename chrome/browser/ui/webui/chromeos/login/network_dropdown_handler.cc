@@ -5,9 +5,12 @@
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown_handler.h"
 
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chrome/browser/chromeos/ui/choose_mobile_network_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/login/localized_values_builder.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
 
@@ -18,6 +21,10 @@ const char kJsApiNetworkItemChosen[] = "networkItemChosen";
 const char kJsApiNetworkDropdownShow[] = "networkDropdownShow";
 const char kJsApiNetworkDropdownHide[] = "networkDropdownHide";
 const char kJsApiNetworkDropdownRefresh[] = "networkDropdownRefresh";
+const char kJsApiLaunchProxySettingsDialog[] = "launchProxySettingsDialog";
+const char kJsApiLaunchAddWiFiNetworkDialog[] = "launchAddWiFiNetworkDialog";
+const char kJsApiLaunchAddMobileNetworkDialog[] =
+    "launchAddMobileNetworkDialog";
 
 }  // namespace
 
@@ -57,6 +64,28 @@ void NetworkDropdownHandler::RegisterMessages() {
               &NetworkDropdownHandler::HandleNetworkDropdownHide);
   AddCallback(kJsApiNetworkDropdownRefresh,
               &NetworkDropdownHandler::HandleNetworkDropdownRefresh);
+
+  // MD-OOBE
+  AddCallback(kJsApiLaunchProxySettingsDialog,
+              &NetworkDropdownHandler::HandleLaunchProxySettingsDialog);
+  AddCallback(kJsApiLaunchAddWiFiNetworkDialog,
+              &NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog);
+  AddCallback(kJsApiLaunchAddMobileNetworkDialog,
+              &NetworkDropdownHandler::HandleLaunchAddMobileNetworkDialog);
+}
+
+void NetworkDropdownHandler::HandleLaunchProxySettingsDialog() {
+  dropdown_->OpenButtonOptions();
+}
+
+void NetworkDropdownHandler::HandleLaunchAddWiFiNetworkDialog() {
+  gfx::NativeWindow native_window = GetNativeWindow();
+  NetworkConfigView::ShowForType(shill::kTypeWifi, native_window);
+}
+
+void NetworkDropdownHandler::HandleLaunchAddMobileNetworkDialog() {
+  gfx::NativeWindow native_window = GetNativeWindow();
+  ChooseMobileNetworkDialog::ShowDialog(native_window);
 }
 
 void NetworkDropdownHandler::OnConnectToNetworkRequested() {

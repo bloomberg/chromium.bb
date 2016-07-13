@@ -1,0 +1,74 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.oobe-icon-div {
+ --iron-icon-height: 20px;
+ --iron-icon-width: 20px;
+ color: var(--google-blue-500);
+}
+
+.oobe-header {
+  background-color: white;
+  color: black;
+  height: 150px;
+}
+
+.oobe-footer {
+  background-color: white;
+  position: relative;
+}
+
+.header-container {
+  padding: 50px 40px 18px;
+}
+
+.footer-container {
+  padding: 24px 40px 34px;
+}
+
+::content div.oobe-body-text {
+  margin-bottom: 24px;
+}
+
+::content div.oobe-body-text p {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+  line-height: 20px;
+  margin: 0;
+}
+
+::content h1.welcome-message {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 20px;
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+::content h1.welcome-message-hint {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 12px;
+  font-weight: normal;
+  margin-bottom: 0;
+}
+
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+  z-index: 11;
+}
+
+:host(.full-disabled) #full-overlay,
+:host(.disabled) #bottom-overlay,
+

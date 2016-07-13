@@ -52,6 +52,10 @@ class NetworkDropdownHandler : public BaseScreenHandler,
   // Handles network drop-down refresh.
   void HandleNetworkDropdownRefresh();
 
+  void HandleLaunchProxySettingsDialog();
+  void HandleLaunchAddWiFiNetworkDialog();
+  void HandleLaunchAddMobileNetworkDialog();
+
   std::unique_ptr<NetworkDropdown> dropdown_;
 
   base::ObserverList<Observer> observers_;

@@ -6,6 +6,8 @@ shared between OOBE and login, add it to login_non_lock_shared.html.
 Any additional include increases the lock screen initialization time.
 -->
 
+<!-- This must be the first import in all login pages. -->
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="stylesheet" href="chrome://resources/css/butter_bar.css">
 <link rel="stylesheet" href="chrome://resources/css/dialogs.css">
 <link rel="stylesheet" href="chrome://resources/css/list.css">

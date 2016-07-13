@@ -2,12 +2,26 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_network_select.html">
+<link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+
+<iron-iconset-svg name="oobe-welcome" size="24">
+  <svg>
+    <defs>
+      <g id="add"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></g>
+      <g id="wifi"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"></path></g>
+    </defs>
+  </svg>
+</iron-iconset-svg>
 
 <dom-module name="oobe-welcome-md">
   <link rel="stylesheet" href="oobe_welcome.css">
   <template>
-    <oobe-card class="fit">
+    <oobe-card id="welcomeSection" class="fit" hidden="[[networkSelectionScreenShown]]">
       <div class="header flex vertical layout end-justified start">
         <h1 class="welcome-message" i18n-content="networkScreenGreeting"></h1>
       </div>
@@ -27,6 +41,22 @@
         </div>
       </div>
     </oobe-card>
+    <oobe-dialog id="networkSection" class="fit" hidden="[[!networkSelectionScreenShown]]">
+      <iron-icon icon="oobe-welcome:wifi" class="oobe-icon"></iron-icon>
+      <div class="header flex vertical layout end-justified start">
+        <h1 class="welcome-message" i18n-content="networkSectionTitle"></h1>
+        <h1 class="welcome-message-hint" i18n-content="networkSectionHint"></h1>
+      </div>
+      <div class="footer flex vertical layout justified">
+        <cr-network-select id="networkSelect"
+            on-network-connected="onNetworkConnected_"
+            on-network-item-selected="onNetworkListNetworkItemSelected_"
+            on-custom-item-selected="onNetworkListCustomItemSelected_"
+            custom-items="[[_getNetworkCustomItems()]]"
+            max-height="280">
+        </cr-network-select>
+      </div>
+    </oobe-dialog>
   </template>
 </dom-module>
 

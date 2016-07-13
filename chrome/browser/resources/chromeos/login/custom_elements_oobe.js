@@ -23,4 +23,5 @@
 <include src="navigation_bar.js">
 <include src="oobe_buttons.js">
 <include src="oobe_card.js">
+<include src="oobe_dialog.js">
 <include src="oobe_welcome.js">

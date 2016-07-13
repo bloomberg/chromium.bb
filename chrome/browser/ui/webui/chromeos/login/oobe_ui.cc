@@ -499,8 +499,9 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
 
   bool new_kiosk_ui = KioskAppMenuHandler::EnableNewKioskUI();
   localized_strings->SetString("newKioskUI", new_kiosk_ui ? "on" : "off");
-
   localized_strings->SetString("newOobeUI", UseMDOobe() ? "on" : "off");
+
+  NetworkUI::GetLocalizedStrings(localized_strings);
 }
 
 void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
