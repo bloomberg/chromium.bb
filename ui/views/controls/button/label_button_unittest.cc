@@ -311,16 +311,29 @@ TEST_F(LabelButtonTest, ChangeTextSize) {
   const base::string16 text(ASCIIToUTF16("abc"));
   const base::string16 longer_text(ASCIIToUTF16("abcdefghijklm"));
   button_->SetText(text);
-
+  button_->SizeToPreferredSize();
+  gfx::Rect bounds(button_->bounds());
   const int original_width = button_->GetPreferredSize().width();
+  EXPECT_EQ(original_width, bounds.width());
 
-  // The button size increases when the text size is increased.
+  // Reserve more space in the button.
+  bounds.set_width(bounds.width() * 10);
+  button_->SetBoundsRect(bounds);
+
+  // Label view in the button is sized to short text.
+  const int original_label_width = button_->label()->bounds().width();
+
+  // The button preferred size and the label size increase when the text size
+  // is increased.
   button_->SetText(longer_text);
-  EXPECT_GT(button_->GetPreferredSize().width(), original_width);
+  EXPECT_GT(button_->label()->bounds().width(), original_label_width * 2);
+  EXPECT_GT(button_->GetPreferredSize().width(), original_width * 2);
 
-  // The button returns to its original size when the original text is restored.
+  // The button and the label view return to its original size when the original
+  // text is restored.
   button_->SetMinSize(gfx::Size());
   button_->SetText(text);
+  EXPECT_EQ(original_label_width, button_->label()->bounds().width());
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }
 
