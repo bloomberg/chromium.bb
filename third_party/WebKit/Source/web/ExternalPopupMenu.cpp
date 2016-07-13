@@ -194,11 +194,12 @@ void ExternalPopupMenu::didAcceptIndex(int index)
 
     if (m_ownerElement) {
         m_ownerElement->popupDidHide();
-        m_ownerElement->valueChanged(popupMenuItemIndex);
+        m_ownerElement->selectOptionByPopup(popupMenuItemIndex);
     }
     m_webExternalPopupMenu = 0;
 }
 
+// Android uses this function even for single SELECT.
 void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
 {
     if (!m_ownerElement) {
@@ -210,10 +211,15 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
     ownerElement->popupDidHide();
 
     if (indices.size() == 0) {
-        ownerElement->valueChanged(static_cast<unsigned>(-1));
+        ownerElement->selectOptionByPopup(-1);
+    } else if (!ownerElement->multiple()) {
+        ownerElement->selectOptionByPopup(toPopupMenuItemIndex(indices[indices.size() - 1], *ownerElement));
     } else {
+        Vector<int> listIndices;
+        listIndices.reserveCapacity(indices.size());
         for (size_t i = 0; i < indices.size(); ++i)
-            ownerElement->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *ownerElement), (i > 0), (i == indices.size() - 1));
+            listIndices.append(toPopupMenuItemIndex(indices[i], *ownerElement));
+        ownerElement->selectMultipleOptionsByPopup(listIndices);
     }
 
     m_webExternalPopupMenu = 0;

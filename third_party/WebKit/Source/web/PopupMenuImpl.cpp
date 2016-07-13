@@ -398,7 +398,7 @@ void PopupMenuImpl::setValueAndClosePopup(int numValue, const String& stringValu
     DCHECK(success);
     {
         EventQueueScope scope;
-        m_ownerElement->valueChanged(listIndex);
+        m_ownerElement->selectOptionByPopup(listIndex);
         if (m_popup)
             m_chromeClient->closePagePopup(m_popup);
         // 'change' event is dispatched here.  For compatbility with

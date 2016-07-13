@@ -208,18 +208,19 @@ String HTMLSelectElement::defaultToolTip() const
     return validationMessage();
 }
 
-void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool fireOnChangeNow)
+void HTMLSelectElement::selectMultipleOptionsByPopup(const Vector<int>& listIndices)
 {
-    if (!multiple()) {
-        optionSelectedByUser(listToOptionIndex(listIndex), fireOnChangeNow);
-    } else {
-        HTMLElement* element = listItems()[listIndex];
+    DCHECK(usesMenuList());
+    DCHECK(!multiple());
+    for (size_t i = 0; i < listIndices.size(); ++i) {
+        bool addSelectionIfNotFirst = i > 0;
+        HTMLElement* element = listItems()[listIndices[i]];
         if (isHTMLOptionElement(element))
-            updateSelectedState(toHTMLOptionElement(element), allowMultiplySelections, false);
-        setNeedsValidityCheck();
-        if (fireOnChangeNow)
-            listBoxOnChange();
+            updateSelectedState(toHTMLOptionElement(element), addSelectionIfNotFirst, false);
     }
+    setNeedsValidityCheck();
+    // TODO(tkent): Using listBoxOnChange() is very confusing.
+    listBoxOnChange();
 }
 
 bool HTMLSelectElement::usesMenuList() const
@@ -1267,8 +1268,8 @@ void HTMLSelectElement::handlePopupOpenKeyboardEvent(Event* event)
         return;
     // Save the selection so it can be compared to the new selection when
     // dispatching change events during selectOption, which gets called from
-    // valueChanged, which gets called after the user makes a selection from the
-    // menu.
+    // selectOptionByPopup, which gets called after the user makes a selection
+    // from the menu.
     saveLastSelection();
     showPopup();
     event->setDefaultHandled();
@@ -1386,8 +1387,8 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* event)
             } else {
                 // Save the selection so it can be compared to the new selection
                 // when we call onChange during selectOption, which gets called
-                // from valueChanged, which gets called after the user makes a
-                // selection from the menu.
+                // from selectOptionByPopup, which gets called after the user
+                // makes a selection from the menu.
                 saveLastSelection();
                 // TODO(lanwei): Will check if we need to add
                 // InputDeviceCapabilities here when select menu list gets
@@ -1923,8 +1924,9 @@ HTMLOptionElement* HTMLSelectElement::optionToBeShown() const
     return m_lastOnChangeOption;
 }
 
-void HTMLSelectElement::valueChanged(unsigned listIndex)
+void HTMLSelectElement::selectOptionByPopup(int listIndex)
 {
+    DCHECK(usesMenuList());
     // Check to ensure a page navigation has not occurred while the popup was
     // up.
     Document& doc = document();
@@ -1938,7 +1940,7 @@ void HTMLSelectElement::valueChanged(unsigned listIndex)
 void HTMLSelectElement::popupDidCancel()
 {
     if (m_indexToSelectOnCancel >= 0)
-        valueChanged(m_indexToSelectOnCancel);
+        selectOptionByPopup(m_indexToSelectOnCancel);
 }
 
 void HTMLSelectElement::provisionalSelectionChanged(unsigned listIndex)

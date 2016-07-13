@@ -149,10 +149,8 @@ public:
     LayoutUnit clientPaddingLeft() const;
     // Text starting offset in RTL.
     LayoutUnit clientPaddingRight() const;
-    void valueChanged(unsigned listIndex);
-    // TODO(tkent): Rename this. This is used only for multiple-selection
-    // menulist.
-    void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool fireOnChangeNow);
+    void selectOptionByPopup(int listIndex);
+    void selectMultipleOptionsByPopup(const Vector<int>& listIndices);
     // A popup is canceled when the popup was hidden without selecting an item.
     void popupDidCancel();
     // Provisional selection is a selection made using arrow keys or type ahead.
