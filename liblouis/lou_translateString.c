@@ -2072,7 +2072,7 @@ checkEmphasisChange(const int skip)
 {
 	int i;	
 	for(i = src + (skip + 1); i < src + transRule->charslen; i++)
-	if(emphasisBuffer[i] || transNoteBuffer[i])
+	if((emphasisBuffer[i] & ~CAPS_EMPHASIS) || transNoteBuffer[i])
 		return 1;
 	return 0;
 }
