@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Finishing an animation: ready/finished ordering</title
+<link rel="help" href="https://w3c.github.io/web-animations/#finishing-an-animation-section">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+async_test(function(t) {
+  var animation = document.documentElement.animate([], 100000);
+  var ready = false;
+  animation.ready.then(function() {
+    t.step(function() {
+      ready = true;
+    });
+  });
+  animation.finished.then(function() {
+    t.step(function() {
+      assert_true(ready);
+    });
+    t.done();
+  });
+  animation.finish();
+}, 'The ready promise should be resolved before the finished promise');
+</script>

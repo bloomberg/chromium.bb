@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Cancel an animation: ready/finished ordering</title
+<link rel="help" href="https://w3c.github.io/web-animations/#canceling-an-animation-section">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+  var animation = document.documentElement.animate([], 100000);
+  var ready = false;
+  animation.ready.then(null, function() {
+    t.step(function() {
+      ready = true;
+    });
+  });
+  animation.finished.then(null, function() {
+    t.step(function() {
+      assert_true(ready);
+    });
+    t.done();
+  });
+  animation.cancel();
+}, 'The ready promise should be rejected before the finished promise');
+</script>
