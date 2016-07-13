@@ -44,7 +44,7 @@ source_set("os_crypt") {
     libs = [ "crypt32.lib" ]
   }
 
-  if (is_desktop_linux && (use_glib || use_dbus)) {
+  if (is_desktop_linux) {
     sources -= [ "os_crypt_posix.cc" ]
     sources += [
       "key_storage_linux.cc",
@@ -86,7 +86,7 @@ source_set("test_support") {
     "//base",
     "//testing/gtest",
   ]
-  if (is_desktop_linux && (use_glib || use_dbus)) {
+  if (is_desktop_linux) {
     sources += [
       "os_crypt_mocker_linux.cc",
       "os_crypt_mocker_linux.h",
@@ -112,7 +112,7 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  if (is_desktop_linux && (use_glib || use_dbus)) {
+  if (is_desktop_linux) {
     sources += [ "os_crypt_linux_unittest.cc" ]
     defines = []
 

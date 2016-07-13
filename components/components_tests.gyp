@@ -1596,6 +1596,7 @@
             'os_crypt/os_crypt_util_linux_unittest.cc',
           ],
           'defines': [
+            'USE_KWALLET',
             'USE_LIBSECRET',
           ],
           'include_dirs': [

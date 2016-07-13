@@ -210,6 +210,14 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   return true;
 }
 
+// static
+void OSCrypt::SetStore(const std::string& store_type) {
+  // Changing the targeted password store makes no sense after initializing.
+  DCHECK(!g_cache.Get().is_key_storage_cached);
+
+  KeyStorageLinux::SetStore(store_type);
+}
+
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)()) {
   // Save the real implementation to restore it later.
