@@ -29,7 +29,7 @@
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #else
 #include "chrome/browser/permissions/permission_bubble_request_impl.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 // static
@@ -153,8 +153,8 @@ void PermissionContextBase::CancelPermissionRequest(
 #else
   PermissionBubbleRequest* cancelling = pending_bubbles_.get(id.ToString());
   if (cancelling != NULL && web_contents != NULL &&
-      PermissionBubbleManager::FromWebContents(web_contents) != NULL) {
-    PermissionBubbleManager::FromWebContents(web_contents)
+      PermissionRequestManager::FromWebContents(web_contents) != NULL) {
+    PermissionRequestManager::FromWebContents(web_contents)
         ->CancelRequest(cancelling);
   }
 #endif
@@ -170,11 +170,11 @@ void PermissionContextBase::DecidePermission(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if !defined(OS_ANDROID)
-  PermissionBubbleManager* bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents);
-  // TODO(felt): sometimes |bubble_manager| is null. This check is meant to
-  // prevent crashes. See crbug.com/457091.
-  if (!bubble_manager)
+  PermissionRequestManager* permission_request_manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  // TODO(felt): sometimes |permission_request_manager| is null. This check is
+  // meant to prevent crashes. See crbug.com/457091.
+  if (!permission_request_manager)
     return;
   std::unique_ptr<PermissionBubbleRequest> request_ptr(
       new PermissionBubbleRequestImpl(
@@ -189,7 +189,7 @@ void PermissionContextBase::DecidePermission(
   bool inserted =
       pending_bubbles_.add(id.ToString(), std::move(request_ptr)).second;
   DCHECK(inserted) << "Duplicate id " << id.ToString();
-  bubble_manager->AddRequest(request);
+  permission_request_manager->AddRequest(request);
 #else
   GetQueueController()->CreateInfoBarRequest(
       id, requesting_origin, embedding_origin,

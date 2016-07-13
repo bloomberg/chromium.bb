@@ -27,7 +27,7 @@
 #include "chrome/browser/media/media_stream_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #else
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -163,10 +163,10 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
   MediaStreamInfoBarDelegateAndroid::Create(web_contents,
                                             std::move(controller));
 #else
-  PermissionBubbleManager* bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents);
-  if (bubble_manager)
-    bubble_manager->AddRequest(controller.release());
+  PermissionRequestManager* permission_request_manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  if (permission_request_manager)
+    permission_request_manager->AddRequest(controller.release());
 #endif
 }
 

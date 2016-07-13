@@ -48,6 +48,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
@@ -59,7 +60,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -2776,17 +2776,17 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
       DownloadItem::COMPLETE));
 }
 #else
-IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsBubble) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsRequests) {
   // Create a downloads observer.
   std::unique_ptr<content::DownloadTestObserver> downloads_observer(
       CreateWaiter(browser(), 2));
 
-  PermissionBubbleManager* permission_bubble_manager =
-      PermissionBubbleManager::FromWebContents(
+  PermissionRequestManager* permission_request_manager =
+      PermissionRequestManager::FromWebContents(
           browser()->tab_strip_model()->GetActiveWebContents());
-  permission_bubble_manager->DisplayPendingRequests();
-  permission_bubble_manager->set_auto_response_for_test(
-      PermissionBubbleManager::ACCEPT_ALL);
+  permission_request_manager->DisplayPendingRequests();
+  permission_request_manager->set_auto_response_for_test(
+      PermissionRequestManager::ACCEPT_ALL);
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), net::URLRequestMockHTTPJob::GetMockUrl(

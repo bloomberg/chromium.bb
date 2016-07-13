@@ -7,16 +7,16 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 MockPermissionBubbleFactory::MockPermissionBubbleFactory(
-    PermissionBubbleManager* manager)
+    PermissionRequestManager* manager)
     : can_update_ui_(false),
       show_count_(0),
       requests_count_(0),
       total_requests_count_(0),
-      response_type_(PermissionBubbleManager::NONE),
+      response_type_(PermissionRequestManager::NONE),
       manager_(manager) {
   manager->view_factory_ =
       base::Bind(&MockPermissionBubbleFactory::Create, base::Unretained(this));

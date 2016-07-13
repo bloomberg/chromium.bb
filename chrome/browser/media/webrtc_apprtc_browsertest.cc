@@ -14,10 +14,10 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc_browsertest_common.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
@@ -243,8 +243,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionBubbleManager::FromWebContents(left_tab)
-      ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
+  PermissionRequestManager::FromWebContents(left_tab)
+      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
   InfoBarResponder left_infobar_responder(
       InfoBarService::FromWebContents(left_tab), InfoBarResponder::ACCEPT);
   ui_test_utils::NavigateToURL(browser(), room_url);
@@ -253,8 +253,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionBubbleManager::FromWebContents(right_tab)
-      ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
+  PermissionRequestManager::FromWebContents(right_tab)
+      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
   InfoBarResponder right_infobar_responder(
       InfoBarService::FromWebContents(right_tab), InfoBarResponder::ACCEPT);
   ui_test_utils::NavigateToURL(browser(), room_url);
@@ -291,8 +291,8 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* chrome_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionBubbleManager::FromWebContents(chrome_tab)
-      ->set_auto_response_for_test(PermissionBubbleManager::ACCEPT_ALL);
+  PermissionRequestManager::FromWebContents(chrome_tab)
+      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
   InfoBarResponder infobar_responder(
       InfoBarService::FromWebContents(chrome_tab), InfoBarResponder::ACCEPT);
   ui_test_utils::NavigateToURL(browser(), room_url);

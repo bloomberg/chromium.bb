@@ -12,7 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
-class PermissionBubbleManager;
+class PermissionRequestManager;
 class PermissionBubbleRequest;
 
 // This class is the platform-independent interface through which the permission

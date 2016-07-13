@@ -31,7 +31,7 @@
 #include "chrome/browser/download/download_request_infobar_delegate_android.h"
 #else
 #include "chrome/browser/download/download_permission_request.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -135,7 +135,7 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
   bool promptable = InfoBarService::FromWebContents(web_contents()) != nullptr;
 #else
   bool promptable =
-      PermissionBubbleManager::FromWebContents(web_contents()) != nullptr;
+      PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
 #endif
 
   // See PromptUserForDownload(): if there's no InfoBarService, then
@@ -169,10 +169,10 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   DownloadRequestInfoBarDelegateAndroid::Create(
       InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
 #else
-  PermissionBubbleManager* bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents_);
-  if (bubble_manager) {
-    bubble_manager->AddRequest(
+  PermissionRequestManager* permission_request_manager =
+      PermissionRequestManager::FromWebContents(web_contents_);
+  if (permission_request_manager) {
+    permission_request_manager->AddRequest(
         new DownloadPermissionRequest(factory_.GetWeakPtr()));
   } else {
     Cancel();

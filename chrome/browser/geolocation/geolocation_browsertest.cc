@@ -17,11 +17,11 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
@@ -127,21 +127,22 @@ void IFrameLoader::Observe(int type,
     base::MessageLoopForUI::current()->QuitWhenIdle();
 }
 
-// PermissionBubbleObserver ---------------------------------------------------
+// PermissionRequestObserver ---------------------------------------------------
 
-// Used to observe the creation of a single permission bubble without
+// Used to observe the creation of a single permission request without
 // responding.
-class PermissionBubbleObserver : public PermissionBubbleManager::Observer {
+class PermissionRequestObserver : public PermissionRequestManager::Observer {
  public:
-  explicit PermissionBubbleObserver(content::WebContents* web_contents)
-      : bubble_manager_(PermissionBubbleManager::FromWebContents(web_contents)),
+  explicit PermissionRequestObserver(content::WebContents* web_contents)
+      : request_manager_(
+            PermissionRequestManager::FromWebContents(web_contents)),
         request_shown_(false),
         message_loop_runner_(new content::MessageLoopRunner) {
-    bubble_manager_->AddObserver(this);
+    request_manager_->AddObserver(this);
   }
-  ~PermissionBubbleObserver() override {
+  ~PermissionRequestObserver() override {
     // Safe to remove twice if it happens.
-    bubble_manager_->RemoveObserver(this);
+    request_manager_->RemoveObserver(this);
   }
 
   void Wait() { message_loop_runner_->Run(); }
@@ -149,18 +150,18 @@ class PermissionBubbleObserver : public PermissionBubbleManager::Observer {
   bool request_shown() { return request_shown_; }
 
  private:
-  // PermissionBubbleManager::Observer
+  // PermissionRequestManager::Observer
   void OnBubbleAdded() override {
     request_shown_ = true;
-    bubble_manager_->RemoveObserver(this);
+    request_manager_->RemoveObserver(this);
     message_loop_runner_->Quit();
   }
 
-  PermissionBubbleManager* bubble_manager_;
+  PermissionRequestManager* request_manager_;
   bool request_shown_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
-  DISALLOW_COPY_AND_ASSIGN(PermissionBubbleObserver);
+  DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
 };
 
 }  // namespace
@@ -221,14 +222,14 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   HostContentSettingsMap* GetHostContentSettingsMap();
 
   // Calls watchPosition in JavaScript and accepts or denies the resulting
-  // permission bubble. Returns |true| if the expected behavior happened.
+  // permission request. Returns |true| if the expected behavior happened.
   bool WatchPositionAndGrantPermission() WARN_UNUSED_RESULT;
   bool WatchPositionAndDenyPermission() WARN_UNUSED_RESULT;
 
   // Calls watchPosition in JavaScript and observes whether the permission
-  // bubble is shown without interacting with it. Callers should set
-  // |bubble_should_display| to |true| if they expect a bubble to display.
-  void WatchPositionAndObservePermissionBubble(bool bubble_should_display);
+  // request is shown without interacting with it. Callers should set
+  // |request_should_display| to |true| if they expect a request to display.
+  void WatchPositionAndObservePermissionRequest(bool request_should_display);
 
   // Checks that no errors have been received in JavaScript, and checks that the
   // position most recently received matches |latitude| and |longitude|.
@@ -250,14 +251,14 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   // successfully in JavaScript.
   bool SetPositionAndWaitUntilUpdated(double latitude, double longitude);
 
-  // Convenience method to look up the number of queued permission bubbles.
-  int GetBubbleQueueSize(PermissionBubbleManager* manager);
+  // Convenience method to look up the number of queued permission requests.
+  int GetRequestQueueSize(PermissionRequestManager* manager);
 
  private:
   // Calls watchPosition() in JavaScript and accepts or denies the resulting
-  // permission bubble. Returns the JavaScript response.
-  std::string WatchPositionAndRespondToPermissionBubble(
-      PermissionBubbleManager::AutoResponseType bubble_response);
+  // permission request. Returns the JavaScript response.
+  std::string WatchPositionAndRespondToPermissionRequest(
+      PermissionRequestManager::AutoResponseType request_response);
 
   // The current Browser as set in Initialize. May be for an incognito profile.
   Browser* current_browser_ = nullptr;
@@ -347,39 +348,39 @@ HostContentSettingsMap* GeolocationBrowserTest::GetHostContentSettingsMap() {
 }
 
 bool GeolocationBrowserTest::WatchPositionAndGrantPermission() {
-  std::string result = WatchPositionAndRespondToPermissionBubble(
-      PermissionBubbleManager::ACCEPT_ALL);
+  std::string result = WatchPositionAndRespondToPermissionRequest(
+      PermissionRequestManager::ACCEPT_ALL);
   return "request-callback-success" == result;
 }
 
 bool GeolocationBrowserTest::WatchPositionAndDenyPermission() {
-  std::string result = WatchPositionAndRespondToPermissionBubble(
-      PermissionBubbleManager::DENY_ALL);
+  std::string result = WatchPositionAndRespondToPermissionRequest(
+      PermissionRequestManager::DENY_ALL);
   return "request-callback-error" == result;
 }
 
-std::string GeolocationBrowserTest::WatchPositionAndRespondToPermissionBubble(
-    PermissionBubbleManager::AutoResponseType bubble_response) {
-  PermissionBubbleManager::FromWebContents(
+std::string GeolocationBrowserTest::WatchPositionAndRespondToPermissionRequest(
+    PermissionRequestManager::AutoResponseType request_response) {
+  PermissionRequestManager::FromWebContents(
       current_browser_->tab_strip_model()->GetActiveWebContents())
-      ->set_auto_response_for_test(bubble_response);
+      ->set_auto_response_for_test(request_response);
   return RunScript(render_frame_host_, "geoStartWithAsyncResponse()");
 }
 
-void GeolocationBrowserTest::WatchPositionAndObservePermissionBubble(
-    bool bubble_should_display) {
-  PermissionBubbleObserver observer(
+void GeolocationBrowserTest::WatchPositionAndObservePermissionRequest(
+    bool request_should_display) {
+  PermissionRequestObserver observer(
       current_browser_->tab_strip_model()->GetActiveWebContents());
-  if (bubble_should_display) {
+  if (request_should_display) {
     // Control will return as soon as the API call is made, and then the
-    // observer will wait for the bubble to display.
+    // observer will wait for the request to display.
     RunScript(render_frame_host_, "geoStartWithSyncResponse()");
     observer.Wait();
   } else {
     // Control will return once one of the callbacks fires.
     RunScript(render_frame_host_, "geoStartWithAsyncResponse()");
   }
-  EXPECT_EQ(bubble_should_display, observer.request_shown());
+  EXPECT_EQ(request_should_display, observer.request_shown());
 }
 
 void GeolocationBrowserTest::ExpectPosition(double latitude, double longitude) {
@@ -423,8 +424,8 @@ bool GeolocationBrowserTest::SetPositionAndWaitUntilUpdated(double latitude,
   return result == "geoposition-updated";
 }
 
-int GeolocationBrowserTest::GetBubbleQueueSize(
-    PermissionBubbleManager* manager) {
+int GeolocationBrowserTest::GetRequestQueueSize(
+    PermissionRequestManager* manager) {
   return static_cast<int>(manager->requests_.size());
 }
 
@@ -469,9 +470,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForSecondTab) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
   ASSERT_TRUE(WatchPositionAndGrantPermission());
 
-  // Checks bubble is not needed in a second tab.
+  // Checks request is not needed in a second tab.
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_NEWTAB));
-  WatchPositionAndObservePermissionBubble(false);
+  WatchPositionAndObservePermissionRequest(false);
   ExpectPosition(fake_latitude(), fake_longitude());
 }
 
@@ -481,13 +482,13 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForDeniedOrigin) {
       current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string(), CONTENT_SETTING_BLOCK);
 
-  // Check that the bubble wasn't shown but we get an error for this origin.
-  WatchPositionAndObservePermissionBubble(false);
+  // Check that the request wasn't shown but we get an error for this origin.
+  WatchPositionAndObservePermissionRequest(false);
   ExpectValueFromScript(GetErrorCodePermissionDenied(), "geoGetLastError()");
 
   // Checks prompt will not be created a second tab.
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_NEWTAB));
-  WatchPositionAndObservePermissionBubble(false);
+  WatchPositionAndObservePermissionRequest(false);
   ExpectValueFromScript(GetErrorCodePermissionDenied(), "geoGetLastError()");
 }
 
@@ -502,9 +503,9 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoPromptForAllowedOrigin) {
   GetHostContentSettingsMap()->SetContentSettingDefaultScope(
       current_url(), current_url(), CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string(), CONTENT_SETTING_ALLOW);
-  // The bubble is not shown, there is no error, and the position gets to the
+  // The request is not shown, there is no error, and the position gets to the
   // script.
-  WatchPositionAndObservePermissionBubble(false);
+  WatchPositionAndObservePermissionRequest(false);
   ExpectPosition(fake_latitude(), fake_longitude());
 }
 
@@ -519,7 +520,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoPromptForOffTheRecord) {
   // incognito profile. Go incognito, and check that the user is not prompted
   // again and the position gets to the script.
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_OFFTHERECORD));
-  WatchPositionAndObservePermissionBubble(false);
+  WatchPositionAndObservePermissionRequest(false);
   ExpectPosition(fake_latitude(), fake_longitude());
 }
 
@@ -558,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_IFramesWithFreshPosition) {
   // In a second iframe from a different origin with a cached position the user
   // is prompted.
   SetFrameForScriptExecution("iframe_1");
-  WatchPositionAndObservePermissionBubble(true);
+  WatchPositionAndObservePermissionRequest(true);
 
   // Back to the first frame, enable navigation and refresh geoposition.
   SetFrameForScriptExecution("iframe_0");
@@ -620,15 +621,15 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   // Test second iframe from a different origin with a cached position will
   // create the prompt.
   SetFrameForScriptExecution("iframe_1");
-  WatchPositionAndObservePermissionBubble(true);
+  WatchPositionAndObservePermissionRequest(true);
 
   // Navigate the iframe, and ensure the prompt is gone.
   content::WebContents* web_contents =
       current_browser()->tab_strip_model()->GetActiveWebContents();
   IFrameLoader change_iframe_1(current_browser(), 1, current_url());
-  int num_bubbles_after_cancel = GetBubbleQueueSize(
-      PermissionBubbleManager::FromWebContents(web_contents));
-  EXPECT_EQ(0, num_bubbles_after_cancel);
+  int num_requests_after_cancel = GetRequestQueueSize(
+      PermissionRequestManager::FromWebContents(web_contents));
+  EXPECT_EQ(0, num_requests_after_cancel);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {
@@ -710,15 +711,15 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, DISABLED_PendingChildFrames) {
   LoadIFrames();
 
   SetFrameForScriptExecution("iframe_0");
-  WatchPositionAndObservePermissionBubble(true);
+  WatchPositionAndObservePermissionRequest(true);
 
   SetFrameForScriptExecution("iframe_1");
-  WatchPositionAndObservePermissionBubble(true);
+  WatchPositionAndObservePermissionRequest(true);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, TabDestroyed) {
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  WatchPositionAndObservePermissionBubble(true);
+  WatchPositionAndObservePermissionRequest(true);
 
   // TODO(mvanouwerkerk): Can't close a window you did not open. Maybe this was
   // valid when the test was written, but now it just prints "Scripts may close
@@ -755,7 +756,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_LastUsageUpdated) {
   clock_->Advance(base::TimeDelta::FromSeconds(3));
 
   // Calling watchPosition should trigger the last usage update.
-  WatchPositionAndObservePermissionBubble(false);
+  WatchPositionAndObservePermissionRequest(false);
   ExpectPosition(fake_latitude(), fake_longitude());
 
   // Last usage has been updated.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 
 #include <algorithm>
 
@@ -63,19 +63,19 @@ bool IsMessageTextEqual(PermissionBubbleRequest* a,
 
 }  // namespace
 
-// PermissionBubbleManager::Observer -------------------------------------------
+// PermissionRequestManager::Observer ------------------------------------------
 
-PermissionBubbleManager::Observer::~Observer() {
+PermissionRequestManager::Observer::~Observer() {
 }
 
-void PermissionBubbleManager::Observer::OnBubbleAdded() {
+void PermissionRequestManager::Observer::OnBubbleAdded() {
 }
 
-// PermissionBubbleManager -----------------------------------------------------
+// PermissionRequestManager ----------------------------------------------------
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionBubbleManager);
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(PermissionRequestManager);
 
-PermissionBubbleManager::PermissionBubbleManager(
+PermissionRequestManager::PermissionRequestManager(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
 #if !defined(OS_ANDROID)  // No bubbles in android tests.
@@ -87,7 +87,7 @@ PermissionBubbleManager::PermissionBubbleManager(
       weak_factory_(this) {
 }
 
-PermissionBubbleManager::~PermissionBubbleManager() {
+PermissionRequestManager::~PermissionRequestManager() {
   if (view_ != NULL)
     view_->SetDelegate(NULL);
 
@@ -101,7 +101,7 @@ PermissionBubbleManager::~PermissionBubbleManager() {
     entry.second->RequestFinished();
 }
 
-void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
+void PermissionRequestManager::AddRequest(PermissionBubbleRequest* request) {
   content::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
   // TODO(gbillock): is there a race between an early request on a
   // newly-navigated page and the to-be-cleaned-up requests on the previous
@@ -154,7 +154,7 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
   ScheduleShowBubble();
 }
 
-void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
+void PermissionRequestManager::CancelRequest(PermissionBubbleRequest* request) {
   // First look in the queued requests, where we can simply finish the request
   // and go on.
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
@@ -224,7 +224,7 @@ void PermissionBubbleManager::CancelRequest(PermissionBubbleRequest* request) {
   NOTREACHED();  // Callers should not cancel requests that are not pending.
 }
 
-void PermissionBubbleManager::HideBubble() {
+void PermissionRequestManager::HideBubble() {
   // Disengage from the existing view if there is one.
   if (!view_)
     return;
@@ -234,7 +234,7 @@ void PermissionBubbleManager::HideBubble() {
   view_.reset();
 }
 
-void PermissionBubbleManager::DisplayPendingRequests() {
+void PermissionRequestManager::DisplayPendingRequests() {
   if (IsBubbleVisible())
     return;
 
@@ -249,22 +249,22 @@ void PermissionBubbleManager::DisplayPendingRequests() {
   TriggerShowBubble();
 }
 
-void PermissionBubbleManager::UpdateAnchorPosition() {
+void PermissionRequestManager::UpdateAnchorPosition() {
   if (view_)
     view_->UpdateAnchorPosition();
 }
 
-bool PermissionBubbleManager::IsBubbleVisible() {
+bool PermissionRequestManager::IsBubbleVisible() {
   return view_ && view_->IsVisible();
 }
 
-gfx::NativeWindow PermissionBubbleManager::GetBubbleWindow() {
+gfx::NativeWindow PermissionRequestManager::GetBubbleWindow() {
   if (view_)
     return view_->GetNativeWindow();
   return nullptr;
 }
 
-void PermissionBubbleManager::DidNavigateMainFrame(
+void PermissionRequestManager::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   if (details.is_in_page)
@@ -275,7 +275,7 @@ void PermissionBubbleManager::DidNavigateMainFrame(
   main_frame_has_fully_loaded_ = false;
 }
 
-void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
+void PermissionRequestManager::DocumentOnLoadCompletedInMainFrame() {
   main_frame_has_fully_loaded_ = true;
   // This is scheduled because while all calls to the browser have been
   // issued at DOMContentLoaded, they may be bouncing around in scheduled
@@ -285,12 +285,12 @@ void PermissionBubbleManager::DocumentOnLoadCompletedInMainFrame() {
   ScheduleShowBubble();
 }
 
-void PermissionBubbleManager::DocumentLoadedInFrame(
+void PermissionRequestManager::DocumentLoadedInFrame(
     content::RenderFrameHost* render_frame_host) {
   ScheduleShowBubble();
 }
 
-void PermissionBubbleManager::WebContentsDestroyed() {
+void PermissionRequestManager::WebContentsDestroyed() {
   // If the web contents has been destroyed, treat the bubble as cancelled.
   CancelPendingQueues();
   FinalizeBubble();
@@ -303,12 +303,12 @@ void PermissionBubbleManager::WebContentsDestroyed() {
   // returning from this function is the only safe thing to do.
 }
 
-void PermissionBubbleManager::ToggleAccept(int request_index, bool new_value) {
+void PermissionRequestManager::ToggleAccept(int request_index, bool new_value) {
   DCHECK(request_index < static_cast<int>(accept_states_.size()));
   accept_states_[request_index] = new_value;
 }
 
-void PermissionBubbleManager::Accept() {
+void PermissionRequestManager::Accept() {
   PermissionUmaUtil::PermissionPromptAccepted(requests_, accept_states_);
 
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
@@ -325,7 +325,7 @@ void PermissionBubbleManager::Accept() {
   FinalizeBubble();
 }
 
-void PermissionBubbleManager::Deny() {
+void PermissionRequestManager::Deny() {
   PermissionUmaUtil::PermissionPromptDenied(requests_);
 
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
@@ -337,7 +337,7 @@ void PermissionBubbleManager::Deny() {
   FinalizeBubble();
 }
 
-void PermissionBubbleManager::Closing() {
+void PermissionRequestManager::Closing() {
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
        requests_iter != requests_.end();
@@ -347,7 +347,7 @@ void PermissionBubbleManager::Closing() {
   FinalizeBubble();
 }
 
-void PermissionBubbleManager::ScheduleShowBubble() {
+void PermissionRequestManager::ScheduleShowBubble() {
   // ::ScheduleShowBubble() will be called again when the main frame will be
   // loaded.
   if (!main_frame_has_fully_loaded_)
@@ -356,11 +356,11 @@ void PermissionBubbleManager::ScheduleShowBubble() {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&PermissionBubbleManager::TriggerShowBubble,
+      base::Bind(&PermissionRequestManager::TriggerShowBubble,
                  weak_factory_.GetWeakPtr()));
 }
 
-void PermissionBubbleManager::TriggerShowBubble() {
+void PermissionRequestManager::TriggerShowBubble() {
   if (!view_)
     return;
   if (IsBubbleVisible())
@@ -391,7 +391,7 @@ void PermissionBubbleManager::TriggerShowBubble() {
     DoAutoResponseForTesting();
 }
 
-void PermissionBubbleManager::FinalizeBubble() {
+void PermissionRequestManager::FinalizeBubble() {
   if (view_)
     view_->Hide();
 
@@ -409,7 +409,7 @@ void PermissionBubbleManager::FinalizeBubble() {
     request_url_ = GURL();
 }
 
-void PermissionBubbleManager::CancelPendingQueues() {
+void PermissionRequestManager::CancelPendingQueues() {
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   for (requests_iter = queued_requests_.begin();
        requests_iter != queued_requests_.end();
@@ -425,7 +425,7 @@ void PermissionBubbleManager::CancelPendingQueues() {
   queued_frame_requests_.clear();
 }
 
-PermissionBubbleRequest* PermissionBubbleManager::GetExistingRequest(
+PermissionBubbleRequest* PermissionRequestManager::GetExistingRequest(
     PermissionBubbleRequest* request) {
   for (PermissionBubbleRequest* existing_request : requests_)
     if (IsMessageTextEqual(existing_request, request))
@@ -439,7 +439,7 @@ PermissionBubbleRequest* PermissionBubbleManager::GetExistingRequest(
   return nullptr;
 }
 
-void PermissionBubbleManager::PermissionGrantedIncludingDuplicates(
+void PermissionRequestManager::PermissionGrantedIncludingDuplicates(
     PermissionBubbleRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_[frame_]]requests_ can have duplicates";
@@ -448,7 +448,7 @@ void PermissionBubbleManager::PermissionGrantedIncludingDuplicates(
   for (auto it = range.first; it != range.second; ++it)
     it->second->PermissionGranted();
 }
-void PermissionBubbleManager::PermissionDeniedIncludingDuplicates(
+void PermissionRequestManager::PermissionDeniedIncludingDuplicates(
     PermissionBubbleRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_[frame_]]requests_ can have duplicates";
@@ -457,7 +457,7 @@ void PermissionBubbleManager::PermissionDeniedIncludingDuplicates(
   for (auto it = range.first; it != range.second; ++it)
     it->second->PermissionDenied();
 }
-void PermissionBubbleManager::CancelledIncludingDuplicates(
+void PermissionRequestManager::CancelledIncludingDuplicates(
     PermissionBubbleRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_[frame_]]requests_ can have duplicates";
@@ -466,7 +466,7 @@ void PermissionBubbleManager::CancelledIncludingDuplicates(
   for (auto it = range.first; it != range.second; ++it)
     it->second->Cancelled();
 }
-void PermissionBubbleManager::RequestFinishedIncludingDuplicates(
+void PermissionRequestManager::RequestFinishedIncludingDuplicates(
     PermissionBubbleRequest* request) {
   // We can't call GetExistingRequest here, because other entries in requests_,
   // queued_requests_ or queued_frame_requests_ might already have been deleted.
@@ -485,19 +485,19 @@ void PermissionBubbleManager::RequestFinishedIncludingDuplicates(
   duplicate_requests_.erase(request);
 }
 
-void PermissionBubbleManager::AddObserver(Observer* observer) {
+void PermissionRequestManager::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
 
-void PermissionBubbleManager::RemoveObserver(Observer* observer) {
+void PermissionRequestManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void PermissionBubbleManager::NotifyBubbleAdded() {
+void PermissionRequestManager::NotifyBubbleAdded() {
   FOR_EACH_OBSERVER(Observer, observer_list_, OnBubbleAdded());
 }
 
-void PermissionBubbleManager::DoAutoResponseForTesting() {
+void PermissionRequestManager::DoAutoResponseForTesting() {
   switch (auto_response_for_test_) {
     case ACCEPT_ALL:
       Accept();

@@ -5,8 +5,8 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/test/result_catcher.h"
 #include "media/base/media_switches.h"
@@ -18,28 +18,29 @@ namespace extensions {
 namespace {
 
 // Used to observe the creation of permission prompt without responding.
-class PermissionRequestObserver : public PermissionBubbleManager::Observer {
+class PermissionRequestObserver : public PermissionRequestManager::Observer {
  public:
   explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : bubble_manager_(PermissionBubbleManager::FromWebContents(web_contents)),
+      : request_manager_(
+            PermissionRequestManager::FromWebContents(web_contents)),
         request_shown_(false) {
-    bubble_manager_->AddObserver(this);
+    request_manager_->AddObserver(this);
   }
   ~PermissionRequestObserver() override {
     // Safe to remove twice if it happens.
-    bubble_manager_->RemoveObserver(this);
+    request_manager_->RemoveObserver(this);
   }
 
   bool request_shown() const { return request_shown_; }
 
  private:
-  // PermissionBubbleManager::Observer
+  // PermissionRequestManager::Observer
   void OnBubbleAdded() override {
     request_shown_ = true;
-    bubble_manager_->RemoveObserver(this);
+    request_manager_->RemoveObserver(this);
   }
 
-  PermissionBubbleManager* bubble_manager_;
+  PermissionRequestManager* request_manager_;
   bool request_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
@@ -91,10 +92,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
   GURL url = GetTestServerInsecureUrl("/extensions/test_file.html?succeed");
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionBubbleManager* bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents);
-  bubble_manager->set_auto_response_for_test(
-      PermissionBubbleManager::ACCEPT_ALL);
+  PermissionRequestManager* request_manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  request_manager->set_auto_response_for_test(
+      PermissionRequestManager::ACCEPT_ALL);
   PermissionRequestObserver permission_request_observer(web_contents);
   extensions::ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(), url);
@@ -104,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
 }
 
 // Verify that a chrome-extension:// web accessible URL will fail to access
-// getUserMedia() if it is denied by the permission bubble, even if it is
+// getUserMedia() if it is denied by the permission request, even if it is
 // embedded in an insecure context.
 IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
                        GetUserMediaInWebAccessibleResourceFail) {
@@ -115,9 +116,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
   GURL url = GetTestServerInsecureUrl("/extensions/test_file.html?fail");
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionBubbleManager* bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents);
-  bubble_manager->set_auto_response_for_test(PermissionBubbleManager::DENY_ALL);
+  PermissionRequestManager* request_manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  request_manager->set_auto_response_for_test(
+      PermissionRequestManager::DENY_ALL);
   PermissionRequestObserver permission_request_observer(web_contents);
   extensions::ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(), url);

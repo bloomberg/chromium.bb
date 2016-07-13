@@ -623,7 +623,7 @@ const NSSize kPermissionIconSize = {18, 18};
                previousContents:(content::WebContents*)oldContents
                         atIndex:(NSInteger)index
                          reason:(int)reason {
-  // The show/hide of this bubble is handled by the PermissionBubbleManager.
+  // The show/hide of this bubble is handled by the PermissionRequestManager.
   // So bypass the base class, which would close the bubble here.
 }
 

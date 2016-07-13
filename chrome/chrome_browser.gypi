@@ -2335,6 +2335,8 @@
       'browser/permissions/permission_manager_factory.h',
       'browser/permissions/permission_request_id.cc',
       'browser/permissions/permission_request_id.h',
+      'browser/permissions/permission_request_manager.cc',
+      'browser/permissions/permission_request_manager.h',
       'browser/permissions/permission_uma_util.cc',
       'browser/permissions/permission_uma_util.h',
       'browser/permissions/permission_util.cc',

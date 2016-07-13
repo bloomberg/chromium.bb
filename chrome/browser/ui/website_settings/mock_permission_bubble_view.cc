@@ -6,8 +6,8 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 
 MockPermissionBubbleView::~MockPermissionBubbleView() {
   Hide();
@@ -48,7 +48,7 @@ gfx::NativeWindow MockPermissionBubbleView::GetNativeWindow() {
 
 MockPermissionBubbleView::MockPermissionBubbleView(
     MockPermissionBubbleFactory* factory,
-    PermissionBubbleManager* manager)
+    PermissionRequestManager* manager)
     : factory_(factory),
       manager_(manager),
       can_update_ui_(true),

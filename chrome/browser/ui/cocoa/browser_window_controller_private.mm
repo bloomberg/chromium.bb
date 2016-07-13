@@ -15,6 +15,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -45,7 +46,6 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -268,7 +268,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Will update the location of the permission bubble when showing/hiding the
   // top level toolbar in fullscreen.
-  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  PermissionRequestManager* manager = [self permissionRequestManager];
   if (manager)
     manager->UpdateAnchorPosition();
 
@@ -421,7 +421,7 @@ willPositionSheet:(NSWindow*)sheet
     statusBubble_->SwitchParentWindow(destWindow);
 
   // Updates the bubble position.
-  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  PermissionRequestManager* manager = [self permissionRequestManager];
   if (manager)
     manager->UpdateAnchorPosition();
 
@@ -468,7 +468,7 @@ willPositionSheet:(NSWindow*)sheet
   BOOL showDropdown =
       !fullscreenForTab && !kioskMode && ([self floatingBarHasFocus]);
 
-  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  PermissionRequestManager* manager = [self permissionRequestManager];
   if (manager && manager->IsBubbleVisible()) {
     NSWindow* bubbleWindow = manager->GetBubbleWindow();
     DCHECK(bubbleWindow);
@@ -815,7 +815,7 @@ willPositionSheet:(NSWindow*)sheet
   [self resetCustomAppKitFullscreenVariables];
 
   // Ensures that the permission bubble shows up properly at the front.
-  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  PermissionRequestManager* manager = [self permissionRequestManager];
   if (manager && manager->IsBubbleVisible()) {
     NSWindow* bubbleWindow = manager->GetBubbleWindow();
     DCHECK(bubbleWindow);
@@ -1274,9 +1274,9 @@ willPositionSheet:(NSWindow*)sheet
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-- (PermissionBubbleManager*)permissionBubbleManager {
+- (PermissionRequestManager*)permissionRequestManager {
   if (WebContents* contents = [self webContents])
-    return PermissionBubbleManager::FromWebContents(contents);
+    return PermissionRequestManager::FromWebContents(contents);
   return nil;
 }
 

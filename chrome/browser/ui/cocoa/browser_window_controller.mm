@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -77,7 +78,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/translate/translate_bubble_model_impl.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/command.h"
@@ -1016,15 +1016,15 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)onActiveTabChanged:(content::WebContents*)oldContents
                         to:(content::WebContents*)newContents {
   // No need to remove previous bubble. It will close itself.
-  PermissionBubbleManager* manager(nullptr);
+  PermissionRequestManager* manager(nullptr);
   if (oldContents) {
-    manager = PermissionBubbleManager::FromWebContents(oldContents);
+    manager = PermissionRequestManager::FromWebContents(oldContents);
     if (manager)
       manager->HideBubble();
   }
 
   if (newContents) {
-    manager = PermissionBubbleManager::FromWebContents(newContents);
+    manager = PermissionRequestManager::FromWebContents(newContents);
     if (manager)
       manager->DisplayPendingRequests();
   }
@@ -1634,7 +1634,7 @@ bool IsTabDetachingInFullscreenEnabled() {
 }
 
 - (void)dismissPermissionBubble {
-  PermissionBubbleManager* manager = [self permissionBubbleManager];
+  PermissionRequestManager* manager = [self permissionRequestManager];
   if (manager)
     manager->HideBubble();
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
@@ -28,14 +28,14 @@ const char* kPermissionsKillSwitchBlockedValue =
     PermissionContextBase::kPermissionsKillSwitchBlockedValue;
 const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
 
-class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
+class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
  public:
-  PermissionBubbleManagerBrowserTest() = default;
-  ~PermissionBubbleManagerBrowserTest() override = default;
+  PermissionRequestManagerBrowserTest() = default;
+  ~PermissionRequestManagerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
-    PermissionBubbleManager* manager = GetPermissionBubbleManager();
+    PermissionRequestManager* manager = GetPermissionRequestManager();
     mock_permission_bubble_factory_.reset(
         new MockPermissionBubbleFactory(manager));
     manager->DisplayPendingRequests();
@@ -46,8 +46,8 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
-  PermissionBubbleManager* GetPermissionBubbleManager() {
-    return PermissionBubbleManager::FromWebContents(
+  PermissionRequestManager* GetPermissionRequestManager() {
+    return PermissionRequestManager::FromWebContents(
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
@@ -72,7 +72,7 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
 
 // Requests before the load event should be bundled into one bubble.
 // http://crbug.com/512849 flaky
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        DISABLED_RequestsBeforeLoad) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 }
 
 // Requests before the load should not be bundled with a request after the load.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        RequestsBeforeAfterLoad) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -110,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 #else
 #define MAYBE_NavTwice NavTwice
 #endif
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, MAYBE_NavTwice) {
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, MAYBE_NavTwice) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, MAYBE_NavTwice) {
 #else
 #define MAYBE_NavTwiceWithHash NavTwiceWithHash
 #endif
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        MAYBE_NavTwiceWithHash) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 }
 
 // Bubble requests should be shown after in-page navigation.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, InPageNavigation) {
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, InPageNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, InPageNavigation) {
 }
 
 // Bubble requests should not be shown when the killswitch is on.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        KillSwitchGeolocation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
 }
 
 // Bubble requests should not be shown when the killswitch is on.
-IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        KillSwitchNotifications) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

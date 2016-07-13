@@ -17,7 +17,6 @@
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_util.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,7 +33,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/permissions/permission_queue_controller.h"
 #else
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 const char* kPermissionsKillSwitchFieldStudy =
@@ -122,8 +121,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     context->GetInfoBarController()->OnPermissionSet(
         id, url, url, update_content_setting, allowed);
 #else
-    PermissionBubbleManager* manager =
-        PermissionBubbleManager::FromWebContents(web_contents());
+    PermissionRequestManager* manager =
+        PermissionRequestManager::FromWebContents(web_contents());
     switch (response) {
       case CONTENT_SETTING_ALLOW:
         manager->Accept();
@@ -314,7 +313,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 #if defined(OS_ANDROID)
     InfoBarService::CreateForWebContents(web_contents());
 #else
-    PermissionBubbleManager::CreateForWebContents(web_contents());
+    PermissionRequestManager::CreateForWebContents(web_contents());
 #endif
   }
 

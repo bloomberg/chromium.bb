@@ -68,6 +68,7 @@
 #include "chrome/browser/memory/tab_manager_web_contents_data.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
@@ -143,7 +144,6 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -1763,10 +1763,10 @@ void Browser::RegisterProtocolHandler(WebContents* web_contents,
     window_->GetLocationBar()->UpdateContentSettingsIcons();
   }
 
-  PermissionBubbleManager* bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents);
-  if (bubble_manager) {
-    bubble_manager->AddRequest(
+  PermissionRequestManager* permission_request_manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  if (permission_request_manager) {
+    permission_request_manager->AddRequest(
         new RegisterProtocolHandlerPermissionRequest(registry, handler,
                                                      url, user_gesture));
   }

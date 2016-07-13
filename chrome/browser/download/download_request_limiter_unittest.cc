@@ -27,8 +27,8 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #else
 #include "chrome/browser/download/download_permission_request.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #endif
 
 using content::WebContents;
@@ -98,10 +98,10 @@ class TestingDelegate {
 class TestingDelegate {
  public:
   void SetUp(WebContents* web_contents) {
-    PermissionBubbleManager::CreateForWebContents(web_contents);
+    PermissionRequestManager::CreateForWebContents(web_contents);
     mock_permission_bubble_factory_.reset(new MockPermissionBubbleFactory(
-        PermissionBubbleManager::FromWebContents(web_contents)));
-    PermissionBubbleManager::FromWebContents(web_contents)
+        PermissionRequestManager::FromWebContents(web_contents)));
+    PermissionRequestManager::FromWebContents(web_contents)
         ->DisplayPendingRequests();
   }
 
@@ -116,19 +116,19 @@ class TestingDelegate {
   int AllowCount() { return mock_permission_bubble_factory_->show_count(); }
 
   void UpdateExpectations(TestingAction action) {
-    // Set expectations for PermissionBubbleManager.
+    // Set expectations for PermissionRequestManager.
     if (action == ACCEPT) {
       mock_permission_bubble_factory_->set_response_type(
-          PermissionBubbleManager::ACCEPT_ALL);
+          PermissionRequestManager::ACCEPT_ALL);
     } else if (action == CANCEL) {
       mock_permission_bubble_factory_->set_response_type(
-          PermissionBubbleManager::DENY_ALL);
+          PermissionRequestManager::DENY_ALL);
     } else if (action == WAIT) {
       mock_permission_bubble_factory_->set_response_type(
-          PermissionBubbleManager::NONE);
+          PermissionRequestManager::NONE);
     } else {
       mock_permission_bubble_factory_->set_response_type(
-          PermissionBubbleManager::DISMISS);
+          PermissionRequestManager::DISMISS);
     }
   }
 

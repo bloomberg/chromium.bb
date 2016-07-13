@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 namespace {
@@ -103,7 +103,7 @@ class MediaStreamDevicePermissionContextTests
 #if defined(OS_ANDROID)
     InfoBarService::CreateForWebContents(web_contents());
 #else
-    PermissionBubbleManager::CreateForWebContents(web_contents());
+    PermissionRequestManager::CreateForWebContents(web_contents());
 #endif
   }
 

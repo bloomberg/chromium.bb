@@ -9,18 +9,18 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_request.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
+class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
  public:
-  PermissionBubbleManagerTest()
+  PermissionRequestManagerTest()
       : ChromeRenderViewHostTestHarness(),
         request1_("test1", PermissionBubbleType::QUOTA),
         request2_("test2", PermissionBubbleType::DOWNLOAD),
@@ -28,14 +28,14 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
                                     GURL("http://www.google.com/some/url")),
         iframe_request_other_domain_("iframe",
                                      GURL("http://www.youtube.com")) {}
-  ~PermissionBubbleManagerTest() override {}
+  ~PermissionRequestManagerTest() override {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     SetContents(CreateTestWebContents());
     NavigateAndCommit(GURL("http://www.google.com"));
 
-    manager_.reset(new PermissionBubbleManager(web_contents()));
+    manager_.reset(new PermissionRequestManager(web_contents()));
     view_factory_.reset(new MockPermissionBubbleFactory(manager_.get()));
   }
 
@@ -62,7 +62,7 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void WaitForFrameLoad() {
-    // PermissionBubbleManager ignores all parameters. Yay?
+    // PermissionRequestManager ignores all parameters. Yay?
     manager_->DocumentLoadedInFrame(NULL);
     base::RunLoop().RunUntilIdle();
   }
@@ -86,11 +86,11 @@ class PermissionBubbleManagerTest : public ChromeRenderViewHostTestHarness {
   MockPermissionBubbleRequest request2_;
   MockPermissionBubbleRequest iframe_request_same_domain_;
   MockPermissionBubbleRequest iframe_request_other_domain_;
-  std::unique_ptr<PermissionBubbleManager> manager_;
+  std::unique_ptr<PermissionRequestManager> manager_;
   std::unique_ptr<MockPermissionBubbleFactory> view_factory_;
 };
 
-TEST_F(PermissionBubbleManagerTest, SingleRequest) {
+TEST_F(PermissionRequestManagerTest, SingleRequest) {
   manager_->AddRequest(&request1_);
   manager_->DisplayPendingRequests();
   WaitForCoalescing();
@@ -103,7 +103,7 @@ TEST_F(PermissionBubbleManagerTest, SingleRequest) {
   EXPECT_TRUE(request1_.granted());
 }
 
-TEST_F(PermissionBubbleManagerTest, SingleRequestViewFirst) {
+TEST_F(PermissionRequestManagerTest, SingleRequestViewFirst) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -116,7 +116,7 @@ TEST_F(PermissionBubbleManagerTest, SingleRequestViewFirst) {
   EXPECT_TRUE(request1_.granted());
 }
 
-TEST_F(PermissionBubbleManagerTest, TwoRequests) {
+TEST_F(PermissionRequestManagerTest, TwoRequests) {
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request2_);
   manager_->DisplayPendingRequests();
@@ -132,7 +132,7 @@ TEST_F(PermissionBubbleManagerTest, TwoRequests) {
   EXPECT_FALSE(request2_.granted());
 }
 
-TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
+TEST_F(PermissionRequestManagerTest, TwoRequestsTabSwitch) {
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request2_);
   manager_->DisplayPendingRequests();
@@ -157,20 +157,20 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsTabSwitch) {
   EXPECT_FALSE(request2_.granted());
 }
 
-TEST_F(PermissionBubbleManagerTest, NoRequests) {
+TEST_F(PermissionRequestManagerTest, NoRequests) {
   manager_->DisplayPendingRequests();
   WaitForCoalescing();
   EXPECT_FALSE(view_factory_->is_visible());
 }
 
-TEST_F(PermissionBubbleManagerTest, NoView) {
+TEST_F(PermissionRequestManagerTest, NoView) {
   manager_->AddRequest(&request1_);
   // Don't display the pending requests.
   WaitForCoalescing();
   EXPECT_FALSE(view_factory_->is_visible());
 }
 
-TEST_F(PermissionBubbleManagerTest, TwoRequestsCoalesce) {
+TEST_F(PermissionRequestManagerTest, TwoRequestsCoalesce) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request2_);
@@ -181,7 +181,7 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsCoalesce) {
   ASSERT_EQ(view_factory_->request_count(), 2);
 }
 
-TEST_F(PermissionBubbleManagerTest, TwoRequestsDoNotCoalesce) {
+TEST_F(PermissionRequestManagerTest, TwoRequestsDoNotCoalesce) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -191,7 +191,7 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsDoNotCoalesce) {
   ASSERT_EQ(view_factory_->request_count(), 1);
 }
 
-TEST_F(PermissionBubbleManagerTest, TwoRequestsShownInTwoBubbles) {
+TEST_F(PermissionRequestManagerTest, TwoRequestsShownInTwoBubbles) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -208,7 +208,7 @@ TEST_F(PermissionBubbleManagerTest, TwoRequestsShownInTwoBubbles) {
   ASSERT_EQ(view_factory_->show_count(), 2);
 }
 
-TEST_F(PermissionBubbleManagerTest, TestAddDuplicateRequest) {
+TEST_F(PermissionRequestManagerTest, TestAddDuplicateRequest) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request2_);
@@ -219,7 +219,7 @@ TEST_F(PermissionBubbleManagerTest, TestAddDuplicateRequest) {
   ASSERT_EQ(view_factory_->request_count(), 2);
 }
 
-TEST_F(PermissionBubbleManagerTest, SequentialRequests) {
+TEST_F(PermissionRequestManagerTest, SequentialRequests) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -238,7 +238,7 @@ TEST_F(PermissionBubbleManagerTest, SequentialRequests) {
   EXPECT_TRUE(request2_.granted());
 }
 
-TEST_F(PermissionBubbleManagerTest, SameRequestRejected) {
+TEST_F(PermissionRequestManagerTest, SameRequestRejected) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&request1_);
@@ -249,7 +249,7 @@ TEST_F(PermissionBubbleManagerTest, SameRequestRejected) {
   ASSERT_EQ(view_factory_->request_count(), 1);
 }
 
-TEST_F(PermissionBubbleManagerTest, DuplicateRequestCancelled) {
+TEST_F(PermissionRequestManagerTest, DuplicateRequestCancelled) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   MockPermissionBubbleRequest dupe_request("test1");
@@ -261,7 +261,7 @@ TEST_F(PermissionBubbleManagerTest, DuplicateRequestCancelled) {
   EXPECT_TRUE(request1_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
+TEST_F(PermissionRequestManagerTest, DuplicateQueuedRequest) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -286,7 +286,7 @@ TEST_F(PermissionBubbleManagerTest, DuplicateQueuedRequest) {
   EXPECT_TRUE(request2_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, ForgetRequestsOnPageNavigation) {
+TEST_F(PermissionRequestManagerTest, ForgetRequestsOnPageNavigation) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -305,7 +305,7 @@ TEST_F(PermissionBubbleManagerTest, ForgetRequestsOnPageNavigation) {
   EXPECT_TRUE(iframe_request_other_domain_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, TestCancelQueued) {
+TEST_F(PermissionRequestManagerTest, TestCancelQueued) {
   manager_->AddRequest(&request1_);
   EXPECT_FALSE(view_factory_->is_visible());
 
@@ -321,7 +321,7 @@ TEST_F(PermissionBubbleManagerTest, TestCancelQueued) {
   ASSERT_EQ(view_factory_->request_count(), 1);
 }
 
-TEST_F(PermissionBubbleManagerTest, TestCancelWhileDialogShown) {
+TEST_F(PermissionRequestManagerTest, TestCancelWhileDialogShown) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -335,7 +335,7 @@ TEST_F(PermissionBubbleManagerTest, TestCancelWhileDialogShown) {
   EXPECT_FALSE(view_factory_->is_visible());
 }
 
-TEST_F(PermissionBubbleManagerTest, TestCancelWhileDialogShownNoUpdate) {
+TEST_F(PermissionRequestManagerTest, TestCancelWhileDialogShownNoUpdate) {
   manager_->DisplayPendingRequests();
   view_factory_->SetCanUpdateUi(false);
   manager_->AddRequest(&request1_);
@@ -350,7 +350,7 @@ TEST_F(PermissionBubbleManagerTest, TestCancelWhileDialogShownNoUpdate) {
   Closing();
 }
 
-TEST_F(PermissionBubbleManagerTest, TestCancelPendingRequest) {
+TEST_F(PermissionRequestManagerTest, TestCancelPendingRequest) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -365,7 +365,7 @@ TEST_F(PermissionBubbleManagerTest, TestCancelPendingRequest) {
   EXPECT_TRUE(request2_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, MainFrameNoRequestIFrameRequest) {
+TEST_F(PermissionRequestManagerTest, MainFrameNoRequestIFrameRequest) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&iframe_request_same_domain_);
   WaitForCoalescing();
@@ -376,7 +376,7 @@ TEST_F(PermissionBubbleManagerTest, MainFrameNoRequestIFrameRequest) {
   EXPECT_TRUE(iframe_request_same_domain_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, MainFrameAndIFrameRequestSameDomain) {
+TEST_F(PermissionRequestManagerTest, MainFrameAndIFrameRequestSameDomain) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&iframe_request_same_domain_);
@@ -391,7 +391,7 @@ TEST_F(PermissionBubbleManagerTest, MainFrameAndIFrameRequestSameDomain) {
   EXPECT_FALSE(view_factory_->is_visible());
 }
 
-TEST_F(PermissionBubbleManagerTest, MainFrameAndIFrameRequestOtherDomain) {
+TEST_F(PermissionRequestManagerTest, MainFrameAndIFrameRequestOtherDomain) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   manager_->AddRequest(&iframe_request_other_domain_);
@@ -407,7 +407,7 @@ TEST_F(PermissionBubbleManagerTest, MainFrameAndIFrameRequestOtherDomain) {
   EXPECT_TRUE(iframe_request_other_domain_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, IFrameRequestWhenMainRequestVisible) {
+TEST_F(PermissionRequestManagerTest, IFrameRequestWhenMainRequestVisible) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
   WaitForCoalescing();
@@ -425,7 +425,7 @@ TEST_F(PermissionBubbleManagerTest, IFrameRequestWhenMainRequestVisible) {
   EXPECT_TRUE(iframe_request_same_domain_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest,
+TEST_F(PermissionRequestManagerTest,
        IFrameRequestOtherDomainWhenMainRequestVisible) {
   manager_->DisplayPendingRequests();
   manager_->AddRequest(&request1_);
@@ -442,7 +442,7 @@ TEST_F(PermissionBubbleManagerTest,
   EXPECT_TRUE(iframe_request_other_domain_.finished());
 }
 
-TEST_F(PermissionBubbleManagerTest, RequestsDontNeedUserGesture) {
+TEST_F(PermissionRequestManagerTest, RequestsDontNeedUserGesture) {
   manager_->DisplayPendingRequests();
   WaitForFrameLoad();
   WaitForCoalescing();
@@ -454,7 +454,7 @@ TEST_F(PermissionBubbleManagerTest, RequestsDontNeedUserGesture) {
   EXPECT_TRUE(view_factory_->is_visible());
 }
 
-TEST_F(PermissionBubbleManagerTest, UMAForSimpleAcceptedBubble) {
+TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedBubble) {
   base::HistogramTester histograms;
 
   manager_->AddRequest(&request1_);
@@ -474,7 +474,7 @@ TEST_F(PermissionBubbleManagerTest, UMAForSimpleAcceptedBubble) {
       static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA), 1);
 }
 
-TEST_F(PermissionBubbleManagerTest, UMAForSimpleDeniedBubble) {
+TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubble) {
   base::HistogramTester histograms;
 
   manager_->AddRequest(&request1_);
@@ -492,7 +492,7 @@ TEST_F(PermissionBubbleManagerTest, UMAForSimpleDeniedBubble) {
 // This code path (calling Accept on a non-merged bubble, with no accepted
 // permission) would never be used in actual Chrome, but its still tested for
 // completeness.
-TEST_F(PermissionBubbleManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
+TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
   base::HistogramTester histograms;
 
   manager_->AddRequest(&request1_);
@@ -508,7 +508,7 @@ TEST_F(PermissionBubbleManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
       static_cast<base::HistogramBase::Sample>(PermissionBubbleType::QUOTA), 1);
 }
 
-TEST_F(PermissionBubbleManagerTest, UMAForMergedAcceptedBubble) {
+TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
   base::HistogramTester histograms;
 
   manager_->AddRequest(&request1_);
@@ -549,7 +549,7 @@ TEST_F(PermissionBubbleManagerTest, UMAForMergedAcceptedBubble) {
       1);
 }
 
-TEST_F(PermissionBubbleManagerTest, UMAForMergedMixedBubble) {
+TEST_F(PermissionRequestManagerTest, UMAForMergedMixedBubble) {
   base::HistogramTester histograms;
 
   manager_->AddRequest(&request1_);
@@ -577,7 +577,7 @@ TEST_F(PermissionBubbleManagerTest, UMAForMergedMixedBubble) {
       1);
 }
 
-TEST_F(PermissionBubbleManagerTest, UMAForMergedDeniedBubble) {
+TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
   base::HistogramTester histograms;
 
   manager_->AddRequest(&request1_);

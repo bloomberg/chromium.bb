@@ -8,8 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 
 class Browser;
 class PermissionBubbleView;
@@ -19,10 +18,10 @@ class MockPermissionBubbleView;
 // test the bubble manager logic. Should not be used for anything that requires
 // actual UI.
 // See example usage in
-// chrome/browser/ui/website_settings/permission_bubble_manager_unittest.cc
+// chrome/browser/permissions/permission_request_manager_unittest.cc
 class MockPermissionBubbleFactory {
  public:
-  explicit MockPermissionBubbleFactory(PermissionBubbleManager* manager);
+  explicit MockPermissionBubbleFactory(PermissionRequestManager* manager);
   ~MockPermissionBubbleFactory();
 
   // Create method called by the PBM to show a bubble.
@@ -34,7 +33,7 @@ class MockPermissionBubbleFactory {
 
   void DocumentOnLoadCompletedInMainFrame();
 
-  void set_response_type(PermissionBubbleManager::AutoResponseType type) {
+  void set_response_type(PermissionRequestManager::AutoResponseType type) {
     response_type_ = type;
   }
 
@@ -65,12 +64,12 @@ class MockPermissionBubbleFactory {
   int requests_count_;
   int total_requests_count_;
   std::vector<MockPermissionBubbleView*> views_;
-  PermissionBubbleManager::AutoResponseType response_type_;
+  PermissionRequestManager::AutoResponseType response_type_;
 
   base::Closure show_bubble_quit_closure_;
 
   // The bubble manager that will be associated with this factory.
-  PermissionBubbleManager* manager_;
+  PermissionRequestManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPermissionBubbleFactory);
 };

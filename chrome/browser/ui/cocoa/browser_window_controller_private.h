@@ -10,7 +10,7 @@
 #import "chrome/browser/ui/cocoa/fullscreen_toolbar_controller.h"
 
 @class BrowserWindowLayout;
-class PermissionBubbleManager;
+class PermissionRequestManager;
 
 namespace content {
 class WebContents;
@@ -176,7 +176,7 @@ class WebContents;
 - (void)resetCustomAppKitFullscreenVariables;
 
 - (content::WebContents*)webContents;
-- (PermissionBubbleManager*)permissionBubbleManager;
+- (PermissionRequestManager*)permissionRequestManager;
 
 // Hides or unhides any displayed modal sheet for fullscreen transition.
 // Modal sheets should be hidden at the beginning and then shown at the end.

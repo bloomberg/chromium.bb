@@ -63,6 +63,7 @@
 #include "components/offline_pages/offline_page_feature.h"
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
@@ -71,7 +72,6 @@
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "components/pdf/browser/pdf_web_contents_helper.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
@@ -202,7 +202,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
       web_contents, std::unique_ptr<pdf::PDFWebContentsHelperClient>(
                         new ChromePDFWebContentsHelperClient()));
-  PermissionBubbleManager::CreateForWebContents(web_contents);
+  PermissionRequestManager::CreateForWebContents(web_contents);
   PluginObserver::CreateForWebContents(web_contents);
   SadTabHelper::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);

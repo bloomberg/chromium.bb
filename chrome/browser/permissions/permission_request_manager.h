@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_MANAGER_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_MANAGER_H_
+#ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_MANAGER_H_
+#define CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_MANAGER_H_
 
 #include <unordered_map>
 #include <vector>
@@ -24,13 +24,13 @@ class PermissionBubbleRequest;
 // visible UI action at all. (In that case, the request will be immediately
 // informed that the permission request failed.)
 //
-// A PermissionBubbleManager is associated with a particular WebContents.
+// A PermissionRequestManager is associated with a particular WebContents.
 // Requests attached to a particular WebContents' PBM must outlive it.
 //
-// The PermissionBubbleManager should be addressed on the UI thread.
-class PermissionBubbleManager
+// The PermissionRequestManager should be addressed on the UI thread.
+class PermissionRequestManager
     : public content::WebContentsObserver,
-      public content::WebContentsUserData<PermissionBubbleManager>,
+      public content::WebContentsUserData<PermissionRequestManager>,
       public PermissionBubbleView::Delegate {
  public:
   class Observer {
@@ -46,11 +46,11 @@ class PermissionBubbleManager
     DISMISS
   };
 
-  ~PermissionBubbleManager() override;
+  ~PermissionRequestManager() override;
 
   // Adds a new request to the permission bubble. Ownership of the request
   // remains with the caller. The caller must arrange for the request to
-  // outlive the PermissionBubbleManager. If a bubble is visible when this
+  // outlive the PermissionRequestManager. If a bubble is visible when this
   // call is made, the request will be queued up and shown after the current
   // bubble closes. A request with message text identical to an outstanding
   // request will be merged with the outstanding request, and will have the same
@@ -70,7 +70,7 @@ class PermissionBubbleManager
   void HideBubble();
 
   // Will show a permission bubble if there is a pending permission request on
-  // the web contents that the PermissionBubbleManager belongs to.
+  // the web contents that the PermissionRequestManager belongs to.
   void DisplayPendingRequests();
 
   // Will reposition the bubble (may change parent if necessary).
@@ -102,12 +102,12 @@ class PermissionBubbleManager
   friend class GeolocationPermissionContextTests;
   friend class MockPermissionBubbleFactory;
   friend class MockPermissionBubbleView;
-  friend class PermissionBubbleManagerTest;
+  friend class PermissionRequestManagerTest;
   friend class PermissionContextBaseTests;
-  friend class content::WebContentsUserData<PermissionBubbleManager>;
+  friend class content::WebContentsUserData<PermissionRequestManager>;
   FRIEND_TEST_ALL_PREFIXES(DownloadTest, TestMultipleDownloadsBubble);
 
-  explicit PermissionBubbleManager(content::WebContents* web_contents);
+  explicit PermissionRequestManager(content::WebContents* web_contents);
 
   // WebContentsObserver:
   void DidNavigateMainFrame(
@@ -188,7 +188,7 @@ class PermissionBubbleManager
   base::ObserverList<Observer> observer_list_;
   AutoResponseType auto_response_for_test_;
 
-  base::WeakPtrFactory<PermissionBubbleManager> weak_factory_;
+  base::WeakPtrFactory<PermissionRequestManager> weak_factory_;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_PERMISSION_BUBBLE_MANAGER_H_
+#endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_REQUEST_MANAGER_H_

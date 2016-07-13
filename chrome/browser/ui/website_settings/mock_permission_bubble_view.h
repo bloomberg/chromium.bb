@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_view.h"
 
 class MockPermissionBubbleFactory;
-class PermissionBubbleManager;
+class PermissionRequestManager;
 
 // Provides a skeleton class for unit and browser testing when trying to test
 // the bubble manager logic. Should not be used for anything that requires
@@ -32,10 +32,10 @@ class MockPermissionBubbleView : public PermissionBubbleView {
   friend class MockPermissionBubbleFactory;
 
   MockPermissionBubbleView(MockPermissionBubbleFactory* factory,
-                           PermissionBubbleManager* manager);
+                           PermissionRequestManager* manager);
 
   MockPermissionBubbleFactory* factory_;
-  PermissionBubbleManager* manager_;
+  PermissionRequestManager* manager_;
   bool can_update_ui_;
   bool is_visible_;
 };

@@ -22,7 +22,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/infobars/infobar_service.h"
 #else
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 namespace {
@@ -80,7 +80,7 @@ class MidiPermissionContextTests : public ChromeRenderViewHostTestHarness {
 #if defined(OS_ANDROID)
     InfoBarService::CreateForWebContents(web_contents());
 #else
-    PermissionBubbleManager::CreateForWebContents(web_contents());
+    PermissionRequestManager::CreateForWebContents(web_contents());
 #endif
   }
 

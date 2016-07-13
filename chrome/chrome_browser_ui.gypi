@@ -1851,8 +1851,6 @@
       'browser/ui/user_manager.h',
       'browser/ui/website_settings/chooser_bubble_delegate.cc',
       'browser/ui/website_settings/chooser_bubble_delegate.h',
-      'browser/ui/website_settings/permission_bubble_manager.cc',
-      'browser/ui/website_settings/permission_bubble_manager.h',
       'browser/ui/website_settings/permission_bubble_view.h',
       'browser/ui/website_settings/permission_menu_model.cc',
       'browser/ui/website_settings/permission_menu_model.h',

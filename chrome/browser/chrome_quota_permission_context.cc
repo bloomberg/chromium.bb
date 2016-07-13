@@ -31,7 +31,7 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #else
-#include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 namespace {
@@ -270,10 +270,10 @@ void ChromeQuotaPermissionContext::RequestQuotaPermission(
     return;
   }
 #else
-  PermissionBubbleManager* bubble_manager =
-      PermissionBubbleManager::FromWebContents(web_contents);
-  if (bubble_manager) {
-    bubble_manager->AddRequest(
+  PermissionRequestManager* permission_request_manager =
+      PermissionRequestManager::FromWebContents(web_contents);
+  if (permission_request_manager) {
+    permission_request_manager->AddRequest(
         new QuotaPermissionRequest(this, params.origin_url, callback));
     return;
   }
