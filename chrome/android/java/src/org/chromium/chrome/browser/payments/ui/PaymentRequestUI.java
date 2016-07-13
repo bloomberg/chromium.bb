@@ -248,6 +248,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private boolean mIsProcessingPayClicked;
     private boolean mIsClientClosing;
     private boolean mIsClientCheckingSelection;
+    private boolean mIsShowingSpinner;
 
     private ShoppingCart mShoppingCart;
     private SectionInformation mPaymentMethodSectionInformation;
@@ -674,28 +675,32 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     private void processPayButton() {
+        assert !mIsShowingSpinner;
         mIsProcessingPayClicked = true;
 
-        mRequestView.removeView(mPaymentContainer);
-        mRequestView.removeView(mButtonBar);
-        mRequestView.addView(mSpinnyLayout);
-
-        // Turn the bottom sheet back into a collapsed bottom sheet showing only the spinner.
-        // TODO(dfalcantara): Animate this: https://crbug.com/621955
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mRequestView.getLayoutParams();
-        params.width = LayoutParams.MATCH_PARENT;
-        params.height = LayoutParams.WRAP_CONTENT;
-        params.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
-        mRequestView.requestLayout();
-
-        boolean showSpinner = mClient.onPayClicked(
+        boolean shouldShowSpinner = mClient.onPayClicked(
                 mShippingAddressSectionInformation == null
                         ? null : mShippingAddressSectionInformation.getSelectedItem(),
                 mShippingOptionsSectionInformation == null
                         ? null : mShippingOptionsSectionInformation.getSelectedItem(),
                 mPaymentMethodSectionInformation.getSelectedItem());
 
-        if (!showSpinner) mDialog.hide();
+        if (shouldShowSpinner) {
+            changeSpinnerVisibility(true);
+        } else {
+            mDialog.hide();
+        }
+    }
+
+    /**
+     * Called when user cancelled out of the UI that was shown after they clicked [PAY] button.
+     */
+    public void onPayButtonProcessingCancelled() {
+        assert mIsProcessingPayClicked;
+        mIsProcessingPayClicked = false;
+        changeSpinnerVisibility(false);
+        mDialog.show();
+        updatePayButtonEnabled();
     }
 
     /**
@@ -704,8 +709,34 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      */
     public void showProcessingMessage() {
         assert mIsProcessingPayClicked;
-        mIsProcessingPayClicked = false;
+        changeSpinnerVisibility(true);
         mDialog.show();
+    }
+
+    private void changeSpinnerVisibility(boolean showSpinner) {
+        if (mIsShowingSpinner == showSpinner) return;
+        mIsShowingSpinner = showSpinner;
+
+        if (showSpinner) {
+            mRequestView.removeView(mPaymentContainer);
+            mRequestView.removeView(mButtonBar);
+            mRequestView.addView(mSpinnyLayout);
+
+            // Turn the bottom sheet back into a collapsed bottom sheet showing only the spinner.
+            // TODO(dfalcantara): Animate this: https://crbug.com/621955
+            FrameLayout.LayoutParams params =
+                    (FrameLayout.LayoutParams) mRequestView.getLayoutParams();
+            params.width = LayoutParams.MATCH_PARENT;
+            params.height = LayoutParams.WRAP_CONTENT;
+            params.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
+            mRequestView.requestLayout();
+        } else {
+            mRequestView.removeView(mSpinnyLayout);
+            mRequestView.addView(mPaymentContainer);
+            mRequestView.addView(mButtonBar);
+
+            if (mIsShowingEditDialog) expand(mSelectedSection);
+        }
     }
 
     private void updatePayButtonEnabled() {

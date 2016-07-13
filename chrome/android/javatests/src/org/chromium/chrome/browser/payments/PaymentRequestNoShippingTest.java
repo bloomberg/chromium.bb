@@ -62,18 +62,21 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
     }
 
     @MediumTest
-    public void testPayAndCancelDialog() throws InterruptedException, ExecutionException,
-            TimeoutException {
+    public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, mResultReady);
-        clickAndWait(R.id.ok_button, mDismissed);
-        expectResultContains(new String[] {"Request cancelled"});
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
+                "123"});
     }
 
     @MediumTest
-    public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
+    public void testCancelUnmaskAndRetry()
+            throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_NEGATIVE, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);

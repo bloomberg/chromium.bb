@@ -859,8 +859,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onInstrumentDetailsError() {
-        disconnectFromClientWithDebugMessage("Failed to retrieve payment instrument details");
-        closeUI(false);
+        mUI.onPayButtonProcessingCancelled();
+        mPaymentAppRunning = false;
     }
 
     private void disconnectFromClientWithDebugMessage(String debugMessage) {
