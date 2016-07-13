@@ -1016,6 +1016,8 @@
             'tools/cert_verify_tool/cert_verify_tool_util.h',
             'tools/cert_verify_tool/verify_using_cert_verify_proc.cc',
             'tools/cert_verify_tool/verify_using_cert_verify_proc.h',
+            'tools/cert_verify_tool/verify_using_path_builder.cc',
+            'tools/cert_verify_tool/verify_using_path_builder.h',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],

@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "net/tools/cert_verify_tool/cert_verify_tool_util.h"
 #include "net/tools/cert_verify_tool/verify_using_cert_verify_proc.h"
+#include "net/tools/cert_verify_tool/verify_using_path_builder.h"
 
 namespace {
 
@@ -24,6 +25,13 @@ void PrintUsage(const char* argv0) {
   std::cerr << " --intermediates=<certs path>\n";
   std::cerr << " <certs path> should be a file containing a single DER cert or "
                "one or more PEM CERTIFICATE blocks.\n";
+  std::cerr << " --time=<time>\n";
+  std::cerr << " Use <time> instead of the current system time. <time> is "
+               "interpreted in local time if a timezone is not specified.\n";
+  std::cerr << " Many common formats are supported, such as:\n";
+  std::cerr << "  1994-11-15 12:45:26 GMT\n";
+  std::cerr << "  Tue, 15 Nov 1994 12:45:26 GMT\n";
+  std::cerr << "  Nov 15 12:45:26 1994 GMT\n";
   std::cerr << " --dump=<file prefix>\n";
   std::cerr << " Dumps the verified chain to PEM files starting with <file "
                "prefix>.\n";
@@ -59,6 +67,17 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  base::Time verify_time;
+  std::string time_flag = command_line.GetSwitchValueASCII("time");
+  if (!time_flag.empty()) {
+    if (!base::Time::FromString(time_flag.c_str(), &verify_time)) {
+      std::cerr << "Error parsing --time flag\n";
+      return 1;
+    }
+  } else {
+    verify_time = base::Time::Now();
+  }
+
   base::FilePath roots_path = command_line.GetSwitchValuePath("roots");
   base::FilePath intermediates_path =
       command_line.GetSwitchValuePath("intermediates");
@@ -82,9 +101,20 @@ int main(int argc, char** argv) {
   }
 
   std::cout << "CertVerifyProc:\n";
-  bool verify_ok = VerifyUsingCertVerifyProc(target_der_cert, hostname,
-                                             intermediate_der_certs,
-                                             root_der_certs, dump_prefix_path);
+  bool cert_verify_proc_ok = true;
+  if (!time_flag.empty()) {
+    std::cerr << "ERROR: --time is not supported with CertVerifyProc, "
+                 "skipping.\n";
+  } else {
+    cert_verify_proc_ok = VerifyUsingCertVerifyProc(
+        target_der_cert, hostname, intermediate_der_certs, root_der_certs,
+        dump_prefix_path);
+  }
 
-  return verify_ok ? 0 : 1;
+  std::cout << "\nCertPathBuilder:\n";
+  bool path_builder_ok =
+      VerifyUsingPathBuilder(target_der_cert, intermediate_der_certs,
+                             root_der_certs, verify_time, dump_prefix_path);
+
+  return (cert_verify_proc_ok && path_builder_ok) ? 0 : 1;
 }
