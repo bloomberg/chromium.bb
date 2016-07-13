@@ -71,6 +71,8 @@ private:
     bool isLocalFrame() const override { return false; }
     bool isRemoteFrame() const override { return true; }
 
+    void detachChildren();
+
     Member<RemoteFrameView> m_view;
     Member<RemoteSecurityContext> m_securityContext;
     Member<RemoteDOMWindow> m_domWindow;

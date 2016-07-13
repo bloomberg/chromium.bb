@@ -196,4 +196,15 @@ void RemoteFrame::advanceFocus(WebFocusType type, LocalFrame* source)
     client()->advanceFocus(type, source);
 }
 
+void RemoteFrame::detachChildren()
+{
+    using FrameVector = HeapVector<Member<Frame>>;
+    FrameVector childrenToDetach;
+    childrenToDetach.reserveCapacity(tree().childCount());
+    for (Frame* child = tree().firstChild(); child; child = child->tree().nextSibling())
+        childrenToDetach.append(child);
+    for (const auto& child : childrenToDetach)
+        child->detach(FrameDetachType::Remove);
+}
+
 } // namespace blink

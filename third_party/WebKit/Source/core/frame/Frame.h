@@ -81,7 +81,6 @@ public:
     virtual void reload(FrameLoadType, ClientRedirectPolicy) = 0;
 
     virtual void detach(FrameDetachType);
-    void detachChildren();
     void disconnectOwnerElement();
     virtual bool shouldClose() = 0;
 

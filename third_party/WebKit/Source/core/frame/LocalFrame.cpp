@@ -31,6 +31,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/InstrumentingAgents.h"
+#include "core/dom/ChildFrameDisconnector.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/editing/EditingUtilities.h"
@@ -459,6 +460,14 @@ bool LocalFrame::shouldClose()
     // TODO(dcheng): This should be fixed to dispatch beforeunload events to
     // both local and remote frames.
     return m_loader.shouldClose();
+}
+
+void LocalFrame::detachChildren()
+{
+    DCHECK(m_loader.stateMachine()->creatingInitialEmptyDocument() || document());
+
+    if (Document* document = this->document())
+        ChildFrameDisconnector(*document).disconnect();
 }
 
 void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow)
