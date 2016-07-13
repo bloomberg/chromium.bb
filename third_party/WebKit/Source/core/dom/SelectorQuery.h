@@ -79,7 +79,6 @@ private:
     void executeSlowTraversingShadowTree(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
     template <typename SelectorQueryTrait>
     void execute(ContainerNode& rootNode, typename SelectorQueryTrait::OutputType&) const;
-    const CSSSelector* selectorForIdLookup(const CSSSelector&) const;
 
     Vector<const CSSSelector*> m_selectors;
     bool m_usesDeepCombinatorOrShadowPseudo : 1;

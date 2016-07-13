@@ -27,6 +27,7 @@
 #include "core/dom/SelectorQuery.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/HTMLNames.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
@@ -40,6 +41,8 @@
 #include <memory>
 
 namespace blink {
+
+using namespace HTMLNames;
 
 struct SingleElementSelectorQueryTrait {
     typedef Element* OutputType;
@@ -444,10 +447,16 @@ void SelectorDataList::executeSlowTraversingShadowTree(ContainerNode& rootNode, 
     }
 }
 
-const CSSSelector* SelectorDataList::selectorForIdLookup(const CSSSelector& firstSelector) const
+static const CSSSelector* selectorForIdLookup(const CSSSelector& firstSelector)
 {
     for (const CSSSelector* selector = &firstSelector; selector; selector = selector->tagHistory()) {
         if (selector->match() == CSSSelector::Id)
+            return selector;
+        // We only use the fast path when in standards mode where #id selectors
+        // are case sensitive, so we need the same behavior for [id=value].
+        if (selector->match() == CSSSelector::AttributeExact
+            && selector->attribute() == idAttr
+            && selector->attributeMatch() == CSSSelector::CaseSensitive)
             return selector;
         if (selector->relation() != CSSSelector::SubSelector)
             break;
@@ -473,11 +482,12 @@ void SelectorDataList::execute(ContainerNode& rootNode, typename SelectorQueryTr
     }
 
     DCHECK_EQ(m_selectors.size(), 1u);
+    DCHECK(!rootNode.document().inQuirksMode());
 
     const CSSSelector& selector = *m_selectors[0];
     const CSSSelector& firstSelector = selector;
 
-    // Fast path for querySelector*('#id'), querySelector*('tag#id').
+    // Fast path for querySelector*('#id'), querySelector*('tag#id'), querySelector*('tag[id=example]').
     if (const CSSSelector* idSelector = selectorForIdLookup(firstSelector)) {
         const AtomicString& idToMatch = idSelector->value();
         if (rootNode.treeScope().containsMultipleElementsWithId(idToMatch)) {
