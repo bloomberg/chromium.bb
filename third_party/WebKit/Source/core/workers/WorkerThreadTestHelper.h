@@ -61,7 +61,6 @@ public:
     }
     MOCK_METHOD1(reportConsoleMessage, void(ConsoleMessage*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
-    MOCK_METHOD0(postWorkerConsoleAgentEnabled, void());
     MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
     MOCK_METHOD1(workerGlobalScopeStarted, void(WorkerGlobalScope*));
     MOCK_METHOD0(workerGlobalScopeClosed, void());

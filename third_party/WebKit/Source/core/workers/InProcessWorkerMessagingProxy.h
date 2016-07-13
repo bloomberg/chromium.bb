@@ -70,7 +70,6 @@ public:
     void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>);
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, std::unique_ptr<SourceLocation>);
     void postMessageToPageInspector(const String&);
-    void postWorkerConsoleAgentEnabled();
     void confirmMessageFromWorkerObject(bool hasPendingActivity);
     void reportPendingActivity(bool hasPendingActivity);
     void workerThreadTerminated();

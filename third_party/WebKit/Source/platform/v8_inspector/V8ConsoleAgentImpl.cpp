@@ -35,7 +35,6 @@ void V8ConsoleAgentImpl::enable(ErrorString* errorString)
     m_enabled = true;
     m_session->debugger()->enableStackCapturingIfNeeded();
     reportAllMessages();
-    m_session->client()->consoleEnabled();
 }
 
 void V8ConsoleAgentImpl::disable(ErrorString* errorString)

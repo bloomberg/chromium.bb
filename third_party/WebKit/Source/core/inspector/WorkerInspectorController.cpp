@@ -96,11 +96,6 @@ void WorkerInspectorController::resumeStartup()
     m_workerGlobalScope->thread()->stopRunningDebuggerTasksOnPauseOnWorkerThread();
 }
 
-void WorkerInspectorController::consoleEnabled()
-{
-    m_workerGlobalScope->thread()->workerReportingProxy().postWorkerConsoleAgentEnabled();
-}
-
 void WorkerInspectorController::sendProtocolMessage(int sessionId, int callId, const String& response, const String& state)
 {
     // Worker messages are wrapped, no need to handle callId or state.

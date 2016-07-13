@@ -295,7 +295,8 @@ void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage
         consoleMessage->location()->columnNumber(),
         consoleMessage->location()->cloneStackTrace(),
         consoleMessage->location()->scriptId(),
-        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
+        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()),
+        consoleMessage->workerId());
 }
 
 bool WorkerGlobalScope::isContextThread() const

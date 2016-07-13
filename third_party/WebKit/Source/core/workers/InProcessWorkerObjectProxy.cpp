@@ -85,13 +85,6 @@ void InProcessWorkerObjectProxy::postMessageToPageInspector(const String& messag
         toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postMessageToPageInspector, crossThreadUnretained(m_messagingProxy), message));
 }
 
-void InProcessWorkerObjectProxy::postWorkerConsoleAgentEnabled()
-{
-    ExecutionContext* context = getExecutionContext();
-    if (context->isDocument())
-        toDocument(context)->postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::postWorkerConsoleAgentEnabled, crossThreadUnretained(m_messagingProxy)));
-}
-
 void InProcessWorkerObjectProxy::workerGlobalScopeClosed()
 {
     getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::terminateWorkerGlobalScope, crossThreadUnretained(m_messagingProxy)));

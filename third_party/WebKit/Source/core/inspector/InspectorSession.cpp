@@ -163,11 +163,6 @@ void InspectorSession::profilingStopped()
     m_client->profilingStopped();
 }
 
-void InspectorSession::consoleEnabled()
-{
-    m_client->consoleEnabled();
-}
-
 void InspectorSession::consoleCleared()
 {
     m_client->consoleCleared();

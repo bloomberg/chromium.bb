@@ -37,7 +37,6 @@ public:
     void workerThreadCreated(Document*, WorkerThread*, const KURL&);
     void workerThreadTerminated();
     void dispatchMessageFromWorker(const String&);
-    void workerConsoleAgentEnabled();
     void addConsoleMessageFromWorker(ConsoleMessage*);
 
     void connectToInspector(PageInspector*);
@@ -60,8 +59,6 @@ private:
     PageInspector* m_pageInspector;
     String m_url;
     String m_inspectorId;
-    HeapDeque<Member<ConsoleMessage>> m_consoleMessages;
-    bool m_ignoreConsoleMessages;
 };
 
 } // namespace blink

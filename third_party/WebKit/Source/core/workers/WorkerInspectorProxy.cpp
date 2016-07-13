@@ -20,8 +20,6 @@ namespace blink {
 
 namespace {
 
-static const unsigned maxConsoleMessageCount = 1000;
-
 static WorkerInspectorProxy::WorkerInspectorProxySet& inspectorProxies()
 {
     DEFINE_STATIC_LOCAL(WorkerInspectorProxy::WorkerInspectorProxySet, proxies, ());
@@ -39,7 +37,6 @@ WorkerInspectorProxy::WorkerInspectorProxy()
     : m_workerThread(nullptr)
     , m_document(nullptr)
     , m_pageInspector(nullptr)
-    , m_ignoreConsoleMessages(false)
 {
 }
 
@@ -85,13 +82,6 @@ void WorkerInspectorProxy::workerThreadTerminated()
         InspectorInstrumentation::workerTerminated(m_document, this);
     }
 
-    LocalFrame* frame = m_document ? m_document->frame() : nullptr;
-    if (frame) {
-        for (ConsoleMessage* message : m_consoleMessages)
-            frame->console().adoptWorkerMessage(message);
-        m_consoleMessages.clear();
-    }
-
     m_workerThread = nullptr;
     m_pageInspector = nullptr;
     m_document = nullptr;
@@ -103,22 +93,10 @@ void WorkerInspectorProxy::dispatchMessageFromWorker(const String& message)
         m_pageInspector->dispatchMessageFromWorker(this, message);
 }
 
-void WorkerInspectorProxy::workerConsoleAgentEnabled()
-{
-    m_ignoreConsoleMessages = true;
-    m_consoleMessages.clear();
-}
-
 void WorkerInspectorProxy::addConsoleMessageFromWorker(ConsoleMessage* consoleMessage)
 {
-    if (!m_ignoreConsoleMessages) {
-        DCHECK(m_consoleMessages.size() <= maxConsoleMessageCount);
-        if (m_consoleMessages.size() == maxConsoleMessageCount)
-            m_consoleMessages.removeFirst();
-        m_consoleMessages.append(consoleMessage);
-    }
     if (LocalFrame* frame = m_document->frame())
-        frame->console().reportWorkerMessage(consoleMessage);
+        frame->console().addMessageFromWorker(consoleMessage, m_inspectorId);
 }
 
 static void connectToWorkerGlobalScopeInspectorTask(WorkerThread* workerThread)
@@ -172,7 +150,6 @@ void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId)
 DEFINE_TRACE(WorkerInspectorProxy)
 {
     visitor->trace(m_document);
-    visitor->trace(m_consoleMessages);
 }
 
 } // namespace blink

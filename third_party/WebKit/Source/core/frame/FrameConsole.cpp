@@ -69,7 +69,8 @@ bool FrameConsole::addMessageToStorage(ConsoleMessage* consoleMessage)
         consoleMessage->location()->columnNumber(),
         consoleMessage->location()->cloneStackTrace(),
         consoleMessage->location()->scriptId(),
-        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
+        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()),
+        consoleMessage->workerId());
 }
 
 void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
@@ -95,14 +96,10 @@ void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
     frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location()->lineNumber(), url, stackTrace);
 }
 
-void FrameConsole::reportWorkerMessage(ConsoleMessage* consoleMessage)
+void FrameConsole::addMessageFromWorker(ConsoleMessage* consoleMessage, const String& workerId)
 {
     reportMessageToClient(consoleMessage);
-}
-
-void FrameConsole::adoptWorkerMessage(ConsoleMessage* consoleMessage)
-{
-    addMessageToStorage(consoleMessage);
+    addMessageToStorage(ConsoleMessage::createFromWorker(consoleMessage->level(), consoleMessage->message(), consoleMessage->location() ? consoleMessage->location()->clone() : nullptr, workerId));
 }
 
 void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsigned long requestIdentifier, const ResourceResponse& response)

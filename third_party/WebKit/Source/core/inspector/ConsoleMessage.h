@@ -29,6 +29,9 @@ public:
     // This method captures current location.
     static ConsoleMessage* createForRequest(MessageSource, MessageLevel, const String& message, const String& url, unsigned long requestIdentifier);
 
+    // This creates message from WorkerMessageSource.
+    static ConsoleMessage* createFromWorker(MessageLevel, const String& message, std::unique_ptr<SourceLocation>, const String& workerId);
+
     ~ConsoleMessage();
 
     SourceLocation* location() const;
@@ -37,6 +40,7 @@ public:
     MessageSource source() const;
     MessageLevel level() const;
     const String& message() const;
+    const String& workerId() const;
 
     DECLARE_TRACE();
 
@@ -49,6 +53,7 @@ private:
     std::unique_ptr<SourceLocation> m_location;
     unsigned long m_requestIdentifier;
     double m_timestamp;
+    String m_workerId;
 };
 
 } // namespace blink

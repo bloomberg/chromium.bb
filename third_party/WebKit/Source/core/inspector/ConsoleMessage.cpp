@@ -18,6 +18,7 @@ ConsoleMessage* ConsoleMessage::createForRequest(MessageSource source, MessageLe
     return consoleMessage;
 }
 
+// static
 ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location)
 {
     return new ConsoleMessage(source, level, message, std::move(location));
@@ -27,6 +28,14 @@ ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level,
 ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message)
 {
     return ConsoleMessage::create(source, level, message, SourceLocation::capture());
+}
+
+// static
+ConsoleMessage* ConsoleMessage::createFromWorker(MessageLevel level, const String& message, std::unique_ptr<SourceLocation> location, const String& workerId)
+{
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(WorkerMessageSource, level, message, std::move(location));
+    consoleMessage->m_workerId = workerId;
+    return consoleMessage;
 }
 
 ConsoleMessage::ConsoleMessage(MessageSource source,
@@ -74,6 +83,11 @@ MessageLevel ConsoleMessage::level() const
 const String& ConsoleMessage::message() const
 {
     return m_message;
+}
+
+const String& ConsoleMessage::workerId() const
+{
+    return m_workerId;
 }
 
 DEFINE_TRACE(ConsoleMessage)

@@ -51,11 +51,10 @@ public:
     }
 
     void addMessage(ConsoleMessage*);
+    void addMessageFromWorker(ConsoleMessage*, const String& workerId);
+
     bool addMessageToStorage(ConsoleMessage*);
     void reportMessageToClient(ConsoleMessage*);
-
-    void reportWorkerMessage(ConsoleMessage*);
-    void adoptWorkerMessage(ConsoleMessage*);
 
     void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);
 

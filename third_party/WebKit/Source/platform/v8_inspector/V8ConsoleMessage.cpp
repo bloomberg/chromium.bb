@@ -30,6 +30,7 @@ String16 messageSourceValue(MessageSource source)
     case SecurityMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Security;
     case OtherMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Other;
     case DeprecationMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Deprecation;
+    case WorkerMessageSource: return protocol::Console::ConsoleMessage::SourceEnum::Worker;
     }
     return protocol::Console::ConsoleMessage::SourceEnum::Other;
 }
@@ -199,28 +200,15 @@ private:
 
 } // namespace
 
-V8ConsoleMessage::V8ConsoleMessage(
-    double timestamp,
-    MessageSource source,
-    MessageLevel level,
-    const String16& message,
-    const String16& url,
-    unsigned lineNumber,
-    unsigned columnNumber,
-    std::unique_ptr<V8StackTrace> stackTrace,
-    int scriptId,
-    const String16& requestIdentifier)
-    : m_origin(V8MessageOrigin::kConsole)
+V8ConsoleMessage::V8ConsoleMessage(V8MessageOrigin origin, double timestamp, MessageSource source, MessageLevel level, const String16& message)
+    : m_origin(origin)
     , m_timestamp(timestamp)
     , m_source(source)
     , m_level(level)
     , m_message(message)
-    , m_url(url)
-    , m_lineNumber(lineNumber)
-    , m_columnNumber(columnNumber)
-    , m_stackTrace(std::move(stackTrace))
-    , m_scriptId(scriptId)
-    , m_requestIdentifier(requestIdentifier)
+    , m_lineNumber(0)
+    , m_columnNumber(0)
+    , m_scriptId(0)
     , m_contextId(0)
     , m_type(LogMessageType)
     , m_exceptionId(0)
@@ -230,6 +218,15 @@ V8ConsoleMessage::V8ConsoleMessage(
 
 V8ConsoleMessage::~V8ConsoleMessage()
 {
+}
+
+void V8ConsoleMessage::setLocation(const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
+{
+    m_url = url;
+    m_lineNumber = lineNumber;
+    m_columnNumber = columnNumber;
+    m_stackTrace = std::move(stackTrace);
+    m_scriptId = scriptId;
 }
 
 void V8ConsoleMessage::reportToFrontend(protocol::Console::Frontend* frontend, V8InspectorSessionImpl* session, bool generatePreview) const
@@ -257,6 +254,8 @@ void V8ConsoleMessage::reportToFrontend(protocol::Console::Frontend* frontend, V
         result->setParameters(std::move(args));
     if (m_stackTrace)
         result->setStack(m_stackTrace->buildInspectorObject());
+    if (m_source == WorkerMessageSource && !m_workerId.isEmpty())
+        result->setWorkerId(m_workerId);
     frontend->messageAdded(std::move(result));
 }
 
@@ -376,7 +375,8 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
             actualMessage = V8ValueStringBuilder::toString(messageArguments.at(0)->Get(context->isolate()), context->isolate());
     }
 
-    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(timestamp, ConsoleAPIMessageSource, level, actualMessage, url, lineNumber, columnNumber, std::move(stackTrace), 0 /* scriptId */, String16() /* requestIdentifier */));
+    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(V8MessageOrigin::kConsole, timestamp, ConsoleAPIMessageSource, level, actualMessage));
+    message->setLocation(url, lineNumber, columnNumber, std::move(stackTrace), 0);
     message->m_type = type;
     if (messageArguments.size()) {
         message->m_contextId = context->contextId();
@@ -390,9 +390,9 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForConsoleAPI(double t
 // static
 std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForException(double timestamp, const String16& messageText, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, v8::Isolate* isolate, int contextId, v8::Local<v8::Value> exception, unsigned exceptionId)
 {
-    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(timestamp, JSMessageSource, ErrorMessageLevel, messageText, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, String16() /* requestIdentifier */));
+    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(V8MessageOrigin::kException, timestamp, JSMessageSource, ErrorMessageLevel, messageText));
+    message->setLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId);
     message->m_exceptionId = exceptionId;
-    message->m_origin = V8MessageOrigin::kException;
     if (contextId && !exception.IsEmpty()) {
         message->m_contextId = contextId;
         message->m_arguments.push_back(wrapUnique(new v8::Global<v8::Value>(isolate, exception)));
@@ -403,9 +403,18 @@ std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForException(double ti
 // static
 std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createForRevokedException(double timestamp, const String16& messageText, unsigned revokedExceptionId)
 {
-    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(timestamp, JSMessageSource, ErrorMessageLevel, messageText, String16(), 0, 0, nullptr, 0, String16()));
-    message->m_origin = V8MessageOrigin::kRevokedException;
+    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(V8MessageOrigin::kRevokedException, timestamp, JSMessageSource, ErrorMessageLevel, messageText));
     message->m_revokedExceptionId = revokedExceptionId;
+    return message;
+}
+
+// static
+std::unique_ptr<V8ConsoleMessage> V8ConsoleMessage::createExternal(double timestamp, MessageSource source, MessageLevel level, const String16& messageText, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, const String16& requestIdentifier, const String16& workerId)
+{
+    std::unique_ptr<V8ConsoleMessage> message = wrapUnique(new V8ConsoleMessage(V8MessageOrigin::kConsole, timestamp, source, level, messageText));
+    message->setLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId);
+    message->m_requestIdentifier = requestIdentifier;
+    message->m_workerId = workerId;
     return message;
 }
 

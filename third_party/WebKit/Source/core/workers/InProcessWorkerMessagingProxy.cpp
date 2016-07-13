@@ -268,13 +268,6 @@ void InProcessWorkerMessagingProxy::postMessageToPageInspector(const String& mes
         m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
-void InProcessWorkerMessagingProxy::postWorkerConsoleAgentEnabled()
-{
-    DCHECK(isParentContextThread());
-    if (m_workerInspectorProxy)
-        m_workerInspectorProxy->workerConsoleAgentEnabled();
-}
-
 void InProcessWorkerMessagingProxy::confirmMessageFromWorkerObject(bool hasPendingActivity)
 {
     DCHECK(isParentContextThread());

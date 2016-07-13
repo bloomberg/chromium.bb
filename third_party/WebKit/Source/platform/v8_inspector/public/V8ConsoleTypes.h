@@ -18,6 +18,7 @@ enum MessageSource {
     SecurityMessageSource,
     OtherMessageSource,
     DeprecationMessageSource,
+    WorkerMessageSource
 };
 
 enum MessageLevel {

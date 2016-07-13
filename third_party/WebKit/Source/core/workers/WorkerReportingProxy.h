@@ -50,7 +50,6 @@ public:
     virtual void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>) = 0;
     virtual void reportConsoleMessage(ConsoleMessage*) = 0;
     virtual void postMessageToPageInspector(const String&) = 0;
-    virtual void postWorkerConsoleAgentEnabled() = 0;
 
     // Invoked when the worker script is evaluated. |success| is true if the
     // evaluation completed with no uncaught exception.

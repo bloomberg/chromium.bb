@@ -38,11 +38,10 @@ function stopWorker()
 
 function test()
 {
-    var workerEventHandler = [];
-    InspectorTest.eventHandler["Console.messageAdded"] = onConsoleMessage.bind(null, false);
+    var workerEventHandler = {};
     InspectorTest.eventHandler["Worker.workerCreated"] = onWorkerCreated;
     InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = onWorkerMessage;
-    workerEventHandler["Console.messageAdded"] = onConsoleMessage.bind(null, true);
+    workerEventHandler["Console.messageAdded"] = onConsoleMessageFromWorker;
 
     var workerId;
 
@@ -91,20 +90,25 @@ function test()
     function logInWorker(message, next)
     {
         InspectorTest.log("Logging in worker: " + message);
-        if (next)
-            InspectorTest.evaluateInPageAsync("logInWorkerFromPage(\"" + message + "\", %callback)", next);
-        else
-            InspectorTest.evaluateInPage("logInWorkerFromPage(\"" + message + "\")");
+        InspectorTest.eventHandler["Console.messageAdded"] = onConsoleMessage;
+        InspectorTest.evaluateInPage("logInWorkerFromPage(\"" + message + "\")");
+
+        function onConsoleMessage(payload)
+        {
+            InspectorTest.log("Got console message from page: " + payload.params.message.text);
+            delete InspectorTest.eventHandler["Console.messageAdded"];
+            next();
+        }
     }
 
     var gotMessages = [];
     var waitingForMessage;
     var waitingForMessageCallback;
 
-    function onConsoleMessage(fromWorker, payload)
+    function onConsoleMessageFromWorker(payload)
     {
         var message = payload.params.message.text;
-        InspectorTest.log("Got console message from " + (fromWorker ? "worker" : "page") + ": " + message);
+        InspectorTest.log("Got console message from worker: " + message);
         gotMessages.push(message);
         if (message === waitingForMessage)
             waitingForMessageCallback();
@@ -140,8 +144,7 @@ function test()
         function stop0(next)
         {
             InspectorTest.log("Stopping worker");
-            waitForMessage("message0", next);
-            InspectorTest.evaluateInPage("stopWorker()");
+            InspectorTest.evaluateInPage("stopWorker()", next);
         },
 
         function start1(next)
@@ -170,8 +173,17 @@ function test()
 
         function log2(next)
         {
+            logInWorker("message2", next);
+        },
+
+        function waitForMessage2(next)
+        {
             waitForMessage("message2", next);
-            logInWorker("message2");
+        },
+
+        function throw1(next)
+        {
+            logInWorker("throw1", next);
         },
 
         function disable1(next)
@@ -218,8 +230,12 @@ function test()
 
         function log5(next)
         {
+            logInWorker("message5", next);
+        },
+
+        function waitForMessage5(next)
+        {
             waitForMessage("message5", next);
-            logInWorker("message5");
         },
 
         function stop2(next)
@@ -242,8 +258,7 @@ function test()
         function stop3(next)
         {
             InspectorTest.log("Stopping worker");
-            waitForMessage("message6", next);
-            InspectorTest.evaluateInPage("stopWorker()");
+            InspectorTest.evaluateInPage("stopWorker()", next);
         },
 
         function disable2(next)

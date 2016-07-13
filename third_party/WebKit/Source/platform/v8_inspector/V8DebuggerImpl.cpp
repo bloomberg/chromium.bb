@@ -1056,11 +1056,11 @@ void V8DebuggerImpl::idleFinished()
     m_isolate->GetCpuProfiler()->SetIdle(false);
 }
 
-bool V8DebuggerImpl::addConsoleMessage(int contextGroupId, MessageSource source, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, const String16& requestIdentifier)
+bool V8DebuggerImpl::addConsoleMessage(int contextGroupId, MessageSource source, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, const String16& requestIdentifier, const String16& workerId)
 {
     if (m_muteConsoleCount)
         return false;
-    ensureConsoleMessageStorage(contextGroupId)->addMessage(wrapUnique(new V8ConsoleMessage(m_client->currentTimeMS(), source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, requestIdentifier)));
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createExternal(m_client->currentTimeMS(), source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, requestIdentifier, workerId));
     return true;
 }
 

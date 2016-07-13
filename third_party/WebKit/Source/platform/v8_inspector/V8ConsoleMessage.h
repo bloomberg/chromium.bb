@@ -25,17 +25,6 @@ enum class V8MessageOrigin { kConsole, kException, kRevokedException };
 
 class V8ConsoleMessage {
 public:
-    V8ConsoleMessage(
-        double timestamp,
-        MessageSource,
-        MessageLevel,
-        const String16& message,
-        const String16& url,
-        unsigned lineNumber,
-        unsigned columnNumber,
-        std::unique_ptr<V8StackTrace>,
-        int scriptId,
-        const String16& requestIdentifier);
     ~V8ConsoleMessage();
 
     static std::unique_ptr<V8ConsoleMessage> createForConsoleAPI(
@@ -65,6 +54,19 @@ public:
         const String16& message,
         unsigned revokedExceptionId);
 
+    static std::unique_ptr<V8ConsoleMessage> createExternal(
+        double timestamp,
+        MessageSource,
+        MessageLevel,
+        const String16& message,
+        const String16& url,
+        unsigned lineNumber,
+        unsigned columnNumber,
+        std::unique_ptr<V8StackTrace>,
+        int scriptId,
+        const String16& requestIdentifier,
+        const String16& workerId);
+
     V8MessageOrigin origin() const;
     void reportToFrontend(protocol::Console::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
     void reportToFrontend(protocol::Runtime::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
@@ -73,9 +75,12 @@ public:
     void contextDestroyed(int contextId);
 
 private:
+    V8ConsoleMessage(V8MessageOrigin, double timestamp, MessageSource, MessageLevel, const String16& message);
+
     using Arguments = std::vector<std::unique_ptr<v8::Global<v8::Value>>>;
     std::unique_ptr<protocol::Array<protocol::Runtime::RemoteObject>> wrapArguments(V8InspectorSessionImpl*, bool generatePreview) const;
     std::unique_ptr<protocol::Runtime::RemoteObject> wrapException(V8InspectorSessionImpl*, bool generatePreview) const;
+    void setLocation(const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);
 
     V8MessageOrigin m_origin;
     double m_timestamp;
@@ -88,6 +93,7 @@ private:
     std::unique_ptr<V8StackTrace> m_stackTrace;
     int m_scriptId;
     String16 m_requestIdentifier;
+    String16 m_workerId;
     int m_contextId;
     MessageType m_type;
     unsigned m_exceptionId;

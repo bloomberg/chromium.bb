@@ -78,7 +78,6 @@ public:
     void reportException(const WTF::String&, std::unique_ptr<SourceLocation>) override;
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const WTF::String&) override;
-    void postWorkerConsoleAgentEnabled() override { }
     void didEvaluateWorkerScript(bool success) override { }
     void workerGlobalScopeStarted(WorkerGlobalScope*) override;
     void workerGlobalScopeClosed() override;
