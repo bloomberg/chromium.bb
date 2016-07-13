@@ -49,6 +49,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/media_stream_utils.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 #include "content/renderer/device_sensors/device_light_event_pump.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
@@ -58,6 +59,7 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_decoder.h"
+#include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/canvas_capture_handler.h"
 #include "content/renderer/media/html_audio_element_capturer_source.h"
 #include "content/renderer/media/html_video_element_capturer_source.h"
@@ -79,7 +81,6 @@
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
-#include "media/base/audio_hardware_config.h"
 #include "media/base/mime_util.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
@@ -102,6 +103,7 @@
 #include "third_party/WebKit/public/platform/mime_registry.mojom.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
 
 #if defined(OS_MACOSX)
@@ -177,6 +179,16 @@ base::LazyInstance<blink::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
+
+media::AudioParameters GetAudioHardwareParams() {
+  blink::WebLocalFrame* const web_frame =
+      blink::WebLocalFrame::frameForCurrentContext();
+  RenderFrame* const render_frame = RenderFrame::FromWebFrame(web_frame);
+  return AudioDeviceFactory::GetOutputDeviceInfo(render_frame->GetRoutingID(),
+                                                 0, std::string(),
+                                                 web_frame->getSecurityOrigin())
+      .output_params();
+}
 
 }  // namespace
 
@@ -685,18 +697,15 @@ bool RendererBlinkPlatformImpl::isThreadedAnimationEnabled() {
 }
 
 double RendererBlinkPlatformImpl::audioHardwareSampleRate() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  return thread->GetAudioHardwareConfig()->GetOutputSampleRate();
+  return GetAudioHardwareParams().sample_rate();
 }
 
 size_t RendererBlinkPlatformImpl::audioHardwareBufferSize() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  return thread->GetAudioHardwareConfig()->GetOutputBufferSize();
+  return GetAudioHardwareParams().frames_per_buffer();
 }
 
 unsigned RendererBlinkPlatformImpl::audioHardwareOutputChannels() {
-  RenderThreadImpl* thread = RenderThreadImpl::current();
-  return thread->GetAudioHardwareConfig()->GetOutputChannels();
+  return GetAudioHardwareParams().channels();
 }
 
 WebDatabaseObserver* RendererBlinkPlatformImpl::databaseObserver() {
