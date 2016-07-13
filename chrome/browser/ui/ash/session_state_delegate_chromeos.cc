@@ -7,7 +7,6 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_observer.h"
 #include "ash/content/shell_content_state.h"
-#include "ash/system/chromeos/multi_user/user_switch_util.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -276,5 +276,5 @@ void DoSwitchUser(const AccountId& account_id) {
 
 void SessionStateDelegateChromeos::TryToSwitchUser(
     const AccountId& account_id) {
-  ash::TrySwitchingActiveUser(base::Bind(&DoSwitchUser, account_id));
+  TrySwitchingActiveUser(base::Bind(&DoSwitchUser, account_id));
 }

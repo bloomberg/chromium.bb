@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
-#include "ash/shell.h"
-#include "ash/system/chromeos/multi_user/user_switch_util.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 
 namespace ash {
 
@@ -29,7 +28,7 @@ class TrySwitchingUserTest : public ash::test::AshTestBase {
   void SetUp() override {
     test::AshTestBase::SetUp();
     TrayItemView::DisableAnimationsForTest();
-    SystemTray* system_tray = Shell::GetInstance()->GetPrimarySystemTray();
+    SystemTray* system_tray = GetPrimarySystemTray();
     share_item_ = system_tray->GetScreenShareItem();
     capture_item_ = system_tray->GetScreenCaptureItem();
     EXPECT_TRUE(share_item_);

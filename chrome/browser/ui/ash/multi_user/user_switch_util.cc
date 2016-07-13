@@ -2,20 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/multi_user/user_switch_util.h"
+#include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-
-namespace ash {
 
 namespace {
 
@@ -31,7 +29,7 @@ const int kTopInset = 10;
 // Dialog for multi-profiles desktop casting warning.
 class DesktopCastingWarningView : public views::DialogDelegateView {
  public:
-  DesktopCastingWarningView(base::Callback<void()> on_accept);
+  explicit DesktopCastingWarningView(base::Callback<void()> on_accept);
   ~DesktopCastingWarningView() override;
 
   static void ShowDialog(const base::Callback<void()> on_accept);
@@ -90,7 +88,8 @@ void DesktopCastingWarningView::ShowDialog(
 
 bool DesktopCastingWarningView::Accept() {
   // Stop screen sharing and capturing.
-  SystemTray* system_tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  ash::SystemTray* system_tray =
+      ash::Shell::GetInstance()->GetPrimarySystemTray();
   if (system_tray->GetScreenShareItem()->is_started())
     system_tray->GetScreenShareItem()->Stop();
   if (system_tray->GetScreenCaptureItem()->is_started())
@@ -175,7 +174,8 @@ void TrySwitchingActiveUser(const base::Callback<void()> on_switch) {
   }
   // If neither screen sharing nor capturing is going on we can immediately
   // switch users.
-  SystemTray* system_tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
+  ash::SystemTray* system_tray =
+      ash::Shell::GetInstance()->GetPrimarySystemTray();
   if (!system_tray->GetScreenShareItem()->is_started() &&
       !system_tray->GetScreenCaptureItem()->is_started()) {
     on_switch.Run();
@@ -193,5 +193,3 @@ bool TestAndTerminateDesktopCastingWarningForTest(bool accept) {
   CHECK(!instance_for_test);
   return true;
 }
-
-}  // namespace chromeos

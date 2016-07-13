@@ -607,6 +607,8 @@
       'browser/ui/ash/multi_user/multi_user_window_manager_stub.h',
       'browser/ui/ash/multi_user/user_switch_animator_chromeos.cc',
       'browser/ui/ash/multi_user/user_switch_animator_chromeos.h',
+      'browser/ui/ash/multi_user/user_switch_util.cc',
+      'browser/ui/ash/multi_user/user_switch_util.h',
       'browser/ui/ash/network_connect_delegate_chromeos.cc',
       'browser/ui/ash/network_connect_delegate_chromeos.h',
       'browser/ui/ash/networking_config_delegate_chromeos.cc',
