@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/task_runner_util.h"
-#include "content/public/common/service_registry.h"
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/media_stream_video_sink.h"
 #include "content/public/renderer/render_thread.h"
@@ -16,6 +15,7 @@
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_pipeline.h"
 #include "media/base/bind_to_current_loop.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 namespace extensions {
 
@@ -86,11 +86,11 @@ WiFiDisplayMediaManager::WiFiDisplayMediaManager(
     const blink::WebMediaStreamTrack& video_track,
     const blink::WebMediaStreamTrack& audio_track,
     const std::string& sink_ip_address,
-    content::ServiceRegistry* service_registry,
+    shell::InterfaceProvider* interface_provider,
     const ErrorCallback& error_callback)
     : video_track_(video_track),
       audio_track_(audio_track),
-      service_registry_(service_registry),
+      interface_provider_(interface_provider),
       sink_ip_address_(sink_ip_address),
       player_(nullptr),
       io_task_runner_(content::RenderThread::Get()->GetIOTaskRunner()),
@@ -99,7 +99,7 @@ WiFiDisplayMediaManager::WiFiDisplayMediaManager(
       is_initialized_(false),
       weak_factory_(this) {
   DCHECK(!video_track.isNull() || !audio_track.isNull());
-  DCHECK(service_registry_);
+  DCHECK(interface_provider_);
   DCHECK(!error_callback_.is_null());
 }
 
@@ -488,7 +488,7 @@ void WiFiDisplayMediaManager::RegisterMediaService(
 void WiFiDisplayMediaManager::ConnectToRemoteService(
     WiFiDisplayMediaServiceRequest request) {
   DCHECK(content::RenderThread::Get());
-  service_registry_->ConnectToRemoteService(std::move(request));
+  interface_provider_->GetInterface(std::move(request));
 }
 
 }  // namespace extensions

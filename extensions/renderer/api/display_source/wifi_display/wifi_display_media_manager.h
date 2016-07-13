@@ -18,9 +18,9 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
-namespace content {
-class ServiceRegistry;
-}  // namespace content
+namespace shell {
+class InterfaceProvider;
+}  // namespace shell
 
 namespace extensions {
 class WiFiDisplayAudioSink;
@@ -36,7 +36,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
       const blink::WebMediaStreamTrack& video_track,
       const blink::WebMediaStreamTrack& audio_track,
       const std::string& sink_ip_address,
-      content::ServiceRegistry* service_registry,
+      shell::InterfaceProvider* interface_provider,
       const ErrorCallback& error_callback);
 
   ~WiFiDisplayMediaManager() override;
@@ -79,7 +79,7 @@ class WiFiDisplayMediaManager : public wds::SourceMediaManager {
   std::unique_ptr<WiFiDisplayAudioSink> audio_sink_;
   std::unique_ptr<WiFiDisplayVideoSink> video_sink_;
 
-  content::ServiceRegistry* service_registry_;
+  shell::InterfaceProvider* interface_provider_;
   std::string sink_ip_address_;
   std::pair<int, int> sink_rtp_ports_;
   wds::H264VideoFormat optimal_video_format_;
