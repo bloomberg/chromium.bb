@@ -1565,7 +1565,7 @@ views::View* ProfileChooserView::CreateMaterialDesignCurrentProfileView(
   current_profile_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   NonInteractiveContainer* profile_name_container =
       new NonInteractiveContainer();
-  int name_container_v_spacing = views::kRelatedControlSmallVerticalSpacing;
+  int name_container_v_spacing = views::kRelatedControlVerticalSpacing;
   if (!avatar_item.signed_in || switches::IsEnableAccountConsistency())
     name_container_v_spacing += views::kRelatedControlVerticalSpacing;
   profile_name_container->SetLayoutManager(new views::BoxLayout(
@@ -1801,15 +1801,17 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
 
 views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
   views::View* view = new views::View();
+  int horizontal_margin = switches::IsMaterialDesignUserMenu() ?
+      kMaterialMenuEdgeMargin : views::kButtonHEdgeMarginNew;
   views::GridLayout* layout = CreateSingleColumnLayout(
-      view, GetFixedMenuWidth() - 2 * views::kButtonHEdgeMarginNew);
+      view, GetFixedMenuWidth() - 2 * horizontal_margin);
   if (switches::IsMaterialDesignUserMenu()) {
-    layout->SetInsets(0, kMaterialMenuEdgeMargin, kMaterialMenuEdgeMargin,
-                      kMaterialMenuEdgeMargin);
+    layout->SetInsets(0, horizontal_margin,
+                      kMaterialMenuEdgeMargin, horizontal_margin);
   } else {
     layout->SetInsets(
-        views::kRelatedControlVerticalSpacing, views::kButtonHEdgeMarginNew,
-        views::kRelatedControlVerticalSpacing, views::kButtonHEdgeMarginNew);
+        views::kRelatedControlVerticalSpacing, horizontal_margin,
+        views::kRelatedControlVerticalSpacing, horizontal_margin);
   }
 
   views::Label* disclaimer = new views::Label(
