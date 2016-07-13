@@ -6,6 +6,7 @@
 #define MEDIA_MOJO_SERVICES_MOJO_MEDIA_CLIENT_H_
 
 #include <memory>
+#include <string>
 
 #include "base/memory/ref_counted.h"
 #include "media/mojo/services/media_mojo_export.h"
@@ -23,12 +24,10 @@ class InterfaceProvider;
 namespace media {
 
 class AudioDecoder;
-class AudioRendererSink;
 class CdmFactory;
 class MediaLog;
-class RendererFactory;
+class Renderer;
 class VideoDecoder;
-class VideoRendererSink;
 
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
@@ -48,20 +47,14 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  // TODO(xhwang): Consider creating Renderer and CDM directly in the client
+  // TODO(xhwang): Consider creating CDM directly in the client
   // instead of creating factories. See http://crbug.com/586211
 
-  // Returns the RendererFactory to be used by MojoRendererService.
-  virtual std::unique_ptr<RendererFactory> CreateRendererFactory(
-      const scoped_refptr<MediaLog>& media_log);
-
-  // The output sink used for rendering audio or video respectively. They will
-  // be used in the CreateRenderer() call on the RendererFactory returned by
-  // CreateRendererFactory(). May be null if the RendererFactory doesn't need an
-  // audio or video sink. If not null, the sink must be owned by the client.
-  virtual AudioRendererSink* CreateAudioRendererSink();
-  virtual VideoRendererSink* CreateVideoRendererSink(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+  // Creates and returns a Renderer.
+  virtual std::unique_ptr<Renderer> CreateRenderer(
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      scoped_refptr<MediaLog> media_log,
+      const std::string& audio_device_id);
 
   // Returns the CdmFactory to be used by MojoCdmService.
   virtual std::unique_ptr<CdmFactory> CreateCdmFactory(

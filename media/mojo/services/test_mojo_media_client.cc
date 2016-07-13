@@ -5,6 +5,7 @@
 #include "media/mojo/services/test_mojo_media_client.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_device_description.h"
@@ -13,6 +14,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media.h"
+#include "media/base/media_log.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/renderer_factory.h"
 #include "media/cdm/default_cdm_factory.h"
@@ -50,21 +52,44 @@ void TestMojoMediaClient::WillQuit() {
   base::RunLoop().RunUntilIdle();
 }
 
-std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
-    const scoped_refptr<MediaLog>& media_log) {
+std::unique_ptr<Renderer> TestMojoMediaClient::CreateRenderer(
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    scoped_refptr<MediaLog> media_log,
+    const std::string& audio_device_id) {
   DVLOG(1) << __FUNCTION__;
-  return base::WrapUnique(new DefaultRendererFactory(
-      media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB()));
+  AudioRendererSink* audio_renderer_sink = GetAudioRendererSink();
+  VideoRendererSink* video_renderer_sink =
+      GetVideoRendererSink(media_task_runner);
+
+  RendererFactory* renderer_factory = GetRendererFactory(std::move(media_log));
+  if (!renderer_factory)
+    return nullptr;
+
+  return renderer_factory->CreateRenderer(
+      media_task_runner, media_task_runner, audio_renderer_sink,
+      video_renderer_sink, RequestSurfaceCB());
 }
 
-AudioRendererSink* TestMojoMediaClient::CreateAudioRendererSink() {
+RendererFactory* TestMojoMediaClient::GetRendererFactory(
+    scoped_refptr<MediaLog> media_log) {
+  DVLOG(1) << __FUNCTION__;
+  if (!renderer_factory_) {
+    renderer_factory_ = base::MakeUnique<DefaultRendererFactory>(
+        std::move(media_log), nullptr,
+        DefaultRendererFactory::GetGpuFactoriesCB());
+  }
+
+  return renderer_factory_.get();
+}
+
+AudioRendererSink* TestMojoMediaClient::GetAudioRendererSink() {
   if (!audio_renderer_sink_)
     audio_renderer_sink_ = new AudioOutputStreamSink();
 
   return audio_renderer_sink_.get();
 }
 
-VideoRendererSink* TestMojoMediaClient::CreateVideoRendererSink(
+VideoRendererSink* TestMojoMediaClient::GetVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   if (!video_renderer_sink_) {
     video_renderer_sink_ = base::WrapUnique(

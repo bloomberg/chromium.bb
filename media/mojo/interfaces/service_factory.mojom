@@ -19,7 +19,10 @@ interface ServiceFactory {
   CreateVideoDecoder(VideoDecoder& video_decoder);
 
   // Creates a Renderer service.
-  CreateRenderer(Renderer& renderer);
+  // Audio stream will be played on device_id, which is defined in
+  // media/audio/audio_device_description.h. If audio_device_id
+  // is empty, kDefaultDeviceId will be used. 
+  CreateRenderer(string audio_device_id, Renderer& renderer);
 
   // Creates a ContentDecryptionModule service.
   CreateCdm(ContentDecryptionModule& cdm);

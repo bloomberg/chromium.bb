@@ -6,6 +6,7 @@
 #define CHROMECAST_BROWSER_MEDIA_MEDIA_PIPELINE_BACKEND_FACTORY_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -15,8 +16,8 @@ namespace chromecast {
 namespace media {
 
 typedef base::Callback<std::unique_ptr<MediaPipelineBackend>(
-    const MediaPipelineDeviceParams&)>
-    CreateMediaPipelineBackendCB;
+    const MediaPipelineDeviceParams&,
+    const std::string& audio_device_id)> CreateMediaPipelineBackendCB;
 
 }  // media
 }  // chromecast

@@ -25,6 +25,7 @@
 #include "chromecast/media/cma/pipeline/video_pipeline_impl.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "media/audio/audio_device_description.h"
 
 namespace chromecast {
 namespace media {
@@ -70,8 +71,10 @@ void MediaPipelineHost::Initialize(
   MediaPipelineDeviceParams default_parameters(sync_type, task_runner_.get());
 
   media_pipeline_->SetClient(client);
-  media_pipeline_->Initialize(load_type,
-                              create_backend_cb.Run(default_parameters));
+  media_pipeline_->Initialize(
+      load_type,
+      create_backend_cb.Run(default_parameters,
+                            ::media::AudioDeviceDescription::kDefaultDeviceId));
 }
 
 void MediaPipelineHost::SetAvPipe(

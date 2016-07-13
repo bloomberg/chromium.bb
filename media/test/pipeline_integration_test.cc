@@ -716,7 +716,8 @@ class PipelineIntegrationTestHost : public shell::test::ServiceTest,
     connector()->ConnectToInterface("mojo:media", &media_service_factory_);
 
     mojom::RendererPtr mojo_renderer;
-    media_service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));
+    media_service_factory_->CreateRenderer(std::string(),
+                                           mojo::GetProxy(&mojo_renderer));
 
     return base::WrapUnique(new MojoRenderer(message_loop_.task_runner(),
                                              std::move(mojo_renderer)));

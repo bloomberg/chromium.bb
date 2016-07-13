@@ -12,10 +12,16 @@
 #include "media/audio/audio_manager.h"
 #include "media/mojo/services/mojo_media_client.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace media {
 
 class AudioHardwareConfig;
 class AudioRendererSink;
+class MediaLog;
+class RendererFactory;
 class VideoRendererSink;
 
 // Default MojoMediaClient for MojoMediaApplication.
@@ -27,16 +33,21 @@ class TestMojoMediaClient : public MojoMediaClient {
   // MojoMediaClient implementation.
   void Initialize() final;
   void WillQuit() final;
-  std::unique_ptr<RendererFactory> CreateRendererFactory(
-      const scoped_refptr<MediaLog>& media_log) final;
-  AudioRendererSink* CreateAudioRendererSink() final;
-  VideoRendererSink* CreateVideoRendererSink(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) final;
+  std::unique_ptr<Renderer> CreateRenderer(
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      scoped_refptr<MediaLog> media_log,
+      const std::string& audio_device_id) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       shell::mojom::InterfaceProvider* /* interface_provider */) final;
 
  private:
+  RendererFactory* GetRendererFactory(scoped_refptr<MediaLog> media_log);
+  AudioRendererSink* GetAudioRendererSink();
+  VideoRendererSink* GetVideoRendererSink(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+
   ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<RendererFactory> renderer_factory_;
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
   std::unique_ptr<VideoRendererSink> video_renderer_sink_;
 

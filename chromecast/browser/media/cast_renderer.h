@@ -26,7 +26,8 @@ class MediaPipelineImpl;
 class CastRenderer : public ::media::Renderer {
  public:
   CastRenderer(const CreateMediaPipelineBackendCB& create_backend_cb,
-               const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+               const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+               const std::string& audio_device_id);
   ~CastRenderer() final;
 
   // ::media::Renderer implementation.
@@ -55,6 +56,7 @@ class CastRenderer : public ::media::Renderer {
 
   const CreateMediaPipelineBackendCB create_backend_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  std::string audio_device_id_;
   ::media::RendererClient* client_;
   CastCdmContext* cast_cdm_context_;
   scoped_refptr<BalancedMediaTaskRunnerFactory> media_task_runner_factory_;

@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/media_interface_provider.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
@@ -33,6 +35,7 @@ void MediaInterfaceProvider::GetInterface(const mojo::String& interface_name,
             std::move(pipe)));
   } else if (interface_name == media::mojom::Renderer::Name_) {
     GetMediaServiceFactory()->CreateRenderer(
+        std::string(),
         mojo::MakeRequest<media::mojom::Renderer>(std::move(pipe)));
   } else if (interface_name == media::mojom::AudioDecoder::Name_) {
     GetMediaServiceFactory()->CreateAudioDecoder(

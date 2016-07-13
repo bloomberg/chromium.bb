@@ -32,9 +32,11 @@ const base::TimeDelta kMaxDeltaFetcher(base::TimeDelta::FromMilliseconds(2000));
 
 CastRenderer::CastRenderer(
     const CreateMediaPipelineBackendCB& create_backend_cb,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const std::string& audio_device_id)
     : create_backend_cb_(create_backend_cb),
       task_runner_(task_runner),
+      audio_device_id_(audio_device_id),
       client_(nullptr),
       cast_cdm_context_(nullptr),
       media_task_runner_factory_(
@@ -65,7 +67,7 @@ void CastRenderer::Initialize(
           : MediaPipelineDeviceParams::kModeSyncPts;
   MediaPipelineDeviceParams params(sync_type, backend_task_runner_.get());
   std::unique_ptr<MediaPipelineBackend> backend =
-      create_backend_cb_.Run(params);
+      create_backend_cb_.Run(params, audio_device_id_);
 
   // Create pipeline.
   MediaPipelineClient pipeline_client;

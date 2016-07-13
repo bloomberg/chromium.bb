@@ -21,8 +21,10 @@ class CastMojoMediaClient : public ::media::MojoMediaClient {
   ~CastMojoMediaClient() override;
 
   // MojoMediaClient overrides.
-  std::unique_ptr<::media::RendererFactory> CreateRendererFactory(
-      const scoped_refptr<::media::MediaLog>& media_log) override;
+  std::unique_ptr<::media::Renderer> CreateRenderer(
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+      scoped_refptr<::media::MediaLog> media_log,
+      const std::string& audio_device_id) override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory(
       ::shell::mojom::InterfaceProvider* interface_provider) override;
 

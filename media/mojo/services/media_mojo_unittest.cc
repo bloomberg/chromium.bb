@@ -104,7 +104,7 @@ class MediaServiceTest : public shell::test::ServiceTest {
 
   void InitializeRenderer(const VideoDecoderConfig& video_config,
                           bool expected_result) {
-    service_factory_->CreateRenderer(mojo::GetProxy(&renderer_));
+    service_factory_->CreateRenderer(std::string(), mojo::GetProxy(&renderer_));
 
     video_stream_.set_video_decoder_config(video_config);
 

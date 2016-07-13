@@ -154,7 +154,8 @@ CastContentBrowserClient::GetMediaTaskRunner() {
 
 std::unique_ptr<media::MediaPipelineBackend>
 CastContentBrowserClient::CreateMediaPipelineBackend(
-    const media::MediaPipelineDeviceParams& params) {
+    const media::MediaPipelineDeviceParams& params,
+    const std::string& audio_device_id) {
   return media_pipeline_backend_manager()->CreateMediaPipelineBackend(params);
 }
 

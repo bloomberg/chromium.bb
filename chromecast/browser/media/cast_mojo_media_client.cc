@@ -10,35 +10,6 @@
 #include "media/base/media_log.h"
 #include "media/base/renderer_factory.h"
 
-namespace {
-
-class CastRendererFactory : public media::RendererFactory {
- public:
-  CastRendererFactory(
-      const chromecast::media::CreateMediaPipelineBackendCB& create_backend_cb,
-      const scoped_refptr<media::MediaLog>& media_log)
-      : create_backend_cb_(create_backend_cb), media_log_(media_log) {}
-  ~CastRendererFactory() final {}
-
-  std::unique_ptr<media::Renderer> CreateRenderer(
-      const scoped_refptr<base::SingleThreadTaskRunner>& media_task_runner,
-      const scoped_refptr<base::TaskRunner>& worker_task_runner,
-      media::AudioRendererSink* audio_renderer_sink,
-      media::VideoRendererSink* video_renderer_sink,
-      const media::RequestSurfaceCB& request_surface_cb) final {
-    DCHECK(!audio_renderer_sink && !video_renderer_sink);
-    return base::WrapUnique(new chromecast::media::CastRenderer(
-        create_backend_cb_, media_task_runner));
-  }
-
- private:
-  const chromecast::media::CreateMediaPipelineBackendCB create_backend_cb_;
-  scoped_refptr<media::MediaLog> media_log_;
-  DISALLOW_COPY_AND_ASSIGN(CastRendererFactory);
-};
-
-}  // namespace
-
 namespace chromecast {
 namespace media {
 
@@ -50,11 +21,12 @@ CastMojoMediaClient::CastMojoMediaClient(
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
 
-std::unique_ptr<::media::RendererFactory>
-CastMojoMediaClient::CreateRendererFactory(
-    const scoped_refptr<::media::MediaLog>& media_log) {
-  return base::WrapUnique(
-      new CastRendererFactory(create_backend_cb_, media_log));
+std::unique_ptr<::media::Renderer> CastMojoMediaClient::CreateRenderer(
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
+    scoped_refptr<::media::MediaLog> media_log,
+    const std::string& audio_device_id) {
+  return base::MakeUnique<chromecast::media::CastRenderer>(
+      create_backend_cb_, std::move(media_task_runner), audio_device_id);
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(

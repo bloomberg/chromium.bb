@@ -74,7 +74,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   // Creates a MediaPipelineDevice (CMA backend) for media playback, called
   // once per media player instance.
   virtual std::unique_ptr<media::MediaPipelineBackend>
-  CreateMediaPipelineBackend(const media::MediaPipelineDeviceParams& params);
+  CreateMediaPipelineBackend(const media::MediaPipelineDeviceParams& params,
+                             const std::string& audio_device_id);
 
   media::MediaResourceTracker* media_resource_tracker();
 
