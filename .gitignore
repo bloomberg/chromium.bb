@@ -159,6 +159,7 @@ TAGS
 /tests/resolve_table.h
 /tests/squash_space
 /tests/typeform
+/tests/typeform_for_emphclass
 /tests/uplow_with_unicode
 /tests/yaml/*.log
 /tests/yaml/*.trs
