@@ -46,6 +46,9 @@
 ../../third_party/catapult/devil/devil/android/sdk/keyevent.py
 ../../third_party/catapult/devil/devil/android/sdk/split_select.py
 ../../third_party/catapult/devil/devil/android/sdk/version_codes.py
+../../third_party/catapult/devil/devil/android/tools/__init__.py
+../../third_party/catapult/devil/devil/android/tools/device_recovery.py
+../../third_party/catapult/devil/devil/android/tools/device_status.py
 ../../third_party/catapult/devil/devil/android/valgrind_tools/__init__.py
 ../../third_party/catapult/devil/devil/android/valgrind_tools/base_tool.py
 ../../third_party/catapult/devil/devil/base_error.py
@@ -58,8 +61,10 @@
 ../../third_party/catapult/devil/devil/utils/host_utils.py
 ../../third_party/catapult/devil/devil/utils/lazy/__init__.py
 ../../third_party/catapult/devil/devil/utils/lazy/weak_constant.py
+../../third_party/catapult/devil/devil/utils/lsusb.py
 ../../third_party/catapult/devil/devil/utils/parallelizer.py
 ../../third_party/catapult/devil/devil/utils/reraiser_thread.py
+../../third_party/catapult/devil/devil/utils/reset_usb.py
 ../../third_party/catapult/devil/devil/utils/run_tests_helper.py
 ../../third_party/catapult/devil/devil/utils/signal_handler.py
 ../../third_party/catapult/devil/devil/utils/timeout_retry.py
@@ -102,6 +107,7 @@ pylib/local/device/__init__.py
 pylib/local/device/local_device_environment.py
 pylib/local/device/local_device_gtest_run.py
 pylib/local/device/local_device_instrumentation_test_run.py
+pylib/local/device/local_device_perf_test_run.py
 pylib/local/device/local_device_test_run.py
 pylib/local/local_test_server_spawner.py
 pylib/monkey/__init__.py
@@ -109,6 +115,7 @@ pylib/monkey/setup.py
 pylib/monkey/test_options.py
 pylib/monkey/test_runner.py
 pylib/perf/__init__.py
+pylib/perf/perf_test_instance.py
 pylib/perf/setup.py
 pylib/perf/test_options.py
 pylib/perf/test_runner.py

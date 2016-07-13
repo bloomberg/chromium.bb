@@ -90,6 +90,10 @@ class LocalDeviceEnvironment(environment.Environment):
         monitor.Start()
 
   @property
+  def blacklist(self):
+    return self._blacklist
+
+  @property
   def concurrent_adb(self):
     return self._concurrent_adb
 

@@ -562,9 +562,15 @@ def AddPerfTestOptions(parser):
       '--output-chartjson-data',
       default='',
       help='Write out chartjson into the given file.')
+  # TODO(rnephew): Remove this when everything moves to new option in platform
+  # mode.
   group.add_argument(
       '--get-output-dir-archive', metavar='FILENAME',
-      help='Write the chached output directory archived by a step into the'
+      help='Write the cached output directory archived by a step into the'
+      ' given ZIP file.')
+  group.add_argument(
+      '--output-dir-archive-path', metavar='FILENAME',
+      help='Write the cached output directory archived by a step into the'
       ' given ZIP file.')
   group.add_argument(
       '--flaky-steps',
@@ -585,12 +591,23 @@ def AddPerfTestOptions(parser):
       '--max-battery-temp', type=int,
       help='Only start tests when the battery is at or below the given '
            'temperature (0.1 C)')
-  group.add_argument('single_step_command', nargs='*', action=SingleStepAction,
-                     help='If --single-step is specified, the command to run.')
-  group.add_argument('--min-battery-level', type=int,
-                     help='Only starts tests when the battery is charged above '
-                          'given level.')
+  group.add_argument(
+      'single_step_command', nargs='*', action=SingleStepAction,
+      help='If --single-step is specified, the command to run.')
+  group.add_argument(
+      '--min-battery-level', type=int,
+      help='Only starts tests when the battery is charged above '
+      'given level.')
   group.add_argument('--known-devices-file', help='Path to known device list.')
+  group.add_argument(
+      '--repeat', dest='repeat', type=int, default=0,
+      help='Number of times to repeat the specified set of tests.')
+  group.add_argument(
+      '--break-on-failure', '--break_on_failure', dest='break_on_failure',
+      action='store_true', help='Whether to break on failure.')
+  group.add_argument(
+      '--write-buildbot-json', action='store_true',
+      help='Whether to output buildbot json.')
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
 
@@ -776,6 +793,10 @@ def _GetAttachedDevices(blacklist_file, test_device, enable_cache, num_retries):
     return sorted(attached_devices)
 
 
+# TODO(rnephew): Add perf when ready to switch to platform mode as default.
+_DEFAULT_PLATFORM_MODE_TESTS = ['gtest', 'instrumentation']
+
+
 def RunTestsCommand(args): # pylint: disable=too-many-return-statements
   """Checks test type and dispatches to the appropriate function.
 
@@ -793,8 +814,7 @@ def RunTestsCommand(args): # pylint: disable=too-many-return-statements
 
   ProcessCommonOptions(args)
   logging.info('command: %s', ' '.join(sys.argv))
-
-  if args.enable_platform_mode or command in ('gtest', 'instrumentation'):
+  if args.enable_platform_mode or command in _DEFAULT_PLATFORM_MODE_TESTS:
     return RunTestsInPlatformMode(args)
 
   forwarder.Forwarder.RemoveHostLog()
@@ -823,6 +843,7 @@ _SUPPORTED_IN_PLATFORM_MODE = [
   # TODO(jbudorick): Add support for more test types.
   'gtest',
   'instrumentation',
+  'perf',
   'uirobot',
 ]
 

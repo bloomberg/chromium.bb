@@ -222,3 +222,7 @@ class LocalDeviceTestRun(test_run.TestRun):
 
   def _ShouldShard(self):
     raise NotImplementedError
+
+
+class NoTestsError(Exception):
+  """Error for when no tests are found."""
