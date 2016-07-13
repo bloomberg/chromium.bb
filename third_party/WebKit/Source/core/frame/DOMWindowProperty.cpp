@@ -52,13 +52,6 @@ void DOMWindowProperty::willDestroyGlobalObjectInFrame()
     m_frame = nullptr;
 }
 
-void DOMWindowProperty::willDetachGlobalObjectFromFrame()
-{
-    // If the property is getting this callback it must have been
-    // created with a LocalFrame and it should still have it.
-    ASSERT(m_frame);
-}
-
 DEFINE_TRACE(DOMWindowProperty)
 {
     visitor->trace(m_frame);

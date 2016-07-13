@@ -193,8 +193,6 @@ public:
     // recurse on its child frames.
     void sendOrientationChangeEvent();
 
-    void willDetachDocumentFromFrame();
-
     EventQueue* getEventQueue() const;
     void enqueueWindowEvent(Event*);
     void enqueueDocumentEvent(Event*);

@@ -26,7 +26,7 @@
 #ifndef NavigatorGamepad_h
 #define NavigatorGamepad_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/ModulesExport.h"
@@ -42,7 +42,7 @@ class Gamepad;
 class GamepadList;
 class Navigator;
 
-class MODULES_EXPORT NavigatorGamepad final : public GarbageCollectedFinalized<NavigatorGamepad>, public Supplement<Navigator>, public DOMWindowProperty, public PlatformEventController, public LocalDOMWindow::EventListenerObserver {
+class MODULES_EXPORT NavigatorGamepad final : public GarbageCollectedFinalized<NavigatorGamepad>, public Supplement<Navigator>, public ContextLifecycleObserver, public PlatformEventController, public LocalDOMWindow::EventListenerObserver {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorGamepad);
 public:
     static NavigatorGamepad* from(Document&);
@@ -65,9 +65,8 @@ private:
     void didRemoveGamepadEventListeners();
     bool startUpdatingIfAttached();
 
-    // DOMWindowProperty
-    void willDestroyGlobalObjectInFrame() override;
-    void willDetachGlobalObjectFromFrame() override;
+    // ContextLifecycleObserver
+    void contextDestroyed() override;
 
     // PlatformEventController
     void registerWithDispatcher() override;

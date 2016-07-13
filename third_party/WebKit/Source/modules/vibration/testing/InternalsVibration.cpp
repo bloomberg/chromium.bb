@@ -40,13 +40,13 @@ namespace blink {
 bool InternalsVibration::isVibrating(Internals&, Navigator* navigator)
 {
     DCHECK(navigator && navigator->frame());
-    return NavigatorVibration::from(*navigator).controller()->isRunning();
+    return NavigatorVibration::from(*navigator).controller(*navigator->frame())->isRunning();
 }
 
 Vector<unsigned> InternalsVibration::pendingVibrationPattern(Internals&, Navigator* navigator)
 {
     DCHECK(navigator && navigator->frame());
-    return NavigatorVibration::from(*navigator).controller()->pattern();
+    return NavigatorVibration::from(*navigator).controller(*navigator->frame())->pattern();
 }
 
 } // namespace blink

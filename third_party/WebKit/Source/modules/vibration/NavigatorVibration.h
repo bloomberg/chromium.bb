@@ -20,7 +20,7 @@
 #ifndef NavigatorVibration_h
 #define NavigatorVibration_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/GarbageCollected.h"
@@ -30,6 +30,7 @@
 
 namespace blink {
 
+class LocalFrame;
 class Navigator;
 class VibrationController;
 
@@ -46,7 +47,7 @@ enum NavigatorVibrationType {
 class MODULES_EXPORT NavigatorVibration final
     : public GarbageCollectedFinalized<NavigatorVibration>
     , public Supplement<Navigator>
-    , public DOMWindowProperty {
+    , public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorVibration);
     WTF_MAKE_NONCOPYABLE(NavigatorVibration);
 public:
@@ -59,7 +60,7 @@ public:
     static bool vibrate(Navigator&, unsigned time);
     static bool vibrate(Navigator&, const VibrationPattern&);
 
-    VibrationController* controller();
+    VibrationController* controller(const LocalFrame&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -68,8 +69,8 @@ private:
 
     explicit NavigatorVibration(Navigator&);
 
-    // Inherited from DOMWindowProperty.
-    void willDetachGlobalObjectFromFrame() override;
+    // Inherited from ContextLifecycleObserver.
+    void contextDestroyed() override;
 
     static void collectHistogramMetrics(const LocalFrame&);
 

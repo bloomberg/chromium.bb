@@ -5,6 +5,7 @@
 #ifndef NavigatorServiceWorker_h
 #define NavigatorServiceWorker_h
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/Navigator.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
@@ -17,7 +18,7 @@ class ExceptionState;
 class Navigator;
 class ServiceWorkerContainer;
 
-class MODULES_EXPORT NavigatorServiceWorker final : public GarbageCollected<NavigatorServiceWorker>, public Supplement<Navigator>, public DOMWindowProperty {
+class MODULES_EXPORT NavigatorServiceWorker final : public GarbageCollected<NavigatorServiceWorker>, public Supplement<Navigator>, public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
 public:
     static NavigatorServiceWorker* from(Document&);
@@ -29,12 +30,12 @@ public:
 
 private:
     explicit NavigatorServiceWorker(Navigator&);
-    ServiceWorkerContainer* serviceWorker(ExceptionState&);
+    ServiceWorkerContainer* serviceWorker(LocalFrame*, ExceptionState&);
 
     static const char* supplementName();
 
-    // DOMWindowProperty override.
-    void willDetachGlobalObjectFromFrame() override;
+    // ContextLifecycleObserver override.
+    void contextDestroyed() override;
 
     Member<ServiceWorkerContainer> m_serviceWorker;
 };

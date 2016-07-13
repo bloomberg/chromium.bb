@@ -19,6 +19,7 @@
 
 #include "modules/vibration/NavigatorVibration.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
 #include "core/frame/UseCounter.h"
@@ -30,7 +31,7 @@
 namespace blink {
 
 NavigatorVibration::NavigatorVibration(Navigator& navigator)
-    : DOMWindowProperty(navigator.frame())
+    : ContextLifecycleObserver(navigator.frame()->document())
 {
 }
 
@@ -80,7 +81,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator, const VibrationPattern& p
     if (!frame->page()->isPageVisible())
         return false;
 
-    return NavigatorVibration::from(navigator).controller()->vibrate(pattern);
+    return NavigatorVibration::from(navigator).controller(*frame)->vibrate(pattern);
 }
 
 // static
@@ -112,15 +113,15 @@ void NavigatorVibration::collectHistogramMetrics(const LocalFrame& frame)
     NavigatorVibrateHistogram.count(type);
 }
 
-VibrationController* NavigatorVibration::controller()
+VibrationController* NavigatorVibration::controller(const LocalFrame& frame)
 {
-    if (!m_controller && frame())
-        m_controller = new VibrationController(*frame()->document());
+    if (!m_controller)
+        m_controller = new VibrationController(*frame.document());
 
     return m_controller.get();
 }
 
-void NavigatorVibration::willDetachGlobalObjectFromFrame()
+void NavigatorVibration::contextDestroyed()
 {
     if (m_controller) {
         m_controller->cancel();
@@ -132,7 +133,7 @@ DEFINE_TRACE(NavigatorVibration)
 {
     visitor->trace(m_controller);
     Supplement<Navigator>::trace(visitor);
-    DOMWindowProperty::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

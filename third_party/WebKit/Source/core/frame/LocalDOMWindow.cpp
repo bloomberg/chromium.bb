@@ -504,12 +504,6 @@ void LocalDOMWindow::willDestroyDocumentInFrame()
         domWindowProperty->willDestroyGlobalObjectInFrame();
 }
 
-void LocalDOMWindow::willDetachDocumentFromFrame()
-{
-    for (const auto& domWindowProperty : m_properties)
-        domWindowProperty->willDetachGlobalObjectFromFrame();
-}
-
 void LocalDOMWindow::registerProperty(DOMWindowProperty* property)
 {
     m_properties.add(property);

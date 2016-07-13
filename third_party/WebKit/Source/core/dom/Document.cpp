@@ -2140,8 +2140,6 @@ void Document::detach(const AttachContext& context)
     ScriptForbiddenScope forbidScript;
     view()->dispose();
     m_markers->prepareForDestruction();
-    if (LocalDOMWindow* window = this->domWindow())
-        window->willDetachDocumentFromFrame();
 
     m_lifecycle.advanceTo(DocumentLifecycle::Stopping);
 

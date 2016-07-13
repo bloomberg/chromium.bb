@@ -39,7 +39,6 @@ public:
     explicit DOMWindowProperty(LocalFrame*);
 
     virtual void willDestroyGlobalObjectInFrame();
-    virtual void willDetachGlobalObjectFromFrame();
 
     LocalFrame* frame() const { return m_frame; }
 
