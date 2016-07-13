@@ -59,7 +59,7 @@ gfx::Image UpgradeDetector::GetIcon() {
   DCHECK_NE(gfx::kPlaceholderColor, color);
 
   return gfx::Image(
-      gfx::CreateVectorIcon(gfx::VectorIconId::UPGRADE_MENU_ITEM, 16, color));
+      gfx::CreateVectorIcon(gfx::VectorIconId::BROWSER_TOOLS_UPDATE, color));
 }
 
 UpgradeDetector::UpgradeDetector()
