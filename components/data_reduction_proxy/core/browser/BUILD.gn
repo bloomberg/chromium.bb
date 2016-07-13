@@ -96,7 +96,7 @@ source_set("browser") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "data_reduction_proxy_config_test_utils.cc",

@@ -666,7 +666,7 @@ if (!is_android) {
   }
 
   if (enable_app_list && use_ash) {
-    source_set("test_support_applist_ash") {
+    static_library("test_support_applist_ash") {
       defines = []
       testonly = true
 
@@ -682,7 +682,7 @@ if (!is_android) {
     }
   }
 
-  source_set("sync_integration_test_support") {
+  static_library("sync_integration_test_support") {
     testonly = true
     sources = rebase_path(
             chrome_tests_gypi_values.test_support_sync_integration_sources,
@@ -2438,7 +2438,7 @@ if (!is_android && !is_ios && !is_chromecast) {
   }
 }
 
-source_set("test_support_unit") {
+static_library("test_support_unit") {
   testonly = true
   sources = [
     "../browser/sync/glue/session_sync_test_helper.cc",

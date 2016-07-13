@@ -97,7 +97,7 @@ source_set("unit_tests") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "abstract_profile_sync_service_test.cc",

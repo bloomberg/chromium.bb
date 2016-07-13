@@ -20,7 +20,7 @@ component("captive_portal") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "captive_portal_testing_utils.cc",

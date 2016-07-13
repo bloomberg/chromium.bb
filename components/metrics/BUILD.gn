@@ -14,7 +14,7 @@ if (metrics_use_blimp) {
 }
 
 # GYP version: components/metrics.gypi:metrics
-source_set("metrics") {
+static_library("metrics") {
   sources = [
     "call_stack_profile_metrics_provider.cc",
     "call_stack_profile_metrics_provider.h",
@@ -130,7 +130,7 @@ if (!is_ios) {
 
 if (is_chromeos) {
   # GYP version: components/metrics.gypi:metrics_leak_detector
-  source_set("leak_detector") {
+  static_library("leak_detector") {
     sources = [
       "leak_detector/call_stack_manager.cc",
       "leak_detector/call_stack_manager.h",
@@ -196,7 +196,7 @@ static_library("net") {
 }
 
 # GYP version: components/metrics.gypi:metrics_profiler
-source_set("profiler") {
+static_library("profiler") {
   sources = [
     "profiler/profiler_metrics_provider.cc",
     "profiler/profiler_metrics_provider.h",
@@ -236,7 +236,7 @@ source_set("ui") {
 
 if (!is_ios) {
   # GYP version: components/metrics.gypi:metrics_profiler_content
-  source_set("profiler_content") {
+  static_library("profiler_content") {
     sources = [
       "profiler/content/content_tracking_synchronizer_delegate.cc",
       "profiler/content/content_tracking_synchronizer_delegate.h",
@@ -254,7 +254,7 @@ if (!is_ios) {
   }
 } else {
   # GYP version: components/metrics.gypi:metrics_profiler_ios
-  source_set("profiler_ios") {
+  static_library("profiler_ios") {
     sources = [
       "profiler/ios/ios_tracking_synchronizer_delegate.cc",
       "profiler/ios/ios_tracking_synchronizer_delegate.h",
@@ -270,7 +270,7 @@ if (!is_ios) {
 }
 
 # GYP version: components/metrics.gypi:metrics_test_support
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test_enabled_state_provider.cc",
@@ -291,7 +291,7 @@ source_set("test_support") {
 
 if (is_linux) {
   # GYP version: components/metrics.gypi:metrics_serialization
-  source_set("serialization") {
+  static_library("serialization") {
     sources = [
       "serialization/metric_sample.cc",
       "serialization/metric_sample.h",

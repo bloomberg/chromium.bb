@@ -48,7 +48,7 @@ static_library("renderer") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test_password_autofill_agent.cc",

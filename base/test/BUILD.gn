@@ -9,7 +9,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("test_config") {
+static_library("test_config") {
   testonly = true
   sources = [
     "test_switches.cc",
@@ -23,7 +23,7 @@ source_set("test_config") {
 }
 
 # GYP: //base/base.gyp:test_support_base
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "gtest_util.cc",
@@ -216,6 +216,9 @@ config("perf_test_config") {
   defines = [ "PERF_TEST" ]
 }
 
+# This is a source set instead of a static library because it seems like some
+# linkers get confused when "main" is in a static library, and if you link to
+# this, you always want the object file anyway.
 source_set("test_support_perf") {
   testonly = true
   sources = [
@@ -230,7 +233,7 @@ source_set("test_support_perf") {
   public_configs = [ ":perf_test_config" ]
 }
 
-source_set("test_launcher_nacl_nonsfi") {
+static_library("test_launcher_nacl_nonsfi") {
   testonly = true
   sources = [
     "launcher/test_launcher_nacl_nonsfi.cc",
@@ -241,7 +244,7 @@ source_set("test_launcher_nacl_nonsfi") {
   ]
 }
 
-source_set("run_all_unittests") {
+static_library("run_all_unittests") {
   testonly = true
   sources = [
     "run_all_unittests.cc",

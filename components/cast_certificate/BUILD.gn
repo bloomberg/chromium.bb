@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cast_certificate") {
+static_library("cast_certificate") {
   sources = [
     "cast_cert_validator.cc",
     "cast_cert_validator.h",
@@ -15,7 +15,7 @@ source_set("cast_certificate") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "cast_cert_validator_test_helpers.cc",

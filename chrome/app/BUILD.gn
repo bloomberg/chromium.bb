@@ -312,7 +312,7 @@ grit("settings_google_chrome_strings") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   visibility = [ "//chrome/test:test_support" ]
 

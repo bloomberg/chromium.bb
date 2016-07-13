@@ -181,7 +181,7 @@ component("ash_with_content") {
 }
 
 # TODO(msw): Move support code with content deps to test_support_with_content.
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = gypi_values.ash_test_support_sources
   configs += [ "//build/config:precompiled_headers" ]
@@ -237,7 +237,7 @@ source_set("test_support") {
   }
 }
 
-source_set("test_support_with_content") {
+static_library("test_support_with_content") {
   testonly = true
   sources = gypi_values.ash_test_support_with_content_sources
   configs += [ "//build/config:precompiled_headers" ]
@@ -249,7 +249,7 @@ source_set("test_support_with_content") {
   ]
 }
 
-source_set("interactive_ui_test_support") {
+static_library("interactive_ui_test_support") {
   testonly = true
   configs += [ "//build/config:precompiled_headers" ]
   public_deps = [

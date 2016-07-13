@@ -990,7 +990,7 @@ if (android_java_ui) {
 }
 
 if (is_win) {
-  source_set("chrome_process_finder") {
+  static_library("chrome_process_finder") {
     sources = [
       "win/chrome_process_finder.cc",
       "win/chrome_process_finder.h",
@@ -1324,7 +1324,7 @@ static_library("test_support") {
 }
 
 # In GYP this is part of test_support_ui.
-source_set("test_support_ui") {
+static_library("test_support_ui") {
   testonly = true
 
   # Always include this via the main test support UI target.
@@ -1351,7 +1351,7 @@ source_set("test_support_ui") {
 }
 
 if (enable_rlz_support) {
-  source_set("rlz") {
+  static_library("rlz") {
     sources =
         rebase_path(gypi_values.chrome_browser_rlz_sources, ".", "//chrome")
     deps = [
@@ -1367,7 +1367,7 @@ if (enable_rlz_support) {
 if (enable_pepper_cdms) {
   # These constants are separated so that test binaries can use them without
   # linking all of the test support.
-  source_set("pepper_cdm_test_constants") {
+  static_library("pepper_cdm_test_constants") {
     testonly = true
     visibility = [ "//chrome/*" ]
     sources = [

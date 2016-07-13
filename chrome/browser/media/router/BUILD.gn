@@ -83,7 +83,7 @@ mojom("mojo_bindings") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   deps = [
     ":router",

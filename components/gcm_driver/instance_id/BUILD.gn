@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # GYP version: components/gcm_driver.gypi:instance_id_driver
-source_set("instance_id") {
+static_library("instance_id") {
   sources = [
     "android/component_jni_registrar.cc",
     "android/component_jni_registrar.h",
@@ -36,7 +36,7 @@ source_set("instance_id") {
 }
 
 # GYP version: components/gcm_driver.gypi:instance_id_test_support
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "fake_gcm_driver_for_instance_id.cc",

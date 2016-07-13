@@ -4,7 +4,7 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-source_set("drive") {
+static_library("drive") {
   sources = [
     "drive_api_util.cc",
     "drive_api_util.h",
@@ -144,7 +144,7 @@ proto_library("proto") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "service/dummy_drive_service.cc",
@@ -165,25 +165,27 @@ source_set("test_support") {
   ]
 }
 
-source_set("test_support_chromeos") {
-  testonly = true
-  sources = [
-    "chromeos/drive_test_util.cc",
-    "chromeos/drive_test_util.h",
-    "chromeos/dummy_file_system.cc",
-    "chromeos/dummy_file_system.h",
-    "chromeos/fake_file_system.cc",
-    "chromeos/fake_file_system.h",
-    "chromeos/fake_free_disk_space_getter.cc",
-    "chromeos/fake_free_disk_space_getter.h",
-  ]
-  deps = [
-    ":drive",
-    ":drive_chromeos",
-    ":proto",
-    "//base",
-    "//components/prefs:test_support",
-    "//content/test:test_support",
-    "//google_apis:test_support",
-  ]
+if (is_chromeos) {
+  static_library("test_support_chromeos") {
+    testonly = true
+    sources = [
+      "chromeos/drive_test_util.cc",
+      "chromeos/drive_test_util.h",
+      "chromeos/dummy_file_system.cc",
+      "chromeos/dummy_file_system.h",
+      "chromeos/fake_file_system.cc",
+      "chromeos/fake_file_system.h",
+      "chromeos/fake_free_disk_space_getter.cc",
+      "chromeos/fake_free_disk_space_getter.h",
+    ]
+    deps = [
+      ":drive",
+      ":drive_chromeos",
+      ":proto",
+      "//base",
+      "//components/prefs:test_support",
+      "//content/test:test_support",
+      "//google_apis:test_support",
+    ]
+  }
 }
