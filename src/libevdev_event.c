@@ -159,16 +159,18 @@ int
 Event_Get_Touch_Count(EvdevPtr device)
 {
 
-    if (TestBit(BTN_TOOL_QUINTTAP, device->key_state_bitmask))
-        return 5;
-    if (TestBit(BTN_TOOL_QUADTAP, device->key_state_bitmask))
-        return 4;
-    if (TestBit(BTN_TOOL_TRIPLETAP, device->key_state_bitmask))
-        return 3;
-    if (TestBit(BTN_TOOL_DOUBLETAP, device->key_state_bitmask))
-        return 2;
-    if (TestBit(BTN_TOOL_FINGER, device->key_state_bitmask))
-        return 1;
+    if (TestBit(BTN_TOUCH, device->key_state_bitmask)) {
+        if (TestBit(BTN_TOOL_QUINTTAP, device->key_state_bitmask))
+            return 5;
+        if (TestBit(BTN_TOOL_QUADTAP, device->key_state_bitmask))
+            return 4;
+        if (TestBit(BTN_TOOL_TRIPLETAP, device->key_state_bitmask))
+            return 3;
+        if (TestBit(BTN_TOOL_DOUBLETAP, device->key_state_bitmask))
+            return 2;
+        if (TestBit(BTN_TOOL_FINGER, device->key_state_bitmask))
+            return 1;
+    }
     return 0;
 }
 
