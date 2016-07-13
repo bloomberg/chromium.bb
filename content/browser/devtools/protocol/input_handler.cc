@@ -166,6 +166,7 @@ Response InputHandler::DispatchKeyEvent(
     const bool* is_keypad,
     const bool* is_system_key) {
   NativeWebKeyboardEvent event;
+  event.skip_in_browser = true;
 
   if (type == dispatch_key_event::kTypeKeyDown) {
     event.type = blink::WebInputEvent::KeyDown;

@@ -1066,6 +1066,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDeviceEmulation) {
   RunTest("testDeviceMetricsOverrides", "about:blank");
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDispatchKeyEventDoesNotCrash) {
+  RunTest("testDispatchKeyEventDoesNotCrash", "about:blank");
+}
+
 // Tests that settings are stored in profile correctly.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSettings) {
   OpenDevToolsWindow("about:blank", true);
