@@ -275,9 +275,12 @@ class NodeController : public ports::NodeDelegate,
   std::unordered_map<ports::NodeName, OutgoingMessageQueue>
       pending_relay_messages_;
 
-  // Guards |incoming_messages_|.
+  // Guards |incoming_messages_| and |incoming_messages_task_posted_|.
   base::Lock messages_lock_;
   std::queue<ports::ScopedMessage> incoming_messages_;
+  // Ensures that there is only one incoming messages task posted to the IO
+  // thread.
+  bool incoming_messages_task_posted_ = false;
   // Flag to fast-path checking |incoming_messages_|.
   AtomicFlag incoming_messages_flag_;
 

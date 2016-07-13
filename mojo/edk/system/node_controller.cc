@@ -651,6 +651,16 @@ void NodeController::AcceptIncomingMessages() {
 
 void NodeController::ProcessIncomingMessages() {
   RequestContext request_context(RequestContext::Source::SYSTEM);
+
+  {
+    base::AutoLock lock(messages_lock_);
+    // Allow a new incoming messages processing task to be posted. This can't be
+    // done after AcceptIncomingMessages() otherwise a message might be missed.
+    // Doing it here may result in at most two tasks existing at the same time;
+    // this running one, and one pending in the task runner.
+    incoming_messages_task_posted_ = false;
+  }
+
   AcceptIncomingMessages();
 }
 
@@ -708,16 +718,18 @@ void NodeController::ForwardMessage(const ports::NodeName& node,
     // (synchronously) in response to Node's ClosePort, SendMessage, or
     // AcceptMessage, we flush the queue after calling any of those methods.
     base::AutoLock lock(messages_lock_);
-    schedule_pump_task = incoming_messages_.empty();
+    // |io_task_runner_| may be null in tests or processes that don't require
+    // multi-process Mojo.
+    schedule_pump_task = incoming_messages_.empty() && io_task_runner_ &&
+        !incoming_messages_task_posted_;
+    incoming_messages_task_posted_ |= schedule_pump_task;
     incoming_messages_.emplace(std::move(message));
     incoming_messages_flag_.Set(true);
   } else {
     SendPeerMessage(node, std::move(message));
   }
 
-  // |io_task_runner_| may be null in tests or processes that don't require
-  // multi-process Mojo.
-  if (schedule_pump_task && io_task_runner_) {
+  if (schedule_pump_task) {
     // Normally, the queue is processed after the action that added the local
     // message is done (i.e. SendMessage, ClosePort, etc). However, it's also
     // possible for a local message to be added as a result of a remote message,
