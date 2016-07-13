@@ -52,7 +52,7 @@ bool IsValidExternalPath(const base::FilePath& path) {
 }
 
 void NormalizeInternalPath(std::string* path) {
-  if (path->size() > 1 && path->at(path->size() - 1) == '/')
+  if (path->size() > 1 && path->back() == '/')
     path->erase(path->size() - 1, 1);
 }
 

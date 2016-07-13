@@ -64,8 +64,8 @@ class P2PSocketDispatcherHost::DnsRequest {
 
     // Add period at the end to make sure that we only resolve
     // fully-qualified names.
-    if (host_name_.at(host_name_.size() - 1) != '.')
-      host_name_ = host_name_ + '.';
+    if (host_name_.back() != '.')
+      host_name_ += '.';
 
     net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
     int result = resolver_.Resolve(
