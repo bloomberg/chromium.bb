@@ -441,10 +441,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // RenderFrames.
   bool is_for_guests_only_;
 
-  // Forwards messages between WebRTCInternals in the browser process
-  // and PeerConnectionTracker in the renderer process.
-  scoped_refptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
-
   // Prevents the class from being added as a GpuDataManagerImpl observer more
   // than once.
   bool gpu_observer_registered_;
@@ -478,6 +474,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   WebRTCEventLogHost webrtc_eventlog_host_;
 #endif
+
+  // Forwards messages between WebRTCInternals in the browser process
+  // and PeerConnectionTracker in the renderer process.
+  // It holds a raw pointer to webrtc_eventlog_host_, and therefore should be
+  // defined below it so it is destructed first.
+  scoped_refptr<PeerConnectionTrackerHost> peer_connection_tracker_host_;
 
   int worker_ref_count_;
 
