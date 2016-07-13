@@ -148,8 +148,7 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
 // Returns a JS dictionary of configuration data for the local NTP.
 std::string GetConfigData(Profile* profile) {
   base::DictionaryValue config_data;
-  bool is_google = DefaultSearchProviderIsGoogle(profile) &&
-                   search::ShouldShowGoogleLocalNTP();
+  bool is_google = DefaultSearchProviderIsGoogle(profile);
   config_data.Set("translatedStrings",
                   GetTranslatedStrings(is_google).release());
   config_data.SetBoolean("isGooglePage", is_google);

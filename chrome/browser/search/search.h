@@ -134,10 +134,6 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile);
 // focused.
 bool ShouldPrerenderInstantUrlOnOmniboxFocus();
 
-// Returns true if the local new tab page should show a Google logo and search
-// box for users whose default search provider is Google, or false if not.
-bool ShouldShowGoogleLocalNTP();
-
 // Transforms the input |url| into its "effective URL". The returned URL
 // facilitates grouping process-per-site. The |url| is transformed, for
 // example, from

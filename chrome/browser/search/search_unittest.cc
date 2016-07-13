@@ -596,23 +596,6 @@ TEST_F(SearchTest,
 }
 
 
-TEST_F(SearchTest, ShouldShowGoogleLocalNTP_Default) {
-  EXPECT_TRUE(ShouldShowGoogleLocalNTP());
-}
-
-TEST_F(SearchTest, ShouldShowGoogleLocalNTP_EnabledViaFinch) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 google_local_ntp:1"));
-  EXPECT_TRUE(ShouldShowGoogleLocalNTP());
-}
-
-TEST_F(SearchTest, ShouldShowGoogleLocalNTP_DisabledViaFinch) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch", "Group1 espv:2 google_local_ntp:0"));
-  EXPECT_FALSE(ShouldShowGoogleLocalNTP());
-}
-
-
 TEST_F(SearchTest, IsNTPURL) {
   GURL invalid_url;
   GURL ntp_url(chrome::kChromeUINewTabURL);

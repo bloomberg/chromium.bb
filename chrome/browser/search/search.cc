@@ -61,8 +61,6 @@ const char kUseSearchPathForInstant[] = "use_search_path_for_instant";
 const char kAltInstantURLPath[] = "search";
 const char kAltInstantURLQueryParams[] = "&qbp=1";
 
-const char kShouldShowGoogleLocalNTPFlagName[] = "google_local_ntp";
-
 // Status of the New Tab URL for the default Search provider. NOTE: Used in a
 // UMA histogram so values should only be added at the end and not reordered.
 enum NewTabURLState {
@@ -500,12 +498,6 @@ bool ShouldPrerenderInstantUrlOnOmniboxFocus() {
   FieldTrialFlags flags;
   return GetFieldTrialInfo(&flags) && GetBoolValueForFlagWithDefault(
       kPrerenderInstantUrlOnOmniboxFocus, false, flags);
-}
-
-bool ShouldShowGoogleLocalNTP() {
-  FieldTrialFlags flags;
-  return !GetFieldTrialInfo(&flags) || GetBoolValueForFlagWithDefault(
-      kShouldShowGoogleLocalNTPFlagName, true, flags);
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
