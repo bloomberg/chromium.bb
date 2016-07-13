@@ -1120,7 +1120,7 @@ if (is_win) {
   } else {
     group("chrome_dump_syms") {
     }
-    group("chrome_symbol_archive") {
+    group("chrome_dsym_archive") {
     }
   }
 }
