@@ -56,6 +56,7 @@ class IndexedDBFactory;
 class LevelDBComparator;
 class LevelDBDatabase;
 class LevelDBFactory;
+struct IndexedDBDataLossInfo;
 struct IndexedDBValue;
 
 class CONTENT_EXPORT IndexedDBBackingStore
@@ -372,8 +373,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const url::Origin& origin,
       const base::FilePath& path_base,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       base::SequencedTaskRunner* task_runner,
       bool clean_journal,
@@ -383,8 +383,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
       const url::Origin& origin,
       const base::FilePath& path_base,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       LevelDBFactory* leveldb_factory,
       base::SequencedTaskRunner* task_runner,

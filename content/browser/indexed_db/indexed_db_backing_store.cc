@@ -819,18 +819,15 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const Origin& origin,
     const base::FilePath& path_base,
     net::URLRequestContext* request_context,
-    blink::WebIDBDataLoss* data_loss,
-    std::string* data_loss_message,
+    IndexedDBDataLossInfo* data_loss_info,
     bool* disk_full,
     base::SequencedTaskRunner* task_runner,
     bool clean_journal,
     leveldb::Status* status) {
-  *data_loss = blink::WebIDBDataLossNone;
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::Open(
-      indexed_db_factory, origin, path_base, request_context, data_loss,
-      data_loss_message, disk_full, &leveldb_factory, task_runner,
-      clean_journal, status);
+      indexed_db_factory, origin, path_base, request_context, data_loss_info,
+      disk_full, &leveldb_factory, task_runner, clean_journal, status);
 }
 
 static std::string OriginToCustomHistogramSuffix(const Origin& origin) {
@@ -962,8 +959,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const Origin& origin,
     const base::FilePath& path_base,
     net::URLRequestContext* request_context,
-    blink::WebIDBDataLoss* data_loss,
-    std::string* data_loss_message,
+    IndexedDBDataLossInfo* data_loss_info,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory,
     base::SequencedTaskRunner* task_runner,
@@ -971,10 +967,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     leveldb::Status* status) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
-  *data_loss = blink::WebIDBDataLossNone;
-  *data_loss_message = "";
   *is_disk_full = false;
 
+  data_loss_info->status = blink::WebIDBDataLossNone;
   *status = leveldb::Status::OK();
 
   std::unique_ptr<LevelDBComparator> comparator(new Comparator());
@@ -1012,8 +1007,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     if (leveldb_env::IndicatesDiskFull(*status)) {
       *is_disk_full = true;
     } else if (status->IsCorruption()) {
-      *data_loss = blink::WebIDBDataLossTotal;
-      *data_loss_message = leveldb_env::GetCorruptionMessage(*status);
+      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->message = leveldb_env::GetCorruptionMessage(*status);
     }
   }
 
@@ -1026,8 +1021,8 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_PRIOR_CORRUPTION,
                           origin);
       db.reset();
-      *data_loss = blink::WebIDBDataLossTotal;
-      *data_loss_message =
+      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->message =
           "IndexedDB (database was corrupt): " + corruption_message;
     } else if (!IsSchemaKnown(db.get(), &is_schema_known)) {
       LOG(ERROR) << "IndexedDB had IO error checking schema, treating it as "
@@ -1036,16 +1031,16 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
           INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA,
           origin);
       db.reset();
-      *data_loss = blink::WebIDBDataLossTotal;
-      *data_loss_message = "I/O error checking schema";
+      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->message = "I/O error checking schema";
     } else if (!is_schema_known) {
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
                     "as failure to open";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA,
                           origin);
       db.reset();
-      *data_loss = blink::WebIDBDataLossTotal;
-      *data_loss_message = "Unknown schema";
+      data_loss_info->status = blink::WebIDBDataLossTotal;
+      data_loss_info->message = "Unknown schema";
     }
   }
 

@@ -187,18 +187,12 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
   scoped_refptr<TestableIndexedDBBackingStore> OpenBackingStoreForTest(
       const Origin& origin,
       net::URLRequestContext* url_request_context) {
-    blink::WebIDBDataLoss data_loss;
-    std::string data_loss_reason;
+    IndexedDBDataLossInfo data_loss_info;
     bool disk_full;
     leveldb::Status status;
     scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(origin,
-                         context()->data_path(),
-                         url_request_context,
-                         &data_loss,
-                         &data_loss_reason,
-                         &disk_full,
-                         &status);
+        OpenBackingStore(origin, context()->data_path(), url_request_context,
+                         &data_loss_info, &disk_full, &status);
     scoped_refptr<TestableIndexedDBBackingStore> testable_store =
         static_cast<TestableIndexedDBBackingStore*>(backing_store.get());
     return testable_store;
@@ -211,8 +205,7 @@ class TestIDBFactory : public IndexedDBFactoryImpl {
       const Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       bool first_time,
       leveldb::Status* status) override {

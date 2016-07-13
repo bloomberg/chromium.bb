@@ -31,6 +31,7 @@ namespace content {
 
 class IndexedDBBackingStore;
 struct IndexedDBPendingConnection;
+struct IndexedDBDataLossInfo;
 
 class CONTENT_EXPORT IndexedDBFactory
     : NON_EXPORTED_BASE(public base::RefCountedThreadSafe<IndexedDBFactory>) {
@@ -91,8 +92,7 @@ class CONTENT_EXPORT IndexedDBFactory
       const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_reason,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       leveldb::Status* status) = 0;
 
@@ -100,8 +100,7 @@ class CONTENT_EXPORT IndexedDBFactory
       const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       bool first_time,
       leveldb::Status* status) = 0;

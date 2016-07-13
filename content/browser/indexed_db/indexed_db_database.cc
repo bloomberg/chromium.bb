@@ -1740,7 +1740,8 @@ void IndexedDBDatabase::OpenConnection(
     // The backing store only detects data loss when it is first opened. The
     // presence of existing connections means we didn't even check for data loss
     // so there'd better not be any.
-    DCHECK_NE(blink::WebIDBDataLossTotal, connection.callbacks->data_loss());
+    DCHECK_NE(blink::WebIDBDataLossTotal,
+              connection.callbacks->data_loss_info().status);
     pending_open_calls_.push(connection);
     return;
   }
@@ -1830,7 +1831,7 @@ void IndexedDBDatabase::RunVersionChangeTransaction(
   DCHECK(callbacks.get());
   DCHECK(connections_.count(connection.get()));
   if (ConnectionCount() > 1) {
-    DCHECK_NE(blink::WebIDBDataLossTotal, callbacks->data_loss());
+    DCHECK_NE(blink::WebIDBDataLossTotal, callbacks->data_loss_info().status);
     // Front end ensures the event is not fired at connections that have
     // close_pending set.
     for (const auto* iter : connections_) {

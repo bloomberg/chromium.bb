@@ -76,8 +76,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_reason,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       leveldb::Status* s) override;
 
@@ -85,8 +84,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
       const url::Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       bool first_time,
       leveldb::Status* s) override;

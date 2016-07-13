@@ -39,20 +39,13 @@ class MockIDBFactory : public IndexedDBFactoryImpl {
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const Origin& origin,
       const base::FilePath& data_directory) {
-    blink::WebIDBDataLoss data_loss =
-        blink::WebIDBDataLossNone;
-    std::string data_loss_message;
+    IndexedDBDataLossInfo data_loss_info;
     bool disk_full;
     leveldb::Status s;
     scoped_refptr<IndexedDBBackingStore> backing_store =
-        OpenBackingStore(origin,
-                         data_directory,
-                         NULL /* request_context */,
-                         &data_loss,
-                         &data_loss_message,
-                         &disk_full,
-                         &s);
-    EXPECT_EQ(blink::WebIDBDataLossNone, data_loss);
+        OpenBackingStore(origin, data_directory, NULL /* request_context */,
+                         &data_loss_info, &disk_full, &s);
+    EXPECT_EQ(blink::WebIDBDataLossNone, data_loss_info.status);
     return backing_store;
   }
 
@@ -221,8 +214,7 @@ class DiskFullFactory : public IndexedDBFactoryImpl {
       const Origin& origin,
       const base::FilePath& data_directory,
       net::URLRequestContext* request_context,
-      blink::WebIDBDataLoss* data_loss,
-      std::string* data_loss_message,
+      IndexedDBDataLossInfo* data_loss_info,
       bool* disk_full,
       leveldb::Status* s) override {
     *disk_full = true;
@@ -447,7 +439,7 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
   ErrorCallbacks() : MockIndexedDBCallbacks(false), saw_error_(false) {}
 
   void OnError(const IndexedDBDatabaseError& error) override {
-    saw_error_= true;
+    saw_error_ = true;
   }
   bool saw_error() const { return saw_error_; }
 

@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
+#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/leveldb/leveldb_database.h"
 #include "content/browser/indexed_db/leveldb/mock_leveldb_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -98,24 +99,15 @@ TEST(IndexedDBIOErrorTest, CleanUpTest) {
 
   EXPECT_CALL(mock_leveldb_factory, OpenLevelDB(_, _, _, _)).Times(Exactly(1));
   EXPECT_CALL(mock_leveldb_factory, DestroyLevelDB(_)).Times(Exactly(1));
-  blink::WebIDBDataLoss data_loss = blink::WebIDBDataLossNone;
-  std::string data_loss_message;
+  content::IndexedDBDataLossInfo data_loss_info;
   bool disk_full = false;
   base::SequencedTaskRunner* task_runner = NULL;
   bool clean_journal = false;
   leveldb::Status s;
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      IndexedDBBackingStore::Open(factory,
-                                  origin,
-                                  path,
-                                  request_context,
-                                  &data_loss,
-                                  &data_loss_message,
-                                  &disk_full,
-                                  &mock_leveldb_factory,
-                                  task_runner,
-                                  clean_journal,
-                                  &s);
+      IndexedDBBackingStore::Open(
+          factory, origin, path, request_context, &data_loss_info, &disk_full,
+          &mock_leveldb_factory, task_runner, clean_journal, &s);
 }
 
 TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
@@ -125,9 +117,7 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   const base::FilePath path = temp_directory.path();
-  blink::WebIDBDataLoss data_loss =
-      blink::WebIDBDataLossNone;
-  std::string data_loss_reason;
+  content::IndexedDBDataLossInfo data_loss_info;
   bool disk_full = false;
   base::SequencedTaskRunner* task_runner = NULL;
   bool clean_journal = false;
@@ -147,17 +137,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                           leveldb_env::kNewLogger,
                                           base::File::FILE_ERROR_NO_SPACE));
   scoped_refptr<IndexedDBBackingStore> backing_store =
-      IndexedDBBackingStore::Open(factory,
-                                  origin,
-                                  path,
-                                  request_context,
-                                  &data_loss,
-                                  &data_loss_reason,
-                                  &disk_full,
-                                  &mock_leveldb_factory,
-                                  task_runner,
-                                  clean_journal,
-                                  &s);
+      IndexedDBBackingStore::Open(
+          factory, origin, path, request_context, &data_loss_info, &disk_full,
+          &mock_leveldb_factory, task_runner, clean_journal, &s);
   ASSERT_TRUE(s.IsIOError());
 
   busted_factory.SetOpenError(MakeIOError("some filename",
@@ -165,34 +147,18 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                           leveldb_env::kNewLogger,
                                           base::File::FILE_ERROR_NO_MEMORY));
   scoped_refptr<IndexedDBBackingStore> backing_store2 =
-      IndexedDBBackingStore::Open(factory,
-                                  origin,
-                                  path,
-                                  request_context,
-                                  &data_loss,
-                                  &data_loss_reason,
-                                  &disk_full,
-                                  &mock_leveldb_factory,
-                                  task_runner,
-                                  clean_journal,
-                                  &s);
+      IndexedDBBackingStore::Open(
+          factory, origin, path, request_context, &data_loss_info, &disk_full,
+          &mock_leveldb_factory, task_runner, clean_journal, &s);
   ASSERT_TRUE(s.IsIOError());
 
   busted_factory.SetOpenError(MakeIOError("some filename", "some message",
                                           leveldb_env::kNewLogger,
                                           base::File::FILE_ERROR_IO));
   scoped_refptr<IndexedDBBackingStore> backing_store3 =
-      IndexedDBBackingStore::Open(factory,
-                                  origin,
-                                  path,
-                                  request_context,
-                                  &data_loss,
-                                  &data_loss_reason,
-                                  &disk_full,
-                                  &mock_leveldb_factory,
-                                  task_runner,
-                                  clean_journal,
-                                  &s);
+      IndexedDBBackingStore::Open(
+          factory, origin, path, request_context, &data_loss_info, &disk_full,
+          &mock_leveldb_factory, task_runner, clean_journal, &s);
   ASSERT_TRUE(s.IsIOError());
 
   busted_factory.SetOpenError(MakeIOError("some filename",
@@ -200,17 +166,9 @@ TEST(IndexedDBNonRecoverableIOErrorTest, NuancedCleanupTest) {
                                           leveldb_env::kNewLogger,
                                           base::File::FILE_ERROR_FAILED));
   scoped_refptr<IndexedDBBackingStore> backing_store4 =
-      IndexedDBBackingStore::Open(factory,
-                                  origin,
-                                  path,
-                                  request_context,
-                                  &data_loss,
-                                  &data_loss_reason,
-                                  &disk_full,
-                                  &mock_leveldb_factory,
-                                  task_runner,
-                                  clean_journal,
-                                  &s);
+      IndexedDBBackingStore::Open(
+          factory, origin, path, request_context, &data_loss_info, &disk_full,
+          &mock_leveldb_factory, task_runner, clean_journal, &s);
   ASSERT_TRUE(s.IsIOError());
 }
 
