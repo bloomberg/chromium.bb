@@ -26,6 +26,7 @@
 #include "components/user_manager/known_user.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/display/screen.h"
 
 namespace {
 const char kAction[] = "action";
@@ -41,6 +42,7 @@ const char kStatus[] = "status";
 const char kText[] = "text";
 const char kActionInitialize[] = "initialize";
 const char kActionSetMetricsMode[] = "setMetricsMode";
+const char kActionSetWindowBounds[] = "setWindowBounds";
 const char kActionStartLso[] = "startLso";
 const char kActionCancelAuthCode[] = "cancelAuthCode";
 const char kActionSetAuthCode[] = "setAuthCode";
@@ -73,6 +75,7 @@ ArcSupportHost::ArcSupportHost() {
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
   DCHECK(arc_auth_service);
   arc_auth_service->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 
   pref_change_registrar_.Init(g_browser_process->local_state());
   pref_change_registrar_.Add(
@@ -82,6 +85,7 @@ ArcSupportHost::ArcSupportHost() {
 }
 
 ArcSupportHost::~ArcSupportHost() {
+  display::Screen::GetScreen()->RemoveObserver(this);
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
   if (arc_auth_service)
     arc_auth_service->RemoveObserver(this);
@@ -163,6 +167,19 @@ void ArcSupportHost::Initialize() {
   request.SetString(kAction, kActionInitialize);
   request.Set(kData, std::move(loadtime_data));
   request.SetString(kDeviceId, device_id);
+  base::JSONWriter::Write(request, &request_string);
+  client_->PostMessageFromNativeHost(request_string);
+}
+
+void ArcSupportHost::OnDisplayAdded(const display::Display& new_display) {}
+
+void ArcSupportHost::OnDisplayRemoved(const display::Display& old_display) {}
+
+void ArcSupportHost::OnDisplayMetricsChanged(const display::Display& display,
+                                             uint32_t changed_metrics) {
+  base::DictionaryValue request;
+  std::string request_string;
+  request.SetString(kAction, kActionSetWindowBounds);
   base::JSONWriter::Write(request, &request_string);
   client_->PostMessageFromNativeHost(request_string);
 }

@@ -66,6 +66,19 @@ var currentDeviceId = null;
 var termsAccepted = false;
 
 /**
+ * Host window inner default width.
+ * @const {number}
+ */
+var INNER_WIDTH = 960;
+
+/**
+ * Host window inner default height.
+ * @const {number}
+ */
+var INNER_HEIGHT = 688;
+
+
+/**
  * Closes current window in response to request from native code. This does not
  * issue 'cancelAuthCode' message to native code.
  */
@@ -207,6 +220,8 @@ function onNativeMessage(message) {
     closeWindowInternally();
   } else if (message.action == 'showPage') {
     showPageWithStatus(message.page, message.status);
+  } else if (message.action == 'setWindowBounds') {
+    setWindowBounds();
   }
 }
 
@@ -307,10 +322,46 @@ function loadInitialTerms() {
   termsView.src = 'https://play.google.com/about/play-terms.html';
 }
 
+function setWindowBounds() {
+  if (!appWindow) {
+    return;
+  }
+
+  var decorationWidth = appWindow.outerBounds.width -
+      appWindow.innerBounds.width;
+  var decorationHeight = appWindow.outerBounds.height -
+      appWindow.innerBounds.height;
+
+  var outerWidth = INNER_WIDTH + decorationWidth;
+  var outerHeight = INNER_HEIGHT + decorationHeight;
+  if (outerWidth > screen.availWidth) {
+    outerWidth = screen.availWidth;
+  }
+  if (outerHeight > screen.availHeight) {
+    outerHeight = screen.availHeight;
+  }
+  if (appWindow.outerBounds.width == outerWidth &&
+      appWindow.outerBounds.height == outerHeight) {
+    return;
+  }
+
+  appWindow.outerBounds.width = outerWidth;
+  appWindow.outerBounds.height = outerHeight;
+  appWindow.outerBounds.left = Math.ceil((screen.availWidth - outerWidth) / 2);
+  appWindow.outerBounds.top =
+    Math.ceil((screen.availHeight - outerHeight) / 2);
+}
+
 chrome.app.runtime.onLaunched.addListener(function() {
   var onAppContentLoad = function() {
     var doc = appWindow.contentWindow.document;
     lsoView = doc.getElementById('arc-support');
+    lsoView.addContentScripts([
+        { name: 'postProcess',
+          matches: ['https://accounts.google.com/*'],
+          css: { files: ['lso.css'] },
+          run_at: 'document_end'
+        }]);
 
     var isApprovalResponse = function(url) {
       var resultUrlPrefix = 'https://accounts.google.com/o/oauth2/approval?';
@@ -340,6 +391,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
       if (!isApprovalResponse(lsoView.src)) {
         // Show LSO page when its content is ready.
         showPage('lso');
+        // We have fixed width for LSO page in css file in order to prevent
+        // unwanted webview resize animation when it is shown first time. Now
+        // it safe to make it up to window width.
+        lsoView.style.width = '100%';
         return;
       }
 
@@ -457,6 +512,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
     appWindow = createdWindow;
     appWindow.contentWindow.onload = onAppContentLoad;
     createdWindow.onClosed.addListener(onWindowClosed);
+
+    setWindowBounds();
   };
 
   var onWindowClosed = function() {
@@ -472,6 +529,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
   };
 
   windowClosedInternally = false;
+
   var options = {
     'id': 'play_store_wnd',
     'resizable': false,
@@ -481,8 +539,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
       color: '#ffffff'
     },
     'innerBounds': {
-      'width': 960,
-      'height': 688
+      'width': INNER_WIDTH,
+      'height': INNER_HEIGHT
     }
   };
   chrome.app.window.create('main.html', options, onWindowCreated);

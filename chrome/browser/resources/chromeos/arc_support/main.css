@@ -15,7 +15,24 @@ webview,
   width: 100%;
 }
 
+::-webkit-scrollbar {
+  background: transparent;
+  height: 4px;
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  height: 16px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 #arc-support {
+  flex: auto;
+  overflow: hidden;
   width: 960px;
 }
 
@@ -34,6 +51,13 @@ webview,
   width: 16px;
 }
 
+.content {
+  /* Default window inner height (688px) minus image caption height (300px) */
+  height: 388px;
+  margin: 0;
+  padding: 0;
+}
+
 .image-header {
   display: block;
   height: 300px;
@@ -41,7 +65,16 @@ webview,
   width: 960px;
 }
 
+.scrollable {
+  flex: auto;
+  margin: 0;
+  overflow: auto;
+  padding: 0;
+}
+
 .section {
+  display: flex;
+  flex-direction: column;
   text-align: center;
 }
 
@@ -54,7 +87,6 @@ webview,
 .section-flex {
   display: flex;
   flex-direction: column;
-  height: 688px;
 }
 
 .section-checkbox-container {

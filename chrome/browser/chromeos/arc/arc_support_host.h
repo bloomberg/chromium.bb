@@ -9,10 +9,12 @@
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
+#include "ui/display/display_observer.h"
 
 // Supports communication with Arc support dialog.
 class ArcSupportHost : public extensions::NativeMessageHost,
-                       public arc::ArcAuthService::Observer {
+                       public arc::ArcAuthService::Observer,
+                       public display::DisplayObserver {
  public:
   static const char kHostName[];
   static const char kHostAppId[];
@@ -32,6 +34,12 @@ class ArcSupportHost : public extensions::NativeMessageHost,
   void OnOptInUIClose() override;
   void OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
                          const base::string16& status) override;
+
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
  private:
   ArcSupportHost();
