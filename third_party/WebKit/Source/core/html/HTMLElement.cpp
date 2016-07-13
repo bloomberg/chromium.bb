@@ -737,7 +737,8 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
     while (node) {
         // Skip bdi, script, style and text form controls.
         if (equalIgnoringCase(node->nodeName(), "bdi") || isHTMLScriptElement(*node) || isHTMLStyleElement(*node)
-            || (node->isElementNode() && toElement(node)->isTextFormControl())) {
+            || (node->isElementNode() && toElement(node)->isTextFormControl())
+            || (node->isElementNode() && toElement(node)->shadowPseudoId() == "-webkit-input-placeholder")) {
             node = FlatTreeTraversal::nextSkippingChildren(*node, this);
             continue;
         }
