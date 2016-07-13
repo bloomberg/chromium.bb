@@ -73,22 +73,12 @@ public:
         virtual ~ExtraData() { }
     };
 
-    ResourceRequest()
-    {
-        initialize(KURL());
-    }
-
-    ResourceRequest(const String& urlString)
-    {
-        initialize(KURL(ParsedURLString, urlString));
-    }
-
-    ResourceRequest(const KURL& url)
-    {
-        initialize(url);
-    }
-
+    ResourceRequest();
+    ResourceRequest(const String& urlString);
+    ResourceRequest(const KURL&);
     explicit ResourceRequest(CrossThreadResourceRequestData*);
+    ResourceRequest(const ResourceRequest&);
+    ResourceRequest& operator=(const ResourceRequest&);
 
     // Gets a copy of the data suitable for passing to another thread.
     std::unique_ptr<CrossThreadResourceRequestData> copyData() const;

@@ -164,6 +164,9 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     // whatever values may be present in the opaque m_extraData structure.
 }
 
+ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
+ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) = default;
+
 std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
 {
     std::unique_ptr<CrossThreadResourceResponseData> data = wrapUnique(new CrossThreadResourceResponseData);

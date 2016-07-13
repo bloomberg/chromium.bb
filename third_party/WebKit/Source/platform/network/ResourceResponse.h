@@ -131,6 +131,8 @@ public:
 
     ResourceResponse();
     ResourceResponse(const KURL&, const AtomicString& mimeType, long long expectedLength, const AtomicString& textEncodingName, const String& filename);
+    ResourceResponse(const ResourceResponse&);
+    ResourceResponse& operator=(const ResourceResponse&);
 
     bool isNull() const { return m_isNull; }
     bool isHTTP() const;

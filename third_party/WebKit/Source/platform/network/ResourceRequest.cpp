@@ -40,6 +40,21 @@ namespace blink {
 
 double ResourceRequest::s_defaultTimeoutInterval = INT_MAX;
 
+ResourceRequest::ResourceRequest()
+{
+    initialize(KURL());
+}
+
+ResourceRequest::ResourceRequest(const String& urlString)
+{
+    initialize(KURL(ParsedURLString, urlString));
+}
+
+ResourceRequest::ResourceRequest(const KURL& url)
+{
+    initialize(url);
+}
+
 ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
     : ResourceRequest()
 {
@@ -79,6 +94,10 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
     m_inputPerfMetricReportPolicy = data->m_inputPerfMetricReportPolicy;
     m_redirectStatus = data->m_redirectStatus;
 }
+
+ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
+
+ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
 
 std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
 {
