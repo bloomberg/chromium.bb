@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/renderer_host/chrome_navigation_data.h"
@@ -152,14 +153,15 @@ class DataReductionProxyMetricsObserverTest
     NavigateAndCommit(GURL(kDefaultTestUrl2));
   }
 
-  // Verify that, if expected is set, its value equals that of
-  // actual. Otherwise, if expected is unset, verify that actual is zero.
+  // Verify that, if expected and actual are set, their values are equal.
+  // Otherwise, verify that both are unset.
   void ExpectEqualOrUnset(const base::Optional<base::TimeDelta>& expected,
-                          base::TimeDelta actual) {
-    if (expected) {
-      EXPECT_EQ(expected.value(), actual);
+                          const base::Optional<base::TimeDelta>& actual) {
+    if (expected && actual) {
+      EXPECT_EQ(expected.value(), actual.value());
     } else {
-      EXPECT_TRUE(actual.is_zero());
+      EXPECT_TRUE(!expected);
+      EXPECT_TRUE(!actual);
     }
   }
 
@@ -168,13 +170,13 @@ class DataReductionProxyMetricsObserverTest
     EXPECT_EQ(timing_.navigation_start,
               pingback_client_->timing()->navigation_start);
     ExpectEqualOrUnset(timing_.first_contentful_paint,
-                       pingback_client_->timing()->first_contentful_paint);
+              pingback_client_->timing()->first_contentful_paint);
     ExpectEqualOrUnset(timing_.response_start,
-                       pingback_client_->timing()->response_start);
+              pingback_client_->timing()->response_start);
     ExpectEqualOrUnset(timing_.load_event_start,
-                       pingback_client_->timing()->load_event_start);
+              pingback_client_->timing()->load_event_start);
     ExpectEqualOrUnset(timing_.first_image_paint,
-                       pingback_client_->timing()->first_image_paint);
+              pingback_client_->timing()->first_image_paint);
   }
 
   void ValidateHistograms() {

@@ -73,6 +73,7 @@
         'data_reduction_proxy/core/common/data_reduction_proxy_event_store.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_headers.h',
+        'data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_params.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_params.h',

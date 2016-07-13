@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 
 #include "base/metrics/histogram.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_page_load_timing.h"
@@ -41,25 +42,28 @@ std::string SerializeData(const DataReductionProxyData& request_data,
           .release());
   if (request_data.original_request_url().is_valid())
     request->set_first_request_url(request_data.original_request_url().spec());
-  if (!timing.first_contentful_paint.is_zero()) {
+  if (timing.first_contentful_paint) {
     request->set_allocated_time_to_first_contentful_paint(
         protobuf_parser::CreateDurationFromTimeDelta(
-            timing.first_contentful_paint)
+            timing.first_contentful_paint.value())
             .release());
   }
-  if (!timing.first_image_paint.is_zero()) {
+  if (timing.first_image_paint) {
     request->set_allocated_time_to_first_image_paint(
-        protobuf_parser::CreateDurationFromTimeDelta(timing.first_image_paint)
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.first_image_paint.value())
             .release());
   }
-  if (!timing.response_start.is_zero()) {
+  if (timing.response_start) {
     request->set_allocated_time_to_first_byte(
-        protobuf_parser::CreateDurationFromTimeDelta(timing.response_start)
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.response_start.value())
             .release());
   }
-  if (!timing.load_event_start.is_zero()) {
+  if (timing.load_event_start) {
     request->set_allocated_page_load_time(
-        protobuf_parser::CreateDurationFromTimeDelta(timing.load_event_start)
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.load_event_start.value())
             .release());
   }
   std::string serialized_request;

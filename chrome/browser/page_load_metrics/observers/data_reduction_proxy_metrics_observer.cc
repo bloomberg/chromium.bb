@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -126,28 +127,26 @@ void DataReductionProxyMetricsObserver::OnComplete(
   }
   // Only consider timing events that happened before the first background
   // event.
-  base::TimeDelta response_start;
-  base::TimeDelta load_event_start;
-  base::TimeDelta first_image_paint;
-  base::TimeDelta first_contentful_paint;
+  base::Optional<base::TimeDelta> response_start;
+  base::Optional<base::TimeDelta> load_event_start;
+  base::Optional<base::TimeDelta> first_image_paint;
+  base::Optional<base::TimeDelta> first_contentful_paint;
   if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
                                                       info)) {
-    response_start = timing.response_start.value();
+    response_start = timing.response_start;
   }
   if (WasStartedInForegroundOptionalEventInForeground(timing.load_event_start,
                                                       info)) {
-    load_event_start = timing.load_event_start.value();
+    load_event_start = timing.load_event_start;
   }
   if (WasStartedInForegroundOptionalEventInForeground(timing.first_image_paint,
                                                       info)) {
-    first_image_paint = timing.first_image_paint.value();
+    first_image_paint = timing.first_image_paint;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
           timing.first_contentful_paint, info)) {
-    first_contentful_paint = timing.first_contentful_paint.value();
+    first_contentful_paint = timing.first_contentful_paint;
   }
-  // TODO(ryansturm): Change DataReductionProxyPageLoadTiming to take
-  // base::Optional<>s (see crbug.com/626040).
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint);

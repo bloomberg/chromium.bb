@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
@@ -68,10 +69,14 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
  public:
   DataReductionProxyPingbackClientTest()
       : timing_(base::Time::FromJsTime(1500),
-                base::TimeDelta::FromMilliseconds(1600),
-                base::TimeDelta::FromMilliseconds(1700),
-                base::TimeDelta::FromMilliseconds(1800),
-                base::TimeDelta::FromMilliseconds(1900)) {}
+                base::Optional<base::TimeDelta>(
+                    base::TimeDelta::FromMilliseconds(1600)),
+                base::Optional<base::TimeDelta>(
+                    base::TimeDelta::FromMilliseconds(1700)),
+                base::Optional<base::TimeDelta>(
+                    base::TimeDelta::FromMilliseconds(1800)),
+                base::Optional<base::TimeDelta>(
+                    base::TimeDelta::FromMilliseconds(1900))) {}
 
   TestDataReductionProxyPingbackClient* pingback_client() const {
     return pingback_client_.get();
@@ -123,15 +128,16 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_EQ(
       timing().navigation_start,
       protobuf_parser::TimestampToTime(pageload_metrics.first_request_time()));
-  EXPECT_EQ(timing().response_start,
+  EXPECT_EQ(timing().response_start.value(),
             protobuf_parser::DurationToTimeDelta(
                 pageload_metrics.time_to_first_byte()));
-  EXPECT_EQ(timing().load_event_start, protobuf_parser::DurationToTimeDelta(
-                                           pageload_metrics.page_load_time()));
-  EXPECT_EQ(timing().first_image_paint,
+  EXPECT_EQ(
+      timing().load_event_start.value(),
+      protobuf_parser::DurationToTimeDelta(pageload_metrics.page_load_time()));
+  EXPECT_EQ(timing().first_image_paint.value(),
             protobuf_parser::DurationToTimeDelta(
                 pageload_metrics.time_to_first_image_paint()));
-  EXPECT_EQ(timing().first_contentful_paint,
+  EXPECT_EQ(timing().first_contentful_paint.value(),
             protobuf_parser::DurationToTimeDelta(
                 pageload_metrics.time_to_first_contentful_paint()));
 
