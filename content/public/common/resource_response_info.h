@@ -64,6 +64,10 @@ struct ResourceResponseInfo {
   // no data, contains -1.
   int64_t encoded_data_length;
 
+  // Length of the response body data before decompression. -1 unless the body
+  // has been read to the end.
+  int64_t encoded_body_length;
+
   // The appcache this response was loaded from, or kAppCacheNoCacheId.
   int64_t appcache_id;
 

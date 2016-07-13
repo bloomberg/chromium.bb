@@ -127,6 +127,7 @@ void SyncResourceHandler::OnResponseCompleted(
 
   int total_transfer_size = request()->GetTotalReceivedBytes();
   result_.encoded_data_length = total_transfer_size_ + total_transfer_size;
+  result_.encoded_body_length = request()->GetRawBodyBytes();
 
   ResourceHostMsg_SyncLoad::WriteReplyParams(result_message_, result_);
   filter->Send(result_message_);
