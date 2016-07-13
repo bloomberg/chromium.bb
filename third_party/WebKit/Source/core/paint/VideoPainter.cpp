@@ -12,7 +12,6 @@
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 
 namespace blink {
@@ -29,17 +28,12 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
     rect.moveBy(paintOffset);
 
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutVideo, paintInfo.phase))
+        return;
+
     GraphicsContext& context = paintInfo.context;
     LayoutRect contentRect = m_layoutVideo.contentBoxRect();
     contentRect.moveBy(paintOffset);
-
-    Optional<ClipRecorder> clipRecorder;
-    if (!contentRect.contains(rect))
-        clipRecorder.emplace(context, m_layoutVideo, paintInfo.displayItemTypeForClipping(), pixelSnappedIntRect(contentRect));
-
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutVideo, paintInfo.phase))
-        return;
-
 
     // Video frames are only painted in software for printing or capturing node images via web APIs.
     bool forceSoftwareVideoPaint = paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
@@ -61,7 +55,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
 
     if (displayingPoster || !forceSoftwareVideoPaint) {
         // This will display the poster image, if one is present, and otherwise paint nothing.
-        ImagePainter(m_layoutVideo).paintIntoRect(context, rect);
+        ImagePainter(m_layoutVideo).paintIntoRect(context, rect, contentRect);
     } else {
         SkPaint videoPaint = context.fillPaint();
         videoPaint.setColor(SK_ColorBLACK);

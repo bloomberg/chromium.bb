@@ -19,7 +19,6 @@
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
-#include "platform/graphics/paint/ClipRecorder.h"
 
 namespace blink {
 
@@ -102,46 +101,51 @@ void ImagePainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
             context.drawRect(paintRect);
         }
     } else if (cWidth > 0 && cHeight > 0) {
+        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutImage, paintInfo.phase))
+            return;
+
         LayoutRect contentRect = m_layoutImage.contentBoxRect();
         contentRect.moveBy(paintOffset);
         LayoutRect paintRect = m_layoutImage.replacedContentRect();
         paintRect.moveBy(paintOffset);
 
-        Optional<ClipRecorder> clipRecorder;
-        if (!contentRect.contains(paintRect)) {
-            // TODO(fmalita): can we get rid of this clip and adjust the image src/dst rect instead?
-            clipRecorder.emplace(context, m_layoutImage, paintInfo.displayItemTypeForClipping(), pixelSnappedIntRect(contentRect));
-        }
-
-        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(context, m_layoutImage, paintInfo.phase))
-            return;
-
         LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutImage, paintInfo.phase, contentRect);
-        paintIntoRect(context, paintRect);
+        paintIntoRect(context, paintRect, contentRect);
     }
 }
 
-void ImagePainter::paintIntoRect(GraphicsContext& context, const LayoutRect& rect)
+void ImagePainter::paintIntoRect(GraphicsContext& context, const LayoutRect& destRect, const LayoutRect& contentRect)
 {
     if (!m_layoutImage.imageResource()->hasImage() || m_layoutImage.imageResource()->errorOccurred())
         return; // FIXME: should we just ASSERT these conditions? (audit all callers).
 
-    IntRect alignedRect = pixelSnappedIntRect(rect);
-    if (alignedRect.width() <= 0 || alignedRect.height() <= 0)
+    IntRect pixelSnappedDestRect = pixelSnappedIntRect(destRect);
+    if (pixelSnappedDestRect.isEmpty())
         return;
 
-    RefPtr<Image> image = m_layoutImage.imageResource()->image(alignedRect.size(), m_layoutImage.style()->effectiveZoom());
+    RefPtr<Image> image = m_layoutImage.imageResource()->image(pixelSnappedDestRect.size(), m_layoutImage.style()->effectiveZoom());
     if (!image || image->isNull())
         return;
 
     // FIXME: why is interpolation quality selection not included in the Instrumentation reported cost of drawing an image?
-    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutImage, image.get(), image.get(), LayoutSize(alignedRect.size()));
+    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_layoutImage, image.get(), image.get(), LayoutSize(pixelSnappedDestRect.size()));
+
+    FloatRect srcRect = image->rect();
+    // If the content rect requires clipping, adjust |srcRect| and |pixelSnappedDestRect| over using a clip.
+    if (!contentRect.contains(destRect)) {
+        IntRect pixelSnappedContentRect = pixelSnappedIntRect(contentRect);
+        pixelSnappedContentRect.intersect(pixelSnappedDestRect);
+        if (pixelSnappedContentRect.isEmpty())
+            return;
+        srcRect = mapRect(pixelSnappedContentRect, pixelSnappedDestRect, srcRect);
+        pixelSnappedDestRect = pixelSnappedContentRect;
+    }
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(m_layoutImage));
 
     InterpolationQuality previousInterpolationQuality = context.imageInterpolationQuality();
     context.setImageInterpolationQuality(interpolationQuality);
-    context.drawImage(image.get(), alignedRect, nullptr, SkXfermode::kSrcOver_Mode,
+    context.drawImage(image.get(), pixelSnappedDestRect, &srcRect, SkXfermode::kSrcOver_Mode,
         LayoutObject::shouldRespectImageOrientation(&m_layoutImage));
     context.setImageInterpolationQuality(previousInterpolationQuality);
 }
