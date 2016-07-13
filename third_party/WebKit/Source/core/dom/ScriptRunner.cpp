@@ -149,7 +149,7 @@ void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionTy
 {
     switch (executionType) {
     case ASYNC_EXECUTION: {
-        // RELEASE_ASSERT makes us crash in a controlled way in error cases
+        // SECURITY_CHECK makes us crash in a controlled way in error cases
         // where the ScriptLoader is associated with the wrong ScriptRunner
         // (otherwise we'd cause a use-after-free in ~ScriptRunner when it tries
         // to detach).

@@ -85,9 +85,9 @@ public:
 
     // Evaluate JavaScript in the main world.
     void executeScriptInMainWorld(const String&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
-    void executeScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin, double* compilationFinishTime = 0);
+    void executeScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
     v8::Local<v8::Value> executeScriptInMainWorldAndReturnValue(const ScriptSourceCode&, ExecuteScriptPolicy = DoNotExecuteScriptWhenScriptsDisabled);
-    v8::Local<v8::Value> executeScriptAndReturnValue(v8::Local<v8::Context>, const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin, double* compilationFinishTime = 0);
+    v8::Local<v8::Value> executeScriptAndReturnValue(v8::Local<v8::Context>, const ScriptSourceCode&, AccessControlStatus = NotSharableCrossOrigin);
 
     // Executes JavaScript in an isolated world. The script gets its own global scope,
     // its own prototypes for intrinsic JavaScript objects (String, Array, and so-on),
@@ -146,7 +146,7 @@ private:
 
     LocalFrame* frame() const { return toLocalFrame(m_windowProxyManager->frame()); }
 
-    v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy, double* compilationFinishTime = 0);
+    v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&, AccessControlStatus, ExecuteScriptPolicy);
 
     Member<WindowProxyManager> m_windowProxyManager;
 };

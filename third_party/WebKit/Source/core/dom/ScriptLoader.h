@@ -55,7 +55,7 @@ public:
     String scriptCharset() const { return m_characterEncoding; }
     String scriptContent() const;
     // Returns false if and only if execution was blocked.
-    bool executeScript(const ScriptSourceCode&, double* compilationFinishTime = 0);
+    bool executeScript(const ScriptSourceCode&);
     virtual void execute();
 
     // XML parser calls these

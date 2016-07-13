@@ -354,7 +354,7 @@ void ScriptLoader::logScriptMimetype(ScriptResource* resource, LocalFrame* frame
     UseCounter::count(frame, feature);
 }
 
-bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* compilationFinishTime)
+bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
 {
     DCHECK(m_alreadyStarted);
 
@@ -426,7 +426,7 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
     // Create a script from the script element node, using the script
     // block's source and the script block's type.
     // Note: This is where the script is compiled and actually executed.
-    frame->script().executeScriptInMainWorld(sourceCode, accessControlStatus, compilationFinishTime);
+    frame->script().executeScriptInMainWorld(sourceCode, accessControlStatus);
 
     if (isHTMLScriptLoader(m_element) || isSVGScriptLoader(m_element)) {
         DCHECK(contextDocument->currentScript() == m_element);
