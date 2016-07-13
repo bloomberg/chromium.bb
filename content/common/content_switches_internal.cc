@@ -20,7 +20,7 @@ namespace content {
 namespace {
 
 bool IsUseZoomForDSFEnabledByDefault() {
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
   return true;
 #else
   return false;
