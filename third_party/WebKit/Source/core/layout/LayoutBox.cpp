@@ -2916,13 +2916,14 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
         LayoutObject* cb = isOutOfFlowPositioned() ? container() : containingBlock();
         while (cb->isAnonymous())
             cb = cb->containingBlock();
-        LayoutUnit stretchedFlexHeight(-1);
+        LayoutUnit stretchedHeight(-1);
         if (cb->isLayoutBlock()) {
             LayoutBlock* block = toLayoutBlock(cb);
             block->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
             if (block->isFlexItem())
-                stretchedFlexHeight = toLayoutFlexibleBox(block->parent())->childLogicalHeightForPercentageResolution(*block);
-
+                stretchedHeight = toLayoutFlexibleBox(block->parent())->childLogicalHeightForPercentageResolution(*block);
+            else if (block->isGridItem() && block->hasOverrideLogicalContentHeight())
+                stretchedHeight = block->overrideLogicalContentHeight();
         }
 
         if (cb->isOutOfFlowPositioned() && cb->style()->height().isAuto() && !(cb->style()->top().isAuto() || cb->style()->bottom().isAuto())) {
@@ -2941,8 +2942,10 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
         LayoutUnit availableHeight;
         if (isOutOfFlowPositioned()) {
             availableHeight = containingBlockLogicalHeightForPositioned(toLayoutBoxModelObject(cb));
-        } else if (stretchedFlexHeight != -1) {
-            availableHeight = stretchedFlexHeight;
+        } else if (stretchedHeight != -1) {
+            availableHeight = stretchedHeight;
+        } else if (isGridItem() && hasOverrideContainingBlockLogicalHeight()) {
+            availableHeight = overrideContainingBlockContentLogicalHeight();
         } else {
             availableHeight = containingBlockLogicalHeightForContent(IncludeMarginBorderPadding);
             // It is necessary to use the border-box to match WinIE's broken
