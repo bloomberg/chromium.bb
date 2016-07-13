@@ -149,6 +149,11 @@ bool DefaultAccessPolicy::CanSetHitTestMask(const ServerWindow* window) const {
          delegate_->HasRootForAccessPolicy(window);
 }
 
+bool DefaultAccessPolicy::CanSetAcceptEvents(const ServerWindow* window) const {
+  return WasCreatedByThisClient(window) ||
+         delegate_->HasRootForAccessPolicy(window);
+}
+
 bool DefaultAccessPolicy::CanSetCursorProperties(
     const ServerWindow* window) const {
   return WasCreatedByThisClient(window) ||

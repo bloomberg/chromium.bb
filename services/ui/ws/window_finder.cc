@@ -26,9 +26,12 @@ bool IsValidWindowForEvents(ServerWindow* window) {
 
 ServerWindow* FindDeepestVisibleWindowForEvents(ServerWindow* window,
                                                 gfx::Point* location) {
+  if (!window->can_accept_events())
+    return nullptr;
+
   const ServerWindow::Windows& children = window->children();
   for (ServerWindow* child : base::Reversed(children)) {
-    if (!child->visible())
+    if (!child->visible() || !child->can_accept_events())
       continue;
 
     // TODO(sky): support transform.

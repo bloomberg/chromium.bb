@@ -112,6 +112,7 @@ class WindowTreeClient : public mojom::WindowTreeClient,
   void ClearHitTestMask(Id window_id);
   void SetFocus(Window* window);
   void SetCanFocus(Id window_id, bool can_focus);
+  void SetCanAcceptEvents(Id window_id, bool can_accept_events);
   void SetPredefinedCursor(Id window_id, ui::mojom::Cursor cursor_id);
   void SetVisible(Window* window, bool visible);
   void SetOpacity(Window* window, float opacity);

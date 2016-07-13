@@ -705,6 +705,12 @@ void WindowTreeClient::RemoveObserver(WindowTreeClientObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WindowTreeClient::SetCanAcceptEvents(Id window_id,
+                                          bool can_accept_events) {
+  DCHECK(tree_);
+  tree_->SetCanAcceptEvents(window_id, can_accept_events);
+}
+
 void WindowTreeClient::OnEmbed(ClientSpecificId client_id,
                                    mojom::WindowDataPtr root_data,
                                    mojom::WindowTreePtr tree,

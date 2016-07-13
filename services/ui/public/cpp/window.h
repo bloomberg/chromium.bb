@@ -209,6 +209,9 @@ class Window {
   bool HasFocus() const;
   void SetCanFocus(bool can_focus);
 
+  // Sets whether this window accepts events.
+  void SetCanAcceptEvents(bool can_accept_events);
+
   // Embedding. See window_tree.mojom for details.
   void Embed(ui::mojom::WindowTreeClientPtr client, uint32_t flags = 0);
 
@@ -338,6 +341,10 @@ class Window {
   bool visible_;
   float opacity_;
   int64_t display_id_;
+
+  // Whether this window can accept events. Initialized to true to
+  // match ServerWindow.
+  bool can_accept_events_ = true;
 
   mojom::Cursor cursor_id_;
 

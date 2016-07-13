@@ -1245,6 +1245,18 @@ TEST_F(WindowTreeTest, InvalidMoveLoopStillAcksAttempt) {
             SingleChangeToDescription(*embed_client->tracker()->changes()));
 }
 
+TEST_F(WindowTreeTest, SetCanAcceptEvents) {
+  TestWindowTreeClient* embed_client = nullptr;
+  WindowTree* tree = nullptr;
+  ServerWindow* window = nullptr;
+  EXPECT_NO_FATAL_FAILURE(SetupEventTargeting(&embed_client, &tree, &window));
+
+  EXPECT_TRUE(window->can_accept_events());
+  WindowTreeTestApi(tree).SetCanAcceptEvents(
+      ClientWindowIdForWindow(tree, window).id, false);
+  EXPECT_FALSE(window->can_accept_events());
+}
+
 }  // namespace test
 }  // namespace ws
 }  // namespace ui

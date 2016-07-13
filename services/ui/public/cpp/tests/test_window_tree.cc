@@ -139,6 +139,9 @@ void TestWindowTree::SetFocus(uint32_t change_id, uint32_t window_id) {
 
 void TestWindowTree::SetCanFocus(uint32_t window_id, bool can_focus) {}
 
+void TestWindowTree::SetCanAcceptEvents(uint32_t window_id,
+                                        bool can_accept_events) {}
+
 void TestWindowTree::SetPredefinedCursor(uint32_t change_id,
                                          uint32_t window_id,
                                          ui::mojom::Cursor cursor_id) {}

@@ -693,6 +693,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
   window_->SetCanFocus(params.activatable ==
                        Widget::InitParams::ACTIVATABLE_YES);
+  window_->SetCanAcceptEvents(params.accept_events);
 
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();

@@ -447,6 +447,14 @@ void Window::SetCanFocus(bool can_focus) {
     client_->SetCanFocus(server_id_, can_focus);
 }
 
+void Window::SetCanAcceptEvents(bool can_accept_events) {
+  if (can_accept_events_ == can_accept_events)
+    return;
+  can_accept_events_ = can_accept_events;
+  if (client_)
+    client_->SetCanAcceptEvents(server_id_, can_accept_events_);
+}
+
 void Window::Embed(ui::mojom::WindowTreeClientPtr client, uint32_t flags) {
   Embed(std::move(client), base::Bind(&EmptyEmbedCallback), flags);
 }

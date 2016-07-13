@@ -151,6 +151,9 @@ class ServerWindow {
   void set_can_focus(bool can_focus) { can_focus_ = can_focus; }
   bool can_focus() const { return can_focus_; }
 
+  void set_can_accept_events(bool value) { can_accept_events_ = value; }
+  bool can_accept_events() const { return can_accept_events_; }
+
   // Returns true if this window is attached to a root and all ancestors are
   // visible.
   bool IsDrawn() const;
@@ -221,6 +224,7 @@ class ServerWindow {
   mojom::Cursor non_client_cursor_id_;
   float opacity_;
   bool can_focus_;
+  bool can_accept_events_;
   gfx::Transform transform_;
   ui::TextInputState text_input_state_;
 
