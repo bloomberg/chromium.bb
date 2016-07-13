@@ -1108,11 +1108,7 @@ TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
   form_manager_to_save->Save();
 }
 
-TEST_F(PasswordManagerTest, PasswordGenerationForceSaving) {
-  // Test the safety net against password loss during generation
-  // (http://crbug.com/506307) -- out of the two rules (1) "always save
-  // generated passwords" and (2) "do not save passwords when the password form
-  // reappears", rule (1) takes precedence.
+TEST_F(PasswordManagerTest, PasswordGeneration_FailedSubmission) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeFormWithOnlyNewPasswordField());
   observed.push_back(form);
@@ -1125,29 +1121,21 @@ TEST_F(PasswordManagerTest, PasswordGenerationForceSaving) {
       .WillRepeatedly(Return(true));
   manager()->SetHasGeneratedPasswordForForm(&driver_, form, true);
 
-  // The user should not need to confirm saving as they have already given
-  // consent by using the generated password. The form should be saved once
-  // navigation occurs. The client will be informed that automatic saving has
-  // occured.
+  // Do not save generated password when the password form reappears.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
-  PasswordForm form_to_save;
-  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
-  EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
+  EXPECT_CALL(*store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(client_, AutomaticPasswordSaveIndicator()).Times(0);
 
   // Simulate submission failing, with the same form being visible after
   // navigation.
   OnPasswordFormSubmitted(form);
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
-  EXPECT_EQ(form.username_value, form_to_save.username_value);
-  // What was "new password" field in the submitted form, becomes the current
-  // password field in the form to save.
-  EXPECT_EQ(form.new_password_value, form_to_save.password_value);
 }
 
 // If the user edits the generated password, but does not remove it completely,
 // it should stay treated as a generated password.
-TEST_F(PasswordManagerTest, PasswordGenerationPasswordEdited) {
+TEST_F(PasswordManagerTest, PasswordGenerationPasswordEdited_FailedSubmission) {
   std::vector<PasswordForm> observed;
   PasswordForm form(MakeFormWithOnlyNewPasswordField());
   observed.push_back(form);
@@ -1165,23 +1153,15 @@ TEST_F(PasswordManagerTest, PasswordGenerationPasswordEdited) {
   form.new_password_value = ASCIIToUTF16("different_password");
   OnPasswordFormSubmitted(form);
 
-  // The user should not be presented with an infobar as they have already given
-  // consent by using the generated password. The form should be saved once
-  // navigation occurs. The client will be informed that automatic saving has
-  // occurred.
+  // Do not save generated password when the password form reappears.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
-  PasswordForm form_to_save;
-  EXPECT_CALL(*store_, AddLogin(_)).WillOnce(SaveArg<0>(&form_to_save));
-  EXPECT_CALL(client_, AutomaticPasswordSaveIndicator());
+  EXPECT_CALL(*store_, AddLogin(_)).Times(0);
+  EXPECT_CALL(client_, AutomaticPasswordSaveIndicator()).Times(0);
 
   // Simulate submission failing, with the same form being visible after
   // navigation.
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
-  EXPECT_EQ(form.username_value, form_to_save.username_value);
-  // What was "new password" field in the submitted form, becomes the current
-  // password field in the form to save.
-  EXPECT_EQ(form.new_password_value, form_to_save.password_value);
 }
 
 // Generated password are saved even if it looks like the submit failed (the

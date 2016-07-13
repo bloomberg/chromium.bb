@@ -635,19 +635,15 @@ void PasswordManager::OnPasswordFormsRendered(
                 provisional_save_manager_->pending_credentials().action,
                 all_visible_forms_[i].action)) {
           provisional_save_manager_->LogSubmitFailed();
-          // Generated passwords should always be saved, but we do want to
-          // record that the submission normally would have failed for UMA.
-          if (!provisional_save_manager_->has_generated_password()) {
-            if (logger) {
-              logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
-                                      all_visible_forms_[i]);
-              logger->LogMessage(Logger::STRING_DECISION_DROP);
-            }
-            provisional_save_manager_.reset();
-            // Clear all_visible_forms_ once we found the match.
-            all_visible_forms_.clear();
-            return;
+          if (logger) {
+            logger->LogPasswordForm(Logger::STRING_PASSWORD_FORM_REAPPEARED,
+                                    all_visible_forms_[i]);
+            logger->LogMessage(Logger::STRING_DECISION_DROP);
           }
+          provisional_save_manager_.reset();
+          // Clear all_visible_forms_ once we found the match.
+          all_visible_forms_.clear();
+          return;
         }
       }
     } else {
