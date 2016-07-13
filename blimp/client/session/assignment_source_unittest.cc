@@ -210,7 +210,7 @@ TEST_F(AssignmentSourceTest, TestTCPAlternateEndpointSuccess) {
   assignment.engine_endpoint = net::IPEndPoint(kTestIpAddress, kTestPort);
   assignment.cert = scoped_refptr<net::X509Certificate>(nullptr);
 
-  auto cmd_line = base::CommandLine::ForCurrentProcess();
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
   cmd_line->AppendSwitchASCII(switches::kEngineIP, kTestIpAddressString);
   cmd_line->AppendSwitchASCII(switches::kEnginePort,
                               std::to_string(kTestPort));
@@ -234,7 +234,7 @@ TEST_F(AssignmentSourceTest, TestSSLAlternateEndpointSuccess) {
   assignment.engine_endpoint = net::IPEndPoint(kTestIpAddress, kTestPort);
   assignment.cert = cert_;
 
-  auto cmd_line = base::CommandLine::ForCurrentProcess();
+  auto* cmd_line = base::CommandLine::ForCurrentProcess();
 
   cmd_line->AppendSwitchASCII(switches::kEngineIP, kTestIpAddressString);
   cmd_line->AppendSwitchASCII(switches::kEnginePort,

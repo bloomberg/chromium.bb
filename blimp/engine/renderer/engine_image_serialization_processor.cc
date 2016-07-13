@@ -165,7 +165,7 @@ scoped_refptr<BlobData> EngineImageSerializationProcessor::EncodeImageAsBlob(
   picture.height = pixmap.height();
 
   // Import picture from raw pixels.
-  auto pixel_chars = static_cast<const unsigned char*>(pixmap.addr());
+  auto* pixel_chars = static_cast<const unsigned char*>(pixmap.addr());
   CHECK(PlatformPictureImport(pixel_chars, &picture, pixmap.alphaType()));
 
   // Set up the writer parameters.
