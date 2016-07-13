@@ -24,7 +24,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink_public.platform.WebDisplayMode;
@@ -46,9 +45,6 @@ import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -176,22 +172,15 @@ public class WebappActivity extends FullScreenActivity {
         String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
         File tabFile = new File(activityDirectory, tabFileName);
 
-        FileOutputStream foutput = null;
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
             long time = SystemClock.elapsedRealtime();
-            foutput = new FileOutputStream(tabFile);
-            TabState.saveState(foutput, getActivityTab().getState(), false);
+            TabState.saveState(tabFile, getActivityTab().getState(), false);
             RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappSaveState",
                     SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
-        } catch (FileNotFoundException exception) {
-            Log.e(TAG, "Failed to save out tab state.", exception);
-        } catch (IOException exception) {
-            Log.e(TAG, "Failed to save out tab state.", exception);
         } finally {
-            StreamUtil.closeQuietly(foutput);
             StrictMode.setThreadPolicy(oldPolicy);
         }
     }

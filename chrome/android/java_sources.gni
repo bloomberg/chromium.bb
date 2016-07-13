@@ -1302,6 +1302,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/payments/CurrencyStringFormatterTest.java",
   "junit/src/org/chromium/chrome/browser/snackbar/SnackbarCollectionUnitTest.java",
   "junit/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProviderUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/tabstate/TabStateUnitTest.java",
   "junit/src/org/chromium/chrome/browser/util/NonThreadSafeTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappDataStorageTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappRegistryTest.java",

@@ -286,54 +286,61 @@ public class TabState {
 
     /**
      * Writes the TabState to disk. This method may be called on either the UI or background thread.
-     * @param output Stream to write the tab's state to.
+     * @param file File to write the tab's state to.
      * @param state State object obtained from from {@link Tab#getState()}.
      * @param encrypted Whether or not the TabState should be encrypted.
      */
-    public static void saveState(FileOutputStream output, TabState state, boolean encrypted)
-            throws IOException {
+    public static void saveState(File file, TabState state, boolean encrypted) {
         if (state == null || state.contentsState == null) {
             return;
         }
 
-        DataOutputStream stream;
-        if (encrypted) {
-            Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
-            if (cipher != null) {
-                stream = new DataOutputStream(new CipherOutputStream(output, cipher));
-            } else {
-                // If cipher is null, getRandomBytes failed, which means encryption is meaningless.
-                // Therefore, do not save anything. This will cause users to lose Incognito state in
-                // certain cases. That is annoying, but is better than failing to provide the
-                // guarantee of Incognito Mode.
-                return;
-            }
-        } else {
-            stream = new DataOutputStream(output);
-        }
+        // Create the byte array from contentsState before opening the FileOutputStream, in case
+        // contentsState.buffer is an instance of MappedByteBuffer that is mapped to
+        // the tab state file.
+        state.contentsState.buffer().rewind();
+        byte[] contentsStateBytes = new byte[state.contentsState.buffer().remaining()];
+        state.contentsState.buffer().get(contentsStateBytes);
 
+        DataOutputStream dataOutputStream = null;
+        FileOutputStream fileOutputStream = null;
         try {
+            fileOutputStream = new FileOutputStream(file);
+
             if (encrypted) {
-                stream.writeLong(KEY_CHECKER);
-            }
-            stream.writeLong(state.timestampMillis);
-            state.contentsState.buffer().rewind();
-            stream.writeInt(state.contentsState.buffer().remaining());
-            if (encrypted) {
-                byte[] bytes = new byte[state.contentsState.buffer().remaining()];
-                state.contentsState.buffer().get(bytes);
-                stream.write(bytes);
+                Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.ENCRYPT_MODE);
+                if (cipher != null) {
+                    dataOutputStream = new DataOutputStream(new CipherOutputStream(
+                            fileOutputStream, cipher));
+                } else {
+                    // If cipher is null, getRandomBytes failed, which means encryption is
+                    // meaningless. Therefore, do not save anything. This will cause users
+                    // to lose Incognito state in certain cases. That is annoying, but is
+                    // better than failing to provide the guarantee of Incognito Mode.
+                    return;
+                }
             } else {
-                output.getChannel().write(state.contentsState.buffer());
+                dataOutputStream = new DataOutputStream(fileOutputStream);
             }
-            stream.writeInt(state.parentId);
-            stream.writeUTF(state.openerAppId != null ? state.openerAppId : "");
-            stream.writeInt(state.contentsState.version());
-            stream.writeLong(state.syncId);
-            stream.writeBoolean(state.shouldPreserve);
-            stream.writeInt(state.themeColor);
+            if (encrypted) {
+                dataOutputStream.writeLong(KEY_CHECKER);
+            }
+            dataOutputStream.writeLong(state.timestampMillis);
+            dataOutputStream.writeInt(contentsStateBytes.length);
+            dataOutputStream.write(contentsStateBytes);
+            dataOutputStream.writeInt(state.parentId);
+            dataOutputStream.writeUTF(state.openerAppId != null ? state.openerAppId : "");
+            dataOutputStream.writeInt(state.contentsState.version());
+            dataOutputStream.writeLong(state.syncId);
+            dataOutputStream.writeBoolean(state.shouldPreserve);
+            dataOutputStream.writeInt(state.themeColor);
+        } catch (FileNotFoundException e) {
+            Log.w(TAG, "FileNotFoundException while attempting to save TabState.");
+        } catch (IOException e) {
+            Log.w(TAG, "IOException while attempting to save TabState.");
         } finally {
-            StreamUtil.closeQuietly(stream);
+            StreamUtil.closeQuietly(dataOutputStream);
+            StreamUtil.closeQuietly(fileOutputStream);
         }
     }
 
