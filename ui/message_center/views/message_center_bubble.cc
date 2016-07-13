@@ -107,10 +107,15 @@ void MessageCenterBubble::InitializeContents(
   // |new_bubble_view| actually wants. See crbug.com/169390.
   bubble_view()->Layout();
   UpdateBubbleView();
-  bubble_view()
-      ->GetFocusManager()
-      ->GetNextFocusableView(nullptr, nullptr, false, false)
-      ->RequestFocus();
+  views::FocusManager* focus_manager = bubble_view()->GetFocusManager();
+  // new_bubble_view should be a top level view and have a focus manager.
+  DCHECK(focus_manager);
+  views::View* next_focusable_view = focus_manager
+      ->GetNextFocusableView(nullptr, nullptr, false, false);
+  // The bubble may not have any focusable view (eg. on lock screen). In such
+  // case, |next_focusable_view| is null.
+  if (next_focusable_view)
+    next_focusable_view->RequestFocus();
 }
 
 void MessageCenterBubble::OnBubbleViewDestroyed() {
