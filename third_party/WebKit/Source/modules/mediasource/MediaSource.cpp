@@ -58,12 +58,21 @@ using blink::WebSourceBuffer;
 
 namespace blink {
 
-static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, ExceptionState& exceptionState)
+static bool throwExceptionIfClosed(bool isOpen, ExceptionState& exceptionState)
 {
     if (!isOpen) {
         MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The MediaSource's readyState is not 'open'.");
         return true;
     }
+
+    return false;
+}
+
+static bool throwExceptionIfClosedOrUpdating(bool isOpen, bool isUpdating, ExceptionState& exceptionState)
+{
+    if (throwExceptionIfClosed(isOpen, exceptionState))
+        return true;
+
     if (isUpdating) {
         MediaSource::logAndThrowDOMException(exceptionState, InvalidStateError, "The 'updating' attribute is true on one or more of this MediaSource's SourceBuffers.");
         return true;
@@ -530,7 +539,9 @@ void MediaSource::setLiveSeekableRange(double start, double end, ExceptionState&
     // 2. If the updating attribute equals true on any SourceBuffer in
     //    SourceBuffers, then throw an InvalidStateError exception and abort
     //    these steps.
-    if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
+    //    Note: https://github.com/w3c/media-source/issues/118, once fixed, will
+    //    remove the updating check (step 2). We skip that check here already.
+    if (throwExceptionIfClosed(isOpen(), exceptionState))
         return;
 
     // 3. If start is negative or greater than end, then throw a TypeError
@@ -554,7 +565,9 @@ void MediaSource::clearLiveSeekableRange(ExceptionState& exceptionState)
     // 2. If the updating attribute equals true on any SourceBuffer in
     //    SourceBuffers, then throw an InvalidStateError exception and abort
     //    these steps.
-    if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
+    //    Note: https://github.com/w3c/media-source/issues/118, once fixed, will
+    //    remove the updating check (step 2). We skip that check here already.
+    if (throwExceptionIfClosed(isOpen(), exceptionState))
         return;
 
     // 3. If live seekable range contains a range, then set live seekable range
