@@ -206,8 +206,8 @@ def _CheckForJSTest(input_api, output_api):
             'instead, as these can be more easily upstreamed to Web Platform '
             'Tests for cross-vendor compatibility testing. If you\'re not '
             'already familiar with this framework, a tutorial is available at '
-            'https://darobin.github.io/test-harness-tutorial/docs/using-testharness.html.'
-            'with the new framework.\n\n%s' % '\n'.join(errors))]
+            'https://darobin.github.io/test-harness-tutorial/docs/using-testharness.html'
+            '\n\n%s' % '\n'.join(errors))]
     return []
 
 def _CheckForFailInFile(input_api, f):
