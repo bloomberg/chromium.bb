@@ -82,6 +82,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance/rendering/point-specific-shader-variables.html',
         ['win'], bug=616335)
+    self.Fail('conformance/textures/canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['win'], bug=483282)
+    self.Fail('conformance/textures/canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['win'], bug=483282)
+    self.Fail('conformance/textures/canvas/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['win'], bug=483282)
     self.Fail('conformance/textures/webgl_canvas/' +
               'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
               ['win'], bug=483282)
@@ -559,6 +568,21 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia'], bug=621178)
 
     # Linux NVIDIA with ANGLE only
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
+              ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance/misc/uninitialized-test.html',
+              ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance/state/state-uneffected-after-compositing.html',
+              ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('deqp/functional/gles3/buffercopy.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('deqp/functional/gles3/bufferobjectquery.html',
