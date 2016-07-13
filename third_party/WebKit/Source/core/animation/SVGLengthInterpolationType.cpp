@@ -23,6 +23,10 @@ enum LengthInterpolatedUnit {
     LengthInterpolatedEXS,
     LengthInterpolatedREMS,
     LengthInterpolatedCHS,
+    LengthInterpolatedViewportWidth,
+    LengthInterpolatedViewportHeight,
+    LengthInterpolatedViewportMin,
+    LengthInterpolatedViewportMax,
 };
 
 static const CSSPrimitiveValue::UnitType unitTypes[] = {
@@ -31,7 +35,11 @@ static const CSSPrimitiveValue::UnitType unitTypes[] = {
     CSSPrimitiveValue::UnitType::Ems,
     CSSPrimitiveValue::UnitType::Exs,
     CSSPrimitiveValue::UnitType::Rems,
-    CSSPrimitiveValue::UnitType::Chs
+    CSSPrimitiveValue::UnitType::Chs,
+    CSSPrimitiveValue::UnitType::ViewportWidth,
+    CSSPrimitiveValue::UnitType::ViewportHeight,
+    CSSPrimitiveValue::UnitType::ViewportMin,
+    CSSPrimitiveValue::UnitType::ViewportMax,
 };
 
 const size_t numLengthInterpolatedUnits = WTF_ARRAY_LENGTH(unitTypes);
@@ -71,6 +79,14 @@ LengthInterpolatedUnit convertToInterpolatedUnit(CSSPrimitiveValue::UnitType uni
         return LengthInterpolatedREMS;
     case CSSPrimitiveValue::UnitType::Chs:
         return LengthInterpolatedCHS;
+    case CSSPrimitiveValue::UnitType::ViewportWidth:
+        return LengthInterpolatedViewportWidth;
+    case CSSPrimitiveValue::UnitType::ViewportHeight:
+        return LengthInterpolatedViewportHeight;
+    case CSSPrimitiveValue::UnitType::ViewportMin:
+        return LengthInterpolatedViewportMin;
+    case CSSPrimitiveValue::UnitType::ViewportMax:
+        return LengthInterpolatedViewportMax;
     }
 }
 
