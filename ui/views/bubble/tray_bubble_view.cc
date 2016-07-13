@@ -200,6 +200,7 @@ TrayBubbleContentMask::TrayBubbleContentMask(int corner_radius)
     : layer_(ui::LAYER_TEXTURED),
       corner_radius_(corner_radius) {
   layer_.set_delegate(this);
+  layer_.SetFillsBoundsOpaquely(false);
 }
 
 TrayBubbleContentMask::~TrayBubbleContentMask() {
