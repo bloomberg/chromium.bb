@@ -4,7 +4,52 @@
 
 module mojom;
 
+import "mojo/common/common_custom_types.mojom";
+
+[Native]
+struct FileExtensionFilters;
+
 interface ShellHandler {
   // Returns the pinned state of the current executable.
   IsPinnedToTaskbar() => (bool succeeded, bool is_pinned_to_taskbar);
+
+  // Invokes GetOpenFileName.
+  // |owner| is the HWND to use as the parent of the modal dialog.
+  // |flags| is the OFN_* flags of OPENFILENAME.
+  // |filters| constrains the user's file choices.
+  // |initial_directory| is the directory to be displayed.
+  // |filename| is the file initially selected.
+  //
+  // Returns the list of selected |files|, which are all childs of |directory|.
+  // On cancelation or failure, |files| will be empty.
+  DoGetOpenFileName(uint32 owner,
+                    uint32 flags,
+                    FileExtensionFilters filters,
+                    mojo.common.mojom.FilePath initial_directory,
+                    mojo.common.mojom.FilePath filename) =>
+      (mojo.common.mojom.FilePath directory,
+       array<mojo.common.mojom.FilePath> files);
+
+  // Invokes GetSaveFileName.
+  // |owner| is the HWND to use as the parent of the modal dialog.
+  // |flags| is the OFN_* flags of OPENFILENAME.
+  // |filters| constrains the user's file choices.
+  // |one_based_filter_index| is The index of the currently selected filter in
+  //   |filters|.
+  // |initial_directory| is the directory to be displayed.
+  // |filename| is the file initially selected.
+  // |default_extension| is the extension to add to the file if the user doesn't
+  //   type one.
+  //
+  // Returns the selected |path| and the |one_based_filter_index| of the filter
+  // passed to the initial call to DoGetSaveFileName. On cancelation or failure,
+  // |path| will be empty.
+  DoGetSaveFileName(uint32 owner,
+                    uint32 flags,
+                    FileExtensionFilters filters,
+                    uint32 one_based_filter_index,
+                    mojo.common.mojom.FilePath initial_directory,
+                    mojo.common.mojom.FilePath suggested_filename,
+                    mojo.common.mojom.FilePath default_extension) =>
+      (mojo.common.mojom.FilePath path, uint32 one_based_filter_index);
 };

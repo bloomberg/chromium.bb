@@ -15,8 +15,6 @@
       'utility/cloud_print/pwg_encoder.h',
       'utility/image_decoder_impl.cc',
       'utility/image_decoder_impl.h',
-      'utility/ipc_shell_handler_win.cc',
-      'utility/ipc_shell_handler_win.h',
       'utility/printing_handler.cc',
       'utility/printing_handler.h',
       'utility/shell_handler_impl_win.cc',
