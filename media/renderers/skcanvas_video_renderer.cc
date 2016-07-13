@@ -429,22 +429,15 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
                       -SkFloatToScalar(last_image_->height() * 0.5f));
   }
 
-  // This is a workaround for crbug.com/524717. SkBitmaps are read back before a
-  // SkPicture is sent to multiple threads while SkImages are not. The long term
-  // solution is for Skia to provide a SkPicture filter that makes a picture
-  // safe for multiple CPU raster threads (skbug.com/4321). We limit the
-  // workaround to cases where the src frame is a texture and the canvas is
-  // recording.
-  if (last_image_.get()->getTexture() &&
-      canvas->imageInfo().colorType() == kUnknown_SkColorType) {
-    SkBitmap bmp;
-    GrWrapTextureInBitmap(last_image_.get()->getTexture(),
-                          last_image_.get()->width(),
-                          last_image_.get()->height(), true, &bmp);
-    // Even though the bitmap is logically immutable we do not mark it as such
-    // because doing so would defer readback until rasterization, which will be
-    // on another thread and is therefore unsafe.
-    canvas->drawBitmap(bmp, 0, 0, &paint);
+  // This is a workaround for crbug.com/524717. A texture backed image is not
+  // safe to access on another thread or GL context. So if we're drawing into a
+  // recording canvas we read the texture back into CPU memory and record that
+  // sw image into the SkPicture. The long term solution is for Skia to provide
+  // a SkPicture filter that makes a picture safe for multiple CPU raster
+  // threads. (skbug.com/4321).
+  if (canvas->imageInfo().colorType() == kUnknown_SkColorType) {
+    sk_sp<SkImage> swImage = last_image_->makeNonTextureImage();
+    canvas->drawImage(swImage, 0, 0, &paint);
   } else {
     canvas->drawImage(last_image_.get(), 0, 0, &paint);
   }
