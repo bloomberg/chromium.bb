@@ -11,6 +11,9 @@ function setMessage(msg) {
 function notifyDidFinishLoading() {
   if (plugin.didFinishLoading)
     plugin.didFinishLoading();
+
+  if (plugin.didFinishIconRepositionForTesting)
+    plugin.didFinishIconRepositionForTesting();
 }
 </script>
 </if>

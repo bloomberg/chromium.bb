@@ -37,16 +37,6 @@ class ChromePluginPlaceholder final
       const base::string16& message,
       const PowerSaverInfo& power_saver_info);
 
-  // Create a plugin placeholder that delays until sizing is known.
-  static ChromePluginPlaceholder* CreateDelayedPlugin(
-      content::RenderFrame* render_frame,
-      blink::WebLocalFrame* frame,
-      const blink::WebPluginParams& params,
-      const content::WebPluginInfo& info,
-      const std::string& identifier,
-      const base::string16& name,
-      const PowerSaverInfo& power_saver_info);
-
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateLoadableMissingPlugin(
       content::RenderFrame* render_frame,
@@ -69,9 +59,7 @@ class ChromePluginPlaceholder final
 
   // content::LoadablePluginPlaceholder overrides.
   blink::WebPlugin* CreatePlugin() override;
-  void OnLoadedRectUpdate(
-      const gfx::Rect& unobscured_rect,
-      content::RenderFrame::PeripheralContentStatus status) override;
+  void OnBlockedTinyContent() override;
 
   // gin::Wrappable (via PluginPlaceholder) method
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -120,7 +108,7 @@ class ChromePluginPlaceholder final
   int context_menu_request_id_;  // Nonzero when request pending.
   base::string16 plugin_name_;
 
-  bool ignore_updates_;
+  bool did_send_blocked_content_notification_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePluginPlaceholder);
 };

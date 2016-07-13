@@ -768,8 +768,15 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         PowerSaverInfo power_saver_info =
             PowerSaverInfo::Get(render_frame, power_saver_setting_on, params,
                                 info, frame->document().url());
+        // Prevent small plugins from loading by using a placeholder until
+        // we can determine the unobscured size of the object.
+        bool blocked_for_tinyness =
+            ChromePluginPlaceholder::IsSmallContentFilterEnabled() &&
+            power_saver_info.power_saver_enabled;
+
         if (power_saver_info.blocked_for_background_tab || is_prerendering ||
-            !power_saver_info.poster_attribute.empty()) {
+            !power_saver_info.poster_attribute.empty() ||
+            blocked_for_tinyness) {
           placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
               render_frame, frame, params, info, identifier, group_name,
               power_saver_info.poster_attribute.empty()
@@ -778,24 +785,12 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
               l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name),
               power_saver_info);
           placeholder->set_blocked_for_prerendering(is_prerendering);
+          placeholder->set_blocked_for_tinyness(blocked_for_tinyness);
           placeholder->AllowLoading();
           break;
         }
 
         std::unique_ptr<content::PluginInstanceThrottler> throttler;
-
-        // Small content filter requires routing through a placeholder.
-        if (ChromePluginPlaceholder::IsSmallContentFilterEnabled() &&
-            power_saver_info.power_saver_enabled) {
-          // The feature only applies to flash plugins.
-          if (power_saver_info.is_eligible) {
-            placeholder = ChromePluginPlaceholder::CreateDelayedPlugin(
-                render_frame, frame, params, info, identifier, group_name,
-                power_saver_info);
-            break;
-          }
-        }
-
         if (power_saver_info.power_saver_enabled) {
           throttler = PluginInstanceThrottler::Create();
           // PluginPreroller manages its own lifetime.

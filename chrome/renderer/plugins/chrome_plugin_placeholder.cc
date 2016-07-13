@@ -65,7 +65,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
       status_(ChromeViewHostMsg_GetPluginInfo_Status::kAllowed),
       title_(title),
       context_menu_request_id_(0),
-      ignore_updates_(false) {
+      did_send_blocked_content_notification_(false) {
   RenderThread::Get()->AddObserver(this);
 }
 
@@ -168,39 +168,6 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
       power_saver_info.blocked_for_background_tab);
 
   return blocked_plugin;
-}
-
-// static
-ChromePluginPlaceholder* ChromePluginPlaceholder::CreateDelayedPlugin(
-    content::RenderFrame* render_frame,
-    blink::WebLocalFrame* frame,
-    const blink::WebPluginParams& params,
-    const content::WebPluginInfo& info,
-    const std::string& identifier,
-    const base::string16& name,
-    const PowerSaverInfo& power_saver_info) {
-  // Can never be called with an actual poster.
-  DCHECK(power_saver_info.poster_attribute.empty());
-
-  // Can never be called when blocked for background tab.
-  DCHECK(!power_saver_info.blocked_for_background_tab);
-
-  const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PLUGIN_DELAY_HTML));
-  base::DictionaryValue values;
-  std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
-
-  // |delay_plugin| will destroy itself when its WebViewPlugin is going away.
-  ChromePluginPlaceholder* delay_plugin =
-      new ChromePluginPlaceholder(render_frame, frame, params, html_data, name);
-
-  delay_plugin->set_delayed(true);
-  delay_plugin->SetPluginInfo(info);
-  delay_plugin->SetIdentifier(identifier);
-  delay_plugin->set_power_saver_enabled(power_saver_info.power_saver_enabled);
-
-  return delay_plugin;
 }
 
 void ChromePluginPlaceholder::SetStatus(
@@ -408,33 +375,13 @@ blink::WebPlugin* ChromePluginPlaceholder::CreatePlugin() {
                                       GetPluginParams(), std::move(throttler));
 }
 
-void ChromePluginPlaceholder::OnLoadedRectUpdate(
-    const gfx::Rect& unobscured_rect,
-    content::RenderFrame::PeripheralContentStatus status) {
-  // If the placeholder is in the blocked state, do nothing.
-  if (ignore_updates_)
+void ChromePluginPlaceholder::OnBlockedTinyContent() {
+  if (did_send_blocked_content_notification_)
     return;
 
-  // This should only be called once.
-  set_delayed(false);
-
-  // block tiny cross-origin - simply by not continuing the load chain.
-  if (status ==
-      content::RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_TINY) {
-    ContentSettingsObserver* observer =
-        ContentSettingsObserver::Get(render_frame());
-    observer->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, title_);
-    AllowLoading();
-    ignore_updates_ = true;
-    return;
-  }
-
-  // For essential content, powersaver can be turned off.
-  if (status != content::RenderFrame::CONTENT_STATUS_PERIPHERAL)
-    set_power_saver_enabled(false);
-
-  AllowLoading();
-  LoadPlugin();
+  did_send_blocked_content_notification_ = true;
+  ContentSettingsObserver::Get(render_frame())
+      ->DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS, title_);
 }
 
 gin::ObjectTemplateBuilder ChromePluginPlaceholder::GetObjectTemplateBuilder(

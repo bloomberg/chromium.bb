@@ -31,8 +31,6 @@ struct PowerSaverInfo {
                             const blink::WebPluginParams& params,
                             const content::WebPluginInfo& plugin_info,
                             const GURL& document_url);
-  // Whether this plugin is eligible for power saver.
-  bool is_eligible;
 
   // Whether power saver should be enabled.
   bool power_saver_enabled;

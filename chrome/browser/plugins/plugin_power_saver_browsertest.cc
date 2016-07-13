@@ -308,6 +308,28 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
         GetActiveWebContents()->GetMainFrame()));
   }
 
+  // Returns the background WebContents.
+  content::WebContents* LoadHTMLInBackgroundTab(const std::string& html) {
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&RespondWithHTML, html));
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), embedded_test_server()->base_url(), NEW_BACKGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+    int index = browser()->tab_strip_model()->GetIndexOfLastWebContentsOpenedBy(
+        GetActiveWebContents(), 0 /* start_index */);
+    content::WebContents* contents =
+        browser()->tab_strip_model()->GetWebContentsAt(index);
+    EXPECT_TRUE(content::WaitForRenderFrameReady(contents->GetMainFrame()));
+    return contents;
+  }
+
+  void ActivateTab(content::WebContents* contents) {
+    browser()->tab_strip_model()->ActivateTabAt(
+        browser()->tab_strip_model()->GetIndexOfWebContents(contents),
+        true /* user_gesture */);
+  }
+
   content::WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -619,35 +641,19 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
-  std::string html =
+  content::WebContents* background_contents = LoadHTMLInBackgroundTab(
       "<object id='same_origin' data='fake.swf' "
       "    type='application/x-ppapi-tests'></object>"
       "<object id='small_cross_origin' data='http://otherorigin.com/fake1.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='100'></object>";
-  embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&RespondWithHTML, html));
-  ui_test_utils::NavigateToURLWithDisposition(
-      browser(), embedded_test_server()->base_url(), NEW_BACKGROUND_TAB,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  content::WebContents* background_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(1);
-  EXPECT_TRUE(
-      content::WaitForRenderFrameReady(background_contents->GetMainFrame()));
+      "    type='application/x-ppapi-tests' width='400' height='80'></object>");
 
   EXPECT_FALSE(PluginLoaded(background_contents, "same_origin"));
   EXPECT_FALSE(PluginLoaded(background_contents, "small_cross_origin"));
 
-  browser()->tab_strip_model()->SelectNextTab();
-  EXPECT_EQ(background_contents, GetActiveWebContents());
+  ActivateTab(background_contents);
 
   VerifyPluginMarkedEssential(background_contents, "same_origin");
   VerifyPluginIsThrottled(background_contents, "small_cross_origin");
-
-  // TODO(groby): We need to cover the edge case of tiny plugin on a  a
-  // background tab here. If blocking of tiny content is enabled
-  // this should be IsThrotthled, not IsPlaceholderOnly.
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
@@ -670,8 +676,7 @@ class PluginPowerSaverBlockTinyBrowserTest
     base::FeatureList::ClearInstanceForTesting();
     PluginPowerSaverBrowserTest::SetUp();
   }
-  void SetUpInProcessBrowserTestFixture() override { BlockTinyPlugins(); }
-  void BlockTinyPlugins() {
+  void SetUpInProcessBrowserTestFixture() override {
     base::FeatureList::ClearInstanceForTesting();
     std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
     feature_list->InitializeFromCommandLine(features::kBlockSmallContent.name,
@@ -682,12 +687,6 @@ class PluginPowerSaverBlockTinyBrowserTest
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest, BlockTinyPlugins) {
   LoadHTML(
-      "<object id='large_same_origin' data='fake.swf' "
-      "    type='application/x-ppapi-tests' width='500' height='500'>"
-      "</object>"
-      "<object id='small_same_origin' data='fake.swf' "
-      "    type='application/x-ppapi-tests' width='500' height='500'>"
-      "</object>"
       "<object id='tiny_same_origin' data='fake.swf' "
       "    type='application/x-ppapi-tests' width='3' height='3'>"
       "</object>"
@@ -698,9 +697,41 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest, BlockTinyPlugins) {
       "    type='application/x-ppapi-tests' width='1' height='1'>"
       "</object>");
 
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "large_same_origin");
-  VerifyPluginMarkedEssential(GetActiveWebContents(), "small_same_origin");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_same_origin");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_1");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_2");
+}
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest,
+                       BackgroundTabTinyPlugins) {
+  content::WebContents* background_contents = LoadHTMLInBackgroundTab(
+      "<object id='tiny' data='http://a.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='3' height='3'>"
+      "</object>");
+  EXPECT_FALSE(PluginLoaded(background_contents, "tiny"));
+
+  ActivateTab(background_contents);
+  VerifyPluginIsPlaceholderOnly("tiny");
+}
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBlockTinyBrowserTest,
+                       ExpandingTinyPlugins) {
+  LoadHTML(
+      "<object id='expand_to_peripheral' data='http://a.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='4' height='4'></object>"
+      "<object id='expand_to_essential' data='http://b.com/fake.swf' "
+      "    type='application/x-ppapi-tests' width='4' height='4'></object>");
+
+  VerifyPluginIsPlaceholderOnly("expand_to_peripheral");
+  VerifyPluginIsPlaceholderOnly("expand_to_essential");
+
+  std::string script =
+      "window.document.getElementById('expand_to_peripheral').height = 200;"
+      "window.document.getElementById('expand_to_peripheral').width = 200;"
+      "window.document.getElementById('expand_to_essential').height = 400;"
+      "window.document.getElementById('expand_to_essential').width = 400;";
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(), script));
+
+  VerifyPluginIsThrottled(GetActiveWebContents(), "expand_to_peripheral");
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "expand_to_essential");
 }
