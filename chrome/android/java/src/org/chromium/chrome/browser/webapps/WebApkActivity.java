@@ -10,7 +10,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
@@ -103,11 +102,11 @@ public class WebApkActivity extends WebappActivity {
             }
 
             @Override
-            public AppBannerManager createAppBannerManager(Tab tab) {
+            public boolean canShowAppBanners(Tab tab) {
                 // Do not show app banners for WebAPKs regardless of the current page URL.
                 // A WebAPK can display a page outside of its WebAPK scope if a page within the
                 // WebAPK scope navigates via JavaScript while the WebAPK is in the background.
-                return null;
+                return false;
             }
         };
     }

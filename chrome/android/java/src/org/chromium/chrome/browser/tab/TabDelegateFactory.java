@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
@@ -43,12 +42,12 @@ public class TabDelegateFactory {
     }
 
     /**
-     * Creates the {@link AppBannerManager} the tab will be initialized with.
+     * Return true if app banners are to be permitted in this tab.
      * @param tab The associated {@link Tab}.
-     * @return {@link AppBannerManager} to be used for the given tab. May be null.
+     * @return true if app banners are permitted, and false otherwise.
      */
-    public AppBannerManager createAppBannerManager(Tab tab) {
-        return new AppBannerManager(tab, tab.getApplicationContext());
+    public boolean canShowAppBanners(Tab tab) {
+        return true;
     }
 
     /**

@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/banners/app_banner_manager_android.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/media/media_throttle_infobar_delegate.h"
@@ -417,11 +418,10 @@ void TabWebContentsDelegateAndroid::AddNewContents(
 
 void TabWebContentsDelegateAndroid::RequestAppBannerFromDevTools(
     content::WebContents* web_contents) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return;
-  Java_TabWebContentsDelegateAndroid_requestAppBanner(env, obj.obj());
+  banners::AppBannerManagerAndroid* manager =
+      banners::AppBannerManagerAndroid::FromWebContents(web_contents);
+  DCHECK(manager);
+  manager->RequestAppBanner(web_contents->GetLastCommittedURL(), true);
 }
 
 }  // namespace android

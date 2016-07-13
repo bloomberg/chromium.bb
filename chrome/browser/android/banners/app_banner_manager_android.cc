@@ -19,6 +19,8 @@ using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(banners::AppBannerManagerAndroid);
+
 namespace {
 
 const char kPlayPlatform[] = "play";
@@ -31,27 +33,65 @@ const char kPlayInlineReferrer[] = "playinline=chrome_inline";
 namespace banners {
 
 AppBannerManagerAndroid::AppBannerManagerAndroid(
-    JNIEnv* env,
-    jobject obj)
-    : AppBannerManager(nullptr),
-      weak_java_banner_view_manager_(env, obj) {
+    content::WebContents* web_contents)
+    : AppBannerManager(web_contents) {
+  CreateJavaBannerManager();
 }
 
 AppBannerManagerAndroid::~AppBannerManagerAndroid() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_AppBannerManager_destroy(env, java_banner_manager_.obj());
+  java_banner_manager_.Reset();
 }
 
-void AppBannerManagerAndroid::Destroy(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
-  delete this;
+const base::android::ScopedJavaGlobalRef<jobject>&
+AppBannerManagerAndroid::GetJavaBannerManager() const {
+  return java_banner_manager_;
 }
 
-void AppBannerManagerAndroid::ReplaceWebContents(
+bool AppBannerManagerAndroid::IsFetcherActive(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return AppBannerManager::IsFetcherActive();
+}
+
+bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jweb_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  AppBannerManager::ReplaceWebContents(web_contents);
+    const JavaParamRef<jobject>& japp_data,
+    const JavaParamRef<jstring>& japp_title,
+    const JavaParamRef<jstring>& japp_package,
+    const JavaParamRef<jstring>& jicon_url) {
+  AppBannerDataFetcherAndroid* android_fetcher =
+      static_cast<AppBannerDataFetcherAndroid*>(data_fetcher().get());
+  if (!CheckFetcherMatchesContents(android_fetcher->is_debug_mode()))
+    return false;
+
+  GURL image_url = GURL(ConvertJavaStringToUTF8(env, jicon_url));
+
+  return android_fetcher->ContinueFetching(
+      ConvertJavaStringToUTF16(env, japp_title),
+      ConvertJavaStringToUTF8(env, japp_package), japp_data, image_url);
+}
+
+void AppBannerManagerAndroid::RequestAppBanner(const GURL& validated_url,
+                                               bool is_debug_mode) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!Java_AppBannerManager_isEnabledForTab(env, java_banner_manager_.obj()))
+    return;
+
+  AppBannerManager::RequestAppBanner(validated_url, is_debug_mode);
+}
+
+AppBannerDataFetcher* AppBannerManagerAndroid::CreateAppBannerDataFetcher(
+    base::WeakPtr<Delegate> weak_delegate,
+    bool is_debug_mode) {
+  return new AppBannerDataFetcherAndroid(
+      web_contents(), weak_delegate,
+      ShortcutHelper::GetIdealHomescreenIconSizeInDp(),
+      ShortcutHelper::GetMinimumHomescreenIconSizeInDp(),
+      ShortcutHelper::GetIdealSplashImageSizeInDp(),
+      ShortcutHelper::GetMinimumSplashImageSizeInDp(), is_debug_mode);
 }
 
 bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
@@ -65,8 +105,7 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
 
   // Send the info to the Java side to get info about the app.
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> jobj = weak_java_banner_view_manager_.get(env);
-  if (jobj.is_null())
+  if (java_banner_manager_.is_null())
     return false;
 
   std::string id_from_app_url = ExtractQueryValueForName(url, kIdName);
@@ -93,9 +132,29 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
   ScopedJavaLocalRef<jstring> jreferrer(
       ConvertUTF8ToJavaString(env, referrer));
   Java_AppBannerManager_fetchAppDetails(
-      env, jobj.obj(), jurl.obj(),
+      env, java_banner_manager_.obj(), jurl.obj(),
       jpackage.obj(), jreferrer.obj(),
       ShortcutHelper::GetIdealHomescreenIconSizeInDp());
+  return true;
+}
+
+void AppBannerManagerAndroid::CreateJavaBannerManager() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_banner_manager_.Reset(
+      Java_AppBannerManager_create(env, reinterpret_cast<intptr_t>(this)));
+}
+
+bool AppBannerManagerAndroid::CheckFetcherMatchesContents(bool is_debug_mode) {
+  if (!web_contents())
+    return false;
+
+  if (!data_fetcher() ||
+      data_fetcher()->validated_url() != web_contents()->GetURL()) {
+    banners::OutputDeveloperNotShownMessage(
+        web_contents(), banners::kUserNavigatedBeforeBannerShown,
+        is_debug_mode);
+    return false;
+  }
   return true;
 }
 
@@ -111,20 +170,6 @@ bool AppBannerManagerAndroid::CheckPlatformAndId(const std::string& platform,
   if (id.empty()) {
     banners::OutputDeveloperNotShownMessage(
         web_contents(), banners::kIgnoredNoId, is_debug_mode);
-    return false;
-  }
-  return true;
-}
-
-bool AppBannerManagerAndroid::CheckFetcherMatchesContents(bool is_debug_mode) {
-  if (!web_contents())
-    return false;
-
-  if (!data_fetcher() ||
-      data_fetcher()->validated_url() != web_contents()->GetURL()) {
-    banners::OutputDeveloperNotShownMessage(
-        web_contents(), banners::kUserNavigatedBeforeBannerShown,
-        is_debug_mode);
     return false;
   }
   return true;
@@ -146,78 +191,44 @@ std::string AppBannerManagerAndroid::ExtractQueryValueForName(
   return "";
 }
 
-AppBannerDataFetcher* AppBannerManagerAndroid::CreateAppBannerDataFetcher(
-    base::WeakPtr<Delegate> weak_delegate,
-    bool is_debug_mode) {
-  return new AppBannerDataFetcherAndroid(
-      web_contents(), weak_delegate,
-      ShortcutHelper::GetIdealHomescreenIconSizeInDp(),
-      ShortcutHelper::GetMinimumHomescreenIconSizeInDp(),
-      ShortcutHelper::GetIdealSplashImageSizeInDp(),
-      ShortcutHelper::GetMinimumSplashImageSizeInDp(), is_debug_mode);
-}
-
-bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& japp_data,
-    const JavaParamRef<jstring>& japp_title,
-    const JavaParamRef<jstring>& japp_package,
-    const JavaParamRef<jstring>& jicon_url) {
-  AppBannerDataFetcherAndroid* android_fetcher =
-      static_cast<AppBannerDataFetcherAndroid*>(data_fetcher().get());
-  if (!CheckFetcherMatchesContents(android_fetcher->is_debug_mode()))
-    return false;
-
-  GURL image_url = GURL(ConvertJavaStringToUTF8(env, jicon_url));
-
-  return android_fetcher->ContinueFetching(
-      ConvertJavaStringToUTF16(env, japp_title),
-      ConvertJavaStringToUTF8(env, japp_package), japp_data, image_url);
-}
-
-bool AppBannerManagerAndroid::IsFetcherActive(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return AppBannerManager::IsFetcherActive();
-}
-
-void AppBannerManagerAndroid::RequestAppBanner(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  // Set debug mode to true as this method is only called from DevTools.
-  AppBannerManager::RequestAppBanner(web_contents()->GetLastCommittedURL(),
-                                     true /* is_debug_mode */);
-}
-
 // static
 bool AppBannerManagerAndroid::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-jlong Init(JNIEnv* env,
-           const JavaParamRef<jobject>& obj) {
-  AppBannerManagerAndroid* manager = new AppBannerManagerAndroid(env, obj);
-  return reinterpret_cast<intptr_t>(manager);
+// static
+ScopedJavaLocalRef<jobject> GetJavaBannerManagerForWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jobject>& java_web_contents) {
+  AppBannerManagerAndroid* manager = AppBannerManagerAndroid::FromWebContents(
+      content::WebContents::FromJavaWebContents(java_web_contents));
+  if (!manager)
+    return ScopedJavaLocalRef<jobject>();
+
+  return ScopedJavaLocalRef<jobject>(manager->GetJavaBannerManager());
 }
 
-void SetTimeDeltaForTesting(JNIEnv* env,
-                            const JavaParamRef<jclass>& clazz,
-                            jint days) {
-  AppBannerDataFetcher::SetTimeDeltaForTesting(days);
-}
-
+// static
 void DisableSecureSchemeCheckForTesting(JNIEnv* env,
                                         const JavaParamRef<jclass>& clazz) {
   AppBannerManager::DisableSecureSchemeCheckForTesting();
 }
 
+// static
 void SetEngagementWeights(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,
                           jdouble direct_engagement,
                           jdouble indirect_engagement) {
   AppBannerManager::SetEngagementWeights(direct_engagement,
                                          indirect_engagement);
+}
+
+// static
+void SetTimeDeltaForTesting(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            jint days) {
+  AppBannerDataFetcher::SetTimeDeltaForTesting(days);
 }
 
 }  // namespace banners

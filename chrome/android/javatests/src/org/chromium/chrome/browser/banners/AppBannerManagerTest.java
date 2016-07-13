@@ -172,7 +172,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @Override
     protected void setUp() throws Exception {
         mPackageManager = new TestPackageManager();
-        AppBannerManager.setIsEnabledForTesting(true);
+        AppBannerManager.setIsSupported(true);
         AppBannerInfoBarDelegateAndroid.setPackageManagerForTesting(mPackageManager);
         ShortcutHelper.setDelegateForTests(new ShortcutHelper.Delegate() {
             @Override
@@ -223,8 +223,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AppBannerManager manager =
-                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
                 return mDetailsDelegate.mNumRetrieved == numExpected
                         && !manager.isFetcherActiveForTesting();
             }
@@ -313,8 +312,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AppBannerManager manager =
-                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
                 return !manager.isFetcherActiveForTesting();
             }
         });
@@ -326,8 +324,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AppBannerManager manager =
-                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
                 return !manager.isFetcherActiveForTesting();
             }
         });
@@ -486,8 +483,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AppBannerManager manager =
-                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
                 return !manager.isFetcherActiveForTesting();
             }
         });
@@ -504,8 +500,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                AppBannerManager manager =
-                        getActivity().getActivityTab().getAppBannerManagerForTesting();
+                AppBannerManager manager = getActivity().getActivityTab().getAppBannerManager();
                 return !manager.isFetcherActiveForTesting();
             }
         });

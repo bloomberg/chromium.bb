@@ -180,9 +180,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /** InfoBar container to show InfoBars for this tab. */
     private InfoBarContainer mInfoBarContainer;
 
-    /** Manages app banners shown for this tab. */
-    private AppBannerManager mAppBannerManager;
-
     /** Controls overscroll pull-to-refresh behavior for this tab. */
     private SwipeRefreshHandler mSwipeRefreshHandler;
 
@@ -1435,11 +1432,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             RevenueStats.getInstance().tabCreated(this);
 
-            if (AppBannerManager.isEnabled()) {
-                mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
-                if (mAppBannerManager != null) addObserver(mAppBannerManager);
-            }
-
             mTopControlsVisibilityDelegate =
                     mDelegateFactory.createTopControlsVisibilityDelegate(this);
 
@@ -1471,6 +1463,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             if (!creatingWebContents && webContents.isLoadingToDifferentDocument()) {
                 didStartPageLoad(webContents.getUrl(), false);
             }
+
+            getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
         } finally {
             if (mTimestampMillis == INVALID_TIMESTAMP) {
                 mTimestampMillis = System.currentTimeMillis();
@@ -1561,7 +1555,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 mWebContentsDelegate, mDelegateFactory.createContextMenuPopulator(this));
         mTopControlsVisibilityDelegate = mDelegateFactory.createTopControlsVisibilityDelegate(this);
         setInterceptNavigationDelegate(mDelegateFactory.createInterceptNavigationDelegate(this));
-        mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
+        getAppBannerManager().setIsEnabledForTab(mDelegateFactory.canShowAppBanners(this));
 
         // Reload the NativePage (if any), since the old NativePage has a reference to the old
         // activity.
@@ -2029,13 +2023,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mInfoBarContainer != null) {
             mInfoBarContainer.destroy();
             mInfoBarContainer = null;
-        }
-
-        // Destroy the AppBannerManager after the InfoBarContainer because it monitors for infobar
-        // removals.
-        if (mAppBannerManager != null) {
-            mAppBannerManager.destroy();
-            mAppBannerManager = null;
         }
 
         mPreviousFullscreenTopControlsOffsetY = Float.NaN;
@@ -2528,13 +2515,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
     }
 
-    /** Requests the app banner. This method is called from the DevTools. */
-    protected boolean requestAppBanner() {
-        if (mAppBannerManager == null) return false;
-        mAppBannerManager.requestAppBanner();
-        return true;
-    }
-
     @CalledByNative
     private void clearNativePtr() {
         assert mNativeTabAndroid != 0;
@@ -3003,9 +2983,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     /**
      * @return the AppBannerManager.
      */
-    @VisibleForTesting
-    public AppBannerManager getAppBannerManagerForTesting() {
-        return mAppBannerManager;
+    public AppBannerManager getAppBannerManager() {
+        return AppBannerManager.getAppBannerManagerForWebContents(getWebContents());
     }
 
     @VisibleForTesting

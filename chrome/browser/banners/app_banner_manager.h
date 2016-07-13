@@ -40,7 +40,7 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Requests an app banner. Set |is_debug_mode| when it is triggered by the
   // developer's action in DevTools.
-  void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
+  virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
 
   ~AppBannerManager() override;
 
