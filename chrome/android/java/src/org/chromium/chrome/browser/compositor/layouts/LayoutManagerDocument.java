@@ -396,8 +396,7 @@ public class LayoutManagerDocument extends LayoutManager
             FullscreenManager manager = mHost.getFullscreenManager();
             if (getActiveLayout() != mStaticLayout
                     || !FeatureUtilities.isDocumentModeEligible(mHost.getContext())
-                    || !DeviceClassManager.enableToolbarSwipe(
-                               FeatureUtilities.isDocumentMode(mHost.getContext()))
+                    || !DeviceClassManager.enableToolbarSwipe()
                     || (manager != null && manager.getPersistentFullscreenMode())) {
                 return false;
             }

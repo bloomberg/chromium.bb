@@ -1065,10 +1065,6 @@ const char kEnableHostedMode[] = "enable-hosted-mode";
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
 
-// Enabled tab switcher in document mode.
-const char kEnableTabSwitcherInDocumentMode[] =
-    "enable-tab-switcher-in-document-mode";
-
 // Enable theme colors in the tab switcher.
 const char kEnableTabSwitcherThemeColors[] = "enable-tab-switcher-theme-colors";
 

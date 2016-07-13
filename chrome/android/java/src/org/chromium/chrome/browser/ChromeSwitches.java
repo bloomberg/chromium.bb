@@ -19,10 +19,6 @@ public abstract class ChromeSwitches {
     /** Whether fullscreen support is disabled (auto hiding controls, etc...). */
     public static final String DISABLE_FULLSCREEN = "disable-fullscreen";
 
-    /** Enable toolbar swipe to change tabs in document mode */
-    public static final String ENABLE_TOOLBAR_SWIPE_IN_DOCUMENT_MODE =
-            "enable-toolbar-swipe-in-document-mode";
-
     /** Whether instant is disabled. */
     public static final String DISABLE_INSTANT = "disable-instant";
 
@@ -217,12 +213,6 @@ public abstract class ChromeSwitches {
 
     public static final String DISABLE_APP_LINK = "disable-app-link";
     public static final String ENABLE_APP_LINK = "enable-app-link";
-
-    /**
-     * Enable tab switcher in document mode (merged tabs and apps option).
-     */
-    public static final String ENABLE_TAB_SWITCHER_IN_DOCUMENT_MODE =
-            "enable-tab-switcher-in-document-mode";
 
     /**
      * Set the partner-defined homepage URL, for testing.

@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector.CloseAllTabsDelegat
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -687,8 +686,7 @@ public class LayoutManagerChrome
         public boolean isSwipeEnabled(ScrollDirection direction) {
             FullscreenManager manager = mHost.getFullscreenManager();
             if (getActiveLayout() != mStaticLayout
-                    || !DeviceClassManager.enableToolbarSwipe(
-                               FeatureUtilities.isDocumentMode(mHost.getContext()))
+                    || !DeviceClassManager.enableToolbarSwipe()
                     || (manager != null && manager.getPersistentFullscreenMode())) {
                 return false;
             }

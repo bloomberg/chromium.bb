@@ -322,12 +322,9 @@ public class ToolbarPhone extends ToolbarLayout
             ApiCompatibilityUtils.setMarginEnd(
                     (MarginLayoutParams) mMenuButtonWrapper.getLayoutParams(),
                     getResources().getDimensionPixelSize(R.dimen.document_toolbar_menu_offset));
-        }
-
-        if (FeatureUtilities.isTabSwitchingEnabled(getContext())) {
-            inflateTabSwitchingResources();
-        } else {
             hideTabSwitchingResources();
+        } else {
+            inflateTabSwitchingResources();
         }
 
         setWillNotDraw(false);
@@ -417,15 +414,7 @@ public class ToolbarPhone extends ToolbarLayout
         super.onNativeLibraryReady();
         getLocationBar().onNativeLibraryReady();
 
-        if (FeatureUtilities.isTabSwitchingEnabledInDocumentMode(getContext())) {
-            // We might have hidden some buttons at onFinishInflate() because it was called
-            // before native library is ready and chrome switch can be correctly read.
-            // Now recover those buttons. Since we want to show toolbar even before native
-            // library is ready, and as tab switching is experimental, this is unavoidable.
-            unhideTabSwitchingResources();
-            inflateTabSwitchingResources();
-            enableTabSwitchingResources();
-        } else if (FeatureUtilities.isDocumentMode(getContext())) {
+        if (FeatureUtilities.isDocumentMode(getContext())) {
             removeTabSwitchingResources();
         } else {  // non-document mode
             enableTabSwitchingResources();

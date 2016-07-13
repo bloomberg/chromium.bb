@@ -28,7 +28,6 @@ public class DeviceClassManager {
     private boolean mEnableAnimations;
     private boolean mEnablePrerendering;
     private boolean mEnableToolbarSwipe;
-    private boolean mEnableToolbarSwipeInDocumentMode;
     private boolean mDisableDomainReliability;
 
     private final boolean mEnableFullscreen;
@@ -74,8 +73,6 @@ public class DeviceClassManager {
                 .hasSwitch(ChromeSwitches.ENABLE_ACCESSIBILITY_TAB_SWITCHER);
         mEnableFullscreen =
                 !commandLine.hasSwitch(ChromeSwitches.DISABLE_FULLSCREEN);
-        mEnableToolbarSwipeInDocumentMode =
-                commandLine.hasSwitch(ChromeSwitches.ENABLE_TOOLBAR_SWIPE_IN_DOCUMENT_MODE);
 
         // Related features.
         if (mEnableAccessibilityLayout) {
@@ -127,12 +124,10 @@ public class DeviceClassManager {
     }
 
     /**
-     * @param isDocumentMode Whether or not chrome is in document mode.
      * @return Whether or not we can use the toolbar swipe.
      */
-    public static boolean enableToolbarSwipe(boolean isDocumentMode) {
-        return getInstance().mEnableToolbarSwipe
-                && !(isDocumentMode && !getInstance().mEnableToolbarSwipeInDocumentMode);
+    public static boolean enableToolbarSwipe() {
+        return getInstance().mEnableToolbarSwipe;
     }
 
     /**

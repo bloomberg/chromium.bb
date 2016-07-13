@@ -1720,10 +1720,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"tab-management-experiment-type", IDS_FLAGS_HERB_PROTOTYPE_CHOICES_NAME,
      IDS_FLAGS_HERB_PROTOTYPE_CHOICES_DESCRIPTION, kOsAndroid,
      MULTI_VALUE_TYPE(kHerbPrototypeChoices)},
-    {"enable-tab-switcher-in-document-mode",
-     IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME,
-     IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableTabSwitcherInDocumentMode)},
     {"app-link", IDS_FLAGS_ENABLE_APP_LINK_NAME,
      IDS_FLAGS_ENABLE_APP_LINK_DESCRIPTION, kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppLink,
@@ -2012,14 +2008,6 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   if (!strcmp("enable-data-reduction-proxy-carrier-test",
               entry.internal_name) &&
       channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
-  }
-  // enable-tab-switcher-in-document-mode is only available for Chromium
-  // builds and the Canary channel.
-  if (!strcmp("enable-tab-switcher-in-document-mode",
-              entry.internal_name) &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {
     return true;

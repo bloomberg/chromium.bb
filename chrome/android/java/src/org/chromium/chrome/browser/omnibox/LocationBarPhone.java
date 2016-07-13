@@ -152,7 +152,7 @@ public class LocationBarPhone extends LocationBarLayout {
     public boolean showMenuButtonInOmnibox() {
         // When we show tab switching button, we prefer to show menu right to the tab switcher
         // button.
-        return !FeatureUtilities.isTabSwitchingEnabled(getContext());
+        return FeatureUtilities.isDocumentMode(getContext());
     }
 
     /**

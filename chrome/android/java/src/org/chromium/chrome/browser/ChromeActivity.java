@@ -1310,7 +1310,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 mReaderModeManager);
 
         if (controlContainer != null
-                && DeviceClassManager.enableToolbarSwipe(FeatureUtilities.isDocumentMode(this))) {
+                && DeviceClassManager.enableToolbarSwipe()) {
             controlContainer.setSwipeHandler(
                     getCompositorViewHolder().getLayoutManager().getTopSwipeHandler());
         }
