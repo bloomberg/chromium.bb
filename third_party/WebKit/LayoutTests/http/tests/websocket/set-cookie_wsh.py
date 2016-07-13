@@ -41,6 +41,8 @@ def web_socket_do_extra_handshake(request):
         'ws-path-root=1; Path=/' + max_age,
         'ws-path-foobar=1; Path=/foo/bar' + max_age,
         'ws=1' + max_age,
+        'same-site-strict=1; SameSite=Strict' + max_age,
+        'same-site-lax=1; SameSite=Lax' + max_age
     ]
     for value in cookie_values:
         request.extra_headers.append(('Set-Cookie', value))

@@ -265,11 +265,12 @@ class WebSocketEndToEndTest : public ::testing::Test {
       InitialiseContext();
     }
     url::Origin origin(GURL("http://localhost"));
+    GURL first_party_for_cookies("http://localhost/");
     event_interface_ = new ConnectTestingEventInterface;
     channel_.reset(
         new WebSocketChannel(base::WrapUnique(event_interface_), &context_));
     channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
-                                    "");
+                                    first_party_for_cookies, "");
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }

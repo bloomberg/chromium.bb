@@ -396,16 +396,15 @@ bool WebSocketHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WebSocketHost::OnAddChannelRequest(
-    const GURL& socket_url,
-    const std::vector<std::string>& requested_protocols,
-    const url::Origin& origin,
-    const std::string& user_agent_override,
-    int render_frame_id) {
+    const WebSocketHostMsg_AddChannelRequest_Params& params) {
   DVLOG(3) << "WebSocketHost::OnAddChannelRequest"
-           << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
-           << "\" requested_protocols=\""
-           << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin << "\" user_agent_override=\"" << user_agent_override
+           << " routing_id=" << routing_id_ << " socket_url=\""
+           << params.socket_url << "\" requested_protocols=\""
+           << base::JoinString(params.requested_protocols, ", ")
+           << "\" origin=\"" << params.origin
+           << "\" first_party_for_cookies=\""
+           << params.first_party_for_cookies << "\" user_agent_override=\""
+           << params.user_agent_override
            << "\"";
 
   DCHECK(!channel_);
@@ -413,12 +412,15 @@ void WebSocketHost::OnAddChannelRequest(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&WebSocketHost::AddChannel, weak_ptr_factory_.GetWeakPtr(),
-                  socket_url, requested_protocols, origin,
-                  user_agent_override, render_frame_id),
+                   params.socket_url, params.requested_protocols,
+                   params.origin, params.first_party_for_cookies,
+                   params.user_agent_override, params.render_frame_id),
         delay_);
   } else {
-    AddChannel(socket_url, requested_protocols, origin,
-               user_agent_override, render_frame_id);
+    AddChannel(
+        params.socket_url, params.requested_protocols, params.origin,
+        params.first_party_for_cookies, params.user_agent_override,
+        params.render_frame_id);
   }
   // |this| may have been deleted here.
 }
@@ -427,13 +429,15 @@ void WebSocketHost::AddChannel(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
     const url::Origin& origin,
+    const GURL& first_party_for_cookies,
     const std::string& user_agent_override,
     int render_frame_id) {
   DVLOG(3) << "WebSocketHost::AddChannel"
            << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
            << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
-           << origin << "\" user_agent_override=\""
+           << origin << "\" first_party_for_cookies=\""
+           << first_party_for_cookies << "\" user_agent_override=\""
            << user_agent_override << "\"";
 
   DCHECK(!channel_);
@@ -469,8 +473,8 @@ void WebSocketHost::AddChannel(
                                             user_agent_override.c_str());
   }
   channel_->SendAddChannelRequest(
-          socket_url, requested_protocols, origin,
-          additional_headers);
+      socket_url, requested_protocols, origin, first_party_for_cookies,
+      additional_headers);
   // |this| may have been deleted here.
 }
 

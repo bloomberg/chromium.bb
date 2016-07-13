@@ -18,6 +18,7 @@
 #include "content/common/websocket.h"
 
 class GURL;
+struct WebSocketHostMsg_AddChannelRequest_Params;
 
 namespace url {
 class Origin;
@@ -66,15 +67,13 @@ class CONTENT_EXPORT WebSocketHost {
   // Handlers for each message type, dispatched by OnMessageReceived(), as
   // defined in content/common/websocket_messages.h
 
-  void OnAddChannelRequest(const GURL& socket_url,
-                           const std::vector<std::string>& requested_protocols,
-                           const url::Origin& origin,
-                           const std::string& user_agent_override,
-                           int render_frame_id);
+  void OnAddChannelRequest(
+      const WebSocketHostMsg_AddChannelRequest_Params& request);
 
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
                   const url::Origin& origin,
+                  const GURL& first_party_for_cookies,
                   const std::string& user_agent_override,
                   int render_frame_id);
 

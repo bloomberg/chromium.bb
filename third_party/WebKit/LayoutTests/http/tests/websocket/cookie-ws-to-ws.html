@@ -22,7 +22,7 @@ ws_set_cookie.onopen = function () {
 ws_set_cookie.onclose = function (e) {
     connectAndGetRequestHeader('cookie').then(function(value) {
         cookie = normalizeCookie(value);
-        shouldBeEqualToString('cookie', 'ws-domain-local-ip=1; ws-path-root=1; ws=1');
+        shouldBeEqualToString('cookie', 'same-site-lax=1; same-site-strict=1; ws-domain-local-ip=1; ws-path-root=1; ws=1');
         clear();
     }, finishAsFailed);
 };

@@ -50,6 +50,7 @@ class NET_EXPORT WebSocketChannel {
       const GURL&,
       const std::vector<std::string>&,
       const url::Origin&,
+      const GURL&,
       const std::string&,
       URLRequestContext*,
       const BoundNetLog&,
@@ -73,6 +74,7 @@ class NET_EXPORT WebSocketChannel {
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
+      const GURL& first_party_for_cookies,
       const std::string& additional_headers);
 
   // Sends a data frame to the remote side. It is the responsibility of the
@@ -123,6 +125,7 @@ class NET_EXPORT WebSocketChannel {
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
+      const GURL& first_party_for_cookies,
       const std::string& additional_headers,
       const WebSocketStreamCreator& creator);
 
@@ -216,6 +219,7 @@ class NET_EXPORT WebSocketChannel {
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin,
+      const GURL& first_party_for_cookies,
       const std::string& additional_headers,
       const WebSocketStreamCreator& creator);
 

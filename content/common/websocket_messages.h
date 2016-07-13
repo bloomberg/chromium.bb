@@ -46,6 +46,15 @@
 IPC_ENUM_TRAITS_MAX_VALUE(content::WebSocketMessageType,
                           content::WEB_SOCKET_MESSAGE_TYPE_LAST)
 
+IPC_STRUCT_BEGIN(WebSocketHostMsg_AddChannelRequest_Params)
+  IPC_STRUCT_MEMBER(GURL, socket_url)
+  IPC_STRUCT_MEMBER(std::vector<std::string>, requested_protocols)
+  IPC_STRUCT_MEMBER(url::Origin, origin)
+  IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
+  IPC_STRUCT_MEMBER(std::string, user_agent_override)
+  IPC_STRUCT_MEMBER(int, render_frame_id)
+IPC_STRUCT_END()
+
 IPC_STRUCT_TRAITS_BEGIN(content::WebSocketHandshakeRequest)
   IPC_STRUCT_TRAITS_MEMBER(url)
   IPC_STRUCT_TRAITS_MEMBER(headers)
@@ -67,12 +76,8 @@ IPC_STRUCT_TRAITS_END()
 // Open new WebSocket connection to |socket_url|. |requested_protocols| is a
 // list of tokens identifying sub-protocols the renderer would like to use, as
 // described in RFC6455 "Subprotocols Using the WebSocket Protocol".
-IPC_MESSAGE_ROUTED5(WebSocketHostMsg_AddChannelRequest,
-                    GURL /* socket_url */,
-                    std::vector<std::string> /* requested_protocols */,
-                    url::Origin /* origin */,
-                    std::string /* user_agent_override */,
-                    int /* render_frame_id */)
+IPC_MESSAGE_ROUTED1(WebSocketHostMsg_AddChannelRequest,
+                    WebSocketHostMsg_AddChannelRequest_Params)
 
 // Send a complete binary WebSocket message consisting of the Blob identified by
 // |uuid|. The message will be split into frames as necessary. |expected_size|

@@ -6,7 +6,7 @@ description("Test WebSocket.extensions attribute.");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket(ECHO_REQUEST_HEADERS_WS_URL);
+var ws = new WebSocket(WS_ECHO_REQUEST_HEADERS_URL);
 debug("Check the value before opening the connection:");
 shouldBeEqualToString("ws.extensions", "");
 

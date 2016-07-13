@@ -58,8 +58,6 @@
 #include "wtf/PtrUtil.h"
 #include <memory>
 
-using blink::WebSocketHandle;
-
 namespace blink {
 
 class DocumentWebSocketChannel::BlobLoader final : public GarbageCollectedFinalized<DocumentWebSocketChannel::BlobLoader>, public FileReaderLoaderClient {
@@ -184,7 +182,8 @@ bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
 
     if (document()->frame())
         document()->frame()->loader().client()->dispatchWillOpenWebSocket(m_handle.get());
-    m_handle->connect(url, webProtocols, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), document()->userAgent(), this);
+    m_handle->connect(url, webProtocols, WebSecurityOrigin(getExecutionContext()->getSecurityOrigin()), document()->firstPartyForCookies(), document()->userAgent(), this);
+
     flowControlIfNecessary();
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketCreateEvent::data(document(), m_identifier, url, protocol));
     InspectorInstrumentation::didCreateWebSocket(document(), m_identifier, url, protocol);

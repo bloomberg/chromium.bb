@@ -48,8 +48,8 @@ function runTests()
         .then(echoCookie)
         .then(
         function (cookie) {
-            if (cookie != 'ws-domain-local-ip=1; ws-path-root=1; ws=1')
-                return Promise.reject('Echoed cookie is incorrect');
+            if (cookie != 'ws-domain-local-ip=1; ws-path-root=1; ws=1; same-site-strict=1; same-site-lax=1')
+                return Promise.reject('Echoed cookie is incorrect: ' + cookie);
 
             postMessage("DONE");
         }

@@ -34,6 +34,7 @@ class WebSocketBridge : public blink::WebSocketHandle {
   void connect(const blink::WebURL& url,
                const blink::WebVector<blink::WebString>& protocols,
                const blink::WebSecurityOrigin& origin,
+               const blink::WebURL& first_party_for_cookies,
                const blink::WebString& user_agent_override,
                blink::WebSocketHandleClient* client) override;
   void send(bool fin,

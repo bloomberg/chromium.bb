@@ -700,6 +700,7 @@ struct ArgumentCopyingWebSocketStreamCreator {
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
       const url::Origin& origin,
+      const GURL& first_party_for_cookies,
       const std::string& additional_headers,
       URLRequestContext* url_request_context,
       const BoundNetLog& net_log,
@@ -707,6 +708,7 @@ struct ArgumentCopyingWebSocketStreamCreator {
     this->socket_url = socket_url;
     this->requested_subprotocols = requested_subprotocols;
     this->origin = origin;
+    this->first_party_for_cookies = first_party_for_cookies;
     this->url_request_context = url_request_context;
     this->net_log = net_log;
     this->connect_delegate = std::move(connect_delegate);
@@ -715,6 +717,7 @@ struct ArgumentCopyingWebSocketStreamCreator {
 
   GURL socket_url;
   url::Origin origin;
+  GURL first_party_for_cookies;
   std::vector<std::string> requested_subprotocols;
   URLRequestContext* url_request_context;
   BoundNetLog net_log;
@@ -747,7 +750,7 @@ class WebSocketChannelTest : public ::testing::Test {
                                         &connect_data_.url_request_context));
     channel_->SendAddChannelRequestForTesting(
         connect_data_.socket_url, connect_data_.requested_subprotocols,
-        connect_data_.origin, "",
+        connect_data_.origin, connect_data_.first_party_for_cookies, "",
         base::Bind(&ArgumentCopyingWebSocketStreamCreator::Create,
                    base::Unretained(&connect_data_.creator)));
   }
@@ -780,7 +783,10 @@ class WebSocketChannelTest : public ::testing::Test {
   // A struct containing the data that will be used to connect the channel.
   // Grouped for readability.
   struct ConnectData {
-    ConnectData() : socket_url("ws://ws/"), origin(GURL("http://ws")) {}
+    ConnectData()
+        : socket_url("ws://ws/"),
+          origin(GURL("http://ws")),
+          first_party_for_cookies("http://ws/") {}
 
     // URLRequestContext object.
     URLRequestContext url_request_context;
@@ -791,6 +797,8 @@ class WebSocketChannelTest : public ::testing::Test {
     std::vector<std::string> requested_subprotocols;
     // Origin of the request
     url::Origin origin;
+    // First party for cookies for the request.
+    GURL first_party_for_cookies;
 
     // A fake WebSocketStreamCreator that just records its arguments.
     ArgumentCopyingWebSocketStreamCreator creator;
@@ -1005,6 +1013,7 @@ class WebSocketChannelReceiveUtf8Test : public WebSocketChannelStreamTest {
 TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   connect_data_.socket_url = GURL("ws://example.com/test");
   connect_data_.origin = url::Origin(GURL("http://example.com"));
+  connect_data_.first_party_for_cookies = GURL("http://example.com/");
   connect_data_.requested_subprotocols.push_back("Sinbad");
 
   CreateChannelAndConnect();
@@ -1017,6 +1026,8 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   EXPECT_EQ(connect_data_.requested_subprotocols,
             actual.requested_subprotocols);
   EXPECT_EQ(connect_data_.origin.Serialize(), actual.origin.Serialize());
+  EXPECT_EQ(connect_data_.first_party_for_cookies,
+            actual.first_party_for_cookies);
 }
 
 // Verify that calling SendFlowControl before the connection is established does

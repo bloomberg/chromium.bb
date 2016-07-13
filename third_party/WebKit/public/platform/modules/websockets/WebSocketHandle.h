@@ -57,7 +57,7 @@ public:
 
     virtual ~WebSocketHandle() { }
 
-    virtual void connect(const WebURL&, const WebVector<WebString>& protocols, const WebSecurityOrigin&, const WebString& user_agent_override, WebSocketHandleClient*) = 0;
+    virtual void connect(const WebURL&, const WebVector<WebString>& protocols, const WebSecurityOrigin&, const WebURL& first_party_for_cookies, const WebString& user_agent_override, WebSocketHandleClient*) = 0;
     virtual void send(bool fin, MessageType, const char* data, size_t /* size */) = 0;
     virtual void flowControl(int64_t quota) = 0;
     virtual void close(unsigned short code, const WebString& reason) = 0;

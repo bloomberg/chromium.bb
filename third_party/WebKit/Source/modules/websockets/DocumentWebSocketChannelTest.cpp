@@ -30,7 +30,7 @@ using testing::_;
 using testing::InSequence;
 using testing::PrintToString;
 using testing::AnyNumber;
-
+using testing::SaveArg;
 
 namespace blink {
 
@@ -80,7 +80,7 @@ public:
 
     ~MockWebSocketHandle() override { }
 
-    MOCK_METHOD5(connect, void(const WebURL&, const WebVector<WebString>&, const WebSecurityOrigin&, const WebString&, WebSocketHandleClient*));
+    MOCK_METHOD6(connect, void(const WebURL&, const WebVector<WebString>&, const WebSecurityOrigin&, const WebURL&, const WebString&, WebSocketHandleClient*));
     MOCK_METHOD4(send, void(bool, WebSocketHandle::MessageType, const char*, size_t));
     MOCK_METHOD1(flowControl, void(int64_t));
     MOCK_METHOD2(close, void(unsigned short, const WebString&));
@@ -132,7 +132,7 @@ public:
     {
         {
             InSequence s;
-            EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, _, handleClient()));
+            EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, _, _, handleClient()));
             EXPECT_CALL(*handle(), flowControl(65536));
             EXPECT_CALL(*channelClient(), didConnect(String("a"), String("b")));
         }
@@ -158,18 +158,46 @@ MATCHER_P2(MemEq, p, len,
     return memcmp(arg, p, len) == 0;
 }
 
+MATCHER_P(WebURLEq, urlString,
+    std::string(negation ? "doesn't equal" : "equals")
+    + " to \"" + urlString + "\""
+)
+{
+    WebURL url(KURL(KURL(), urlString));
+    *result_listener << "where the url is \"" << arg.string().utf8() << "\"";
+    return arg == url;
+}
+
 TEST_F(DocumentWebSocketChannelTest, connectSuccess)
 {
+    WebVector<WebString> protocols;
+    WebSecurityOrigin origin;
+
     Checkpoint checkpoint;
     {
         InSequence s;
-        EXPECT_CALL(*handle(), connect(WebURL(KURL(KURL(), "ws://localhost/")), _, _, _, handleClient()));
+        EXPECT_CALL(*handle(), connect(WebURLEq("ws://localhost/"), _, _, WebURLEq("http://example.com/"), _, handleClient())).WillOnce(DoAll(
+            SaveArg<1>(&protocols),
+            SaveArg<2>(&origin)));
         EXPECT_CALL(*handle(), flowControl(65536));
         EXPECT_CALL(checkpoint, Call(1));
         EXPECT_CALL(*channelClient(), didConnect(String("a"), String("b")));
     }
 
+    KURL pageUrl(KURL(), "http://example.com/");
+    m_pageHolder->frame().securityContext()->setSecurityOrigin(SecurityOrigin::create(pageUrl));
+    Document& document = m_pageHolder->document();
+    document.setURL(pageUrl);
+    // Make sure that firstPartyForCookies() is set to the given value.
+    EXPECT_STREQ("http://example.com/", document.firstPartyForCookies().getString().utf8().data());
+
     EXPECT_TRUE(channel()->connect(KURL(KURL(), "ws://localhost/"), "x"));
+
+    EXPECT_EQ(1U, protocols.size());
+    EXPECT_STREQ("x", protocols[0].utf8().data());
+
+    EXPECT_STREQ("http://example.com", origin.toString().utf8().data());
+
     checkpoint.Call(1);
     handleClient()->didConnect(handle(), WebString("a"), WebString("b"));
 }

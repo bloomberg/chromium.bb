@@ -1,22 +1,27 @@
-var ECHO_REQUEST_HEADERS_WS_URL = 'ws://127.0.0.1:8880/echo-request-headers';
+var WS_ORIGIN = 'ws://127.0.0.1:8880';
+var WS_REMOTE_ORIGIN = 'ws://localhost:8880';
+var WS_ECHO_REQUEST_HEADERS_URL = WS_ORIGIN + '/echo-request-headers';
 
 // Returns a Promise which will create a new WebSocket, and resolve to the value
 // of the specified header in the request, or reject with an error message if
 // something goes wrong. The header must be specified in lower-case.
 function connectAndGetRequestHeader(request_header)
 {
-    return connectAndGetRequestHeaders().then(function(headers)
-    {
-        return headers[request_header];
-    });
+    return connectAndGetRequestHeaders(WS_ORIGIN).then(
+        headers => headers[request_header]);
+}
+
+function connectAndGetRequestHeaders()
+{
+    return connectAndGetRequestHeadersFrom(WS_ORIGIN);
 }
 
 // Returns a Promise which will create a new WebSocket, and return all the
 // request headers as an object, with the header names as keys in lower-case.
-function connectAndGetRequestHeaders()
+function connectAndGetRequestHeadersFrom(server)
 {
     return new Promise(function(resolve, reject) {
-        var header_ws = new WebSocket(ECHO_REQUEST_HEADERS_WS_URL);
+        var header_ws = new WebSocket(server + '/echo-request-headers');
         header_ws.onmessage = function (evt) {
             try {
                 var headers = JSON.parse(evt.data);

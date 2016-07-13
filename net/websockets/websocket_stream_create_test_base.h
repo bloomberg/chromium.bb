@@ -19,6 +19,8 @@
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_test_util.h"
 
+class GURL;
+
 namespace net {
 
 class HttpRequestHeaders;
@@ -37,9 +39,10 @@ class WebSocketStreamCreateTestBase {
 
   // A wrapper for CreateAndConnectStreamForTesting that knows about our default
   // parameters.
-  void CreateAndConnectStream(const std::string& socket_url,
+  void CreateAndConnectStream(const GURL& socket_url,
                               const std::vector<std::string>& sub_protocols,
                               const url::Origin& origin,
+                              const GURL& first_party_for_cookies,
                               const std::string& additional_headers,
                               std::unique_ptr<base::Timer> timer);
 
