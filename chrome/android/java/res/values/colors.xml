@@ -50,6 +50,10 @@
     <color name="website_settings_popup_text_link">#4285f4</color>
 
     <!-- URL Emphasizer colors -->
+    <color name="url_emphasis_start_scheme_security_warning">#ffb000</color>
+    <color name="url_emphasis_start_scheme_security_error">#db4437</color>
+    <color name="url_emphasis_start_scheme_ev_secure">#1ac222</color>
+    <color name="url_emphasis_start_scheme_secure">#1ac222</color>
     <color name="url_emphasis_non_emphasized_text">#80333333</color>
     <color name="url_emphasis_light_non_emphasized_text">#80ffffff</color>
     <color name="url_emphasis_domain_and_registry">#333333</color>
