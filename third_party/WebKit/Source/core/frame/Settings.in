@@ -411,3 +411,7 @@ passiveListenerDefault type=PassiveListenerDefault, initial=PassiveListenerDefau
 # Use default interpolation quality to scale bitmap images if quality is not determined
 # in other ways. This can help us writing reftests containing scaled images.
 useDefaultImageInterpolationQuality initial=false
+
+# Variant of the ParseHTMLOnMainThread experiment. One experiment immediately
+# tokenizes input bytes. The default is to tokenize with a post task.
+parseHTMLOnMainThreadSyncTokenize initial=false
