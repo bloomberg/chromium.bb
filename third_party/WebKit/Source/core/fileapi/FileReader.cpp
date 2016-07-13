@@ -45,6 +45,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
+#include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"
 
 namespace blink {
@@ -199,6 +200,7 @@ FileReader::FileReader(ExecutionContext* context)
     , ActiveDOMObject(context)
     , m_state(EMPTY)
     , m_loadingState(LoadingStateNone)
+    , m_stillFiringEvents(false)
     , m_readType(FileReaderLoader::ReadAsBinaryString)
     , m_lastProgressNotificationTimeMS(0)
 {
@@ -227,7 +229,7 @@ void FileReader::stop()
 
 bool FileReader::hasPendingActivity() const
 {
-    return m_state == LOADING;
+    return m_state == LOADING || m_stillFiringEvents;
 }
 
 void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
@@ -341,6 +343,7 @@ void FileReader::abort()
 void FileReader::doAbort()
 {
     ASSERT(m_state != DONE);
+    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
 
     terminate();
 
@@ -380,6 +383,7 @@ void FileReader::terminate()
 
 void FileReader::didStartLoading()
 {
+    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
     fireEvent(EventTypeNames::loadstart);
 }
 
@@ -390,6 +394,7 @@ void FileReader::didReceiveData()
     if (!m_lastProgressNotificationTimeMS) {
         m_lastProgressNotificationTimeMS = now;
     } else if (now - m_lastProgressNotificationTimeMS > progressNotificationIntervalMS) {
+        TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
         fireEvent(EventTypeNames::progress);
         m_lastProgressNotificationTimeMS = now;
     }
@@ -400,6 +405,13 @@ void FileReader::didFinishLoading()
     if (m_loadingState == LoadingStateAborted)
         return;
     ASSERT(m_loadingState == LoadingStateLoading);
+
+    // TODO(jochen): When we set m_state to DONE below, we still need to fire
+    // the load and loadend events. To avoid GC to collect this FileReader, we
+    // use this separate variable to keep the wrapper of this FileReader alive.
+    // An alternative would be to keep any active DOM object alive that is on
+    // the stack.
+    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
 
     // It's important that we change m_loadingState before firing any events
     // since any of the events could call abort(), which internally checks
@@ -425,6 +437,9 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
 {
     if (m_loadingState == LoadingStateAborted)
         return;
+
+    TemporaryChange<bool> firingEvents(m_stillFiringEvents, true);
+
     ASSERT(m_loadingState == LoadingStateLoading);
     m_loadingState = LoadingStateNone;
 

@@ -123,6 +123,7 @@ private:
         LoadingStateAborted
     };
     LoadingState m_loadingState;
+    bool m_stillFiringEvents;
 
     String m_blobType;
     RefPtr<BlobDataHandle> m_blobDataHandle;
