@@ -1492,9 +1492,8 @@ void ProfileManager::SetNonPersonalProfilePrefs(Profile* profile) {
 
 bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  if (profile->GetPath().BaseName().value() == chrome::kInitialProfile) {
+  if (chromeos::ProfileHelper::IsSigninProfile(profile))
     return true;
-  }
 #endif
   return profile->IsGuestSession() || profile->IsSystemProfile();
 }
