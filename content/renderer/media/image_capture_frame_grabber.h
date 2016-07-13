@@ -18,17 +18,13 @@ namespace blink {
 class WebMediaStreamTrack;
 }
 
-namespace media {
-class VideoFrame;
-}
-
 namespace content {
 
 // This class grabs Video Frames from a given Media Stream Video Track, binding
-// a function every time grabFrame() is called. This function receives an
-// incoming VideoFrame on a background thread and converts it into the
-// appropriate SkBitmap which is sent back to OnSkBitmap(). This class is single
-// threaded throughout.
+// a method of an ephemeral SingleShotFrameHandler every time grabFrame() is
+// called. This method receives an incoming media::VideoFrame on a background
+// thread and converts it into the appropriate SkBitmap which is sent back to
+// OnSkBitmap(). This class is single threaded throughout.
 class CONTENT_EXPORT ImageCaptureFrameGrabber final
     : NON_EXPORTED_BASE(public blink::WebImageCaptureFrameGrabber),
       NON_EXPORTED_BASE(public MediaStreamVideoSink) {
@@ -43,6 +39,9 @@ class CONTENT_EXPORT ImageCaptureFrameGrabber final
                  blink::WebImageCaptureGrabFrameCallbacks* callbacks) override;
 
  private:
+  // Internal class to receive, convert and forward one frame.
+  class SingleShotFrameHandler;
+
   void OnSkImage(
       ScopedWebCallbacks<blink::WebImageCaptureGrabFrameCallbacks> callbacks,
       sk_sp<SkImage> image);
