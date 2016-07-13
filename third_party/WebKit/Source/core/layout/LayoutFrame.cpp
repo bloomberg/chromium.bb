@@ -24,7 +24,10 @@
 #include "core/layout/LayoutFrame.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElement.h"
+#include "core/input/EventHandler.h"
+#include "core/style/CursorData.h"
 
 namespace blink {
 
@@ -38,6 +41,23 @@ FrameEdgeInfo LayoutFrame::edgeInfo() const
 {
     HTMLFrameElement* element = toHTMLFrameElement(node());
     return FrameEdgeInfo(element->noResize(), element->hasFrameBorder());
+}
+
+void LayoutFrame::imageChanged(WrappedImagePtr image, const IntRect*)
+{
+    if (const CursorList* cursors = style()->cursors()) {
+        for (const CursorData& cursor : *cursors) {
+            if (cursor.image() && cursor.image()->cachedImage() == image) {
+                if (LocalFrame* frame = this->frame()) {
+                    // Cursor update scheduling is done by the local root, which is the main frame if there
+                    // are no RemoteFrame ancestors in the frame tree. Use of localFrameRoot() is
+                    // discouraged but will change when cursor update scheduling is moved from EventHandler
+                    // to PageEventHandler.
+                    frame->localFrameRoot()->eventHandler().scheduleCursorUpdate();
+                }
+            }
+        }
+    }
 }
 
 void LayoutFrame::updateFromElement()

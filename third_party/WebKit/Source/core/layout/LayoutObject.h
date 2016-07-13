@@ -1617,6 +1617,7 @@ private:
 
     void updateShapeImage(const ShapeValue*, const ShapeValue*);
     void updateFillImages(const FillLayer* oldLayers, const FillLayer& newLayers);
+    void updateCursorImages(const CursorList* oldCursors, const CursorList* newCursors);
 
     void setNeedsOverflowRecalcAfterStyleChange();
 
@@ -1651,6 +1652,7 @@ private:
     Color selectionColor(int colorProperty, const GlobalPaintFlags) const;
 
     void removeShapeImageClient(ShapeValue*);
+    void removeCursorImageClient(const CursorList*);
 
 #if ENABLE(ASSERT)
     void checkBlockPositionedObjectsNeedLayout();

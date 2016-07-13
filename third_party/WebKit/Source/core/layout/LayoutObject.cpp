@@ -1898,6 +1898,7 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
     updateImage(oldBoxReflectMaskImage, newBoxReflectMaskImage);
 
     updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style->shapeOutside());
+    updateCursorImages(oldStyle ? oldStyle->cursors() : nullptr, m_style->cursors());
 
     bool doesNotNeedLayoutOrPaintInvalidation = !m_parent;
 
@@ -2120,6 +2121,20 @@ void LayoutObject::updateFillImages(const FillLayer* oldLayers, const FillLayer&
         if (currOld->image())
             currOld->image()->removeClient(this);
     }
+}
+
+void LayoutObject::updateCursorImages(const CursorList* oldCursors, const CursorList* newCursors)
+{
+    if (oldCursors && newCursors && *oldCursors == *newCursors)
+        return;
+
+    if (newCursors) {
+        for (const CursorData& cursorNew : *newCursors) {
+            if (cursorNew.image())
+                cursorNew.image()->addClient(this);
+        }
+    }
+    removeCursorImageClient(oldCursors);
 }
 
 void LayoutObject::updateImage(StyleImage* oldImage, StyleImage* newImage)
@@ -2651,6 +2666,7 @@ void LayoutObject::willBeDestroyed()
             m_style->boxReflect()->mask().image()->removeClient(this);
 
         removeShapeImageClient(m_style->shapeOutside());
+        removeCursorImageClient(m_style->cursors());
     }
 
     if (frameView())
@@ -2834,6 +2850,16 @@ void LayoutObject::removeShapeImageClient(ShapeValue* shapeValue)
         return;
     if (StyleImage* shapeImage = shapeValue->image())
         shapeImage->removeClient(this);
+}
+
+void LayoutObject::removeCursorImageClient(const CursorList* cursorList)
+{
+    if (!cursorList)
+        return;
+    for (const CursorData& cursor : *cursorList) {
+        if (cursor.image())
+            cursor.image()->removeClient(this);
+    }
 }
 
 PositionWithAffinity LayoutObject::positionForPoint(const LayoutPoint&)

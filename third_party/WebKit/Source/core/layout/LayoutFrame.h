@@ -36,6 +36,8 @@ public:
 
     FrameEdgeInfo edgeInfo() const;
 
+    void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
+
     const char* name() const override { return "LayoutFrame"; }
 
 private:
