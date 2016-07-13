@@ -26,7 +26,7 @@ function becomeOptimizedForMobile(enable)
 
     if (!enable) {
         // We can't transition out of optimized for mobile.
-        endTest();
+        testRunner.notifyDone();
     } else {
         // This only works once.
         mobileMetaTag = document.createElement('meta');
@@ -130,7 +130,7 @@ function runOneConfig(spec)
     // Record the spec in the element, so that we can display the
     // results later.
     element.spec = spec;
-    window.internals.triggerAutoplayViewportCheck(element);
+    internals.triggerAutoplayViewportCheck(element);
 
     // Wait for canplaythrough before continuing, so that the media
     // might actually be playing.
@@ -148,7 +148,7 @@ function runOneConfig(spec)
             // We are supposed to scroll the player into view.
             element.scrollIntoView(true);
             // TODO(liberato): remove once autoplay gesture override experiment concludes.
-            window.internals.triggerAutoplayViewportCheck(element);
+            internals.triggerAutoplayViewportCheck(element);
             // Once these two methods return, changes to the element state due
             // to the autoplay experiment should be observable synchronously.
             checkElementStatus(element, spec);
@@ -200,7 +200,7 @@ function runNextConfig()
 
     // Return null if configNumber was larger than the highest experiment.
     if (exp > 0)
-        endTest();
+        testRunner.notifyDone();
 
     configNumber++;
 
@@ -263,9 +263,11 @@ function runNextConfig()
 }
 
 function start(mediaType, experiments) {
-  elementTypes = [ mediaType ];
-  experimentTypes = experiments;
+    testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    elementTypes = [ mediaType ];
+    experimentTypes = experiments;
 
-  window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
-  runNextConfig();
+    internals.settings.setMediaPlaybackRequiresUserGesture(true);
+    runNextConfig();
 }
