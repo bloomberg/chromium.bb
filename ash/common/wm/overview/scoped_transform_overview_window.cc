@@ -248,6 +248,7 @@ base::Closure ScopedTransformOverviewWindow::OverviewContentMask::
 
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
     : window_(window),
+      determined_original_window_shape_(false),
       minimized_(window->GetShowState() == ui::SHOW_STATE_MINIMIZED),
       ignored_by_shelf_(window->GetWindowState()->ignored_by_shelf()),
       overview_started_(false),
@@ -416,9 +417,12 @@ void ScopedTransformOverviewWindow::SetTransform(
     mask_->set_radius(radius);
     window()->GetLayer()->SchedulePaint(bounds);
 
-    SkRegion* window_shape = window()->GetLayer()->alpha_shape();
-    if (!original_window_shape_ && window_shape)
-      original_window_shape_.reset(new SkRegion(*window_shape));
+    if (!determined_original_window_shape_) {
+      determined_original_window_shape_ = true;
+      SkRegion* window_shape = window()->GetLayer()->alpha_shape();
+      if (!original_window_shape_ && window_shape)
+        original_window_shape_.reset(new SkRegion(*window_shape));
+    }
     const int inset =
         window()->GetIntProperty(WmWindowProperty::TOP_VIEW_INSET);
     if (inset > 0) {

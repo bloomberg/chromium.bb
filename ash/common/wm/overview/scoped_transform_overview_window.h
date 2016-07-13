@@ -140,6 +140,10 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // Original window shape, if it was set on a window.
   std::unique_ptr<SkRegion> original_window_shape_;
 
+  // True after the |original_window_shape_| has been set or after it has
+  // been determined that window shape was not originally set on the |window_|.
+  bool determined_original_window_shape_;
+
   // If true, the window was minimized and should be restored if the window
   // was not selected.
   bool minimized_;
