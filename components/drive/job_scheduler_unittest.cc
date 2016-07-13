@@ -128,6 +128,9 @@ class CancelTestableFakeDriveService : public FakeDriveService {
   bool upload_new_file_cancelable_;
 };
 
+const char kHello[] = "Hello";
+const size_t kHelloLen = sizeof(kHello) - 1;
+
 }  // namespace
 
 class JobSchedulerTest : public testing::Test {
@@ -928,13 +931,13 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
 
   // Upload job.
   path = temp_dir.path().AppendASCII("new_file.txt");
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(path, "Hello"));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(path, kHello));
   google_apis::DriveApiErrorCode upload_error =
       google_apis::DRIVE_OTHER_ERROR;
   std::unique_ptr<google_apis::FileResource> entry;
 
   scheduler_->UploadNewFile(
-      fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
+      fake_drive_service_->GetRootResourceId(), kHelloLen,
       base::FilePath::FromUTF8Unsafe("drive/new_file.txt"), path, "dummy title",
       "plain/plain", UploadNewFileOptions(), ClientContext(BACKGROUND),
       google_apis::test_util::CreateCopyResultCallback(&upload_error, &entry));
@@ -952,7 +955,7 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath upload_path = temp_dir.path().AppendASCII("new_file.txt");
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(upload_path, "Hello"));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(upload_path, kHello));
 
   // To create a pending job for testing, set the mode to cellular connection
   // and issue BACKGROUND jobs.
@@ -963,7 +966,7 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
   google_apis::DriveApiErrorCode error1 = google_apis::DRIVE_OTHER_ERROR;
   std::unique_ptr<google_apis::FileResource> entry;
   scheduler_->UploadNewFile(
-      fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
+      fake_drive_service_->GetRootResourceId(), kHelloLen,
       base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
       "dummy title 1", "text/plain", UploadNewFileOptions(),
       ClientContext(BACKGROUND),
@@ -977,7 +980,7 @@ TEST_F(JobSchedulerTest, CancelPendingJob) {
   // Start the second job.
   google_apis::DriveApiErrorCode error2 = google_apis::DRIVE_OTHER_ERROR;
   scheduler_->UploadNewFile(
-      fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
+      fake_drive_service_->GetRootResourceId(), kHelloLen,
       base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
       "dummy title 2", "text/plain", UploadNewFileOptions(),
       ClientContext(BACKGROUND),
@@ -1000,14 +1003,14 @@ TEST_F(JobSchedulerTest, CancelRunningJob) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath upload_path = temp_dir.path().AppendASCII("new_file.txt");
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(upload_path, "Hello"));
+  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(upload_path, kHello));
 
   // Run as a cancelable task.
   fake_drive_service_->set_upload_new_file_cancelable(true);
   google_apis::DriveApiErrorCode error1 = google_apis::DRIVE_OTHER_ERROR;
   std::unique_ptr<google_apis::FileResource> entry;
   scheduler_->UploadNewFile(
-      fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
+      fake_drive_service_->GetRootResourceId(), kHelloLen,
       base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
       "dummy title 1", "text/plain", UploadNewFileOptions(),
       ClientContext(USER_INITIATED),
@@ -1022,7 +1025,7 @@ TEST_F(JobSchedulerTest, CancelRunningJob) {
   fake_drive_service_->set_upload_new_file_cancelable(false);
   google_apis::DriveApiErrorCode error2 = google_apis::DRIVE_OTHER_ERROR;
   scheduler_->UploadNewFile(
-      fake_drive_service_->GetRootResourceId(), std::string("Hello").size(),
+      fake_drive_service_->GetRootResourceId(), kHelloLen,
       base::FilePath::FromUTF8Unsafe("dummy/path"), upload_path,
       "dummy title 2", "text/plain", UploadNewFileOptions(),
       ClientContext(USER_INITIATED),

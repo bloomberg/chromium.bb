@@ -297,19 +297,20 @@ bool CanImportURLAsSearchEngine(const GURL& url,
 namespace internal {
 
 bool ParseCharsetFromLine(const std::string& line, std::string* charset) {
-  const char kCharset[] = "charset=";
-  if (base::StartsWith(line, "<META", base::CompareCase::INSENSITIVE_ASCII) &&
-      (line.find("CONTENT=\"") != std::string::npos ||
-       line.find("content=\"") != std::string::npos)) {
-    size_t begin = line.find(kCharset);
-    if (begin == std::string::npos)
-      return false;
-    begin += std::string(kCharset).size();
-    size_t end = line.find_first_of('\"', begin);
-    *charset = line.substr(begin, end - begin);
-    return true;
+  if (!base::StartsWith(line, "<META", base::CompareCase::INSENSITIVE_ASCII) ||
+      (line.find("CONTENT=\"") == std::string::npos &&
+       line.find("content=\"") == std::string::npos)) {
+    return false;
   }
-  return false;
+
+  const char kCharset[] = "charset=";
+  size_t begin = line.find(kCharset);
+  if (begin == std::string::npos)
+    return false;
+  begin += sizeof(kCharset) - 1;
+  size_t end = line.find_first_of('\"', begin);
+  *charset = line.substr(begin, end - begin);
+  return true;
 }
 
 bool ParseFolderNameFromLine(const std::string& lineDt,

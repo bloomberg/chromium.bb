@@ -740,7 +740,7 @@ class TestResourceDispatcherHostDelegate
 // Waits for a ShareableFileReference to be released.
 class ShareableFileReleaseWaiter {
  public:
-  ShareableFileReleaseWaiter(const base::FilePath& path) {
+  explicit ShareableFileReleaseWaiter(const base::FilePath& path) {
     scoped_refptr<ShareableFileReference> file =
         ShareableFileReference::Get(path);
     file->AddFinalReleaseCallback(
@@ -766,7 +766,7 @@ class ShareableFileReleaseWaiter {
 // ResourceDispatcherHostImpl.
 class TestWebContentsObserver : public WebContentsObserver {
  public:
-  TestWebContentsObserver(WebContents* web_contents)
+  explicit TestWebContentsObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents),
         resource_request_redirect_count_(0),
         resource_response_start_count_(0) {}
@@ -1836,7 +1836,7 @@ TEST_P(ResourceDispatcherHostTest, TestProcessCancel) {
   // Now that the async IO path is in place, the IO always completes on the
   // initial call; so the requests have already completed.  This basically
   // breaks the whole test.
-  //EXPECT_EQ(3, host_.pending_requests());
+  // EXPECT_EQ(3, host_.pending_requests());
 
   // Process test_url_2 and test_url_3 for one level so one callback is called.
   // We'll cancel test_url_4 (detachable) before processing it to verify that it
@@ -2212,8 +2212,7 @@ TEST_P(ResourceDispatcherHostTest, TooMuchOutstandingRequestsMemory) {
   // ResourceDispatcherHost::CalculateApproximateMemoryCost().
   int kMemoryCostOfTest2Req =
       ResourceDispatcherHostImpl::kAvgBytesPerOutstandingRequest +
-      std::string("GET").size() +
-      net::URLRequestTestJob::test_url_2().spec().size();
+      net::URLRequestTestJob::test_url_2().spec().size() + sizeof("GET") - 1;
 
   // Tighten the bound on the ResourceDispatcherHost, to speed things up.
   int kMaxCostPerProcess = 440000;
