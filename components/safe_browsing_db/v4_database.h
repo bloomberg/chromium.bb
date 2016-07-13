@@ -89,6 +89,7 @@ class V4Database {
   FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithNewStates);
   FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithNoNewState);
   FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate);
+  FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestApplyUpdateWithInvalidUpdate);
 
   // Makes the passed |factory| the factory used to instantiate a V4Store. Only
   // for tests.

@@ -127,17 +127,23 @@ class V4DatabaseTest : public PlatformTest {
   }
 
   std::unique_ptr<ParsedServerResponse> CreateFakeServerResponse(
-      StoreStateMap store_state_map) {
+      StoreStateMap store_state_map,
+      bool use_valid_response_type) {
     std::unique_ptr<ParsedServerResponse> parsed_server_response(
         new ParsedServerResponse);
     for (const auto& store_state_iter : store_state_map) {
       UpdateListIdentifier identifier = store_state_iter.first;
-      ListUpdateResponse* list_update_response = new ListUpdateResponse;
-      list_update_response->set_platform_type(identifier.platform_type);
-      list_update_response->set_threat_entry_type(identifier.threat_entry_type);
-      list_update_response->set_threat_type(identifier.threat_type);
-      list_update_response->set_new_client_state(store_state_iter.second);
-      parsed_server_response->push_back(base::WrapUnique(list_update_response));
+      ListUpdateResponse* lur = new ListUpdateResponse;
+      lur->set_platform_type(identifier.platform_type);
+      lur->set_threat_entry_type(identifier.threat_entry_type);
+      lur->set_threat_type(identifier.threat_type);
+      lur->set_new_client_state(store_state_iter.second);
+      if (use_valid_response_type) {
+        lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
+      } else {
+        lur->set_response_type(ListUpdateResponse::RESPONSE_TYPE_UNSPECIFIED);
+      }
+      parsed_server_response->push_back(base::WrapUnique(lur));
     }
     return parsed_server_response;
   }
@@ -237,8 +243,9 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNewStates) {
     old_stores_map_[store_iter.first] = store;
   }
 
-  v4_database_->ApplyUpdate(CreateFakeServerResponse(expected_store_state_map_),
-                            callback_db_updated_);
+  v4_database_->ApplyUpdate(
+      CreateFakeServerResponse(expected_store_state_map_, true),
+      callback_db_updated_);
 
   task_runner_->RunPendingTasks();
   base::RunLoop().RunUntilIdle();
@@ -267,8 +274,9 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNoNewState) {
     old_stores_map_[store_iter.first] = store;
   }
 
-  v4_database_->ApplyUpdate(CreateFakeServerResponse(expected_store_state_map_),
-                            callback_db_updated_);
+  v4_database_->ApplyUpdate(
+      CreateFakeServerResponse(expected_store_state_map_, true),
+      callback_db_updated_);
 
   task_runner_->RunPendingTasks();
   base::RunLoop().RunUntilIdle();
@@ -302,6 +310,36 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
   v4_database_->ApplyUpdate(std::move(parsed_server_response),
                             callback_db_updated_);
 
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  VerifyExpectedStoresState(false);
+}
+
+// Test to ensure invalid update leads to no store changes.
+TEST_F(V4DatabaseTest, TestApplyUpdateWithInvalidUpdate) {
+  expected_resets_successfully_ = true;
+  RegisterFactory(!expected_resets_successfully_);
+
+  V4Database::Create(task_runner_, database_dirname_, store_file_name_map_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  task_runner_->RunPendingTasks();
+  base::RunLoop().RunUntilIdle();
+
+  // The database has now been created. Time to try to update it.
+  EXPECT_TRUE(v4_database_);
+  const StoreMap* db_stores = v4_database_->store_map_.get();
+  EXPECT_EQ(expected_store_paths_.size(), db_stores->size());
+  for (const auto& store_iter : *db_stores) {
+    V4Store* store = store_iter.second.get();
+    expected_store_state_map_[store_iter.first] = store->state();
+    old_stores_map_[store_iter.first] = store;
+  }
+
+  v4_database_->ApplyUpdate(
+      CreateFakeServerResponse(expected_store_state_map_, false),
+      callback_db_updated_);
   task_runner_->RunPendingTasks();
   base::RunLoop().RunUntilIdle();
 

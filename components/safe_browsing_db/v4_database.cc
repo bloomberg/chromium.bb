@@ -137,7 +137,9 @@ void V4Database::UpdatedStoreReady(UpdateListIdentifier identifier,
                                    std::unique_ptr<V4Store> new_store) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(pending_store_updates_);
-  (*store_map_)[identifier] = std::move(new_store);
+  if (new_store) {
+    (*store_map_)[identifier] = std::move(new_store);
+  }
 
   pending_store_updates_--;
   if (!pending_store_updates_) {

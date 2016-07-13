@@ -47212,6 +47212,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.V4ApplyUpdateResult"
+    enum="SafeBrowsingV4ApplyUpdateResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the result of applying the update fetched from the PVer4 service for a
+    particular store.
+  </summary>
+</histogram>
+
 <histogram name="SafeBrowsing.V4StoreReadResult"
     enum="SafeBrowsingStoreReadResult">
   <owner>vakh@chromium.org</owner>
@@ -88535,6 +88544,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="INVALID_RESPONSE_TYPE_FAILURE"/>
   <int value="3" label="UNEXPECTED_BYTES_WRITTEN_FAILURE"/>
   <int value="4" label="UNABLE_TO_RENAME_FAILURE"/>
+</enum>
+
+<enum name="SafeBrowsingV4ApplyUpdateResult" type="int">
+  <int value="0" label="APPLY_UPDATE_SUCCESS"/>
+  <int value="1" label="UNEXPECTED_APPLY_UPDATE_FAILURE"/>
+  <int value="2" label="PREFIX_SIZE_TOO_SMALL_FAILURE"/>
+  <int value="3" label="PREFIX_SIZE_TOO_LARGE_FAILURE"/>
+  <int value="4" label="ADDITIONS_SIZE_UNEXPECTED_FAILURE"/>
+  <int value="5" label="ADDITIONS_HAS_EXISTING_PREFIX_FAILURE"/>
+  <int value="6" label="UNEXPECTED_RESPONSE_TYPE_FAILURE"/>
 </enum>
 
 <enum name="SafeBrowsingV4OperationResult" type="int">
