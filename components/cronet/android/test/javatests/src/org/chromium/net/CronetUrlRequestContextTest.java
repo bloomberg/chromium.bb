@@ -154,6 +154,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    @SuppressWarnings("deprecation")
     public void testConfigUserAgent() throws Exception {
         String userAgentName = "User-Agent";
         String userAgentValue = "User-Agent-Value";
@@ -180,8 +181,6 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
-    // TODO(xunjieli): Remove annotation after crbug.com/539519 is fixed.
-    @SuppressWarnings("deprecation")
     public void testDataReductionProxyEnabled() throws Exception {
         mTestFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
@@ -244,8 +243,10 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         } catch (IllegalStateException e) {
         }
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest urlRequest =
-                mTestFramework.mCronetEngine.createRequest(mUrl, callback, callback.getExecutor());
+        UrlRequest.Builder builder = new UrlRequest.Builder(
+                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        UrlRequest urlRequest = builder.build();
+
         urlRequest.start();
         callback.blockForDone();
         assertEquals(0, rttListener.rttObservationCount());
@@ -268,8 +269,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework.mCronetEngine.addRttListener(rttListener);
         mTestFramework.mCronetEngine.removeRttListener(rttListener);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest urlRequest =
-                mTestFramework.mCronetEngine.createRequest(mUrl, callback, callback.getExecutor());
+        UrlRequest.Builder builder = new UrlRequest.Builder(
+                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
         networkQualityExecutor.runAllTasks();
@@ -303,8 +305,9 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         mTestFramework.mCronetEngine.addThroughputListener(throughputListener);
 
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest urlRequest =
-                mTestFramework.mCronetEngine.createRequest(mUrl, callback, callback.getExecutor());
+        UrlRequest.Builder builder = new UrlRequest.Builder(
+                mUrl, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        UrlRequest urlRequest = builder.build();
         urlRequest.start();
         callback.blockForDone();
 
