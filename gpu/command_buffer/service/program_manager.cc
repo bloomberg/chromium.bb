@@ -1073,6 +1073,14 @@ bool Program::Link(ShaderManager* manager,
       set_log_info("glBindUniformLocationCHROMIUM() conflicts");
       return false;
     }
+    if (DetectInterfaceBlocksMismatch(&conflicting_name)) {
+      std::string info_log =
+          "Interface blocks with the same name but different"
+          " fields/layout: " +
+          conflicting_name;
+      set_log_info(ProcessLogInfo(info_log).c_str());
+      return false;
+    }
     if (DetectVaryingsMismatch(&conflicting_name)) {
       std::string info_log = "Varyings with the same name but different type, "
                              "or statically used varyings in fragment shader "
@@ -1611,6 +1619,29 @@ bool Program::DetectUniformsMismatch(std::string* conflicting_name) const {
         // If a uniform is in the map, i.e., it has already been declared by
         // another shader, then the type, precision, etc. must match.
         if (hit->second->isSameUniformAtLinkTime(key_value.second))
+          continue;
+        *conflicting_name = name;
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+bool Program::DetectInterfaceBlocksMismatch(
+    std::string* conflicting_name) const {
+  std::map<std::string, const sh::InterfaceBlock*> interface_pointer_map;
+  for (auto shader : attached_shaders_) {
+    const InterfaceBlockMap& shader_interfaces = shader->interface_block_map();
+    for (const auto& it : shader_interfaces) {
+      const auto& name = it.first;
+      auto hit = interface_pointer_map.find(name);
+      if (hit == interface_pointer_map.end()) {
+        interface_pointer_map[name] = &(it.second);
+      } else {
+        // If an interface is in the map, i.e., it has already been declared by
+        // another shader, then the layout must match.
+        if (hit->second->isSameInterfaceBlockAtLinkTime(it.second))
           continue;
         *conflicting_name = name;
         return true;

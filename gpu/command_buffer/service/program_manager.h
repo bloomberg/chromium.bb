@@ -345,6 +345,10 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // conflicting_name if such cases are detected.
   bool DetectUniformsMismatch(std::string* conflicting_name) const;
 
+  // Detects if there are interface blocks of the same name but different
+  // layouts.
+  bool DetectInterfaceBlocksMismatch(std::string* conflicting_name) const;
+
   // Return true if a varying is statically used in fragment shader, but it
   // is not declared in vertex shader.
   bool DetectVaryingsMismatch(std::string* conflicting_name) const;
