@@ -1731,16 +1731,17 @@ void RenderWidgetHostImpl::OnLockMouse(bool user_gesture,
   }
 
   pending_mouse_lock_request_ = true;
+  if (delegate_) {
+    delegate_->RequestToLockMouse(this, user_gesture, last_unlocked_by_target,
+                                  privileged && allow_privileged_mouse_lock_);
+    return;
+  }
+
   if (privileged && allow_privileged_mouse_lock_) {
     // Directly approve to lock the mouse.
     GotResponseToLockMouseRequest(true);
   } else {
-    if (delegate_) {
-      delegate_->RequestToLockMouse(this, user_gesture,
-                                    last_unlocked_by_target);
-      return;
-    }
-    // If there's no delegate, just reject it.
+    // Otherwise, just reject it.
     GotResponseToLockMouseRequest(false);
   }
 }

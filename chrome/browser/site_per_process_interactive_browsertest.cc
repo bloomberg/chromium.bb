@@ -741,3 +741,32 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   EXPECT_FALSE(ElementHasFullscreenStyle(c_middle, "child-0"));
 }
 
+// Test that deleting a RenderWidgetHost that holds the mouse lock won't cause a
+// crash. https://crbug.com/619571.
+IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
+                       RenderWidgetHostDeletedWhileMouseLocked) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  content::RenderFrameHost* child = ChildFrameAt(main_frame, 0);
+
+  EXPECT_TRUE(ExecuteScript(child, "document.body.requestPointerLock()"));
+  bool mouse_locked = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(child,
+                                          "window.domAutomationController.send("
+                                          "document.body == "
+                                          "document.pointerLockElement)",
+                                          &mouse_locked));
+  EXPECT_TRUE(mouse_locked);
+  EXPECT_TRUE(main_frame->GetView()->IsMouseLocked());
+
+  EXPECT_TRUE(ExecuteScript(main_frame,
+                            "document.querySelector('iframe').parentNode."
+                            "removeChild(document.querySelector('iframe'))"));
+  EXPECT_FALSE(main_frame->GetView()->IsMouseLocked());
+}

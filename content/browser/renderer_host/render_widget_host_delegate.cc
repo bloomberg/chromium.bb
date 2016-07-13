@@ -62,6 +62,11 @@ blink::WebDisplayMode RenderWidgetHostDelegate::GetDisplayMode(
   return blink::WebDisplayModeBrowser;
 }
 
+bool RenderWidgetHostDelegate::HasMouseLock(
+    RenderWidgetHostImpl* render_widget_host) {
+  return false;
+}
+
 TextInputManager* RenderWidgetHostDelegate::GetTextInputManager() {
   return nullptr;
 }

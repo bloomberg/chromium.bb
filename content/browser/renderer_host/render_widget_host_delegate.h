@@ -144,10 +144,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Requests to lock the mouse. Once the request is approved or rejected,
   // GotResponseToLockMouseRequest() will be called on the requesting render
-  // widget host.
+  // widget host. |privileged| means that the request is always granted, used
+  // for Pepper Flash.
   virtual void RequestToLockMouse(RenderWidgetHostImpl* render_widget_host,
                                   bool user_gesture,
-                                  bool last_unlocked_by_target) {}
+                                  bool last_unlocked_by_target,
+                                  bool privileged) {}
 
   // Return the rect where to display the resize corner, if any, otherwise
   // an empty rect.
@@ -166,6 +168,9 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Notification that the widget has lost the mouse lock.
   virtual void LostMouseLock(RenderWidgetHostImpl* render_widget_host) {}
+
+  // Returns true if |render_widget_host| holds the mouse lock.
+  virtual bool HasMouseLock(RenderWidgetHostImpl* render_widget_host);
 
   // Called when the widget has sent a compositor proto.  This is used in Btlimp
   // mode with the RemoteChannel compositor.

@@ -77,6 +77,13 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
         id_allocator_->client_id());
 
     parent_surface_client_id_ = 0;
+
+    // After the RenderWidgetHostViewChildFrame loses the frame_connector, it
+    // won't be able to walk up the frame tree anymore. Clean up anything that
+    // needs to be done through the CrossProcessFrameConnector before it's gone.
+
+    // Unlocks the mouse if this RenderWidgetHostView holds the lock.
+    UnlockMouse();
   }
   frame_connector_ = frame_connector;
   if (frame_connector_) {
@@ -458,19 +465,16 @@ bool RenderWidgetHostViewChildFrame::LockMouse() {
 }
 
 void RenderWidgetHostViewChildFrame::UnlockMouse() {
+  if (host_->delegate() && host_->delegate()->HasMouseLock(host_) &&
+      frame_connector_)
+    frame_connector_->UnlockMouse();
 }
 
 bool RenderWidgetHostViewChildFrame::IsMouseLocked() {
-  if (!frame_connector_)
+  if (!host_->delegate())
     return false;
 
-  RenderWidgetHostViewBase* root_view =
-      frame_connector_->GetRootRenderWidgetHostView();
-
-  if (root_view)
-    return root_view->IsMouseLocked();
-
-  return false;
+  return host_->delegate()->HasMouseLock(host_);
 }
 
 uint32_t RenderWidgetHostViewChildFrame::GetSurfaceClientId() {
