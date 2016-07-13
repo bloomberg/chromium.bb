@@ -164,8 +164,8 @@ void PrerenderingLoader::HandleLoadingStopped() {
   // Request status depends on whether we are still loading (failed) or
   // did load and then loading was stopped (cancel - from prerender stack).
   Offliner::RequestStatus request_status =
-      IsLoaded() ? Offliner::RequestStatus::CANCELED
-                 : Offliner::RequestStatus::FAILED;
+      IsLoaded() ? Offliner::RequestStatus::PRERENDERING_CANCELED
+                 : Offliner::RequestStatus::PRERENDERING_FAILED;
   // TODO(dougarnett): For failure, determine from final status if retry-able
   // and report different failure statuses if retry-able or not.
   snapshot_controller_.reset(nullptr);
@@ -181,11 +181,6 @@ void PrerenderingLoader::CancelPrerender() {
   }
   snapshot_controller_.reset(nullptr);
   session_contents_.reset(nullptr);
-  if (!IsLoaded() && !IsIdle()) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, Offliner::RequestStatus::CANCELED, nullptr));
-  }
   state_ = State::IDLE;
 }
 

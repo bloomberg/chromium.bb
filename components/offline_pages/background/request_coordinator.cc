@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
@@ -19,6 +20,15 @@
 namespace offline_pages {
 
 namespace {
+
+// Records the final request status UMA for an offlining request. This should
+// only be called once per Offliner::LoadAndSave request.
+void RecordOfflinerResultUMA(Offliner::RequestStatus request_status) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.Background.OfflinerRequestStatus",
+                            request_status,
+                            Offliner::RequestStatus::STATUS_COUNT);
+}
+
 // TODO(dougarnett/petewil): Move to Policy object. Also consider lower minimum
 // battery percentage once there is some processing time limits in place.
 const Scheduler::TriggerConditions kUserRequestTriggerConditions(
@@ -91,6 +101,11 @@ void RequestCoordinator::StopProcessing() {
   is_canceled_ = true;
   if (offliner_ && is_busy_)
     offliner_->Cancel();
+
+  // Stopping offliner means it will not call callback.
+  last_offlining_status_ =
+      Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED;
+  RecordOfflinerResultUMA(last_offlining_status_);
 
   // Let the scheduler know we are done processing.
   scheduler_callback_.Run(true);
@@ -167,11 +182,14 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   DVLOG(2) << "offliner finished, saved: "
            << (status == Offliner::RequestStatus::SAVED) << ", status: "
            << (int) status << ", " << __FUNCTION__;
+  DCHECK_NE(status, Offliner::RequestStatus::UNKNOWN);
+  DCHECK_NE(status, Offliner::RequestStatus::LOADED);
   event_logger_.RecordSavePageRequestUpdated(
       request.client_id().name_space,
       "Saved",
       request.request_id());
   last_offlining_status_ = status;
+  RecordOfflinerResultUMA(last_offlining_status_);
   watchdog_timer_.Stop();
 
   is_busy_ = false;

@@ -68,8 +68,10 @@ class SchedulerStub : public Scheduler {
 
 class OfflinerStub : public Offliner {
  public:
-  OfflinerStub() : request_(kRequestId, kUrl, kClientId, base::Time::Now()),
-                   enable_callback_(false) {}
+  OfflinerStub()
+      : request_(kRequestId, kUrl, kClientId, base::Time::Now()),
+        enable_callback_(false),
+        cancel_called_(false) {}
 
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& callback) override {
@@ -84,28 +86,23 @@ class OfflinerStub : public Offliner {
     return true;
   }
 
-  // Clears the currently processing request, if any.  Must have called
-  // LoadAndSave first to set the callback and request.
-  // Clears the currently processing request, if any.
-  void Cancel() override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback_, request_, Offliner::RequestStatus::CANCELED));
-  }
+  void Cancel() override { cancel_called_ = true; }
 
   void enable_callback(bool enable) {
     enable_callback_ = enable;
   }
 
+  bool cancel_called() { return cancel_called_; }
+
  private:
   CompletionCallback callback_;
   SavePageRequest request_;
   bool enable_callback_;
+  bool cancel_called_;
 };
 
 class OfflinerFactoryStub : public OfflinerFactory {
  public:
-
   OfflinerFactoryStub() : offliner_(nullptr) {}
 
   Offliner* GetOffliner(const OfflinerPolicy* policy) override {
@@ -184,6 +181,8 @@ class RequestCoordinatorTest
   Offliner::RequestStatus last_offlining_status() const {
     return coordinator_->last_offlining_status_;
   }
+
+  bool OfflinerWasCanceled() const { return offliner_->cancel_called(); }
 
  private:
   RequestQueue::GetRequestsResult last_get_requests_result_;
@@ -356,7 +355,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
   EnableOfflinerCallback(true);
-  SendOfflinerDoneCallback(request, Offliner::RequestStatus::FAILED);
+  SendOfflinerDoneCallback(request,
+                           Offliner::RequestStatus::PRERENDERING_FAILED);
   PumpLoop();
 
   // Verify the request is not removed from the queue, and wait for callbacks.
@@ -397,8 +397,12 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
   PumpLoop();
 
   // OfflinerDoneCallback will not end up getting called with status SAVED,
-  // Since we cancelled the event before it called offliner_->LoadAndSave().
-  EXPECT_NE(Offliner::RequestStatus::SAVED, last_offlining_status());
+  // since we cancelled the event before it called offliner_->LoadAndSave().
+  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
+            last_offlining_status());
+
+  // Since offliner was not started, it will not have seen cancel call.
+  EXPECT_FALSE(OfflinerWasCanceled());
 }
 
 // This tests a StopProcessing call after the prerenderer has been started.
@@ -433,8 +437,12 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   PumpLoop();
 
   // OfflinerDoneCallback will not end up getting called with status SAVED,
-  // Since we cancelled the event before it called offliner_->LoadAndSave().
-  EXPECT_EQ(Offliner::RequestStatus::CANCELED, last_offlining_status());
+  // since we cancelled the event before the LoadAndSave completed.
+  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
+            last_offlining_status());
+
+  // Since offliner was started, it will have seen cancel call.
+  EXPECT_TRUE(OfflinerWasCanceled());
 }
 
 TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
@@ -477,8 +485,9 @@ TEST_F(RequestCoordinatorTest, PrerendererTimeout) {
   WaitForCallback();
   PumpLoop();
 
-  // Now trying to start processing on another request should return false.
-  EXPECT_EQ(Offliner::RequestStatus::CANCELED, last_offlining_status());
+  EXPECT_TRUE(OfflinerWasCanceled());
+  EXPECT_EQ(Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED,
+            last_offlining_status());
 }
 
 }  // namespace offline_pages

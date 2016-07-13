@@ -35982,6 +35982,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Background.OfflinerRequestStatus"
+    enum="OfflinePagesBackgroundOfflinerRequestStatus">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Status code of background offlining (loading and saving) requests.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.BatchDelete.Count">
   <owner>jianli@chromium.org</owner>
   <summary>Number of offline pages that are deleted in a batch.</summary>
@@ -84574,6 +84582,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Account was not seeded before FireRefreshTokenRevoked"/>
   <int value="3"
       label="Account was not seeded before FireRefreshTokenAvailable"/>
+</enum>
+
+<enum name="OfflinePagesBackgroundOfflinerRequestStatus" type="int">
+<!-- Generated from components/offline_pages/background/offliner.h -->
+
+  <int value="0" label="Unknown (not expected to be recorded)"/>
+  <int value="1" label="Loaded (not expected to be recorded)"/>
+  <int value="2" label="Saved"/>
+  <int value="3" label="RequestCoordinator canceled"/>
+  <int value="4" label="Prerendering canceled"/>
+  <int value="5" label="Prerendering failed"/>
+  <int value="6" label="Save failed"/>
 </enum>
 
 <enum name="OfflinePagesClearAllStatus" type="int">

@@ -223,7 +223,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
   PumpLoop();
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
-  EXPECT_EQ(Offliner::RequestStatus::CANCELED, callback_load_status());
+  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED,
+            callback_load_status());
 }
 
 TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
@@ -243,7 +244,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(callback_called());
   // We did not provide any WebContents for the callback so expect did not load.
-  EXPECT_EQ(Offliner::RequestStatus::FAILED, callback_load_status());
+  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED,
+            callback_load_status());
 
   // Stopped event causes no harm.
   test_adapter()->GetObserver()->OnPrerenderStop();
@@ -262,8 +264,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadCanceledFromStopLoading) {
   loader()->StopLoading();
   PumpLoop();
   EXPECT_TRUE(loader()->IsIdle());
-  EXPECT_TRUE(callback_called());
-  EXPECT_EQ(Offliner::RequestStatus::CANCELED, callback_load_status());
+  EXPECT_FALSE(callback_called());
 }
 
 TEST_F(PrerenderingLoaderTest, LoadPageNotAcceptedWhenNotIdle) {

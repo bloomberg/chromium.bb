@@ -97,7 +97,7 @@ void PrerenderingOffliner::OnSavePageDone(
   } else {
     // TODO(dougarnett): Consider reflecting some recommendation to retry the
     // request based on specific save error cases.
-    save_status = RequestStatus::FAILED_SAVE;
+    save_status = RequestStatus::SAVE_FAILED;
   }
   completion_callback.Run(request, save_status);
 }

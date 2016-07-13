@@ -16,14 +16,20 @@ class SavePageRequest;
 class Offliner {
  public:
   // Status of processing an offline page request.
-  enum class RequestStatus {
-    UNKNOWN,      // No status determined/reported yet.
-    LOADED,       // Page loaded but not (yet) saved.
-    SAVED,        // Offline page snapshot saved.
-    CANCELED,     // Request was canceled.
-    FAILED,       // Failed to load page.
-    FAILED_SAVE,  // Failed to save loaded page.
-    // TODO(dougarnett): Define a retry-able failure status.
+  // WARNING: You must update histograms.xml to match any changes made to
+  // this enum (ie, OfflinePagesBackgroundOfflinerRequestStatus histogram enum).
+  enum RequestStatus {
+    UNKNOWN = 0,  // No status determined/reported yet. Interim status, not sent
+                  // in callback.
+    LOADED = 1,  // Page loaded but not (yet) saved. Interim status, not sent in
+                 // callback.
+    SAVED = 2,   // Offline page snapshot saved.
+    REQUEST_COORDINATOR_CANCELED = 3,  // RequestCoordinator canceled request.
+    PRERENDERING_CANCELED = 4,         // Prerendering was canceled.
+    PRERENDERING_FAILED = 5,           // Prerendering failed to load page.
+    SAVE_FAILED = 6,                   // Failed to save loaded page.
+    // NOTE: insert new values above this line and update histogram enum too.
+    STATUS_COUNT
   };
 
   // Reports the completion status of a request.
@@ -41,7 +47,8 @@ class Offliner {
       const SavePageRequest& request,
       const CompletionCallback& callback) = 0;
 
-  // Clears the currently processing request, if any.
+  // Clears the currently processing request, if any, and skips running its
+  // CompletionCallback.
   virtual void Cancel() = 0;
 
   // TODO(dougarnett): add policy support methods.
