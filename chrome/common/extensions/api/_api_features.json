@@ -548,7 +548,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://md-settings/*"
+      "chrome://md-settings/*",
+      "chrome://settings/*"
     ]
   }],
   "instanceID": {
@@ -699,7 +700,8 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://md-settings/*"
+      "chrome://md-settings/*",
+      "chrome://settings/*"
     ],
     "platforms": ["chromeos"]
   },
