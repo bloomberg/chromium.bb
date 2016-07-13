@@ -38,6 +38,7 @@
             '../gpu/gpu_nacl.gyp:gles2_implementation_nacl',
             '../media/media_nacl.gyp:shared_memory_support_nacl',
             '../third_party/khronos/khronos.gyp:khronos_headers',
+            '../ui/gfx/gfx_nacl.gyp:gfx_geometry_nacl',
           ],
         },
       ],

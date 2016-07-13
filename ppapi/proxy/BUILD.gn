@@ -287,6 +287,8 @@ component("proxy") {
     "//mojo/edk/system",
     "//ppapi/c",
     "//ppapi/shared_impl",
+    "//ui/gfx/geometry",
+    "//ui/gfx/ipc/geometry",
   ]
 
   if (!is_nacl) {

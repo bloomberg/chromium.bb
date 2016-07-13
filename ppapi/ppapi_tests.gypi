@@ -209,6 +209,7 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
+        '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/surface/surface.gyp:surface',
       ],
       'sources': [

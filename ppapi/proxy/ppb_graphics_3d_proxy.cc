@@ -48,8 +48,8 @@ gpu::CommandBuffer::State GetErrorState() {
 
 }  // namespace
 
-Graphics3D::Graphics3D(const HostResource& resource)
-    : PPB_Graphics3D_Shared(resource) {
+Graphics3D::Graphics3D(const HostResource& resource, const gfx::Size& size)
+    : PPB_Graphics3D_Shared(resource, size) {
 }
 
 Graphics3D::~Graphics3D() {
@@ -118,8 +118,7 @@ gpu::GpuControl* Graphics3D::GetGpuControl() {
 }
 
 int32_t Graphics3D::DoSwapBuffers(const gpu::SyncToken& sync_token,
-                                  int32_t width,
-                                  int32_t height) {
+                                  const gfx::Size& size) {
   // A valid sync token would indicate a swap buffer already happened somehow.
   DCHECK(!sync_token.HasData());
 
@@ -137,8 +136,7 @@ int32_t Graphics3D::DoSwapBuffers(const gpu::SyncToken& sync_token,
   gl->GenSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
 
   IPC::Message* msg = new PpapiHostMsg_PPBGraphics3D_SwapBuffers(
-      API_ID_PPB_GRAPHICS_3D, host_resource(), new_sync_token, width,
-      height);
+      API_ID_PPB_GRAPHICS_3D, host_resource(), new_sync_token, size);
   msg->set_unblock(true);
   PluginDispatcher::GetForResource(this)->Send(msg);
 
@@ -215,7 +213,8 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   if (result.is_null())
     return 0;
 
-  scoped_refptr<Graphics3D> graphics_3d(new Graphics3D(result));
+  scoped_refptr<Graphics3D> graphics_3d(
+      new Graphics3D(result, attrib_helper.offscreen_framebuffer_size));
   if (!graphics_3d->Init(share_gles2, capabilities, shared_state,
                          command_buffer_id)) {
     return 0;
@@ -361,14 +360,13 @@ void PPB_Graphics3D_Proxy::OnMsgDestroyTransferBuffer(
 
 void PPB_Graphics3D_Proxy::OnMsgSwapBuffers(const HostResource& context,
                                             const gpu::SyncToken& sync_token,
-                                            int32_t width,
-                                            int32_t height) {
+                                            const gfx::Size& size) {
   EnterHostFromHostResourceForceCallback<PPB_Graphics3D_API> enter(
       context, callback_factory_,
       &PPB_Graphics3D_Proxy::SendSwapBuffersACKToPlugin, context);
   if (enter.succeeded())
     enter.SetResult(enter.object()->SwapBuffersWithSyncToken(
-        enter.callback(), sync_token, width, height));
+        enter.callback(), sync_token, size));
 }
 
 void PPB_Graphics3D_Proxy::OnMsgTakeFrontBuffer(const HostResource& context) {

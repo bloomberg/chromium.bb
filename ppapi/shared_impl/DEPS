@@ -4,6 +4,7 @@ include_rules = [
   "+media/audio",
   "+media/base",
   "+skia",
+  "+ui/gfx/geometry",
 
   "-ppapi/cpp",
   "-ppapi/proxy",
