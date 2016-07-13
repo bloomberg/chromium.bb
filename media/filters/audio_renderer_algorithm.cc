@@ -146,6 +146,7 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
   if (playback_rate == 0)
     return 0;
 
+  DCHECK_GT(playback_rate, 0);
   DCHECK_EQ(channels_, dest->channels());
 
   // Optimize the muted case to issue a single clear instead of performing
@@ -160,7 +161,10 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
     // only skip over complete frames, so a partial frame may remain for next
     // time.
     muted_partial_frame_ += frames_to_render * playback_rate;
-    int seek_frames = static_cast<int>(muted_partial_frame_);
+    // Handle the case where muted_partial_frame_ rounds up to
+    // audio_buffer_.frames()+1.
+    int seek_frames = std::min(static_cast<int>(muted_partial_frame_),
+                               audio_buffer_.frames());
     dest->ZeroFramesPartial(dest_offset, frames_to_render);
     audio_buffer_.SeekFrames(seek_frames);
 
