@@ -171,7 +171,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // to a point. If a Surface has not yet been created this returns the
   // same point with no transform applied.
   void TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                       cc::SurfaceId original_surface,
+                                       const cc::SurfaceId& original_surface,
                                        gfx::Point* transformed_point);
 
   // Exposed for tests.

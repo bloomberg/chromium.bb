@@ -45,25 +45,26 @@ class CC_SURFACES_EXPORT SurfaceFactory
   SurfaceFactory(SurfaceManager* manager, SurfaceFactoryClient* client);
   ~SurfaceFactory();
 
-  void Create(SurfaceId surface_id);
-  void Destroy(SurfaceId surface_id);
+  void Create(const SurfaceId& surface_id);
+  void Destroy(const SurfaceId& surface_id);
   void DestroyAll();
 
   // Set that the current frame on new_id is to be treated as the successor to
   // the current frame on old_id for the purposes of calculating damage.
-  void SetPreviousFrameSurface(SurfaceId new_id, SurfaceId old_id);
+  void SetPreviousFrameSurface(const SurfaceId& new_id,
+                               const SurfaceId& old_id);
 
   // A frame can only be submitted to a surface created by this factory,
   // although the frame may reference surfaces created by other factories.
   // The callback is called the first time this frame is used to draw, or if
   // the frame is discarded.
-  void SubmitCompositorFrame(SurfaceId surface_id,
+  void SubmitCompositorFrame(const SurfaceId& surface_id,
                              CompositorFrame frame,
                              const DrawCallback& callback);
-  void RequestCopyOfSurface(SurfaceId surface_id,
+  void RequestCopyOfSurface(const SurfaceId& surface_id,
                             std::unique_ptr<CopyOutputRequest> copy_request);
 
-  void WillDrawSurface(SurfaceId id, const gfx::Rect& damage_rect);
+  void WillDrawSurface(const SurfaceId& id, const gfx::Rect& damage_rect);
 
   SurfaceFactoryClient* client() { return client_; }
 

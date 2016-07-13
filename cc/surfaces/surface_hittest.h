@@ -33,20 +33,20 @@ class CC_SURFACES_EXPORT SurfaceHittest {
   // Returns the target surface that falls underneath the provided |point|.
   // Also returns the |transform| to convert the |point| to the target surface's
   // space.
-  SurfaceId GetTargetSurfaceAtPoint(SurfaceId root_surface_id,
+  SurfaceId GetTargetSurfaceAtPoint(const SurfaceId& root_surface_id,
                                     const gfx::Point& point,
                                     gfx::Transform* transform);
 
   // Returns whether the target surface falls inside the provide root surface.
   // Returns the |transform| to convert points from the root surface coordinate
   // space to the target surface coordinate space.
-  bool GetTransformToTargetSurface(SurfaceId root_surface_id,
-                                   SurfaceId target_surface_id,
+  bool GetTransformToTargetSurface(const SurfaceId& root_surface_id,
+                                   const SurfaceId& target_surface_id,
                                    gfx::Transform* transform);
 
  private:
   bool GetTargetSurfaceAtPointInternal(
-      SurfaceId surface_id,
+      const SurfaceId& surface_id,
       const RenderPassId& render_pass_id,
       const gfx::Point& point_in_root_target,
       std::set<const RenderPass*>* referenced_passes,
@@ -54,14 +54,14 @@ class CC_SURFACES_EXPORT SurfaceHittest {
       gfx::Transform* out_transform);
 
   bool GetTransformToTargetSurfaceInternal(
-      SurfaceId root_surface_id,
-      SurfaceId target_surface_id,
+      const SurfaceId& root_surface_id,
+      const SurfaceId& target_surface_id,
       const RenderPassId& render_pass_id,
       std::set<const RenderPass*>* referenced_passes,
       gfx::Transform* out_transform);
 
   const RenderPass* GetRenderPassForSurfaceById(
-      SurfaceId surface_id,
+      const SurfaceId& surface_id,
       const RenderPassId& render_pass_id);
 
   bool PointInQuad(const DrawQuad* quad,

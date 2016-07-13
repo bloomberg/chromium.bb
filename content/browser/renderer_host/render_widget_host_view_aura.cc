@@ -2042,7 +2042,7 @@ void RenderWidgetHostViewAura::ProcessGestureEvent(
 
 void RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    cc::SurfaceId original_surface,
+    const cc::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.

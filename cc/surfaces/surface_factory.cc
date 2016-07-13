@@ -39,14 +39,14 @@ void SurfaceFactory::DestroyAll() {
   surface_map_.clear();
 }
 
-void SurfaceFactory::Create(SurfaceId surface_id) {
+void SurfaceFactory::Create(const SurfaceId& surface_id) {
   std::unique_ptr<Surface> surface(new Surface(surface_id, this));
   manager_->RegisterSurface(surface.get());
   DCHECK(!surface_map_.count(surface_id));
   surface_map_[surface_id] = std::move(surface);
 }
 
-void SurfaceFactory::Destroy(SurfaceId surface_id) {
+void SurfaceFactory::Destroy(const SurfaceId& surface_id) {
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);
@@ -56,8 +56,8 @@ void SurfaceFactory::Destroy(SurfaceId surface_id) {
     manager_->Destroy(std::move(surface));
 }
 
-void SurfaceFactory::SetPreviousFrameSurface(SurfaceId new_id,
-                                             SurfaceId old_id) {
+void SurfaceFactory::SetPreviousFrameSurface(const SurfaceId& new_id,
+                                             const SurfaceId& old_id) {
   OwningSurfaceMap::iterator it = surface_map_.find(new_id);
   DCHECK(it != surface_map_.end());
   Surface* old_surface = manager_->GetSurfaceForId(old_id);
@@ -66,7 +66,7 @@ void SurfaceFactory::SetPreviousFrameSurface(SurfaceId new_id,
   }
 }
 
-void SurfaceFactory::SubmitCompositorFrame(SurfaceId surface_id,
+void SurfaceFactory::SubmitCompositorFrame(const SurfaceId& surface_id,
                                            CompositorFrame frame,
                                            const DrawCallback& callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
@@ -81,7 +81,7 @@ void SurfaceFactory::SubmitCompositorFrame(SurfaceId surface_id,
 }
 
 void SurfaceFactory::RequestCopyOfSurface(
-    SurfaceId surface_id,
+    const SurfaceId& surface_id,
     std::unique_ptr<CopyOutputRequest> copy_request) {
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   if (it == surface_map_.end()) {
@@ -93,7 +93,7 @@ void SurfaceFactory::RequestCopyOfSurface(
   manager_->SurfaceModified(surface_id);
 }
 
-void SurfaceFactory::WillDrawSurface(SurfaceId id,
+void SurfaceFactory::WillDrawSurface(const SurfaceId& id,
                                      const gfx::Rect& damage_rect) {
   client_->WillDrawSurface(id, damage_rect);
 }

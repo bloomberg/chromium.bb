@@ -40,11 +40,11 @@ class CC_SURFACES_EXPORT Surface {
  public:
   using DrawCallback = SurfaceFactory::DrawCallback;
 
-  Surface(SurfaceId id, SurfaceFactory* factory);
+  Surface(const SurfaceId& id, SurfaceFactory* factory);
   ~Surface();
 
-  SurfaceId surface_id() const { return surface_id_; }
-  SurfaceId previous_frame_surface_id() const {
+  const SurfaceId& surface_id() const { return surface_id_; }
+  const SurfaceId& previous_frame_surface_id() const {
     return previous_frame_surface_id_;
   }
 

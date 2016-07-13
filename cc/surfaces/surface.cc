@@ -22,7 +22,7 @@ namespace cc {
 // completely damaged the first time they're drawn from.
 static const int kFrameIndexStart = 2;
 
-Surface::Surface(SurfaceId id, SurfaceFactory* factory)
+Surface::Surface(const SurfaceId& id, SurfaceFactory* factory)
     : surface_id_(id),
       previous_frame_surface_id_(id),
       factory_(factory->AsWeakPtr()),

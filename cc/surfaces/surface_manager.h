@@ -33,12 +33,12 @@ class CC_SURFACES_EXPORT SurfaceManager {
   ~SurfaceManager();
 
   void RegisterSurface(Surface* surface);
-  void DeregisterSurface(SurfaceId surface_id);
+  void DeregisterSurface(const SurfaceId& surface_id);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
   void Destroy(std::unique_ptr<Surface> surface);
 
-  Surface* GetSurfaceForId(SurfaceId surface_id);
+  Surface* GetSurfaceForId(const SurfaceId& surface_id);
 
   void AddObserver(SurfaceDamageObserver* obs) {
     observer_list_.AddObserver(obs);
@@ -48,7 +48,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
     observer_list_.RemoveObserver(obs);
   }
 
-  bool SurfaceModified(SurfaceId surface_id);
+  bool SurfaceModified(const SurfaceId& surface_id);
 
   // A frame for a surface satisfies a set of sequence numbers in a particular
   // id namespace.

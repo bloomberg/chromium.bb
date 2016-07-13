@@ -226,7 +226,7 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
 
 void DelegatedFrameHost::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    cc::SurfaceId original_surface,
+    const cc::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
   if (surface_id_.is_null() || original_surface == surface_id_)

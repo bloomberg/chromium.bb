@@ -51,7 +51,7 @@ void SurfaceManager::RegisterSurface(Surface* surface) {
   surface_map_[surface->surface_id()] = surface;
 }
 
-void SurfaceManager::DeregisterSurface(SurfaceId surface_id) {
+void SurfaceManager::DeregisterSurface(const SurfaceId& surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
@@ -112,7 +112,7 @@ void SurfaceManager::GarbageCollectSurfaces() {
     Surface* surf = surface_map_[live_surfaces[i]];
     DCHECK(surf);
 
-    for (SurfaceId id : surf->referenced_surfaces()) {
+    for (const SurfaceId& id : surf->referenced_surfaces()) {
       if (live_surfaces_set.count(id))
         continue;
 
@@ -331,7 +331,7 @@ void SurfaceManager::UnregisterSurfaceNamespaceHierarchy(
     RecursivelyAttachBeginFrameSource(source_iter.second, source_iter.first);
 }
 
-Surface* SurfaceManager::GetSurfaceForId(SurfaceId surface_id) {
+Surface* SurfaceManager::GetSurfaceForId(const SurfaceId& surface_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   SurfaceMap::iterator it = surface_map_.find(surface_id);
   if (it == surface_map_.end())
@@ -339,7 +339,7 @@ Surface* SurfaceManager::GetSurfaceForId(SurfaceId surface_id) {
   return it->second;
 }
 
-bool SurfaceManager::SurfaceModified(SurfaceId surface_id) {
+bool SurfaceManager::SurfaceModified(const SurfaceId& surface_id) {
   CHECK(thread_checker_.CalledOnValidThread());
   bool changed = false;
   FOR_EACH_OBSERVER(SurfaceDamageObserver, observer_list_,

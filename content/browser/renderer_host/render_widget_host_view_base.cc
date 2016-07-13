@@ -402,7 +402,7 @@ gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
 
 void RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
-    cc::SurfaceId original_surface,
+    const cc::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
 }

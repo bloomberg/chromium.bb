@@ -36,12 +36,12 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                     bool aggregate_only_damaged);
   ~SurfaceAggregator();
 
-  CompositorFrame Aggregate(SurfaceId surface_id);
-  void ReleaseResources(SurfaceId surface_id);
+  CompositorFrame Aggregate(const SurfaceId& surface_id);
+  void ReleaseResources(const SurfaceId& surface_id);
   SurfaceIndexMap& previous_contained_surfaces() {
     return previous_contained_surfaces_;
   }
-  void SetFullDamageForSurface(SurfaceId surface_id);
+  void SetFullDamageForSurface(const SurfaceId& surface_id);
   void set_output_is_secure(bool secure) { output_is_secure_ = secure; }
 
  private:
@@ -67,7 +67,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
                              const gfx::Transform& target_transform);
 
   RenderPassId RemapPassId(RenderPassId surface_local_pass_id,
-                           SurfaceId surface_id);
+                           const SurfaceId& surface_id);
 
   void HandleSurfaceQuad(const SurfaceDrawQuad* surface_quad,
                          const gfx::Transform& target_transform,
@@ -84,8 +84,8 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
       const gfx::Transform& target_transform,
       const ClipData& clip_rect,
       RenderPass* dest_pass,
-      SurfaceId surface_id);
-  gfx::Rect PrewalkTree(SurfaceId surface_id,
+      const SurfaceId& surface_id);
+  gfx::Rect PrewalkTree(const SurfaceId& surface_id,
                         bool in_moved_pixel_pass,
                         RenderPassId parent_pass,
                         PrewalkResult* result);

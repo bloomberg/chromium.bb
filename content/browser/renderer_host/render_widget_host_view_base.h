@@ -246,9 +246,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // to be translated to viewport coordinates for the root RWHV, in which case
   // this method is called on the root RWHV with the out-of-process iframe's
   // SurfaceId.
-  virtual void TransformPointToLocalCoordSpace(const gfx::Point& point,
-                                               cc::SurfaceId original_surface,
-                                               gfx::Point* transformed_point);
+  virtual void TransformPointToLocalCoordSpace(
+      const gfx::Point& point,
+      const cc::SurfaceId& original_surface,
+      gfx::Point* transformed_point);
 
   //----------------------------------------------------------------------------
   // The following methods are related to IME.
