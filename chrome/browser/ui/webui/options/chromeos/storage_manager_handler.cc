@@ -371,6 +371,13 @@ void StorageManagerHandler::UpdateOtherUsersSize() {
         base::Bind(&StorageManagerHandler::OnGetOtherUserSize,
                    weak_ptr_factory_.GetWeakPtr()));
   }
+  // We should show "0 B" if there is no other user.
+  if (other_users_.empty()) {
+    updating_other_users_size_ = false;
+    web_ui()->CallJavascriptFunctionUnsafe(
+        "options.StorageManager.setOtherUsersSize",
+        base::StringValue(ui::FormatBytes(0)));
+  }
 }
 
 void StorageManagerHandler::OnGetOtherUserSize(bool success, int64_t size) {
