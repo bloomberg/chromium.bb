@@ -22,7 +22,7 @@ class WebLayer;
 class WindowProxyManager;
 struct FrameLoadRequest;
 
-class CORE_EXPORT RemoteFrame: public Frame {
+class CORE_EXPORT RemoteFrame final : public Frame {
 public:
     static RemoteFrame* create(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
