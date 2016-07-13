@@ -587,11 +587,11 @@ base::TimeTicks SanitizeNavigationTiming(
 
 // PlzNavigate
 CommonNavigationParams MakeCommonNavigationParams(
-    blink::WebURLRequest* request,
-    bool should_replace_current_entry) {
+    const blink::WebFrameClient::NavigationPolicyInfo& info) {
   Referrer referrer(
-      GURL(request->httpHeaderField(WebString::fromUTF8("Referer")).latin1()),
-      request->referrerPolicy());
+      GURL(info.urlRequest.httpHeaderField(
+          WebString::fromUTF8("Referer")).latin1()),
+      info.urlRequest.referrerPolicy());
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
   // only non empty when the navigation was triggered by an Android intent, or
@@ -600,20 +600,26 @@ CommonNavigationParams MakeCommonNavigationParams(
   // CommitNavigation IPC, and then back to the browser again in the
   // DidCommitProvisionalLoad and the DocumentLoadComplete IPCs.
   base::TimeTicks ui_timestamp =
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(request->uiStartTime());
+      base::TimeTicks() +
+      base::TimeDelta::FromSecondsD(info.urlRequest.uiStartTime());
   FrameMsg_UILoadMetricsReportType::Value report_type =
       static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-          request->inputPerfMetricReportPolicy());
+          info.urlRequest.inputPerfMetricReportPolicy());
+
+  FrameMsg_Navigate_Type::Value navigation_type =
+      info.navigationType == blink::WebNavigationTypeReload
+      ? FrameMsg_Navigate_Type::RELOAD
+      : FrameMsg_Navigate_Type::NORMAL;
 
   const RequestExtraData* extra_data =
-      static_cast<RequestExtraData*>(request->getExtraData());
+      static_cast<RequestExtraData*>(info.urlRequest.getExtraData());
   DCHECK(extra_data);
   return CommonNavigationParams(
-      request->url(), referrer, extra_data->transition_type(),
-      FrameMsg_Navigate_Type::NORMAL, true, should_replace_current_entry,
+      info.urlRequest.url(), referrer, extra_data->transition_type(),
+      navigation_type, true, info.replacesCurrentHistoryItem,
       ui_timestamp, report_type, GURL(), GURL(), extra_data->lofi_state(),
-      base::TimeTicks::Now(), request->httpMethod().latin1(),
-      GetRequestBodyForWebURLRequest(*request));
+      base::TimeTicks::Now(), info.urlRequest.httpMethod().latin1(),
+      GetRequestBodyForWebURLRequest(info.urlRequest));
 }
 
 media::Context3D GetSharedMainThreadContext3D(
@@ -5062,8 +5068,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   if (IsBrowserSideNavigationEnabled() &&
       info.urlRequest.checkForBrowserSideNavigation() &&
       ShouldMakeNetworkRequestForURL(url)) {
-    BeginNavigation(&info.urlRequest, info.replacesCurrentHistoryItem,
-                    info.isClientRedirect);
+    BeginNavigation(info);
     return blink::WebNavigationPolicyHandledByClient;
   }
 
@@ -5776,11 +5781,8 @@ void RenderFrameImpl::PrepareRenderViewForNavigation(
   }
 }
 
-void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
-                                      bool should_replace_current_entry,
-                                      bool is_client_redirect) {
+void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   CHECK(IsBrowserSideNavigationEnabled());
-  DCHECK(request);
 
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so
@@ -5792,14 +5794,14 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
   // TODO(clamy): Apply devtools override.
   // TODO(clamy): Make sure that navigation requests are not modified somewhere
   // else in blink.
-  willSendRequest(frame_, 0, *request, blink::WebURLResponse());
+  willSendRequest(frame_, 0, info.urlRequest, blink::WebURLResponse());
 
   // Update the transition type of the request for client side redirects.
-  if (!request->getExtraData())
-    request->setExtraData(new RequestExtraData());
-  if (is_client_redirect) {
+  if (!info.urlRequest.getExtraData())
+    info.urlRequest.setExtraData(new RequestExtraData());
+  if (info.isClientRedirect) {
     RequestExtraData* extra_data =
-        static_cast<RequestExtraData*>(request->getExtraData());
+        static_cast<RequestExtraData*>(info.urlRequest.getExtraData());
     extra_data->set_transition_type(ui::PageTransitionFromInt(
         extra_data->transition_type() | ui::PAGE_TRANSITION_CLIENT_REDIRECT));
   }
@@ -5810,27 +5812,28 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
   // These values are assumed on the browser side for navigations. These checks
   // ensure the renderer has the correct values.
   DCHECK_EQ(FETCH_REQUEST_MODE_NAVIGATE,
-            GetFetchRequestModeForWebURLRequest(*request));
+            GetFetchRequestModeForWebURLRequest(info.urlRequest));
   DCHECK_EQ(FETCH_CREDENTIALS_MODE_INCLUDE,
-            GetFetchCredentialsModeForWebURLRequest(*request));
-  DCHECK(GetFetchRedirectModeForWebURLRequest(*request) ==
+            GetFetchCredentialsModeForWebURLRequest(info.urlRequest));
+  DCHECK(GetFetchRedirectModeForWebURLRequest(info.urlRequest) ==
          FetchRedirectMode::MANUAL_MODE);
   DCHECK(frame_->parent() ||
-         GetRequestContextFrameTypeForWebURLRequest(*request) ==
+         GetRequestContextFrameTypeForWebURLRequest(info.urlRequest) ==
              REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL);
   DCHECK(!frame_->parent() ||
-         GetRequestContextFrameTypeForWebURLRequest(*request) ==
+         GetRequestContextFrameTypeForWebURLRequest(info.urlRequest) ==
              REQUEST_CONTEXT_FRAME_TYPE_NESTED);
 
   Send(new FrameHostMsg_BeginNavigation(
       routing_id_,
-      MakeCommonNavigationParams(request, should_replace_current_entry),
-      BeginNavigationParams(GetWebURLRequestHeaders(*request),
-                            GetLoadFlagsForWebURLRequest(*request),
-                            request->hasUserGesture(),
-                            request->skipServiceWorker() !=
-                                blink::WebURLRequest::SkipServiceWorker::None,
-                            GetRequestContextTypeForWebURLRequest(*request))));
+      MakeCommonNavigationParams(info),
+      BeginNavigationParams(
+          GetWebURLRequestHeaders(info.urlRequest),
+          GetLoadFlagsForWebURLRequest(info.urlRequest),
+          info.urlRequest.hasUserGesture(),
+          info.urlRequest.skipServiceWorker() !=
+              blink::WebURLRequest::SkipServiceWorker::None,
+          GetRequestContextTypeForWebURLRequest(info.urlRequest))));
 }
 
 void RenderFrameImpl::LoadDataURL(
