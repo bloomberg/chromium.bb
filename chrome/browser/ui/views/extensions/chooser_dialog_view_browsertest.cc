@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,14 +24,11 @@ class ChooserDialogViewTest : public ExtensionBrowserTest {
   ~ChooserDialogViewTest() override {}
 
   void SetUpOnMainThread() override {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
     std::unique_ptr<MockChooserController> mock_chooser_controller(
         new MockChooserController(nullptr));
     mock_chooser_controller_ = mock_chooser_controller.get();
     std::unique_ptr<ChooserDialogView> chooser_dialog_view(
-        new ChooserDialogView(web_contents,
-                              std::move(mock_chooser_controller)));
+        new ChooserDialogView(std::move(mock_chooser_controller)));
     chooser_dialog_view_ = chooser_dialog_view.get();
     table_view_ = chooser_dialog_view_->table_view_for_test();
     ASSERT_TRUE(table_view_);

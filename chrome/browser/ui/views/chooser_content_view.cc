@@ -143,6 +143,10 @@ gfx::Size ChooserContentView::GetPreferredSize() const {
   return gfx::Size(kChooserWidth, kChooserHeight);
 }
 
+base::string16 ChooserContentView::GetWindowTitle() const {
+  return chooser_controller_->GetTitle();
+}
+
 base::string16 ChooserContentView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK

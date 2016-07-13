@@ -11,7 +11,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,15 +23,10 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
-#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/l10n/l10n_util_mac.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   return base::WrapUnique(
@@ -120,13 +115,9 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
                    name:NSWindowDidMoveNotification
                  object:[self getExpectedParentWindow]];
 
-    url::Origin origin = chooserController->GetOrigin();
+    base::string16 chooserTitle = chooserController->GetTitle();
     chooserContentView_.reset([[ChooserContentViewCocoa alloc]
-        initWithChooserTitle:
-            l10n_util::GetNSStringF(
-                IDS_DEVICE_CHOOSER_PROMPT,
-                url_formatter::FormatOriginForSecurityDisplay(
-                    origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC))
+        initWithChooserTitle:base::SysUTF16ToNSString(chooserTitle)
            chooserController:std::move(chooserController)]);
 
     tableView_ = [chooserContentView_ tableView];

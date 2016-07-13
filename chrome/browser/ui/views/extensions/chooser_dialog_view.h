@@ -11,14 +11,9 @@
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
-#include "url/origin.h"
 
 class ChooserContentView;
 class ChooserController;
-
-namespace content {
-class WebContents;
-}
 
 namespace views {
 class TableView;
@@ -30,8 +25,8 @@ class ChooserDialogView : public views::DialogDelegateView,
                           public views::StyledLabelListener,
                           public views::TableViewObserver {
  public:
-  ChooserDialogView(content::WebContents* web_contents,
-                    std::unique_ptr<ChooserController> chooser_controller);
+  explicit ChooserDialogView(
+      std::unique_ptr<ChooserController> chooser_controller);
   ~ChooserDialogView() override;
 
   // views::WidgetDelegate:
@@ -63,8 +58,6 @@ class ChooserDialogView : public views::DialogDelegateView,
   views::TableView* table_view_for_test() const;
 
  private:
-  content::WebContents* web_contents_;
-  url::Origin origin_;
   ChooserContentView* chooser_content_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserDialogView);

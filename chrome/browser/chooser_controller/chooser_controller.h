@@ -12,10 +12,6 @@ namespace content {
 class RenderFrameHost;
 }
 
-namespace url {
-class Origin;
-}
-
 // Subclass ChooserController to implement a chooser, which has some
 // introductory text and a list of options that users can pick one of.
 // Your subclass must define the set of options users can pick from;
@@ -52,8 +48,8 @@ class ChooserController {
     virtual ~Observer() {}
   };
 
-  // Return the origin URL to be displayed on the chooser title.
-  url::Origin GetOrigin() const;
+  // Returns the text to be displayed in the chooser title.
+  base::string16 GetTitle() const;
 
   // The number of options users can pick from. For example, it can be
   // the number of USB/Bluetooth device names which are listed in the

@@ -37,6 +37,7 @@ class ChooserContentView : public views::View {
   // views::View:
   gfx::Size GetPreferredSize() const override;
 
+  base::string16 GetWindowTitle() const;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
   bool IsDialogButtonEnabled(ui::DialogButton button) const;
   // Ownership of the view is passed to the caller.

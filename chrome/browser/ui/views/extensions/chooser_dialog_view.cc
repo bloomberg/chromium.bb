@@ -10,18 +10,13 @@
 #include "chrome/browser/ui/views/chooser_content_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "components/url_formatter/elide_url.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_registry.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/window/dialog_client_view.h"
 
 ChooserDialogView::ChooserDialogView(
-    content::WebContents* web_contents,
-    std::unique_ptr<ChooserController> chooser_controller)
-    : web_contents_(web_contents), chooser_content_view_(nullptr) {
+    std::unique_ptr<ChooserController> chooser_controller) {
   // ------------------------------------
   // | Chooser dialog title             |
   // | -------------------------------- |
@@ -37,9 +32,7 @@ ChooserDialogView::ChooserDialogView(
   // | Not seeing your device? Get help |
   // ------------------------------------
 
-  DCHECK(web_contents_);
   DCHECK(chooser_controller);
-  origin_ = chooser_controller->GetOrigin();
   chooser_content_view_ =
       new ChooserContentView(this, std::move(chooser_controller));
 }
@@ -47,24 +40,7 @@ ChooserDialogView::ChooserDialogView(
 ChooserDialogView::~ChooserDialogView() {}
 
 base::string16 ChooserDialogView::GetWindowTitle() const {
-  base::string16 chooser_title;
-  content::BrowserContext* browser_context = web_contents_->GetBrowserContext();
-  extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(browser_context);
-  if (extension_registry) {
-    const extensions::Extension* extension =
-        extension_registry->enabled_extensions().GetExtensionOrAppByURL(
-            GURL(origin_.Serialize()));
-    if (extension)
-      chooser_title = base::UTF8ToUTF16(extension->name());
-  }
-
-  if (chooser_title.empty()) {
-    chooser_title = url_formatter::FormatOriginForSecurityDisplay(
-        origin_, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-  }
-
-  return l10n_util::GetStringFUTF16(IDS_DEVICE_CHOOSER_PROMPT, chooser_title);
+  return chooser_content_view_->GetWindowTitle();
 }
 
 bool ChooserDialogView::ShouldShowCloseButton() const {
@@ -138,7 +114,6 @@ void ChromeExtensionChooserDialog::ShowDialogImpl(
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_);
   if (manager) {
     constrained_window::ShowWebModalDialogViews(
-        new ChooserDialogView(web_contents_, std::move(chooser_controller)),
-        web_contents_);
+        new ChooserDialogView(std::move(chooser_controller)), web_contents_);
   }
 }

@@ -5,17 +5,9 @@
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #import "chrome/browser/ui/cocoa/chooser_content_view_cocoa.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/url_formatter/elide_url.h"
-#include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_registry.h"
-#import "ui/base/l10n/l10n_util_mac.h"
-#include "url/gurl.h"
-#include "url/origin.h"
 
 @implementation ChooserDialogCocoaController
 
@@ -28,28 +20,9 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
   if ((self = [super init]))
     chooserDialogCocoa_ = chooserDialogCocoa;
 
-  base::string16 chooserTitle;
-  url::Origin origin = chooserController->GetOrigin();
-  content::WebContents* web_contents = chooserDialogCocoa_->web_contents();
-  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
-  extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(browser_context);
-  if (extension_registry) {
-    const extensions::Extension* extension =
-        extension_registry->enabled_extensions().GetExtensionOrAppByURL(
-            GURL(origin.Serialize()));
-    if (extension)
-      chooserTitle = base::UTF8ToUTF16(extension->name());
-  }
-
-  if (chooserTitle.empty()) {
-    chooserTitle = url_formatter::FormatOriginForSecurityDisplay(
-        origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
-  }
-
+  base::string16 chooserTitle = chooserController->GetTitle();
   chooserContentView_.reset([[ChooserContentViewCocoa alloc]
-      initWithChooserTitle:l10n_util::GetNSStringF(IDS_DEVICE_CHOOSER_PROMPT,
-                                                   chooserTitle)
+      initWithChooserTitle:base::SysUTF16ToNSString(chooserTitle)
          chooserController:std::move(chooserController)]);
 
   tableView_ = [chooserContentView_ tableView];

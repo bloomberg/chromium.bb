@@ -21,15 +21,11 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/bubble/bubble_controller.h"
-#include "components/url_formatter/elide_url.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_client_view.h"
-#include "url/origin.h"
 
 std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   return base::WrapUnique(
@@ -81,7 +77,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   void UpdateTableModel() const;
 
  private:
-  url::Origin origin_;
   ChooserContentView* chooser_content_view_;
   BubbleReference bubble_reference_;
 
@@ -109,7 +104,6 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
   // | Not seeing your device? Get help |
   // ------------------------------------
 
-  origin_ = chooser_controller->GetOrigin();
   chooser_content_view_ =
       new ChooserContentView(this, std::move(chooser_controller));
 }
@@ -117,10 +111,7 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
 ChooserBubbleUiViewDelegate::~ChooserBubbleUiViewDelegate() {}
 
 base::string16 ChooserBubbleUiViewDelegate::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_DEVICE_CHOOSER_PROMPT,
-      url_formatter::FormatOriginForSecurityDisplay(
-          origin_, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+  return chooser_content_view_->GetWindowTitle();
 }
 
 base::string16 ChooserBubbleUiViewDelegate::GetDialogButtonLabel(
