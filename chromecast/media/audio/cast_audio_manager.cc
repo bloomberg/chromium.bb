@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "chromecast/media/audio/audio_features.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
@@ -33,17 +32,13 @@ CastAudioManager::CastAudioManager(
     scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner,
     ::media::AudioLogFactory* audio_log_factory,
     MediaPipelineBackendManager* backend_manager)
-    : AudioManagerBase(std::move(task_runner),
-                       std::move(worker_task_runner),
-                       audio_log_factory),
-      backend_manager_(backend_manager) {
-#if BUILDFLAG(ENABLE_PCM_MIXING)
-  // |this| is guaranteed to outlive |mixer_|, so it is safe to
-  // use base::Unretained here.
-  mixer_.reset(new CastAudioMixer(base::Bind(
-      &CastAudioManager::MakeMixerOutputStream, base::Unretained(this))));
-#endif
-}
+    : CastAudioManager(task_runner,
+                       worker_task_runner,
+                       audio_log_factory,
+                       backend_manager,
+                       new CastAudioMixer(
+                           base::Bind(&CastAudioManager::MakeMixerOutputStream,
+                                      base::Unretained(this)))) {}
 
 CastAudioManager::CastAudioManager(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
