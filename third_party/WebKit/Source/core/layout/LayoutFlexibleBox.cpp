@@ -90,6 +90,7 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
     : LayoutBlock(element)
     , m_orderIterator(this)
     , m_numberOfInFlowChildrenOnFirstLine(-1)
+    , m_hasDefiniteHeight(SizeDefiniteness::Unknown)
 {
     ASSERT(!childrenInline());
 }
@@ -380,6 +381,10 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren)
     updateAfterLayout();
 
     clearNeedsLayout();
+
+    // We have to reset this, because changes to our ancestors' style
+    // can affect this value.
+    m_hasDefiniteHeight = SizeDefiniteness::Unknown;
 }
 
 void LayoutFlexibleBox::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
@@ -769,9 +774,13 @@ bool LayoutFlexibleBox::mainAxisLengthIsDefinite(const LayoutBox& child, const L
     if (flexBasis.isAuto())
         return false;
     if (flexBasis.hasPercent()) {
-        return isColumnFlow() ?
-            child.computePercentageLogicalHeight(flexBasis) != -1 :
-            true;
+        if (!isColumnFlow() || m_hasDefiniteHeight == SizeDefiniteness::Definite)
+            return true;
+        if (m_hasDefiniteHeight == SizeDefiniteness::Indefinite)
+            return false;
+        bool definite = child.computePercentageLogicalHeight(flexBasis) != -1;
+        m_hasDefiniteHeight = definite ? SizeDefiniteness::Definite : SizeDefiniteness::Indefinite;
+        return definite;
     }
     return true;
 }
@@ -781,9 +790,13 @@ bool LayoutFlexibleBox::crossAxisLengthIsDefinite(const LayoutBox& child, const 
     if (length.isAuto())
         return false;
     if (length.hasPercent()) {
-        return hasOrthogonalFlow(child) ?
-            true :
-            child.computePercentageLogicalHeight(length) != -1;
+        if (hasOrthogonalFlow(child) || m_hasDefiniteHeight == SizeDefiniteness::Definite)
+            return true;
+        if (m_hasDefiniteHeight == SizeDefiniteness::Indefinite)
+            return false;
+        bool definite = child.computePercentageLogicalHeight(length) != -1;
+        m_hasDefiniteHeight = definite ? SizeDefiniteness::Definite : SizeDefiniteness::Indefinite;
+        return definite;
     }
     // TODO(cbiesinger): Eventually we should support other types of sizes here. Requires updating
     // computeMainSizeFromAspectRatioUsing.
@@ -1147,7 +1160,6 @@ LayoutUnit LayoutFlexibleBox::mainSizeForPercentageResolution(const LayoutBox& c
         // If flex basis had a percentage, our size is guaranteed to be definite or the flex item's
         // size could not be definite.
         // Otherwise, we make up a percentage to check whether we have a definite size.
-        // TODO(cbiesinger): cache this somewhere
         if (!mainAxisLengthIsDefinite(child, Length(0, Percent)))
             return LayoutUnit(-1);
     }

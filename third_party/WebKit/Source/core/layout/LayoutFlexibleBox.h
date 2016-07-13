@@ -99,6 +99,10 @@ private:
         TopToBottomWritingMode, RightToLeftWritingMode, LeftToRightWritingMode, BottomToTopWritingMode
     };
 
+    enum class SizeDefiniteness {
+        Definite, Indefinite, Unknown
+    };
+
     struct FlexItem;
     struct LineContext;
 
@@ -200,6 +204,9 @@ private:
 
     mutable OrderIterator m_orderIterator;
     int m_numberOfInFlowChildrenOnFirstLine;
+
+    // This is SizeIsUnknown outside of layoutBlock()
+    mutable SizeDefiniteness m_hasDefiniteHeight;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlexibleBox, isFlexibleBox());
