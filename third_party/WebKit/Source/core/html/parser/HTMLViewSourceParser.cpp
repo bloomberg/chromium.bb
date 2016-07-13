@@ -73,7 +73,10 @@ void HTMLViewSourceParser::finish()
 {
     if (!m_input.haveSeenEndOfFile())
         m_input.markEndOfFile();
-    pumpTokenizer();
+
+    if (!isDetached())
+        pumpTokenizer();
+
     document()->finishedParsing();
 }
 
