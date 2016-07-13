@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Animation resets when play() called after finish()</title>
+<link rel="help" href="http://w3c.github.io/web-animations/#play-an-animation">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id='element'></div>
+
+<script>
+var element = document.getElementById('element');
+
+test(function() {
+    var animation = element.animate([{left: '0px'}, {left: '100px'}], 10);
+    animation.finish();
+    assert_equals(getComputedStyle(element).left, 'auto');
+
+    animation.play();
+    assert_equals(getComputedStyle(element).left, '0px');
+}, 'Calling play() after finish() causes the animation to reset');
+
+</script>

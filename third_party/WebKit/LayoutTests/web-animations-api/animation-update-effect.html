@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Element style is updated when the Animation's effect is update</title>
+<link rel="help" href="http://w3c.github.io/web-animations/#set-the-target-effect-of-an-animation">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id='element'></div>
+
+<script>
+var element = document.getElementById('element');
+
+test(function() {
+    var animation = element.animate([{left: '0px'}, {left: '100px'}], 10);
+    assert_equals(getComputedStyle(element).left, '0px');
+
+    var effect = animation.effect
+    animation.effect = null;
+    assert_equals(getComputedStyle(element).left, 'auto');
+
+    animation.effect = effect;
+    assert_equals(getComputedStyle(element).left, '0px');
+}, 'Element style updated after clear and set effect');
+
+</script>
