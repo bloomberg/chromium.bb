@@ -144,8 +144,7 @@
 <if expr="chromeos">
             <div class="settings-box" on-tap="onDetailedBuildInfoTap_"
                 actionable>
-              <!-- TODO(dpapad): Localize string. -->
-              Detailed build info
+              $i18n{aboutDetailedBuildInfo}
             </div>
 </if>
             <div class="settings-box product-info copyable">
@@ -173,7 +172,7 @@
           </neon-animatable>
 <if expr="chromeos">
           <template is="dom-if" name="detailed-build-info">
-            <settings-subpage page-title="Detailed build information">
+            <settings-subpage page-title="$i18n{aboutDetailedBuildInfo}">
               <settings-detailed-build-info></settings-detailed-build-info>
             </settings-subpage>
           </template>

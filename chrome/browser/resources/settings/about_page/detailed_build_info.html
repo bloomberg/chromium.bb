@@ -17,23 +17,20 @@
     </style>
     <div class="settings-box two-line">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>Platform</div>
+        <div>$i18n{aboutPlatformLabel}</div>
         <div class="secondary" id="osVersion">[[versionInfo_.osVersion]]</div>
       </div>
     </div>
     <div class="settings-box two-line"
         hidden$="[[!shouldShowVersion_(versionInfo_.osFirmware)]]">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>Firmware</div>
+        <div>$i18n{aboutFirmwareLabel}</div>
         <div class="secondary" id="osFirmware">[[versionInfo_.osFirmware]]</div>
       </div>
     </div>
     <div class="settings-box two-line">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>Channel</div>
+        <div>$i18n{aboutChannelLabel}</div>
         <div class="secondary">[[currentlyOnChannelText_]]</div>
       </div>
       <div class="secondary-action">
@@ -50,15 +47,13 @@
     <div class="settings-box two-line"
         hidden$="[[!shouldShowVersion_(versionInfo_.arcVersion)]]">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>ARC Version</div>
+        <div>$i18n{aboutArcVersionLabel}</div>
         <div class="secondary" id="arcVersion">[[versionInfo_.arcVersion]]</div>
       </div>
     </div>
     <div class="settings-box two-line">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>Blink</div>
+        <div>Blink</div><!-- No need to localize. -->
         <div class="secondary">$i18n{aboutBlinkVersion}</div>
       </div>
     </div>
@@ -70,22 +65,19 @@
     </div>
     <div class="settings-box two-line">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>User agent</div>
+        <div>$i18n{aboutUserAgentLabel}</div>
         <div class="secondary">$i18n{aboutUserAgent}</div>
       </div>
     </div>
     <div class="settings-box two-line">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>Command line</div>
+        <div>$i18n{aboutCommandLineLabel}</div>
         <div class="secondary">$i18n{aboutCommandLine}</div>
       </div>
     </div>
     <div class="settings-box two-line">
       <div class="start">
-        <!-- TODO(dpapad): Localize string -->
-        <div>Build date</div>
+        <div>$i18n{aboutBuildDateLabel}</div>
         <div class="secondary">$i18n{aboutBuildDate}</div>
       </div>
     </div>

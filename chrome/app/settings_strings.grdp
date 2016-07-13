@@ -3,6 +3,15 @@
 <grit-part>
   <!-- About Page -->
   <if expr="chromeos">
+    <message name="IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO" desc="Label describing the section that shows detailed information about the current Chrome build.">
+      Detailed build information
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_ARC_VERSION" desc="Label for ARC version">
+      ARC Version
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_CHANNEL" desc="The channel label under Detailed build info.">
+      Channel
+    </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES" desc="The button label to check for updates and apply (download and install) if found">
       Check for updates
     </message>
@@ -17,6 +26,12 @@
     </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL" desc="The message about current channel.">
       Currently on <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_FIRMWARE" desc="Label used for Chrome OS BIOS firmware version.">
+      Firmware
+    </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_PLATFORM" desc="Label for Platform">
+      Platform
     </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_RELAUNCH" desc="The label for the relaunch button that relaunches the browser once update is complete">
       Restart
