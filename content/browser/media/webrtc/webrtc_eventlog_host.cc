@@ -78,14 +78,15 @@ WebRTCEventLogHost::~WebRTCEventLogHost() {
 
 void WebRTCEventLogHost::PeerConnectionAdded(int peer_connection_local_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(std::find(active_peer_connection_local_ids_.begin(),
-                   active_peer_connection_local_ids_.end(),
-                   peer_connection_local_id) ==
-         active_peer_connection_local_ids_.end());
-  active_peer_connection_local_ids_.push_back(peer_connection_local_id);
-  if (rtc_event_logging_enabled_ &&
-      number_active_log_files_ < kMaxNumberLogFiles) {
-    StartEventLogForPeerConnection(peer_connection_local_id);
+  if (std::find(active_peer_connection_local_ids_.begin(),
+                active_peer_connection_local_ids_.end(),
+                peer_connection_local_id) ==
+      active_peer_connection_local_ids_.end()) {
+    active_peer_connection_local_ids_.push_back(peer_connection_local_id);
+    if (rtc_event_logging_enabled_ &&
+        number_active_log_files_ < kMaxNumberLogFiles) {
+      StartEventLogForPeerConnection(peer_connection_local_id);
+    }
   }
 }
 
@@ -94,8 +95,9 @@ void WebRTCEventLogHost::PeerConnectionRemoved(int peer_connection_local_id) {
   const auto found = std::find(active_peer_connection_local_ids_.begin(),
                                active_peer_connection_local_ids_.end(),
                                peer_connection_local_id);
-  DCHECK(found != active_peer_connection_local_ids_.end());
-  active_peer_connection_local_ids_.erase(found);
+  if (found != active_peer_connection_local_ids_.end()) {
+    active_peer_connection_local_ids_.erase(found);
+  }
 }
 
 bool WebRTCEventLogHost::StartWebRTCEventLog(const base::FilePath& file_path) {
