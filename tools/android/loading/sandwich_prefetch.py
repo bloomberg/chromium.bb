@@ -651,7 +651,7 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
       runner = self._common_builder.CreateSandwichRunner()
       for transformer in transformer_list:
         transformer(runner)
-      runner.wpr_archive_path = self._wpr_archive_path
+      runner.wpr_archive_path = self._common_builder.original_wpr_task.path
       runner.wpr_out_log_path = os.path.join(
           RunBenchmark.path, sandwich_runner.WPR_LOG_FILENAME)
       runner.cache_archive_path = BuildBenchmarkCacheArchive.path
