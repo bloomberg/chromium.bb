@@ -1367,4 +1367,29 @@ TEST(HttpUtilTest, HasValidators) {
   EXPECT_TRUE(HttpUtil::HasValidators(v1_1, kEtagEmpty, kLastModifiedInvalid));
 }
 
+TEST(HttpUtilTest, IsValidHeaderValue) {
+  const char* const invalid_values[] = {
+      "X-Requested-With: chrome${NUL}Sec-Unsafe: injected",
+      "X-Requested-With: chrome\r\nSec-Unsafe: injected",
+      "X-Requested-With: chrome\nSec-Unsafe: injected",
+      "X-Requested-With: chrome\rSec-Unsafe: injected",
+  };
+  for (const std::string& value : invalid_values) {
+    std::string replaced = value;
+    base::ReplaceSubstringsAfterOffset(&replaced, 0, "${NUL}",
+                                       std::string(1, '\0'));
+    EXPECT_FALSE(HttpUtil::IsValidHeaderValue(replaced)) << replaced;
+  }
+
+  // Check that all characters permitted by RFC7230 3.2.6 are allowed.
+  std::string allowed = "\t";
+  for (char c = '\x20'; c < '\x7F'; ++c) {
+    allowed.append(1, c);
+  }
+  for (int c = 0x80; c <= 0xFF; ++c) {
+    allowed.append(1, static_cast<char>(c));
+  }
+  EXPECT_TRUE(HttpUtil::IsValidHeaderValue(allowed));
+}
+
 }  // namespace net
