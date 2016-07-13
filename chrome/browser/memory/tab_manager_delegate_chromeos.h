@@ -150,7 +150,7 @@ class TabManagerDelegate
   typedef std::pair<int, base::ProcessHandle> ProcessInfo;
 
   // Cache OOM scores in memory.
-  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;  // NOLINT
+  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
 
   // Get the list of candidates to kill, sorted by reversed importance.
   static std::vector<Candidate> GetSortedCandidates(
