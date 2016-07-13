@@ -61,15 +61,6 @@ cr.define('md_history.history_overflow_menu_test', function() {
                      element.$.sharedMenu.lastAnchor_);
       });
 
-      test('keyboard input for closing menu', function() {
-        // Test that pressing escape on the document closes the menu. In the
-        // actual page, it will take two presses to close the menu due to focus.
-        // TODO(yingran): Fix this behavior to only require one key press.
-        element.toggleMenu_(MENU_EVENT);
-        MockInteractions.pressAndReleaseKeyOn(document.body, 27);
-        assertEquals(false, element.$.sharedMenu.menuOpen);
-      });
-
       teardown(function() {
         element.$.sharedMenu.lastAnchor_ = null;
       });

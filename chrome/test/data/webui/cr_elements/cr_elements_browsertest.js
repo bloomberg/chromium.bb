@@ -96,3 +96,22 @@ TEST_F('CrElementsSliderTest', 'All', function() {
   cr_slider.registerTests();
   mocha.run();
 });
+
+function CrElementsSharedMenuTest() {}
+
+CrElementsSharedMenuTest.prototype = {
+  __proto__: CrElementsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://resources/cr_elements/cr_shared_menu/cr_shared_menu.html',
+
+  /** @override */
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
+    'cr_shared_menu_tests.js'
+  ]),
+};
+
+TEST_F('CrElementsSharedMenuTest', 'All', function() {
+  mocha.run();
+});
