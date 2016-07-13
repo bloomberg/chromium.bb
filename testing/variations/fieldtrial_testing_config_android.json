@@ -115,6 +115,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ExpectCTReporting": [
+        {
+            "enable_features": [
+                "ExpectCTReporting"
+            ],
+            "group_name": "ExpectCTReportingEnabled"
+        }
+    ],
     "ImeThread": [
         {
             "enable_features": [

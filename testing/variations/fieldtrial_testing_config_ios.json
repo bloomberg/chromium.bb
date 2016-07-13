@@ -28,6 +28,14 @@
             "group_name": "Enabled"
         }
     ],
+    "ExpectCTReporting": [
+        {
+            "enable_features": [
+                "ExpectCTReporting"
+            ],
+            "group_name": "ExpectCTReportingEnabled"
+        }
+    ],
     "NetworkTimeQueries": [
         {
             "enable_features": [
