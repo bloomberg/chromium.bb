@@ -256,12 +256,7 @@ bool TranslateUIDelegate::IsLanguageBlocked() {
 void TranslateUIDelegate::SetLanguageBlocked(bool value) {
   if (value) {
     prefs_->BlockLanguage(GetOriginalLanguageCode());
-    // In the new UI, we will keep showing the translate omnibar icon
-    // even if the language is blocked so in case the user just wants to
-    // translate that page the user can invoke the translate bubble from
-    // the omnibar icon.
-    if (!base::FeatureList::IsEnabled(kTranslateUI2016Q2) &&
-        translate_manager_) {
+    if (translate_manager_) {
       translate_manager_->GetLanguageState().SetTranslateEnabled(false);
     }
   } else {
@@ -283,12 +278,7 @@ void TranslateUIDelegate::SetSiteBlacklist(bool value) {
 
   if (value) {
     prefs_->BlacklistSite(host);
-    // In the new UI, we will keep showing the translate omnibar icon
-    // even if the site is blocked so in case the user just wants to
-    // translate that page the user can invoke the translate bubble from
-    // the omnibar icon.
-    if (!base::FeatureList::IsEnabled(kTranslateUI2016Q2) &&
-        translate_manager_) {
+    if (translate_manager_) {
       translate_manager_->GetLanguageState().SetTranslateEnabled(false);
     }
   } else {
