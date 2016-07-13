@@ -84,6 +84,10 @@ void Channel::GenerateMojoChannelHandlePair(
 Channel::~Channel() {
 }
 
+Channel::AssociatedInterfaceSupport* Channel::GetAssociatedInterfaceSupport() {
+  return nullptr;
+}
+
 bool Channel::IsSendThreadSafe() const {
   return false;
 }

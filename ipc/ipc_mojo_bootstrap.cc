@@ -591,6 +591,11 @@ class BootstrapMasterBinding {
     endpoint_client_->set_connection_error_handler(handler);
   }
 
+  mojo::AssociatedGroup* associated_group() {
+    DCHECK(controller_);
+    return controller_->associated_group();
+  }
+
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     DCHECK(!controller_);
     controller_ =
@@ -621,6 +626,9 @@ class MojoServerBootstrap : public MojoBootstrap {
  private:
   // MojoBootstrap implementation.
   void Connect() override;
+  mojo::AssociatedGroup* GetAssociatedGroup() override {
+    return bootstrap_.associated_group();
+  }
 
   void OnInitDone(int32_t peer_pid);
 
@@ -680,6 +688,9 @@ class MojoClientBootstrap : public MojoBootstrap, public mojom::Bootstrap {
  private:
   // MojoBootstrap implementation.
   void Connect() override;
+  mojo::AssociatedGroup* GetAssociatedGroup() override {
+    return binding_.associated_group();
+  }
 
   // mojom::Bootstrap implementation.
   void Init(mojom::ChannelAssociatedRequest receive_channel,
