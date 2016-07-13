@@ -44,13 +44,13 @@ void StartOnServerThread(const base::FilePath& test_files_root,
 
   // Set up server certs.
   base::FilePath directory = test_data_dir.Append("net/data/ssl/certificates");
-  // TODO(xunjieli): Use scoped_ptr when crbug.com/545474 is fixed.
-  net::ProofSourceChromium* proof_source = new net::ProofSourceChromium();
+  std::unique_ptr<net::ProofSourceChromium> proof_source(
+      new net::ProofSourceChromium());
   CHECK(proof_source->Initialize(
       directory.Append("quic_test.example.com.crt"),
       directory.Append("quic_test.example.com.key.pkcs8"),
       directory.Append("quic_test.example.com.key.sct")));
-  g_quic_server = new net::QuicSimpleServer(proof_source, config,
+  g_quic_server = new net::QuicSimpleServer(std::move(proof_source), config,
                                             net::QuicSupportedVersions());
 
   // Start listening.

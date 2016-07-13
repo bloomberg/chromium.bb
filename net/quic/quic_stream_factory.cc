@@ -649,10 +649,11 @@ QuicStreamFactory::QuicStreamFactory(
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
       config_(InitializeQuicConfig(connection_options,
                                    idle_connection_timeout_seconds)),
-      crypto_config_(new ProofVerifierChromium(cert_verifier,
-                                               ct_policy_enforcer,
-                                               transport_security_state,
-                                               cert_transparency_verifier)),
+      crypto_config_(base::WrapUnique(
+          new ProofVerifierChromium(cert_verifier,
+                                    ct_policy_enforcer,
+                                    transport_security_state,
+                                    cert_transparency_verifier))),
       supported_versions_(supported_versions),
       enable_port_selection_(enable_port_selection),
       always_require_handshake_confirmation_(

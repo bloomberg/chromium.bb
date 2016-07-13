@@ -254,11 +254,12 @@ int main(int argc, char* argv[]) {
       new TransportSecurityState);
   std::unique_ptr<CTVerifier> ct_verifier(new MultiLogCTVerifier());
   std::unique_ptr<CTPolicyEnforcer> ct_policy_enforcer(new CTPolicyEnforcer());
-  ProofVerifierChromium* proof_verifier = new ProofVerifierChromium(
-      cert_verifier.get(), ct_policy_enforcer.get(),
-      transport_security_state.get(), ct_verifier.get());
+  std::unique_ptr<ProofVerifierChromium> proof_verifier(
+      new ProofVerifierChromium(cert_verifier.get(), ct_policy_enforcer.get(),
+                                transport_security_state.get(),
+                                ct_verifier.get()));
   net::QuicSimpleClient client(net::IPEndPoint(ip_addr, port), server_id,
-                               versions, proof_verifier);
+                               versions, std::move(proof_verifier));
   client.set_initial_max_packet_length(
       FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
   if (!client.Initialize()) {
