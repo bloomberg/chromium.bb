@@ -471,7 +471,7 @@ class SiteDataDeleteHelper :
         NULL);
 
     cookies_tree_model_.reset(new CookiesTreeModel(
-        container, profile_->GetExtensionSpecialStoragePolicy(), false));
+        container, profile_->GetExtensionSpecialStoragePolicy()));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 

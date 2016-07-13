@@ -686,8 +686,7 @@ class CookieTreeFlashLSONode : public CookieTreeNode {
 class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
  public:
   CookiesTreeModel(LocalDataContainer* data_container,
-                   ExtensionSpecialStoragePolicy* special_storage_policy,
-                   bool group_by_cookie_source);
+                   ExtensionSpecialStoragePolicy* special_storage_policy);
   ~CookiesTreeModel() override;
 
   // Given a CanonicalCookie, return the ID of the message which should be
@@ -849,22 +848,18 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
                                       ScopedBatchUpdateNotifier* notifier,
                                       const base::string16& filter);
 
-  // Map of app ids to LocalDataContainer objects to use when retrieving
-  // locally stored data.
-  std::unique_ptr<LocalDataContainer> data_container_;
-
 #if defined(ENABLE_EXTENSIONS)
   // The extension special storage policy; see ExtensionsProtectingNode() above.
   scoped_refptr<ExtensionSpecialStoragePolicy> special_storage_policy_;
 #endif
 
+  // Map of app ids to LocalDataContainer objects to use when retrieving
+  // locally stored data.
+  std::unique_ptr<LocalDataContainer> data_container_;
+
   // The CookiesTreeModel maintains a separate list of observers that are
   // specifically of the type CookiesTreeModel::Observer.
   base::ObserverList<Observer> cookies_observer_list_;
-
-  // If true, use the CanonicalCookie::Source attribute to group cookies.
-  // Otherwise, use the CanonicalCookie::Domain attribute.
-  bool group_by_cookie_source_;
 
   // Keeps track of how many batches the consumer of this class says it is going
   // to send.

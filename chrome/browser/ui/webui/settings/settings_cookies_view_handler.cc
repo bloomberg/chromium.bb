@@ -161,8 +161,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         BrowsingDataFlashLSOHelper::Create(profile));
     cookies_tree_model_.reset(
         new CookiesTreeModel(container,
-                             profile->GetExtensionSpecialStoragePolicy(),
-                             false));
+                             profile->GetExtensionSpecialStoragePolicy()));
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 }

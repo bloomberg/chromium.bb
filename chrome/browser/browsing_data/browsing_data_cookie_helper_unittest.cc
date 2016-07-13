@@ -22,8 +22,6 @@ class CookieExpectation {
   CookieExpectation() {}
 
   bool MatchesCookie(const net::CanonicalCookie& cookie) const {
-    if (!source_.is_empty() && source_ != cookie.Source())
-      return false;
     if (!domain_.empty() && domain_ != cookie.Domain())
       return false;
     if (!path_.empty() && path_ != cookie.Path())
@@ -189,9 +187,10 @@ class BrowsingDataCookieHelperTest : public testing::Test {
     ASSERT_EQ(3U, cookie_list.size());
   }
 
-  void DeleteCookie(BrowsingDataCookieHelper* helper, const GURL origin) {
+  void DeleteCookie(BrowsingDataCookieHelper* helper,
+                    const std::string& domain) {
     for (const auto& cookie : cookie_list_) {
-      if (cookie.Source() == origin)
+      if (cookie.Domain() == domain)
         helper->DeleteCookie(cookie);
     }
   }
@@ -265,7 +264,7 @@ TEST_F(BrowsingDataCookieHelperTest, CannedDeleteCookie) {
 
   EXPECT_EQ(2u, helper->GetCookieCount());
 
-  DeleteCookie(helper.get(), origin1);
+  DeleteCookie(helper.get(), origin1.host());
 
   EXPECT_EQ(1u, helper->GetCookieCount());
   helper->StartFetching(

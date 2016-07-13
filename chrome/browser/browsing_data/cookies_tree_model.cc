@@ -117,21 +117,6 @@ std::string CanonicalizeHost(const GURL& url) {
   return retval;
 }
 
-// When creating a cookie tree node from a cookie, strip the port of the
-// cookie source and treat all non-file:// URLs as http://.
-GURL CanonicalizeCookieSource(const net::CanonicalCookie& cookie) {
-  GURL url = cookie.Source();
-  if (url.SchemeIsFile())
-    return url;
-
-  url::Replacements<char> replacements;
-  replacements.ClearPort();
-  if (url.SchemeIsCryptographic())
-    replacements.SetScheme("http", url::Component(0, 4));
-
-  return url.GetOrigin().ReplaceComponents(replacements);
-}
-
 #if defined(ENABLE_EXTENSIONS)
 bool TypeIsProtected(CookieTreeNode::DetailedInfo::NodeType type) {
   switch (type) {
@@ -971,14 +956,12 @@ void CookiesTreeModel::ScopedBatchUpdateNotifier::StartBatchUpdate() {
 // CookiesTreeModel, public:
 CookiesTreeModel::CookiesTreeModel(
     LocalDataContainer* data_container,
-    ExtensionSpecialStoragePolicy* special_storage_policy,
-    bool group_by_cookie_source)
+    ExtensionSpecialStoragePolicy* special_storage_policy)
     : ui::TreeNodeModel<CookieTreeNode>(new CookieTreeRootNode(this)),
-      data_container_(data_container),
 #if defined(ENABLE_EXTENSIONS)
       special_storage_policy_(special_storage_policy),
 #endif
-      group_by_cookie_source_(group_by_cookie_source) {
+      data_container_(data_container) {
   data_container_->Init(this);
 }
 
@@ -1219,18 +1202,13 @@ void CookiesTreeModel::PopulateCookieInfoWithFilter(
   notifier->StartBatchUpdate();
   for (CookieList::iterator it = container->cookie_list_.begin();
        it != container->cookie_list_.end(); ++it) {
-    GURL source = CanonicalizeCookieSource(*it);
-    if (source.is_empty() || !group_by_cookie_source_) {
-      std::string domain = it->Domain();
-      if (domain.length() > 1 && domain[0] == '.')
-        domain = domain.substr(1);
+    std::string domain = it->Domain();
+    if (domain.length() > 1 && domain[0] == '.')
+      domain = domain.substr(1);
 
-      // We treat secure cookies just the same as normal ones.
-      source = GURL(std::string(url::kHttpScheme) +
-                    url::kStandardSchemeSeparator + domain + "/");
-    }
-    if (!source.SchemeIsHTTPOrHTTPS())
-      continue;
+    // Cookies ignore schemes, so group all HTTP and HTTPS cookies together.
+    GURL source(std::string(url::kHttpScheme) + url::kStandardSchemeSeparator +
+                domain + "/");
 
     if (filter.empty() || (CookieTreeHostNode::TitleForUrl(source)
                                .find(filter) != base::string16::npos)) {

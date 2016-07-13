@@ -221,8 +221,8 @@ std::unique_ptr<CookiesTreeModel>
 LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
   LocalDataContainer* container = new LocalDataContainer(
       cookies(), databases(), local_storages(), session_storages(), appcaches(),
-      indexed_dbs(), file_systems(), NULL, channel_ids(), service_workers(),
-      cache_storages(), NULL);
+      indexed_dbs(), file_systems(), nullptr, channel_ids(), service_workers(),
+      cache_storages(), nullptr);
 
-  return base::WrapUnique(new CookiesTreeModel(container, NULL, true));
+  return base::WrapUnique(new CookiesTreeModel(container, nullptr));
 }
