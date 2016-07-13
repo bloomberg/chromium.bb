@@ -661,10 +661,6 @@ group("both_gn_and_gyp") {
     deps += [ "//chromecast:cast_shell" ]
   }
 
-  if (is_mac) {  # TODO(GYP) || is_ios
-    deps += [ "//media/cast:cast_h264_vt_encoder_unittests" ]
-  }
-
   if (is_mac || is_win) {
     deps += [
       "//third_party/crashpad/crashpad/handler:crashpad_handler",

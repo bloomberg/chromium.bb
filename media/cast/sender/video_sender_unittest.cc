@@ -113,7 +113,7 @@ class PeerVideoSender : public VideoSender {
  public:
   PeerVideoSender(
       scoped_refptr<CastEnvironment> cast_environment,
-      const VideoSenderConfig& video_config,
+      const FrameSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
@@ -178,7 +178,7 @@ class VideoSenderTest : public ::testing::Test {
   // If |external| is true then external video encoder (VEA) is used.
   // |expect_init_success| is true if initialization is expected to succeed.
   void InitEncoder(bool external, bool expect_init_success) {
-    VideoSenderConfig video_config = GetDefaultVideoSenderConfig();
+    FrameSenderConfig video_config = GetDefaultVideoSenderConfig();
     video_config.use_external_encoder = external;
 
     ASSERT_EQ(operational_status_, STATUS_UNINITIALIZED);

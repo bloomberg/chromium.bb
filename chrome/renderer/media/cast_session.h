@@ -60,10 +60,10 @@ class CastSession : public base::RefCounted<CastSession> {
   // error message. Both |callback| and |error_callback| will be made on
   // the main thread.
   // |StartUDP()| must be called before these methods.
-  void StartAudio(const media::cast::AudioSenderConfig& config,
+  void StartAudio(const media::cast::FrameSenderConfig& config,
                   const AudioFrameInputAvailableCallback& callback,
                   const ErrorCallback& error_callback);
-  void StartVideo(const media::cast::VideoSenderConfig& config,
+  void StartVideo(const media::cast::FrameSenderConfig& config,
                   const VideoFrameInputAvailableCallback& callback,
                   const ErrorCallback& error_callback);
 

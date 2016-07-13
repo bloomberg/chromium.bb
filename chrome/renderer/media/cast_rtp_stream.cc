@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -44,17 +43,9 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "ui/gfx/geometry/size.h"
 
-using media::cast::AudioSenderConfig;
-using media::cast::VideoSenderConfig;
+using media::cast::FrameSenderConfig;
 
 namespace {
-
-const char kCodecNameOpus[] = "OPUS";
-const char kCodecNameVp8[] = "VP8";
-const char kCodecNameH264[] = "H264";
-
-// To convert from kilobits per second to bits to per second.
-const int kBitrateMultiplier = 1000;
 
 // The maximum number of milliseconds that should elapse since the last video
 // frame was received from the video source, before requesting refresh frames.
@@ -64,253 +55,69 @@ const int kRefreshIntervalMilliseconds = 250;
 // limit (60 * 250ms = 15 seconds), refresh frame requests will stop being made.
 const int kMaxConsecutiveRefreshFrames = 60;
 
-CastRtpPayloadParams DefaultOpusPayload() {
-  CastRtpPayloadParams payload;
-  payload.payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
-  payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
-  payload.ssrc = 1;
-  payload.feedback_ssrc = 2;
-  payload.clock_rate = media::cast::kDefaultAudioSamplingRate;
+FrameSenderConfig DefaultOpusConfig() {
+  FrameSenderConfig config;
+  config.rtp_payload_type = media::cast::RtpPayloadType::AUDIO_OPUS;
+  config.sender_ssrc = 1;
+  config.receiver_ssrc = 2;
+  config.rtp_timebase = media::cast::kDefaultAudioSamplingRate;
+  config.channels = 2;
   // The value is 0 which means VBR.
-  payload.min_bitrate = payload.max_bitrate =
+  config.min_bitrate = config.max_bitrate = config.start_bitrate =
       media::cast::kDefaultAudioEncoderBitrate;
-  payload.channels = 2;
-  payload.max_frame_rate = 100;  // 10 ms audio frames
-  payload.codec_name = kCodecNameOpus;
-  return payload;
+  config.max_frame_rate = 100;  // 10 ms audio frames
+  config.codec = media::cast::CODEC_AUDIO_OPUS;
+  return config;
 }
 
-CastRtpPayloadParams DefaultVp8Payload() {
-  CastRtpPayloadParams payload;
-  payload.payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
-  payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
-  payload.ssrc = 11;
-  payload.feedback_ssrc = 12;
-  payload.clock_rate = media::cast::kVideoFrequency;
-  payload.max_bitrate = media::cast::kDefaultMaxVideoKbps;
-  payload.min_bitrate = media::cast::kDefaultMinVideoKbps;
-  payload.channels = 1;
-  payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
-  payload.codec_name = kCodecNameVp8;
-  return payload;
+FrameSenderConfig DefaultVp8Config() {
+  FrameSenderConfig config;
+  config.rtp_payload_type = media::cast::RtpPayloadType::VIDEO_VP8;
+  config.sender_ssrc = 11;
+  config.receiver_ssrc = 12;
+  config.rtp_timebase = media::cast::kVideoFrequency;
+  config.channels = 1;
+  config.max_bitrate = media::cast::kDefaultMaxVideoBitrate;
+  config.min_bitrate = media::cast::kDefaultMinVideoBitrate;
+  config.max_frame_rate = media::cast::kDefaultMaxFrameRate;
+  config.codec = media::cast::CODEC_VIDEO_VP8;
+  return config;
 }
 
-CastRtpPayloadParams DefaultH264Payload() {
-  CastRtpPayloadParams payload;
-  payload.payload_type = media::cast::RtpPayloadType::VIDEO_H264;
-  payload.max_latency_ms = media::cast::kDefaultRtpMaxDelayMs;
-  payload.ssrc = 11;
-  payload.feedback_ssrc = 12;
-  payload.clock_rate = media::cast::kVideoFrequency;
-  payload.max_bitrate = media::cast::kDefaultMaxVideoKbps;
-  payload.min_bitrate = media::cast::kDefaultMinVideoKbps;
-  payload.channels = 1;
-  payload.max_frame_rate = media::cast::kDefaultMaxFrameRate;
-  payload.codec_name = kCodecNameH264;
-  return payload;
+FrameSenderConfig DefaultH264Config() {
+  FrameSenderConfig config;
+  config.rtp_payload_type = media::cast::RtpPayloadType::VIDEO_H264;
+  config.sender_ssrc = 11;
+  config.receiver_ssrc = 12;
+  config.rtp_timebase = media::cast::kVideoFrequency;
+  config.channels = 1;
+  config.max_bitrate = media::cast::kDefaultMaxVideoBitrate;
+  config.min_bitrate = media::cast::kDefaultMinVideoBitrate;
+  config.max_frame_rate = media::cast::kDefaultMaxFrameRate;
+  config.codec = media::cast::CODEC_VIDEO_H264;
+  return config;
 }
 
-bool IsHardwareVP8EncodingSupported() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
-    DVLOG(1) << "Disabled hardware VP8 support for Cast Streaming.";
-    return false;
-  }
-
-  // Query for hardware VP8 encoder support.
-  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
-  for (const auto& vea_profile : vea_profiles) {
-    if (vea_profile.profile >= media::VP8PROFILE_MIN &&
-        vea_profile.profile <= media::VP8PROFILE_MAX) {
-      return true;
-    }
-  }
-  return false;
-}
-
-bool IsHardwareH264EncodingSupported() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
-    DVLOG(1) << "Disabled hardware h264 support for Cast Streaming.";
-    return false;
-  }
-
-  // Query for hardware H.264 encoder support.
-  //
-  // TODO(miu): Look into why H.264 hardware encoder on MacOS is broken.
-  // http://crbug.com/596674
-#if !defined(OS_MACOSX)
-  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
-      vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
-  for (const auto& vea_profile : vea_profiles) {
-    if (vea_profile.profile >= media::H264PROFILE_MIN &&
-        vea_profile.profile <= media::H264PROFILE_MAX) {
-      return true;
-    }
-  }
-#endif  // !defined(OS_MACOSX)
-  return false;
-}
-
-int NumberOfEncodeThreads() {
-  // Do not saturate CPU utilization just for encoding. On a lower-end system
-  // with only 1 or 2 cores, use only one thread for encoding. On systems with
-  // more cores, allow half of the cores to be used for encoding.
-  return std::min(8, (base::SysInfo::NumberOfProcessors() + 1) / 2);
-}
-
-std::vector<CastRtpParams> SupportedAudioParams() {
+std::vector<FrameSenderConfig> SupportedAudioConfigs() {
   // TODO(hclam): Fill in more codecs here.
-  return std::vector<CastRtpParams>(1, CastRtpParams(DefaultOpusPayload()));
+  return std::vector<FrameSenderConfig>(1, DefaultOpusConfig());
 }
 
-std::vector<CastRtpParams> SupportedVideoParams() {
-  std::vector<CastRtpParams> supported_params;
+std::vector<FrameSenderConfig> SupportedVideoConfigs() {
+  std::vector<FrameSenderConfig> supported_configs;
 
   // Prefer VP8 over H.264 for hardware encoder.
-  if (IsHardwareVP8EncodingSupported())
-    supported_params.push_back(CastRtpParams(DefaultVp8Payload()));
-  if (IsHardwareH264EncodingSupported())
-    supported_params.push_back(CastRtpParams(DefaultH264Payload()));
+  if (CastRtpStream::IsHardwareVP8EncodingSupported())
+    supported_configs.push_back(DefaultVp8Config());
+  if (CastRtpStream::IsHardwareH264EncodingSupported())
+    supported_configs.push_back(DefaultH264Config());
 
   // Propose the default software VP8 encoder, if no hardware encoders are
   // available.
-  if (supported_params.empty())
-    supported_params.push_back(CastRtpParams(DefaultVp8Payload()));
+  if (supported_configs.empty())
+    supported_configs.push_back(DefaultVp8Config());
 
-  return supported_params;
-}
-
-bool ToAudioSenderConfig(const CastRtpParams& params,
-                         AudioSenderConfig* config) {
-  config->ssrc = params.payload.ssrc;
-  config->receiver_ssrc = params.payload.feedback_ssrc;
-  if (config->ssrc == config->receiver_ssrc) {
-    DVLOG(1) << "ssrc " << config->ssrc << " cannot be equal to receiver_ssrc";
-    return false;
-  }
-  config->min_playout_delay = base::TimeDelta::FromMilliseconds(
-                                  params.payload.min_latency_ms ?
-                                  params.payload.min_latency_ms :
-                                  params.payload.max_latency_ms);
-  config->max_playout_delay =
-      base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
-  config->animated_playout_delay = base::TimeDelta::FromMilliseconds(
-      params.payload.animated_latency_ms ? params.payload.animated_latency_ms
-                                         : params.payload.max_latency_ms);
-  if (config->min_playout_delay <= base::TimeDelta()) {
-    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
-             << " is too small";
-    return false;
-  }
-  if (config->min_playout_delay > config->max_playout_delay) {
-    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
-             << " is too big";
-    return false;
-  }
-  if (config->animated_playout_delay < config->min_playout_delay ||
-      config->animated_playout_delay > config->max_playout_delay) {
-    DVLOG(1) << "animated_playout_delay " << config->animated_playout_delay
-             << " is out of range";
-    return false;
-  }
-  config->rtp_payload_type = params.payload.payload_type;
-  config->use_external_encoder = false;
-  config->frequency = params.payload.clock_rate;
-  // Sampling rate must be one of the Opus-supported values.
-  switch (config->frequency) {
-    case 48000:
-    case 24000:
-    case 16000:
-    case 12000:
-    case 8000:
-      break;
-    default:
-      DVLOG(1) << "frequency " << config->frequency << " is invalid";
-      return false;
-  }
-  config->channels = params.payload.channels;
-  if (config->channels < 1) {
-    DVLOG(1) << "channels " << config->channels << " is invalid";
-    return false;
-  }
-  config->bitrate = params.payload.max_bitrate * kBitrateMultiplier;
-  if (params.payload.codec_name == kCodecNameOpus) {
-    config->codec = media::cast::CODEC_AUDIO_OPUS;
-  } else {
-    DVLOG(1) << "codec_name " << params.payload.codec_name << " is invalid";
-    return false;
-  }
-  config->aes_key = params.payload.aes_key;
-  config->aes_iv_mask = params.payload.aes_iv_mask;
-  return true;
-}
-
-bool ToVideoSenderConfig(const CastRtpParams& params,
-                         VideoSenderConfig* config) {
-  config->ssrc = params.payload.ssrc;
-  config->receiver_ssrc = params.payload.feedback_ssrc;
-  if (config->ssrc == config->receiver_ssrc) {
-    DVLOG(1) << "ssrc " << config->ssrc << " cannot be equal to receiver_ssrc";
-    return false;
-  }
-  config->min_playout_delay = base::TimeDelta::FromMilliseconds(
-                                  params.payload.min_latency_ms ?
-                                  params.payload.min_latency_ms :
-                                  params.payload.max_latency_ms);
-  config->max_playout_delay =
-      base::TimeDelta::FromMilliseconds(params.payload.max_latency_ms);
-  config->animated_playout_delay = base::TimeDelta::FromMilliseconds(
-      params.payload.animated_latency_ms ? params.payload.animated_latency_ms
-                                         : params.payload.max_latency_ms);
-  if (config->min_playout_delay <= base::TimeDelta()) {
-    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
-             << " is too small";
-    return false;
-  }
-  if (config->min_playout_delay > config->max_playout_delay) {
-    DVLOG(1) << "min_playout_delay " << config->min_playout_delay
-             << " is too big";
-    return false;
-  }
-  if (config->animated_playout_delay < config->min_playout_delay ||
-      config->animated_playout_delay > config->max_playout_delay) {
-    DVLOG(1) << "animated_playout_delay " << config->animated_playout_delay
-             << " is out of range";
-    return false;
-  }
-  config->rtp_payload_type = params.payload.payload_type;
-  config->min_bitrate = config->start_bitrate =
-      params.payload.min_bitrate * kBitrateMultiplier;
-  config->max_bitrate = params.payload.max_bitrate * kBitrateMultiplier;
-  if (config->min_bitrate > config->max_bitrate) {
-    DVLOG(1) << "min_bitrate " << config->min_bitrate << " is larger than "
-             << "max_bitrate " << config->max_bitrate;
-    return false;
-  }
-  config->start_bitrate = config->min_bitrate;
-  config->max_frame_rate = static_cast<int>(
-      std::max(1.0, params.payload.max_frame_rate) + 0.5);
-  if (config->max_frame_rate > media::limits::kMaxFramesPerSecond) {
-    DVLOG(1) << "max_frame_rate " << config->max_frame_rate << " is invalid";
-    return false;
-  }
-  if (params.payload.codec_name == kCodecNameVp8) {
-    config->use_external_encoder = IsHardwareVP8EncodingSupported();
-    config->codec = media::cast::CODEC_VIDEO_VP8;
-  } else if (params.payload.codec_name == kCodecNameH264) {
-    config->use_external_encoder = IsHardwareH264EncodingSupported();
-    config->codec = media::cast::CODEC_VIDEO_H264;
-  } else {
-    DVLOG(1) << "codec_name " << params.payload.codec_name << " is invalid";
-    return false;
-  }
-  if (!config->use_external_encoder)
-    config->number_of_encode_threads = NumberOfEncodeThreads();
-  config->aes_key = params.payload.aes_key;
-  config->aes_iv_mask = params.payload.aes_iv_mask;
-  return true;
+  return supported_configs;
 }
 
 }  // namespace
@@ -595,35 +402,48 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
   DISALLOW_COPY_AND_ASSIGN(CastAudioSink);
 };
 
-CastRtpParams::CastRtpParams(const CastRtpPayloadParams& payload_params)
-    : payload(payload_params) {}
+bool CastRtpStream::IsHardwareVP8EncodingSupported() {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
+    DVLOG(1) << "Disabled hardware VP8 support for Cast Streaming.";
+    return false;
+  }
 
-CastCodecSpecificParams::CastCodecSpecificParams() {}
+  // Query for hardware VP8 encoder support.
+  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
+  for (const auto& vea_profile : vea_profiles) {
+    if (vea_profile.profile >= media::VP8PROFILE_MIN &&
+        vea_profile.profile <= media::VP8PROFILE_MAX) {
+      return true;
+    }
+  }
+  return false;
+}
 
-CastCodecSpecificParams::~CastCodecSpecificParams() {}
+bool CastRtpStream::IsHardwareH264EncodingSupported() {
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
+    DVLOG(1) << "Disabled hardware h264 support for Cast Streaming.";
+    return false;
+  }
 
-CastRtpPayloadParams::CastRtpPayloadParams()
-    : payload_type(media::cast::RtpPayloadType::UNKNOWN),
-      max_latency_ms(0),
-      min_latency_ms(0),
-      ssrc(0),
-      feedback_ssrc(0),
-      clock_rate(0),
-      max_bitrate(0),
-      min_bitrate(0),
-      channels(0),
-      max_frame_rate(0.0) {}
-
-CastRtpPayloadParams::CastRtpPayloadParams(const CastRtpPayloadParams& other) =
-    default;
-
-CastRtpPayloadParams::~CastRtpPayloadParams() {}
-
-CastRtpParams::CastRtpParams() {}
-
-CastRtpParams::CastRtpParams(const CastRtpParams& other) = default;
-
-CastRtpParams::~CastRtpParams() {}
+// Query for hardware H.264 encoder support.
+//
+// TODO(miu): Look into why H.264 hardware encoder on MacOS is broken.
+// http://crbug.com/596674
+#if !defined(OS_MACOSX)
+  const std::vector<media::VideoEncodeAccelerator::SupportedProfile>
+      vea_profiles = content::GetSupportedVideoEncodeAcceleratorProfiles();
+  for (const auto& vea_profile : vea_profiles) {
+    if (vea_profile.profile >= media::H264PROFILE_MIN &&
+        vea_profile.profile <= media::H264PROFILE_MAX) {
+      return true;
+    }
+  }
+#endif  // !defined(OS_MACOSX)
+  return false;
+}
 
 CastRtpStream::CastRtpStream(const blink::WebMediaStreamTrack& track,
                              const scoped_refptr<CastSession>& session)
@@ -633,16 +453,14 @@ CastRtpStream::~CastRtpStream() {
   Stop();
 }
 
-std::vector<CastRtpParams> CastRtpStream::GetSupportedParams() {
+std::vector<FrameSenderConfig> CastRtpStream::GetSupportedConfigs() {
   if (IsAudio())
-    return SupportedAudioParams();
+    return SupportedAudioConfigs();
   else
-    return SupportedVideoParams();
+    return SupportedVideoConfigs();
 }
 
-CastRtpParams CastRtpStream::GetParams() { return params_; }
-
-void CastRtpStream::Start(const CastRtpParams& params,
+void CastRtpStream::Start(const FrameSenderConfig& config,
                           const base::Closure& start_callback,
                           const base::Closure& stop_callback,
                           const ErrorCallback& error_callback) {
@@ -655,18 +473,10 @@ void CastRtpStream::Start(const CastRtpParams& params,
   error_callback_ = error_callback;
 
   if (IsAudio()) {
-    AudioSenderConfig config;
-    if (!ToAudioSenderConfig(params, &config)) {
-      DidEncounterError("Invalid parameters for audio.");
-      return;
-    }
-
     // In case of error we have to go through DidEncounterError() to stop
     // the streaming after reporting the error.
-    audio_sink_.reset(new CastAudioSink(
-        track_,
-        params.payload.channels,
-        params.payload.clock_rate));
+    audio_sink_.reset(
+        new CastAudioSink(track_, config.channels, config.rtp_timebase));
     cast_session_->StartAudio(
         config,
         base::Bind(&CastAudioSink::AddToTrack, audio_sink_->AsWeakPtr()),
@@ -674,11 +484,6 @@ void CastRtpStream::Start(const CastRtpParams& params,
                    weak_factory_.GetWeakPtr()));
     start_callback.Run();
   } else {
-    VideoSenderConfig config;
-    if (!ToVideoSenderConfig(params, &config)) {
-      DidEncounterError("Invalid parameters for video.");
-      return;
-    }
     // See the code for audio above for explanation of callbacks.
     video_sink_.reset(new CastVideoSink(
         track_,
@@ -686,7 +491,7 @@ void CastRtpStream::Start(const CastRtpParams& params,
                                             weak_factory_.GetWeakPtr()))));
     cast_session_->StartVideo(
         config, base::Bind(&CastVideoSink::AddToTrack, video_sink_->AsWeakPtr(),
-                           !params.payload.aes_key.empty()),
+                           !config.aes_key.empty()),
         base::Bind(&CastRtpStream::DidEncounterError,
                    weak_factory_.GetWeakPtr()));
     start_callback.Run();

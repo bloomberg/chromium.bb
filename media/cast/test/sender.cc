@@ -224,9 +224,9 @@ int main(int argc, char** argv) {
   LOG(INFO) << "Sending to " << remote_ip_address << ":" << remote_port
             << ".";
 
-  media::cast::AudioSenderConfig audio_config =
+  media::cast::FrameSenderConfig audio_config =
       media::cast::GetDefaultAudioSenderConfig();
-  media::cast::VideoSenderConfig video_config =
+  media::cast::FrameSenderConfig video_config =
       media::cast::GetDefaultVideoSenderConfig();
 
   // Running transport on the main thread.

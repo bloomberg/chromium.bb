@@ -142,35 +142,19 @@
             '<(DEPTH)/testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
+        ['OS=="ios" or OS=="mac"', {
+          'sources': [
+            'sender/h264_vt_encoder_unittest.cc',
+          ],
+
+          'dependencies': [
+            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
+          ],
+        }] # OS=="ios" or OS=="mac"
       ], # conditions
     },
   ], # targets
   'conditions': [
-    ['OS=="ios" or OS=="mac"', {
-      'targets': [
-        {
-          # GN version: //media/cast:cast_h264_vt_encoder_unittests
-          # TODO(miu): This can be rolled into cast_unittests now that FFMPEG
-          # dependency issues are resolved for iOS; but there are bot/isolates
-          # to update too.
-          'target_name': 'cast_h264_vt_encoder_unittests',
-          'type': '<(gtest_target_type)',
-          'include_dirs': [
-            '<(DEPTH)/',
-          ],
-          'dependencies': [
-            'cast_common',
-            'cast_sender',
-            'cast_test_utility',
-            '<(DEPTH)/testing/gmock.gyp:gmock',
-            '<(DEPTH)/testing/gtest.gyp:gtest',
-            '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
-          ],
-          'sources': [
-            'sender/h264_vt_encoder_unittest.cc',
-          ],
-      }], # targets
-    }], # OS=="ios" or OS=="mac"
     ['OS=="android"', {
       'targets': [
         {

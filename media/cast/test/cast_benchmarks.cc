@@ -258,8 +258,9 @@ class RunOneBenchmark {
     video_receiver_config_.rtp_max_delay_ms = kTargetPlayoutDelayMs;
     video_receiver_config_.codec = video_codec;
 
-    frame_duration_ = base::TimeDelta::FromSeconds(1) /
-        video_sender_config_.max_frame_rate;
+    DCHECK_GT(video_sender_config_.max_frame_rate, 0);
+    frame_duration_ = base::TimeDelta::FromSecondsD(
+        1.0 / video_sender_config_.max_frame_rate);
   }
 
   void SetSenderClockSkew(double skew, base::TimeDelta offset) {
@@ -285,8 +286,8 @@ class RunOneBenchmark {
   }
 
   base::TimeDelta VideoTimestamp(int frame_number) {
-    return (frame_number * base::TimeDelta::FromSeconds(1)) /
-        video_sender_config_.max_frame_rate;
+    return frame_number * base::TimeDelta::FromSecondsD(
+                              1.0 / video_sender_config_.max_frame_rate);
   }
 
   void SendFakeVideoFrame() {
@@ -410,8 +411,8 @@ class RunOneBenchmark {
  private:
   FrameReceiverConfig audio_receiver_config_;
   FrameReceiverConfig video_receiver_config_;
-  AudioSenderConfig audio_sender_config_;
-  VideoSenderConfig video_sender_config_;
+  FrameSenderConfig audio_sender_config_;
+  FrameSenderConfig video_sender_config_;
 
   base::TimeTicks start_time_;
 

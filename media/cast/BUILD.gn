@@ -365,23 +365,11 @@ test("cast_unittests") {
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
-}
 
-# TODO(miu): This can be rolled into cast_unittests now that FFMPEG dependency
-# issues are resolved for iOS; but there are bot/isolates to update too.
-if (is_ios || is_mac) {
-  test("cast_h264_vt_encoder_unittests") {
-    sources = [
-      "sender/h264_vt_encoder_unittest.cc",
-    ]
-    deps = [
-      ":common",
-      ":sender",
-      ":test_support",
-      "//testing/gmock",
-      "//testing/gtest",
-      "//third_party/ffmpeg",
-    ]
+  if (is_ios || is_mac) {
+    sources += [ "sender/h264_vt_encoder_unittest.cc" ]
+
+    deps += [ "//third_party/ffmpeg" ]
   }
 }
 

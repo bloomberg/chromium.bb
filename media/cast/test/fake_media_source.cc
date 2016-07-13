@@ -76,15 +76,15 @@ namespace cast {
 FakeMediaSource::FakeMediaSource(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::TickClock* clock,
-    const AudioSenderConfig& audio_config,
-    const VideoSenderConfig& video_config,
+    const FrameSenderConfig& audio_config,
+    const FrameSenderConfig& video_config,
     bool keep_frames)
     : task_runner_(task_runner),
       output_audio_params_(AudioParameters::AUDIO_PCM_LINEAR,
                            media::GuessChannelLayout(audio_config.channels),
-                           audio_config.frequency,
+                           audio_config.rtp_timebase,
                            32,
-                           audio_config.frequency / kAudioPacketsPerSecond),
+                           audio_config.rtp_timebase / kAudioPacketsPerSecond),
       video_config_(video_config),
       keep_frames_(keep_frames),
       variable_frame_size_mode_(false),
@@ -102,10 +102,9 @@ FakeMediaSource::FakeMediaSource(
       video_first_pts_set_(false),
       weak_factory_(this) {
   CHECK(output_audio_params_.IsValid());
-  audio_bus_factory_.reset(new TestAudioBusFactory(audio_config.channels,
-                                                   audio_config.frequency,
-                                                   kSoundFrequency,
-                                                   kSoundVolume));
+  audio_bus_factory_.reset(
+      new TestAudioBusFactory(audio_config.channels, audio_config.rtp_timebase,
+                              kSoundFrequency, kSoundVolume));
 }
 
 FakeMediaSource::~FakeMediaSource() {

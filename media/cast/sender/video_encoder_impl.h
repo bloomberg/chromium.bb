@@ -28,10 +28,10 @@ class VideoEncoderImpl : public VideoEncoder {
   };
 
   // Returns true if VideoEncoderImpl can be used with the given |video_config|.
-  static bool IsSupported(const VideoSenderConfig& video_config);
+  static bool IsSupported(const FrameSenderConfig& video_config);
 
   VideoEncoderImpl(scoped_refptr<CastEnvironment> cast_environment,
-                   const VideoSenderConfig& video_config,
+                   const FrameSenderConfig& video_config,
                    const StatusChangeCallback& status_change_cb);
 
   ~VideoEncoderImpl() final;

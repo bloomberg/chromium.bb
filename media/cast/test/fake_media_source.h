@@ -55,8 +55,8 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   // |keep_frames| is true if all VideoFrames are saved in a queue.
   FakeMediaSource(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                   base::TickClock* clock,
-                  const AudioSenderConfig& audio_config,
-                  const VideoSenderConfig& video_config,
+                  const FrameSenderConfig& audio_config,
+                  const FrameSenderConfig& video_config,
                   bool keep_frames);
   ~FakeMediaSource() final;
 
@@ -71,7 +71,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   void Start(scoped_refptr<AudioFrameInput> audio_frame_input,
              scoped_refptr<VideoFrameInput> video_frame_input);
 
-  const VideoSenderConfig& get_video_config() const { return video_config_; }
+  const FrameSenderConfig& get_video_config() const { return video_config_; }
 
   scoped_refptr<media::VideoFrame> PopOldestInsertedVideoFrame();
 
@@ -118,7 +118,7 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
 
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const media::AudioParameters output_audio_params_;
-  const VideoSenderConfig video_config_;
+  const FrameSenderConfig video_config_;
   const bool keep_frames_;
   bool variable_frame_size_mode_;
   gfx::Size current_frame_size_;

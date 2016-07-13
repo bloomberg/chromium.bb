@@ -89,7 +89,7 @@ void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
 // See details: crbug.com/392086.
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
-    const VideoSenderConfig& video_config,
+    const FrameSenderConfig& video_config,
     const StatusChangeCallback& status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
     const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
@@ -100,7 +100,7 @@ VideoSender::VideoSender(
           false,
           transport_sender,
           kVideoFrequency,
-          video_config.ssrc,
+          video_config.sender_ssrc,
           video_config.max_frame_rate,
           video_config.min_playout_delay,
           video_config.max_playout_delay,
@@ -133,7 +133,7 @@ VideoSender::VideoSender(
   }
 
   media::cast::CastTransportRtpConfig transport_config;
-  transport_config.ssrc = video_config.ssrc;
+  transport_config.ssrc = video_config.sender_ssrc;
   transport_config.feedback_ssrc = video_config.receiver_ssrc;
   transport_config.rtp_payload_type = video_config.rtp_payload_type;
   transport_config.aes_key = video_config.aes_key;

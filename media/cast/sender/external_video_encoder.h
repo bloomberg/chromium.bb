@@ -28,11 +28,11 @@ class ExternalVideoEncoder : public VideoEncoder {
  public:
   // Returns true if the current platform and system configuration supports
   // using ExternalVideoEncoder with the given |video_config|.
-  static bool IsSupported(const VideoSenderConfig& video_config);
+  static bool IsSupported(const FrameSenderConfig& video_config);
 
   ExternalVideoEncoder(
       const scoped_refptr<CastEnvironment>& cast_environment,
-      const VideoSenderConfig& video_config,
+      const FrameSenderConfig& video_config,
       const gfx::Size& frame_size,
       FrameId first_frame_id,
       const StatusChangeCallback& status_change_cb,
@@ -56,7 +56,7 @@ class ExternalVideoEncoder : public VideoEncoder {
   // VEAClientImpl to own and interface with a new |vea|.  Upon return,
   // |client_| holds a reference to the new VEAClientImpl.
   void OnCreateVideoEncodeAccelerator(
-      const VideoSenderConfig& video_config,
+      const FrameSenderConfig& video_config,
       FrameId first_frame_id,
       const StatusChangeCallback& status_change_cb,
       scoped_refptr<base::SingleThreadTaskRunner> encoder_task_runner,
@@ -86,7 +86,7 @@ class SizeAdaptableExternalVideoEncoder : public SizeAdaptableVideoEncoderBase {
  public:
   SizeAdaptableExternalVideoEncoder(
       const scoped_refptr<CastEnvironment>& cast_environment,
-      const VideoSenderConfig& video_config,
+      const FrameSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb,
       const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
       const CreateVideoEncodeMemoryCallback& create_video_encode_memory_cb);

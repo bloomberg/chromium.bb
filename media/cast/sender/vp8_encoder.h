@@ -26,7 +26,7 @@ namespace cast {
 
 class Vp8Encoder : public SoftwareVideoEncoder {
  public:
-  explicit Vp8Encoder(const VideoSenderConfig& video_config);
+  explicit Vp8Encoder(const FrameSenderConfig& video_config);
 
   ~Vp8Encoder() final;
 
@@ -51,7 +51,7 @@ class Vp8Encoder : public SoftwareVideoEncoder {
   // |encoder_| instance.
   void ConfigureForNewFrameSize(const gfx::Size& frame_size);
 
-  const VideoSenderConfig cast_config_;
+  const FrameSenderConfig cast_config_;
 
   const double target_encoder_utilization_;
 

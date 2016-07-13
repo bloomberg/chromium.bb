@@ -30,7 +30,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
  public:
   SizeAdaptableVideoEncoderBase(
       const scoped_refptr<CastEnvironment>& cast_environment,
-      const VideoSenderConfig& video_config,
+      const FrameSenderConfig& video_config,
       const StatusChangeCallback& status_change_cb);
 
   ~SizeAdaptableVideoEncoderBase() override;
@@ -50,9 +50,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
   CastEnvironment* cast_environment() const {
     return cast_environment_.get();
   }
-  const VideoSenderConfig& video_config() const {
-    return video_config_;
-  }
+  const FrameSenderConfig& video_config() const { return video_config_; }
   const gfx::Size& frame_size() const {
     return frame_size_;
   }
@@ -93,7 +91,7 @@ class SizeAdaptableVideoEncoderBase : public VideoEncoder {
 
   // This is not const since |video_config_.starting_bitrate| is modified by
   // SetBitRate(), for when a replacement encoder is spawned.
-  VideoSenderConfig video_config_;
+  FrameSenderConfig video_config_;
 
   // Run whenever the underlying encoder reports a status change.
   const StatusChangeCallback status_change_cb_;
