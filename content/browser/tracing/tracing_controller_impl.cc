@@ -168,6 +168,13 @@ std::unique_ptr<base::DictionaryValue> GenerateTracingMetadataDict() {
   metadata_dict->SetBoolean("highres-ticks",
                             base::TimeTicks::IsHighResolution());
 
+  base::Time::Exploded ctime;
+  base::Time::Now().UTCExplode(&ctime);
+  std::string time_string = base::StringPrintf("%u-%u-%u %d:%d:%d",
+      ctime.year, ctime.month, ctime.day_of_month, ctime.hour,
+      ctime.minute, ctime.second);
+  metadata_dict->SetString("trace-capture-datetime", time_string);
+
   return metadata_dict;
 }
 
