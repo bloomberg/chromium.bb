@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -26,7 +25,6 @@ class GFX_EXPORT ColorSpace {
   ColorSpace& operator=(const ColorSpace& other);
   ~ColorSpace();
   bool operator==(const ColorSpace& other) const;
-  bool operator<(const ColorSpace& other) const;
 
   // Returns the color profile of the monitor that can best represent color.
   // This profile should be used for creating content that does not know on
@@ -37,7 +35,7 @@ class GFX_EXPORT ColorSpace {
   static ColorSpace FromCGColorSpace(CGColorSpaceRef cg_color_space);
 #endif
 
-  const std::vector<char>& GetICCProfile() const;
+  const std::vector<char>& GetICCProfile() const { return icc_profile_; }
 
 #if defined(OS_WIN)
   // This will read monitor ICC profiles from disk and cache the results for the
@@ -49,20 +47,7 @@ class GFX_EXPORT ColorSpace {
   static bool IsValidProfileLength(size_t length);
 
  private:
-  struct Key;
-  class GlobalData;
-  friend struct Key;
-  friend class GlobalData;
-  enum class Type {
-    UNDEFINED,
-    ICC_PROFILE,
-  };
-  Type type_ = Type::UNDEFINED;
-
-  // GlobalData stores large or expensive-to-compute data about a color space
-  // (e.g, ICC profile). This structure is shared by all identical ColorSpace
-  // objects in the process. It is lazily initialized for named color spaces.
-  mutable scoped_refptr<GlobalData> global_data_;
+  std::vector<char> icc_profile_;
 };
 
 }  // namespace gfx

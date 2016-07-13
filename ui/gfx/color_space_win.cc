@@ -59,10 +59,9 @@ bool ColorSpace::CachedProfilesNeedUpdate() {
 void ColorSpace::UpdateCachedProfilesOnBackgroundThread() {
   std::vector<char> icc_profile;
   ReadBestMonitorICCProfile(&icc_profile);
-  gfx::ColorSpace color_space = FromICCProfile(icc_profile);
 
   base::AutoLock lock(g_best_monitor_color_space_lock.Get());
-  g_best_monitor_color_space.Get() = color_space;
+  g_best_monitor_color_space.Get().icc_profile_ = icc_profile;
   g_has_initialized_best_monitor_color_space = true;
 }
 
