@@ -1,55 +1,28 @@
 <!DOCTYPE HTML5>
+<title>Delayed load of poster should not overwrite intrinsic size of video.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-<html>
-    <head>
-        <title>Delayed load of poster should not overwrite intrinsic size of video</title>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script src=media-file.js></script>
-        <style>
-            video {
-                border: 3px solid red;
-                background-color: magenta;
-            }
-        </style>
-        <script>
-            function start()
-            {
-                video = document.getElementById('video');
+    video.onloadeddata = t.step_func(function() {
+        testVideoSize();
+        video.poster = "content/abe.png";
+        var image = document.createElement("img");
+        image.src = "content/abe.png";
+        image.onload = t.step_func_done(testVideoSize);
+    });
 
-                video.addEventListener("loadeddata", function(ev) {
+    function testVideoSize() {
+        assert_equals(video.clientWidth, 320);
+        assert_equals(video.clientHeight, 240);
+        assert_equals(video.videoWidth, 320);
+        assert_equals(video.videoHeight, 240);
+    }
 
-                    consoleWrite("<br><b>Video loaded</b><br>");
-
-                    testExpected("video.clientWidth", 320);
-                    testExpected("video.clientHeight", 240);
-                    testExpected("video.videoWidth", 320);
-                    testExpected("video.videoHeight", 240);
-
-                    video.poster = "content/abe.png";
-                    setTimeout(testAfterLoadingPoster, 100);
-                });
-
-                video.src = findMediaFile("video", "content/test");
-            }
-
-            function testAfterLoadingPoster()
-            {
-                consoleWrite("<br><b>Poster loaded</b><br>");
-
-                testExpected("video.clientWidth", 320);
-                testExpected("video.clientHeight", 240);
-                testExpected("video.videoWidth", 320);
-                testExpected("video.videoHeight", 240);
-
-                endTest();
-            }
-        </script>
-    </head>
-
-
-    <body onload="start()">
-        <video id=video></video>
-    </body>
-</html>
+    video.src = findMediaFile("video", "content/test");
+});
+</script>

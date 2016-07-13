@@ -1,142 +1,75 @@
-<html>
-    <head>
-        <title>&lt;video&gt; element with poster size test</title>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            var posterInfo =
-            {
-                current:0,
-                posters:
-                [
-                    {
-                        description:", with 'width' and 'height' attributes",
-                        url:null,
-                        reflectedUrl:"",
-                        width:320,
-                        height:240
-                    },
-                    {
-                        description:", size should equal image size",
-                        url:"content/greenbox.png",
-                        width:25,
-                        height:25
-                    },
-                    {
-                        description:", with NO 'width' or 'height' attributes so size should be &lt;video&gt; default",
-                        url:"",
-                        reflectedUrl:"video-poster.html",
-                        width:300,
-                        height:150
-                    },
-                    {
-                        description:", size should equal image size",
-                        url:"content/abe.png",
-                        width:76,
-                        height:103
-                    },
-                    {
-                        description:", invalid url so size should revert to &lt;video&gt; default",
-                        url:"content/bogus.png",
-                        width:300,
-                        height:150
-                    },
-                    {
-                        description:", with only a 'width' attribute so size should have the same aspect ratio as &lt;video&gt; default",
-                        url:"",
-                        reflectedUrl:"video-poster.html",
-                        width:600,
-                        height:300,
-                        widthAttr: 600
-                    },
-                    {
-                        description:", with only a 'width' attribute so size should equal a scaled up image size with the same aspect ratio as the original image",
-                        url:"content/abe.png",
-                        width:152,
-                        height:206,
-                        widthAttr: 152
-                    },
-                    {
-                        description:", invalid url w/ width attribute so size should have the same aspect ratio as &lt;video&gt; default",
-                        url:"content/bogus.png",
-                        width:600,
-                        height:300,
-                        widthAttr: 600
-                    },
-                ]
-            };
+<!DOCTYPE html>
+<title>Test video poster with different dimensions.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<body>
+<script>
+var posterInfo = [
+    {
+        description: "Testing poster null, with 'width' and 'height' attributes.",
+        url: null, reflectedUrl: "", expectedWidth: 320, expectedHeight: 240, setSize: true
+    },
+    {
+        description: "Testing 25x25 poster 'content/greenbox.png', size should equal image size.",
+        url: "content/greenbox.png", expectedWidth: 25, expectedHeight: 25
+    },
+    {
+        description: "Testing poster '', with NO 'width' or 'height' attributes so size should be <video> default.",
+        url: "", reflectedUrl: "video-poster.html", expectedWidth: 300, expectedHeight: 150
+    },
+    {
+        description: "Testing 76x103 poster 'content/abe.png', size should equal image size.",
+        url: "content/abe.png", expectedWidth: 76, expectedHeight: 103
+    },
+    {
+        description: "Testing 300x150 poster 'content/bogus.png', invalid url so size should revert to <video> default.",
+        url: "content/bogus.png", expectedWidth: 300, expectedHeight: 150
+    },
+    {
+        description: "Testing poster '', with only a 'width' attribute so size should have the same aspect ratio as <video> default.",
+        url: "", reflectedUrl: "video-poster.html", expectedWidth: 600, expectedHeight: 300, widthAttr: 600
+    },
+    {
+        description: "Testing 152x206 poster 'content/abe.png', with only a 'width' attribute so size should equal a scaled up image size with the same aspect ratio as the original image.",
+        url: "content/abe.png", expectedWidth: 152, expectedHeight: 206, widthAttr: 152
+    },
+    {
+        description: "Testing 600x300 poster 'content/bogus.png', invalid url w/ width attribute so size should have the same aspect ratio as <video> default.",
+        url: "content/bogus.png", expectedWidth: 600, expectedHeight: 300, widthAttr: 600
+    }
+];
 
-            // Wait for |video| to have the |expectedWidth| and |expectedHeight|
-            // and invoke |callback()|.
-            function listenForWidthAndHeight(expectedWidth, expectedHeight, callback) {
-              if (video.clientWidth == expectedWidth && video.clientHeight == expectedHeight) {
-                callback();
-              } else {
-                // This uses a 20ms sleep loop to accomplish the wait, since the
-                // standard specifies no events that fire on poster load or error.
-                window.setTimeout(listenForWidthAndHeight, 20, expectedWidth, expectedHeight, callback);
-              }
-            }
+posterInfo.forEach(function(poster) {
+    async_test(function(t) {
+        var video = document.createElement("video");
+        document.body.appendChild(video);
+        if (poster.setSize) {
+            video.setAttribute("width", "320");
+            video.setAttribute("height", "240");
+        } else {
+            video.poster = poster.url;
+        }
+        if (poster.widthAttr)
+            video.width = poster.widthAttr;
+        if (poster.url) {
+            var image = document.createElement("img");
+            image.src = poster.url;
+            document.body.appendChild(image);
+            if (image.src.indexOf("bogus") > 0)
+                image.onerror = t.step_func_done(testPoster);
+            else
+                image.onload = t.step_func_done(testPoster);
+        } else {
+            setTimeout(t.step_func_done(testPoster), 0);
+        }
 
-            function testPoster()
-            {
-                var temp = document.body.offsetWidth;
-                var poster = posterInfo.posters[posterInfo.current];
-
-                var size = poster.url ? (" " + poster.width + "x" + poster.height) : "";
-                var urlStr = typeof(poster.url) == "string" ? ("'" + poster.url + "'") : 'null';
-                var desc = "<b>Testing" + size + " poster <em>"+ urlStr + "</em>" + poster.description + ".</b>";
-                consoleWrite(desc);
-
-                testExpected("video.getAttribute('poster')", poster.url);
-                testExpected("relativeURL(video.poster)", poster.hasOwnProperty("reflectedUrl") ? poster.reflectedUrl : poster.url);
-                testExpected("video.clientWidth", poster.width);
-                testExpected("video.clientHeight", poster.height);
-
-                // Remove width/height attributes if present
-                if (video.width)
-                    video.removeAttribute('width');
-                if (video.height)
-                    video.removeAttribute('height');
-
-                posterInfo.current++;
-                consoleWrite("");
-                if (posterInfo.current >= posterInfo.posters.length) {
-                  endTest();
-                  return;
-                }
-                var currentPoster = posterInfo.posters[posterInfo.current];
-
-                if (currentPoster.widthAttr)
-                    video.width = currentPoster.widthAttr;
-
-                var url = currentPoster.url;
-                var desc = "<b>Setting poster to <em>\""+ url + "\"</em></b>";
-                consoleWrite(desc);
-                video.poster = url;
-                listenForWidthAndHeight(currentPoster.width, currentPoster.height, testPoster);
-            }
-
-            function unexpectedEvent(evt)
-            {
-                consoleWrite("");
-                failTest("Unexpected '" + evt.type + "' event fired!");
-            }
-
-            function setup()
-            {
-                document.addEventListener("error", unexpectedEvent);
-                document.addEventListener("load", unexpectedEvent);
-                findMediaElement();
-                testPoster();
-            }
-        </script>
-    </head>
-
-    <body>
-        <video controls width=320 height=240></video>
-        <p>Test &lt;video&gt; element with and without a poster.</p>
-        <script>setup();</script>
-    </body>
-</html>
+        function testPoster() {
+            assert_equals(video.getAttribute("poster"), poster.url);
+            var url = video.poster.substr(video.poster.lastIndexOf("/media/") + 7);
+            assert_equals(url, (poster.hasOwnProperty("reflectedUrl") ? poster.reflectedUrl : poster.url));
+            assert_equals(video.clientWidth, poster.expectedWidth);
+            assert_equals(video.clientHeight, poster.expectedHeight);
+        }
+    }, poster.description);
+});
+</script>
