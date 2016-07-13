@@ -35,8 +35,9 @@ class TestModel : public ui::SimpleMenuModel {
       return command_id == model_->checked_command_;
     }
     bool IsCommandIdEnabled(int command_id) const override { return true; }
-    bool GetAcceleratorForCommandId(int command_id,
-                                    ui::Accelerator* accelerator) override {
+    bool GetAcceleratorForCommandId(
+        int command_id,
+        ui::Accelerator* accelerator) const override {
       return false;
     }
     void ExecuteCommand(int command_id, int event_flags) override {}

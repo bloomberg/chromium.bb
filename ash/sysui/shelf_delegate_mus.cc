@@ -89,8 +89,9 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
     bool IsCommandIdEnabled(int command_id) const override {
       return command_id > 0;
     }
-    bool GetAcceleratorForCommandId(int command_id,
-                                    ui::Accelerator* accelerator) override {
+    bool GetAcceleratorForCommandId(
+        int command_id,
+        ui::Accelerator* accelerator) const override {
       return false;
     }
     void ExecuteCommand(int command_id, int event_flags) override {

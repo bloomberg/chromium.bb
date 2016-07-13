@@ -79,8 +79,9 @@ namespace AppMenuControllerInternal {
 // A C++ delegate that handles the accelerators in the app menu.
 class AcceleratorDelegate : public ui::AcceleratorProvider {
  public:
-  bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* out_accelerator) override {
+  bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* out_accelerator) const override {
     AcceleratorsCocoa* keymap = AcceleratorsCocoa::GetInstance();
     const ui::Accelerator* accelerator =
         keymap->GetAcceleratorForCommand(command_id);

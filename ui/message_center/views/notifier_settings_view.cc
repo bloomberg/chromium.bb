@@ -218,7 +218,7 @@ class NotifierGroupMenuModel : public ui::SimpleMenuModel,
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override;
+                                  ui::Accelerator* accelerator) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
@@ -257,7 +257,7 @@ bool NotifierGroupMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool NotifierGroupMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

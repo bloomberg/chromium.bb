@@ -59,7 +59,7 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
  public:
   // Don't handle accelerators.
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override {
+                                  ui::Accelerator* accelerator) const override {
     return false;
   }
 

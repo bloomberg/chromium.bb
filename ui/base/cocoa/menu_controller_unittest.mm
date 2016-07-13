@@ -46,7 +46,7 @@ class Delegate : public SimpleMenuModel::Delegate {
     return true;
   }
   bool GetAcceleratorForCommandId(int command_id,
-                                  Accelerator* accelerator) override {
+                                  Accelerator* accelerator) const override {
     return false;
   }
   void ExecuteCommand(int command_id, int event_flags) override {

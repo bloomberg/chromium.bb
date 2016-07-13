@@ -113,7 +113,7 @@ bool StatusIconMenuModel::IsCommandIdVisible(int command_id) const {
 }
 
 bool StatusIconMenuModel::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
+    int command_id, ui::Accelerator* accelerator) const {
   ItemStateMap::const_iterator iter = item_states_.find(command_id);
   if (iter != item_states_.end() &&
       iter->second.accelerator.key_code() != ui::VKEY_UNKNOWN) {

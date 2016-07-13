@@ -89,7 +89,7 @@ class NewTaskManagerView
   bool IsCommandIdChecked(int id) const override;
   bool IsCommandIdEnabled(int id) const override;
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override;
+                                  ui::Accelerator* accelerator) const override;
   void ExecuteCommand(int id, int event_flags) override;
 
  private:

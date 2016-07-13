@@ -41,8 +41,9 @@ bool ContextMenuMus::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool ContextMenuMus::GetAcceleratorForCommandId(int command_id,
-                                                ui::Accelerator* accelerator) {
+bool ContextMenuMus::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

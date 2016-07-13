@@ -171,7 +171,7 @@ bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool EncodingMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 
@@ -721,8 +721,9 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
   }
 }
 
-bool AppMenuModel::GetAcceleratorForCommandId(int command_id,
-                                              ui::Accelerator* accelerator) {
+bool AppMenuModel::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
   return provider_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 

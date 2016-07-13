@@ -59,8 +59,9 @@ bool SystemMenuModelDelegate::IsCommandIdEnabled(int command_id) const {
   return true;
 }
 
-bool SystemMenuModelDelegate::GetAcceleratorForCommandId(int command_id,
-                                             ui::Accelerator* accelerator) {
+bool SystemMenuModelDelegate::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
   return provider_->GetAcceleratorForCommandId(command_id, accelerator);
 }
 

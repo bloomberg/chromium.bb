@@ -47,7 +47,7 @@ bool ContentSettingMediaMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool ContentSettingMediaMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

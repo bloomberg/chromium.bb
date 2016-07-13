@@ -102,7 +102,7 @@ bool OptionsMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool OptionsMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

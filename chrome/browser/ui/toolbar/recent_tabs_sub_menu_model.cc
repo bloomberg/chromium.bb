@@ -252,7 +252,8 @@ bool RecentTabsSubMenuModel::IsCommandIdEnabled(int command_id) const {
 }
 
 bool RecentTabsSubMenuModel::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
+    int command_id,
+    ui::Accelerator* accelerator) const {
   // If there are no recently closed items, we show the accelerator beside
   // the header, otherwise, we show it beside the first item underneath it.
   int index_in_menu = GetIndexOfCommandId(command_id);

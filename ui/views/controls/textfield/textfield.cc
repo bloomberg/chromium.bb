@@ -1179,7 +1179,7 @@ bool Textfield::IsCommandIdEnabled(int command_id) const {
 }
 
 bool Textfield::GetAcceleratorForCommandId(int command_id,
-                                           ui::Accelerator* accelerator) {
+                                           ui::Accelerator* accelerator) const {
   switch (command_id) {
     case IDS_APP_UNDO:
       *accelerator = ui::Accelerator(ui::VKEY_Z, ui::EF_CONTROL_DOWN);

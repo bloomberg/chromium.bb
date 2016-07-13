@@ -1608,8 +1608,9 @@ void BrowserView::CloseAllTabsCanceled() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, ui::AcceleratorProvider implementation:
 
-bool BrowserView::GetAcceleratorForCommandId(int command_id,
-                                             ui::Accelerator* accelerator) {
+bool BrowserView::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
   // Let's let the ToolbarView own the canonical implementation of this method.
   return toolbar_->GetAcceleratorForCommandId(command_id, accelerator);
 }

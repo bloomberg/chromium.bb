@@ -30,7 +30,8 @@ bool MediaGalleryContextMenu::IsCommandIdVisible(int command_id) const {
 }
 
 bool MediaGalleryContextMenu::GetAcceleratorForCommandId(
-    int command_id, ui::Accelerator* accelerator) {
+    int command_id,
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

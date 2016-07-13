@@ -121,7 +121,7 @@ bool PermissionMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool PermissionMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   // Accelerators are not supported.
   return false;
 }

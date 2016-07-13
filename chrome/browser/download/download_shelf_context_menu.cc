@@ -88,7 +88,7 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
 bool DownloadShelfContextMenu::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

@@ -39,8 +39,9 @@ class UI_BASE_EXPORT ButtonMenuItemModel {
 
     // Gets the accelerator for the specified command id. Returns true if the
     // command id has a valid accelerator, false otherwise.
-    virtual bool GetAcceleratorForCommandId(int command_id,
-                                            ui::Accelerator* accelerator) = 0;
+    virtual bool GetAcceleratorForCommandId(
+        int command_id,
+        ui::Accelerator* accelerator) const = 0;
 
    protected:
     virtual ~Delegate() {}

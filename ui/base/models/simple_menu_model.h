@@ -39,7 +39,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
     // command id has a valid accelerator, false otherwise.
     virtual bool GetAcceleratorForCommandId(
         int command_id,
-        ui::Accelerator* accelerator) = 0;
+        ui::Accelerator* accelerator) const = 0;
 
     // Some command ids have labels, sublabels, minor text and icons that change
     // over time.
@@ -134,7 +134,7 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
 
   // Returns the index of the item that has the given |command_id|. Returns
   // -1 if not found.
-  int GetIndexOfCommandId(int command_id);
+  int GetIndexOfCommandId(int command_id) const;
 
   // Overridden from MenuModel:
   bool HasIcons() const override;

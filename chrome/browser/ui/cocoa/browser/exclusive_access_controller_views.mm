@@ -154,7 +154,7 @@ void ExclusiveAccessController::HideDownloadShelf() {
 
 bool ExclusiveAccessController::GetAcceleratorForCommandId(
     int cmd_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   *accelerator =
       *AcceleratorsCocoa::GetInstance()->GetAcceleratorForCommand(cmd_id);
   return true;

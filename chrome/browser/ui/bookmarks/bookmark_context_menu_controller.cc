@@ -434,7 +434,7 @@ bool BookmarkContextMenuController::IsCommandIdVisible(int command_id) const {
 
 bool BookmarkContextMenuController::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

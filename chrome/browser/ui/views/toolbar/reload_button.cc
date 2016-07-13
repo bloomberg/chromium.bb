@@ -181,8 +181,9 @@ bool ReloadButton::IsCommandIdVisible(int command_id) const {
   return true;
 }
 
-bool ReloadButton::GetAcceleratorForCommandId(int command_id,
-    ui::Accelerator* accelerator) {
+bool ReloadButton::GetAcceleratorForCommandId(
+    int command_id,
+    ui::Accelerator* accelerator) const {
   switch (command_id) {
     case IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM:
       GetWidget()->GetAccelerator(IDC_RELOAD, accelerator);

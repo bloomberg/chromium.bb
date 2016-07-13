@@ -116,7 +116,7 @@ class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
   bool IsCommandIdEnabled(int command_id) const override { return true; }
 
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override {
+                                  ui::Accelerator* accelerator) const override {
     return false;
   }
 

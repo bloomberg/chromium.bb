@@ -49,7 +49,7 @@ class RenderViewContextMenuViews : public RenderViewContextMenu {
 
   // RenderViewContextMenu implementation.
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override;
+                                  ui::Accelerator* accelerator) const override;
 
  private:
   void AppendPlatformEditableItems() override;

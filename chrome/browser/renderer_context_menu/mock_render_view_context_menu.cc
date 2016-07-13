@@ -53,7 +53,7 @@ void MockRenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {}
 
 bool MockRenderViewContextMenu::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

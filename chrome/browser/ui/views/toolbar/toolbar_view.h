@@ -137,7 +137,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // ui::AcceleratorProvider:
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override;
+                                  ui::Accelerator* accelerator) const override;
 
   // views::View:
   gfx::Size GetPreferredSize() const override;

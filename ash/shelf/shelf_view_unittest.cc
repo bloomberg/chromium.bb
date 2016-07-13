@@ -2052,7 +2052,7 @@ class TestShelfMenuModel : public ShelfMenuModel,
     return command_id != 0;
   }
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override {
+                                  ui::Accelerator* accelerator) const override {
     return false;
   }
   void ExecuteCommand(int command_id, int event_flags) override {}

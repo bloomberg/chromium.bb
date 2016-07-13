@@ -109,8 +109,8 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 bool LauncherContextMenu::GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) {
+    int command_id,
+    ui::Accelerator* accelerator) const {
   return false;
 }
 

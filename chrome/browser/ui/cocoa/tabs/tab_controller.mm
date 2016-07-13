@@ -48,7 +48,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     return [target_ isCommandEnabled:command forController:owner_];
   }
   bool GetAcceleratorForCommandId(int command_id,
-                                  ui::Accelerator* accelerator) override {
+                                  ui::Accelerator* accelerator) const override {
     return false;
   }
   void ExecuteCommand(int command_id, int event_flags) override {

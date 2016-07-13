@@ -37,7 +37,7 @@ TestRenderViewContextMenu* TestRenderViewContextMenu::Create(
 
 bool TestRenderViewContextMenu::GetAcceleratorForCommandId(
     int command_id,
-    ui::Accelerator* accelerator) {
+    ui::Accelerator* accelerator) const {
   // None of our commands have accelerators, so always return false.
   return false;
 }

@@ -256,8 +256,8 @@ void SimpleMenuModel::Clear() {
   MenuItemsChanged();
 }
 
-int SimpleMenuModel::GetIndexOfCommandId(int command_id) {
-  for (ItemVector::iterator i = items_.begin(); i != items_.end(); ++i) {
+int SimpleMenuModel::GetIndexOfCommandId(int command_id) const {
+  for (ItemVector::const_iterator i = items_.begin(); i != items_.end(); ++i) {
     if (i->command_id == command_id)
       return static_cast<int>(std::distance(items_.begin(), i));
   }
