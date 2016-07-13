@@ -113,10 +113,6 @@ void V8PerIsolateData::useCounterCallback(v8::Isolate* isolate, v8::Isolate::Use
     case v8::Isolate::kLegacyConst:
         blinkFeature = UseCounter::LegacyConst;
         break;
-    case v8::Isolate::kObjectObserve:
-        blinkFeature = UseCounter::ObjectObserve;
-        deprecated = true;
-        break;
     case v8::Isolate::kSloppyMode:
         blinkFeature = UseCounter::V8SloppyMode;
         break;

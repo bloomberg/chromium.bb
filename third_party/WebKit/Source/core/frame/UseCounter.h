@@ -625,7 +625,6 @@ public:
         CSSKeyframesRuleAnonymousIndexedGetter = 785,
         V8Screen_AvailLeft_AttributeGetter = 786,
         V8Screen_AvailTop_AttributeGetter = 787,
-        ObjectObserve = 788,
         V8SVGFEConvolveMatrixElement_PreserveAlpha_AttributeGetter = 791,
         V8SVGStyleElement_Disabled_AttributeGetter = 798,
         V8SVGStyleElement_Disabled_AttributeSetter = 799,

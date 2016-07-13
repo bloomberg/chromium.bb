@@ -343,9 +343,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::V8TouchEvent_InitTouchEvent_Method:
         return replacedWillBeRemoved("'TouchEvent.initTouchEvent'", "the TouchEvent constructor", 53, "5730982598541312");
 
-    case UseCounter::ObjectObserve:
-        return willBeRemoved("'Object.observe'", 50, "6147094632988672");
-
     case UseCounter::SVGZoomEvent:
         return willBeRemoved("'SVGZoomEvent'", 52, "5760883808534528");
 
