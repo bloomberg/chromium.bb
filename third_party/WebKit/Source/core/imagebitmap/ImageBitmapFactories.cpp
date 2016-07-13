@@ -220,19 +220,19 @@ void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding(D
     if (arrayBuffer->byteLength() >= longTaskByteLengthThreshold)
         taskSize = BackgroundTaskRunner::TaskSizeLongRunningTask;
     WebTaskRunner* taskRunner = Platform::current()->currentThread()->getWebTaskRunner();
-    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, crossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, wrapCrossThreadPersistent(this), crossThreadUnretained(taskRunner), wrapCrossThreadPersistent(arrayBuffer)), taskSize);
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, crossThreadBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, wrapCrossThreadPersistent(this), crossThreadUnretained(taskRunner), wrapCrossThreadPersistent(arrayBuffer), m_options.premultiplyAlpha(), m_options.colorSpaceConversion()), taskSize);
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner, DOMArrayBuffer* arrayBuffer)
+void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner, DOMArrayBuffer* arrayBuffer, const String& premultiplyAlphaOption, const String& colorSpaceConversionOption)
 {
     ASSERT(!isMainThread());
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(static_cast<char*>(arrayBuffer->data()), static_cast<size_t>(arrayBuffer->byteLength()));
 
     ImageDecoder::AlphaOption alphaOp = ImageDecoder::AlphaPremultiplied;
-    if (m_options.premultiplyAlpha() == "none")
+    if (premultiplyAlphaOption == "none")
         alphaOp = ImageDecoder::AlphaNotPremultiplied;
     ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied;
-    if (m_options.colorSpaceConversion() == "none")
+    if (colorSpaceConversionOption == "none")
         colorSpaceOp = ImageDecoder::GammaAndColorProfileIgnored;
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(*sharedBuffer, alphaOp, colorSpaceOp));
     RefPtr<SkImage> frame;
