@@ -138,10 +138,14 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   std::unique_ptr<Buffer> buffer(
       ReserveI420OutputBuffer(dimensions, output_pixel_storage, &y_plane_data,
                               &u_plane_data, &v_plane_data));
-  if (!buffer.get()) {
-    DLOG(WARNING) << "Failed to reserve I420 output buffer.";
+#if DCHECK_IS_ON()
+  dropped_frame_counter_ = buffer.get() ? 0 : dropped_frame_counter_ + 1;
+  if (dropped_frame_counter_ >= kMaxDroppedFrames)
+    OnError(FROM_HERE, "Too many frames dropped");
+#endif
+  // Failed to reserve I420 output buffer, so drop the frame.
+  if (!buffer.get())
     return;
-  }
 
   const int yplane_stride = dimensions.width();
   const int uv_plane_stride = yplane_stride / 2;

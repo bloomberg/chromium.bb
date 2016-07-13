@@ -103,6 +103,14 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
 
+#if DCHECK_IS_ON()
+  // Counter used to track the number of times consecutive capture buffers are
+  // dropped.
+  int dropped_frame_counter_ = 0;
+
+  static const int kMaxDroppedFrames = 150;
+#endif  // DCHECK_IS_ON()
+
   // Indication to the Client to copy-transform the incoming data into
   // GpuMemoryBuffers.
   const bool use_gpu_memory_buffers_;
