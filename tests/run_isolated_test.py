@@ -98,13 +98,14 @@ class RunIsolatedTestBase(auto_stub.TestCase):
   @property
   def run_test_temp_dir(self):
     """Where to map all files in run_isolated.run_tha_test."""
-    return os.path.join(self.tempdir, 'isolated_run')
+    return os.path.join(self.tempdir, run_isolated.ISOLATED_RUN_DIR)
 
   def fake_make_temp_dir(self, prefix, _root_dir=None):
     """Predictably returns directory for run_tha_test (one per test case)."""
     self.assertIn(
         prefix,
-        ('isolated_out', 'isolated_run', 'isolated_tmp', 'cipd_site_root'))
+        (run_isolated.ISOLATED_OUT_DIR, run_isolated.ISOLATED_RUN_DIR,
+          run_isolated.ISOLATED_TMP_DIR, 'cipd_site_root'))
     temp_dir = os.path.join(self.tempdir, prefix)
     self.assertFalse(os.path.isdir(temp_dir))
     os.makedirs(temp_dir)

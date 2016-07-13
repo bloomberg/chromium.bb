@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.8.1'
+__version__ = '0.8.2'
 
 import base64
 import logging
@@ -53,10 +53,6 @@ import cipd
 import isolateserver
 
 
-ISOLATED_OUTDIR_PARAMETER = '${ISOLATED_OUTDIR}'
-EXECUTABLE_SUFFIX_PARAMETER = '${EXECUTABLE_SUFFIX}'
-SWARMING_BOT_FILE_PARAMETER = '${SWARMING_BOT_FILE}'
-
 # Absolute path to this file (can be None if running from zip on Mac).
 THIS_FILE_PATH = os.path.abspath(
     __file__.decode(sys.getfilesystemencoding())) if __file__ else None
@@ -74,11 +70,34 @@ else:
   # interactive prompt, in that case __file__ is undefined.
   MAIN_DIR = None
 
+
+# Magic variables that can be found in the isolate task command line.
+ISOLATED_OUTDIR_PARAMETER = '${ISOLATED_OUTDIR}'
+EXECUTABLE_SUFFIX_PARAMETER = '${EXECUTABLE_SUFFIX}'
+SWARMING_BOT_FILE_PARAMETER = '${SWARMING_BOT_FILE}'
+
+
 # The name of the log file to use.
 RUN_ISOLATED_LOG_FILE = 'run_isolated.log'
 
+
 # The name of the log to use for the run_test_cases.py command
 RUN_TEST_CASES_LOG = 'run_test_cases.log'
+
+
+# Use short names for temporary directories. This is driven by Windows, which
+# imposes a relatively short maximum path length of 260 characters, often
+# referred to as MAX_PATH. It is relatively easy to create files with longer
+# path length. A use case is with recursive depedency treesV like npm packages.
+#
+# It is recommended to start the script with a `root_dir` as short as
+# possible.
+# - ir stands for isolated_run
+# - io stands for isolated_out
+# - it stands for isolated_tmp
+ISOLATED_RUN_DIR = u'ir'
+ISOLATED_OUT_DIR = u'io'
+ISOLATED_TMP_DIR = u'it'
 
 
 def get_as_zip_package(executable=True):
@@ -387,9 +406,10 @@ def map_and_run(
     file_path.ensure_tree(root_dir, 0700)
   else:
     root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
-  run_dir = make_temp_dir(u'isolated_run', root_dir)
-  out_dir = make_temp_dir(u'isolated_out', root_dir) if storage else None
-  tmp_dir = make_temp_dir(u'isolated_tmp', root_dir)
+  # See comment for these constants.
+  run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
+  out_dir = make_temp_dir(ISOLATED_OUT_DIR, root_dir) if storage else None
+  tmp_dir = make_temp_dir(ISOLATED_TMP_DIR, root_dir)
   cwd = run_dir
 
   try:
