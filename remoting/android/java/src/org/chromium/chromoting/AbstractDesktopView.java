@@ -8,8 +8,6 @@ import android.content.Context;
 import android.graphics.Point;
 import android.view.SurfaceView;
 
-import org.chromium.chromoting.jni.Client;
-
 /**
  * Callback interface to allow the TouchInputHandler to request actions on the DesktopView.
  */
@@ -17,12 +15,6 @@ public abstract class AbstractDesktopView extends SurfaceView {
     public AbstractDesktopView(Context context) {
         super(context);
     }
-
-    /**
-     * Initializes the instance. Implementations can assume this function will be called exactly
-     * once after constructor but before other functions.
-     */
-    public abstract void init(Desktop desktop, Client client);
 
     /** Triggers a brief animation to indicate the existence and location of an input event. */
     public abstract void showInputFeedback(DesktopView.InputFeedbackType feedbackToShow, Point pos);

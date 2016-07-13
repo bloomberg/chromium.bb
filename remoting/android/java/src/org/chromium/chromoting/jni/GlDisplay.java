@@ -4,12 +4,12 @@
 
 package org.chromium.chromoting.jni;
 
-import android.content.Context;
 import android.view.Surface;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromoting.AbstractDesktopView;
+import org.chromium.chromoting.Desktop;
 import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.Event;
 import org.chromium.chromoting.SizeChangedEventParameter;
@@ -159,14 +159,14 @@ public class GlDisplay {
     }
 
     @CalledByNative
-    private DesktopViewFactory createDesktopViewFactory() {
-        return new DesktopViewFactory() {
+    private void initializeClient(Client client) {
+        client.setDesktopViewFactory(new DesktopViewFactory() {
             @Override
-            public AbstractDesktopView createDesktopView(Context context) {
+            public AbstractDesktopView createDesktopView(Desktop desktop, Client client) {
                 // UNIMPLEMENTED.
                 return null;
             }
-        };
+        });
     }
 
     @CalledByNative

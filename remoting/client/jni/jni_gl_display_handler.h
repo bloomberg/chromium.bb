@@ -26,8 +26,9 @@ class JniGlDisplayHandler : public DisplayUpdaterFactory {
   JniGlDisplayHandler(ChromotingJniRuntime* runtime);
   ~JniGlDisplayHandler() override;
 
-  base::android::ScopedJavaLocalRef<jobject> CreateDesktopViewFactory();
-
+  // Sets the DesktopViewFactory for the Java client.
+  void InitializeClient(
+      const base::android::JavaRef<jobject>& java_client);
   // DisplayUpdaterFactory overrides.
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub() override;
   std::unique_ptr<protocol::VideoRenderer> CreateVideoRenderer() override;

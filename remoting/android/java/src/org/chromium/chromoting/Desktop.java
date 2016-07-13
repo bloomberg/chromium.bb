@@ -105,11 +105,10 @@ public class Desktop
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
 
-        AbstractDesktopView remoteHostDesktop = mClient.createDesktopView(this);
+        AbstractDesktopView remoteHostDesktop = mClient.createDesktopView(this, mClient);
         remoteHostDesktop.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         ((ViewGroup) findViewById(R.id.desktop_view_placeholder)).addView(remoteHostDesktop);
-        remoteHostDesktop.init(this, mClient);
         mSwitchToCardboardDesktopActivity = false;
 
         getSupportActionBar().setDisplayShowTitleEnabled(false);

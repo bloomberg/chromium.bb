@@ -39,12 +39,9 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
     private final TouchInputHandler mInputHandler;
 
     /** The parent Desktop activity. */
-    private Desktop mDesktop;
+    private final Desktop mDesktop;
 
-    /** The Client connection, used to inject input and fetch the video frames. */
-    private Client mClient;
-
-    private Display mDisplay;
+    private final Display mDisplay;
 
 
     // Flag to prevent multiple repaint requests from being backed up. Requests for repainting will
@@ -72,34 +69,26 @@ public class DesktopView extends AbstractDesktopView implements SurfaceHolder.Ca
     /** Whether the TouchInputHandler has requested animation to be performed. */
     private boolean mInputAnimationRunning = false;
 
-    public DesktopView(Context context, Display display) {
-        super(context);
-
+    public DesktopView(Display display, Desktop desktop, Client client) {
+        super(desktop);
         Preconditions.notNull(display);
+        Preconditions.notNull(desktop);
+        Preconditions.notNull(client);
         mDisplay = display;
+        mDesktop = desktop;
 
         // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
         setFocusableInTouchMode(true);
 
         mRenderData = new RenderData();
-        mInputHandler = new TouchInputHandler(this, context, mRenderData);
+        mInputHandler = new TouchInputHandler(this, desktop, mRenderData);
+        mInputHandler.init(desktop, new InputEventSender(client));
 
         mRepaintPending = false;
 
         getHolder().addCallback(this);
 
         attachRedrawCallback();
-    }
-
-    @Override
-    public void init(Desktop desktop, Client client) {
-        Preconditions.isNull(mDesktop);
-        Preconditions.isNull(mClient);
-        Preconditions.notNull(desktop);
-        Preconditions.notNull(client);
-        mDesktop = desktop;
-        mClient = client;
-        mInputHandler.init(desktop, new InputEventSender(client));
     }
 
     public Event<PaintEventParameter> onPaint() {

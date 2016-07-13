@@ -11,6 +11,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chromoting.AbstractDesktopView;
 import org.chromium.chromoting.CapabilityManager;
+import org.chromium.chromoting.Desktop;
 import org.chromium.chromoting.DesktopViewFactory;
 import org.chromium.chromoting.InputStub;
 import org.chromium.chromoting.Preconditions;
@@ -45,20 +46,20 @@ public class Client implements InputStub {
     }
 
     /**
-     * Sets the desktop view factory. Called by the native code when the connection starts.
+     * Sets the desktop view factory to be used by {@link Client#createDesktopView(Context)}.
      * @param factory The factory to create implementation-dependent desktop view.
      */
-    @CalledByNative
-    private void setDesktopViewFactory(DesktopViewFactory factory) {
+    public void setDesktopViewFactory(DesktopViewFactory factory) {
         mDesktopViewFactory = factory;
     }
 
     /**
-     * Creates an implementation specific desktop view.
+     * Creates an implementation specific {@link AbstractDesktopView} using the
+     * {@link DesktopViewFactory} set by {@link Client#setDesktopViewFactory(DesktopViewFactory)}.
      */
-    public AbstractDesktopView createDesktopView(Context context) {
+    public AbstractDesktopView createDesktopView(Desktop desktop, Client client) {
         Preconditions.notNull(mDesktopViewFactory);
-        return mDesktopViewFactory.createDesktopView(context);
+        return mDesktopViewFactory.createDesktopView(desktop, client);
     }
 
     // Suppress FindBugs warning, since |sClient| is only used on the UI thread.

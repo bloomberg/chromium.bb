@@ -4,7 +4,7 @@
 
 package org.chromium.chromoting;
 
-import android.content.Context;
+import org.chromium.chromoting.jni.Client;
 
 /**
  * Interface for creating a implementation specific desktop view.
@@ -14,5 +14,5 @@ public interface DesktopViewFactory {
      * Creates an uninitialized implementation specific desktop view. Initializing and adding the
      * view should done separately.
      */
-    AbstractDesktopView createDesktopView(Context context);
+    AbstractDesktopView createDesktopView(Desktop desktop, Client client);
 }

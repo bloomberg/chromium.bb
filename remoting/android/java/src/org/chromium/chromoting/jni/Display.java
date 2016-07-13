@@ -4,7 +4,6 @@
 
 package org.chromium.chromoting.jni;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Looper;
@@ -13,6 +12,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromoting.AbstractDesktopView;
+import org.chromium.chromoting.Desktop;
 import org.chromium.chromoting.DesktopView;
 import org.chromium.chromoting.DesktopViewFactory;
 
@@ -170,13 +170,13 @@ public class Display {
     }
 
     @CalledByNative
-    private DesktopViewFactory createDesktopViewFactory() {
-        return new DesktopViewFactory() {
+    private void initializeClient(Client client) {
+        client.setDesktopViewFactory(new DesktopViewFactory() {
             @Override
-            public AbstractDesktopView createDesktopView(Context context) {
-                return new DesktopView(context, Display.this);
+            public AbstractDesktopView createDesktopView(Desktop desktop, Client client) {
+                return new DesktopView(Display.this, desktop, client);
             }
-        };
+        });
     }
 
     @CalledByNative
