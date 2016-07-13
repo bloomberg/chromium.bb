@@ -30,7 +30,7 @@ class ArcUserDataService : public ArcService,
   // ArcBridgeService::Observer:
   // Called whenever the arc bridge is stopped to potentially remove data if
   // the user has not opted in.
-  void OnBridgeStopped() override;
+  void OnBridgeStopped(ArcBridgeService::StopReason reason) override;
 
  private:
   base::ThreadChecker thread_checker_;

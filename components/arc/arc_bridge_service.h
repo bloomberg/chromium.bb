@@ -22,7 +22,6 @@ class CommandLine;
 
 namespace arc {
 
-class ArcBridgeBootstrap;
 class ArcBridgeTest;
 
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
@@ -30,12 +29,26 @@ class ArcBridgeTest;
 // communication channel (the ARC bridge) used to send and receive messages.
 class ArcBridgeService : public mojom::ArcBridgeHost {
  public:
+  // Describes the reason the bridge is stopped.
+  enum class StopReason {
+    // ARC instance has been gracefully shut down.
+    SHUTDOWN,
+
+    // Errors occurred during the ARC instance boot. This includes any failures
+    // before the instance is actually attempted to be started, and also
+    // failures on bootstrapping IPC channels with Android.
+    GENERIC_BOOT_FAILURE,
+
+    // ARC instance has crashed.
+    CRASH,
+  };
+
   // Notifies life cycle events of ArcBridgeService.
   class Observer {
    public:
     // Called whenever the state of the bridge has changed.
     virtual void OnBridgeReady() {}
-    virtual void OnBridgeStopped() {}
+    virtual void OnBridgeStopped(StopReason reason) {}
 
     // Called whenever ARC's availability has changed for this system.
     virtual void OnAvailableChanged(bool available) {}
@@ -195,6 +208,11 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   // Changes the current availability and notifies all observers.
   void SetAvailable(bool availability);
 
+  // Sets the reason the bridge is stopped. This function must be always called
+  // before SetState(State::STOPPED) to report a correct reason with
+  // Observer::OnBridgeStopped().
+  void SetStopReason(StopReason stop_reason);
+
   base::ObserverList<Observer>& observer_list() { return observer_list_; }
 
   bool CalledOnValidThread();
@@ -208,6 +226,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
 
   // Instance holders.
   InstanceHolder<mojom::AppInstance> app_;
@@ -239,6 +258,9 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
 
   // The current state of the bridge.
   ArcBridgeService::State state_;
+
+  // The reason the bridge is stopped.
+  StopReason stop_reason_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcBridgeService> weak_factory_;

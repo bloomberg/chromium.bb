@@ -73,11 +73,11 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   //   AcceptInstanceConnection() -> OnInstanceConnected() ->
   // READY
   //
-  // When Stop() is called from any state, either because an operation
-  // resulted in an error or because the user is logging out:
+  // When Stop() or AbortBoot() is called from any state, either because an
+  // operation resulted in an error or because the user is logging out:
   //
   // (any)
-  //   Stop() ->
+  //   Stop()/AbortBoot() ->
   // STOPPING
   //   StopInstance() ->
   // STOPPED
@@ -86,6 +86,9 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   //   READY -> STOPPING -> STOPPED
   // and then restarted:
   //   STOPPED -> SOCKET_CREATING -> ... -> READY).
+  //
+  // Note: Order of constants below matters. Please make sure to sort them
+  // in chronological order.
   enum class State {
     // ARC is not currently running.
     STOPPED,
@@ -114,6 +117,10 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   void Stop() override;
 
  private:
+  // Aborts ARC instance boot. This is called from various state-machine
+  // functions when they encounter an error during boot.
+  void AbortBoot(ArcBridgeService::StopReason reason);
+
   // Creates the UNIX socket on the bootstrap thread and then processes its
   // file descriptor.
   static base::ScopedFD CreateSocket();
@@ -134,6 +141,10 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
 
   // The state of the bootstrap connection.
   State state_ = State::STOPPED;
+
+  // The reason the ARC instance is stopped.
+  ArcBridgeService::StopReason stop_reason_ =
+      ArcBridgeService::StopReason::SHUTDOWN;
 
   base::ThreadChecker thread_checker_;
 
@@ -168,6 +179,7 @@ void ArcBridgeBootstrapImpl::Start() {
     VLOG(1) << "Start() called when instance is not stopped";
     return;
   }
+  stop_reason_ = ArcBridgeService::StopReason::SHUTDOWN;
   SetState(State::SOCKET_CREATING);
   base::PostTaskAndReplyWithResult(
       base::WorkerPool::GetTaskRunner(true).get(), FROM_HERE,
@@ -236,7 +248,7 @@ void ArcBridgeBootstrapImpl::OnSocketCreated(base::ScopedFD socket_fd) {
 
   if (!socket_fd.is_valid()) {
     LOG(ERROR) << "ARC: Error creating socket";
-    Stop();
+    AbortBoot(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
     return;
   }
 
@@ -261,7 +273,7 @@ void ArcBridgeBootstrapImpl::OnInstanceStarted(base::ScopedFD socket_fd,
     // Roll back the state to SOCKET_CREATING to avoid sending the D-Bus signal
     // to stop the failed instance.
     SetState(State::SOCKET_CREATING);
-    Stop();
+    AbortBoot(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
     return;
   }
   if (state_ != State::STARTING) {
@@ -318,12 +330,14 @@ void ArcBridgeBootstrapImpl::OnInstanceConnected(base::ScopedFD fd) {
   }
   if (!fd.is_valid()) {
     LOG(ERROR) << "Invalid handle";
+    AbortBoot(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
     return;
   }
   mojo::ScopedMessagePipeHandle server_pipe = mojo::edk::CreateMessagePipe(
       mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(fd.release())));
   if (!server_pipe.is_valid()) {
     LOG(ERROR) << "Invalid pipe";
+    AbortBoot(ArcBridgeService::StopReason::GENERIC_BOOT_FAILURE);
     return;
   }
   SetState(State::READY);
@@ -339,11 +353,10 @@ void ArcBridgeBootstrapImpl::Stop() {
     VLOG(1) << "Stop() called when ARC is not running";
     return;
   }
-  if (state_ == State::SOCKET_CREATING) {
+  if (state_ < State::STARTING) {
     // This was stopped before the D-Bus command to start the instance. Skip
     // the D-Bus command to stop it.
-    SetState(State::STOPPING);
-    ArcInstanceStopped(true);
+    SetState(State::STOPPED);
     return;
   }
   SetState(State::STOPPING);
@@ -354,13 +367,26 @@ void ArcBridgeBootstrapImpl::Stop() {
       base::Bind(&DoNothingInstanceStopped));
 }
 
+void ArcBridgeBootstrapImpl::AbortBoot(ArcBridgeService::StopReason reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(reason != ArcBridgeService::StopReason::SHUTDOWN);
+  // In case of multiple errors, report the first one.
+  if (stop_reason_ == ArcBridgeService::StopReason::SHUTDOWN) {
+    stop_reason_ = reason;
+  }
+  Stop();
+}
+
 void ArcBridgeBootstrapImpl::ArcInstanceStopped(bool clean) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!clean)
+  if (!clean) {
     LOG(ERROR) << "ARC instance crashed";
-  DCHECK(delegate_);
+    // In case of multiple errors, report the first one.
+    if (stop_reason_ == ArcBridgeService::StopReason::SHUTDOWN) {
+      stop_reason_ = ArcBridgeService::StopReason::CRASH;
+    }
+  }
   SetState(State::STOPPED);
-  delegate_->OnStopped();
 }
 
 void ArcBridgeBootstrapImpl::SetState(State state) {
@@ -369,6 +395,10 @@ void ArcBridgeBootstrapImpl::SetState(State state) {
   DCHECK(state_ != state);
   state_ = state;
   VLOG(2) << "State: " << static_cast<uint32_t>(state_);
+  if (state_ == State::STOPPED) {
+    DCHECK(delegate_);
+    delegate_->OnStopped(stop_reason_);
+  }
 }
 
 }  // namespace

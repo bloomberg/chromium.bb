@@ -44,6 +44,7 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
  private:
   friend class ArcBridgeTest;
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
 
   // If all pre-requisites are true (ARC is available, it has been enabled, and
   // the session has started), and ARC is stopped, start ARC. If ARC is running
@@ -55,7 +56,7 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
 
   // ArcBridgeBootstrap::Delegate:
   void OnConnectionEstablished(mojom::ArcBridgeInstancePtr instance) override;
-  void OnStopped() override;
+  void OnStopped(StopReason reason) override;
 
   // Called when the bridge channel is closed. This typically only happens when
   // the ARC instance crashes. This is not called during shutdown.

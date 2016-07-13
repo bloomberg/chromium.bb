@@ -124,7 +124,7 @@ class ArcAuthService : public ArcService,
   void RemoveObserver(Observer* observer);
 
   // ArcBridgeService::Observer:
-  void OnBridgeStopped() override;
+  void OnBridgeStopped(ArcBridgeService::StopReason reason) override;
 
   // InstanceHolder<mojom::AuthInstance>::Observer:
   void OnInstanceReady() override;

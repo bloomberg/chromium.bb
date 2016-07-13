@@ -31,7 +31,7 @@ ArcUserDataService::~ArcUserDataService() {
   arc_bridge_service()->RemoveObserver(this);
 }
 
-void ArcUserDataService::OnBridgeStopped() {
+void ArcUserDataService::OnBridgeStopped(ArcBridgeService::StopReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   const AccountId& account_id =
       user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId();

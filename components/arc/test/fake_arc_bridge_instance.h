@@ -17,7 +17,7 @@ class FakeArcBridgeInstance : public mojom::ArcBridgeInstance {
   class Delegate {
    public:
     virtual ~Delegate() = default;
-    virtual void OnCrashed() = 0;
+    virtual void OnStopped(ArcBridgeService::StopReason reason) = 0;
   };
 
   FakeArcBridgeInstance();
@@ -41,8 +41,8 @@ class FakeArcBridgeInstance : public mojom::ArcBridgeInstance {
   // The number of times Init() has been called.
   int init_calls() const { return init_calls_; }
 
-  // Simulates a crash by calling Stop() on the ArcBridgeBoostrap.
-  void SimulateCrash();
+  // Stops the instance.
+  void Stop(ArcBridgeService::StopReason reason);
 
  private:
   Delegate* delegate_ = nullptr;

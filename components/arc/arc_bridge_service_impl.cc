@@ -78,6 +78,7 @@ void ArcBridgeServiceImpl::PrerequisitesChanged() {
     if (!available() || !session_started_)
       return;
     VLOG(0) << "Prerequisites met, starting ARC";
+    SetStopReason(StopReason::SHUTDOWN);
     SetState(State::CONNECTING);
     bootstrap_->Start();
   } else {
@@ -136,8 +137,9 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
   SetState(State::READY);
 }
 
-void ArcBridgeServiceImpl::OnStopped() {
+void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
+  SetStopReason(stop_reason);
   SetState(State::STOPPED);
   VLOG(0) << "ARC stopped";
   if (reconnect_) {

@@ -28,11 +28,13 @@ void FakeArcBridgeBootstrap::Start() {
 void FakeArcBridgeBootstrap::Stop() {
   DCHECK(delegate_);
   instance_->Unbind();
-  delegate_->OnStopped();
+  delegate_->OnStopped(ArcBridgeService::StopReason::SHUTDOWN);
 }
 
-void FakeArcBridgeBootstrap::OnCrashed() {
-  Stop();
+void FakeArcBridgeBootstrap::OnStopped(ArcBridgeService::StopReason reason) {
+  DCHECK(delegate_);
+  instance_->Unbind();
+  delegate_->OnStopped(reason);
 }
 
 }  // namespace arc

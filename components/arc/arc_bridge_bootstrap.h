@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/arc_bridge.mojom.h"
 
 namespace arc {
@@ -21,9 +22,12 @@ class ArcBridgeBootstrap {
  public:
   class Delegate {
    public:
+    // Called when the connection with ARC instance has been established.
     virtual void OnConnectionEstablished(
         mojom::ArcBridgeInstancePtr instance_ptr) = 0;
-    virtual void OnStopped() = 0;
+
+    // Called when ARC instance is stopped.
+    virtual void OnStopped(ArcBridgeService::StopReason reason) = 0;
   };
 
   // Creates a default instance of ArcBridgeBootstrap.

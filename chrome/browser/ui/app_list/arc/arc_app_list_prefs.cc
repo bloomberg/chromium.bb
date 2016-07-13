@@ -237,7 +237,7 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
   bridge_service->app()->AddObserver(this);
   bridge_service->AddObserver(this);
   if (!bridge_service->ready())
-    OnBridgeStopped();
+    OnBridgeStopped(arc::ArcBridgeService::StopReason::SHUTDOWN);
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
@@ -563,7 +563,8 @@ void ArcAppListPrefs::OnOptInEnabled(bool enabled) {
     RemoveAllApps();
 }
 
-void ArcAppListPrefs::OnBridgeStopped() {
+void ArcAppListPrefs::OnBridgeStopped(
+    arc::ArcBridgeService::StopReason reason) {
   DisableAllApps();
 }
 

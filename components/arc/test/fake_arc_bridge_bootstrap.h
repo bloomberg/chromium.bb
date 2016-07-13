@@ -24,7 +24,7 @@ class FakeArcBridgeBootstrap : public ArcBridgeBootstrap,
 
  private:
   // FakeArcBridgeInstance::Delegate:
-  void OnCrashed() override;
+  void OnStopped(ArcBridgeService::StopReason reason) override;
 
   // Owned by the caller.
   FakeArcBridgeInstance* instance_;

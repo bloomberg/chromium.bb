@@ -209,7 +209,7 @@ class ArcAppListPrefs
   ArcAppListPrefs(const base::FilePath& base_path, PrefService* prefs);
 
   // arc::ArcBridgeService::Observer:
-  void OnBridgeStopped() override;
+  void OnBridgeStopped(arc::ArcBridgeService::StopReason reason) override;
 
   // arc::InstanceHolder<arc::mojom::AppInstance>::Observer:
   void OnInstanceReady() override;
