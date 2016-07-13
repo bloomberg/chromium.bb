@@ -9,12 +9,6 @@
   *;
 }
 
-# Keep all the primitive and String constants for for the following two packages.
--keepclassmembers class com.google.android.apps.chrome.**,org.chromium.** {
-  !private static final % *;
-  !private static final java.lang.String *;
-}
-
 # Fragments are loaded using reflection via Fragment.instantiate(Context,String)
 # This can be improved upon - see crbug.com/622023.
 -keep public class com.google.android.apps.chrome** extends android.app.Fragment
