@@ -253,6 +253,9 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(int index, int tile_type) {
   // function to work with asynchronous UI.
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
+
+  UMA_HISTOGRAM_ENUMERATION("NewTabPage.MostVisited", index, num_sites_);
+
   std::string histogram = base::StringPrintf(
       "NewTabPage.MostVisited.%s",
       GetSourceHistogramName(current_suggestions_[index].source).c_str());
@@ -502,8 +505,6 @@ void MostVisitedSites::NotifyMostVisitedURLsObserver() {
   if (received_most_visited_sites_ && received_popular_sites_ &&
       !recorded_uma_) {
     RecordImpressionUMAMetrics();
-    UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles",
-                                current_suggestions_.size());
     recorded_uma_ = true;
   }
 
@@ -530,7 +531,13 @@ void MostVisitedSites::OnPopularSitesAvailable(bool success) {
 }
 
 void MostVisitedSites::RecordImpressionUMAMetrics() {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("NewTabPage.NumberOfTiles",
+                              current_suggestions_.size());
+
   for (size_t i = 0; i < current_suggestions_.size(); i++) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "NewTabPage.SuggestionsImpression", static_cast<int>(i), num_sites_);
+
     std::string histogram = base::StringPrintf(
         "NewTabPage.SuggestionsImpression.%s",
         GetSourceHistogramName(current_suggestions_[i].source).c_str());

@@ -229,9 +229,6 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   void OnPopularSitesAvailable(bool success);
 
-  // Records thumbnail-related UMA histogram metrics.
-  void RecordThumbnailUMAMetrics();
-
   // Records UMA histogram metrics related to the number of impressions.
   void RecordImpressionUMAMetrics();
 
