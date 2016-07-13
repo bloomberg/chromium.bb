@@ -25,6 +25,7 @@
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
 #include <cstring>
 #include <iosfwd>
@@ -205,6 +206,13 @@ template<> struct DefaultHash<AtomicString> {
 // Pretty printer for gtest and base/logging.*.  It prepends and appends
 // double-quotes, and escapes chracters other than ASCII printables.
 WTF_EXPORT std::ostream& operator<<(std::ostream&, const AtomicString&);
+
+inline StringView::StringView(const AtomicString& string, unsigned offset, unsigned length)
+    : StringView(string.impl(), offset, length) {}
+inline StringView::StringView(const AtomicString& string, unsigned offset)
+    : StringView(string.impl(), offset) {}
+inline StringView::StringView(const AtomicString& string)
+    : StringView(string.impl()) {}
 
 } // namespace WTF
 

@@ -10,13 +10,14 @@
 #if DCHECK_IS_ON()
 #include "wtf/RefPtr.h"
 #endif
-#include "wtf/text/AtomicString.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/text/Unicode.h"
-#include "wtf/text/WTFString.h"
 #include <cstring>
 
 namespace WTF {
+
+class AtomicString;
+class String;
 
 // A string like object that wraps either an 8bit or 16bit byte sequence
 // and keeps track of the length and the type, it does NOT own the bytes.
@@ -42,25 +43,21 @@ public:
     StringView(StringImpl*, unsigned offset);
     StringView(StringImpl*, unsigned offset, unsigned length);
 
-    // From a String:
-    StringView(const String& string, unsigned offset, unsigned length)
-        : StringView(string.impl(), offset, length) {}
-    StringView(const String& string, unsigned offset)
-        : StringView(string.impl(), offset) {}
-    StringView(const String& string)
-        : StringView(string.impl()) {}
+    // From an String, implemented in String.h
+    inline StringView(const String&, unsigned offset, unsigned length);
+    inline StringView(const String&, unsigned offset);
+    inline StringView(const String&);
 
-    // From an AtomicString:
-    StringView(const AtomicString& string, unsigned offset, unsigned length)
-        : StringView(string.impl(), offset, length) {}
-    StringView(const AtomicString& string, unsigned offset)
-        : StringView(string.impl(), offset) {}
-    StringView(const AtomicString& string)
-        : StringView(string.impl()) {}
+    // From an AtomicString, implemented in AtomicString.h
+    inline StringView(const AtomicString&, unsigned offset, unsigned length);
+    inline StringView(const AtomicString&, unsigned offset);
+    inline StringView(const AtomicString&);
 
     // From a literal string or LChar buffer:
     StringView(const LChar* chars, unsigned length)
-        : StringView(reinterpret_cast<const void*>(chars), length, true) {}
+        : m_impl(StringImpl::empty())
+        , m_characters8(chars)
+        , m_length(length) {}
     StringView(const char* chars, unsigned length)
         : StringView(reinterpret_cast<const LChar*>(chars), length) {}
     StringView(const LChar* chars)
@@ -70,14 +67,10 @@ public:
 
     // From a wide literal string or UChar buffer.
     StringView(const UChar* chars, unsigned length)
-        : StringView(reinterpret_cast<const void*>(chars), length, false) {}
-    StringView(const UChar* chars);
-
-    // From a byte pointer.
-    StringView(const void* bytes, unsigned length, bool is8Bit)
-        : m_impl(is8Bit ? StringImpl::empty() : StringImpl::empty16Bit())
-        , m_bytes(bytes)
+        : m_impl(StringImpl::empty16Bit())
+        , m_characters16(chars)
         , m_length(length) {}
+    StringView(const UChar* chars);
 
 #if DCHECK_IS_ON()
     ~StringView();

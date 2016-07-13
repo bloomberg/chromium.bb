@@ -94,7 +94,9 @@ public:
     CSSParserTokenType type() const { return static_cast<CSSParserTokenType>(m_type); }
     StringView value() const
     {
-        return StringView(m_valueDataCharRaw, m_valueLength, m_valueIs8Bit);
+        if (m_valueIs8Bit)
+            return StringView(reinterpret_cast<const LChar*>(m_valueDataCharRaw), m_valueLength);
+        return StringView(reinterpret_cast<const UChar*>(m_valueDataCharRaw), m_valueLength);
     }
 
     UChar delimiter() const;

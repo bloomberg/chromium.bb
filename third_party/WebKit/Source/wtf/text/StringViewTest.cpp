@@ -289,20 +289,6 @@ TEST(StringViewTest, ConstructionLiteral16)
     EXPECT_EQ(String("12"), StringView(kChars16, 2).toString());
 }
 
-TEST(StringViewTest, ConstructionRawBytes)
-{
-    // StringView(const void* bytes, unsigned length, bool is8Bit);
-    StringView view8(reinterpret_cast<const void*>(kChars), 2, true);
-    ASSERT_TRUE(view8.is8Bit());
-    EXPECT_EQ(2u, view8.length());
-    EXPECT_EQ("12", view8);
-
-    StringView view16(reinterpret_cast<const void*>(kChars16), 3, false);
-    ASSERT_FALSE(view16.is8Bit());
-    EXPECT_EQ(3u, view16.length());
-    EXPECT_EQ("123", view16);
-}
-
 TEST(StringViewTest, IsEmpty)
 {
     EXPECT_FALSE(StringView(kChars).isEmpty());
