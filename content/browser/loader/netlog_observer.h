@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"
+#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "content/public/common/resource_devtools_info.h"
 #include "net/log/net_log.h"
 
@@ -34,9 +36,9 @@ class NetLogObserver : public net::NetLog::ThreadSafeObserver {
   // net::NetLog::ThreadSafeObserver implementation:
   void OnAddEntry(const net::NetLog::Entry& entry) override;
 
-  void OnAddURLRequestEntry(const net::NetLog::Entry& entry);
+  // The NetLog instance is passed in via the |net_log| parameter.
+  static void Attach(net::NetLog* net_log);
 
-  static void Attach();
   static void Detach();
 
   // Must be called on the IO thread. May return NULL if no observers
@@ -52,9 +54,16 @@ class NetLogObserver : public net::NetLog::ThreadSafeObserver {
 
   ResourceInfo* GetResourceInfo(uint32_t id);
 
+  void OnAddURLRequestEntry(const net::NetLog::Entry& entry);
+
   typedef base::hash_map<uint32_t, scoped_refptr<ResourceInfo>>
       RequestToInfoMap;
   RequestToInfoMap request_to_info_;
+
+  // Used to validate that calls to the NetLogObserver methods occur on the
+  // thread it was instantiated on. Typically the IO thread.
+  static base::LazyInstance<std::unique_ptr<base::ThreadChecker>>::Leaky
+      io_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(NetLogObserver);
 };

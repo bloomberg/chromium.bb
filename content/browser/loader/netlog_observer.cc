@@ -9,8 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -22,7 +20,12 @@
 namespace content {
 const size_t kMaxNumEntries = 1000;
 
+// static
 NetLogObserver* NetLogObserver::instance_ = NULL;
+
+// static
+base::LazyInstance<std::unique_ptr<base::ThreadChecker>>::Leaky
+    NetLogObserver::io_thread_checker_;
 
 NetLogObserver::NetLogObserver() {}
 
@@ -36,8 +39,10 @@ NetLogObserver::ResourceInfo* NetLogObserver::GetResourceInfo(uint32_t id) {
 }
 
 void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
+  DCHECK(io_thread_checker_.Get().get());
+
   // The events that the Observer is interested in only occur on the IO thread.
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO))
+  if (!io_thread_checker_.Get()->CalledOnValidThread())
     return;
 
   if (entry.source().type == net::NetLog::SOURCE_URL_REQUEST)
@@ -45,8 +50,6 @@ void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
 }
 
 void NetLogObserver::OnAddURLRequestEntry(const net::NetLog::Entry& entry) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
   bool is_begin = entry.phase() == net::NetLog::PHASE_BEGIN;
   bool is_end = entry.phase() == net::NetLog::PHASE_END;
 
@@ -153,9 +156,9 @@ void NetLogObserver::OnAddURLRequestEntry(const net::NetLog::Entry& entry) {
   }
 }
 
-void NetLogObserver::Attach() {
+void NetLogObserver::Attach(net::NetLog* net_log) {
   DCHECK(!instance_);
-  net::NetLog* net_log = GetContentClient()->browser()->GetNetLog();
+  io_thread_checker_.Get().reset(new base::ThreadChecker());
   if (net_log) {
     instance_ = new NetLogObserver();
     net_log->DeprecatedAddObserver(
@@ -164,8 +167,9 @@ void NetLogObserver::Attach() {
 }
 
 void NetLogObserver::Detach() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
+  DCHECK(io_thread_checker_.Get().get() &&
+         io_thread_checker_.Get()->CalledOnValidThread());
+  io_thread_checker_.Get().reset();
   if (instance_) {
     // Safest not to do this in the destructor to maintain thread safety across
     // refactorings.
@@ -176,7 +180,10 @@ void NetLogObserver::Detach() {
 }
 
 NetLogObserver* NetLogObserver::GetInstance() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!io_thread_checker_.Get().get())
+    return nullptr;
+
+  DCHECK(io_thread_checker_.Get()->CalledOnValidThread());
 
   return instance_;
 }

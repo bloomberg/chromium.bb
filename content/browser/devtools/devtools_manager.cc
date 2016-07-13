@@ -34,7 +34,8 @@ void DevToolsManager::AgentHostStateChanged(
       BrowserThread::PostTask(
           BrowserThread::IO,
           FROM_HERE,
-          base::Bind(&NetLogObserver::Attach));
+          base::Bind(&NetLogObserver::Attach,
+                     GetContentClient()->browser()->GetNetLog()));
     }
     ++attached_hosts_count_;
   } else {
