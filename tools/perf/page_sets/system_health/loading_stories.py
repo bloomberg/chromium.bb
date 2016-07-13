@@ -2,81 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
 import sys
+
+from page_sets.system_health import platforms
+from page_sets.system_health import system_health_story
 
 from page_sets.login_helpers import dropbox_login
 from page_sets.login_helpers import google_login
 
-from telemetry.core import discover
-from telemetry.page import page
 
-
-_ALL_PLATFORMS = frozenset({'desktop', 'mobile'})
-_DESKTOP_ONLY = frozenset({'desktop'})
-_MOBILE_ONLY = frozenset({'mobile'})
-_NO_PLATFORMS = frozenset()
-
-
-_DUMP_WAIT_TIME = 3
-
-
-class _SinglePageStory(page.Page):
+class _LoadingStory(system_health_story.SystemHealthStory):
   """Abstract base class for single-page System Health user stories."""
-
-  # The full name of a single page story has the form CASE:GROUP:PAGE (e.g.
-  # 'load:search:google').
-  NAME = NotImplemented
-  URL = NotImplemented
-  SUPPORTED_PLATFORMS = _ALL_PLATFORMS
-
-  def __init__(self, story_set, take_memory_measurement):
-    case, group, _ = self.NAME.split(':')
-    super(_SinglePageStory, self).__init__(
-        page_set=story_set, name=self.NAME, url=self.URL,
-        credentials_path='../data/credentials.json',
-        grouping_keys={'case': case, 'group': group})
-    self._take_memory_measurement = take_memory_measurement
-
-  def _Measure(self, action_runner):
-    if not self._take_memory_measurement:
-      return
-    # TODO(petrcermak): This method is essentially the same as
-    # MemoryHealthPage._TakeMemoryMeasurement() in memory_health_story.py.
-    # Consider sharing the common code.
-    action_runner.Wait(_DUMP_WAIT_TIME)
-    action_runner.ForceGarbageCollection()
-    action_runner.Wait(_DUMP_WAIT_TIME)
-    tracing_controller = action_runner.tab.browser.platform.tracing_controller
-    if not tracing_controller.is_tracing_running:
-      return  # Tracing is not running, e.g., when recording a WPR archive.
-    if not action_runner.tab.browser.DumpMemory():
-      logging.error('Unable to get a memory dump for %s.', self.name)
-
-  def _Login(self, action_runner):
-    pass
-
-  def _DidLoadDocument(self, action_runner):
-    pass
-
-  def RunNavigateSteps(self, action_runner):
-    self._Login(action_runner)
-    super(_SinglePageStory, self).RunNavigateSteps(action_runner)
-
-  def RunPageInteractions(self, action_runner):
-    action_runner.tab.WaitForDocumentReadyStateToBeComplete()
-    self._DidLoadDocument(action_runner)
-    self._Measure(action_runner)
+  pass
 
 
 def IterAllStoryClasses():
-  # Sort the classes by their names so that their order is stable and
-  # deterministic.
-  for unused_cls_name, cls in sorted(discover.DiscoverClassesInModule(
-      module=sys.modules[__name__],
-      base_class=_SinglePageStory,
-      index_by_class_name=True).iteritems()):
-    yield cls
+  return system_health_story.IterAllStoryClasses(
+      sys.modules[__name__], _LoadingStory)
 
 
 ################################################################################
@@ -84,45 +26,45 @@ def IterAllStoryClasses():
 ################################################################################
 
 
-class LoadGoogleStory(_SinglePageStory):
+class LoadGoogleStory(_LoadingStory):
   NAME = 'load:search:google'
   URL = 'https://www.google.com/#hl=en&q=science'
 
 
-class LoadBaiduStory(_SinglePageStory):
+class LoadBaiduStory(_LoadingStory):
   NAME = 'load:search:baidu'
   URL = 'https://www.baidu.com/s?word=google'
 
 
-class LoadYahooStory(_SinglePageStory):
+class LoadYahooStory(_LoadingStory):
   NAME = 'load:search:yahoo'
   URL = 'https://search.yahoo.com/search;_ylt=?p=google'
 
 
-class LoadAmazonStory(_SinglePageStory):
+class LoadAmazonStory(_LoadingStory):
   NAME = 'load:search:amazon'
   URL = 'https://www.amazon.com/s/?field-keywords=nexus'
 
 
-class LoadTaobaoDesktopStory(_SinglePageStory):
+class LoadTaobaoDesktopStory(_LoadingStory):
   NAME = 'load:search:taobao'
   URL = 'https://world.taobao.com/'
-  SUPPORTED_PLATFORMS = _DESKTOP_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadTaobaoMobileStory(_SinglePageStory):
+class LoadTaobaoMobileStory(_LoadingStory):
   NAME = 'load:search:taobao'
   # "ali_trackid" in the URL suppresses "Download app" interstitial.
   URL = 'http://m.intl.taobao.com/?ali_trackid'
-  SUPPORTED_PLATFORMS = _MOBILE_ONLY
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
-class LoadYandexStory(_SinglePageStory):
+class LoadYandexStory(_LoadingStory):
   NAME = 'load:search:yandex'
   URL = 'https://yandex.ru/touchsearch?text=science'
 
 
-class LoadEbayStory(_SinglePageStory):
+class LoadEbayStory(_LoadingStory):
   NAME = 'load:search:ebay'
   # Redirects to the "http://" version.
   URL = 'https://www.ebay.com/sch/i.html?_nkw=headphones'
@@ -133,38 +75,38 @@ class LoadEbayStory(_SinglePageStory):
 ################################################################################
 
 
-class LoadFacebookStory(_SinglePageStory):
+class LoadFacebookStory(_LoadingStory):
   # Using Facebook login often causes "404 Not Found" with WPR.
   NAME = 'load:social:facebook'
   URL = 'https://www.facebook.com/rihanna'
 
 
-class LoadTwitterStory(_SinglePageStory):
+class LoadTwitterStory(_LoadingStory):
   NAME = 'load:social:twitter'
   URL = 'https://www.twitter.com/justinbieber?skip_interstitial=true'
 
 
-class LoadVkStory(_SinglePageStory):
+class LoadVkStory(_LoadingStory):
   NAME = 'load:social:vk'
   URL = 'https://vk.com/sbeatles'
   # Due to the deterministic date injected by WPR (February 2008), the cookie
   # set by https://vk.com immediately expires, so the page keeps refreshing
   # indefinitely on mobile
   # (see https://github.com/chromium/web-page-replay/issues/71).
-  SUPPORTED_PLATFORMS = _DESKTOP_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadInstagramStory(_SinglePageStory):
+class LoadInstagramStory(_LoadingStory):
   NAME = 'load:social:instagram'
   URL = 'https://www.instagram.com/selenagomez/'
 
 
-class LoadPinterestStory(_SinglePageStory):
+class LoadPinterestStory(_LoadingStory):
   NAME = 'load:social:pinterest'
   URL = 'https://uk.pinterest.com/categories/popular/'
 
 
-class LoadTumblrStory(_SinglePageStory):
+class LoadTumblrStory(_LoadingStory):
   NAME = 'load:social:tumblr'
   # Redirects to the "http://" version.
   URL = 'https://50thousand.tumblr.com/'
@@ -175,40 +117,54 @@ class LoadTumblrStory(_SinglePageStory):
 ################################################################################
 
 
-class LoadBbcStory(_SinglePageStory):
+class LoadBbcStory(_LoadingStory):
   NAME = 'load:news:bbc'
   # Redirects to the "http://" version.
   URL = 'https://www.bbc.co.uk/news/world-asia-china-36189636'
 
 
-class LoadCnnStory(_SinglePageStory):
+class LoadCnnStory(_LoadingStory):
   NAME = 'load:news:cnn'
   # Using "https://" shows "Your connection is not private".
-  URL = (
-      'http://edition.cnn.com/2016/05/02/health/three-habitable-planets-earth-dwarf-star/index.html')
+  URL = 'http://edition.cnn.com'
 
 
-class LoadRedditDesktopStory(_SinglePageStory):
-  NAME = 'load:news:reddit'
-  URL = (
-      'https://www.reddit.com/r/AskReddit/comments/4hi90e/whats_your_best_wedding_horror_story/')
-  SUPPORTED_PLATFORMS = _DESKTOP_ONLY
+class LoadHackerNewsStory(_LoadingStory):
+  NAME = 'load:news:hackernews'
+  URL = 'https://news.ycombinator.com'
 
 
-class LoadRedditMobileStory(_SinglePageStory):
-  NAME = 'load:news:reddit'
-  URL = (
-      'https://m.reddit.com/r/AskReddit/comments/4hi90e/whats_your_best_wedding_horror_story/')
-  SUPPORTED_PLATFORMS = _MOBILE_ONLY
+class LoadNytimesDesktopStory(_LoadingStory):
+  NAME = 'load:news:nytimes'
+  URL = 'http://www.nytimes.com'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadQqMobileStory(_SinglePageStory):
+class LoadNytimesMobileStory(_LoadingStory):
+  NAME = 'load:news:nytimes'
+  URL = 'http://mobile.nytimes.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+
+class LoadQqMobileStory(_LoadingStory):
   NAME = 'load:news:qq'
   # Using "https://" hangs and shows "This site can't be reached".
-  URL = 'http://news.qq.com/a/20160503/003186.htm'
+  URL = 'http://news.qq.com'
 
 
-class LoadSohuStory(_SinglePageStory):
+class LoadRedditDesktopStory(_LoadingStory):
+  NAME = 'load:news:reddit'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+
+
+class LoadRedditMobileStory(_LoadingStory):
+  NAME = 'load:news:reddit'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+
+class LoadSohuStory(_LoadingStory):
   NAME = 'load:news:sohu'
   # Using "https://" leads to missing images and scripts on mobile (due to
   # mixed content).
@@ -216,10 +172,20 @@ class LoadSohuStory(_SinglePageStory):
   # The desktop page (http://news.sohu.com/20160503/n447433356.shtml) almost
   # always fails to completely load due to
   # https://github.com/chromium/web-page-replay/issues/74.
-  SUPPORTED_PLATFORMS = _MOBILE_ONLY
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 
-class LoadWikipediaStory(_SinglePageStory):
+class LoadWashingtonPostMobileStory(_LoadingStory):
+  NAME = 'load:news:washingtonpost'
+  URL = 'https://www.washingtonpost.com/pwa'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+
+  def _DidLoadDocument(self, action_runner):
+    # Close the popup window.
+    action_runner.ClickElement(selector='.close')
+
+
+class LoadWikipediaStory(_LoadingStory):
   NAME = 'load:news:wikipedia'
   URL = 'https://en.wikipedia.org/wiki/Science'
 
@@ -229,13 +195,13 @@ class LoadWikipediaStory(_SinglePageStory):
 ################################################################################
 
 
-class LoadYouTubeStory(_SinglePageStory):
+class LoadYouTubeStory(_LoadingStory):
   # No way to disable autoplay on desktop.
   NAME = 'load:media:youtube'
   URL = 'https://www.youtube.com/watch?v=QGfhS1hfTWw&autoplay=false'
 
 
-class LoadDailymotionStory(_SinglePageStory):
+class LoadDailymotionStory(_LoadingStory):
   # The side panel with related videos doesn't show on desktop due to
   # https://github.com/chromium/web-page-replay/issues/74.
   NAME = 'load:media:dailymotion'
@@ -243,24 +209,24 @@ class LoadDailymotionStory(_SinglePageStory):
       'https://www.dailymotion.com/video/x489k7d_street-performer-shows-off-slinky-skills_fun?autoplay=false')
 
 
-class LoadGoogleImagesStory(_SinglePageStory):
+class LoadGoogleImagesStory(_LoadingStory):
   NAME = 'load:media:google_images'
   URL = 'https://www.google.co.uk/search?tbm=isch&q=love'
 
 
-class LoadSoundCloudStory(_SinglePageStory):
+class LoadSoundCloudStory(_LoadingStory):
   # No way to disable autoplay on desktop. Album artwork doesn't load due to
   # https://github.com/chromium/web-page-replay/issues/73.
   NAME = 'load:media:soundcloud'
   URL = 'https://soundcloud.com/lifeofdesiigner/desiigner-panda'
 
 
-class Load9GagStory(_SinglePageStory):
+class Load9GagStory(_LoadingStory):
   NAME = 'load:media:9gag'
   URL = 'https://www.9gag.com/'
 
 
-class LoadFlickr(_SinglePageStory):
+class LoadFlickr(_LoadingStory):
   NAME = 'load:media:flickr'
   URL = 'https://www.flickr.com/photos/tags/farm'
 
@@ -277,16 +243,16 @@ class LoadFlickr(_SinglePageStory):
 ################################################################################
 
 
-class LoadDocsStory(_SinglePageStory):
+class LoadDocsStory(_LoadingStory):
   NAME = 'load:tools:docs'
   URL = (
       'https://docs.google.com/document/d/1GvzDP-tTLmJ0myRhUAfTYWs3ZUFilUICg8psNHyccwQ/edit?usp=sharing')
 
 
-class _LoadGmailBaseStory(_SinglePageStory):
+class _LoadGmailBaseStory(_LoadingStory):
   NAME = 'load:tools:gmail'
   URL = 'https://mail.google.com/mail/'
-  SUPPORTED_PLATFORMS = _NO_PLATFORMS
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
   def _Login(self, action_runner):
     google_login.LoginGoogleAccount(action_runner, 'googletest',
@@ -304,7 +270,7 @@ class _LoadGmailBaseStory(_SinglePageStory):
 
 
 class LoadGmailDesktopStory(_LoadGmailBaseStory):
-  SUPPORTED_PLATFORMS = _DESKTOP_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
   def _DidLoadDocument(self, action_runner):
     # Wait until the UI loads.
@@ -312,7 +278,7 @@ class LoadGmailDesktopStory(_LoadGmailBaseStory):
         'document.getElementById("loading").style.display === "none"')
 
 class LoadGmailMobileStory(_LoadGmailBaseStory):
-  SUPPORTED_PLATFORMS = _MOBILE_ONLY
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
   def _DidLoadDocument(self, action_runner):
     # Close the "Get Inbox by Gmail" interstitial.
@@ -325,18 +291,18 @@ class LoadGmailMobileStory(_LoadGmailBaseStory):
         'document.getElementById("apploadingdiv").style.height === "0px"')
 
 
-class LoadMapsStory(_SinglePageStory):
+class LoadMapsStory(_LoadingStory):
   NAME = 'load:tools:maps'
   URL = 'https://www.google.com/maps/place/London,+UK/'
 
 
-class LoadStackOverflowStory(_SinglePageStory):
+class LoadStackOverflowStory(_LoadingStory):
   NAME = 'load:tools:stackoverflow'
   URL = (
       'https://stackoverflow.com/questions/36827659/compiling-an-application-for-use-in-highly-radioactive-environments')
 
 
-class LoadDropboxStory(_SinglePageStory):
+class LoadDropboxStory(_LoadingStory):
   NAME = 'load:tools:dropbox'
   URL = 'https://www.dropbox.com'
 
@@ -344,12 +310,12 @@ class LoadDropboxStory(_SinglePageStory):
     dropbox_login.LoginAccount(action_runner, 'dropbox', self.credentials_path)
 
 
-class LoadWeatherStory(_SinglePageStory):
+class LoadWeatherStory(_LoadingStory):
   NAME = 'load:tools:weather'
   URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
 
 
-class LoadDriveStory(_SinglePageStory):
+class LoadDriveStory(_LoadingStory):
   NAME = 'load:tools:drive'
   URL = 'https://drive.google.com/drive/my-drive'
 
@@ -363,7 +329,7 @@ class LoadDriveStory(_SinglePageStory):
 ################################################################################
 
 
-class LoadBubblesStory(_SinglePageStory):
+class LoadBubblesStory(_LoadingStory):
   NAME = 'load:games:bubbles'
   URL = (
       'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
@@ -374,13 +340,13 @@ class LoadBubblesStory(_SinglePageStory):
         'document.getElementById("logo") === null')
 
 
-class LoadLazorsStory(_SinglePageStory):
+class LoadLazorsStory(_LoadingStory):
   NAME = 'load:games:lazors'
   # Using "https://" hangs and shows "This site can't be reached".
   URL = 'http://www8.games.mobi/games/html5/lazors/lazors.html'
 
 
-class LoadSpyChaseStory(_SinglePageStory):
+class LoadSpyChaseStory(_LoadingStory):
   NAME = 'load:games:spychase'
   # Using "https://" shows "Your connection is not private".
   URL = 'http://playstar.mobi/games/spychase/index.php'
@@ -392,16 +358,16 @@ class LoadSpyChaseStory(_SinglePageStory):
         'document.querySelector("#game canvas").style.background !== ""')
 
 
-class LoadMiniclipStory(_SinglePageStory):
+class LoadMiniclipStory(_LoadingStory):
   NAME = 'load:games:miniclip'
   # Using "https://" causes "404 Not Found" during WPR recording.
   URL = 'http://www.miniclip.com/games/en/'
   # Desktop only (requires Flash).
-  SUPPORTED_PLATFORMS = _DESKTOP_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
-class LoadAlphabettyStory(_SinglePageStory):
+class LoadAlphabettyStory(_LoadingStory):
   NAME = 'load:games:alphabetty'
   URL = 'https://king.com/play/alphabetty'
   # Desktop only (requires Flash).
-  SUPPORTED_PLATFORMS = _DESKTOP_ONLY
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
