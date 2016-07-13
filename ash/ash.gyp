@@ -842,8 +842,6 @@
       'test/ui_controls_factory_ash.h',
       'test/user_metrics_recorder_test_api.cc',
       'test/user_metrics_recorder_test_api.h',
-      'test/virtual_keyboard_test_helper.cc',
-      'test/virtual_keyboard_test_helper.h',
     ],
     'ash_test_support_with_content_sources': [
       'test/content/test_shell_content_state.cc',

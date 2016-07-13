@@ -10,8 +10,8 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/virtual_keyboard_test_helper.h"
 #include "base/command_line.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
@@ -38,6 +38,9 @@ class TrayIMETest : public test::AshTestBase {
   // index.
   views::View* GetScrollChildView(int index);
 
+  void SuppressKeyboard();
+  void RestoreKeyboard();
+
   // test::AshTestBase:
   void SetUp() override;
   void TearDown() override;
@@ -46,6 +49,12 @@ class TrayIMETest : public test::AshTestBase {
   std::unique_ptr<TrayIME> tray_;
   std::unique_ptr<views::View> default_view_;
   std::unique_ptr<views::View> detailed_view_;
+
+  bool keyboard_suppressed_ = false;
+  std::vector<ui::TouchscreenDevice> touchscreen_devices_to_restore_;
+  std::vector<ui::InputDevice> keyboard_devices_to_restore_;
+
+  DISALLOW_COPY_AND_ASSIGN(TrayIMETest);
 };
 
 void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
@@ -75,6 +84,36 @@ views::View* TrayIMETest::GetScrollChildView(int index) {
   return content->child_at(index);
 }
 
+void TrayIMETest::SuppressKeyboard() {
+  DCHECK(!keyboard_suppressed_);
+  keyboard_suppressed_ = true;
+
+  ui::DeviceDataManager* device_manager = ui::DeviceDataManager::GetInstance();
+  touchscreen_devices_to_restore_ = device_manager->GetTouchscreenDevices();
+  keyboard_devices_to_restore_ = device_manager->GetKeyboardDevices();
+
+  ui::DeviceHotplugEventObserver* manager =
+      ui::DeviceDataManager::GetInstance();
+  std::vector<ui::TouchscreenDevice> screens;
+  screens.push_back(
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen", gfx::Size(1024, 768), 0));
+  manager->OnTouchscreenDevicesUpdated(screens);
+
+  std::vector<ui::InputDevice> keyboards;
+  keyboards.push_back(ui::InputDevice(
+      2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
+  manager->OnKeyboardDevicesUpdated(keyboards);
+}
+
+void TrayIMETest::RestoreKeyboard() {
+  DCHECK(keyboard_suppressed_);
+  ui::DeviceHotplugEventObserver* manager =
+      ui::DeviceDataManager::GetInstance();
+  manager->OnTouchscreenDevicesUpdated(touchscreen_devices_to_restore_);
+  manager->OnKeyboardDevicesUpdated(keyboard_devices_to_restore_);
+}
+
 void TrayIMETest::SetUp() {
   test::AshTestBase::SetUp();
   tray_.reset(new TrayIME(GetPrimarySystemTray()));
@@ -83,6 +122,8 @@ void TrayIMETest::SetUp() {
 }
 
 void TrayIMETest::TearDown() {
+  if (keyboard_suppressed_)
+    RestoreKeyboard();
   SetAccessibilityKeyboardEnabled(false);
   tray_.reset();
   default_view_.reset();
@@ -105,7 +146,7 @@ TEST_F(TrayIMETest, HiddenWithNoIMEs) {
 // enabled.
 TEST_F(TrayIMETest, HidesOnA11yEnabled) {
   SetIMELength(0);
-  test::VirtualKeyboardTestHelper::SuppressKeyboard();
+  SuppressKeyboard();
   EXPECT_TRUE(default_view()->visible());
   // Enable a11y keyboard.
   SetAccessibilityKeyboardEnabled(true);
@@ -119,7 +160,7 @@ TEST_F(TrayIMETest, HidesOnA11yEnabled) {
 // to toggle between enabled and disabled.
 TEST_F(TrayIMETest, PerformActionOnDetailedView) {
   SetIMELength(0);
-  test::VirtualKeyboardTestHelper::SuppressKeyboard();
+  SuppressKeyboard();
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
   views::View* toggle = GetScrollChildView(0);
   ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
