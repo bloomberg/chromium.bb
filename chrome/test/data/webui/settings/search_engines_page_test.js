@@ -16,7 +16,7 @@ cr.define('settings_search_engines_page', function() {
       canBeEdited: canBeEdited,
       canBeRemoved: canBeRemoved,
       default: false,
-      displayName: "Google",
+      displayName: "Google displayName",
       iconURL: "http://www.google.com/favicon.ico",
       isOmniboxExtension: false,
       keyword: "google.com",
@@ -34,7 +34,7 @@ cr.define('settings_search_engines_page', function() {
       canBeEdited: false,
       canBeRemoved: false,
       default: false,
-      displayName: "Omnibox extension",
+      displayName: "Omnibox extension displayName",
       extension: {
         icon: "chrome://extension-icon/some-extension-icon",
         id: "dummyextensionid",
@@ -143,18 +143,38 @@ cr.define('settings_search_engines_page', function() {
       /** @type {?SettingsSearchEngineEntryElement} */
       var entry = null;
 
+      /** @type {!settings_search.TestSearchEnginesBrowserProxy} */
       var browserProxy = null;
+
+      /** @type {!SearchEngine} */
+      var searchEngine = createSampleSearchEngine(true, true, true);
 
       setup(function() {
         browserProxy = new settings_search.TestSearchEnginesBrowserProxy();
         settings.SearchEnginesBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         entry = document.createElement('settings-search-engine-entry');
-        entry.set('engine', createSampleSearchEngine(true, true, true));
+        entry.set('engine', searchEngine);
         document.body.appendChild(entry);
       });
 
       teardown(function() { entry.remove(); });
+
+      // Test that the <search-engine-entry> is populated according to its
+      // underlying SearchEngine model.
+      test('Initialization', function() {
+        var nameElement = entry.$$('.name');
+        assertTrue(!!nameElement);
+        assertEquals(searchEngine.displayName, nameElement.textContent);
+
+        var keywordElement = entry.$$('.keyword-column');
+        assertTrue(!!keywordElement);
+        assertEquals(searchEngine.keyword, keywordElement.textContent);
+
+        var urlElement = entry.$$('.url-column');
+        assertTrue(!!urlElement);
+        assertEquals(searchEngine.url, urlElement.textContent);
+      });
 
       test('Remove_Enabled', function() {
         var deleteButton = entry.$.delete;
@@ -191,7 +211,7 @@ cr.define('settings_search_engines_page', function() {
               assertTrue(!!dialog);
 
               // Check that the paper-input fields are pre-populated.
-              assertEquals(engine.displayName, dialog.$.searchEngine.value);
+              assertEquals(engine.name, dialog.$.searchEngine.value);
               assertEquals(engine.keyword, dialog.$.keyword.value);
               assertEquals(engine.url, dialog.$.queryUrl.value);
 

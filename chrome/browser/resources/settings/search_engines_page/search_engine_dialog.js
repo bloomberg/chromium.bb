@@ -57,7 +57,7 @@ Polymer({
       this.actionButtonText_ = loadTimeData.getString('save');
 
       // If editing an existing search engine, pre-populate the input fields.
-      this.searchEngine_ = this.model.displayName;
+      this.searchEngine_ = this.model.name;
       this.keyword_ = this.model.keyword;
       this.queryUrl_ = this.model.url;
     } else {
