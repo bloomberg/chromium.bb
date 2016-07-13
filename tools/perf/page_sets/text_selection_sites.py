@@ -151,7 +151,7 @@ class TextSelectionSitesPageSet(story.StorySet):
 
     # A subset of top_10_mobile page set
     page_urls = [
-        'https://www.google.com/#hl=en&q=science',
+        'https://www.google.co.uk/#hl=en&q=science',
         'https://m.facebook.com/rihanna',
         'http://search.yahoo.com/search;_ylt=?p=google',
         'http://www.baidu.com/s?word=google',

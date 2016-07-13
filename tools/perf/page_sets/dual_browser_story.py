@@ -19,7 +19,7 @@ from telemetry.util import wpr_modes
 from page_sets.top_10_mobile import URL_LIST
 
 
-GOOGLE_SEARCH = 'https://www.google.com/search?'
+GOOGLE_SEARCH = 'https://www.google.co.uk/search?'
 
 SEARCH_QUERIES = [
   'science',

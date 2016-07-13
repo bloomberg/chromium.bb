@@ -9,7 +9,7 @@ from telemetry import story
 URL_LIST = [
     # Why: #1 (Alexa) most visited page worldwide, picked a reasonable
     # search term
-    'https://www.google.com/#hl=en&q=science',
+    'https://www.google.co.uk/#hl=en&q=science',
     # Why: #2 (Alexa) most visited page worldwide, picked the most liked
     # page
     'https://m.facebook.com/rihanna',
@@ -32,7 +32,7 @@ URL_LIST = [
     'http://www.amazon.com/gp/aw/s/?k=nexus',
     # Why: #13 (Alexa) most visited page worldwide, picked the first real
     # page
-    'http://m.taobao.com/channel/act/mobile/20131111-women.html',
+    'http://m.intl.taobao.com/group-purchase.html',
     # Why: #18 (Alexa) most visited page worldwide, picked a reasonable
     # search term
     'http://yandex.ru/touchsearch?text=science',
