@@ -42,9 +42,10 @@ void RendererSurfaceViewManager::NaturalSizeChanged(const gfx::Size& size) {
 
 void RendererSurfaceViewManager::OnFullscreenSurfaceCreated(int surface_id) {
   DVLOG(3) << __FUNCTION__ << ": surface_id: " << surface_id;
-  DCHECK(!pending_surface_created_cb_.is_null());
-  pending_surface_created_cb_.Run(surface_id);
-  pending_surface_created_cb_.Reset();
+  if (!pending_surface_created_cb_.is_null()) {
+    pending_surface_created_cb_.Run(surface_id);
+    pending_surface_created_cb_.Reset();
+  }
 }
 
 void RendererSurfaceViewManager::OnDestruct() {
