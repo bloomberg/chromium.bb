@@ -52,8 +52,9 @@ def _Login():
   log.info('Logging into chrome-infra-auth...')
   result = retry_util.RunCommandWithRetries(
       3,
-      args=[[_GetAuthUtil(), 'login']],
-      kwargs={'error_code_ok': True})
+      [_GetAuthUtil(), 'login'],
+      error_code_ok=True,
+      mute_output=False)
   if not result.returncode:
     return True
   print(result.error, file=sys.stderr)

@@ -14,8 +14,8 @@ from __future__ import print_function
 
 import collections
 
-BUILDBUCKET_HOST_KEY = '/buildbucket'
-BUILDBUCKET_TEST_HOST_KEY = '/buildbucket'
+BUILDBUCKET_HOST_KEY = '/buildbucket/host'
+BUILDBUCKET_TEST_HOST_KEY = '/buildbucket/test/host'
 STATSD_HOST_KEY = '/statsd/host'
 STATSD_PORT_KEY = '/statsd/port'
 ELASTIC_SEARCH_HOST_KEY = '/statsd/es_host'
