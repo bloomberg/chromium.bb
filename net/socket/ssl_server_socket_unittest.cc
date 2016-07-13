@@ -455,8 +455,9 @@ class SSLServerSocketTest : public PlatformTest {
         ReadTestKey(private_key_file_name);
     ASSERT_TRUE(key);
 
-    client_ssl_config_.client_private_key = WrapOpenSSLPrivateKey(
-        crypto::ScopedEVP_PKEY(EVP_PKEY_up_ref(key->key())));
+    EVP_PKEY_up_ref(key->key());
+    client_ssl_config_.client_private_key =
+        WrapOpenSSLPrivateKey(crypto::ScopedEVP_PKEY(key->key()));
   }
 
   void ConfigureClientCertsForServer() {
