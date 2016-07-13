@@ -82,6 +82,8 @@ class GLManager : private GpuControl {
     bool backbuffer_alpha;
     // The ImageFactory to use to generate images for the backbuffer.
     gpu::ImageFactory* image_factory;
+    // Whether to preserve the backbuffer after a call to SwapBuffers().
+    bool preserve_backbuffer;
   };
   GLManager();
   ~GLManager() override;

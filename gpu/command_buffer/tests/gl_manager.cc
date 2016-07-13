@@ -188,7 +188,8 @@ GLManager::Options::Options()
       force_shader_name_hashing(false),
       multisampled(false),
       backbuffer_alpha(true),
-      image_factory(nullptr) {}
+      image_factory(nullptr),
+      preserve_backbuffer(false) {}
 
 GLManager::GLManager()
     : sync_point_manager_(nullptr),
@@ -293,6 +294,7 @@ void GLManager::InitializeWithCommandLine(
   attribs.should_use_native_gmb_for_backbuffer =
       options.image_factory != nullptr;
   attribs.offscreen_framebuffer_size = options.size;
+  attribs.buffer_preserved = options.preserve_backbuffer;
 
   if (!context_group) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);

@@ -402,7 +402,7 @@ class BackTexture {
   bool AllocateStorage(const gfx::Size& size, GLenum format, bool zero);
 
   // Copy the contents of the currently bound frame buffer.
-  void Copy(const gfx::Size& size, GLenum format);
+  void Copy();
 
   // Destroy the render texture. This must be explicitly called before
   // destroying this object.
@@ -2592,15 +2592,14 @@ bool BackTexture::AllocateStorage(
   return success;
 }
 
-void BackTexture::Copy(const gfx::Size& size, GLenum format) {
+void BackTexture::Copy() {
   DCHECK_NE(id(), 0u);
   ScopedGLErrorSuppressor suppressor("BackTexture::Copy",
                                      decoder_->state_.GetErrorState());
   ScopedTextureBinder binder(&decoder_->state_, id(), Target());
-  glCopyTexImage2D(Target(),
-                   0,  // level
-                   format, 0, 0, size.width(), size.height(),
-                   0);  // border
+  glCopyTexSubImage2D(Target(),
+                      0,  // level
+                      0, 0, 0, 0, size_.width(), size_.height());
 }
 
 void BackTexture::Destroy() {
@@ -13479,9 +13478,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
 
       if (offscreen_target_buffer_preserved_) {
         // Copy the target frame buffer to the saved offscreen texture.
-        offscreen_saved_color_texture_->Copy(
-            offscreen_saved_color_texture_->size(),
-            offscreen_saved_color_format_);
+        offscreen_saved_color_texture_->Copy();
       } else {
         offscreen_saved_color_texture_.swap(offscreen_target_color_texture_);
         offscreen_target_frame_buffer_->AttachRenderTexture(
