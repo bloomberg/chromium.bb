@@ -16,7 +16,7 @@ exceptionDetails:
    exceptionDetails stack trace:
        url: test.js
        function: 
-       line: 1
+       line: 0
 
 Running: testCompileError
 Compiling script

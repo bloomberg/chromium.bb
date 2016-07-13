@@ -305,9 +305,7 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
 
     function runtimeCallFramePosition()
     {
-        var lineNumber = this.lineNumber ? this.lineNumber - 1 : 0;
-        var columnNumber = this.columnNumber ? this.columnNumber - 1 : 0;
-        return new WebInspector.DebuggerModel.Location(debuggerModel, this.scriptId, lineNumber, columnNumber);
+        return new WebInspector.DebuggerModel.Location(debuggerModel, this.scriptId, this.lineNumber, this.columnNumber);
     }
 
     results.push("Call stack:");

@@ -72,6 +72,8 @@ V8StackTraceImpl::Frame::Frame(const String16& functionName, const String16& scr
     , m_lineNumber(lineNumber)
     , m_columnNumber(column)
 {
+    DCHECK(m_lineNumber != v8::Message::kNoLineNumberInfo);
+    DCHECK(m_columnNumber != v8::Message::kNoColumnInfo);
 }
 
 V8StackTraceImpl::Frame::~Frame()
@@ -86,8 +88,8 @@ std::unique_ptr<protocol::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInsp
         .setFunctionName(m_functionName)
         .setScriptId(m_scriptId)
         .setUrl(m_scriptName)
-        .setLineNumber(m_lineNumber)
-        .setColumnNumber(m_columnNumber)
+        .setLineNumber(m_lineNumber - 1)
+        .setColumnNumber(m_columnNumber - 1)
         .build();
 }
 

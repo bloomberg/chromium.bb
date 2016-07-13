@@ -8,5 +8,5 @@ Stack Trace:
 
     url: http://127.0.0.1:8000/inspector/stacktraces/csp-setTimeout-warning-contains-stacktrace.html
     function: thisTest
-    line: 11
+    line: 10
 

@@ -8,9 +8,9 @@ CONSOLE MESSAGE: line 2: 239
     stack : {
         callFrames : [
             [0] : {
-                columnNumber : 9
+                columnNumber : 8
                 functionName : 
-                lineNumber : 1
+                lineNumber : 0
                 scriptId : 0
                 url : 
             }
@@ -28,9 +28,9 @@ CONSOLE MESSAGE: line 2: 239
     stack : {
         callFrames : [
             [0] : {
-                columnNumber : 3
+                columnNumber : 2
                 functionName : 
-                lineNumber : 2
+                lineNumber : 1
                 scriptId : 0
                 url : 
             }

@@ -152,8 +152,8 @@
                     { "name": "functionName", "type": "string", "description": "JavaScript function name." },
                     { "name": "scriptId", "$ref": "ScriptId", "description": "JavaScript script id." },
                     { "name": "url", "type": "string", "description": "JavaScript script name or url." },
-                    { "name": "lineNumber", "type": "integer", "description": "JavaScript script line number." },
-                    { "name": "columnNumber", "type": "integer", "description": "JavaScript script column number." }
+                    { "name": "lineNumber", "type": "integer", "description": "JavaScript script line number (0-based)." },
+                    { "name": "columnNumber", "type": "integer", "description": "JavaScript script column number (0-based)." }
                 ]
             },
             {

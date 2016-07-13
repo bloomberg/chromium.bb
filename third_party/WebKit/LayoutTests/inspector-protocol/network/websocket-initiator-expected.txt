@@ -7,5 +7,5 @@ Initiator Type: script
 Stack #0
   functionName: createSocket
   url: websocket-initiator.html
-  lineNumber: 10
+  lineNumber: 9
 

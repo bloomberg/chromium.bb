@@ -2,5 +2,5 @@ Tests that page navigation initiated by JS is correctly reported.
 
 Page reloaded.
 http://127.0.0.1:8000/inspector/network/network-document-initiator.html?foo: script
-    navigateFromScript http://127.0.0.1:8000/inspector/network/network-document-initiator.html 9
+    navigateFromScript http://127.0.0.1:8000/inspector/network/network-document-initiator.html 8
 
