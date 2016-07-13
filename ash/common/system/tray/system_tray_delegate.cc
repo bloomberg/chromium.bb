@@ -4,6 +4,8 @@
 
 #include "ash/common/system/tray/system_tray_delegate.h"
 
+#include "ash/common/system/tray/system_tray_item.h"
+
 namespace ash {
 
 NetworkIconInfo::NetworkIconInfo()
@@ -231,6 +233,16 @@ void SystemTrayDelegate::ShouldRebootOnShutdown(
     const RebootOnShutdownCallback& callback) {}
 
 VPNDelegate* SystemTrayDelegate::GetVPNDelegate() const {
+  return nullptr;
+}
+
+std::unique_ptr<SystemTrayItem> SystemTrayDelegate::CreateDisplayTrayItem(
+    SystemTray* tray) {
+  return nullptr;
+}
+
+std::unique_ptr<SystemTrayItem> SystemTrayDelegate::CreateRotationLockTrayItem(
+    SystemTray* tray) {
   return nullptr;
 }
 

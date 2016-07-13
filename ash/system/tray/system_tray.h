@@ -51,11 +51,8 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Resets internal pointers.
   void Shutdown();
 
-  // Adds a new item in the tray.
+  // Adds a new item in the tray. Takes ownership.
   void AddTrayItem(SystemTrayItem* item);
-
-  // Removes an existing tray item.
-  void RemoveTrayItem(SystemTrayItem* item);
 
   // Returns all tray items that has been added to system tray.
   const std::vector<SystemTrayItem*>& GetTrayItems() const;

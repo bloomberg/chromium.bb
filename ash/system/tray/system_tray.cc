@@ -62,8 +62,6 @@
 #include "ash/common/system/chromeos/tray_caps_lock.h"
 #include "ash/common/system/chromeos/tray_tracing.h"
 #include "ash/common/system/ime/tray_ime_chromeos.h"
-#include "ash/system/chromeos/rotation/tray_rotation_lock.h"
-#include "ash/system/chromeos/tray_display.h"
 #include "ui/message_center/message_center.h"
 #endif
 
@@ -197,7 +195,12 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayBluetooth(this));
   tray_cast_ = new TrayCast(this);
   AddTrayItem(tray_cast_);
-  AddTrayItem(new TrayDisplay(this));
+  // TODO(jamescook): Remove this when mus has support for display management
+  // and we have a DisplayManager equivalent. See http://crbug.com/548429
+  std::unique_ptr<SystemTrayItem> tray_display =
+      delegate->CreateDisplayTrayItem(this);
+  if (tray_display)
+    AddTrayItem(tray_display.release());
   screen_capture_tray_item_ = new ScreenCaptureTrayItem(this);
   AddTrayItem(screen_capture_tray_item_);
   screen_share_tray_item_ = new ScreenShareTrayItem(this);
@@ -206,7 +209,12 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(new TrayAudioChromeOs(this));
   AddTrayItem(new TrayBrightness(this));
   AddTrayItem(new TrayCapsLock(this));
-  AddTrayItem(new TrayRotationLock(this));
+  // TODO(jamescook): Remove this when mus has support for display management
+  // and we have a DisplayManager equivalent. See http://crbug.com/548429
+  std::unique_ptr<SystemTrayItem> tray_rotation_lock =
+      delegate->CreateRotationLockTrayItem(this);
+  if (tray_rotation_lock)
+    AddTrayItem(tray_rotation_lock.release());
   AddTrayItem(new TraySettings(this));
   AddTrayItem(tray_update_);
   AddTrayItem(tray_date_);
@@ -231,10 +239,6 @@ void SystemTray::AddTrayItem(SystemTrayItem* item) {
     PreferredSizeChanged();
     tray_item_map_[item] = tray_item;
   }
-}
-
-void SystemTray::RemoveTrayItem(SystemTrayItem* item) {
-  NOTIMPLEMENTED();
 }
 
 const std::vector<SystemTrayItem*>& SystemTray::GetTrayItems() const {

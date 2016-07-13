@@ -55,6 +55,10 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
   void SignOut() override;
+  std::unique_ptr<SystemTrayItem> CreateDisplayTrayItem(
+      SystemTray* tray) override;
+  std::unique_ptr<SystemTrayItem> CreateRotationLockTrayItem(
+      SystemTray* tray) override;
 
  private:
   bool should_show_display_notification_;

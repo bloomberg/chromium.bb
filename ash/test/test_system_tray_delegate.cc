@@ -13,6 +13,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/system/chromeos/rotation/tray_rotation_lock.h"
+#include "ash/system/chromeos/tray_display.h"
+#include "base/memory/ptr_util.h"
+#else
+#include "ash/common/system/tray/system_tray_item.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -106,6 +114,24 @@ bool TestSystemTrayDelegate::GetSessionLengthLimit(
 
 void TestSystemTrayDelegate::SignOut() {
   base::MessageLoop::current()->QuitWhenIdle();
+}
+
+std::unique_ptr<SystemTrayItem> TestSystemTrayDelegate::CreateDisplayTrayItem(
+    SystemTray* tray) {
+#if defined(OS_CHROMEOS)
+  return base::MakeUnique<TrayDisplay>(tray);
+#else
+  return nullptr;
+#endif
+}
+
+std::unique_ptr<SystemTrayItem>
+TestSystemTrayDelegate::CreateRotationLockTrayItem(SystemTray* tray) {
+#if defined(OS_CHROMEOS)
+  return base::MakeUnique<TrayRotationLock>(tray);
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace test
