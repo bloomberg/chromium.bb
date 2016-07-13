@@ -56,7 +56,6 @@ public:
 
     float value(const SVGLengthContext&) const;
     void setValue(float, const SVGLengthContext&);
-    void setValueAsNumber(float);
 
     float valueInSpecifiedUnits() const { return m_value->getFloatValue(); }
     void setValueInSpecifiedUnits(float value)

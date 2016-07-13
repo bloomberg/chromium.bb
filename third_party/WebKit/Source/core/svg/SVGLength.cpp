@@ -77,11 +77,6 @@ float SVGLength::value(const SVGLengthContext& context) const
         m_value->getFloatValue(), unitMode(), m_value->typeWithCalcResolved());
 }
 
-void SVGLength::setValueAsNumber(float value)
-{
-    m_value = CSSPrimitiveValue::create(value, CSSPrimitiveValue::UnitType::UserUnits);
-}
-
 void SVGLength::setValue(float value, const SVGLengthContext& context)
 {
     m_value = CSSPrimitiveValue::create(
