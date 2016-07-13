@@ -54,18 +54,21 @@ def Main():
     sys.stderr.write('Cannot find gen dir %s' % generated_output_dir)
     return 1
 
-  if build_type == 'chromium':
-    excluded_header = 'google_chrome_strings.h'
-  else:
-    excluded_header = 'chromium_strings.h'
+  product = 'chromium' if build_type == 'chromium' else 'google_chrome'
+  suffix = product + '_strings.h'
+  excluded_headers = set([s % suffix for s in (
+      '%s',
+      'components_%s',
+      'settings_%s'
+  )])
+
   data_files = []
   for root, dirs, files in os.walk(generated_output_dir):
     if os.path.basename(root) != 'grit':
       continue
 
-    header_files = [header for header in files if header.endswith('.h')]
-    if excluded_header in header_files:
-      header_files.remove(excluded_header)
+    header_files = set([header for header in files if header.endswith('.h')])
+    header_files -= excluded_headers
     data_files.extend([os.path.join(root, header) for header in header_files])
 
   resource_id_to_name_file_map = {}
