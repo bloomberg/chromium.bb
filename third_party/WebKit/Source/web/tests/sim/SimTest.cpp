@@ -41,7 +41,6 @@ SimTest::~SimTest()
 void SimTest::loadURL(const String& url)
 {
     WebURLRequest request;
-    request.initialize();
     request.setURL(KURL(ParsedURLString, url));
     request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     webView().mainFrameImpl()->loadRequest(request);

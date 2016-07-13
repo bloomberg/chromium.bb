@@ -106,7 +106,6 @@ void MobileYouTubePlugin::OpenYoutubeUrlCallback() {
   std::string youtube("vnd.youtube:");
   GURL url(youtube.append(GetYoutubeVideoId(GetPluginParams())));
   WebURLRequest request;
-  request.initialize();
   request.setURL(url);
   render_frame()->LoadURLExternally(request,
                                     blink::WebNavigationPolicyNewForegroundTab);

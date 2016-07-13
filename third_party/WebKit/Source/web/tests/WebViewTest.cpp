@@ -2057,7 +2057,6 @@ TEST_F(WebViewTest, DoNotFocusCurrentFrameOnNavigateFromLocalFrame)
 
     // Make a request from a local frame.
     WebURLRequest webURLRequestWithTargetStart;
-    webURLRequestWithTargetStart.initialize();
     LocalFrame* localFrame = toWebLocalFrameImpl(webViewImpl->mainFrame()->firstChild())->frame();
     FrameLoadRequest requestWithTargetStart(localFrame->document(), webURLRequestWithTargetStart.toResourceRequest(), "_top");
     localFrame->loader().load(requestWithTargetStart);
@@ -2077,7 +2076,6 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
 
     // Make a request that will open a new window
     WebURLRequest webURLRequest;
-    webURLRequest.initialize();
     FrameLoadRequest request(0, webURLRequest.toResourceRequest(), "_blank");
     toLocalFrame(webViewImpl->page()->mainFrame())->loader().load(request);
     ASSERT_TRUE(client.createdWebView());
@@ -2085,7 +2083,6 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
 
     // Make a request from the new window that will navigate the original window. The original window should be focused.
     WebURLRequest webURLRequestWithTargetStart;
-    webURLRequestWithTargetStart.initialize();
     FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), "_start");
     toLocalFrame(toWebViewImpl(client.createdWebView())->page()->mainFrame())->loader().load(requestWithTargetStart);
     EXPECT_TRUE(client.didFocusCalled());

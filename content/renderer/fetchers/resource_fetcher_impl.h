@@ -66,7 +66,7 @@ class ResourceFetcherImpl : public ResourceFetcher,
   // Options to send to the loader.
   blink::WebURLLoaderOptions options_;
 
-  // Request to send.  Released once Start() is called.
+  // Request to send.
   blink::WebURLRequest request_;
 
   // Callback when we're done.

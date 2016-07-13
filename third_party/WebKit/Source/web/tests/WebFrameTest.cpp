@@ -3320,7 +3320,6 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional)
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initialize();
     WebURLRequest request;
-    request.initialize();
     request.setURL(toKURL(m_baseURL + "fixed_layout.html"));
     request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     webViewHelper.webView()->mainFrame()->loadRequest(request);
@@ -6288,7 +6287,6 @@ TEST_P(ParameterizedWebFrameTest, CurrentHistoryItem)
     WebFrame* frame = webViewHelper.webView()->mainFrame();
     const FrameLoader& mainFrameLoader = webViewHelper.webViewImpl()->mainFrameImpl()->frame()->loader();
     WebURLRequest request;
-    request.initialize();
     request.setURL(toKURL(url));
     request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     frame->loadRequest(request);
@@ -8808,7 +8806,6 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame)
     WebURLRequest request;
     std::string redirectURL = m_baseURL + "foo.html";
     URLTestHelpers::registerMockedURLLoad(toKURL(redirectURL), "foo.html");
-    request.initialize();
     request.setURL(toKURL("javascript:location='" + redirectURL + "'"));
     request.setRequestorOrigin(WebSecurityOrigin::createUnique());
     helper.webViewImpl()->mainFrame()->toWebLocalFrame()->loadRequest(request);

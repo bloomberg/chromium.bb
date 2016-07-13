@@ -44,7 +44,7 @@ public:
     ~WrappedResourceResponse() {}
 
     explicit WrappedResourceResponse(ResourceResponse& resourceResponse)
-        : WebURLResponse(&resourceResponse)
+        : WebURLResponse(resourceResponse)
     {
     }
 

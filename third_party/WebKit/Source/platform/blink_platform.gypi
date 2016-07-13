@@ -376,7 +376,6 @@
       'exported/WebURLLoaderTestDelegate.cpp',
       'exported/WebURLLoadTiming.cpp',
       'exported/WebURLRequest.cpp',
-      'exported/WebURLRequestPrivate.h',
       'exported/WebURLResponse.cpp',
       'exported/WrappedResourceRequest.h',
       'exported/WrappedResourceResponse.h',

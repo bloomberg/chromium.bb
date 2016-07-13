@@ -184,7 +184,6 @@ public:
     void CheckMethodFails(const char* unsafeMethod)
     {
         WebURLRequest request;
-        request.initialize();
         request.setURL(toKURL("http://www.test.com/success.html"));
         request.setHTTPMethod(WebString::fromUTF8(unsafeMethod));
         WebURLLoaderOptions options;
@@ -200,7 +199,6 @@ public:
     void CheckHeaderFails(const char* headerField, const char* headerValue)
     {
         WebURLRequest request;
-        request.initialize();
         request.setURL(toKURL("http://www.test.com/success.html"));
         if (equalIgnoringCase(WebString::fromUTF8(headerField), "referer"))
             request.setHTTPReferrer(WebString::fromUTF8(headerValue), WebReferrerPolicyDefault);
@@ -235,7 +233,6 @@ public:
 
         KURL url = toKURL(id);
         WebURLRequest request;
-        request.initialize();
         request.setURL(url);
 
         WebString headerNameString(WebString::fromUTF8(headerName));
@@ -288,7 +285,6 @@ TEST_F(AssociatedURLLoaderTest, SameOriginSuccess)
 {
     KURL url = toKURL("http://www.test.com/SameOriginSuccess.html");
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
@@ -311,7 +307,6 @@ TEST_F(AssociatedURLLoaderTest, SameOriginRestriction)
     // This is cross-origin since the frame was loaded from www.test.com.
     KURL url = toKURL("http://www.other.com/SameOriginRestriction.html");
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
     CheckFails(request);
 }
@@ -322,7 +317,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginSuccess)
     // This is cross-origin since the frame was loaded from www.test.com.
     KURL url = toKURL("http://www.other.com/CrossOriginSuccess");
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
     // No-CORS requests (CrossOriginRequestPolicyAllow) aren't allowed for the
     // default context. So we set the context as Script here.
@@ -350,7 +344,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlSuccess)
     // This is cross-origin since the frame was loaded from www.test.com.
     KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlSuccess.html");
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
@@ -376,7 +369,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailure)
     // This is cross-origin since the frame was loaded from www.test.com.
     KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
@@ -408,7 +400,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailureBadStatusCode
     // This is cross-origin since the frame was loaded from www.test.com.
     KURL url = toKURL("http://www.other.com/CrossOriginWithAccessControlFailure.html");
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
 
     m_expectedResponse = WebURLResponse();
@@ -439,7 +430,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
     KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
 
     m_expectedRedirectResponse = WebURLResponse();
@@ -449,7 +439,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectSuccess)
     Platform::current()->getURLLoaderMockFactory()->registerURL(url, m_expectedRedirectResponse, m_frameFilePath);
 
     m_expectedNewRequest = WebURLRequest();
-    m_expectedNewRequest.initialize();
     m_expectedNewRequest.setURL(redirectURL);
 
     m_expectedResponse = WebURLResponse();
@@ -475,7 +464,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
     KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
 
     m_expectedRedirectResponse = WebURLResponse();
@@ -485,7 +473,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure)
     Platform::current()->getURLLoaderMockFactory()->registerURL(url, m_expectedRedirectResponse, m_frameFilePath);
 
     m_expectedNewRequest = WebURLRequest();
-    m_expectedNewRequest.initialize();
     m_expectedNewRequest.setURL(redirectURL);
 
     m_expectedResponse = WebURLResponse();
@@ -512,7 +499,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
     KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
 
     m_expectedRedirectResponse = WebURLResponse();
@@ -522,7 +508,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure)
     Platform::current()->getURLLoaderMockFactory()->registerURL(url, m_expectedRedirectResponse, m_frameFilePath);
 
     m_expectedNewRequest = WebURLRequest();
-    m_expectedNewRequest.initialize();
     m_expectedNewRequest.setURL(redirectURL);
 
     m_expectedResponse = WebURLResponse();
@@ -552,7 +537,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
     KURL redirectURL = toKURL(redirect);
 
     WebURLRequest request;
-    request.initialize();
     request.setURL(url);
     // Add a CORS simple header.
     request.setHTTPHeaderField("accept", "application/json");
@@ -566,7 +550,6 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess)
     Platform::current()->getURLLoaderMockFactory()->registerURL(url, m_expectedRedirectResponse, m_frameFilePath);
 
     m_expectedNewRequest = WebURLRequest();
-    m_expectedNewRequest.initialize();
     m_expectedNewRequest.setURL(redirectURL);
     m_expectedNewRequest.setHTTPHeaderField("accept", "application/json");
 
@@ -678,7 +661,6 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginHeaderWhitelisting)
 TEST_F(AssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders)
 {
     WebURLRequest request;
-    request.initialize();
     KURL url = toKURL("http://www.other.com/CrossOriginHeaderAllowResponseHeaders.html");
     request.setURL(url);
 

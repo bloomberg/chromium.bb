@@ -72,7 +72,7 @@ private:
 struct WebURLResponse::ResourceResponseContainer {
     ResourceResponseContainer() {}
 
-    ResourceResponseContainer(const ResourceResponse& r)
+    explicit ResourceResponseContainer(const ResourceResponse& r)
         : resourceResponse(r)
     {
     }
@@ -512,10 +512,9 @@ void WebURLResponse::setExtraData(WebURLResponse::ExtraData* extraData)
     m_resourceResponse->setExtraData(ExtraDataContainer::create(extraData));
 }
 
-WebURLResponse::WebURLResponse(ResourceResponse* p)
-    : m_resourceResponse(p)
+WebURLResponse::WebURLResponse(ResourceResponse& r)
+    : m_resourceResponse(&r)
 {
-    DCHECK(p);
 }
 
 } // namespace blink

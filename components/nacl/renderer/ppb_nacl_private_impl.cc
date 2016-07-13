@@ -348,7 +348,6 @@ blink::WebURLLoader* CreateWebURLLoader(const blink::WebDocument& document,
 blink::WebURLRequest CreateWebURLRequest(const blink::WebDocument& document,
                                          const GURL& gurl) {
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(gurl);
   request.setFirstPartyForCookies(document.firstPartyForCookies());
   return request;

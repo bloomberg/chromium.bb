@@ -122,8 +122,8 @@ void ResourceFetcherImpl::Start(
   }
   loader_->loadAsynchronously(request_, this);
 
-  // No need to hold on to the request.
-  request_.reset();
+  // No need to hold on to the request; reset it now.
+  request_ = blink::WebURLRequest();
 }
 
 void ResourceFetcherImpl::SetTimeout(const base::TimeDelta& timeout) {

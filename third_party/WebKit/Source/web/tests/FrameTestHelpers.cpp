@@ -123,7 +123,6 @@ String nameToUniqueName(const String& name)
 void loadFrame(WebFrame* frame, const std::string& url)
 {
     WebURLRequest urlRequest;
-    urlRequest.initialize();
     urlRequest.setURL(URLTestHelpers::toKURL(url));
     urlRequest.setRequestorOrigin(WebSecurityOrigin::createUnique());
     frame->loadRequest(urlRequest);

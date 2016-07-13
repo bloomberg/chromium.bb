@@ -35,6 +35,7 @@
 #include "WebCommon.h"
 #include "WebHTTPBody.h"
 #include "WebReferrerPolicy.h"
+#include <memory>
 
 namespace blink {
 
@@ -44,7 +45,6 @@ class WebHTTPHeaderVisitor;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
-class WebURLRequestPrivate;
 enum class WebCachePolicy;
 
 class WebURLRequest {
@@ -158,25 +158,11 @@ public:
         virtual ~ExtraData() { }
     };
 
-    ~WebURLRequest() { reset(); }
-
-    WebURLRequest() : m_private(0) { }
-    WebURLRequest(const WebURLRequest& r) : m_private(0) { assign(r); }
-    WebURLRequest& operator=(const WebURLRequest& r)
-    {
-        assign(r);
-        return *this;
-    }
-
-    explicit WebURLRequest(const WebURL& url) : m_private(0)
-    {
-        initialize();
-        setURL(url);
-    }
-
-    BLINK_PLATFORM_EXPORT void initialize();
-    BLINK_PLATFORM_EXPORT void reset();
-    BLINK_PLATFORM_EXPORT void assign(const WebURLRequest&);
+    BLINK_PLATFORM_EXPORT ~WebURLRequest();
+    BLINK_PLATFORM_EXPORT WebURLRequest();
+    BLINK_PLATFORM_EXPORT WebURLRequest(const WebURLRequest&);
+    BLINK_PLATFORM_EXPORT explicit WebURLRequest(const WebURL&);
+    BLINK_PLATFORM_EXPORT WebURLRequest& operator=(const WebURLRequest&);
 
     BLINK_PLATFORM_EXPORT bool isNull() const;
 
@@ -323,13 +309,23 @@ public:
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();
     BLINK_PLATFORM_EXPORT const ResourceRequest& toResourceRequest() const;
-#endif
 
 protected:
-    BLINK_PLATFORM_EXPORT void assign(WebURLRequestPrivate*);
+    // Permit subclasses to set arbitrary ResourceRequest pointer as
+    // |m_resourceRequest|. |m_ownedResourceRequest| is not set in this case.
+    BLINK_PLATFORM_EXPORT explicit WebURLRequest(ResourceRequest&);
+#endif
 
 private:
-    WebURLRequestPrivate* m_private;
+    struct ResourceRequestContainer;
+
+    // If this instance owns a ResourceRequest then |m_ownedResourceRequest|
+    // is non-null and |m_resourceRequest| points to the ResourceRequest
+    // instance it contains.
+    std::unique_ptr<ResourceRequestContainer> m_ownedResourceRequest;
+
+    // Should never be null.
+    ResourceRequest* m_resourceRequest;
 };
 
 } // namespace blink

@@ -60,7 +60,6 @@ TEST(WebURLRequestTest, ExtraData)
         TestExtraData* extraData = new TestExtraData(&alive);
         EXPECT_TRUE(alive);
 
-        urlRequest.initialize();
         urlRequest.setExtraData(extraData);
         EXPECT_EQ(extraData, urlRequest.getExtraData());
         {

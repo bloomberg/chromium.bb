@@ -607,7 +607,6 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
                       request_.reportRawHeaders());
 
   WebURLRequest new_request;
-  new_request.initialize();
   PopulateURLRequestForRedirect(
       request_, redirect_info, referrer_policy_,
       info.was_fetched_via_service_worker

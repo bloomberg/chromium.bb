@@ -47,13 +47,11 @@ WebDataSourceImpl* WebDataSourceImpl::create(LocalFrame* frame, const ResourceRe
 
 const WebURLRequest& WebDataSourceImpl::originalRequest() const
 {
-    m_originalRequestWrapper.bind(DocumentLoader::originalRequest());
     return m_originalRequestWrapper;
 }
 
 const WebURLRequest& WebDataSourceImpl::request() const
 {
-    m_requestWrapper.bind(DocumentLoader::request());
     return m_requestWrapper;
 }
 
@@ -134,6 +132,8 @@ WebNavigationType WebDataSourceImpl::toWebNavigationType(NavigationType type)
 
 WebDataSourceImpl::WebDataSourceImpl(LocalFrame* frame, const ResourceRequest& request, const SubstituteData& data)
     : DocumentLoader(frame, request, data)
+    , m_originalRequestWrapper(DocumentLoader::originalRequest())
+    , m_requestWrapper(DocumentLoader::request())
     , m_responseWrapper(DocumentLoader::response())
 {
 }

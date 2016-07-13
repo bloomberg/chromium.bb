@@ -277,7 +277,6 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoStartAsyncRequest() {
     blink::WebURLRequest request;
-    request.initialize();
     request.setURL(GURL(kTestURL));
     client()->loader()->loadAsynchronously(request, client());
     ASSERT_TRUE(peer());
@@ -286,7 +285,6 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoStartAsyncRequestWithPriority(
       blink::WebURLRequest::Priority priority) {
     blink::WebURLRequest request;
-    request.initialize();
     request.setPriority(priority);
     request.setURL(GURL(kTestURL));
     client()->loader()->loadAsynchronously(request, client());
@@ -446,7 +444,6 @@ TEST_F(WebURLLoaderImplTest, DeleteOnFail) {
 
 TEST_F(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->loadAsynchronously(request, client());
   client()->DeleteLoader();
@@ -458,7 +455,6 @@ TEST_F(WebURLLoaderImplTest, DeleteBeforeResponseDataURL) {
 
 TEST_F(WebURLLoaderImplTest, DataURL) {
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->loadAsynchronously(request, client());
   base::RunLoop().RunUntilIdle();
@@ -470,7 +466,6 @@ TEST_F(WebURLLoaderImplTest, DataURL) {
 
 TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_response();
   client()->loader()->loadAsynchronously(request, client());
@@ -482,7 +477,6 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveResponse) {
 
 TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_receive_data();
   client()->loader()->loadAsynchronously(request, client());
@@ -494,7 +488,6 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnReceiveData) {
 
 TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->set_delete_on_finish();
   client()->loader()->loadAsynchronously(request, client());
@@ -506,7 +499,6 @@ TEST_F(WebURLLoaderImplTest, DataURLDeleteOnFinish) {
 
 TEST_F(WebURLLoaderImplTest, DataURLDefersLoading) {
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(GURL("data:text/html;charset=utf-8,blah!"));
   client()->loader()->loadAsynchronously(request, client());
 
@@ -614,7 +606,6 @@ TEST_F(WebURLLoaderImplTest, BrowserSideNavigationCommit) {
   const GURL kStreamURL = GURL("http://bar");
   const std::string kMimeType = "text/html";
   blink::WebURLRequest request;
-  request.initialize();
   request.setURL(kNavigationURL);
   request.setFrameType(blink::WebURLRequest::FrameTypeTopLevel);
   request.setRequestContext(blink::WebURLRequest::RequestContextFrame);

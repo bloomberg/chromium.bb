@@ -169,7 +169,6 @@ bool CreateWebURLRequest(PP_Instance instance,
      name_version = "internal_testing_only";
    }
 
-  dest->initialize();
   dest->setURL(frame->document().completeURL(WebString::fromUTF8(data->url)));
   dest->setDownloadToFile(data->stream_to_file);
   dest->setReportUploadProgress(data->record_upload_progress);
