@@ -6,15 +6,6 @@
 
 #include "url/gurl.h"
 
-namespace {
-
-constexpr char kIntentActionView[] = "android.intent.action.VIEW";
-constexpr char kIntentCategoryBrowsable[] = "android.intent.category.BROWSABLE";
-constexpr char kSchemeHttp[] = "http";
-constexpr char kSchemeHttps[] = "https";
-
-}  // namespace
-
 namespace arc {
 
 LocalActivityResolver::LocalActivityResolver() = default;
@@ -27,11 +18,8 @@ bool LocalActivityResolver::ShouldChromeHandleUrl(const GURL& url) {
     return true;
   }
 
-  for (const mojom::IntentFilterPtr& filter : intent_filters_) {
-    if (IsRelevantIntentFilter(filter)) {
-      // For now err on the side of caution and let Android
-      // handle cases where there are possible matching intent
-      // filters.
+  for (const IntentFilter& filter : intent_filters_) {
+    if (filter.match(url)) {
       return false;
     }
   }
@@ -41,48 +29,11 @@ bool LocalActivityResolver::ShouldChromeHandleUrl(const GURL& url) {
 }
 
 void LocalActivityResolver::UpdateIntentFilters(
-    mojo::Array<mojom::IntentFilterPtr> intent_filters) {
-  intent_filters_ = std::move(intent_filters);
-}
-
-bool LocalActivityResolver::IsRelevantIntentFilter(
-    const mojom::IntentFilterPtr& intent_filter) {
-  return FilterHasViewAction(intent_filter) &&
-         FilterCategoryIsBrowsable(intent_filter) &&
-         FilterHandlesWebSchemes(intent_filter);
-}
-
-bool LocalActivityResolver::FilterHasViewAction(
-    const mojom::IntentFilterPtr& intent_filter) {
-  for (const mojo::String& action : intent_filter->actions) {
-    if (action == kIntentActionView) {
-      return true;
-    }
+    mojo::Array<mojom::IntentFilterPtr> mojo_intent_filters) {
+  intent_filters_.clear();
+  for (mojom::IntentFilterPtr& mojo_filter : mojo_intent_filters) {
+    intent_filters_.emplace_back(mojo_filter);
   }
-
-  return false;
-}
-
-bool LocalActivityResolver::FilterCategoryIsBrowsable(
-    const mojom::IntentFilterPtr& intent_filter) {
-  for (const mojo::String& category : intent_filter->categories) {
-    if (category == kIntentCategoryBrowsable) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-bool LocalActivityResolver::FilterHandlesWebSchemes(
-    const mojom::IntentFilterPtr& intent_filter) {
-  for (const mojo::String& scheme : intent_filter->data_schemes) {
-    if (scheme == kSchemeHttp || scheme == kSchemeHttps) {
-      return true;
-    }
-  }
-
-  return false;
 }
 
 }  // namespace arc

@@ -34,6 +34,8 @@ static_library("arc") {
     "intent_helper/arc_intent_helper_bridge.h",
     "intent_helper/font_size_util.cc",
     "intent_helper/font_size_util.h",
+    "intent_helper/intent_filter.cc",
+    "intent_helper/intent_filter.h",
     "intent_helper/link_handler_model_impl.cc",
     "intent_helper/link_handler_model_impl.h",
     "intent_helper/local_activity_resolver.cc",
