@@ -33,6 +33,20 @@
 
 namespace blink {
 
+namespace {
+
+Vector<ResourceResponse::SignedCertificateTimestamp> isolatedCopy(const Vector<ResourceResponse::SignedCertificateTimestamp>& src)
+{
+    Vector<ResourceResponse::SignedCertificateTimestamp> result;
+    result.reserveCapacity(src.size());
+    for (const auto& timestamp : src) {
+        result.append(timestamp.isolatedCopy());
+    }
+    return result;
+}
+
+} // namespace
+
 ResourceResponse::SignedCertificateTimestamp::SignedCertificateTimestamp(
     const blink::WebURLResponse::SignedCertificateTimestamp& sct)
     : m_status(sct.status)
@@ -44,6 +58,19 @@ ResourceResponse::SignedCertificateTimestamp::SignedCertificateTimestamp(
     , m_signatureAlgorithm(sct.signatureAlgorithm)
     , m_signatureData(sct.signatureData)
 {
+}
+
+ResourceResponse::SignedCertificateTimestamp ResourceResponse::SignedCertificateTimestamp::isolatedCopy() const
+{
+    return SignedCertificateTimestamp(
+        m_status.isolatedCopy(),
+        m_origin.isolatedCopy(),
+        m_logDescription.isolatedCopy(),
+        m_logId.isolatedCopy(),
+        m_timestamp,
+        m_hashAlgorithm.isolatedCopy(),
+        m_signatureAlgorithm.isolatedCopy(),
+        m_signatureData.isolatedCopy());
 }
 
 ResourceResponse::ResourceResponse()
@@ -192,7 +219,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData() co
     data->m_securityDetails.numUnknownSCTs = m_securityDetails.numUnknownSCTs;
     data->m_securityDetails.numInvalidSCTs = m_securityDetails.numInvalidSCTs;
     data->m_securityDetails.numValidSCTs = m_securityDetails.numValidSCTs;
-    data->m_securityDetails.sctList = m_securityDetails.sctList;
+    data->m_securityDetails.sctList = isolatedCopy(m_securityDetails.sctList);
     data->m_httpVersion = m_httpVersion;
     data->m_appCacheID = m_appCacheID;
     data->m_appCacheManifestURL = m_appCacheManifestURL.copy();

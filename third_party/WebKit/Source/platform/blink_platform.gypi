@@ -1239,6 +1239,7 @@
       'network/LinkHeaderTest.cpp',
       'network/NetworkUtilsTest.cpp',
       'network/ResourceRequestTest.cpp',
+      'network/ResourceResponseTest.cpp',
       'scheduler/CancellableTaskFactoryTest.cpp',
       'scroll/ScrollableAreaTest.cpp',
       'testing/ArenaTestHelpers.h',

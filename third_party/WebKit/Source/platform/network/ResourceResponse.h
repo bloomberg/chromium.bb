@@ -61,7 +61,7 @@ public:
         SecurityStyleAuthenticated
     };
 
-    class SignedCertificateTimestamp {
+    class PLATFORM_EXPORT SignedCertificateTimestamp final {
     public:
         SignedCertificateTimestamp(
             String status,
@@ -84,6 +84,8 @@ public:
         }
         explicit SignedCertificateTimestamp(
             const struct blink::WebURLResponse::SignedCertificateTimestamp&);
+        SignedCertificateTimestamp isolatedCopy() const;
+
         String m_status;
         String m_origin;
         String m_logDescription;
