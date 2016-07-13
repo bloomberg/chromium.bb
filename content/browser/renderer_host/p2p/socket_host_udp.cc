@@ -352,6 +352,8 @@ void P2PSocketHostUdp::HandleSendResult(uint64_t packet_id,
   TRACE_EVENT_ASYNC_END1("p2p", "Send", packet_id,
                          "result", result);
   if (result < 0) {
+    ReportSocketError(result, "WebRTC.ICE.UdpSocketWriteErrorCode");
+
     if (!IsTransientError(result)) {
       LOG(ERROR) << "Error when sending data in UDP socket: " << result;
       OnError();

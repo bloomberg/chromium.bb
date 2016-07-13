@@ -115,6 +115,8 @@ class CONTENT_EXPORT P2PSocketHost {
                                 StunMessageType* type);
   static bool IsRequestOrResponse(StunMessageType type);
 
+  static void ReportSocketError(int result, const char* histogram_name);
+
   // Calls |packet_dump_callback_| to record the RTP header.
   void DumpRtpPacket(const char* packet, size_t length, bool incoming);
 

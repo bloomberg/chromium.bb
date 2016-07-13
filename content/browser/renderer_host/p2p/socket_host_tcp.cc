@@ -435,6 +435,8 @@ void P2PSocketHostTcpBase::HandleWriteResult(int result) {
   } else if (result == net::ERR_IO_PENDING) {
     write_pending_ = true;
   } else {
+    ReportSocketError(result, "WebRTC.ICE.TcpSocketWriteErrorCode");
+
     LOG(ERROR) << "Error when sending data in TCP socket: " << result;
     OnError();
   }

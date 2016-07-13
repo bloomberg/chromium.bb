@@ -11,10 +11,24 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/net_errors.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 #include "third_party/webrtc/media/base/turnutils.h"
 
 namespace {
+
+// Used to back histogram value of "WebRTC.ICE.TcpSocketErrorCode" and
+// "WebRTC.ICE.UdpSocketErrorCode".
+enum class SocketErrorCode {
+  ERR_MSG_TOO_BIG,
+  ERR_ADDRESS_UNREACHABLE,
+  ERR_ADDRESS_INVALID,
+  ERR_INTERNET_DISCONNECTED,
+  ERR_TIMED_OUT,
+  ERR_INSUFFICIENT_RESOURCES,
+  ERR_OUT_OF_MEMORY,
+  ERR_OTHER  // For all the others
+};
 
 const uint32_t kStunMagicCookie = 0x2112A442;
 const size_t kMinRtcpHeaderLength = 8;
@@ -34,6 +48,31 @@ bool IsRtcpPacket(const char* data, size_t length) {
   return (type >= 64 && type < 96);
 }
 
+// Map the network error to SocketErrorCode for the UMA histogram.
+// static
+static SocketErrorCode MapNetErrorToSocketErrorCode(int net_err) {
+  switch (net_err) {
+    case net::OK:
+      NOTREACHED();
+      return SocketErrorCode::ERR_OTHER;
+    case net::ERR_MSG_TOO_BIG:
+      return SocketErrorCode::ERR_MSG_TOO_BIG;
+    case net::ERR_ADDRESS_UNREACHABLE:
+      return SocketErrorCode::ERR_ADDRESS_UNREACHABLE;
+    case net::ERR_ADDRESS_INVALID:
+      return SocketErrorCode::ERR_ADDRESS_INVALID;
+    case net::ERR_INTERNET_DISCONNECTED:
+      return SocketErrorCode::ERR_INTERNET_DISCONNECTED;
+    case net::ERR_TIMED_OUT:
+      return SocketErrorCode::ERR_TIMED_OUT;
+    case net::ERR_INSUFFICIENT_RESOURCES:
+      return SocketErrorCode::ERR_INSUFFICIENT_RESOURCES;
+    case net::ERR_OUT_OF_MEMORY:
+      return SocketErrorCode::ERR_OUT_OF_MEMORY;
+    default:
+      return SocketErrorCode::ERR_OTHER;
+  }
+}
 }  // namespace
 
 namespace content {
@@ -126,6 +165,13 @@ bool P2PSocketHost::GetStunPacketType(
 bool P2PSocketHost::IsRequestOrResponse(StunMessageType type) {
   return type == STUN_BINDING_REQUEST || type == STUN_BINDING_RESPONSE ||
       type == STUN_ALLOCATE_REQUEST || type == STUN_ALLOCATE_RESPONSE;
+}
+
+// static
+void P2PSocketHost::ReportSocketError(int result, const char* histogram_name) {
+  SocketErrorCode error_code = MapNetErrorToSocketErrorCode(result);
+  UMA_HISTOGRAM_ENUMERATION(histogram_name, static_cast<int>(error_code),
+                            static_cast<int>(SocketErrorCode::ERR_OTHER) + 1);
 }
 
 // static

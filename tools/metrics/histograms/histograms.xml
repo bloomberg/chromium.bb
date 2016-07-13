@@ -63906,6 +63906,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.ICE.TcpSocketWriteErrorCode" enum="SocketErrorCode">
+  <owner>zhihuang@chromium.org</owner>
+  <summary>
+    Counters on different types of TCP socket error code. Collected when we hit
+    the error code when writing.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.ICE.UdpSocketWriteErrorCode" enum="SocketErrorCode">
+  <owner>zhihuang@chromium.org</owner>
+  <summary>
+    Counters on different types of UDP socket error code. Collected when we hit
+    the error code when writing.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.NAT.Metrics" enum="NatTypeCounters">
   <owner>guoweis@chromium.org</owner>
   <summary>
@@ -90405,6 +90421,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="User swiped a snippet away without visiting"/>
   <int value="6"
       label="User scrolled below the fold (max once per NTP load). Obsolete."/>
+</enum>
+
+<enum name="SocketErrorCode" type="int">
+  <int value="0" label="ERR_MSG_TOO_BIG"/>
+  <int value="1" label="ERR_ADDRESS_UNREACHABLE"/>
+  <int value="2" label="ERR_ADDRESS_INVALID"/>
+  <int value="3" label="ERR_INTERNET_DISCONNECTED"/>
+  <int value="4" label="ERR_TIMED_OUT"/>
+  <int value="5" label="ERR_INSUFFICIENT_RESOURCES"/>
+  <int value="6" label="ERR_OUT_OF_MEMORY"/>
+  <int value="7" label="ERR_OTHER"/>
 </enum>
 
 <enum name="SocketStreamConnectionType" type="int">
