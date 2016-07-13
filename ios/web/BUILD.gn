@@ -318,6 +318,7 @@ source_set("test_support") {
 
   deps = [
     ":web",
+    "//base",
     "//base/test:test_support",
     "//ios/testing:ocmock_support",
     "//ios/third_party/gcdwebserver",
@@ -368,6 +369,7 @@ source_set("test_support") {
     "public/test/test_web_thread_bundle.h",
     "public/test/test_web_view_content_view.h",
     "public/test/test_web_view_content_view.mm",
+    "public/test/web_js_test.h",
     "public/test/web_test.h",
     "public/test/web_test.mm",
     "public/test/web_test_suite.h",

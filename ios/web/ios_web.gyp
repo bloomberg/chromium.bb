@@ -459,6 +459,7 @@
       'target_name': 'ios_web_test_support',
       'type': 'static_library',
       'dependencies': [
+        '../../base/base.gyp:base',
         '../../base/base.gyp:test_support_base',
         '../../ios/testing/ios_testing.gyp:ocmock_support',
         '../../ios/third_party/gcdwebserver/gcdwebserver.gyp:gcdwebserver',
@@ -512,6 +513,7 @@
         'public/test/test_web_thread_bundle.h',
         'public/test/test_web_view_content_view.h',
         'public/test/test_web_view_content_view.mm',
+        'public/test/web_js_test.h',
         'public/test/web_test.h',
         'public/test/web_test.mm',
         'public/test/web_test_suite.h',
