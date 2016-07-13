@@ -52,7 +52,7 @@
     <div id="main-container">
       <iron-pages id="content" attr-for-selected="id"
           selected="[[selectedPage_]]">
-        <history-list-container id="history" query-state="[[queryState_]]"
+        <history-list-container id="history" query-state="{{queryState_}}"
             query-result="[[queryResult_]]" grouped="[[grouped_]]">
         </history-list-container>
         <template is="dom-if" if="[[syncedTabsSelected_(selectedPage_)]]">

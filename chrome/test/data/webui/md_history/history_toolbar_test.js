@@ -45,7 +45,7 @@ cr.define('md_history.history_toolbar_test', function() {
       test('search term gathered correctly from toolbar', function(done) {
         app.queryState_.queryingDisabled = false;
         registerMessageCallback('queryHistory', this, function (info) {
-          assertEquals(info[0], 'Test');
+          assertEquals('Test', info[0]);
           done();
         });
 
@@ -70,7 +70,19 @@ cr.define('md_history.history_toolbar_test', function() {
             document.body, 70, 'ctrl', 'f');
         assertTrue(field.showingSearch);
         assertEquals(field.$.searchInput, field.root.activeElement);
-     });
+      });
+
+      test('spinner is active on search' , function(done) {
+        app.queryState_.queryingDisabled = false;
+        registerMessageCallback('queryHistory', this, function (info) {
+          assertTrue(toolbar.spinnerActive);
+          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+          assertFalse(toolbar.spinnerActive);
+          done();
+        });
+
+        toolbar.$$('cr-toolbar').fire('search-changed', 'Test2');
+      });
 
       teardown(function() {
         element.historyData_ = [];
