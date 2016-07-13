@@ -95,5 +95,6 @@ PASS FileReader interface: new FileReader() must inherit property "onload" with 
 PASS FileReader interface: new FileReader() must inherit property "onabort" with the proper type (13) 
 PASS FileReader interface: new FileReader() must inherit property "onerror" with the proper type (14) 
 PASS FileReader interface: new FileReader() must inherit property "onloadend" with the proper type (15) 
+PASS FileReaderSync interface: existence and properties of interface object 
 Harness: the test ran to completion.
 

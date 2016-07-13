@@ -196,6 +196,7 @@ imported/wpt/WebIDL/valid [ Skip ]
 imported/wpt/XMLHttpRequest [ Skip ]
 imported/wpt/ambient-light [ Skip ]
 imported/wpt/animation-timing [ Skip ]
+imported/wpt/annotation-model [ Skip ]
 imported/wpt/app-uri [ Skip ]
 imported/wpt/battery-status [ Skip ]
 ## Owners: none; No tests in the directory.
