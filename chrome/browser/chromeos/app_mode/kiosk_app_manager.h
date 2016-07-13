@@ -22,6 +22,7 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "ui/gfx/image/image_skia.h"
 
+class GURL;
 class PrefRegistrySimple;
 class Profile;
 
@@ -233,6 +234,13 @@ class KioskAppManager : public KioskAppDataDelegate,
 
   // Initialize |app_session_|.
   void InitSession(Profile* profile, const std::string& app_id);
+
+  // Adds an app with the given meta data directly and skips meta data fetching
+  // for test.
+  void AddAppForTest(const std::string& app_id,
+                     const AccountId& account_id,
+                     const GURL& update_url,
+                     const std::string& required_platform_version);
 
   AppSession* app_session() { return app_session_.get(); }
   bool external_loader_created() const { return external_loader_created_; }

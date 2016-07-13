@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_APP_DATA_H_
 #define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_APP_DATA_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
@@ -85,6 +86,13 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   Status status() const { return status_; }
 
   void SetStatusForTest(Status status);
+
+  static std::unique_ptr<KioskAppData> CreateForTest(
+      KioskAppDataDelegate* delegate,
+      const std::string& app_id,
+      const AccountId& account_id,
+      const GURL& update_url,
+      const std::string& required_platform_version);
 
  private:
   class CrxLoader;

@@ -85,6 +85,8 @@ const char* const kKnownSettings[] = {
     kReportDeviceSessionStatus,
     kReportDeviceUsers,
     kReportDeviceVersionInfo,
+    kReportOsUpdateStatus,
+    kReportRunningKioskApp,
     kReportUploadFrequency,
     kServiceAccountIdentity,
     kSignedDataRoamingEnabled,
@@ -367,6 +369,14 @@ void DecodeReportingPolicies(
       new_values_cache->SetBoolean(
           kReportDeviceSessionStatus,
           reporting_policy.report_session_status());
+    }
+    if (reporting_policy.has_report_os_update_status()) {
+      new_values_cache->SetBoolean(kReportOsUpdateStatus,
+                                   reporting_policy.report_os_update_status());
+    }
+    if (reporting_policy.has_report_running_kiosk_app()) {
+      new_values_cache->SetBoolean(kReportRunningKioskApp,
+                                   reporting_policy.report_running_kiosk_app());
     }
     if (reporting_policy.has_device_status_frequency()) {
       new_values_cache->SetInteger(

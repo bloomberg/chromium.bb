@@ -25,9 +25,11 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -36,6 +38,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_handler.h"
@@ -238,6 +242,16 @@ std::unique_ptr<policy::DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
   return std::unique_ptr<policy::DeviceLocalAccount>();
 }
 
+base::Version GetPlatformVersion() {
+  int32_t major_version;
+  int32_t minor_version;
+  int32_t bugfix_version;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  return base::Version(base::StringPrintf("%d.%d.%d", major_version,
+                                          minor_version, bugfix_version));
+}
+
 }  // namespace
 
 namespace policy {
@@ -253,24 +267,12 @@ DeviceStatusCollector::DeviceStatusCollector(
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
       last_idle_check_(Time()),
-      last_reported_day_(0),
-      duration_for_last_reported_day_(0),
-      geolocation_update_in_progress_(false),
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
       cpu_temp_fetcher_(cpu_temp_fetcher),
       statistics_provider_(provider),
-      last_cpu_active_(0),
-      last_cpu_idle_(0),
+      cros_settings_(chromeos::CrosSettings::Get()),
       location_update_requester_(location_update_requester),
-      report_version_info_(false),
-      report_activity_times_(false),
-      report_boot_mode_(false),
-      report_location_(false),
-      report_network_interfaces_(false),
-      report_users_(false),
-      report_hardware_status_(false),
-      report_session_status_(false),
       weak_factory_(this) {
   if (volume_info_fetcher_.is_null())
     volume_info_fetcher_ = base::Bind(&GetVolumeInfo);
@@ -288,9 +290,6 @@ DeviceStatusCollector::DeviceStatusCollector(
       FROM_HERE,
       TimeDelta::FromSeconds(kHardwareStatusSampleIntervalSeconds),
       this, &DeviceStatusCollector::SampleHardwareStatus);
-
-  cros_settings_ = chromeos::CrosSettings::Get();
-
 
   // Watch for changes to the individual policies that control what the status
   // reports contain.
@@ -313,6 +312,10 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceHardwareStatus, callback);
   session_status_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceSessionStatus, callback);
+  os_update_status_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportOsUpdateStatus, callback);
+  running_kiosk_app_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportRunningKioskApp, callback);
 
   // The last known location is persisted in local state. This makes location
   // information available immediately upon startup and avoids the need to
@@ -437,6 +440,16 @@ void DeviceStatusCollector::UpdateReportingSettings() {
     // Turning on hardware status reporting - fetch an initial sample
     // immediately instead of waiting for the sampling timer to fire.
     SampleHardwareStatus();
+  }
+
+  // Os update status and running kiosk app reporting are disabled by default.
+  if (!cros_settings_->GetBoolean(chromeos::kReportOsUpdateStatus,
+                                  &report_os_update_status_)) {
+    report_os_update_status_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportRunningKioskApp,
+                                  &report_running_kiosk_app_)) {
+    report_running_kiosk_app_ = false;
   }
 }
 
@@ -907,6 +920,89 @@ void DeviceStatusCollector::GetHardwareStatus(
   }
 }
 
+bool DeviceStatusCollector::GetOsUpdateStatus(
+    em::DeviceStatusReportRequest* status) {
+  const base::Version platform_version(GetPlatformVersion());
+  if (!platform_version.IsValid())
+    return false;
+
+  const std::string required_platform_version_string =
+      chromeos::KioskAppManager::Get()
+          ->GetAutoLaunchAppRequiredPlatformVersion();
+  if (required_platform_version_string.empty())
+    return false;
+
+  const base::Version required_platfrom_version(
+      required_platform_version_string);
+
+  em::OsUpdateStatus* os_update_status = status->mutable_os_update_status();
+  os_update_status->set_new_required_platform_version(
+      required_platfrom_version.GetString());
+
+  if (platform_version == required_platfrom_version) {
+    os_update_status->set_update_status(em::OsUpdateStatus::OS_UP_TO_DATE);
+    return true;
+  }
+
+  const chromeos::UpdateEngineClient::Status update_engine_status =
+      chromeos::DBusThreadManager::Get()
+          ->GetUpdateEngineClient()
+          ->GetLastStatus();
+  if (update_engine_status.status ==
+          chromeos::UpdateEngineClient::UPDATE_STATUS_DOWNLOADING ||
+      update_engine_status.status ==
+          chromeos::UpdateEngineClient::UPDATE_STATUS_VERIFYING ||
+      update_engine_status.status ==
+          chromeos::UpdateEngineClient::UPDATE_STATUS_FINALIZING) {
+    os_update_status->set_update_status(
+        em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_IN_PROGRESS);
+    os_update_status->set_new_platform_version(
+        update_engine_status.new_version);
+  } else if (update_engine_status.status ==
+             chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
+    os_update_status->set_update_status(
+        em::OsUpdateStatus::OS_UPDATE_NEED_REBOOT);
+    // Note the new_version could be a dummy "0.0.0.0" for some edge cases,
+    // e.g. update engine is somehow restarted without a reboot.
+    os_update_status->set_new_platform_version(
+        update_engine_status.new_version);
+  } else {
+    os_update_status->set_update_status(
+        em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_NOT_STARTED);
+  }
+
+  return true;
+}
+
+bool DeviceStatusCollector::GetRunningKioskApp(
+    em::DeviceStatusReportRequest* status) {
+  std::unique_ptr<const DeviceLocalAccount> account =
+      GetAutoLaunchedKioskSessionInfo();
+  // Only generate running kiosk app reports if we are in an auto-launched kiosk
+  // session.
+  if (!account)
+    return false;
+
+  em::AppStatus* running_kiosk_app = status->mutable_running_kiosk_app();
+  running_kiosk_app->set_app_id(account->kiosk_app_id);
+
+  const std::string app_version = GetAppVersion(account->kiosk_app_id);
+  if (app_version.empty()) {
+    DLOG(ERROR) << "Unable to get version for extension: "
+                << account->kiosk_app_id;
+  } else {
+    running_kiosk_app->set_extension_version(app_version);
+  }
+
+  chromeos::KioskAppManager::App app_info;
+  if (chromeos::KioskAppManager::Get()->GetApp(account->kiosk_app_id,
+                                               &app_info)) {
+    running_kiosk_app->set_required_platform_version(
+        app_info.required_platform_version);
+  }
+  return true;
+}
+
 bool DeviceStatusCollector::GetDeviceStatus(
     em::DeviceStatusReportRequest* status) {
   if (report_activity_times_)
@@ -930,13 +1026,23 @@ bool DeviceStatusCollector::GetDeviceStatus(
   if (report_hardware_status_)
     GetHardwareStatus(status);
 
+  bool os_update_status_reported = false;
+  if (report_os_update_status_)
+    os_update_status_reported = GetOsUpdateStatus(status);
+
+  bool running_kiosk_app_reported = false;
+  if (report_running_kiosk_app_)
+    running_kiosk_app_reported = GetRunningKioskApp(status);
+
   return (report_activity_times_ ||
           report_version_info_ ||
           report_boot_mode_ ||
           report_location_ ||
           report_network_interfaces_ ||
           report_users_ ||
-          report_hardware_status_);
+          report_hardware_status_ ||
+          os_update_status_reported ||
+          running_kiosk_app_reported);
 }
 
 bool DeviceStatusCollector::GetDeviceSessionStatus(

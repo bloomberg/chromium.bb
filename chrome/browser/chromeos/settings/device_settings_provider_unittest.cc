@@ -80,6 +80,8 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     proto->set_report_users(enable_reporting);
     proto->set_report_hardware_status(enable_reporting);
     proto->set_report_session_status(enable_reporting);
+    proto->set_report_os_update_status(enable_reporting);
+    proto->set_report_running_kiosk_app(enable_reporting);
     proto->set_device_status_frequency(frequency);
     device_policy_.Build();
     device_settings_test_helper_.set_policy_blob(device_policy_.GetBlob());
@@ -151,7 +153,9 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
       kReportDeviceNetworkInterfaces,
       kReportDeviceUsers,
       kReportDeviceHardwareStatus,
-      kReportDeviceSessionStatus
+      kReportDeviceSessionStatus,
+      kReportOsUpdateStatus,
+      kReportRunningKioskApp
     };
 
     const base::FundamentalValue expected_enable_value(expected_enable_state);

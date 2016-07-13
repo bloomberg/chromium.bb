@@ -178,6 +178,10 @@ class DeviceStatusCollector {
       enterprise_management::DeviceStatusReportRequest* request);
   void GetHardwareStatus(
       enterprise_management::DeviceStatusReportRequest* request);
+  bool GetOsUpdateStatus(
+      enterprise_management::DeviceStatusReportRequest* request);
+  bool GetRunningKioskApp(
+      enterprise_management::DeviceStatusReportRequest* request);
 
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();
@@ -202,7 +206,7 @@ class DeviceStatusCollector {
   // to dBm units expected by server.
   int ConvertWifiSignalStrength(int signal_strength);
 
-  PrefService* local_state_;
+  PrefService* const local_state_;
 
   // The last time an idle state check was performed.
   base::Time last_idle_check_;
@@ -211,11 +215,11 @@ class DeviceStatusCollector {
   // GetDeviceStatus(), and the duration for it. This is used to trim the
   // stored data in OnSubmittedSuccessfully(). Trimming is delayed so
   // unsuccessful uploads don't result in dropped data.
-  int64_t last_reported_day_;
-  int duration_for_last_reported_day_;
+  int64_t last_reported_day_ = 0;
+  int duration_for_last_reported_day_ = 0;
 
   // Whether a geolocation update is currently in progress.
-  bool geolocation_update_in_progress_;
+  bool geolocation_update_in_progress_ = false;
 
   base::RepeatingTimer idle_poll_timer_;
   base::RepeatingTimer hardware_status_sampling_timer_;
@@ -254,13 +258,13 @@ class DeviceStatusCollector {
   // Callback invoked to fetch information about cpu temperature.
   CPUTempFetcher cpu_temp_fetcher_;
 
-  chromeos::system::StatisticsProvider* statistics_provider_;
+  chromeos::system::StatisticsProvider* const statistics_provider_;
 
-  chromeos::CrosSettings* cros_settings_;
+  chromeos::CrosSettings* const cros_settings_;
 
   // The most recent CPU readings.
-  uint64_t last_cpu_active_;
-  uint64_t last_cpu_idle_;
+  uint64_t last_cpu_active_ = 0;
+  uint64_t last_cpu_idle_ = 0;
 
   // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
   // way to mock geolocation exists.
@@ -270,14 +274,16 @@ class DeviceStatusCollector {
       geolocation_subscription_;
 
   // Cached values of the reporting settings from the device policy.
-  bool report_version_info_;
-  bool report_activity_times_;
-  bool report_boot_mode_;
-  bool report_location_;
-  bool report_network_interfaces_;
-  bool report_users_;
-  bool report_hardware_status_;
-  bool report_session_status_;
+  bool report_version_info_ = false;
+  bool report_activity_times_ = false;
+  bool report_boot_mode_ = false;
+  bool report_location_ = false;
+  bool report_network_interfaces_ = false;
+  bool report_users_ = false;
+  bool report_hardware_status_ = false;
+  bool report_session_status_ = false;
+  bool report_os_update_status_ = false;
+  bool report_running_kiosk_app_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       version_info_subscription_;
@@ -295,6 +301,10 @@ class DeviceStatusCollector {
       hardware_status_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       session_status_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      os_update_status_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      running_kiosk_app_subscription_;
 
   base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
 

@@ -20,7 +20,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/sys_info.h"
+#include "base/test/scoped_path_override.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
@@ -28,10 +32,12 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -260,7 +266,9 @@ class DeviceStatusCollectorTest : public testing::Test {
         fake_device_local_account_(policy::DeviceLocalAccount::TYPE_KIOSK_APP,
                                    kKioskAccountId,
                                    kKioskAppId,
-                                   std::string() /* kiosk_app_update_url */) {
+                                   std::string() /* kiosk_app_update_url */),
+        user_data_dir_override_(chrome::DIR_USER_DATA),
+        update_engine_client_(new chromeos::FakeUpdateEngineClient) {
     // Run this test with a well-known timezone so that Time::LocalMidnight()
     // returns the same values on all machines.
     std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -299,6 +307,16 @@ class DeviceStatusCollectorTest : public testing::Test {
     RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                            base::Bind(&GetEmptyCPUStatistics),
                            base::Bind(&GetEmptyCPUTempInfo));
+
+    // Set up a fake local state for KioskAppManager.
+    TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
+    chromeos::KioskAppManager::RegisterPrefs(local_state_.registry());
+
+    // Use FakeUpdateEngineClient.
+    std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
+        chromeos::DBusThreadManager::GetSetterForTesting();
+    dbus_setter->SetUpdateEngineClient(
+        base::WrapUnique<chromeos::UpdateEngineClient>(update_engine_client_));
   }
 
   void AddMountPoint(const std::string& mount_point) {
@@ -310,6 +328,9 @@ class DeviceStatusCollectorTest : public testing::Test {
   }
 
   ~DeviceStatusCollectorTest() override {
+    chromeos::KioskAppManager::Shutdown();
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
+
     // Finish pending tasks.
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     message_loop_.RunUntilIdle();
@@ -323,7 +344,9 @@ class DeviceStatusCollectorTest : public testing::Test {
                                 false);
   }
 
-  void TearDown() override { settings_helper_.RestoreProvider(); }
+  void TearDown() override {
+    settings_helper_.RestoreProvider();
+  }
 
   void RestartStatusCollector(
       const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
@@ -391,6 +414,38 @@ class DeviceStatusCollectorTest : public testing::Test {
         Return(true));
   }
 
+  void MockPlatformVersion(const std::string& platform_version) {
+    const std::string lsb_release = base::StringPrintf(
+        "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
+    base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release,
+                                                 base::Time::Now());
+  }
+
+  void MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+      const DeviceLocalAccount& auto_launch_app_account,
+      const std::string& required_platform_version) {
+    chromeos::KioskAppManager* manager = chromeos::KioskAppManager::Get();
+    manager->AddAppForTest(
+        auto_launch_app_account.kiosk_app_id,
+        AccountId::FromUserEmail(auto_launch_app_account.user_id),
+        GURL("http://cws/"),  // Dummy URL to avoid setup ExtensionsClient.
+        required_platform_version);
+    manager->SetEnableAutoLaunch(true);
+
+    std::vector<DeviceLocalAccount> accounts;
+    accounts.push_back(auto_launch_app_account);
+    SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
+
+    owner_settings_service_->SetString(
+        chromeos::kAccountsPrefDeviceLocalAccountAutoLoginId,
+        auto_launch_app_account.account_id);
+
+    message_loop_.RunUntilIdle();
+
+    ASSERT_EQ(required_platform_version,
+              manager->GetAutoLaunchAppRequiredPlatformVersion());
+  }
+
  protected:
   // Convenience method.
   int64_t ActivePeriodMilliseconds() {
@@ -413,11 +468,14 @@ class DeviceStatusCollectorTest : public testing::Test {
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   std::unique_ptr<chromeos::FakeOwnerSettingsService> owner_settings_service_;
-  chromeos::MockUserManager* user_manager_;
+  chromeos::MockUserManager* const user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
   em::DeviceStatusReportRequest status_;
   std::unique_ptr<TestingDeviceStatusCollector> status_collector_;
   const policy::DeviceLocalAccount fake_device_local_account_;
+  base::ScopedPathOverride user_data_dir_override_;
+  TestingPrefServiceSimple local_state_;
+  chromeos::FakeUpdateEngineClient* const update_engine_client_;
 };
 
 TEST_F(DeviceStatusCollectorTest, AllIdle) {
@@ -1014,6 +1072,121 @@ TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
   EXPECT_EQ(kKioskAppId, app.app_id());
   // Test code just sets the version to the app ID.
   EXPECT_EQ(kKioskAppId, app.extension_version());
+  EXPECT_FALSE(app.has_status());
+  EXPECT_FALSE(app.has_error());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoOsUpdateStatusByDefault) {
+  MockPlatformVersion("1234.0.0");
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(fake_device_local_account_,
+                                                    "1234.0.0");
+
+  GetStatus();
+  EXPECT_FALSE(status_.has_os_update_status());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
+  MockPlatformVersion("1234.0.0");
+  settings_helper_.SetBoolean(chromeos::kReportOsUpdateStatus, true);
+
+  const char* kRequiredPlatformVersions[] = {"1234", "1234.0", "1234.0.0"};
+
+  for (size_t i = 0; i < arraysize(kRequiredPlatformVersions); ++i) {
+    MockAutoLaunchKioskAppWithRequiredPlatformVersion(
+        fake_device_local_account_, kRequiredPlatformVersions[i]);
+
+    GetStatus();
+    ASSERT_TRUE(status_.has_os_update_status()) << "Required platform version="
+                                                << kRequiredPlatformVersions[i];
+    EXPECT_EQ(em::OsUpdateStatus::OS_UP_TO_DATE,
+              status_.os_update_status().update_status())
+        << "Required platform version=" << kRequiredPlatformVersions[i];
+    EXPECT_EQ(kRequiredPlatformVersions[i],
+              status_.os_update_status().new_required_platform_version())
+        << "Required platform version=" << kRequiredPlatformVersions[i];
+  }
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
+  MockPlatformVersion("1234.0.0");
+  settings_helper_.SetBoolean(chromeos::kReportOsUpdateStatus, true);
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(fake_device_local_account_,
+                                                    "1235");
+
+  chromeos::UpdateEngineClient::Status update_status;
+  update_status.status = chromeos::UpdateEngineClient::UPDATE_STATUS_IDLE;
+
+  GetStatus();
+  ASSERT_TRUE(status_.has_os_update_status());
+  EXPECT_EQ(em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_NOT_STARTED,
+            status_.os_update_status().update_status());
+
+  const chromeos::UpdateEngineClient::UpdateStatusOperation kUpdateEngineOps[] =
+      {
+          chromeos::UpdateEngineClient::UPDATE_STATUS_DOWNLOADING,
+          chromeos::UpdateEngineClient::UPDATE_STATUS_VERIFYING,
+          chromeos::UpdateEngineClient::UPDATE_STATUS_FINALIZING,
+      };
+
+  for (size_t i = 0; i < arraysize(kUpdateEngineOps); ++i) {
+    update_status.status = kUpdateEngineOps[i];
+    update_status.new_version = "1235.1.2";
+    update_engine_client_->PushLastStatus(update_status);
+
+    GetStatus();
+    ASSERT_TRUE(status_.has_os_update_status());
+    EXPECT_EQ(em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_IN_PROGRESS,
+              status_.os_update_status().update_status());
+    EXPECT_EQ("1235.1.2", status_.os_update_status().new_platform_version());
+    EXPECT_EQ("1235",
+              status_.os_update_status().new_required_platform_version());
+  }
+
+  update_status.status =
+      chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
+  update_engine_client_->PushLastStatus(update_status);
+  GetStatus();
+  ASSERT_TRUE(status_.has_os_update_status());
+  EXPECT_EQ(em::OsUpdateStatus::OS_UPDATE_NEED_REBOOT,
+            status_.os_update_status().update_status());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
+  MockPlatformVersion("1234.0.0");
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(fake_device_local_account_,
+                                                    "1234.0.0");
+  status_collector_->set_kiosk_account(base::WrapUnique(
+      new policy::DeviceLocalAccount(fake_device_local_account_)));
+  MockRunningKioskApp(fake_device_local_account_);
+
+  GetStatus();
+  EXPECT_FALSE(status_.has_running_kiosk_app());
+}
+
+TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
+  settings_helper_.SetBoolean(chromeos::kReportRunningKioskApp, true);
+  MockPlatformVersion("1234.0.0");
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(fake_device_local_account_,
+                                                    "1234.0.0");
+
+  GetStatus();
+  EXPECT_FALSE(status_.has_running_kiosk_app());
+}
+
+TEST_F(DeviceStatusCollectorTest, ReportRunningKioskApp) {
+  settings_helper_.SetBoolean(chromeos::kReportRunningKioskApp, true);
+  MockPlatformVersion("1234.0.0");
+  MockAutoLaunchKioskAppWithRequiredPlatformVersion(fake_device_local_account_,
+                                                    "1235");
+  MockRunningKioskApp(fake_device_local_account_);
+  status_collector_->set_kiosk_account(base::WrapUnique(
+      new policy::DeviceLocalAccount(fake_device_local_account_)));
+
+  GetStatus();
+  ASSERT_TRUE(status_.has_running_kiosk_app());
+  const em::AppStatus app = status_.running_kiosk_app();
+  EXPECT_EQ(kKioskAppId, app.app_id());
+  EXPECT_EQ("1235", app.required_platform_version());
   EXPECT_FALSE(app.has_status());
   EXPECT_FALSE(app.has_error());
 }

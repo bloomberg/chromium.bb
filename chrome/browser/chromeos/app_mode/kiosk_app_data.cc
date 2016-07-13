@@ -477,6 +477,20 @@ void KioskAppData::SetStatusForTest(Status status) {
   SetStatus(status);
 }
 
+// static
+std::unique_ptr<KioskAppData> KioskAppData::CreateForTest(
+    KioskAppDataDelegate* delegate,
+    const std::string& app_id,
+    const AccountId& account_id,
+    const GURL& update_url,
+    const std::string& required_platform_version) {
+  std::unique_ptr<KioskAppData> data(new KioskAppData(
+      delegate, app_id, account_id, update_url, base::FilePath()));
+  data->status_ = STATUS_LOADED;
+  data->required_platform_version_ = required_platform_version;
+  return data;
+}
+
 void KioskAppData::SetStatus(Status status) {
   if (status_ == status)
     return;
