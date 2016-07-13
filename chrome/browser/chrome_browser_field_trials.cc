@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -57,6 +58,18 @@ void InstantiatePersistentHistograms() {
   if (!base::ReplaceFile(active_file, metrics_file, nullptr))
     base::DeleteFile(metrics_file, /*recursive=*/false);
 
+  // This is used to report results to an UMA histogram. It's an int because
+  // arithmetic is done on the value. The corresponding "failed" case must
+  // always appear directly after the "success" case.
+  enum : int {
+    LOCAL_MEMORY_SUCCESS,
+    LOCAL_MEMORY_FAILED,
+    MAPPED_FILE_SUCCESS,
+    MAPPED_FILE_FAILED,
+    CREATE_ALLOCATOR_RESULTS
+  };
+  int result;
+
   // Create persistent/shared memory and allow histograms to be stored in
   // it. Memory that is not actualy used won't be physically mapped by the
   // system. BrowserMetrics usage, as reported in UMA, peaked around 1.9MiB
@@ -70,18 +83,29 @@ void InstantiatePersistentHistograms() {
     base::GlobalHistogramAllocator::CreateWithFile(
         active_file, kAllocSize, kAllocId,
         ChromeMetricsServiceClient::kBrowserMetricsName);
+    result = MAPPED_FILE_SUCCESS;
   } else if (storage == "LocalMemory") {
     // Use local memory for storage even though it will not persist across
     // an unclean shutdown.
     base::GlobalHistogramAllocator::CreateWithLocalMemory(
         kAllocSize, kAllocId, ChromeMetricsServiceClient::kBrowserMetricsName);
+    result = LOCAL_MEMORY_SUCCESS;
   } else {
     // Persistent metric storage is disabled.
     return;
   }
 
+  // Get the allocator that was just created and report result. Exit if the
+  // allocator could not be created.
   base::GlobalHistogramAllocator* allocator =
       base::GlobalHistogramAllocator::Get();
+  UMA_HISTOGRAM_ENUMERATION("UMA.PersistentHistograms.InitResult",
+                            result + (allocator ? 0 : 1),
+                            CREATE_ALLOCATOR_RESULTS);
+  if (!allocator)
+    return;
+
+  // Create tracking histograms for the allocator and record storage file.
   allocator->CreateTrackingHistograms(
       ChromeMetricsServiceClient::kBrowserMetricsName);
   allocator->SetPersistentLocation(active_file);

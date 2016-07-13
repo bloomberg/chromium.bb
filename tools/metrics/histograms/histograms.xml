@@ -59966,6 +59966,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.PersistentHistograms.InitResult"
+    enum="PersistentHistogramsInitResult">
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    A count of successes and various failure modes related to collecting and
+    processing performance data obtained through &quot;perf&quot; on Chrome OS.
+  </summary>
+</histogram>
+
 <histogram name="UMA.ProfilesCount.AfterErase">
   <obsolete>
     Deprecated as of Jun 2016. The histogram was added for debugging purpose and
@@ -86135,6 +86144,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="PERMISSION_AUDIO_CAPTURE"/>
   <int value="9" label="PERMISSION_VIDEO_CAPTURE"/>
   <int value="10" label="PERMISSION_BACKGROUND_SYNC"/>
+</enum>
+
+<enum name="PersistentHistogramsInitResult" type="int">
+  <int value="0" label="Local-Memory Success"/>
+  <int value="1" label="Local-Memory Failure"/>
+  <int value="2" label="Mapped-File Success"/>
+  <int value="3" label="Mapped-File Failure"/>
 </enum>
 
 <enum name="PhotoEditorFileType" type="int">
