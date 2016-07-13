@@ -1,4 +1,0 @@
-#if defined(OS_ANDROID)
-
-#if defined(OS_WIN)
-
