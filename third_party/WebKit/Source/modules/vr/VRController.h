@@ -5,7 +5,7 @@
 #ifndef VRController_h
 #define VRController_h
 
-#include "core/frame/LocalFrameLifecycleObserver.h"
+#include "core/frame/LocalFrame.h"
 #include "device/vr/vr_service.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
@@ -20,8 +20,7 @@ class VRGetDevicesCallback;
 
 class MODULES_EXPORT VRController final
     : public GarbageCollectedFinalized<VRController>
-    , public Supplement<LocalFrame>
-    , public LocalFrameLifecycleObserver {
+    , public Supplement<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(VRController);
     WTF_MAKE_NONCOPYABLE(VRController);
 public:
@@ -41,9 +40,6 @@ public:
 
 private:
     VRController(LocalFrame&, ServiceRegistry*);
-
-    // Inherited from LocalFrameLifecycleObserver.
-    void willDetachFrameHost() override;
 
     // Binding callbacks.
     void onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr>);

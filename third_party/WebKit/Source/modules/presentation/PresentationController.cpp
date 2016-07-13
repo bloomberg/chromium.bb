@@ -131,7 +131,7 @@ void PresentationController::registerConnection(PresentationConnection* connecti
     m_connections.add(connection);
 }
 
-void PresentationController::willDetachFrameHost()
+void PresentationController::contextDestroyed()
 {
     if (m_client) {
         m_client->setController(nullptr);

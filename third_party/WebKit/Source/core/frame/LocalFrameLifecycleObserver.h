@@ -37,7 +37,6 @@ class LocalFrame;
 
 class CORE_EXPORT LocalFrameLifecycleObserver : public LifecycleObserver<LocalFrame, LocalFrameLifecycleObserver> {
 public:
-    virtual void willDetachFrameHost() { }
     virtual void contextDestroyed()
     {
         setContext(nullptr);

@@ -106,8 +106,6 @@ public:
     bool prepareForCommit() override;
     void didChangeVisibilityState() override;
 
-    void willDetachFrameHost();
-
     LocalDOMWindow* localDOMWindow() const;
     void setDOMWindow(LocalDOMWindow*);
     FrameView* view() const;

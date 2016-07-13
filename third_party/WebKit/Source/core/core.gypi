@@ -1766,7 +1766,6 @@
             'frame/LocalDOMWindow.h',
             'frame/LocalFrame.cpp',
             'frame/LocalFrame.h',
-            'frame/LocalFrameLifecycleNotifier.cpp',
             'frame/LocalFrameLifecycleNotifier.h',
             'frame/LocalFrameLifecycleObserver.h',
             'frame/Location.cpp',

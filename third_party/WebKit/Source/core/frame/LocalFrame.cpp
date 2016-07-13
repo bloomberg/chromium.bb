@@ -406,13 +406,25 @@ void LocalFrame::detach(FrameDetachType type)
     // back to FrameLoaderClient via WindowProxy.
     script().clearForClose();
     setView(nullptr);
-    willDetachFrameHost();
-    InspectorInstrumentation::frameDetachedFromParent(this);
-    Frame::detach(type);
+
+    m_host->eventHandlerRegistry().didRemoveAllEventHandlers(*localDOMWindow());
 
     // Signal frame destruction here rather than in the destructor.
     // Main motivation is to avoid being dependent on its exact timing (Oilpan.)
     LocalFrameLifecycleNotifier::notifyContextDestroyed();
+
+    // TODO: Page should take care of updating focus/scrolling instead of Frame.
+    // TODO: It's unclear as to why this is called more than once, but it is,
+    // so page() could be null.
+    if (page() && page()->focusController().focusedFrame() == this)
+        page()->focusController().setFocusedFrame(nullptr);
+
+    if (page() && page()->scrollingCoordinator() && m_view)
+        page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
+
+    InspectorInstrumentation::frameDetachedFromParent(this);
+    Frame::detach(type);
+
     m_supplements.clear();
     WeakIdentifierMap<LocalFrame>::notifyObjectDestroyed(this);
 }
@@ -447,20 +459,6 @@ bool LocalFrame::shouldClose()
     // TODO(dcheng): This should be fixed to dispatch beforeunload events to
     // both local and remote frames.
     return m_loader.shouldClose();
-}
-
-void LocalFrame::willDetachFrameHost()
-{
-    LocalFrameLifecycleNotifier::notifyWillDetachFrameHost();
-
-    // FIXME: Page should take care of updating focus/scrolling instead of Frame.
-    // FIXME: It's unclear as to why this is called more than once, but it is,
-    // so page() could be null.
-    if (page() && page()->focusController().focusedFrame() == this)
-        page()->focusController().setFocusedFrame(nullptr);
-
-    if (page() && page()->scrollingCoordinator() && m_view)
-        page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
 }
 
 void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow)

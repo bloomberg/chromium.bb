@@ -55,7 +55,7 @@ private:
     void pageVisibilityChanged() override;
 
     // Inherited from LocalFrameLifecycleObserver.
-    void willDetachFrameHost() override;
+    void contextDestroyed() override;
 
     void notifyDispatcher();
 

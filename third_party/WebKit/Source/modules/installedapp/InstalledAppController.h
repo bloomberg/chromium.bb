@@ -33,7 +33,7 @@ private:
     InstalledAppController(LocalFrame&, WebInstalledAppClient*);
 
     // Inherited from LocalFrameLifecycleObserver.
-    void willDetachFrameHost() override;
+    void contextDestroyed() override;
 
     WebInstalledAppClient* m_client;
 };

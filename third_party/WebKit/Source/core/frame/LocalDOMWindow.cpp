@@ -104,11 +104,6 @@ public:
     }
 
     // LocalFrameLifecycleObserver overrides:
-    void willDetachFrameHost() override
-    {
-        m_window->willDetachFrameHost();
-    }
-
     void contextDestroyed() override
     {
         m_window->frameDestroyed();
@@ -493,11 +488,6 @@ LocalDOMWindow* LocalDOMWindow::toLocalDOMWindow()
 MediaQueryList* LocalDOMWindow::matchMedia(const String& media)
 {
     return document() ? document()->mediaQueryMatcher().matchMedia(media) : nullptr;
-}
-
-void LocalDOMWindow::willDetachFrameHost()
-{
-    frame()->host()->eventHandlerRegistry().didRemoveAllEventHandlers(*this);
 }
 
 void LocalDOMWindow::frameDestroyed()

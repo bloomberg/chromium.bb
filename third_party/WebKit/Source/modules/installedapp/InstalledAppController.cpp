@@ -54,7 +54,7 @@ void InstalledAppController::getInstalledApps(const WebSecurityOrigin& url, std:
     m_client->getInstalledRelatedApps(url, std::move(callback));
 }
 
-void InstalledAppController::willDetachFrameHost()
+void InstalledAppController::contextDestroyed()
 {
     m_client = nullptr;
 }

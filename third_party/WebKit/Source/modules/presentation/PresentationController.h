@@ -71,7 +71,7 @@ private:
     PresentationController(LocalFrame&, WebPresentationClient*);
 
     // Implementation of LocalFrameLifecycleObserver.
-    void willDetachFrameHost() override;
+    void contextDestroyed() override;
 
     // Return the connection associated with the given |connectionClient| or
     // null if it doesn't exist.

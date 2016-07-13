@@ -15,8 +15,6 @@ class LocalFrameLifecycleObserver;
 class LocalFrame;
 
 class CORE_EXPORT LocalFrameLifecycleNotifier : public LifecycleNotifier<LocalFrame, LocalFrameLifecycleObserver> {
-public:
-    void notifyWillDetachFrameHost();
 };
 
 } // namespace blink

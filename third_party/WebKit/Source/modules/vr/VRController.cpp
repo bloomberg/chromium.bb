@@ -28,7 +28,6 @@ VRController* VRController::from(LocalFrame& frame)
 }
 
 VRController::VRController(LocalFrame& frame, ServiceRegistry* registry)
-    : LocalFrameLifecycleObserver(&frame)
 {
     ASSERT(!m_service.is_bound());
     registry->connectToRemoteService(mojo::GetProxy(&m_service));
@@ -67,11 +66,6 @@ void VRController::resetPose(unsigned index)
     m_service->ResetPose(index);
 }
 
-void VRController::willDetachFrameHost()
-{
-    // TODO(kphanee): Detach from the mojo service connection.
-}
-
 void VRController::onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr> displays)
 {
     std::unique_ptr<VRGetDevicesCallback> callback = m_pendingGetDevicesCallbacks.takeFirst();
@@ -84,7 +78,6 @@ void VRController::onGetDisplays(mojo::WTFArray<device::blink::VRDisplayPtr> dis
 DEFINE_TRACE(VRController)
 {
     Supplement<LocalFrame>::trace(visitor);
-    LocalFrameLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

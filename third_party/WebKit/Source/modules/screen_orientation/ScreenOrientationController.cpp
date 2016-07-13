@@ -197,7 +197,7 @@ bool ScreenOrientationController::hasLastData()
     return true;
 }
 
-void ScreenOrientationController::willDetachFrameHost()
+void ScreenOrientationController::contextDestroyed()
 {
     m_client = nullptr;
 }
