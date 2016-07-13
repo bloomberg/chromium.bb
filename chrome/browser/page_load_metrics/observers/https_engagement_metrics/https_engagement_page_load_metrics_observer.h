@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_HTTPS_ENGAGEMENT_PAGE_LOAD_METRICS_OBSERVER_H_
-#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_HTTPS_ENGAGEMENT_PAGE_LOAD_METRICS_OBSERVER_H_
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_HTTPS_ENGAGEMENT_METRICS_HTTPS_ENGAGEMENT_PAGE_LOAD_METRICS_OBSERVER_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_HTTPS_ENGAGEMENT_METRICS_HTTPS_ENGAGEMENT_PAGE_LOAD_METRICS_OBSERVER_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_service.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "url/gurl.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace internal {
 extern const char kHttpsEngagementHistogram[];
@@ -18,7 +23,8 @@ extern const char kHttpEngagementHistogram[];
 class HttpsEngagementPageLoadMetricsObserver
     : public page_load_metrics::PageLoadMetricsObserver {
  public:
-  HttpsEngagementPageLoadMetricsObserver();
+  explicit HttpsEngagementPageLoadMetricsObserver(
+      content::BrowserContext* context);
 
   // page_load_metrics::PageLoadMetricsObserver:
   void OnStart(content::NavigationHandle* navigation_handle,
@@ -34,8 +40,9 @@ class HttpsEngagementPageLoadMetricsObserver
   bool currently_in_foreground_;
   base::TimeDelta foreground_time_;
   base::TimeTicks last_time_shown_;
+  HttpsEngagementService* engagement_service_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpsEngagementPageLoadMetricsObserver);
 };
 
-#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_HTTPS_ENGAGEMENT_PAGE_LOAD_METRICS_OBSERVER_H_
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_HTTPS_ENGAGEMENT_METRICS_HTTPS_ENGAGEMENT_PAGE_LOAD_METRICS_OBSERVER_H_

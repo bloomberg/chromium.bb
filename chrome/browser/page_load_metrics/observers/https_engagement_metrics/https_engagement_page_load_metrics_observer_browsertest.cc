@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/https_engagement_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/https_engagement_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/metrics/metrics_service.h"
 #include "content/public/test/test_utils.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_server_config.h"
@@ -22,7 +25,8 @@
 
 class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
  public:
-  HttpsEngagementPageLoadMetricsBrowserTest() {}
+  HttpsEngagementPageLoadMetricsBrowserTest()
+      : metrics_provider_(new HttpsEngagementMetricsProvider()) {}
   ~HttpsEngagementPageLoadMetricsBrowserTest() override {}
 
   void StartHttpsServer(bool cert_error) {
@@ -148,10 +152,15 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
     return (base::TimeTicks::Now() - start);
   }
 
+  void FakeUserMetricsUpload() {
+    metrics_provider_->ProvideGeneralMetrics(NULL);
+  }
+
  protected:
   base::HistogramTester histogram_tester_;
   std::unique_ptr<net::EmbeddedTestServer> https_test_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_test_server_;
+  std::unique_ptr<HttpsEngagementMetricsProvider> metrics_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpsEngagementPageLoadMetricsBrowserTest);
 };
@@ -161,6 +170,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpsServer(false);
   base::TimeDelta upper_bound = NavigateInForegroundAndCloseWithTiming(
       https_test_server_->GetURL("/simple.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
   int32_t bucket_min =
@@ -168,12 +179,24 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
           .min;
   EXPECT_GE(upper_bound.InMilliseconds(), bucket_min);
   EXPECT_LT(0, bucket_min);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(100, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest, Simple_Http) {
   StartHttpServer();
   base::TimeDelta upper_bound = NavigateInForegroundAndCloseWithTiming(
       http_test_server_->GetURL("/simple.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
   int32_t bucket_min =
@@ -181,12 +204,25 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest, Simple_Http) {
           .min;
   EXPECT_GE(upper_bound.InMilliseconds(), bucket_min);
   EXPECT_LT(0, bucket_min);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(0, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest, OtherScheme) {
   NavigateInForegroundAndCloseWithTiming(GURL(chrome::kChromeUIVersionURL));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -194,8 +230,20 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpsServer(false);
   NavigateTwiceInTabAndClose(https_test_server_->GetURL("/simple.html"),
                              https_test_server_->GetURL("/empty.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 2);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(100, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -203,8 +251,20 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpServer();
   NavigateTwiceInTabAndClose(http_test_server_->GetURL("/simple.html"),
                              http_test_server_->GetURL("/empty.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 2);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(0, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -220,6 +280,9 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   destroyed_watcher.Wait();
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -227,23 +290,48 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpsServer(false);
   NavigateTwiceInTabAndClose(https_test_server_->GetURL("/simple.html"),
                              GURL(chrome::kChromeUIVersionURL));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(100, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        Navigate_Http) {
   StartHttpServer();
+
+  // Test the page load metrics.
   NavigateTwiceInTabAndClose(http_test_server_->GetURL("/simple.html"),
                              GURL(chrome::kChromeUIVersionURL));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(0, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        Navigate_Both) {
   StartHttpServer();
   StartHttpsServer(false);
+
   NavigateTwiceInTabAndClose(http_test_server_->GetURL("/simple.html"),
                              https_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
@@ -260,8 +348,21 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   // TODO(bmcquade): for the time being, the page load metrics infrastructure
   // also tracks non-HTML resources. We should update these to expect 0
   // histogram events once that gets fixed. See crbug.com/627536.
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_GT(100, ratio_bucket);
+  EXPECT_LT(0, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -270,6 +371,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   base::TimeDelta upper_bound =
       NavigateInForegroundAndCloseInBackgroundWithTiming(
           https_test_server_->GetURL("/simple.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
   int32_t bucket_min =
@@ -277,6 +380,16 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
           .min;
   EXPECT_GE(upper_bound.InMilliseconds(), bucket_min);
   EXPECT_LT(0, bucket_min);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(100, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -285,6 +398,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   base::TimeDelta upper_bound =
       NavigateInForegroundAndCloseInBackgroundWithTiming(
           http_test_server_->GetURL("/simple.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
   int32_t bucket_min =
@@ -292,6 +407,16 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
           .min;
   EXPECT_GE(upper_bound.InMilliseconds(), bucket_min);
   EXPECT_LT(0, bucket_min);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(0, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -300,6 +425,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   base::TimeDelta upper_bound =
       NavigateInBackgroundAndCloseInForegroundWithTiming(
           https_test_server_->GetURL("/simple.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
   int32_t bucket_min =
@@ -307,6 +434,16 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
           .min;
   EXPECT_GE(upper_bound.InMilliseconds(), bucket_min);
   EXPECT_LT(0, bucket_min);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(100, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -315,6 +452,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   base::TimeDelta upper_bound =
       NavigateInBackgroundAndCloseInForegroundWithTiming(
           http_test_server_->GetURL("/simple.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
   int32_t bucket_min =
@@ -322,6 +461,16 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
           .min;
   EXPECT_GE(upper_bound.InMilliseconds(), bucket_min);
   EXPECT_LT(0, bucket_min);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
+  int32_t ratio_bucket =
+      histogram_tester_
+          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
+          .min;
+  EXPECT_EQ(0, ratio_bucket);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -330,6 +479,27 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpServer();
   NavigateInBackgroundAndClose(https_test_server_->GetURL("/simple.html"));
   NavigateInBackgroundAndClose(http_test_server_->GetURL("/simple.html"));
+
+  // Test the page load metrics.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
+
+  // Test the ratio metric.
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
+                       MultipleUploads) {
+  StartHttpsServer(false);
+
+  NavigateInForegroundAndCloseWithTiming(https_test_server_->GetURL("/"));
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 0);
+  FakeUserMetricsUpload();
+  FakeUserMetricsUpload();
+  FakeUserMetricsUpload();
+  histogram_tester_.ExpectTotalCount(
+      internal::kHttpsEngagementSessionPercentage, 1);
 }

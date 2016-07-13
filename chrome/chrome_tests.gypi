@@ -379,7 +379,7 @@
       'browser/net/sdch_browsertest.cc',
       'browser/net/websocket_browsertest.cc',
       'browser/page_load_metrics/page_load_metrics_browsertest.cc',
-      'browser/page_load_metrics/observers/https_engagement_page_load_metrics_observer_browsertest.cc',
+      'browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer_browsertest.cc',
       'browser/password_manager/credential_manager_browsertest.cc',
       'browser/password_manager/password_manager_browsertest.cc',
       'browser/pdf/pdf_extension_test.cc',

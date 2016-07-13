@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/observers/https_engagement_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_service_factory.h"
 #include "url/url_constants.h"
 
 namespace internal {
@@ -12,8 +13,12 @@ const char kHttpsEngagementHistogram[] = "Navigation.EngagementTime.HTTPS";
 const char kHttpEngagementHistogram[] = "Navigation.EngagementTime.HTTP";
 }
 
-HttpsEngagementPageLoadMetricsObserver::HttpsEngagementPageLoadMetricsObserver()
-    : currently_in_foreground_(false) {}
+HttpsEngagementPageLoadMetricsObserver::HttpsEngagementPageLoadMetricsObserver(
+    content::BrowserContext* context)
+    : currently_in_foreground_(false) {
+  engagement_service_ =
+      HttpsEngagementServiceFactory::GetForBrowserContext(context);
+}
 
 void HttpsEngagementPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
@@ -49,9 +54,15 @@ void HttpsEngagementPageLoadMetricsObserver::OnComplete(
     OnHidden();
 
   if (extra_info.committed_url.SchemeIs(url::kHttpsScheme)) {
+    if (engagement_service_)
+      engagement_service_->RecordTimeOnPage(foreground_time_,
+                                            HttpsEngagementService::HTTPS);
     UMA_HISTOGRAM_LONG_TIMES_100(internal::kHttpsEngagementHistogram,
                                  foreground_time_);
   } else if (extra_info.committed_url.SchemeIs(url::kHttpScheme)) {
+    if (engagement_service_)
+      engagement_service_->RecordTimeOnPage(foreground_time_,
+                                            HttpsEngagementService::HTTP);
     UMA_HISTOGRAM_LONG_TIMES_100(internal::kHttpEngagementHistogram,
                                  foreground_time_);
   }

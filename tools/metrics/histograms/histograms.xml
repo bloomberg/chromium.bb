@@ -25282,6 +25282,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.EngagementTime.Ratio" units="%">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The percentage of time that HTTPS pages were in the foreground, as compared
+    to total foreground time. Recorded whenever user metrics are uploaded.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.FrameHasEmbeddedCredentials" enum="Boolean">
   <owner>palmer@chromium.org</owner>
   <owner>cbentzel@chromium.org</owner>
