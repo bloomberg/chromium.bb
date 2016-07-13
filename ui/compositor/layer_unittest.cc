@@ -633,6 +633,28 @@ TEST_F(LayerWithRealCompositorTest, DrawTree) {
   EXPECT_FALSE(d3.painted());
 }
 
+// Tests that scheduling paint on a layer with a mask updates the mask.
+TEST_F(LayerWithRealCompositorTest, SchedulePaintUpdatesMask) {
+  std::unique_ptr<Layer> layer(
+      CreateColorLayer(SK_ColorRED, gfx::Rect(20, 20, 400, 400)));
+  std::unique_ptr<Layer> mask_layer(CreateLayer(ui::LAYER_TEXTURED));
+  mask_layer->SetBounds(gfx::Rect(layer->GetTargetBounds().size()));
+  layer->SetMaskLayer(mask_layer.get());
+
+  GetCompositor()->SetRootLayer(layer.get());
+  WaitForDraw();
+
+  DrawTreeLayerDelegate d1(layer->bounds());
+  layer->set_delegate(&d1);
+  DrawTreeLayerDelegate d2(mask_layer->bounds());
+  mask_layer->set_delegate(&d2);
+
+  layer->SchedulePaint(gfx::Rect(5, 5, 5, 5));
+  WaitForDraw();
+  EXPECT_TRUE(d1.painted());
+  EXPECT_TRUE(d2.painted());
+}
+
 // Tests no-texture Layers.
 // Create this hierarchy:
 // L1 - red

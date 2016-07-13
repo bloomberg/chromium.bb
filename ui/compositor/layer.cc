@@ -673,6 +673,11 @@ bool Layer::SchedulePaint(const gfx::Rect& invalid_rect) {
 
   damaged_region_.Union(invalid_rect);
   ScheduleDraw();
+
+  if (layer_mask_) {
+    layer_mask_->damaged_region_.Union(invalid_rect);
+    layer_mask_->ScheduleDraw();
+  }
   return true;
 }
 
@@ -690,6 +695,8 @@ void Layer::SendDamagedRects() {
 
   for (cc::Region::Iterator iter(damaged_region_); iter.has_rect(); iter.next())
     cc_layer_->SetNeedsDisplayRect(iter.rect());
+  if (layer_mask_)
+    layer_mask_->SendDamagedRects();
 
   if (content_layer_)
     paint_region_.Union(damaged_region_);

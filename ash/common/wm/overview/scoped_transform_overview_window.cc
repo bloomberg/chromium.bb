@@ -183,6 +183,7 @@ class ScopedTransformOverviewWindow::OverviewContentMask
   explicit OverviewContentMask(float radius);
   ~OverviewContentMask() override;
 
+  void set_radius(float radius) { radius_ = radius; }
   ui::Layer* layer() { return &layer_; }
 
   // Overridden from LayerDelegate.
@@ -405,11 +406,15 @@ void ScopedTransformOverviewWindow::SetTransform(
 
   if (ash::MaterialDesignController::IsOverviewMaterial() &&
       &transform != &original_transform_) {
+    if (!mask_) {
+      mask_.reset(new OverviewContentMask(radius));
+      mask_->layer()->SetFillsBoundsOpaquely(false);
+      window()->GetLayer()->SetMaskLayer(mask_->layer());
+    }
     gfx::Rect bounds(GetTargetBoundsInScreen().size());
-    mask_.reset(new OverviewContentMask(radius));
-    mask_->layer()->SetFillsBoundsOpaquely(false);
     mask_->layer()->SetBounds(bounds);
-    window()->GetLayer()->SetMaskLayer(mask_->layer());
+    mask_->set_radius(radius);
+    window()->GetLayer()->SchedulePaint(bounds);
 
     SkRegion* window_shape = window()->GetLayer()->alpha_shape();
     if (!original_window_shape_ && window_shape)
