@@ -14,9 +14,11 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
+#include "content/public/browser/permission_type.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -30,6 +32,8 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace safe_browsing {
+
+class PermissionReporter;
 
 class SafeBrowsingPingManager : public net::URLFetcherDelegate {
  public:
@@ -59,6 +63,11 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   void SetCertificateErrorReporterForTesting(
       std::unique_ptr<certificate_reporting::ErrorReporter>
           certificate_error_reporter);
+
+  // Report permission action to SafeBrowsing servers.
+  void ReportPermissionAction(const GURL& origin,
+                              content::PermissionType permission,
+                              PermissionAction action);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingPingManagerTest,
@@ -99,6 +108,9 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   // Sends reports of invalid SSL certificate chains.
   std::unique_ptr<certificate_reporting::ErrorReporter>
       certificate_error_reporter_;
+
+  // Sends reports of permission actions.
+  std::unique_ptr<PermissionReporter> permission_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPingManager);
 };

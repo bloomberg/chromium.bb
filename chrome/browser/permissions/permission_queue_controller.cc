@@ -205,11 +205,14 @@ void PermissionQueueController::OnPermissionSet(
   if (update_content_setting) {
     UpdateContentSetting(requesting_frame, embedder, allowed);
     if (allowed)
-      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_frame);
+      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_frame,
+                                           profile_);
     else
-      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_frame);
+      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_frame,
+                                          profile_);
   } else {
-    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_frame);
+    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_frame,
+                                           profile_);
   }
 
   // Cancel this request first, then notify listeners.  TODO(pkasting): Why

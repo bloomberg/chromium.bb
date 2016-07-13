@@ -175,6 +175,7 @@
       'browser/permissions/delegation_tracker_unittest.cc',
       'browser/permissions/permission_context_base_unittest.cc',
       'browser/permissions/permission_manager_unittest.cc',
+      'browser/permissions/permission_uma_util_unittest.cc',
       'browser/permissions/permission_util_unittest.cc',
       'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
       'browser/policy/cloud/remote_commands_invalidator_unittest.cc',

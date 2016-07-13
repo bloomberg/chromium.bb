@@ -669,6 +669,7 @@ class ProfileSyncService : public sync_driver::SyncService,
     SYNC_INITIAL_STATE_LIMIT
   };
 
+  friend class PermissionUmaUtilTest;
   friend class ProfileSyncServicePasswordTest;
   friend class SyncTest;
   friend class TestProfileSyncService;
