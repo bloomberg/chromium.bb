@@ -137,10 +137,10 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 @DataType int optionType, Callback<PaymentInformation> checkedCallback);
 
         /**
-         * Called when the user clicks on the “Pay” button. At this point, the UI is disabled and is
-         * showing a spinner.
+         * Called when the user clicks on the “Pay” button. If this method returns true, the UI is
+         * disabled and is showing a spinner. Otherwise, the UI is hidden.
          */
-        void onPayClicked(PaymentOption selectedShippingAddress,
+        boolean onPayClicked(PaymentOption selectedShippingAddress,
                 PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod);
 
         /**
@@ -688,12 +688,24 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         params.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
         mRequestView.requestLayout();
 
-        mClient.onPayClicked(
+        boolean showSpinner = mClient.onPayClicked(
                 mShippingAddressSectionInformation == null
                         ? null : mShippingAddressSectionInformation.getSelectedItem(),
                 mShippingOptionsSectionInformation == null
                         ? null : mShippingOptionsSectionInformation.getSelectedItem(),
                 mPaymentMethodSectionInformation.getSelectedItem());
+
+        if (!showSpinner) mDialog.hide();
+    }
+
+    /**
+     * Called when the user has sent the payment information to the website, which is now processing
+     * the payment.
+     */
+    public void showProcessingMessage() {
+        assert mIsProcessingPayClicked;
+        mIsProcessingPayClicked = false;
+        mDialog.show();
     }
 
     private void updatePayButtonEnabled() {

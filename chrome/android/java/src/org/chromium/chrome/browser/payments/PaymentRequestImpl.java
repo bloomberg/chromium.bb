@@ -692,13 +692,14 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
-    public void onPayClicked(PaymentOption selectedShippingAddress,
+    public boolean onPayClicked(PaymentOption selectedShippingAddress,
             PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
         assert selectedPaymentMethod instanceof PaymentInstrument;
         PaymentInstrument instrument = (PaymentInstrument) selectedPaymentMethod;
         mPaymentAppRunning = true;
         instrument.getDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
                 mMethodData.get(instrument.getMethodName()), this);
+        return !(instrument instanceof AutofillPaymentInstrument);
     }
 
     @Override
@@ -816,6 +817,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
+        mUI.showProcessingMessage();
         mClient.onPaymentResponse(response);
     }
 
