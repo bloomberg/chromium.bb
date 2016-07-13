@@ -19,7 +19,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/sys_info.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/feature_entry_macros.h"
@@ -143,14 +142,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
 
   if ([defaults boolForKey:@"EnableCredentialManagement"])
     command_line->AppendSwitch(switches::kEnableCredentialManagerAPI);
-
-  // Populate command line flags from FullFormAutofill.
-  NSString* fullFormAutofillValue = [defaults stringForKey:@"FullFormAutofill"];
-  if ([fullFormAutofillValue isEqualToString:@"Enabled"]) {
-    command_line->AppendSwitch(autofill::switches::kEnableFullFormAutofillIOS);
-  } else if ([fullFormAutofillValue isEqualToString:@"Disabled"]) {
-    command_line->AppendSwitch(autofill::switches::kDisableFullFormAutofillIOS);
-  }
 
   NSString* autoReloadEnabledValue =
       [defaults stringForKey:@"AutoReloadEnabled"];

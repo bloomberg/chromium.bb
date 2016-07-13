@@ -147,8 +147,6 @@ source_set("browser") {
 
   if (is_ios) {
     sources += [
-      "autofill_field_trial_ios.cc",
-      "autofill_field_trial_ios.h",
       "keyboard_accessory_metrics_logger.h",
       "keyboard_accessory_metrics_logger.mm",
     ]

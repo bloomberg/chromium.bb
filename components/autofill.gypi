@@ -250,8 +250,6 @@
       'conditions': [
         ['OS=="ios"', {
           'sources': [
-            'autofill/core/browser/autofill_field_trial_ios.cc',
-            'autofill/core/browser/autofill_field_trial_ios.h',
             'autofill/core/browser/keyboard_accessory_metrics_logger.h',
             'autofill/core/browser/keyboard_accessory_metrics_logger.mm',
           ],

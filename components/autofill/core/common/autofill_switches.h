@@ -13,13 +13,11 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kDisableCreditCardScan[];
-extern const char kDisableFullFormAutofillIOS[];
 extern const char kDisableOfferStoreUnmaskedWalletCards[];
 extern const char kDisableOfferUploadCreditCards[];
 extern const char kDisablePasswordGeneration[];
 extern const char kDisableSingleClickAutofill[];
 extern const char kEnableCreditCardScan[];
-extern const char kEnableFullFormAutofillIOS[];
 extern const char kEnableOfferStoreUnmaskedWalletCards[];
 extern const char kEnableOfferUploadCreditCards[];
 extern const char kEnablePasswordGeneration[];

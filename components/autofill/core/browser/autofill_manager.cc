@@ -66,7 +66,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_IOS)
-#include "components/autofill/core/browser/autofill_field_trial_ios.h"
 #include "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #endif
 
@@ -594,13 +593,6 @@ bool AutofillManager::WillFillCreditCardNumber(const FormData& form,
 
   if (autofill_field->Type().GetStorableType() == CREDIT_CARD_NUMBER)
     return true;
-
-#if defined(OS_IOS)
-  // On iOS, we only fill out one field at a time (assuming the new full-form
-  // feature isn't enabled). So we only need to check the current field.
-  if (!AutofillFieldTrialIOS::IsFullFormAutofillEnabled())
-    return false;
-#endif
 
   // If the relevant section is already autofilled, the new fill operation will
   // only fill |autofill_field|.

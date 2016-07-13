@@ -923,20 +923,6 @@ class AutofillManagerTest : public testing::Test {
     autofill_manager_->FillOrPreviewCreditCardForm(
         AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
         form->fields[0], *card);
-
-#if defined(OS_IOS)
-    // Filling out the entire form on iOS requires requesting autofill on each
-    // of the form fields.
-    autofill_manager_->FillOrPreviewCreditCardForm(
-        AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
-        form->fields[1], *card);
-    autofill_manager_->FillOrPreviewCreditCardForm(
-        AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
-        form->fields[2], *card);
-    autofill_manager_->FillOrPreviewCreditCardForm(
-        AutofillDriver::FORM_DATA_ACTION_FILL, kDefaultPageID, *form,
-        form->fields[3], *card);
-#endif  // defined(OS_IOS)
   }
 
   // Convenience method to cast the FullCardRequest into a CardUnmaskDelegate.
@@ -1827,26 +1813,18 @@ TEST_F(AutofillManagerTest, WillFillCreditCardNumber) {
       month_field = &form.fields[i];
   }
 
-  // Empty form - whole form is Autofilled (except on iOS).
+  // Empty form - whole form is Autofilled.
   EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
-#if defined(OS_IOS)
-  EXPECT_FALSE(WillFillCreditCardNumber(form, *name_field));
-#else
   EXPECT_TRUE(WillFillCreditCardNumber(form, *name_field));
-#endif  // defined(OS_IOS)
 
   // If the user has entered a value, it won't be overridden.
   number_field->value = ASCIIToUTF16("gibberish");
   EXPECT_TRUE(WillFillCreditCardNumber(form, *number_field));
   EXPECT_FALSE(WillFillCreditCardNumber(form, *name_field));
 
-  // But if that value is removed, it will be Autofilled (except on iOS).
+  // But if that value is removed, it will be Autofilled.
   number_field->value.clear();
-#if defined(OS_IOS)
-  EXPECT_FALSE(WillFillCreditCardNumber(form, *name_field));
-#else
   EXPECT_TRUE(WillFillCreditCardNumber(form, *name_field));
-#endif  // defined(OS_IOS)
 
   // When part of the section is Autofilled, only fill the initiating field.
   month_field->is_autofilled = true;
