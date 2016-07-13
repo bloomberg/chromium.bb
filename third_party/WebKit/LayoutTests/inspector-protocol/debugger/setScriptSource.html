@@ -9,7 +9,7 @@ function test()
     // A general-purpose engine for sending a sequence of protocol commands.
     // The clients provide requests and response handlers, while the engine catches
     // errors and makes sure that once there's nothing to do completeTest() is called.
-    // @param step is an object with command, params and callback fields 
+    // @param step is an object with command, params and callback fields
     function runRequestSeries(step) {
         processStep(step);
 
@@ -21,7 +21,7 @@ function test()
                 InspectorTest.completeTest();
             }
         }
-        
+
         function processStepOrFail(currentStep) {
             if (!currentStep) {
                 InspectorTest.completeTest();
@@ -64,7 +64,7 @@ function test()
             InspectorTest.sendCommand(currentStep.command, currentStep.params, innerCallback);
         }
     }
-    
+
     function logEqualsCheck(actual, expected)
     {
         if (actual == expected) {
@@ -77,57 +77,63 @@ function test()
     {
         InspectorTest.log(description + ": " + (success ? "PASS" : "FAIL"));
     }
-    
+
     var firstStep = { callback: enableDebugger };
 
     runRequestSeries(firstStep);
-    
+
     function enableDebugger() {
         return { command: "Debugger.enable", params: {}, callback: evalFunction };
     }
-    
+
     function evalFunction(response) {
         var expression = "TestExpression(2, 4)";
         return { command: "Runtime.evaluate", params: { expression: expression }, callback: callbackEvalFunction };
     }
-    
+
     function callbackEvalFunction(result) {
         InspectorTest.log("Function evaluate: " + JSON.stringify(result.result));
         logEqualsCheck(result.result.value, 6);
 
         return { command: "Runtime.evaluate", params: { expression: "TestExpression" }, callback: callbackEvalFunctionObject };
     }
-    
+
     function callbackEvalFunctionObject(result) {
-        return { command: "Debugger.getFunctionDetails", params: { functionId: result.result.objectId }, callback: callbackFunctionDetails };
-    }
-    
-    function callbackFunctionDetails(result) {
-        return createScriptManipulationArc(result.details.location.scriptId, null);
+        return { command: "Runtime.getProperties", params: { objectId: result.result.objectId }, callback: callbackFunctionDetails };
     }
 
-    // Several steps with scriptId in context.    
+    function callbackFunctionDetails(result)
+    {
+        var scriptId;
+        for (var prop of result.internalProperties) {
+            if (prop.name === "[[FunctionLocation]]")
+                scriptId = prop.value.value.scriptId;
+        }
+        return createScriptManipulationArc(scriptId, null);
+    }
+
+    // Several steps with scriptId in context.
     function createScriptManipulationArc(scriptId, next) {
         return { command: "Debugger.getScriptSource", params: { scriptId: scriptId }, callback: callbackGetScriptSource };
-        
+
         var originalText;
-        
+
         function callbackGetScriptSource(result) {
             originalText = result.scriptSource;
             var patched = originalText.replace("a + b", "a * b");
 
             return { command: "Debugger.setScriptSource", params: { scriptId: scriptId, scriptSource: patched }, callback: callbackSetScriptSource };
         }
-        
+
         function callbackSetScriptSource(result) {
             var expression = "TestExpression(2, 4)";
             return { command: "Runtime.evaluate", params: { expression: expression }, callback: callbackEvalFunction2 };
         }
-        
+
         function callbackEvalFunction2(result) {
             InspectorTest.log("Function evaluate: " + JSON.stringify(result.result));
             logEqualsCheck(result.result.value, 8);
-    
+
             var patched = originalText.replace("a + b", "a # b");
 
             return { command: "Debugger.setScriptSource", params: { scriptId: scriptId, scriptSource: patched }, callback: errorCallbackSetScriptSource2 };

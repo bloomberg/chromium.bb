@@ -10,6 +10,7 @@ function onload()
     console.dir(Object(true));
     console.dir((function(a,b) { return a + b; }));
     console.dir((function(a,b) { return a + b; }).bind({}, 2));
+    console.dir((function*() { yeild [1,2,3] }));
     runTest();
 }
 

@@ -8,6 +8,7 @@
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/V8Compat.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/V8InternalValueType.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8DebuggerClient.h"
 
@@ -54,16 +55,6 @@ v8::Local<v8::Object> V8InjectedScriptHost::create(v8::Local<v8::Context> contex
     return injectedScriptHost;
 }
 
-v8::Local<v8::Private> V8InjectedScriptHost::internalEntryPrivate(v8::Isolate* isolate)
-{
-    return v8::Private::ForApi(isolate, toV8StringInternalized(isolate, "V8InjectedScriptHost#internalEntry"));
-}
-
-v8::Local<v8::Private> V8InjectedScriptHost::internalLocationPrivate(v8::Isolate* isolate)
-{
-    return v8::Private::ForApi(isolate, toV8StringInternalized(isolate, "V8InjectedScriptHost#internalLocation"));
-}
-
 void V8InjectedScriptHost::internalConstructorNameCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 1 || !info[0]->IsObject())
@@ -100,6 +91,13 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
 
     v8::Isolate* isolate = info.GetIsolate();
     v8::Local<v8::Value> value = info[0];
+    if (value->IsObject()) {
+        v8::Local<v8::Value> internalType = v8InternalValueTypeFrom(isolate->GetCurrentContext(), v8::Local<v8::Object>::Cast(value));
+        if (internalType->IsString()) {
+            info.GetReturnValue().Set(internalType);
+            return;
+        }
+    }
     if (value->IsArray() || value->IsTypedArray() || value->IsArgumentsObject()) {
         info.GetReturnValue().Set(toV8StringInternalized(isolate, "array"));
         return;
@@ -135,17 +133,6 @@ void V8InjectedScriptHost::subtypeCallback(const v8::FunctionCallbackInfo<v8::Va
     if (value->IsProxy()) {
         info.GetReturnValue().Set(toV8StringInternalized(isolate, "proxy"));
         return;
-    }
-    if (value->IsObject()) {
-        v8::Local<v8::Object> obj = value.As<v8::Object>();
-        if (obj->HasPrivate(isolate->GetCurrentContext(), internalEntryPrivate(isolate)).FromMaybe(false)) {
-            info.GetReturnValue().Set(toV8StringInternalized(isolate, "internal#entry"));
-            return;
-        }
-        if (obj->HasPrivate(isolate->GetCurrentContext(), internalLocationPrivate(isolate)).FromMaybe(false)) {
-            info.GetReturnValue().Set(toV8StringInternalized(isolate, "internal#location"));
-            return;
-        }
     }
     String16 subtype = unwrapDebugger(info)->client()->valueSubtype(value);
     if (!subtype.isEmpty()) {

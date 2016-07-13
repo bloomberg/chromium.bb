@@ -376,18 +376,6 @@
                 "description": "Location in the source code."
             },
             {
-                "id": "FunctionDetails",
-                "hidden": true,
-                "type": "object",
-                "properties": [
-                    { "name": "location", "$ref": "Location", "optional": true, "description": "Location of the function, none for native functions." },
-                    { "name": "functionName", "type": "string", "description": "Name of the function." },
-                    { "name": "isGenerator", "type": "boolean", "description": "Whether this is a generator function." },
-                    { "name": "scopeChain", "type": "array", "optional": true, "items": { "$ref": "Scope" }, "description": "Scope chain for this closure." }
-                ],
-                "description": "Information about the function."
-            },
-            {
                 "id": "CallFrame",
                 "type": "object",
                 "properties": [
@@ -577,17 +565,6 @@
                     { "name": "scriptSource", "type": "string", "description": "Script source." }
                 ],
                 "description": "Returns source for the script with given id."
-            },
-            {
-                "name": "getFunctionDetails",
-                "hidden": true,
-                "parameters": [
-                    { "name": "functionId", "$ref": "Runtime.RemoteObjectId", "description": "Id of the function to get details for." }
-                ],
-                "returns": [
-                    { "name": "details", "$ref": "FunctionDetails", "description": "Information about the function." }
-                ],
-                "description": "Returns detailed information on given function."
             },
             {
                 "name": "setPauseOnExceptions",

@@ -199,6 +199,20 @@ InjectedScript.primitiveTypes = {
     __proto__: null
 }
 
+/**
+ * @type {!Map<string, string>}
+ * @const
+ */
+InjectedScript.closureTypes = new Map([
+    ["local", "Local"],
+    ["closure", "Closure"],
+    ["catch", "Catch"],
+    ["block", "Block"],
+    ["script", "Script"],
+    ["with", "With Block"],
+    ["global", "Global"]
+]);
+
 InjectedScript.prototype = {
     /**
      * @param {*} object
@@ -324,10 +338,20 @@ InjectedScript.prototype = {
      */
     getProperties: function(object, objectGroupName, ownProperties, accessorPropertiesOnly, generatePreview)
     {
+        var subtype = this._subtype(object);
+        if (subtype === "internal#scope") {
+            // Internally, scope contains object with scope variables and additional information like type,
+            // we use additional information for preview and would like to report variables as scope
+            // properties.
+            object = object.object;
+        }
+
         var descriptors = [];
         var iter = this._propertyDescriptors(object, ownProperties, accessorPropertiesOnly, undefined);
         // Go over properties, wrap object values.
         for (var descriptor of iter) {
+            if (subtype === "internal#scopeList" && descriptor.name === "length")
+                continue;
             if ("get" in descriptor)
                 descriptor.get = this._wrapObject(descriptor.get, objectGroupName);
             if ("set" in descriptor)
@@ -626,6 +650,12 @@ InjectedScript.prototype = {
                 return "{" + this._describeIncludingPrimitives(obj.key) + " => " + this._describeIncludingPrimitives(obj.value) + "}";
             return this._describeIncludingPrimitives(obj.value);
         }
+
+        if (subtype === "internal#scopeList")
+            return "Scopes[" + obj.length + "]";
+
+        if (subtype === "internal#scope")
+            return (InjectedScript.closureTypes.get(obj.type) || "Unknown") + (obj.name ? " (" + obj.name + ")" : "");
 
         return className;
     },

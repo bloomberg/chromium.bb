@@ -28,7 +28,6 @@ using blink::protocol::Maybe;
 using blink::protocol::Debugger::BreakpointId;
 using blink::protocol::Debugger::CallFrame;
 using blink::protocol::Runtime::ExceptionDetails;
-using blink::protocol::Debugger::FunctionDetails;
 using blink::protocol::Runtime::ScriptId;
 using blink::protocol::Runtime::StackTrace;
 using blink::protocol::Runtime::RemoteObject;
@@ -593,43 +592,6 @@ void V8DebuggerAgentImpl::getScriptSource(ErrorString* error, const String16& sc
     }
     v8::HandleScope handles(m_isolate);
     *scriptSource = toProtocolString(it->second->source(m_isolate));
-}
-
-void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const String16& functionId, std::unique_ptr<FunctionDetails>* details)
-{
-    if (!checkEnabled(errorString))
-        return;
-    InjectedScript::ObjectScope scope(errorString, m_debugger, m_session->contextGroupId(), functionId);
-    if (!scope.initialize())
-        return;
-    if (!scope.object()->IsFunction()) {
-        *errorString = "Value with given id is not a function";
-        return;
-    }
-    v8::Local<v8::Function> function = scope.object().As<v8::Function>();
-
-    v8::Local<v8::Value> scopesValue;
-    v8::Local<v8::Array> scopes;
-    if (m_debugger->functionScopes(function).ToLocal(&scopesValue) && scopesValue->IsArray()) {
-        scopes = scopesValue.As<v8::Array>();
-        if (!scope.injectedScript()->wrapPropertyInArray(errorString, scopes, toV8StringInternalized(m_isolate, "object"), scope.objectGroupName()))
-            return;
-    }
-
-    std::unique_ptr<FunctionDetails> functionDetails = FunctionDetails::create()
-        .setLocation(buildProtocolLocation(String16::number(function->ScriptId()), function->GetScriptLineNumber(), function->GetScriptColumnNumber()))
-        .setFunctionName(toProtocolStringWithTypeCheck(function->GetDebugName()))
-        .setIsGenerator(function->IsGeneratorFunction()).build();
-
-    if (!scopes.IsEmpty()) {
-        protocol::ErrorSupport errorSupport;
-        std::unique_ptr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(scope.context(), scopes).get(), &errorSupport);
-        if (hasInternalError(errorString, errorSupport.hasErrors()))
-            return;
-        functionDetails->setScopeChain(std::move(scopeChain));
-    }
-
-    *details = std::move(functionDetails);
 }
 
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, std::unique_ptr<protocol::DictionaryValue> data)

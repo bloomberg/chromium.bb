@@ -1100,6 +1100,8 @@
       'v8_inspector/V8InjectedScriptHost.h',
       'v8_inspector/V8InspectorSessionImpl.cpp',
       'v8_inspector/V8InspectorSessionImpl.h',
+      'v8_inspector/V8InternalValueType.cpp',
+      'v8_inspector/V8InternalValueType.h',
       'v8_inspector/V8ProfilerAgentImpl.cpp',
       'v8_inspector/V8ProfilerAgentImpl.h',
       'v8_inspector/V8Regex.cpp',

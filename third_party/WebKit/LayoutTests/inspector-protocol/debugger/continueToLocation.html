@@ -23,13 +23,17 @@ function test()
     function callbackEvalFunctionObject(response)
     {
         var functionObjectId = response.result.result.objectId;
-        InspectorTest.sendCommand("Debugger.getFunctionDetails", { functionId: functionObjectId }, callbackFunctionDetails);
+        InspectorTest.sendCommand("Runtime.getProperties", { objectId: functionObjectId }, callbackFunctionDetails);
     }
 
     function callbackFunctionDetails(response)
     {
         var result = response.result;
-        var scriptId = result.details.location.scriptId;
+        var scriptId;
+        for (var prop of result.internalProperties) {
+            if (prop.name === "[[FunctionLocation]]")
+                scriptId = prop.value.value.scriptId;
+        }
 
         nextScenarioStep(0);
 

@@ -51,7 +51,6 @@
 
 using blink::protocol::Array;
 using blink::protocol::Debugger::CallFrame;
-using blink::protocol::Debugger::FunctionDetails;
 using blink::protocol::Runtime::PropertyDescriptor;
 using blink::protocol::Runtime::InternalPropertyDescriptor;
 using blink::protocol::Runtime::RemoteObject;

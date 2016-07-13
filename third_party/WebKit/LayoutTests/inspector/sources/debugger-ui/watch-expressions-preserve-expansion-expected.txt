@@ -4,8 +4,8 @@ Bug 99304
 Watch expressions added.
 expanded foo [object Object]
 expanded bar [object Object]
-expanded <function scope> 
-expanded Closure 
+expanded [[Scopes]] [object Object]
+expanded 0 [object Object]
 expanded a [object Object]
 expanded [200 .. 299] 
 expanded 299 [object Object]
@@ -129,11 +129,12 @@ func: function () {return a + b;}
     name: 
     prototype: Object
     __proto__: function () {}
-    <function scope>
-      Closure
+    [[FunctionLocation]]: Object
+    [[Scopes]]: Scopes[2]
+      0: Closure
         a: 10
         b: 100
-      Global: Window
+      1: Global
 Page reloaded.
 Watch expressions after page reload:
 globalObject: Object
@@ -255,9 +256,10 @@ func: function () {return a + b;}
     name: 
     prototype: Object
     __proto__: function () {}
-    <function scope>
-      Closure
+    [[FunctionLocation]]: Object
+    [[Scopes]]: Scopes[2]
+      0: Closure
         a: 10
         b: 100
-      Global: Window
+      1: Global
 

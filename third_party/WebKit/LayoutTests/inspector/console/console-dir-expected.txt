@@ -40,8 +40,8 @@ console-dir.html:19 anonymous()
     name: ""
     prototype: Object
     __proto__: ()
-    <function scope>
-        Global: Window
+    [[FunctionLocation]]: console-dir.html:19
+    [[Scopes]]: Scopes[1]
 console-dir.html:23 inner
     __proto__: Object
 console-dir.html:26 Object
@@ -56,8 +56,7 @@ console-dir.html:29 get __proto__()
     length: 0
     name: "get __proto__"
     __proto__: ()
-    <function scope>
-        No Scopes
+    [[FunctionLocation]]: <unknown>
 console-dir.html:34 Uint8Array[400000000]
     [0 … 99999999]
     [100000000 … 199999999]

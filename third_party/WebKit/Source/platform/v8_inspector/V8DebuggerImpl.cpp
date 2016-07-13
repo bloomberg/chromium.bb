@@ -41,6 +41,7 @@
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8InjectedScriptHost.h"
 #include "platform/v8_inspector/V8InspectorSessionImpl.h"
+#include "platform/v8_inspector/V8InternalValueType.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -651,7 +652,18 @@ v8::MaybeLocal<v8::Value> V8DebuggerImpl::functionScopes(v8::Local<v8::Function>
         return v8::Local<v8::Value>::New(m_isolate, v8::Undefined(m_isolate));
     }
     v8::Local<v8::Value> argv[] = { function };
-    return callDebuggerMethod("getFunctionScopes", 1, argv);
+    v8::Local<v8::Value> scopesValue;
+    if (!callDebuggerMethod("getFunctionScopes", 1, argv).ToLocal(&scopesValue) || !scopesValue->IsArray())
+        return v8::MaybeLocal<v8::Value>();
+    v8::Local<v8::Array> scopes = scopesValue.As<v8::Array>();
+    v8::Local<v8::Context> context = m_debuggerContext.Get(m_isolate);
+    if (!markAsInternal(context, scopes, V8InternalValueType::kScopeList))
+        return v8::MaybeLocal<v8::Value>();
+    if (!markArrayEntriesAsInternal(context, scopes, V8InternalValueType::kScope))
+        return v8::MaybeLocal<v8::Value>();
+    if (!scopes->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
+        return v8::Undefined(m_isolate);
+    return scopes;
 }
 
 v8::MaybeLocal<v8::Array> V8DebuggerImpl::internalProperties(v8::Local<v8::Context> context, v8::Local<v8::Value> value)
@@ -659,6 +671,18 @@ v8::MaybeLocal<v8::Array> V8DebuggerImpl::internalProperties(v8::Local<v8::Conte
     v8::Local<v8::Array> properties;
     if (!v8::Debug::GetInternalProperties(m_isolate, value).ToLocal(&properties))
         return v8::MaybeLocal<v8::Array>();
+    if (value->IsFunction()) {
+        v8::Local<v8::Function> function = value.As<v8::Function>();
+        v8::Local<v8::Value> location = functionLocation(context, function);
+        if (location->IsObject()) {
+            properties->Set(properties->Length(), v8InternalizedString("[[FunctionLocation]]"));
+            properties->Set(properties->Length(), location);
+        }
+        if (function->IsGeneratorFunction()) {
+            properties->Set(properties->Length(), v8InternalizedString("[[IsGenerator]]"));
+            properties->Set(properties->Length(), v8::True(m_isolate));
+        }
+    }
     if (!enabled())
         return properties;
     if (value->IsMap() || value->IsWeakMap() || value->IsSet() || value->IsWeakSet() || value->IsSetIterator() || value->IsMapIterator()) {
@@ -675,6 +699,15 @@ v8::MaybeLocal<v8::Array> V8DebuggerImpl::internalProperties(v8::Local<v8::Conte
             properties->Set(properties->Length(), location);
         }
     }
+    if (value->IsFunction()) {
+        v8::Local<v8::Function> function = value.As<v8::Function>();
+        v8::Local<v8::Value> boundFunction = function->GetBoundFunction();
+        v8::Local<v8::Value> scopes;
+        if (boundFunction->IsUndefined() && functionScopes(function).ToLocal(&scopes)) {
+            properties->Set(properties->Length(), v8InternalizedString("[[Scopes]]"));
+            properties->Set(properties->Length(), scopes);
+        }
+    }
     return properties;
 }
 
@@ -689,13 +722,8 @@ v8::Local<v8::Value> V8DebuggerImpl::collectionEntries(v8::Local<v8::Context> co
     if (!entriesValue->IsArray())
         return v8::Undefined(m_isolate);
     v8::Local<v8::Array> entries = entriesValue.As<v8::Array>();
-    for (size_t i = 0; i < entries->Length(); ++i) {
-        v8::Local<v8::Value> entry;
-        if (!entries->Get(context, i).ToLocal(&entry) || !entry->IsObject())
-            continue;
-        if (!entry.As<v8::Object>()->SetPrivate(context, V8InjectedScriptHost::internalEntryPrivate(m_isolate), v8::True(m_isolate)).FromMaybe(false))
-            continue;
-    }
+    if (!markArrayEntriesAsInternal(context, entries, V8InternalValueType::kEntry))
+        return v8::Undefined(m_isolate);
     if (!entries->SetPrototype(context, v8::Null(m_isolate)).FromMaybe(false))
         return v8::Undefined(m_isolate);
     return entries;
@@ -712,7 +740,28 @@ v8::Local<v8::Value> V8DebuggerImpl::generatorObjectLocation(v8::Local<v8::Objec
     if (!location->IsObject())
         return v8::Null(m_isolate);
     v8::Local<v8::Context> context = m_debuggerContext.Get(m_isolate);
-    if (!location.As<v8::Object>()->SetPrivate(context, V8InjectedScriptHost::internalLocationPrivate(m_isolate), v8::True(m_isolate)).FromMaybe(false))
+    if (!markAsInternal(context, v8::Local<v8::Object>::Cast(location), V8InternalValueType::kLocation))
+        return v8::Null(m_isolate);
+    return location;
+}
+
+v8::Local<v8::Value> V8DebuggerImpl::functionLocation(v8::Local<v8::Context> context, v8::Local<v8::Function> function)
+{
+    int scriptId = function->ScriptId();
+    if (scriptId == v8::UnboundScript::kNoScriptId)
+        return v8::Null(m_isolate);
+    int lineNumber = function->GetScriptLineNumber();
+    int columnNumber = function->GetScriptColumnNumber();
+    if (lineNumber == v8::Function::kLineOffsetNotFound || columnNumber == v8::Function::kLineOffsetNotFound)
+        return v8::Null(m_isolate);
+    v8::Local<v8::Object> location = v8::Object::New(m_isolate);
+    if (!location->Set(context, v8InternalizedString("scriptId"), toV8String(m_isolate, String16::number(scriptId))).FromMaybe(false))
+        return v8::Null(m_isolate);
+    if (!location->Set(context, v8InternalizedString("lineNumber"), v8::Integer::New(m_isolate, lineNumber)).FromMaybe(false))
+        return v8::Null(m_isolate);
+    if (!location->Set(context, v8InternalizedString("columnNumber"), v8::Integer::New(m_isolate, columnNumber)).FromMaybe(false))
+        return v8::Null(m_isolate);
+    if (!markAsInternal(context, location, V8InternalValueType::kLocation))
         return v8::Null(m_isolate);
     return location;
 }

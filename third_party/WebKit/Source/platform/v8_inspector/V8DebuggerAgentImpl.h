@@ -92,9 +92,6 @@ public:
         std::unique_ptr<protocol::Array<protocol::Debugger::CallFrame>>* newCallFrames,
         Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void getScriptSource(ErrorString*, const String16& scriptId, String16* scriptSource) override;
-    void getFunctionDetails(ErrorString*,
-        const String16& functionId,
-        std::unique_ptr<protocol::Debugger::FunctionDetails>*) override;
     void pause(ErrorString*) override;
     void resume(ErrorString*) override;
     void stepOver(ErrorString*) override;

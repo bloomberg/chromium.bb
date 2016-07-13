@@ -38,7 +38,7 @@ var test = function()
     {
         InspectorTest.addResult("Watch expressions added.");
         var expandArray = expandWatchExpression.bind(null, ["array", "[200 \u2026 299]", "299"], step3);
-        var expandFunc = expandWatchExpression.bind(null, ["func", "<function scope>", "Closure", "a"], expandArray);
+        var expandFunc = expandWatchExpression.bind(null, ["func", "[[Scopes]]", "0", "a"], expandArray);
         expandWatchExpression(["globalObject", "foo", "bar"], expandFunc);
     }
 
