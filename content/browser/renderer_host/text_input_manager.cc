@@ -7,6 +7,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/view_messages.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace content {
 
@@ -45,14 +46,14 @@ TextInputManager::~TextInputManager() {
     Unregister(view);
 }
 
-const TextInputState* TextInputManager::GetTextInputState() {
-  return !!active_view_ ? &text_input_state_map_[active_view_] : nullptr;
-}
-
 RenderWidgetHostImpl* TextInputManager::GetActiveWidget() const {
   return !!active_view_ ? static_cast<RenderWidgetHostImpl*>(
                               active_view_->GetRenderWidgetHost())
                         : nullptr;
+}
+
+const TextInputState* TextInputManager::GetTextInputState() {
+  return !!active_view_ ? &text_input_state_map_[active_view_] : nullptr;
 }
 
 gfx::Rect TextInputManager::GetSelectionBoundsRect() {
@@ -62,6 +63,13 @@ gfx::Rect TextInputManager::GetSelectionBoundsRect() {
   return gfx::RectBetweenSelectionBounds(
       selection_region_map_[active_view_].anchor,
       selection_region_map_[active_view_].focus);
+}
+
+const std::vector<gfx::Rect>*
+TextInputManager::GetCompositionCharacterBounds() {
+  return !!active_view_
+             ? &composition_range_info_map_[active_view_].character_bounds
+             : nullptr;
 }
 
 void TextInputManager::UpdateTextInputState(
@@ -148,6 +156,24 @@ void TextInputManager::SelectionBoundsChanged(
 #endif
 }
 
+void TextInputManager::ImeCompositionRangeChanged(
+    RenderWidgetHostViewBase* view,
+    const gfx::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+  DCHECK(IsRegistered(view));
+  composition_range_info_map_[view].character_bounds.clear();
+
+  // The values for the bounds should be converted to root view's coordinates
+  // before being stored.
+  for (auto rect : character_bounds) {
+    composition_range_info_map_[view].character_bounds.emplace_back(gfx::Rect(
+        view->TransformPointToRootCoordSpace(rect.origin()), rect.size()));
+  }
+
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnImeCompositionRangeChanged(this, view));
+}
+
 void TextInputManager::Register(RenderWidgetHostViewBase* view) {
   DCHECK(!IsRegistered(view));
 
@@ -199,5 +225,12 @@ TextInputManager::SelectionRegion::SelectionRegion() {}
 
 TextInputManager::SelectionRegion::SelectionRegion(
     const SelectionRegion& other) = default;
+
+TextInputManager::CompositionRangeInfo::CompositionRangeInfo() {}
+
+TextInputManager::CompositionRangeInfo::CompositionRangeInfo(
+    const CompositionRangeInfo& other) = default;
+
+TextInputManager::CompositionRangeInfo::~CompositionRangeInfo() {}
 
 }  // namespace content

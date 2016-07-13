@@ -16,7 +16,12 @@
 
 struct ViewHostMsg_SelectionBounds_Params;
 
+namespace gfx {
+class Range;
+}
+
 namespace content {
+
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
@@ -45,8 +50,12 @@ class CONTENT_EXPORT TextInputManager {
     virtual void OnImeCancelComposition(
         TextInputManager* text_input_manager,
         RenderWidgetHostViewBase* updated_view) {}
-    // Called when the selection bounds for the |updated_view| has changed.
+    // Called when |updated_view| has changed its SelectionRegion.
     virtual void OnSelectionBoundsChanged(
+        TextInputManager* text_input_manager,
+        RenderWidgetHostViewBase* updated_view) {}
+    // Called when |updated_view| has changed its CompositionRangeInfo.
+    virtual void OnImeCompositionRangeChanged(
         TextInputManager* text_input_manager,
         RenderWidgetHostViewBase* updated_view) {}
   };
@@ -54,21 +63,26 @@ class CONTENT_EXPORT TextInputManager {
   TextInputManager();
   ~TextInputManager();
 
-  // ---------------------------------------------------------------------------
-  // The following methods can be used to obtain information about IME-related
-  // state for the active RenderWidget.
-
   // Returns the currently active widget, i.e., the RWH which is associated with
   // |active_view_|.
   RenderWidgetHostImpl* GetActiveWidget() const;
 
-  // Returns the TextInputState corresponding to |active_view_|.
-  // Users of this method should not hold on to the pointer as it might become
-  // dangling if the TextInputManager or |active_view_| might go away.
+  // ---------------------------------------------------------------------------
+  // The following methods can be used to obtain information about IME-related
+  // state for the active RenderWidgetHost. If the active widget is nullptr, the
+  // methods below will return nullptr as well.
+  // Users of these methods should not hold on to the pointers as they become
+  // dangling if the TextInputManager or |active_view_| are destroyed.
+
+  // Returns the currently stored TextInputState. An state of nullptr can be
+  // interpreted as a ui::TextInputType of ui::TEXT_INPUT_TYPE_NONE.
   const TextInputState* GetTextInputState();
 
-  // Returns the rect between selection bounds for the |active_view_|.
+  // Returns the rect between selection bounds.
   gfx::Rect GetSelectionBoundsRect();
+
+  // Returns a vector of rects representing the character bounds.
+  const std::vector<gfx::Rect>* GetCompositionCharacterBounds();
 
   // ---------------------------------------------------------------------------
   // The following methods are called by RWHVs on the tab to update their IME-
@@ -87,6 +101,12 @@ class CONTENT_EXPORT TextInputManager {
   // setting the position of the ui::ImeWindow.
   void SelectionBoundsChanged(RenderWidgetHostViewBase* view,
                               const ViewHostMsg_SelectionBounds_Params& params);
+
+  // Called when the composition range and/or character bounds have changed.
+  void ImeCompositionRangeChanged(
+      RenderWidgetHostViewBase* view,
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds);
 
   // Registers the given |view| for tracking its TextInputState. This is called
   // by any view which has updates in its TextInputState (whether tab's RWHV or
@@ -128,6 +148,15 @@ class CONTENT_EXPORT TextInputManager {
     gfx::SelectionBound focus;
   };
 
+  // Ccomposition range information.
+  struct CompositionRangeInfo {
+    CompositionRangeInfo();
+    CompositionRangeInfo(const CompositionRangeInfo& other);
+    ~CompositionRangeInfo();
+
+    std::vector<gfx::Rect> character_bounds;
+  };
+
   // This class is used to create maps which hold specific IME state for a
   // view.
   template <class Value>
@@ -146,6 +175,7 @@ class CONTENT_EXPORT TextInputManager {
 
   // Text selection bounds information for registered views.
   ViewMap<SelectionRegion> selection_region_map_;
+  ViewMap<CompositionRangeInfo> composition_range_info_map_;
 
   base::ObserverList<Observer> observer_list_;
 

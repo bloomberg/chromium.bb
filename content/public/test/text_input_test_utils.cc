@@ -18,6 +18,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
+#include "third_party/WebKit/public/web/WebCompositionUnderline.h"
+#include "ui/base/ime/composition_underline.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_observer.h"
 
@@ -58,6 +60,11 @@ class TextInputManagerTester::InternalObserver
     on_selection_bounds_changed_callback_ = callback;
   }
 
+  void set_on_ime_composition_range_changed_callback(
+      const base::Closure& callback) {
+    on_ime_composition_range_changed_callback_ = callback;
+  }
+
   const RenderWidgetHostView* GetUpdatedView() const { return updated_view_; }
 
   bool text_input_state_changed() const { return text_input_state_changed_; }
@@ -84,6 +91,14 @@ class TextInputManagerTester::InternalObserver
       on_selection_bounds_changed_callback_.Run();
   }
 
+  void OnImeCompositionRangeChanged(
+      TextInputManager* text_input_manager,
+      RenderWidgetHostViewBase* updated_view) override {
+    updated_view_ = updated_view;
+    if (!on_ime_composition_range_changed_callback_.is_null())
+      on_ime_composition_range_changed_callback_.Run();
+  }
+
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override { text_input_manager_ = nullptr; }
 
@@ -93,6 +108,7 @@ class TextInputManagerTester::InternalObserver
   bool text_input_state_changed_;
   base::Closure update_text_input_state_callback_;
   base::Closure on_selection_bounds_changed_callback_;
+  base::Closure on_ime_composition_range_changed_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalObserver);
 };
@@ -216,6 +232,25 @@ bool GetTextInputTypeForView(WebContents* web_contents,
   return true;
 }
 
+void SetCompositionForRenderWidgetHost(
+    RenderWidgetHost* render_widget_host,
+    const base::string16& text,
+    const std::vector<ui::CompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
+    int selection_start,
+    int selection_end) {
+  std::vector<blink::WebCompositionUnderline> web_underlines;
+  for (auto underline : underlines) {
+    web_underlines.emplace_back(blink::WebCompositionUnderline(
+        underline.start_offset, underline.end_offset, underline.color,
+        underline.thick, underline.background_color));
+  }
+
+  static_cast<RenderWidgetHostImpl*>(render_widget_host)
+      ->ImeSetComposition(text, web_underlines, replacement_range,
+                          selection_start, selection_end);
+}
+
 size_t GetRegisteredViewsCountFromTextInputManager(WebContents* web_contents) {
   std::unordered_set<RenderWidgetHostView*> views;
   TextInputManager* manager =
@@ -242,6 +277,11 @@ void TextInputManagerTester::SetUpdateTextInputStateCalledCallback(
 void TextInputManagerTester::SetOnSelectionBoundsChangedCallback(
     const base::Closure& callback) {
   observer_->set_on_selection_bounds_changed_callback(callback);
+}
+
+void TextInputManagerTester::SetOnImeCompositionRangeChangedCallback(
+    const base::Closure& callback) {
+  observer_->set_on_ime_composition_range_changed_callback(callback);
 }
 
 bool TextInputManagerTester::GetTextInputType(ui::TextInputType* type) {

@@ -272,6 +272,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params);
 
+  // Updates the range of the marked text in an IME composition.
+  virtual void ImeCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds);
+
   //----------------------------------------------------------------------------
   // The following static methods are implemented by each platform.
 
@@ -381,11 +386,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Instructs the view to not drop the surface even when the view is hidden.
   virtual void LockCompositingSurface() = 0;
   virtual void UnlockCompositingSurface() = 0;
-
-  // Updates the range of the marked text in an IME composition.
-  virtual void ImeCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) = 0;
 
   // Add and remove observers for lifetime event notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be

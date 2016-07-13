@@ -233,12 +233,6 @@ void RenderWidgetHostViewChildFrame::InitAsFullscreen(
   NOTREACHED();
 }
 
-void RenderWidgetHostViewChildFrame::ImeCompositionRangeChanged(
-    const gfx::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
-  // TODO(kenrb): Fix OOPIF Ime.
-}
-
 void RenderWidgetHostViewChildFrame::UpdateCursor(const WebCursor& cursor) {
   if (frame_connector_)
     frame_connector_->UpdateCursor(cursor);

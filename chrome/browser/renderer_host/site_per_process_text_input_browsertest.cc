@@ -5,12 +5,14 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -18,6 +20,7 @@
 #include "content/public/test/text_input_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/base/ime/composition_underline.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -204,6 +207,32 @@ class ViewSelectionBoundsChangedObserver : public TextInputManagerObserverBase {
   const content::RenderWidgetHostView* const expected_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewSelectionBoundsChangedObserver);
+};
+
+// This class observes the |expected_view| for the first change in its
+// composition range information.
+class ViewCompositionRangeChangedObserver
+    : public TextInputManagerObserverBase {
+ public:
+  ViewCompositionRangeChangedObserver(
+      content::WebContents* web_contents,
+      content::RenderWidgetHostView* expected_view)
+      : TextInputManagerObserverBase(web_contents),
+        expected_view_(expected_view) {
+    tester()->SetOnImeCompositionRangeChangedCallback(
+        base::Bind(&ViewCompositionRangeChangedObserver::VerifyChange,
+                   base::Unretained(this)));
+  }
+
+ private:
+  void VerifyChange() {
+    if (expected_view_ == tester()->GetUpdatedView())
+      OnSuccess();
+  }
+
+  const content::RenderWidgetHostView* const expected_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ViewCompositionRangeChangedObserver);
 };
 
 }  // namespace
@@ -484,7 +513,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 // receives the corresponding update on the change in selection bounds on the
 // browser side.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       TrackSelectionBoundsForChildFrames) {
+                       TrackSelectionBoundsForAllFrames) {
   CreateIframePage("a(b,c(a,b),d)");
   std::vector<content::RenderFrameHost*> frames{
       GetFrame(IndexVector{}),     GetFrame(IndexVector{0}),
@@ -513,6 +542,44 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
 
   for (auto view : views)
     send_tab_insert_text_wait_for_bounds_change(view);
+}
+
+// This test creates a page with multiple child frames and adds an <input> to
+// each frame. Then, sequentially, each <input> is focused by sending a tab key.
+// Then, after |TextInputState.type| for a view is changed to text, the test
+// sends a set composition IPC to the active widget and waits until the widget
+// updates its composition range.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       TrackCompositionRangeForAllFrames) {
+  // TODO(ekaramd): After IME methods are implemented for WebFrameWidgetImpl,
+  // change the page so that it contains child frames as well
+  // (crbug.com/626746).
+  CreateIframePage("a()");
+  std::vector<content::RenderFrameHost*> frames{GetFrame(IndexVector{})};
+  std::vector<content::RenderWidgetHostView*> views;
+  for (auto frame : frames)
+    views.push_back(frame->GetView());
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", "", true);
+
+  content::WebContents* web_contents = active_contents();
+
+  auto send_tab_set_composition_wait_for_bounds_change =
+      [&web_contents](content::RenderWidgetHostView* view) {
+        ViewTextInputTypeObserver type_observer(web_contents, view,
+                                                ui::TEXT_INPUT_TYPE_TEXT);
+        SimulateKeyPress(web_contents, ui::DomKey::TAB, ui::DomCode::TAB,
+                         ui::VKEY_TAB, false, false, false, false);
+        type_observer.Wait();
+        ViewCompositionRangeChangedObserver range_observer(web_contents, view);
+        content::SetCompositionForRenderWidgetHost(
+            view->GetRenderWidgetHost(), base::ASCIIToUTF16("text"),
+            {ui::CompositionUnderline()}, gfx::Range::InvalidRange(), 0, 0);
+        range_observer.Wait();
+      };
+
+  for (auto view : views)
+    send_tab_set_composition_wait_for_bounds_change(view);
 }
 
 // TODO(ekaramad): The following tests are specifically written for Aura and are

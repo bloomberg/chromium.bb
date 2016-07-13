@@ -424,6 +424,18 @@ void RenderWidgetHostViewBase::ImeCancelComposition() {
 #endif
 }
 
+void RenderWidgetHostViewBase::ImeCompositionRangeChanged(
+    const gfx::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+// TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
+#if defined(USE_AURA)
+  if (GetTextInputManager()) {
+    GetTextInputManager()->ImeCompositionRangeChanged(this, range,
+                                                      character_bounds);
+  }
+#endif
+}
+
 TextInputManager* RenderWidgetHostViewBase::GetTextInputManager() {
   if (text_input_manager_)
     return text_input_manager_;

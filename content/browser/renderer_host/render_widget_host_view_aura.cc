@@ -976,12 +976,6 @@ void RenderWidgetHostViewAura::SetIsLoading(bool is_loading) {
   UpdateCursorIfOverSelf();
 }
 
-void RenderWidgetHostViewAura::ImeCompositionRangeChanged(
-    const gfx::Range& range,
-    const std::vector<gfx::Rect>& character_bounds) {
-  composition_character_bounds_ = character_bounds;
-}
-
 void RenderWidgetHostViewAura::RenderProcessGone(base::TerminationStatus status,
                                                  int error_code) {
   UpdateCursorIfOverSelf();
@@ -1533,9 +1527,15 @@ bool RenderWidgetHostViewAura::GetCompositionCharacterBounds(
     uint32_t index,
     gfx::Rect* rect) const {
   DCHECK(rect);
-  if (index >= composition_character_bounds_.size())
+
+  if (!text_input_manager_ || !text_input_manager_->GetActiveWidget())
     return false;
-  *rect = ConvertRectToScreen(composition_character_bounds_[index]);
+
+  const std::vector<gfx::Rect>* composition_character_bounds =
+      text_input_manager_->GetCompositionCharacterBounds();
+  if (index >= composition_character_bounds->size())
+    return false;
+  *rect = ConvertRectToScreen(composition_character_bounds->at(index));
   return true;
 }
 

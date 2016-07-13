@@ -4300,4 +4300,26 @@ TEST_F(InputMethodStateAuraTest, GetCaretBounds) {
   }
 }
 
+// This test activates child frames in a specific sequence and changes their
+// composition range. Then it verifies that the ui::TextInputClient returns the
+// correct character bound at the given indices.
+TEST_F(InputMethodStateAuraTest, GetCompositionCharacterBounds) {
+  gfx::Rect bound;
+  // Initially, there should be no bounds.
+  EXPECT_FALSE(text_input_client()->GetCompositionCharacterBounds(0, &bound));
+  for (auto index : active_view_sequence_) {
+    ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
+    // Simulate an IPC to set character bounds for the view.
+    views_[index]->ImeCompositionRangeChanged(gfx::Range(),
+                                              {gfx::Rect(1, 2, 3, 4 + index)});
+
+    // No bounds at index 1.
+    EXPECT_FALSE(text_input_client()->GetCompositionCharacterBounds(1, &bound));
+
+    // Valid bound at index 0.
+    EXPECT_TRUE(text_input_client()->GetCompositionCharacterBounds(0, &bound));
+    EXPECT_EQ(4 + (int)index, bound.height());
+  }
+}
+
 }  // namespace content

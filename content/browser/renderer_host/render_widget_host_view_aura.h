@@ -142,9 +142,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void Focus() override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void ImeCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) override;
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
   void Destroy() override;
@@ -586,8 +583,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // object.
   ui::MotionEventAura pointer_state_;
 
-  // The current composition character bounds.
-  std::vector<gfx::Rect> composition_character_bounds_;
 
   // Indicates if there is onging composition text.
   bool has_composition_text_;

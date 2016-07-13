@@ -101,9 +101,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void SetIsLoading(bool is_loading) override {}
   void UpdateCursor(const WebCursor& cursor) override {}
   void ImeCancelComposition() override {}
-  void ImeCompositionRangeChanged(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds) override {}
   void RenderProcessGone(base::TerminationStatus status,
                          int error_code) override;
   void Destroy() override;
