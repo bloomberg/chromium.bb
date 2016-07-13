@@ -780,13 +780,11 @@ class ChromeSDKCommand(command.CliCommand):
     env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
     env['GYP_CROSSCOMPILE'] = '1'
 
-    # deploy_chrome relies on the 'gn' USE flag to locate .so (and potentially
-    # other) files. Set this by default if GYP_CHROMIUM_NO_ACTION=1.
-    # TODO(stevenjb): Maybe figure out a better way to set this by default.
-    if os.environ.get('GYP_CHROMIUM_NO_ACTION', '') == '1':
-      env['USE'] = 'gn'
-      logging.notice(
-          'GYP_CHROMIUM_NO_ACTION=1, setting USE="gn" for deploy_chrome.')
+    # SimpleChrome now only supports GN by default. deploy_chrome relies on
+    # the 'gn' USE flag to locate .so (and potentially other) files.
+    useflags = set(os.environ.get('USE', '').split() + ['gn'])
+    useflags.discard('-gn')
+    env['USE'] = ' '.join(useflags)
 
     return env
 
