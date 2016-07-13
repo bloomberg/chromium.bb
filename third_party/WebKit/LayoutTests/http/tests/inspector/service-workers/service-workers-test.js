@@ -19,7 +19,7 @@ InspectorTest.waitForServiceWorker = function(callback)
 {
     function isRightTarget(target)
     {
-        return target.isDedicatedWorker() && target.parentTarget() && target.parentTarget().isServiceWorker();
+        return InspectorTest.isDedicatedWorker(target) && InspectorTest.isServiceWorker(target.parentTarget());
     }
 
     WebInspector.targetManager.observeTargets({

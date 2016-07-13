@@ -998,7 +998,17 @@ InspectorTest.preloadModule = function(moduleName)
     InspectorTest._modulesToPreload.push(moduleName);
 }
 
-};  // initialize_InspectorTest
+InspectorTest.isDedicatedWorker = function(target)
+{
+    return target && !target.hasBrowserCapability() && target.hasJSCapability() && !target.hasNetworkCapability() && !target.hasWorkerCapability();
+}
+
+InspectorTest.isServiceWorker = function(target)
+{
+    return target && !target.hasBrowserCapability() && !target.hasJSCapability() && target.hasNetworkCapability() && target.hasWorkerCapability();
+}
+
+    };  // initialize_InspectorTest
 
 var initializeCallId = 0;
 var runTestCallId = 1;

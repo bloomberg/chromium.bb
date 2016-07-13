@@ -33,7 +33,7 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Adding sw target");
-    var swTarget = InspectorTest.createMockTarget("sw-target", null, WebInspector.Target.Type.Worker);
+    var swTarget = InspectorTest.createMockTarget("sw-target", null, WebInspector.Target.Capability.Network | WebInspector.Target.Capability.Worker);
     swTarget.runtimeModel._executionContextCreated({id: "sw1", isDefault: true, origin: "origin", name: "swContext1Name", frameId: ""});
 
     InspectorTest.addResult("");
