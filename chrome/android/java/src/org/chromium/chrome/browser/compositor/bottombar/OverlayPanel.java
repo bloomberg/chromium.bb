@@ -297,8 +297,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     }
 
     /**
-     * Set the visibility of the base page text selection controls.
-     * TODO(mdjones): This should be replaced be focusing the panel's ContentViewCore.
+     * Set the visibility of the base page text selection controls. This will also attempt to
+     * remove focus from the base page to clear any open controls.
+     * TODO(mdjones): This should be replaced with focusing the panel's ContentViewCore.
      * @param visible If the text controls are visible.
      */
     protected void setBasePageTextControlsVisibility(boolean visible) {
@@ -308,10 +309,16 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         if (baseContentView == null) return;
 
         // If the panel does not have focus or isn't open, return.
-        if (isPanelOpened() && mDidClearTextControls && visible) return;
-        if (!isPanelOpened() && !mDidClearTextControls && !visible) return;
+        if (isPanelOpened() && mDidClearTextControls && !visible) return;
+        if (!isPanelOpened() && !mDidClearTextControls && visible) return;
 
         mDidClearTextControls = !visible;
+
+        if (!visible) {
+            baseContentView.preserveSelectionOnNextLossOfFocus();
+            baseContentView.getContainerView().clearFocus();
+        }
+
         baseContentView.updateTextSelectionUI(visible);
     }
 
