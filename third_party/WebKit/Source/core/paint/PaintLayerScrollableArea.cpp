@@ -219,11 +219,6 @@ GraphicsLayer* PaintLayerScrollableArea::layerForScrollCorner() const
     return layer()->hasCompositedLayerMapping() ? layer()->compositedLayerMapping()->layerForScrollCorner() : 0;
 }
 
-void PaintLayerScrollableArea::scrollControlWasSetNeedsPaintInvalidation()
-{
-    box().setMayNeedPaintInvalidation();
-}
-
 bool PaintLayerScrollableArea::shouldUseIntegerScrollOffset() const
 {
     Frame* frame = box().frame();

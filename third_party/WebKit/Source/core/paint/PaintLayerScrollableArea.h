@@ -258,7 +258,6 @@ public:
 
     bool usesCompositedScrolling() const override;
     bool shouldScrollOnMainThread() const override;
-    void scrollControlWasSetNeedsPaintInvalidation() override;
     bool shouldUseIntegerScrollOffset() const override;
     bool isActive() const override;
     bool isScrollCornerVisible() const override;
@@ -488,9 +487,6 @@ private:
             m_rareData = wrapUnique(new PaintLayerScrollableAreaRareData());
         return *m_rareData.get();
     }
-
-    // PaintInvalidationCapableScrollableArea
-    LayoutBox& boxForScrollControlPaintInvalidation() const { return box(); }
 
     PaintLayer& m_layer;
 

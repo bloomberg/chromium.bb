@@ -19,7 +19,7 @@ void PaintInvalidationCapableScrollableArea::willRemoveScrollbar(Scrollbar& scro
 {
     if (!scrollbar.isCustomScrollbar()
         && !(orientation == HorizontalScrollbar ? layerForHorizontalScrollbar() : layerForVerticalScrollbar()))
-        boxForScrollControlPaintInvalidation().slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(scrollbar, PaintInvalidationScroll);
+        layoutBox()->slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(scrollbar, PaintInvalidationScroll);
 
     ScrollableArea::willRemoveScrollbar(scrollbar, orientation);
 }
@@ -42,7 +42,6 @@ static bool invalidatePaintOfScrollControlIfNeeded(const LayoutRect& newPaintInv
     }
     if (shouldInvalidateNewRect) {
         box.invalidatePaintUsingContainer(paintInvalidationContainer, newPaintInvalidationRect, PaintInvalidationScroll);
-        box.enclosingLayer()->setNeedsRepaint();
         return true;
     }
     return false;
@@ -99,7 +98,7 @@ static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLay
 
 void PaintInvalidationCapableScrollableArea::invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    LayoutBox& box = boxForScrollControlPaintInvalidation();
+    LayoutBox& box = *layoutBox();
     invalidatePaintOfScrollbarIfNeeded(horizontalScrollbar(), layerForHorizontalScrollbar(), m_horizontalScrollbarPreviouslyWasOverlay, m_horizontalScrollbarPreviousPaintInvalidationRect, horizontalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState);
     invalidatePaintOfScrollbarIfNeeded(verticalScrollbar(), layerForVerticalScrollbar(), m_verticalScrollbarPreviouslyWasOverlay, m_verticalScrollbarPreviousPaintInvalidationRect, verticalScrollbarNeedsPaintInvalidation(), box, paintInvalidationState);
 
@@ -129,6 +128,11 @@ LayoutRect PaintInvalidationCapableScrollableArea::visualRectForScrollbarParts()
     fullBounds.unite(m_verticalScrollbarPreviousPaintInvalidationRect);
     fullBounds.unite(m_scrollCornerAndResizerPreviousPaintInvalidationRect);
     return fullBounds;
+}
+
+void PaintInvalidationCapableScrollableArea::scrollControlWasSetNeedsPaintInvalidation()
+{
+    layoutBox()->setMayNeedPaintInvalidation();
 }
 
 } // namespace blink

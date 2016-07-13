@@ -4266,10 +4266,4 @@ bool FrameView::canThrottleRendering() const
     return m_subtreeThrottled || (m_hiddenForThrottling && m_crossOriginForThrottling);
 }
 
-LayoutBox& FrameView::boxForScrollControlPaintInvalidation() const
-{
-    ASSERT(!layoutViewItem().isNull());
-    return *layoutView();
-}
-
 } // namespace blink

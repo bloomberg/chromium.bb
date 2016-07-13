@@ -377,7 +377,6 @@ public:
     IntPoint maximumScrollPosition() const override;
 
     // ScrollableArea interface
-    void scrollControlWasSetNeedsPaintInvalidation() override { }
     void getTickmarks(Vector<IntRect>&) const override;
     IntRect scrollableAreaBoundingBox() const override;
     bool scrollAnimatorEnabled() const override;
@@ -770,7 +769,6 @@ private:
     void updateThrottlingStatus();
 
     // PaintInvalidationCapableScrollableArea
-    LayoutBox& boxForScrollControlPaintInvalidation() const override;
     LayoutScrollbarPart* resizer() const override { return nullptr; }
 
     void checkLayoutInvalidationIsAllowed() const;
