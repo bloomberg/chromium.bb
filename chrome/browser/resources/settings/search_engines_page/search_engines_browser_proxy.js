@@ -131,7 +131,7 @@ cr.define('settings', function() {
 
     /** @override */
     manageExtension: function(extensionId) {
-      window.location = 'chrome://extensions?id=' + extensionId;
+      window.open('chrome://extensions?id=' + extensionId);
     },
   };
 
