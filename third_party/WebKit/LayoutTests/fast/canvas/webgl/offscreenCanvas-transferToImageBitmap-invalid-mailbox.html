@@ -15,8 +15,6 @@ var gl = aCanvas.getContext('webgl');
 gl.clearColor(1.0, 0.0, 0.0, 1.0);
 gl.clear(gl.COLOR_BUFFER_BIT);
 var image1 = aCanvas.transferToImageBitmap();
-gl.clearColor(0.0, 0.0, 1.0, 1.0);
-gl.clear(gl.COLOR_BUFFER_BIT);
 var image2 = aCanvas.transferToImageBitmap();
 
 var canvas1 = document.getElementById("output1");
