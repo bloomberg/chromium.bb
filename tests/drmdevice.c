@@ -44,8 +44,8 @@ print_device_info(drmDevicePtr device, int i)
     if (device->bustype == DRM_BUS_PCI) {
         printf("\t\tpci\n");
         printf("\t\t\tdomain\t%04x\n",device->businfo.pci->domain);
-        printf("\t\t\tbu\t%02x\n", device->businfo.pci->bus);
-        printf("\t\t\tde\t%02x\n", device->businfo.pci->dev);
+        printf("\t\t\tbus\t%02x\n", device->businfo.pci->bus);
+        printf("\t\t\tdev\t%02x\n", device->businfo.pci->dev);
         printf("\t\t\tfunc\t%1u\n", device->businfo.pci->func);
 
         printf("\tdeviceinfo\n");
