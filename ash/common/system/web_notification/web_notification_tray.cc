@@ -516,9 +516,8 @@ message_center::MessageCenter* WebNotificationTray::message_center() const {
 
 bool WebNotificationTray::IsLoggedIn() const {
   WmShell* shell = WmShell::Get();
-  LoginStatus status = shell->system_tray_delegate()->GetUserLoginStatus();
-  return status != LoginStatus::NOT_LOGGED_IN &&
-         status != LoginStatus::LOCKED &&
+  return shell->system_tray_delegate()->GetUserLoginStatus() !=
+             LoginStatus::NOT_LOGGED_IN &&
          !shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
 }
 
