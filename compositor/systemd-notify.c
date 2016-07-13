@@ -145,7 +145,7 @@ module_init(struct weston_compositor *compositor,
 		return 0;
 
 	errno = 0;
-	watchdog_time_conv = strtol(watchdog_time_env, &tail, 0);
+	watchdog_time_conv = strtol(watchdog_time_env, &tail, 10);
 	if ((errno != 0) || (*tail != '\0'))
 		return 0;
 
