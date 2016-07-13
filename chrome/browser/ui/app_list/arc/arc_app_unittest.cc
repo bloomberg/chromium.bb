@@ -538,8 +538,11 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   ASSERT_NE(nullptr, item_first);
   ASSERT_NE(nullptr, item_last);
   item_first->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
   item_last->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
   item_first->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
 
   const ScopedVector<arc::FakeAppInstance::Request>& launch_requests =
       app_instance()->launch_requests();
@@ -575,8 +578,11 @@ TEST_F(ArcAppModelBuilderTest, LaunchShortcuts) {
   ASSERT_NE(nullptr, item_first);
   ASSERT_NE(nullptr, item_last);
   item_first->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
   item_last->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
   item_first->Activate(0);
+  app_instance()->WaitForIncomingMethodCall();
 
   const ScopedVector<mojo::String>& launch_intents =
       app_instance()->launch_intents();
@@ -622,7 +628,14 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   // Process pending tasks.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
+  // Normally just one call to RunUntilIdle() suffices to make sure
+  // all RequestAppIcon() calls are delivered, but on slower machines
+  // (especially when running under Valgrind), they might not get
+  // delivered on time. Wait for the remaining tasks individually.
   const size_t expected_size = scale_factors.size() * fake_apps().size();
+  while (app_instance()->icon_requests().size() < expected_size) {
+    app_instance()->WaitForIncomingMethodCall();
+  }
 
   // At this moment we should receive all requests for icon loading.
   const ScopedVector<arc::FakeAppInstance::IconRequest>& icon_requests =
@@ -922,6 +935,7 @@ TEST_F(ArcAppModelBuilderTest, AppLauncher) {
   app_instance()->SendRefreshAppList(apps);
 
   EXPECT_TRUE(launcher1.app_launched());
+  app_instance()->WaitForIncomingMethodCall();
   ASSERT_EQ(1u, app_instance()->launch_requests().size());
   EXPECT_TRUE(app_instance()->launch_requests()[0]->IsForApp(app1));
   EXPECT_FALSE(launcher3.app_launched());
@@ -930,6 +944,7 @@ TEST_F(ArcAppModelBuilderTest, AppLauncher) {
 
   ArcAppLauncher launcher2(profile(), id2, true);
   EXPECT_TRUE(launcher2.app_launched());
+  app_instance()->WaitForIncomingMethodCall();
   EXPECT_FALSE(prefs->HasObserver(&launcher2));
   ASSERT_EQ(2u, app_instance()->launch_requests().size());
   EXPECT_TRUE(app_instance()->launch_requests()[1]->IsForApp(app2));

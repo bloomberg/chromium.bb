@@ -177,10 +177,10 @@ class AppContextMenuTest : public AppListTestBase {
     return profile_.get();
   }
 
-  void AddSeparator(std::vector<MenuState>* states) {
-    if (states->empty() || states->back().command_id == -1)
+  void AddSeparator(std::vector<MenuState>& states) {
+    if (states.empty() || states.back().command_id == -1)
       return;
-    states->push_back(MenuState());
+    states.push_back(MenuState());
   }
 
   void TestExtensionApp(const std::string& app_id,
@@ -206,7 +206,7 @@ class AppContextMenuTest : public AppListTestBase {
     if (!platform_app)
       states.push_back(MenuState(app_list::AppContextMenu::LAUNCH_NEW));
     if (pinnable != AppListControllerDelegate::NO_PIN) {
-      AddSeparator(&states);
+      AddSeparator(states);
       states.push_back(MenuState(
           app_list::AppContextMenu::TOGGLE_PIN,
           pinnable != AppListControllerDelegate::PIN_FIXED,
@@ -214,7 +214,7 @@ class AppContextMenuTest : public AppListTestBase {
     }
     if (can_create_shortcuts)
       states.push_back(MenuState(app_list::AppContextMenu::CREATE_SHORTCUTS));
-    AddSeparator(&states);
+    AddSeparator(states);
 
     if (!platform_app) {
       if (extensions::util::CanHostedAppsOpenInWindows() &&
@@ -244,7 +244,7 @@ class AppContextMenuTest : public AppListTestBase {
             true,
             launch_type == extensions::LAUNCH_TYPE_FULLSCREEN));
       }
-      AddSeparator(&states);
+      AddSeparator(states);
       states.push_back(MenuState(app_list::AppContextMenu::OPTIONS,
                                  false,
                                  false));
@@ -376,6 +376,7 @@ TEST_F(AppContextMenuTest, ArcMenu) {
   EXPECT_EQ(0u, arc_test.app_instance()->launch_requests().size());
 
   menu->ActivatedAt(0);
+  arc_test.app_instance()->WaitForIncomingMethodCall();
 
   const ScopedVector<arc::FakeAppInstance::Request>& launch_requests =
       arc_test.app_instance()->launch_requests();

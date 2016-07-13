@@ -52,6 +52,113 @@ void ArcBridgeService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void ArcBridgeService::OnAppInstanceReady(mojom::AppInstancePtr app_ptr) {
+  DCHECK(CalledOnValidThread());
+  app_.OnInstanceReady(std::move(app_ptr));
+}
+
+void ArcBridgeService::OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) {
+  DCHECK(CalledOnValidThread());
+  audio_.OnInstanceReady(std::move(audio_ptr));
+}
+
+void ArcBridgeService::OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) {
+  DCHECK(CalledOnValidThread());
+  auth_.OnInstanceReady(std::move(auth_ptr));
+}
+
+void ArcBridgeService::OnBluetoothInstanceReady(
+    mojom::BluetoothInstancePtr bluetooth_ptr) {
+  DCHECK(CalledOnValidThread());
+  bluetooth_.OnInstanceReady(std::move(bluetooth_ptr));
+}
+
+void ArcBridgeService::OnClipboardInstanceReady(
+    mojom::ClipboardInstancePtr clipboard_ptr) {
+  DCHECK(CalledOnValidThread());
+  clipboard_.OnInstanceReady(std::move(clipboard_ptr));
+}
+
+void ArcBridgeService::OnCrashCollectorInstanceReady(
+    mojom::CrashCollectorInstancePtr crash_collector_ptr) {
+  DCHECK(CalledOnValidThread());
+  crash_collector_.OnInstanceReady(std::move(crash_collector_ptr));
+}
+
+void ArcBridgeService::OnFileSystemInstanceReady(
+    mojom::FileSystemInstancePtr file_system_ptr) {
+  DCHECK(CalledOnValidThread());
+  file_system_.OnInstanceReady(std::move(file_system_ptr));
+}
+
+void ArcBridgeService::OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) {
+  DCHECK(CalledOnValidThread());
+  ime_.OnInstanceReady(std::move(ime_ptr));
+}
+
+void ArcBridgeService::OnIntentHelperInstanceReady(
+    mojom::IntentHelperInstancePtr intent_helper_ptr) {
+  DCHECK(CalledOnValidThread());
+  intent_helper_.OnInstanceReady(std::move(intent_helper_ptr));
+}
+
+void ArcBridgeService::OnMetricsInstanceReady(
+    mojom::MetricsInstancePtr metrics_ptr) {
+  DCHECK(CalledOnValidThread());
+  metrics_.OnInstanceReady(std::move(metrics_ptr));
+}
+
+void ArcBridgeService::OnNetInstanceReady(mojom::NetInstancePtr net_ptr) {
+  DCHECK(CalledOnValidThread());
+  net_.OnInstanceReady(std::move(net_ptr));
+}
+
+void ArcBridgeService::OnNotificationsInstanceReady(
+    mojom::NotificationsInstancePtr notifications_ptr) {
+  DCHECK(CalledOnValidThread());
+  notifications_.OnInstanceReady(std::move(notifications_ptr));
+}
+
+void ArcBridgeService::OnObbMounterInstanceReady(
+    mojom::ObbMounterInstancePtr obb_mounter_ptr) {
+  DCHECK(CalledOnValidThread());
+  obb_mounter_.OnInstanceReady(std::move(obb_mounter_ptr));
+}
+
+void ArcBridgeService::OnPolicyInstanceReady(
+    mojom::PolicyInstancePtr policy_ptr) {
+  DCHECK(CalledOnValidThread());
+  policy_.OnInstanceReady(std::move(policy_ptr));
+}
+
+void ArcBridgeService::OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) {
+  DCHECK(CalledOnValidThread());
+  power_.OnInstanceReady(std::move(power_ptr));
+}
+
+void ArcBridgeService::OnProcessInstanceReady(
+    mojom::ProcessInstancePtr process_ptr) {
+  DCHECK(CalledOnValidThread());
+  process_.OnInstanceReady(std::move(process_ptr));
+}
+
+void ArcBridgeService::OnStorageManagerInstanceReady(
+    mojom::StorageManagerInstancePtr storage_manager_ptr) {
+  DCHECK(CalledOnValidThread());
+  storage_manager_.OnInstanceReady(std::move(storage_manager_ptr));
+}
+
+void ArcBridgeService::OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) {
+  DCHECK(CalledOnValidThread());
+  video_.OnInstanceReady(std::move(video_ptr));
+}
+
+void ArcBridgeService::OnWindowManagerInstanceReady(
+    mojom::WindowManagerInstancePtr window_manager_ptr) {
+  DCHECK(CalledOnValidThread());
+  window_manager_.OnInstanceReady(std::move(window_manager_ptr));
+}
+
 void ArcBridgeService::SetState(State state) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(state_, state);
@@ -72,6 +179,30 @@ void ArcBridgeService::SetAvailable(bool available) {
 
 bool ArcBridgeService::CalledOnValidThread() {
   return thread_checker_.CalledOnValidThread();
+}
+
+void ArcBridgeService::CloseAllChannels() {
+  // Call all the error handlers of all the channels to both close the channel
+  // and notify any observers that the channel is closed.
+  app_.CloseChannel();
+  audio_.CloseChannel();
+  auth_.CloseChannel();
+  bluetooth_.CloseChannel();
+  clipboard_.CloseChannel();
+  crash_collector_.CloseChannel();
+  file_system_.CloseChannel();
+  ime_.CloseChannel();
+  intent_helper_.CloseChannel();
+  metrics_.CloseChannel();
+  net_.CloseChannel();
+  notifications_.CloseChannel();
+  obb_mounter_.CloseChannel();
+  policy_.CloseChannel();
+  power_.CloseChannel();
+  process_.CloseChannel();
+  storage_manager_.CloseChannel();
+  video_.CloseChannel();
+  window_manager_.CloseChannel();
 }
 
 }  // namespace arc

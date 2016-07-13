@@ -28,7 +28,7 @@ class ArcBridgeTest;
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
 // This service handles the lifetime of ARC instances and sets up the
 // communication channel (the ARC bridge) used to send and receive messages.
-class ArcBridgeService {
+class ArcBridgeService : public mojom::ArcBridgeHost {
  public:
   // Notifies life cycle events of ArcBridgeService.
   class Observer {
@@ -44,7 +44,7 @@ class ArcBridgeService {
     virtual ~Observer() {}
   };
 
-  virtual ~ArcBridgeService();
+  ~ArcBridgeService() override;
 
   // Gets the global instance of the ARC Bridge Service. This can only be
   // called on the thread that this class was created on.
@@ -108,6 +108,36 @@ class ArcBridgeService {
     return &window_manager_;
   }
 
+  // ArcHost:
+  void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
+  void OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) override;
+  void OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) override;
+  void OnBluetoothInstanceReady(
+      mojom::BluetoothInstancePtr bluetooth_ptr) override;
+  void OnClipboardInstanceReady(
+      mojom::ClipboardInstancePtr clipboard_ptr) override;
+  void OnCrashCollectorInstanceReady(
+      mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
+  void OnFileSystemInstanceReady(
+      mojom::FileSystemInstancePtr file_system_ptr) override;
+  void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
+  void OnIntentHelperInstanceReady(
+      mojom::IntentHelperInstancePtr intent_helper_ptr) override;
+  void OnMetricsInstanceReady(mojom::MetricsInstancePtr metrics_ptr) override;
+  void OnNetInstanceReady(mojom::NetInstancePtr net_ptr) override;
+  void OnNotificationsInstanceReady(
+      mojom::NotificationsInstancePtr notifications_ptr) override;
+  void OnObbMounterInstanceReady(
+      mojom::ObbMounterInstancePtr obb_mounter_ptr) override;
+  void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
+  void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
+  void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
+  void OnStorageManagerInstanceReady(
+      mojom::StorageManagerInstancePtr storage_manager_ptr) override;
+  void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
+  void OnWindowManagerInstanceReady(
+      mojom::WindowManagerInstancePtr window_manager_ptr) override;
+
   // Gets if ARC is available in this system.
   bool available() const { return available_; }
 
@@ -156,6 +186,29 @@ class ArcBridgeService {
 
   ArcBridgeService();
 
+  // Gets the current state of the bridge service.
+  State state() const { return state_; }
+
+  // Changes the current state and notifies all observers.
+  void SetState(State state);
+
+  // Changes the current availability and notifies all observers.
+  void SetAvailable(bool availability);
+
+  base::ObserverList<Observer>& observer_list() { return observer_list_; }
+
+  bool CalledOnValidThread();
+
+  // Closes all Mojo channels.
+  void CloseAllChannels();
+
+ private:
+  friend class ArcBridgeTest;
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
+
   // Instance holders.
   InstanceHolder<mojom::AppInstance> app_;
   InstanceHolder<mojom::AudioInstance> audio_;
@@ -176,26 +229,6 @@ class ArcBridgeService {
   InstanceHolder<mojom::StorageManagerInstance> storage_manager_;
   InstanceHolder<mojom::VideoInstance> video_;
   InstanceHolder<mojom::WindowManagerInstance> window_manager_;
-
-  // Gets the current state of the bridge service.
-  State state() const { return state_; }
-
-  // Changes the current state and notifies all observers.
-  void SetState(State state);
-
-  // Changes the current availability and notifies all observers.
-  void SetAvailable(bool availability);
-
-  base::ObserverList<Observer>& observer_list() { return observer_list_; }
-
-  bool CalledOnValidThread();
-
- private:
-  friend class ArcBridgeTest;
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
 
   base::ObserverList<Observer> observer_list_;
 
