@@ -492,7 +492,7 @@ TEST_F(GLES2UtilTest, GLSLArrayNameParsingNotArray) {
   const char* kNotArrayNames[] = {
       "u_name",     "u_name[]",    "u_name]", "u_name[0a]",
       "u_name[a0]", "u_name[0a0]", "[3]",     ""};
-  for (auto name : kNotArrayNames) {
+  for (auto* name : kNotArrayNames) {
     GLSLArrayName parsed_name(name);
     EXPECT_FALSE(parsed_name.IsArrayName());
   }

@@ -10831,7 +10831,7 @@ namespace gles2 {
 }
 
 void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
-  const auto& feature_info_ = group_->feature_info();
+  auto* feature_info_ = group_->feature_info();
 """)
       # We need to sort the keys so the expectations match
       for state_name in sorted(_STATES.keys()):

@@ -3355,7 +3355,7 @@ GLenum TextureManager::ExtractTypeFromStorageFormat(GLenum internalformat) {
 }
 
 void Texture::IncrementManagerServiceIdGeneration() {
-  for (auto ref : refs_) {
+  for (auto* ref : refs_) {
     TextureManager* manager = ref->manager();
     manager->IncrementServiceIdGeneration();
   }

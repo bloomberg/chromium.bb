@@ -1685,7 +1685,7 @@ bool Program::DetectVaryingsMismatch(std::string* conflicting_name) const {
 }
 
 bool Program::DetectFragmentInputLocationBindingConflicts() const {
-  auto shader = attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+  auto* shader = attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
   if (!shader || !shader->valid())
     return false;
 
