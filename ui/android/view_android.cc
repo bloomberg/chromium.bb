@@ -40,7 +40,7 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
 
   children_.push_back(child);
   if (child->parent_)
-    parent_->RemoveChild(child);
+    child->parent_->RemoveChild(child);
   child->parent_ = this;
 }
 
