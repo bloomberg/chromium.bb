@@ -251,7 +251,9 @@ private:
     // and a Document in all other cases.
     Member<ContainerNode> m_attachmentRoot;
 
+    // https://html.spec.whatwg.org/multipage/syntax.html#head-element-pointer
     Member<HTMLStackItem> m_head;
+    // https://html.spec.whatwg.org/multipage/syntax.html#form-element-pointer
     Member<HTMLFormElement> m_form;
     mutable HTMLElementStack m_openElements;
     mutable HTMLFormattingElementList m_activeFormattingElements;
