@@ -31,6 +31,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # All platforms.
 
+    self.Fail('conformance/misc/invalid-passed-params.html', bug=483282)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_byte.html', bug=483282)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html', bug=483282)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html', bug=483282)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html', bug=483282)
+    self.Fail('conformance/textures/image_bitmap_from_canvas/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', bug=483282)
+
+
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
@@ -62,6 +75,24 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['amd'], bug=617290)
 
     # Windows only.
+    self.Fail('conformance/glsl/bugs/' +
+              'pow-of-small-constant-in-user-defined-function.html',
+        ['win'], bug=485641)
+    self.Fail('conformance/misc/uninitialized-test.html',
+        ['win'], bug=483282)
+    self.Fail('conformance/rendering/point-specific-shader-variables.html',
+        ['win'], bug=616335)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['win'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['win'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['win'], bug=483282)
+    self.Fail('deqp/data/gles2/shaders/functions.html',
+        ['win'], bug=478572)
     self.Fail('deqp/functional/gles3/shaderloop_for.html',
         ['win'], bug=617817)
     self.Fail('deqp/functional/gles3/shaderloop_while.html',
@@ -125,6 +156,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # It's unfortunate that this suppression needs to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
     # it's infeasible to suppress individual failures one by one.
+    self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
@@ -180,6 +212,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=626068)
 
     # Mac only.
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+              ['mac'], bug=483282)
+    self.Fail('deqp/data/gles2/shaders/scoping.html',
+              ['mac'], bug=483282)
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
@@ -252,6 +288,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
 
     # Mac Retina NVIDIA
+    self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail(
+        'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
+        ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
+    self.Fail('conformance/programs/' +
+        'gl-bind-attrib-location-long-names-test.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('conformance/programs/gl-bind-attrib-location-test.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9), 'no_angle'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
@@ -467,6 +513,22 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgba-rgba-unsigned_byte.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgb-rgb-unsigned_byte.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+               ['linux'], bug=627525)
+
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
 

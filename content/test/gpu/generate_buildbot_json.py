@@ -926,7 +926,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'args': [
       '--webgl-conformance-version=2.0.0',
-      '--webgl2-only=true',
       # The current working directory when run via isolate is
       # out/Debug or out/Release. Reference this file relatively to
       # it.
@@ -934,9 +933,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '../../content/test/data/gpu/webgl2_conformance_tests_output.json',
     ],
     'swarming': {
-      # These tests currently take about an hour to run. Split them
-      # into roughly 5-minute shards.
-      'shards': 12,
+      # These tests currently take about an hour and fifteen minutes
+      # to run. Split them into roughly 5-minute shards.
+      'shards': 15,
     },
   },
   'webgl2_conformance_angle_tests': {
@@ -966,7 +965,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     ],
     'args': [
       '--webgl-conformance-version=2.0.0',
-      '--webgl2-only=true',
       # The current working directory when run via isolate is
       # out/Debug or out/Release. Reference this file relatively to
       # it.
@@ -974,9 +972,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '../../content/test/data/gpu/webgl2_conformance_tests_output.json',
     ],
     'swarming': {
-      # These tests currently take about an hour to run. Split them
-      # into roughly 5-minute shards.
-      'shards': 12,
+      # These tests currently take about an hour and fifteen minutes
+      # to run. Split them into roughly 5-minute shards.
+      'shards': 15,
     },
   },
 }

@@ -402,7 +402,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # This is because webview already has this expectation below
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgb-rgb-unsigned_byte.html',
-              ['android-content-shell', 'android-chromium',
+              ['android', 'android-content-shell', 'android-chromium',
               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
@@ -410,15 +410,15 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgba-rgba-unsigned_byte.html',
-              ['android-content-shell', 'android-chromium',
+              ['android', 'android-content-shell', 'android-chromium',
               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-              ['android-content-shell', 'android-chromium',
+              ['android', 'android-content-shell', 'android-chromium',
               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/textures/video/' +
               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-              ['android-content-shell', 'android-chromium',
+              ['android', 'android-content-shell', 'android-chromium',
               ('qualcomm', 'Adreno (TM) 430')], bug=611945)
     self.Fail('conformance/textures/webgl_canvas/' +
               'tex-2d-rgb-rgb-unsigned_byte.html',
@@ -638,6 +638,22 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac', ('amd', 0x6821)], bug=599272)
 
     # Linux failures
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgba-rgba-unsigned_byte.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgb-rgb-unsigned_byte.html',
+               ['linux'], bug=627525)
+    self.Flaky('conformance/textures/video/' +
+               'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+               ['linux'], bug=627525)
+
     # OpenGL
     self.Fail('conformance/extensions/oes-texture-half-float.html',
         ['linux', 'opengl'], bug=607283)

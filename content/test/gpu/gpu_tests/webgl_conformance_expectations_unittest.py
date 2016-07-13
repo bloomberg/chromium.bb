@@ -143,5 +143,10 @@ class WebGLConformanceExpectationsTest(unittest.TestCase):
         conflicts = non_gpu_conflicts and gpu_conflicts
 
         if conflicts:
-          print "WARNING: Found a conflict for", pattern
+          print "WARNING: Found a conflict for", pattern, " :"
+          print "  ", c1
+          print "  ", c2
+
+          print "  Type:" + (" (non-gpu)" if non_gpu_conflicts else "") + \
+            (" (gpu)" if gpu_conflicts else "")
         self.assertEquals(conflicts, False)

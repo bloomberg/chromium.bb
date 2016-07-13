@@ -329,17 +329,24 @@ class WebglConformance(gpu_test_base.TestBase):
 
         i = 0
         min_version = None
+        max_version = None
         while i < len(line_tokens):
           token = line_tokens[i]
           if token == '--min-version':
             i += 1
             min_version = line_tokens[i]
+          elif token == '--max-version':
+            i += 1
+            max_version = line_tokens[i]
           i += 1
 
         min_version_to_compare = min_version or folder_min_version
 
         if (min_version_to_compare and
             _CompareVersion(version, min_version_to_compare) < 0):
+          continue
+
+        if max_version and _CompareVersion(version, max_version) > 0:
           continue
 
         if (webgl2_only and not '.txt' in test_name and
