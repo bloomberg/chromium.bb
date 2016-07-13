@@ -133,8 +133,7 @@ std::unique_ptr<CastMessage> MessageFramer::Ingest(size_t num_bytes,
     case HEADER:
       if (BytesRequested() == 0) {
         MessageHeader header;
-        MessageHeader::Deserialize(input_buffer_.get()->StartOfBuffer(),
-                                   &header);
+        MessageHeader::Deserialize(input_buffer_->StartOfBuffer(), &header);
         if (header.message_size > MessageHeader::max_message_size()) {
           VLOG(1) << "Error parsing header (message size too large).";
           *error = CHANNEL_ERROR_INVALID_MESSAGE;

@@ -1406,7 +1406,7 @@ void Dispatcher::UpdateBindingsForContext(ScriptContext* context) {
           continue;
         }
 
-        if (context->IsAnyFeatureAvailableToContext(*map_entry.second.get())) {
+        if (context->IsAnyFeatureAvailableToContext(*map_entry.second)) {
           // TODO(lazyboy): RegisterBinding() uses |source_map_|, any thread
           // safety issue?
           RegisterBinding(map_entry.first, context);

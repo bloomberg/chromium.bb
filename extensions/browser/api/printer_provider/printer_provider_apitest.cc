@@ -334,8 +334,8 @@ class PrinterProviderApiTest : public ShellApiTest {
       const std::vector<std::unique_ptr<base::Value>>& expected_printers) {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
     for (const auto& printer_value : expected_printers) {
-      EXPECT_TRUE(printers.Find(*printer_value.get()) != printers.end())
-          << "Unable to find " << *printer_value.get() << " in " << printers;
+      EXPECT_TRUE(printers.Find(*printer_value) != printers.end())
+          << "Unable to find " << *printer_value << " in " << printers;
     }
   }
 

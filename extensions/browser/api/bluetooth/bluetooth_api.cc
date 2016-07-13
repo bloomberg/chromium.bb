@@ -105,7 +105,7 @@ BluetoothGetAdapterStateFunction::~BluetoothGetAdapterStateFunction() {}
 bool BluetoothGetAdapterStateFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
   bluetooth::AdapterState state;
-  PopulateAdapterState(*adapter.get(), &state);
+  PopulateAdapterState(*adapter, &state);
   results_ = bluetooth::GetAdapterState::Results::Create(state);
   SendResponse(true);
   return true;

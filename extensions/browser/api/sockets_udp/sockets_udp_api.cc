@@ -75,13 +75,13 @@ sockets_udp::SocketInfo CreateSocketInfo(int socket_id,
 void SetSocketProperties(ResumableUDPSocket* socket,
                          sockets_udp::SocketProperties* properties) {
   if (properties->name.get()) {
-    socket->set_name(*properties->name.get());
+    socket->set_name(*properties->name);
   }
   if (properties->persistent.get()) {
-    socket->set_persistent(*properties->persistent.get());
+    socket->set_persistent(*properties->persistent);
   }
   if (properties->buffer_size.get()) {
-    socket->set_buffer_size(*properties->buffer_size.get());
+    socket->set_buffer_size(*properties->buffer_size);
   }
 }
 
@@ -98,7 +98,7 @@ bool SocketsUdpCreateFunction::Prepare() {
 void SocketsUdpCreateFunction::Work() {
   ResumableUDPSocket* socket = new ResumableUDPSocket(extension_->id());
 
-  sockets_udp::SocketProperties* properties = params_.get()->properties.get();
+  sockets_udp::SocketProperties* properties = params_->properties.get();
   if (properties) {
     SetSocketProperties(socket, properties);
   }
@@ -125,7 +125,7 @@ void SocketsUdpUpdateFunction::Work() {
     return;
   }
 
-  SetSocketProperties(socket, &params_.get()->properties);
+  SetSocketProperties(socket, &params_->properties);
   results_ = sockets_udp::Update::Results::Create();
 }
 

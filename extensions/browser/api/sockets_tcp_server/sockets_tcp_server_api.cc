@@ -48,10 +48,10 @@ SocketInfo CreateSocketInfo(int socket_id, ResumableTCPServerSocket* socket) {
 void SetSocketProperties(ResumableTCPServerSocket* socket,
                          SocketProperties* properties) {
   if (properties->name.get()) {
-    socket->set_name(*properties->name.get());
+    socket->set_name(*properties->name);
   }
   if (properties->persistent.get()) {
-    socket->set_persistent(*properties->persistent.get());
+    socket->set_persistent(*properties->persistent);
   }
 }
 
@@ -87,8 +87,7 @@ void SocketsTcpServerCreateFunction::Work() {
   ResumableTCPServerSocket* socket =
       new ResumableTCPServerSocket(extension_->id());
 
-  sockets_tcp_server::SocketProperties* properties =
-      params_.get()->properties.get();
+  sockets_tcp_server::SocketProperties* properties = params_->properties.get();
   if (properties) {
     SetSocketProperties(socket, properties);
   }
@@ -115,7 +114,7 @@ void SocketsTcpServerUpdateFunction::Work() {
     return;
   }
 
-  SetSocketProperties(socket, &params_.get()->properties);
+  SetSocketProperties(socket, &params_->properties);
   results_ = sockets_tcp_server::Update::Results::Create();
 }
 
@@ -192,9 +191,8 @@ void SocketsTcpServerListenFunction::AsyncWorkStart() {
   }
 
   int net_result = socket->Listen(
-      params_->address,
-      params_->port,
-      params_->backlog.get() ? *params_->backlog.get() : kDefaultListenBacklog,
+      params_->address, params_->port,
+      params_->backlog.get() ? *params_->backlog : kDefaultListenBacklog,
       &error_);
   results_ = sockets_tcp_server::Listen::Results::Create(net_result);
   if (net_result == net::OK) {

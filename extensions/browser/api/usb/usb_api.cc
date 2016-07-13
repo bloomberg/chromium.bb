@@ -503,7 +503,7 @@ ExtensionFunction::ResponseAction UsbFindDevicesFunction::Run() {
   vendor_id_ = parameters->options.vendor_id;
   product_id_ = parameters->options.product_id;
   int interface_id = parameters->options.interface_id.get()
-                         ? *parameters->options.interface_id.get()
+                         ? *parameters->options.interface_id
                          : UsbDevicePermissionData::ANY_INTERFACE;
   UsbDevicePermission::CheckParam param(vendor_id_, product_id_, interface_id);
   if (!extension()->permissions_data()->CheckAPIPermissionWithParam(

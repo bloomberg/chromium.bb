@@ -155,9 +155,9 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceEvents) {
   event_router()->DeviceAdded(mock_adapter_, device1_.get());
   event_router()->DeviceAdded(mock_adapter_, device2_.get());
 
-  EXPECT_CALL(*device2_.get(), GetDeviceName())
-    .WillRepeatedly(testing::Return("the real d2"));
-  EXPECT_CALL(*device2_.get(), GetNameForDisplay())
+  EXPECT_CALL(*device2_, GetDeviceName())
+      .WillRepeatedly(testing::Return("the real d2"));
+  EXPECT_CALL(*device2_, GetNameForDisplay())
       .WillRepeatedly(testing::Return(base::UTF8ToUTF16("the real d2")));
   event_router()->DeviceChanged(mock_adapter_, device2_.get());
 
@@ -410,31 +410,28 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
   // Set up the first device object to reflect a real-world device.
   BluetoothAdapter::ConstDeviceList devices;
 
-  EXPECT_CALL(*device1_.get(), GetAddress())
-    .WillRepeatedly(testing::Return("A4:17:31:00:00:00"));
-  EXPECT_CALL(*device1_.get(), GetDeviceName())
-    .WillRepeatedly(testing::Return("Chromebook Pixel"));
-  EXPECT_CALL(*device1_.get(), GetNameForDisplay())
+  EXPECT_CALL(*device1_, GetAddress())
+      .WillRepeatedly(testing::Return("A4:17:31:00:00:00"));
+  EXPECT_CALL(*device1_, GetDeviceName())
+      .WillRepeatedly(testing::Return("Chromebook Pixel"));
+  EXPECT_CALL(*device1_, GetNameForDisplay())
       .WillRepeatedly(testing::Return(base::UTF8ToUTF16("Chromebook Pixel")));
-  EXPECT_CALL(*device1_.get(), GetBluetoothClass())
-    .WillRepeatedly(testing::Return(0x080104));
-  EXPECT_CALL(*device1_.get(), GetDeviceType())
-    .WillRepeatedly(testing::Return(BluetoothDevice::DEVICE_COMPUTER));
-  EXPECT_CALL(*device1_.get(), GetVendorIDSource())
-    .WillRepeatedly(testing::Return(BluetoothDevice::VENDOR_ID_BLUETOOTH));
-  EXPECT_CALL(*device1_.get(), GetVendorID())
-    .WillRepeatedly(testing::Return(0x00E0));
-  EXPECT_CALL(*device1_.get(), GetProductID())
-    .WillRepeatedly(testing::Return(0x240A));
-  EXPECT_CALL(*device1_.get(), GetDeviceID())
-    .WillRepeatedly(testing::Return(0x0400));
+  EXPECT_CALL(*device1_, GetBluetoothClass())
+      .WillRepeatedly(testing::Return(0x080104));
+  EXPECT_CALL(*device1_, GetDeviceType())
+      .WillRepeatedly(testing::Return(BluetoothDevice::DEVICE_COMPUTER));
+  EXPECT_CALL(*device1_, GetVendorIDSource())
+      .WillRepeatedly(testing::Return(BluetoothDevice::VENDOR_ID_BLUETOOTH));
+  EXPECT_CALL(*device1_, GetVendorID()).WillRepeatedly(testing::Return(0x00E0));
+  EXPECT_CALL(*device1_, GetProductID())
+      .WillRepeatedly(testing::Return(0x240A));
+  EXPECT_CALL(*device1_, GetDeviceID()).WillRepeatedly(testing::Return(0x0400));
 
   BluetoothDevice::UUIDList uuids;
   uuids.push_back(BluetoothUUID("1105"));
   uuids.push_back(BluetoothUUID("1106"));
 
-  EXPECT_CALL(*device1_.get(), GetUUIDs())
-      .WillOnce(testing::Return(uuids));
+  EXPECT_CALL(*device1_, GetUUIDs()).WillOnce(testing::Return(uuids));
 
   devices.push_back(device1_.get());
 

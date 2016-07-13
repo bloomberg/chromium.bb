@@ -258,7 +258,7 @@ void AlarmManager::RemoveAlarmIterator(const AlarmIterator& iter) {
 
 void AlarmManager::OnAlarm(AlarmIterator it) {
   CHECK(it.first != alarms_.end());
-  Alarm& alarm = *it.second->get();
+  Alarm& alarm = **it.second;
   std::string extension_id_copy(it.first->first);
   delegate_->OnAlarm(extension_id_copy, alarm);
 

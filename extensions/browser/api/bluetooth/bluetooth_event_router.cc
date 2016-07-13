@@ -375,7 +375,7 @@ void BluetoothEventRouter::DispatchAdapterStateEvent() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   api::bluetooth::AdapterState state;
   CHECK(adapter_.get());
-  PopulateAdapterState(*adapter_.get(), &state);
+  PopulateAdapterState(*adapter_, &state);
 
   std::unique_ptr<base::ListValue> args =
       bluetooth::OnAdapterStateChanged::Create(state);

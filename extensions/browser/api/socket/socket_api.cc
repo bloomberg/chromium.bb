@@ -446,9 +446,9 @@ void SocketListenFunction::AsyncWorkStart() {
     return;
   }
 
-  int result = socket->Listen(
-      params_->address, params_->port,
-      params_->backlog.get() ? *params_->backlog.get() : 5, &error_);
+  int result =
+      socket->Listen(params_->address, params_->port,
+                     params_->backlog.get() ? *params_->backlog : 5, &error_);
   SetResult(base::MakeUnique<base::FundamentalValue>(result));
   if (result != net::OK) {
     AsyncWorkCompleted();
@@ -511,7 +511,7 @@ void SocketReadFunction::AsyncWorkStart() {
     return;
   }
 
-  socket->Read(params_->buffer_size.get() ? *params_->buffer_size.get() : 4096,
+  socket->Read(params_->buffer_size.get() ? *params_->buffer_size : 4096,
                base::Bind(&SocketReadFunction::OnCompleted, this));
 }
 

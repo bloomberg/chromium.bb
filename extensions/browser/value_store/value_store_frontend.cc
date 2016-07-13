@@ -50,9 +50,8 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     LazyInit();
     // We don't need the old value, so skip generating changes.
     ValueStore::WriteResult result = storage_->Set(
-        ValueStore::IGNORE_QUOTA | ValueStore::NO_GENERATE_CHANGES,
-        key,
-        *value.get());
+        ValueStore::IGNORE_QUOTA | ValueStore::NO_GENERATE_CHANGES, key,
+        *value);
     LOG_IF(ERROR, !result->status().ok()) << "Error while writing " << key
                                           << " to " << db_path_.value();
   }

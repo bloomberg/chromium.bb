@@ -101,7 +101,7 @@ void SaveDevicePermissionEntry(BrowserContext* context,
   }
 
   std::unique_ptr<base::Value> device_entry(entry->ToValue());
-  DCHECK(devices->Find(*device_entry.get()) == devices->end());
+  DCHECK(devices->Find(*device_entry) == devices->end());
   devices->Append(std::move(device_entry));
 }
 

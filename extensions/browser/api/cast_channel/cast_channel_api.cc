@@ -271,12 +271,12 @@ bool CastChannelOpenFunction::Prepare() {
   } else {
     // Parse timeout parameters if they are set.
     if (connect_info.liveness_timeout.get()) {
-      liveness_timeout_ = base::TimeDelta::FromMilliseconds(
-          *connect_info.liveness_timeout.get());
+      liveness_timeout_ =
+          base::TimeDelta::FromMilliseconds(*connect_info.liveness_timeout);
     }
     if (connect_info.ping_interval.get()) {
       ping_interval_ =
-          base::TimeDelta::FromMilliseconds(*connect_info.ping_interval.get());
+          base::TimeDelta::FromMilliseconds(*connect_info.ping_interval);
     }
 
     // Validate timeout parameters.
@@ -313,10 +313,10 @@ void CastChannelOpenFunction::AsyncWorkStart() {
         extension_->id(), *ip_endpoint_, channel_auth_,
         ExtensionsBrowserClient::Get()->GetNetLog(),
         base::TimeDelta::FromMilliseconds(connect_info.timeout.get()
-                                              ? *connect_info.timeout.get()
+                                              ? *connect_info.timeout
                                               : kDefaultConnectTimeoutMillis),
         liveness_timeout_ > base::TimeDelta(), api_->GetLogger(),
-        connect_info.capabilities.get() ? *connect_info.capabilities.get()
+        connect_info.capabilities.get() ? *connect_info.capabilities
                                         : CastDeviceCapability::NONE);
   }
   new_channel_id_ = AddSocket(socket);

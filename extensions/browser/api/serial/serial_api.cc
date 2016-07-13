@@ -131,7 +131,7 @@ bool SerialConnectFunction::Prepare() {
 void SerialConnectFunction::AsyncWorkStart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   connection_ = CreateSerialConnection(params_->path, extension_->id());
-  connection_->Open(*params_->options.get(),
+  connection_->Open(*params_->options,
                     base::Bind(&SerialConnectFunction::OnConnected, this));
 }
 

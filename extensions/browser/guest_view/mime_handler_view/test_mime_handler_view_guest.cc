@@ -71,7 +71,7 @@ void TestMimeHandlerViewGuest::CallBaseCreateWebContents(
     std::unique_ptr<base::DictionaryValue> create_params,
     const WebContentsCreatedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  MimeHandlerViewGuest::CreateWebContents(*create_params.get(), callback);
+  MimeHandlerViewGuest::CreateWebContents(*create_params, callback);
 }
 
 // static

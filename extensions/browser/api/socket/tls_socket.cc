@@ -253,10 +253,10 @@ void TLSSocket::UpgradeSocketToTLS(
     uint16_t version_min = 0, version_max = 0;
     api::socket::TLSVersionConstraints* versions = options->tls_version.get();
     if (versions->min.get()) {
-      version_min = SSLProtocolVersionFromString(*versions->min.get());
+      version_min = SSLProtocolVersionFromString(*versions->min);
     }
     if (versions->max.get()) {
-      version_max = SSLProtocolVersionFromString(*versions->max.get());
+      version_max = SSLProtocolVersionFromString(*versions->max);
     }
     if (version_min) {
       ssl_config.version_min = version_min;

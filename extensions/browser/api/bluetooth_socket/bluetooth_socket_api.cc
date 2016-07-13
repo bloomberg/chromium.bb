@@ -62,15 +62,15 @@ SocketInfo CreateSocketInfo(int socket_id, BluetoothApiSocket* socket) {
 void SetSocketProperties(BluetoothApiSocket* socket,
                          SocketProperties* properties) {
   if (properties->name.get()) {
-    socket->set_name(*properties->name.get());
+    socket->set_name(*properties->name);
   }
   if (properties->persistent.get()) {
-    socket->set_persistent(*properties->persistent.get());
+    socket->set_persistent(*properties->persistent);
   }
   if (properties->buffer_size.get()) {
     // buffer size is validated when issuing the actual Recv operation
     // on the socket.
-    socket->set_buffer_size(*properties->buffer_size.get());
+    socket->set_buffer_size(*properties->buffer_size);
   }
 }
 
@@ -195,8 +195,7 @@ void BluetoothSocketCreateFunction::Work() {
 
   BluetoothApiSocket* socket = new BluetoothApiSocket(extension_id());
 
-  bluetooth_socket::SocketProperties* properties =
-      params_.get()->properties.get();
+  bluetooth_socket::SocketProperties* properties = params_->properties.get();
   if (properties) {
     SetSocketProperties(socket, properties);
   }
@@ -224,7 +223,7 @@ void BluetoothSocketUpdateFunction::Work() {
     return;
   }
 
-  SetSocketProperties(socket, &params_.get()->properties);
+  SetSocketProperties(socket, &params_->properties);
   results_ = bluetooth_socket::Update::Results::Create();
 }
 

@@ -102,8 +102,8 @@ bool ValidatePairingResponseOptions(
     const device::BluetoothDevice* device,
     const bt_private::SetPairingResponseOptions& options) {
   bool response = options.response != bt_private::PAIRING_RESPONSE_NONE;
-  bool pincode = options.pincode.get() != nullptr;
-  bool passkey = options.passkey.get() != nullptr;
+  bool pincode = options.pincode != nullptr;
+  bool passkey = options.passkey != nullptr;
 
   if (!response && !pincode && !passkey)
     return false;
@@ -280,9 +280,9 @@ bool BluetoothPrivateSetPairingResponseFunction::DoWork(
   }
 
   if (options.pincode.get()) {
-    device->SetPinCode(*options.pincode.get());
+    device->SetPinCode(*options.pincode);
   } else if (options.passkey.get()) {
-    device->SetPasskey(*options.passkey.get());
+    device->SetPasskey(*options.passkey);
   } else {
     switch (options.response) {
       case bt_private::PAIRING_RESPONSE_CONFIRM:

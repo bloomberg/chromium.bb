@@ -65,7 +65,7 @@ void DocumentScanScanFunction::OnScannerListReceived(
   // types are specified, the first scanner that supports one of these
   // MIME types is selected.
   if (params_->options.mime_types) {
-    std::vector<std::string>& mime_types = *params_->options.mime_types.get();
+    std::vector<std::string>& mime_types = *params_->options.mime_types;
     for (; scanner_i != scanner_descriptions.end(); ++scanner_i) {
       if (std::find(mime_types.begin(), mime_types.end(),
                     scanner_i->image_mime_type) != mime_types.end()) {

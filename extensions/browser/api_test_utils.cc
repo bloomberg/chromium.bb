@@ -44,7 +44,7 @@ class SendResponseDelegate
 
   bool GetResponse() {
     EXPECT_TRUE(HasResponse());
-    return *response_.get();
+    return *response_;
   }
 
   void OnSendResponse(UIThreadExtensionFunction* function,

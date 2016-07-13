@@ -257,7 +257,7 @@ void AddExtensionInfo(const ExtensionSet& extensions,
                       content::BrowserContext* context) {
   for (ExtensionSet::const_iterator iter = extensions.begin();
        iter != extensions.end(); ++iter) {
-    const Extension& extension = *iter->get();
+    const Extension& extension = **iter;
 
     if (extension.ShouldNotBeVisible())
       continue;  // Skip built-in extensions/apps.

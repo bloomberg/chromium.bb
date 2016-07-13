@@ -193,7 +193,7 @@ class Server : public DiscreteTimeSimulation::Actor {
     return max_experienced_queries_per_tick_;
   }
 
-  const URLRequest& mock_request() const { return *mock_request_.get(); }
+  const URLRequest& mock_request() const { return *mock_request_; }
 
   std::string VisualizeASCII(int terminal_width) {
     // Account for | characters we place at left of graph.

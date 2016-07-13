@@ -68,15 +68,15 @@ SocketInfo CreateSocketInfo(int socket_id, ResumableTCPSocket* socket) {
 void SetSocketProperties(ResumableTCPSocket* socket,
                          SocketProperties* properties) {
   if (properties->name.get()) {
-    socket->set_name(*properties->name.get());
+    socket->set_name(*properties->name);
   }
   if (properties->persistent.get()) {
-    socket->set_persistent(*properties->persistent.get());
+    socket->set_persistent(*properties->persistent);
   }
   if (properties->buffer_size.get()) {
     // buffer size is validated when issuing the actual Recv operation
     // on the socket.
-    socket->set_buffer_size(*properties->buffer_size.get());
+    socket->set_buffer_size(*properties->buffer_size);
   }
 }
 
@@ -126,7 +126,7 @@ bool SocketsTcpCreateFunction::Prepare() {
 void SocketsTcpCreateFunction::Work() {
   ResumableTCPSocket* socket = new ResumableTCPSocket(extension_->id());
 
-  sockets_tcp::SocketProperties* properties = params_.get()->properties.get();
+  sockets_tcp::SocketProperties* properties = params_->properties.get();
   if (properties) {
     SetSocketProperties(socket, properties);
   }
@@ -153,7 +153,7 @@ void SocketsTcpUpdateFunction::Work() {
     return;
   }
 
-  SetSocketProperties(socket, &params_.get()->properties);
+  SetSocketProperties(socket, &params_->properties);
   results_ = sockets_tcp::Update::Results::Create();
 }
 
@@ -210,7 +210,7 @@ void SocketsTcpSetKeepAliveFunction::Work() {
     return;
   }
 
-  int delay = params_->delay ? *params_->delay.get() : 0;
+  int delay = params_->delay ? *params_->delay : 0;
 
   bool success = socket->SetKeepAlive(params_->enable, delay);
   int net_result = (success ? net::OK : net::ERR_FAILED);
@@ -508,11 +508,11 @@ void SocketsTcpSecureFunction::AsyncWorkStart() {
     legacy_params.tls_version.reset(new api::socket::TLSVersionConstraints);
     if (params_->options->tls_version->min.get()) {
       legacy_params.tls_version->min.reset(
-          new std::string(*params_->options->tls_version->min.get()));
+          new std::string(*params_->options->tls_version->min));
     }
     if (params_->options->tls_version->max.get()) {
       legacy_params.tls_version->max.reset(
-          new std::string(*params_->options->tls_version->max.get()));
+          new std::string(*params_->options->tls_version->max));
     }
   }
 
