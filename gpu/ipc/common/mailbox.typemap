@@ -5,7 +5,9 @@
 mojom = "//gpu/ipc/common/mailbox.mojom"
 public_headers = [ "//gpu/command_buffer/common/mailbox.h" ]
 traits_headers = [ "//gpu/ipc/common/mailbox_struct_traits.h" ]
-sources = [ "//gpu/ipc/common/mailbox_struct_traits.cc" ]
+sources = [
+  "//gpu/ipc/common/mailbox_struct_traits.cc",
+]
 deps = [
   "//mojo/public/cpp/bindings",
 ]

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/message_loop/message_loop.h"
 #include "gpu/ipc/common/traits_test_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -22,6 +24,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
+  void EchoGpuDevice(const GPUInfo::GPUDevice& g,
+                     const EchoGpuDeviceCallback& callback) override {
+    callback.Run(g);
+  }
+
   void EchoMailbox(const Mailbox& m,
                    const EchoMailboxCallback& callback) override {
     callback.Run(m);
@@ -44,6 +51,30 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 };
 
 }  // namespace
+
+TEST_F(StructTraitsTest, GPUDevice) {
+  gpu::GPUInfo::GPUDevice input;
+  // Using the values from gpu/config/gpu_info_collector_unittest.cc::nvidia_gpu
+  const uint32_t vendor_id = 0x10de;
+  const uint32_t device_id = 0x0df8;
+  const std::string vendor_string = "vendor_string";
+  const std::string device_string = "device_string";
+
+  input.vendor_id = vendor_id;
+  input.device_id = device_id;
+  input.vendor_string = vendor_string;
+  input.device_string = device_string;
+  input.active = false;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  gpu::GPUInfo::GPUDevice output;
+  proxy->EchoGpuDevice(input, &output);
+
+  EXPECT_EQ(vendor_id, output.vendor_id);
+  EXPECT_EQ(device_id, output.device_id);
+  EXPECT_FALSE(output.active);
+  EXPECT_TRUE(vendor_string.compare(output.vendor_string) == 0);
+  EXPECT_TRUE(device_string.compare(output.device_string) == 0);
+}
 
 TEST_F(StructTraitsTest, Mailbox) {
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {

@@ -4,6 +4,7 @@
 
 module gpu.mojom;
 
+import "gpu/ipc/common/gpu_info.mojom";
 import "gpu/ipc/common/mailbox.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
@@ -11,6 +12,10 @@ import "gpu/ipc/common/sync_token.mojom";
 // All functions on this interface echo their arguments to test StructTraits
 // serialization and deserialization.
 interface TraitsTestService {
+
+  [Sync]
+  EchoGpuDevice(GpuDevice g) => (GpuDevice pass);
+
   [Sync]
   EchoMailbox(Mailbox m) => (Mailbox pass);
 

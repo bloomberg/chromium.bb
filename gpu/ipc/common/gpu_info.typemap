@@ -1,0 +1,17 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//gpu/ipc/common/gpu_info.mojom"
+public_headers = [ "//gpu/config/gpu_info.h" ]
+traits_headers = [ "//gpu/ipc/common/gpu_info_struct_traits.h" ]
+sources = [
+  "//gpu/ipc/common/gpu_info_struct_traits.cc",
+]
+deps = [
+  "//gpu/config",
+]
+type_mappings = [
+  "gpu.mojom.GpuDevice=::gpu::GPUInfo::GPUDevice",
+  "gpu.mojom.CollectInfoResult=::gpu::CollectInfoResult",
+]

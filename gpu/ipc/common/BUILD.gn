@@ -121,6 +121,7 @@ mojom("interfaces") {
   sources = [
     "capabilities.mojom",
     "command_buffer.mojom",
+    "gpu_info.mojom",
     "mailbox.mojom",
     "mailbox_holder.mojom",
     "sync_token.mojom",

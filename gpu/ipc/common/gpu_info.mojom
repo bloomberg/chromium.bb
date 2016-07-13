@@ -1,0 +1,21 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module gpu.mojom;
+
+// gpu::GPUInfo::GPUDevice
+struct GpuDevice {
+  uint32 vendor_id;
+  uint32 device_id;
+  bool active;
+  string vendor_string;
+  string device_string;
+};
+
+enum CollectInfoResult {
+  kCollectInfoNone = 0,
+  kCollectInfoSuccess = 1,
+  kCollectInfoNonFatalFailure = 2,
+  kCollectInfoFatalFailure = 3
+};
