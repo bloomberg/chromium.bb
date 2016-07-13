@@ -647,6 +647,12 @@
                    file="privacy_page/privacy_page_browser_proxy.js"
                    type="chrome_html" />
       </if>
+      <structure name="IDR_SETTINGS_PROTOCOL_HANDLERS_HTML"
+                 file="site_settings/protocol_handlers.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PROTOCOL_HANDLERS_JS"
+                 file="site_settings/protocol_handlers.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_HTML"
                  file="settings_page/settings_router.html"
                  type="chrome_html" />

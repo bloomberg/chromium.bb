@@ -283,6 +283,18 @@ Polymer({
       subpage: ['site-settings', 'site-settings-category-images'],
     },
     {
+      url: '/siteSettings/handlers',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'protocol-handlers'],
+    },
+    {
+      url: '/siteSettings/javascript',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-javascript'],
+    },
+    {
       url: '/siteSettings/keygen',
       page: 'advanced',
       section: 'privacy',
@@ -293,12 +305,6 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-location'],
-    },
-    {
-      url: '/siteSettings/javascript',
-      page: 'advanced',
-      section: 'privacy',
-      subpage: ['site-settings', 'site-settings-category-javascript'],
     },
     {
       url: '/siteSettings/microphone',
@@ -380,6 +386,13 @@ Polymer({
           'site-details'],
     },
     {
+      url: '/siteSettings/javascript/details',
+      page: 'advanced',
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-javascript',
+          'site-details'],
+    },
+    {
       url: '/siteSettings/keygen/details',
       page: 'advanced',
       section: 'privacy',
@@ -391,13 +404,6 @@ Polymer({
       page: 'advanced',
       section: 'privacy',
       subpage: ['site-settings', 'site-settings-category-location',
-          'site-details'],
-    },
-    {
-      url: '/siteSettings/javascript/details',
-      page: 'advanced',
-      section: 'privacy',
-      subpage: ['site-settings', 'site-settings-category-javascript',
           'site-details'],
     },
     {

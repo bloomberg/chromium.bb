@@ -52,6 +52,8 @@ Polymer({
         '#notifications');
     this.setDefaultValue_(this.ContentSettingsTypes.PLUGINS, '#plugins');
     this.setDefaultValue_(this.ContentSettingsTypes.POPUPS, '#popups');
+    this.setDefaultValue_(this.ContentSettingsTypes.PROTOCOL_HANDLERS,
+        '#handlers');
     this.setDefaultValue_(this.ContentSettingsTypes.UNSANDBOXED_PLUGINS,
         '#unsandboxedPlugins');
   },
@@ -76,6 +78,12 @@ Polymer({
         page: this.currentRoute.page,
         section: 'privacy',
         subpage: ['site-settings', 'all-sites'],
+      };
+    } else if (category == this.ContentSettingsTypes.PROTOCOL_HANDLERS) {
+      this.currentRoute = {
+        page: this.currentRoute.page,
+        section: 'privacy',
+        subpage: ['site-settings', 'protocol-handlers'],
       };
     } else {
       this.categorySelected = this.computeCategoryTextId(category);

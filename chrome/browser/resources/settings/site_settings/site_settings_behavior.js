@@ -96,6 +96,8 @@ var SiteSettingsBehaviorImpl = {
         return 'plugins';
       case settings.ContentSettingsTypes.POPUPS:
         return 'popups';
+      case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
+        return 'handlers';
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return 'unsandboxed-plugins';
       default:
@@ -139,6 +141,8 @@ var SiteSettingsBehaviorImpl = {
         return 'cr:extension';
       case settings.ContentSettingsTypes.POPUPS:
         return 'settings:open-in-new';
+      case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
+        return 'settings:open-with';
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return 'cr:extension';
       default:
@@ -183,6 +187,8 @@ var SiteSettingsBehaviorImpl = {
         return loadTimeData.getString('siteSettingsPlugins');
       case settings.ContentSettingsTypes.POPUPS:
         return loadTimeData.getString('siteSettingsPopups');
+      case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
+        return loadTimeData.getString('siteSettingsHandlers');
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return loadTimeData.getString('siteSettingsUnsandboxedPlugins');
       default:
@@ -245,6 +251,14 @@ var SiteSettingsBehaviorImpl = {
         return showRecommendation ?
             loadTimeData.getString('siteSettingsCookiesAllowedRecommended') :
             loadTimeData.getString('siteSettingsCookiesAllowed');
+      case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
+        // "Allow sites to ask to become default handlers" vs "Blocked".
+        if (!categoryEnabled) {
+          return loadTimeData.getString('siteSettingsHandlersBlocked');
+        }
+        return showRecommendation ?
+            loadTimeData.getString('siteSettingsHandlersAskRecommended') :
+            loadTimeData.getString('siteSettingsHandlersAsk');
       case settings.ContentSettingsTypes.IMAGES:
         if (!categoryEnabled) {
           return loadTimeData.getString('siteSettingsDontShowImages');

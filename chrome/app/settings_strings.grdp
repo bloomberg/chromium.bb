@@ -985,6 +985,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES" desc="Label for the cookies site settings.">
     Cookies
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS" desc="Label for the protocol handlers (e.g. mailto) in site settings.">
+    Handlers
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_LOCATION" desc="Label for the location site settings.">
     Location
   </message>
@@ -1068,6 +1071,15 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_BACKGROUND_SYNC_BLOCKED" desc="The block label for background sync in site settings.">
     Do not allow recently closed sites to finish sending and receiving data
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS_ASK" desc="The allow label for protocol handlers in site settings.">
+    Allow sites to ask to become default handlers for protocols
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS_ASK_RECOMMENDED" desc="The allow label for protocol handlers in site settings (with the 'recommended' suffix).">
+    Allow sites to ask to become default handlers for protocols (recommended)
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLERS_BLOCKED" desc="The block label for protocol handlers in site settings.">
+    Do not allow any site to handle protocols
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_KEYGEN_ALLOW" desc="The allow label for keygen in site settings.">
     Allow all sites to use key generation in forms
@@ -1167,6 +1179,15 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_SUBLABEL" desc="A sub-label below the Block 3rd-party cookie checkbox.">
     Prevent third-party websites from saving and reading cookie data.
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLER_IS_DEFAULT" desc="A label showing that a certain handler for a given protocol is the default.">
+    Default
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_HANDLER_SET_DEFAULT" desc="A label for the action of making a certain handler the default for a given protocol.">
+    Set as default
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_REMOVE" desc="A label for the action of removing (deleting) a certain handler.">
+    Remove
   </message>
 
   <!-- Sync / People Page -->

@@ -22,6 +22,7 @@ cr.define('settings', function() {
     FULLSCREEN: 'fullscreen',
     MIC: 'media-stream-mic',
     CAMERA: 'media-stream-camera',
+    PROTOCOL_HANDLERS: 'register-protocol-handler',
     UNSANDBOXED_PLUGINS: 'ppapi-broker',
     AUTOMATIC_DOWNLOADS: 'multiple-automatic-downloads',
     KEYGEN: 'keygen',

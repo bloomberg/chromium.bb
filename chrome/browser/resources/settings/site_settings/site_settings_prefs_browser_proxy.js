@@ -127,6 +127,33 @@ cr.define('settings', function() {
      * @param {string} path The path to the parent cookie.
      */
     removeCookie: function(path) {},
+
+    /**
+     * Initializes the protocol handler list. List is returned through JS calls
+     * to setHandlersEnabled, setProtocolHandlers & setIgnoredProtocolHandlers.
+     */
+    initializeProtocolHandlerList: function() {},
+
+    /**
+     * Enables or disables the ability for sites to ask to become the default
+     * protocol handlers.
+     * @param {boolean} enabled Whether sites can ask to become default.
+     */
+    setProtocolHandlerDefault: function(enabled) {},
+
+    /**
+     * Sets a certain url as default for a given protocol handler.
+     * @param {string} protocol The protocol to set a default for.
+     * @param {string} url The url to use as the default.
+     */
+    setProtocolDefault: function(protocol, url) {},
+
+    /**
+     * Deletes a certain protocol handler by url.
+     * @param {string} protocol The protocol to delete the url from.
+     * @param {string} url The url to delete.
+     */
+    removeProtocolHandler: function(protocol, url) {},
   };
 
   /**
@@ -197,7 +224,26 @@ cr.define('settings', function() {
     /** @override */
     removeCookie: function(path) {
       chrome.send('removeCookie', [path]);
-    }
+    },
+
+    initializeProtocolHandlerList: function() {
+      chrome.send('initializeProtocolHandlerList');
+    },
+
+    /** @override */
+    setProtocolHandlerDefault: function(enabled) {
+      chrome.send('setHandlersEnabled', [enabled]);
+    },
+
+    /** @override */
+    setProtocolDefault: function(protocol, url) {
+      chrome.send('setDefault', [[protocol, url]]);
+    },
+
+    /** @override */
+    removeProtocolHandler: function(protocol, url) {
+      chrome.send('removeHandler', [[protocol, url]]);
+    },
   };
 
   return {

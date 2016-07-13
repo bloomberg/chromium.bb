@@ -147,6 +147,17 @@
         <div id="unsandboxedPlugins" class="secondary"></div>
       </div>
     </div>
+    <div class="settings-box two-line"
+        category$="[[ContentSettingsTypes.PROTOCOL_HANDLERS]]"
+        on-tap="onTapCategory">
+      <iron-icon icon="[[computeIconForContentCategory(
+          ContentSettingsTypes.PROTOCOL_HANDLERS)]]" item-icon=""></iron-icon>
+      <div class="middle">
+        [[computeTitleForContentCategory(
+            ContentSettingsTypes.PROTOCOL_HANDLERS)]]
+        <div id="handlers" class="secondary"></div>
+      </div>
+    </div>
   </template>
   <script src="site_settings_page.js"></script>
 </dom-module>
