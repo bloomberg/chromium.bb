@@ -550,3 +550,40 @@ FileManagerUI.prototype.decorateSplitter_ = function(splitterElement,
   customSplitter.decorate(splitterElement);
   splitterElement.resizeNextElement = !!opt_resizeNextElement;
 };
+
+/**
+ * Sets up and shows the alert to inform a user the task is opened in the
+ * desktop of the running profile.
+ *
+ * @param {Array<Entry>} entries List of opened entries.
+ */
+FileManagerUI.prototype.showOpenInOtherDesktopAlert = function(entries) {
+  if (!entries.length)
+    return;
+  chrome.fileManagerPrivate.getProfiles(
+    function(profiles, currentId, displayedId) {
+      // Find strings.
+      var displayName;
+      for (var i = 0; i < profiles.length; i++) {
+        if (profiles[i].profileId === currentId) {
+          displayName = profiles[i].displayName;
+          break;
+        }
+      }
+      if (!displayName) {
+        console.warn('Display name is not found.');
+        return;
+      }
+
+      var title = entries.length > 1 ?
+          entries[0].name + '\u2026' /* ellipsis */ : entries[0].name;
+      var message = strf(entries.length > 1 ?
+                         'OPEN_IN_OTHER_DESKTOP_MESSAGE_PLURAL' :
+                         'OPEN_IN_OTHER_DESKTOP_MESSAGE',
+                         displayName,
+                         currentId);
+
+      // Show the dialog.
+      this.alertDialog.showWithTitle(title, message, null, null, null);
+    }.bind(this));
+};

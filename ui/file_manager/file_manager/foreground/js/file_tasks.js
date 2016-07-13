@@ -496,10 +496,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
         break;
       case 'message_sent':
         util.isTeleported(window).then(function(teleported) {
-          if (teleported) {
-            util.showOpenInOtherDesktopAlert(
-                this.ui_.alertDialog, this.entries_);
-          }
+          if (teleported)
+            this.ui_.showOpenInOtherDesktopAlert(this.entries_);
         }.bind(this));
         callback(true, this.entries_);
         break;
@@ -546,10 +544,8 @@ FileTasks.prototype.executeInternal_ = function(taskId) {
             if (result !== 'message_sent')
               return;
             util.isTeleported(window).then(function(teleported) {
-              if (teleported) {
-                util.showOpenInOtherDesktopAlert(
-                    this.ui_.alertDialog, this.entries_);
-              }
+              if (teleported)
+                this.ui_.showOpenInOtherDesktopAlert(this.entries_);
             }.bind(this));
       }.bind(this));
     }

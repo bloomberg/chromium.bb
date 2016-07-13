@@ -15,7 +15,6 @@
           '../../../../webui/resources/js/util.js',
           '../../../../webui/resources/js/cr/event_target.js',
           '../../../../webui/resources/js/cr/ui/array_data_model.js',
-          '../../../../webui/resources/js/cr/ui/dialogs.js',
           '../../common/js/lru_cache.js',
           '../../../image_loader/image_loader_client.js',
           '../../common/js/error_util.js',
