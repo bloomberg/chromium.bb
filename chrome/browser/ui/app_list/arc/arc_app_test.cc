@@ -110,10 +110,7 @@ void ArcAppTest::SetUp(Profile* profile) {
   DCHECK(arc_app_list_pref_);
 
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
-  arc::mojom::AppInstancePtr instance;
-  app_instance_->Bind(mojo::GetProxy(&instance));
-  bridge_service_->OnAppInstanceReady(std::move(instance));
-  app_instance_->WaitForOnAppInstanceReady();
+  bridge_service_->app()->SetInstance(app_instance_.get());
 
   // Check initial conditions.
   EXPECT_EQ(bridge_service_.get(), arc::ArcBridgeService::Get());
