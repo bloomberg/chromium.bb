@@ -15,10 +15,8 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "ipc/ipc.mojom.h"
-#include "ipc/ipc_export.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
@@ -43,15 +41,12 @@ class AsyncHandleWaiter;
 // be called on any thread. All |Delegate| functions will be called on the IO
 // thread.
 //
-class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
+class MessagePipeReader : public mojom::Channel {
  public:
   class Delegate {
    public:
     virtual void OnMessageReceived(const Message& message) = 0;
     virtual void OnPipeError() = 0;
-    virtual void OnAssociatedInterfaceRequest(
-        const std::string& name,
-        mojo::ScopedInterfaceEndpointHandle handle) = 0;
   };
 
   // Delay the object deletion using the current message loop.
@@ -96,10 +91,6 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
   // thread.
   bool Send(std::unique_ptr<Message> message);
 
-  // Requests an associated interface from the other end of the pipe.
-  void GetRemoteInterface(const std::string& name,
-                          mojo::ScopedInterfaceEndpointHandle handle);
-
   base::ProcessId GetPeerPid() const { return peer_pid_; }
 
  protected:
@@ -110,9 +101,6 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
   // mojom::Channel:
   void Receive(mojo::Array<uint8_t> data,
                mojo::Array<mojom::SerializedHandlePtr> handles) override;
-  void GetAssociatedInterface(
-      const mojo::String& name,
-      mojom::GenericInterfaceAssociatedRequest request) override;
 
   // |delegate_| is null once the message pipe is closed.
   Delegate* delegate_;

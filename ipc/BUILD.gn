@@ -167,13 +167,6 @@ mojom("mojom") {
   ]
 }
 
-mojom("test_interfaces") {
-  testonly = true
-  sources = [
-    "ipc_test.mojom",
-  ]
-}
-
 # This is provided as a separate target so other targets can provide param
 # traits implementations without necessarily linking to all of IPC.
 source_set("param_traits") {
@@ -242,7 +235,6 @@ if (!is_ios) {
       ":ipc",
       ":mojom",
       ":run_all_unittests",
-      ":test_interfaces",
       ":test_support",
       "//base",
       "//base:i18n",

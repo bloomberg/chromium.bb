@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <memory>
 #include <utility>
 
@@ -18,7 +17,6 @@
 #include "base/pickle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
@@ -28,7 +26,6 @@
 #include "ipc/ipc_mojo_handle_attachment.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
-#include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
 #include "mojo/edk/test/mojo_test_base.h"
@@ -63,12 +60,6 @@
 
 namespace {
 
-void SendString(IPC::Sender* sender, const std::string& str) {
-  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
-  message->WriteString(str);
-  ASSERT_TRUE(sender->Send(message));
-}
-
 class ListenerThatExpectsOK : public IPC::Listener {
  public:
   ListenerThatExpectsOK() : received_ok_(false) {}
@@ -92,7 +83,12 @@ class ListenerThatExpectsOK : public IPC::Listener {
     DCHECK(received_ok_);
   }
 
-  static void SendOK(IPC::Sender* sender) { SendString(sender, "OK"); }
+  static void SendOK(IPC::Sender* sender) {
+    IPC::Message* message =
+        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+    message->WriteString(std::string("OK"));
+    ASSERT_TRUE(sender->Send(message));
+  }
 
  private:
   bool received_ok_;
@@ -128,7 +124,7 @@ class ChannelClient {
 
 class IPCChannelMojoTest : public testing::Test {
  public:
-  IPCChannelMojoTest() {}
+  IPCChannelMojoTest() : io_thread_(base::TestIOThread::Mode::kAutoStart) {}
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
 
@@ -152,6 +148,7 @@ class IPCChannelMojoTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  base::TestIOThread io_thread_;
   mojo::edk::test::MultiprocessTestHelper helper_;
   mojo::ScopedMessagePipeHandle handle_;
   std::unique_ptr<IPC::Channel> channel_;
@@ -585,120 +582,6 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendOkClient,
   Close();
 }
 
-class ListenerWithSimpleAssociatedInterface
-    : public IPC::Listener,
-      public IPC::mojom::SimpleTestDriver {
- public:
-  static const int kNumMessages;
-
-  ListenerWithSimpleAssociatedInterface() : binding_(this) {}
-
-  ~ListenerWithSimpleAssociatedInterface() override {}
-
-  bool OnMessageReceived(const IPC::Message& message) override {
-    base::PickleIterator iter(message);
-    std::string should_be_expected;
-    EXPECT_TRUE(iter.ReadString(&should_be_expected));
-    EXPECT_EQ(should_be_expected, next_expected_string_);
-    num_messages_received_++;
-    return true;
-  }
-
-  void OnChannelError() override {
-    DCHECK(received_quit_);
-  }
-
-  void RegisterInterfaceFactory(IPC::Channel* channel) {
-    channel->GetAssociatedInterfaceSupport()->AddAssociatedInterface(
-        base::Bind(&ListenerWithSimpleAssociatedInterface::BindRequest,
-                   base::Unretained(this)));
-  }
-
- private:
-  // IPC::mojom::SimpleTestDriver:
-  void ExpectString(const mojo::String& str) override {
-    next_expected_string_ = str;
-  }
-
-  void RequestQuit(const RequestQuitCallback& callback) override {
-    EXPECT_EQ(kNumMessages, num_messages_received_);
-    received_quit_ = true;
-    callback.Run();
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-
-  void BindRequest(IPC::mojom::SimpleTestDriverAssociatedRequest request) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
-  }
-
-  std::string next_expected_string_;
-  int num_messages_received_ = 0;
-  bool received_quit_ = false;
-
-  mojo::AssociatedBinding<IPC::mojom::SimpleTestDriver> binding_;
-};
-
-const int ListenerWithSimpleAssociatedInterface::kNumMessages = 1000;
-
-class ListenerSendingAssociatedMessages : public IPC::Listener {
- public:
-  ListenerSendingAssociatedMessages() {}
-
-  bool OnMessageReceived(const IPC::Message& message) override { return true; }
-
-  void OnChannelConnected(int32_t peer_pid) override {
-    DCHECK(channel_);
-    channel_->GetAssociatedInterfaceSupport()->GetRemoteAssociatedInterface(
-        &driver_);
-
-    // Send a bunch of interleaved messages, alternating between the associated
-    // interface and a legacy IPC::Message.
-    for (int i = 0; i < ListenerWithSimpleAssociatedInterface::kNumMessages;
-         ++i) {
-      std::string str = base::StringPrintf("Hello! %d", i);
-      driver_->ExpectString(str);
-      SendString(channel_, str);
-    }
-    driver_->RequestQuit(base::Bind(&OnQuitAck));
-  }
-
-  void set_channel(IPC::Channel* channel) { channel_ = channel; }
-
- private:
-  static void OnQuitAck() { base::MessageLoop::current()->QuitWhenIdle(); }
-
-  IPC::Channel* channel_ = nullptr;
-  IPC::mojom::SimpleTestDriverAssociatedPtr driver_;
-};
-
-TEST_F(IPCChannelMojoTest, SimpleAssociatedInterface) {
-  InitWithMojo("SimpleAssociatedInterfaceClient");
-
-  ListenerWithSimpleAssociatedInterface listener;
-  CreateChannel(&listener);
-  ASSERT_TRUE(ConnectChannel());
-
-  listener.RegisterInterfaceFactory(channel());
-
-  base::RunLoop().Run();
-  channel()->Close();
-
-  EXPECT_TRUE(WaitForClientShutdown());
-  DestroyChannel();
-}
-
-DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(SimpleAssociatedInterfaceClient,
-                                    ChannelClient) {
-  ListenerSendingAssociatedMessages listener;
-  Connect(&listener);
-  listener.set_channel(channel());
-
-  base::RunLoop().Run();
-
-  Close();
-}
-
 #if defined(OS_POSIX)
 class ListenerThatExpectsFile : public IPC::Listener {
  public:
@@ -813,7 +696,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
   Close();
 }
 
-#endif  // defined(OS_POSIX)
+#endif
 
 #if defined(OS_LINUX)
 

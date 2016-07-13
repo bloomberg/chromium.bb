@@ -17,14 +17,8 @@ struct SerializedHandle {
   Type type;
 };
 
-// A placeholder interface type since we don't yet support generic associated
-// message pipe handles.
-interface GenericInterface {};
-
 interface Channel {
   Receive(array<uint8> data, array<SerializedHandle>? handles);
-
-  GetAssociatedInterface(string name, associated GenericInterface& request);
 };
 
 // An interface for connecting a pair of Channel interfaces representing a

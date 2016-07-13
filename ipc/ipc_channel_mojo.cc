@@ -307,14 +307,6 @@ void ChannelMojo::OnBootstrapError() {
   listener_->OnChannelError();
 }
 
-void ChannelMojo::OnAssociatedInterfaceRequest(
-    const std::string& name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  auto iter = associated_interfaces_.find(name);
-  if (iter != associated_interfaces_.end())
-    iter->second.Run(std::move(handle));
-}
-
 void ChannelMojo::InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
                                     mojom::ChannelAssociatedRequest receiver,
                                     base::ProcessId peer_pid) {
@@ -400,9 +392,6 @@ base::ProcessId ChannelMojo::GetSelfPID() const {
   return bootstrap_->GetSelfPID();
 }
 
-Channel::AssociatedInterfaceSupport*
-ChannelMojo::GetAssociatedInterfaceSupport() { return this; }
-
 void ChannelMojo::OnMessageReceived(const Message& message) {
   TRACE_EVENT2("ipc,toplevel", "ChannelMojo::OnMessageReceived",
                "class", IPC_MESSAGE_ID_CLASS(message.type()),
@@ -477,25 +466,6 @@ MojoResult ChannelMojo::WriteToMessageAttachmentSet(
     }
   }
   return MOJO_RESULT_OK;
-}
-
-mojo::AssociatedGroup* ChannelMojo::GetAssociatedGroup() {
-  DCHECK(bootstrap_);
-  return bootstrap_->GetAssociatedGroup();
-}
-
-void ChannelMojo::AddGenericAssociatedInterface(
-    const std::string& name,
-    const GenericAssociatedInterfaceFactory& factory) {
-  auto result = associated_interfaces_.insert({ name, factory });
-  DCHECK(result.second);
-}
-
-void ChannelMojo::GetGenericRemoteAssociatedInterface(
-    const std::string& name,
-    mojo::ScopedInterfaceEndpointHandle handle) {
-  DCHECK(message_reader_);
-  message_reader_->GetRemoteInterface(name, std::move(handle));
 }
 
 }  // namespace IPC
