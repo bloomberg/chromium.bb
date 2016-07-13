@@ -187,6 +187,11 @@ void InsertListCommand::doApply(EditingState* editingState)
                 if (!singleParagraphResult)
                     break;
                 if (endOfSelection.isNull() || endOfSelection.isOrphan() || startOfLastParagraph.isNull() || startOfLastParagraph.isOrphan()) {
+
+                    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+                    // see http://crbug.com/590369 for more details.
+                    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
                     endOfSelection = visiblePositionForIndex(indexForEndOfSelection, scopeForEndOfSelection);
                     // If endOfSelection is null, then some contents have been deleted from the document.
                     // This should never happen and if it did, exit early immediately because we've lost the loop invariant.

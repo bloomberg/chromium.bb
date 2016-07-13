@@ -2029,6 +2029,11 @@ void AXLayoutObject::setSelection(const AXRange& selection)
     if (!frame)
         return;
 
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    // This callsite should probably move up the stack.
+    frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     // Set the selection based on visible positions, because the offsets in accessibility nodes
     // are based on visible indexes, which often skips redundant whitespace, for example.
     VisiblePosition anchorVisiblePosition = anchorNode->isTextNode()

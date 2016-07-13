@@ -1365,6 +1365,10 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     Element* documentElement = document().documentElement();
     if (!documentElement)
         return;
+
+    // We need clean layout in order to compute plain-text ranges below.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     // Fragment creation (using createMarkup) incorrectly uses regular spaces
     // instead of nbsps for some spaces that were rendered (11475), which causes
     // spaces to be collapsed during the move operation. This results in a call

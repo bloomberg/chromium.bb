@@ -995,6 +995,11 @@ bool WebLocalFrameImpl::firstRectForCharacterRange(unsigned location, unsigned l
     Element* editable = frame()->selection().rootEditableElementOrDocumentElement();
     if (!editable)
         return false;
+
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    editable->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     const EphemeralRange range = PlainTextRange(location, location + length).createRange(*editable);
     if (range.isNull())
         return false;

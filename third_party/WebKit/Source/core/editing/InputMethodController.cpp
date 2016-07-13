@@ -399,6 +399,10 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     if (!rootEditableElement)
         return;
 
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    rootEditableElement->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     // In case of exceeding the right boundary.
     // If both |value1| and |value2| exceed right boundary,
     // PlainTextRange(value1, value2)::createRange() will return a default
@@ -435,6 +439,10 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     Element* editable = frame().selection().rootEditableElement();
     if (!editable)
         return;
+
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    editable->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     const EphemeralRange range = PlainTextRange(compositionStart, compositionEnd).createRange(*editable);
     if (range.isNull())
@@ -500,6 +508,10 @@ bool InputMethodController::setSelectionOffsets(const PlainTextRange& selectionO
     Element* rootEditableElement = frame().selection().rootEditableElement();
     if (!rootEditableElement)
         return false;
+
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    rootEditableElement->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
     const EphemeralRange range = selectionOffsets.createRange(*rootEditableElement);
     if (range.isNull())

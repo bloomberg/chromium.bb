@@ -79,6 +79,11 @@ WebRange WebRange::fromDocumentRange(WebLocalFrame* frame, int start, int length
     LocalFrame* webFrame = toWebLocalFrameImpl(frame)->frame();
     Element* selectionRoot = webFrame->selection().rootEditableElement();
     ContainerNode* scope = selectionRoot ? selectionRoot : webFrame->document()->documentElement();
+
+    // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+    // see http://crbug.com/590369 for more details.
+    scope->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     return createRange(PlainTextRange(start, start + length).createRange(*scope));
 }
 
