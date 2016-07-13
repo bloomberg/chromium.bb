@@ -150,12 +150,12 @@
   <!-- Begin of Bookmarks Bubble strings. -->
   <if expr="not use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="Title of the bubble after bookmarking a page.">
-      Bookmark added!
+      Bookmark added
     </message>
   </if>
   <if expr="use_titlecase">
     <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED" desc="In Title Case: Title of the bubble after bookmarking a page.">
-      Bookmark Added!
+      Bookmark Added
     </message>
   </if>
   <message name="IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK" desc="Title of the bubble when re-clicking on a bookmark">
