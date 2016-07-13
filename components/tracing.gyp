@@ -89,7 +89,7 @@
         'tracing/test/example_messages.proto',
       ],
       'dependencies': [
-        'proto_zero_plugin',
+        'proto_zero_plugin#host',
       ],
       'includes': ['../build/protoc.gypi'],
     },
