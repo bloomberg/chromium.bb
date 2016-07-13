@@ -36,7 +36,7 @@ class SafeBrowsingDatabaseFactory {
  public:
   SafeBrowsingDatabaseFactory() { }
   virtual ~SafeBrowsingDatabaseFactory() { }
-  virtual SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
+  virtual std::unique_ptr<SafeBrowsingDatabase> CreateSafeBrowsingDatabase(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       bool enable_download_protection,
       bool enable_client_side_whitelist,
@@ -68,7 +68,7 @@ class SafeBrowsingDatabase {
   // It is not thread safe.
   // The browse list and off-domain inclusion whitelist are always on;
   // availability of other lists is controlled by the flags on this method.
-  static SafeBrowsingDatabase* Create(
+  static std::unique_ptr<SafeBrowsingDatabase> Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       bool enable_download_protection,
       bool enable_client_side_whitelist,

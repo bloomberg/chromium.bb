@@ -11,6 +11,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/safe_browsing/download_feedback.h"
@@ -82,7 +83,7 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
  public:
   ~FakeDownloadFeedbackFactory() override {}
 
-  DownloadFeedback* CreateDownloadFeedback(
+  std::unique_ptr<DownloadFeedback> CreateDownloadFeedback(
       net::URLRequestContextGetter* request_context_getter,
       base::TaskRunner* file_task_runner,
       const base::FilePath& file_path,
@@ -98,12 +99,10 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
                    base::Unretained(this),
                    feedbacks_.size()));
     feedbacks_.push_back(feedback);
-    return feedback;
+    return base::WrapUnique(feedback);
   }
 
-  void DownloadFeedbackDeleted(size_t n) {
-    feedbacks_[n] = NULL;
-  }
+  void DownloadFeedbackDeleted(size_t n) { feedbacks_[n] = nullptr; }
 
   FakeDownloadFeedback* feedback(size_t n) const {
     return feedbacks_[n];
@@ -144,7 +143,7 @@ class DownloadFeedbackServiceTest : public testing::Test {
     DownloadFeedback::RegisterFactory(&download_feedback_factory_);
   }
 
-  void TearDown() override { DownloadFeedback::RegisterFactory(NULL); }
+  void TearDown() override { DownloadFeedback::RegisterFactory(nullptr); }
 
   base::FilePath CreateTestFile(int n) const {
     base::FilePath upload_file_path(
@@ -235,14 +234,14 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackComplete) {
 TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
   const std::string ping_request = "ping";
   const std::string ping_response = "resp";
-  const size_t num_downloads = 3;
+  const size_t kNumDownloads = 3;
 
   content::DownloadItem::AcquireFileCallback
-      download_discarded_callback[num_downloads];
+      download_discarded_callback[kNumDownloads];
 
-  base::FilePath file_path[num_downloads];
-  content::MockDownloadItem item[num_downloads];
-  for (size_t i = 0; i < num_downloads; ++i) {
+  base::FilePath file_path[kNumDownloads];
+  content::MockDownloadItem item[kNumDownloads];
+  for (size_t i = 0; i < kNumDownloads; ++i) {
     file_path[i] = CreateTestFile(i);
     EXPECT_CALL(item[i], GetDangerType())
         .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
@@ -258,14 +257,14 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
   {
     DownloadFeedbackService service(request_context_getter_.get(),
                                     file_task_runner_.get());
-    for (size_t i = 0; i < num_downloads; ++i) {
+    for (size_t i = 0; i < kNumDownloads; ++i) {
       SCOPED_TRACE(i);
       service.BeginFeedbackForDownload(&item[i]);
       ASSERT_FALSE(download_discarded_callback[i].is_null());
     }
     EXPECT_EQ(0U, num_feedbacks());
 
-    for (size_t i = 0; i < num_downloads; ++i) {
+    for (size_t i = 0; i < kNumDownloads; ++i) {
       download_discarded_callback[i].Run(file_path[i]);
     }
 
@@ -304,14 +303,14 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
 TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   const std::string ping_request = "ping";
   const std::string ping_response = "resp";
-  const size_t num_downloads = 3;
+  const size_t kNumDownloads = 3;
 
   content::DownloadItem::AcquireFileCallback
-      download_discarded_callback[num_downloads];
+      download_discarded_callback[kNumDownloads];
 
-  base::FilePath file_path[num_downloads];
-  content::MockDownloadItem item[num_downloads];
-  for (size_t i = 0; i < num_downloads; ++i) {
+  base::FilePath file_path[kNumDownloads];
+  content::MockDownloadItem item[kNumDownloads];
+  for (size_t i = 0; i < kNumDownloads; ++i) {
     file_path[i] = CreateTestFile(i);
     EXPECT_CALL(item[i], GetDangerType())
         .WillRepeatedly(Return(content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
@@ -327,7 +326,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   {
     DownloadFeedbackService service(request_context_getter_.get(),
                                     file_task_runner_.get());
-    for (size_t i = 0; i < num_downloads; ++i) {
+    for (size_t i = 0; i < kNumDownloads; ++i) {
       SCOPED_TRACE(i);
       service.BeginFeedbackForDownload(&item[i]);
       ASSERT_FALSE(download_discarded_callback[i].is_null());

@@ -244,11 +244,13 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   scoped_refptr<SafeBrowsingURLRequestContextGetter>
       url_request_context_getter_;
 
+#if defined(SAFE_BROWSING_DB_LOCAL)
   // Handles interaction with SafeBrowsing servers. Accessed on IO thread.
-  SafeBrowsingProtocolManager* protocol_manager_;
+  std::unique_ptr<SafeBrowsingProtocolManager> protocol_manager_;
+#endif
 
   // Provides phishing and malware statistics. Accessed on IO thread.
-  SafeBrowsingPingManager* ping_manager_;
+  std::unique_ptr<SafeBrowsingPingManager> ping_manager_;
 
   // Whether the service is running. 'enabled_' is used by SafeBrowsingService
   // on the IO thread during normal operations.

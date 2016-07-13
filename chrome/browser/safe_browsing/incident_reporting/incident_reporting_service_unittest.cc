@@ -35,6 +35,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/quota_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,22 +54,20 @@ class IncidentReportingServiceTest : public testing::Test {
   class TestIncidentReportingService
       : public safe_browsing::IncidentReportingService {
    public:
-    typedef base::Callback<void(Profile*)> PreProfileAddCallback;
+    using PreProfileAddCallback = base::Callback<void(Profile*)>;
 
-    typedef base::Callback<
-        void(safe_browsing::ClientIncidentReport_EnvironmentData*)>
-        CollectEnvironmentCallback;
+    using CollectEnvironmentCallback = base::Callback<void(
+        safe_browsing::ClientIncidentReport_EnvironmentData*)>;
 
-    typedef base::Callback<std::unique_ptr<safe_browsing::LastDownloadFinder>(
-        const safe_browsing::LastDownloadFinder::LastDownloadCallback&
-            callback)>
-        CreateDownloadFinderCallback;
+    using CreateDownloadFinderCallback =
+        base::Callback<std::unique_ptr<safe_browsing::LastDownloadFinder>(
+            const safe_browsing::LastDownloadFinder::LastDownloadCallback&
+                callback)>;
 
-    typedef base::Callback<
-        std::unique_ptr<safe_browsing::IncidentReportUploader>(
+    using StartUploadCallback =
+        base::Callback<std::unique_ptr<safe_browsing::IncidentReportUploader>(
             const safe_browsing::IncidentReportUploader::OnResultCallback&,
-            const safe_browsing::ClientIncidentReport& report)>
-        StartUploadCallback;
+            const safe_browsing::ClientIncidentReport& report)>;
 
     TestIncidentReportingService(
         const scoped_refptr<base::TaskRunner>& task_runner,
@@ -76,8 +75,8 @@ class IncidentReportingServiceTest : public testing::Test {
         const CollectEnvironmentCallback& collect_environment_callback,
         const CreateDownloadFinderCallback& create_download_finder_callback,
         const StartUploadCallback& start_upload_callback)
-        : IncidentReportingService(NULL,
-                                   NULL,
+        : IncidentReportingService(nullptr,
+                                   nullptr,
                                    base::TimeDelta::FromMilliseconds(5),
                                    task_runner),
           pre_profile_add_callback_(pre_profile_add_callback),
@@ -89,7 +88,9 @@ class IncidentReportingServiceTest : public testing::Test {
       test_instance_.Get().Set(this);
     }
 
-    ~TestIncidentReportingService() override { test_instance_.Get().Set(NULL); }
+    ~TestIncidentReportingService() override {
+      test_instance_.Get().Set(nullptr);
+    }
 
     bool IsProcessingReport() const {
       return IncidentReportingService::IsProcessingReport();
@@ -195,6 +196,7 @@ class IncidentReportingServiceTest : public testing::Test {
   IncidentReportingServiceTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         thread_task_runner_handle_(task_runner_),
+        ui_thread_(content::BrowserThread::UI),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         on_create_download_finder_action_(
             ON_CREATE_DOWNLOAD_FINDER_DOWNLOADS_FOUND),
@@ -344,6 +346,7 @@ class IncidentReportingServiceTest : public testing::Test {
       disable_purge_for_testing_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
+  content::TestBrowserThread ui_thread_;
   TestingProfileManager profile_manager_;
   std::unique_ptr<TestIncidentReportingService> instance_;
   base::Closure on_start_upload_callback_;
@@ -508,9 +511,7 @@ class IncidentReportingServiceTest : public testing::Test {
   // operation.
   void CollectEnvironmentData(
       safe_browsing::ClientIncidentReport_EnvironmentData* data) {
-    ASSERT_NE(
-        static_cast<safe_browsing::ClientIncidentReport_EnvironmentData*>(NULL),
-        data);
+    ASSERT_TRUE(data);
     data->mutable_os()->set_os_name(kFakeOsName);
     environment_collected_ = true;
   }
@@ -1069,7 +1070,7 @@ TEST_F(IncidentReportingServiceTest, ProfileDestroyedDuringUpload) {
 TEST_F(IncidentReportingServiceTest, ProcessWideNoProfileNoUpload) {
   SetFieldTrialAndCreateService(true);
   // Add the test incident.
-  AddTestIncident(NULL);
+  AddTestIncident(nullptr);
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -1090,7 +1091,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUpload) {
                 ON_PROFILE_ADDITION_NO_ACTION, nullptr);
 
   // Add the test incident.
-  AddTestIncident(NULL);
+  AddTestIncident(nullptr);
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -1099,7 +1100,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideOneUpload) {
   ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Add the incident to the service again.
-  AddTestIncident(NULL);
+  AddTestIncident(nullptr);
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -1148,7 +1149,7 @@ TEST_F(IncidentReportingServiceTest, ProcessWideTwoUploads) {
 TEST_F(IncidentReportingServiceTest, ProcessWideNoUploadAfterProfile) {
   SetFieldTrialAndCreateService(false);
   // Add the test incident.
-  AddTestIncident(NULL);
+  AddTestIncident(nullptr);
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();
@@ -1294,7 +1295,7 @@ TEST_F(IncidentReportingServiceTest, DelayedAnalysisOneUpload) {
   ExpectTestIncidentUploadWithBinaryDownload(1);
 
   // Add the incident to the service again.
-  AddTestIncident(NULL);
+  AddTestIncident(nullptr);
 
   // Let all tasks run.
   task_runner_->RunUntilIdle();

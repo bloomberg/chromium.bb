@@ -14,10 +14,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/safe_browsing/two_phase_uploader.h"
 
-namespace content {
-class DownloadItem;
-}
-
 namespace safe_browsing {
 
 class DownloadFeedbackFactory;
@@ -28,7 +24,7 @@ class DownloadFeedback : public base::NonThreadSafe {
  public:
   // Takes ownership of the file pointed to be |file_path|, it will be deleted
   // when the DownloadFeedback is destructed.
-  static DownloadFeedback* Create(
+  static std::unique_ptr<DownloadFeedback> Create(
       net::URLRequestContextGetter* request_context_getter,
       base::TaskRunner* file_task_runner,
       const base::FilePath& file_path,
@@ -70,7 +66,7 @@ class DownloadFeedbackFactory {
  public:
   virtual ~DownloadFeedbackFactory() {}
 
-  virtual DownloadFeedback* CreateDownloadFeedback(
+  virtual std::unique_ptr<DownloadFeedback> CreateDownloadFeedback(
       net::URLRequestContextGetter* request_context_getter,
       base::TaskRunner* file_task_runner,
       const base::FilePath& file_path,

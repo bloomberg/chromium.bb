@@ -81,10 +81,11 @@ DownloadFeedbackService::DownloadFeedbackService(
     : request_context_getter_(request_context_getter),
       file_task_runner_(file_task_runner),
       weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 DownloadFeedbackService::~DownloadFeedbackService() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 // static
@@ -142,7 +143,7 @@ void DownloadFeedbackService::RecordEligibleDownloadShown(
 
 void DownloadFeedbackService::BeginFeedbackForDownload(
     content::DownloadItem* download) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Activations",
                             download->GetDangerType(),
@@ -186,11 +187,11 @@ void DownloadFeedbackService::BeginFeedback(
     const std::string& ping_request,
     const std::string& ping_response,
     const base::FilePath& path) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<DownloadFeedback> feedback(DownloadFeedback::Create(
       request_context_getter_.get(), file_task_runner_.get(), path,
       ping_request, ping_response));
-  active_feedback_.push_back(std::move(feedback));
+  active_feedback_.push(std::move(feedback));
   UMA_HISTOGRAM_COUNTS_100("SBDownloadFeedback.ActiveFeedbacks",
                            active_feedback_.size());
 
@@ -200,9 +201,9 @@ void DownloadFeedbackService::BeginFeedback(
 
 void DownloadFeedbackService::FeedbackComplete() {
   DVLOG(1) << __FUNCTION__;
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!active_feedback_.empty());
-  active_feedback_.erase(active_feedback_.begin());
+  active_feedback_.pop();
   if (!active_feedback_.empty())
     StartPendingFeedback();
 }

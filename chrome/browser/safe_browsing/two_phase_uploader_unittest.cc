@@ -51,10 +51,10 @@ class Delegate {
 base::FilePath GetTestFilePath() {
   base::FilePath file_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
-  file_path = file_path.Append(FILE_PATH_LITERAL("net"));
-  file_path = file_path.Append(FILE_PATH_LITERAL("data"));
-  file_path = file_path.Append(FILE_PATH_LITERAL("url_request_unittest"));
-  file_path = file_path.Append(FILE_PATH_LITERAL("BullRunSpeech.txt"));
+  file_path = file_path.AppendASCII("net");
+  file_path = file_path.AppendASCII("data");
+  file_path = file_path.AppendASCII("url_request_unittest");
+  file_path = file_path.AppendASCII("BullRunSpeech.txt");
   return file_path;
 }
 

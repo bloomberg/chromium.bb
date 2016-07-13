@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -38,11 +39,12 @@ namespace safe_browsing {
 // SafeBrowsingPingManager implementation ----------------------------------
 
 // static
-SafeBrowsingPingManager* SafeBrowsingPingManager::Create(
+std::unique_ptr<SafeBrowsingPingManager> SafeBrowsingPingManager::Create(
     net::URLRequestContextGetter* request_context_getter,
     const SafeBrowsingProtocolConfig& config) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return new SafeBrowsingPingManager(request_context_getter, config);
+  return base::WrapUnique(
+      new SafeBrowsingPingManager(request_context_getter, config));
 }
 
 SafeBrowsingPingManager::SafeBrowsingPingManager(

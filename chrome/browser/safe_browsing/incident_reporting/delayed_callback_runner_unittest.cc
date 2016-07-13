@@ -11,8 +11,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -45,14 +47,11 @@ class DelayedCallbackRunnerTest : public testing::Test {
   }
 
  protected:
-  DelayedCallbackRunnerTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
-        thread_task_runner_handle_(task_runner_) {}
+  DelayedCallbackRunnerTest() {}
 
   void SetUp() override {
     instance_.reset(new safe_browsing::DelayedCallbackRunner(
-        base::TimeDelta::FromMilliseconds(1),  // ignored by simple runner.
-        task_runner_));
+        base::TimeDelta(), base::ThreadTaskRunnerHandle::Get()));
   }
 
   void TearDown() override { instance_.reset(); }
@@ -90,8 +89,7 @@ class DelayedCallbackRunnerTest : public testing::Test {
     return callbacks_[name].deleted;
   }
 
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle thread_task_runner_handle_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<safe_browsing::DelayedCallbackRunner> instance_;
 
  private:
@@ -118,7 +116,7 @@ TEST_F(DelayedCallbackRunnerTest, RunDeleted) {
   const std::string name("one");
   RegisterTestCallback(name);
   instance_->Start();
-  task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CallbackWasRun(name));
   EXPECT_TRUE(CallbackWasDeleted(name));
 }
@@ -130,15 +128,13 @@ TEST_F(DelayedCallbackRunnerTest, AddWhileRunningRun) {
   const std::string name2("two");
 
   // Post a task to register a new callback after Start() is called.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DelayedCallbackRunnerTest::RegisterTestCallback,
-                 base::Unretained(this),
-                 name2));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DelayedCallbackRunnerTest::RegisterTestCallback,
+                            base::Unretained(this), name2));
 
   RegisterTestCallback(name);
   instance_->Start();
-  task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CallbackWasRun(name));
   EXPECT_TRUE(CallbackWasDeleted(name));
   EXPECT_TRUE(CallbackWasRun(name2));
@@ -151,13 +147,13 @@ TEST_F(DelayedCallbackRunnerTest, MultipleRuns) {
 
   RegisterTestCallback(name);
   instance_->Start();
-  task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CallbackWasRun(name));
   EXPECT_TRUE(CallbackWasDeleted(name));
 
   RegisterTestCallback(name2);
   instance_->Start();
-  task_runner_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CallbackWasRun(name2));
   EXPECT_TRUE(CallbackWasDeleted(name2));
 }

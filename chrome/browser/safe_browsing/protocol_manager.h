@@ -24,7 +24,6 @@
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/chunk_range.h"
@@ -47,8 +46,8 @@ namespace safe_browsing {
 class SBProtocolManagerFactory;
 class SafeBrowsingProtocolManagerDelegate;
 
-class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
-                                    public base::NonThreadSafe {
+// Lives on the IO thread.
+class SafeBrowsingProtocolManager : public net::URLFetcherDelegate {
  public:
   // FullHashCallback is invoked when GetFullHash completes.
   // Parameters:
@@ -56,8 +55,9 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   //     were no matches, and that the resource is safe.
   //   - The cache lifetime of the result. A lifetime of 0 indicates the results
   //     should not be cached.
-  typedef base::Callback<void(const std::vector<SBFullHashResult>&,
-                              const base::TimeDelta&)> FullHashCallback;
+  using FullHashCallback =
+      base::Callback<void(const std::vector<SBFullHashResult>&,
+                          const base::TimeDelta&)>;
 
   ~SafeBrowsingProtocolManager() override;
 
@@ -68,7 +68,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   }
 
   // Create an instance of the safe browsing protocol manager.
-  static SafeBrowsingProtocolManager* Create(
+  static std::unique_ptr<SafeBrowsingProtocolManager> Create(
       SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config);
@@ -290,7 +290,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
     FullHashCallback callback;
     bool is_download;
   };
-  typedef base::hash_map<const net::URLFetcher*, FullHashDetails> HashRequests;
+  using HashRequests = base::hash_map<const net::URLFetcher*, FullHashDetails>;
 
   // The factory that controls the creation of SafeBrowsingProtocolManager.
   // This is used by tests.
@@ -392,10 +392,12 @@ class SBProtocolManagerFactory {
  public:
   SBProtocolManagerFactory() {}
   virtual ~SBProtocolManagerFactory() {}
-  virtual SafeBrowsingProtocolManager* CreateProtocolManager(
+
+  virtual std::unique_ptr<SafeBrowsingProtocolManager> CreateProtocolManager(
       SafeBrowsingProtocolManagerDelegate* delegate,
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SBProtocolManagerFactory);
 };
@@ -403,12 +405,11 @@ class SBProtocolManagerFactory {
 // Delegate interface for the SafeBrowsingProtocolManager.
 class SafeBrowsingProtocolManagerDelegate {
  public:
-  typedef base::Callback<void(
+  using GetChunksCallback = base::Callback<void(
       const std::vector<SBListChunkRanges>&, /* List of chunks */
       bool,                                  /* database_error */
-      bool                                   /* is_extended_reporting */
-      )> GetChunksCallback;
-  typedef base::Callback<void(void)> AddChunksCallback;
+      bool                                   /* is_extended_reporting */)>;
+  using AddChunksCallback = base::Closure;
 
   virtual ~SafeBrowsingProtocolManagerDelegate();
 

@@ -804,7 +804,7 @@ SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase() {
     return database_;
 
   const base::TimeTicks before = base::TimeTicks::Now();
-  SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create(
+  std::unique_ptr<SafeBrowsingDatabase> database = SafeBrowsingDatabase::Create(
       safe_browsing_task_runner_, enable_download_protection_,
       enable_csd_whitelist_, enable_download_whitelist_,
       enable_extension_blacklist_, enable_ip_blacklist_,
@@ -815,7 +815,7 @@ SafeBrowsingDatabase* LocalSafeBrowsingDatabaseManager::GetDatabase() {
     // Acquiring the lock here guarantees correct ordering between the writes to
     // the new database object above, and the setting of |database_| below.
     base::AutoLock lock(database_lock_);
-    database_ = database;
+    database_ = database.release();
   }
 
   BrowserThread::PostTask(

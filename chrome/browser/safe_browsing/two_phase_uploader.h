@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/threading/non_thread_safe.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
@@ -33,7 +32,8 @@ class TwoPhaseUploaderFactory;
 // supports sending metadata in the POST request body. We also do not need the
 // api-version and authorization headers.
 // TODO(mattm): support retry / resume.
-class TwoPhaseUploader : public base::NonThreadSafe {
+// Lives on the UI thread.
+class TwoPhaseUploader {
  public:
   enum State {
     STATE_NONE,
@@ -41,11 +41,11 @@ class TwoPhaseUploader : public base::NonThreadSafe {
     UPLOAD_FILE,
     STATE_SUCCESS,
   };
-  typedef base::Callback<void(int64_t sent, int64_t total)> ProgressCallback;
-  typedef base::Callback<void(State state,
-                              int net_error,
-                              int response_code,
-                              const std::string& response_data)> FinishCallback;
+  using ProgressCallback = base::Callback<void(int64_t sent, int64_t total)>;
+  using FinishCallback = base::Callback<void(State state,
+                                             int net_error,
+                                             int response_code,
+                                             const std::string& response_data)>;
 
   virtual ~TwoPhaseUploader() {}
 
@@ -62,7 +62,7 @@ class TwoPhaseUploader : public base::NonThreadSafe {
   // response_data will specify information about the error. |finish_callback|
   // will not be called if the upload is cancelled by destructing the
   // TwoPhaseUploader object before completion.
-  static TwoPhaseUploader* Create(
+  static std::unique_ptr<TwoPhaseUploader> Create(
       net::URLRequestContextGetter* url_request_context_getter,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,
@@ -90,7 +90,7 @@ class TwoPhaseUploaderFactory {
  public:
   virtual ~TwoPhaseUploaderFactory() {}
 
-  virtual TwoPhaseUploader* CreateTwoPhaseUploader(
+  virtual std::unique_ptr<TwoPhaseUploader> CreateTwoPhaseUploader(
       net::URLRequestContextGetter* url_request_context_getter,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,

@@ -241,7 +241,7 @@ IncidentReportingService::Receiver::~Receiver() {
 void IncidentReportingService::Receiver::AddIncidentForProfile(
     Profile* profile,
     std::unique_ptr<Incident> incident) {
-  DCHECK(thread_runner_->BelongsToCurrentThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
   AddIncidentOnMainThread(service_, profile, std::move(incident));
 }
@@ -361,6 +361,7 @@ IncidentReportingService::IncidentReportingService(
       download_metadata_manager_(content::BrowserThread::GetBlockingPool()),
       receiver_weak_ptr_factory_(this),
       weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_ADDED,
                               content::NotificationService::AllSources());
@@ -368,9 +369,9 @@ IncidentReportingService::IncidentReportingService(
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
   DownloadProtectionService* download_protection_service =
-      (safe_browsing_service ?
-       safe_browsing_service->download_protection_service() :
-       NULL);
+      (safe_browsing_service
+           ? safe_browsing_service->download_protection_service()
+           : nullptr);
   if (download_protection_service) {
     client_download_request_subscription_ =
         download_protection_service->RegisterClientDownloadRequestCallback(
@@ -382,7 +383,7 @@ IncidentReportingService::IncidentReportingService(
 }
 
 IncidentReportingService::~IncidentReportingService() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CancelIncidentCollection();
 
   // Cancel all internal asynchronous tasks.
@@ -403,7 +404,7 @@ IncidentReportingService::GetIncidentReceiver() {
 
 std::unique_ptr<TrackedPreferenceValidationDelegate>
 IncidentReportingService::CreatePreferenceValidationDelegate(Profile* profile) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (profile->IsOffTheRecord())
     return std::unique_ptr<TrackedPreferenceValidationDelegate>();
@@ -413,7 +414,7 @@ IncidentReportingService::CreatePreferenceValidationDelegate(Profile* profile) {
 
 void IncidentReportingService::RegisterDelayedAnalysisCallback(
     const DelayedAnalysisCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // |callback| will be run on the blocking pool. The receiver will bounce back
   // to the origin thread if needed.
@@ -430,7 +431,7 @@ void IncidentReportingService::RegisterDelayedAnalysisCallback(
 void IncidentReportingService::
     RegisterExtendedReportingOnlyDelayedAnalysisCallback(
         const DelayedAnalysisCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // |callback| will be run on the blocking pool. The receiver will bounce back
   // to the origin thread if needed.
@@ -460,7 +461,7 @@ IncidentReportingService::IncidentReportingService(
     const scoped_refptr<base::TaskRunner>& delayed_task_runner)
     : database_manager_(safe_browsing_service
                             ? safe_browsing_service->database_manager()
-                            : NULL),
+                            : nullptr),
       url_request_context_getter_(request_context_getter),
       collect_environment_data_fn_(&CollectEnvironmentData),
       environment_collection_task_runner_(
@@ -508,7 +509,7 @@ void IncidentReportingService::DoExtensionCollection(
 }
 
 void IncidentReportingService::OnProfileAdded(Profile* profile) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Track the addition of all profiles even when no report is being assembled
   // so that the service can determine whether or not it can evaluate a
@@ -584,13 +585,13 @@ IncidentReportingService::StartReportUpload(
 }
 
 bool IncidentReportingService::IsProcessingReport() const {
-  return report_ != NULL;
+  return report_ != nullptr;
 }
 
 IncidentReportingService::ProfileContext*
 IncidentReportingService::GetOrCreateProfileContext(Profile* profile) {
   ProfileContextCollection::iterator it =
-      profiles_.insert(ProfileContextCollection::value_type(profile, NULL))
+      profiles_.insert(ProfileContextCollection::value_type(profile, nullptr))
           .first;
   if (!it->second)
     it->second = new ProfileContext();
@@ -600,11 +601,11 @@ IncidentReportingService::GetOrCreateProfileContext(Profile* profile) {
 IncidentReportingService::ProfileContext*
 IncidentReportingService::GetProfileContext(Profile* profile) {
   ProfileContextCollection::iterator it = profiles_.find(profile);
-  return it == profiles_.end() ? NULL : it->second;
+  return it != profiles_.end() ? it->second : nullptr;
 }
 
 void IncidentReportingService::OnProfileDestroyed(Profile* profile) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ProfileContextCollection::iterator it = profiles_.find(profile);
   if (it == profiles_.end())
@@ -626,7 +627,7 @@ void IncidentReportingService::OnProfileDestroyed(Profile* profile) {
 }
 
 Profile* IncidentReportingService::FindEligibleProfile() const {
-  Profile* candidate = NULL;
+  Profile* candidate = nullptr;
   for (ProfileContextCollection::const_iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
@@ -654,7 +655,7 @@ Profile* IncidentReportingService::FindEligibleProfile() const {
 
 void IncidentReportingService::AddIncident(Profile* profile,
                                            std::unique_ptr<Incident> incident) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Ignore incidents from off-the-record profiles.
   if (profile && profile->IsOffTheRecord())
@@ -705,7 +706,7 @@ void IncidentReportingService::ClearIncident(
 }
 
 void IncidentReportingService::BeginReportProcessing() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Creates a new report if needed.
   if (!report_)
@@ -734,7 +735,7 @@ void IncidentReportingService::CancelIncidentCollection() {
 }
 
 void IncidentReportingService::OnCollationTimeout() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Exit early if collection was cancelled.
   if (!collation_timeout_pending_)
@@ -756,7 +757,7 @@ void IncidentReportingService::OnCollationTimeout() {
 }
 
 void IncidentReportingService::BeginEnvironmentCollection() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(report_);
   // Nothing to do if environment collection is pending or has already
   // completed, if there are no incidents to process, or if there is no eligible
@@ -794,7 +795,7 @@ void IncidentReportingService::CancelEnvironmentCollection() {
 
 void IncidentReportingService::OnEnvironmentDataCollected(
     std::unique_ptr<ClientIncidentReport_EnvironmentData> environment_data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(environment_collection_pending_);
   DCHECK(report_ && !report_->has_environment());
   environment_collection_pending_ = false;
@@ -816,7 +817,7 @@ void IncidentReportingService::OnEnvironmentDataCollected(
 }
 
 void IncidentReportingService::BeginDownloadCollection() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(report_);
   // Nothing to do if a search for the most recent download is already pending,
   // if one has already been found, or if there are no incidents to process.
@@ -870,7 +871,7 @@ void IncidentReportingService::OnLastDownloadFound(
     std::unique_ptr<ClientIncidentReport_DownloadDetails> last_binary_download,
     std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
         last_non_binary_download) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(report_);
 
   UMA_HISTOGRAM_TIMES("SBIRS.FindDownloadedBinaryTime",
@@ -923,7 +924,7 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
   // Associate process-wide incidents with the profile that benefits from the
   // strongest safe browsing protections. If there is no such profile, drop the
   // incidents.
-  ProfileContext* null_context = GetProfileContext(NULL);
+  ProfileContext* null_context = GetProfileContext(nullptr);
   if (null_context && null_context->HasIncidents()) {
     if (eligible_profile) {
       ProfileContext* eligible_context = GetProfileContext(eligible_profile);
@@ -1063,7 +1064,7 @@ void IncidentReportingService::OnKillSwitchResult(UploadContext* context,
   }
 #endif
 
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!is_killswitch_on) {
     // Initiate the upload.
     context->uploader = StartReportUpload(
@@ -1095,7 +1096,7 @@ void IncidentReportingService::OnReportUploadResult(
     UploadContext* context,
     IncidentReportUploader::Result result,
     std::unique_ptr<ClientIncidentResponse> response) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   UMA_HISTOGRAM_ENUMERATION(
       "SBIRS.UploadResult", result, IncidentReportUploader::NUM_UPLOAD_RESULTS);

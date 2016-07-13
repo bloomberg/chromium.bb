@@ -7,9 +7,11 @@
 #include "base/bind.h"
 #include "base/files/file_util_proxy.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 
 namespace safe_browsing {
@@ -89,12 +91,13 @@ DownloadFeedbackImpl::DownloadFeedbackImpl(
       file_size_(-1),
       ping_request_(ping_request),
       ping_response_(ping_response) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "DownloadFeedback constructed " << this << " for "
            << file_path.AsUTF8Unsafe();
 }
 
 DownloadFeedbackImpl::~DownloadFeedbackImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << "DownloadFeedback destructed " << this;
 
   if (uploader_) {
@@ -110,7 +113,7 @@ DownloadFeedbackImpl::~DownloadFeedbackImpl() {
 }
 
 void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!uploader_);
 
   ClientDownloadReport report_metadata;
@@ -126,16 +129,12 @@ void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {
   std::string metadata_string;
   bool ok = report_metadata.SerializeToString(&metadata_string);
   DCHECK(ok);
-  uploader_.reset(
-      TwoPhaseUploader::Create(request_context_getter_.get(),
-                               file_task_runner_.get(),
-                               GURL(kSbFeedbackURL),
-                               metadata_string,
-                               file_path_,
-                               TwoPhaseUploader::ProgressCallback(),
-                               base::Bind(&DownloadFeedbackImpl::FinishedUpload,
-                                          base::Unretained(this),
-                                          finish_callback)));
+  uploader_ = TwoPhaseUploader::Create(
+      request_context_getter_.get(), file_task_runner_.get(),
+      GURL(kSbFeedbackURL), metadata_string, file_path_,
+      TwoPhaseUploader::ProgressCallback(),
+      base::Bind(&DownloadFeedbackImpl::FinishedUpload, base::Unretained(this),
+                 finish_callback));
   uploader_->Start();
 }
 
@@ -144,33 +143,31 @@ void DownloadFeedbackImpl::FinishedUpload(base::Closure finish_callback,
                                           int net_error,
                                           int response_code,
                                           const std::string& response_data) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(1) << __FUNCTION__ << " " << state << " rlen=" << response_data.size();
 
   switch (state) {
     case TwoPhaseUploader::STATE_SUCCESS: {
       ClientUploadResponse response;
       if (!response.ParseFromString(response_data) ||
-          response.status() != ClientUploadResponse::SUCCESS)
+          response.status() != ClientUploadResponse::SUCCESS) {
         RecordUploadResult(UPLOAD_COMPLETE_RESPONSE_ERROR);
-      else
+      } else {
         RecordUploadResult(UPLOAD_SUCCESS);
+      }
       break;
     }
     case TwoPhaseUploader::UPLOAD_FILE:
-      if (net_error != net::OK)
-        RecordUploadResult(UPLOAD_FILE_NET_ERROR);
-      else
-        RecordUploadResult(UPLOAD_FILE_RESPONSE_ERROR);
+      RecordUploadResult(net_error != net::OK ? UPLOAD_FILE_NET_ERROR
+                                              : UPLOAD_FILE_RESPONSE_ERROR);
       break;
     case TwoPhaseUploader::UPLOAD_METADATA:
-      if (net_error != net::OK)
-        RecordUploadResult(UPLOAD_METADATA_NET_ERROR);
-      else
-        RecordUploadResult(UPLOAD_METADATA_RESPONSE_ERROR);
+      RecordUploadResult(net_error != net::OK ? UPLOAD_METADATA_NET_ERROR
+                                              : UPLOAD_METADATA_RESPONSE_ERROR);
       break;
     default:
       NOTREACHED();
+      break;
   }
 
   uploader_.reset();
@@ -180,12 +177,13 @@ void DownloadFeedbackImpl::FinishedUpload(base::Closure finish_callback,
 }
 
 void DownloadFeedbackImpl::RecordUploadResult(UploadResultType result) {
-  if (result == UPLOAD_SUCCESS)
+  if (result == UPLOAD_SUCCESS) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "SBDownloadFeedback.SizeSuccess", file_size_, 1, kMaxUploadSize, 50);
-  else
+  } else {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "SBDownloadFeedback.SizeFailure", file_size_, 1, kMaxUploadSize, 50);
+  }
   UMA_HISTOGRAM_ENUMERATION(
       "SBDownloadFeedback.UploadResult", result, UPLOAD_RESULT_MAX);
 }
@@ -200,19 +198,20 @@ const char DownloadFeedback::kSbFeedbackURL[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/chrome";
 
 // static
-DownloadFeedbackFactory* DownloadFeedback::factory_ = NULL;
+DownloadFeedbackFactory* DownloadFeedback::factory_ = nullptr;
 
 // static
-DownloadFeedback* DownloadFeedback::Create(
+std::unique_ptr<DownloadFeedback> DownloadFeedback::Create(
     net::URLRequestContextGetter* request_context_getter,
     base::TaskRunner* file_task_runner,
     const base::FilePath& file_path,
     const std::string& ping_request,
     const std::string& ping_response) {
-  if (!DownloadFeedback::factory_)
-    return new DownloadFeedbackImpl(
-        request_context_getter, file_task_runner, file_path, ping_request,
-        ping_response);
+  if (!factory_) {
+    return base::WrapUnique(
+        new DownloadFeedbackImpl(request_context_getter, file_task_runner,
+                                 file_path, ping_request, ping_response));
+  }
   return DownloadFeedback::factory_->CreateDownloadFeedback(
         request_context_getter, file_task_runner, file_path, ping_request,
         ping_response);

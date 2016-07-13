@@ -280,7 +280,7 @@ SafeBrowsingStoreFile* CreateStore(
 // The default SafeBrowsingDatabaseFactory.
 class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
  public:
-  SafeBrowsingDatabase* CreateSafeBrowsingDatabase(
+  std::unique_ptr<SafeBrowsingDatabase> CreateSafeBrowsingDatabase(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       bool enable_download_protection,
       bool enable_client_side_whitelist,
@@ -289,7 +289,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
       bool enable_ip_blacklist,
       bool enable_unwanted_software_list,
       bool enable_module_whitelist) override {
-    return new SafeBrowsingDatabaseNew(
+    return base::WrapUnique(new SafeBrowsingDatabaseNew(
         db_task_runner, CreateStore(true, db_task_runner),  // browse_store
         CreateStore(enable_download_protection, db_task_runner),
         CreateStore(enable_client_side_whitelist, db_task_runner),
@@ -298,7 +298,7 @@ class SafeBrowsingDatabaseFactoryImpl : public SafeBrowsingDatabaseFactory {
         CreateStore(enable_ip_blacklist, db_task_runner),
         CreateStore(enable_unwanted_software_list, db_task_runner),
         CreateStore(enable_module_whitelist, db_task_runner),
-        CreateStore(true, db_task_runner));  // resource_blacklist_store
+        CreateStore(true, db_task_runner)));  // resource_blacklist_store
   }
 
   SafeBrowsingDatabaseFactoryImpl() {}
@@ -315,7 +315,7 @@ SafeBrowsingDatabaseFactory* SafeBrowsingDatabase::factory_ = NULL;
 // TODO(shess): There's no need for a factory any longer.  Convert
 // SafeBrowsingDatabaseNew to SafeBrowsingDatabase, and have Create()
 // callers just construct things directly.
-SafeBrowsingDatabase* SafeBrowsingDatabase::Create(
+std::unique_ptr<SafeBrowsingDatabase> SafeBrowsingDatabase::Create(
     const scoped_refptr<base::SequencedTaskRunner>& current_task_runner,
     bool enable_download_protection,
     bool enable_client_side_whitelist,

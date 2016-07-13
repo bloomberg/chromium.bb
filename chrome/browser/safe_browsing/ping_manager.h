@@ -36,7 +36,7 @@ class SafeBrowsingPingManager : public net::URLFetcherDelegate {
   ~SafeBrowsingPingManager() override;
 
   // Create an instance of the safe browsing ping manager.
-  static SafeBrowsingPingManager* Create(
+  static std::unique_ptr<SafeBrowsingPingManager> Create(
       net::URLRequestContextGetter* request_context_getter,
       const SafeBrowsingProtocolConfig& config);
 

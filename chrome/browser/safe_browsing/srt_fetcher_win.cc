@@ -22,7 +22,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/browser/browser_process.h"
@@ -472,7 +471,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
       const scoped_refptr<base::TaskRunner>& blocking_task_runner) {
     if (!instance_)
       instance_ = new ReporterRunner;
-    DCHECK(instance_->thread_checker_.CalledOnValidThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     // There's nothing to do if the path and version of the reporter has not
     // changed, we just keep running the tasks that are running now.
     if (instance_->exe_path_ == exe_path && instance_->version_.IsValid() &&
@@ -497,7 +496,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   void OnBrowserSetLastActive(Browser* browser) override {}
   void OnBrowserRemoved(Browser* browser) override {}
   void OnBrowserAdded(Browser* browser) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(browser);
     MaybeFetchSRT(browser, version_);
     BrowserList::RemoveObserver(this);
@@ -509,7 +508,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   void ReporterDone(const base::Time& reporter_start_time,
                     const base::Version& version,
                     int exit_code) {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     base::TimeDelta reporter_running_time =
         base::Time::Now() - reporter_start_time;
@@ -565,7 +564,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
   }
 
   void TryToRun() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     PrefService* local_state = g_browser_process->local_state();
     if (!version_.IsValid() || !local_state) {
       DCHECK(exe_path_.empty());
@@ -622,7 +621,6 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // A single leaky instance.
   static ReporterRunner* instance_;
 
-  base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(ReporterRunner);
 };
 

@@ -281,8 +281,6 @@ SafeBrowsingService* SafeBrowsingService::CreateSafeBrowsingService() {
 
 SafeBrowsingService::SafeBrowsingService()
     : services_delegate_(ServicesDelegate::Create(this)),
-      protocol_manager_(nullptr),
-      ping_manager_(nullptr),
       enabled_(false),
       enabled_by_prefs_(false) {}
 
@@ -390,12 +388,16 @@ SafeBrowsingService::database_manager() const {
 
 SafeBrowsingProtocolManager* SafeBrowsingService::protocol_manager() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return protocol_manager_;
+#if defined(SAFE_BROWSING_DB_LOCAL)
+  return protocol_manager_.get();
+#else
+  return nullptr;
+#endif
 }
 
 SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return ping_manager_;
+  return ping_manager_.get();
 }
 
 std::unique_ptr<TrackedPreferenceValidationDelegate>
@@ -569,11 +571,9 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
     // This cancels all in-flight GetHash requests. Note that
     // |database_manager_| relies on |protocol_manager_| so if the latter is
     // destroyed, the former must be stopped.
-    delete protocol_manager_;
-    protocol_manager_ = nullptr;
+    protocol_manager_.reset();
 #endif
-    delete ping_manager_;
-    ping_manager_ = NULL;
+    ping_manager_.reset();
   }
 }
 

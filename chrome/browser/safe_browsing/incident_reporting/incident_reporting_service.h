@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
@@ -74,6 +73,7 @@ class SafeBrowsingService;
 // a bit. Additional incidents that arrive during this time are collated with
 // the initial incident. Finally, already-reported incidents are pruned and any
 // remaining are uploaded in an incident report.
+// Lives on the UI thread.
 class IncidentReportingService : public content::NotificationObserver {
  public:
   explicit IncidentReportingService(SafeBrowsingService* safe_browsing_service);
@@ -276,8 +276,6 @@ class IncidentReportingService : public content::NotificationObserver {
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
-
-  base::ThreadChecker thread_checker_;
 
   // The safe browsing database manager, through which the whitelist killswitch
   // is checked.

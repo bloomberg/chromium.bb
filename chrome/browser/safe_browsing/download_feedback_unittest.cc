@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -64,10 +65,10 @@ FakeUploader::FakeUploader(
 
 class FakeUploaderFactory : public TwoPhaseUploaderFactory {
  public:
-  FakeUploaderFactory() : uploader_(NULL) {}
+  FakeUploaderFactory() : uploader_(nullptr) {}
   ~FakeUploaderFactory() override {}
 
-  TwoPhaseUploader* CreateTwoPhaseUploader(
+  std::unique_ptr<TwoPhaseUploader> CreateTwoPhaseUploader(
       net::URLRequestContextGetter* url_request_context_getter,
       base::TaskRunner* file_task_runner,
       const GURL& base_url,
@@ -79,7 +80,7 @@ class FakeUploaderFactory : public TwoPhaseUploaderFactory {
   FakeUploader* uploader_;
 };
 
-TwoPhaseUploader* FakeUploaderFactory::CreateTwoPhaseUploader(
+std::unique_ptr<TwoPhaseUploader> FakeUploaderFactory::CreateTwoPhaseUploader(
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* file_task_runner,
     const GURL& base_url,
@@ -92,7 +93,7 @@ TwoPhaseUploader* FakeUploaderFactory::CreateTwoPhaseUploader(
   uploader_ = new FakeUploader(url_request_context_getter, file_task_runner,
                                base_url, metadata, file_path, progress_callback,
                                finish_callback);
-  return uploader_;
+  return base::WrapUnique(uploader_);
 }
 
 }  // namespace
@@ -120,16 +121,15 @@ class DownloadFeedbackTest : public testing::Test {
     TwoPhaseUploader::RegisterFactory(&two_phase_uploader_factory_);
   }
 
-  void TearDown() override { TwoPhaseUploader::RegisterFactory(NULL); }
+  void TearDown() override { TwoPhaseUploader::RegisterFactory(nullptr); }
 
   FakeUploader* uploader() const {
     return two_phase_uploader_factory_.uploader_;
   }
 
-  void FinishCallback(DownloadFeedback* feedback) {
+  void FinishCallback() {
     EXPECT_FALSE(feedback_finish_called_);
     feedback_finish_called_ = true;
-    delete feedback;
   }
 
  protected:
@@ -147,11 +147,10 @@ class DownloadFeedbackTest : public testing::Test {
 
 TEST_F(DownloadFeedbackTest, CompleteUpload) {
   ClientDownloadReport expected_report_metadata;
-  expected_report_metadata.mutable_download_request()->set_url("http://test");
-  expected_report_metadata.mutable_download_request()->set_length(
-      upload_file_data_.size());
-  expected_report_metadata.mutable_download_request()->mutable_digests(
-      )->set_sha1("hi");
+  auto* request = expected_report_metadata.mutable_download_request();
+  request->set_url("http://test");
+  request->set_length(upload_file_data_.size());
+  request->mutable_digests()->set_sha1("hi");
   expected_report_metadata.mutable_download_response()->set_verdict(
       ClientDownloadResponse::DANGEROUS_HOST);
   std::string ping_request(
@@ -159,17 +158,13 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
   std::string ping_response(
       expected_report_metadata.download_response().SerializeAsString());
 
-  DownloadFeedback* feedback =
-      DownloadFeedback::Create(url_request_context_getter_.get(),
-                               file_task_runner_.get(),
-                               upload_file_path_,
-                               ping_request,
-                               ping_response);
+  std::unique_ptr<DownloadFeedback> feedback = DownloadFeedback::Create(
+      url_request_context_getter_.get(), file_task_runner_.get(),
+      upload_file_path_, ping_request, ping_response);
   EXPECT_FALSE(uploader());
 
   feedback->Start(base::Bind(&DownloadFeedbackTest::FinishCallback,
-                             base::Unretained(this),
-                             feedback));
+                             base::Unretained(this)));
   ASSERT_TRUE(uploader());
   EXPECT_FALSE(feedback_finish_called_);
   EXPECT_TRUE(uploader()->start_called_);
@@ -188,17 +183,17 @@ TEST_F(DownloadFeedbackTest, CompleteUpload) {
   uploader()->finish_callback_.Run(
       TwoPhaseUploader::STATE_SUCCESS, net::OK, 0, "");
   EXPECT_TRUE(feedback_finish_called_);
+  feedback.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(base::PathExists(upload_file_path_));
 }
 
 TEST_F(DownloadFeedbackTest, CancelUpload) {
   ClientDownloadReport expected_report_metadata;
-  expected_report_metadata.mutable_download_request()->set_url("http://test");
-  expected_report_metadata.mutable_download_request()->set_length(
-      upload_file_data_.size());
-  expected_report_metadata.mutable_download_request()->mutable_digests(
-      )->set_sha1("hi");
+  auto* request = expected_report_metadata.mutable_download_request();
+  request->set_url("http://test");
+  request->set_length(upload_file_data_.size());
+  request->mutable_digests()->set_sha1("hi");
   expected_report_metadata.mutable_download_response()->set_verdict(
       ClientDownloadResponse::DANGEROUS_HOST);
   std::string ping_request(
@@ -206,23 +201,19 @@ TEST_F(DownloadFeedbackTest, CancelUpload) {
   std::string ping_response(
       expected_report_metadata.download_response().SerializeAsString());
 
-  DownloadFeedback* feedback =
-      DownloadFeedback::Create(url_request_context_getter_.get(),
-                               file_task_runner_.get(),
-                               upload_file_path_,
-                               ping_request,
-                               ping_response);
+  std::unique_ptr<DownloadFeedback> feedback = DownloadFeedback::Create(
+      url_request_context_getter_.get(), file_task_runner_.get(),
+      upload_file_path_, ping_request, ping_response);
   EXPECT_FALSE(uploader());
 
   feedback->Start(base::Bind(&DownloadFeedbackTest::FinishCallback,
-                             base::Unretained(this),
-                             feedback));
+                             base::Unretained(this)));
   ASSERT_TRUE(uploader());
   EXPECT_FALSE(feedback_finish_called_);
   EXPECT_TRUE(uploader()->start_called_);
   EXPECT_TRUE(base::PathExists(upload_file_path_));
 
-  delete feedback;
+  feedback.reset();
   EXPECT_FALSE(feedback_finish_called_);
 
   base::RunLoop().RunUntilIdle();

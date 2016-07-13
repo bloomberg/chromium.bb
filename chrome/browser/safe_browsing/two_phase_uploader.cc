@@ -10,7 +10,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -20,12 +22,12 @@
 namespace {
 
 // Header sent on initial request to start the two phase upload process.
-const char* kStartHeader = "x-goog-resumable: start";
+const char kStartHeader[] = "x-goog-resumable: start";
 
 // Header returned on initial response with URL to use for the second phase.
-const char* kLocationHeader = "Location";
+const char kLocationHeader[] = "Location";
 
-const char* kUploadContentType = "application/octet-stream";
+const char kUploadContentType[] = "application/octet-stream";
 
 class TwoPhaseUploaderImpl : public net::URLFetcherDelegate,
                              public TwoPhaseUploader {
@@ -84,21 +86,22 @@ TwoPhaseUploaderImpl::TwoPhaseUploaderImpl(
       file_path_(file_path),
       progress_callback_(progress_callback),
       finish_callback_(finish_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 TwoPhaseUploaderImpl::~TwoPhaseUploaderImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
 void TwoPhaseUploaderImpl::Start() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(STATE_NONE, state_);
 
   UploadMetadata();
 }
 
 void TwoPhaseUploaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   net::URLRequestStatus status = source->GetStatus();
   int response_code = source->GetResponseCode();
 
@@ -126,7 +129,7 @@ void TwoPhaseUploaderImpl::OnURLFetchComplete(const net::URLFetcher* source) {
         }
         std::string location;
         if (!source->GetResponseHeaders()->EnumerateHeader(
-              NULL, kLocationHeader, &location)) {
+                nullptr, kLocationHeader, &location)) {
           LOG(ERROR) << "no location header";
           Finish(net::OK, response_code, std::string());
           return;
@@ -154,7 +157,7 @@ void TwoPhaseUploaderImpl::OnURLFetchUploadProgress(
     const net::URLFetcher* source,
     int64_t current,
     int64_t total) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG(3) << __FUNCTION__ << " " << source->GetURL().spec()
            << " " << current << "/" << total;
   if (state_ == UPLOAD_FILE && !progress_callback_.is_null())
@@ -162,7 +165,7 @@ void TwoPhaseUploaderImpl::OnURLFetchUploadProgress(
 }
 
 void TwoPhaseUploaderImpl::UploadMetadata() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   state_ = UPLOAD_METADATA;
   url_fetcher_ =
       net::URLFetcher::Create(base_url_, net::URLFetcher::POST, this);
@@ -173,7 +176,7 @@ void TwoPhaseUploaderImpl::UploadMetadata() {
 }
 
 void TwoPhaseUploaderImpl::UploadFile() {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   state_ = UPLOAD_FILE;
 
   url_fetcher_ =
@@ -188,17 +191,17 @@ void TwoPhaseUploaderImpl::UploadFile() {
 void TwoPhaseUploaderImpl::Finish(int net_error,
                                   int response_code,
                                   const std::string& response) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   finish_callback_.Run(state_, net_error, response_code, response);
 }
 
 }  // namespace
 
 // static
-TwoPhaseUploaderFactory* TwoPhaseUploader::factory_ = NULL;
+TwoPhaseUploaderFactory* TwoPhaseUploader::factory_ = nullptr;
 
 // static
-TwoPhaseUploader* TwoPhaseUploader::Create(
+std::unique_ptr<TwoPhaseUploader> TwoPhaseUploader::Create(
     net::URLRequestContextGetter* url_request_context_getter,
     base::TaskRunner* file_task_runner,
     const GURL& base_url,
@@ -206,10 +209,11 @@ TwoPhaseUploader* TwoPhaseUploader::Create(
     const base::FilePath& file_path,
     const ProgressCallback& progress_callback,
     const FinishCallback& finish_callback) {
-  if (!TwoPhaseUploader::factory_)
-    return new TwoPhaseUploaderImpl(
+  if (!factory_) {
+    return base::WrapUnique(new TwoPhaseUploaderImpl(
         url_request_context_getter, file_task_runner, base_url, metadata,
-        file_path, progress_callback, finish_callback);
+        file_path, progress_callback, finish_callback));
+  }
   return TwoPhaseUploader::factory_->CreateTwoPhaseUploader(
       url_request_context_getter, file_task_runner, base_url, metadata,
       file_path, progress_callback, finish_callback);
