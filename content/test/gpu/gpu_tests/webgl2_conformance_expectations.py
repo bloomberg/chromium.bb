@@ -36,11 +36,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
 
-    self.Flaky('deqp/functional/gles3/negativefragmentapi.html', bug=604794)
-
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
-    self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
+    # Mark this test Flaky on all platforms but Intel Linux that is failing
+    # reliably.
+    self.Flaky('conformance2/query/occlusion-query.html',
+        ['win', 'mac'], bug=603168)
+    self.Flaky('conformance2/query/occlusion-query.html',
+        ['linux', 'nvidia', 'amd'], bug=603168)
 
     self.Fail('conformance2/rendering/attrib-type-match.html', bug=627193)
 
@@ -515,57 +518,83 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
 
-    # Linux Intel with ANGLE only
+    # Linux Intel
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
-    self.Fail('deqp/functional/gles3/shaderderivate_*',
-        ['linux', 'intel', 'opengl'], bug=618408)
-
-    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
+    self.Fail('deqp/functional/gles3/shaderderivate_dfdx.html',
+        ['linux', 'intel'], bug=618408)
 
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
+    # It has been fixed in Mesa 12.0
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
 
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_08.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_10.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_11.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_12.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_13.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_18.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_25.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_29.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_32.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_34.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/' +
         'default_framebuffer_00.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
-        ['linux', 'intel', 'opengl'], bug=483282)
+        ['linux', 'intel'], bug=598902)
+
+    # Linux Intel with ANGLE only
+    self.Fail('deqp/functional/gles3/fragmentoutput/*.html',
+        ['linux', 'intel', 'opengl'], bug=598902)
+
+    # Linux Intel without ANGLE only
+    self.Fail('conformance2/query/occlusion-query.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('conformance2/query/query.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('conformance2/renderbuffers/framebuffer-object-attachment.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('deqp/functional/gles3/fbocompleteness.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('deqp/functional/gles3/instancedrendering.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('deqp/functional/gles3/lifetime.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('deqp/functional/gles3/negativefragmentapi.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('deqp/functional/gles3/negativestateapi.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('deqp/functional/gles3/occlusionquery_conservative.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
+    self.Fail('deqp/functional/gles3/occlusionquery_strict.html',
+        ['linux', 'intel', 'no_angle'], bug=598902)
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
