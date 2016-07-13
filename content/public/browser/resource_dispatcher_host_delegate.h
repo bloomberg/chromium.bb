@@ -17,10 +17,6 @@
 class GURL;
 template <class T> class ScopedVector;
 
-namespace IPC {
-class Sender;
-}
-
 namespace net {
 class AuthChallengeInfo;
 class ClientCertStore;
@@ -115,8 +111,7 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
   // Informs the delegate that a response has started.
   virtual void OnResponseStarted(net::URLRequest* request,
                                  ResourceContext* resource_context,
-                                 ResourceResponse* response,
-                                 IPC::Sender* sender);
+                                 ResourceResponse* response);
 
   // Informs the delegate that a request has been redirected.
   virtual void OnRequestRedirected(const GURL& redirect_url,

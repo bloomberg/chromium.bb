@@ -77,9 +77,7 @@ void ResourceDispatcherHostDelegate::OnStreamCreated(
 void ResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     ResourceContext* resource_context,
-    ResourceResponse* response,
-    IPC::Sender* sender) {
-}
+    ResourceResponse* response) {}
 
 void ResourceDispatcherHostDelegate::OnRequestRedirected(
     const GURL& redirect_url,

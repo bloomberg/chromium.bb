@@ -714,8 +714,7 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
 void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     net::URLRequest* request,
     content::ResourceContext* resource_context,
-    content::ResourceResponse* response,
-    IPC::Sender* sender) {
+    content::ResourceResponse* response) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 

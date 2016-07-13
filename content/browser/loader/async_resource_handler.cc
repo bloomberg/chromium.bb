@@ -338,8 +338,8 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   }
 
   if (rdh_->delegate()) {
-    rdh_->delegate()->OnResponseStarted(
-        request(), info->GetContext(), response, info->filter());
+    rdh_->delegate()->OnResponseStarted(request(), info->GetContext(),
+                                        response);
   }
 
   NetLogObserver::PopulateResponseInfo(request(), response);

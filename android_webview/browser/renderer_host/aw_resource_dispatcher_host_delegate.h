@@ -18,10 +18,6 @@ class ResourceContext;
 struct ResourceResponse;
 }  // namespace content
 
-namespace IPC {
-class Sender;
-}  // namespace IPC
-
 namespace android_webview {
 
 class IoThreadClientThrottle;
@@ -60,8 +56,7 @@ class AwResourceDispatcherHostDelegate
       content::ResourceContext* resource_context) override;
   void OnResponseStarted(net::URLRequest* request,
                          content::ResourceContext* resource_context,
-                         content::ResourceResponse* response,
-                         IPC::Sender* sender) override;
+                         content::ResourceResponse* response) override;
 
   void OnRequestRedirected(const GURL& redirect_url,
                            net::URLRequest* request,
