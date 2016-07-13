@@ -31,6 +31,7 @@
 #ifndef LocalFileSystem_h
 #define LocalFileSystem_h
 
+#include "core/frame/LocalFrame.h"
 #include "core/workers/WorkerClients.h"
 #include "platform/FileSystemType.h"
 #include "platform/Supplementable.h"
@@ -46,7 +47,6 @@ class CallbackWrapper;
 class FileSystemClient;
 class ExecutionContext;
 class KURL;
-class LocalFrame;
 class WebFileSystem;
 
 class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>, public Supplement<LocalFrame>, public Supplement<WorkerClients> {
@@ -65,11 +65,7 @@ public:
     static const char* supplementName();
     static LocalFileSystem* from(ExecutionContext&);
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        Supplement<LocalFrame>::trace(visitor);
-        Supplement<WorkerClients>::trace(visitor);
-    }
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     explicit LocalFileSystem(std::unique_ptr<FileSystemClient>);

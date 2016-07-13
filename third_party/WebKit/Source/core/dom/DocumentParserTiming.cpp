@@ -59,6 +59,7 @@ void DocumentParserTiming::recordParserBlockedOnScriptLoadDuration(
 DEFINE_TRACE(DocumentParserTiming)
 {
     visitor->trace(m_document);
+    Supplement<Document>::trace(visitor);
 }
 
 DocumentParserTiming::DocumentParserTiming(Document& document)

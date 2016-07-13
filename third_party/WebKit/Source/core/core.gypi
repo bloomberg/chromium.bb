@@ -2271,6 +2271,7 @@
             'workers/Worker.h',
             'workers/WorkerBackingThread.cpp',
             'workers/WorkerBackingThread.h',
+            'workers/WorkerClients.cpp',
             'workers/WorkerClients.h',
             'workers/WorkerEventQueue.cpp',
             'workers/WorkerEventQueue.h',

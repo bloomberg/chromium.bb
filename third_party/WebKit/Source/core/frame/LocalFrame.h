@@ -78,6 +78,8 @@ class SpellChecker;
 class WebFrameHostScheduler;
 class WebFrameScheduler;
 
+extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
+
 class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 public:

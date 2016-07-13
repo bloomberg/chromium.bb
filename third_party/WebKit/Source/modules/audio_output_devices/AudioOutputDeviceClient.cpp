@@ -32,4 +32,9 @@ void provideAudioOutputDeviceClientTo(LocalFrame& frame, AudioOutputDeviceClient
     frame.provideSupplement(AudioOutputDeviceClient::supplementName(), client);
 }
 
+DEFINE_TRACE(AudioOutputDeviceClient)
+{
+    Supplement<LocalFrame>::trace(visitor);
+}
+
 } // namespace blink

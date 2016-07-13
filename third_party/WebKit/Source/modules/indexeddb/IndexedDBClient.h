@@ -28,6 +28,8 @@
 #ifndef IndexedDBClient_h
 #define IndexedDBClient_h
 
+#include "core/frame/LocalFrame.h"
+#include "core/workers/WorkerClients.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -46,7 +48,7 @@ public:
     IndexedDBClient();
     virtual ~IndexedDBClient() {}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DECLARE_VIRTUAL_TRACE();
 
     virtual bool allowIndexedDB(ExecutionContext*, const String& name) = 0;
 

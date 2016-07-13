@@ -31,6 +31,12 @@ const char* IndexedDBClient::supplementName()
     return "IndexedDBClient";
 }
 
+DEFINE_TRACE(IndexedDBClient)
+{
+    Supplement<LocalFrame>::trace(visitor);
+    Supplement<WorkerClients>::trace(visitor);
+}
+
 void provideIndexedDBClientTo(LocalFrame& frame, IndexedDBClient* client)
 {
     frame.provideSupplement(IndexedDBClient::supplementName(), client);

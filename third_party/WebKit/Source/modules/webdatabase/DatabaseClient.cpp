@@ -44,6 +44,7 @@ DatabaseClient::DatabaseClient()
 DEFINE_TRACE(DatabaseClient)
 {
     visitor->trace(m_inspectorAgent);
+    Supplement<Page>::trace(visitor);
 }
 
 DatabaseClient* DatabaseClient::fromPage(Page* page)

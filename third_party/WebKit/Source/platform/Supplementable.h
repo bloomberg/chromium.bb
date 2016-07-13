@@ -107,6 +107,8 @@ public:
     {
         return host ? host->requireSupplement(key) : 0;
     }
+
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
 // Supplementable<T> inherits from GarbageCollectedMixin virtually

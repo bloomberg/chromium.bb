@@ -239,6 +239,8 @@ inline float parentTextZoomFactor(LocalFrame* frame)
 
 } // namespace
 
+template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
+
 LocalFrame* LocalFrame::create(FrameLoaderClient* client, FrameHost* host, FrameOwner* owner, ServiceRegistry* serviceRegistry)
 {
     LocalFrame* frame = new LocalFrame(client, host, owner, serviceRegistry ? serviceRegistry : ServiceRegistry::getEmptyServiceRegistry());

@@ -195,6 +195,12 @@ LocalFileSystem::LocalFileSystem(std::unique_ptr<FileSystemClient> client)
 {
 }
 
+DEFINE_TRACE(LocalFileSystem)
+{
+    Supplement<LocalFrame>::trace(visitor);
+    Supplement<WorkerClients>::trace(visitor);
+}
+
 const char* LocalFileSystem::supplementName()
 {
     return "LocalFileSystem";

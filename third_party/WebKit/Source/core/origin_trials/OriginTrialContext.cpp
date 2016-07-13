@@ -388,6 +388,7 @@ WebOriginTrialTokenStatus OriginTrialContext::checkFeatureEnabled(const String& 
 DEFINE_TRACE(OriginTrialContext)
 {
     visitor->trace(m_host);
+    Supplement<ExecutionContext>::trace(visitor);
 }
 
 } // namespace blink

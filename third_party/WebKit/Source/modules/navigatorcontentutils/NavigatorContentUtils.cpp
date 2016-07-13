@@ -226,6 +226,12 @@ void NavigatorContentUtils::unregisterProtocolHandler(Navigator& navigator, cons
     NavigatorContentUtils::from(*navigator.frame())->client()->unregisterProtocolHandler(scheme, document->completeURL(url));
 }
 
+DEFINE_TRACE(NavigatorContentUtils)
+{
+    visitor->trace(m_client);
+    Supplement<LocalFrame>::trace(visitor);
+}
+
 const char* NavigatorContentUtils::supplementName()
 {
     return "NavigatorContentUtils";

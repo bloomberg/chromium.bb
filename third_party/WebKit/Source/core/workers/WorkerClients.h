@@ -31,10 +31,13 @@
 #ifndef WorkerClients_h
 #define WorkerClients_h
 
+#include "core/CoreExport.h"
 #include "platform/Supplementable.h"
 #include "wtf/Forward.h"
 
 namespace blink {
+
+class WorkerClients;
 
 // This is created on the main thread, passed to the worker thread and
 // attached to WorkerGlobalScope when it is created.
@@ -56,6 +59,8 @@ public:
 private:
     WorkerClients() { }
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<WorkerClients>;
 
 } // namespace blink
 

@@ -68,6 +68,7 @@ void PaintTiming::markFirstImagePaint()
 DEFINE_TRACE(PaintTiming)
 {
     visitor->trace(m_document);
+    Supplement<Document>::trace(visitor);
 }
 
 PaintTiming::PaintTiming(Document& document)

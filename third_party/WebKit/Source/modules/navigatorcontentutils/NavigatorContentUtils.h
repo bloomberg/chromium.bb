@@ -27,6 +27,7 @@
 #ifndef NavigatorContentUtils_h
 #define NavigatorContentUtils_h
 
+#include "core/frame/LocalFrame.h"
 #include "modules/ModulesExport.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/Supplementable.h"
@@ -53,11 +54,7 @@ public:
 
     static NavigatorContentUtils* create(NavigatorContentUtilsClient*);
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_client);
-        Supplement<LocalFrame>::trace(visitor);
-    }
+    DECLARE_VIRTUAL_TRACE();
 
     void setClientForTest(NavigatorContentUtilsClient* client) { m_client = client; }
 
