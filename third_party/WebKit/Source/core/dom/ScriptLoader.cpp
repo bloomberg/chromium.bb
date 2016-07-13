@@ -132,21 +132,20 @@ static bool isLegacySupportedJavaScriptLanguage(const String& language)
 
     // FIXME: This function is not HTML5 compliant. These belong in the MIME registry as "text/javascript<version>" entries.
     typedef HashSet<String, CaseFoldingHash> LanguageSet;
-    DEFINE_STATIC_LOCAL(LanguageSet, languages, ());
-    if (languages.isEmpty()) {
-        languages.add("javascript");
-        languages.add("javascript1.0");
-        languages.add("javascript1.1");
-        languages.add("javascript1.2");
-        languages.add("javascript1.3");
-        languages.add("javascript1.4");
-        languages.add("javascript1.5");
-        languages.add("javascript1.6");
-        languages.add("javascript1.7");
-        languages.add("livescript");
-        languages.add("ecmascript");
-        languages.add("jscript");
-    }
+    DEFINE_STATIC_LOCAL(LanguageSet, languages, ({
+        "javascript",
+        "javascript1.0",
+        "javascript1.1",
+        "javascript1.2",
+        "javascript1.3",
+        "javascript1.4",
+        "javascript1.5",
+        "javascript1.6",
+        "javascript1.7",
+        "livescript",
+        "ecmascript",
+        "jscript",
+    }));
 
     return languages.contains(language);
 }

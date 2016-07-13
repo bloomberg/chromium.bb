@@ -106,13 +106,12 @@ static bool isAxisName(const String& name, Step::Axis& type)
 
 static bool isNodeTypeName(const String& name)
 {
-    DEFINE_STATIC_LOCAL(HashSet<String>, nodeTypeNames, ());
-    if (nodeTypeNames.isEmpty()) {
-        nodeTypeNames.add("comment");
-        nodeTypeNames.add("text");
-        nodeTypeNames.add("processing-instruction");
-        nodeTypeNames.add("node");
-    }
+    DEFINE_STATIC_LOCAL(HashSet<String>, nodeTypeNames, ({
+        "comment",
+        "text",
+        "processing-instruction",
+        "node",
+    }));
     return nodeTypeNames.contains(name);
 }
 

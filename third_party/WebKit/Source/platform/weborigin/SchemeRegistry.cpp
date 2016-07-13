@@ -65,50 +65,40 @@ static URLSchemesSet& displayIsolatedURLSchemes()
 
 static URLSchemesSet& mixedContentRestrictingSchemes()
 {
-    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, mixedContentRestrictingSchemes, ());
-
-    if (mixedContentRestrictingSchemes.isEmpty())
-        mixedContentRestrictingSchemes.add("https");
-
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, mixedContentRestrictingSchemes, ({
+        "https",
+    }));
     return mixedContentRestrictingSchemes;
 }
 
 static URLSchemesSet& secureSchemes()
 {
-    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, secureSchemes, ());
-
-    if (secureSchemes.isEmpty()) {
-        secureSchemes.add("https");
-        secureSchemes.add("about");
-        secureSchemes.add("data");
-        secureSchemes.add("wss");
-    }
-
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, secureSchemes, ({
+        "https",
+        "about",
+        "data",
+        "wss",
+    }));
     return secureSchemes;
 }
 
 static URLSchemesSet& schemesWithUniqueOrigins()
 {
-    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, schemesWithUniqueOrigins, ());
-
-    if (schemesWithUniqueOrigins.isEmpty()) {
-        schemesWithUniqueOrigins.add("about");
-        schemesWithUniqueOrigins.add("javascript");
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, schemesWithUniqueOrigins, ({
+        "about",
+        "javascript",
         // This is a willful violation of HTML5.
         // See https://bugs.webkit.org/show_bug.cgi?id=11885
-        schemesWithUniqueOrigins.add("data");
-    }
-
+        "data",
+    }));
     return schemesWithUniqueOrigins;
 }
 
 static URLSchemesSet& emptyDocumentSchemes()
 {
-    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, emptyDocumentSchemes, ());
-
-    if (emptyDocumentSchemes.isEmpty())
-        emptyDocumentSchemes.add("about");
-
+    DEFINE_STATIC_LOCAL_WITH_LOCK(URLSchemesSet, emptyDocumentSchemes, ({
+        "about",
+    }));
     return emptyDocumentSchemes;
 }
 

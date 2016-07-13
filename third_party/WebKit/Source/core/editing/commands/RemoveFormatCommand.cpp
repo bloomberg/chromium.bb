@@ -47,33 +47,32 @@ RemoveFormatCommand::RemoveFormatCommand(Document& document)
 
 static bool isElementForRemoveFormatCommand(const Element* element)
 {
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, elements, ());
-    if (elements.isEmpty()) {
-        elements.add(acronymTag);
-        elements.add(bTag);
-        elements.add(bdoTag);
-        elements.add(bigTag);
-        elements.add(citeTag);
-        elements.add(codeTag);
-        elements.add(dfnTag);
-        elements.add(emTag);
-        elements.add(fontTag);
-        elements.add(iTag);
-        elements.add(insTag);
-        elements.add(kbdTag);
-        elements.add(nobrTag);
-        elements.add(qTag);
-        elements.add(sTag);
-        elements.add(sampTag);
-        elements.add(smallTag);
-        elements.add(strikeTag);
-        elements.add(strongTag);
-        elements.add(subTag);
-        elements.add(supTag);
-        elements.add(ttTag);
-        elements.add(uTag);
-        elements.add(varTag);
-    }
+    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, elements, ({
+        acronymTag,
+        bTag,
+        bdoTag,
+        bigTag,
+        citeTag,
+        codeTag,
+        dfnTag,
+        emTag,
+        fontTag,
+        iTag,
+        insTag,
+        kbdTag,
+        nobrTag,
+        qTag,
+        sTag,
+        sampTag,
+        smallTag,
+        strikeTag,
+        strongTag,
+        subTag,
+        supTag,
+        ttTag,
+        uTag,
+        varTag,
+    }));
     return elements.contains(element->tagQName());
 }
 

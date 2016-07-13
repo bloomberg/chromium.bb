@@ -613,57 +613,56 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
 static bool isProhibitedParagraphChild(const AtomicString& name)
 {
     // https://dvcs.w3.org/hg/editing/raw-file/57abe6d3cb60/editing.html#prohibited-paragraph-child
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, elements, ());
-    if (elements.isEmpty()) {
-        elements.add(addressTag.localName());
-        elements.add(articleTag.localName());
-        elements.add(asideTag.localName());
-        elements.add(blockquoteTag.localName());
-        elements.add(captionTag.localName());
-        elements.add(centerTag.localName());
-        elements.add(colTag.localName());
-        elements.add(colgroupTag.localName());
-        elements.add(ddTag.localName());
-        elements.add(detailsTag.localName());
-        elements.add(dirTag.localName());
-        elements.add(divTag.localName());
-        elements.add(dlTag.localName());
-        elements.add(dtTag.localName());
-        elements.add(fieldsetTag.localName());
-        elements.add(figcaptionTag.localName());
-        elements.add(figureTag.localName());
-        elements.add(footerTag.localName());
-        elements.add(formTag.localName());
-        elements.add(h1Tag.localName());
-        elements.add(h2Tag.localName());
-        elements.add(h3Tag.localName());
-        elements.add(h4Tag.localName());
-        elements.add(h5Tag.localName());
-        elements.add(h6Tag.localName());
-        elements.add(headerTag.localName());
-        elements.add(hgroupTag.localName());
-        elements.add(hrTag.localName());
-        elements.add(liTag.localName());
-        elements.add(listingTag.localName());
-        elements.add(mainTag.localName()); // Missing in the specification.
-        elements.add(menuTag.localName());
-        elements.add(navTag.localName());
-        elements.add(olTag.localName());
-        elements.add(pTag.localName());
-        elements.add(plaintextTag.localName());
-        elements.add(preTag.localName());
-        elements.add(sectionTag.localName());
-        elements.add(summaryTag.localName());
-        elements.add(tableTag.localName());
-        elements.add(tbodyTag.localName());
-        elements.add(tdTag.localName());
-        elements.add(tfootTag.localName());
-        elements.add(thTag.localName());
-        elements.add(theadTag.localName());
-        elements.add(trTag.localName());
-        elements.add(ulTag.localName());
-        elements.add(xmpTag.localName());
-    }
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, elements, ({
+        addressTag.localName(),
+        articleTag.localName(),
+        asideTag.localName(),
+        blockquoteTag.localName(),
+        captionTag.localName(),
+        centerTag.localName(),
+        colTag.localName(),
+        colgroupTag.localName(),
+        ddTag.localName(),
+        detailsTag.localName(),
+        dirTag.localName(),
+        divTag.localName(),
+        dlTag.localName(),
+        dtTag.localName(),
+        fieldsetTag.localName(),
+        figcaptionTag.localName(),
+        figureTag.localName(),
+        footerTag.localName(),
+        formTag.localName(),
+        h1Tag.localName(),
+        h2Tag.localName(),
+        h3Tag.localName(),
+        h4Tag.localName(),
+        h5Tag.localName(),
+        h6Tag.localName(),
+        headerTag.localName(),
+        hgroupTag.localName(),
+        hrTag.localName(),
+        liTag.localName(),
+        listingTag.localName(),
+        mainTag.localName(), // Missing in the specification.
+        menuTag.localName(),
+        navTag.localName(),
+        olTag.localName(),
+        pTag.localName(),
+        plaintextTag.localName(),
+        preTag.localName(),
+        sectionTag.localName(),
+        summaryTag.localName(),
+        tableTag.localName(),
+        tbodyTag.localName(),
+        tdTag.localName(),
+        tfootTag.localName(),
+        thTag.localName(),
+        theadTag.localName(),
+        trTag.localName(),
+        ulTag.localName(),
+        xmpTag.localName(),
+    }));
     return elements.contains(name);
 }
 

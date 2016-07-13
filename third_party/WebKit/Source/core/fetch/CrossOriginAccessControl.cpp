@@ -43,24 +43,16 @@
 
 namespace blink {
 
-static std::unique_ptr<HTTPHeaderSet> createAllowedCrossOriginResponseHeadersSet()
-{
-    std::unique_ptr<HTTPHeaderSet> headerSet = wrapUnique(new HashSet<String, CaseFoldingHash>);
-
-    headerSet->add("cache-control");
-    headerSet->add("content-language");
-    headerSet->add("content-type");
-    headerSet->add("expires");
-    headerSet->add("last-modified");
-    headerSet->add("pragma");
-
-    return headerSet;
-}
-
 bool isOnAccessControlResponseHeaderWhitelist(const String& name)
 {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(HTTPHeaderSet, allowedCrossOriginResponseHeaders, (createAllowedCrossOriginResponseHeadersSet().release()));
-
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(HTTPHeaderSet, allowedCrossOriginResponseHeaders, (new HTTPHeaderSet({
+        "cache-control",
+        "content-language",
+        "content-type",
+        "expires",
+        "last-modified",
+        "pragma",
+    })));
     return allowedCrossOriginResponseHeaders.contains(name);
 }
 

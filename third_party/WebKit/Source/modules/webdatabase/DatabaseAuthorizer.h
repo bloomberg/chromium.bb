@@ -30,8 +30,6 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
-#include "wtf/HashSet.h"
-#include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -116,8 +114,6 @@ private:
     bool m_hadDeletes : 1;
 
     const String m_databaseInfoTableName;
-
-    HashSet<String, CaseFoldingHash> m_whitelistedFunctions;
 };
 
 } // namespace blink

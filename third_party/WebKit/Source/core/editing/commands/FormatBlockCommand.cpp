@@ -133,31 +133,30 @@ Element* FormatBlockCommand::elementForFormatBlockCommand(Range* range)
 
 bool isElementForFormatBlock(const QualifiedName& tagName)
 {
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, blockTags, ());
-    if (blockTags.isEmpty()) {
-        blockTags.add(addressTag);
-        blockTags.add(articleTag);
-        blockTags.add(asideTag);
-        blockTags.add(blockquoteTag);
-        blockTags.add(ddTag);
-        blockTags.add(divTag);
-        blockTags.add(dlTag);
-        blockTags.add(dtTag);
-        blockTags.add(footerTag);
-        blockTags.add(h1Tag);
-        blockTags.add(h2Tag);
-        blockTags.add(h3Tag);
-        blockTags.add(h4Tag);
-        blockTags.add(h5Tag);
-        blockTags.add(h6Tag);
-        blockTags.add(headerTag);
-        blockTags.add(hgroupTag);
-        blockTags.add(mainTag);
-        blockTags.add(navTag);
-        blockTags.add(pTag);
-        blockTags.add(preTag);
-        blockTags.add(sectionTag);
-    }
+    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, blockTags, ({
+        addressTag,
+        articleTag,
+        asideTag,
+        blockquoteTag,
+        ddTag,
+        divTag,
+        dlTag,
+        dtTag,
+        footerTag,
+        h1Tag,
+        h2Tag,
+        h3Tag,
+        h4Tag,
+        h5Tag,
+        h6Tag,
+        headerTag,
+        hgroupTag,
+        mainTag,
+        navTag,
+        pTag,
+        preTag,
+        sectionTag,
+    }));
     return blockTags.contains(tagName);
 }
 

@@ -48,91 +48,79 @@ SVGResources::SVGResources()
 
 static HashSet<AtomicString>& clipperFilterMaskerTags()
 {
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
-    if (s_tagList.isEmpty()) {
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ({
         // "container elements": http://www.w3.org/TR/SVG11/intro.html#TermContainerElement
         // "graphics elements" : http://www.w3.org/TR/SVG11/intro.html#TermGraphicsElement
-        s_tagList.add(aTag.localName());
-        s_tagList.add(circleTag.localName());
-        s_tagList.add(ellipseTag.localName());
-        s_tagList.add(gTag.localName());
-        s_tagList.add(imageTag.localName());
-        s_tagList.add(lineTag.localName());
-        s_tagList.add(markerTag.localName());
-        s_tagList.add(maskTag.localName());
-        s_tagList.add(pathTag.localName());
-        s_tagList.add(polygonTag.localName());
-        s_tagList.add(polylineTag.localName());
-        s_tagList.add(rectTag.localName());
-        s_tagList.add(svgTag.localName());
-        s_tagList.add(textTag.localName());
-        s_tagList.add(useTag.localName());
-
+        aTag.localName(),
+        circleTag.localName(),
+        ellipseTag.localName(),
+        gTag.localName(),
+        imageTag.localName(),
+        lineTag.localName(),
+        markerTag.localName(),
+        maskTag.localName(),
+        pathTag.localName(),
+        polygonTag.localName(),
+        polylineTag.localName(),
+        rectTag.localName(),
+        svgTag.localName(),
+        textTag.localName(),
+        useTag.localName(),
         // Not listed in the definitions is the clipPath element, the SVG spec says though:
         // The "clipPath" element or any of its children can specify property "clip-path".
         // So we have to add clipPathTag here, otherwhise clip-path on clipPath will fail.
         // (Already mailed SVG WG, waiting for a solution)
-        s_tagList.add(clipPathTag.localName());
-
+        clipPathTag.localName(),
         // Not listed in the definitions are the text content elements, though filter/clipper/masker on tspan/text/.. is allowed.
         // (Already mailed SVG WG, waiting for a solution)
-        s_tagList.add(textPathTag.localName());
-        s_tagList.add(tspanTag.localName());
-
+        textPathTag.localName(),
+        tspanTag.localName(),
         // Not listed in the definitions is the foreignObject element, but clip-path
         // is a supported attribute.
-        s_tagList.add(foreignObjectTag.localName());
-
+        foreignObjectTag.localName(),
         // Elements that we ignore, as it doesn't make any sense.
         // defs, pattern, switch (FIXME: Mail SVG WG about these)
         // symbol (is converted to a svg element, when referenced by use, we can safely ignore it.)
-    }
-
+    }));
     return s_tagList;
 }
 
 bool SVGResources::supportsMarkers(const SVGElement& element)
 {
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
-    if (s_tagList.isEmpty()) {
-        s_tagList.add(lineTag.localName());
-        s_tagList.add(pathTag.localName());
-        s_tagList.add(polygonTag.localName());
-        s_tagList.add(polylineTag.localName());
-    }
-
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ({
+        lineTag.localName(),
+        pathTag.localName(),
+        polygonTag.localName(),
+        polylineTag.localName(),
+    }));
     return s_tagList.contains(element.localName());
 }
 
 static HashSet<AtomicString>& fillAndStrokeTags()
 {
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
-    if (s_tagList.isEmpty()) {
-        s_tagList.add(circleTag.localName());
-        s_tagList.add(ellipseTag.localName());
-        s_tagList.add(lineTag.localName());
-        s_tagList.add(pathTag.localName());
-        s_tagList.add(polygonTag.localName());
-        s_tagList.add(polylineTag.localName());
-        s_tagList.add(rectTag.localName());
-        s_tagList.add(textTag.localName());
-        s_tagList.add(textPathTag.localName());
-        s_tagList.add(tspanTag.localName());
-    }
-
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ({
+        circleTag.localName(),
+        ellipseTag.localName(),
+        lineTag.localName(),
+        pathTag.localName(),
+        polygonTag.localName(),
+        polylineTag.localName(),
+        rectTag.localName(),
+        textTag.localName(),
+        textPathTag.localName(),
+        tspanTag.localName(),
+    }));
     return s_tagList;
 }
 
 static HashSet<AtomicString>& chainableResourceTags()
 {
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ());
-    if (s_tagList.isEmpty()) {
-        s_tagList.add(linearGradientTag.localName());
-        s_tagList.add(filterTag.localName());
-        s_tagList.add(patternTag.localName());
-        s_tagList.add(radialGradientTag.localName());
-    }
-
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, s_tagList, ({
+        linearGradientTag.localName(),
+        filterTag.localName(),
+        patternTag.localName(),
+        radialGradientTag.localName(),
+    }));
     return s_tagList;
 }
 

@@ -60,18 +60,16 @@ bool CustomElement::isValidName(const AtomicString& name)
         return false;
 
     // https://html.spec.whatwg.org/multipage/scripting.html#valid-custom-element-name
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, hyphenContainingElementNames, ());
-    if (hyphenContainingElementNames.isEmpty()) {
-        hyphenContainingElementNames.add("annotation-xml");
-        hyphenContainingElementNames.add("color-profile");
-        hyphenContainingElementNames.add("font-face");
-        hyphenContainingElementNames.add("font-face-src");
-        hyphenContainingElementNames.add("font-face-uri");
-        hyphenContainingElementNames.add("font-face-format");
-        hyphenContainingElementNames.add("font-face-name");
-        hyphenContainingElementNames.add("missing-glyph");
-    }
-
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, hyphenContainingElementNames, ({
+        "annotation-xml",
+        "color-profile",
+        "font-face",
+        "font-face-src",
+        "font-face-uri",
+        "font-face-format",
+        "font-face-name",
+        "missing-glyph",
+    }));
     return !hyphenContainingElementNames.contains(name);
 }
 

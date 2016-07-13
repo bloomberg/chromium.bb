@@ -27,8 +27,6 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    using SupportedTokens = HashSet<AtomicString>;
-
 private:
     explicit RelList(Element*);
 

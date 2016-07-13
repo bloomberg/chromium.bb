@@ -45,27 +45,29 @@ ForbiddenHeaderNames::ForbiddenHeaderNames()
     : m_proxyHeaderPrefix("proxy-")
     , m_secHeaderPrefix("sec-")
 {
-    m_fixedNames.add("accept-charset");
-    m_fixedNames.add("accept-encoding");
-    m_fixedNames.add("access-control-request-headers");
-    m_fixedNames.add("access-control-request-method");
-    m_fixedNames.add("connection");
-    m_fixedNames.add("content-length");
-    m_fixedNames.add("cookie");
-    m_fixedNames.add("cookie2");
-    m_fixedNames.add("date");
-    m_fixedNames.add("dnt");
-    m_fixedNames.add("expect");
-    m_fixedNames.add("host");
-    m_fixedNames.add("keep-alive");
-    m_fixedNames.add("origin");
-    m_fixedNames.add("referer");
-    m_fixedNames.add("te");
-    m_fixedNames.add("trailer");
-    m_fixedNames.add("transfer-encoding");
-    m_fixedNames.add("upgrade");
-    m_fixedNames.add("user-agent");
-    m_fixedNames.add("via");
+    m_fixedNames = {
+        "accept-charset",
+        "accept-encoding",
+        "access-control-request-headers",
+        "access-control-request-method",
+        "connection",
+        "content-length",
+        "cookie",
+        "cookie2",
+        "date",
+        "dnt",
+        "expect",
+        "host",
+        "keep-alive",
+        "origin",
+        "referer",
+        "te",
+        "trailer",
+        "transfer-encoding",
+        "upgrade",
+        "user-agent",
+        "via",
+    };
 }
 
 const ForbiddenHeaderNames& ForbiddenHeaderNames::get()

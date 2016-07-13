@@ -249,29 +249,28 @@ static bool isDisallowedElement(const Element& element)
     if (!element.isSVGElement())
         return true;
 
-    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, allowedElementTags, ());
-    if (allowedElementTags.isEmpty()) {
-        allowedElementTags.add(SVGNames::aTag);
-        allowedElementTags.add(SVGNames::circleTag);
-        allowedElementTags.add(SVGNames::descTag);
-        allowedElementTags.add(SVGNames::ellipseTag);
-        allowedElementTags.add(SVGNames::gTag);
-        allowedElementTags.add(SVGNames::imageTag);
-        allowedElementTags.add(SVGNames::lineTag);
-        allowedElementTags.add(SVGNames::metadataTag);
-        allowedElementTags.add(SVGNames::pathTag);
-        allowedElementTags.add(SVGNames::polygonTag);
-        allowedElementTags.add(SVGNames::polylineTag);
-        allowedElementTags.add(SVGNames::rectTag);
-        allowedElementTags.add(SVGNames::svgTag);
-        allowedElementTags.add(SVGNames::switchTag);
-        allowedElementTags.add(SVGNames::symbolTag);
-        allowedElementTags.add(SVGNames::textTag);
-        allowedElementTags.add(SVGNames::textPathTag);
-        allowedElementTags.add(SVGNames::titleTag);
-        allowedElementTags.add(SVGNames::tspanTag);
-        allowedElementTags.add(SVGNames::useTag);
-    }
+    DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, allowedElementTags, ({
+        SVGNames::aTag,
+        SVGNames::circleTag,
+        SVGNames::descTag,
+        SVGNames::ellipseTag,
+        SVGNames::gTag,
+        SVGNames::imageTag,
+        SVGNames::lineTag,
+        SVGNames::metadataTag,
+        SVGNames::pathTag,
+        SVGNames::polygonTag,
+        SVGNames::polylineTag,
+        SVGNames::rectTag,
+        SVGNames::svgTag,
+        SVGNames::switchTag,
+        SVGNames::symbolTag,
+        SVGNames::textTag,
+        SVGNames::textPathTag,
+        SVGNames::titleTag,
+        SVGNames::tspanTag,
+        SVGNames::useTag,
+    }));
     return !allowedElementTags.contains<SVGAttributeHashTranslator>(element.tagQName());
 }
 

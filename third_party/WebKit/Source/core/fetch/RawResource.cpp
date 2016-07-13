@@ -205,19 +205,18 @@ void RawResource::setDefersLoading(bool defers)
 static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName)
 {
     // FIXME: This list of headers that don't affect cache policy almost certainly isn't complete.
-    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, m_headers, ());
-    if (m_headers.isEmpty()) {
-        m_headers.add("Cache-Control");
-        m_headers.add("If-Modified-Since");
-        m_headers.add("If-None-Match");
-        m_headers.add("Origin");
-        m_headers.add("Pragma");
-        m_headers.add("Purpose");
-        m_headers.add("Referer");
-        m_headers.add("User-Agent");
-        m_headers.add(HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id);
-    }
-    return m_headers.contains(headerName);
+    DEFINE_STATIC_LOCAL(HashSet<AtomicString>, headers, ({
+        "Cache-Control",
+        "If-Modified-Since",
+        "If-None-Match",
+        "Origin",
+        "Pragma",
+        "Purpose",
+        "Referer",
+        "User-Agent",
+        HTTPNames::X_DevTools_Emulate_Network_Conditions_Client_Id,
+    }));
+    return headers.contains(headerName);
 }
 
 static bool isCacheableHTTPMethod(const AtomicString& method)
