@@ -12,6 +12,7 @@ namespace {
 
 static const int s_width = 50;
 static const int s_height = 75;
+static const float s_zoom = 1.0;
 
 class PaintRenderingContext2DTest : public ::testing::Test {
 protected:
@@ -22,7 +23,7 @@ protected:
 
 void PaintRenderingContext2DTest::SetUp()
 {
-    m_ctx = PaintRenderingContext2D::create(ImageBuffer::create(IntSize(s_width, s_height)), false /* hasAlpha */);
+    m_ctx = PaintRenderingContext2D::create(ImageBuffer::create(IntSize(s_width, s_height)), false /* hasAlpha */, s_zoom);
 }
 
 void trySettingStrokeStyle(PaintRenderingContext2D* ctx, const String& expected, const String& value)

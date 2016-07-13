@@ -30,7 +30,7 @@ public:
     //
     // This may return a nullptr (representing an invalid image) if javascript
     // throws an error.
-    PassRefPtr<Image> paint(const LayoutObject&, const IntSize&);
+    PassRefPtr<Image> paint(const LayoutObject&, const IntSize&, float zoom);
     const Vector<CSSPropertyID>& nativeInvalidationProperties() const { return m_nativeInvalidationProperties; }
     const Vector<AtomicString>& customInvalidationProperties() const { return m_customInvalidationProperties; }
     bool hasAlpha() const { return m_hasAlpha; }

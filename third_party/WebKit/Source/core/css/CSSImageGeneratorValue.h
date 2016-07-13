@@ -60,7 +60,7 @@ public:
 
     void addClient(const LayoutObject*, const IntSize&);
     void removeClient(const LayoutObject*);
-    PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float zoom);
 
     bool isFixedSize() const;
     IntSize fixedSize(const LayoutObject&, const FloatSize& defaultObjectSize);

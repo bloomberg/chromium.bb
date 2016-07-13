@@ -36,12 +36,12 @@ String CSSPaintValue::name() const
     return m_name->value();
 }
 
-PassRefPtr<Image> CSSPaintValue::image(const LayoutObject& layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSPaintValue::image(const LayoutObject& layoutObject, const IntSize& size, float zoom)
 {
     if (!m_generator)
         m_generator = CSSPaintImageGenerator::create(name(), layoutObject.document(), m_paintImageGeneratorObserver);
 
-    return m_generator->paint(layoutObject, size);
+    return m_generator->paint(layoutObject, size, zoom);
 }
 
 void CSSPaintValue::Observer::paintImageGeneratorReady()

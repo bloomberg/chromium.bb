@@ -24,7 +24,7 @@ public:
 
     String name() const;
 
-    PassRefPtr<Image> image(const LayoutObject&, const IntSize&);
+    PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float zoom);
     bool isFixedSize() const { return false; }
     IntSize fixedSize(const LayoutObject&) { return IntSize(); }
 

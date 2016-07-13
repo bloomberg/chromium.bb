@@ -68,9 +68,9 @@ void StyleGeneratedImage::removeClient(LayoutObject* layoutObject)
     m_imageGeneratorValue->removeClient(layoutObject);
 }
 
-PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject& layoutObject, const IntSize& size, float) const
+PassRefPtr<Image> StyleGeneratedImage::image(const LayoutObject& layoutObject, const IntSize& size, float zoom) const
 {
-    return m_imageGeneratorValue->image(layoutObject, size);
+    return m_imageGeneratorValue->image(layoutObject, size, zoom);
 }
 
 bool StyleGeneratedImage::knownToBeOpaque(const LayoutObject& layoutObject) const

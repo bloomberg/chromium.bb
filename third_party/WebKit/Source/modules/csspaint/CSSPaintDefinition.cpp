@@ -21,6 +21,19 @@
 
 namespace blink {
 
+namespace {
+
+IntSize getSpecifiedSize(const IntSize& size, float zoom)
+{
+    float unZoomFactor = 1 / zoom;
+    auto unZoomFn = [unZoomFactor](int a) -> int {
+        return round(a * unZoomFactor);
+    };
+    return IntSize(unZoomFn(size.width()), unZoomFn(size.height()));
+}
+
+} // namespace
+
 CSSPaintDefinition* CSSPaintDefinition::create(ScriptState* scriptState, v8::Local<v8::Function> constructor, v8::Local<v8::Function> paint, Vector<CSSPropertyID>& nativeInvalidationProperties, Vector<AtomicString>& customInvalidationProperties, bool hasAlpha)
 {
     return new CSSPaintDefinition(scriptState, constructor, paint, nativeInvalidationProperties, customInvalidationProperties, hasAlpha);
@@ -41,8 +54,10 @@ CSSPaintDefinition::~CSSPaintDefinition()
 {
 }
 
-PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject, const IntSize& size, float zoom)
 {
+    const IntSize specifiedSize = getSpecifiedSize(size, zoom);
+
     ScriptState::Scope scope(m_scriptState.get());
 
     maybeCreatePaintInstance();
@@ -58,8 +73,8 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject, co
     DCHECK(layoutObject.node());
 
     PaintRenderingContext2D* renderingContext = PaintRenderingContext2D::create(
-        ImageBuffer::create(wrapUnique(new RecordingImageBufferSurface(size, nullptr /* fallbackFactory */, m_hasAlpha ? NonOpaque : Opaque))),  m_hasAlpha);
-    PaintSize* paintSize = PaintSize::create(size);
+        ImageBuffer::create(wrapUnique(new RecordingImageBufferSurface(size, nullptr /* fallbackFactory */, m_hasAlpha ? NonOpaque : Opaque))),  m_hasAlpha, zoom);
+    PaintSize* paintSize = PaintSize::create(specifiedSize);
     StylePropertyMap* styleMap = FilteredComputedStylePropertyMap::create(
         CSSComputedStyleDeclaration::create(layoutObject.node()),
         m_nativeInvalidationProperties, m_customInvalidationProperties);
@@ -83,7 +98,7 @@ PassRefPtr<Image> CSSPaintDefinition::paint(const LayoutObject& layoutObject, co
         return nullptr;
     }
 
-    return PaintGeneratedImage::create(renderingContext->imageBuffer()->getPicture(), size);
+    return PaintGeneratedImage::create(renderingContext->imageBuffer()->getPicture(), specifiedSize);
 }
 
 void CSSPaintDefinition::maybeCreatePaintInstance()

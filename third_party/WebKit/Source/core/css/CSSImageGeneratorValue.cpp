@@ -118,7 +118,7 @@ void CSSImageGeneratorValue::putImage(const IntSize& size, PassRefPtr<Image> ima
     m_images.add(size, image);
 }
 
-PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject& layoutObject, const IntSize& size)
+PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject& layoutObject, const IntSize& size, float zoom)
 {
     switch (getClassType()) {
     case CrossfadeClass:
@@ -126,7 +126,7 @@ PassRefPtr<Image> CSSImageGeneratorValue::image(const LayoutObject& layoutObject
     case LinearGradientClass:
         return toCSSLinearGradientValue(this)->image(layoutObject, size);
     case PaintClass:
-        return toCSSPaintValue(this)->image(layoutObject, size);
+        return toCSSPaintValue(this)->image(layoutObject, size, zoom);
     case RadialGradientClass:
         return toCSSRadialGradientValue(this)->image(layoutObject, size);
     default:
