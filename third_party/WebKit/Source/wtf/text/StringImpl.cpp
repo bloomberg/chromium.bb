@@ -1431,26 +1431,6 @@ size_t StringImpl::findIgnoringASCIICase(StringImpl* matchString, unsigned index
     return findIgnoringASCIICaseInner(searchStart, matchString->characters16(), index, searchLength, matchLength);
 }
 
-size_t StringImpl::findNextLineStart(unsigned index)
-{
-    if (is8Bit())
-        return WTF::findNextLineStart(characters8(), m_length, index);
-    return WTF::findNextLineStart(characters16(), m_length, index);
-}
-
-size_t StringImpl::count(LChar c) const
-{
-    int count = 0;
-    if (is8Bit()) {
-        for (size_t i = 0; i < m_length; ++i)
-            count += characters8()[i] == c;
-    } else {
-        for (size_t i = 0; i < m_length; ++i)
-            count += characters16()[i] == c;
-    }
-    return count;
-}
-
 size_t StringImpl::reverseFind(UChar c, unsigned index)
 {
     if (is8Bit())
