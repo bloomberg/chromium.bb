@@ -20,6 +20,7 @@ import java.util.Locale;
  * Controls how Translation One-box triggering is handled for the {@link ContextualSearchManager}.
  */
 public class ContextualSearchTranslateController  {
+    private static final int LOCALE_MIN_LENGTH = 2;
 
     private final ChromeActivity mActivity;
     private final ContextualSearchPolicy mPolicy;
@@ -108,8 +109,8 @@ public class ContextualSearchTranslateController  {
         // Add the accept languages to the end, since they are a weaker hint than
         // the proficient languages.
         List<String> acceptLanguages = getAcceptLanguages();
-        for (int i = 0; i < acceptLanguages.size(); i++) {
-            uniqueLanguages.add(trimLocaleToLanguage(acceptLanguages.get(i)));
+        for (String accept : acceptLanguages) {
+            if (isValidLocale(accept)) uniqueLanguages.add(trimLocaleToLanguage(accept));
         }
         return new ArrayList<String>(uniqueLanguages);
     }
@@ -138,7 +139,7 @@ public class ContextualSearchTranslateController  {
             Context context = mActivity.getApplicationContext();
             if (context != null) {
                 for (String locale : UiUtils.getIMELocales(context)) {
-                    uniqueLanguages.add(trimLocaleToLanguage(locale));
+                    if (isValidLocale(locale)) uniqueLanguages.add(trimLocaleToLanguage(locale));
                 }
             }
         }
@@ -153,21 +154,32 @@ public class ContextualSearchTranslateController  {
         List<String> result = new ArrayList<String>();
         if (!ContextualSearchFieldTrial.isAcceptLanguagesForTranslationDisabled()) {
             String acceptLanguages = getNativeAcceptLanguages();
-            for (String language : acceptLanguages.split(",")) {
-                result.add(language);
+            if (!TextUtils.isEmpty(acceptLanguages)) {
+                for (String language : acceptLanguages.split(",")) {
+                    result.add(language);
+                }
             }
         }
         return result;
     }
 
     /**
+     * @return Whether the given locale appears to be valid.
+     */
+    private boolean isValidLocale(String locale) {
+        return !TextUtils.isEmpty(locale) && locale.length() >= LOCALE_MIN_LENGTH;
+    }
+
+    /**
+     * Converts a given locale to a language code.
+     * @param locale The locale string, which must have a length of at least 2.
      * @return The given locale as a language code.
      */
     private String trimLocaleToLanguage(String locale) {
         // TODO(donnd): use getScript or getLanguageTag (both API 21), or some other standard way to
         // strip the country, instead of hard-coding the two character language code.
         // TODO(donnd): Shouldn't getLanguage() do this?
-        String trimmedLocale = locale.substring(0, 2);
+        String trimmedLocale = locale.substring(0, LOCALE_MIN_LENGTH);
         return new Locale(trimmedLocale).getLanguage();
     }
 

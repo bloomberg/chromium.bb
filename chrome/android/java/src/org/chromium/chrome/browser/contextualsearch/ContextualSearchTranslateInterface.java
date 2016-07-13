@@ -15,7 +15,7 @@ interface ContextualSearchTranslateInterface {
     public String getAcceptLanguages();
 
     /**
-     * @return The Translate Service's target language string.
+     * @return The Translate Service's target language string, non-empty.
      */
     public String getTranslateServiceTargetLanguage();
 }
