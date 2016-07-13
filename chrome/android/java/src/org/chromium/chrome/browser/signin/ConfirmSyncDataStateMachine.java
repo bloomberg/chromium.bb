@@ -65,7 +65,7 @@ public class ConfirmSyncDataStateMachine
     private final String mOldAccountName;
     private final String mNewAccountName;
     private final boolean mCurrentlyManaged;
-    private final Promise<Boolean> mNewAccountManaged = new Promise<Boolean>();
+    private final Promise<Boolean> mNewAccountManaged = new Promise<>();
     private final FragmentManager mFragmentManager;
     private final Context mContext;
     private final ImportSyncType mImportSyncType;
@@ -78,6 +78,9 @@ public class ConfirmSyncDataStateMachine
     public static void run(String oldAccountName, String newAccountName,
             ImportSyncType importSyncType, FragmentManager fragmentManager, Context context,
             ConfirmImportSyncDataDialog.Listener callback) {
+        // Includes implicit not-null assertion.
+        assert !newAccountName.equals("") : "New account name must be provided.";
+
         ConfirmSyncDataStateMachine stateMachine = new ConfirmSyncDataStateMachine(oldAccountName,
                 newAccountName, importSyncType, fragmentManager, context, callback);
         stateMachine.progress();
@@ -110,7 +113,7 @@ public class ConfirmSyncDataStateMachine
             case BEFORE_OLD_ACCOUNT_DIALOG:
                 mState = BEFORE_NEW_ACCOUNT_DIALOG;
 
-                if (TextUtils.isEmpty(mOldAccountName) || mOldAccountName == mNewAccountName) {
+                if (TextUtils.isEmpty(mOldAccountName) || mNewAccountName.equals(mOldAccountName)) {
                     // If there is no old account or the user is just logging back into whatever
                     // they were previously logged in as, progress past the old account checks.
                     progress();
