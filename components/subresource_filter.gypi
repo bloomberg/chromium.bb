@@ -72,6 +72,10 @@
         'subresource_filter/core/common/ngram_extractor.h',
         'subresource_filter/core/common/string_splitter.h',
         'subresource_filter/core/common/uint64_hasher.h',
+        'subresource_filter/core/common/url_pattern.cc',
+        'subresource_filter/core/common/url_pattern.h',
+        'subresource_filter/core/common/url_pattern_matching.cc',
+        'subresource_filter/core/common/url_pattern_matching.h',
       ],
       'export_dependent_settings': [
         'subresource_filter_core_common_ruleset_flatbuffer',

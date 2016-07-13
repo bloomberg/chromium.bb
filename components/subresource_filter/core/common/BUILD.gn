@@ -15,6 +15,10 @@ source_set("common") {
     "ngram_extractor.h",
     "string_splitter.h",
     "uint64_hasher.h",
+    "url_pattern.cc",
+    "url_pattern.h",
+    "url_pattern_matching.cc",
+    "url_pattern_matching.h",
   ]
 
   public_deps = [
@@ -24,6 +28,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//url:url",
   ]
 }
 
@@ -35,10 +40,12 @@ source_set("unit_tests") {
     "knuth_morris_pratt_unittest.cc",
     "ngram_extractor_unittest.cc",
     "string_splitter_unittest.cc",
+    "url_pattern_matching_unittest.cc",
   ]
   deps = [
     ":common",
     "//base",
     "//testing/gtest",
+    "//url:url",
   ]
 }
