@@ -57,6 +57,7 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(Profile* profile)
     : ConfirmInfoBarDelegate(),
       profile_(profile),
       should_expire_(false),
+      action_taken_(false),
       weak_factory_(this) {
   // We want the info-bar to stick-around for few seconds and then be hidden
   // on the next navigation after that.
@@ -66,7 +67,13 @@ DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(Profile* profile)
       base::TimeDelta::FromSeconds(8));
 }
 
-DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() = default;
+DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
+  if (!action_taken_) {
+    UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
+                              IGNORE_INFO_BAR,
+                              NUM_INFO_BAR_USER_INTERACTION_TYPES);
+  }
+}
 
 void DefaultBrowserInfoBarDelegate::AllowExpiry() {
   should_expire_ = true;
@@ -127,10 +134,11 @@ bool DefaultBrowserInfoBarDelegate::ShouldExpire(
 }
 
 void DefaultBrowserInfoBarDelegate::InfoBarDismissed() {
+  action_taken_ = true;
   content::RecordAction(
       base::UserMetricsAction("DefaultBrowserInfoBar_Dismiss"));
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
-                            IGNORE_INFO_BAR,
+                            DISMISS_INFO_BAR,
                             NUM_INFO_BAR_USER_INTERACTION_TYPES);
 }
 
@@ -164,6 +172,7 @@ bool DefaultBrowserInfoBarDelegate::OKButtonTriggersUACPrompt() const {
 }
 
 bool DefaultBrowserInfoBarDelegate::Accept() {
+  action_taken_ = true;
   content::RecordAction(
       base::UserMetricsAction("DefaultBrowserInfoBar_Accept"));
   UMA_HISTOGRAM_ENUMERATION("DefaultBrowser.InfoBar.UserInteraction",
@@ -190,6 +199,7 @@ bool DefaultBrowserInfoBarDelegate::Accept() {
 }
 
 bool DefaultBrowserInfoBarDelegate::Cancel() {
+  action_taken_ = true;
   // This can get reached in tests where profile_ is null.
   if (profile_)
     chrome::DefaultBrowserPromptDeclined(profile_);

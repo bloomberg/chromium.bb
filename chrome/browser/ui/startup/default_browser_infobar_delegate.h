@@ -46,6 +46,8 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
     CANCEL_INFO_BAR = 1,
     // The user did not interact with the info bar.
     IGNORE_INFO_BAR = 2,
+    // The user explicitly closed the infobar.
+    DISMISS_INFO_BAR = 3,
     NUM_INFO_BAR_USER_INTERACTION_TYPES
   };
 
@@ -84,6 +86,9 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // Whether the info bar should be dismissed on the next navigation.
   bool should_expire_;
+
+  // Indicates if the user interacted with the infobar.
+  bool action_taken_;
 
   // Used to delay the expiration of the info-bar.
   base::WeakPtrFactory<DefaultBrowserInfoBarDelegate> weak_factory_;

@@ -70573,6 +70573,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Ignore">
     The user did not interact with the info bar.
   </int>
+  <int value="3" label="Dismiss">The user explicitly closed the infobar.</int>
 </enum>
 
 <enum name="DefaultBrowserState" type="int">
