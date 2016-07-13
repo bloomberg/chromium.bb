@@ -7,13 +7,12 @@ Once the Material Design settings is further along, these
 strings will begin to be translated.
 -->
 <grit base_dir="." latest_public_release="0" current_release="1"
-      source_lang_id="en" enc_check="möl">
+      output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
   <outputs>
     <output filename="grit/settings_strings.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
       <output filename="settings_strings.pak" type="data_package"/>
-    
   </outputs>
 
   <release seq="1" allow_pseudo="false">

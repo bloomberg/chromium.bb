@@ -30,7 +30,7 @@ CHAR-LIMIT guidelines:
   * Action bar items - 32 characters
 -->
 
-<grit current_release="1" latest_public_release="0">
+<grit current_release="1" latest_public_release="0" output_all_resource_defines="false">
   <outputs>
     <output filename="values-am/android_chrome_strings.xml" lang="am" type="android" />
     <output filename="values-ar/android_chrome_strings.xml" lang="ar" type="android" />
@@ -881,15 +881,15 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DATA_REDUCTION_ENABLED_TOAST" desc="Toast message displayed after the user enables Data Saver from the promo" >
         Data Saver is on. Manage it in Settings.
       </message>
-      <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_TITLE" desc="Text to be displayed in the data reduction promo infobar title">  
+      <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_TITLE" desc="Text to be displayed in the data reduction promo infobar title">
         Save up to 60% of your data
-      </message>     
-      <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_TEXT" desc="Text to be displayed in the data reduction promo infobar">  
+      </message>
+      <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_TEXT" desc="Text to be displayed in the data reduction promo infobar">
         Google servers will optimize the pages you visit, except for HTTPS and Incognito.
       </message>
-      <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_BUTTON" desc="Text to be displayed in the data reduction promo infobar confirm button">  
+      <message name="IDS_DATA_REDUCTION_PROMO_INFOBAR_BUTTON" desc="Text to be displayed in the data reduction promo infobar confirm button">
         Turn on Data Saver
-      </message>   
+      </message>
 
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">

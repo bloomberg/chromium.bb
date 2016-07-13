@@ -8,7 +8,7 @@ are declared in build/common.gypi.
 -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
-      source_lang_id="en" enc_check="möl">
+      output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
   <outputs>
     <output filename="grit/generated_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
