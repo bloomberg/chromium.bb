@@ -271,6 +271,10 @@ void DefaultPlatformDisplay::OnCompositorFrameDrawn() {
     delegate_->OnCompositorFrameDrawn();
 }
 
+bool DefaultPlatformDisplay::IsInHighContrastMode() {
+  return delegate_ ? delegate_->IsInHighContrastMode() : false;
+}
+
 const ViewportMetrics& DefaultPlatformDisplay::GetViewportMetrics() {
   return metrics_;
 }

@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "accelerator_registrar.mojom",
+    "accessibility_manager.mojom",
     "animations.mojom",
     "channel_handle.mojom",
     "clipboard.mojom",

@@ -25,6 +25,8 @@ class FrameGeneratorDelegate {
   // Called when a compositor frame is finished drawing.
   virtual void OnCompositorFrameDrawn() = 0;
 
+  virtual bool IsInHighContrastMode() = 0;
+
   virtual const ViewportMetrics& GetViewportMetrics() = 0;
 
  protected:

@@ -14,6 +14,10 @@
 #include "base/observer_list.h"
 #include "services/ui/public/cpp/window_tree_client_observer.h"
 
+namespace shell {
+class Connector;
+}
+
 namespace ui {
 class WindowTreeClient;
 }
@@ -27,7 +31,9 @@ class WmWindowMus;
 // WmShell implementation for mus.
 class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
  public:
-  WmShellMus(ShellDelegate* delegate, ::ui::WindowTreeClient* client);
+  WmShellMus(ShellDelegate* delegate,
+             ::ui::WindowTreeClient* client,
+             shell::Connector* connector);
   ~WmShellMus() override;
 
   static WmShellMus* Get();
@@ -91,6 +97,7 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
   void OnDidDestroyClient(::ui::WindowTreeClient* client) override;
 
   ::ui::WindowTreeClient* client_;
+  shell::Connector* connector_;
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 

@@ -7,6 +7,7 @@
 #include "base/containers/adapters.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass.h"
+#include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "services/ui/surfaces/display_compositor.h"
@@ -26,7 +27,9 @@ FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
       gpu_state_(gpu_state),
       surfaces_state_(surfaces_state),
       draw_timer_(false, false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(delegate_);
+}
 
 FrameGenerator::~FrameGenerator() {
   // Invalidate WeakPtrs now to avoid callbacks back into the
@@ -90,8 +93,11 @@ void FrameGenerator::DidDraw(cc::SurfaceDrawStatus status) {
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   const ViewportMetrics& metrics = delegate_->GetViewportMetrics();
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->damage_rect = dirty_rect_;
-  render_pass->output_rect = gfx::Rect(metrics.size_in_pixels);
+  gfx::Rect output_rect(metrics.size_in_pixels);
+  dirty_rect_.Intersect(output_rect);
+  const cc::RenderPassId render_pass_id(1, 1);
+  render_pass->SetNew(render_pass_id, output_rect, dirty_rect_,
+                      gfx::Transform());
 
   DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
                  1.0f);
@@ -99,6 +105,24 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);
   frame_data->render_pass_list.push_back(std::move(render_pass));
+  if (delegate_->IsInHighContrastMode()) {
+    std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
+    invert_pass->SetNew(cc::RenderPassId(2, 0), output_rect, dirty_rect_,
+                        gfx::Transform());
+    cc::SharedQuadState* shared_state =
+        invert_pass->CreateAndAppendSharedQuadState();
+    shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,
+                         output_rect, false, 1.f, SkXfermode::kSrcOver_Mode, 0);
+    auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
+    cc::FilterOperations filters;
+    filters.Append(cc::FilterOperation::CreateInvertFilter(1.f));
+    quad->SetNew(shared_state, output_rect, output_rect, render_pass_id,
+                 0 /* mask_resource_id */, gfx::Vector2dF() /* mask_uv_scale */,
+                 gfx::Size() /* mask_texture_size */, filters,
+                 gfx::Vector2dF() /* filters_scale */,
+                 cc::FilterOperations() /* background_filters */);
+    frame_data->render_pass_list.push_back(std::move(invert_pass));
+  }
 
   cc::CompositorFrame frame;
   frame.delegated_frame_data = std::move(frame_data);

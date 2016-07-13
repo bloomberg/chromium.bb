@@ -275,6 +275,10 @@ ServerWindow* Display::GetRootWindow() {
   return root_.get();
 }
 
+bool Display::IsInHighContrastMode() {
+  return window_server_->IsActiveUserInHighContrastMode();
+}
+
 void Display::OnEvent(const ui::Event& event) {
   WindowManagerDisplayRoot* display_root = GetActiveWindowManagerDisplayRoot();
   if (display_root)

@@ -13,6 +13,8 @@ source_set("lib") {
     "accelerator.h",
     "access_policy.h",
     "access_policy_delegate.h",
+    "accessibility_manager.cc",
+    "accessibility_manager.h",
     "animation_runner.cc",
     "animation_runner.h",
     "animation_runner_observer.h",

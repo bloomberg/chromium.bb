@@ -23,6 +23,7 @@
 #include "services/ui/gles2/gpu_impl.h"
 #include "services/ui/gpu/gpu_service_impl.h"
 #include "services/ui/gpu/gpu_service_mus.h"
+#include "services/ui/ws/accessibility_manager.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
@@ -75,6 +76,7 @@ struct Service::PendingRequest {
 
 struct Service::UserState {
   std::unique_ptr<clipboard::ClipboardImpl> clipboard;
+  std::unique_ptr<ws::AccessibilityManager> accessibility;
   std::unique_ptr<ws::WindowTreeHostFactory> window_tree_host_factory;
 };
 
@@ -224,6 +226,7 @@ void Service::OnStart(shell::Connector* connector,
 }
 
 bool Service::OnConnect(Connection* connection) {
+  connection->AddInterface<mojom::AccessibilityManager>(this);
   connection->AddInterface<mojom::Clipboard>(this);
   connection->AddInterface<mojom::DisplayManager>(this);
   connection->AddInterface<mojom::UserAccessManager>(this);
@@ -278,6 +281,17 @@ void Service::CreateDefaultDisplays() {
   // displays are ready.
   platform_screen_->ConfigurePhysicalDisplay(base::Bind(
       &Service::OnCreatedPhysicalDisplay, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void Service::Create(shell::Connection* connection,
+                     mojom::AccessibilityManagerRequest request) {
+  UserState* user_state = GetUserState(connection);
+  if (!user_state->accessibility) {
+    const ws::UserId& user_id = connection->GetRemoteIdentity().user_id();
+    user_state->accessibility.reset(
+        new ws::AccessibilityManager(window_server_.get(), user_id));
+  }
+  user_state->accessibility->Bind(std::move(request));
 }
 
 void Service::Create(shell::Connection* connection,

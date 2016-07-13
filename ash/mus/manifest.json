@@ -7,8 +7,13 @@
       "mus:window_manager" : [ "ui::mojom::AcceleratorRegistrar" ]
     },
     "required": {
-      "*": { "classes": [ "app" ] },
-      "mojo:ui": { "interfaces": [ "ui::mojom::WindowManagerWindowTreeFactory" ] }
+      "*": { "classes": [ "accessibility", "app" ] },
+      "mojo:ui": {
+        "interfaces": [
+          "ui::mojom::AccessibilityManager",
+          "ui::mojom::WindowManagerWindowTreeFactory"
+        ]
+      }
     }
   }
 }

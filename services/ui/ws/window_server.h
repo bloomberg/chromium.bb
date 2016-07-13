@@ -143,6 +143,9 @@ class WindowServer : public ServerWindowDelegate,
   bool SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
+  bool IsActiveUserInHighContrastMode() const;
+  void SetHighContrastMode(const UserId& user, bool enabled);
+
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies
   // WindowManagerChangeCompleted() is called to obtain the original source
@@ -252,6 +255,8 @@ class WindowServer : public ServerWindowDelegate,
   // |window|.
   void UpdateNativeCursorIfOver(ServerWindow* window);
 
+  bool IsUserInHighContrastMode(const UserId& user) const;
+
   // Overridden from ServerWindowDelegate:
   ui::SurfacesState* GetSurfacesState() override;
   void OnScheduleWindowPaint(ServerWindow* window) override;
@@ -333,6 +338,7 @@ class WindowServer : public ServerWindowDelegate,
   Operation* current_operation_;
 
   bool in_destructor_;
+  std::map<UserId, bool> high_contrast_mode_;
 
   // Maps from window manager change id to the client that initiated the
   // request.

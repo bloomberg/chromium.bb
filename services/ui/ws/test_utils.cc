@@ -120,6 +120,10 @@ ServerWindow* TestFrameGeneratorDelegate::GetRootWindow() {
   return root_.get();
 }
 
+bool TestFrameGeneratorDelegate::IsInHighContrastMode() {
+  return false;
+}
+
 const ViewportMetrics& TestFrameGeneratorDelegate::GetViewportMetrics() {
   return metrics_;
 }

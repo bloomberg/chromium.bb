@@ -26,6 +26,8 @@ class PlatformDisplayDelegate {
   // Returns the root window of this display.
   virtual ServerWindow* GetRootWindow() = 0;
 
+  virtual bool IsInHighContrastMode() = 0;
+
   // Called when the window managed by the PlatformDisplay is closed.
   virtual void OnDisplayClosed() = 0;
 

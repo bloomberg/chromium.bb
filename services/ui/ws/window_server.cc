@@ -282,6 +282,22 @@ ServerWindow* WindowServer::GetFocusedWindow() {
   return nullptr;
 }
 
+bool WindowServer::IsActiveUserInHighContrastMode() const {
+  return IsUserInHighContrastMode(user_id_tracker_.active_id());
+}
+
+void WindowServer::SetHighContrastMode(const UserId& user, bool enabled) {
+  if (IsUserInHighContrastMode(user) == enabled)
+    return;
+  high_contrast_mode_[user] = enabled;
+  if (user_id_tracker_.active_id() != user)
+    return;
+  for (Display* display : display_manager_->displays()) {
+    display->SchedulePaint(display->root_window(),
+                           gfx::Rect(display->root_window()->bounds().size()));
+  }
+}
+
 uint32_t WindowServer::GenerateWindowManagerChangeId(
     WindowTree* source,
     uint32_t client_change_id) {
@@ -515,6 +531,11 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
     display_root->display()->UpdateNativeCursor(cursor_id);
 }
 
+bool WindowServer::IsUserInHighContrastMode(const UserId& user) const {
+  const auto iter = high_contrast_mode_.find(user);
+  return (iter == high_contrast_mode_.end()) ? false : iter->second;
+}
+
 ui::SurfacesState* WindowServer::GetSurfacesState() {
   return surfaces_state_.get();
 }
@@ -736,7 +757,15 @@ WindowManagerState* WindowServer::GetWindowManagerStateForUser(
 }
 
 void WindowServer::OnActiveUserIdChanged(const UserId& previously_active_id,
-                                         const UserId& active_id) {}
+                                         const UserId& active_id) {
+  if (IsUserInHighContrastMode(previously_active_id) ==
+      IsUserInHighContrastMode(active_id))
+    return;
+  for (Display* display : display_manager_->displays()) {
+    display->SchedulePaint(display->root_window(),
+                           gfx::Rect(display->root_window()->bounds().size()));
+  }
+}
 
 void WindowServer::OnUserIdAdded(const UserId& id) {
   activity_monitor_map_[id] = base::MakeUnique<UserActivityMonitor>(nullptr);

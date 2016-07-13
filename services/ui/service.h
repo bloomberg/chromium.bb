@@ -19,6 +19,7 @@
 #include "services/shell/public/cpp/service.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "services/ui/input_devices/input_device_server.h"
+#include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/display.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
@@ -64,6 +65,7 @@ class WindowServer;
 class Service
     : public shell::Service,
       public ws::WindowServerDelegate,
+      public shell::InterfaceFactory<mojom::AccessibilityManager>,
       public shell::InterfaceFactory<mojom::Clipboard>,
       public shell::InterfaceFactory<mojom::DisplayManager>,
       public shell::InterfaceFactory<mojom::Gpu>,
@@ -107,6 +109,10 @@ class Service
   void OnNoMoreDisplays() override;
   bool IsTestConfig() const override;
   void CreateDefaultDisplays() override;
+
+  // shell::InterfaceFactory<mojom::AccessibilityManager> implementation.
+  void Create(shell::Connection* connection,
+              mojom::AccessibilityManagerRequest request) override;
 
   // shell::InterfaceFactory<mojom::Clipboard> implementation.
   void Create(shell::Connection* connection,
