@@ -76,11 +76,6 @@ class UDIFParser {
   // Parses the blkx plist trailer structure.
   bool ParseBlkx();
 
-  // Reads the data pointed to by the block |chunk|, decompressing it as
-  // necessary, into the out-buffer |decompressed_data|.
-  bool ReadBlockChunk(const UDIFBlockChunk* chunk,
-                      std::vector<uint8_t>* decompressed_data);
-
   ReadStream* const stream_;  // The stream backing the UDIF image. Weak.
   std::vector<std::string> partition_names_;  // The names of all partitions.
   ScopedVector<const UDIFBlock> blocks_;  // All blocks in the UDIF image.

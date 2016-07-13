@@ -369,7 +369,10 @@ bool HFSForkReadStream::Read(uint8_t* buffer,
 
     // Read the entire extent now, to avoid excessive seeking and re-reading.
     if (!read_current_extent_) {
-      hfs_->SeekToBlock(extent->startBlock);
+      if (!hfs_->SeekToBlock(extent->startBlock)) {
+        DLOG(ERROR) << "Failed to seek to block " << extent->startBlock;
+        return false;
+      }
       current_extent_data_.resize(extent_size.ValueOrDie());
       if (!hfs_->stream()->ReadExact(&current_extent_data_[0],
                                      extent_size.ValueOrDie())) {

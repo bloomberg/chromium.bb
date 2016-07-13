@@ -181,29 +181,62 @@ static void ConvertBigEndian(UDIFBlockData* block) {
 // endian, the data for both the block and the chunk.
 class UDIFBlock {
  public:
-  explicit UDIFBlock(const UDIFBlockData* block_data) : block(*block_data) {
-    ConvertBigEndian(&block);
-    for (uint32_t i = 0; i < block.chunk_count; ++i) {
-      chunks.push_back(block_data->chunks[i]);
-      ConvertBigEndian(&chunks[i]);
+  UDIFBlock() : block_() {}
+
+  bool ParseBlockData(const UDIFBlockData* block_data, uint16_t sector_size) {
+    block_ = *block_data;
+    ConvertBigEndian(&block_);
+
+    // Make sure the number of sectors doesn't overflow.
+    auto block_size = base::CheckedNumeric<size_t>(sector_count()) *
+                      sector_size;
+    if (!block_size.IsValid()) {
+      DLOG(ERROR) << "UDIF block size overflows";
+      return false;
     }
+
+    // Make sure that the chunk data isn't larger than the block reports.
+    base::CheckedNumeric<size_t> chunk_sectors(0);
+    for (uint32_t i = 0; i < block_.chunk_count; ++i) {
+      chunks_.push_back(block_data->chunks[i]);
+      UDIFBlockChunk* chunk = &chunks_[i];
+      ConvertBigEndian(chunk);
+
+      chunk_sectors += chunk->sector_count;
+      if (!chunk_sectors.IsValid() ||
+          chunk_sectors.ValueOrDie() > sector_count()) {
+        DLOG(ERROR) << "Total chunk sectors larger than reported block sectors";
+        return false;
+      }
+
+      auto chunk_end_offset =
+          base::CheckedNumeric<size_t>(chunk->compressed_offset) +
+          chunk->compressed_length;
+      if (!chunk_end_offset.IsValid() ||
+          chunk->compressed_length > block_size.ValueOrDie()) {
+        DLOG(ERROR) << "UDIF chunk data length " << i << " overflows";
+        return false;
+      }
+    }
+
+    return true;
   }
 
-  uint32_t signature() const { return block.signature; }
-  uint32_t version() const { return block.version; }
-  uint64_t start_sector() const { return block.start_sector; }
-  uint64_t sector_count() const { return block.sector_count; }
-  uint64_t chunk_count() const { return chunks.size(); }
+  uint32_t signature() const { return block_.signature; }
+  uint32_t version() const { return block_.version; }
+  uint64_t start_sector() const { return block_.start_sector; }
+  uint64_t sector_count() const { return block_.sector_count; }
+  uint64_t chunk_count() const { return chunks_.size(); }
 
   const UDIFBlockChunk* chunk(uint32_t i) const {
     if (i >= chunk_count())
       return nullptr;
-    return &chunks[i];
+    return &chunks_[i];
   }
 
  private:
-  UDIFBlockData block;
-  std::vector<UDIFBlockChunk> chunks;
+  UDIFBlockData block_;
+  std::vector<UDIFBlockChunk> chunks_;
 
   DISALLOW_COPY_AND_ASSIGN(UDIFBlock);
 };
@@ -348,7 +381,8 @@ std::unique_ptr<ReadStream> UDIFParser::GetPartitionReadStream(
 
 bool UDIFParser::ParseBlkx() {
   UDIFResourceFile trailer;
-  if (stream_->Seek(-sizeof(trailer), SEEK_END) == -1)
+  off_t trailer_start = stream_->Seek(-sizeof(trailer), SEEK_END);
+  if (trailer_start == -1)
     return false;
 
   if (!stream_->ReadType(&trailer)) {
@@ -364,6 +398,14 @@ bool UDIFParser::ParseBlkx() {
   }
   if (trailer.version != trailer.kVersion) {
     DLOG(ERROR) << "blkx version does not match, is " << trailer.version;
+    return false;
+  }
+
+  auto plist_end = base::CheckedNumeric<size_t>(trailer.plist_offset) +
+                   trailer.plist_length;
+  if (!plist_end.IsValid() ||
+      plist_end.ValueOrDie() > base::checked_cast<size_t>(trailer_start)) {
+    DLOG(ERROR) << "blkx plist extends past UDIF trailer";
     return false;
   }
 
@@ -434,9 +476,13 @@ bool UDIFParser::ParseBlkx() {
     }
 
     // Copy the block table out of the plist.
-    auto block_data =
-        reinterpret_cast<const UDIFBlockData*>(CFDataGetBytePtr(data));
-    std::unique_ptr<UDIFBlock> block(new UDIFBlock(block_data));
+    std::unique_ptr<UDIFBlock> block(new UDIFBlock());
+    if (!block->ParseBlockData(
+            reinterpret_cast<const UDIFBlockData*>(CFDataGetBytePtr(data)),
+            block_size_)) {
+      DLOG(ERROR) << "Failed to parse UDIF block data";
+      return false;
+    }
 
     if (block->signature() != UDIFBlockData::kSignature) {
       DLOG(ERROR) << "Skipping block " << i << " because its signature does not"
@@ -478,14 +524,6 @@ bool UDIFParser::ParseBlkx() {
   }
 
   return true;
-}
-
-bool UDIFParser::ReadBlockChunk(const UDIFBlockChunk* chunk,
-                                std::vector<uint8_t>* decompressed_data) {
-  UDIFBlockChunkReadStream chunk_read_stream(stream_, block_size_, chunk);
-  decompressed_data->resize(chunk_read_stream.length_in_bytes());
-  return chunk_read_stream.ReadExact(&(*decompressed_data)[0],
-                                     decompressed_data->size());
 }
 
 namespace {
