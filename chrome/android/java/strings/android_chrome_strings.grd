@@ -1302,6 +1302,12 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_INCOGNITO_STACK" desc="Content description for the incognito stack selection 'button'.">
         Incognito tabs
       </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_STANDARD_STACK_SELECTED" desc="Announcement when the standard tab stack is selected.">
+        Switched to standard tabs
+      </message>
+      <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_INCOGNITO_STACK_SELECTED" desc="Announcement when the incognito tab stack is selected.">
+        Switched to incognito tabs
+      </message>
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_UNDO_TAB_CLOSED" desc="Content description for the undo tab closed 'button.">
         Reopen closed tab
       </message>
