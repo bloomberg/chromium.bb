@@ -140,9 +140,6 @@ private:
     // propagating the invalidation to child frames.
     void updateFindMatchRects();
 
-    // Add a WebKit TextMatch-highlight marker to nodes in a range.
-    void addMarker(Range*, bool activeMatch);
-
     // Sets the markers within a range as active or inactive. Returns true if at least
     // one such marker found.
     bool setMarkerActive(Range*, bool active);

@@ -360,7 +360,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
                 identifier);
         }
 
-        addMarker(resultRange, foundActiveMatch);
+        ownerFrame().frame()->document()->markers().addTextMatchMarker(resultRange, foundActiveMatch);
 
         m_findMatchesCache.append(FindMatch(resultRange, m_lastMatchCount + matchCount));
 
@@ -654,11 +654,6 @@ TextFinder::TextFinder(WebLocalFrameImpl& ownerFrame)
 
 TextFinder::~TextFinder()
 {
-}
-
-void TextFinder::addMarker(Range* range, bool activeMatch)
-{
-    ownerFrame().frame()->document()->markers().addTextMatchMarker(range, activeMatch);
 }
 
 bool TextFinder::setMarkerActive(Range* range, bool active)
