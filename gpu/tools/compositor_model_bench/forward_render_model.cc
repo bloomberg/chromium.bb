@@ -39,11 +39,11 @@ class ForwardRenderNodeVisitor : public RenderNodeVisitor {
   }
 };
 
-ForwardRenderSimulator::ForwardRenderSimulator(RenderNode* root,
+ForwardRenderSimulator::ForwardRenderSimulator(std::unique_ptr<RenderNode> root,
                                                int window_width,
                                                int window_height)
-    : RenderModelSimulator(root) {
-  textures_.reset(new TextureGenerator(root));
+    : RenderModelSimulator(std::move(root)) {
+  textures_.reset(new TextureGenerator(root_.get()));
   visitor_.reset(new ForwardRenderNodeVisitor());
   glViewport(0, 0, window_width, window_height);
   glDisable(GL_DEPTH_TEST);

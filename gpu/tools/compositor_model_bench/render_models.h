@@ -26,17 +26,19 @@ class RenderModelSimulator {
   virtual void Resize(int width, int height) = 0;
 
  protected:
-  explicit RenderModelSimulator(RenderNode* root);
+  explicit RenderModelSimulator(std::unique_ptr<RenderNode> root);
+
   std::unique_ptr<RenderNode> root_;
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(RenderModelSimulator);
 };
 
-RenderModelSimulator* ConstructSimulationModel(RenderModel model,
-                                               RenderNode* render_tree_root,
-                                               int window_width,
-                                               int window_height);
+std::unique_ptr<RenderModelSimulator> ConstructSimulationModel(
+    RenderModel model,
+    std::unique_ptr<RenderNode> render_tree_root,
+    int window_width,
+    int window_height);
 
 #endif  // GPU_TOOLS_COMPOSITOR_MODEL_BENCH_RENDER_MODELS_H_
 

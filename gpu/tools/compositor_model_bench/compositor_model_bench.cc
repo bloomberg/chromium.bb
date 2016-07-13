@@ -19,6 +19,7 @@
 
 #include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -59,20 +60,18 @@ void _update_loop(Simulator* sim);
 class Simulator {
  public:
   Simulator(int seconds_per_test, const base::FilePath& output_path)
-     : current_sim_(NULL),
-       output_path_(output_path),
-       seconds_per_test_(seconds_per_test),
-       display_(NULL),
-       window_(0),
-       gl_context_(NULL),
-       window_width_(WINDOW_WIDTH),
-       window_height_(WINDOW_HEIGHT),
-       weak_factory_(this) {
-  }
+      : output_path_(output_path),
+        seconds_per_test_(seconds_per_test),
+        display_(nullptr),
+        window_(0),
+        gl_context_(nullptr),
+        window_width_(WINDOW_WIDTH),
+        window_height_(WINDOW_HEIGHT),
+        weak_factory_(this) {}
 
   ~Simulator() {
     // Cleanup GL.
-    glXMakeCurrent(display_, 0, NULL);
+    glXMakeCurrent(display_, 0, nullptr);
     glXDestroyContext(display_, gl_context_);
 
     // Destroy window and display.
@@ -153,7 +152,7 @@ class Simulator {
   // Initialize X11. Returns true if successful. This method creates the
   // X11 window. Further initialization is done in X11VideoRenderer.
   bool InitX11() {
-    display_ = XOpenDisplay(NULL);
+    display_ = XOpenDisplay(nullptr);
     if (!display_) {
       LOG(FATAL) << "Cannot open display";
       return false;
@@ -212,7 +211,7 @@ class Simulator {
 
     if (!glXMakeCurrent(display_, window_, gl_context_)) {
       glXDestroyContext(display_, gl_context_);
-      gl_context_ = NULL;
+      gl_context_ = nullptr;
       return false;
     }
 
@@ -221,32 +220,26 @@ class Simulator {
 
   bool InitializeNextTest() {
     SimulationSpecification& spec = sims_remaining_.front();
-    LOG(INFO) << "Initializing test for " << spec.simulation_name <<
-        "(" << ModelToString(spec.model_under_test) << ")";
+    LOG(INFO) << "Initializing test for " << spec.simulation_name << "("
+              << ModelToString(spec.model_under_test) << ")";
     const base::FilePath& path = spec.input_path;
 
-    RenderNode* root = NULL;
-    if (!(root = BuildRenderTreeFromFile(path))) {
-      LOG(ERROR) << "Couldn't parse test configuration file " <<
-          path.LossyDisplayName();
+    std::unique_ptr<RenderNode> root = BuildRenderTreeFromFile(path);
+    if (!root) {
+      LOG(ERROR) << "Couldn't parse test configuration file "
+                 << path.LossyDisplayName();
       return false;
     }
 
-    current_sim_ = ConstructSimulationModel(spec.model_under_test,
-                                            root,
-                                            window_width_,
-                                            window_height_);
-    if (!current_sim_)
-      return false;
-
-    return true;
+    current_sim_ = ConstructSimulationModel(
+        spec.model_under_test, std::move(root), window_width_, window_height_);
+    return !!current_sim_;
   }
 
   void CleanupCurrentTest() {
     LOG(INFO) << "Finished test " << sims_remaining_.front().simulation_name;
 
-    delete current_sim_;
-    current_sim_ = NULL;
+    current_sim_.reset();
   }
 
   void UpdateCurrentTest() {
@@ -276,8 +269,8 @@ class Simulator {
     FILE* f = base::OpenFile(output_path_, "w");
 
     if (!f) {
-      LOG(ERROR) << "Failed to open output file " <<
-        output_path_.LossyDisplayName();
+      LOG(ERROR) << "Failed to open output file "
+                 << output_path_.LossyDisplayName();
       exit(-1);
     }
 
@@ -338,7 +331,7 @@ class Simulator {
   }
 
   // Simulation task list for this execution
-  RenderModelSimulator* current_sim_;
+  std::unique_ptr<RenderModelSimulator> current_sim_;
   queue<SimulationSpecification> sims_remaining_;
   queue<SimulationSpecification> sims_completed_;
   base::FilePath output_path_;

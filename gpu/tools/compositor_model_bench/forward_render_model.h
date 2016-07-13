@@ -17,9 +17,9 @@ class ForwardRenderNodeVisitor;
 
 class ForwardRenderSimulator : public RenderModelSimulator {
  public:
-  explicit ForwardRenderSimulator(RenderNode* root,
-                                  int window_width,
-                                  int window_height);
+  ForwardRenderSimulator(std::unique_ptr<RenderNode> root,
+                         int window_width,
+                         int window_height);
   ~ForwardRenderSimulator() override;
   void Update() override;
   void Resize(int width, int height) override;
