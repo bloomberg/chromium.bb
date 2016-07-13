@@ -1232,10 +1232,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             getToolbarManager().finishAnimations();
         }
         if (TextUtils.equals(externalAppId, getPackageName())) {
-            // If the intent was launched by chrome, open the new tab in the current model.
+            // If the intent was launched by chrome, open the new tab in the appropriate model.
             // Using FROM_LINK ensures the tab is parented to the current tab, which allows
             // the back button to close these tabs and restore selection to the previous tab.
-            return getCurrentTabCreator().launchUrl(url, TabLaunchType.FROM_LINK, intent,
+            boolean isIncognito = IntentUtils.safeGetBooleanExtra(intent,
+                    IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false);
+            return getTabCreator(isIncognito).launchUrl(url, TabLaunchType.FROM_LINK, intent,
                     mIntentHandlingTimeMs);
         } else {
             return getTabCreator(false).launchUrlFromExternalApp(url, referer, headers,
