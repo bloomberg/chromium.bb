@@ -9,6 +9,9 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "components/ntp_snippets/content_suggestions_category.h"
+#include "components/ntp_snippets/content_suggestions_category_status.h"
+#include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -19,7 +22,8 @@ class ListValue;
 // The implementation for the chrome://snippets-internals page.
 class SnippetsInternalsMessageHandler
     : public content::WebUIMessageHandler,
-      public ntp_snippets::NTPSnippetsServiceObserver {
+      public ntp_snippets::NTPSnippetsServiceObserver,
+      public ntp_snippets::ContentSuggestionsService::Observer {
  public:
   SnippetsInternalsMessageHandler();
   ~SnippetsInternalsMessageHandler() override;
@@ -34,25 +38,41 @@ class SnippetsInternalsMessageHandler
   void NTPSnippetsServiceDisabledReasonChanged(
       ntp_snippets::DisabledReason disabled_reason) override;
 
+  // ntp_snippets::ContentSuggestionsService::Observer:
+  void OnNewSuggestions() override;
+  void OnCategoryStatusChanged(
+      ntp_snippets::ContentSuggestionsCategory category,
+      ntp_snippets::ContentSuggestionsCategoryStatus new_status) override;
+  void ContentSuggestionsServiceShutdown() override;
+
   void HandleLoaded(const base::ListValue* args);
   void HandleClear(const base::ListValue* args);
   void HandleClearDiscarded(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
+  void HandleClearCachedSuggestions(const base::ListValue* args);
+  void HandleClearDiscardedSuggestions(const base::ListValue* args);
 
   void SendInitialData();
   void SendSnippets();
   void SendDiscardedSnippets();
   void SendHosts();
+  void SendContentSuggestions();
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);
 
   ScopedObserver<ntp_snippets::NTPSnippetsService,
-                 ntp_snippets::NTPSnippetsServiceObserver> observer_;
+                 ntp_snippets::NTPSnippetsServiceObserver>
+      ntp_snippets_service_observer_;
+
+  ScopedObserver<ntp_snippets::ContentSuggestionsService,
+                 ntp_snippets::ContentSuggestionsService::Observer>
+      content_suggestions_service_observer_;
 
   // Tracks whether we can already send messages to the page.
   bool dom_loaded_;
 
   ntp_snippets::NTPSnippetsService* ntp_snippets_service_;
+  ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SnippetsInternalsMessageHandler);
 };

@@ -37,11 +37,13 @@ found in the LICENSE file.
   </div>
 
   <div id="snippets">
-    <h2>Snippets <span class="detail">(click for details)</span></h2>
+    <h2>Snippets directly from NTPSnippetsService
+      <span class="detail">(click for details)</span>
+    </h2>
     <table class="section-details">
       <tr jsselect="list" style="display:none">
         <td class="title-link">
-          <span class="snippet-title" jsvalues="snippet-id:id">
+          <span class="snippet-title" jsvalues="hidden-id:id">
               <span jscontent="title"></span>&gt;&gt;</span>
           <div jsvalues="id:id" class="snippet-detail hidden">
             <table>
@@ -106,7 +108,7 @@ found in the LICENSE file.
     <table class="section-details">
       <tr jsselect="list" style="display:none">
         <td class="title-link">
-          <span class="discarded-snippet-title" jsvalues="snippet-id:id">
+          <span class="discarded-snippet-title" jsvalues="hidden-id:id">
               <span jscontent="title"></span> &gt;&gt;</span>
           <div jsvalues="id:id" class="snippet-detail hidden">
             <table>
@@ -148,5 +150,60 @@ found in the LICENSE file.
         <td jscontent="url">
     </table>
     <div class="detail" id="hosts-empty"></div>
+  </div>
+  
+  <div id="content-suggestions">
+    <h2>Content suggestions by category
+      <span class="detail">(click for details)</span>
+    </h2>
+    <div jsselect="list" style="display:none">
+      <h3>
+        <span jscontent="name"></span>
+        <span class="detail">
+          (<span jscontent="status"></span>)
+        </span>
+      </h3>
+      
+      <table class="section-details">
+        <tr jsselect="suggestions" style="display:none">
+          <td class="title-link">
+            <span class="content-suggestion-title"
+                jsvalues="hidden-id:id">
+              <span jscontent="title"></span>&gt;&gt;
+            </span>
+            <div jsvalues="id:id" class="content-suggestion-detail hidden">
+              <table>
+                <tr>
+                  <td>ID
+                  <td jscontent="suggestionId">
+                <tr>
+                  <td>URL
+                  <td><a class="url" jsvalues="href:url" jscontent="url"></a>
+                <tr>
+                  <td>AMP URL
+                  <td>
+                    <a class="amp-url" jsvalues="href:ampUrl" 
+                        jscontent="ampUrl"></a>
+                <tr>
+                  <td>Snippet text
+                  <td jscontent="snippetText">
+                <tr>
+                  <td>Publish date
+                  <td class="expiry">
+                    <span class="date" jscontent="publishDate"></span>
+                <tr>
+                  <td>Publisher name
+                  <td jscontent="publisherName">
+              </table>
+            </div>
+      </table>
+    </div>
+    <div class="detail" id="content-suggestions-empty"></div>
+    <div class="forms">
+      <input id="submit-clear-cached-suggestions" type="submit"
+          value="Clear cached suggestions">
+      <input id="submit-clear-discarded-suggestions" type="submit"
+          value="Clear discarded suggestions">
+    </div>
   </div>
 </div>

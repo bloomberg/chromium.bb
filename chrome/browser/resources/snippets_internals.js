@@ -38,6 +38,18 @@ cr.define('chrome.SnippetsInternals', function() {
       event.preventDefault();
     });
 
+    $('submit-clear-cached-suggestions')
+        .addEventListener('click', function(event) {
+      chrome.send('clearCachedSuggestions');
+      event.preventDefault();
+    });
+
+    $('submit-clear-discarded-suggestions')
+        .addEventListener('click', function(event) {
+      chrome.send('clearDiscardedSuggestions');
+      event.preventDefault();
+    });
+
     chrome.send('loaded');
   }
 
@@ -69,6 +81,11 @@ cr.define('chrome.SnippetsInternals', function() {
                 'discarded-snippet-title');
   }
 
+  function receiveContentSuggestions(categoriesList) {
+    displayList(categoriesList, 'content-suggestions',
+                'content-suggestion-title');
+  }
+
   function receiveJson(json) {
     var trimmed = json.trim();
     var hasContent = (trimmed && trimmed != '{}');
@@ -91,6 +108,11 @@ cr.define('chrome.SnippetsInternals', function() {
     link.click();
   }
 
+  function toggleHidden(event) {
+    var id = event.currentTarget.getAttribute('hidden-id');
+    $(id).classList.toggle('hidden');
+  }
+
   function displayList(object, domId, titleClass) {
     jstProcess(new JsEvalContext(object), $(domId));
 
@@ -110,10 +132,7 @@ cr.define('chrome.SnippetsInternals', function() {
 
     var links = document.getElementsByClassName(titleClass);
     for (var link of links) {
-      link.addEventListener('click', function(event) {
-        var id = event.currentTarget.getAttribute('snippet-id');
-        $(id).classList.toggle('hidden');
-      });
+      link.addEventListener('click', toggleHidden);
     }
   }
 
@@ -125,6 +144,7 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveHosts: receiveHosts,
     receiveSnippets: receiveSnippets,
     receiveDiscardedSnippets: receiveDiscardedSnippets,
+    receiveContentSuggestions: receiveContentSuggestions,
     receiveJson: receiveJson,
   };
 });

@@ -700,12 +700,9 @@ void NTPSnippetsService::UpdateStateForStatus(DisabledReason disabled_reason) {
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceDisabledReasonChanged(disabled_reason));
 
-  State new_state;
-  ContentSuggestionsCategoryStatus new_status;
   switch (disabled_reason) {
     case DisabledReason::NONE:
-      new_state = State::READY;
-      new_status = ContentSuggestionsCategoryStatus::AVAILABLE;
+      EnterState(State::READY, ContentSuggestionsCategoryStatus::AVAILABLE);
       break;
 
     case DisabledReason::HISTORY_SYNC_STATE_UNKNOWN:
@@ -714,46 +711,35 @@ void NTPSnippetsService::UpdateStateForStatus(DisabledReason disabled_reason) {
       // |OnStateChanged| will call this function again to update the state.
       DVLOG(1) << "Sync configuration incomplete, continuing based on the "
                   "current state.";
-      new_state = state_;
-      new_status = ContentSuggestionsCategoryStatus::INITIALIZING;
+      EnterState(state_, ContentSuggestionsCategoryStatus::INITIALIZING);
       break;
 
     case DisabledReason::EXPLICITLY_DISABLED:
-      new_state = State::DISABLED;
-      new_status =
-          ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED;
+      EnterState(
+          State::DISABLED,
+          ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
 
     case DisabledReason::SIGNED_OUT:
-      new_state = State::DISABLED;
-      new_status = ContentSuggestionsCategoryStatus::SIGNED_OUT;
+      EnterState(State::DISABLED, ContentSuggestionsCategoryStatus::SIGNED_OUT);
       break;
 
     case DisabledReason::SYNC_DISABLED:
-      new_state = State::DISABLED;
-      new_status = ContentSuggestionsCategoryStatus::SYNC_DISABLED;
+      EnterState(State::DISABLED,
+                 ContentSuggestionsCategoryStatus::SYNC_DISABLED);
       break;
 
     case DisabledReason::PASSPHRASE_ENCRYPTION_ENABLED:
-      new_state = State::DISABLED;
-      new_status =
-          ContentSuggestionsCategoryStatus::PASSPHRASE_ENCRYPTION_ENABLED;
+      EnterState(
+          State::DISABLED,
+          ContentSuggestionsCategoryStatus::PASSPHRASE_ENCRYPTION_ENABLED);
       break;
 
     case DisabledReason::HISTORY_SYNC_DISABLED:
-      new_state = State::DISABLED;
-      new_status = ContentSuggestionsCategoryStatus::HISTORY_SYNC_DISABLED;
-      break;
-
-    default:
-      // All cases should be handled by the above switch
-      NOTREACHED();
-      new_state = State::DISABLED;
-      new_status = ContentSuggestionsCategoryStatus::LOADING_ERROR;
+      EnterState(State::DISABLED,
+                 ContentSuggestionsCategoryStatus::HISTORY_SYNC_DISABLED);
       break;
   }
-
-  EnterState(new_state, new_status);
 }
 
 void NTPSnippetsService::EnterState(State state,
