@@ -37,4 +37,7 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < */vsync-feedback/vsync-feedback-unstable-v1.xml > protocol/vsync-feedback-protocol.c
     wayland-scanner server-header < unstable/vsync-feedback/vsync-feedback-unstable-v1.xml > include/protocol/vsync-feedback-unstable-v1-server-protocol.h
     wayland-scanner client-header < unstable/vsync-feedback/vsync-feedback-unstable-v1.xml > include/protocol/vsync-feedback-unstable-v1-client-protocol.h
+    wayland-scanner code < */gaming-input/gaming-input-unstable-v1.xml > protocol/gaming-input-protocol.c
+    wayland-scanner server-header < unstable/gaming-input/gaming-input-unstable-v1.xml > include/protocol/gaming-input-unstable-v1-server-protocol.h
+    wayland-scanner client-header < unstable/gaming-input/gaming-input-unstable-v1.xml > include/protocol/gaming-input-unstable-v1-client-protocol.h
 - Update this README to reflect the new version number.
