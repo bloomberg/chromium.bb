@@ -215,6 +215,12 @@ Polymer({
       subpage: ['quick-unlock-authenticate'],
     },
     {
+      url: '/quickUnlock/chooseMethod',
+      page: 'basic',
+      section: 'people',
+      subpage: ['quick-unlock-choose-method'],
+    },
+    {
       url: '/accounts',
       page: 'basic',
       section: 'people',

@@ -1,0 +1,63 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="/people_page/pin_keyboard.html">
+<link rel="import" href="/people_page/quick_unlock_routing_behavior.html">
+<link rel="import" href="/people_page/quick_unlock_password_detect_behavior.html">
+<link rel="import" href="/prefs/prefs_behavior.html">
+<link rel="import" href="/settings_page/settings_section.html">
+<link rel="import" href="/settings_shared_css.html">
+
+
+<dom-module id="settings-quick-unlock-choose-method">
+  <template>
+    <style include="settings-shared"></style>
+    <style>
+      #warning-message {
+        color: var(--paper-grey-500);
+        font-style: italic;
+      }
+
+      .align-end {
+        justify-content: flex-end;
+      }
+    </style>
+
+    <div>
+      <div class="settings-box">
+        $i18n{quickUnlockChooseUnlockMethod}
+      </div>
+
+      <div class="list-frame">
+        <paper-radio-group selected="{{selectedUnlockType_}}">
+          <paper-radio-button name="password">
+            $i18n{quickUnlockUnlockMethodPassword}
+          </paper-radio-button>
+          <paper-radio-button name="pin+password">
+            $i18n{quickUnlockUnlockMethodPinAndPassword}
+          </paper-radio-button>
+          <paper-radio-button name="none">
+            $i18n{quickUnlockUnlockMethodNone}
+          </paper-radio-button>
+        </paper-radio-group>
+      </div>
+
+      <div class="step" hidden$="[[!showSetupPin_(selectedUnlockType_)]]">
+        <div class="settings-box continuation">
+          <!-- TODO(jdufault): i18n once this string is finalized. -->
+          <span id="warning-message">
+            Warning about how PIN is weaker than a password.
+          </span>
+        </div>
+
+        <div class="align-end settings-box">
+          <paper-button class="action-button" on-tap="onConfigurePin_">
+            $i18n{quickUnlockConfigurePinButton}
+          </paper-button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="quick_unlock_choose_method.js"></script>
+</dom-module>

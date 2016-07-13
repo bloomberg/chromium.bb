@@ -18,6 +18,7 @@
 <link rel="import" href="/people_page/easy_unlock_browser_proxy.html">
 <link rel="import" href="/people_page/easy_unlock_turn_off_dialog.html">
 <link rel="import" href="/people_page/quick_unlock_authenticate.html">
+<link rel="import" href="/people_page/quick_unlock_choose_method.html">
 <link rel="import" href="/people_page/users_page.html">
 </if>
 <if expr="not chromeos">
@@ -242,10 +243,19 @@
       <template is="dom-if" name="quick-unlock-authenticate">
         <settings-subpage page-title="$i18n{quickUnlockTitle}">
           <settings-quick-unlock-authenticate
-            account-password="{{quickUnlockAccountPassword}}"
+            set-modes="{{quickUnlockSetModes}}"
             current-route="{{currentRoute}}"
             profile-name="[[profileName_]]">
           </settings-quick-unlock-authenticate>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" name="quick-unlock-choose-method">
+        <settings-subpage page-title="$i18n{quickUnlockTitle}">
+          <settings-quick-unlock-choose-method
+            set-modes="[[quickUnlockSetModes]]"
+            current-route="{{currentRoute}}"
+            prefs="{{prefs}}">
+          </settings-quick-unlock-choose-method>
         </settings-subpage>
       </template>
       <template is="dom-if" name="users">
