@@ -52,8 +52,8 @@ void ProgramDetectorTest::TestDetectDisassembler(
     ExecutableType expected_type) const {
   ExecutableType detected_type = EXE_UNKNOWN;
   size_t detected_length = 0;
-  DetectExecutableType(test_data.data(), test_data.size(), &detected_type,
-                       &detected_length);
+  DetectExecutableType(reinterpret_cast<const uint8_t*>(test_data.data()),
+                       test_data.size(), &detected_type, &detected_length);
   EXPECT_EQ(expected_type, detected_type);
   EXPECT_EQ(test_data.size(), detected_length);
 }

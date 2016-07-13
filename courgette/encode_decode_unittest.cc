@@ -15,21 +15,20 @@
 
 class EncodeDecodeTest : public BaseTest {
  public:
-  void TestAssembleToStreamDisassemble(std::string file,
+  void TestAssembleToStreamDisassemble(const std::string& file,
                                        size_t expected_encoded_length) const;
 };
 
 void EncodeDecodeTest::TestAssembleToStreamDisassemble(
-    std::string file,
+    const std::string& file,
     size_t expected_encoded_length) const {
-  const void* original_buffer = file.c_str();
+  const uint8_t* original_buffer =
+      reinterpret_cast<const uint8_t*>(file.data());
   size_t original_length = file.length();
 
   std::unique_ptr<courgette::AssemblyProgram> program;
-  const courgette::Status parse_status =
-      courgette::ParseDetectedExecutable(original_buffer,
-                                         original_length,
-                                         &program);
+  const courgette::Status parse_status = courgette::ParseDetectedExecutable(
+      original_buffer, original_length, &program);
   EXPECT_EQ(courgette::C_OK, parse_status);
 
   std::unique_ptr<courgette::EncodedProgram> encoded;

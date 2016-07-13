@@ -29,16 +29,6 @@ Status DetectExecutableType(const uint8_t* buffer,
                             ExecutableType* type,
                             size_t* detected_length);
 
-// Same as above, takes void* instead.
-// TODO(etiennep): Propagate "const uint8_t*" upwards.
-inline Status DetectExecutableType(const void* buffer,
-                                   size_t length,
-                                   ExecutableType* type,
-                                   size_t* detected_length) {
-  return DetectExecutableType(reinterpret_cast<const uint8_t*>(buffer), length,
-                              type, detected_length);
-}
-
 // Attempts to detect the type of executable, and parse it with the appropriate
 // tools.
 // On success:
@@ -49,16 +39,6 @@ inline Status DetectExecutableType(const void* buffer,
 Status ParseDetectedExecutable(const uint8_t* buffer,
                                size_t length,
                                std::unique_ptr<AssemblyProgram>* output);
-
-// Same as above, takes void* instead.
-// TODO(etiennep): Propagate "const uint8_t*" upwards.
-inline Status ParseDetectedExecutable(
-    const void* buffer,
-    size_t length,
-    std::unique_ptr<AssemblyProgram>* output) {
-  return ParseDetectedExecutable(reinterpret_cast<const uint8_t*>(buffer),
-                                 length, output);
-}
 
 }  // namespace courgette
 

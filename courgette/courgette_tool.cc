@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -52,16 +53,25 @@ void Problem(const char* format, ...) {
   exit(1);
 }
 
-std::string ReadOrFail(const base::FilePath& file_name, const char* kind) {
-  int64_t file_size = 0;
-  if (!base::GetFileSize(file_name, &file_size))
-    Problem("Can't read %s file.", kind);
-  std::string buffer;
-  buffer.reserve(static_cast<size_t>(file_size));
-  if (!base::ReadFileToString(file_name, &buffer))
-    Problem("Can't read %s file.", kind);
-  return buffer;
-}
+// A file reader that calls Problem() on failure.
+class BufferedFileReader {
+ public:
+  BufferedFileReader(const base::FilePath& file_name, const char* kind) {
+    int64_t file_size = 0;
+    if (!base::GetFileSize(file_name, &file_size))
+      Problem("Can't read %s file.", kind);
+    buffer_.reserve(static_cast<size_t>(file_size));
+    if (!base::ReadFileToString(file_name, &buffer_))
+      Problem("Can't read %s file.", kind);
+  }
+  const uint8_t* data() {
+    return reinterpret_cast<const uint8_t*>(buffer_.data());
+  }
+  size_t length() { return buffer_.length(); }
+
+ private:
+  std::string buffer_;
+};
 
 void WriteSinkToFile(const courgette::SinkStream *sink,
                      const base::FilePath& output_file) {
@@ -77,12 +87,11 @@ void WriteSinkToFile(const courgette::SinkStream *sink,
 
 void Disassemble(const base::FilePath& input_file,
                  const base::FilePath& output_file) {
-  std::string buffer = ReadOrFail(input_file, "input");
+  BufferedFileReader buffer(input_file, "input");
 
   std::unique_ptr<courgette::AssemblyProgram> program;
-  const courgette::Status parse_status =
-      courgette::ParseDetectedExecutable(buffer.c_str(), buffer.length(),
-                                         &program);
+  const courgette::Status parse_status = courgette::ParseDetectedExecutable(
+      buffer.data(), buffer.length(), &program);
   if (parse_status != courgette::C_OK)
     Problem("Can't parse input (code = %d).", parse_status);
 
@@ -111,14 +120,12 @@ void Disassemble(const base::FilePath& input_file,
 bool Supported(const base::FilePath& input_file) {
   bool result = false;
 
-  std::string buffer = ReadOrFail(input_file, "input");
+  BufferedFileReader buffer(input_file, "input");
 
   courgette::ExecutableType type;
   size_t detected_length;
 
-  DetectExecutableType(buffer.c_str(), buffer.length(),
-                       &type,
-                       &detected_length);
+  DetectExecutableType(buffer.data(), buffer.length(), &type, &detected_length);
 
   // If the detection fails, we just fall back on UNKNOWN
   std::string format = "Unsupported";
@@ -156,22 +163,20 @@ bool Supported(const base::FilePath& input_file) {
 void DisassembleAndAdjust(const base::FilePath& program_file,
                           const base::FilePath& model_file,
                           const base::FilePath& output_file) {
-  std::string program_buffer = ReadOrFail(program_file, "program");
-  std::string model_buffer = ReadOrFail(model_file, "reference");
+  BufferedFileReader program_buffer(program_file, "program");
+  BufferedFileReader model_buffer(model_file, "model");
 
   std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_program_status =
-      courgette::ParseDetectedExecutable(program_buffer.c_str(),
-                                         program_buffer.length(),
-                                         &program);
+      courgette::ParseDetectedExecutable(program_buffer.data(),
+                                         program_buffer.length(), &program);
   if (parse_program_status != courgette::C_OK)
     Problem("Can't parse program input (code = %d).", parse_program_status);
 
   std::unique_ptr<courgette::AssemblyProgram> model;
   const courgette::Status parse_model_status =
-      courgette::ParseDetectedExecutable(model_buffer.c_str(),
-                                         model_buffer.length(),
-                                         &model);
+      courgette::ParseDetectedExecutable(model_buffer.data(),
+                                         model_buffer.length(), &model);
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input (code = %d).", parse_model_status);
 
@@ -212,22 +217,20 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
                            const base::FilePath& program_file,
                            const base::FilePath& output_file_root,
                            bool adjust) {
-  std::string model_buffer = ReadOrFail(model_file, "'old'");
-  std::string program_buffer = ReadOrFail(program_file, "'new'");
+  BufferedFileReader model_buffer(model_file, "old");
+  BufferedFileReader program_buffer(program_file, "new");
 
   std::unique_ptr<courgette::AssemblyProgram> model;
   const courgette::Status parse_model_status =
-      courgette::ParseDetectedExecutable(model_buffer.c_str(),
-                                         model_buffer.length(),
-                                         &model);
+      courgette::ParseDetectedExecutable(model_buffer.data(),
+                                         model_buffer.length(), &model);
   if (parse_model_status != courgette::C_OK)
     Problem("Can't parse model input (code = %d).", parse_model_status);
 
   std::unique_ptr<courgette::AssemblyProgram> program;
   const courgette::Status parse_program_status =
-      courgette::ParseDetectedExecutable(program_buffer.c_str(),
-                                         program_buffer.length(),
-                                         &program);
+      courgette::ParseDetectedExecutable(program_buffer.data(),
+                                         program_buffer.length(), &program);
   if (parse_program_status != courgette::C_OK)
     Problem("Can't parse program input (code = %d).", parse_program_status);
 
@@ -293,10 +296,10 @@ void DisassembleAdjustDiff(const base::FilePath& model_file,
 
 void Assemble(const base::FilePath& input_file,
               const base::FilePath& output_file) {
-  std::string buffer = ReadOrFail(input_file, "input");
+  BufferedFileReader buffer(input_file, "input");
 
   courgette::SourceStreamSet sources;
-  if (!sources.Init(buffer.c_str(), buffer.length()))
+  if (!sources.Init(buffer.data(), buffer.length()))
     Problem("Bad input file.");
 
   std::unique_ptr<courgette::EncodedProgram> encoded;
@@ -318,13 +321,13 @@ void Assemble(const base::FilePath& input_file,
 void GenerateEnsemblePatch(const base::FilePath& old_file,
                            const base::FilePath& new_file,
                            const base::FilePath& patch_file) {
-  std::string old_buffer = ReadOrFail(old_file, "'old' input");
-  std::string new_buffer = ReadOrFail(new_file, "'new' input");
+  BufferedFileReader old_buffer(old_file, "'old' input");
+  BufferedFileReader new_buffer(new_file, "'new' input");
 
   courgette::SourceStream old_stream;
   courgette::SourceStream new_stream;
-  old_stream.Init(old_buffer);
-  new_stream.Init(new_buffer);
+  old_stream.Init(old_buffer.data(), old_buffer.length());
+  new_stream.Init(new_buffer.data(), new_buffer.length());
 
   courgette::SinkStream patch_stream;
   courgette::Status status =
@@ -376,12 +379,9 @@ void ApplyEnsemblePatch(const base::FilePath& old_file,
       break;
   }
 
-  //  If we failed due to a missing input file, this will
-  // print the message.
-  std::string old_buffer = ReadOrFail(old_file, "'old' input");
-  old_buffer.clear();
-  std::string patch_buffer = ReadOrFail(patch_file, "'patch' input");
-  patch_buffer.clear();
+  // If we failed due to a missing input file, this will print the message.
+  { BufferedFileReader old_buffer(old_file, "'old' input"); }
+  { BufferedFileReader patch_buffer(patch_file, "'patch' input"); }
 
   // Non-input related errors:
   if (status == courgette::C_WRITE_OPEN_ERROR)
@@ -395,13 +395,13 @@ void ApplyEnsemblePatch(const base::FilePath& old_file,
 void GenerateBSDiffPatch(const base::FilePath& old_file,
                          const base::FilePath& new_file,
                          const base::FilePath& patch_file) {
-  std::string old_buffer = ReadOrFail(old_file, "'old' input");
-  std::string new_buffer = ReadOrFail(new_file, "'new' input");
+  BufferedFileReader old_buffer(old_file, "'old' input");
+  BufferedFileReader new_buffer(new_file, "'new' input");
 
   courgette::SourceStream old_stream;
   courgette::SourceStream new_stream;
-  old_stream.Init(old_buffer);
-  new_stream.Init(new_buffer);
+  old_stream.Init(old_buffer.data(), old_buffer.length());
+  new_stream.Init(new_buffer.data(), new_buffer.length());
 
   courgette::SinkStream patch_stream;
   courgette::BSDiffStatus status =
@@ -415,13 +415,13 @@ void GenerateBSDiffPatch(const base::FilePath& old_file,
 void ApplyBSDiffPatch(const base::FilePath& old_file,
                       const base::FilePath& patch_file,
                       const base::FilePath& new_file) {
-  std::string old_buffer = ReadOrFail(old_file, "'old' input");
-  std::string patch_buffer = ReadOrFail(patch_file, "'patch' input");
+  BufferedFileReader old_buffer(old_file, "'old' input");
+  BufferedFileReader patch_buffer(patch_file, "'patch' input");
 
   courgette::SourceStream old_stream;
   courgette::SourceStream patch_stream;
-  old_stream.Init(old_buffer);
-  patch_stream.Init(patch_buffer);
+  old_stream.Init(old_buffer.data(), old_buffer.length());
+  patch_stream.Init(patch_buffer.data(), patch_buffer.length());
 
   courgette::SinkStream new_stream;
   courgette::BSDiffStatus status =

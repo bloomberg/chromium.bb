@@ -41,7 +41,8 @@ class DecodeFuzzTest : public BaseTest {
 void DecodeFuzzTest::FuzzExe(const char* file_name) const {
   std::string file1 = FileContents(file_name);
 
-  const void* original_buffer = file1.c_str();
+  const uint8_t* original_buffer =
+      reinterpret_cast<const uint8_t*>(file1.data());
   size_t original_length = file1.length();
 
   std::unique_ptr<courgette::AssemblyProgram> program;
