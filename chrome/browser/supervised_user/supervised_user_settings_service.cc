@@ -75,9 +75,8 @@ void SupervisedUserSettingsService::Init(
   Init(store);
   if (load_synchronously) {
     store_->ReadPrefs();
-    // TODO(bauerb): Temporary CHECK while investigating
-    // https://crbug.com/425785. Remove (or change to DCHECK) once the bug
-    // is fixed.
+    // This should be a DCHECK, but it is triggering in the wild.
+    // https://crbug.com/627031
     CHECK(store_->IsInitializationComplete());
   } else {
     store_->ReadPrefsAsync(nullptr);
@@ -102,7 +101,7 @@ SupervisedUserSettingsService::Subscribe(const SettingsCallback& callback) {
   return callback_list_.Add(callback);
 }
 
-Profile* SupervisedUserSettingsService::GetProfile(){
+Profile* SupervisedUserSettingsService::GetProfile() {
   return profile_;
 }
 
@@ -111,7 +110,7 @@ void SupervisedUserSettingsService::SetActive(bool active) {
   InformSubscribers();
 }
 
-bool SupervisedUserSettingsService::IsReady() {
+bool SupervisedUserSettingsService::IsReady() const {
   // Initialization cannot be complete but have failed at the same time.
   DCHECK(!(store_->IsInitializationComplete() && initialization_failed_));
   return initialization_failed_ || store_->IsInitializationComplete();
@@ -404,9 +403,7 @@ void SupervisedUserSettingsService::OnInitializationCompleted(bool success) {
     initialization_failed_ = true;
   }
 
-  // TODO(bauerb): Temporary CHECK while investigating https://crbug.com/425785.
-  // Remove (or change back to DCHECK) once the bug is fixed.
-  CHECK(IsReady());
+  DCHECK(IsReady());
   InformSubscribers();
 }
 

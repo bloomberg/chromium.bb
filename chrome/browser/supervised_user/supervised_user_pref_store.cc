@@ -76,7 +76,7 @@ SupervisedUserPrefStore::SupervisedUserPrefStore(
   // TODO(peconn): Remove this once SupervisedUserPrefStore is (partially at
   // least) a KeyedService. The user_settings_subscription_ must be reset or
   // destroyed before the SupervisedUserSettingsService is.
-  if (supervised_user_settings_service->GetProfile() != nullptr){
+  if (supervised_user_settings_service->GetProfile()) {
     unsubscriber_registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
         content::Source<Profile>(
           supervised_user_settings_service->GetProfile()));
@@ -85,10 +85,6 @@ SupervisedUserPrefStore::SupervisedUserPrefStore(
 
 bool SupervisedUserPrefStore::GetValue(const std::string& key,
                                        const base::Value** value) const {
-  // TODO(bauerb): Temporary CHECK to force a clean crash while investigating
-  // https://crbug.com/425785. Remove (or change back to DCHECK) once the bug
-  // is fixed.
-  CHECK(prefs_);
   return prefs_->GetValue(key, value);
 }
 

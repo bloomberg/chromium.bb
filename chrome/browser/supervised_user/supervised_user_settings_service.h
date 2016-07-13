@@ -95,7 +95,7 @@ class SupervisedUserSettingsService : public KeyedService,
   void SetActive(bool active);
 
   // Whether supervised user settings are available.
-  bool IsReady();
+  bool IsReady() const;
 
   // Clears all supervised user settings and items.
   void Clear();
@@ -172,7 +172,7 @@ class SupervisedUserSettingsService : public KeyedService,
   // directly hooked up to the PrefService.
   scoped_refptr<PersistentPrefStore> store_;
 
-  Profile* profile_;
+  Profile* const profile_;
 
   bool active_;
 

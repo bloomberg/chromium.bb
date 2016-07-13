@@ -429,9 +429,7 @@ void PrepareFactory(
   if (supervised_user_settings) {
     scoped_refptr<PrefStore> supervised_user_prefs = make_scoped_refptr(
         new SupervisedUserPrefStore(supervised_user_settings));
-    // TODO(bauerb): Temporary CHECK while investigating
-    // https://crbug.com/425785. Remove when that bug is fixed.
-    CHECK(async || supervised_user_prefs->IsInitializationComplete());
+    DCHECK(async || supervised_user_prefs->IsInitializationComplete());
     factory->set_supervised_user_prefs(supervised_user_prefs);
   }
 #endif
