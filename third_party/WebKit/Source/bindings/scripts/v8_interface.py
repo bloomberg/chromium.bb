@@ -116,7 +116,9 @@ def origin_trial_features(interface, constants, attributes, methods):
             method['origin_trial_feature_name'])]
     )
     # Group members by origin_trial_feature_name
-    members_by_name = itertools.groupby(origin_trial_members, itemgetter('origin_trial_feature_name'))
+    members_by_name = itertools.groupby(sorted(origin_trial_members,
+                                               key=itemgetter('origin_trial_feature_name')),
+                                        itemgetter('origin_trial_feature_name'))
     # Construct the list of dictionaries. 'needs_instance' will be true if any
     # member for the feature has 'on_instance' defined as true.
     features = [{'name': name,
