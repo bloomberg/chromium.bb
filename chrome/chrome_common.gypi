@@ -658,7 +658,6 @@
         ],
       },
       'dependencies': [
-        '../mojo/mojo_base.gyp:mojo_common_custom_types_mojom',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../skia/skia.gyp:skia_mojo',
       ],

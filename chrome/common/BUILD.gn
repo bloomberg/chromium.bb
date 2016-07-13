@@ -434,7 +434,4 @@ mojom("mojo_bindings") {
   public_deps = [
     "//skia/public/interfaces",
   ]
-  deps = [
-    "//mojo/common:common_custom_types",
-  ]
 }

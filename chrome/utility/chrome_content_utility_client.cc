@@ -38,6 +38,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/utility/ipc_shell_handler_win.h"
 #include "chrome/utility/shell_handler_impl_win.h"
 #endif
 
@@ -124,6 +125,10 @@ ChromeContentUtilityClient::ChromeContentUtilityClient()
 #if defined(ENABLE_PRINT_PREVIEW) || \
     (defined(ENABLE_BASIC_PRINTING) && defined(OS_WIN))
   handlers_.push_back(new printing::PrintingHandler());
+#endif
+
+#if defined(OS_WIN)
+  handlers_.push_back(new IPCShellHandler());
 #endif
 }
 

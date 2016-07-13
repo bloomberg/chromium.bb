@@ -4,10 +4,9 @@
 
 _typemap_imports = [
   "//cc/ipc/typemaps.gni",
-  "//chrome/common/typemaps.gni",
+  "//device/bluetooth/public/interfaces/typemaps.gni",
   "//components/arc/common/typemaps.gni",
   "//components/typemaps.gni",
-  "//device/bluetooth/public/interfaces/typemaps.gni",
   "//gpu/ipc/common/typemaps.gni",
   "//media/mojo/interfaces/typemaps.gni",
   "//mojo/common/typemaps.gni",

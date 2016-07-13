@@ -1455,7 +1455,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
         parsed_command_line_);
   }
 
-  ui::SelectFileDialog::SetFactory(new ChromeSelectFileDialogFactory());
+  ui::SelectFileDialog::SetFactory(new ChromeSelectFileDialogFactory(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 #endif  // defined(OS_WIN)
 
   if (parsed_command_line().HasSwitch(switches::kMakeDefaultBrowser)) {

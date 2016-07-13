@@ -17,13 +17,8 @@
 #include "base/win/shortcut.h"
 #include "chrome/installer/util/install_util.h"
 #include "content/public/utility/utility_thread.h"
-#include "ui/base/win/open_file_name_win.h"
 
 namespace {
-
-HWND Uint32ToHWND(uint32_t value) {
-  return reinterpret_cast<HWND>(value);
-}
 
 // This class checks if the current executable is pinned to the taskbar. It also
 // keeps track of the errors that occurs that prevents it from getting a result.
@@ -226,57 +221,4 @@ void ShellHandlerImpl::IsPinnedToTaskbar(
   IsPinnedToTaskbarHelper helper;
   bool is_pinned_to_taskbar = helper.GetResult();
   callback.Run(!helper.error_occured(), is_pinned_to_taskbar);
-}
-
-void ShellHandlerImpl::DoGetOpenFileName(
-    uint32_t owner,
-    uint32_t flags,
-    const std::vector<std::tuple<base::string16, base::string16>>& filters,
-    const base::FilePath& initial_directory,
-    const base::FilePath& filename,
-    const DoGetOpenFileNameCallback& callback) {
-  ui::win::OpenFileName open_file_name(Uint32ToHWND(owner), flags);
-  open_file_name.SetInitialSelection(initial_directory, filename);
-  open_file_name.SetFilters(filters);
-
-  base::FilePath directory;
-  std::vector<base::FilePath> filenames;
-
-  if (::GetOpenFileName(open_file_name.GetOPENFILENAME()))
-    open_file_name.GetResult(&directory, &filenames);
-
-  if (!filenames.empty())
-    callback.Run(directory, filenames);
-  else
-    callback.Run(base::FilePath(), std::vector<base::FilePath>());
-}
-
-void ShellHandlerImpl::DoGetSaveFileName(
-    uint32_t owner,
-    uint32_t flags,
-    const std::vector<std::tuple<base::string16, base::string16>>& filters,
-    uint32_t one_based_filter_index,
-    const base::FilePath& initial_directory,
-    const base::FilePath& suggested_filename,
-    const base::FilePath& default_extension,
-    const DoGetSaveFileNameCallback& callback) {
-  ui::win::OpenFileName open_file_name(reinterpret_cast<HWND>(owner), flags);
-  open_file_name.SetInitialSelection(initial_directory, suggested_filename);
-  open_file_name.SetFilters(filters);
-  open_file_name.GetOPENFILENAME()->nFilterIndex = one_based_filter_index;
-  open_file_name.GetOPENFILENAME()->lpstrDefExt =
-      default_extension.value().c_str();
-
-  if (::GetSaveFileName(open_file_name.GetOPENFILENAME())) {
-    callback.Run(base::FilePath(open_file_name.GetOPENFILENAME()->lpstrFile),
-                 open_file_name.GetOPENFILENAME()->nFilterIndex);
-    return;
-  }
-
-  // Zero means the dialog was closed, otherwise we had an error.
-  DWORD error_code = ::CommDlgExtendedError();
-  if (error_code != 0)
-    NOTREACHED() << "GetSaveFileName failed with code: " << error_code;
-
-  callback.Run(base::FilePath(), 0);
 }

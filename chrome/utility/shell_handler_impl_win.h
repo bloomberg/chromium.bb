@@ -5,9 +5,6 @@
 #ifndef CHROME_UTILITY_SHELL_HANDLER_IMPL_WIN_H_
 #define CHROME_UTILITY_SHELL_HANDLER_IMPL_WIN_H_
 
-#include <tuple>
-#include <vector>
-
 #include "base/macros.h"
 #include "chrome/common/shell_handler_win.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -23,24 +20,6 @@ class ShellHandlerImpl : public mojom::ShellHandler {
 
   // mojom::ShellHandler:
   void IsPinnedToTaskbar(const IsPinnedToTaskbarCallback& callback) override;
-
-  void DoGetOpenFileName(
-      uint32_t owner,
-      uint32_t flags,
-      const std::vector<std::tuple<base::string16, base::string16>>& filters,
-      const base::FilePath& initial_directory,
-      const base::FilePath& filename,
-      const DoGetOpenFileNameCallback& callback) override;
-
-  void DoGetSaveFileName(
-      uint32_t owner,
-      uint32_t flags,
-      const std::vector<std::tuple<base::string16, base::string16>>& filters,
-      uint32_t one_based_filter_index,
-      const base::FilePath& initial_directory,
-      const base::FilePath& suggested_filename,
-      const base::FilePath& default_extension,
-      const DoGetSaveFileNameCallback& callback) override;
 
   mojo::StrongBinding<ShellHandler> binding_;
 
