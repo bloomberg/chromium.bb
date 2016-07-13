@@ -108,13 +108,13 @@
 }
 
 #eol-status-message-container {
-  -webkit-margin-start: 12px;
+  -webkit-margin-start: 8px;
   display: inline-block;
   vertical-align: middle;
 }
 
 #update-status-message-container {
-  -webkit-margin-start: 12px;
+  -webkit-margin-start: 8px;
   display: inline-block;
   vertical-align: middle;
 }
