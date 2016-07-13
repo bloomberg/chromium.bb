@@ -134,10 +134,6 @@ emit display items to a `PaintController` (using `GraphicsContext`).
 
 ### Standalone display items
 
-#### [CachedDisplayItem](CachedDisplayItem.h)
-
-See [Display item caching](../../../core/paint/README.md#paint-result-caching).
-
 #### [DrawingDisplayItem](DrawingDisplayItem.h)
 
 Holds an `SkPicture` which contains the Skia commands required to draw some atom
@@ -164,14 +160,17 @@ Callers use `GraphicsContext` (via its drawing methods, and its
 a `PaintController`.
 
 `PaintController` is responsible for producing the paint artifact. It contains
-the *current* paint artifact, which is always complete (i.e. it has no
-`CachedDisplayItem` objects), and *new* display items and paint chunks, which
+the *current* paint artifact, and *new* display items and paint chunks, which
 are added as content is painted.
 
+Painters should call `PaintController::useCachedDrawingIfPossible()` or
+`PaintController::useCachedSubsequenceIfPossible()` and if the function returns
+`true`, existing display items that are still valid in the *current* paint artifact
+will be reused and the painter should skip real painting of the drawing or subsequence.
+
 When the new display items have been populated, clients call
-`commitNewDisplayItems`, which merges the previous artifact with the new data,
-producing a new paint artifact, where `CachedDisplayItem` objects have been
-replaced with the cached content from the previous artifact.
+`commitNewDisplayItems`, which replaces the previous artifact with the new data,
+producing a new paint artifact.
 
 At this point, the paint artifact is ready to be drawn or composited.
 
@@ -193,11 +192,12 @@ cached drawings by calling `DisplayItemClient::setDisplayItemsCached()`.
 A display item is treated as validly cached in a paint controller if its cache
 generation matches the paint controller's cache generation.
 
-`kInvalidCacheGeneration` is a special cache generation value which matches no
-other cache generations. When a `DisplayItemClient` is invalidated, we set its
-cache generation to `kInvalidCacheGeneration`. When a `PaintController` is
-cleared (e.g. when the corresponding `GraphicsLayer` is fully invalidated), we
-also set its cache generation to `kInvalidCacheGeneration`.
+A cache generation value smaller than `kFirstValidGeneration` matches no
+other cache generations thus is always treated as invalid. When a
+`DisplayItemClient` is invalidated, we set its cache generation to one of
+`PaintInvalidationReason` values which are smaller than `kFirstValidGeneration`.
+When a `PaintController` is cleared (e.g. when the corresponding `GraphicsLayer`
+is fully invalidated), we also invalidate its cache generation.
 
 For now we use a uint32_t variable to store cache generation. Assuming there is
 an animation in 60fps needing main-thread repaint, the cache generation will

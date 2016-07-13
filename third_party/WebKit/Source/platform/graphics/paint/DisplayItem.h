@@ -116,9 +116,6 @@ public:
         ReflectionMask,
         DrawingLast = ReflectionMask,
 
-        CachedDrawingFirst,
-        CachedDrawingLast = CachedDrawingFirst + DrawingLast - DrawingFirst,
-
         ForeignLayerFirst,
         ForeignLayerCanvas = ForeignLayerFirst,
         ForeignLayerPlugin,
@@ -184,7 +181,6 @@ public:
 
         Subsequence,
         EndSubsequence,
-        CachedSubsequence,
 
         UninitializedType,
         TypeLast = UninitializedType
@@ -224,33 +220,11 @@ public:
             : client(client)
             , type(type) { }
 
-        bool matches(const DisplayItem& item) const
-        {
-            // We should always convert to non-cached types before matching.
-            ASSERT(!isCachedType(item.m_type));
-            ASSERT(!isCachedType(type));
-            return &client == item.m_client && type == item.m_type;
-        }
-
         const DisplayItemClient& client;
         const Type type;
     };
 
-    // Convert cached type to non-cached type (e.g., Type::CachedSVGImage -> Type::SVGImage).
-    static Type nonCachedType(Type type)
-    {
-        if (isCachedDrawingType(type))
-            return cachedDrawingTypeToDrawingType(type);
-        if (type == CachedSubsequence)
-            return Subsequence;
-        return type;
-    }
-
-    // Return the Id with cached type converted to non-cached type.
-    Id nonCachedId() const
-    {
-        return Id(*m_client, nonCachedType(m_type));
-    }
+    Id getId() const { return Id(*m_client, m_type); }
 
     virtual void replay(GraphicsContext&) const { }
 
@@ -303,8 +277,6 @@ public:
 
     DEFINE_CATEGORY_METHODS(Drawing)
     DEFINE_PAINT_PHASE_CONVERSION_METHOD(Drawing)
-    DEFINE_CATEGORY_METHODS(CachedDrawing)
-    DEFINE_CONVERSION_METHODS(Drawing, drawing, CachedDrawing, cachedDrawing)
 
     DEFINE_CATEGORY_METHODS(ForeignLayer)
 
@@ -321,8 +293,6 @@ public:
 
     DEFINE_PAIRED_CATEGORY_METHODS(Transform3D, transform3D)
 
-    static bool isCachedType(Type type) { return isCachedDrawingType(type) || type == CachedSubsequence; }
-    bool isCached() const { return isCachedType(m_type); }
     static bool isCacheableType(Type type) { return isDrawingType(type) || type == Subsequence; }
     bool isCacheable() const { return !skippedCache() && isCacheableType(m_type); }
 
@@ -382,6 +352,16 @@ private:
     WTF::String m_clientDebugString;
 #endif
 };
+
+inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b)
+{
+    return a.client == b.client && a.type == b.type;
+}
+
+inline bool operator!=(const DisplayItem::Id& a, const DisplayItem::Id& b)
+{
+    return !(a == b);
+}
 
 class PLATFORM_EXPORT PairedBeginDisplayItem : public DisplayItem {
 protected:

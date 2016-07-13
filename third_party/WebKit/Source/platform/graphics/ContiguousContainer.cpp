@@ -171,6 +171,14 @@ void ContiguousContainerBase::swap(ContiguousContainerBase& other)
     std::swap(m_maxObjectSize, other.m_maxObjectSize);
 }
 
+void ContiguousContainerBase::shrinkToFit()
+{
+    while (m_endIndex < m_buffers.size() - 1) {
+        DCHECK(m_buffers.last()->isEmpty());
+        m_buffers.removeLast();
+    }
+}
+
 ContiguousContainerBase::Buffer*
 ContiguousContainerBase::allocateNewBufferForNextAllocation(size_t bufferSize, const char* typeName)
 {

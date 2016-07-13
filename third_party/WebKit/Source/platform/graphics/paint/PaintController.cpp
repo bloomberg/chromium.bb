@@ -31,6 +31,81 @@ const PaintArtifact& PaintController::paintArtifact() const
     return m_currentPaintArtifact;
 }
 
+bool PaintController::useCachedDrawingIfPossible(const DisplayItemClient& client, DisplayItem::Type type)
+{
+    DCHECK(DisplayItem::isDrawingType(type));
+
+    if (displayItemConstructionIsDisabled())
+        return false;
+
+    if (!clientCacheIsValid(client))
+        return false;
+
+#if ENABLE(ASSERT)
+    // When under-invalidation checking is enabled, we output CachedDrawing display item
+    // followed by the display item containing forced painting.
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        return false;
+#endif
+
+    DisplayItemList::iterator cachedItem = findCachedItem(DisplayItem::Id(client, type));
+    if (cachedItem == m_currentPaintArtifact.getDisplayItemList().end()) {
+        NOTREACHED();
+        return false;
+    }
+
+    ++m_numCachedNewItems;
+    ensureNewDisplayItemListInitialCapacity();
+    processNewItem(m_newDisplayItemList.appendByMoving(*cachedItem));
+
+    m_nextItemToMatch = cachedItem + 1;
+    // Items before m_nextItemToMatch have been copied so we don't need to index them.
+    if (m_nextItemToMatch - m_nextItemToIndex > 0)
+        m_nextItemToIndex = m_nextItemToMatch;
+
+    return true;
+}
+
+bool PaintController::useCachedSubsequenceIfPossible(const DisplayItemClient& client)
+{
+    // TODO(crbug.com/596983): Implement subsequence caching for spv2.
+    // The problem is in copyCachedSubsequence() which fails to handle PaintChunkProperties
+    // of chunks containing cached display items. We need to find the previous
+    // PaintChunkProperties and ensure they are valid in the current paint property tree.
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return false;
+
+    if (displayItemConstructionIsDisabled() || subsequenceCachingIsDisabled())
+        return false;
+
+    if (!clientCacheIsValid(client))
+        return false;
+
+#if ENABLE(ASSERT)
+    // When under-invalidation checking is enabled, we output CachedDrawing display item
+    // followed by the display item containing forced painting.
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        return false;
+#endif
+
+    DisplayItemList::iterator cachedItem = findCachedItem(DisplayItem::Id(client, DisplayItem::Subsequence));
+    if (cachedItem == m_currentPaintArtifact.getDisplayItemList().end()) {
+        NOTREACHED();
+        return false;
+    }
+
+    // |cachedItem| will point to the first item after the subsequence or end of the current list.
+    ensureNewDisplayItemListInitialCapacity();
+    copyCachedSubsequence(cachedItem);
+
+    m_nextItemToMatch = cachedItem;
+    // Items before |cachedItem| have been copied so we don't need to index them.
+    if (cachedItem - m_nextItemToIndex > 0)
+        m_nextItemToIndex = cachedItem;
+
+    return true;
+}
+
 bool PaintController::lastDisplayItemIsNoopBegin() const
 {
     if (m_newDisplayItemList.isEmpty())
@@ -63,11 +138,10 @@ void PaintController::removeLastDisplayItem()
 void PaintController::processNewItem(DisplayItem& displayItem)
 {
     DCHECK(!m_constructionDisabled);
-    DCHECK(!skippingCache() || !displayItem.isCached());
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     if (!skippingCache()) {
-        if (displayItem.isCacheable() || displayItem.isCached()) {
+        if (displayItem.isCacheable()) {
             // Mark the client shouldKeepAlive under this PaintController.
             // The status will end after the new display items are committed.
             displayItem.client().beginShouldKeepAlive(this);
@@ -88,9 +162,6 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     }
 #endif
 
-    if (displayItem.isCached())
-        ++m_numCachedNewItems;
-
 #if DCHECK_IS_ON()
     // Verify noop begin/end pairs have been removed.
     if (m_newDisplayItemList.size() >= 2 && displayItem.isEnd()) {
@@ -104,7 +175,7 @@ void PaintController::processNewItem(DisplayItem& displayItem)
         displayItem.setSkippedCache();
 
 #if DCHECK_IS_ON()
-    size_t index = findMatchingItemFromIndex(displayItem.nonCachedId(), m_newDisplayItemIndicesByClient, m_newDisplayItemList);
+    size_t index = findMatchingItemFromIndex(displayItem.getId(), m_newDisplayItemIndicesByClient, m_newDisplayItemList);
     if (index != kNotFound) {
 #ifndef NDEBUG
         showDebugData();
@@ -158,7 +229,7 @@ size_t PaintController::findMatchingItemFromIndex(const DisplayItem::Id& id, con
     for (size_t index : indices) {
         const DisplayItem& existingItem = list[index];
         DCHECK(!existingItem.hasValidClient() || existingItem.client() == id.client);
-        if (id.matches(existingItem))
+        if (id == existingItem.getId())
             return index;
     }
 
@@ -176,54 +247,88 @@ void PaintController::addItemToIndexIfNeeded(const DisplayItem& displayItem, siz
     indices.append(index);
 }
 
-struct PaintController::OutOfOrderIndexContext {
-    STACK_ALLOCATED();
-    OutOfOrderIndexContext(DisplayItemList::iterator begin) : nextItemToIndex(begin) { }
-
-    DisplayItemList::iterator nextItemToIndex;
-    DisplayItemIndicesByClientMap displayItemIndicesByClient;
-};
-
-DisplayItemList::iterator PaintController::findOutOfOrderCachedItem(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
+DisplayItemList::iterator PaintController::findCachedItem(const DisplayItem::Id& id)
 {
     DCHECK(clientCacheIsValid(id.client));
 
-    size_t foundIndex = findMatchingItemFromIndex(id, context.displayItemIndicesByClient, m_currentPaintArtifact.getDisplayItemList());
-    if (foundIndex != kNotFound)
-        return m_currentPaintArtifact.getDisplayItemList().begin() + foundIndex;
+    // Try to find the item sequentially first. This is fast if the current list and the new list are in
+    // the same order around the new item. If found, we don't need to update and lookup the index.
+    DisplayItemList::iterator end = m_currentPaintArtifact.getDisplayItemList().end();
+    DisplayItemList::iterator it = m_nextItemToMatch;
+    for (; it != end; ++it) {
+        // We encounter an item that has already been copied which indicates we can't do sequential matching.
+        if (!it->hasValidClient())
+            break;
+        if (id == it->getId()) {
+#if DCHECK_IS_ON()
+            ++m_numSequentialMatches;
+#endif
+            return it;
+        }
+        // We encounter a different cacheable item which also indicates we can't do sequential matching.
+        if (it->isCacheable())
+            break;
+    }
 
-    return findOutOfOrderCachedItemForward(id, context);
+    size_t foundIndex = findMatchingItemFromIndex(id, m_outOfOrderItemIndices, m_currentPaintArtifact.getDisplayItemList());
+    if (foundIndex != kNotFound) {
+#if DCHECK_IS_ON()
+        ++m_numOutOfOrderMatches;
+#endif
+        return m_currentPaintArtifact.getDisplayItemList().begin() + foundIndex;
+    }
+
+    return findOutOfOrderCachedItemForward(id);
 }
 
 // Find forward for the item and index all skipped indexable items.
-DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const DisplayItem::Id& id, OutOfOrderIndexContext& context)
+DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const DisplayItem::Id& id)
 {
-    DisplayItemList::iterator currentEnd = m_currentPaintArtifact.getDisplayItemList().end();
-    for (; context.nextItemToIndex != currentEnd; ++context.nextItemToIndex) {
-        const DisplayItem& item = *context.nextItemToIndex;
+    DisplayItemList::iterator end = m_currentPaintArtifact.getDisplayItemList().end();
+    for (DisplayItemList::iterator it = m_nextItemToIndex; it != end; ++it) {
+        const DisplayItem& item = *it;
         DCHECK(item.hasValidClient());
-        if (id.matches(item))
-            return context.nextItemToIndex++;
-        if (item.isCacheable())
-            addItemToIndexIfNeeded(item, context.nextItemToIndex - m_currentPaintArtifact.getDisplayItemList().begin(), context.displayItemIndicesByClient);
+        if (id == item.getId()) {
+#if DCHECK_IS_ON()
+            ++m_numSequentialMatches;
+#endif
+            return it;
+        }
+        if (item.isCacheable()) {
+#if DCHECK_IS_ON()
+            ++m_numIndexedItems;
+#endif
+            addItemToIndexIfNeeded(item, it - m_currentPaintArtifact.getDisplayItemList().begin(), m_outOfOrderItemIndices);
+        }
     }
-    return currentEnd;
+
+#ifndef NDEBUG
+    showDebugData();
+    LOG(ERROR) << id.client.debugName() << ":" << DisplayItem::typeAsDebugString(id.type) << " not found in current display item list";
+#endif
+    NOTREACHED();
+    // We did not find the cached display item. This should be impossible, but may occur if there is a bug
+    // in the system, such as under-invalidation, incorrect cache checking or duplicate display ids.
+    // In this case, the caller should fall back to repaint the display item.
+    return end;
 }
 
-void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, DisplayItemList::iterator& currentIt, DisplayItemList& updatedList, SkPictureGpuAnalyzer& gpuAnalyzer)
+// On return, |it| points to the item after the EndSubsequence item of the subsequence.
+void PaintController::copyCachedSubsequence(DisplayItemList::iterator& it)
 {
-    DCHECK(currentIt->getType() == DisplayItem::Subsequence);
-    DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence);
+    DCHECK(it->getType() == DisplayItem::Subsequence);
+    DisplayItem::Id endSubsequenceId(it->client(), DisplayItem::EndSubsequence);
     do {
         // We should always find the EndSubsequence display item.
-        DCHECK(currentIt != m_currentPaintArtifact.getDisplayItemList().end());
-        DCHECK(currentIt->hasValidClient());
+        DCHECK(it != m_currentPaintArtifact.getDisplayItemList().end());
+        DCHECK(it->hasValidClient());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-        CHECK(currentIt->client().isAlive());
+        CHECK(it->client().isAlive());
 #endif
-        updatedList.appendByMoving(*currentIt, currentList.visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()), gpuAnalyzer);
-        ++currentIt;
-    } while (!endSubsequenceId.matches(updatedList.last()));
+        ++m_numCachedNewItems;
+        processNewItem(m_newDisplayItemList.appendByMoving(*it));
+        ++it;
+    } while (endSubsequenceId != m_newDisplayItemList.last().getId());
 }
 
 static IntRect visualRectForDisplayItem(const DisplayItem& displayItem, const LayoutSize& offsetFromLayoutObject)
@@ -233,17 +338,12 @@ static IntRect visualRectForDisplayItem(const DisplayItem& displayItem, const La
     return enclosingIntRect(visualRect);
 }
 
-// Update the existing display items by removing invalidated entries, updating
-// repainted ones, and appending new items.
-// - For cached drawing display item, copy the corresponding cached DrawingDisplayItem;
-// - For cached subsequence display item, copy the cached display items between the
-//   corresponding SubsequenceDisplayItem and EndSubsequenceDisplayItem (incl.);
-// - Otherwise, copy the new display item.
-//
-// The algorithm is O(|m_currentDisplayItemList| + |m_newDisplayItemList|).
-// Coefficients are related to the ratio of out-of-order CachedDisplayItems
-// and the average number of (Drawing|Subsequence)DisplayItems per client.
-//
+void PaintController::resetCurrentListIterators()
+{
+    m_nextItemToMatch = m_currentPaintArtifact.getDisplayItemList().begin();
+    m_nextItemToIndex = m_nextItemToMatch;
+}
+
 void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutObject)
 {
     TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
@@ -259,99 +359,37 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
 
     SkPictureGpuAnalyzer gpuAnalyzer;
 
-    if (m_currentPaintArtifact.isEmpty()) {
-#if DCHECK_IS_ON()
-        for (const auto& item : m_newDisplayItemList)
-            DCHECK(!item.isCached());
-#endif
+    m_currentCacheGeneration = DisplayItemClient::CacheGenerationOrInvalidationReason::next();
+    for (const auto& item : m_newDisplayItemList) {
+        // No reason to continue the analysis once we have a veto.
+        if (gpuAnalyzer.suitableForGpuRasterization())
+            item.analyzeForGpuRasterization(gpuAnalyzer);
 
-        for (const auto& item : m_newDisplayItemList) {
-            m_newDisplayItemList.appendVisualRect(visualRectForDisplayItem(item, offsetFromLayoutObject));
-            // No reason to continue the analysis once we have a veto.
-            if (gpuAnalyzer.suitableForGpuRasterization())
-                item.analyzeForGpuRasterization(gpuAnalyzer);
-        }
-        m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
-        m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
-        updateCacheGeneration();
-        return;
+        m_newDisplayItemList.appendVisualRect(visualRectForDisplayItem(item, offsetFromLayoutObject));
+
+        if (item.isCacheable())
+            item.client().setDisplayItemsCached(m_currentCacheGeneration);
     }
 
-    // Stores indices to valid DrawingDisplayItems in m_currentDisplayItems that have not been matched
-    // by CachedDisplayItems during synchronized matching. The indexed items will be matched
-    // by later out-of-order CachedDisplayItems in m_newDisplayItemList. This ensures that when
-    // out-of-order CachedDisplayItems occur, we only traverse at most once over m_currentDisplayItems
-    // looking for potential matches. Thus we can ensure that the algorithm runs in linear time.
-    OutOfOrderIndexContext outOfOrderIndexContext(m_currentPaintArtifact.getDisplayItemList().begin());
+    // The new list will not be appended to again so we can release unused memory.
+    m_newDisplayItemList.shrinkToFit();
+    m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
+    resetCurrentListIterators();
+    m_outOfOrderItemIndices.clear();
 
-    // TODO(jbroman): Consider revisiting this heuristic.
-    DisplayItemList updatedList(std::max(m_currentPaintArtifact.getDisplayItemList().usedCapacityInBytes(), m_newDisplayItemList.usedCapacityInBytes()));
-    Vector<PaintChunk> updatedPaintChunks;
-    DisplayItemList::iterator currentIt = m_currentPaintArtifact.getDisplayItemList().begin();
-    DisplayItemList::iterator currentEnd = m_currentPaintArtifact.getDisplayItemList().end();
-    for (DisplayItemList::iterator newIt = m_newDisplayItemList.begin(); newIt != m_newDisplayItemList.end(); ++newIt) {
-        const DisplayItem& newDisplayItem = *newIt;
-        const DisplayItem::Id newDisplayItemId = newDisplayItem.nonCachedId();
-        bool newDisplayItemHasCachedType = newDisplayItem.getType() != newDisplayItemId.type;
+    // We'll allocate the initial buffer when we start the next paint.
+    m_newDisplayItemList = DisplayItemList(0);
 
-        bool isSynchronized = currentIt != currentEnd && newDisplayItemId.matches(*currentIt);
-
-        if (newDisplayItemHasCachedType) {
-            DCHECK(newDisplayItem.isCached());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-            CHECK(clientCacheIsValid(newDisplayItem.client()));
+    CHECK(m_currentSubsequenceClients.isEmpty());
+    DisplayItemClient::endShouldKeepAliveAllClients(this);
 #endif
-            if (!isSynchronized) {
-                currentIt = findOutOfOrderCachedItem(newDisplayItemId, outOfOrderIndexContext);
 
-                if (currentIt == currentEnd) {
-#ifndef NDEBUG
-                    showDebugData();
-                    WTFLogAlways("%s not found in m_currentDisplayItemList\n", newDisplayItem.asDebugString().utf8().data());
-#endif
-                    NOTREACHED();
-                    // We did not find the cached display item. This should be impossible, but may occur if there is a bug
-                    // in the system, such as under-invalidation, incorrect cache checking or duplicate display ids.
-                    // In this case, attempt to recover rather than crashing or bailing on display of the rest of the display list.
-                    continue;
-                }
-            }
 #if DCHECK_IS_ON()
-            if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
-                DisplayItemList::iterator temp = currentIt;
-                checkUnderInvalidation(newIt, temp);
-            }
+    m_numSequentialMatches = 0;
+    m_numOutOfOrderMatches = 0;
+    m_numIndexedItems = 0;
 #endif
-            if (newDisplayItem.isCachedDrawing()) {
-                updatedList.appendByMoving(*currentIt, m_currentPaintArtifact.getDisplayItemList().visualRect(currentIt - m_currentPaintArtifact.getDisplayItemList().begin()),
-                    gpuAnalyzer);
-                ++currentIt;
-            } else {
-                DCHECK(newDisplayItem.getType() == DisplayItem::CachedSubsequence);
-                copyCachedSubsequence(m_currentPaintArtifact.getDisplayItemList(), currentIt, updatedList, gpuAnalyzer);
-                DCHECK(updatedList.last().getType() == DisplayItem::EndSubsequence);
-            }
-        } else {
-            DCHECK(!newDisplayItem.isDrawing()
-                || newDisplayItem.skippedCache()
-                || !clientCacheIsValid(newDisplayItem.client()));
-
-            updatedList.appendByMoving(*newIt, visualRectForDisplayItem(*newIt, offsetFromLayoutObject), gpuAnalyzer);
-
-            if (isSynchronized)
-                ++currentIt;
-        }
-        // Items before currentIt should have been copied so we don't need to index them.
-        if (currentIt - outOfOrderIndexContext.nextItemToIndex > 0)
-            outOfOrderIndexContext.nextItemToIndex = currentIt;
-    }
-
-    // TODO(jbroman): When subsequence caching applies to SPv2, we'll need to
-    // merge the paint chunks as well.
-    m_currentPaintArtifact = PaintArtifact(std::move(updatedList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
-
-    m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);
-    updateCacheGeneration();
 }
 
 size_t PaintController::approximateUnsharedMemoryUsage() const
@@ -379,34 +417,23 @@ size_t PaintController::approximateUnsharedMemoryUsage() const
     return memoryUsage;
 }
 
-void PaintController::updateCacheGeneration()
-{
-    m_currentCacheGeneration = DisplayItemClient::CacheGenerationOrInvalidationReason::next();
-    for (const DisplayItem& displayItem : m_currentPaintArtifact.getDisplayItemList()) {
-        if (!displayItem.isCacheable())
-            continue;
-        displayItem.client().setDisplayItemsCached(m_currentCacheGeneration);
-    }
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    CHECK(m_currentSubsequenceClients.isEmpty());
-    DisplayItemClient::endShouldKeepAliveAllClients(this);
-#endif
-}
-
 void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& displayItemClient, PassRefPtr<SkPicture> picture, const LayoutSize& offsetFromLayoutObject)
 {
     DCHECK(m_newDisplayItemList.isEmpty());
     DrawingDisplayItem& displayItem = m_currentPaintArtifact.getDisplayItemList().allocateAndConstruct<DrawingDisplayItem>(displayItemClient, DisplayItem::DebugDrawing, picture);
     displayItem.setSkippedCache();
     m_currentPaintArtifact.getDisplayItemList().appendVisualRect(visualRectForDisplayItem(displayItem, offsetFromLayoutObject));
+
+    // Need to reset the iterators after mutation of the DisplayItemList.
+    resetCurrentListIterators();
 }
 
-#if DCHECK_IS_ON()
+#if 0 // DCHECK_IS_ON()
+// TODO(wangxianzhu): Fix under-invalidation checking for the new caching method.
 
 void PaintController::checkUnderInvalidation(DisplayItemList::iterator& newIt, DisplayItemList::iterator& currentIt)
 {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
-    DCHECK(newIt->isCached());
 
     // When under-invalidation-checking is enabled, the forced painting is following the cached display item.
     DisplayItem::Type nextItemType = DisplayItem::nonCachedType(newIt->getType());

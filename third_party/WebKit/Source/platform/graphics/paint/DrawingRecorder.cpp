@@ -7,30 +7,10 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace blink {
-
-bool DrawingRecorder::useCachedDrawingIfPossible(GraphicsContext& context, const DisplayItemClient& client, DisplayItem::Type type)
-{
-    ASSERT(DisplayItem::isDrawingType(type));
-
-    if (!context.getPaintController().clientCacheIsValid(client))
-        return false;
-
-    context.getPaintController().createAndAppend<CachedDisplayItem>(client, DisplayItem::drawingTypeToCachedDrawingType(type));
-
-#if ENABLE(ASSERT)
-    // When under-invalidation checking is enabled, we output CachedDrawing display item
-    // followed by the display item containing forced painting.
-    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
-        return false;
-#endif
-
-    return true;
-}
 
 DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClient& displayItemClient, DisplayItem::Type displayItemType, const FloatRect& floatCullRect)
     : m_context(context)

@@ -742,7 +742,6 @@
       'graphics/gpu/Extensions3DUtil.h',
       'graphics/gpu/WebGLImageConversion.cpp',
       'graphics/gpu/WebGLImageConversion.h',
-      'graphics/paint/CachedDisplayItem.h',
       'graphics/paint/ClipDisplayItem.cpp',
       'graphics/paint/ClipDisplayItem.h',
       'graphics/paint/ClipPaintPropertyNode.h',

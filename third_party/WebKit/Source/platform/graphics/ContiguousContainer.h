@@ -60,6 +60,10 @@ protected:
     void clear();
     void swap(ContiguousContainerBase&);
 
+    // Discards excess buffer capacity. Intended for use when no more appending
+    // is anticipated.
+    void shrinkToFit();
+
     Vector<void*> m_elements;
 
 private:
@@ -142,6 +146,7 @@ public:
     using ContiguousContainerBase::capacityInBytes;
     using ContiguousContainerBase::usedCapacityInBytes;
     using ContiguousContainerBase::memoryUsageInBytes;
+    using ContiguousContainerBase::shrinkToFit;
 
     iterator begin() { return iterator(m_elements.begin()); }
     iterator end() { return iterator(m_elements.end()); }

@@ -6,35 +6,10 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SubsequenceDisplayItem.h"
 
 namespace blink {
-
-bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClient& client)
-{
-    if (context.getPaintController().displayItemConstructionIsDisabled() || context.getPaintController().subsequenceCachingIsDisabled())
-        return false;
-
-    if (!context.getPaintController().clientCacheIsValid(client))
-        return false;
-
-    // TODO(pdr): Implement subsequence caching for spv2 (crbug.com/596983).
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        return false;
-
-    context.getPaintController().createAndAppend<CachedDisplayItem>(client, DisplayItem::CachedSubsequence);
-
-#if ENABLE(ASSERT)
-    // When under-invalidation checking is enabled, we output CachedSubsequence display item
-    // followed by forced painting of the subsequence.
-    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
-        return false;
-#endif
-
-    return true;
-}
 
 SubsequenceRecorder::SubsequenceRecorder(GraphicsContext& context, const DisplayItemClient& client)
     : m_paintController(context.getPaintController())

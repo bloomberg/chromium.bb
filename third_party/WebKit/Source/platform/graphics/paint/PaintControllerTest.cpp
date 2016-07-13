@@ -6,7 +6,6 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/CachedDisplayItem.h"
 #include "platform/graphics/paint/ClipPathDisplayItem.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
@@ -32,6 +31,14 @@ public:
 
 protected:
     PaintController& getPaintController() { return *m_paintController; }
+
+    int numCachedNewItems() const { return m_paintController->m_numCachedNewItems; }
+
+#if DCHECK_IS_ON()
+    int numSequentialMatches() const { return m_paintController->m_numSequentialMatches; }
+    int numOutOfOrderMatches() const { return m_paintController->m_numOutOfOrderMatches; }
+    int numIndexedItems() const { return m_paintController->m_numIndexedItems; }
+#endif
 
 private:
     void TearDown() override
@@ -115,6 +122,9 @@ TEST_F(PaintControllerTest, UpdateBasic)
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 200, 200));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+
+    EXPECT_EQ(0, numCachedNewItems());
+
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
@@ -125,6 +135,14 @@ TEST_F(PaintControllerTest, UpdateBasic)
     second.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 300, 300));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 300, 300));
+
+    EXPECT_EQ(2, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(2, numSequentialMatches());
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(1, numIndexedItems());
+#endif
+
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
@@ -140,25 +158,93 @@ TEST_F(PaintControllerTest, UpdateSwapOrder)
     GraphicsContext context(getPaintController());
 
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
+    drawRect(context, unaffected, foregroundDrawingType, FloatRect(300, 300, 10, 10));
     getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
         TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(first, foregroundDrawingType),
         TestDisplayItem(second, backgroundDrawingType),
-        TestDisplayItem(unaffected, backgroundDrawingType));
+        TestDisplayItem(second, foregroundDrawingType),
+        TestDisplayItem(unaffected, backgroundDrawingType),
+        TestDisplayItem(unaffected, foregroundDrawingType));
 
-    second.setDisplayItemsUncached();
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
+    drawRect(context, unaffected, foregroundDrawingType, FloatRect(300, 300, 10, 10));
+
+    EXPECT_EQ(6, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(5, numSequentialMatches()); // second, first foreground, unaffected
+    EXPECT_EQ(1, numOutOfOrderMatches()); // first
+    EXPECT_EQ(2, numIndexedItems()); // first
+#endif
+
     getPaintController().commitNewDisplayItems();
 
-    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
         TestDisplayItem(second, backgroundDrawingType),
+        TestDisplayItem(second, foregroundDrawingType),
         TestDisplayItem(first, backgroundDrawingType),
-        TestDisplayItem(unaffected, backgroundDrawingType));
+        TestDisplayItem(first, foregroundDrawingType),
+        TestDisplayItem(unaffected, backgroundDrawingType),
+        TestDisplayItem(unaffected, foregroundDrawingType));
+}
+
+TEST_F(PaintControllerTest, UpdateSwapOrderWithInvalidation)
+{
+    FakeDisplayItemClient first("first");
+    FakeDisplayItemClient second("second");
+    FakeDisplayItemClient unaffected("unaffected");
+    GraphicsContext context(getPaintController());
+
+    drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
+    drawRect(context, unaffected, foregroundDrawingType, FloatRect(300, 300, 10, 10));
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
+        TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(first, foregroundDrawingType),
+        TestDisplayItem(second, backgroundDrawingType),
+        TestDisplayItem(second, foregroundDrawingType),
+        TestDisplayItem(unaffected, backgroundDrawingType),
+        TestDisplayItem(unaffected, foregroundDrawingType));
+
+    first.setDisplayItemsUncached();
+    drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
+    drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
+    drawRect(context, unaffected, backgroundDrawingType, FloatRect(300, 300, 10, 10));
+    drawRect(context, unaffected, foregroundDrawingType, FloatRect(300, 300, 10, 10));
+
+    EXPECT_EQ(4, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(4, numSequentialMatches()); // second, unaffected
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(2, numIndexedItems());
+#endif
+
+    getPaintController().commitNewDisplayItems();
+
+    EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
+        TestDisplayItem(second, backgroundDrawingType),
+        TestDisplayItem(second, foregroundDrawingType),
+        TestDisplayItem(first, backgroundDrawingType),
+        TestDisplayItem(first, foregroundDrawingType),
+        TestDisplayItem(unaffected, backgroundDrawingType),
+        TestDisplayItem(unaffected, foregroundDrawingType));
 }
 
 TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
@@ -179,6 +265,14 @@ TEST_F(PaintControllerTest, UpdateNewItemInMiddle)
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, third, backgroundDrawingType, FloatRect(125, 100, 200, 50));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 50, 200));
+
+    EXPECT_EQ(2, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(2, numSequentialMatches()); // first, second
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(0, numIndexedItems());
+#endif
+
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
@@ -217,6 +311,14 @@ TEST_F(PaintControllerTest, UpdateInvalidationWithPhases)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     drawRect(context, second, foregroundDrawingType, FloatRect(100, 100, 50, 200));
     drawRect(context, third, foregroundDrawingType, FloatRect(300, 100, 50, 50));
+
+    EXPECT_EQ(4, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(4, numSequentialMatches());
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(2, numIndexedItems());
+#endif
+
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 6,
@@ -248,6 +350,7 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
+    EXPECT_EQ(0, numCachedNewItems());
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
@@ -259,6 +362,14 @@ TEST_F(PaintControllerTest, UpdateAddFirstOverlap)
     first.setDisplayItemsUncached();
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
+
+    EXPECT_EQ(2, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(2, numSequentialMatches());
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(2, numIndexedItems());
+#endif
+
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
@@ -286,6 +397,7 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(200, 200, 50, 50));
     drawRect(context, second, foregroundDrawingType, FloatRect(200, 200, 50, 50));
+    EXPECT_EQ(0, numCachedNewItems());
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 4,
@@ -298,6 +410,7 @@ TEST_F(PaintControllerTest, UpdateAddLastOverlap)
     second.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, first, foregroundDrawingType, FloatRect(100, 100, 150, 150));
+    EXPECT_EQ(0, numCachedNewItems());
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
@@ -327,6 +440,14 @@ TEST_F(PaintControllerTest, UpdateClip)
     first.setDisplayItemsUncached();
     drawRect(context, first, backgroundDrawingType, FloatRect(100, 100, 150, 150));
     drawRect(context, second, backgroundDrawingType, FloatRect(100, 100, 150, 150));
+
+    EXPECT_EQ(1, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(1, numSequentialMatches());
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(1, numIndexedItems());
+#endif
+
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 2,
@@ -483,9 +604,12 @@ TEST_F(PaintControllerTest, CachedSubsequenceSwapOrder)
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container2));
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container1));
 
-    EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 2,
-        TestDisplayItem(container2, DisplayItem::CachedSubsequence),
-        TestDisplayItem(container1, DisplayItem::CachedSubsequence));
+    EXPECT_EQ(12, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(1, numSequentialMatches());
+    EXPECT_EQ(1, numOutOfOrderMatches());
+    EXPECT_EQ(5, numIndexedItems());
+#endif
 
     getPaintController().commitNewDisplayItems();
 
@@ -602,14 +726,13 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, content1));
         drawRect(context, container1, foregroundDrawingType, FloatRect(100, 100, 100, 100));
     }
-    EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 7,
-        TestDisplayItem(content2, DisplayItem::Subsequence),
-        TestDisplayItem(content2, foregroundDrawingType),
-        TestDisplayItem(content2, DisplayItem::EndSubsequence),
-        TestDisplayItem(container1, DisplayItem::Subsequence),
-        TestDisplayItem(content1, DisplayItem::CachedSubsequence),
-        TestDisplayItem(container1, foregroundDrawingType),
-        TestDisplayItem(container1, DisplayItem::EndSubsequence));
+
+    EXPECT_EQ(4, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(1, numSequentialMatches());
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(2, numIndexedItems());
+#endif
 
     getPaintController().commitNewDisplayItems();
 
@@ -667,10 +790,12 @@ TEST_F(PaintControllerTest, SkipCache)
     drawRect(context, content, foregroundDrawingType, rect2);
     getPaintController().endSkippingCache();
 
-    EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 3,
-        TestDisplayItem(multicol, DisplayItem::drawingTypeToCachedDrawingType(backgroundDrawingType)),
-        TestDisplayItem(content, foregroundDrawingType),
-        TestDisplayItem(content, foregroundDrawingType));
+    EXPECT_EQ(1, numCachedNewItems());
+#if DCHECK_IS_ON()
+    EXPECT_EQ(1, numSequentialMatches());
+    EXPECT_EQ(0, numOutOfOrderMatches());
+    EXPECT_EQ(0, numIndexedItems());
+#endif
 
     getPaintController().commitNewDisplayItems();
 

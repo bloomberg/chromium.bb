@@ -185,8 +185,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
 {
     if (isDrawingType(type))
         return drawingTypeAsDebugString(type);
-    if (isCachedDrawingType(type))
-        return "Cached" + drawingTypeAsDebugString(cachedDrawingTypeToDrawingType(type));
 
     if (isForeignLayerType(type))
         return foreignLayerTypeAsDebugString(type);
@@ -224,7 +222,6 @@ WTF::String DisplayItem::typeAsDebugString(Type type)
         DEBUG_STRING_CASE(EndClipPath);
         DEBUG_STRING_CASE(Subsequence);
         DEBUG_STRING_CASE(EndSubsequence);
-        DEBUG_STRING_CASE(CachedSubsequence);
         DEBUG_STRING_CASE(UninitializedType);
         DEFAULT_CASE;
     }

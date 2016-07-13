@@ -8,7 +8,9 @@
 #include "platform/PlatformExport.h"
 
 #include "platform/geometry/FloatRect.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
@@ -24,7 +26,10 @@ class PLATFORM_EXPORT DrawingRecorder final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(DrawingRecorder);
 public:
-    static bool useCachedDrawingIfPossible(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type);
+    static bool useCachedDrawingIfPossible(GraphicsContext& context, const DisplayItemClient& client, DisplayItem::Type type)
+    {
+        return context.getPaintController().useCachedDrawingIfPossible(client, type);
+    }
 
     DrawingRecorder(GraphicsContext&, const DisplayItemClient&, DisplayItem::Type, const FloatRect& cullRect);
     ~DrawingRecorder();

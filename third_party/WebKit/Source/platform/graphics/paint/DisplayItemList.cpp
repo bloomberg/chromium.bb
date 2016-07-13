@@ -14,12 +14,8 @@
 
 namespace blink {
 
-DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item, const IntRect& visualRect, SkPictureGpuAnalyzer& gpuAnalyzer)
+DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item)
 {
-    // No reason to continue the analysis once we have a veto.
-    if (gpuAnalyzer.suitableForGpuRasterization())
-        item.analyzeForGpuRasterization(gpuAnalyzer);
-
 #ifndef NDEBUG
     String originalDebugString = item.asDebugString();
 #endif
@@ -33,7 +29,6 @@ DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item, const IntRect& v
     // Save original debug string in the old item to help debugging.
     item.setClientDebugString(originalDebugString);
 #endif
-    appendVisualRect(visualRect);
     return result;
 }
 

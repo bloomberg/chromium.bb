@@ -75,6 +75,8 @@ public:
 
         if (displayItemConstructionIsDisabled())
             return;
+
+        ensureNewDisplayItemListInitialCapacity();
         DisplayItemClass& displayItem = m_newDisplayItemList.allocateAndConstruct<DisplayItemClass>(std::forward<Args>(args)...);
         processNewItem(displayItem);
     }
@@ -94,6 +96,14 @@ public:
         else
             createAndAppend<DisplayItemClass>(std::forward<Args>(args)...);
     }
+
+    // Tries to find the cached drawing display item corresponding to the given parameters. If found,
+    // appends the cached display item to the new display list and returns true. Otherwise returns false.
+    bool useCachedDrawingIfPossible(const DisplayItemClient&, DisplayItem::Type);
+
+    // Tries to find the cached subsequence corresponding to the given parameters. If found, copies the
+    // cache subsequence to the new display list and returns true. Otherwise returns false.
+    bool useCachedSubsequenceIfPossible(const DisplayItemClient&);
 
     // True if the last display item is a begin that doesn't draw content.
     bool lastDisplayItemIsNoopBegin() const;
@@ -148,16 +158,34 @@ public:
 
 protected:
     PaintController()
-        : m_newDisplayItemList(kInitialDisplayItemListCapacityBytes)
+        : m_newDisplayItemList(0)
         , m_constructionDisabled(false)
         , m_subsequenceCachingDisabled(false)
         , m_textPainted(false)
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
         , m_numCachedNewItems(0)
-    { }
+#if DCHECK_IS_ON()
+        , m_numSequentialMatches(0)
+        , m_numOutOfOrderMatches(0)
+        , m_numIndexedItems(0)
+#endif
+    {
+        resetCurrentListIterators();
+    }
 
 private:
+    friend class PaintControllerTest;
+    friend class PaintControllerPaintTestBase;
+
+    void ensureNewDisplayItemListInitialCapacity()
+    {
+        if (m_newDisplayItemList.isEmpty()) {
+            // TODO(wangxianzhu): Consider revisiting this heuristic.
+            m_newDisplayItemList = DisplayItemList(m_currentPaintArtifact.getDisplayItemList().isEmpty() ? kInitialDisplayItemListCapacityBytes : m_currentPaintArtifact.getDisplayItemList().usedCapacityInBytes());
+        }
+    }
+
     // Set new item state (cache skipping, etc) for a new item.
     void processNewItem(DisplayItem&);
 
@@ -172,10 +200,14 @@ private:
     static size_t findMatchingItemFromIndex(const DisplayItem::Id&, const DisplayItemIndicesByClientMap&, const DisplayItemList&);
     static void addItemToIndexIfNeeded(const DisplayItem&, size_t index, DisplayItemIndicesByClientMap&);
 
-    struct OutOfOrderIndexContext;
-    DisplayItemList::iterator findOutOfOrderCachedItem(const DisplayItem::Id&, OutOfOrderIndexContext&);
-    DisplayItemList::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&, OutOfOrderIndexContext&);
-    void copyCachedSubsequence(const DisplayItemList& currentList, DisplayItemList::iterator& currentIt, DisplayItemList& updatedList, SkPictureGpuAnalyzer&);
+    DisplayItemList::iterator findCachedItem(const DisplayItem::Id&);
+    DisplayItemList::iterator findOutOfOrderCachedItemForward(const DisplayItem::Id&);
+    void copyCachedSubsequence(DisplayItemList::iterator&);
+
+    // Resets the iterators (e.g. m_nextItemToMatch) of m_currentPaintArtifact.getDisplayItemList()
+    // to their initial values. This should be called when the DisplayItemList in m_currentPaintArtifact
+    // is newly created, or is changed causing the previous iterators to be invalid.
+    void resetCurrentListIterators();
 
 #if DCHECK_IS_ON()
     // The following two methods are for checking under-invalidations
@@ -183,8 +215,6 @@ private:
     void checkUnderInvalidation(DisplayItemList::iterator& newIt, DisplayItemList::iterator& currentIt);
     void checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem);
 #endif
-
-    void updateCacheGeneration();
 
     // The last complete paint artifact.
     // In SPv2, this includes paint chunks as well as display items.
@@ -209,14 +239,30 @@ private:
 
     int m_numCachedNewItems;
 
-#if DCHECK_IS_ON()
-    // This is used to check duplicated ids during add(). We could also check
-    // during commitNewDisplayItems(), but checking during add() helps developer
-    // easily find where the duplicated ids are from.
-    DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
-#endif
+    // Stores indices to valid DrawingDisplayItems in current display list that have not been
+    // matched by CachedDisplayItems during sequential matching. The indexed items will be
+    // matched by later out-of-order requests of cached display items. This ensures that when
+    // out-of-order cached display items are requested, we only traverse at most once over
+    // the current display list looking for potential matches. Thus we can ensure that the
+    // algorithm runs in linear time.
+    DisplayItemIndicesByClientMap m_outOfOrderItemIndices;
+
+    // The next item in the current list for sequential match.
+    DisplayItemList::iterator m_nextItemToMatch;
+
+    // The next item in the current list to be indexed for out-of-order cache requests.
+    DisplayItemList::iterator m_nextItemToIndex;
 
     DisplayItemClient::CacheGenerationOrInvalidationReason m_currentCacheGeneration;
+
+#if DCHECK_IS_ON()
+    int m_numSequentialMatches;
+    int m_numOutOfOrderMatches;
+    int m_numIndexedItems;
+
+    // This is used to check duplicated ids during createAndAppend().
+    DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
+#endif
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     // A stack recording subsequence clients that are currently painting.

@@ -5,7 +5,9 @@
 #ifndef SubsequenceRecorder_h
 #define SubsequenceRecorder_h
 
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DisplayItem.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
@@ -26,7 +28,10 @@ class PLATFORM_EXPORT SubsequenceRecorder final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(SubsequenceRecorder);
 public:
-    static bool useCachedSubsequenceIfPossible(GraphicsContext&, const DisplayItemClient&);
+    static bool useCachedSubsequenceIfPossible(GraphicsContext& context, const DisplayItemClient& client)
+    {
+        return context.getPaintController().useCachedSubsequenceIfPossible(client);
+    }
 
     SubsequenceRecorder(GraphicsContext&, const DisplayItemClient&);
     ~SubsequenceRecorder();

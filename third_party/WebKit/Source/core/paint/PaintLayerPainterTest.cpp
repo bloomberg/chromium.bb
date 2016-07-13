@@ -56,20 +56,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence)
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     document().view()->updateAllLifecyclePhasesExceptPaint();
-    bool needsCommit = paintWithoutCommit();
+    EXPECT_TRUE(paintWithoutCommit());
 
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
-        TestDisplayItem(layoutView(), cachedDocumentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
-        TestDisplayItem(container1, cachedBackgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::CachedSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+    EXPECT_EQ(6, numCachedNewItems());
 
-    if (needsCommit)
-        commit();
+    commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),
@@ -139,28 +130,16 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange)
 
     document().view()->updateAllLifecyclePhasesExceptPaint();
     IntRect newInterestRect(0, 100, 300, 1000);
-    bool needsCommit = paintWithoutCommit(&newInterestRect);
+    EXPECT_TRUE(paintWithoutCommit(&newInterestRect));
 
     // Container1 becomes partly in the interest rect, but uses cached subsequence
     // because it was fully painted before;
     // Container2's intersection with the interest rect changes;
     // Content2b is out of the interest rect and outputs nothing;
     // Container3 becomes out of the interest rect and outputs empty subsequence pair..
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 11,
-        TestDisplayItem(layoutView(), cachedDocumentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::CachedSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::Subsequence),
-        TestDisplayItem(container2, cachedBackgroundType),
-        TestDisplayItem(content2a, cachedBackgroundType),
-        TestDisplayItem(content2b, backgroundType),
-        TestDisplayItem(container2Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container3Layer, DisplayItem::Subsequence),
-        TestDisplayItem(container3Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+    EXPECT_EQ(7, numCachedNewItems());
 
-    if (needsCommit)
-        commit();
+    commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 14,
         TestDisplayItem(layoutView(), documentBackgroundType),
@@ -215,20 +194,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnStyleChangeWithInterestRectClip
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; width: 100px; height: 100px; background-color: green");
     document().view()->updateAllLifecyclePhasesExceptPaint();
-    bool needsCommit = paintWithoutCommit(&interestRect);
+    EXPECT_TRUE(paintWithoutCommit(&interestRect));
 
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 8,
-        TestDisplayItem(layoutView(), cachedDocumentBackgroundType),
-        TestDisplayItem(htmlLayer, DisplayItem::Subsequence),
-        TestDisplayItem(container1Layer, DisplayItem::Subsequence),
-        TestDisplayItem(container1, cachedBackgroundType),
-        TestDisplayItem(content1, backgroundType),
-        TestDisplayItem(container1Layer, DisplayItem::EndSubsequence),
-        TestDisplayItem(container2Layer, DisplayItem::CachedSubsequence),
-        TestDisplayItem(htmlLayer, DisplayItem::EndSubsequence));
+    EXPECT_EQ(6, numCachedNewItems());
 
-    if (needsCommit)
-        commit();
+    commit();
 
     EXPECT_DISPLAY_LIST(rootPaintController().getDisplayItemList(), 11,
         TestDisplayItem(layoutView(), documentBackgroundType),

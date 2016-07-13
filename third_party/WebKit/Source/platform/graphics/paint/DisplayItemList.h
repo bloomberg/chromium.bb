@@ -43,7 +43,7 @@ public:
         return *this;
     }
 
-    DisplayItem& appendByMoving(DisplayItem&, const IntRect& visualRect, SkPictureGpuAnalyzer&);
+    DisplayItem& appendByMoving(DisplayItem&);
 
     IntRect visualRect(unsigned index) const
     {

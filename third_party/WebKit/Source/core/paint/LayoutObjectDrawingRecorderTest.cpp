@@ -76,9 +76,7 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     drawNothing(context, layoutView(), PaintPhaseSelfBlockBackgroundOnly, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
 
-    EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 2,
-        TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfBlockBackgroundOnly))),
-        TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground))));
+    EXPECT_EQ(2, numCachedNewItems());
 
     rootPaintController().commitNewDisplayItems();
 
