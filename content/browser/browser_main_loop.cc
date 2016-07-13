@@ -1079,6 +1079,11 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       }
       case BrowserThread::IO: {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IOThread");
+        // At this point we should have removed all tabs which will lead to all
+        // RenderProcessHostImpl instances getting terminated.
+        // It is suspected that this is not happening: crbug.com/608049.
+        // TODO(alokp): Remove this after fixing the issue.
+        RenderProcessHostImpl::CheckAllTerminated();
         ResetThread_IO(std::move(io_thread_));
         break;
       }

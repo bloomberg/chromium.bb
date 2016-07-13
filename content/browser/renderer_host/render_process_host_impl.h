@@ -204,6 +204,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void RegisterHost(int host_id, RenderProcessHost* host);
   static void UnregisterHost(int host_id);
 
+  // CHECKs that all hosts have terminated.
+  // Added temporarily to diagnose crbug.com/608049.
+  static void CheckAllTerminated();
+
   // Implementation of FilterURL below that can be shared with the mock class.
   static void FilterURL(RenderProcessHost* rph, bool empty_allowed, GURL* url);
 

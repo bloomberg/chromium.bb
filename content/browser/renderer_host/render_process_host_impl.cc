@@ -2108,6 +2108,20 @@ void RenderProcessHostImpl::UnregisterHost(int host_id) {
 }
 
 // static
+void RenderProcessHostImpl::CheckAllTerminated() {
+  iterator iter(AllHostsIterator());
+  while (!iter.IsAtEnd()) {
+    // The leftover hosts must have reset IPC channel and getting deleted soon.
+    RenderProcessHostImpl* host =
+        static_cast<RenderProcessHostImpl*>(iter.GetCurrentValue());
+    CHECK(host->listeners_.IsEmpty());
+    CHECK_EQ(0, host->worker_ref_count_);
+    CHECK(!host->channel_);
+    CHECK(host->deleting_soon_);
+  }
+}
+
+// static
 void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
                                       bool empty_allowed,
                                       GURL* url) {
