@@ -103,7 +103,7 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
   // Validate that the overrides are all strings
   for (base::DictionaryValue::Iterator iter(*overrides); !iter.IsAtEnd();
        iter.Advance()) {
-    std::string page = iter.key();
+    const std::string& page = iter.key();
     std::string val;
     // Restrict override pages to a list of supported URLs.
     bool is_allowed_host = page == chrome::kChromeUINewTabHost ||

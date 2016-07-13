@@ -62,7 +62,7 @@ void SystemNetworkGetNetworkInterfacesFunction::SendResponseOnUIThread(
 
   std::vector<api::system_network::NetworkInterface> create_arg;
   create_arg.reserve(interface_list.size());
-  for (const net::NetworkInterface interface : interface_list) {
+  for (const net::NetworkInterface& interface : interface_list) {
     api::system_network::NetworkInterface info;
     info.name = interface.name;
     info.address = interface.address.ToString();

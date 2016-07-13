@@ -59,7 +59,7 @@ struct AutomationInfo : public Extension::ManifestData {
 
  private:
   AutomationInfo();
-  AutomationInfo(bool desktop, URLPatternSet matches, bool interact);
+  AutomationInfo(bool desktop, const URLPatternSet& matches, bool interact);
 
   static std::unique_ptr<api::manifest_types::Automation> AsManifestType(
       const AutomationInfo& info);

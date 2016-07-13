@@ -314,7 +314,7 @@ bool ExtensionSpecialStoragePolicy::SpecialCollection::Contains(
 
 bool ExtensionSpecialStoragePolicy::SpecialCollection::GrantsCapabilitiesTo(
     const GURL& origin) {
-  for (scoped_refptr<const Extension> extension : extensions_) {
+  for (const auto& extension : extensions_) {
     if (extensions::ContentCapabilitiesInfo::Get(extension.get())
             .url_patterns.MatchesURL(origin)) {
       return true;

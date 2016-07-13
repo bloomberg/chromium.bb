@@ -32,7 +32,7 @@ typedef const struct {
 // |platform_specific_only| is true, only the latter is tested. |platforms|
 // specifies all platforms to use when populating the |suggested_key|
 // dictionary.
-void CheckParse(ConstCommandsTestData data,
+void CheckParse(const ConstCommandsTestData& data,
                 int i,
                 bool platform_specific_only,
                 std::vector<std::string>& platforms) {

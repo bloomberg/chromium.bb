@@ -331,7 +331,7 @@ class PrinterProviderApiTest : public ShellApiTest {
   // in |expoected_printers| are unique.
   void ValidatePrinterListValue(
       const base::ListValue& printers,
-      const std::vector<std::unique_ptr<base::Value>> expected_printers) {
+      const std::vector<std::unique_ptr<base::Value>>& expected_printers) {
     ASSERT_EQ(expected_printers.size(), printers.GetSize());
     for (const auto& printer_value : expected_printers) {
       EXPECT_TRUE(printers.Find(*printer_value.get()) != printers.end())
@@ -508,7 +508,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersSuccess) {
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, std::move(expected_printers));
+  ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
@@ -539,7 +539,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersAsyncSuccess) {
           .Set("name", "Printer 1")
           .Build());
 
-  ValidatePrinterListValue(printers, std::move(expected_printers));
+  ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
@@ -601,7 +601,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersTwoExtensions) {
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, std::move(expected_printers));
+  ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
@@ -680,7 +680,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, std::move(expected_printers));
+  ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest,
           .Set("name", "Printer 2")
           .Build());
 
-  ValidatePrinterListValue(printers, std::move(expected_printers));
+  ValidatePrinterListValue(printers, expected_printers);
 }
 
 IN_PROC_BROWSER_TEST_F(PrinterProviderApiTest, GetPrintersNoListener) {

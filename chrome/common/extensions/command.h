@@ -61,7 +61,7 @@ class Command {
   bool global() const { return global_; }
 
   // Setter:
-  void set_accelerator(ui::Accelerator accelerator) {
+  void set_accelerator(const ui::Accelerator& accelerator) {
     accelerator_ = accelerator;
   }
   void set_global(bool global) {

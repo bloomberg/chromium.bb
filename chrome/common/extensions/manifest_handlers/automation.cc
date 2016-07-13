@@ -306,10 +306,9 @@ AutomationInfo::AutomationInfo() : desktop(false), interact(false) {
 }
 
 AutomationInfo::AutomationInfo(bool desktop,
-                               const URLPatternSet matches,
+                               const URLPatternSet& matches,
                                bool interact)
-    : desktop(desktop), matches(matches), interact(interact) {
-}
+    : desktop(desktop), matches(matches), interact(interact) {}
 
 AutomationInfo::~AutomationInfo() {
 }

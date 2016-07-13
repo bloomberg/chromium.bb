@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(AllUrlsApiTest, WhitelistedExtension) {
     embedded_test_server()->GetURL(kAllUrlsTarget).spec(),
     bystander->GetResourceURL("page.html").spec()
   };
-  for (auto test_url : test_urls)
+  for (const auto& test_url : test_urls)
     NavigateAndWait(test_url);
 }
 

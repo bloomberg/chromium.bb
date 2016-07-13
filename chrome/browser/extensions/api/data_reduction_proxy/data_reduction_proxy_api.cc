@@ -48,9 +48,9 @@ void DataReductionProxyGetDataUsageFunction::ReplyWithDataUsage(
   for (const auto& data_usage_bucket : *data_usage) {
     std::unique_ptr<base::ListValue> connection_usage_list(
         new base::ListValue());
-    for (auto connection_usage : data_usage_bucket.connection_usage()) {
+    for (const auto& connection_usage : data_usage_bucket.connection_usage()) {
       std::unique_ptr<base::ListValue> site_usage_list(new base::ListValue());
-      for (auto site_usage : connection_usage.site_usage()) {
+      for (const auto& site_usage : connection_usage.site_usage()) {
         std::unique_ptr<base::DictionaryValue> usage(
             new base::DictionaryValue());
         usage->SetString("hostname", site_usage.hostname());
