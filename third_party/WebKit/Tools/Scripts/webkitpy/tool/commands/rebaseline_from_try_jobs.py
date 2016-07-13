@@ -11,6 +11,7 @@ with layout test results.
 import logging
 import optparse
 
+from webkitpy.common.checkout.scm.git import Git
 from webkitpy.common.net.rietveld import latest_try_jobs
 from webkitpy.common.net.web import Web
 from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
@@ -29,7 +30,7 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         super(RebaselineFromTryJobs, self).__init__(options=[
             optparse.make_option(
                 '--issue', type='int', default=None,
-                help='Rietveld issue number.'),
+                help='Rietveld issue number; if none given, this will be obtained via `git cl issue`.'),
             optparse.make_option(
                 '--dry-run', action='store_true', default=False,
                 help='Dry run mode; list actions that would be performed but do not do anything.'),
@@ -39,24 +40,39 @@ class RebaselineFromTryJobs(AbstractParallelRebaselineCommand):
         self.web = Web()
 
     def execute(self, options, args, tool):
-        if not options.issue:
-            # TODO(qyearsley): If no issue number is given, get the one for the current branch.
-            _log.info('No issue number provided.')
+        issue_number = self._get_issue_number(options)
+        if not issue_number:
             return
-
         if args:
             test_prefix_list = {}
-            try_jobs = latest_try_jobs(options.issue, self._try_bots(), self.web)
+            try_jobs = latest_try_jobs(issue_number, self._try_bots(), self.web)
             builders = [j.builder_name for j in try_jobs]
             for t in args:
                 test_prefix_list[t] = {b: BASELINE_SUFFIX_LIST for b in builders}
         else:
-            test_prefix_list = self._test_prefix_list(options.issue)
+            test_prefix_list = self._test_prefix_list(issue_number)
         self._log_test_prefix_list(test_prefix_list)
 
         if options.dry_run:
             return
         self._rebaseline(options, test_prefix_list, skip_checking_actual_results=True)
+
+    def _get_issue_number(self, options):
+        """Gets the Rietveld CL number from either |options| or from the current local branch."""
+        if options.issue:
+            return options.issue
+        issue_number = self._git().get_issue_number()
+        _log.debug('Issue number for current branch: %s' % issue_number)
+        if not issue_number.isdigit():
+            _log.error('No issue number given and no issue for current branch.')
+            return None
+        return int(issue_number)
+
+    def _git(self):
+        """Returns a Git instance; can be overridden for tests."""
+        # Pass in a current working directory inside of the repo so
+        # that this command can be called from outside of the repo.
+        return Git(cwd=self._tool.filesystem.dirname(self._tool.path()))
 
     def _test_prefix_list(self, issue_number):
         """Returns a collection of test, builder and file extensions to get new baselines for."""
