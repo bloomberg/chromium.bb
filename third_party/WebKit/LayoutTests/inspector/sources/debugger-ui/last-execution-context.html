@@ -54,7 +54,7 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("User selected content script");
-    context.setFlavor(WebInspector.ExecutionContext, pageTarget.runtimeModel.executionContexts()[0]);
+    context.setFlavor(WebInspector.ExecutionContext, pageTarget.runtimeModel.executionContexts()[2]);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to sw target");
@@ -66,7 +66,7 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("User selected iframe1");
-    context.setFlavor(WebInspector.ExecutionContext, pageTarget.runtimeModel.executionContexts()[1]);
+    context.setFlavor(WebInspector.ExecutionContext, pageTarget.runtimeModel.executionContexts()[0]);
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Switching to sw target");

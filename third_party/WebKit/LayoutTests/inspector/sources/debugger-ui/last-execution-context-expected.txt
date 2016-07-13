@@ -9,7 +9,7 @@ Execution context selected: mock-target-page-target:42
 Adding sw target
 
 Removing page main frame
-Execution context selected: contentScript1
+Execution context selected: mock-target-page-target:iframe1
 
 Readding page main frame
 Execution context selected: mock-target-page-target:42

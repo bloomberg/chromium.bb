@@ -43,11 +43,11 @@ InspectorTest.createMockTarget = function(id, debuggerModelConstructor, targetTy
         WebInspector.Target.call(this, InspectorTest.testTargetManager, name, type, connection, null, callback);
         this.consoleModel = new WebInspector.ConsoleModel(this);
         this.networkManager = new WebInspector.NetworkManager(this);
+        this.runtimeModel = new WebInspector.RuntimeModel(this);
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
         this.resourceTreeModel._inspectedPageURL = InspectorTest.resourceTreeModel._inspectedPageURL;
         this.resourceTreeModel._cachedResourcesProcessed = true;
         this.resourceTreeModel._frameAttached("42", 0);
-        this.runtimeModel = new WebInspector.RuntimeModel(this);
         this.debuggerModel = debuggerModelConstructor ? new debuggerModelConstructor(this) : new WebInspector.DebuggerModel(this);
         this._modelByConstructor.set(WebInspector.DebuggerModel, this.debuggerModel);
         this.domModel = new WebInspector.DOMModel(this);
