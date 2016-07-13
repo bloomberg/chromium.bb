@@ -32,6 +32,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/ScriptLoader.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/LocalFrame.h"
@@ -358,7 +359,7 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
         if (m_document->frame()) {
             ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
             if (scriptState)
-                ScriptStreamer::startStreaming(m_parserBlockingScript.get(), ScriptStreamer::ParsingBlocking, m_document->frame()->settings(), scriptState, m_document->loadingTaskRunner());
+                ScriptStreamer::startStreaming(m_parserBlockingScript.get(), ScriptStreamer::ParsingBlocking, m_document->frame()->settings(), scriptState, TaskRunnerHelper::getLoadingTaskRunner(m_document));
         }
 
         m_parserBlockingScript->watchForLoad(this);
@@ -374,7 +375,7 @@ void HTMLScriptRunner::requestDeferredScript(Element* element)
     if (m_document->frame() && !pendingScript->isReady()) {
         ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());
         if (scriptState)
-            ScriptStreamer::startStreaming(pendingScript, ScriptStreamer::Deferred, m_document->frame()->settings(), scriptState, m_document->loadingTaskRunner());
+            ScriptStreamer::startStreaming(pendingScript, ScriptStreamer::Deferred, m_document->frame()->settings(), scriptState, TaskRunnerHelper::getLoadingTaskRunner(m_document));
     }
 
     ASSERT(pendingScript->resource());

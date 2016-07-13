@@ -2625,6 +2625,8 @@
             'dom/StyleSheetCollection.h',
             'dom/TagCollection.cpp',
             'dom/TagCollection.h',
+            'dom/TaskRunnerHelper.cpp',
+            'dom/TaskRunnerHelper.h',
             'dom/Text.cpp',
             'dom/TextLinkColors.cpp',
             'dom/TextLinkColors.h',

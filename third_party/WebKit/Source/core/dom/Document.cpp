@@ -100,6 +100,7 @@
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/TransformSource.h"
 #include "core/dom/TreeWalker.h"
@@ -445,7 +446,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_compositorPendingAnimations(new CompositorPendingAnimations())
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
-    , m_timers(timerTaskRunner()->adoptClone())
+    , m_timers(TaskRunnerHelper::getTimerTaskRunner(this)->adoptClone())
     , m_hasViewportUnits(false)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
     , m_nodeCount(0)
@@ -3021,7 +3022,7 @@ void Document::didRemoveAllPendingStylesheet()
 
 void Document::didLoadAllScriptBlockingResources()
 {
-    loadingTaskRunner()->postTask(BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
+    TaskRunnerHelper::getLoadingTaskRunner(this)->postTask(BLINK_FROM_HERE, m_executeScriptsWaitingForResourcesTask->cancelAndCreate());
 
     if (isHTMLDocument() && body()) {
         // For HTML if we have no more stylesheets to load and we're past the body
@@ -5869,39 +5870,6 @@ bool Document::isSecureContext(String& errorMessage, const SecureContextCheck pr
 bool Document::isSecureContext(const SecureContextCheck privilegeContextCheck) const
 {
     return isSecureContextImpl(privilegeContextCheck);
-}
-
-WebTaskRunner* Document::loadingTaskRunner() const
-{
-    if (frame())
-        return frame()->frameScheduler()->loadingTaskRunner();
-    if (m_importsController)
-        return m_importsController->master()->loadingTaskRunner();
-    if (m_contextDocument)
-        return m_contextDocument->loadingTaskRunner();
-    return Platform::current()->currentThread()->scheduler()->loadingTaskRunner();
-}
-
-WebTaskRunner* Document::timerTaskRunner() const
-{
-    if (frame())
-        return m_frame->frameScheduler()->timerTaskRunner();
-    if (m_importsController)
-        return m_importsController->master()->timerTaskRunner();
-    if (m_contextDocument)
-        return m_contextDocument->timerTaskRunner();
-    return Platform::current()->currentThread()->scheduler()->timerTaskRunner();
-}
-
-WebTaskRunner* Document::unthrottledTaskRunner() const
-{
-    if (frame())
-        return m_frame->frameScheduler()->unthrottledTaskRunner();
-    if (m_importsController)
-        return m_importsController->master()->unthrottledTaskRunner();
-    if (m_contextDocument)
-        return m_contextDocument->unthrottledTaskRunner();
-    return Platform::current()->currentThread()->getWebTaskRunner();
 }
 
 void Document::enforceInsecureRequestPolicy(WebInsecureRequestPolicy policy)

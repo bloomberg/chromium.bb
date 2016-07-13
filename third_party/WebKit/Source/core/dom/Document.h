@@ -1072,10 +1072,6 @@ public:
 
     SnapCoordinator* snapCoordinator();
 
-    WebTaskRunner* loadingTaskRunner() const;
-    WebTaskRunner* timerTaskRunner() const;
-    WebTaskRunner* unthrottledTaskRunner() const;
-
     void enforceInsecureRequestPolicy(WebInsecureRequestPolicy);
 
     bool mayContainV0Shadow() const { return m_mayContainV0Shadow; }
