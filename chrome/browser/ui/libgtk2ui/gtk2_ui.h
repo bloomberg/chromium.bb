@@ -134,6 +134,9 @@ class Gtk2UI : public views::LinuxUI {
   // ThemeService interface and the colors we send to webkit.
   void LoadGtkValues();
 
+  // Initialize the Xcursor theme and size with the GTK theme and size.
+  void LoadCursorTheme();
+
   // Updates colors if necessary after possible modification of command line.
   // TODO(varkha): This should not be necessary once Material Design is on
   // unconditionally.
