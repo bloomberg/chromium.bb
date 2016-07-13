@@ -46,7 +46,7 @@ namespace {
 String buildCacheId(const String& securityOrigin, const String& cacheName)
 {
     String id(securityOrigin);
-    id.append("|");
+    id.append('|');
     id.append(cacheName);
     return id;
 }

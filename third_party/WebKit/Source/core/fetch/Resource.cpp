@@ -618,7 +618,7 @@ String Resource::reasonNotDeletable() const
             builder.append(", Finished=");
             builder.appendNumber(m_finishedClients.size());
         }
-        builder.append(")");
+        builder.append(')');
     }
     if (m_loader) {
         if (!builder.isEmpty())
@@ -630,7 +630,7 @@ String Resource::reasonNotDeletable() const
             builder.append(' ');
         builder.append("m_preloadCount(");
         builder.appendNumber(m_preloadCount);
-        builder.append(")");
+        builder.append(')');
     }
     if (memoryCache()->contains(this)) {
         if (!builder.isEmpty())

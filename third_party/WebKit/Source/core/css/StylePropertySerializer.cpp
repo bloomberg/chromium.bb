@@ -853,7 +853,7 @@ static void appendBackgroundRepeatValue(StringBuilder& builder, const CSSValue& 
         builder.append("repeat-x");
     } else {
         builder.append(repeatX.cssText());
-        builder.append(" ");
+        builder.append(' ');
         builder.append(repeatY.cssText());
     }
 }

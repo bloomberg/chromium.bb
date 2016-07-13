@@ -58,14 +58,14 @@ String CSSFontFaceSrcValue::customCSSText() const
     if (isLocal()) {
         result.append("local(");
         result.append(serializeString(m_absoluteResource));
-        result.append(")");
+        result.append(')');
     } else {
         result.append(serializeURI(m_specifiedResource));
     }
     if (!m_format.isEmpty()) {
         result.append(" format(");
         result.append(serializeString(m_format));
-        result.append(")");
+        result.append(')');
     }
     return result.toString();
 }

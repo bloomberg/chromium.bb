@@ -219,7 +219,7 @@ void CSSParserToken::serialize(StringBuilder& builder) const
     case UrlToken:
         builder.append("url(");
         serializeIdentifier(value().toString(), builder);
-        return builder.append(")");
+        return builder.append(')');
     case DelimiterToken:
         if (delimiter() == '\\')
             return builder.append("\\\n");

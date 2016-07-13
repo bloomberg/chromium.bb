@@ -804,10 +804,13 @@ void V8DebuggerAgentImpl::setBlackboxPatterns(ErrorString* errorString, std::uni
     }
 
     String16Builder patternBuilder;
-    patternBuilder.append("(");
-    for (size_t i = 0; i < patterns->length() - 1; ++i)
-        patternBuilder.append(patterns->get(i) + "|");
-    patternBuilder.append(patterns->get(patterns->length() - 1) + ")");
+    patternBuilder.append('(');
+    for (size_t i = 0; i < patterns->length() - 1; ++i) {
+        patternBuilder.append(patterns->get(i));
+        patternBuilder.append("|");
+    }
+    patternBuilder.append(patterns->get(patterns->length() - 1));
+    patternBuilder.append(')');
     String16 pattern = patternBuilder.toString();
     if (!setBlackboxPattern(errorString, pattern))
         return;

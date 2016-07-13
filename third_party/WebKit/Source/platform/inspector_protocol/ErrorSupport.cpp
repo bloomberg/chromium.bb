@@ -42,7 +42,7 @@ void ErrorSupport::addError(const String16& error)
     String16Builder builder;
     for (size_t i = 0; i < m_path.size(); ++i) {
         if (i)
-            builder.append(".");
+            builder.append('.');
         builder.append(m_path[i]);
     }
     builder.append(": ");

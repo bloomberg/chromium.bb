@@ -85,13 +85,13 @@ static bool throwExceptionIfRemovedOrUpdating(bool isRemoved, bool isUpdating, E
 WTF::String webTimeRangesToString(const WebTimeRanges& ranges)
 {
     StringBuilder stringBuilder;
-    stringBuilder.append("{");
+    stringBuilder.append('{');
     for (auto& r : ranges) {
         stringBuilder.append(" [");
         stringBuilder.appendNumber(r.start);
-        stringBuilder.append(";");
+        stringBuilder.append(';');
         stringBuilder.appendNumber(r.end);
-        stringBuilder.append("]");
+        stringBuilder.append(']');
     }
     stringBuilder.append(" }");
     return stringBuilder.toString();

@@ -10,6 +10,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/StringHasher.h"
+#include "wtf/text/StringBuilder.h"
 #include <memory>
 
 namespace blink {
@@ -23,13 +24,13 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
 
 PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName)
 {
-    String filePath = testing::blinkRootDir();
-    filePath.append("/");
+    StringBuilder filePath;
+    filePath.append(testing::blinkRootDir());
+    filePath.append('/');
     filePath.append(dir);
-    filePath.append("/");
+    filePath.append('/');
     filePath.append(fileName);
-
-    return testing::readFromFile(filePath);
+    return testing::readFromFile(filePath.toString());
 }
 
 unsigned hashBitmap(const SkBitmap& bitmap)

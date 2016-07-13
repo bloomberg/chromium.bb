@@ -163,7 +163,7 @@ String DictionaryTest::stringFromIterable(ExecutionContext* executionContext, Di
         if (firstLoop)
             firstLoop = false;
         else
-            result.append(",");
+            result.append(',');
 
         v8::Local<v8::Value> value;
         if (v8Call(iterator.value(), value))

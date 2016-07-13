@@ -113,7 +113,7 @@ String nameToUniqueName(const String& name)
     static int uniqueNameCounter = 0;
     StringBuilder uniqueName;
     uniqueName.append(name);
-    uniqueName.append(" ");
+    uniqueName.append(' ');
     uniqueName.appendNumber(uniqueNameCounter++);
     return uniqueName.toString();
 }

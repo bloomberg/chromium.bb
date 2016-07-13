@@ -646,20 +646,20 @@ String canonicalCSSText(CSSRule* rule)
 
     StringBuilder builder;
     builder.append(styleRule->selectorText());
-    builder.append("{");
+    builder.append('{');
     for (unsigned i = 0; i < propertyNames.size(); ++i) {
         String name = propertyNames.at(i);
-        builder.append(" ");
+        builder.append(' ');
         builder.append(name);
-        builder.append(":");
+        builder.append(':');
         builder.append(style->getPropertyValue(name));
         if (!style->getPropertyPriority(name).isEmpty()) {
-            builder.append(" ");
+            builder.append(' ');
             builder.append(style->getPropertyPriority(name));
         }
-        builder.append(";");
+        builder.append(';');
     }
-    builder.append("}");
+    builder.append('}');
 
     return builder.toString();
 }

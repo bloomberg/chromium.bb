@@ -865,7 +865,7 @@ String AXObject::textFromElements(bool inAriaLabelledbyTraversal, AXObjectSet& v
             localRelatedObjects.append(new NameSourceRelatedObject(axElement, result));
             if (!result.isEmpty()) {
                 if (!accumulatedText.isEmpty())
-                    accumulatedText.append(" ");
+                    accumulatedText.append(' ');
                 accumulatedText.append(result);
             }
         }

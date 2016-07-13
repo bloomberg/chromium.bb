@@ -505,7 +505,7 @@ void SecurityOrigin::buildRawString(StringBuilder& builder, bool includeSuborigi
     builder.append("://");
     if (includeSuborigin && hasSuborigin()) {
         builder.append(m_suborigin.name());
-        builder.append("_");
+        builder.append('_');
     }
     builder.append(m_host);
 

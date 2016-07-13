@@ -15,7 +15,7 @@ String CSSGridAutoRepeatValue::customCSSText() const
     result.append(getValueName(autoRepeatID()));
     result.append(", ");
     result.append(CSSValueList::customCSSText());
-    result.append(")");
+    result.append(')');
     return result.toString();
 }
 

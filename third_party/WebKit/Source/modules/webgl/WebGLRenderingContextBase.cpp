@@ -534,7 +534,7 @@ static String extractWebGLContextCreationError(const Platform::GraphicsInfo& inf
     formatWebGLStatusString("Reset notification strategy", String::format("0x%04x", info.resetNotificationStrategy).utf8().data(), statusMessage);
     formatWebGLStatusString("GPU process crash count", String::number(info.processCrashCount).utf8().data(), statusMessage);
     formatWebGLStatusString("ErrorMessage", info.errorMessage.utf8().data(), statusMessage);
-    statusMessage.append(".");
+    statusMessage.append('.');
     return statusMessage;
 }
 

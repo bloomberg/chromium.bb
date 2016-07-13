@@ -147,10 +147,10 @@ public:
             builder.append("Tokens(");
             for (unsigned index = 0; index < m_tokens.size(); ++index) {
                 if (index)
-                    builder.append(",");
+                    builder.append(',');
                 builder.append(m_tokens[index].toString());
             }
-            builder.append(")");
+            builder.append(')');
             return builder.toString();
         }
 

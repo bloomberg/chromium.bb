@@ -20,6 +20,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 #include <v8.h>
@@ -358,15 +359,15 @@ TEST(DOMWebSocketTest, maximumReasonSize)
         EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
         EXPECT_CALL(webSocketScope.channel(), failMock(_, _, _));
     }
-    String reason;
+    StringBuilder reason;
     for (size_t i = 0; i < 123; ++i)
-        reason.append("a");
+        reason.append('a');
     webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
     EXPECT_FALSE(scope.getExceptionState().hadException());
     EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    webSocketScope.socket().close(1000, reason, scope.getExceptionState());
+    webSocketScope.socket().close(1000, reason.toString(), scope.getExceptionState());
 
     EXPECT_FALSE(scope.getExceptionState().hadException());
     EXPECT_EQ(DOMWebSocket::CLOSING, webSocketScope.socket().readyState());
@@ -380,15 +381,15 @@ TEST(DOMWebSocketTest, reasonSizeExceeding)
         InSequence s;
         EXPECT_CALL(webSocketScope.channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
     }
-    String reason;
+    StringBuilder reason;
     for (size_t i = 0; i < 124; ++i)
-        reason.append("a");
+        reason.append('a');
     webSocketScope.socket().connect("ws://example.com/", Vector<String>(), scope.getExceptionState());
 
     EXPECT_FALSE(scope.getExceptionState().hadException());
     EXPECT_EQ(DOMWebSocket::CONNECTING, webSocketScope.socket().readyState());
 
-    webSocketScope.socket().close(1000, reason, scope.getExceptionState());
+    webSocketScope.socket().close(1000, reason.toString(), scope.getExceptionState());
 
     EXPECT_TRUE(scope.getExceptionState().hadException());
     EXPECT_EQ(SyntaxError, scope.getExceptionState().code());

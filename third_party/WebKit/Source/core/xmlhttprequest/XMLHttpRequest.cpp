@@ -837,7 +837,7 @@ void XMLHttpRequest::throwForLoadFailureIfNeeded(ExceptionState& exceptionState,
 
     String message = "Failed to load '" + m_url.elidedString() + "'";
     if (reason.isNull()) {
-        message.append(".");
+        message.append('.');
     } else {
         message.append(": ");
         message.append(reason);

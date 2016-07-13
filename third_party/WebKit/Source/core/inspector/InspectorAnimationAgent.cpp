@@ -129,7 +129,7 @@ static std::unique_ptr<protocol::Animation::KeyframeStyle> buildObjectForStringK
 {
     Decimal decimal = Decimal::fromDouble(keyframe->offset() * 100);
     String offset = decimal.toString();
-    offset.append("%");
+    offset.append('%');
 
     std::unique_ptr<protocol::Animation::KeyframeStyle> keyframeObject = protocol::Animation::KeyframeStyle::create()
         .setOffset(offset)

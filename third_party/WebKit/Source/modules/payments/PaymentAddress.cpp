@@ -4,6 +4,8 @@
 
 #include "modules/payments/PaymentAddress.h"
 
+#include "wtf/text/StringBuilder.h"
+
 namespace blink {
 
 PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
@@ -21,8 +23,11 @@ PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
     , m_phone(address->phone)
 {
     if (!m_languageCode.isEmpty() && !address->script_code.isEmpty()) {
-        m_languageCode.append("-");
-        m_languageCode.append(address->script_code);
+        StringBuilder builder;
+        builder.append(m_languageCode);
+        builder.append('-');
+        builder.append(address->script_code);
+        m_languageCode = builder.toString();
     }
 }
 

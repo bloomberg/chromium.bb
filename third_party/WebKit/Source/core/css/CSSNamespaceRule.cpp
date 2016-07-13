@@ -26,7 +26,7 @@ String CSSNamespaceRule::cssText() const
     result.append("@namespace ");
     serializeIdentifier(prefix(), result);
     if (!prefix().isEmpty())
-        result.append(" ");
+        result.append(' ');
     result.append("url(");
     result.append(serializeString(namespaceURI()));
     result.append(");");

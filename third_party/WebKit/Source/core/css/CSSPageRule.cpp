@@ -79,7 +79,7 @@ String CSSPageRule::cssText() const
     String pageSelectors = selectorText();
     result.append(pageSelectors);
     if (!pageSelectors.isEmpty())
-        result.append(" ");
+        result.append(' ');
     result.append("{ ");
     String decls = m_pageRule->properties().asText();
     result.append(decls);
