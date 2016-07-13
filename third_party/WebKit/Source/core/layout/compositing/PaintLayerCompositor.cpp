@@ -1018,7 +1018,7 @@ void PaintLayerCompositor::ensureRootLayer()
         IntRect overflowRect = m_layoutView.pixelSnappedLayoutOverflowRect();
         m_rootContentLayer->setSize(FloatSize(overflowRect.maxX(), overflowRect.maxY()));
         m_rootContentLayer->setPosition(FloatPoint());
-        m_rootContentLayer->setOwnerNodeId(DOMNodeIds::idForNode(m_layoutView.generatingNode()));
+        m_rootContentLayer->setOwnerNodeId(DOMNodeIds::idForNode(m_layoutView.node()));
 
         // FIXME: with rootLayerScrolls, we probably don't even need m_rootContentLayer?
         if (!(settings && settings->rootLayerScrolls())) {

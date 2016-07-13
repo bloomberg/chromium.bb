@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<style>
+div {
+  width: 100px;
+  height: 100px;
+  background: orange;
+}
+div::before {
+  content: ":)";
+  transition-property: transform;
+  transition-duration: 1ms;
+
+  /* Make the pseudo element "transformable" as per
+   * https://www.w3.org/TR/css-transforms-1/#transformable-element.
+   */
+  display: block;
+}
+</style>
+<div></div>
+<script>
+if (window.testRunner)
+  window.testRunner.waitUntilDone();
+
+requestAnimationFrame(function(ts) {
+  document.styleSheets[0].addRule('div::before',  'transform: translateX(20px)');
+  requestAnimationFrame(function(ts) {
+    requestAnimationFrame(function(ts) {
+      if (window.testRunner)
+        window.testRunner.notifyDone();
+    });
+  });
+});
+</script>
