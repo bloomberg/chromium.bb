@@ -12,8 +12,8 @@
 #include "base/values.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "components/version_info/version_info.h"
-#include "extensions/common/features/base_feature_provider.h"
 #include "extensions/common/features/complex_feature.h"
+#include "extensions/common/features/json_feature_provider.h"
 #include "extensions/common/features/permission_feature.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/value_builder.h"
@@ -146,8 +146,8 @@ TEST_F(ChromeChannelFeatureFilterTest, FeatureValidation) {
   feature2->Set("contexts", contexts);
   value->Set("feature2", feature2);
 
-  std::unique_ptr<BaseFeatureProvider> provider(
-      new BaseFeatureProvider(*value, CreateFeature<PermissionFeature>));
+  std::unique_ptr<JSONFeatureProvider> provider(
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
 
   // feature1 won't validate because it lacks an extension type.
   EXPECT_FALSE(provider->GetFeature("feature1"));
@@ -155,13 +155,13 @@ TEST_F(ChromeChannelFeatureFilterTest, FeatureValidation) {
   // If we add one, it works.
   feature1->Set("extension_types", extension_types->DeepCopy());
   provider.reset(
-      new BaseFeatureProvider(*value, CreateFeature<PermissionFeature>));
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
   EXPECT_TRUE(provider->GetFeature("feature1"));
 
   // Remove the channel, and feature1 won't validate.
   feature1->Remove("channel", NULL);
   provider.reset(
-      new BaseFeatureProvider(*value, CreateFeature<PermissionFeature>));
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
   EXPECT_FALSE(provider->GetFeature("feature1"));
 
   // feature2 won't validate because of the presence of "contexts".
@@ -170,7 +170,7 @@ TEST_F(ChromeChannelFeatureFilterTest, FeatureValidation) {
   // If we remove it, it works.
   feature2->Remove("contexts", NULL);
   provider.reset(
-      new BaseFeatureProvider(*value, CreateFeature<PermissionFeature>));
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
   EXPECT_TRUE(provider->GetFeature("feature2"));
 }
 
@@ -195,8 +195,8 @@ TEST_F(ChromeChannelFeatureFilterTest, SimpleFeatureAvailability) {
                    .Build())
           .Build());
 
-  std::unique_ptr<BaseFeatureProvider> provider(
-      new BaseFeatureProvider(*rule, CreateFeature<SimpleFeature>));
+  std::unique_ptr<JSONFeatureProvider> provider(
+      new JSONFeatureProvider(*rule, CreateFeature<SimpleFeature>));
 
   Feature* feature = provider->GetFeature("feature1");
   EXPECT_TRUE(feature);

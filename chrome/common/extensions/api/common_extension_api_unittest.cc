@@ -24,7 +24,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/features/api_feature.h"
-#include "extensions/common/features/base_feature_provider.h"
+#include "extensions/common/features/json_feature_provider.h"
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -177,7 +177,7 @@ TEST(ExtensionAPITest, APIFeatures) {
   std::unique_ptr<base::DictionaryValue> value(
       static_cast<base::DictionaryValue*>(
           base::JSONReader::Read(api_features_str).release()));
-  BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
+  JSONFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     ExtensionAPI api;
@@ -271,7 +271,7 @@ TEST(ExtensionAPITest, IsAnyFeatureAvailableToContext) {
   std::unique_ptr<base::DictionaryValue> value(
       static_cast<base::DictionaryValue*>(
           base::JSONReader::Read(api_features_str).release()));
-  BaseFeatureProvider api_feature_provider(*value, CreateAPIFeature);
+  JSONFeatureProvider api_feature_provider(*value, CreateAPIFeature);
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     ExtensionAPI api;
@@ -701,7 +701,7 @@ TEST(ExtensionAPITest, FeaturesRequireContexts) {
   };
 
   for (size_t i = 0; i < arraysize(test_data); ++i) {
-    BaseFeatureProvider api_feature_provider(*test_data[i].api_features,
+    JSONFeatureProvider api_feature_provider(*test_data[i].api_features,
                                              CreateAPIFeature);
     Feature* feature = api_feature_provider.GetFeature("test");
     EXPECT_EQ(test_data[i].expect_success, feature != NULL) << i;

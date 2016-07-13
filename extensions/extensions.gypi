@@ -82,6 +82,8 @@
       'common/features/api_feature.h',
       'common/features/base_feature_provider.cc',
       'common/features/base_feature_provider.h',
+      'common/features/json_feature_provider.cc',
+      'common/features/json_feature_provider.h',
       'common/features/behavior_feature.cc',
       'common/features/behavior_feature.h',
       'common/features/complex_feature.cc',
