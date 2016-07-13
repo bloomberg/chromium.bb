@@ -105,6 +105,9 @@ bool IsPepperFlash(const content::WebPluginInfo& plugin) {
          (plugin.pepper_permissions & ppapi::PERMISSION_FLASH);
 }
 
+// |path| is the path to the latest Chrome-managed Flash installation (bundled
+// or component updated).
+// |version| is the version of that Flash implementation.
 void RegisterPepperFlashWithChrome(const base::FilePath& path,
                                    const Version& version) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -112,8 +115,6 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
     return;
 
-  base::FilePath bundled_flash_dir;
-  PathService::Get(chrome::DIR_PEPPER_FLASH_PLUGIN, &bundled_flash_dir);
   base::FilePath system_flash_path;
   PathService::Get(chrome::FILE_PEPPER_FLASH_SYSTEM_PLUGIN, &system_flash_path);
 
@@ -131,8 +132,6 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
       return;
     }
 
-    bool registered_is_bundled =
-        !bundled_flash_dir.empty() && bundled_flash_dir.IsParent(plugin.path);
     bool registered_is_debug_system =
         !system_flash_path.empty() &&
         base::FilePath::CompareEqualIgnoreCase(plugin.path.value(),
@@ -145,11 +144,10 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
     is_on_network = base::IsOnNetworkDrive(path);
 #endif
     // If equal version, register iff component is not on a network drive,
-    // and the version of flash is not bundled, and not debug system.
+    // and the version of flash is not debug system.
     if (registered_version.IsValid() &&
         version.CompareTo(registered_version) == 0 &&
-        (is_on_network || registered_is_bundled ||
-         registered_is_debug_system)) {
+        (is_on_network || registered_is_debug_system)) {
       return;
     }
 
@@ -163,12 +161,8 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
   PluginService::GetInstance()->RefreshPlugins();
 }
 
-void NotifyPathServiceAndChrome(const base::FilePath& path,
-                                const Version& version) {
+void UpdatePathService(const base::FilePath& path) {
   PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RegisterPepperFlashWithChrome, path, version));
 }
 #endif  // !defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
 
@@ -234,8 +228,9 @@ void FlashComponentInstallerTraits::ComponentReady(
   // Installation is done. Now tell the rest of chrome. Both the path service
   // and to the plugin service. On Linux, a restart is required to use the new
   // Flash version, so we do not do this.
+  RegisterPepperFlashWithChrome(path, version);
   BrowserThread::GetBlockingPool()->PostTask(
-      FROM_HERE, base::Bind(&NotifyPathServiceAndChrome, path, version));
+      FROM_HERE, base::Bind(&UpdatePathService, path));
 #endif  // !defined(OS_LINUX)
 }
 
