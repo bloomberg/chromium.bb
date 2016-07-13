@@ -36,6 +36,6 @@ Polymer({
    * @private
    */
   onClearBrowsingDataTap_: function() {
-    window.location.href = 'chrome://settings/clearBrowserData';
+    md_history.BrowserService.getInstance().openClearBrowsingData();
   },
 });

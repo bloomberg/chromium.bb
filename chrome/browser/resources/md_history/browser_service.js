@@ -49,6 +49,10 @@ cr.define('md_history', function() {
       chrome.send('removeBookmark', [url]);
     },
 
+    openClearBrowsingData: function() {
+      chrome.send('clearBrowsingData');
+    },
+
     /**
      * @param {boolean} successful
      * @private
