@@ -1,19 +1,15 @@
+<!DOCTYPE html>
 <script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
 <script>
-
-function runTest()
-{
+function runTest() {
     var canPlayThroughCount = 0;
     var videoShouldPlay;
     var videoShouldNotPlay;
 
     testRunner.waitUntilDone();
+    testRunner.dumpAsText();
 
-    function canPlayThrough()
-    {
+    function canPlayThrough() {
         canPlayThroughCount++;
         if (canPlayThroughCount == 2) {
             // Pause() will clear the autoplaying flag, which should also prevent the
@@ -23,16 +19,27 @@ function runTest()
             // Scroll them into view, and see if they start playing.
             parent.scrollIntoView(true);
             // TODO(liberato): remove once autoplay gesture override experiment concludes.
-            window.internals.triggerAutoplayViewportCheck(videoShouldPlay);
-            window.internals.triggerAutoplayViewportCheck(videoShouldNotPlay);
-            logResult(didPlaybackStart(videoShouldPlay), "First video should play");
-            logResult(!didPlaybackStart(videoShouldNotPlay), "Second video should not play");
+            internals.triggerAutoplayViewportCheck(videoShouldPlay);
+            internals.triggerAutoplayViewportCheck(videoShouldNotPlay);
+            var result;
+            if (didPlaybackStart(videoShouldPlay))
+                result = document.createTextNode("PASS First video is playing");
+            else
+                result = document.createTextNode("FAIL First video isn't playing");
+            document.body.appendChild(result);
+
+            document.body.appendChild(document.createElement("br"));
+
+            if (!didPlaybackStart(videoShouldNotPlay))
+                result = document.createTextNode("PASS Second video isn't playing");
+            else
+                result = document.createTextNode("FAIL Second video is playing");
+            document.body.appendChild(result);
             testRunner.notifyDone();
         }
     }
 
-    function prepareVideo(parent)
-    {
+    function prepareVideo(parent) {
         var video = document.createElement("video");
         video.oncanplaythrough = canPlayThrough;
         video.src = findMediaFile("video", "content/test");
@@ -42,8 +49,7 @@ function runTest()
         return video;
     }
 
-    function didPlaybackStart(element)
-    {
+    function didPlaybackStart(element) {
         return !element.paused || element.ended;
     }
 
@@ -65,7 +71,6 @@ function runTest()
     videoShouldPlay = prepareVideo(parent);
     videoShouldNotPlay = prepareVideo(parent);
 }
-
 </script>
 <p>Test that the autoplay experiment doesn't play media once the media
 is no longer eligible for autoplay.</p>
