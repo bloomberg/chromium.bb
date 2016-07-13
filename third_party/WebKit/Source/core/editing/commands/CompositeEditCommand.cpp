@@ -1065,7 +1065,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
     Node* lastNode = nullptr;
     Node* outerNode = passedOuterNode;
 
-    if (outerNode->isRootEditableElement()) {
+    if (isRootEditableElement(*outerNode)) {
         lastNode = blockElement;
     } else {
         lastNode = outerNode->cloneNode(isDisplayInsideTable(outerNode));
@@ -1398,7 +1398,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState)
     if (!listNode
         || (!isHTMLUListElement(*listNode) && !isHTMLOListElement(*listNode))
         || !listNode->hasEditableStyle()
-        || listNode == emptyListItem->rootEditableElement())
+        || listNode == rootEditableElement(*emptyListItem))
         return false;
 
     HTMLElement* newBlock = nullptr;

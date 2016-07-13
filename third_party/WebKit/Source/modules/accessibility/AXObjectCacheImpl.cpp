@@ -1075,7 +1075,7 @@ bool AXObjectCacheImpl::inlineTextBoxAccessibilityEnabled()
 
 const Element* AXObjectCacheImpl::rootAXEditableElement(const Node* node)
 {
-    const Element* result = node->rootEditableElement();
+    const Element* result = rootEditableElement(*node);
     const Element* element = node->isElementNode() ? toElement(node) : node->parentElement();
 
     for (; element; element = element->parentElement()) {

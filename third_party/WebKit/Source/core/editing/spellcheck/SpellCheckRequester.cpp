@@ -47,7 +47,7 @@ SpellCheckRequest::SpellCheckRequest(
     : m_requester(nullptr)
     , m_checkingRange(checkingRange)
     , m_paragraphRange(paragraphRange)
-    , m_rootEditableElement(m_checkingRange->startContainer()->rootEditableElement())
+    , m_rootEditableElement(blink::rootEditableElement(*m_checkingRange->startContainer()))
     , m_requestData(unrequestedTextCheckingSequence, text, mask, processType, documentMarkersInRange, documentMarkerOffsets)
     , m_requestNumber(requestNumber)
 {
@@ -84,7 +84,7 @@ SpellCheckRequest* SpellCheckRequest::create(TextCheckingTypeMask textCheckingOp
 {
     if (checkingRange.isNull())
         return nullptr;
-    if (!checkingRange.startPosition().computeContainerNode()->rootEditableElement())
+    if (!blink::rootEditableElement(*checkingRange.startPosition().computeContainerNode()))
         return nullptr;
 
     String text = plainText(checkingRange, TextIteratorEmitsObjectReplacementCharacter);

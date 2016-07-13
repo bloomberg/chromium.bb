@@ -790,7 +790,7 @@ bool LayoutBlock::isSelectionRoot() const
 
     if (view() && view()->selectionStart()) {
         Node* startElement = view()->selectionStart()->node();
-        if (startElement && startElement->rootEditableElement() == node())
+        if (startElement && rootEditableElement(*startElement) == node())
             return true;
     }
 
@@ -1409,7 +1409,7 @@ bool LayoutBlock::hasLineIfEmpty() const
     if (!node())
         return false;
 
-    if (node()->isRootEditableElement())
+    if (isRootEditableElement(*node()))
         return true;
 
     if (node()->isShadowRoot() && isHTMLInputElement(toShadowRoot(node())->host()))

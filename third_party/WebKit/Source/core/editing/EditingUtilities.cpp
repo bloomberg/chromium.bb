@@ -339,7 +339,7 @@ Element* rootEditableElementOf(const Position& p, EditableType editableType)
     if (isDisplayInsideTable(node))
         node = node->parentNode();
 
-    return node->rootEditableElement(editableType);
+    return rootEditableElement(*node, editableType);
 }
 
 Element* rootEditableElementOf(const PositionInFlatTree& p, EditableType editableType)
@@ -351,7 +351,7 @@ Element* rootEditableElementOf(const PositionInFlatTree& p, EditableType editabl
 Element* rootEditableElementOf(const VisiblePosition& visiblePosition)
 {
     Node* anchorNode = visiblePosition.deepEquivalent().anchorNode();
-    return anchorNode ? anchorNode->rootEditableElement() : nullptr;
+    return anchorNode ? rootEditableElement(*anchorNode) : nullptr;
 }
 
 // Finds the enclosing element until which the tree can be split.
@@ -913,9 +913,9 @@ static bool isSpecialHTMLElement(const Node& n)
 
 static HTMLElement* firstInSpecialElement(const Position& pos)
 {
-    Element* rootEditableElement = pos.computeContainerNode()->rootEditableElement();
+    Element* element = rootEditableElement(*pos.computeContainerNode());
     for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*pos.anchorNode())) {
-        if (runner.rootEditableElement() != rootEditableElement)
+        if (rootEditableElement(runner) != element)
             break;
         if (isSpecialHTMLElement(runner)) {
             HTMLElement* specialElement = toHTMLElement(&runner);
@@ -932,9 +932,9 @@ static HTMLElement* firstInSpecialElement(const Position& pos)
 
 static HTMLElement* lastInSpecialElement(const Position& pos)
 {
-    Element* rootEditableElement = pos.computeContainerNode()->rootEditableElement();
+    Element* element = rootEditableElement(*pos.computeContainerNode());
     for (Node& runner : NodeTraversal::inclusiveAncestorsOf(*pos.anchorNode())) {
-        if (runner.rootEditableElement() != rootEditableElement)
+        if (rootEditableElement(runner) != element)
             break;
         if (isSpecialHTMLElement(runner)) {
             HTMLElement* specialElement = toHTMLElement(&runner);
@@ -955,7 +955,7 @@ Position positionBeforeContainingSpecialElement(const Position& pos, HTMLElement
     if (!n)
         return pos;
     Position result = Position::inParentBeforeNode(*n);
-    if (result.isNull() || result.anchorNode()->rootEditableElement() != pos.anchorNode()->rootEditableElement())
+    if (result.isNull() || rootEditableElement(*result.anchorNode()) != rootEditableElement(*pos.anchorNode()))
         return pos;
     if (containingSpecialElement)
         *containingSpecialElement = n;
@@ -968,7 +968,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
     if (!n)
         return pos;
     Position result = Position::inParentAfterNode(*n);
-    if (result.isNull() || result.anchorNode()->rootEditableElement() != pos.anchorNode()->rootEditableElement())
+    if (result.isNull() || rootEditableElement(*result.anchorNode()) != rootEditableElement(*pos.anchorNode()))
         return pos;
     if (containingSpecialElement)
         *containingSpecialElement = n;
@@ -1175,10 +1175,10 @@ static bool hasARenderedDescendant(Node* node, Node* excludedNode)
 Node* highestNodeToRemoveInPruning(Node* node, Node* excludeNode)
 {
     Node* previousNode = nullptr;
-    Element* rootEditableElement = node ? node->rootEditableElement() : nullptr;
+    Element* element = node ? rootEditableElement(*node) : nullptr;
     for (; node; node = node->parentNode()) {
         if (LayoutObject* layoutObject = node->layoutObject()) {
-            if (!layoutObject->canHaveChildren() || hasARenderedDescendant(node, previousNode) || rootEditableElement == node || excludeNode == node)
+            if (!layoutObject->canHaveChildren() || hasARenderedDescendant(node, previousNode) || element == node || excludeNode == node)
                 return previousNode;
         }
         previousNode = node;
@@ -1285,7 +1285,7 @@ bool canMergeLists(Element* firstList, Element* secondList)
 
     return firstList->hasTagName(secondList->tagQName()) // make sure the list types match (ol vs. ul)
     && firstList->hasEditableStyle() && secondList->hasEditableStyle() // both lists are editable
-    && firstList->rootEditableElement() == secondList->rootEditableElement() // don't cross editing boundaries
+    && rootEditableElement(*firstList) == rootEditableElement(*secondList) // don't cross editing boundaries
     && isVisiblyAdjacent(Position::inParentAfterNode(*firstList), Position::inParentBeforeNode(*secondList));
     // Make sure there is no visible content between this li and the previous list
 }
@@ -1416,7 +1416,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
     if (position.isNull())
         return Position();
 
-    Element* fromRootEditableElement = position.anchorNode()->rootEditableElement();
+    Element* fromRootEditableElement = rootEditableElement(*position.anchorNode());
 
     bool atStartOfLine = isStartOfLine(createVisiblePosition(position, affinity));
     bool rendered = isVisuallyEquivalentCandidate(position);
@@ -1428,7 +1428,7 @@ static Position previousCharacterPosition(const Position& position, TextAffinity
         // |CodePoint|.
         currentPos = previousPositionOf(currentPos, PositionMoveType::CodeUnit);
 
-        if (currentPos.anchorNode()->rootEditableElement() != fromRootEditableElement)
+        if (rootEditableElement(*currentPos.anchorNode()) != fromRootEditableElement)
             return position;
 
         if (atStartOfLine || !rendered) {

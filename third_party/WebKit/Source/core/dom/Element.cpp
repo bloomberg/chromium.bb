@@ -2430,7 +2430,7 @@ void Element::updateFocusAppearance(SelectionBehaviorOnFocus selectionBehavior)
 {
     if (selectionBehavior == SelectionBehaviorOnFocus::None)
         return;
-    if (isRootEditableElement()) {
+    if (isRootEditableElement(*this)) {
         LocalFrame* frame = document().frame();
         if (!frame)
             return;
@@ -2470,7 +2470,7 @@ bool Element::supportsFocus() const
     // it won't be focusable. Furthermore, supportsFocus cannot just return true
     // always or else tabIndex() will change for all HTML elements.
     return hasElementFlag(TabIndexWasSetExplicitly)
-        || isRootEditableElement()
+        || isRootEditableElement(*this)
         || (isShadowHost(this) && authorShadowRoot() && authorShadowRoot()->delegatesFocus())
         || supportsSpatialNavigationFocus();
 }

@@ -335,10 +335,6 @@ public:
 
     virtual bool canContainRangeEndPoint() const { return false; }
 
-    bool isRootEditableElement() const;
-    Element* rootEditableElement() const;
-    Element* rootEditableElement(EditableType) const;
-
     // For <link> and <style> elements.
     virtual bool sheetLoaded() { return true; }
     enum LoadedSheetErrorStatus {
@@ -893,6 +889,11 @@ inline ScriptWrappable* ScriptWrappable::fromNode(Node* node)
 {
     return node;
 }
+
+// TODO(yoichio): Move to core/editing
+CORE_EXPORT bool isRootEditableElement(const Node&);
+CORE_EXPORT Element* rootEditableElement(const Node&);
+CORE_EXPORT Element* rootEditableElement(const Node&, EditableType);
 
 // Allow equality comparisons of Nodes by reference or pointer, interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES_REFCOUNTED(Node)

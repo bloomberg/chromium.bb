@@ -369,7 +369,7 @@ void DeleteSelectionCommand::removeNode(Node* node, EditingState* editingState, 
         }
     }
 
-    if (isTableStructureNode(node) || node->isRootEditableElement()) {
+    if (isTableStructureNode(node) || isRootEditableElement(*node)) {
         // Do not remove an element of table structure; remove its contents.
         // Likewise for the root editable element.
         Node* child = node->firstChild();
@@ -441,12 +441,12 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
         Node* nextNode = NodeTraversal::next(*node);
         if (isHTMLStyleElement(*node) || isHTMLLinkElement(*node)) {
             nextNode = NodeTraversal::nextSkippingChildren(*node);
-            Element* rootEditableElement = node->rootEditableElement();
-            if (rootEditableElement) {
+            Element* element = rootEditableElement(*node);
+            if (element) {
                 removeNode(node, editingState);
                 if (editingState->isAborted())
                     return;
-                appendNode(node, rootEditableElement, editingState);
+                appendNode(node, element, editingState);
                 if (editingState->isAborted())
                     return;
             }
@@ -809,7 +809,7 @@ void DeleteSelectionCommand::clearTransientState()
 void DeleteSelectionCommand::removeRedundantBlocks(EditingState* editingState)
 {
     Node* node = m_endingPosition.computeContainerNode();
-    Element* rootElement = node->rootEditableElement();
+    Element* rootElement = rootEditableElement(*node);
 
     while (node != rootElement) {
         if (isRemovableBlock(node)) {
@@ -840,8 +840,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
     TextAffinity affinity = m_selectionToDelete.affinity();
 
     Position downstreamEnd = mostForwardCaretPosition(m_selectionToDelete.end());
-    bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.computeContainerNode() == downstreamEnd.computeContainerNode()->rootEditableElement()
-        || (downstreamEnd.computeContainerNode()->isTextNode() && downstreamEnd.computeContainerNode()->parentNode() == downstreamEnd.computeContainerNode()->rootEditableElement());
+    bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.computeContainerNode() == rootEditableElement(*downstreamEnd.computeContainerNode())
+        || (downstreamEnd.computeContainerNode()->isTextNode() && downstreamEnd.computeContainerNode()->parentNode() == rootEditableElement(*downstreamEnd.computeContainerNode()));
     bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
     m_needPlaceholder = !rootWillStayOpenWithoutPlaceholder
         && isStartOfParagraph(m_selectionToDelete.visibleStart(), CanCrossEditingBoundary)

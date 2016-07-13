@@ -124,8 +124,8 @@ Element* FormatBlockCommand::elementForFormatBlockCommand(Range* range)
     if (!commonAncestor)
         return 0;
 
-    Element* rootEditableElement = range->startContainer()->rootEditableElement();
-    if (!rootEditableElement || commonAncestor->contains(rootEditableElement))
+    Element* element = rootEditableElement(*range->startContainer());
+    if (!element || commonAncestor->contains(element))
         return 0;
 
     return commonAncestor->isElementNode() ? toElement(commonAncestor) : 0;

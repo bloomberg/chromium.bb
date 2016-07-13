@@ -362,7 +362,7 @@ static bool acceptsEditingFocus(const Element& element)
 {
     DCHECK(element.hasEditableStyle());
 
-    return element.document().frame() && element.rootEditableElement();
+    return element.document().frame() && rootEditableElement(element);
 }
 
 uint64_t Document::s_globalTreeVersion = 0;
@@ -3559,7 +3559,7 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement, const FocusParam
     if (newFocusedElement)
         updateStyleAndLayoutTreeForNode(newFocusedElement);
     if (newFocusedElement && newFocusedElement->isFocusable()) {
-        if (newFocusedElement->isRootEditableElement() && !acceptsEditingFocus(*newFocusedElement)) {
+        if (isRootEditableElement(*newFocusedElement) && !acceptsEditingFocus(*newFocusedElement)) {
             // delegate blocks focus change
             focusChangeBlocked = true;
             goto SetFocusedElementDone;
@@ -3607,7 +3607,7 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement, const FocusParam
             }
         }
 
-        if (m_focusedElement->isRootEditableElement())
+        if (isRootEditableElement(*m_focusedElement))
             frame()->spellChecker().didBeginEditing(m_focusedElement.get());
 
         // eww, I suck. set the qt focus correctly

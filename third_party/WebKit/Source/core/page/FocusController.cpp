@@ -1021,7 +1021,7 @@ Element* FocusController::findFocusableElementInShadowHost(const Element& shadow
 static bool relinquishesEditingFocus(const Element& element)
 {
     DCHECK(element.hasEditableStyle());
-    return element.document().frame() && element.rootEditableElement();
+    return element.document().frame() && rootEditableElement(element);
 }
 
 static void clearSelectionIfNeeded(LocalFrame* oldFocusedFrame, LocalFrame* newFocusedFrame, Element* newFocusedElement)
@@ -1068,7 +1068,7 @@ bool FocusController::setFocusedElement(Element* element, Frame* newFocusedFrame
         return true;
 
     // FIXME: Might want to disable this check for caretBrowsing
-    if (oldFocusedElement && oldFocusedElement->isRootEditableElement() && !relinquishesEditingFocus(*oldFocusedElement))
+    if (oldFocusedElement && isRootEditableElement(*oldFocusedElement) && !relinquishesEditingFocus(*oldFocusedElement))
         return false;
 
     m_page->chromeClient().willSetInputMethodState();

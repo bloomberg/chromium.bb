@@ -147,10 +147,10 @@ static String dispatchBeforeTextInsertedEvent(const String& text, const VisibleS
 
     String newText = text;
     if (Node* startNode = selectionForInsertion.start().computeContainerNode()) {
-        if (startNode->rootEditableElement()) {
+        if (rootEditableElement(*startNode)) {
             // Send BeforeTextInsertedEvent. The event handler will update text if necessary.
             BeforeTextInsertedEvent* evt = BeforeTextInsertedEvent::create(text);
-            startNode->rootEditableElement()->dispatchEvent(evt);
+            rootEditableElement(*startNode)->dispatchEvent(evt);
             newText = evt->text();
         }
     }

@@ -1336,7 +1336,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     // Could not find a previous line. This means we must already be on the first line.
     // Move to the start of the content in this block, which effectively moves us
     // to the start of the line we're on.
-    Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
+    Element* rootElement = node->hasEditableStyle(editableType) ? rootEditableElement(*node, editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
     return VisiblePosition::firstPositionInNode(rootElement);
@@ -1392,7 +1392,7 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
     // Could not find a next line. This means we must already be on the last line.
     // Move to the end of the content in this block, which effectively moves us
     // to the end of the line we're on.
-    Element* rootElement = node->hasEditableStyle(editableType) ? node->rootEditableElement(editableType) : node->document().documentElement();
+    Element* rootElement = node->hasEditableStyle(editableType) ? rootEditableElement(*node, editableType) : node->document().documentElement();
     if (!rootElement)
         return VisiblePosition();
     return VisiblePosition::lastPositionInNode(rootElement);
