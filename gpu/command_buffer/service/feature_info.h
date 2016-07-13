@@ -91,6 +91,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_blend_func_extended;
     bool ext_read_format_bgra;
     bool desktop_srgb_support;
+    bool arb_es3_compatibility;
   };
 
   FeatureInfo();

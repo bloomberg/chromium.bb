@@ -79,13 +79,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['win'], bug=624506)
 
+    self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
+        ['win'], bug=614573)
+
     # Windows 8 only.
 
     self.Flaky('deqp/functional/gles3/buffercopy.html', ['win8'], bug=587601)
 
     # Win / NVidia
-    self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
-        ['win', 'nvidia'], bug=614573)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_02.html',
         ['win', 'nvidia'], bug=483282)
     self.Fail('deqp/functional/gles3/framebufferblit/rect_05.html',
@@ -100,8 +101,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_depth_stencil.html',
         ['win', ('amd', 0x6779)], bug=614178)
-    self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
-        ['win', ('amd', 0x6779)], bug=614573)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
         ['win', ('amd', 0x6779)], bug=483282)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
@@ -159,8 +158,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/textureformat/sized_depth_stencil.html',
         ['win', 'intel'], bug=614418)
-    self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
-        ['win', 'intel'], bug=614418)
     self.Flaky('deqp/functional/gles3/textureformat/unsized_3d.html',
         ['win', 'intel'], bug=614418)
     self.Fail('deqp/functional/gles3/shadertexturefunction/texture.html',
@@ -191,11 +188,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
-    self.Fail('deqp/functional/gles3/textureformat/compressed_2d.html',
-        ['mac'], bug=612205)
     self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
-        ['mac'], bug=612205)
-    self.Fail('deqp/functional/gles3/texturewrap/e*',
         ['mac'], bug=612205)
 
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
@@ -205,10 +198,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac'], bug=483282)
 
-    self.Fail('conformance2/textures/misc/compressed-tex-image.html',
-        ['mac'], bug=565438)
-    self.Fail('conformance2/textures/misc/tex-storage-compressed-formats.html',
-        ['mac'], bug=295792)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/rendering/framebuffer-completeness-unaffected.html',

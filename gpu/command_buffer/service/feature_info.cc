@@ -137,7 +137,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_multisample_compatibility(false),
       ext_blend_func_extended(false),
       ext_read_format_bgra(false),
-      desktop_srgb_support(false) {}
+      desktop_srgb_support(false),
+      arb_es3_compatibility(false) {}
 
 FeatureInfo::FeatureInfo() {
   InitializeBasicState(base::CommandLine::InitializedForCurrentProcess()
@@ -643,6 +644,12 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_EXT_read_format_bgra");
     validators_.read_pixel_format.AddValue(GL_BGRA_EXT);
   }
+
+  // GL_ARB_ES3_compatibility adds support for some ES3 texture formats that are
+  // not supported in desktop GL
+  feature_flags_.arb_es3_compatibility =
+      extensions.Contains("GL_ARB_ES3_compatibility") &&
+      !gl_version_info_->is_es;
 
   // glGetInteger64v for timestamps is implemented on the client side in a way
   // that it does not depend on a driver-level implementation of

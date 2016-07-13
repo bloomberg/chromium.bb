@@ -699,6 +699,7 @@
             '../build/android/disable_gcc_lto.gypi',
           ],
           'dependencies': [
+            '../third_party/angle/src/angle.gyp:angle_image_util',
             'command_buffer_common',
             'disk_cache_proto',
             'gpu_config',
@@ -793,6 +794,7 @@
           ],
           'dependencies': [
             '../base/base.gyp:base',
+            '../third_party/angle/src/angle.gyp:angle_image_util',
             'command_buffer/command_buffer.gyp:gles2_utils',
             'disk_cache_proto',
           ],

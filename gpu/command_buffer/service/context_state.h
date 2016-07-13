@@ -195,6 +195,9 @@ struct GPU_EXPORT ContextState {
   void RestoreTextureUnitBindings(
       GLuint unit, const ContextState* prev_state) const;
 
+  void PushTextureDecompressionUnpackState() const;
+  void RestoreUnpackState() const;
+
   // Helper for getting cached state.
   bool GetStateAsGLint(
       GLenum pname, GLint* params, GLsizei* num_written) const;

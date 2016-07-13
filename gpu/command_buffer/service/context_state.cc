@@ -265,6 +265,26 @@ void ContextState::RestoreTextureUnitBindings(
   }
 }
 
+void ContextState::PushTextureDecompressionUnpackState() const {
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  if (bound_pixel_unpack_buffer.get()) {
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+  }
+}
+
+void ContextState::RestoreUnpackState() const {
+  glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
+  if (bound_pixel_unpack_buffer.get()) {
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER,
+                 GetBufferId(bound_pixel_unpack_buffer.get()));
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
+  }
+}
+
 void ContextState::RestoreBufferBindings() const {
   if (vertex_attrib_manager.get()) {
     Buffer* element_array_buffer =
