@@ -145,7 +145,7 @@ private:
 
     Member<TimeRanges> m_liveSeekableRange;
 
-    bool m_isAddedToRegistry;
+    int m_addedToRegistryCounter;
 };
 
 } // namespace blink

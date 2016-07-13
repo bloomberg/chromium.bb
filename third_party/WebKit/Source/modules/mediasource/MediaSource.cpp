@@ -106,7 +106,7 @@ MediaSource::MediaSource(ExecutionContext* context)
     , m_sourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
     , m_activeSourceBuffers(SourceBufferList::create(getExecutionContext(), m_asyncEventQueue.get()))
     , m_liveSeekableRange(TimeRanges::create())
-    , m_isAddedToRegistry(false)
+    , m_addedToRegistryCounter(0)
 {
     MSLOG << __FUNCTION__ << " this=" << this;
 }
@@ -302,14 +302,15 @@ void MediaSource::setWebMediaSourceAndOpen(std::unique_ptr<WebMediaSource> webMe
 
 void MediaSource::addedToRegistry()
 {
-    DCHECK(!m_isAddedToRegistry);
-    m_isAddedToRegistry = true;
+    ++m_addedToRegistryCounter;
+    // Ensure there's no counter overflow.
+    CHECK_GT(m_addedToRegistryCounter, 0);
 }
 
 void MediaSource::removedFromRegistry()
 {
-    DCHECK(m_isAddedToRegistry);
-    m_isAddedToRegistry = false;
+    DCHECK_GT(m_addedToRegistryCounter, 0);
+    --m_addedToRegistryCounter;
 }
 
 double MediaSource::duration() const
@@ -648,7 +649,7 @@ bool MediaSource::hasPendingActivity() const
 {
     return m_attachedElement || m_webMediaSource
         || m_asyncEventQueue->hasPendingEvents()
-        || m_isAddedToRegistry;
+        || m_addedToRegistryCounter > 0;
 }
 
 void MediaSource::stop()
