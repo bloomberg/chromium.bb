@@ -765,6 +765,7 @@ void ProfileChooserView::ResetView() {
   delete_account_button_map_.clear();
   reauth_account_button_map_.clear();
   manage_accounts_link_ = nullptr;
+  manage_accounts_button_ = nullptr;
   signin_current_profile_button_ = nullptr;
   auth_error_email_button_ = nullptr;
   current_profile_photo_ = nullptr;
