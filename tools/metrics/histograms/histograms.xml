@@ -98063,19 +98063,40 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="NewTabPageProviders" separator=".">
   <suffix name="client" label="Suggestions coming from the client."/>
-  <suffix name="client0"
-      label="deprecated - Suggestions coming from the client source 0."/>
+  <suffix name="server" label="Suggestions coming from the server."/>
   <suffix name="popular" label="Non-personalized, popular suggestions."/>
   <suffix name="whitelist"
       label="Installed whitelist entry point suggestions."/>
-<!-- Server providers 1 through 8 have never been logged. -->
-
-  <suffix name="server" label="Suggestions coming from the server."/>
-  <suffix name="server0" label="Suggestions coming from server source 0."/>
-  <suffix name="server8" label="Suggestions coming from server source 8."/>
-  <suffix name="server9" label="Suggestions coming from server source 9."/>
-  <suffix name="server10" label="Suggestions coming from server source 10."/>
-  <suffix name="server11" label="Suggestions coming from server source 11."/>
+  <suffix name="client0">
+    <obsolete>
+      Hasn't been used for a while, as of 2016-07.
+    </obsolete>
+  </suffix>
+  <suffix name="server0">
+    <obsolete>
+      Hasn't been used for a while, as of 2016-07.
+    </obsolete>
+  </suffix>
+  <suffix name="server8">
+    <obsolete>
+      Not used anymore as of 2016-07.
+    </obsolete>
+  </suffix>
+  <suffix name="server9">
+    <obsolete>
+      Has never been used.
+    </obsolete>
+  </suffix>
+  <suffix name="server10">
+    <obsolete>
+      Has never been used.
+    </obsolete>
+  </suffix>
+  <suffix name="server11">
+    <obsolete>
+      Has never been used.
+    </obsolete>
+  </suffix>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
   <affected-histogram name="NewTabPage.TileType"/>

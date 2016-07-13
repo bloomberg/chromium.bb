@@ -143,9 +143,6 @@ class MostVisitedSites : public history::TopSitesObserver,
     // Only valid for source == WHITELIST (empty otherwise).
     base::FilePath whitelist_icon_path;
 
-    // Only valid for source == SUGGESTIONS_SERVICE (-1 otherwise).
-    int provider_index;
-
     Suggestion();
     ~Suggestion();
 
@@ -174,8 +171,7 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
   void RecordTileTypeMetrics(const std::vector<int>& tile_types,
-                             const std::vector<int>& sources,
-                             const std::vector<int>& provider_indices);
+                             const std::vector<int>& sources);
   void RecordOpenedMostVisitedItem(int index, int tile_type);
 
   // MostVisitedSitesSupervisor::Observer implementation.

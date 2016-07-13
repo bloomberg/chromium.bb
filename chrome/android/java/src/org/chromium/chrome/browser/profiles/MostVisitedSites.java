@@ -28,7 +28,7 @@ public class MostVisitedSites {
          */
         @CalledByNative("MostVisitedURLsObserver")
         public void onMostVisitedURLsAvailable(String[] titles, String[] urls,
-                String[] whitelistIconPaths, int[] sources, int[] providerIndexes);
+                String[] whitelistIconPaths, int[] sources);
 
         /**
          * This is called when the list of popular URLs is initially available or updated.
@@ -73,11 +73,10 @@ public class MostVisitedSites {
         MostVisitedURLsObserver wrappedObserver = new MostVisitedURLsObserver() {
             @Override
             public void onMostVisitedURLsAvailable(String[] titles, String[] urls,
-                    String[] whitelistIconPaths, int[] sources, int[] providerIndexes) {
+                    String[] whitelistIconPaths, int[] sources) {
                 // Don't notify observer if we've already been destroyed.
                 if (mNativeMostVisitedSitesBridge != 0) {
-                    observer.onMostVisitedURLsAvailable(
-                            titles, urls, whitelistIconPaths, sources, providerIndexes);
+                    observer.onMostVisitedURLsAvailable(titles, urls, whitelistIconPaths, sources);
                 }
             }
             @Override
@@ -112,9 +111,8 @@ public class MostVisitedSites {
      * @param tileTypes An array of values from MostVisitedTileType indicating the type of each
      *                  tile that's currently showing.
      */
-    public void recordTileTypeMetrics(int[] tileTypes, int[] sources, int[] providerIndices) {
-        nativeRecordTileTypeMetrics(
-                mNativeMostVisitedSitesBridge, tileTypes, sources, providerIndices);
+    public void recordTileTypeMetrics(int[] tileTypes, int[] sources) {
+        nativeRecordTileTypeMetrics(mNativeMostVisitedSitesBridge, tileTypes, sources);
     }
 
     /**
@@ -134,7 +132,7 @@ public class MostVisitedSites {
             long nativeMostVisitedSitesBridge, String url,
             boolean addUrl);
     private native void nativeRecordTileTypeMetrics(long nativeMostVisitedSitesBridge,
-            int[] tileTypes, int[] sources, int[] providerIndices);
+            int[] tileTypes, int[] sources);
     private native void nativeRecordOpenedMostVisitedItem(
             long nativeMostVisitedSitesBridge, int index, int tileType);
 

@@ -42,8 +42,7 @@ class MostVisitedSitesBridge {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jintArray>& jtile_types,
-      const base::android::JavaParamRef<jintArray>& jsources,
-      const base::android::JavaParamRef<jintArray>& jprovider_indices);
+      const base::android::JavaParamRef<jintArray>& jsources);
   void RecordOpenedMostVisitedItem(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

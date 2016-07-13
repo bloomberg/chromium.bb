@@ -25,7 +25,6 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
 
 using history::TopSites;
@@ -40,7 +39,6 @@ namespace {
 // Identifiers for the various tile sources.
 const char kHistogramClientName[] = "client";
 const char kHistogramServerName[] = "server";
-const char kHistogramServerFormat[] = "server%d";
 const char kHistogramPopularName[] = "popular";
 const char kHistogramWhitelistName[] = "whitelist";
 
@@ -102,7 +100,7 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
   return url1.host() == url2.host() && url1.path() == url2.path();
 }
 
-std::string GetSourceHistogramName(int source, int provider_index) {
+std::string GetSourceHistogramName(int source) {
   switch (source) {
     case MostVisitedSites::TOP_SITES:
       return kHistogramClientName;
@@ -111,17 +109,10 @@ std::string GetSourceHistogramName(int source, int provider_index) {
     case MostVisitedSites::WHITELIST:
       return kHistogramWhitelistName;
     case MostVisitedSites::SUGGESTIONS_SERVICE:
-      return provider_index >= 0
-                 ? base::StringPrintf(kHistogramServerFormat, provider_index)
-                 : kHistogramServerName;
+      return kHistogramServerName;
   }
   NOTREACHED();
   return std::string();
-}
-
-std::string GetSourceHistogramNameFromSuggestion(
-    const MostVisitedSites::Suggestion& suggestion) {
-  return GetSourceHistogramName(suggestion.source, suggestion.provider_index);
 }
 
 void AppendSuggestions(MostVisitedSites::SuggestionsVector src,
@@ -133,7 +124,7 @@ void AppendSuggestions(MostVisitedSites::SuggestionsVector src,
 
 }  // namespace
 
-MostVisitedSites::Suggestion::Suggestion() : provider_index(-1) {}
+MostVisitedSites::Suggestion::Suggestion() {}
 
 MostVisitedSites::Suggestion::~Suggestion() {}
 
@@ -237,15 +228,14 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
 
 void MostVisitedSites::RecordTileTypeMetrics(
     const std::vector<int>& tile_types,
-    const std::vector<int>& sources,
-    const std::vector<int>& provider_indices) {
+    const std::vector<int>& sources) {
   int counts_per_type[NUM_TILE_TYPES] = {0};
   for (size_t i = 0; i < tile_types.size(); ++i) {
     int tile_type = tile_types[i];
     ++counts_per_type[tile_type];
     std::string histogram = base::StringPrintf(
         "NewTabPage.TileType.%s",
-        GetSourceHistogramName(sources[i], provider_indices[i]).c_str());
+        GetSourceHistogramName(sources[i]).c_str());
     LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
   }
 
@@ -265,14 +255,12 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(int index, int tile_type) {
   DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
   std::string histogram = base::StringPrintf(
       "NewTabPage.MostVisited.%s",
-      GetSourceHistogramNameFromSuggestion(current_suggestions_[index])
-          .c_str());
+      GetSourceHistogramName(current_suggestions_[index].source).c_str());
   LogHistogramEvent(histogram, index, num_sites_);
 
   histogram = base::StringPrintf(
       "NewTabPage.TileTypeClicked.%s",
-      GetSourceHistogramNameFromSuggestion(current_suggestions_[index])
-          .c_str());
+      GetSourceHistogramName(current_suggestions_[index].source).c_str());
   LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 
@@ -369,8 +357,6 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
     generated_suggestion.source = SUGGESTIONS_SERVICE;
     generated_suggestion.whitelist_icon_path =
         GetWhitelistLargeIconPath(GURL(suggestion.url()));
-    if (suggestion.providers_size() > 0)
-      generated_suggestion.provider_index = suggestion.providers(0);
 
     suggestions.push_back(std::move(generated_suggestion));
   }
@@ -547,7 +533,7 @@ void MostVisitedSites::RecordImpressionUMAMetrics() {
   for (size_t i = 0; i < current_suggestions_.size(); i++) {
     std::string histogram = base::StringPrintf(
         "NewTabPage.SuggestionsImpression.%s",
-        GetSourceHistogramNameFromSuggestion(current_suggestions_[i]).c_str());
+        GetSourceHistogramName(current_suggestions_[i].source).c_str());
     LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
   }
 }

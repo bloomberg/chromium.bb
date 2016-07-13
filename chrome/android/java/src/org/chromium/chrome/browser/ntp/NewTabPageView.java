@@ -816,7 +816,7 @@ public class NewTabPageView extends FrameLayout
 
     @Override
     public void onMostVisitedURLsAvailable(final String[] titles, final String[] urls,
-            final String[] whitelistIconPaths, final int[] sources, final int[] providerIndexes) {
+            final String[] whitelistIconPaths, final int[] sources) {
         Set<String> urlSet = new HashSet<>(Arrays.asList(urls));
 
         // TODO(https://crbug.com/607573): We should show offline-available content in a nonblocking
@@ -825,15 +825,13 @@ public class NewTabPageView extends FrameLayout
         mManager.getUrlsAvailableOffline(urlSet, new Callback<Set<String>>() {
             @Override
             public void onResult(Set<String> offlineUrls) {
-                onOfflineUrlsAvailable(
-                        titles, urls, whitelistIconPaths, offlineUrls, sources, providerIndexes);
+                onOfflineUrlsAvailable(titles, urls, whitelistIconPaths, offlineUrls, sources);
             }
         });
     }
 
     private void onOfflineUrlsAvailable(final String[] titles, final String[] urls,
-            final String[] whitelistIconPaths, final Set<String> offlineUrls, final int[] sources,
-            final int[] providerIndexes) {
+            final String[] whitelistIconPaths, final Set<String> offlineUrls, final int[] sources) {
         mMostVisitedLayout.removeAllViews();
 
         MostVisitedItem[] oldItems = mMostVisitedItems;
@@ -849,7 +847,6 @@ public class NewTabPageView extends FrameLayout
             final String title = titles[i];
             final String whitelistIconPath = whitelistIconPaths[i];
             final int source = sources[i];
-            final int providerIndex = providerIndexes[i];
 
             boolean offlineAvailable = offlineUrls.contains(url);
 
@@ -871,7 +868,7 @@ public class NewTabPageView extends FrameLayout
             // If nothing can be reused, create a new item.
             if (item == null) {
                 item = new MostVisitedItem(mManager, title, url, whitelistIconPath,
-                        offlineAvailable, i, source, providerIndex);
+                        offlineAvailable, i, source);
                 View view =
                         mMostVisitedDesign.createMostVisitedItemView(inflater, item, isInitialLoad);
                 item.initView(view);

@@ -51,7 +51,6 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     private static final String[] FAKE_MOST_VISITED_TITLES = new String[] { "Simple" };
     private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS = new String[] { "" };
     private static final int[] FAKE_MOST_VISITED_SOURCES = new int[] {MostVisitedSource.TOP_SITES};
-    private static final int[] FAKE_MOST_VISITED_PROVIDER_INDEXES = new int[] {0};
 
     private Tab mTab;
     private NewTabPage mNtp;
@@ -89,7 +88,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
                     mFakeMostVisitedSites =
                             new FakeMostVisitedSites(mTab.getProfile(), FAKE_MOST_VISITED_TITLES,
                                     mFakeMostVisitedUrls, FAKE_MOST_VISITED_WHITELIST_ICON_PATHS,
-                                    FAKE_MOST_VISITED_SOURCES, FAKE_MOST_VISITED_PROVIDER_INDEXES);
+                                    FAKE_MOST_VISITED_SOURCES);
                 }
             });
         } catch (Throwable t) {
