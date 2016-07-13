@@ -91,7 +91,7 @@ const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
 // Foreground of small icon image.
 const SkColor kSmallImageMaskForegroundColor = SK_ColorWHITE;
 // Background of small icon image.
-const SkColor kSmallImageMaskBackgroundColor = SkColorSetRGB(0xa3, 0xa3, 0xa);
+const SkColor kSmallImageMaskBackgroundColor = SkColorSetRGB(0xa3, 0xa3, 0xa3);
 
 // Limits.
 
