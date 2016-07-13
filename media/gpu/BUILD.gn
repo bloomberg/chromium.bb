@@ -131,6 +131,9 @@ config("gpu_config") {
   if (is_chromeos && use_v4lplugin) {
     defines += [ "USE_LIBV4L2" ]
   }
+  if (is_chromeos && use_v4l2_codec) {
+    defines += [ "USE_V4L2_CODEC" ]
+  }
 }
 
 component("gpu") {
@@ -257,7 +260,6 @@ component("gpu") {
       deps += [ ":libv4l2_generate_stubs" ]
     }
     if (use_v4l2_codec) {
-      defines += [ "USE_V4L2_CODEC" ]
       deps += [ "//third_party/libyuv" ]
       sources += [
         "generic_v4l2_device.cc",

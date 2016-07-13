@@ -38,6 +38,8 @@ source_set("service") {
     "//third_party/mesa:mesa_headers",
   ]
 
+  configs += [ "//media/gpu:gpu_config" ]
+
   if (is_chromeos && current_cpu != "arm") {
     configs += [ "//third_party/libva:libva_config" ]
   }
