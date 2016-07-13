@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/kill.h"
+#include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -122,7 +123,7 @@ Status ChromeDesktopImpl::WaitForPageToLoad(
 
     for (size_t i = 0; i < views_info.GetSize(); ++i) {
       const WebViewInfo& view_info = views_info.Get(i);
-      if (view_info.url.find(url) == 0) {
+      if (base::StartsWith(view_info.url, url, base::CompareCase::SENSITIVE)) {
         id = view_info.id;
         type = view_info.type;
         break;

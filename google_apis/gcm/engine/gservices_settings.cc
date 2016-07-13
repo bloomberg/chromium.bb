@@ -227,7 +227,8 @@ bool GServicesSettings::UpdateFromCheckinResponse(
       return false;
     }
 
-    if (settings_diff && name.find(kDeleteSettingPrefix) == 0) {
+    if (settings_diff && base::StartsWith(name, kDeleteSettingPrefix,
+                                          base::CompareCase::SENSITIVE)) {
       std::string setting_to_delete =
           name.substr(arraysize(kDeleteSettingPrefix) - 1);
       new_settings.erase(setting_to_delete);

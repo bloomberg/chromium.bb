@@ -427,8 +427,9 @@ class AdbParser : public SimpleHttpServer::Parser,
       SendSuccess(base::StringPrintf("%s\tdevice\n%s\toffline",
                                      kSerialOnline,
                                      kSerialOffline));
-    } else if (command.find(kHostTransportPrefix) == 0) {
-      serial_ = command.substr(strlen(kHostTransportPrefix));
+    } else if (base::StartsWith(command, kHostTransportPrefix,
+                                base::CompareCase::SENSITIVE)) {
+      serial_ = command.substr(sizeof(kHostTransportPrefix) - 1);
       SendSuccess(std::string());
     } else if (serial_ != kSerialOnline) {
       Send("FAIL", "device offline (x)");
@@ -540,7 +541,8 @@ void MockAndroidConnection::Receive(const std::string& data) {
       SendHTTPResponse(kSampleChromeBetaPages);
     else
       NOTREACHED() << "Unknown command " << request;
-  } else if (socket_name_.find("noprocess_devtools_remote") == 0) {
+  } else if (base::StartsWith(socket_name_, "noprocess_devtools_remote",
+                              base::CompareCase::SENSITIVE)) {
     if (path == kJsonVersionPath)
       SendHTTPResponse("{}");
     else if (path == kJsonListPath)
@@ -560,40 +562,42 @@ void MockAndroidConnection::Receive(const std::string& data) {
 }
 
 void MockAndroidConnection::ProcessCommand(const std::string& command) {
-  if (command.find(kLocalAbstractPrefix) == 0) {
-    socket_name_ = command.substr(strlen(kLocalAbstractPrefix));
+  if (base::StartsWith(command, kLocalAbstractPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    socket_name_ = command.substr(sizeof(kLocalAbstractPrefix) - 1);
     delegate_->SendSuccess(std::string());
-  } else {
-    if (command.find(kShellPrefix) == 0) {
-      std::string result;
-      for (const auto& line :
-           base::SplitString(command.substr(strlen(kShellPrefix)), "\n",
-                             base::KEEP_WHITESPACE,
-                             base::SPLIT_WANT_NONEMPTY)) {
-        if (line == kDeviceModelCommand) {
-          result += kDeviceModel;
-          result += "\r\n";
-        } else if (line == kOpenedUnixSocketsCommand) {
-          result += kSampleOpenedUnixSockets;
-        } else if (line == kDumpsysCommand) {
-          result += kSampleDumpsys;
-        } else if (line == kListProcessesCommand) {
-          result += kSampleListProcesses;
-        } else if (line == kListUsersCommand) {
-          result += kSampleListUsers;
-        } else if (line.find(kEchoCommandPrefix) == 0) {
-          result += line.substr(strlen(kEchoCommandPrefix));
-          result += "\r\n";
-        } else {
-          NOTREACHED() << "Unknown shell command - " << command;
-        }
-      }
-      delegate_->SendSuccess(result);
-    } else {
-      NOTREACHED() << "Unknown command - " << command;
-    }
-    delegate_->Close();
+    return;
   }
+
+  if (base::StartsWith(command, kShellPrefix, base::CompareCase::SENSITIVE)) {
+    std::string result;
+    for (const auto& line :
+         base::SplitString(command.substr(sizeof(kShellPrefix) - 1), "\n",
+                           base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+      if (line == kDeviceModelCommand) {
+        result += kDeviceModel;
+        result += "\r\n";
+      } else if (line == kOpenedUnixSocketsCommand) {
+        result += kSampleOpenedUnixSockets;
+      } else if (line == kDumpsysCommand) {
+        result += kSampleDumpsys;
+      } else if (line == kListProcessesCommand) {
+        result += kSampleListProcesses;
+      } else if (line == kListUsersCommand) {
+        result += kSampleListUsers;
+      } else if (base::StartsWith(line, kEchoCommandPrefix,
+                                  base::CompareCase::SENSITIVE)) {
+        result += line.substr(sizeof(kEchoCommandPrefix) - 1);
+        result += "\r\n";
+      } else {
+        NOTREACHED() << "Unknown shell command - " << command;
+      }
+    }
+    delegate_->SendSuccess(result);
+  } else {
+    NOTREACHED() << "Unknown command - " << command;
+  }
+  delegate_->Close();
 }
 
 void MockAndroidConnection::SendHTTPResponse(const std::string& body) {

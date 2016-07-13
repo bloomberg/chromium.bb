@@ -29,6 +29,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
@@ -521,25 +522,27 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
       url = url_formatter::FixupRelativeFile(cur_dir, param);
     }
     // Exclude dangerous schemes.
-    if (url.is_valid()) {
-      ChildProcessSecurityPolicy* policy =
-          ChildProcessSecurityPolicy::GetInstance();
-      if (policy->IsWebSafeScheme(url.scheme()) ||
-          url.SchemeIs(url::kFileScheme) ||
+    if (!url.is_valid())
+      continue;
+
+    ChildProcessSecurityPolicy* policy =
+        ChildProcessSecurityPolicy::GetInstance();
+    if (policy->IsWebSafeScheme(url.scheme()) ||
+        url.SchemeIs(url::kFileScheme) ||
 #if defined(OS_CHROMEOS)
-          // In ChromeOS, allow any settings page to be specified on the command
-          // line. See ExistingUserController::OnLoginSuccess.
-          (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
+        // In ChromeOS, allow any settings page to be specified on the command
+        // line. See ExistingUserController::OnLoginSuccess.
+        base::StartsWith(url.spec(), chrome::kChromeUISettingsURL,
+                         base::CompareCase::SENSITIVE) ||
 #else
-          // Exposed for external cleaners to offer a settings reset to the
-          // user. So the URL must match exactly, without any param or prefix.
-          (url.spec() ==
-           std::string(chrome::kChromeUISettingsURL) +
-               chrome::kResetProfileSettingsSubPage) ||
+        // Exposed for external cleaners to offer a settings reset to the
+        // user. So the URL must match exactly, without any param or prefix.
+        (url.spec() ==
+         std::string(chrome::kChromeUISettingsURL) +
+             chrome::kResetProfileSettingsSubPage) ||
 #endif
-          (url.spec().compare(url::kAboutBlankURL) == 0)) {
-        urls.push_back(url);
-      }
+        (url.spec().compare(url::kAboutBlankURL) == 0)) {
+      urls.push_back(url);
     }
   }
   return urls;

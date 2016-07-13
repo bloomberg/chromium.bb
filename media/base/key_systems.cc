@@ -169,10 +169,8 @@ static bool IsPotentiallySupportedKeySystem(const std::string& key_system) {
   // can use the "x-" prefix to avoid conflicting with and advertising support
   // for real key system names. Use is discouraged.
   const char kExcludedPrefix[] = "x-";
-  if (key_system.find(kExcludedPrefix, 0, arraysize(kExcludedPrefix) - 1) == 0)
-    return true;
-
-  return false;
+  return base::StartsWith(key_system, kExcludedPrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 class KeySystemsImpl : public KeySystems {

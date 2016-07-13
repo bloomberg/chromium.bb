@@ -392,7 +392,7 @@ std::string InputMethodUtil::GetLocalizedDisplayName(
     const InputMethodDescriptor& descriptor) const {
   // Localizes the input method name.
   const std::string& disp = descriptor.name();
-  if (disp.find("__MSG_") == 0) {
+  if (base::StartsWith(disp, "__MSG_", base::CompareCase::SENSITIVE)) {
     const InputMethodNameMap* map = kInputMethodNameMap;
     size_t map_size = arraysize(kInputMethodNameMap);
     std::string name = base::ToUpperASCII(disp);

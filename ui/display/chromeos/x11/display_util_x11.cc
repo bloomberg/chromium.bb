@@ -5,6 +5,7 @@
 #include "ui/display/chromeos/x11/display_util_x11.h"
 
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 
 namespace ui {
 
@@ -30,7 +31,8 @@ const DisplayConnectionTypeMapping kDisplayConnectionTypeMapping[] = {
 DisplayConnectionType GetDisplayConnectionTypeFromName(
     const std::string& name) {
   for (unsigned int i = 0; i < arraysize(kDisplayConnectionTypeMapping); ++i) {
-    if (name.find(kDisplayConnectionTypeMapping[i].name) == 0) {
+    if (base::StartsWith(name, kDisplayConnectionTypeMapping[i].name,
+                         base::CompareCase::SENSITIVE)) {
       return kDisplayConnectionTypeMapping[i].type;
     }
   }

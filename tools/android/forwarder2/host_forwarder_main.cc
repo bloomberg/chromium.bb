@@ -240,7 +240,7 @@ class HostControllersManager {
     const std::string prefix = base::StringPrintf("%d:", port);
     for (HostControllerMap::const_iterator others = controllers_->begin();
          others != controllers_->end(); ++others) {
-      if (others->first.find(prefix) == 0U)
+      if (base::StartsWith(others->first, prefix, base::CompareCase::SENSITIVE))
         return;
     }
     // No other port is being forwarded to this device:
@@ -318,7 +318,7 @@ class HostControllersManager {
 
 class ServerDelegate : public Daemon::ServerDelegate {
  public:
-  ServerDelegate(const std::string& adb_path)
+  explicit ServerDelegate(const std::string& adb_path)
       : adb_path_(adb_path), has_failed_(false) {}
 
   bool has_failed() const {
@@ -370,7 +370,7 @@ class ServerDelegate : public Daemon::ServerDelegate {
 
 class ClientDelegate : public Daemon::ClientDelegate {
  public:
-  ClientDelegate(const base::Pickle& command_pickle)
+  explicit ClientDelegate(const base::Pickle& command_pickle)
       : command_pickle_(command_pickle), has_failed_(false) {}
 
   bool has_failed() const { return has_failed_; }

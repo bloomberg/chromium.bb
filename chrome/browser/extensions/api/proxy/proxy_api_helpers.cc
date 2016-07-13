@@ -78,7 +78,7 @@ bool GetProxyModeFromExtensionPref(const base::DictionaryValue* proxy_config,
 bool GetPacMandatoryFromExtensionPref(const base::DictionaryValue* proxy_config,
                                       bool* out,
                                       std::string* error,
-                                      bool* bad_message){
+                                      bool* bad_message) {
   const base::DictionaryValue* pac_dict = NULL;
   proxy_config->GetDictionary(keys::kProxyConfigPacScript, &pac_dict);
   if (!pac_dict)
@@ -475,7 +475,7 @@ base::DictionaryValue* CreatePacScriptDict(
     return NULL;
   }
 
-  if (pac_url.find("data") == 0) {
+  if (base::StartsWith(pac_url, "data", base::CompareCase::SENSITIVE)) {
     std::string pac_data;
     if (!CreatePACScriptFromDataURL(pac_url, &pac_data)) {
       LOG(ERROR) << "Cannot decode base64-encoded PAC data URL: " << pac_url;

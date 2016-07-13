@@ -427,43 +427,48 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     int* mention_start,
     int* mention_end,
     std::string* lang) {
-  bool contains_xssi_escape = response.find(kXssiEscape) == 0;
+  bool contains_xssi_escape =
+      base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
-      contains_xssi_escape ? response.substr(strlen(kXssiEscape)) : response;
+      contains_xssi_escape ? response.substr(sizeof(kXssiEscape) - 1)
+                           : response;
   JSONStringValueDeserializer deserializer(proper_json);
-  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, NULL);
+  std::unique_ptr<base::Value> root =
+      deserializer.Deserialize(nullptr, nullptr);
+  std::unique_ptr<base::DictionaryValue> dict =
+      base::DictionaryValue::From(std::move(root));
+  if (!dict)
+    return;
 
-  if (root.get() != NULL && root->IsType(base::Value::TYPE_DICTIONARY)) {
-    base::DictionaryValue* dict =
-        static_cast<base::DictionaryValue*>(root.get());
-    dict->GetString(kContextualSearchPreventPreload, prevent_preload);
-    dict->GetString(kContextualSearchResponseSearchTermParam, search_term);
-    dict->GetString(kContextualSearchResponseLanguageParam, lang);
-    // For the display_text, if not present fall back to the "search_term".
-    if (!dict->GetString(kContextualSearchResponseDisplayTextParam,
-                         display_text)) {
-      *display_text = *search_term;
-    }
-    // Extract mentions for selection expansion.
-    if (!field_trial_->IsDecodeMentionsDisabled()) {
-      base::ListValue* mentions_list = NULL;
-      dict->GetList(kContextualSearchMentions, &mentions_list);
-      if (mentions_list != NULL && mentions_list->GetSize() >= 2)
-        ExtractMentionsStartEnd(*mentions_list, mention_start, mention_end);
-    }
-    // If either the selected text or the resolved term is not the search term,
-    // use it as the alternate term.
-    std::string selected_text;
-    dict->GetString(kContextualSearchResponseSelectedTextParam, &selected_text);
-    if (selected_text != *search_term) {
-      *alternate_term = selected_text;
-    } else {
-      std::string resolved_term;
-      dict->GetString(kContextualSearchResponseResolvedTermParam,
-                      &resolved_term);
-      if (resolved_term != *search_term) {
-        *alternate_term = resolved_term;
-      }
+  dict->GetString(kContextualSearchPreventPreload, prevent_preload);
+  dict->GetString(kContextualSearchResponseSearchTermParam, search_term);
+  dict->GetString(kContextualSearchResponseLanguageParam, lang);
+
+  // For the display_text, if not present fall back to the "search_term".
+  if (!dict->GetString(kContextualSearchResponseDisplayTextParam,
+                       display_text)) {
+    *display_text = *search_term;
+  }
+
+  // Extract mentions for selection expansion.
+  if (!field_trial_->IsDecodeMentionsDisabled()) {
+    base::ListValue* mentions_list = nullptr;
+    dict->GetList(kContextualSearchMentions, &mentions_list);
+    if (mentions_list && mentions_list->GetSize() >= 2)
+      ExtractMentionsStartEnd(*mentions_list, mention_start, mention_end);
+  }
+
+  // If either the selected text or the resolved term is not the search term,
+  // use it as the alternate term.
+  std::string selected_text;
+  dict->GetString(kContextualSearchResponseSelectedTextParam, &selected_text);
+  if (selected_text != *search_term) {
+    *alternate_term = selected_text;
+  } else {
+    std::string resolved_term;
+    dict->GetString(kContextualSearchResponseResolvedTermParam, &resolved_term);
+    if (resolved_term != *search_term) {
+      *alternate_term = resolved_term;
     }
   }
 }

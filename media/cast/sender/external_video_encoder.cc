@@ -18,6 +18,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
@@ -64,17 +65,19 @@ int GetConfiguredBacklogRedline() {
   const std::string& switch_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kCastEncoderUtilHeuristic);
-  if (switch_value.find(kBacklogSwitchValue) == 0) {
-    int redline = kBacklogDefaultRedline;
-    if (!base::StringToInt(switch_value.substr(sizeof(kBacklogSwitchValue) - 1),
-                           &redline)) {
-      redline = kBacklogDefaultRedline;
-    }
-    VLOG(1) << "Using 'backlog' heuristic with a redline of " << redline
-            << " to compute encoder utilization.";
-    return redline;
+  if (!base::StartsWith(switch_value, kBacklogSwitchValue,
+                        base::CompareCase::SENSITIVE)) {
+    return 0;
   }
-  return 0;
+
+  int redline = kBacklogDefaultRedline;
+  if (!base::StringToInt(switch_value.substr(sizeof(kBacklogSwitchValue) - 1),
+                         &redline)) {
+    redline = kBacklogDefaultRedline;
+  }
+  VLOG(1) << "Using 'backlog' heuristic with a redline of " << redline
+          << " to compute encoder utilization.";
+  return redline;
 }
 
 }  // namespace

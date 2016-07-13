@@ -364,9 +364,11 @@ DevToolsAndroidBridge::AgentHostDelegate::~AgentHostDelegate() {
 void DevToolsAndroidBridge::AgentHostDelegate::Attach(
     content::DevToolsExternalAgentProxy* proxy) {
   proxy_ = proxy;
-  content::RecordAction(browser_id_.second.find(kWebViewSocketPrefix) == 0 ?
-      base::UserMetricsAction("DevTools_InspectAndroidWebView") :
-      base::UserMetricsAction("DevTools_InspectAndroidPage"));
+  content::RecordAction(
+      base::StartsWith(browser_id_.second, kWebViewSocketPrefix,
+                       base::CompareCase::SENSITIVE)
+          ? base::UserMetricsAction("DevTools_InspectAndroidWebView")
+          : base::UserMetricsAction("DevTools_InspectAndroidPage"));
 
   // Retain the device so it's not released until AgentHost is detached.
   if (bridge_)
@@ -466,7 +468,7 @@ static std::string GetFrontendURL(const base::DictionaryValue& value) {
   size_t ws_param = frontend_url.find("?ws");
   if (ws_param != std::string::npos)
     frontend_url = frontend_url.substr(0, ws_param);
-  if (frontend_url.find("http:") == 0)
+  if (base::StartsWith(frontend_url, "http:", base::CompareCase::SENSITIVE))
     frontend_url = "https:" + frontend_url.substr(5);
   return frontend_url;
 }
@@ -474,7 +476,7 @@ static std::string GetFrontendURL(const base::DictionaryValue& value) {
 static std::string GetTargetPath(const base::DictionaryValue& value) {
   std::string target_path = GetStringProperty(value, "webSocketDebuggerUrl");
 
-  if (target_path.find("ws://") == 0) {
+  if (base::StartsWith(target_path, "ws://", base::CompareCase::SENSITIVE)) {
     size_t pos = target_path.find("/", 5);
     if (pos == std::string::npos)
       pos = 5;

@@ -311,10 +311,11 @@ base::string16 GetFirefoxImporterName(const base::FilePath& app_path) {
       if (line == "[App]") {
         in_app_section = true;
       } else if (in_app_section) {
-        if (line.find(name_attr) == 0) {
+        if (base::StartsWith(line, name_attr, base::CompareCase::SENSITIVE)) {
           line.substr(name_attr.size()).CopyToString(&branding_name);
           break;
-        } else if (line.length() > 0 && line[0] == '[') {
+        }
+        if (line.length() > 0 && line[0] == '[') {
           // No longer in the [App] section.
           break;
         }

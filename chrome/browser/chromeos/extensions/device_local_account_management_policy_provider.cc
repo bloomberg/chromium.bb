@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
@@ -488,9 +489,12 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
         }
         // Allow arbitrary web requests.  Don't include <all_urls> because that
         // also matches file:// schemes.
-        if (permission_string.find("https://") == 0 ||
-            permission_string.find("http://") == 0 ||
-            permission_string.find("ftp://") == 0) {
+        if (base::StartsWith(permission_string, "https://",
+                             base::CompareCase::SENSITIVE) ||
+            base::StartsWith(permission_string, "http://",
+                             base::CompareCase::SENSITIVE) ||
+            base::StartsWith(permission_string, "ftp://",
+                             base::CompareCase::SENSITIVE)) {
           continue;
         }
         LOG(ERROR) << extension->id()

@@ -16,7 +16,8 @@
 
 namespace {
 
-const std::string kVersionPrefix = "Chrome/";
+const char kVersionPrefix[] = "Chrome/";
+const size_t kVersionPrefixLen = sizeof(kVersionPrefix) - 1;
 
 }  // namespace
 
@@ -86,8 +87,9 @@ Status ParseBrowserString(bool has_android_package,
   }
 
   int build_no = 0;
-  if (browser_string.find(kVersionPrefix) == 0u) {
-    std::string version = browser_string.substr(kVersionPrefix.length());
+  if (base::StartsWith(browser_string, kVersionPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    std::string version = browser_string.substr(kVersionPrefixLen);
 
     Status status = ParseBrowserVersionString(
         version, &browser_info->major_version, &build_no);
@@ -108,7 +110,7 @@ Status ParseBrowserString(bool has_android_package,
     if (pos != std::string::npos) {
       browser_info->browser_name = "webview";
       browser_info->browser_version =
-          browser_string.substr(pos + kVersionPrefix.length());
+          browser_string.substr(pos + kVersionPrefixLen);
       browser_info->is_android = true;
       return ParseBrowserVersionString(browser_info->browser_version,
                                        &browser_info->major_version, &build_no);

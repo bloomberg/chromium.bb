@@ -202,7 +202,9 @@ DefaultWebClientState GetIsDefaultWebClient(const std::string& protocol) {
   }
 
   // Allow any reply that starts with "yes".
-  return (reply.find("yes") == 0) ? IS_DEFAULT : NOT_DEFAULT;
+  return base::StartsWith(reply, "yes", base::CompareCase::SENSITIVE)
+             ? IS_DEFAULT
+             : NOT_DEFAULT;
 #endif
 }
 

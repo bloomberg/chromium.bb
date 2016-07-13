@@ -309,7 +309,7 @@ bool AutofillProfileComparator::MergePhoneNumbers(
   // include the country code prefix.
   if (merged_number.country_code() == 1 &&
       merged_number.national_number() <= 9999999 &&
-      new_number.find("+1") == 0) {
+      base::StartsWith(new_number, "+1", base::CompareCase::SENSITIVE)) {
     size_t offset = 2;  // The char just after "+1".
     while (offset < new_number.size() &&
            base::IsAsciiWhitespace(new_number[offset])) {

@@ -72,7 +72,8 @@ bool IsArcWindow(aura::Window* window) {
   if (!window || window->name() != kExoShellSurfaceWindowName)
     return false;
   std::string application_id = exo::ShellSurface::GetApplicationId(window);
-  return application_id.find(kArcProcessNamePrefix) == 0;
+  return base::StartsWith(application_id, kArcProcessNamePrefix,
+                          base::CompareCase::SENSITIVE);
 }
 
 bool IsArcWindowInForeground() {
@@ -285,8 +286,9 @@ int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
 
 class TabManagerDelegate::UmaReporter {
  public:
-  UmaReporter() : last_kill_time_(), total_kills_(0) {}
+  UmaReporter() : total_kills_(0) {}
   ~UmaReporter() {}
+
   void ReportKill(const int memory_freed);
 
  private:

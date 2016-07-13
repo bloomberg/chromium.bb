@@ -138,7 +138,7 @@ base::FilePath::StringType VirtualPath::GetNormalizedFilePath(
 }
 
 bool VirtualPath::IsAbsolute(const base::FilePath::StringType& path) {
-  return path.find(kRoot) == 0;
+  return base::StartsWith(path, kRoot, base::CompareCase::SENSITIVE);
 }
 
 bool VirtualPath::IsRootPath(const base::FilePath& path) {

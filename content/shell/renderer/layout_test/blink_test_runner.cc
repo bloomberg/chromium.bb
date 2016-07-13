@@ -543,19 +543,20 @@ void BlinkTestRunner::SetBlockThirdPartyCookies(bool block) {
 
 std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
 #if defined(OS_WIN)
-  if (resource.find("/tmp/") == 0) {
+  if (base::StartsWith(resource, "/tmp/", base::CompareCase::SENSITIVE)) {
     // We want a temp file.
     GURL base_url = net::FilePathToFileURL(test_config_.temp_path);
-    return base_url.Resolve(resource.substr(strlen("/tmp/"))).spec();
+    return base_url.Resolve(resource.substr(sizeof("/tmp/") - 1)).spec();
   }
 #endif
 
   // Some layout tests use file://// which we resolve as a UNC path. Normalize
   // them to just file:///.
   std::string result = resource;
-  while (base::ToLowerASCII(result).find("file:////") == 0) {
-    result = result.substr(0, strlen("file:///")) +
-             result.substr(strlen("file:////"));
+  static const size_t kFileLen = sizeof("file:///") - 1;
+  while (base::StartsWith(base::ToLowerASCII(result), "file:////",
+                          base::CompareCase::SENSITIVE)) {
+    result = result.substr(0, kFileLen) + result.substr(kFileLen + 1);
   }
   return RewriteLayoutTestsURL(result, false /* is_wpt_mode */).string().utf8();
 }
@@ -657,13 +658,13 @@ void BlinkTestRunner::SetPermission(const std::string& name,
                                     const GURL& origin,
                                     const GURL& embedding_origin) {
   blink::mojom::PermissionStatus status;
-  if (value == "granted")
+  if (value == "granted") {
     status = blink::mojom::PermissionStatus::GRANTED;
-  else if (value == "prompt")
+  } else if (value == "prompt") {
     status = blink::mojom::PermissionStatus::ASK;
-  else if (value == "denied")
+  } else if (value == "denied") {
     status = blink::mojom::PermissionStatus::DENIED;
-  else {
+  } else {
     NOTREACHED();
     status = blink::mojom::PermissionStatus::DENIED;
   }

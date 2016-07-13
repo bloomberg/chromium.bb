@@ -16,6 +16,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -270,11 +271,10 @@ bool LocalizeExtension(const base::FilePath& extension_path,
       extensions::file_util::LoadMessageBundle(extension_path, default_locale,
                                                error));
 
-  if (!message_bundle.get() && !error->empty())
+  if (!message_bundle && !error->empty())
     return false;
 
-  if (message_bundle.get() &&
-      !LocalizeManifest(*message_bundle, manifest, error))
+  if (message_bundle && !LocalizeManifest(*message_bundle, manifest, error))
     return false;
 
   return true;
@@ -287,7 +287,7 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
                std::string* error) {
   // Accept name that starts with a . but don't add it to the list of supported
   // locales.
-  if (locale_name.find(".") == 0)
+  if (base::StartsWith(locale_name, ".", base::CompareCase::SENSITIVE))
     return true;
   if (chrome_locales.find(locale_name) == chrome_locales.end()) {
     // Warn if there is an extension locale that's not in the Chrome list,
@@ -297,14 +297,13 @@ bool AddLocale(const std::set<std::string>& chrome_locales,
     return true;
   }
   // Check if messages file is actually present (but don't check content).
-  if (base::PathExists(locale_folder.Append(extensions::kMessagesFilename))) {
-    valid_locales->insert(locale_name);
-  } else {
+  if (!base::PathExists(locale_folder.Append(extensions::kMessagesFilename))) {
     *error = base::StringPrintf("Catalog file is missing for locale %s.",
                                 locale_name.c_str());
     return false;
   }
 
+  valid_locales->insert(locale_name);
   return true;
 }
 

@@ -262,11 +262,15 @@ std::string GetUserName(const std::string& unix_user,
 
 AndroidDeviceManager::BrowserInfo::Type
 GetBrowserType(const std::string& socket) {
-  if (socket.find(kChromeDefaultSocket) == 0)
+  if (base::StartsWith(socket, kChromeDefaultSocket,
+                       base::CompareCase::SENSITIVE)) {
     return AndroidDeviceManager::BrowserInfo::kTypeChrome;
+  }
 
-  if (socket.find(kWebViewSocketPrefix) == 0)
+  if (base::StartsWith(socket, kWebViewSocketPrefix,
+                       base::CompareCase::SENSITIVE)) {
     return AndroidDeviceManager::BrowserInfo::kTypeWebView;
+  }
 
   return AndroidDeviceManager::BrowserInfo::kTypeOther;
 }

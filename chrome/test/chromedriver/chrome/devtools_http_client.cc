@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -32,7 +34,8 @@ WebViewInfo::WebViewInfo(const WebViewInfo& other) = default;
 WebViewInfo::~WebViewInfo() {}
 
 bool WebViewInfo::IsFrontend() const {
-  return url.find("chrome-devtools://") == 0u;
+  return base::StartsWith(url, "chrome-devtools://",
+                          base::CompareCase::SENSITIVE);
 }
 
 bool WebViewInfo::IsInactiveBackgroundPage() const {
@@ -153,11 +156,12 @@ const DeviceMetrics* DevToolsHttpClient::device_metrics() {
 }
 
 bool DevToolsHttpClient::IsBrowserWindow(const WebViewInfo& view) const {
-  return window_types_->find(view.type) != window_types_->end() ||
-      (view.type == WebViewInfo::kOther &&
-        (view.url.find("chrome-extension://") == 0 ||
-         view.url == "chrome://print/" ||
-         view.url == "chrome://media-router/"));
+  return ContainsKey(*window_types_, view.type) ||
+         (view.type == WebViewInfo::kOther &&
+          (base::StartsWith(view.url, "chrome-extension://",
+                            base::CompareCase::SENSITIVE) ||
+           view.url == "chrome://print/" ||
+           view.url == "chrome://media-router/"));
 }
 
 Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {

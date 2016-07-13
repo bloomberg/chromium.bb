@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/ppapi/ppapi_test.h"
@@ -147,7 +148,8 @@ class FakeDatabaseManager
   bool MatchDownloadWhitelistUrl(const GURL& url) override {
     // This matches the behavior in RunTestViaHTTP().
     return url.SchemeIsHTTPOrHTTPS() && url.has_path() &&
-           url.path().find("/test_case.html") == 0;
+           base::StartsWith(url.path(), "/test_case.html",
+                            base::CompareCase::SENSITIVE);
   }
 
  protected:

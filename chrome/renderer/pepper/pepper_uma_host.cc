@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -113,7 +114,8 @@ bool PepperUMAHost::IsPluginWhitelisted() {
 }
 
 bool PepperUMAHost::IsHistogramAllowed(const std::string& histogram) {
-  if (is_plugin_in_process_ && histogram.find("NaCl.") == 0) {
+  if (is_plugin_in_process_ &&
+      base::StartsWith(histogram, "NaCl.", base::CompareCase::SENSITIVE)) {
     return true;
   }
 

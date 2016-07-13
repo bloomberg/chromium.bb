@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/ini_parser.h"
 
@@ -38,7 +39,8 @@ class PicasaINIParser : public INIParser {
       return;
 
     // [.album:*] sections ignored as we get that data from the PMP files.
-    if (section.find(kAlbumSectionHeader) == 0)
+    if (base::StartsWith(section, kAlbumSectionHeader,
+                         base::CompareCase::SENSITIVE))
       return;
 
     for (const std::string& album : base::SplitString(
