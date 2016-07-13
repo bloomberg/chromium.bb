@@ -639,9 +639,30 @@ TEST_F('CrSettingsRadioGroupTest', 'All', function() {
  * @constructor
  * @extends {CrSettingsBrowserTest}
  */
-function CrSettingsRouterTest() {}
+function CrSettingsRouteTest() {}
 
-CrSettingsRouterTest.prototype = {
+CrSettingsRouteTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/route.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'route_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsRouteTest', 'All', function() {
+  mocha.run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsRouterElementTest() {}
+
+CrSettingsRouterElementTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
@@ -652,6 +673,6 @@ CrSettingsRouterTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsRouterTest', 'All', function() {
+TEST_F('CrSettingsRouterElementTest', 'All', function() {
   mocha.run();
 });
