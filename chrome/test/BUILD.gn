@@ -2288,6 +2288,9 @@ test("unit_tests") {
             ".",
             "//chrome")
   }
+  if (enable_supervised_users && !is_android && !is_chromeos) {
+    sources += [ "../browser/ui/webui/signin/signin_supervised_user_import_handler_unittest.cc" ]
+  }
   if (safe_browsing_mode == 1 && enable_extensions) {
     sources += [ "../browser/extensions/blacklist_unittest.cc" ]
   }
