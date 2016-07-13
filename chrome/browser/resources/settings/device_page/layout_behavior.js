@@ -15,6 +15,12 @@ var LayoutBehavior = {
      * @type {!Array<!chrome.system.display.DisplayLayout>}
      */
     layouts: Array,
+
+    /**
+     * Whether or not mirroring is enabled.
+     * @type {boolean}
+     */
+    mirroring: false,
   },
 
   /** @private {!Map<string, chrome.system.display.Bounds>} */
@@ -48,6 +54,8 @@ var LayoutBehavior = {
   initializeDisplayLayout: function(displays, layouts) {
     this.dragLayoutId = '';
     this.dragParentId_ = '';
+
+    this.mirroring = displays.length > 0 && !!displays[0].mirroringSourceId;
 
     this.displayBoundsMap_.clear();
     for (let display of displays)
@@ -182,11 +190,12 @@ var LayoutBehavior = {
 
   /**
    * @param {string} displayId
+   * @param {boolean=} opt_notest Set to true if bounds may not be set.
    * @return {!chrome.system.display.Bounds} bounds
    */
-  getCalculatedDisplayBounds: function(displayId) {
+  getCalculatedDisplayBounds: function(displayId, opt_notest) {
     var bounds = this.calculatedBoundsMap_.get(displayId);
-    assert(bounds);
+    assert(opt_notest || bounds);
     return bounds;
   },
 
@@ -308,7 +317,7 @@ var LayoutBehavior = {
   calculateBounds_: function(id, width, height) {
     var left, top;
     var layout = this.displayLayoutMap_.get(id);
-    if (!layout || !layout.parentId) {
+    if (this.mirroring || !layout || !layout.parentId) {
       left = -width / 2;
       top = -height / 2;
     } else {

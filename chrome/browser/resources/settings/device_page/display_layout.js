@@ -28,12 +28,6 @@ Polymer({
      */
     displays: Array,
 
-    /**
-     * Whether or not mirroring is enabled.
-     * @type {boolean}
-     */
-    mirroring: false,
-
     /** @type {!chrome.system.display.DisplayUnitInfo|undefined} */
     selectedDisplay: Object,
 
@@ -48,19 +42,6 @@ Polymer({
   visualOffset_: {left: 0, top: 0},
 
   /** @override */
-  attached: function() {
-    // TODO(stevenjb): Remove retry once fixed:
-    // https://github.com/Polymer/polymer/issues/3629
-    var self = this;
-    var retry = 100;  // ms
-    function tryCalcVisualScale() {
-      if (!self.calculateVisualScale_())
-        setTimeout(tryCalcVisualScale, retry);
-    }
-    tryCalcVisualScale();
-  },
-
-  /** @override */
   detached: function() { this.initializeDrag(false); },
 
   /**
@@ -73,11 +54,15 @@ Polymer({
     this.displays = displays;
     this.layouts = layouts;
 
-    this.mirroring = displays.length > 0 && !!displays[0].mirroringSourceId;
-
     this.initializeDisplayLayout(displays, layouts);
 
-    this.calculateVisualScale_();
+    var self = this;
+    var retry = 100;  // ms
+    function tryCalcVisualScale() {
+      if (!self.calculateVisualScale_())
+        setTimeout(tryCalcVisualScale, retry);
+    }
+    tryCalcVisualScale();
 
     this.initializeDrag(
         !this.mirroring, this.$.displayArea, this.onDrag_.bind(this));
@@ -150,21 +135,36 @@ Polymer({
    * @param {string} id
    * @param {!chrome.system.display.Bounds} displayBounds
    * @param {number} visualScale
+   * @param {boolean=} opt_mirrored
    * @return {string} The style string for the div.
    * @private
    */
-  getDivStyle_: function(id, displayBounds, visualScale) {
+  getDivStyle_: function(id, displayBounds, visualScale, opt_mirrored) {
     // This matches the size of the box-shadow or border in CSS.
-    /** @const {number} */ var BORDER = 2;
-    var bounds = this.getCalculatedDisplayBounds(id);
+    /** @const {number} */ var BORDER = opt_mirrored ? 1 : 2;
+    /** @const {number} */ var OFFSET = opt_mirrored ? -4 : 0;
+    var bounds = this.getCalculatedDisplayBounds(id, true /* notest */);
+    if (!bounds)
+      return '';
     var height = Math.round(bounds.height * this.visualScale) - BORDER * 2;
     var width = Math.round(bounds.width * this.visualScale) - BORDER * 2;
-    var left =
+    var left = OFFSET +
         Math.round(this.visualOffset_.left + (bounds.left * this.visualScale));
-    var top =
+    var top = OFFSET +
         Math.round(this.visualOffset_.top + (bounds.top * this.visualScale));
     return `height: ${height}px; width: ${width}px;` +
         ` left: ${left}px; top: ${top}px`;
+  },
+
+  /**
+   * @param {string} id
+   * @param {!chrome.system.display.Bounds} displayBounds
+   * @param {number} visualScale
+   * @return {string} The style string for the mirror div.
+   * @private
+   */
+  getMirrorDivStyle_: function(id, displayBounds, visualScale) {
+    return this.getDivStyle_(id, displayBounds, visualScale, true);
   },
 
   /**

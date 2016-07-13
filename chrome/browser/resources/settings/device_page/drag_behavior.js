@@ -17,14 +17,16 @@ var DragPosition;
 
 /** @polymerBehavior */
 var DragBehavior = {
+  properties: {
+    /** Whether or not drag is enabled (e.g. not mirrored). */
+    dragEnabled: Boolean,
+  },
+
   /**
    * The id of the element being dragged, or empty if not dragging.
    * @private {string}
    */
   dragId_: '',
-
-  /** @private {boolean} */
-  enabled_: false,
 
   /** @private {!HTMLDivElement|undefined} */
   container_: undefined,
@@ -62,51 +64,60 @@ var DragBehavior = {
    * @param {!function(string, ?DragPosition):void=} opt_callback
    */
   initializeDrag: function(enabled, opt_container, opt_callback) {
-    this.enabled_ = enabled;
+    this.dragEnabled = enabled;
     if (!enabled) {
-      if (this.container) {
-        this.container.removeEventListener('mousdown', this.mouseDownListener_);
-        this.mouseDownListener_ = null;
-        this.container.removeEventListener(
-            'mousemove', this.mouseMoveListener_);
-        this.mouseMoveListener_ = null;
-        this.container.removeEventListener(
-            'touchstart', this.touchStartListener_);
-        this.touchStartListener_ = null;
-        this.container.removeEventListener(
-            'touchmove', this.touchMoveListener_);
-        this.touchMoveListener_ = null;
-        this.container.removeEventListener('touchend', this.endDragListener_);
-      }
-      if (this.mouseUpListener_)
-        window.removeEventListener('mouseup', this.endDragListener_);
-      this.endDragListener_ = null;
+      this.removeListeners_();
       return;
     }
 
     if (opt_container !== undefined)
       this.container_ = opt_container;
-    var container = this.container_;
-    assert(container);
 
-    this.mouseDownListener_ = this.onMouseDown_.bind(this);
-    container.addEventListener('mousedown', this.mouseDownListener_, true);
-
-    this.mouseMoveListener_ = this.onMouseMove_.bind(this);
-    container.addEventListener('mousemove', this.mouseMoveListener_, true);
-
-    this.touchStartListener_ = this.onTouchStart_.bind(this);
-    container.addEventListener('touchstart', this.touchStartListener_, true);
-
-    this.touchMoveListener_ = this.onTouchMove_.bind(this);
-    container.addEventListener('touchmove', this.touchMoveListener_, true);
-
-    this.endDragListener_ = this.endDrag_.bind(this);
-    window.addEventListener('mouseup', this.endDragListener_, true);
-    container.addEventListener('touchend', this.endDragListener_, true);
+    this.addListeners_();
 
     if (opt_callback !== undefined)
       this.callback_ = opt_callback;
+  },
+
+  /** @private */
+  addListeners_() {
+    let container = this.container_;
+    if (!container || this.mouseDownListener_)
+      return;
+    this.mouseDownListener_ = this.onMouseDown_.bind(this);
+    container.addEventListener('mousedown', this.mouseDownListener_);
+
+    this.mouseMoveListener_ = this.onMouseMove_.bind(this);
+    container.addEventListener('mousemove', this.mouseMoveListener_);
+
+    this.touchStartListener_ = this.onTouchStart_.bind(this);
+    container.addEventListener('touchstart', this.touchStartListener_);
+
+    this.touchMoveListener_ = this.onTouchMove_.bind(this);
+    container.addEventListener('touchmove', this.touchMoveListener_);
+
+    this.endDragListener_ = this.endDrag_.bind(this);
+    window.addEventListener('mouseup', this.endDragListener_);
+    container.addEventListener('touchend', this.endDragListener_);
+  },
+
+  /** @private */
+  removeListeners_() {
+    let container = this.container_;
+    if (!container || !this.mouseDownListener_)
+      return;
+    container.removeEventListener('mousedown', this.mouseDownListener_);
+    this.mouseDownListener_ = null;
+    container.removeEventListener('mousemove', this.mouseMoveListener_);
+    this.mouseMoveListener_ = null;
+    container.removeEventListener('touchstart', this.touchStartListener_);
+    this.touchStartListener_ = null;
+    container.removeEventListener('touchmove', this.touchMoveListener_);
+    this.touchMoveListener_ = null;
+    container.removeEventListener('touchend', this.endDragListener_);
+    if (this.endDragListener_)
+      window.removeEventListener('mouseup', this.endDragListener_);
+    this.endDragListener_ = null;
   },
 
   /**
@@ -115,9 +126,7 @@ var DragBehavior = {
    * @private
    */
   onMouseDown_: function(e) {
-    if (e.button != 0)
-      return true;
-    if (!e.target.getAttribute('draggable'))
+    if (e.button != 0 || !e.target.getAttribute('draggable'))
       return true;
     e.preventDefault();
     var target = assertInstanceof(e.target, HTMLElement);
@@ -181,6 +190,7 @@ var DragBehavior = {
    * @private
    */
   startDrag_: function(target, eventLocation) {
+    assert(this.dragEnabled);
     this.dragId_ = target.id;
     this.dragStartLocation_ = eventLocation;
     return false;
@@ -192,6 +202,7 @@ var DragBehavior = {
    * @private
    */
   endDrag_: function(e) {
+    assert(this.dragEnabled);
     if (this.dragId_ && this.callback_)
       this.callback_(this.dragId_, null);
     this.dragId_ = '';
@@ -206,6 +217,7 @@ var DragBehavior = {
    * @private
    */
   processDrag_: function(e, eventLocation) {
+    assert(this.dragEnabled);
     if (!this.dragId_)
       return true;
     if (this.callback_) {

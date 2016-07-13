@@ -16,6 +16,8 @@
         position: relative;
         width: 100%;
       }
+      /* Note: the size of the border / box shadow affects the style generated
+         in getDivStyle_ and getMirrorDivStyle_ */
       .display {
         align-items: center;
         background: var(--paper-grey-200);
@@ -28,6 +30,10 @@
       }
       .display[selected] {
         border: var(--google-blue-500) solid 2px;
+        box-shadow: none;
+      }
+      .display.mirror {
+        border: var(--google-blue-500) solid 1px;
         box-shadow: none;
       }
       .highlight-left {
@@ -45,7 +51,13 @@
     </style>
     <div id="displayArea" on-iron-resize="calculateVisualScale_">
       <template is="dom-repeat" items="[[displays]]">
-        <div id="_[[item.id]]" class="display" draggable="true"
+        <div id="_mirror_[[item.id]]" class="display mirror"
+            hidden$="[[!mirroring]]"
+            style$="[[getMirrorDivStyle_(item.id, item.bounds, visualScale)]]"
+        </div>
+      </template>
+      <template is="dom-repeat" items="[[displays]]">
+        <div id="_[[item.id]]" class="display" draggable="[[dragEnabled]]"
             style$="[[getDivStyle_(item.id, item.bounds, visualScale)]]"
             selected$="[[isSelected_(item, selectedDisplay)]]"
             on-tap="onSelectDisplayTap_">
