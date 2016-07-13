@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "build/build_config.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -55,8 +56,7 @@ bool IsTraceEventArgsWhitelisted(
 
 }  // namespace
 
-class TracingControllerTestEndpoint
-    : public TracingController::TraceDataEndpoint {
+class TracingControllerTestEndpoint : public TraceDataEndpoint {
  public:
   TracingControllerTestEndpoint(
       base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
@@ -271,7 +271,7 @@ class TracingControllerTest : public ContentBrowserTest {
               &TracingControllerTest::StopTracingStringDoneCallbackTest,
               base::Unretained(this), run_loop.QuitClosure());
       bool result = controller->StopTracing(
-          TracingController::CreateCompressedStringSink(
+          TracingControllerImpl::CreateCompressedStringSink(
               new TracingControllerTestEndpoint(callback)));
       ASSERT_TRUE(result);
       run_loop.Run();
@@ -302,9 +302,9 @@ class TracingControllerTest : public ContentBrowserTest {
           &TracingControllerTest::StopTracingFileDoneCallbackTest,
           base::Unretained(this), run_loop.QuitClosure(), result_file_path);
       bool result = controller->StopTracing(
-          TracingController::CreateCompressedStringSink(
-              TracingController::CreateFileEndpoint(result_file_path,
-                                                    callback)));
+          TracingControllerImpl::CreateCompressedStringSink(
+              TracingControllerImpl::CreateFileEndpoint(result_file_path,
+                                                        callback)));
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);

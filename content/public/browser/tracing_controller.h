@@ -74,47 +74,15 @@ class TracingController {
     base::DictionaryValue metadata_;
   };
 
-  // An implementation of this interface is passed when constructing a
-  // TraceDataSink, and receives chunks of the final trace data as it's being
-  // constructed.
-  // Methods may be called from any thread.
-  class CONTENT_EXPORT TraceDataEndpoint
-      : public base::RefCountedThreadSafe<TraceDataEndpoint> {
-   public:
-    virtual void ReceiveTraceChunk(const std::string& chunk) {}
-    virtual void ReceiveTraceFinalContents(
-        std::unique_ptr<const base::DictionaryValue> metadata,
-        const std::string& contents) {}
-
-   protected:
-    friend class base::RefCountedThreadSafe<TraceDataEndpoint>;
-    virtual ~TraceDataEndpoint() {}
-  };
-
   // Create a trace sink that may be supplied to StopTracing
   // to capture the trace data as a string.
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateStringSink(
       const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                                 base::RefCountedString*)>& callback);
 
-  CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
-      scoped_refptr<TraceDataEndpoint> endpoint);
-
   // Create a trace sink that may be supplied to StopTracing
   // to dump the trace data to a file.
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateFileSink(
-      const base::FilePath& file_path,
-      const base::Closure& callback);
-
-  // Create an endpoint that may be supplied to any TraceDataSink to
-  // dump the trace data to a callback.
-  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
-      const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
-                                base::RefCountedString*)>& callback);
-
-  // Create an endpoint that may be supplied to any TraceDataSink to
-  // dump the trace data to a file.
-  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
       const base::FilePath& file_path,
       const base::Closure& callback);
 

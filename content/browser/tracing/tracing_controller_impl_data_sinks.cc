@@ -19,7 +19,7 @@ namespace {
 const char kChromeTraceLabel[] = "traceEvents";
 const char kMetadataTraceLabel[] = "metadata";
 
-class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
+class StringTraceDataEndpoint : public TraceDataEndpoint {
  public:
   typedef base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                               base::RefCountedString*)>
@@ -49,7 +49,7 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
   DISALLOW_COPY_AND_ASSIGN(StringTraceDataEndpoint);
 };
 
-class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
+class FileTraceDataEndpoint : public TraceDataEndpoint {
  public:
   explicit FileTraceDataEndpoint(const base::FilePath& trace_file_path,
                                  const base::Closure& callback)
@@ -117,8 +117,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
 class StringTraceDataSink : public TracingController::TraceDataSink {
  public:
-  explicit StringTraceDataSink(
-      scoped_refptr<TracingController::TraceDataEndpoint> endpoint)
+  explicit StringTraceDataSink(scoped_refptr<TraceDataEndpoint> endpoint)
       : endpoint_(endpoint) {}
 
   void AddTraceChunk(const std::string& chunk) override {
@@ -159,7 +158,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
  private:
   ~StringTraceDataSink() override {}
 
-  scoped_refptr<TracingController::TraceDataEndpoint> endpoint_;
+  scoped_refptr<TraceDataEndpoint> endpoint_;
   std::string trace_;
 
   DISALLOW_COPY_AND_ASSIGN(StringTraceDataSink);
@@ -168,7 +167,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
 class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
  public:
   explicit CompressedStringTraceDataSink(
-      scoped_refptr<TracingController::TraceDataEndpoint> endpoint)
+      scoped_refptr<TraceDataEndpoint> endpoint)
       : endpoint_(endpoint), already_tried_open_(false) {}
 
   void AddTraceChunk(const std::string& chunk) override {
@@ -287,7 +286,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
                                          compressed_trace_data_);
   }
 
-  scoped_refptr<TracingController::TraceDataEndpoint> endpoint_;
+  scoped_refptr<TraceDataEndpoint> endpoint_;
   std::unique_ptr<z_stream> stream_;
   bool already_tried_open_;
   std::string compressed_trace_data_;
@@ -349,8 +348,8 @@ TracingController::CreateStringSink(
 }
 
 scoped_refptr<TracingController::TraceDataSink>
-TracingController::CreateCompressedStringSink(
-    scoped_refptr<TracingController::TraceDataEndpoint> endpoint) {
+TracingControllerImpl::CreateCompressedStringSink(
+    scoped_refptr<TraceDataEndpoint> endpoint) {
   return new CompressedStringTraceDataSink(endpoint);
 }
 
@@ -358,19 +357,18 @@ scoped_refptr<TracingController::TraceDataSink>
 TracingController::CreateFileSink(const base::FilePath& file_path,
                                   const base::Closure& callback) {
   return new StringTraceDataSink(
-      CreateFileEndpoint(file_path, callback));
+      TracingControllerImpl::CreateFileEndpoint(file_path, callback));
 }
 
-scoped_refptr<TracingController::TraceDataEndpoint>
-TracingController::CreateCallbackEndpoint(
+scoped_refptr<TraceDataEndpoint> TracingControllerImpl::CreateCallbackEndpoint(
     const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                               base::RefCountedString*)>& callback) {
   return new StringTraceDataEndpoint(callback);
 }
 
-scoped_refptr<TracingController::TraceDataEndpoint>
-TracingController::CreateFileEndpoint(const base::FilePath& file_path,
-                                      const base::Closure& callback) {
+scoped_refptr<TraceDataEndpoint> TracingControllerImpl::CreateFileEndpoint(
+    const base::FilePath& file_path,
+    const base::Closure& callback) {
   return new FileTraceDataEndpoint(file_path, callback);
 }
 

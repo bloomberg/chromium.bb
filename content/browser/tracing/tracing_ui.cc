@@ -186,8 +186,8 @@ bool OnBeginJSONRequest(const std::string& path,
   }
   if (path == "json/end_recording_compressed") {
     scoped_refptr<TracingControllerImpl::TraceDataSink> data_sink =
-        TracingController::CreateCompressedStringSink(
-            TracingController::CreateCallbackEndpoint(
+        TracingControllerImpl::CreateCompressedStringSink(
+            TracingControllerImpl::CreateCallbackEndpoint(
                 base::Bind(TracingCallbackWrapperBase64, callback)));
     AddCustomMetadata(data_sink.get());
     return TracingController::GetInstance()->StopTracing(data_sink);

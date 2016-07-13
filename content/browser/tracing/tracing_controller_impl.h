@@ -30,11 +30,42 @@ namespace content {
 class TraceMessageFilter;
 class TracingUI;
 
+// An implementation of this interface is passed when constructing a
+// TraceDataSink, and receives chunks of the final trace data as it's being
+// constructed.
+// Methods may be called from any thread.
+class TraceDataEndpoint : public base::RefCountedThreadSafe<TraceDataEndpoint> {
+ public:
+  virtual void ReceiveTraceChunk(const std::string& chunk) {}
+  virtual void ReceiveTraceFinalContents(
+      std::unique_ptr<const base::DictionaryValue> metadata,
+      const std::string& contents) {}
+
+ protected:
+  friend class base::RefCountedThreadSafe<TraceDataEndpoint>;
+  virtual ~TraceDataEndpoint() {}
+};
+
 class TracingControllerImpl
     : public TracingController,
       public base::trace_event::MemoryDumpManagerDelegate,
       public base::trace_event::TracingAgent {
  public:
+  // Create an endpoint that may be supplied to any TraceDataSink to
+  // dump the trace data to a callback.
+  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateCallbackEndpoint(
+      const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
+                                base::RefCountedString*)>& callback);
+
+  // Create an endpoint that may be supplied to any TraceDataSink to
+  // dump the trace data to a file.
+  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
+      const base::FilePath& file_path,
+      const base::Closure& callback);
+
+  CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
+      scoped_refptr<TraceDataEndpoint> endpoint);
+
   static TracingControllerImpl* GetInstance();
 
   // TracingController implementation.

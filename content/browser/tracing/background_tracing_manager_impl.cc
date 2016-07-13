@@ -16,6 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/tracing/background_tracing_rule.h"
+#include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/tracing_delegate.h"
@@ -506,8 +507,8 @@ void BackgroundTracingManagerImpl::BeginFinalizing(
 
   scoped_refptr<TracingControllerImpl::TraceDataSink> trace_data_sink;
   if (is_allowed_finalization) {
-    trace_data_sink = content::TracingController::CreateCompressedStringSink(
-        content::TracingController::CreateCallbackEndpoint(
+    trace_data_sink = TracingControllerImpl::CreateCompressedStringSink(
+        TracingControllerImpl::CreateCallbackEndpoint(
             base::Bind(&BackgroundTracingManagerImpl::OnFinalizeStarted,
                        base::Unretained(this))));
     RecordBackgroundTracingMetric(FINALIZATION_ALLOWED);
