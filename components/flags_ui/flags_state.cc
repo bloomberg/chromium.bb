@@ -199,11 +199,14 @@ base::Value* CreateOptionsData(const FeatureEntry& entry,
 // |kTrialGroupAboutFlags|.
 void RegisterFeatureVariationParameters(
     const std::string& feature_trial_name,
-    const FeatureEntry::FeatureVariation& feature_variation) {
+    const FeatureEntry::FeatureVariation* feature_variation) {
   std::map<std::string, std::string> params;
-  for (int i = 0; i < feature_variation.num_params; ++i) {
-    params[feature_variation.params[i].param_name] =
-        feature_variation.params[i].param_value;
+  if (feature_variation) {
+    // Copy the parameters for non-null variations.
+    for (int i = 0; i < feature_variation->num_params; ++i) {
+      params[feature_variation->params[i].param_name] =
+          feature_variation->params[i].param_value;
+    }
   }
 
   bool success = variations::AssociateVariationParams(
@@ -443,9 +446,10 @@ void FlagsState::RegisterAllFeatureVariationParameters(
       for (int j = 0; j < e.num_options; ++j) {
         const FeatureEntry::FeatureVariation* variation =
             e.VariationForOption(j);
-        if (variation != nullptr && enabled_entries.count(e.NameForOption(j))) {
-          // If the option is selected by the user & has variation, register it.
-          RegisterFeatureVariationParameters(e.feature_trial_name, *variation);
+        if (e.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
+            enabled_entries.count(e.NameForOption(j))) {
+          // If the option is enabled by the user, register it.
+          RegisterFeatureVariationParameters(e.feature_trial_name, variation);
           // TODO(jkrcal) The code does not associate the feature with the field
           // trial |e.feature_trial_name|. The reason is that features
           // overridden in chrome://flags are translated to command-line flags

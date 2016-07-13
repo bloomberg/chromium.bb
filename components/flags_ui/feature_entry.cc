@@ -41,11 +41,10 @@ base::string16 FeatureEntry::DescriptionForOption(int index) const {
     if (index == 0) {
       description_id = IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT;
     } else if (index == 1) {
-      // Variation 1: the default enabled variation => "Enabled".
       description_id = IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED;
     } else if (index < num_options - 1) {
-      // Variations 2 .. n  => "Enabled <description_text>".
-      int variation_index = index - 1;
+      // First two options do not have variations params.
+      int variation_index = index - 2;
       return l10n_util::GetStringUTF16(IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED) +
              base::ASCIIToUTF16(" ") +
              base::ASCIIToUTF16(
@@ -86,11 +85,12 @@ const FeatureEntry::FeatureVariation* FeatureEntry::VariationForOption(
          type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE);
   DCHECK_LT(index, num_options);
 
-  if (type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE && index > 0 &&
+  if (type == FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE && index > 1 &&
       index < num_options - 1) {
     // We have no variations for FEATURE_VALUE type. Option at |index|
-    // corresponds to variation at |index| - 1 as the first option is "Default".
-    return &feature_variations[index - 1];
+    // corresponds to variation at |index| - 2 as the list starts with "Default"
+    // and "Enabled" (with default parameters).
+    return &feature_variations[index - 2];
   }
   return nullptr;
 }

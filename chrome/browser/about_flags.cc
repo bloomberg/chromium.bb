@@ -513,7 +513,6 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationDefault[] = {};
 const FeatureEntry::FeatureParam kNTPSnippetsFeatureVariationOnlyPersonal[] = {
     {"fetching_personalization", "personal"},
     {"fetching_host_restrict", "off"},
@@ -529,10 +528,7 @@ const FeatureEntry::FeatureParam
         {"fetching_host_restrict", "on"},
 };
 
-// TODO(jkrcal) allow for nullptr instead of the empty array.
 const FeatureEntry::FeatureVariation kNTPSnippetsFeatureVariations[] = {
-    {"", kNTPSnippetsFeatureVariationDefault,
-     0},
     {"only personalized", kNTPSnippetsFeatureVariationOnlyPersonal,
      arraysize(kNTPSnippetsFeatureVariationOnlyPersonal)},
     {"only from most visited sites",

@@ -35,7 +35,7 @@
 #define FEATURE_WITH_VARIATIONS_VALUE_TYPE(feature, feature_variations,       \
                                            feature_trial)                     \
   flags_ui::FeatureEntry::FEATURE_WITH_VARIATIONS_VALUE, nullptr, nullptr,    \
-      nullptr, nullptr, &feature, 2 + arraysize(feature_variations), nullptr, \
+      nullptr, nullptr, &feature, 3 + arraysize(feature_variations), nullptr, \
       feature_variations, feature_trial
 
 #endif  // COMPONENTS_FLAGS_UI_FEATURE_ENTRY_MACROS_H_
