@@ -95,7 +95,7 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
 {
     Document* document = frameView().frame().document();
 
-    if (frameView().shouldThrottleRendering())
+    if (frameView().shouldThrottleRendering() || !document->isActive())
         return;
 
 #ifndef NDEBUG
@@ -124,6 +124,8 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     }
 
     frameView().checkDoesNotNeedLayout();
+    // TODO(wangxianzhu): The following check should be stricter, but currently this is blocked
+    // by the svg root issue (crbug.com/442939).
     ASSERT(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
     TRACE_EVENT1("devtools.timeline", "Paint", "data", InspectorPaintEvent::data(layoutView, LayoutRect(rect), 0));

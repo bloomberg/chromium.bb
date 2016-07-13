@@ -2519,6 +2519,9 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
         || targetState == DocumentLifecycle::PrePaintClean
         || targetState == DocumentLifecycle::PaintClean);
 
+    if (!m_frame->document()->isActive())
+        return;
+
     TemporaryChange<DocumentLifecycle::LifecycleState> targetStateScope(m_currentUpdateLifecyclePhasesTargetState, targetState);
 
     if (shouldThrottleRendering()) {
@@ -2698,7 +2701,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
 
 void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal()
 {
-    if (shouldThrottleRendering())
+    if (shouldThrottleRendering() || !m_frame->document()->isActive())
         return;
 
     ScopedFrameBlamer frameBlamer(m_frame);
