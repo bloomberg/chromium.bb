@@ -1262,7 +1262,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         mSecurityIconType = securityLevel;
 
         updateSecurityButton(!(securityLevel == ConnectionSecurityLevel.NONE && isSmallDevice));
-        // Since we emphasize the schema of the URL based on the security type, we need to
+        // Since we emphasize the scheme of the URL based on the security type, we need to
         // refresh the emphasis.
         mUrlBar.deEmphasizeUrl();
         emphasizeUrl();
@@ -1275,14 +1275,8 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     @Override
     public boolean shouldEmphasizeHttpsScheme() {
-        int securityLevel = getSecurityLevel();
-        if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
-                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
-            return true;
-        }
-        if (getToolbarDataProvider().isUsingBrandColor()) return false;
-        if (getToolbarDataProvider().isIncognito()) return false;
+        ToolbarDataProvider provider = getToolbarDataProvider();
+        if (provider.isUsingBrandColor() || provider.isIncognito()) return false;
         return true;
     }
 
