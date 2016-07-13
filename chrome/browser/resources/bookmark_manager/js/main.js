@@ -77,24 +77,24 @@ var searchTreeItem = new TreeItem({
 var commandShortcutMap = cr.isMac ? {
   'edit': 'Enter',
   // On Mac we also allow Meta+Backspace.
-  'delete': 'U+007F  U+0008 Meta-U+0008',
-  'open-in-background-tab': 'Meta-Enter',
-  'open-in-new-tab': 'Shift-Meta-Enter',
-  'open-in-same-window': 'Meta-Down',
-  'open-in-new-window': 'Shift-Enter',
+  'delete': 'Delete Backspace Meta|Backspace',
+  'open-in-background-tab': 'Meta|Enter',
+  'open-in-new-tab': 'Shift|Meta|Enter',
+  'open-in-same-window': 'Meta|Down',
+  'open-in-new-window': 'Shift|Enter',
   'rename-folder': 'Enter',
   // Global undo is Command-Z. It is not in any menu.
-  'undo': 'Meta-U+005A',
+  'undo': 'Meta|z',
 } : {
   'edit': 'F2',
-  'delete': 'U+007F',
-  'open-in-background-tab': 'Ctrl-Enter',
-  'open-in-new-tab': 'Shift-Ctrl-Enter',
+  'delete': 'Delete',
+  'open-in-background-tab': 'Ctrl|Enter',
+  'open-in-new-tab': 'Shift|Ctrl|Enter',
   'open-in-same-window': 'Enter',
-  'open-in-new-window': 'Shift-Enter',
+  'open-in-new-window': 'Shift|Enter',
   'rename-folder': 'F2',
   // Global undo is Ctrl-Z. It is not in any menu.
-  'undo': 'Ctrl-U+005A',
+  'undo': 'Ctrl|z',
 };
 
 /**
