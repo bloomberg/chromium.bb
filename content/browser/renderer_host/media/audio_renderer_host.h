@@ -174,10 +174,12 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   void OnDeviceAuthorized(int stream_id,
                           const std::string& device_id,
                           const url::Origin& security_origin,
+                          base::TimeTicks auth_start_time,
                           bool have_access);
 
   // Proceed with device authorization after translating device ID.
   void OnDeviceIDTranslated(int stream_id,
+                            base::TimeTicks auth_start_time,
                             bool device_found,
                             const AudioOutputDeviceInfo& device_info);
 

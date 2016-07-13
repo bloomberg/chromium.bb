@@ -21239,6 +21239,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audio.OutputDeviceAuthorizationTime" units="ms">
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Time delta between the moment output device authorization request is
+    received by the browser and the moment its processessing is finished (and
+    reply is to be sent back to the renderer if IPC is not closed yet).
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.PhysicalProcessorsMac">
   <owner>henrika@chromium.org</owner>
   <summary>

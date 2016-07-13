@@ -109,6 +109,13 @@ void MaybeFixAudioParameters(media::AudioParameters* params) {
     *params = media::AudioParameters::UnavailableDeviceParams();
 }
 
+void UMALogDeviceAuthorizationTime(base::TimeTicks auth_start_time) {
+  UMA_HISTOGRAM_CUSTOM_TIMES("Media.Audio.OutputDeviceAuthorizationTime",
+                              base::TimeTicks::Now() - auth_start_time,
+                              base::TimeDelta::FromMilliseconds(1),
+                              base::TimeDelta::FromMilliseconds(5000), 50);
+}
+
 }  // namespace
 
 class AudioRendererHost::AudioEntry
@@ -398,6 +405,8 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
     const std::string& device_id,
     const url::Origin& security_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  const base::TimeTicks auth_start_time = base::TimeTicks::Now();
+
   DVLOG(1) << "AudioRendererHost@" << this << "::OnRequestDeviceAuthorization"
            << "(stream_id=" << stream_id
            << ", render_frame_id=" << render_frame_id
@@ -408,6 +417,7 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
     return;
 
   if (!IsValidDeviceId(device_id)) {
+    UMALogDeviceAuthorizationTime(auth_start_time);
     Send(new AudioMsg_NotifyDeviceAuthorized(
         stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND,
         media::AudioParameters::UnavailableDeviceParams(), std::string()));
@@ -432,6 +442,7 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
       authorizations_.insert(MakeAuthorizationData(
           stream_id, true, info->device.matched_output_device_id));
       MaybeFixAudioParameters(&output_params);
+      UMALogDeviceAuthorizationTime(auth_start_time);
       // Hash matched device id and pass it to the renderer
       Send(new AudioMsg_NotifyDeviceAuthorized(
           stream_id, media::OUTPUT_DEVICE_STATUS_OK, output_params,
@@ -446,22 +457,26 @@ void AudioRendererHost::OnRequestDeviceAuthorization(
   CheckOutputDeviceAccess(
       render_frame_id, device_id, security_origin,
       base::Bind(&AudioRendererHost::OnDeviceAuthorized, this, stream_id,
-                 device_id, security_origin));
+                 device_id, security_origin, auth_start_time));
 }
 
 void AudioRendererHost::OnDeviceAuthorized(int stream_id,
                                            const std::string& device_id,
                                            const url::Origin& security_origin,
+                                           base::TimeTicks auth_start_time,
                                            bool have_access) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const auto& auth_data = authorizations_.find(stream_id);
 
   // A close request was received while access check was in progress.
-  if (auth_data == authorizations_.end())
+  if (auth_data == authorizations_.end()) {
+    UMALogDeviceAuthorizationTime(auth_start_time);
     return;
+  }
 
   if (!have_access) {
     authorizations_.erase(auth_data);
+    UMALogDeviceAuthorizationTime(auth_start_time);
     Send(new AudioMsg_NotifyDeviceAuthorized(
         stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
         media::AudioParameters::UnavailableDeviceParams(), std::string()));
@@ -479,29 +494,33 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
         audio_manager_->GetTaskRunner(), FROM_HERE,
         base::Bind(&GetDefaultDeviceInfoOnDeviceThread, audio_manager_),
         base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this, stream_id,
-                   true));
+                   auth_start_time, true));
   } else {
     media_stream_manager_->audio_output_device_enumerator()->Enumerate(
         base::Bind(&AudioRendererHost::TranslateDeviceID, this, device_id,
                    security_origin,
                    base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this,
-                              stream_id)));
+                              stream_id, auth_start_time)));
   }
 }
 
 void AudioRendererHost::OnDeviceIDTranslated(
     int stream_id,
+    base::TimeTicks auth_start_time,
     bool device_found,
     const AudioOutputDeviceInfo& device_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const auto& auth_data = authorizations_.find(stream_id);
 
   // A close request was received while translation was in progress
-  if (auth_data == authorizations_.end())
+  if (auth_data == authorizations_.end()) {
+    UMALogDeviceAuthorizationTime(auth_start_time);
     return;
+  }
 
   if (!device_found) {
     authorizations_.erase(auth_data);
+    UMALogDeviceAuthorizationTime(auth_start_time);
     Send(new AudioMsg_NotifyDeviceAuthorized(
         stream_id, media::OUTPUT_DEVICE_STATUS_ERROR_NOT_FOUND,
         media::AudioParameters::UnavailableDeviceParams(), std::string()));
@@ -513,6 +532,7 @@ void AudioRendererHost::OnDeviceIDTranslated(
 
   media::AudioParameters output_params = device_info.output_params;
   MaybeFixAudioParameters(&output_params);
+  UMALogDeviceAuthorizationTime(auth_start_time);
   Send(new AudioMsg_NotifyDeviceAuthorized(
       stream_id, media::OUTPUT_DEVICE_STATUS_OK, output_params, std::string()));
 }
