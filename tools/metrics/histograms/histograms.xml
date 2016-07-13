@@ -63186,6 +63186,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebFont.InterventionResult.MissedCache"
+    enum="WebFontInterventionResult">
+  <owner>toyoshim@chromium.org</owner>
+  <owner>kenjibaheux@chromium.org</owner>
+  <summary>
+    Like InterventionResult, this records whether User Agent Intervention was
+    triggered, and whether the request (would have) timed out or not. But this
+    version records only when data actually comes from network, not from disk or
+    memory cache, and is not provided in a data URL format.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.LayoutLatency" units="ms">
   <obsolete>
     Renamed to WebFont.StyleRecalcToDownloadLatency for clarity.

@@ -325,10 +325,10 @@ void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool isT
     const int boundary = 1 << 2;
 
     DEFINE_STATIC_LOCAL(EnumerationHistogram, interventionHistogram, ("WebFont.InterventionResult", boundary));
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, missCachedInterventionHistogram, ("WebFont.MissCachedInterventionResult", boundary));
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, missedCacheInterventionHistogram, ("WebFont.InterventionResult.MissedCache", boundary));
     interventionHistogram.count(interventionResult);
     if (isLoadedFromNetwork)
-        missCachedInterventionHistogram.count(interventionResult);
+        missedCacheInterventionHistogram.count(interventionResult);
 }
 
 } // namespace blink
