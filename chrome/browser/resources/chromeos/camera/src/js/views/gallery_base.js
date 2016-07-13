@@ -409,19 +409,20 @@ camera.views.GalleryBase.prototype.onPictureDeleting = function(picture) {
  */
 camera.views.GalleryBase.prototype.onKeyPressed = function(event) {
   switch (camera.util.getShortcutIdentifier(event)) {
-    case 'U+007F':  // Delete.
+    case 'Delete':
+    case 'Meta-Backspace':
       this.deleteSelection();
       event.preventDefault();
       break;
-    case 'U+001B':  // Escape.
+    case 'Escape':
       this.router.back();
       event.preventDefault();
       break;
-    case 'Ctrl-U+0053':  // Ctrl+S for saving.
+    case 'Ctrl-S':  // Ctrl+S for saving.
       this.exportSelection();
       event.preventDefault();
       break;
-    case 'Ctrl-U+0050':  // Ctrl+P for printing.
+    case 'Ctrl-P':  // Ctrl+P for printing.
       window.print();
       event.preventDefault();
       break;

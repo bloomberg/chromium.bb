@@ -1132,16 +1132,81 @@ camera.util.NamedPerformanceMonitors.prototype.average = function(name) {
 };
 
 /**
- * Returns a shortcut string, such as Ctrl-Alt-U+0041.
+ * Returns a shortcut string, such as Ctrl-Alt-A.
  * @param {Event} event Keyboard event.
  * @return {string} Shortcut identifier.
  */
 camera.util.getShortcutIdentifier = function(event) {
-  return (event.ctrlKey ? 'Ctrl-' : '') +
-         (event.altKey ? 'Alt-' : '') +
-         (event.shiftKey ? 'Shift-' : '') +
-         (event.metaKey ? 'Meta-' : '') +
-         (event.keyIdentifier ? event.keyIdentifier : '');
+  var identifier = (event.ctrlKey ? 'Ctrl-' : '') +
+                   (event.altKey ? 'Alt-' : '') +
+                   (event.shiftKey ? 'Shift-' : '') +
+                   (event.metaKey ? 'Meta-' : '');
+
+  // Handle both KeyboardEvent keyIdentifier and key as keyIdentifier is
+  // deprecated since Chrome M54 and key is not supported prior Chrome M51.
+  if (event.keyIdentifier && !event.key) {
+    switch (event.keyIdentifier) {
+      case 'U+001B':
+        identifier += 'Escape';
+        break;
+      case 'U+007F':
+        identifier += 'Delete';
+        break;
+      case 'U+0020':
+        identifier += 'Space';
+        break;
+      case 'U+0041':
+        identifier += 'A';
+        break;
+      case 'U+0050':
+        identifier += 'P';
+        break;
+      case 'U+0053':
+        identifier += 'S';
+        break;
+      case 'U+0047':
+        identifier += 'G';
+        break;
+      default:
+        identifier += event.keyIdentifier;
+    }
+  }
+
+  if (event.key) {
+    switch (event.key) {
+      case 'ArrowLeft':
+        identifier += 'Left';
+        break;
+      case 'ArrowRight':
+        identifier += 'Right';
+        break;
+      case 'ArrowDown':
+        identifier += 'Down';
+        break;
+      case 'ArrowUp':
+        identifier += 'Up';
+        break;
+      case ' ':
+        identifier += 'Space';
+        break;
+      case 'a':
+        identifier += 'A';
+        break;
+      case 'p':
+        identifier += 'P';
+        break;
+      case 's':
+        identifier += 'S';
+        break;
+      case 'g':
+        identifier += 'G';
+        break;
+      default:
+        identifier += event.key;
+    }
+  }
+
+  return identifier;
 };
 
 /**

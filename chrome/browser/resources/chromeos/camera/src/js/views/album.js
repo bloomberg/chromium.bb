@@ -318,7 +318,7 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
         changeSelection(this.pictures.length - 1);
       event.preventDefault();
       return;
-    case 'Ctrl-U+0041':  // Ctrl+A for selecting all.
+    case 'Ctrl-A':  // Ctrl+A for selecting all.
       if (this.pictures.length) {
         this.setSelectedIndex(0);
         this.expandSelectionTo_(this.pictures.length - 1);

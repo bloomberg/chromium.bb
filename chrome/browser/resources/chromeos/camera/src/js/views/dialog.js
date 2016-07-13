@@ -148,7 +148,7 @@ camera.views.Dialog.prototype.onKeyPressed = function(event) {
       this.router.back({isPositive: true});
       event.preventDefault();
       break;
-    case 'U+001B':  // Escape.
+    case 'Escape':
       this.router.back({isPositive: false});
       event.preventDefault();
       break;

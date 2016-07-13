@@ -805,12 +805,12 @@ camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
 
   // If anything else is focused, then hide controls when navigation keys
   // are pressed (or space).
-   switch (camera.util.getShortcutIdentifier(event)) {
+  switch (camera.util.getShortcutIdentifier(event)) {
     case 'Right':
     case 'Left':
     case 'Up':
     case 'Down':
-    case 'U+0020':  // Space.
+    case 'Space':
     case 'Home':
     case 'End':
       this.setControlsVisible_(false);
@@ -1103,19 +1103,19 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
       this.setCurrentEffect_(this.effectProcessors_.length - 1);
       event.preventDefault();
       break;
-    case 'U+001B':  // Escape.
+    case 'Escape':
       // Complete all fly-away animations immediately.
       while (this.flyAnimations_.length) {
         this.flyAnimations_[0]();
       }
       event.preventDefault();
       break;
-    case 'U+0020':  // Space key for taking the picture.
+    case 'Space':  // Space key for taking the picture.
       document.querySelector('#take-picture').click();
       event.stopPropagation();
       event.preventDefault();
       break;
-    case 'U+0047':  // G key for the gallery.
+    case 'G':  // G key for the gallery.
       if (this.model_)
         this.router.navigate(camera.Router.ViewIdentifier.ALBUM);
       event.preventDefault();
