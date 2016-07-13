@@ -357,8 +357,6 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
     if (app_window) {
       app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
       ash::SetShelfIDForWindow(app_window->shelf_id(), window);
-      if (app_window->controller())
-        window->SetTitle(app_window->controller()->GetTitle());
       chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(
           window,
           user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
