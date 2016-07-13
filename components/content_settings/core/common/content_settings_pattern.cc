@@ -29,7 +29,7 @@ std::string GetDefaultPort(const std::string& scheme) {
   return std::string();
 }
 
-// Returns true if |sub_domain| is a sub domain or equls |domain|.  E.g.
+// Returns true if |sub_domain| is a sub domain or equals |domain|.  E.g.
 // "mail.google.com" is a sub domain of "google.com" but "evilhost.com" is not a
 // subdomain of "host.com".
 bool IsSubDomainOrEqual(const std::string& sub_domain,
