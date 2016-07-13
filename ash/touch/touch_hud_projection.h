@@ -11,7 +11,7 @@
 #include "base/macros.h"
 
 namespace ash {
-class TouchHudRenderer;
+class TouchPointView;
 
 // A heads-up display to show active touch points on the screen. As a derivative
 // of TouchObserverHUD, objects of this class manage their own lifetime.
@@ -33,8 +33,7 @@ class TouchHudProjection : public TouchObserverHUD {
   void UnsetHudForRootWindowController(
       RootWindowController* controller) override;
 
-  // TouchHudRenderer draws out the touch points.
-  std::unique_ptr<TouchHudRenderer> touch_hud_renderer_;
+  std::map<int, TouchPointView*> points_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchHudProjection);
 };

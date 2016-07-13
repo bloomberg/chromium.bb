@@ -26,7 +26,6 @@ component("ash") {
     "//ash/strings",
   ]
   deps = [
-    "//ash/touch_hud",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
@@ -350,7 +349,6 @@ test("ash_unittests") {
     ":test_support_with_content",
     "//ash/resources",
     "//ash/strings",
-    "//ash/touch_hud",
     "//base",
     "//base/test:test_support",
     "//components/signin/core/account_id",
