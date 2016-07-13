@@ -32,6 +32,7 @@ public:
     bool isDefault;
     const String16 origin;
     const String16 humanReadableName;
+    // TODO(dgozman): aux data?
     const String16 frameId;
     bool hasMemoryOnConsole;
 };

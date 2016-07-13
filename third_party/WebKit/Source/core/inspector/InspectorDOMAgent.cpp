@@ -2053,7 +2053,7 @@ std::unique_ptr<protocol::Runtime::RemoteObject> InspectorDOMAgent::resolveNode(
         return nullptr;
 
     ScriptState::Scope scope(scriptState);
-    return m_v8Session->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup);
+    return m_v8Session->wrapObject(scriptState->context(), nodeV8Value(scriptState->context(), node), objectGroup, false);
 }
 
 bool InspectorDOMAgent::pushDocumentUponHandlelessOperation(ErrorString* errorString)

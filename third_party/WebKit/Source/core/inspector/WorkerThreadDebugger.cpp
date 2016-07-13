@@ -34,6 +34,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include <v8.h>
@@ -54,6 +55,7 @@ WorkerThreadDebugger* WorkerThreadDebugger::from(v8::Isolate* isolate)
 WorkerThreadDebugger::WorkerThreadDebugger(WorkerThread* workerThread, v8::Isolate* isolate)
     : ThreadDebugger(isolate)
     , m_workerThread(workerThread)
+    , m_muteConsoleCount(0)
 {
 }
 
@@ -73,7 +75,27 @@ void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context
 
 void WorkerThreadDebugger::exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
+    if (m_muteConsoleCount)
+        return;
     debugger()->exceptionThrown(workerContextGroupId, errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+}
+
+void WorkerThreadDebugger::addConsoleMessage(ConsoleMessage* consoleMessage)
+{
+    if (m_muteConsoleCount)
+        return;
+    debugger()->addConsoleMessage(
+        workerContextGroupId,
+        consoleMessage->source(),
+        consoleMessage->level(),
+        consoleMessage->message(),
+        consoleMessage->location()->url(),
+        consoleMessage->location()->lineNumber(),
+        consoleMessage->location()->columnNumber(),
+        consoleMessage->location()->cloneStackTrace(),
+        consoleMessage->location()->scriptId(),
+        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()),
+        consoleMessage->workerId());
 }
 
 int WorkerThreadDebugger::contextGroupId()
@@ -90,6 +112,16 @@ void WorkerThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 void WorkerThreadDebugger::quitMessageLoopOnPause()
 {
     m_workerThread->stopRunningDebuggerTasksOnPauseOnWorkerThread();
+}
+
+void WorkerThreadDebugger::muteWarningsAndDeprecations()
+{
+    m_muteConsoleCount++;
+}
+
+void WorkerThreadDebugger::unmuteWarningsAndDeprecations()
+{
+    m_muteConsoleCount--;
 }
 
 bool WorkerThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)

@@ -48,7 +48,6 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
@@ -282,21 +281,8 @@ void WorkerGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
 void WorkerGlobalScope::addMessageToWorkerConsole(ConsoleMessage* consoleMessage)
 {
     DCHECK(isContextThread());
-    WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate());
-    if (!debugger)
-        return;
-    debugger->debugger()->addConsoleMessage(
-        debugger->contextGroupId(),
-        consoleMessage->source(),
-        consoleMessage->level(),
-        consoleMessage->message(),
-        consoleMessage->location()->url(),
-        consoleMessage->location()->lineNumber(),
-        consoleMessage->location()->columnNumber(),
-        consoleMessage->location()->cloneStackTrace(),
-        consoleMessage->location()->scriptId(),
-        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()),
-        consoleMessage->workerId());
+    if (WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(thread()->isolate()))
+        debugger->addConsoleMessage(consoleMessage);
 }
 
 bool WorkerGlobalScope::isContextThread() const

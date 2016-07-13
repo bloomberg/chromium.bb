@@ -174,7 +174,7 @@ int FrontendCounter::s_frontendCounter = 0;
 
 bool isDebuggerPaused(LocalFrame*)
 {
-    return MainThreadDebugger::instance()->debugger()->isPaused();
+    return MainThreadDebugger::instance()->isPaused();
 }
 
 void didReceiveResourceResponseButCanceled(LocalFrame* frame, DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, Resource* resource)

@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class ConsoleMessage;
 class SourceLocation;
 class WorkerThread;
 
@@ -51,12 +52,13 @@ public:
     void contextCreated(v8::Local<v8::Context>);
     void contextWillBeDestroyed(v8::Local<v8::Context>);
     void exceptionThrown(const String& errorMessage, std::unique_ptr<SourceLocation>);
+    void addConsoleMessage(ConsoleMessage*);
 
     // V8DebuggerClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
-    void muteWarningsAndDeprecations() override { };
-    void unmuteWarningsAndDeprecations() override { };
+    void muteWarningsAndDeprecations() override;
+    void unmuteWarningsAndDeprecations() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
     v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
 
@@ -65,6 +67,7 @@ public:
 
 private:
     WorkerThread* m_workerThread;
+    int m_muteConsoleCount;
 };
 
 } // namespace blink

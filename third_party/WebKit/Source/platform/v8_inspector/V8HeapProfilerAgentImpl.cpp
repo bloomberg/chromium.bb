@@ -258,7 +258,7 @@ void V8HeapProfilerAgentImpl::getObjectByHeapObjectId(ErrorString* error, const 
         return;
     }
 
-    *result = m_session->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""));
+    *result = m_session->wrapObject(heapObject->CreationContext(), heapObject, objectGroup.fromMaybe(""), false);
     if (!result)
         *error = "Object is not available";
 }

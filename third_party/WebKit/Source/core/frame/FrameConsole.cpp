@@ -31,7 +31,6 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -58,19 +57,7 @@ bool FrameConsole::addMessageToStorage(ConsoleMessage* consoleMessage)
     // TODO(dgozman): drop this check, it's left here to preserve tests output.
     if (!m_frame->document())
         return false;
-    MainThreadDebugger* debugger = MainThreadDebugger::instance();
-    return debugger->debugger()->addConsoleMessage(
-        debugger->contextGroupId(m_frame),
-        consoleMessage->source(),
-        consoleMessage->level(),
-        consoleMessage->message(),
-        consoleMessage->location()->url(),
-        consoleMessage->location()->lineNumber(),
-        consoleMessage->location()->columnNumber(),
-        consoleMessage->location()->cloneStackTrace(),
-        consoleMessage->location()->scriptId(),
-        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()),
-        consoleMessage->workerId());
+    return MainThreadDebugger::instance()->addConsoleMessage(m_frame, consoleMessage);
 }
 
 void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)

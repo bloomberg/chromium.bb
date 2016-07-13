@@ -23,13 +23,15 @@ class V8StackTrace;
 
 enum class V8MessageOrigin { kConsole, kException, kRevokedException };
 
+enum class ConsoleAPIType { kLog, kDir, kDirXML, kTable, kTrace, kStartGroup, kStartGroupCollapsed, kEndGroup, kClear, kAssert, kTimeEnd, kCount };
+
 class V8ConsoleMessage {
 public:
     ~V8ConsoleMessage();
 
     static std::unique_ptr<V8ConsoleMessage> createForConsoleAPI(
         double timestamp,
-        MessageType,
+        ConsoleAPIType,
         MessageLevel,
         const String16& message,
         std::vector<v8::Local<v8::Value>>* arguments,
@@ -71,7 +73,7 @@ public:
     void reportToFrontend(protocol::Console::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
     void reportToFrontend(protocol::Runtime::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
     unsigned argumentCount() const;
-    MessageType type() const;
+    ConsoleAPIType type() const;
     void contextDestroyed(int contextId);
 
 private:
@@ -95,7 +97,7 @@ private:
     String16 m_requestIdentifier;
     String16 m_workerId;
     int m_contextId;
-    MessageType m_type;
+    ConsoleAPIType m_type;
     unsigned m_exceptionId;
     unsigned m_revokedExceptionId;
     Arguments m_arguments;

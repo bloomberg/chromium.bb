@@ -41,6 +41,7 @@
 
 namespace blink {
 
+class ConsoleMessage;
 class LocalFrame;
 class SecurityOrigin;
 class SourceLocation;
@@ -64,6 +65,7 @@ public:
 
     InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
     bool isWorker() override { return false; }
+    bool isPaused() const { return m_paused; }
     void setClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
     // TODO(dgozman): by making this method virtual, we can move many methods to ThreadDebugger and avoid some duplication. Should be careful about performance.
     int contextGroupId(LocalFrame*);
@@ -71,6 +73,7 @@ public:
     void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
     void contextWillBeDestroyed(ScriptState*);
     void exceptionThrown(LocalFrame*, const String& errorMessage, std::unique_ptr<SourceLocation>);
+    bool addConsoleMessage(LocalFrame*, ConsoleMessage*);
 
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
 
@@ -88,6 +91,8 @@ private:
 
     std::unique_ptr<ClientMessageLoop> m_clientMessageLoop;
     std::unique_ptr<InspectorTaskRunner> m_taskRunner;
+    bool m_paused;
+    int m_muteConsoleCount;
 
     static MainThreadDebugger* s_instance;
 

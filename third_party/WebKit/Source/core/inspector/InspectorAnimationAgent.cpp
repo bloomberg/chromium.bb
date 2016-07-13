@@ -375,7 +375,7 @@ void InspectorAnimationAgent::resolveAnimation(ErrorString* errorString, const S
 
     ScriptState::Scope scope(scriptState);
     m_v8Session->releaseObjectGroup("animation");
-    *result = m_v8Session->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation");
+    *result = m_v8Session->wrapObject(scriptState->context(), toV8(animation, scriptState->context()->Global(), scriptState->isolate()), "animation", false);
     if (!*result)
         *errorString = "Element not associated with a document.";
 }

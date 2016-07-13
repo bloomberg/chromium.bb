@@ -5,20 +5,19 @@
 #ifndef V8InspectorSessionClient_h
 #define V8InspectorSessionClient_h
 
-#include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Platform.h"
 
 #include <v8.h>
 
 namespace blink {
 
-class PLATFORM_EXPORT V8InspectorSessionClient
-{
+class PLATFORM_EXPORT V8InspectorSessionClient {
 public:
     virtual ~V8InspectorSessionClient() { }
     virtual void runtimeEnabled() = 0;
     virtual void runtimeDisabled() = 0;
     virtual void resumeStartup() = 0;
+    // TODO(dgozman): this was added to support service worker shadow page. We should not connect at all.
     virtual bool canExecuteScripts() = 0;
     virtual void profilingStarted() = 0;
     virtual void profilingStopped() = 0;

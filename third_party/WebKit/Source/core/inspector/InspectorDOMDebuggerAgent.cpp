@@ -466,11 +466,11 @@ std::unique_ptr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent:
         .setPassive(info.passive)
         .setLocation(std::move(location)).build();
     if (!objectGroupId.isEmpty()) {
-        value->setHandler(m_v8Session->wrapObject(context, function, objectGroupId));
-        value->setOriginalHandler(m_v8Session->wrapObject(context, info.handler, objectGroupId));
+        value->setHandler(m_v8Session->wrapObject(context, function, objectGroupId, false));
+        value->setOriginalHandler(m_v8Session->wrapObject(context, info.handler, objectGroupId, false));
         v8::Local<v8::Function> removeFunction;
         if (info.removeFunction.ToLocal(&removeFunction))
-            value->setRemoveFunction(m_v8Session->wrapObject(context, removeFunction, objectGroupId));
+            value->setRemoveFunction(m_v8Session->wrapObject(context, removeFunction, objectGroupId, false));
     }
     return value;
 }

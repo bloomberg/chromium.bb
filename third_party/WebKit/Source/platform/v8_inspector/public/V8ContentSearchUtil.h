@@ -7,6 +7,7 @@
 
 #include "platform/inspector_protocol/Platform.h"
 #include "platform/inspector_protocol/String16.h"
+#include "platform/v8_inspector/protocol/Debugger.h"
 
 namespace blink {
 

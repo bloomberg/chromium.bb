@@ -82,6 +82,8 @@ MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebugger(isolate)
     , m_taskRunner(wrapUnique(new InspectorTaskRunner()))
+    , m_paused(false)
+    , m_muteConsoleCount(0)
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
@@ -125,7 +127,28 @@ void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
 
 void MainThreadDebugger::exceptionThrown(LocalFrame* frame, const String& errorMessage, std::unique_ptr<SourceLocation> location)
 {
+    if (m_muteConsoleCount)
+        return;
     debugger()->exceptionThrown(contextGroupId(frame), errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+}
+
+bool MainThreadDebugger::addConsoleMessage(LocalFrame* frame, ConsoleMessage* consoleMessage)
+{
+    if (m_muteConsoleCount)
+        return false;
+    debugger()->addConsoleMessage(
+        contextGroupId(frame),
+        consoleMessage->source(),
+        consoleMessage->level(),
+        consoleMessage->message(),
+        consoleMessage->location()->url(),
+        consoleMessage->location()->lineNumber(),
+        consoleMessage->location()->columnNumber(),
+        consoleMessage->location()->cloneStackTrace(),
+        consoleMessage->location()->scriptId(),
+        IdentifiersFactory::requestId(consoleMessage->requestIdentifier()),
+        consoleMessage->workerId());
+    return true;
 }
 
 int MainThreadDebugger::contextGroupId(LocalFrame* frame)
@@ -158,6 +181,7 @@ void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)
     if (!pausedFrame)
         return;
     ASSERT(pausedFrame == pausedFrame->localFrameRoot());
+    m_paused = true;
 
     if (UserGestureToken* token = UserGestureIndicator::currentToken())
         token->setPauseInDebugger();
@@ -168,6 +192,7 @@ void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)
 
 void MainThreadDebugger::quitMessageLoopOnPause()
 {
+    m_paused = false;
     if (m_clientMessageLoop)
         m_clientMessageLoop->quitNow();
 }
@@ -175,11 +200,13 @@ void MainThreadDebugger::quitMessageLoopOnPause()
 void MainThreadDebugger::muteWarningsAndDeprecations()
 {
     UseCounter::muteForInspector();
+    m_muteConsoleCount++;
 }
 
 void MainThreadDebugger::unmuteWarningsAndDeprecations()
 {
     UseCounter::unmuteForInspector();
+    m_muteConsoleCount--;
 }
 
 bool MainThreadDebugger::callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target)

@@ -98,7 +98,7 @@ public:
     void debuggerAgentEnabled();
     void debuggerAgentDisabled();
 
-    bool isPaused() override;
+    bool isPaused();
     v8::Local<v8::Context> pausedContext() { return m_pausedContext; }
     int maxAsyncCallChainDepth() { return m_maxAsyncCallStackDepth; }
     V8StackTraceImpl* currentAsyncCallChain();
@@ -129,7 +129,7 @@ public:
     void didExecuteScript(v8::Local<v8::Context>) override;
     void idleStarted() override;
     void idleFinished() override;
-    bool addConsoleMessage(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, const String16& requestIdentifier, const String16& workerId) override;
+    void addConsoleMessage(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, const String16& requestIdentifier, const String16& workerId) override;
     void logToConsole(v8::Local<v8::Context>, const String16& message, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2) override;
     void exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
     unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId) override;
@@ -142,8 +142,6 @@ public:
     void asyncTaskStarted(void* task) override;
     void asyncTaskFinished(void* task) override;
     void allAsyncTasksCanceled() override;
-    void muteConsole() override { m_muteConsoleCount++; }
-    void unmuteConsole() override { m_muteConsoleCount--; }
 
     using ContextByIdMap = protocol::HashMap<int, std::unique_ptr<InspectedContext>>;
     void discardInspectedContext(int contextGroupId, int contextId);
@@ -187,7 +185,6 @@ private:
     using ConsoleStorageMap = protocol::HashMap<int, std::unique_ptr<V8ConsoleMessageStorage>>;
     ConsoleStorageMap m_consoleStorageMap;
     int m_capturingStackTracesCount;
-    int m_muteConsoleCount;
     unsigned m_lastExceptionId;
     int m_enabledAgentsCount;
     bool m_breakpointsActivated;

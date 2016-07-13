@@ -29,22 +29,6 @@ enum MessageLevel {
     ErrorMessageLevel = 3
 };
 
-// TODO(dgozman): move from public to private.
-enum MessageType {
-    LogMessageType = 1,
-    DirMessageType,
-    DirXMLMessageType,
-    TableMessageType,
-    TraceMessageType,
-    StartGroupMessageType,
-    StartGroupCollapsedMessageType,
-    EndGroupMessageType,
-    ClearMessageType,
-    AssertMessageType,
-    TimeEndMessageType,
-    CountMessageType
-};
-
 }
 
 #endif // !defined(V8ConsoleTypes_h)

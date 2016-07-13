@@ -181,14 +181,12 @@ void V8InjectedScriptHost::suppressWarningsAndCallFunctionCallback(const v8::Fun
 
     V8DebuggerImpl* debugger = unwrapDebugger(info);
     debugger->client()->muteWarningsAndDeprecations();
-    debugger->muteConsole();
 
     v8::MicrotasksScope microtasks(isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
     v8::Local<v8::Value> result;
     if (function->Call(context, receiver, argc, argv.get()).ToLocal(&result))
         info.GetReturnValue().Set(result);
 
-    debugger->unmuteConsole();
     debugger->client()->unmuteWarningsAndDeprecations();
 }
 
