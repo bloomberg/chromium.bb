@@ -57,12 +57,6 @@ class TracingControllerImpl
       const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                                 base::RefCountedString*)>& callback);
 
-  // Create an endpoint that may be supplied to any TraceDataSink to
-  // dump the trace data to a file.
-  CONTENT_EXPORT static scoped_refptr<TraceDataEndpoint> CreateFileEndpoint(
-      const base::FilePath& file_path,
-      const base::Closure& callback);
-
   CONTENT_EXPORT static scoped_refptr<TraceDataSink> CreateCompressedStringSink(
       scoped_refptr<TraceDataEndpoint> endpoint);
 

@@ -348,28 +348,22 @@ TracingController::CreateStringSink(
 }
 
 scoped_refptr<TracingController::TraceDataSink>
-TracingControllerImpl::CreateCompressedStringSink(
-    scoped_refptr<TraceDataEndpoint> endpoint) {
-  return new CompressedStringTraceDataSink(endpoint);
-}
-
-scoped_refptr<TracingController::TraceDataSink>
 TracingController::CreateFileSink(const base::FilePath& file_path,
                                   const base::Closure& callback) {
   return new StringTraceDataSink(
-      TracingControllerImpl::CreateFileEndpoint(file_path, callback));
+      new FileTraceDataEndpoint(file_path, callback));
+}
+
+scoped_refptr<TracingController::TraceDataSink>
+TracingControllerImpl::CreateCompressedStringSink(
+    scoped_refptr<TraceDataEndpoint> endpoint) {
+  return new CompressedStringTraceDataSink(endpoint);
 }
 
 scoped_refptr<TraceDataEndpoint> TracingControllerImpl::CreateCallbackEndpoint(
     const base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                               base::RefCountedString*)>& callback) {
   return new StringTraceDataEndpoint(callback);
-}
-
-scoped_refptr<TraceDataEndpoint> TracingControllerImpl::CreateFileEndpoint(
-    const base::FilePath& file_path,
-    const base::Closure& callback) {
-  return new FileTraceDataEndpoint(file_path, callback);
 }
 
 }  // namespace content

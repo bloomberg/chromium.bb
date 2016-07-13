@@ -279,38 +279,6 @@ class TracingControllerTest : public ContentBrowserTest {
     }
   }
 
-  void TestStartAndStopTracingCompressedFile(
-      const base::FilePath& result_file_path) {
-    Navigate(shell());
-
-    TracingController* controller = TracingController::GetInstance();
-
-    {
-      base::RunLoop run_loop;
-      TracingController::StartTracingDoneCallback callback =
-          base::Bind(&TracingControllerTest::StartTracingDoneCallbackTest,
-                     base::Unretained(this), run_loop.QuitClosure());
-      bool result = controller->StartTracing(TraceConfig(), callback);
-      ASSERT_TRUE(result);
-      run_loop.Run();
-      EXPECT_EQ(enable_recording_done_callback_count(), 1);
-    }
-
-    {
-      base::RunLoop run_loop;
-      base::Closure callback = base::Bind(
-          &TracingControllerTest::StopTracingFileDoneCallbackTest,
-          base::Unretained(this), run_loop.QuitClosure(), result_file_path);
-      bool result = controller->StopTracing(
-          TracingControllerImpl::CreateCompressedStringSink(
-              TracingControllerImpl::CreateFileEndpoint(result_file_path,
-                                                        callback)));
-      ASSERT_TRUE(result);
-      run_loop.Run();
-      EXPECT_EQ(disable_recording_done_callback_count(), 1);
-    }
-  }
-
   void TestStartAndStopTracingFile(
       const base::FilePath& result_file_path) {
     Navigate(shell());
@@ -440,14 +408,6 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
                        EnableAndStopTracingWithCompression) {
   TestStartAndStopTracingCompressed();
-}
-
-IN_PROC_BROWSER_TEST_F(TracingControllerTest,
-                       EnableAndStopTracingToFileWithCompression) {
-  base::FilePath file_path;
-  base::CreateTemporaryFile(&file_path);
-  TestStartAndStopTracingCompressedFile(file_path);
-  EXPECT_EQ(file_path.value(), last_actual_recording_file_path().value());
 }
 
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
