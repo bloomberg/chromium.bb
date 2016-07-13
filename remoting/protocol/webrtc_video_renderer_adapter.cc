@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+ // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,6 +19,7 @@
 #include "remoting/protocol/frame_stats.h"
 #include "remoting/protocol/video_renderer.h"
 #include "third_party/libyuv/include/libyuv/convert_argb.h"
+#include "third_party/libyuv/include/libyuv/convert_from.h"
 #include "third_party/libyuv/include/libyuv/video_common.h"
 #include "third_party/webrtc/media/base/videoframe.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
