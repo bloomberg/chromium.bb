@@ -89,8 +89,11 @@ enum InternalErrorLoadEvent {
   // latest aborted load is used to track the chain size.
   ERR_NAVIGATION_SIGNALS_MULIPLE_ABORTED_LOADS,
 
-  // Receives user input before navigation start
-  ERR_USER_INPUT_WITH_NO_RELEVANT_LOAD,
+  // Received user input without a relevant load. This error type is deprecated,
+  // as it is valid to receive user input without a relevant load. We leave the
+  // enum value here since it's also used in histogram recording, so it's
+  // important that we not re-use this enum entry for a different value.
+  DEPRECATED_ERR_USER_INPUT_WITH_NO_RELEVANT_LOAD,
 
   // A TimeTicks value in the browser process has value less than
   // navigation_start_. This could happen if navigation_start_ was computed in

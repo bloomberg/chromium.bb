@@ -786,12 +786,8 @@ void MetricsWebContentsObserver::OnInputEvent(
   if (event.type == blink::WebInputEvent::Type::Undefined)
     return;
 
-  if (!committed_load_) {
-    RecordInternalError(ERR_USER_INPUT_WITH_NO_RELEVANT_LOAD);
-    return;
-  }
-
-  committed_load_->OnInputEvent(event);
+  if (committed_load_)
+    committed_load_->OnInputEvent(event);
 }
 
 void MetricsWebContentsObserver::DidRedirectNavigation(
