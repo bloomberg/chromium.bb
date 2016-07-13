@@ -206,6 +206,12 @@ config("asan_flags") {
   cflags = []
   if (is_asan) {
     cflags += [ "-fsanitize=address" ]
+    if (!asan_globals) {
+      cflags += [
+        "-mllvm",
+        "-asan-globals=0",
+      ]
+    }
     if (is_win) {
       cflags += [ "-fsanitize-blacklist=" +
                   rebase_path("//tools/memory/asan/blacklist_win.txt",
@@ -216,23 +222,8 @@ config("asan_flags") {
           [ "-fsanitize-blacklist=" +
             rebase_path("//tools/memory/asan/blacklist.txt", root_build_dir) ]
     }
-    if (is_android) {
-      # Android build relies on -Wl,--gc-sections removing unreachable code.
-      # ASan instrumentation for globals inhibits this and results in a
-      # library with unresolvable relocations.
-      # TODO(eugenis): find a way to reenable this.
-      cflags += [
-        "-mllvm",
-        "-asan-globals=0",
-      ]
-    } else if (is_mac) {
-      # http://crbug.com/352073
-      cflags += [
-        "-mllvm",
-        "-asan-globals=0",
-      ]
-      # TODO(GYP): deal with mac_bundles.
-    } else if (is_win) {
+
+    if (is_win) {
       assert(current_cpu == "x86", "WinASan is 32-bit only currently")
       if (is_component_build) {
         libs = [
