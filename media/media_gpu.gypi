@@ -11,6 +11,7 @@
     '../gpu/gpu.gyp:gpu',
     '../media/media.gyp:media',
     '../ui/display/display.gyp:display_types',
+    '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gl/gl.gyp:gl',
     '../ui/gl/init/gl_init.gyp:gl_init',
