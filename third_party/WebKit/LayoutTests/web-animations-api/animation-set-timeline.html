@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Animations are retriggered if timeline time changes</title>
+<link rel="help" href="http://w3c.github.io/web-animations/#set-the-timeline-of-an-animation">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
+
+<div id="div"></div>
+
+<script>
+
+promise_test(function(t) {
+  var animation = div.animate([], 10);
+
+  return animation.ready.then(function() {
+    animation.timeline = new DocumentTimeline(-5);
+    animation.startTime = document.timeline.currentTime;
+    assert_times_equal(animation.currentTime, 5);
+    assert_equals(animation.playState, "running");
+
+    animation.timeline = new DocumentTimeline(-15);
+    animation.startTime = document.timeline.currentTime;
+    assert_times_equal(animation.currentTime, 10);
+    assert_equals(animation.playState, "finished");
+
+    animation.timeline = new DocumentTimeline(0);
+    animation.startTime = document.timeline.currentTime;
+    assert_times_equal(animation.currentTime, 0);
+    assert_equals(animation.playState, "running");
+
+    animation.timeline = new DocumentTimeline(-5);
+    animation.startTime = document.timeline.currentTime;
+    assert_times_equal(animation.currentTime, 5);
+    assert_equals(animation.playState, "running");
+  });
+}, 'Animations are retriggered if timeline time changes');
+
+</script>
