@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/user_action_tester.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
@@ -216,11 +217,15 @@ TEST_F(AutofillExternalDelegateUnitTest, TestSigninPromoIsAdded) {
   EXPECT_CALL(autofill_client_,
               ShowAutofillPopup(_, _, SuggestionVectorIdsAre(element_ids), _));
 
+  base::UserActionTester user_action_tester;
+
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> autofill_item;
   autofill_item.push_back(Suggestion());
   autofill_item[0].frontend_id = kAutofillProfileId;
   external_delegate_->OnSuggestionsReturned(kQueryId, autofill_item);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Signin_Impression_FromAutofillDropdown"));
 
   EXPECT_CALL(
       *autofill_manager_,

@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/metrics/user_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -117,6 +118,8 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
     signin_promo_suggestion.frontend_id =
         POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO;
     suggestions.push_back(signin_promo_suggestion);
+    base::RecordAction(
+        base::UserMetricsAction("Signin_Impression_FromAutofillDropdown"));
   }
 
 #if !defined(OS_ANDROID)
