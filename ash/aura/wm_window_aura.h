@@ -168,6 +168,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowTitleChanged(aura::Window* window) override;
 
   aura::Window* window_;

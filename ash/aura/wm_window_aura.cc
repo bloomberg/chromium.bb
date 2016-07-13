@@ -718,6 +718,12 @@ void WmWindowAura::OnWindowVisibilityChanging(aura::Window* window,
                     OnWindowVisibilityChanging(this, visible));
 }
 
+void WmWindowAura::OnWindowVisibilityChanged(aura::Window* window,
+                                             bool visible) {
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_,
+                    OnWindowVisibilityChanged(this, visible));
+}
+
 void WmWindowAura::OnWindowTitleChanged(aura::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowTitleChanged(this));
 }

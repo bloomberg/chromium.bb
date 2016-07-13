@@ -9,28 +9,24 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shell_observer.h"
-#include "ash/display/window_tree_host_manager.h"
+#include "ash/common/wm_activation_observer.h"
+#include "ash/common/wm_display_observer.h"
+#include "ash/common/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/accelerometer/accelerometer_types.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
-#include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
-#include "ui/wm/public/activation_change_observer.h"
-
-namespace aura {
-class Window;
-}
 
 namespace ash {
 
 // Implements ChromeOS specific functionality for ScreenOrientationProvider.
 class ASH_EXPORT ScreenOrientationController
-    : public aura::client::ActivationChangeObserver,
-      public aura::WindowObserver,
+    : public WmActivationObserver,
+      public WmWindowObserver,
       public chromeos::AccelerometerReader::Observer,
-      public WindowTreeHostManager::Observer,
+      public WmDisplayObserver,
       public ShellObserver {
  public:
   // Observer that reports changes to the state of ScreenOrientationProvider's
@@ -53,9 +49,9 @@ class ASH_EXPORT ScreenOrientationController
 
   // Allows/unallows a window to lock the screen orientation.
   void LockOrientationForWindow(
-      aura::Window* requesting_windowwindow,
+      WmWindow* requesting_window,
       blink::WebScreenOrientationLockType lock_orientation);
-  void UnlockOrientationForWindow(aura::Window* window);
+  void UnlockOrientationForWindow(WmWindow* window);
 
   // Unlock all and set the rotation back to the user specified rotation.
   void UnlockAll();
@@ -80,21 +76,19 @@ class ASH_EXPORT ScreenOrientationController
   void SetDisplayRotation(display::Display::Rotation rotation,
                           display::Display::RotationSource source);
 
-  // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
+  // WmActivationObserver:
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override;
 
-  // aura::WindowObserver:
-  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
-  void OnWindowDestroying(aura::Window* window) override;
+  // WmWindowObserver:
+  void OnWindowDestroying(WmWindow* window) override;
+  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override;
 
   // chromeos::AccelerometerReader::Observer:
   void OnAccelerometerUpdated(
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
-  // WindowTreeHostManager::Observer:
+  // WmDisplayObserver:
   void OnDisplayConfigurationChanged() override;
 
   // ShellObserver:
@@ -180,7 +174,7 @@ class ASH_EXPORT ScreenOrientationController
 
   // Tracks all windows that have requested a lock, as well as the requested
   // orientation.
-  std::map<aura::Window*, blink::WebScreenOrientationLockType> locking_windows_;
+  std::map<WmWindow*, blink::WebScreenOrientationLockType> locking_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationController);
 };

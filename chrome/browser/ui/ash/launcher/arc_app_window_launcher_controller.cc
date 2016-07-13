@@ -5,6 +5,7 @@
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_lookup.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
@@ -580,8 +581,8 @@ void ArcAppWindowLauncherController::UnregisterApp(AppWindow* app_window) {
 
 void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
     AppWindow* app_window) {
-  ash::Shell* shell = ash::Shell::GetInstance();
-  aura::Window* window = app_window->widget()->GetNativeWindow();
+  ash::WmWindow* window =
+      ash::WmLookup::Get()->GetWindowForWidget(app_window->widget());
   if (!window)
     return;
   arc::mojom::OrientationLock orientation_lock;
@@ -602,6 +603,7 @@ void ArcAppWindowLauncherController::SetOrientationLockForAppWindow(
     app_window->set_requested_orientation_lock(orientation_lock);
   }
 
+  ash::Shell* shell = ash::Shell::GetInstance();
   shell->screen_orientation_controller()->LockOrientationForWindow(
       window, BlinkOrientationLockFromMojom(orientation_lock));
 }
