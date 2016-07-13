@@ -1361,3 +1361,9 @@ crbug.com/627754 [ Precise Debug ] virtual/scalefactor150/fast/hidpi/static/cale
 crbug.com/627754 [ Precise Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
+
+crbug.com/627798 [ Win ] fast/repaint/line-flow-with-floats-9.html [ Pass Failure ]
+crbug.com/627798 [ Win ] fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
+crbug.com/627798 [ Win ] fast/repaint/repaint-during-scroll-with-zoom.html [ Pass Failure ]
+crbug.com/627798 [ Win ] fast/repaint/resize-scrollable-iframe.html [ Pass Failure ]
+crbug.com/627798 [ Win ] fast/repaint/text-match-document-change.html [ Pass Failure ]
