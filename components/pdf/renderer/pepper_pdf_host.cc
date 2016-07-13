@@ -142,6 +142,11 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
   if (!instance)
     return PP_ERROR_FAILED;
 
+  // TODO(thestig): Turn CHECKs into the proper if statement after figuring out
+  // what's wrong for https://crbug.com/627814
+  CHECK(instance->GetContainer());
+  CHECK(instance->GetContainer()->document().frame());
+  CHECK(instance->GetContainer()->document().frame()->view());
   blink::WebView* view =
       instance->GetContainer()->document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
