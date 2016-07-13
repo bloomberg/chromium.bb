@@ -1668,6 +1668,44 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(0, git_cl.main(['issue', '0']))
 
+  def test_git_cl_try_default(self):
+    self.mock(git_cl.Changelist, 'GetChange',
+              lambda _, *a: (
+                self._mocked_call(['GetChange']+list(a))))
+    self.mock(git_cl.presubmit_support, 'DoGetTryMasters',
+              lambda *_, **__: (
+                self._mocked_call(['DoGetTryMasters'])))
+    self.mock(git_cl.presubmit_support, 'DoGetTrySlaves',
+              lambda *_, **__: (
+                self._mocked_call(['DoGetTrySlaves'])))
+    self.mock(git_cl._RietveldChangelistImpl, 'SetCQState',
+              lambda _, s: self._mocked_call(['SetCQState', s]))
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
+        ((['git', 'config', 'rietveld.autoupdate'],), ''),
+        ((['git', 'config', 'rietveld.server'],),
+         'https://codereview.chromium.org'),
+        ((['git', 'config', 'branch.feature.rietveldserver'],), ''),
+        ((['git', 'config', 'branch.feature.merge'],), 'feature'),
+        ((['git', 'config', 'branch.feature.remote'],), 'origin'),
+        ((['get_or_create_merge_base', 'feature', 'feature'],),
+         'fake_ancestor_sha'),
+        ((['GetChange', 'fake_ancestor_sha', None], ),
+         git_cl.presubmit_support.GitChange(
+           '', '', '', '', '', '', '', '')),
+        ((['git', 'rev-parse', '--show-cdup'],), '../'),
+        ((['DoGetTryMasters'], ), None),
+        ((['DoGetTrySlaves'], ), None),
+        ((['SetCQState', git_cl._CQState.DRY_RUN], ), None),
+    ]
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+    self.assertEqual(0, git_cl.main(['try']))
+    self.assertEqual(
+        out.getvalue(),
+        'scheduled CQ Dry Run on https://codereview.chromium.org/123\n')
+
   def _common_GerritCommitMsgHookCheck(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
     self.mock(git_cl.os.path, 'abspath',

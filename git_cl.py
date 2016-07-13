@@ -4550,28 +4550,8 @@ def CMDtry(parser, args):
           options.verbose,
           sys.stdout)
 
-      if not options.bot:
-        # Get try masters from cq.cfg if any.
-        # TODO(tandrii): some (but very few) projects store cq.cfg in different
-        # location.
-        cq_cfg = os.path.join(change.RepositoryRoot(),
-                              'infra', 'config', 'cq.cfg')
-        if os.path.exists(cq_cfg):
-          masters = {}
-          cq_masters = commit_queue.get_master_builder_map(
-              cq_cfg, include_experimental=False, include_triggered=False)
-          for master, builders in cq_masters.iteritems():
-            for builder in builders:
-              # Skip presubmit builders, because these will fail without LGTM.
-              masters.setdefault(master, {})[builder] = ['defaulttests']
-          if masters:
-            print('Loaded default bots from CQ config (%s)' % cq_cfg)
-            return masters
-          else:
-            print('CQ config exists (%s) but has no try bots listed' % cq_cfg)
-
     if not options.bot:
-      parser.error('No default try builder to try, use --bot')
+      return {}
 
     builders_and_tests = {}
     # TODO(machenbach): The old style command-line options don't support
@@ -4596,6 +4576,28 @@ def CMDtry(parser, args):
     return {options.master: builders_and_tests}
 
   masters = GetMasterMap()
+  if not masters:
+    # Default to triggering Dry Run (see http://crbug.com/625697).
+    if options.verbose:
+      print('git cl try with no bots now defaults to CQ Dry Run.')
+    try:
+      cl.SetCQState(_CQState.DRY_RUN)
+      print('scheduled CQ Dry Run on %s' % cl.GetIssueURL())
+      return 0
+    except KeyboardInterrupt:
+      raise
+    except:
+      print('WARNING: failed to trigger CQ Dry Run.\n'
+            'Either:\n'
+            ' * your project has no CQ\n'
+            ' * you don\'t have permission to trigger Dry Run\n'
+            ' * bug in this code (see stack trace below).\n'
+            'Consider specifying which bots to trigger manually '
+            'or asking your project owners for permissions '
+            'or contacting Chrome Infrastructure team at '
+            'https://www.chromium.org/infra\n\n')
+      # Still raise exception so that stack trace is printed.
+      raise
 
   for builders in masters.itervalues():
     if any('triggered' in b for b in builders):
@@ -4749,7 +4751,7 @@ def CMDset_commit(parser, args):
     state = _CQState.COMMIT
   if not cl.GetIssue():
     parser.error('Must upload the issue first')
-  cl._codereview_impl.SetCQState(state)
+  cl.SetCQState(state)
   return 0
 
 
