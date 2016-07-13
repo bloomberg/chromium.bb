@@ -462,6 +462,71 @@ TEST(Target, PublicConfigs) {
   ASSERT_TRUE(forward.OnResolved(&err));
 }
 
+// Tests that configs are ordered properly between local and pulled ones.
+TEST(Target, ConfigOrdering) {
+  TestWithScope setup;
+  Err err;
+
+  // Make Dep1. It has all_dependent_configs and public_configs.
+  TestTarget dep1(setup, "//:dep1", Target::SOURCE_SET);
+  Label dep1_all_config_label(SourceDir("//"), "dep1_all_config");
+  Config dep1_all_config(setup.settings(), dep1_all_config_label);
+  ASSERT_TRUE(dep1_all_config.OnResolved(&err));
+  dep1.all_dependent_configs().push_back(LabelConfigPair(&dep1_all_config));
+
+  Label dep1_public_config_label(SourceDir("//"), "dep1_public_config");
+  Config dep1_public_config(setup.settings(), dep1_public_config_label);
+  ASSERT_TRUE(dep1_public_config.OnResolved(&err));
+  dep1.public_configs().push_back(LabelConfigPair(&dep1_public_config));
+  ASSERT_TRUE(dep1.OnResolved(&err));
+
+  // Make Dep2 with the same structure.
+  TestTarget dep2(setup, "//:dep2", Target::SOURCE_SET);
+  Label dep2_all_config_label(SourceDir("//"), "dep2_all_config");
+  Config dep2_all_config(setup.settings(), dep2_all_config_label);
+  ASSERT_TRUE(dep2_all_config.OnResolved(&err));
+  dep2.all_dependent_configs().push_back(LabelConfigPair(&dep2_all_config));
+
+  Label dep2_public_config_label(SourceDir("//"), "dep2_public_config");
+  Config dep2_public_config(setup.settings(), dep2_public_config_label);
+  ASSERT_TRUE(dep2_public_config.OnResolved(&err));
+  dep2.public_configs().push_back(LabelConfigPair(&dep2_public_config));
+  ASSERT_TRUE(dep2.OnResolved(&err));
+
+  // This target depends on both previous targets.
+  TestTarget target(setup, "//:foo", Target::SOURCE_SET);
+  target.private_deps().push_back(LabelTargetPair(&dep1));
+  target.private_deps().push_back(LabelTargetPair(&dep2));
+
+  // It also has a private and public config.
+  Label public_config_label(SourceDir("//"), "public");
+  Config public_config(setup.settings(), public_config_label);
+  ASSERT_TRUE(public_config.OnResolved(&err));
+  target.public_configs().push_back(LabelConfigPair(&public_config));
+
+  Label private_config_label(SourceDir("//"), "private");
+  Config private_config(setup.settings(), private_config_label);
+  ASSERT_TRUE(private_config.OnResolved(&err));
+  target.configs().push_back(LabelConfigPair(&private_config));
+
+  // Resolve to get the computed list of configs applying.
+  ASSERT_TRUE(target.OnResolved(&err));
+  const auto& computed = target.configs();
+
+  // Order should be:
+  // 1. local private
+  // 2. local public
+  // 3. inherited all dependent
+  // 4. inherited public
+  ASSERT_EQ(6u, computed.size());
+  EXPECT_EQ(private_config_label, computed[0].label);
+  EXPECT_EQ(public_config_label, computed[1].label);
+  EXPECT_EQ(dep1_all_config_label, computed[2].label);
+  EXPECT_EQ(dep2_all_config_label, computed[3].label);
+  EXPECT_EQ(dep1_public_config_label, computed[4].label);
+  EXPECT_EQ(dep2_public_config_label, computed[5].label);
+}
+
 // Tests that different link/depend outputs work for solink tools.
 TEST(Target, LinkAndDepOutputs) {
   TestWithScope setup;

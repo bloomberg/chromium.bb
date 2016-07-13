@@ -424,14 +424,11 @@ bool Target::GetOutputFilesForSource(const SourceFile& source,
   return !outputs->empty();
 }
 
-void Target::PullDependentTargetConfigsFrom(const Target* dep) {
-  MergeAllDependentConfigsFrom(dep, &configs_, &all_dependent_configs_);
-  MergePublicConfigsFrom(dep, &configs_);
-}
-
 void Target::PullDependentTargetConfigs() {
   for (const auto& pair : GetDeps(DEPS_LINKED))
-    PullDependentTargetConfigsFrom(pair.ptr);
+    MergeAllDependentConfigsFrom(pair.ptr, &configs_, &all_dependent_configs_);
+  for (const auto& pair : GetDeps(DEPS_LINKED))
+    MergePublicConfigsFrom(pair.ptr, &configs_);
 }
 
 void Target::PullDependentTargetLibsFrom(const Target* dep, bool is_public) {

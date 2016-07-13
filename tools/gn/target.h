@@ -313,7 +313,6 @@ class Target : public Item {
 
   // Pulls necessary information from dependencies to this one when all
   // dependencies have been resolved.
-  void PullDependentTargetConfigsFrom(const Target* dep);
   void PullDependentTargetConfigs();
   void PullDependentTargetLibsFrom(const Target* dep, bool is_public);
   void PullDependentTargetLibs();
