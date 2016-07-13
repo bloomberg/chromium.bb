@@ -37,7 +37,7 @@
               # because the generator is unaware of the libc++.so dependency.
               # Note that setting RPATH here is a potential security issue. See:
               # https://code.google.com/p/gyp/issues/detail?id=315
-              '-Wl,-R,\$$ORIGIN/lib/',
+              '-Wl,-rpath,\$$ORIGIN/lib/',
             ],
             'library_dirs': [
               '<(PRODUCT_DIR)/lib/',

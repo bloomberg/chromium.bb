@@ -123,7 +123,7 @@ config("link_helper") {
       # the generator is unaware of the libc++.so dependency. Note that setting
       # RPATH here is a potential security issue. See the following for another
       # example of this issue: https://code.google.com/p/gyp/issues/detail?id=315
-      "-Wl,-R,\$ORIGIN/",
+      "-Wl,-rpath,\$ORIGIN/",
     ]
   }
 
