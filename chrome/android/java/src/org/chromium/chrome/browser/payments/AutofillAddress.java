@@ -32,7 +32,6 @@ public class AutofillAddress extends PaymentOption {
     @Nullable private static Pattern sRegionCodePattern;
 
     private AutofillProfile mProfile;
-    private boolean mIsComplete;
     @Nullable private Pattern mLanguageScriptCodePattern;
 
     /**
@@ -44,11 +43,6 @@ public class AutofillAddress extends PaymentOption {
         super(profile.getGUID(), profile.getFullName(), profile.getLabel(), PaymentOption.NO_ICON);
         mProfile = profile;
         mIsComplete = isComplete;
-    }
-
-    /** @return Whether the data is complete and can be sent to the merchant as-is. */
-    public boolean isComplete() {
-        return mIsComplete;
     }
 
     /** @return The autofill profile where this address data lives. */

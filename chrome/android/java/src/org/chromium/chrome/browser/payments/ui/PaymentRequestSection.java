@@ -25,10 +25,12 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -524,6 +526,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         private static final int INVALID_OPTION_INDEX = -1;
 
+        private final List<TextView> mLabelsForTest = new ArrayList<>();
+
         /**
          * Displays a row representing either a selectable option or some flavor text.
          *
@@ -577,7 +581,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
             }
 
             /** Set the button identifier for the option. */
-            public void setId(int id) {
+            public void setButtonId(int id) {
                 mButton.setId(id);
             }
 
@@ -864,6 +868,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private void updateOptionList(SectionInformation information, PaymentOption selectedItem) {
             mOptionLayout.removeAllViews();
             mOptionRows.clear();
+            mLabelsForTest.clear();
 
             // Show any additional text requested by the layout.
             if (!TextUtils.isEmpty(mDelegate.getAdditionalText(this))) {
@@ -884,13 +889,18 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 if (firstOptionIndex == INVALID_OPTION_INDEX) firstOptionIndex = currentRow;
 
                 PaymentOption item = information.getItem(i);
-                mOptionRows.add(new OptionRow(mOptionLayout, currentRow,
-                        OptionRow.OPTION_ROW_TYPE_OPTION, item, item == selectedItem));
+                OptionRow currentOptionRow = new OptionRow(mOptionLayout, currentRow,
+                        OptionRow.OPTION_ROW_TYPE_OPTION, item, item == selectedItem);
+                mOptionRows.add(currentOptionRow);
+
+                // For testing, keep the labels in a list for easy access.
+                mLabelsForTest.add(currentOptionRow.mLabel);
             }
 
+            // TODO(crbug.com/627186): Find another way to give access to this resource in tests.
             // For testing.
             if (firstOptionIndex != INVALID_OPTION_INDEX) {
-                mOptionRows.get(firstOptionIndex).setId(R.id.payments_first_radio_button);
+                mOptionRows.get(firstOptionIndex).setButtonId(R.id.payments_first_radio_button);
             }
 
             // If the user is allowed to add new options, show the button for it.
@@ -898,7 +908,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 OptionRow addRow = new OptionRow(mOptionLayout, mOptionLayout.getChildCount(),
                         OptionRow.OPTION_ROW_TYPE_ADD, null, false);
                 addRow.setLabel(information.getAddStringId());
-                addRow.setId(R.id.payments_add_option_button);
+                addRow.setButtonId(R.id.payments_add_option_button);
                 mOptionRows.add(addRow);
             }
         }
@@ -906,6 +916,21 @@ public abstract class PaymentRequestSection extends LinearLayout {
         private CharSequence convertOptionToString(PaymentOption item) {
             if (TextUtils.isEmpty(item.getSublabel())) return item.getLabel();
             return new StringBuilder(item.getLabel()).append("\n").append(item.getSublabel());
+        }
+
+        /**
+         * Returns the label at the specified |labelIndex|. Returns null if there is no label at
+         * that index.
+         */
+        @VisibleForTesting
+        public TextView getOptionLabelsForTest(int labelIndex) {
+            return mLabelsForTest.get(labelIndex);
+        }
+
+        /** Returns the number of option labels. */
+        @VisibleForTesting
+        public int getNumberOfOptionLabelsForTest() {
+            return mLabelsForTest.size();
         }
     }
 

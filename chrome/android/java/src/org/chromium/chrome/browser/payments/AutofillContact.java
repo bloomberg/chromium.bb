@@ -16,7 +16,6 @@ import javax.annotation.Nullable;
  */
 public class AutofillContact extends PaymentOption {
     private final AutofillProfile mProfile;
-    private boolean mIsComplete;
     @Nullable private String mPayerPhone;
     @Nullable private String mPayerEmail;
 
@@ -45,11 +44,6 @@ public class AutofillContact extends PaymentOption {
     /** @return Phone number. Null if the merchant did not request it or data is incomplete. */
     @Nullable public String getPayerPhone() {
         return mPayerPhone;
-    }
-
-    /** @return Whether the data is complete and can be sent to the merchant as-is. */
-    public boolean isComplete() {
-        return mIsComplete;
     }
 
     /** @return The autofill profile where this contact data lives. */

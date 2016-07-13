@@ -10,10 +10,11 @@ import javax.annotation.Nullable;
  * An option that the user can select, e.g., a shipping option, a shipping address, or a payment
  * method.
  */
-public class PaymentOption {
+public class PaymentOption implements Completable {
     /** The placeholder value that indicates the absence of an icon for this option. */
     public static final int NO_ICON = 0;
 
+    protected boolean mIsComplete;
     private final String mId;
     private final int mIcon;
     @Nullable private String mLabel;
@@ -33,6 +34,11 @@ public class PaymentOption {
         mLabel = label;
         mSublabel = sublabel;
         mIcon = icon;
+    }
+
+    @Override
+    public boolean isComplete() {
+        return mIsComplete;
     }
 
     /**

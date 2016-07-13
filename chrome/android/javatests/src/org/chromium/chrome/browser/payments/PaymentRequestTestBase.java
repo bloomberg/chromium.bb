@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.ui.EditorTextField;
+import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -201,6 +202,66 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
             public String call() {
                 return ((TextView) mUI.getShippingSummarySectionForTest().findViewById(
                         R.id.payments_left_summary_label)).getText().toString();
+            }
+        });
+    }
+
+    /**
+     *  Returns the label corresponding to the contact detail suggestion at the specified
+     *  |suggestionIndex|.
+     */
+    protected String getContactDetailsSuggestionLabel(final int suggestionIndex)
+            throws ExecutionException {
+        assert (suggestionIndex < getNumberOfContactDetailSuggestions());
+
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return ((OptionSection) mUI.getContactDetailsSectionForTest())
+                        .getOptionLabelsForTest(suggestionIndex).getText().toString();
+            }
+        });
+    }
+
+    /**
+     *  Returns the the number of contact detail suggestions,
+     */
+    protected int getNumberOfContactDetailSuggestions() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return ((OptionSection) mUI.getContactDetailsSectionForTest())
+                        .getNumberOfOptionLabelsForTest();
+            }
+        });
+    }
+
+    /**
+     *  Returns the label corresponding to the shipping address suggestion at the specified
+     *  |suggestionIndex|.
+     */
+    protected String getShippingAddressSuggestionLabel(final int suggestionIndex)
+            throws ExecutionException {
+        assert (suggestionIndex < getNumberOfShippingAddressSuggestions());
+
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return ((OptionSection) mUI.getShippingAddressSectionForTest())
+                        .getOptionLabelsForTest(suggestionIndex).getText().toString();
+            }
+        });
+    }
+
+    /**
+     *  Returns the the number of shipping address suggestions,
+     */
+    protected int getNumberOfShippingAddressSuggestions() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return ((OptionSection) mUI.getShippingAddressSectionForTest())
+                        .getNumberOfOptionLabelsForTest();
             }
         });
     }

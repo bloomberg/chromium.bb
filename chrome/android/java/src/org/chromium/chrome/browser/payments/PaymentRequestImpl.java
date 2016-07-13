@@ -15,6 +15,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
+import org.chromium.chrome.browser.payments.ui.Completable;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
@@ -45,6 +46,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +77,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private static final int FAVICON_SIZE_DP = 24;
 
     private static final String TAG = "cr_PaymentRequest";
+
+    private static final int SUGGESTIONS_LIMIT = 4;
 
     private static PaymentRequestServiceObserverForTest sObserverForTest;
 
@@ -208,6 +213,20 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
 
+        // Create a comparator to sort the suggestions by completeness.
+        Comparator<Completable> completenessComparator = new Comparator<Completable>() {
+            @Override
+            public int compare(Completable a, Completable b) {
+                if (a.isComplete() == b.isComplete()) {
+                    return 0;
+                } else if (a.isComplete()) {
+                    return -1;
+                } else {
+                    return 1;
+                }
+            }
+        };
+
         // If the merchant requests shipping and does not provide a selected shipping option, then
         // the merchant needs the shipping address to calculate the shipping price and availability.
         boolean requestShipping = options != null && options.requestShipping;
@@ -225,7 +244,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (requestShipping) {
             mAddressEditor = new AddressEditor();
             List<AutofillAddress> addresses = new ArrayList<>();
-            int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
 
             for (int i = 0; i < profiles.size(); i++) {
                 AutofillProfile profile = profiles.get(i);
@@ -233,13 +251,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
 
                 boolean isComplete = mAddressEditor.isProfileComplete(profile);
                 addresses.add(new AutofillAddress(profile, isComplete));
-                if (isComplete && firstCompleteAddressIndex == SectionInformation.NO_SELECTION
-                        && !mMerchantNeedsShippingAddress) {
-                    firstCompleteAddressIndex = i;
-                }
             }
 
-            // The shipping address section automatically selects the first complete entry.
+            // Suggest complete addresses first.
+            Collections.sort(addresses, completenessComparator);
+
+            // Limit the number of suggestions.
+            addresses = addresses.subList(0, Math.min(addresses.size(), SUGGESTIONS_LIMIT));
+
+            // Automatically select the first address if one is complete and if the merchant does
+            // not require a shipping address to calculate shipping costs.
+            int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
+            if (!mMerchantNeedsShippingAddress && !addresses.isEmpty()
+                    && addresses.get(0).isComplete()) {
+                firstCompleteAddressIndex = 0;
+            }
+
             mShippingAddressesSection =
                     new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_ADDRESSES,
                             firstCompleteAddressIndex, addresses);
@@ -249,7 +276,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             Set<String> uniqueContactInfos = new HashSet<>();
             mContactEditor = new ContactEditor(requestPayerPhone, requestPayerEmail);
             List<AutofillContact> contacts = new ArrayList<>();
-            int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
 
             for (int i = 0; i < profiles.size(); i++) {
                 AutofillProfile profile = profiles.get(i);
@@ -270,15 +296,22 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                         boolean isComplete =
                                 mContactEditor.isContactInformationComplete(phone, email);
                         contacts.add(new AutofillContact(profile, phone, email, isComplete));
-                        if (isComplete
-                                && firstCompleteContactIndex == SectionInformation.NO_SELECTION) {
-                            firstCompleteContactIndex = i;
-                        }
                     }
                 }
             }
 
-            // The contact section automatically selects the first complete entry.
+            // Suggest complete contact infos first.
+            Collections.sort(contacts, completenessComparator);
+
+            // Limit the number of suggestions.
+            contacts = contacts.subList(0, Math.min(contacts.size(), SUGGESTIONS_LIMIT));
+
+            // Automatically select the first address if it is complete.
+            int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
+            if (!contacts.isEmpty() && contacts.get(0).isComplete()) {
+                firstCompleteContactIndex = 0;
+            }
+
             mContactSection = new SectionInformation(
                     PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, contacts);
         }

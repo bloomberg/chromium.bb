@@ -151,7 +151,8 @@ public class AutofillTestHelper {
     }
 
     /**
-     * Sets the use |count| and use |date| of the test profile associated with the |guid|.
+     * Sets the use |count| and use |date| of the test profile associated with the |guid|. This
+     * update is not saved to disk.
      * @param guid The GUID of the profile to modify.
      * @param count The use count to assign to the profile. It should be non-negative.
      * @param date The use date to assign to the profile. It represents an absolute point in
@@ -159,7 +160,7 @@ public class AutofillTestHelper {
      *             epoch. For more details see the comment header in time.h. It should always be a
      *             positive number.
      */
-    void setProfileUseStatsForTesting(final String guid, final int count, final long date)
+    public void setProfileUseStatsForTesting(final String guid, final int count, final long date)
             throws InterruptedException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -167,11 +168,11 @@ public class AutofillTestHelper {
                 PersonalDataManager.getInstance().setProfileUseStatsForTesting(guid, count, date);
             }
         });
-        waitForDataChanged();
     }
 
     /**
-     * Sets the use |count| and use |date| of the test credit card associated with the |guid|.
+     * Sets the use |count| and use |date| of the test credit card associated with the |guid|. This
+     * update is not saved to disk.
      * @param guid The GUID of the credit card to modify.
      * @param count The use count to assign to the credit card. It should be non-negative.
      * @param date The use date to assign to the credit card. It represents an absolute point in
@@ -188,7 +189,6 @@ public class AutofillTestHelper {
                         guid, count, date);
             }
         });
-        waitForDataChanged();
     }
 
     private void registerDataObserver() {
