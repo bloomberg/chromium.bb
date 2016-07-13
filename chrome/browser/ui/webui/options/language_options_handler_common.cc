@@ -95,23 +95,6 @@ void LanguageOptionsHandlerCommon::GetLocalizedValues(
       IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE },
   };
 
-#if defined(ENABLE_SETTINGS_APP)
-  static OptionsStringResource app_resources[] = {
-    { "cannotBeDisplayedInThisLanguage",
-      IDS_OPTIONS_SETTINGS_LANGUAGES_CANNOT_BE_DISPLAYED_IN_THIS_LANGUAGE,
-      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
-    { "isDisplayedInThisLanguage",
-      IDS_OPTIONS_SETTINGS_LANGUAGES_IS_DISPLAYED_IN_THIS_LANGUAGE,
-      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
-    { "displayInThisLanguage",
-      IDS_OPTIONS_SETTINGS_LANGUAGES_DISPLAY_IN_THIS_LANGUAGE,
-      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
-  };
-  base::DictionaryValue* app_values = NULL;
-  CHECK(localized_strings->GetDictionary(kSettingsAppKey, &app_values));
-  RegisterStrings(app_values, app_resources, arraysize(app_resources));
-#endif
-
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
   // The following are resources, rather than local strings.

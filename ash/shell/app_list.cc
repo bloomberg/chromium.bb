@@ -312,10 +312,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  void OpenSettings() override {
-    // Nothing needs to be done.
-  }
-
   void OpenHelp() override {
     // Nothing needs to be done.
   }

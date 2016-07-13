@@ -972,13 +972,6 @@
           'enable_print_preview%': 1,
         }],
 
-        # Do not enable the Settings App on ChromeOS.
-        ['enable_app_list==1 and chromeos==0', {
-          'enable_settings_app%': 1,
-        }, {
-          'enable_settings_app%': 0,
-        }],
-
         # Whether tests targets should be run, archived or just have the
         # dependencies verified. All the tests targets have the '_run' suffix,
         # e.g. base_unittests_run runs the target base_unittests. The test
@@ -1244,7 +1237,6 @@
     'create_standalone_apk%': 1,
     'enable_app_list%': '<(enable_app_list)',
     'use_default_render_theme%': '<(use_default_render_theme)',
-    'enable_settings_app%': '<(enable_settings_app)',
     'google_api_key%': '<(google_api_key)',
     'google_default_client_id%': '<(google_default_client_id)',
     'google_default_client_secret%': '<(google_default_client_secret)',
@@ -2166,9 +2158,6 @@
       ['enable_app_list==1', {
         'grit_defines': ['-D', 'enable_app_list'],
       }],
-      ['enable_settings_app==1', {
-        'grit_defines': ['-D', 'enable_settings_app'],
-      }],
       ['use_concatenated_impulse_responses==1', {
         'grit_defines': ['-D', 'use_concatenated_impulse_responses'],
       }],
@@ -2949,9 +2938,6 @@
       }],
       ['enable_app_list==1', {
         'defines': ['ENABLE_APP_LIST=1'],
-      }],
-      ['enable_settings_app==1', {
-        'defines': ['ENABLE_SETTINGS_APP=1'],
       }],
       ['disable_file_support==1', {
         'defines': ['DISABLE_FILE_SUPPORT=1'],

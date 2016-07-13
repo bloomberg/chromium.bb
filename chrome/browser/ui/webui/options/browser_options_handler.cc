@@ -537,33 +537,12 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "backgroundModeCheckbox", IDS_OPTIONS_SYSTEM_ENABLE_BACKGROUND_MODE },
 #endif  // defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 
-#if defined(ENABLE_SETTINGS_APP)
-    { "profilesAppListSwitch", IDS_SETTINGS_APP_PROFILES_SWITCH_BUTTON_LABEL },
-#endif  // defined(ENABLE_SETTINGS_APP)
-
 #if defined(ENABLE_SERVICE_DISCOVERY)
     { "cloudPrintDevicesPageButton", IDS_LOCAL_DISCOVERY_DEVICES_PAGE_BUTTON },
     { "cloudPrintEnableNotificationsLabel",
       IDS_LOCAL_DISCOVERY_NOTIFICATIONS_ENABLE_CHECKBOX_LABEL },
 #endif  // defined(ENABLE_SERVICE_DISCOVERY)
   };
-
-#if defined(ENABLE_SETTINGS_APP)
-  static OptionsStringResource app_resources[] = {
-    { "syncOverview", IDS_SETTINGS_APP_SYNC_OVERVIEW },
-    { "syncButtonTextStart", IDS_SYNC_START_SYNC_BUTTON_LABEL,
-      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
-    { "profilesSingleUser", IDS_PROFILES_SINGLE_USER_MESSAGE,
-      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
-    { "languageSectionLabel", IDS_OPTIONS_ADVANCED_LANGUAGE_LABEL,
-      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
-    { "proxiesLabelSystem", IDS_OPTIONS_SYSTEM_PROXIES_LABEL,
-      IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME },
-  };
-  base::DictionaryValue* app_values = NULL;
-  CHECK(values->GetDictionary(kSettingsAppKey, &app_values));
-  RegisterStrings(app_values, app_resources, arraysize(app_resources));
-#endif
 
   RegisterStrings(values, resources, arraysize(resources));
   RegisterTitle(values, "doNotTrackConfirmOverlay",

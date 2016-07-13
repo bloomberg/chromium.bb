@@ -389,12 +389,6 @@ cr.define('options', function() {
                       ['Options_ShowCreateProfileDlg']);
           ManageProfileOverlay.showCreateDialog();
         };
-        if (OptionsPage.isSettingsApp()) {
-          $('profiles-app-list-switch').onclick = function(event) {
-            var selectedProfile = self.getSelectedProfileItem_();
-            chrome.send('switchAppListProfile', [selectedProfile.filePath]);
-          };
-        }
         $('profiles-manage').onclick = function(event) {
           chrome.send('metricsHandler:recordAction',
                       ['Options_ShowEditProfileDlg']);
@@ -483,7 +477,6 @@ cr.define('options', function() {
         PageManager.showPageByName('clearBrowserData');
         chrome.send('coreOptionsUserMetricsAction', ['Options_ClearData']);
       };
-      $('privacyClearDataButton').hidden = OptionsPage.isSettingsApp();
 
       if ($('metrics-reporting-enabled')) {
         $('metrics-reporting-enabled').checked =
@@ -1527,10 +1520,6 @@ cr.define('options', function() {
         $('profiles-manage').title = '';
       $('profiles-delete').disabled = !profilesList.canDeleteItems ||
                                       !hasSelection;
-      if (OptionsPage.isSettingsApp()) {
-        $('profiles-app-list-switch').disabled = !hasSelection ||
-            selectedProfile.isCurrentProfile;
-      }
       var importData = $('import-data');
       if (importData) {
         importData.disabled = $('import-data').disabled = hasSelection &&
@@ -1550,13 +1539,10 @@ cr.define('options', function() {
       var showSingleProfileView = !usingNewProfilesUI && numProfiles == 1;
       $('profiles-list').hidden = showSingleProfileView;
       $('profiles-single-message').hidden = !showSingleProfileView;
-      $('profiles-manage').hidden =
-          showSingleProfileView || OptionsPage.isSettingsApp();
+      $('profiles-manage').hidden = showSingleProfileView;
       $('profiles-delete').textContent = showSingleProfileView ?
           loadTimeData.getString('profilesDeleteSingle') :
           loadTimeData.getString('profilesDelete');
-      if (OptionsPage.isSettingsApp())
-        $('profiles-app-list-switch').hidden = showSingleProfileView;
     },
 
     /**

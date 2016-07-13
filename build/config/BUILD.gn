@@ -201,9 +201,6 @@ config("feature_flags") {
   if (enable_app_list) {
     defines += [ "ENABLE_APP_LIST=1" ]
   }
-  if (enable_settings_app) {
-    defines += [ "ENABLE_SETTINGS_APP=1" ]
-  }
   if (enable_supervised_users) {
     defines += [ "ENABLE_SUPERVISED_USERS=1" ]
   }

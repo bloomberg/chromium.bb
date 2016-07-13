@@ -207,8 +207,6 @@ OptionsUIHTMLSource::~OptionsUIHTMLSource() {}
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-const char OptionsPageUIHandler::kSettingsAppKey[] = "settingsApp";
-
 OptionsPageUIHandler::OptionsPageUIHandler() {
 }
 
@@ -260,9 +258,6 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
       WebContentsObserver(web_ui->GetWebContents()),
       initialized_handlers_(false) {
   base::DictionaryValue* localized_strings = new base::DictionaryValue();
-  localized_strings->Set(OptionsPageUIHandler::kSettingsAppKey,
-                         new base::DictionaryValue());
-
   CoreOptionsHandler* core_handler;
 #if defined(OS_CHROMEOS)
   core_handler = new chromeos::options::CoreChromeOSOptionsHandler();

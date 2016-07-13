@@ -261,7 +261,6 @@ places are noted in the table below.
 | `enable_service_discovery` (0/1)        | `enable_service_discovery` (true/false)        | `//build/config/features.gni` |
 | `enable_spellcheck` (0/1)               | `enable_spellcheck` (true/false)               | `//build/config/features.gni` |
 | `enable_session_service` (0/1)          | `enable_session_service` (true/false)          | `//build/config/features.gni` |
-| `enable_settings_app` (0/1)             | `enable_settings_app` (true/false)             | `//build/config/features.gni` |
 | `enable_task_manager` (0/1)             | `enable_task_manager` (true/false)             | `//build/config/features.gni` |
 | `enable_themes` (0/1)                   | `enable_themes` (true/false)                   | `//build/config/features.gni` |
 | `enable_webrtc` (0/1)                   | `enable_webrtc` (true/false)                   | `//build/config/features.gni` |

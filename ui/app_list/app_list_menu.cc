@@ -50,9 +50,6 @@ void AppListMenu::InitMenu() {
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
-  menu_model_.AddItem(SHOW_SETTINGS, l10n_util::GetStringUTF16(
-      IDS_APP_LIST_OPEN_SETTINGS));
-
   menu_model_.AddItem(SHOW_HELP, l10n_util::GetStringUTF16(
       IDS_APP_LIST_HELP));
 
@@ -85,9 +82,6 @@ void AppListMenu::ExecuteCommand(int command_id, int event_flags) {
     return;
   }
   switch (command_id) {
-    case SHOW_SETTINGS:
-      delegate_->OpenSettings();
-      break;
     case SHOW_HELP:
       delegate_->OpenHelp();
       break;

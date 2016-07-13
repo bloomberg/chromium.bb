@@ -4965,19 +4965,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Keep changes
       </message>
 
-      <!-- chrome://settings-frame/options_settings_app.html for the App Launcher Settings App -->
-      <if expr="enable_settings_app">
-        <message name="IDS_SETTINGS_APP_LAUNCHER_PRODUCT_NAME" desc="Product name to use when referring to applications running in the App Launcher inside the non-browser Settings App">
-          App Launcher
-        </message>
-        <message name="IDS_SETTINGS_APP_PROFILES_SWITCH_BUTTON_LABEL" desc="The label that appears on the profile switch user button in the Settings App to allow a user to switch the app launcher profile to the current selection.">
-          Switch user
-        </message>
-        <message name="IDS_SETTINGS_APP_SYNC_OVERVIEW" desc="The message that appears in the non-browser Settings App when sync has not been set up by the user.">
-          Sign in with your Google Account to allow apps to synchronize settings and provide other customized services.
-        </message>
-      </if>
-
       <!-- Material Design version of chrome://policy -->
       <message name="IDS_FLAGS_ENABLE_MATERIAL_DESIGN_POLICY_PAGE_NAME" desc="Name for the flag to enable the material design policy page.">
           Enable Material Design policy page

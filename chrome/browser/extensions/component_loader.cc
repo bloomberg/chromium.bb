@@ -589,11 +589,6 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif  // defined(GOOGLE_CHROME_BUILD)
     if (install_feedback)
       Add(IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")));
-
-#if defined(ENABLE_SETTINGS_APP)
-    Add(IDR_SETTINGS_APP_MANIFEST,
-        base::FilePath(FILE_PATH_LITERAL("settings_app")));
-#endif
   }
 
 #if defined(OS_CHROMEOS)

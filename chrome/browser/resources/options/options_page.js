@@ -85,24 +85,6 @@ cr.define('options', function() {
             'enablePepperFlashSettings');
       }
     },
-
-    /**
-     * Sets whether Settings is shown as a standalone page in a window for the
-     * app launcher settings "app".
-     * @param {boolean} isSettingsApp Whether this page is shown standalone.
-     */
-    setIsSettingsApp: function(isSettingsApp) {
-      document.documentElement.classList.toggle('settings-app', isSettingsApp);
-    },
-
-    /**
-     * Returns true if Settings is shown as an "app" (in a window by itself)
-     * for the app launcher settings "app".
-     * @return {boolean} Whether this page is shown standalone.
-     */
-    isSettingsApp: function() {
-      return document.documentElement.classList.contains('settings-app');
-    },
   };
 
   // Export

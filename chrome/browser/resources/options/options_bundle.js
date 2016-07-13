@@ -129,6 +129,3 @@ var CertificateImportErrorOverlay = options.CertificateImportErrorOverlay;
 <include src="../uber/uber_page_manager_observer.js">
 <include src="../uber/uber_utils.js">
 <include src="options.js">
-<if expr="enable_settings_app">
-<include src="options_settings_app.js">
-</if>

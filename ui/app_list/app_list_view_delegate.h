@@ -117,9 +117,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Invoked when the app list is closing.
   virtual void ViewClosing() = 0;
 
-  // Open the settings UI.
-  virtual void OpenSettings() = 0;
-
   // Open the help UI.
   virtual void OpenHelp() = 0;
 

@@ -41,9 +41,6 @@ namespace options {
 // The base class handler of Javascript messages of options pages.
 class OptionsPageUIHandler : public content::WebUIMessageHandler {
  public:
-  // Key for identifying the Settings App localized_strings in loadTimeData.
-  static const char kSettingsAppKey[];
-
   OptionsPageUIHandler();
   ~OptionsPageUIHandler() override;
 

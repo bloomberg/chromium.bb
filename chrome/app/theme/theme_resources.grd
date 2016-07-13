@@ -759,12 +759,6 @@
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_SECONDARY_USER_SETTINGS" file="cros/secondary_user_settings.png" />
       </if>
-      <if expr="enable_settings_app">
-        <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_128" file="settings_app_icon_128.png" />
-        <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_16" file="settings_app_icon_16.png" />
-        <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_32" file="settings_app_icon_32.png" />
-        <structure type="chrome_scaled_image" name="IDR_SETTINGS_APP_ICON_48" file="settings_app_icon_48.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_SETTINGS_FAVICON" file="common/favicon_settings.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR" file="common/star.png" />
       <structure type="chrome_scaled_image" name="IDR_STAR_LIT" file="common/star_lit.png" />

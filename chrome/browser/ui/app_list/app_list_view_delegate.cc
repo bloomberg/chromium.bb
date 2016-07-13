@@ -567,18 +567,6 @@ void AppListViewDelegate::ViewClosing() {
   }
 }
 
-void AppListViewDelegate::OpenSettings() {
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
-          extension_misc::kSettingsAppId,
-          extensions::ExtensionRegistry::EVERYTHING);
-  DCHECK(extension);
-  controller_->ActivateApp(profile_,
-                           extension,
-                           AppListControllerDelegate::LAUNCH_FROM_UNKNOWN,
-                           0);
-}
-
 void AppListViewDelegate::OpenHelp() {
   chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
   content::OpenURLParams params(GURL(chrome::kAppLauncherHelpURL),

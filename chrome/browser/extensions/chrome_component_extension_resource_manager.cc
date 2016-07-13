@@ -36,12 +36,6 @@ ChromeComponentExtensionResourceManager() {
     {"webstore_widget/app/icons/icon_32.png", IDR_WEBSTORE_ICON_32},
     {"webstore_widget/app/icons/icon_128.png", IDR_WEBSTORE_ICON},
 #endif
-#if defined(ENABLE_SETTINGS_APP)
-    {"settings_app/settings_app_icon_128.png", IDR_SETTINGS_APP_ICON_128},
-    {"settings_app/settings_app_icon_16.png", IDR_SETTINGS_APP_ICON_16},
-    {"settings_app/settings_app_icon_32.png", IDR_SETTINGS_APP_ICON_32},
-    {"settings_app/settings_app_icon_48.png", IDR_SETTINGS_APP_ICON_48},
-#endif
   };
 
   AddComponentResourceEntries(

@@ -988,7 +988,6 @@
       'browser/ui/webui/options/password_manager_browsertest.js',
       'browser/ui/webui/options/profile_settings_reset_browsertest.js',
       'browser/ui/webui/options/search_engine_manager_browsertest.js',
-      'browser/ui/webui/options/settings_app_browsertest.js',
       'browser/ui/webui/options/settings_format_browsertest.js',
       'browser/ui/webui/options/startup_page_list_browsertest.js',
       'browser/ui/webui/sync_internals_browsertest.js',

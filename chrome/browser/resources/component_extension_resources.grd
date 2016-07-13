@@ -153,9 +153,6 @@
         <include name="IDR_ARC_SUPPORT_ICON" file="chromeos/arc_support/icon/48.png" type="BINDATA" />
         <include name="IDR_ARC_SUPPORT_ICON_HEADER" file="chromeos/arc_support/images/header.png" type="BINDATA" />
       </if>
-      <if expr="enable_settings_app">
-        <include name="IDR_SETTINGS_APP_JS" file="settings_app/settings_app.js" type="BINDATA" />
-      </if>
       <if expr="enable_plugins">
         <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" allowexternalscript="true" type="BINDATA" />

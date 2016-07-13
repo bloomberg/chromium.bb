@@ -47,11 +47,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 
-#if defined(ENABLE_SETTINGS_APP)
-#include "chrome/browser/ui/app_list/app_list_service.h"
-#include "content/public/browser/web_contents.h"
-#endif
-
 namespace options {
 
 namespace {
@@ -185,11 +180,6 @@ void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("profileIconSelectionChanged",
       base::Bind(&ManageProfileHandler::ProfileIconSelectionChanged,
                  base::Unretained(this)));
-#if defined(ENABLE_SETTINGS_APP)
-  web_ui()->RegisterMessageCallback("switchAppListProfile",
-      base::Bind(&ManageProfileHandler::SwitchAppListProfile,
-                 base::Unretained(this)));
-#endif
   web_ui()->RegisterMessageCallback("addProfileShortcut",
       base::Bind(&ManageProfileHandler::AddProfileShortcut,
                  base::Unretained(this)));
@@ -412,26 +402,6 @@ void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
   CHECK(!new_profile_name.empty());
   profiles::UpdateProfileName(profile, new_profile_name);
 }
-
-#if defined(ENABLE_SETTINGS_APP)
-void ManageProfileHandler::SwitchAppListProfile(const base::ListValue* args) {
-  DCHECK(args);
-  DCHECK(profiles::IsMultipleProfilesEnabled());
-
-  const base::Value* file_path_value;
-  base::FilePath profile_file_path;
-  if (!args->Get(0, &file_path_value) ||
-      !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
-    return;
-
-  AppListService* app_list_service = AppListService::Get();
-  app_list_service->SetProfilePath(profile_file_path);
-  app_list_service->Show();
-
-  // Close the settings app, since it will now be for the wrong profile.
-  web_ui()->GetWebContents()->Close();
-}
-#endif  // defined(ENABLE_SETTINGS_APP)
 
 void ManageProfileHandler::ProfileIconSelectionChanged(
     const base::ListValue* args) {

@@ -263,12 +263,6 @@ if (enable_app_list) {
     "enable_app_list",
   ]
 }
-if (enable_settings_app) {
-  grit_defines += [
-    "-D",
-    "enable_settings_app",
-  ]
-}
 if (enable_webrtc) {
   grit_defines += [
     "-D",
