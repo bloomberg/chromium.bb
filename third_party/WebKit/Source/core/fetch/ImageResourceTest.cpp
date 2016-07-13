@@ -574,4 +574,41 @@ TEST(ImageResourceTest, FailedRevalidationSvgToSvg)
     EXPECT_EQ(300, imageResource->getImage()->height());
 }
 
+// Tests for pruning.
+
+TEST(ImageResourceTest, AddClientAfterPrune)
+{
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo");
+    ImageResource* imageResource = ImageResource::create(ResourceRequest(url));
+
+    // Adds a ResourceClient but not ImageResourceObserver.
+    Persistent<MockResourceClient> client1 = new MockResourceClient(imageResource);
+
+    receiveResponse(imageResource, url, "image/jpeg", jpegImage());
+
+    EXPECT_FALSE(imageResource->errorOccurred());
+    ASSERT_TRUE(imageResource->hasImage());
+    EXPECT_FALSE(imageResource->getImage()->isNull());
+    EXPECT_EQ(1, imageResource->getImage()->width());
+    EXPECT_EQ(1, imageResource->getImage()->height());
+    EXPECT_TRUE(client1->notifyFinishedCalled());
+
+    client1->removeAsClient();
+
+    EXPECT_FALSE(imageResource->hasClientsOrObservers());
+
+    imageResource->prune();
+
+    EXPECT_FALSE(imageResource->hasImage());
+
+    // Re-adds a ResourceClient but not ImageResourceObserver.
+    Persistent<MockResourceClient> client2 = new MockResourceClient(imageResource);
+
+    ASSERT_TRUE(imageResource->hasImage());
+    EXPECT_FALSE(imageResource->getImage()->isNull());
+    EXPECT_EQ(1, imageResource->getImage()->width());
+    EXPECT_EQ(1, imageResource->getImage()->height());
+    EXPECT_TRUE(client2->notifyFinishedCalled());
+}
+
 } // namespace blink

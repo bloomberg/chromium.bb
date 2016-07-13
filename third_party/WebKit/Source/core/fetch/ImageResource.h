@@ -91,6 +91,8 @@ public:
     // the Lo-Fi state set to off and bypassing the cache.
     void reloadIfLoFi(ResourceFetcher*);
 
+    void didAddClient(ResourceClient*) override;
+
     void addObserver(ImageResourceObserver*);
     void removeObserver(ImageResourceObserver*);
     bool hasClientsOrObservers() const override { return Resource::hasClientsOrObservers() || !m_observers.isEmpty() || !m_finishedObservers.isEmpty(); }
@@ -157,6 +159,8 @@ private:
     void clearImage();
     // If not null, changeRect is the changed part of the image.
     void notifyObservers(const IntRect* changeRect = nullptr);
+
+    void ensureImage();
 
     void checkNotify() override;
     void markClientsAndObserversFinished() override;
