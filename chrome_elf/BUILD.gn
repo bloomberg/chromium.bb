@@ -2,9 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Chrome elf targets (excepting tests) should only link in kernel32.
+# Please don't add dependencies on any other system libraries.
+
 import("//build/config/win/manifest.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
+
+##------------------------------------------------------------------------------
+## chrome_elf
+##------------------------------------------------------------------------------
 
 process_version("chrome_elf_resources") {
   template_file = chrome_version_rc_template
@@ -38,10 +45,11 @@ shared_library("chrome_elf") {
     ":breakpad",
     ":chrome_elf_manifest",
     ":chrome_elf_resources",
-    ":common",
+    ":hook_util",
     "//base",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
+    "//chrome_elf/nt_registry:nt_registry",
     "//components/crash/content/app",
     "//components/crash/core/common",
     "//content/public/common:result_codes",
@@ -66,39 +74,14 @@ shared_library("chrome_elf") {
   }
 }
 
+##------------------------------------------------------------------------------
+## source sets
+##------------------------------------------------------------------------------
+
 source_set("constants") {
   sources = [
     "chrome_elf_constants.cc",
     "chrome_elf_constants.h",
-  ]
-}
-
-source_set("common") {
-  public_deps = [
-    ":constants",
-  ]
-  deps = [
-    "//base",
-    "//sandbox",
-  ]
-  sources = [
-    "thunk_getter.cc",
-    "thunk_getter.h",
-  ]
-}
-
-source_set("breakpad") {
-  include_dirs = [ "$target_gen_dir" ]
-  sources = [
-    "breakpad.cc",
-    "breakpad.h",
-  ]
-  deps = [
-    ":common",
-    "//base",
-    "//breakpad:breakpad_handler",
-    "//chrome/common:version_header",
-    "//chrome/install_static:install_static_util",
   ]
 }
 
@@ -111,6 +94,10 @@ source_set("dll_hash") {
     "dll_hash/dll_hash.h",
   ]
 }
+
+##------------------------------------------------------------------------------
+## chrome_elf sub targets
+##------------------------------------------------------------------------------
 
 executable("dll_hash_main") {
   sources = [
@@ -135,12 +122,43 @@ static_library("blacklist") {
   ]
   deps = [
     ":breakpad",
-    ":common",
     ":constants",
-    "//base",
+    ":hook_util",
     "//chrome/install_static:install_static_util",
+    "//chrome_elf/nt_registry:nt_registry",
+
+    # Still uses base/win/pe_image.h
+    "//base",
   ]
 }
+
+static_library("breakpad") {
+  include_dirs = [ "$target_gen_dir" ]
+  sources = [
+    "breakpad/breakpad.cc",
+    "breakpad/breakpad.h",
+  ]
+  deps = [
+    "//breakpad:breakpad_handler",
+    "//chrome/common:version_header",
+    "//chrome/install_static:install_static_util",
+    "//chrome_elf/nt_registry:nt_registry",
+  ]
+}
+
+static_library("hook_util") {
+  sources = [
+    "hook_util/thunk_getter.cc",
+    "hook_util/thunk_getter.h",
+  ]
+  deps = [
+    "//sandbox",
+  ]
+}
+
+##------------------------------------------------------------------------------
+## tests
+##------------------------------------------------------------------------------
 
 test("chrome_elf_unittests") {
   output_name = "chrome_elf_unittests"
@@ -154,12 +172,14 @@ test("chrome_elf_unittests") {
   deps = [
     ":blacklist",
     ":blacklist_test_main_dll",
-    ":common",
+    ":constants",
+    ":hook_util",
     "//base",
     "//base/test:test_support",
     "//chrome",
     "//chrome/common:version_header",
     "//chrome/install_static:install_static_util",
+    "//chrome_elf/nt_registry:nt_registry",
     "//sandbox",
     "//testing/gtest",
   ]
@@ -198,10 +218,10 @@ shared_library("blacklist_test_main_dll") {
   ]
   deps = [
     ":blacklist",
-    ":common",
     "//base",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
+    "//chrome_elf/nt_registry:nt_registry",
   ]
 }
 

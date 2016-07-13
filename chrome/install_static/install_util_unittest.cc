@@ -70,7 +70,7 @@ TEST(InstallStaticTest, TokenizeString) {
   // TokenizeString16 tests.
   // Test if the string is tokenized correctly with all tokens stripped of
   // leading and trailing spaces.
-  std::vector<base::string16> results16 =
+  std::vector<std::wstring> results16 =
       TokenizeString16(L"un |deux\t|trois\n|quatre", L'|', true);
   ASSERT_EQ(4u, results16.size());
   EXPECT_THAT(results16, ElementsAre(L"un", L"deux", L"trois", L"quatre"));

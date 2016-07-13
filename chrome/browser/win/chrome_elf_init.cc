@@ -130,16 +130,22 @@ void AddFinchBlacklistToRegistry() {
       HKEY_CURRENT_USER, blacklist::kRegistryFinchListPath, KEY_SET_VALUE);
 
   std::map<std::string, std::string> params;
-  variations::GetVariationParams(kBrowserBlacklistTrialName, &params);
+  std::string value = variations::GetVariationParamValue(
+      kBrowserBlacklistTrialName, blacklist::kRegistryFinchListValueNameStr);
+  if (value.empty())
+    return;
+  base::string16 value_wcs = base::UTF8ToWide(value);
 
-  for (std::map<std::string, std::string>::iterator it = params.begin();
-       it != params.end();
-       ++it) {
-    std::wstring name = base::UTF8ToWide(it->first);
-    std::wstring val = base::UTF8ToWide(it->second);
+  // The dll names are comma-separated in this param value.  We need to turn
+  // this into REG_MULTI_SZ format (double-null terminates).
+  // Note that the strings are wide character in registry.
+  value_wcs.push_back(L'\0');
+  value_wcs.push_back(L'\0');
+  std::replace(value_wcs.begin(), value_wcs.end(), L',', L'\0');
 
-    finch_blacklist_registry_key.WriteValue(name.c_str(), val.c_str());
-  }
+  finch_blacklist_registry_key.WriteValue(
+      blacklist::kRegistryFinchListValueName, value_wcs.data(),
+      (value_wcs.size() * sizeof(wchar_t)), REG_MULTI_SZ);
 }
 
 void BrowserBlacklistBeaconSetup() {

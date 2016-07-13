@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ELF_BREAKPAD_H_
-#define CHROME_ELF_BREAKPAD_H_
+#ifndef CHROME_ELF_BREAKPAD_BREAKPAD_H_
+#define CHROME_ELF_BREAKPAD_BREAKPAD_H_
 
 #include <windows.h>
 
@@ -31,4 +31,4 @@ int GenerateCrashDump(EXCEPTION_POINTERS* exinfo);
 // InitializeCrashReporting() and used by GenerateCrashDump() to record dumps.
 extern google_breakpad::ExceptionHandler* g_elf_breakpad;
 
-#endif  // CHROME_ELF_BREAKPAD_H_
+#endif  // CHROME_ELF_BREAKPAD_BREAKPAD_H_

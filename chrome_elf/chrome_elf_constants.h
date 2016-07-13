@@ -17,6 +17,13 @@ extern const wchar_t kRegistryBeaconPath[];
 // The registry path of the finch blacklist dlls.
 extern const wchar_t kRegistryFinchListPath[];
 
+// The registry value name for the REG_MULTI_SZ list of blacklist dlls.
+// Note the char version is handy for use as the param name when
+// appending dll names to the base::FieldTrial.  Can be removed
+// if no longer used.
+extern const char kRegistryFinchListValueNameStr[];
+extern const wchar_t kRegistryFinchListValueName[];
+
 // The properties for the blacklist beacon.
 extern const wchar_t kBeaconVersion[];
 extern const wchar_t kBeaconState[];
@@ -40,5 +47,15 @@ enum BlacklistState {
 };
 
 }  // namespace blacklist
+
+namespace elf_sec {
+
+// The registry path of the finch "emergency-off"
+// switch for sandbox::MITIGATION_EXTENSION_POINT_DISABLE.
+extern const wchar_t kRegSecurityFinchPath[];
+
+// The registry path for any early-browser security settings.
+extern const wchar_t kRegSecurityPath[];
+}
 
 #endif  // CHROME_ELF_CHROME_ELF_CONSTANTS_H_

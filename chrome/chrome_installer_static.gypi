@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# The install_static_util target should only depend on functions in kernel32
-# and advapi32. Please don't add dependencies on other system libraries.
+# The install_static_util target should only depend on functions in kernel32.
+# Please don't add dependencies on other system libraries.
 {
   'target_defaults': {
     'variables': {
@@ -33,15 +33,13 @@
             'installer_static_target': 1,
           },
           'dependencies': [
-            'installer_util_strings',
-            '<(DEPTH)/base/base.gyp:base',
+            '../chrome_elf/nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
               # Please don't add dependencies on other system libraries.
               'AdditionalDependencies': [
                 'kernel32.lib',
-                'advapi32.lib',
               ],
             },
           },
@@ -91,7 +89,7 @@
             'installer_static_target': 1,
           },
           'dependencies': [
-            'installer_util_strings',
+            '../chrome_elf/nt_registry/nt_registry.gyp:chrome_elf_nt_registry_nacl_win64',
           ],
           'include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)',
@@ -106,7 +104,6 @@
               # Please don't add dependencies on other system libraries.
               'AdditionalDependencies': [
                 'kernel32.lib',
-                'advapi32.lib',
               ],
             },
           },

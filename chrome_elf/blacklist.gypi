@@ -18,8 +18,11 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../chrome/chrome.gyp:install_static_util',
         '../chrome_elf/chrome_elf.gyp:chrome_elf_breakpad',
         '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
+        '../chrome_elf/chrome_elf.gyp:chrome_elf_hook_util',
+        '../chrome_elf/nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
         '../sandbox/sandbox.gyp:sandbox',
       ],
     },
@@ -32,6 +35,8 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../chrome/chrome.gyp:install_static_util',
+        '../chrome_elf/nt_registry/nt_registry.gyp:chrome_elf_nt_registry',
         'blacklist',
       ],
     },

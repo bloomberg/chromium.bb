@@ -166,8 +166,9 @@ TEST_F(ChromeBlacklistTrialTest, AddFinchBlacklistToRegistry) {
 
   // Set up the trial with the desired parameters.
   std::map<std::string, std::string> desired_params;
-  desired_params["TestDllName1"] = "TestDll1.dll";
-  desired_params["TestDllName2"] = "TestDll2.dll";
+
+  desired_params[blacklist::kRegistryFinchListValueNameStr] =
+      "TestDll1.dll,TestDll2.dll";
 
   variations::AssociateVariationParams(
       kBrowserBlacklistTrialName,
@@ -177,21 +178,23 @@ TEST_F(ChromeBlacklistTrialTest, AddFinchBlacklistToRegistry) {
   // This should add the dlls in those parameters to the registry.
   AddFinchBlacklistToRegistry();
 
-  // Check that all the values in desired_params were added to the registry.
+  // Check that all the dll names in desired_params were added to the registry.
+  std::vector<std::wstring> dlls;
+
   base::win::RegKey finch_blacklist_registry_key(
       HKEY_CURRENT_USER,
       blacklist::kRegistryFinchListPath,
       KEY_QUERY_VALUE | KEY_SET_VALUE);
 
-  ASSERT_EQ(desired_params.size(),
-            finch_blacklist_registry_key.GetValueCount());
+  ASSERT_TRUE(finch_blacklist_registry_key.HasValue(
+      blacklist::kRegistryFinchListValueName));
+  ASSERT_EQ(ERROR_SUCCESS, finch_blacklist_registry_key.ReadValues(
+                               blacklist::kRegistryFinchListValueName, &dlls));
 
-  for (std::map<std::string, std::string>::iterator it = desired_params.begin();
-       it != desired_params.end();
-       ++it) {
-    std::wstring name = base::UTF8ToWide(it->first);
-    ASSERT_TRUE(finch_blacklist_registry_key.HasValue(name.c_str()));
-  }
+  ASSERT_EQ((size_t)2,
+            /* Number of dll names passed in this test. */ dlls.size());
+  EXPECT_STREQ(L"TestDll1.dll", dlls[0].c_str());
+  EXPECT_STREQ(L"TestDll2.dll", dlls[1].c_str());
 }
 
 }  // namespace

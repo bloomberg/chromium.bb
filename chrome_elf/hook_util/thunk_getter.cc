@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <windows.h>
 
-#include "base/macros.h"
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
@@ -30,7 +29,11 @@ enum Version {
 // WOW64_DISABLED for both "32-bit Chrome on 32-bit Windows" and "64-bit
 // Chrome on 64-bit Windows".  WOW64_UNKNOWN means "an error occurred", e.g.
 // the process does not have sufficient access rights to determine this.
-enum WOW64Status { WOW64_DISABLED, WOW64_ENABLED, WOW64_UNKNOWN, };
+enum WOW64Status {
+  WOW64_DISABLED,
+  WOW64_ENABLED,
+  WOW64_UNKNOWN,
+};
 
 WOW64Status GetWOW64StatusForCurrentProcess() {
   typedef BOOL(WINAPI * IsWow64ProcessFunc)(HANDLE, PBOOL);

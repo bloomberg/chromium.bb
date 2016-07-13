@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_ELF_THUNK_GETTER_H_
-#define CHROME_ELF_THUNK_GETTER_H_
+#ifndef CHROME_ELF_HOOK_UTIL_THUNK_GETTER_H_
+#define CHROME_ELF_HOOK_UTIL_THUNK_GETTER_H_
 
 namespace sandbox {
 class ServiceResolverThunk;
@@ -13,4 +13,4 @@ class ServiceResolverThunk;
 // resulting thunk is passed to the caller.
 sandbox::ServiceResolverThunk* GetThunk(bool relaxed);
 
-#endif  // CHROME_ELF_THUNK_GETTER_H_
+#endif  // CHROME_ELF_HOOK_UTIL_THUNK_GETTER_H_

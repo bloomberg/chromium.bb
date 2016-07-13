@@ -5,15 +5,12 @@
 // This module contains the necessary code to register the Breakpad exception
 // handler. This implementation is based on Chrome's crash reporting code.
 
-#include "chrome_elf/breakpad.h"
+#include "chrome_elf/breakpad/breakpad.h"
 
-#include <sddl.h>
-
-#include "base/macros.h"
-#include "base/strings/string16.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome_elf/nt_registry/nt_registry.h"
 
 google_breakpad::ExceptionHandler* g_elf_breakpad = NULL;
 
@@ -39,54 +36,31 @@ const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
 const wchar_t kNoErrorDialogs[] = L"noerrdialogs";
 
 google_breakpad::CustomClientInfo* GetCustomInfo() {
-  base::string16 process =
+  std::wstring process =
       install_static::IsNonBrowserProcess() ? L"renderer" : L"browser";
 
   wchar_t exe_path[MAX_PATH] = {};
-  base::string16 channel;
-  if (GetModuleFileName(NULL, exe_path, arraysize(exe_path)) &&
+  std::wstring channel;
+  if (GetModuleFileName(NULL, exe_path, MAX_PATH) &&
       install_static::IsSxSChrome(exe_path)) {
     channel = L"canary";
   }
 
   static google_breakpad::CustomInfoEntry ver_entry(
       kBreakpadVersionEntry, TEXT(CHROME_VERSION_STRING));
-  static google_breakpad::CustomInfoEntry prod_entry(
-      kBreakpadProdEntry, kBreakpadProductName);
-  static google_breakpad::CustomInfoEntry plat_entry(
-      kBreakpadPlatformEntry, kBreakpadPlatformWin32);
-  static google_breakpad::CustomInfoEntry proc_entry(
-      kBreakpadProcessEntry, process.c_str());
-  static google_breakpad::CustomInfoEntry channel_entry(
-      kBreakpadChannelEntry, channel.c_str());
+  static google_breakpad::CustomInfoEntry prod_entry(kBreakpadProdEntry,
+                                                     kBreakpadProductName);
+  static google_breakpad::CustomInfoEntry plat_entry(kBreakpadPlatformEntry,
+                                                     kBreakpadPlatformWin32);
+  static google_breakpad::CustomInfoEntry proc_entry(kBreakpadProcessEntry,
+                                                     process.c_str());
+  static google_breakpad::CustomInfoEntry channel_entry(kBreakpadChannelEntry,
+                                                        channel.c_str());
   static google_breakpad::CustomInfoEntry entries[] = {
       ver_entry, prod_entry, plat_entry, proc_entry, channel_entry};
   static google_breakpad::CustomClientInfo custom_info = {
-      entries, arraysize(entries) };
+      entries, (sizeof(entries) / sizeof(google_breakpad::CustomInfoEntry))};
   return &custom_info;
-}
-
-base::string16 GetUserSidString() {
-  // Get the current token.
-  HANDLE token = NULL;
-  base::string16 user_sid;
-  if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token))
-    return user_sid;
-
-  DWORD size = sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE;
-  BYTE user_bytes[sizeof(TOKEN_USER) + SECURITY_MAX_SID_SIZE] = {};
-  TOKEN_USER* user = reinterpret_cast<TOKEN_USER*>(user_bytes);
-
-  wchar_t* sid_string = NULL;
-  if (::GetTokenInformation(token, TokenUser, user, size, &size) &&
-      user->User.Sid &&
-      ::ConvertSidToStringSid(user->User.Sid, &sid_string)) {
-    user_sid = sid_string;
-    ::LocalFree(sid_string);
-  }
-
-  CloseHandle(token);
-  return user_sid;
 }
 
 bool IsHeadless() {
@@ -118,7 +92,7 @@ int GenerateCrashDump(EXCEPTION_POINTERS* exinfo) {
 
 void InitializeCrashReporting() {
   wchar_t exe_path[MAX_PATH] = {};
-  if (!::GetModuleFileName(NULL, exe_path, arraysize(exe_path)))
+  if (!::GetModuleFileName(NULL, exe_path, MAX_PATH))
     return;
 
   // Disable the message box for assertions.
@@ -135,7 +109,7 @@ void InitializeCrashReporting() {
   // Minidump with stacks, PEB, TEBs and unloaded module list.
   MINIDUMP_TYPE dump_type = static_cast<MINIDUMP_TYPE>(
       MiniDumpWithProcessThreadData |  // Get PEB and TEB.
-      MiniDumpWithUnloadedModules |  // Get unloaded modules when available.
+      MiniDumpWithUnloadedModules |    // Get unloaded modules when available.
       MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by
                                                 // stack.
 
@@ -145,7 +119,7 @@ void InitializeCrashReporting() {
   bool is_official_chrome_build = false;
 #endif
 
-  base::string16 pipe_name;
+  std::wstring pipe_name;
 
   bool enabled_by_policy = false;
   bool use_policy =
@@ -161,9 +135,9 @@ void InitializeCrashReporting() {
     // 32-bit user: \\.\pipe\GoogleCrashServices\<user SID>
     // 64-bit system: \\.\pipe\GoogleCrashServices\S-1-5-18-x64
     // 64-bit user: \\.\pipe\GoogleCrashServices\<user SID>-x64
-    base::string16 user_sid = install_static::IsSystemInstall(exe_path)
-                                  ? kSystemPrincipalSid
-                                  : GetUserSidString();
+    std::wstring user_sid = install_static::IsSystemInstall(exe_path)
+                                ? kSystemPrincipalSid
+                                : nt::GetCurrentUserSidString();
     if (user_sid.empty())
       return;
 
@@ -180,14 +154,9 @@ void InitializeCrashReporting() {
   }
 
   g_elf_breakpad = new google_breakpad::ExceptionHandler(
-      temp_directory,
-      NULL,
-      NULL,
-      NULL,
-      google_breakpad::ExceptionHandler::HANDLER_ALL,
-      dump_type,
-      pipe_name.c_str(),
-      GetCustomInfo());
+      temp_directory, NULL, NULL, NULL,
+      google_breakpad::ExceptionHandler::HANDLER_ALL, dump_type,
+      pipe_name.c_str(), GetCustomInfo());
 
   if (g_elf_breakpad->IsOutOfProcess()) {
     // Tells breakpad to handle breakpoint and single step exceptions.

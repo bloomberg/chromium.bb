@@ -12,8 +12,7 @@
 #include <memory>
 #include <sstream>
 
-#include "base/macros.h"
-#include "build/build_config.h"
+#include "chrome_elf/nt_registry/nt_registry.h"
 
 namespace install_static {
 
@@ -36,7 +35,7 @@ const wchar_t kRegApField[] = L"ap";
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kRegPathClientState[] = L"Software\\Google\\Update\\ClientState";
 const wchar_t kRegPathClientStateMedium[] =
-L"Software\\Google\\Update\\ClientStateMedium";
+    L"Software\\Google\\Update\\ClientStateMedium";
 const wchar_t kRegPathChromePolicy[] = L"SOFTWARE\\Policies\\Google\\Chrome";
 #else
 const wchar_t kRegPathClientState[] =
@@ -50,8 +49,7 @@ const wchar_t kRegValueUsageStats[] = L"usagestats";
 const wchar_t kUninstallArgumentsField[] = L"UninstallArguments";
 const wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
-const wchar_t kAppGuidCanary[] =
-    L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
+const wchar_t kAppGuidCanary[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
 const wchar_t kAppGuidGoogleChrome[] =
     L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 const wchar_t kAppGuidGoogleBinaries[] =
@@ -96,91 +94,9 @@ void Trace(const wchar_t* format_string, ...) {
   va_list args = {};
 
   va_start(args, format_string);
-  vswprintf(buffer, arraysize(buffer), format_string, args);
-  OutputDebugString(buffer);
+  vswprintf(buffer, kMaxLogBufferSize, format_string, args);
+  OutputDebugStringW(buffer);
   va_end(args);
-}
-
-// Reads a string value identified by |value_to_read| from the registry path
-// under |key_path|. We look in HKLM or HKCU depending on whether the
-// |system_install| parameter is true.
-// Please note that this function only looks in the 32bit view of the registry.
-bool ReadKeyValueString(bool system_install, const wchar_t* key_path,
-                        const wchar_t* guid, const wchar_t* value_to_read,
-                        base::string16* value_out) {
-  HKEY key = nullptr;
-  value_out->clear();
-
-  base::string16 full_key_path(key_path);
-  if (guid && *guid) {
-    full_key_path.append(1, L'\\');
-    full_key_path.append(guid);
-  }
-
-  if (::RegOpenKeyEx(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-                     full_key_path.c_str(), 0,
-                     KEY_QUERY_VALUE | KEY_WOW64_32KEY, &key) !=
-                     ERROR_SUCCESS) {
-    return false;
-  }
-
-  const size_t kMaxStringLength = 1024;
-  wchar_t raw_value[kMaxStringLength] = {};
-  DWORD size = sizeof(raw_value);
-  DWORD type = REG_SZ;
-  LONG result = ::RegQueryValueEx(key, value_to_read, 0, &type,
-                                  reinterpret_cast<LPBYTE>(raw_value), &size);
-
-  if (result == ERROR_SUCCESS) {
-    if (type != REG_SZ || (size & 1) != 0) {
-      result = ERROR_NOT_SUPPORTED;
-    } else if (size == 0) {
-      *raw_value = L'\0';
-    } else if (raw_value[size / sizeof(wchar_t) - 1] != L'\0') {
-      if ((size / sizeof(wchar_t)) < kMaxStringLength)
-        raw_value[size / sizeof(wchar_t)] = L'\0';
-      else
-        result = ERROR_MORE_DATA;
-    }
-  }
-
-  if (result == ERROR_SUCCESS)
-    *value_out = raw_value;
-
-  ::RegCloseKey(key);
-
-  return result == ERROR_SUCCESS;
-}
-
-// Reads a DWORD value identified by |value_to_read| from the registry path
-// under |key_path|. We look in HKLM or HKCU depending on whether the
-// |system_install| parameter is true.
-// Please note that this function only looks in the 32bit view of the registry.
-bool ReadKeyValueDW(bool system_install, const wchar_t* key_path,
-                    base::string16 guid, const wchar_t* value_to_read,
-                    DWORD* value_out) {
-  HKEY key = nullptr;
-  *value_out = 0;
-
-  base::string16 full_key_path(key_path);
-  full_key_path.append(1, L'\\');
-  full_key_path.append(guid);
-
-  if (::RegOpenKeyEx(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,
-                     full_key_path.c_str(), 0,
-                     KEY_QUERY_VALUE | KEY_WOW64_32KEY, &key) !=
-                     ERROR_SUCCESS) {
-    return false;
-  }
-
-  DWORD size = sizeof(*value_out);
-  DWORD type = REG_DWORD;
-  LONG result = ::RegQueryValueEx(key, value_to_read, 0, &type,
-                                  reinterpret_cast<BYTE*>(value_out), &size);
-
-  ::RegCloseKey(key);
-
-  return result == ERROR_SUCCESS && size == sizeof(*value_out);
 }
 
 bool GetLanguageAndCodePageFromVersionResource(const char* version_resource,
@@ -196,10 +112,9 @@ bool GetLanguageAndCodePageFromVersionResource(const char* version_resource,
 
   LanguageAndCodePage* translation_info = nullptr;
   uint32_t data_size_in_bytes = 0;
-  BOOL query_result = VerQueryValue(version_resource,
-                                    L"\\VarFileInfo\\Translation",
-                                    reinterpret_cast<void**>(&translation_info),
-                                    &data_size_in_bytes);
+  BOOL query_result = VerQueryValueW(
+      version_resource, L"\\VarFileInfo\\Translation",
+      reinterpret_cast<void**>(&translation_info), &data_size_in_bytes);
   if (!query_result)
     return false;
 
@@ -209,8 +124,8 @@ bool GetLanguageAndCodePageFromVersionResource(const char* version_resource,
 }
 
 bool GetValueFromVersionResource(const char* version_resource,
-                                 const base::string16& name,
-                                 base::string16* value_str) {
+                                 const std::wstring& name,
+                                 std::wstring* value_str) {
   assert(value_str);
   value_str->clear();
 
@@ -219,13 +134,13 @@ bool GetValueFromVersionResource(const char* version_resource,
   // in the version resource and return the value from the first match.
   WORD language = 0;
   WORD code_page = 0;
-  if (!GetLanguageAndCodePageFromVersionResource(version_resource,
-                                                 &language,
+  if (!GetLanguageAndCodePageFromVersionResource(version_resource, &language,
                                                  &code_page)) {
     return false;
   }
 
-  WORD lang_codepage[8] = {};
+  const size_t array_size = 8;
+  WORD lang_codepage[array_size] = {};
   size_t i = 0;
   // Use the language and codepage
   lang_codepage[i++] = language;
@@ -240,20 +155,20 @@ bool GetValueFromVersionResource(const char* version_resource,
   lang_codepage[i++] = ::GetUserDefaultLangID();
   lang_codepage[i++] = 1252;
 
-  static_assert((arraysize(lang_codepage) % 2) == 0,
+  static_assert((array_size % 2) == 0,
                 "Language code page size should be a multiple of 2");
-  assert(arraysize(lang_codepage) == i);
+  assert(array_size == i);
 
-  for (i = 0; i < arraysize(lang_codepage);) {
+  for (i = 0; i < array_size;) {
     wchar_t sub_block[MAX_PATH];
     WORD language = lang_codepage[i++];
     WORD code_page = lang_codepage[i++];
     _snwprintf_s(sub_block, MAX_PATH, MAX_PATH,
-        L"\\StringFileInfo\\%04hx%04hx\\%ls", language, code_page,
-        name.c_str());
+                 L"\\StringFileInfo\\%04hx%04hx\\%ls", language, code_page,
+                 name.c_str());
     void* value = nullptr;
     uint32_t size = 0;
-    BOOL r = ::VerQueryValue(version_resource, sub_block, &value, &size);
+    BOOL r = ::VerQueryValueW(version_resource, sub_block, &value, &size);
     if (r && value) {
       value_str->assign(static_cast<wchar_t*>(value));
       return true;
@@ -263,14 +178,14 @@ bool GetValueFromVersionResource(const char* version_resource,
 }
 
 // Returns the executable path for the current process.
-base::string16 GetCurrentProcessExePath() {
+std::wstring GetCurrentProcessExePath() {
   wchar_t exe_path[MAX_PATH];
-  if (GetModuleFileName(nullptr, exe_path, arraysize(exe_path)) == 0)
-    return base::string16();
+  if (::GetModuleFileName(nullptr, exe_path, MAX_PATH) == 0)
+    return std::wstring();
   return exe_path;
 }
 
-bool RecursiveDirectoryCreate(const base::string16& full_path) {
+bool RecursiveDirectoryCreate(const std::wstring& full_path) {
   // If the path exists, we've succeeded if it's a directory, failed otherwise.
   const wchar_t* full_path_str = full_path.c_str();
   DWORD file_attributes = ::GetFileAttributes(full_path_str);
@@ -289,9 +204,9 @@ bool RecursiveDirectoryCreate(const base::string16& full_path) {
   // Attempt to create the parent recursively.  This will immediately return
   // true if it already exists, otherwise will create all required parent
   // directories starting with the highest-level missing parent.
-  base::string16 parent_path;
+  std::wstring parent_path;
   std::size_t pos = full_path.find_last_of(L"/\\");
-  if (pos != base::string16::npos) {
+  if (pos != std::wstring::npos) {
     parent_path = full_path.substr(0, pos);
     if (!RecursiveDirectoryCreate(parent_path)) {
       Trace(L"Failed to create one of the parent directories");
@@ -319,30 +234,41 @@ bool RecursiveDirectoryCreate(const base::string16& full_path) {
   return true;
 }
 
-bool GetCollectStatsConsentImpl(const base::string16& exe_path) {
+bool GetCollectStatsConsentImpl(const std::wstring& exe_path) {
   bool enabled = true;
-  if (ReportingIsEnforcedByPolicy(&enabled))
-    return enabled;
+  bool controlled_by_policy = ReportingIsEnforcedByPolicy(&enabled);
+
+  if (controlled_by_policy && !enabled)
+    return false;
 
   bool system_install = IsSystemInstall(exe_path.c_str());
-  base::string16 app_guid;
+  std::wstring app_guid;
 
   if (IsSxSChrome(exe_path.c_str())) {
     app_guid = kAppGuidCanary;
   } else {
-    app_guid = IsMultiInstall(system_install) ? kAppGuidGoogleBinaries :
-        kAppGuidGoogleChrome;
+    app_guid = IsMultiInstall(system_install) ? kAppGuidGoogleBinaries
+                                              : kAppGuidGoogleChrome;
   }
 
   DWORD out_value = 0;
-  if (system_install &&
-    ReadKeyValueDW(system_install, kRegPathClientStateMedium, app_guid,
-                   kRegValueUsageStats, &out_value)) {
-    return out_value == 1;
-  }
 
-  return ReadKeyValueDW(system_install, kRegPathClientState, app_guid,
-      kRegValueUsageStats, &out_value) && out_value == 1;
+  // If system_install, first try kRegPathClientStateMedium.
+  std::wstring full_key_path(kRegPathClientStateMedium);
+  full_key_path.append(1, L'\\');
+  full_key_path.append(app_guid);
+  if (system_install && nt::QueryRegValueDWORD(nt::HKLM, full_key_path.c_str(),
+                                               kRegValueUsageStats, &out_value))
+    return (out_value == 1);
+
+  // Second, try kRegPathClientState.
+  full_key_path = kRegPathClientState;
+  full_key_path.append(1, L'\\');
+  full_key_path.append(app_guid);
+  return (nt::QueryRegValueDWORD((system_install ? nt::HKLM : nt::HKCU),
+                                 full_key_path.c_str(), kRegValueUsageStats,
+                                 &out_value) &&
+          out_value == 1);
 }
 
 // Returns true if the |source| string matches the |pattern|. The pattern
@@ -355,8 +281,8 @@ bool GetCollectStatsConsentImpl(const base::string16& exe_path) {
 // |source|.
 // |pattern_index| is the index of the current pattern character in |pattern|
 // which is matched with source.
-bool MatchPatternImpl(const base::string16& source,
-                      const base::string16& pattern,
+bool MatchPatternImpl(const std::wstring& source,
+                      const std::wstring& pattern,
                       size_t source_index,
                       size_t pattern_index) {
   if (source.empty() && pattern.empty())
@@ -392,8 +318,7 @@ bool MatchPatternImpl(const base::string16& source,
   // 1. We consider current character of source.
   // 2. We ignore current character of source.
   if (pattern[pattern_index] == L'*') {
-    return MatchPatternImpl(source, pattern, source_index + 1,
-                            pattern_index) ||
+    return MatchPatternImpl(source, pattern, source_index + 1, pattern_index) ||
            MatchPatternImpl(source, pattern, source_index, pattern_index + 1);
   }
   return false;
@@ -401,21 +326,22 @@ bool MatchPatternImpl(const base::string16& source,
 
 // Defines the type of whitespace characters typically found in strings.
 constexpr char kWhiteSpaces[] = " \t\n\r\f\v";
-constexpr base::char16 kWhiteSpaces16[] = L" \t\n\r\f\v";
+constexpr wchar_t kWhiteSpaces16[] = L" \t\n\r\f\v";
 
 // Define specializations for white spaces based on the type of the string.
-template<class StringType> StringType GetWhiteSpacesForType();
-template<>
-base::string16 GetWhiteSpacesForType() {
+template <class StringType>
+StringType GetWhiteSpacesForType();
+template <>
+std::wstring GetWhiteSpacesForType() {
   return kWhiteSpaces16;
 }
-template<>
+template <>
 std::string GetWhiteSpacesForType() {
   return kWhiteSpaces;
 }
 
 // Trim whitespaces from left & right
-template<class StringType>
+template <class StringType>
 void TrimT(StringType* str) {
   str->erase(str->find_last_not_of(GetWhiteSpacesForType<StringType>()) + 1);
   str->erase(0, str->find_first_not_of(GetWhiteSpacesForType<StringType>()));
@@ -428,7 +354,7 @@ bool IsValidNumber(const std::string& str) {
 }
 
 // Tokenizes a string based on a single character delimiter.
-template<class StringType>
+template <class StringType>
 std::vector<StringType> TokenizeStringT(
     const StringType& str,
     typename StringType::value_type delimiter,
@@ -446,22 +372,18 @@ std::vector<StringType> TokenizeStringT(
 }  // namespace
 
 bool IsSxSChrome(const wchar_t* exe_path) {
-  return wcsstr(exe_path, L"Chrome SxS\\Application") != nullptr;
+  return ::wcsstr(exe_path, L"Chrome SxS\\Application") != nullptr;
 }
 
 bool IsSystemInstall(const wchar_t* exe_path) {
   wchar_t program_dir[MAX_PATH] = {};
-  DWORD ret = ::GetEnvironmentVariable(L"PROGRAMFILES", program_dir,
-                                       arraysize(program_dir));
-  if (ret && ret < arraysize(program_dir) &&
-      !wcsnicmp(exe_path, program_dir, ret)) {
+  DWORD ret = ::GetEnvironmentVariable(L"PROGRAMFILES", program_dir, MAX_PATH);
+  if (ret && ret < MAX_PATH && !::wcsnicmp(exe_path, program_dir, ret)) {
     return true;
   }
 
-  ret = ::GetEnvironmentVariable(L"PROGRAMFILES(X86)", program_dir,
-                                 arraysize(program_dir));
-  if (ret && ret < arraysize(program_dir) &&
-      !wcsnicmp(exe_path, program_dir, ret)) {
+  ret = ::GetEnvironmentVariable(L"PROGRAMFILES(X86)", program_dir, MAX_PATH);
+  if (ret && ret < MAX_PATH && !::wcsnicmp(exe_path, program_dir, ret)) {
     return true;
   }
 
@@ -469,48 +391,42 @@ bool IsSystemInstall(const wchar_t* exe_path) {
 }
 
 bool IsMultiInstall(bool is_system_install) {
-  base::string16 args;
-  if (!ReadKeyValueString(is_system_install, kRegPathClientState,
-                          kAppGuidGoogleChrome, kUninstallArgumentsField,
-                          &args)) {
+  std::wstring args;
+
+  std::wstring full_key_path(kRegPathClientState);
+  full_key_path.append(1, L'\\');
+  full_key_path.append(kAppGuidGoogleChrome);
+  if (!nt::QueryRegValueSZ((is_system_install ? nt::HKLM : nt::HKCU),
+                           full_key_path.c_str(), kUninstallArgumentsField,
+                           &args))
     return false;
-  }
-  return args.find(L"--multi-install") != base::string16::npos;
+
+  return (args.find(L"--multi-install") != std::wstring::npos);
 }
 
 bool GetCollectStatsConsent() {
   return GetCollectStatsConsentImpl(GetCurrentProcessExePath());
 }
 
-bool GetCollectStatsConsentForTesting(const base::string16& exe_path) {
+bool GetCollectStatsConsentForTesting(const std::wstring& exe_path) {
   return GetCollectStatsConsentImpl(exe_path);
 }
 
 bool ReportingIsEnforcedByPolicy(bool* metrics_is_enforced_by_policy) {
-  HKEY key = nullptr;
   DWORD value = 0;
-  BYTE* value_bytes = reinterpret_cast<BYTE*>(&value);
-  DWORD size = sizeof(value);
-  DWORD type = REG_DWORD;
 
-  if (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, kRegPathChromePolicy, 0,
-                     KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
-    if (::RegQueryValueEx(key, kMetricsReportingEnabled, 0, &type,
-                          value_bytes, &size) == ERROR_SUCCESS) {
-      *metrics_is_enforced_by_policy = value != 0;
-    }
-    ::RegCloseKey(key);
-    return size == sizeof(value);
+  // First, try HKLM.
+  if (nt::QueryRegValueDWORD(nt::HKLM, kRegPathChromePolicy,
+                             kMetricsReportingEnabled, &value)) {
+    *metrics_is_enforced_by_policy = (value != 0);
+    return true;
   }
 
-  if (::RegOpenKeyEx(HKEY_CURRENT_USER, kRegPathChromePolicy, 0,
-                     KEY_QUERY_VALUE, &key) == ERROR_SUCCESS) {
-    if (::RegQueryValueEx(key, kMetricsReportingEnabled, 0, &type,
-                          value_bytes, &size) == ERROR_SUCCESS) {
-      *metrics_is_enforced_by_policy = value != 0;
-    }
-    ::RegCloseKey(key);
-    return size == sizeof(value);
+  // Second, try HKCU.
+  if (nt::QueryRegValueDWORD(nt::HKCU, kRegPathChromePolicy,
+                             kMetricsReportingEnabled, &value)) {
+    *metrics_is_enforced_by_policy = (value != 0);
+    return true;
   }
 
   return false;
@@ -521,7 +437,7 @@ void InitializeProcessType() {
   typedef bool (*IsSandboxedProcessFunc)();
   IsSandboxedProcessFunc is_sandboxed_process_func =
       reinterpret_cast<IsSandboxedProcessFunc>(
-          GetProcAddress(GetModuleHandle(nullptr), "IsSandboxedProcess"));
+          ::GetProcAddress(::GetModuleHandle(nullptr), "IsSandboxedProcess"));
   if (is_sandboxed_process_func && is_sandboxed_process_func()) {
     g_process_type = ProcessType::NON_BROWSER_PROCESS;
     return;
@@ -530,7 +446,7 @@ void InitializeProcessType() {
   // TODO(robertshield): Drop the command line check when we drop support for
   // enabling chrome_elf in unsandboxed processes.
   const wchar_t* command_line = GetCommandLine();
-  if (command_line && wcsstr(command_line, L"--type")) {
+  if (command_line && ::wcsstr(command_line, L"--type")) {
     g_process_type = ProcessType::NON_BROWSER_PROCESS;
     return;
   }
@@ -543,7 +459,7 @@ bool IsNonBrowserProcess() {
   return g_process_type == ProcessType::NON_BROWSER_PROCESS;
 }
 
-bool GetDefaultUserDataDirectory(base::string16* result) {
+bool GetDefaultUserDataDirectory(std::wstring* result) {
   static const wchar_t kLocalAppData[] = L"%LOCALAPPDATA%";
 
   std::unique_ptr<wchar_t> user_data_dir_path;
@@ -554,8 +470,7 @@ bool GetDefaultUserDataDirectory(base::string16* result) {
   DWORD size = ::ExpandEnvironmentStrings(kLocalAppData, nullptr, 0);
   if (size) {
     user_data_dir_path.reset(new wchar_t[size]);
-    if (::ExpandEnvironmentStrings(kLocalAppData,
-                                   user_data_dir_path.get(),
+    if (::ExpandEnvironmentStrings(kLocalAppData, user_data_dir_path.get(),
                                    size) != size) {
       user_data_dir_path.reset();
     }
@@ -571,7 +486,7 @@ bool GetDefaultUserDataDirectory(base::string16* result) {
       return false;
   }
 
-  base::string16 install_sub_directory = GetChromeInstallSubDirectory();
+  std::wstring install_sub_directory = GetChromeInstallSubDirectory();
 
   *result = user_data_dir_path.get();
   if ((*result)[result->length() - 1] != L'\\')
@@ -582,7 +497,7 @@ bool GetDefaultUserDataDirectory(base::string16* result) {
   return true;
 }
 
-bool GetDefaultCrashDumpLocation(base::string16* crash_dir) {
+bool GetDefaultCrashDumpLocation(std::wstring* crash_dir) {
   // In order to be able to start crash handling very early, we do not rely on
   // chrome's PathService entries (for DIR_CRASH_DUMPS) being available on
   // Windows. See https://crbug.com/564398.
@@ -597,16 +512,15 @@ bool GetDefaultCrashDumpLocation(base::string16* crash_dir) {
   return true;
 }
 
-
 std::string GetEnvironmentString(const std::string& variable_name) {
   return UTF16ToUTF8(GetEnvironmentString16(UTF8ToUTF16(variable_name)));
 }
 
-base::string16 GetEnvironmentString16(const base::string16& variable_name) {
+std::wstring GetEnvironmentString16(const std::wstring& variable_name) {
   DWORD value_length =
       ::GetEnvironmentVariable(variable_name.c_str(), nullptr, 0);
   if (value_length == 0)
-    return base::string16();
+    return std::wstring();
   std::unique_ptr<wchar_t[]> value(new wchar_t[value_length]);
   ::GetEnvironmentVariable(variable_name.c_str(), value.get(), value_length);
   return value.get();
@@ -618,8 +532,8 @@ bool SetEnvironmentString(const std::string& variable_name,
                                 UTF8ToUTF16(new_value));
 }
 
-bool SetEnvironmentString16(const base::string16& variable_name,
-                            const base::string16& new_value) {
+bool SetEnvironmentString16(const std::wstring& variable_name,
+                            const std::wstring& new_value) {
   return !!SetEnvironmentVariable(variable_name.c_str(), new_value.c_str());
 }
 
@@ -627,15 +541,15 @@ bool HasEnvironmentVariable(const std::string& variable_name) {
   return HasEnvironmentVariable16(UTF8ToUTF16(variable_name));
 }
 
-bool HasEnvironmentVariable16(const base::string16& variable_name) {
+bool HasEnvironmentVariable16(const std::wstring& variable_name) {
   return !!::GetEnvironmentVariable(variable_name.c_str(), nullptr, 0);
 }
 
-bool GetExecutableVersionDetails(const base::string16& exe_path,
-                                 base::string16* product_name,
-                                 base::string16* version,
-                                 base::string16* special_build,
-                                 base::string16* channel_name) {
+bool GetExecutableVersionDetails(const std::wstring& exe_path,
+                                 std::wstring* product_name,
+                                 std::wstring* version,
+                                 std::wstring* special_build,
+                                 std::wstring* channel_name) {
   assert(product_name);
   assert(version);
   assert(special_build);
@@ -651,11 +565,10 @@ bool GetExecutableVersionDetails(const base::string16& exe_path,
   DWORD length = ::GetFileVersionInfoSize(exe_path.c_str(), &dummy);
   if (length) {
     std::unique_ptr<char> data(new char[length]);
-    if (::GetFileVersionInfo(exe_path.c_str(), dummy, length,
-                             data.get())) {
+    if (::GetFileVersionInfo(exe_path.c_str(), dummy, length, data.get())) {
       GetValueFromVersionResource(data.get(), L"ProductVersion", version);
 
-      base::string16 official_build;
+      std::wstring official_build;
       GetValueFromVersionResource(data.get(), L"Official Build",
                                   &official_build);
       if (official_build != L"1")
@@ -671,7 +584,7 @@ bool GetExecutableVersionDetails(const base::string16& exe_path,
 
 void GetChromeChannelName(bool is_per_user_install,
                           bool add_modifier,
-                          base::string16* channel_name) {
+                          std::wstring* channel_name) {
   channel_name->clear();
   // TODO(ananta)
   // http://crbug.com/604923
@@ -679,21 +592,23 @@ void GetChromeChannelName(bool is_per_user_install,
   if (IsSxSChrome(GetCurrentProcessExePath().c_str())) {
     *channel_name = L"canary";
   } else {
-    base::string16 value;
+    std::wstring value;
     bool channel_available = false;
     bool is_multi_install = IsMultiInstall(!is_per_user_install);
     if (is_multi_install) {
-      channel_available = ReadKeyValueString(!is_per_user_install,
-                                             kRegPathClientState,
-                                             kAppGuidGoogleBinaries,
-                                             kRegApField,
-                                             &value);
+      std::wstring full_key_path(kRegPathClientState);
+      full_key_path.append(1, L'\\');
+      full_key_path.append(kAppGuidGoogleBinaries);
+      channel_available =
+          nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
+                              full_key_path.c_str(), kRegApField, &value);
     } else {
-      channel_available = ReadKeyValueString(!is_per_user_install,
-                                             kRegPathClientState,
-                                             kAppGuidGoogleChrome,
-                                             kRegApField,
-                                             &value);
+      std::wstring full_key_path(kRegPathClientState);
+      full_key_path.append(1, L'\\');
+      full_key_path.append(kAppGuidGoogleChrome);
+      channel_available =
+          nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
+                              full_key_path.c_str(), kRegApField, &value);
     }
     if (channel_available) {
       static const wchar_t kChromeChannelBetaPattern[] = L"1?1-*";
@@ -706,8 +621,8 @@ void GetChromeChannelName(bool is_per_user_install,
       // Empty channel names or those containing "stable" should be reported as
       // an empty string. Exceptions being if |add_modifier| is true and this
       // is a multi install. In that case we report the channel name as "-m".
-      if (value.empty() || (value.find(kChromeChannelStableExplicit)
-              != base::string16::npos)) {
+      if (value.empty() ||
+          (value.find(kChromeChannelStableExplicit) != std::wstring::npos)) {
         if (add_modifier && is_multi_install)
           channel_name->append(L"-m");
         return;
@@ -741,44 +656,40 @@ std::string GetGoogleUpdateVersion() {
   // TODO(ananta)
   // Consider whether Chromium should connect to Google update to manage
   // updates. Should this be returning an empty string for Chromium builds?.
-  base::string16 update_version;
-  if (ReadKeyValueString(IsSystemInstall(GetCurrentProcessExePath().c_str()),
-                         kRegPathGoogleUpdate,
-                         nullptr,
-                         kRegGoogleUpdateVersion,
-                         &update_version)) {
+  std::wstring update_version;
+  if (nt::QueryRegValueSZ(nt::AUTO, kRegPathGoogleUpdate,
+                          kRegGoogleUpdateVersion, &update_version))
     return UTF16ToUTF8(update_version);
-  }
+
   return std::string();
 }
 
-base::string16 GetChromeInstallSubDirectory() {
+std::wstring GetChromeInstallSubDirectory() {
 #if defined(GOOGLE_CHROME_BUILD)
-  base::string16 result = kGoogleChromeInstallSubDir1;
+  std::wstring result = kGoogleChromeInstallSubDir1;
   result += L"\\";
   result += kGoogleChromeInstallSubDir2;
   if (IsSxSChrome(GetCurrentProcessExePath().c_str()))
     result += kSxSSuffix;
   return result;
 #else
-  return base::string16(kChromiumInstallSubDir);
+  return std::wstring(kChromiumInstallSubDir);
 #endif
 }
 
-base::string16 GetBrowserCrashDumpAttemptsRegistryPath() {
-  base::string16 registry_path = L"Software\\";
+std::wstring GetBrowserCrashDumpAttemptsRegistryPath() {
+  std::wstring registry_path = L"Software\\";
   registry_path += GetChromeInstallSubDirectory();
   registry_path += kBrowserCrashDumpMetricsSubKey;
   return registry_path;
 }
 
-bool MatchPattern(const base::string16& source,
-                  const base::string16& pattern) {
-  assert(pattern.find(L"**") == base::string16::npos);
+bool MatchPattern(const std::wstring& source, const std::wstring& pattern) {
+  assert(pattern.find(L"**") == std::wstring::npos);
   return MatchPatternImpl(source, pattern, 0, 0);
 }
 
-std::string UTF16ToUTF8(const base::string16& source) {
+std::string UTF16ToUTF8(const std::wstring& source) {
   if (source.empty() ||
       static_cast<int>(source.size()) > std::numeric_limits<int>::max()) {
     return std::string();
@@ -796,19 +707,19 @@ std::string UTF16ToUTF8(const base::string16& source) {
   return result;
 }
 
-base::string16 UTF8ToUTF16(const std::string& source) {
+std::wstring UTF8ToUTF16(const std::string& source) {
   if (source.empty() ||
       static_cast<int>(source.size()) > std::numeric_limits<int>::max()) {
-    return base::string16();
+    return std::wstring();
   }
   int size = ::MultiByteToWideChar(CP_UTF8, 0, &source[0],
                                    static_cast<int>(source.size()), nullptr, 0);
-  base::string16 result(size, L'\0');
+  std::wstring result(size, L'\0');
   if (::MultiByteToWideChar(CP_UTF8, 0, &source[0],
                             static_cast<int>(source.size()), &result[0],
                             size) != size) {
     assert(false);
-    return base::string16();
+    return std::wstring();
   }
   return result;
 }
@@ -819,10 +730,10 @@ std::vector<std::string> TokenizeString(const std::string& str,
   return TokenizeStringT<std::string>(str, delimiter, trim_spaces);
 }
 
-std::vector<base::string16> TokenizeString16(const base::string16& str,
-                                             base::char16 delimiter,
-                                             bool trim_spaces) {
-  return TokenizeStringT<base::string16>(str, delimiter, trim_spaces);
+std::vector<std::wstring> TokenizeString16(const std::wstring& str,
+                                           wchar_t delimiter,
+                                           bool trim_spaces) {
+  return TokenizeStringT<std::wstring>(str, delimiter, trim_spaces);
 }
 
 bool CompareVersionStrings(const std::string& version1,

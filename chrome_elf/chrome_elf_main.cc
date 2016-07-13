@@ -8,8 +8,7 @@
 
 #include "chrome/install_static/install_util.h"
 #include "chrome_elf/blacklist/blacklist.h"
-#include "chrome_elf/breakpad.h"
-
+#include "chrome_elf/breakpad/breakpad.h"
 
 void SignalChromeElf() {
   blacklist::ResetBeacon();

@@ -16,10 +16,9 @@
 
 // Note that only #includes from base that are either header-only or built into
 // base_static (see base/base.gyp) are allowed here.
-#include "base/strings/string16.h"
 #include "base/win/pe_image.h"
 #include "chrome_elf/blacklist/blacklist.h"
-#include "chrome_elf/breakpad.h"
+#include "chrome_elf/breakpad/breakpad.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
@@ -37,7 +36,7 @@ FARPROC GetNtDllExportByName(const char* export_name) {
   return ::GetProcAddress(ntdll, export_name);
 }
 
-int DllMatch(const base::string16& module_name) {
+int DllMatch(const std::wstring& module_name) {
   if (module_name.empty())
     return -1;
 
@@ -52,7 +51,7 @@ int DllMatch(const base::string16& module_name) {
 // code in sandbox_nt_util.cc. See if they can be unified.
 
 // Native reimplementation of PSAPIs GetMappedFileName.
-base::string16 GetBackingModuleFilePath(PVOID address) {
+std::wstring GetBackingModuleFilePath(PVOID address) {
   DCHECK_NT(g_nt_query_virtual_memory_func);
 
   // We'll start with something close to max_path characters for the name.
@@ -83,11 +82,11 @@ base::string16 GetBackingModuleFilePath(PVOID address) {
 
     UNICODE_STRING* section_string =
         reinterpret_cast<UNICODE_STRING*>(section_name);
-    return base::string16(section_string->Buffer,
-                          section_string->Length / sizeof(wchar_t));
+    return std::wstring(section_string->Buffer,
+                        section_string->Length / sizeof(wchar_t));
   }
 
-  return base::string16();
+  return std::wstring();
 }
 
 bool IsModuleValidImageSection(HANDLE section,
@@ -114,12 +113,12 @@ bool IsModuleValidImageSection(HANDLE section,
   return true;
 }
 
-base::string16 ExtractLoadedModuleName(const base::string16& module_path) {
+std::wstring ExtractLoadedModuleName(const std::wstring& module_path) {
   if (module_path.empty() || module_path.back() == L'\\')
-    return base::string16();
+    return std::wstring();
 
   size_t sep = module_path.find_last_of(L'\\');
-  if (sep == base::string16::npos)
+  if (sep == std::wstring::npos)
     return module_path;
   return module_path.substr(sep + 1);
 }
@@ -161,11 +160,11 @@ void SafeGetImageInfo(const base::win::PEImage& pe,
   }
 }
 
-base::string16 GetImageInfoFromLoadedModule(HMODULE module, uint32_t* flags) {
+std::wstring GetImageInfoFromLoadedModule(HMODULE module, uint32_t* flags) {
   std::string out_name;
   base::win::PEImage pe(module);
   SafeGetImageInfo(pe, &out_name, flags);
-  return base::string16(out_name.begin(), out_name.end());
+  return std::wstring(out_name.begin(), out_name.end());
 }
 
 bool IsSameAsCurrentProcess(HANDLE process) {
@@ -198,7 +197,7 @@ NTSTATUS BlNtMapViewOfSectionImpl(
   if (module) {
     UINT image_flags;
 
-    base::string16 module_name_from_image(GetImageInfoFromLoadedModule(
+    std::wstring module_name_from_image(GetImageInfoFromLoadedModule(
         reinterpret_cast<HMODULE>(*base), &image_flags));
 
     int blocked_index = DllMatch(module_name_from_image);
@@ -206,8 +205,8 @@ NTSTATUS BlNtMapViewOfSectionImpl(
     // If the module name isn't blacklisted, see if the file name is different
     // and blacklisted.
     if (blocked_index == -1) {
-      base::string16 file_name(GetBackingModuleFilePath(*base));
-      base::string16 module_name_from_file = ExtractLoadedModuleName(file_name);
+      std::wstring file_name(GetBackingModuleFilePath(*base));
+      std::wstring module_name_from_file = ExtractLoadedModuleName(file_name);
 
       if (module_name_from_image != module_name_from_file)
         blocked_index = DllMatch(module_name_from_file);

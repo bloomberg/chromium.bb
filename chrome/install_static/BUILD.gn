@@ -7,22 +7,19 @@ import("//testing/test.gni")
 
 assert(is_win)
 
-# This file only contains utility functions which must only depend on kernel32
-# and advapi32. Please don't add dependencies on other system libraries.
+# This file only contains utility functions which must only depend on kernel32.
+# Please don't add dependencies on other system libraries.
 static_library("install_static_util") {
+  public_deps = [
+    "//chrome_elf/nt_registry:nt_registry",
+  ]
+
   sources = [
     "install_util.cc",
     "install_util.h",
   ]
 
-  deps = [
-    "//base",
-  ]
-
-  libs = [
-    "kernel32.lib",
-    "advapi32.lib",
-  ]
+  libs = [ "kernel32.lib" ]
 
   configs += [
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

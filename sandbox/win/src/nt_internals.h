@@ -333,18 +333,18 @@ typedef struct _PROCESS_BASIC_INFORMATION {
   };
 } PROCESS_BASIC_INFORMATION, *PPROCESS_BASIC_INFORMATION;
 
-typedef NTSTATUS (WINAPI *NtQueryInformationProcessFunction)(
-  IN HANDLE ProcessHandle,
-  IN PROCESSINFOCLASS ProcessInformationClass,
-  OUT PVOID ProcessInformation,
-  IN ULONG ProcessInformationLength,
-  OUT PULONG ReturnLength OPTIONAL);
+typedef NTSTATUS(WINAPI* NtQueryInformationProcessFunction)(
+    IN HANDLE ProcessHandle,
+    IN PROCESSINFOCLASS ProcessInformationClass,
+    OUT PVOID ProcessInformation,
+    IN ULONG ProcessInformationLength,
+    OUT PULONG ReturnLength OPTIONAL);
 
-typedef NTSTATUS (WINAPI *NtSetInformationProcessFunction)(
-  HANDLE ProcessHandle,
-  IN PROCESSINFOCLASS ProcessInformationClass,
-  IN PVOID ProcessInformation,
-  IN ULONG ProcessInformationLength);
+typedef NTSTATUS(WINAPI* NtSetInformationProcessFunction)(
+    HANDLE ProcessHandle,
+    IN PROCESSINFOCLASS ProcessInformationClass,
+    IN PVOID ProcessInformation,
+    IN ULONG ProcessInformationLength);
 
 typedef NTSTATUS (WINAPI *NtOpenThreadTokenFunction) (
   IN HANDLE ThreadHandle,
@@ -370,20 +370,49 @@ typedef NTSTATUS (WINAPI *NtOpenProcessTokenExFunction) (
   IN ULONG HandleAttributes,
   OUT PHANDLE TokenHandle);
 
-typedef NTSTATUS (WINAPI * RtlCreateUserThreadFunction)(
-  IN HANDLE Process,
-  IN PSECURITY_DESCRIPTOR ThreadSecurityDescriptor,
-  IN BOOLEAN CreateSuspended,
-  IN ULONG ZeroBits,
-  IN SIZE_T MaximumStackSize,
-  IN SIZE_T CommittedStackSize,
-  IN LPTHREAD_START_ROUTINE StartAddress,
-  IN PVOID Parameter,
-  OUT PHANDLE Thread,
-  OUT PCLIENT_ID ClientId);
+typedef NTSTATUS(WINAPI* NtQueryInformationTokenFunction)(
+    IN HANDLE TokenHandle,
+    IN TOKEN_INFORMATION_CLASS TokenInformationClass,
+    OUT PVOID TokenInformation,
+    IN ULONG TokenInformationLength,
+    OUT PULONG ReturnLength);
+
+typedef NTSTATUS(WINAPI* RtlCreateUserThreadFunction)(
+    IN HANDLE Process,
+    IN PSECURITY_DESCRIPTOR ThreadSecurityDescriptor,
+    IN BOOLEAN CreateSuspended,
+    IN ULONG ZeroBits,
+    IN SIZE_T MaximumStackSize,
+    IN SIZE_T CommittedStackSize,
+    IN LPTHREAD_START_ROUTINE StartAddress,
+    IN PVOID Parameter,
+    OUT PHANDLE Thread,
+    OUT PCLIENT_ID ClientId);
+
+typedef NTSTATUS(WINAPI* RtlConvertSidToUnicodeStringFunction)(
+    OUT PUNICODE_STRING UnicodeString,
+    IN PSID Sid,
+    IN BOOLEAN AllocateDestinationString);
+
+typedef VOID(WINAPI* RtlFreeUnicodeStringFunction)(
+    IN OUT PUNICODE_STRING UnicodeString);
 
 // -----------------------------------------------------------------------
 // Registry
+
+typedef enum _KEY_VALUE_INFORMATION_CLASS {
+  KeyValueFullInformation = 1
+} KEY_VALUE_INFORMATION_CLASS,
+    *PKEY_VALUE_INFORMATION_CLASS;
+
+typedef struct _KEY_VALUE_FULL_INFORMATION {
+  ULONG TitleIndex;
+  ULONG Type;
+  ULONG DataOffset;
+  ULONG DataLength;
+  ULONG NameLength;
+  WCHAR Name[1];
+} KEY_VALUE_FULL_INFORMATION, *PKEY_VALUE_FULL_INFORMATION;
 
 typedef NTSTATUS (WINAPI *NtCreateKeyFunction)(
   OUT PHANDLE KeyHandle,
@@ -407,6 +436,24 @@ typedef NTSTATUS (WINAPI *NtOpenKeyExFunction)(
 
 typedef NTSTATUS (WINAPI *NtDeleteKeyFunction)(
   IN HANDLE KeyHandle);
+
+typedef NTSTATUS(WINAPI* RtlFormatCurrentUserKeyPathFunction)(
+    OUT PUNICODE_STRING RegistryPath);
+
+typedef NTSTATUS(WINAPI* NtQueryValueKeyFunction)(IN HANDLE KeyHandle,
+                                                  IN PUNICODE_STRING ValueName,
+                                                  IN KEY_VALUE_INFORMATION_CLASS
+                                                      KeyValueInformationClass,
+                                                  OUT PVOID KeyValueInformation,
+                                                  IN ULONG Length,
+                                                  OUT PULONG ResultLength);
+
+typedef NTSTATUS(WINAPI* NtSetValueKeyFunction)(IN HANDLE KeyHandle,
+                                                IN PUNICODE_STRING ValueName,
+                                                IN ULONG TitleIndex OPTIONAL,
+                                                IN ULONG Type,
+                                                IN PVOID Data,
+                                                IN ULONG DataSize);
 
 // -----------------------------------------------------------------------
 // Memory

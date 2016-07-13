@@ -13,4 +13,3 @@ EXPORTS
   TestDll_IsBlacklistInitialized=IsBlacklistInitialized
   TestDll_SuccessfullyBlocked=SuccessfullyBlocked
   TestDll_RemoveDllFromBlacklist=RemoveDllFromBlacklist
-  InitBlacklistTestDll

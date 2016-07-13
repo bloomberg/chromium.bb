@@ -3,7 +3,6 @@ include_rules = [
   "-base",
   # Nothing from chrome.
   "-chrome",
-  "+chrome/install_static/install_util.h",
-  # All registry access should go through nt_registry.
+  "-chrome_elf",
   "+chrome_elf/nt_registry/nt_registry.h",
 ]
