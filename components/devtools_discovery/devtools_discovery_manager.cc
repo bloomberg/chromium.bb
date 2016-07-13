@@ -67,15 +67,15 @@ DevToolsDiscoveryManager::HandleNewTargetCommand(
     base::DictionaryValue* command_dict) {
   int id;
   std::string method;
-  std::string initial_url;
+  std::string url;
   const base::DictionaryValue* params_dict = nullptr;
   if (command_dict->GetInteger("id", &id) &&
       command_dict->GetString("method", &method) &&
-      method == "Browser.newPage" &&
+      method == "Browser.createTarget" &&
       command_dict->GetDictionary("params", &params_dict) &&
-      params_dict->GetString("initialUrl", &initial_url)) {
+      params_dict->GetString("url", &url)) {
     std::unique_ptr<devtools_discovery::DevToolsTargetDescriptor> descriptor =
-        CreateNew(GURL(initial_url));
+        CreateNew(GURL(url));
     if (!descriptor)
       return nullptr;
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());

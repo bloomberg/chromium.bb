@@ -183,7 +183,7 @@ class BrowserDomainCreateAndDeletePageTest
 
     devtools_client_->GetBrowser()->GetExperimental()->CreateTarget(
         browser::CreateTargetParams::Builder()
-            .SetInitialUrl(embedded_test_server()->GetURL("/hello.html").spec())
+            .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .SetWidth(1)
             .SetHeight(1)
             .Build(),
@@ -229,7 +229,7 @@ class BrowserDomainDisposeContextFailsIfInUse
 
     devtools_client_->GetBrowser()->GetExperimental()->CreateTarget(
         browser::CreateTargetParams::Builder()
-            .SetInitialUrl(embedded_test_server()->GetURL("/hello.html").spec())
+            .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .SetBrowserContextId(context_id_)
             .Build(),
         base::Bind(
@@ -323,7 +323,7 @@ class BrowserDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
 
     devtools_client_->GetBrowser()->GetExperimental()->CreateTarget(
         browser::CreateTargetParams::Builder()
-            .SetInitialUrl(embedded_test_server()->GetURL("/hello.html").spec())
+            .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .SetBrowserContextId(context_id_one_)
             .Build(),
         base::Bind(&BrowserDomainCreateTwoContexts::OnCreateTargetOneResult,
@@ -331,7 +331,7 @@ class BrowserDomainCreateTwoContexts : public HeadlessAsyncDevTooledBrowserTest,
 
     devtools_client_->GetBrowser()->GetExperimental()->CreateTarget(
         browser::CreateTargetParams::Builder()
-            .SetInitialUrl(embedded_test_server()->GetURL("/hello.html").spec())
+            .SetUrl(embedded_test_server()->GetURL("/hello.html").spec())
             .SetBrowserContextId(context_id_two_)
             .Build(),
         base::Bind(&BrowserDomainCreateTwoContexts::OnCreateTargetTwoResult,
