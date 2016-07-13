@@ -237,6 +237,9 @@ void MostVisitedSites::RecordTileTypeMetrics(
   for (size_t i = 0; i < tile_types.size(); ++i) {
     int tile_type = tile_types[i];
     ++counts_per_type[tile_type];
+
+    UMA_HISTOGRAM_ENUMERATION("NewTabPage.TileType", tile_type, NUM_TILE_TYPES);
+
     std::string histogram = base::StringPrintf(
         "NewTabPage.TileType.%s",
         GetSourceHistogramName(sources[i]).c_str());
@@ -259,6 +262,9 @@ void MostVisitedSites::RecordOpenedMostVisitedItem(int index,
   std::string histogram = base::StringPrintf(
       "NewTabPage.MostVisited.%s", GetSourceHistogramName(source).c_str());
   LogHistogramEvent(histogram, index, num_sites_);
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "NewTabPage.TileTypeClicked", tile_type, NUM_TILE_TYPES);
 
   histogram = base::StringPrintf("NewTabPage.TileTypeClicked.%s",
                                  GetSourceHistogramName(source).c_str());
