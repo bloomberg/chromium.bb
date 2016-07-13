@@ -7,8 +7,7 @@
 
 #include <stddef.h>
 
-#include <deque>
-#include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -33,10 +32,8 @@ class CC_EXPORT RollingTimeDeltaHistory {
   base::TimeDelta Percentile(double percent) const;
 
  private:
-  typedef std::multiset<base::TimeDelta> TimeDeltaMultiset;
-
-  TimeDeltaMultiset sample_set_;
-  std::deque<TimeDeltaMultiset::iterator> chronological_sample_deque_;
+  std::vector<base::TimeDelta> sample_vector_;
+  size_t next_index_;
   size_t max_size_;
 
   DISALLOW_COPY_AND_ASSIGN(RollingTimeDeltaHistory);
