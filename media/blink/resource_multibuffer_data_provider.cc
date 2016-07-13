@@ -72,8 +72,11 @@ void ResourceMultiBufferDataProvider::Start() {
   request.setRequestContext(WebURLRequest::RequestContextVideo);
 
   DVLOG(1) << __FUNCTION__ << " @ " << byte_pos();
-  if (url_data_->length() > 0) {
-    DCHECK_LT(byte_pos(), url_data_->length()) << " " << url_data_->url();
+  if (url_data_->length() > 0 && byte_pos() >= url_data_->length()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ResourceMultiBufferDataProvider::Terminate,
+                              weak_factory_.GetWeakPtr()));
+    return;
   }
 
   request.setHTTPHeaderField(
@@ -403,8 +406,6 @@ void ResourceMultiBufferDataProvider::didFinishLoading(
 
   // If we didn't know the |instance_size_| we do now.
   int64_t size = byte_pos();
-  if (!fifo_.empty())
-    size += fifo_.back()->data_size();
 
   // This request reports something smaller than what we've seen in the past,
   // Maybe it's transient error?
@@ -499,6 +500,11 @@ bool ResourceMultiBufferDataProvider::ParseContentRange(
   }
 
   return true;
+}
+
+void ResourceMultiBufferDataProvider::Terminate() {
+  fifo_.push_back(DataBuffer::CreateEOSBuffer());
+  url_data_->multibuffer()->OnDataProviderEvent(this);
 }
 
 int64_t ResourceMultiBufferDataProvider::byte_pos() const {

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "media/base/media_log.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
@@ -1422,6 +1423,28 @@ TEST_F(MultibufferDataSourceTest, LengthKnownAtEOF) {
   // Done loading, now we should know the length.
   EXPECT_TRUE(data_source_->GetSize(&len));
   EXPECT_EQ(kDataSize, len);
+  Stop();
+}
+
+TEST_F(MultibufferDataSourceTest, FileSizeLessThanBlockSize) {
+  Initialize(kHttpUrl, true);
+  GURL gurl(kHttpUrl);
+  blink::WebURLResponse response(gurl);
+  response.setHTTPStatusCode(200);
+  response.setHTTPHeaderField(
+      WebString::fromUTF8("Content-Length"),
+      WebString::fromUTF8(base::Int64ToString(kDataSize / 2)));
+  response.setExpectedContentLength(kDataSize / 2);
+  Respond(response);
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize / 2));
+  EXPECT_CALL(host_, SetTotalBytes(kDataSize / 2));
+  EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 2));
+  ReceiveData(kDataSize / 2);
+  FinishLoading();
+
+  int64_t len = 0;
+  EXPECT_TRUE(data_source_->GetSize(&len));
+  EXPECT_EQ(kDataSize / 2, len);
   Stop();
 }
 

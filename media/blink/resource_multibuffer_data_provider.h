@@ -75,6 +75,9 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
   friend class ResourceMultiBufferDataProviderTest;
   friend class MockBufferedDataSource;
 
+  // Callback used when we're asked to fetch data after the end of the file.
+  void Terminate();
+
   // Parse a Content-Range header into its component pieces and return true if
   // each of the expected elements was found & parsed correctly.
   // |*instance_size| may be set to kPositionNotSpecified if the range ends in
