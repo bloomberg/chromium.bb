@@ -15,13 +15,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/search/instant_page.h"
+#include "chrome/browser/ui/search/instant_tab.h"
 #include "chrome/common/search/search_types.h"
 
 class BrowserInstantController;
 class GURL;
 class InstantService;
-class InstantTab;
 class Profile;
 struct EmbeddedSearchRequestParams;
 
@@ -32,13 +31,13 @@ class WebContents;
 // InstantController drives Chrome Instant, i.e., the browser implementation of
 // the Embedded Search API (see http://dev.chromium.org/embeddedsearch).
 //
-// In extended mode, InstantController maintains and coordinates an InstantTab
-// instance of InstantPage. An InstantTab instance points to the currently
-// active tab, if it supports the Embedded Search API. InstantTab is backed by a
-// WebContents and it does not own that WebContents.
+// In extended mode, InstantController maintains and coordinates an InstantTab.
+// An InstantTab instance points to the currently active tab, if it supports the
+// Embedded Search API. InstantTab is backed by a WebContents and it does not
+// own that WebContents.
 //
 // InstantController is owned by Browser via BrowserInstantController.
-class InstantController : public InstantPage::Delegate {
+class InstantController : public InstantTab::Delegate {
  public:
   explicit InstantController(BrowserInstantController* browser);
   ~InstantController() override;
@@ -104,13 +103,13 @@ class InstantController : public InstantPage::Delegate {
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            DispatchMVChangeEventWhileNavigatingBackToNTP);
 
-  // Overridden from InstantPage::Delegate:
+  // Overridden from InstantTab::Delegate:
   // TODO(shishir): We assume that the WebContent's current RenderViewHost is
   // the RenderViewHost being created which is not always true. Fix this.
   void InstantSupportDetermined(const content::WebContents* contents,
                                 bool supports_instant) override;
-  void InstantPageAboutToNavigateMainFrame(const content::WebContents* contents,
-                                           const GURL& url) override;
+  void InstantTabAboutToNavigateMainFrame(const content::WebContents* contents,
+                                          const GURL& url) override;
 
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.
@@ -124,7 +123,7 @@ class InstantController : public InstantPage::Delegate {
 
   BrowserInstantController* const browser_;
 
-  // The instance of InstantPage maintained by InstantController.
+  // The instance of InstantTab maintained by InstantController.
   std::unique_ptr<InstantTab> instant_tab_;
 
   // The search model mode for the active tab.

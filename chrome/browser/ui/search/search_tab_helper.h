@@ -27,8 +27,8 @@ struct LoadCommittedDetails;
 }
 
 class GURL;
-class InstantPageTest;
 class InstantService;
+class InstantTabTest;
 class OmniboxView;
 class Profile;
 class SearchIPCRouterTest;
@@ -97,7 +97,7 @@ class SearchTabHelper : public content::WebContentsObserver,
 
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
-  friend class InstantPageTest;
+  friend class InstantTabTest;
   friend class SearchIPCRouterPolicyTest;
   friend class SearchIPCRouterTest;
   friend class SearchTabHelperPrerenderTest;
@@ -134,13 +134,13 @@ class SearchTabHelper : public content::WebContentsObserver,
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            DoNotSendSetDisplayInstantResultsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
-  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
                            DetermineIfPageSupportsInstant_Local);
-  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
                            DetermineIfPageSupportsInstant_NonLocal);
-  FRIEND_TEST_ALL_PREFIXES(InstantPageTest,
+  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
                            PageURLDoesntBelongToInstantRenderer);
-  FRIEND_TEST_ALL_PREFIXES(InstantPageTest, PageSupportsInstant);
+  FRIEND_TEST_ALL_PREFIXES(InstantTabTest, PageSupportsInstant);
 
   explicit SearchTabHelper(content::WebContents* web_contents);
 

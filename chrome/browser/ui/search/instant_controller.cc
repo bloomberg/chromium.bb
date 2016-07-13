@@ -31,7 +31,7 @@
 
 namespace {
 
-bool IsContentsFrom(const InstantPage* page,
+bool IsContentsFrom(const InstantTab* page,
                     const content::WebContents* contents) {
   return page && (page->web_contents() == contents);
 }
@@ -124,8 +124,8 @@ InstantTab* InstantController::instant_tab() const {
 
 void InstantController::InstantSupportChanged(
     InstantSupportState instant_support) {
-  // Handle INSTANT_SUPPORT_YES here because InstantPage is not hooked up to the
-  // active tab. Search model changed listener in InstantPage will handle other
+  // Handle INSTANT_SUPPORT_YES here because InstantTab is not hooked up to the
+  // active tab. Search model changed listener in InstantTab will handle other
   // cases.
   if (instant_support != INSTANT_SUPPORT_YES)
     return;
@@ -148,7 +148,7 @@ void InstantController::InstantSupportDetermined(
       content::NotificationService::NoDetails());
 }
 
-void InstantController::InstantPageAboutToNavigateMainFrame(
+void InstantController::InstantTabAboutToNavigateMainFrame(
     const content::WebContents* contents,
     const GURL& url) {
   DCHECK(IsContentsFrom(instant_tab(), contents));

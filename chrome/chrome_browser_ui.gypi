@@ -112,8 +112,6 @@
       'browser/ui/protocol_dialog_delegate.h',
       'browser/ui/proximity_auth/proximity_auth_error_bubble.h',
       'browser/ui/screen_capture_notification_ui.h',
-      'browser/ui/search/instant_page.cc',
-      'browser/ui/search/instant_page.h',
       'browser/ui/search/instant_search_prerenderer.cc',
       'browser/ui/search/instant_search_prerenderer.h',
       'browser/ui/search/instant_tab.cc',
