@@ -13,6 +13,14 @@ namespace {
 
 static const int kKiBperMiB = 1024;
 
+int GetAvailableSystemMemoryMiB(const base::SystemMemoryInfoKB* mem_info) {
+  // How much system memory is actively available for use right now, in MBs.
+  return (mem_info->available
+              ? mem_info->available
+              : (mem_info->free + mem_info->buffers + mem_info->cached)) /
+         kKiBperMiB;
+}
+
 }  // namespace
 
 // Thresholds at which we consider the system being under moderate/critical
@@ -39,9 +47,7 @@ DirectMemoryPressureCalculator::CalculateCurrentPressureLevel() {
   base::SystemMemoryInfoKB mem_info = {};
   if (!GetSystemMemoryInfo(&mem_info))
     return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-
-  // How much system memory is actively available for use right now, in MBs.
-  int phys_free = mem_info.free / kKiBperMiB;
+  int phys_free = GetAvailableSystemMemoryMiB(&mem_info);
 
   // Determine if the physical memory is under critical memory pressure.
   if (phys_free <= critical_threshold_mb_)
