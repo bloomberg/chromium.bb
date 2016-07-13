@@ -124,6 +124,14 @@ public:
         return !(*this == o);
     }
 
+    bool sizeEquals(const BorderData& o) const
+    {
+        return borderLeftWidth() != o.borderLeftWidth()
+            || borderTopWidth() != o.borderTopWidth()
+            || borderRightWidth() != o.borderRightWidth()
+            || borderBottomWidth() != o.borderBottomWidth();
+    }
+
     const BorderValue& left() const { return m_left; }
     const BorderValue& right() const { return m_right; }
     const BorderValue& top() const { return m_top; }

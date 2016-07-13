@@ -126,6 +126,10 @@ void LayoutTableSection::styleDidChange(StyleDifference diff, const ComputedStyl
     LayoutTable* table = this->table();
     if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border())
         table->invalidateCollapsedBorders();
+
+    if (table && oldStyle && diff.needsFullLayout() && needsLayout() && table->collapseBorders() && oldStyle->border() != style()->border()) {
+        markAllCellsWidthsDirtyAndOrNeedsLayout(MarkDirtyAndNeedsLayout);
+    }
 }
 
 void LayoutTableSection::willBeRemovedFromTree()
@@ -1219,6 +1223,20 @@ bool LayoutTableSection::recalcChildOverflowAfterStyleChange()
     if (childrenOverflowChanged)
         computeOverflowFromCells(totalRows, numEffCols);
     return childrenOverflowChanged;
+}
+
+void LayoutTableSection::markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells whatToMark)
+{
+    for (unsigned i = 0; i < numRows(); i++) {
+        LayoutTableRow* row = rowLayoutObjectAt(i);
+        if (!row)
+            continue;
+        for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
+            cell->setPreferredLogicalWidthsDirty();
+            if (whatToMark == MarkDirtyAndNeedsLayout)
+                cell->setChildNeedsLayout();
+        }
+    }
 }
 
 int LayoutTableSection::calcBlockDirectionOuterBorder(BlockBorderSide side) const

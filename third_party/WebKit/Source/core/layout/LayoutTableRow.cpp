@@ -53,14 +53,6 @@ void LayoutTableRow::willBeRemovedFromTree()
     section()->setNeedsCellRecalc();
 }
 
-static bool borderWidthChanged(const ComputedStyle* oldStyle, const ComputedStyle* newStyle)
-{
-    return oldStyle->borderLeftWidth() != newStyle->borderLeftWidth()
-        || oldStyle->borderTopWidth() != newStyle->borderTopWidth()
-        || oldStyle->borderRightWidth() != newStyle->borderRightWidth()
-        || oldStyle->borderBottomWidth() != newStyle->borderBottomWidth();
-}
-
 void LayoutTableRow::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     ASSERT(style()->display() == TABLE_ROW);
@@ -77,13 +69,14 @@ void LayoutTableRow::styleDidChange(StyleDifference diff, const ComputedStyle* o
         if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border())
             table->invalidateCollapsedBorders();
 
-        if (table && oldStyle && diff.needsFullLayout() && needsLayout() && table->collapseBorders() && borderWidthChanged(oldStyle, style())) {
+        if (table && oldStyle && diff.needsFullLayout() && needsLayout() && table->collapseBorders() && oldStyle->border().sizeEquals(style()->border())) {
             // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
             // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
             // itself.
             for (LayoutBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
                 if (!childBox->isTableCell())
                     continue;
+                // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
                 childBox->setChildNeedsLayout();
                 childBox->setPreferredLogicalWidthsDirty(MarkOnlyThis);
             }

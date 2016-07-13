@@ -115,6 +115,8 @@ public:
     void layoutRows();
     void computeOverflowFromCells();
     bool recalcChildOverflowAfterStyleChange();
+    enum WhatToMarkAllCells { MarkDirtyOnly, MarkDirtyAndNeedsLayout };
+    void markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells);
 
     LayoutTable* table() const { return toLayoutTable(parent()); }
 
@@ -226,6 +228,7 @@ public:
     }
     const LayoutTableCell* primaryCellAt(unsigned row, unsigned effectiveColumn) const { return const_cast<LayoutTableSection*>(this)->primaryCellAt(row, effectiveColumn); }
 
+    // Returns null for cells with a rowspan that exceed the last row. Possibly others.
     LayoutTableRow* rowLayoutObjectAt(unsigned row) { return m_grid[row].rowLayoutObject; }
     const LayoutTableRow* rowLayoutObjectAt(unsigned row) const { return m_grid[row].rowLayoutObject; }
 
