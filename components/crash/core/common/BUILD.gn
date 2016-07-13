@@ -2,7 +2,19 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("common") {
+group("common") {
+  public_deps = [
+    ":crash_keys",
+  ]
+
+  if (is_mac || is_ios) {
+    public_deps += [ ":zombies" ]
+  }
+}
+
+static_library("crash_keys") {
+  visibility = [ ":*" ]
+
   sources = [
     "crash_keys.cc",
     "crash_keys.h",
@@ -11,12 +23,26 @@ static_library("common") {
   deps = [
     "//base",
   ]
+}
 
-  if (is_mac || is_ios) {
-    sources += [
+if (is_mac || is_ios) {
+  component("zombies") {
+    visibility = [ ":common" ]
+
+    sources = [
+      "crash_keys.h",
       "objc_zombie.h",
       "objc_zombie.mm",
     ]
+
+    defines = [ "CRASH_CORE_COMMON_IMPLEMENTATION" ]
+
+    deps = [
+      ":crash_keys",
+      "//base",
+    ]
+
+    libs = [ "Foundation.framework" ]
   }
 }
 
