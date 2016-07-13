@@ -40,11 +40,6 @@ const char kEnableDriveSearchInChromeLauncher[] =
 const char kDisableDriveSearchInChromeLauncher[] =
     "disable-drive-search-in-app-launcher";
 
-// Enable/disable the new "blended" algorithm in app_list::Mixer. This is just
-// forcing the AppListMixer/Blended field trial.
-const char kEnableNewAppListMixer[] = "enable-new-app-list-mixer";
-const char kDisableNewAppListMixer[] = "disable-new-app-list-mixer";
-
 // If set, the app list will forget it has been installed on startup. Note this
 // doesn't prevent the app list from running, it just makes Chrome think the app
 // list hasn't been enabled (as in kEnableAppList) yet.

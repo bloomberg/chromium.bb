@@ -18,8 +18,6 @@ APP_LIST_EXPORT extern const char kEnableAppList[];
 APP_LIST_EXPORT extern const char kEnableCenteredAppList[];
 APP_LIST_EXPORT extern const char kEnableExperimentalAppList[];
 APP_LIST_EXPORT extern const char kDisableExperimentalAppList[];
-APP_LIST_EXPORT extern const char kEnableNewAppListMixer[];
-APP_LIST_EXPORT extern const char kDisableNewAppListMixer[];
 APP_LIST_EXPORT extern const char kEnableSyncAppList[];
 APP_LIST_EXPORT extern const char kDisableSyncAppList[];
 APP_LIST_EXPORT extern const char kEnableDriveSearchInChromeLauncher[];
