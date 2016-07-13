@@ -48,24 +48,12 @@ IPC_STRUCT_TRAITS_END()
 IPC_MESSAGE_ROUTED1(ManifestManagerMsg_RequestManifest,
                     int /* request_id */)
 
-// The browser process requests whether the document loaded in the associated
-// RenderFrame has a manifest link URL. The render process will respond with
-// a HasManifestResponse IPC message, along with a bool indicating the presence
-// of a manifest link, and the |request_id| that was initially given.
-IPC_MESSAGE_ROUTED1(ManifestManagerMsg_HasManifest,
-                    int /* request_id */)
-
 // The render process' response to a RequestManifest. The |request_id| will
-// match the one that was initially received. The |manifest_url| and |manifest|
-// will be empty in case of any failure.
+// match the one that was initially received. |manifest_url| will be empty if
+// there is no manifest specified in the associated RenderFrame's document.
+// |manifest| will be empty if a manifest was specified, but could not be
+// parsed correctly.
 IPC_MESSAGE_ROUTED3(ManifestManagerHostMsg_RequestManifestResponse,
                     int, /* request_id */
                     GURL, /* manifest URL */
                     content::Manifest /* manifest */)
-
-// The render process' response to a HasManifest. The |request_id| is the one
-// sent from the browser. The |bool| will be true if the current document has a
-// manifest link URL, and false otherwise.
-IPC_MESSAGE_ROUTED2(ManifestManagerHostMsg_HasManifestResponse,
-                    int, /* request_id */
-                    bool /* true if the document has a manifest link */)

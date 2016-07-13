@@ -38,20 +38,11 @@ bool ManifestManager::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(ManifestManager, message)
-    IPC_MESSAGE_HANDLER(ManifestManagerMsg_HasManifest, OnHasManifest)
     IPC_MESSAGE_HANDLER(ManifestManagerMsg_RequestManifest, OnRequestManifest)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void ManifestManager::OnHasManifest(int request_id) {
-  GURL url(render_frame()->GetWebFrame()->document().manifestURL());
-
-  bool has_manifest = may_have_manifest_ && !url.is_empty();
-  Send(new ManifestManagerHostMsg_HasManifestResponse(
-      routing_id(), request_id, has_manifest));
 }
 
 void ManifestManager::OnRequestManifest(int request_id) {
@@ -115,6 +106,7 @@ void ManifestManager::GetManifest(const GetManifestCallback& callback) {
 void ManifestManager::DidChangeManifest() {
   may_have_manifest_ = true;
   manifest_dirty_ = true;
+  manifest_url_ = GURL();
 }
 
 void ManifestManager::DidCommitProvisionalLoad(
@@ -125,18 +117,19 @@ void ManifestManager::DidCommitProvisionalLoad(
 
   may_have_manifest_ = false;
   manifest_dirty_ = true;
+  manifest_url_ = GURL();
 }
 
 void ManifestManager::FetchManifest() {
-  GURL url(render_frame()->GetWebFrame()->document().manifestURL());
+  manifest_url_ = render_frame()->GetWebFrame()->document().manifestURL();
 
-  if (url.is_empty()) {
+  if (manifest_url_.is_empty()) {
     ManifestUmaUtil::FetchFailed(ManifestUmaUtil::FETCH_EMPTY_URL);
     ResolveCallbacks(ResolveStateFailure);
     return;
   }
 
-  fetcher_.reset(new ManifestFetcher(url));
+  fetcher_.reset(new ManifestFetcher(manifest_url_));
   fetcher_->Start(
       render_frame()->GetWebFrame(),
       render_frame()->GetWebFrame()->document().manifestUseCredentials(),
@@ -194,10 +187,14 @@ void ManifestManager::OnManifestFetchComplete(
 }
 
 void ManifestManager::ResolveCallbacks(ResolveState state) {
-  if (state == ResolveStateFailure) {
-    manifest_url_ = GURL();
+  // Do not reset |manifest_url_| on failure here. If manifest_url_ is
+  // non-empty, that means the link 404s, we failed to fetch it, or it was
+  // unparseable. However, the site still tried to specify a manifest, so
+  // preserve that information in the URL for the callbacks.
+  // |manifest_url| will be reset on navigation or if we receive a didchange
+  // event.
+  if (state == ResolveStateFailure)
     manifest_ = Manifest();
-  }
 
   manifest_dirty_ = state != ResolveStateSuccess;
 

@@ -147,7 +147,6 @@ class AppBannerDataFetcher : public base::RefCountedThreadSafe<
 
  private:
   // Callbacks for data retrieval.
-  void OnDidHasManifest(bool has_manifest);
   void OnDidGetManifest(const GURL& manifest_url,
                         const content::Manifest& manifest);
   void OnDidCheckHasServiceWorker(bool has_service_worker);

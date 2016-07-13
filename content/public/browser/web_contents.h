@@ -691,18 +691,14 @@ class WebContents : public PageNavigator,
   // Returns true if audio has recently been audible from the WebContents.
   virtual bool WasRecentlyAudible() = 0;
 
+  // The callback invoked when the renderer responds to a request for the main
+  // frame document's manifest. The url will be empty if the document specifies
+  // no manifest, and the manifest will be empty if any other failures occurred.
   typedef base::Callback<void(const GURL&, const Manifest&)>
       GetManifestCallback;
 
   // Requests the manifest URL and the Manifest of the main frame's document.
   virtual void GetManifest(const GetManifestCallback& callback) = 0;
-
-  typedef base::Callback<void(bool)> HasManifestCallback;
-
-  // Returns true if the main frame has a <link> to a web manifest, otherwise
-  // false. This method does not guarantee that the manifest exists at the
-  // specified location or is valid.
-  virtual void HasManifest(const HasManifestCallback& callback) = 0;
 
   // Requests the renderer to exit fullscreen.
   // |will_cause_resize| indicates whether the fullscreen change causes a

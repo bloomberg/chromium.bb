@@ -391,7 +391,6 @@ class CONTENT_EXPORT WebContentsImpl
   void InsertCSS(const std::string& css) override;
   bool WasRecentlyAudible() override;
   void GetManifest(const GetManifestCallback& callback) override;
-  void HasManifest(const HasManifestCallback& callback) override;
   void ExitFullscreen(bool will_cause_resize) override;
   void ResumeLoadingCreatedWebContents() override;
   void OnMediaSessionStateChanged();

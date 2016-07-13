@@ -34,7 +34,6 @@ ManifestManagerHost::ManifestManagerHost(WebContents* web_contents)
 
 ManifestManagerHost::~ManifestManagerHost() {
   STLDeleteValues(&pending_get_callbacks_);
-  STLDeleteValues(&pending_has_callbacks_);
 }
 
 ManifestManagerHost::GetCallbackMap*
@@ -45,49 +44,22 @@ ManifestManagerHost::GetCallbackMapForFrame(
   return it != pending_get_callbacks_.end() ? it->second : nullptr;
 }
 
-ManifestManagerHost::HasCallbackMap*
-ManifestManagerHost::HasCallbackMapForFrame(
-    RenderFrameHost* render_frame_host) {
-  FrameHasCallbackMap::iterator it =
-      pending_has_callbacks_.find(render_frame_host);
-  return it != pending_has_callbacks_.end() ? it->second : nullptr;
-}
-
 void ManifestManagerHost::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
+  GetCallbackMap* callbacks = GetCallbackMapForFrame(render_frame_host);
+  if (!callbacks)
+    return;
+
+  // Call the callbacks with a failure state before deleting them. Do this in
+  // a block so the iterator is destroyed before |callbacks|.
   {
-    GetCallbackMap* callbacks = GetCallbackMapForFrame(render_frame_host);
-    if (!callbacks)
-      return;
-
-    // Call the callbacks with a failure state before deleting them. Do this in
-    // a block so the iterator is destroyed before |callbacks|.
-    {
-      GetCallbackMap::const_iterator it(callbacks);
-      for (; !it.IsAtEnd(); it.Advance())
-        it.GetCurrentValue()->Run(GURL(), Manifest());
-    }
-
-    delete callbacks;
-    pending_get_callbacks_.erase(render_frame_host);
+    GetCallbackMap::const_iterator it(callbacks);
+    for (; !it.IsAtEnd(); it.Advance())
+      it.GetCurrentValue()->Run(GURL(), Manifest());
   }
 
-  {
-    HasCallbackMap* callbacks = HasCallbackMapForFrame(render_frame_host);
-    if (!callbacks)
-      return;
-
-    // Call the callbacks with a failure state before deleting them. Do this in
-    // a block so the iterator is destroyed before |callbacks|.
-    {
-      HasCallbackMap::const_iterator it(callbacks);
-      for (; !it.IsAtEnd(); it.Advance())
-        it.GetCurrentValue()->Run(false);
-    }
-
-    delete callbacks;
-    pending_has_callbacks_.erase(render_frame_host);
-  }
+  delete callbacks;
+  pending_get_callbacks_.erase(render_frame_host);
 }
 
 void ManifestManagerHost::GetManifest(RenderFrameHost* render_frame_host,
@@ -104,20 +76,6 @@ void ManifestManagerHost::GetManifest(RenderFrameHost* render_frame_host,
       render_frame_host->GetRoutingID(), request_id));
 }
 
-void ManifestManagerHost::HasManifest(RenderFrameHost* render_frame_host,
-                                      const HasManifestCallback& callback) {
-  HasCallbackMap* callbacks = HasCallbackMapForFrame(render_frame_host);
-  if (!callbacks) {
-    callbacks = new HasCallbackMap();
-    pending_has_callbacks_[render_frame_host] = callbacks;
-  }
-
-  int request_id = callbacks->Add(new HasManifestCallback(callback));
-
-  render_frame_host->Send(new ManifestManagerMsg_HasManifest(
-      render_frame_host->GetRoutingID(), request_id));
-}
-
 bool ManifestManagerHost::OnMessageReceived(
     const IPC::Message& message, RenderFrameHost* render_frame_host) {
   bool handled = true;
@@ -126,8 +84,6 @@ bool ManifestManagerHost::OnMessageReceived(
                                    render_frame_host)
     IPC_MESSAGE_HANDLER(ManifestManagerHostMsg_RequestManifestResponse,
                         OnRequestManifestResponse)
-    IPC_MESSAGE_HANDLER(ManifestManagerHostMsg_HasManifestResponse,
-                        OnHasManifestResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -200,34 +156,6 @@ void ManifestManagerHost::OnRequestManifestResponse(
   if (callbacks->IsEmpty()) {
     delete callbacks;
     pending_get_callbacks_.erase(render_frame_host);
-  }
-}
-
-void ManifestManagerHost::OnHasManifestResponse(
-    RenderFrameHost* render_frame_host,
-    int request_id,
-    bool has_manifest) {
-  HasCallbackMap* callbacks = HasCallbackMapForFrame(render_frame_host);
-  if (!callbacks) {
-    DVLOG(1) << "Unexpected HasManifestResponse from renderer. "
-                "Killing renderer.";
-    KillRenderer(render_frame_host);
-    return;
-  }
-
-  HasManifestCallback* callback = callbacks->Lookup(request_id);
-  if (!callback) {
-    DVLOG(1) << "Received a request_id (" << request_id << ") from renderer "
-                "with no associated callback. Killing renderer.";
-    KillRenderer(render_frame_host);
-    return;
-  }
-
-  callback->Run(has_manifest);
-  callbacks->Remove(request_id);
-  if (callbacks->IsEmpty()) {
-    delete callbacks;
-    pending_has_callbacks_.erase(render_frame_host);
   }
 }
 
