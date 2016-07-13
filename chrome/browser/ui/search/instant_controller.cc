@@ -107,12 +107,6 @@ void InstantController::ActiveTabChanged() {
   ResetInstantTab();
 }
 
-void InstantController::TabDeactivated(content::WebContents* contents) {
-  // If user is deactivating an NTP tab, give it a change to log stats.
-  if (search::IsInstantNTP(contents))
-    InstantTab::TabDeactivated(contents);
-}
-
 void InstantController::LogDebugEvent(const std::string& info) const {
   DVLOG(1) << info;
 

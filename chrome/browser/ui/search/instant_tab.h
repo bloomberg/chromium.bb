@@ -22,10 +22,6 @@ class InstantTab : public InstantPage {
   // the page supports the Instant API.
   void Init(content::WebContents* contents);
 
-  // Logs statistics regarding the NTP.
-  static void TabDeactivated(content::WebContents* contents);
-  static void MostVisitedItemsChanged(content::WebContents* contents);
-
  private:
   // Overridden from InstantPage:
   bool ShouldProcessAboutToNavigateMainFrame() override;

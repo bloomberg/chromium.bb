@@ -52,13 +52,13 @@ TEST_F(NTPUserDataLoggerTest, TestLogging) {
     logger.LogEvent(NTP_TILE, delta);
   logger.LogEvent(NTP_SERVER_SIDE_SUGGESTION, delta);
 
-  logger.EmitNtpStatistics(NTPUserDataLogger::EmitReason::NAVIGATED_AWAY);
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
 
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
   EXPECT_EQ(1, GetBinCount("NewTabPage.NumberOfTiles", 8));
 
   // Statistics should be reset to 0, so we should not log anything else.
-  logger.EmitNtpStatistics(NTPUserDataLogger::EmitReason::NAVIGATED_AWAY);
+  logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
   EXPECT_EQ(1, GetTotalCount("NewTabPage.NumberOfTiles"));
 }
 

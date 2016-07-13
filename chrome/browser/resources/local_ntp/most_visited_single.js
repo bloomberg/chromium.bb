@@ -23,8 +23,8 @@ var LOG_TYPE = {
   // Indicates a tile was rendered, no matter if it's a thumbnail, a gray tile
   // or an external tile.
   NTP_TILE: 2,
-  // A NTP Tile has finished loading (successfully or failing).
-  NTP_TILE_LOADED: 10,
+  // All NTP Tiles have finished loading (successfully or failing).
+  NTP_ALL_TILES_LOADED: 11,
 };
 
 
@@ -133,7 +133,7 @@ var countLoad = function() {
   loadedCounter -= 1;
   if (loadedCounter <= 0) {
     showTiles();
-    logEvent(LOG_TYPE.NTP_TILE_LOADED);
+    logEvent(LOG_TYPE.NTP_ALL_TILES_LOADED);
     window.parent.postMessage({cmd: 'loaded'}, DOMAIN_ORIGIN);
     loadedCounter = 1;
   }

@@ -154,8 +154,6 @@ void BrowserInstantController::ActiveTabChanged() {
 }
 
 void BrowserInstantController::TabDeactivated(content::WebContents* contents) {
-  instant_.TabDeactivated(contents);
-
   InstantSearchPrerenderer* prerenderer =
       GetInstantSearchPrerenderer(profile());
   if (prerenderer)

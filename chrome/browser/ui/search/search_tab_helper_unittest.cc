@@ -320,46 +320,6 @@ TEST_F(SearchTabHelperTest, OnHistorySyncCheckNotSyncing) {
   ASSERT_FALSE(std::get<0>(params));
 }
 
-TEST_F(SearchTabHelperTest, OnMostVisitedItemsChangedFromServer) {
-  InstantMostVisitedItem item;
-  item.is_server_side_suggestion = true;
-  std::vector<InstantMostVisitedItem> items;
-  items.push_back(item);
-
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-
-  auto logger = NTPUserDataLogger::GetOrCreateFromWebContents(web_contents());
-  ASSERT_FALSE(logger->has_server_side_suggestions_);
-  ASSERT_FALSE(logger->has_client_side_suggestions_);
-
-  search_tab_helper->MostVisitedItemsChanged(items);
-
-  ASSERT_TRUE(logger->has_server_side_suggestions_);
-  ASSERT_FALSE(logger->has_client_side_suggestions_);
-}
-
-TEST_F(SearchTabHelperTest, OnMostVisitedItemsChangedFromClient) {
-  InstantMostVisitedItem item;
-  item.is_server_side_suggestion = false;
-  std::vector<InstantMostVisitedItem> items;
-  items.push_back(item);
-
-  SearchTabHelper* search_tab_helper =
-      SearchTabHelper::FromWebContents(web_contents());
-  ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
-
-  auto logger = NTPUserDataLogger::GetOrCreateFromWebContents(web_contents());
-  ASSERT_FALSE(logger->has_server_side_suggestions_);
-  ASSERT_FALSE(logger->has_client_side_suggestions_);
-
-  search_tab_helper->MostVisitedItemsChanged(items);
-
-  ASSERT_FALSE(logger->has_server_side_suggestions_);
-  ASSERT_TRUE(logger->has_client_side_suggestions_);
-}
-
 class TabTitleObserver : public content::WebContentsObserver {
  public:
   explicit TabTitleObserver(content::WebContents* contents)

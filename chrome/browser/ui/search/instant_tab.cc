@@ -20,17 +20,6 @@ void InstantTab::Init(content::WebContents* contents) {
   SetContents(contents);
 }
 
-// static
-void InstantTab::TabDeactivated(content::WebContents* contents) {
-  NTPUserDataLogger::GetOrCreateFromWebContents(contents)->TabDeactivated();
-}
-
-// static
-void InstantTab::MostVisitedItemsChanged(content::WebContents* contents) {
-  NTPUserDataLogger::GetOrCreateFromWebContents(contents)
-      ->MostVisitedItemsChanged();
-}
-
 bool InstantTab::ShouldProcessAboutToNavigateMainFrame() {
   return true;
 }

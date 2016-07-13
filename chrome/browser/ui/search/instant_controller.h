@@ -64,9 +64,6 @@ class InstantController : public InstantPage::Delegate {
   // Instant search results page.
   void ActiveTabChanged();
 
-  // The user is about to switch tabs.
-  void TabDeactivated(content::WebContents* contents);
-
   // Adds a new event to |debug_events_| and also DVLOG's it. Ensures that
   // |debug_events_| doesn't get too large.
   void LogDebugEvent(const std::string& info) const;

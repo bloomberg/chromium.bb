@@ -100,27 +100,21 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
 void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
                                  base::TimeDelta time) {
   switch (event) {
-    // It is possible that our page gets update with a different set of
-    // suggestions if the NTP is left open enough time.
-    // In either case, we want to flush our stats before recounting again.
     case NTP_SERVER_SIDE_SUGGESTION:
-      if (has_client_side_suggestions_)
-        EmitNtpStatistics(EmitReason::INTERNAL_FLUSH);
       has_server_side_suggestions_ = true;
       break;
     case NTP_CLIENT_SIDE_SUGGESTION:
-      if (has_server_side_suggestions_)
-        EmitNtpStatistics(EmitReason::INTERNAL_FLUSH);
       has_client_side_suggestions_ = true;
       break;
     case NTP_TILE:
+      // TODO(sfiera): remove NTP_TILE and use NTP_*_SIDE_SUGGESTION.
       number_of_tiles_++;
       break;
     case NTP_TILE_LOADED:
-      // The time at which the last tile has loaded (title, thumbnail or single)
-      // is a good proxy for the total load time of the NTP, therefore we keep
-      // the max as the load time.
-      load_time_ = std::max(load_time_, time);
+      // We no longer emit statistics for the multi-iframe NTP.
+      break;
+    case NTP_ALL_TILES_LOADED:
+      EmitNtpStatistics(time);
       break;
     default:
       NOTREACHED();
@@ -165,17 +159,8 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
   content::RecordAction(base::UserMetricsAction("MostVisited_Clicked"));
 }
 
-void NTPUserDataLogger::TabDeactivated() {
-  EmitNtpStatistics(EmitReason::CLOSED);
-}
-
-void NTPUserDataLogger::MostVisitedItemsChanged() {
-  EmitNtpStatistics(EmitReason::MV_CHANGED);
-}
-
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      has_server_side_suggestions_(false),
+    : has_server_side_suggestions_(false),
       has_client_side_suggestions_(false),
       number_of_tiles_(0),
       has_emitted_(false),
@@ -201,40 +186,25 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
   }
 }
 
-// content::WebContentsObserver override
-void NTPUserDataLogger::NavigationEntryCommitted(
-    const content::LoadCommittedDetails& load_details) {
-  if (!load_details.previous_url.is_valid())
-    return;
-
-  if (search::MatchesOriginAndPath(ntp_url_, load_details.previous_url))
-    EmitNtpStatistics(EmitReason::NAVIGATED_AWAY);
-}
-
-void NTPUserDataLogger::EmitNtpStatistics(EmitReason reason) {
+void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // We only send statistics once per page.
-  // And we don't send if there are no tiles recorded.
-  if (has_emitted_ || !number_of_tiles_)
+  if (has_emitted_)
     return;
 
-  // LoadTime only gets update once per page, so we don't have it on reloads.
-  if (load_time_ > base::TimeDelta::FromMilliseconds(0)) {
-    logLoadTimeHistogram("NewTabPage.LoadTime", load_time_);
+  logLoadTimeHistogram("NewTabPage.LoadTime", load_time);
 
-    // Split between ML and MV.
-    std::string type = has_server_side_suggestions_ ?
-        "MostLikely" : "MostVisited";
-    logLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time_);
-    // Split between Web and Local.
-    std::string source = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
-    logLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time_);
+  // Split between ML and MV.
+  std::string type = has_server_side_suggestions_ ?
+      "MostLikely" : "MostVisited";
+  logLoadTimeHistogram("NewTabPage.LoadTime." + type, load_time);
+  // Split between Web and Local.
+  std::string source = ntp_url_.SchemeIsHTTPOrHTTPS() ? "Web" : "LocalNTP";
+  logLoadTimeHistogram("NewTabPage.LoadTime." + source, load_time);
 
-    // Split between Startup and non-startup.
-    std::string status = during_startup_ ? "Startup" : "NewTab";
-    logLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time_);
+  // Split between Startup and non-startup.
+  std::string status = during_startup_ ? "Startup" : "NewTab";
+  logLoadTimeHistogram("NewTabPage.LoadTime." + status, load_time);
 
-    load_time_ = base::TimeDelta::FromMilliseconds(0);
-  }
   has_server_side_suggestions_ = false;
   has_client_side_suggestions_ = false;
   UMA_HISTOGRAM_CUSTOM_COUNTS(

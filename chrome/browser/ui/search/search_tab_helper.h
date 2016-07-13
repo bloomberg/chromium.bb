@@ -201,10 +201,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Returns the OmniboxView for |web_contents_| or NULL if not available.
   OmniboxView* GetOmniboxView() const;
 
-  // Record whether each suggestion comes from server or client.
-  void LogMostVisitedItemsSource(
-      const std::vector<InstantMostVisitedItem>& items);
-
   typedef bool (*OmniboxHasFocusFn)(OmniboxView*);
 
   void set_omnibox_has_focus_fn(OmniboxHasFocusFn fn) {

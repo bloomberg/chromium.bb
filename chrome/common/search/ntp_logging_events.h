@@ -43,10 +43,15 @@ enum NTPLoggingEventType {
 
   // Deleted: NTP_MOUSEOVER = 9
 
-  // A NTP Tile has finished loading (successfully or failing).
+  // A NTP Tile has finished loading (successfully or failing). Logged only by
+  // the multi-iframe version of the NTP.
   NTP_TILE_LOADED = 10,
 
-  NTP_EVENT_TYPE_LAST = NTP_TILE_LOADED
+  // All NTP tiles have finished loading (successfully or failing). Logged only
+  // by the single-iframe version of the NTP.
+  NTP_ALL_TILES_LOADED = 11,
+
+  NTP_EVENT_TYPE_LAST = NTP_ALL_TILES_LOADED
 };
 
 // The source of an NTP tile.

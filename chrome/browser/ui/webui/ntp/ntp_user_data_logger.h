@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/common/search/ntp_logging_events.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -20,8 +19,7 @@ class WebContents;
 
 // Helper class for logging data from the NTP. Attached to each NTP instance.
 class NTPUserDataLogger
-    : public content::WebContentsObserver,
-      public content::WebContentsUserData<NTPUserDataLogger> {
+    : public content::WebContentsUserData<NTPUserDataLogger> {
  public:
   ~NTPUserDataLogger() override;
 
@@ -39,12 +37,6 @@ class NTPUserDataLogger
   // Logs a navigation on one of the NTP tiles by a given source.
   void LogMostVisitedNavigation(int position, NTPLoggingTileSource tile_source);
 
-  // Called when the tab is closed. Logs statistics.
-  void TabDeactivated();
-
-  // Called when the set of most visited sites changes. Flushes statistics.
-  void MostVisitedItemsChanged();
-
  protected:
   explicit NTPUserDataLogger(content::WebContents* contents);
 
@@ -58,20 +50,10 @@ class NTPUserDataLogger
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest,
                            TestLogging);
 
-  // content::WebContentsObserver override
-  void NavigationEntryCommitted(
-      const content::LoadCommittedDetails& load_details) override;
-
-  // To clarify at the call site whether we are calling EmitNtpStatistics() for
-  // a good reason (CLOSED, NAVIGATED_AWAY) or a questionable one (MV_CHANGED,
-  // INTERNAL_FLUSH).
-  // TODO(sfiera): remove MV_CHANGED, INTERNAL_FLUSH.
-  enum class EmitReason { CLOSED, NAVIGATED_AWAY, MV_CHANGED, INTERNAL_FLUSH };
-
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing
   // the tab/shutting down Chrome), or when the user navigates to a URL.
-  void EmitNtpStatistics(EmitReason reason);
+  void EmitNtpStatistics(base::TimeDelta load_time);
 
   // True if at least one iframe came from a server-side suggestion.
   bool has_server_side_suggestions_;
@@ -82,9 +64,6 @@ class NTPUserDataLogger
   // Total number of tiles rendered, no matter if it's a thumbnail, a gray tile
   // or an external tile.
   size_t number_of_tiles_;
-
-  // Time from navigation start it took to load the NTP in milliseconds.
-  base::TimeDelta load_time_;
 
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;

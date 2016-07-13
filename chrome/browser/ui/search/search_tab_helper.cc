@@ -385,28 +385,7 @@ void SearchTabHelper::ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) {
 
 void SearchTabHelper::MostVisitedItemsChanged(
     const std::vector<InstantMostVisitedItem>& items) {
-  // When most visited change, the NTP usually reloads the tiles. This means
-  // our metrics get inconsistent. So we'd rather emit stats now.
-  InstantTab::MostVisitedItemsChanged(web_contents_);
   ipc_router_.SendMostVisitedItems(items);
-  LogMostVisitedItemsSource(items);
-}
-
-void SearchTabHelper::LogMostVisitedItemsSource(
-    const std::vector<InstantMostVisitedItem>& items) {
-  for (auto item : items) {
-    NTPLoggingEventType event;
-    if (item.is_server_side_suggestion) {
-      event = NTP_SERVER_SIDE_SUGGESTION;
-    } else {
-      event = NTP_CLIENT_SIDE_SUGGESTION;
-    }
-    // The metrics are emitted for each suggestion as the design requirement
-    // even the ntp_user_data_logger.cc now only supports the scenario:
-    // all suggestions are provided by server OR
-    // all suggestions are provided by client.
-    this->OnLogEvent(event, base::TimeDelta());
-  }
 }
 
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
