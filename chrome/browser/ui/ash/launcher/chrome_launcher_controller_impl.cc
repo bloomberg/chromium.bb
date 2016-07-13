@@ -1669,7 +1669,12 @@ void ChromeLauncherControllerImpl::ShelfItemChanged(
 // ash::WindowTreeHostManager::Observer:
 
 void ChromeLauncherControllerImpl::OnDisplayConfigurationChanged() {
-  SetShelfBehaviorsFromPrefs();
+  // In BOTTOM_LOCKED state, ignore the call of SetShelfBehaviorsFromPrefs.
+  // Because it might be called by some operations, like crbug.com/627040
+  // rotating screen.
+  ash::Shelf* shelf = ash::Shelf::ForPrimaryDisplay();
+  if (!shelf || shelf->alignment() != ash::SHELF_ALIGNMENT_BOTTOM_LOCKED)
+    SetShelfBehaviorsFromPrefs();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
