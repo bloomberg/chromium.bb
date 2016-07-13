@@ -146,17 +146,18 @@ ImageData* ImageData::create(DOMUint8ClampedArray* data, unsigned width, unsigne
     return new ImageData(IntSize(width, height), data);
 }
 
-ScriptPromise ImageData::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
+ScriptPromise ImageData::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Optional<IntRect> cropRect, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
+    if ((cropRect && !ImageBitmap::isSourceSizeValid(cropRect->width(), cropRect->height(), exceptionState))
+        || !ImageBitmap::isSourceSizeValid(bitmapSourceSize().width(), bitmapSourceSize().height(), exceptionState))
         return ScriptPromise();
-    }
     if (data()->bufferBase()->isNeutered()) {
         exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
         return ScriptPromise();
     }
-    return ImageBitmapSource::fulfillImageBitmap(scriptState, ImageBitmap::create(this, IntRect(sx, sy, sw, sh), options));
+    if (!ImageBitmap::isResizeOptionValid(options, exceptionState))
+        return ScriptPromise();
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, ImageBitmap::create(this, cropRect, options));
 }
 
 v8::Local<v8::Object> ImageData::associateWithWrapper(v8::Isolate* isolate, const WrapperTypeInfo* wrapperType, v8::Local<v8::Object> wrapper)

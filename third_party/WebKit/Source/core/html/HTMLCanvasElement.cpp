@@ -1106,14 +1106,15 @@ IntSize HTMLCanvasElement::bitmapSourceSize() const
     return IntSize(width(), height());
 }
 
-ScriptPromise HTMLCanvasElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
+ScriptPromise HTMLCanvasElement::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Optional<IntRect> cropRect, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     DCHECK(eventTarget.toLocalDOMWindow());
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
+    if ((cropRect && !ImageBitmap::isSourceSizeValid(cropRect->width(), cropRect->height(), exceptionState))
+        || !ImageBitmap::isSourceSizeValid(bitmapSourceSize().width(), bitmapSourceSize().height(), exceptionState))
         return ScriptPromise();
-    }
-    return ImageBitmapSource::fulfillImageBitmap(scriptState, isPaintable() ? ImageBitmap::create(this, IntRect(sx, sy, sw, sh), options) : nullptr);
+    if (!ImageBitmap::isResizeOptionValid(options, exceptionState))
+        return ScriptPromise();
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, isPaintable() ? ImageBitmap::create(this, cropRect, options) : nullptr);
 }
 
 bool HTMLCanvasElement::isOpaque() const

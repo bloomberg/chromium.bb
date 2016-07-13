@@ -469,8 +469,9 @@ TEST_F(CanvasRenderingContext2DTest, NoLayerPromotionUnderImageSizeRatioLimit)
     sourceCanvas->createImageBufferUsingSurfaceForTesting(std::move(sourceSurface));
 
     const ImageBitmapOptions defaultOptions;
+    Optional<IntRect> cropRect = IntRect(IntPoint(0, 0), sourceSize);
     // Go through an ImageBitmap to avoid triggering a display list fallback
-    ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
+    ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, cropRect, defaultOptions);
 
     context2d()->drawImage(canvasElement().getExecutionContext(), sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -493,8 +494,9 @@ TEST_F(CanvasRenderingContext2DTest, LayerPromotionOverImageSizeRatioLimit)
     sourceCanvas->createImageBufferUsingSurfaceForTesting(std::move(sourceSurface));
 
     const ImageBitmapOptions defaultOptions;
+    Optional<IntRect> cropRect = IntRect(IntPoint(0, 0), sourceSize);
     // Go through an ImageBitmap to avoid triggering a display list fallback
-    ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, IntRect(IntPoint(0, 0), sourceSize), defaultOptions);
+    ImageBitmap* sourceImageBitmap = ImageBitmap::create(sourceCanvas, cropRect, defaultOptions);
 
     context2d()->drawImage(canvasElement().getExecutionContext(), sourceImageBitmap, 0, 0, 1, 1, 0, 0, 1, 1, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
@@ -683,8 +685,10 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
     ImageBitmap* imageBitmapDerived = nullptr;
     {
         const ImageBitmapOptions defaultOptions;
-        ImageBitmap* imageBitmapFromCanvas = ImageBitmap::create(canvas, IntRect(0, 0, canvas->width(), canvas->height()), defaultOptions);
-        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas, IntRect(0, 0, 20, 20), defaultOptions);
+        Optional<IntRect> cropRect = IntRect(0, 0, canvas->width(), canvas->height());
+        ImageBitmap* imageBitmapFromCanvas = ImageBitmap::create(canvas, cropRect, defaultOptions);
+        cropRect = IntRect(0, 0, 20, 20);
+        imageBitmapDerived = ImageBitmap::create(imageBitmapFromCanvas, cropRect, defaultOptions);
     }
     CanvasContextCreationAttributes attributes;
     CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(canvas->getCanvasRenderingContext("2d", attributes));

@@ -20,6 +20,18 @@ namespace blink {
 static const char* imageOrientationFlipY = "flipY";
 static const char* imageBitmapOptionNone = "none";
 
+namespace {
+
+struct ParsedOptions {
+    bool flipY = false;
+    bool premultiplyAlpha = true;
+    bool shouldScaleInput = false;
+    unsigned resizeWidth = 0;
+    unsigned resizeHeight = 0;
+    IntRect cropRect;
+    SkFilterQuality resizeQuality = kLow_SkFilterQuality;
+};
+
 // The following two functions are helpers used in cropImage
 static inline IntRect normalizeRect(const IntRect& rect)
 {
@@ -34,6 +46,61 @@ static bool frameIsValid(const SkBitmap& frameBitmap)
     ASSERT(!frameBitmap.isNull() && !frameBitmap.empty() && frameBitmap.isImmutable());
     return frameBitmap.colorType() == kN32_SkColorType;
 }
+
+ParsedOptions parseOptions(const ImageBitmapOptions& options, Optional<IntRect> cropRect, IntSize sourceSize)
+{
+    ParsedOptions parsedOptions;
+    if (options.imageOrientation() == imageOrientationFlipY) {
+        parsedOptions.flipY = true;
+    } else {
+        parsedOptions.flipY = false;
+        DCHECK(options.imageOrientation() == imageBitmapOptionNone);
+    }
+    if (options.premultiplyAlpha() == imageBitmapOptionNone) {
+        parsedOptions.premultiplyAlpha = false;
+    } else {
+        parsedOptions.premultiplyAlpha = true;
+        DCHECK(options.premultiplyAlpha() == "default" || options.premultiplyAlpha() == "premultiply");
+    }
+
+    int sourceWidth = sourceSize.width();
+    int sourceHeight = sourceSize.height();
+    if (!options.hasResizeWidth() && !options.hasResizeHeight()) {
+        parsedOptions.resizeWidth = sourceWidth;
+        parsedOptions.resizeHeight = sourceHeight;
+    } else if (options.hasResizeWidth() && options.hasResizeHeight()) {
+        parsedOptions.resizeWidth = options.resizeWidth();
+        parsedOptions.resizeHeight = options.resizeHeight();
+    } else if (options.hasResizeWidth() && !options.hasResizeHeight()) {
+        parsedOptions.resizeWidth = options.resizeWidth();
+        parsedOptions.resizeHeight = ceil(static_cast<float>(options.resizeWidth()) / sourceWidth * sourceHeight);
+    } else {
+        parsedOptions.resizeHeight = options.resizeHeight();
+        parsedOptions.resizeWidth = ceil(static_cast<float>(options.resizeHeight()) / sourceHeight * sourceWidth);
+    }
+    if (!cropRect) {
+        parsedOptions.cropRect = IntRect(0, 0, parsedOptions.resizeWidth, parsedOptions.resizeHeight);
+    } else  {
+        parsedOptions.cropRect = normalizeRect(*cropRect);
+    }
+    if (static_cast<int>(parsedOptions.resizeWidth) == sourceWidth && static_cast<int>(parsedOptions.resizeHeight) == sourceHeight) {
+        parsedOptions.shouldScaleInput = false;
+        return parsedOptions;
+    }
+    parsedOptions.shouldScaleInput = true;
+
+    if (options.resizeQuality() == "high")
+        parsedOptions.resizeQuality = kHigh_SkFilterQuality;
+    else if (options.resizeQuality() == "medium")
+        parsedOptions.resizeQuality = kMedium_SkFilterQuality;
+    else if (options.resizeQuality() == "pixelated")
+        parsedOptions.resizeQuality = kNone_SkFilterQuality;
+    else
+        parsedOptions.resizeQuality = kLow_SkFilterQuality;
+    return parsedOptions;
+}
+
+} // namespace
 
 static std::unique_ptr<uint8_t[]> copySkImageData(SkImage* input, const SkImageInfo& info)
 {
@@ -113,30 +180,48 @@ PassRefPtr<SkImage> ImageBitmap::getSkImageFromDecoder(std::unique_ptr<ImageDeco
     return fromSkSp(SkImage::MakeFromBitmap(bitmap));
 }
 
+bool ImageBitmap::isResizeOptionValid(const ImageBitmapOptions& options, ExceptionState& exceptionState)
+{
+    if ((options.hasResizeWidth() && options.resizeWidth() == 0) || (options.hasResizeHeight() && options.resizeHeight() == 0)) {
+        exceptionState.throwDOMException(InvalidStateError, "The resizeWidth or/and resizeHeight is equal to 0.");
+        return false;
+    }
+    return true;
+}
+
+bool ImageBitmap::isSourceSizeValid(int sourceWidth, int sourceHeight, ExceptionState& exceptionState)
+{
+    if (!sourceWidth || !sourceHeight) {
+        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sourceWidth ? "height" : "width"));
+        return false;
+    }
+    return true;
+}
+
 // The parameter imageFormat indicates whether the first parameter "image" is unpremultiplied or not.
 // imageFormat = PremultiplyAlpha means the image is in premuliplied format
 // For example, if the image is already in unpremultiplied format and we want the created ImageBitmap
 // in the same format, then we don't need to use the ImageDecoder to decode the image.
-static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipY, bool premultiplyAlpha, AlphaDisposition imageFormat = PremultiplyAlpha, ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied)
+static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions& parsedOptions, AlphaDisposition imageFormat = PremultiplyAlpha, ImageDecoder::GammaAndColorProfileOption colorSpaceOp = ImageDecoder::GammaAndColorProfileApplied)
 {
     ASSERT(image);
 
     IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
-    const IntRect srcRect = intersection(imgRect, cropRect);
+    const IntRect srcRect = intersection(imgRect, parsedOptions.cropRect);
 
     // In the case when cropRect doesn't intersect the source image and it requires a umpremul image
     // We immediately return a transparent black image with cropRect.size()
-    if (srcRect.isEmpty() && !premultiplyAlpha) {
-        SkImageInfo info = SkImageInfo::Make(cropRect.width(), cropRect.height(), kN32_SkColorType, kUnpremul_SkAlphaType);
-        std::unique_ptr<uint8_t[]> dstPixels = wrapArrayUnique(new uint8_t[cropRect.width() * cropRect.height() * info.bytesPerPixel()]());
-        return StaticBitmapImage::create(newSkImageFromRaster(info, std::move(dstPixels), cropRect.width() * info.bytesPerPixel()));
+    if (srcRect.isEmpty() && !parsedOptions.premultiplyAlpha) {
+        SkImageInfo info = SkImageInfo::Make(parsedOptions.cropRect.width(), parsedOptions.cropRect.height(), kN32_SkColorType, kUnpremul_SkAlphaType);
+        std::unique_ptr<uint8_t[]> dstPixels = wrapArrayUnique(new uint8_t[parsedOptions.cropRect.width() * parsedOptions.cropRect.height() * info.bytesPerPixel()]());
+        return StaticBitmapImage::create(newSkImageFromRaster(info, std::move(dstPixels), parsedOptions.cropRect.width() * info.bytesPerPixel()));
     }
 
     RefPtr<SkImage> skiaImage = image->imageForCurrentFrame();
     // Attempt to get raw unpremultiplied image data, executed only when skiaImage is premultiplied.
-    if ((((!premultiplyAlpha && !skiaImage->isOpaque()) || !skiaImage) && image->data() && imageFormat == PremultiplyAlpha) || colorSpaceOp == ImageDecoder::GammaAndColorProfileIgnored) {
+    if ((((!parsedOptions.premultiplyAlpha && !skiaImage->isOpaque()) || !skiaImage) && image->data() && imageFormat == PremultiplyAlpha) || colorSpaceOp == ImageDecoder::GammaAndColorProfileIgnored) {
         std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(*(image->data()),
-            premultiplyAlpha ? ImageDecoder::AlphaPremultiplied : ImageDecoder::AlphaNotPremultiplied,
+            parsedOptions.premultiplyAlpha ? ImageDecoder::AlphaPremultiplied : ImageDecoder::AlphaNotPremultiplied,
             colorSpaceOp));
         if (!decoder)
             return nullptr;
@@ -146,36 +231,43 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
             return nullptr;
     }
 
-    if (cropRect == srcRect) {
+    if (parsedOptions.cropRect == srcRect) {
         RefPtr<SkImage> croppedSkImage = fromSkSp(skiaImage->makeSubset(srcRect));
-        if (flipY)
-            return StaticBitmapImage::create(flipSkImageVertically(croppedSkImage.get(), premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
+        if (parsedOptions.flipY)
+            return StaticBitmapImage::create(flipSkImageVertically(croppedSkImage.get(), parsedOptions.premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
         // Special case: The first parameter image is unpremul but we need to turn it into premul.
-        if (premultiplyAlpha && imageFormat == DontPremultiplyAlpha)
+        if (parsedOptions.premultiplyAlpha && imageFormat == DontPremultiplyAlpha)
             return StaticBitmapImage::create(unPremulSkImageToPremul(croppedSkImage.get()));
         // Call preroll to trigger image decoding.
         croppedSkImage->preroll();
         return StaticBitmapImage::create(croppedSkImage.release());
     }
 
-    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(cropRect.width(), cropRect.height());
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(parsedOptions.cropRect.width(), parsedOptions.cropRect.height());
     if (!surface)
         return nullptr;
     if (srcRect.isEmpty())
         return StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
 
-    SkScalar dstLeft = std::min(0, -cropRect.x());
-    SkScalar dstTop = std::min(0, -cropRect.y());
-    if (cropRect.x() < 0)
-        dstLeft = -cropRect.x();
-    if (cropRect.y() < 0)
-        dstTop = -cropRect.y();
-    surface->getCanvas()->drawImage(skiaImage.get(), dstLeft, dstTop);
+    SkScalar dstLeft = std::min(0, -parsedOptions.cropRect.x());
+    SkScalar dstTop = std::min(0, -parsedOptions.cropRect.y());
+    if (parsedOptions.cropRect.x() < 0)
+        dstLeft = -parsedOptions.cropRect.x();
+    if (parsedOptions.cropRect.y() < 0)
+        dstTop = -parsedOptions.cropRect.y();
+    if (parsedOptions.shouldScaleInput) {
+        SkRect drawDstRect = SkRect::MakeXYWH(dstLeft, dstTop, parsedOptions.resizeWidth, parsedOptions.resizeHeight);
+        SkPaint paint;
+        paint.setFilterQuality(parsedOptions.resizeQuality);
+        surface->getCanvas()->drawImageRect(skiaImage.get(), drawDstRect, &paint);
+    } else {
+        surface->getCanvas()->drawImage(skiaImage.get(), dstLeft, dstTop);
+    }
     skiaImage = fromSkSp(surface->makeImageSnapshot());
-    if (flipY)
+    if (parsedOptions.flipY)
         skiaImage = flipSkImageVertically(skiaImage.get(), PremultiplyAlpha);
 
-    if (premultiplyAlpha) {
+    if (parsedOptions.premultiplyAlpha) {
         if (imageFormat == PremultiplyAlpha)
             return StaticBitmapImage::create(unPremulSkImageToPremul(skiaImage.get()));
         return StaticBitmapImage::create(skiaImage.release());
@@ -183,16 +275,15 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     return StaticBitmapImage::create(premulSkImageToUnPremul(skiaImage.get()));
 }
 
-ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+ImageBitmap::ImageBitmap(HTMLImageElement* image, Optional<IntRect> cropRect, Document* document, const ImageBitmapOptions& options)
 {
-    bool flipY;
-    bool premultiplyAlpha;
-    parseOptions(options, flipY, premultiplyAlpha);
+    RefPtr<Image> input = image->cachedImage()->getImage();
+    ParsedOptions parsedOptions = parseOptions(options, cropRect, image->bitmapSourceSize());
 
     if (options.colorSpaceConversion() == "none")
-        m_image = cropImage(image->cachedImage()->getImage(), cropRect, flipY, premultiplyAlpha, PremultiplyAlpha, ImageDecoder::GammaAndColorProfileIgnored);
+        m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha, ImageDecoder::GammaAndColorProfileIgnored);
     else
-        m_image = cropImage(image->cachedImage()->getImage(), cropRect, flipY, premultiplyAlpha, PremultiplyAlpha, ImageDecoder::GammaAndColorProfileApplied);
+        m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha, ImageDecoder::GammaAndColorProfileApplied);
     if (!m_image)
         return;
     // In the case where the source image is lazy-decoded, m_image may not be in
@@ -205,57 +296,61 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Docum
         m_image = StaticBitmapImage::create(fromSkSp(surface->makeImageSnapshot()));
     }
     m_image->setOriginClean(!image->wouldTaintOrigin(document->getSecurityOrigin()));
-    m_image->setPremultiplied(premultiplyAlpha);
+    m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
 
-ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+ImageBitmap::ImageBitmap(HTMLVideoElement* video, Optional<IntRect> cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntSize playerSize;
     if (video->webMediaPlayer())
         playerSize = video->webMediaPlayer()->naturalSize();
 
+    // TODO(xidachen); implement the resize option.
+    ParsedOptions parsedOptions = parseOptions(options, cropRect, video->bitmapSourceSize());
+
     IntRect videoRect = IntRect(IntPoint(), playerSize);
-    IntRect srcRect = intersection(cropRect, videoRect);
-    std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(cropRect.size(), NonOpaque, DoNotInitializeImagePixels);
+    IntRect srcRect = intersection(parsedOptions.cropRect, videoRect);
+    std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(parsedOptions.cropRect.size(), NonOpaque, DoNotInitializeImagePixels);
     if (!buffer)
         return;
 
-    IntPoint dstPoint = IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y()));
+    IntPoint dstPoint = IntPoint(std::max(0, -parsedOptions.cropRect.x()), std::max(0, -parsedOptions.cropRect.y()));
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
 
-    bool flipY;
-    bool premultiplyAlpha;
-    parseOptions(options, flipY, premultiplyAlpha);
-
-    if (flipY || !premultiplyAlpha) {
+    if (parsedOptions.flipY || !parsedOptions.premultiplyAlpha) {
         RefPtr<SkImage> skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
-        if (flipY)
+        if (parsedOptions.flipY)
             skiaImage = flipSkImageVertically(skiaImage.get(), PremultiplyAlpha);
-        if (!premultiplyAlpha)
+        if (!parsedOptions.premultiplyAlpha)
             skiaImage = premulSkImageToUnPremul(skiaImage.get());
         m_image = StaticBitmapImage::create(skiaImage.release());
     } else {
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
     }
     m_image->setOriginClean(!video->wouldTaintOrigin(document->getSecurityOrigin()));
-    m_image->setPremultiplied(premultiplyAlpha);
+    m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
 
-ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
     ASSERT(canvas->isPaintable());
-    bool flipY;
-    bool premultiplyAlpha;
-    parseOptions(options, flipY, premultiplyAlpha);
+    RefPtr<Image> input = canvas->copiedImage(BackBuffer, PreferAcceleration);
+    ParsedOptions parsedOptions = parseOptions(options, cropRect, canvas->bitmapSourceSize());
 
-    // canvas is always premultiplied, so set the last parameter to true and convert to un-premul later
-    m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect, flipY, true);
+    bool isPremultiplyAlphaReverted = false;
+    if (!parsedOptions.premultiplyAlpha) {
+        parsedOptions.premultiplyAlpha = true;
+        isPremultiplyAlphaReverted = true;
+    }
+    m_image = cropImage(input.get(), parsedOptions);
     if (!m_image)
         return;
-    if (!premultiplyAlpha)
+    if (isPremultiplyAlphaReverted) {
+        parsedOptions.premultiplyAlpha = false;
         m_image = StaticBitmapImage::create(premulSkImageToUnPremul(m_image->imageForCurrentFrame().get()));
+    }
     m_image->setOriginClean(canvas->originClean());
-    m_image->setPremultiplied(premultiplyAlpha);
+    m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
 
 ImageBitmap::ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32_t height, bool isImageBitmapPremultiplied, bool isImageBitmapOriginClean)
@@ -266,44 +361,44 @@ ImageBitmap::ImageBitmap(std::unique_ptr<uint8_t[]> data, uint32_t width, uint32
     m_image->setOriginClean(isImageBitmapOriginClean);
 }
 
-ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap::ImageBitmap(ImageData* data, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    bool flipY;
-    bool premultiplyAlpha;
-    parseOptions(options, flipY, premultiplyAlpha);
-    IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
+    // TODO(xidachen): implement the resize option
+    IntRect dataSrcRect = IntRect(IntPoint(), data->size());
+    ParsedOptions parsedOptions = parseOptions(options, cropRect, data->bitmapSourceSize());
+    IntRect srcRect = cropRect ? intersection(parsedOptions.cropRect, dataSrcRect) : dataSrcRect;
 
     // treat non-premultiplyAlpha as a special case
-    if (!premultiplyAlpha) {
+    if (!parsedOptions.premultiplyAlpha) {
         unsigned char* srcAddr = data->data()->data();
         int srcHeight = data->size().height();
-        int dstHeight = cropRect.height();
+        int dstHeight = parsedOptions.cropRect.height();
         // TODO (xidachen): skia doesn't support SkImage::NewRasterCopy from a kRGBA color type.
         // For now, we swap R and B channel and uses kBGRA color type.
-        SkImageInfo info = SkImageInfo::Make(cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
+        SkImageInfo info = SkImageInfo::Make(parsedOptions.cropRect.width(), dstHeight, kBGRA_8888_SkColorType, kUnpremul_SkAlphaType);
         int srcPixelBytesPerRow = info.bytesPerPixel() * data->size().width();
-        int dstPixelBytesPerRow = info.bytesPerPixel() * cropRect.width();
-        if (cropRect == IntRect(IntPoint(), data->size())) {
-            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, flipY);
+        int dstPixelBytesPerRow = info.bytesPerPixel() * parsedOptions.cropRect.width();
+        if (parsedOptions.cropRect == IntRect(IntPoint(), data->size())) {
+            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
             m_image = StaticBitmapImage::create(fromSkSp(SkImage::MakeRasterCopy(SkPixmap(info, srcAddr, dstPixelBytesPerRow))));
             // restore the original ImageData
-            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, flipY);
+            swizzleImageData(srcAddr, srcHeight, srcPixelBytesPerRow, parsedOptions.flipY);
         } else {
             std::unique_ptr<uint8_t[]> copiedDataBuffer = wrapArrayUnique(new uint8_t[dstHeight * dstPixelBytesPerRow]());
             if (!srcRect.isEmpty()) {
-                IntPoint srcPoint = IntPoint((cropRect.x() > 0) ? cropRect.x() : 0, (cropRect.y() > 0) ? cropRect.y() : 0);
-                IntPoint dstPoint = IntPoint((cropRect.x() >= 0) ? 0 : -cropRect.x(), (cropRect.y() >= 0) ? 0 : -cropRect.y());
+                IntPoint srcPoint = IntPoint((parsedOptions.cropRect.x() > 0) ? parsedOptions.cropRect.x() : 0, (parsedOptions.cropRect.y() > 0) ? parsedOptions.cropRect.y() : 0);
+                IntPoint dstPoint = IntPoint((parsedOptions.cropRect.x() >= 0) ? 0 : -parsedOptions.cropRect.x(), (parsedOptions.cropRect.y() >= 0) ? 0 : -parsedOptions.cropRect.y());
                 int copyHeight = srcHeight - srcPoint.y();
-                if (cropRect.height() < copyHeight)
-                    copyHeight = cropRect.height();
+                if (parsedOptions.cropRect.height() < copyHeight)
+                    copyHeight = parsedOptions.cropRect.height();
                 int copyWidth = data->size().width() - srcPoint.x();
-                if (cropRect.width() < copyWidth)
-                    copyWidth = cropRect.width();
+                if (parsedOptions.cropRect.width() < copyWidth)
+                    copyWidth = parsedOptions.cropRect.width();
                 for (int i = 0; i < copyHeight; i++) {
                     int srcStartCopyPosition = (i + srcPoint.y()) * srcPixelBytesPerRow + srcPoint.x() * info.bytesPerPixel();
                     int srcEndCopyPosition = srcStartCopyPosition + copyWidth * info.bytesPerPixel();
                     int dstStartCopyPosition;
-                    if (flipY)
+                    if (parsedOptions.flipY)
                         dstStartCopyPosition = (dstHeight -1 - dstPoint.y() - i) * dstPixelBytesPerRow + dstPoint.x() * info.bytesPerPixel();
                     else
                         dstStartCopyPosition = (dstPoint.y() + i) * dstPixelBytesPerRow + dstPoint.x() * info.bytesPerPixel();
@@ -319,11 +414,11 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
             }
             m_image = StaticBitmapImage::create(newSkImageFromRaster(info, std::move(copiedDataBuffer), dstPixelBytesPerRow));
         }
-        m_image->setPremultiplied(premultiplyAlpha);
+        m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
         return;
     }
 
-    std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(cropRect.size(), NonOpaque, DoNotInitializeImagePixels);
+    std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(parsedOptions.cropRect.size(), NonOpaque, DoNotInitializeImagePixels);
     if (!buffer)
         return;
 
@@ -332,40 +427,43 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         return;
     }
 
-    IntPoint dstPoint = IntPoint(std::min(0, -cropRect.x()), std::min(0, -cropRect.y()));
-    if (cropRect.x() < 0)
-        dstPoint.setX(-cropRect.x());
-    if (cropRect.y() < 0)
-        dstPoint.setY(-cropRect.y());
+    IntPoint dstPoint = IntPoint(std::min(0, -parsedOptions.cropRect.x()), std::min(0, -parsedOptions.cropRect.y()));
+    if (parsedOptions.cropRect.x() < 0)
+        dstPoint.setX(-parsedOptions.cropRect.x());
+    if (parsedOptions.cropRect.y() < 0)
+        dstPoint.setY(-parsedOptions.cropRect.y());
     buffer->putByteArray(Unmultiplied, data->data()->data(), data->size(), srcRect, dstPoint);
-    if (flipY)
+    if (parsedOptions.flipY)
         m_image = StaticBitmapImage::create(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get(), PremultiplyAlpha));
     else
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
 }
 
-ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap::ImageBitmap(ImageBitmap* bitmap, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    bool flipY;
-    bool premultiplyAlpha;
-    parseOptions(options, flipY, premultiplyAlpha);
-    m_image = cropImage(bitmap->bitmapImage(), cropRect, flipY, premultiplyAlpha, bitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha);
+    RefPtr<Image> input = bitmap->bitmapImage();
+    if (!input)
+        return;
+    ParsedOptions parsedOptions = parseOptions(options, cropRect, input->size());
+
+    m_image = cropImage(input.get(), parsedOptions, bitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(bitmap->originClean());
-    m_image->setPremultiplied(premultiplyAlpha);
+    m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
 
-ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    bool flipY;
-    bool premultiplyAlpha;
-    parseOptions(options, flipY, premultiplyAlpha);
-    m_image = cropImage(image.get(), cropRect, flipY, premultiplyAlpha, DontPremultiplyAlpha);
+    bool originClean = image->originClean();
+    RefPtr<Image> input = image;
+    ParsedOptions parsedOptions = parseOptions(options, cropRect, input->size());
+
+    m_image = cropImage(input.get(), parsedOptions, DontPremultiplyAlpha);
     if (!m_image)
         return;
-    m_image->setOriginClean(image->originClean());
-    m_image->setPremultiplied(premultiplyAlpha);
+    m_image->setOriginClean(originClean);
+    m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
@@ -389,40 +487,34 @@ ImageBitmap::~ImageBitmap()
 {
 }
 
-ImageBitmap* ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(HTMLImageElement* image, Optional<IntRect> cropRect, Document* document, const ImageBitmapOptions& options)
 {
-    IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(image, normalizedCropRect, document, options);
+    return new ImageBitmap(image, cropRect, document, options);
 }
 
-ImageBitmap* ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(HTMLVideoElement* video, Optional<IntRect> cropRect, Document* document, const ImageBitmapOptions& options)
 {
-    IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(video, normalizedCropRect, document, options);
+    return new ImageBitmap(video, cropRect, document, options);
 }
 
-ImageBitmap* ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(HTMLCanvasElement* canvas, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(canvas, normalizedCropRect, options);
+    return new ImageBitmap(canvas, cropRect, options);
 }
 
-ImageBitmap* ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(ImageData* data, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(data, normalizedCropRect, options);
+    return new ImageBitmap(data, cropRect, options);
 }
 
-ImageBitmap* ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(ImageBitmap* bitmap, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(bitmap, normalizedCropRect, options);
+    return new ImageBitmap(bitmap, cropRect, options);
 }
 
-ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
+ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, Optional<IntRect> cropRect, const ImageBitmapOptions& options)
 {
-    IntRect normalizedCropRect = normalizeRect(cropRect);
-    return new ImageBitmap(image, normalizedCropRect, options);
+    return new ImageBitmap(image, cropRect, options);
 }
 
 ImageBitmap* ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
@@ -490,29 +582,14 @@ IntSize ImageBitmap::size() const
     return IntSize(m_image->width(), m_image->height());
 }
 
-ScriptPromise ImageBitmap::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
+ScriptPromise ImageBitmap::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Optional<IntRect> cropRect, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
-    if (!sw || !sh) {
-        exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
+    if ((cropRect && !isSourceSizeValid(cropRect->width(), cropRect->height(), exceptionState))
+        || !isSourceSizeValid(width(), height(), exceptionState))
         return ScriptPromise();
-    }
-    return ImageBitmapSource::fulfillImageBitmap(scriptState, create(this, IntRect(sx, sy, sw, sh), options));
-}
-
-void ImageBitmap::parseOptions(const ImageBitmapOptions& options, bool& flipY, bool& premultiplyAlpha)
-{
-    if (options.imageOrientation() == imageOrientationFlipY) {
-        flipY = true;
-    } else {
-        flipY = false;
-        ASSERT(options.imageOrientation() == imageBitmapOptionNone);
-    }
-    if (options.premultiplyAlpha() == imageBitmapOptionNone) {
-        premultiplyAlpha = false;
-    } else {
-        premultiplyAlpha = true;
-        ASSERT(options.premultiplyAlpha() == "default" || options.premultiplyAlpha() == "premultiply");
-    }
+    if (!isResizeOptionValid(options, exceptionState))
+        return ScriptPromise();
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, create(this, cropRect, options));
 }
 
 PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason, const FloatSize&) const

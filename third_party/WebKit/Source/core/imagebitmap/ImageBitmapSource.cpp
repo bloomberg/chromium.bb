@@ -21,7 +21,7 @@ ScriptPromise ImageBitmapSource::fulfillImageBitmap(ScriptState* scriptState, Im
     return promise;
 }
 
-ScriptPromise ImageBitmapSource::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
+ScriptPromise ImageBitmapSource::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, Optional<IntRect> cropRect, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     return ScriptPromise();
 }

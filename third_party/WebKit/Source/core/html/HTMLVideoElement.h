@@ -90,7 +90,7 @@ public:
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override;
-    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&) override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Optional<IntRect> cropRect, const ImageBitmapOptions&, ExceptionState&) override;
 
 private:
     HTMLVideoElement(Document&);

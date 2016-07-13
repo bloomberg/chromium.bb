@@ -84,18 +84,18 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
     ImageResource* image = ImageResource::create(StaticBitmapImage::create(m_image).get());
     imageElement->setImageResource(image);
 
+    Optional<IntRect> cropRect = IntRect(0, 0, m_image->width(), m_image->height());
     ImageBitmap* imageBitmapNoCrop = ImageBitmap::create(imageElement,
-        IntRect(0, 0, m_image->width(), m_image->height()),
-        &(imageElement->document()), defaultOptions);
+        cropRect, &(imageElement->document()), defaultOptions);
+    cropRect = IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width() / 2, m_image->height() / 2);
     ImageBitmap* imageBitmapInteriorCrop = ImageBitmap::create(imageElement,
-        IntRect(m_image->width() / 2, m_image->height() / 2, m_image->width() / 2, m_image->height() / 2),
-        &(imageElement->document()), defaultOptions);
+        cropRect, &(imageElement->document()), defaultOptions);
+    cropRect = IntRect(-m_image->width() / 2, -m_image->height() / 2, m_image->width(), m_image->height());
     ImageBitmap* imageBitmapExteriorCrop = ImageBitmap::create(imageElement,
-        IntRect(-m_image->width() / 2, -m_image->height() / 2, m_image->width(), m_image->height()),
-        &(imageElement->document()), defaultOptions);
+        cropRect, &(imageElement->document()), defaultOptions);
+    cropRect = IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height());
     ImageBitmap* imageBitmapOutsideCrop = ImageBitmap::create(imageElement,
-        IntRect(-m_image->width(), -m_image->height(), m_image->width(), m_image->height()),
-        &(imageElement->document()), defaultOptions);
+        cropRect, &(imageElement->document()), defaultOptions);
 
     ASSERT_EQ(imageBitmapNoCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
     ASSERT_NE(imageBitmapInteriorCrop->bitmapImage()->imageForCurrentFrame(), imageElement->cachedImage()->getImage()->imageForCurrentFrame());
@@ -114,9 +114,9 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
     image->setImageResource(originalImageResource);
 
     const ImageBitmapOptions defaultOptions;
+    Optional<IntRect> cropRect = IntRect(0, 0, m_image->width(), m_image->height());
     ImageBitmap* imageBitmap = ImageBitmap::create(image,
-        IntRect(0, 0, m_image->width(), m_image->height()),
-        &(image->document()), defaultOptions);
+        cropRect, &(image->document()), defaultOptions);
     ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->getImage()->imageForCurrentFrame());
 
     ImageResource* newImageResource = ImageResource::create(

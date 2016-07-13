@@ -59,7 +59,7 @@ public:
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override { return m_size; }
-    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&) override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, Optional<IntRect> cropRect, const ImageBitmapOptions&, ExceptionState&) override;
 
     DEFINE_INLINE_TRACE()
     {
