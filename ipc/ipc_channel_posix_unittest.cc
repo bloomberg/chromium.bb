@@ -17,14 +17,17 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
@@ -33,6 +36,8 @@
 #include "testing/multiprocess_func_list.h"
 
 namespace {
+
+const char kSocketNameSwitch[] = "connection-socket-name";
 
 static const uint32_t kQuitMessage = 47;
 
@@ -112,8 +117,18 @@ class IPCChannelPosixTest : public base::MultiProcessTest {
   static void SetUpSocket(IPC::ChannelHandle *handle,
                           IPC::Channel::Mode mode);
   static void SpinRunLoop(base::TimeDelta delay);
-  static const std::string GetConnectionSocketName();
   static const std::string GetChannelDirName();
+  static std::string GetClientConnectionSocketName();
+
+  const std::string& GetConnectionSocketName();
+
+  base::Process SpawnChild(const std::string& procname) {
+    base::CommandLine command_line = MakeCmdLine(procname);
+    command_line.AppendSwitchASCII(
+        kSocketNameSwitch, GetConnectionSocketName());
+    return base::SpawnMultiProcessTestChild(
+        procname, command_line, base::LaunchOptions());
+  }
 
   bool WaitForExit(base::Process& process, int* exit_code) {
 #if defined(OS_ANDROID)
@@ -130,6 +145,7 @@ class IPCChannelPosixTest : public base::MultiProcessTest {
 
  private:
   std::unique_ptr<base::MessageLoopForIO> message_loop_;
+  std::string socket_name_;
 };
 
 const std::string IPCChannelPosixTest::GetChannelDirName() {
@@ -138,8 +154,20 @@ const std::string IPCChannelPosixTest::GetChannelDirName() {
   return tmp_dir.value();
 }
 
-const std::string IPCChannelPosixTest::GetConnectionSocketName() {
-  return GetChannelDirName() + "/chrome_IPCChannelPosixTest__ConnectionSocket";
+const std::string& IPCChannelPosixTest::GetConnectionSocketName() {
+  if (socket_name_.empty()) {
+    uint64_t id = base::RandUint64();
+    socket_name_ = GetChannelDirName() +
+        "/chrome_IPCChannelPosixTest_" +
+        base::HexEncode(&id, sizeof(id));
+  }
+  return socket_name_;
+}
+
+std::string IPCChannelPosixTest::GetClientConnectionSocketName() {
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(kSocketNameSwitch));
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      kSocketNameSwitch);
 }
 
 void IPCChannelPosixTest::SetUp() {
@@ -439,7 +467,8 @@ TEST_F(IPCChannelPosixTest, IsNamedServerInitialized) {
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
   base::MessageLoopForIO message_loop;
   IPCChannelPosixTestListener listener(true);
-  IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
+  IPC::ChannelHandle handle(
+      IPCChannelPosixTest::GetClientConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
   std::unique_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
       handle, IPC::Channel::MODE_NAMED_CLIENT, &listener));
@@ -453,7 +482,8 @@ MULTIPROCESS_TEST_MAIN(IPCChannelPosixTestConnectionProc) {
 MULTIPROCESS_TEST_MAIN(IPCChannelPosixFailConnectionProc) {
   base::MessageLoopForIO message_loop;
   IPCChannelPosixTestListener listener(false);
-  IPC::ChannelHandle handle(IPCChannelPosixTest::GetConnectionSocketName());
+  IPC::ChannelHandle handle(
+      IPCChannelPosixTest::GetClientConnectionSocketName());
   IPCChannelPosixTest::SetUpSocket(&handle, IPC::Channel::MODE_NAMED_CLIENT);
   std::unique_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
       handle, IPC::Channel::MODE_NAMED_CLIENT, &listener));
