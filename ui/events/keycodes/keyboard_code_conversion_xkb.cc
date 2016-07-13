@@ -238,7 +238,7 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym) {
     case XKB_KEY_XF86AudioRaiseVolume:
       return DomKey::AUDIO_VOLUME_UP;
     case XKB_KEY_XF86AudioPlay:
-      return DomKey::MEDIA_PLAY;
+      return DomKey::MEDIA_PLAY_PAUSE;
     case XKB_KEY_XF86AudioStop:
       return DomKey::MEDIA_STOP;
     case XKB_KEY_XF86AudioPrev:
