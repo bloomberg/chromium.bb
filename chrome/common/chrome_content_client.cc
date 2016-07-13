@@ -338,10 +338,8 @@ bool GetComponentUpdatedPepperFlash(content::PepperPluginInfo* plugin) {
 #endif  // defined(FLAPPER_AVAILABLE)
   return false;
 }
+#endif  // defined(OS_LINUX)
 
-// Similar to GetComponentUpdatedPepperFlash, this is used on Linux only because
-// on other platforms the component updater will take responsibility for
-// locating and registering the bundled version of Flash.
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 #if defined(FLAPPER_AVAILABLE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -367,7 +365,6 @@ bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
   return false;
 #endif  // FLAPPER_AVAILABLE
 }
-#endif  // defined(OS_LINUX)
 
 bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -534,12 +531,12 @@ void ChromeContentClient::AddPepperPlugins(
       new content::PepperPluginInfo);
   if (GetComponentUpdatedPepperFlash(component_flash.get()))
     flash_versions.push_back(component_flash.release());
+#endif  // defined(OS_LINUX)
 
   std::unique_ptr<content::PepperPluginInfo> bundled_flash(
       new content::PepperPluginInfo);
   if (GetBundledPepperFlash(bundled_flash.get()))
     flash_versions.push_back(bundled_flash.release());
-#endif  // defined(OS_LINUX)
 
   std::unique_ptr<content::PepperPluginInfo> system_flash(
       new content::PepperPluginInfo);
