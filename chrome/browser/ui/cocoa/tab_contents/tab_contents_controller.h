@@ -20,10 +20,9 @@ class WebContents;
 // display of the WebContents view.
 //
 // Client code that inserts [controller view] into the view hierarchy needs to
-// beforehand call the |-ensureContentsSizeDoesNotChange| method. This will
-// avoid multiple resize messages being sent to the renderer and triggering
-// redundant and costly layouts. After the view has been inserted, client code
-// calls |-ensureContentsVisible| to display the WebContents view.
+// call -ensureContentsVisibleInSuperview:(NSView*)superview to match the
+// container to the [superview bounds] and avoid multiple resize messages being
+// sent to the renderer, which triggers redundant and costly layouts.
 //
 // AutoEmbedFullscreen mode: When enabled, TabContentsController will observe
 // for WebContents fullscreen changes and automatically swap the normal
@@ -57,15 +56,10 @@ class WebContents;
 // Create the contents of a tab represented by |contents|.
 - (id)initWithContents:(content::WebContents*)contents isPopup:(BOOL)popup;
 
-// Call when the container view owned by TabContentsController is about to be
-// resized and inserted into the view hierarchy, so as to not trigger
-// unnecessary content re-layout.
-- (void)ensureContentsSizeDoesNotChange;
-
-// Call after the container view is inserted into the view hierarchy and
-// properly sized. Then, this method will select either the WebContents view or
-// the fullscreen view and swap it into the view hierarchy for display.
-- (void)ensureContentsVisible;
+// Call to insert the container view into the view hierarchy, sizing it to match
+// |superview|. Then, this method will select either the WebContents view or
+// the fullscreen view and swap it into the container for display.
+- (void)ensureContentsVisibleInSuperview:(NSView*)superview;
 
 // Called after we enter fullscreen to ensure that the fullscreen widget will
 // have the right frame.
