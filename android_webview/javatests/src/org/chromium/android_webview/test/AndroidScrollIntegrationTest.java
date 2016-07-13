@@ -838,4 +838,44 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                 Math.abs(atomicContentHeight.get() - atomicNewContentHeightApproximation.get())
                         <= 1);
     }
+
+    @SmallTest
+    @Feature("AndroidWebView")
+    public void testScrollOffsetAfterCapturePicture() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+                (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        final int targetScrollYPix = 322;
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
+
+        assertScrollOnMainSync(testContainerView, 0, 0);
+
+        scrollToOnMainSync(testContainerView, 0, targetScrollYPix);
+
+        final int scrolledYPix = runTestOnUiThreadAndGetResult(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return testContainerView.getScrollY();
+            }
+        });
+
+        assertTrue(scrolledYPix > 0);
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                testContainerView.getAwContents().capturePicture();
+            }
+        });
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                assertEquals(testContainerView.getScrollY(), scrolledYPix);
+            }
+        });
+    }
 }
