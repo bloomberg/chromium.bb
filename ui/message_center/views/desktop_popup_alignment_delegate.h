@@ -52,6 +52,8 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
     POPUP_ALIGNMENT_RIGHT = 1 << 3,
   };
 
+  void UpdatePrimaryDisplay();
+
   // Overridden from display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
@@ -59,7 +61,7 @@ class MESSAGE_CENTER_EXPORT DesktopPopupAlignmentDelegate
                                uint32_t metrics) override;
 
   int32_t alignment_;
-  int64_t display_id_;
+  int64_t primary_display_id_;
   display::Screen* screen_;
   gfx::Rect work_area_;
 
