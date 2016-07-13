@@ -50,6 +50,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/text/CompressibleString.h"
 #include "wtf/text/AtomicString.h"
+#include "wtf/text/StringView.h"
 #include <v8.h>
 
 namespace blink {
@@ -421,16 +422,18 @@ inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const CompressibleSt
     return V8PerIsolateData::from(isolate)->getStringCache()->v8ExternalString(isolate, string);
 }
 
-inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, int length = -1)
+inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const StringView& string)
 {
-    ASSERT(isolate);
-    v8::Local<v8::String> value;
-    if (LIKELY(v8::String::NewFromUtf8(isolate, str, v8::NewStringType::kInternalized, length).ToLocal(&value)))
-        return value;
-    // Immediately crashes when NewFromUtf8() fails because it only fails the
-    // given str is too long.
-    RELEASE_NOTREACHED();
-    return v8::String::Empty(isolate);
+    DCHECK(isolate);
+    if (string.is8Bit())
+        return v8CallOrCrash(v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>(string.characters8()), v8::NewStringType::kInternalized, static_cast<int>(string.length())));
+    return v8CallOrCrash(v8::String::NewFromTwoByte(isolate, reinterpret_cast<const uint16_t*>(string.characters16()), v8::NewStringType::kInternalized, static_cast<int>(string.length())));
+}
+
+inline v8::Local<v8::String> v8StringFromUtf8(v8::Isolate* isolate, const char* bytes, int length)
+{
+    DCHECK(isolate);
+    return v8CallOrCrash(v8::String::NewFromUtf8(isolate, bytes, v8::NewStringType::kNormal, length));
 }
 
 inline v8::Local<v8::Value> v8Undefined()
