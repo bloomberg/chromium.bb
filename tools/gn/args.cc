@@ -184,6 +184,12 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
       declared_arguments.insert(arg);
     }
 
+    // In all the cases below, mark the variable used. If a variable is set
+    // that's only used in one toolchain, we don't want to report unused
+    // variable errors in other toolchains. Also, in some cases it's reasonable
+    // for the build file to overwrite the value with a different value based
+    // on some other condition without dereferencing the value first.
+
     // Check whether this argument has been overridden on the toolchain level
     // and use the override instead.
     Scope::KeyValueMap::const_iterator toolchain_override =
@@ -192,6 +198,7 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
       scope_to_set->SetValue(toolchain_override->first,
                              toolchain_override->second,
                              toolchain_override->second.origin());
+      scope_to_set->MarkUsed(arg.first);
       continue;
     }
 
@@ -201,11 +208,10 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
     if (override != overrides_.end()) {
       scope_to_set->SetValue(override->first, override->second,
                              override->second.origin());
+      scope_to_set->MarkUsed(override->first);
       continue;
     }
 
-    // Mark the variable used so the build script can override it in
-    // certain cases without getting unused value errors.
     scope_to_set->SetValue(arg.first, arg.second, arg.second.origin());
     scope_to_set->MarkUsed(arg.first);
   }
