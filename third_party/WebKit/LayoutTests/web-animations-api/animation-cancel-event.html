@@ -1,12 +1,15 @@
 <!DOCTYPE html>
-<body>
+<meta charset=utf-8>
+<title>Canceling an animation: cancel event</title>
+<link rel="help" href="https://w3c.github.io/web-animations/#canceling-an-animation-section">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<body>
 <script>
 var anim1 = document.body.animate([], 100000);
 var anim2 = document.body.animate([], 100000);
 
-var cancelTest = async_test('Cancelling animation should create cancel event.');
+var cancelTest = async_test('Cancelling animation should fire a cancel event.');
 var fired = false;
 
 anim1.oncancel = function(event) {
@@ -28,4 +31,3 @@ anim2.onfinish = function() {
 anim1.cancel();
 anim2.finish();
 </script>
-</body>
