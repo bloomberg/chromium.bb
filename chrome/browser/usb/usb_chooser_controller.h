@@ -40,6 +40,7 @@ class UsbChooserController : public ChooserController,
   ~UsbChooserController() override;
 
   // ChooserController:
+  base::string16 GetOkButtonLabel() const override;
   size_t NumOptions() const override;
   base::string16 GetOption(size_t index) const override;
   void Select(size_t index) override;

@@ -17,6 +17,7 @@ class MockChooserController : public ChooserController {
   ~MockChooserController() override;
 
   // ChooserController:
+  base::string16 GetOkButtonLabel() const override;
   size_t NumOptions() const override;
   base::string16 GetOption(size_t index) const override;
   MOCK_METHOD1(Select, void(size_t index));

@@ -149,9 +149,9 @@ base::string16 ChooserContentView::GetWindowTitle() const {
 
 base::string16 ChooserContentView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
-                                       ? IDS_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT
-                                       : IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
+  return button == ui::DIALOG_BUTTON_OK
+             ? chooser_controller_->GetOkButtonLabel()
+             : l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_CANCEL_BUTTON_TEXT);
 }
 
 bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {

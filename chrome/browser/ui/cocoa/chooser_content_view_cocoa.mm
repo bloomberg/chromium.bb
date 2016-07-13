@@ -264,7 +264,7 @@ void TableViewController::UpdateTableView() {
 
 - (base::scoped_nsobject<NSButton>)createConnectButton {
   NSString* connectTitle =
-      l10n_util::GetNSString(IDS_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT);
+      base::SysUTF16ToNSString(chooserController_->GetOkButtonLabel());
   return [self createButtonWithTitle:connectTitle];
 }
 

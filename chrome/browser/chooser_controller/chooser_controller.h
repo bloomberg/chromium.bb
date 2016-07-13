@@ -51,6 +51,9 @@ class ChooserController {
   // Returns the text to be displayed in the chooser title.
   base::string16 GetTitle() const;
 
+  // Returns the label for OK button.
+  virtual base::string16 GetOkButtonLabel() const = 0;
+
   // The number of options users can pick from. For example, it can be
   // the number of USB/Bluetooth device names which are listed in the
   // chooser so that users can grant permission.

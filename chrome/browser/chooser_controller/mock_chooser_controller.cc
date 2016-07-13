@@ -9,6 +9,10 @@ MockChooserController::MockChooserController(content::RenderFrameHost* owner)
 
 MockChooserController::~MockChooserController() {}
 
+base::string16 MockChooserController::GetOkButtonLabel() const {
+  return base::string16();
+}
+
 size_t MockChooserController::NumOptions() const {
   return option_names_.size();
 }

@@ -71,6 +71,10 @@ UsbChooserController::~UsbChooserController() {
     callback_.Run(nullptr);
 }
 
+base::string16 UsbChooserController::GetOkButtonLabel() const {
+  return l10n_util::GetStringUTF16(IDS_USB_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT);
+}
+
 size_t UsbChooserController::NumOptions() const {
   return devices_.size();
 }

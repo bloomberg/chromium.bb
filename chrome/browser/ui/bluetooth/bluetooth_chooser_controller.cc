@@ -33,6 +33,11 @@ BluetoothChooserController::BluetoothChooserController(
 
 BluetoothChooserController::~BluetoothChooserController() {}
 
+base::string16 BluetoothChooserController::GetOkButtonLabel() const {
+  return l10n_util::GetStringUTF16(
+      IDS_BLUETOOTH_DEVICE_CHOOSER_PAIR_BUTTON_TEXT);
+}
+
 size_t BluetoothChooserController::NumOptions() const {
   return device_names_and_ids_.size();
 }
