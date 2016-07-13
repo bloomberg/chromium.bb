@@ -297,6 +297,11 @@ void FindArcTasks(Profile* profile,
 
   mojo::Array<arc::mojom::UrlWithMimeTypePtr> urls;
   for (const extensions::EntryInfo& entry : entries) {
+    if (entry.is_directory) {  // ARC apps don't support directories.
+      callback.Run(std::move(result_list));
+      return;
+    }
+
     GURL url;
     if (!ConvertToArcUrl(entry.path, &url)) {
       callback.Run(std::move(result_list));
