@@ -7,36 +7,18 @@
 #include <string.h>
 
 #include <memory>
-#include <vector>
 
-#include "base/strings/string_number_conversions.h"
+#include "components/tracing/test/fake_scattered_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
 namespace v2 {
 namespace {
 
-class MockDelegate : public ScatteredStreamWriter::Delegate {
- public:
-  static const size_t kChunkSize = 8;
-
-  ContiguousMemoryRange GetNewBuffer() override {
-    std::unique_ptr<uint8_t[]> chunk(new uint8_t[kChunkSize]);
-    uint8_t* begin = chunk.get();
-    memset(begin, 0, kChunkSize);
-    chunks.push_back(std::move(chunk));
-    return {begin, begin + kChunkSize};
-  }
-
-  std::string GetChunkAsString(int chunk_index) {
-    return base::HexEncode(chunks[chunk_index].get(), kChunkSize);
-  }
-
-  std::vector<std::unique_ptr<uint8_t[]>> chunks;
-};
+const size_t kChunkSize = 8;
 
 TEST(ScatteredStreamWriterTest, ScatteredWrites) {
-  MockDelegate delegate;
+  FakeScatteredBuffer delegate(kChunkSize);
   ScatteredStreamWriter ssw(&delegate);
 
   const uint8_t kOneByteBuf[] = {0x40};
@@ -47,38 +29,38 @@ TEST(ScatteredStreamWriterTest, ScatteredWrites) {
     kTwentyByteBuf[i] = 0xA0 + i;
 
   // Writing up to the chunk size should cause only the initial extension.
-  for (uint8_t i = 0; i < MockDelegate::kChunkSize; ++i) {
+  for (uint8_t i = 0; i < kChunkSize; ++i) {
     ssw.WriteByte(i);
-    EXPECT_EQ(MockDelegate::kChunkSize - i - 1, ssw.bytes_available());
+    EXPECT_EQ(kChunkSize - i - 1, ssw.bytes_available());
   }
-  EXPECT_EQ(1u, delegate.chunks.size());
+  EXPECT_EQ(1u, delegate.chunks().size());
   EXPECT_EQ(0u, ssw.bytes_available());
 
   // This extra write will cause the first extension.
   ssw.WriteBytes(kOneByteBuf, sizeof(kOneByteBuf));
-  EXPECT_EQ(2u, delegate.chunks.size());
+  EXPECT_EQ(2u, delegate.chunks().size());
   EXPECT_EQ(7u, ssw.bytes_available());
 
   // This starts at offset 1, to make sure we don't hardcode any assumption
   // about alignment.
   ContiguousMemoryRange reserved_range_1 = ssw.ReserveBytes(4);
-  EXPECT_EQ(2u, delegate.chunks.size());
+  EXPECT_EQ(2u, delegate.chunks().size());
   EXPECT_EQ(3u, ssw.bytes_available());
 
   ssw.WriteByte(0xFF);
   ssw.WriteBytes(kThreeByteBuf, sizeof(kThreeByteBuf));
-  EXPECT_EQ(3u, delegate.chunks.size());
+  EXPECT_EQ(3u, delegate.chunks().size());
   EXPECT_EQ(7u, ssw.bytes_available());
 
   ContiguousMemoryRange reserved_range_2 = ssw.ReserveBytes(4);
   ssw.WriteBytes(kTwentyByteBuf, sizeof(kTwentyByteBuf));
-  EXPECT_EQ(6u, delegate.chunks.size());
+  EXPECT_EQ(6u, delegate.chunks().size());
   EXPECT_EQ(7u, ssw.bytes_available());
 
   // Writing reserved bytes should not change the bytes_available().
   memcpy(reserved_range_1.begin, kFourByteBuf, sizeof(kFourByteBuf));
   memcpy(reserved_range_2.begin, kFourByteBuf, sizeof(kFourByteBuf));
-  EXPECT_EQ(6u, delegate.chunks.size());
+  EXPECT_EQ(6u, delegate.chunks().size());
   EXPECT_EQ(7u, ssw.bytes_available());
 
   // Check that reserving more bytes than what left creates a brand new chunk
@@ -86,7 +68,7 @@ TEST(ScatteredStreamWriterTest, ScatteredWrites) {
   for (uint8_t i = 0; i < 5; ++i)
     ssw.WriteByte(0xFF);
   memcpy(ssw.ReserveBytes(4).begin, kFourByteBuf, sizeof(kFourByteBuf));
-  EXPECT_EQ(7u, delegate.chunks.size());
+  EXPECT_EQ(7u, delegate.chunks().size());
   EXPECT_EQ(4u, ssw.bytes_available());
 
   EXPECT_EQ("0001020304050607", delegate.GetChunkAsString(0));

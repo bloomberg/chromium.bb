@@ -62,6 +62,7 @@ source_set("unit_tests") {
     "core/proto_utils_unittest.cc",
     "core/scattered_stream_writer_unittest.cc",
     "core/trace_ring_buffer_unittest.cc",
+    "test/fake_scattered_buffer.cc",
   ]
 
   deps = [

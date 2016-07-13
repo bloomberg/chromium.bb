@@ -876,6 +876,7 @@
       'tracing/core/proto_utils_unittest.cc',
       'tracing/core/trace_ring_buffer_unittest.cc',
       'tracing/core/scattered_stream_writer_unittest.cc',
+      'tracing/test/fake_scattered_buffer.cc',
     ],
     'translate_unittest_sources': [
       'translate/core/browser/language_state_unittest.cc',
