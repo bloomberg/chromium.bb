@@ -575,6 +575,10 @@ class DownloadContentTest : public ContentBrowserTest {
             make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
   }
 
+  void SetUpCommandLine(base::CommandLine* commnad_line) override {
+    IsolateAllSitesForTesting(commnad_line);
+  }
+
   TestShellDownloadManagerDelegate* GetDownloadManagerDelegate() {
     return test_delegate_.get();
   }
@@ -2477,6 +2481,45 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DuplicateContentDisposition) {
 
   EXPECT_EQ(FILE_PATH_LITERAL("Jumboshrimp.txt"),
             downloads[0]->GetTargetFilePath().BaseName().value());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameOriginIFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL frame_url = embedded_test_server()->GetURL(
+      "/download/download-attribute.html?target=/download/download-test.lib");
+  GURL document_url = embedded_test_server()->GetURL(
+      "/download/iframe-host.html?target=" + frame_url.spec());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  WaitForCompletion(download);
+
+  EXPECT_STREQ(FILE_PATH_LITERAL("suggested-filename"),
+               download->GetTargetFilePath().BaseName().value().c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadAttributeCrossOriginIFrame) {
+  net::EmbeddedTestServer origin_one;
+  net::EmbeddedTestServer origin_two;
+  ASSERT_TRUE(origin_one.Start());
+  ASSERT_TRUE(origin_two.Start());
+
+  origin_one.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+  origin_two.ServeFilesFromDirectory(GetTestFilePath("download", ""));
+
+  GURL frame_url =
+      origin_one.GetURL("/download-attribute.html?target=" +
+                        origin_two.GetURL("/download-test.lib").spec());
+  GURL::Replacements replacements;
+  replacements.SetHostStr("localhost");
+  frame_url = frame_url.ReplaceComponents(replacements);
+  GURL document_url =
+      origin_two.GetURL("/iframe-host.html?target=" + frame_url.spec());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  WaitForCompletion(download);
+
+  EXPECT_STREQ(FILE_PATH_LITERAL("download-test.lib"),
+               download->GetTargetFilePath().BaseName().value().c_str());
 }
 
 }  // namespace content
