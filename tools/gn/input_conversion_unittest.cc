@@ -158,7 +158,7 @@ TEST_F(InputConversionTest, ValueError) {
       "[rebase_path(\"//\")]",
   };
 
-  for (auto test : kTests) {
+  for (auto* test : kTests) {
     Err err;
     std::string input(test);
     Value result = ConvertInputToValue(settings(), input, nullptr,

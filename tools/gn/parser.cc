@@ -711,7 +711,7 @@ void Parser::AssignComments(ParseNode* file) {
 
   // Assign line comments to syntax immediately following.
   int cur_comment = 0;
-  for (const auto& node : pre) {
+  for (auto* node : pre) {
     const Location& start = node->GetRange().begin();
     while (cur_comment < static_cast<int>(line_comment_tokens_.size())) {
       if (start.byte() >= line_comment_tokens_[cur_comment].location().byte()) {

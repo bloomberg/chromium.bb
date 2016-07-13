@@ -298,7 +298,7 @@ void PrintTargetsAsLabels(bool indent,
                           const std::vector<const Target*>& targets) {
   // Putting the labels into a set automatically sorts them for us.
   std::set<Label> unique_labels;
-  for (const auto& target : targets)
+  for (auto* target : targets)
     unique_labels.insert(target->label());
 
   // Grab the label of the default toolchain from the first target.
@@ -446,7 +446,7 @@ bool ResolveFromCommandLineInput(
 void FilterTargetsByPatterns(const std::vector<const Target*>& input,
                              const std::vector<LabelPattern>& filter,
                              std::vector<const Target*>* output) {
-  for (const auto& target : input) {
+  for (auto* target : input) {
     for (const auto& pattern : filter) {
       if (pattern.Matches(target->label())) {
         output->push_back(target);
@@ -459,7 +459,7 @@ void FilterTargetsByPatterns(const std::vector<const Target*>& input,
 void FilterTargetsByPatterns(const std::vector<const Target*>& input,
                              const std::vector<LabelPattern>& filter,
                              UniqueVector<const Target*>* output) {
-  for (const auto& target : input) {
+  for (auto* target : input) {
     for (const auto& pattern : filter) {
       if (pattern.Matches(target->label())) {
         output->push_back(target);

@@ -69,7 +69,7 @@ Scope::~Scope() {
 const Value* Scope::GetValue(const base::StringPiece& ident,
                              bool counts_as_used) {
   // First check for programmatically-provided values.
-  for (const auto& provider : programmatic_providers_) {
+  for (auto* provider : programmatic_providers_) {
     const Value* v = provider->GetProgrammaticValue(ident);
     if (v)
       return v;

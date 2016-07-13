@@ -419,7 +419,7 @@ void XcodeWriter::WriteProjectContent(std::ostream& out, PBXProject* project) {
               [](const PBXObject* a, const PBXObject* b) {
                 return a->id() < b->id();
               });
-    for (const auto& object : pair.second) {
+    for (auto* object : pair.second) {
       object->Print(out, 2);
     }
     out << "/* End " << ToString(pair.first) << " section */\n";

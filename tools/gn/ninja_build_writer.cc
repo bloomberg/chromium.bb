@@ -242,7 +242,7 @@ void NinjaBuildWriter::WriteAllPools() {
 }
 
 void NinjaBuildWriter::WriteSubninjas() {
-  for (const auto& elem : all_settings_) {
+  for (auto* elem : all_settings_) {
     out_ << "subninja ";
     path_output_.WriteFile(out_, GetNinjaFileForToolchain(elem));
     out_ << std::endl;

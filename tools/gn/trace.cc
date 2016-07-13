@@ -70,7 +70,7 @@ void SummarizeParses(std::vector<const TraceItem*>& loads,
   out << "File parse times: (time in ms, name)\n";
 
   std::sort(loads.begin(), loads.end(), &DurationGreater);
-  for (const auto& load : loads) {
+  for (auto* load : loads) {
     out << base::StringPrintf(" %8.2f  ", load->delta().InMillisecondsF());
     out << load->name() << std::endl;
   }
@@ -80,7 +80,7 @@ void SummarizeCoalesced(std::vector<const TraceItem*>& items,
                         std::ostream& out) {
   // Group by file name.
   std::map<std::string, Coalesced> coalesced;
-  for (const auto& item : items) {
+  for (auto* item : items) {
     Coalesced& c = coalesced[item->name()];
     c.name_ptr = &item->name();
     c.total_duration += item->delta().InMillisecondsF();
@@ -186,7 +186,7 @@ std::string SummarizeTraces() {
   std::vector<const TraceItem*> script_execs;
   std::vector<const TraceItem*> check_headers;
   int headers_checked = 0;
-  for (const auto& event : events) {
+  for (auto* event : events) {
     switch (event->type()) {
       case TraceItem::TRACE_FILE_PARSE:
         parses.push_back(event);
@@ -225,7 +225,7 @@ std::string SummarizeTraces() {
   // parallel. Just report the total of all of them.
   if (!check_headers.empty()) {
     double check_headers_time = 0;
-    for (const auto& cur : check_headers)
+    for (auto* cur : check_headers)
       check_headers_time += cur->delta().InMillisecondsF();
 
     out << "Header check time: (total time in ms, files checked)\n";

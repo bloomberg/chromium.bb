@@ -129,7 +129,7 @@ HeaderChecker::HeaderChecker(const BuildSettings* build_settings,
                              const std::vector<const Target*>& targets)
     : main_loop_(base::MessageLoop::current()),
       build_settings_(build_settings) {
-  for (const auto& target : targets)
+  for (auto* target : targets)
     AddTargetToFileMap(target, &file_map_);
 }
 
@@ -140,7 +140,7 @@ bool HeaderChecker::Run(const std::vector<const Target*>& to_check,
                         bool force_check,
                         std::vector<Err>* errors) {
   FileMap files_to_check;
-  for (const auto& check : to_check)
+  for (auto* check : to_check)
     AddTargetToFileMap(check, &files_to_check);
   RunCheckOverFiles(files_to_check, force_check);
 
@@ -567,9 +567,9 @@ Err HeaderChecker::MakeUnreachableError(
   std::string msg = "It is not in any dependency of\n  " +
       from_target->label().GetUserVisibleName(include_toolchain);
   msg += "\nThe include file is in the target(s):\n";
-  for (const auto& target : targets_with_matching_toolchains)
+  for (auto* target : targets_with_matching_toolchains)
     msg += "  " + target->label().GetUserVisibleName(include_toolchain) + "\n";
-  for (const auto& target : targets_with_other_toolchains)
+  for (auto* target : targets_with_other_toolchains)
     msg += "  " + target->label().GetUserVisibleName(include_toolchain) + "\n";
   if (targets_with_other_toolchains.size() +
       targets_with_matching_toolchains.size() > 1)

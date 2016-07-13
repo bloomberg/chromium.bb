@@ -58,7 +58,7 @@ bool NinjaWriter::WriteToolchains(std::vector<const Settings*>* all_settings,
   CategorizedMap categorized;
 
   std::vector<const BuilderRecord*> all_records = builder_->GetAllRecords();
-  for (const auto& all_record : all_records) {
+  for (auto* all_record : all_records) {
     if (all_record->type() == BuilderRecord::ITEM_TARGET &&
         all_record->should_generate()) {
       categorized[all_record->label().GetToolchainLabel()].push_back(

@@ -255,7 +255,7 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   std::sort(
       input_deps_targets.begin(), input_deps_targets.end(),
       [](const Target* a, const Target* b) { return a->label() < b->label(); });
-  for (const auto& dep : input_deps_targets) {
+  for (auto* dep : input_deps_targets) {
     DCHECK(!dep->dependency_output_file().value().empty());
     out_ << " ";
     path_output_.WriteFile(out_, dep->dependency_output_file());

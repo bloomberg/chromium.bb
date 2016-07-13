@@ -948,7 +948,7 @@ void NinjaBinaryTargetWriter::WriteSourceSetStamp(
   DCHECK(extra_object_files.empty());
 
   std::vector<OutputFile> order_only_deps;
-  for (const auto& dep : non_linkable_deps)
+  for (auto* dep : non_linkable_deps)
     order_only_deps.push_back(dep->dependency_output_file());
 
   WriteStampForTarget(object_files, order_only_deps);
@@ -965,8 +965,7 @@ void NinjaBinaryTargetWriter::GetDeps(
   }
 
   // Inherited libraries.
-  for (const auto& inherited_target :
-           target_->inherited_libraries().GetOrdered()) {
+  for (auto* inherited_target : target_->inherited_libraries().GetOrdered()) {
     ClassifyDependency(inherited_target, extra_object_files,
                        linkable_deps, non_linkable_deps);
   }
@@ -1029,7 +1028,7 @@ void NinjaBinaryTargetWriter::WriteOrderOnlyDependencies(
     out_ << " ||";
 
     // Non-linkable targets.
-    for (const auto& non_linkable_dep : non_linkable_deps) {
+    for (auto* non_linkable_dep : non_linkable_deps) {
       out_ << " ";
       path_output_.WriteFile(out_, non_linkable_dep->dependency_output_file());
     }
