@@ -7,7 +7,7 @@
 
 namespace cc {
 
-void FakeOutputSurfaceClient::DidSwapBuffers() {
+void FakeOutputSurfaceClient::DidSwapBuffersComplete() {
   swap_count_++;
 }
 

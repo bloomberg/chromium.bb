@@ -55,7 +55,6 @@ void VulkanBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   surface_->SwapBuffers();
   PostSwapBuffersComplete();
-  client_->DidSwapBuffers();
 }
 
 }  // namespace content

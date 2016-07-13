@@ -54,7 +54,6 @@ bool PixelTestOutputSurface::HasExternalStencilTest() const {
 
 void PixelTestOutputSurface::SwapBuffers(CompositorFrame frame) {
   PostSwapBuffersComplete();
-  client_->DidSwapBuffers();
 }
 
 uint32_t PixelTestOutputSurface::GetFramebufferCopyTextureFormat() {

@@ -1476,10 +1476,6 @@ void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
-void LayerTreeHostImpl::DidSwapBuffers() {
-  client_->DidSwapBuffersOnImplThread();
-}
-
 void LayerTreeHostImpl::DidSwapBuffersComplete() {
   client_->DidSwapBuffersCompleteOnImplThread();
 }

@@ -23,7 +23,6 @@ BlimpOutputSurface::~BlimpOutputSurface() {}
 void BlimpOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   // See cc::OutputSurface::SwapBuffers() comment for details.
   context_provider_->ContextSupport()->Swap();
-  client_->DidSwapBuffers();
   cc::OutputSurface::PostSwapBuffersComplete();
 }
 

@@ -83,7 +83,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
                              base::TimeDelta interval) override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetEstimatedParentDrawTime(base::TimeDelta draw_time) override;
-  void DidSwapBuffersOnImplThread() override;
   void DidSwapBuffersCompleteOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;

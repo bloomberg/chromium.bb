@@ -103,8 +103,6 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
     context_provider_->ContextSupport()->PartialSwapBuffers(
         frame.gl_frame_data->sub_buffer_rect);
   }
-
-  client_->DidSwapBuffers();
 }
 
 void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(

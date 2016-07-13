@@ -54,7 +54,6 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
         weak_factory_.GetWeakPtr()));
   }
   PostSwapBuffersComplete();
-  client_->DidSwapBuffers();
 }
 
 void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {

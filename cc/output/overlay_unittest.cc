@@ -156,7 +156,6 @@ class OverlayOutputSurface : public OutputSurface {
     return GL_RGB;
   }
   void SwapBuffers(CompositorFrame frame) override {
-    client_->DidSwapBuffers();
   }
   void OnSwapBuffersComplete() override { client_->DidSwapBuffersComplete(); }
 

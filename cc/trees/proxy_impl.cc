@@ -331,11 +331,6 @@ void ProxyImpl::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
   scheduler_->SetEstimatedParentDrawTime(draw_time);
 }
 
-void ProxyImpl::DidSwapBuffersOnImplThread() {
-  DCHECK(IsImplThread());
-  scheduler_->DidSwapBuffers();
-}
-
 void ProxyImpl::DidSwapBuffersCompleteOnImplThread() {
   TRACE_EVENT0("cc,benchmark", "ProxyImpl::DidSwapBuffersCompleteOnImplThread");
   DCHECK(IsImplThread());
@@ -660,8 +655,10 @@ DrawResult ProxyImpl::DrawAndSwapInternal(bool forced_draw) {
   bool start_ready_animations = draw_frame;
   layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
 
-  if (draw_frame)
-    layer_tree_host_impl_->SwapBuffers(frame);
+  if (draw_frame) {
+    if (layer_tree_host_impl_->SwapBuffers(frame))
+      scheduler_->DidSwapBuffers();
+  }
 
   // Tell the main thread that the the newly-commited frame was drawn.
   if (next_frame_is_newly_committed_frame_) {

@@ -34,7 +34,6 @@ TestOutputSurface::~TestOutputSurface() {
 }
 
 void TestOutputSurface::SwapBuffers(CompositorFrame frame) {
-  client_->DidSwapBuffers();
   client_->DidSwapBuffersComplete();
 }
 

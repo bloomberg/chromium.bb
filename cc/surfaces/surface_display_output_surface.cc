@@ -74,8 +74,6 @@ void SurfaceDisplayOutputSurface::SwapBuffers(CompositorFrame frame) {
   display_->SetSurfaceId(delegated_surface_id_,
                          frame.metadata.device_scale_factor);
 
-  client_->DidSwapBuffers();
-
   factory_.SubmitCompositorFrame(
       delegated_surface_id_, std::move(frame),
       base::Bind(&SurfaceDisplayOutputSurface::SwapBuffersComplete,

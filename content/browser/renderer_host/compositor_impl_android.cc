@@ -183,7 +183,6 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
              gfx::Rect(frame.gl_frame_data->size));
       context_provider_->ContextSupport()->Swap();
     }
-    client_->DidSwapBuffers();
   }
 
   bool BindToClient(cc::OutputSurfaceClient* client) override {
@@ -267,7 +266,6 @@ class VulkanOutputSurface : public cc::OutputSurface {
   void SwapBuffers(cc::CompositorFrame frame) override {
     surface_->SwapBuffers();
     PostSwapBuffersComplete();
-    client_->DidSwapBuffers();
   }
 
   void Destroy() {

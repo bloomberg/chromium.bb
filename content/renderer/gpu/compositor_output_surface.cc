@@ -118,7 +118,6 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
                                              messages_to_deliver_with_frame));
     // ~send_message_scope.
   }
-  client_->DidSwapBuffers();
 }
 
 void CompositorOutputSurface::BindFramebuffer() {

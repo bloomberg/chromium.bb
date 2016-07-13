@@ -85,7 +85,6 @@ class DirectOutputSurface : public cc::OutputSurface {
     context_provider_->ContextSupport()->SignalSyncToken(
         sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
                                weak_ptr_factory_.GetWeakPtr()));
-    client_->DidSwapBuffers();
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());

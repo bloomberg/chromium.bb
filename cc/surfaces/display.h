@@ -88,7 +88,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
                              base::TimeDelta interval) override;
   void SetBeginFrameSource(BeginFrameSource* source) override;
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override;
-  void DidSwapBuffers() override;
   void DidSwapBuffersComplete() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;

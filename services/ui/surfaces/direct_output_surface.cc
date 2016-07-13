@@ -69,7 +69,6 @@ void DirectOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   context_provider_->ContextSupport()->SignalSyncToken(
       sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
                              weak_ptr_factory_.GetWeakPtr()));
-  client_->DidSwapBuffers();
 }
 
 uint32_t DirectOutputSurface::GetFramebufferCopyTextureFormat() {

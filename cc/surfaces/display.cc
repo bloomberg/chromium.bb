@@ -322,6 +322,8 @@ bool Display::DrawAndSwap() {
     }
     benchmark_instrumentation::IssueDisplayRenderingStatsEvent();
     renderer_->SwapBuffers(std::move(frame.metadata));
+    if (scheduler_)
+      scheduler_->DidSwapBuffers();
   } else {
     if (have_damage && !size_matches)
       aggregator_->SetFullDamageForSurface(current_surface_id_);
@@ -329,16 +331,12 @@ bool Display::DrawAndSwap() {
     stored_latency_info_.insert(stored_latency_info_.end(),
                                 frame.metadata.latency_info.begin(),
                                 frame.metadata.latency_info.end());
-    DidSwapBuffers();
+    if (scheduler_)
+      scheduler_->DidSwapBuffers();
     DidSwapBuffersComplete();
   }
 
   return true;
-}
-
-void Display::DidSwapBuffers() {
-  if (scheduler_)
-    scheduler_->DidSwapBuffers();
 }
 
 void Display::DidSwapBuffersComplete() {

@@ -143,8 +143,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // The implementation may destroy or steal the contents of the CompositorFrame
   // passed in (though it will not take ownership of the CompositorFrame
   // itself). For successful swaps, the implementation must call
-  // OutputSurfaceClient::DidSwapBuffers() and eventually
-  // DidSwapBuffersComplete().
+  // DidSwapBuffersComplete() (via OnSwapBuffersComplete()) eventually.
   virtual void SwapBuffers(CompositorFrame frame) = 0;
   virtual void OnSwapBuffersComplete();
 

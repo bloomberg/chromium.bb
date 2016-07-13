@@ -64,7 +64,6 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame frame) {
     ++num_sent_frames_;
   }
   PostSwapBuffersComplete();
-  client_->DidSwapBuffers();
 }
 
 void FakeOutputSurface::BindFramebuffer() {

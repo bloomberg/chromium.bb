@@ -512,13 +512,6 @@ void SingleThreadProxy::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {
     scheduler_on_impl_thread_->SetEstimatedParentDrawTime(draw_time);
 }
 
-void SingleThreadProxy::DidSwapBuffersOnImplThread() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::DidSwapBuffersOnImplThread");
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->DidSwapBuffers();
-  client_->DidPostSwapBuffers();
-}
-
 void SingleThreadProxy::DidSwapBuffersCompleteOnImplThread() {
   TRACE_EVENT0("cc,benchmark",
                "SingleThreadProxy::DidSwapBuffersCompleteOnImplThread");
@@ -696,7 +689,11 @@ DrawResult SingleThreadProxy::DoComposite(LayerTreeHostImpl::FrameData* frame) {
     tracked_objects::ScopedTracker tracking_profile8(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "461509 SingleThreadProxy::DoComposite8"));
-    layer_tree_host_impl_->SwapBuffers(*frame);
+    if (layer_tree_host_impl_->SwapBuffers(*frame)) {
+      if (scheduler_on_impl_thread_)
+        scheduler_on_impl_thread_->DidSwapBuffers();
+      client_->DidPostSwapBuffers();
+    }
   }
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/461509 is
   // fixed.

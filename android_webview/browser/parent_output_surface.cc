@@ -35,7 +35,6 @@ void ParentOutputSurface::Reshape(const gfx::Size& size,
 
 void ParentOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   context_provider_->ContextGL()->ShallowFlushCHROMIUM();
-  client_->DidSwapBuffers();
 }
 
 void ParentOutputSurface::ApplyExternalStencil() {

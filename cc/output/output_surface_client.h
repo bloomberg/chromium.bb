@@ -34,7 +34,6 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
 
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
-  virtual void DidSwapBuffers() = 0;
   virtual void DidSwapBuffersComplete() = 0;
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) = 0;

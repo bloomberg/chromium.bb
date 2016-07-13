@@ -121,8 +121,6 @@ void PixelTestDelegatingOutputSurface::DetachFromClient() {
 }
 
 void PixelTestDelegatingOutputSurface::SwapBuffers(CompositorFrame frame) {
-  client_->DidSwapBuffers();
-
   if (delegated_surface_id_.is_null()) {
     delegated_surface_id_ = surface_id_allocator_->GenerateId();
     surface_factory_->Create(delegated_surface_id_);

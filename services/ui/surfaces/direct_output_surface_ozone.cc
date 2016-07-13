@@ -99,8 +99,6 @@ void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame frame) {
 
   gpu::SyncToken sync_token;
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-
-  client_->DidSwapBuffers();
 }
 
 bool DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {

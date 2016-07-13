@@ -45,8 +45,6 @@ uint32_t OutputSurface::GetFramebufferCopyTextureFormat() {
 }
 
 void OutputSurface::SwapBuffers(cc::CompositorFrame frame) {
-  // TODO(fsamuel, rjkroege): We should probably throttle compositor frames.
-  client_->DidSwapBuffers();
   // OutputSurface owns WindowSurface, and so if OutputSurface is
   // destroyed then SubmitCompositorFrame's callback will never get called.
   // Thus, base::Unretained is safe here.

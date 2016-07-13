@@ -146,8 +146,6 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
       reflector_->OnSourcePostSubBuffer(frame.gl_frame_data->sub_buffer_rect);
   }
 
-  client_->DidSwapBuffers();
-
   // TODO(oshima): sync with the reflector's SwapBuffersComplete
   // (crbug.com/520567).
   // The original implementation had a flickering issue (crbug.com/515332).

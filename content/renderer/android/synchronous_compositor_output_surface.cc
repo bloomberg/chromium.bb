@@ -197,11 +197,10 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
   DCHECK(sync_client_);
 
   if (fallback_tick_running_) {
-    client_->DidSwapBuffers();
-    client_->DidSwapBuffersComplete();
     DCHECK(frame.delegated_frame_data->resource_list.empty());
     cc::ReturnedResourceArray return_resources;
     ReturnResources(return_resources);
+    did_swap_ = true;
     return;
   }
 
@@ -235,7 +234,6 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
 
   sync_client_->SwapBuffers(output_surface_id_, std::move(swap_frame));
   DeliverMessages();
-  client_->DidSwapBuffers();
   did_swap_ = true;
 }
 
@@ -332,8 +330,12 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
   did_swap_ = false;
   client_->OnDraw(adjusted_transform, viewport, clip, in_software_draw_);
 
-  if (did_swap_)
+  if (did_swap_) {
+    // This must happen after unwinding the stack and leaving the compositor.
+    // Usually it is a separate task but we just defer it until OnDraw completes
+    // instead.
     client_->DidSwapBuffersComplete();
+  }
 }
 
 void SynchronousCompositorOutputSurface::OnReclaimResources(
