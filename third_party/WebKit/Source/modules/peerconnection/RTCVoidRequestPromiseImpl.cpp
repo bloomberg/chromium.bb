@@ -26,7 +26,6 @@ RTCVoidRequestPromiseImpl::RTCVoidRequestPromiseImpl(RTCPeerConnection* requeste
 
 RTCVoidRequestPromiseImpl::~RTCVoidRequestPromiseImpl()
 {
-    DCHECK(!m_requester);
 }
 
 void RTCVoidRequestPromiseImpl::requestSucceeded()

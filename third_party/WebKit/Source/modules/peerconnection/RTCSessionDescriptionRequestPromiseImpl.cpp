@@ -28,7 +28,6 @@ RTCSessionDescriptionRequestPromiseImpl::RTCSessionDescriptionRequestPromiseImpl
 
 RTCSessionDescriptionRequestPromiseImpl::~RTCSessionDescriptionRequestPromiseImpl()
 {
-    DCHECK(!m_requester);
 }
 
 void RTCSessionDescriptionRequestPromiseImpl::requestSucceeded(const WebRTCSessionDescription& webSessionDescription)
