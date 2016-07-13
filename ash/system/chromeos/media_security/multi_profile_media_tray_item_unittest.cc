@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
+#include "ash/common/system/chromeos/media_security/multi_profile_media_tray_item.h"
 
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
@@ -18,7 +18,7 @@
 
 namespace ash {
 
-typedef test::AshTestBase MultiProfileMediaTrayItemTest;
+using MultiProfileMediaTrayItemTest = test::AshTestBase;
 
 TEST_F(MultiProfileMediaTrayItemTest, NotifyMediaCaptureChange) {
   TrayItemView::DisableAnimationsForTest();

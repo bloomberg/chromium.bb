@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/chromeos/media_security/multi_profile_media_tray_item.h"
+#include "ash/common/system/chromeos/media_security/multi_profile_media_tray_item.h"
 
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/media_delegate.h"
@@ -62,7 +62,7 @@ class MultiProfileMediaTrayView : public TrayItemView,
 }  // namespace tray
 
 MultiProfileMediaTrayItem::MultiProfileMediaTrayItem(SystemTray* system_tray)
-    : SystemTrayItem(system_tray), tray_view_(NULL) {}
+    : SystemTrayItem(system_tray), tray_view_(nullptr) {}
 
 MultiProfileMediaTrayItem::~MultiProfileMediaTrayItem() {}
 
@@ -72,7 +72,7 @@ views::View* MultiProfileMediaTrayItem::CreateTrayView(LoginStatus status) {
 }
 
 void MultiProfileMediaTrayItem::DestroyTrayView() {
-  tray_view_ = NULL;
+  tray_view_ = nullptr;
 }
 
 }  // namespace ash
