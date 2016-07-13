@@ -581,7 +581,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-
+// Make sure update_use_counter_css.py was run which updates histograms.xml.
 static int maximumCSSSampleId() { return 537; }
 
 static EnumerationHistogram& featureObserverHistogram()

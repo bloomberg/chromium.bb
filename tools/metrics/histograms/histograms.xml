@@ -82524,7 +82524,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="410" label="webkit-dashboard-region"/>
   <int value="411" label="webkit-overflow-scrolling"/>
   <int value="412" label="webkit-app-region"/>
-  <int value="413" label="webkit-filter"/>
+  <int value="413" label="alias-webkit-filter"/>
   <int value="414" label="webkit-box-decoration-break"/>
   <int value="415" label="webkit-tap-highlight-color"/>
   <int value="416" label="buffered-rendering"/>
@@ -82647,6 +82647,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="533" label="font-variant-caps"/>
   <int value="534" label="hyphens"/>
   <int value="535" label="font-variant-numeric"/>
+  <int value="536" label="text-size-adjust"/>
+  <int value="537" label="alias-webkit-text-size-adjust"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">
