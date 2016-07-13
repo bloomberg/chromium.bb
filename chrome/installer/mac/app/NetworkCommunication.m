@@ -6,6 +6,19 @@
 
 #import "NetworkCommunication.h"
 
+@interface NSURLSession (PartialAvailability)
+- (NSURLSessionDataTask*)dataTaskWithRequest:(NSURLRequest*)request
+                           completionHandler:
+                               (void (^)(NSData* data,
+                                         NSURLResponse* response,
+                                         NSError* error))completionHandler;
+- (NSURLSessionDownloadTask*)
+downloadTaskWithRequest:(NSURLRequest*)request
+      completionHandler:(void (^)(NSURL* location,
+                                  NSURLResponse* response,
+                                  NSError* error))completionHandler;
+@end
+
 @implementation NetworkCommunication : NSObject
 
 @synthesize session = session_;
