@@ -34,13 +34,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
-    self.Fail('deqp/functional/gles3/framebufferblit/depth_stencil.html',
-        bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
 
     self.Flaky('deqp/functional/gles3/negativefragmentapi.html', bug=604794)
-
-    self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
 
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
@@ -50,6 +46,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/transform_feedback/' +
         'unwritten-output-defaults-to-zero.html', bug=1441) # ANGLE bug
+
+    # Likely move this to WebGL 2.0.1.
+    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
     # Avoid a conflict with a Mac expectation by setting
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
@@ -66,29 +65,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=617817)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
         ['win'], bug=617817)
-
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texturelod.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturelodoffset.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'textureprojlod.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'textureprojlodoffset.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/texturegrad.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'texturegradoffset.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'textureprojgrad.html',
-        ['win'], bug=483282)
-    self.Fail('deqp/functional/gles3/shadertexturefunction/' +
-        'textureprojgradoffset.html',
-        ['win'], bug=483282)
 
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
