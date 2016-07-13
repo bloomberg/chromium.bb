@@ -1660,12 +1660,6 @@ name=bug_377728
 *!SpellcheckLanguage::SpellCheckWord
 *!SpellCheck::SpellCheckWord
 
-UNINITIALIZED READ
-name=bug_387373
-*!blink::WebEmbeddedWorkerImpl::startWorkerContext
-*!content::EmbeddedWorkerDispatcher::OnStartWorker
-*!EmbeddedWorkerMsg_StartWorker::Dispatch<>
-
 UNADDRESSABLE ACCESS
 name=bug_389132
 content.dll!crypto_kernel_do_load_cipher_type
