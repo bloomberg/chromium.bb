@@ -639,6 +639,12 @@
         'module_dir': 'base'
       },
       'conditions': [
+        ['cfi_vptr==1 and cfi_cast==1', {
+          'defines': [
+             # TODO(krasin): remove CFI_CAST_CHECK, see https://crbug.com/626794.
+            'CFI_CAST_CHECK',
+          ],
+        }],
         ['OS == "ios" or OS == "mac"', {
           'dependencies': [
             'base_unittests_arc',

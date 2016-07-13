@@ -49,6 +49,11 @@ declare_args() {
   # TODO(pcc): Remove this flag if/when CFI is enabled in official builds.
   is_cfi = false
 
+  # Enable checks for bad casts: derived cast and unrelated cast.
+  # TODO(krasin): remove this, when we're ready to add these checks by default.
+  # https://crbug.com/626794
+  use_cfi_cast = false
+
   # By default, Control Flow Integrity will crash the program if it detects a
   # violation. Set this to true to print detailed diagnostics instead.
   use_cfi_diag = false

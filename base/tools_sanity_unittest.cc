@@ -343,6 +343,8 @@ TEST(ToolsSanityTest, AtomicsAreIgnored) {
 }
 
 #if defined(CFI_ENFORCEMENT)
+// TODO(krasin): remove CFI_CAST_CHECK, see https://crbug.com/626794.
+#if defined(CFI_CAST_CHECK)
 TEST(ToolsSanityTest, BadCast) {
   class A {
     virtual void f() {}
@@ -355,6 +357,32 @@ TEST(ToolsSanityTest, BadCast) {
   A a;
   EXPECT_DEATH((void)(B*)&a, "ILL_ILLOPN");
 }
-#endif
+#endif // CFI_CAST_CHECK
+
+class A {
+ public:
+  A(): n_(0) {}
+  virtual void f() { n_++; }
+ protected:
+  int n_;
+};
+
+class B: public A {
+ public:
+  void f() override { n_--; }
+};
+
+NOINLINE void KillVptrAndCall(A *obj) {
+  *reinterpret_cast<void **>(obj) = 0;
+  obj->f();
+}
+
+TEST(ToolsSanityTest, BadVirtualCall) {
+  A a;
+  B b;
+  EXPECT_DEATH({ KillVptrAndCall(&a); KillVptrAndCall(&b); }, "ILL_ILLOPN");
+}
+
+#endif // CFI_ENFORCEMENT
 
 }  // namespace base

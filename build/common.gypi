@@ -698,6 +698,8 @@
       # Control Flow Integrity for virtual calls and casts.
       # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
       'cfi_vptr%': 0,
+      # TODO(krasin): remove it. See https://crbug.com/626794.
+      'cfi_cast%': 0,
       'cfi_diag%': 0,
 
       'cfi_blacklist%': '<(PRODUCT_DIR)/../../tools/cfi/blacklist.txt',
@@ -1259,6 +1261,7 @@
     'video_hole%': '<(video_hole)',
     'v8_use_external_startup_data%': '<(v8_use_external_startup_data)',
     'cfi_vptr%': '<(cfi_vptr)',
+    'cfi_cast%': '<(cfi_cast)',
     'cfi_diag%': '<(cfi_diag)',
     'cfi_blacklist%': '<(cfi_blacklist)',
     'mac_views_browser%': '<(mac_views_browser)',
@@ -6212,8 +6215,6 @@
           ['_toolset=="target"', {
             'cflags': [
               '-fsanitize=cfi-vcall',
-              '-fsanitize=cfi-derived-cast',
-              '-fsanitize=cfi-unrelated-cast',
               '-fsanitize-blacklist=<(cfi_blacklist)',
             ],
             'ldflags': [
@@ -6224,8 +6225,6 @@
             'xcode_settings': {
               'OTHER_CFLAGS': [
                 '-fsanitize=cfi-vcall',
-                '-fsanitize=cfi-derived-cast',
-                '-fsanitize=cfi-unrelated-cast',
                 '-fsanitize-blacklist=<(cfi_blacklist)',
               ],
             },
@@ -6234,6 +6233,34 @@
             'xcode_settings':  {
               'OTHER_LDFLAGS': [
                 '-fsanitize=cfi-vcall',
+              ],
+            },
+          }],
+        ],
+      },
+    }],
+    ['cfi_vptr==1 and cfi_cast==1', {
+      'target_defaults': {
+        'target_conditions': [
+          ['_toolset=="target"', {
+            'cflags': [
+              '-fsanitize=cfi-derived-cast',
+              '-fsanitize=cfi-unrelated-cast',
+            ],
+            'ldflags': [
+              '-fsanitize=cfi-derived-cast',
+              '-fsanitize=cfi-unrelated-cast',
+            ],
+            'xcode_settings': {
+              'OTHER_CFLAGS': [
+                '-fsanitize=cfi-derived-cast',
+                '-fsanitize=cfi-unrelated-cast',
+              ],
+            },
+          }],
+          ['_toolset=="target" and _type!="static_library"', {
+            'xcode_settings':  {
+              'OTHER_LDFLAGS': [
                 '-fsanitize=cfi-derived-cast',
                 '-fsanitize=cfi-unrelated-cast',
               ],

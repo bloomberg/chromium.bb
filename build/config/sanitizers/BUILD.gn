@@ -155,11 +155,13 @@ config("default_sanitizer_ldflags") {
     }
 
     if (is_cfi && !is_nacl) {
-      ldflags += [
-        "-fsanitize=cfi-vcall",
-        "-fsanitize=cfi-derived-cast",
-        "-fsanitize=cfi-unrelated-cast",
-      ]
+      ldflags += [ "-fsanitize=cfi-vcall" ]
+      if (use_cfi_cast) {
+        ldflags += [
+          "-fsanitize=cfi-derived-cast",
+          "-fsanitize=cfi-unrelated-cast",
+        ]
+      }
       if (use_cfi_diag) {
         ldflags += [
           "-fno-sanitize-trap=cfi",
@@ -246,10 +248,15 @@ config("cfi_flags") {
         rebase_path("//tools/cfi/blacklist.txt", root_build_dir)
     cflags += [
       "-fsanitize=cfi-vcall",
-      "-fsanitize=cfi-derived-cast",
-      "-fsanitize=cfi-unrelated-cast",
       "-fsanitize-blacklist=$cfi_blacklist_path",
     ]
+
+    if (use_cfi_cast) {
+      cflags += [
+        "-fsanitize=cfi-derived-cast",
+        "-fsanitize=cfi-unrelated-cast",
+      ]
+    }
 
     if (use_cfi_diag) {
       cflags += [
