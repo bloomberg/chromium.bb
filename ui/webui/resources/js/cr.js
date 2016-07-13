@@ -475,6 +475,11 @@ var cr = cr || function() {
     /** Whether this is on Android. */
     get isAndroid() {
       return /Android/.test(navigator.userAgent);
+    },
+
+    /** Whether this is on iOS. */
+    get isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.platform);
     }
   };
 }();
