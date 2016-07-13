@@ -77,7 +77,8 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                                          Channel::MessagePtr message) = 0;
 #endif
 
-    virtual void OnChannelError(const ports::NodeName& node) = 0;
+    virtual void OnChannelError(const ports::NodeName& node,
+                                NodeChannel* channel) = 0;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     virtual MachPortRelay* GetMachPortRelay() = 0;

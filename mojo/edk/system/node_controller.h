@@ -153,7 +153,7 @@ class NodeController : public ports::NodeDelegate,
   void AddPeer(const ports::NodeName& name,
                scoped_refptr<NodeChannel> channel,
                bool start_channel);
-  void DropPeer(const ports::NodeName& name);
+  void DropPeer(const ports::NodeName& name, NodeChannel* channel);
   void SendPeerMessage(const ports::NodeName& name,
                        ports::ScopedMessage message);
   void AcceptIncomingMessages();
@@ -206,7 +206,8 @@ class NodeController : public ports::NodeDelegate,
                                const ports::NodeName& source_node,
                                Channel::MessagePtr message) override;
 #endif
-  void OnChannelError(const ports::NodeName& from_node) override;
+  void OnChannelError(const ports::NodeName& from_node,
+                      NodeChannel* channel) override;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   MachPortRelay* GetMachPortRelay() override;
 #endif
@@ -246,11 +247,15 @@ class NodeController : public ports::NodeDelegate,
   // have one yet :(
   std::unordered_map<ports::NodeName, std::string> pending_child_tokens_;
 
-  // Guards |pending_port_merges_|.
+  // Guards |pending_port_merges_| and |reject_pending_merges_|.
   base::Lock pending_port_merges_lock_;
 
   // A set of port merge requests awaiting parent connection.
   std::vector<std::pair<std::string, ports::PortRef>> pending_port_merges_;
+
+  // Indicates that new merge requests should be rejected because the parent has
+  // disconnected.
+  bool reject_pending_merges_ = false;
 
   // Guards |parent_name_| and |bootstrap_parent_channel_|.
   base::Lock parent_lock_;

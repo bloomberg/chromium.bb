@@ -503,7 +503,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
 
 
   if (payload_size <= sizeof(Header)) {
-    delegate_->OnChannelError(remote_node_name_);
+    delegate_->OnChannelError(remote_node_name_, this);
     return;
   }
 
@@ -733,7 +733,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
   }
 
   DLOG(ERROR) << "Received invalid message. Closing channel.";
-  delegate_->OnChannelError(remote_node_name_);
+  delegate_->OnChannelError(remote_node_name_, this);
 }
 
 void NodeChannel::OnChannelError() {
@@ -746,7 +746,7 @@ void NodeChannel::OnChannelError() {
   // to the name name after that destruction. So may a copy of
   // |remote_node_name_| so it can be used if |this| becomes destroyed.
   ports::NodeName node_name = remote_node_name_;
-  delegate_->OnChannelError(node_name);
+  delegate_->OnChannelError(node_name, this);
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
