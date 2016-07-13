@@ -11,6 +11,10 @@ namespace ntp_snippets {
 // On Android builds, a Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp.snippets
 enum class ContentSuggestionsCategoryStatus {
+  // The provider is still initializing and it is not yet determined whether
+  // content suggestions will be available or not.
+  INITIALIZING,
+
   // Content suggestions are available (though the list of available suggestions
   // may be empty simply because there are no reasonable suggestions to be made
   // at the moment).
@@ -36,9 +40,10 @@ enum class ContentSuggestionsCategoryStatus {
   PASSPHRASE_ENCRYPTION_ENABLED,
   // Content suggestions are not available because history sync is disabled.
   HISTORY_SYNC_DISABLED,
-  // Content suggestions are not available because the history sync service is
-  // not yet completely initialized and its status is unknown.
-  HISTORY_SYNC_STATE_UNKNOWN
+
+  // Content suggestions are not available because an error occured when loading
+  // or updating them.
+  LOADING_ERROR
 };
 
 // Determines whether the given status is one of the AVAILABLE statuses.

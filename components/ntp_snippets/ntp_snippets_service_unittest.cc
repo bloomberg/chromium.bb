@@ -414,7 +414,7 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), SizeIs(1));
 
-  service()->ClearSnippets();
+  service()->ClearCachedSuggestionsForDebugging();
   EXPECT_THAT(service()->snippets(), IsEmpty());
 }
 
@@ -499,11 +499,11 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   ASSERT_THAT(service()->snippets(), SizeIs(1));
 
   // Discarding a non-existent snippet shouldn't do anything.
-  EXPECT_FALSE(service()->DiscardSnippet("http://othersite.com"));
+  service()->DiscardSuggestion("http://othersite.com");
   EXPECT_THAT(service()->snippets(), SizeIs(1));
 
   // Discard the snippet.
-  EXPECT_TRUE(service()->DiscardSnippet(kSnippetUrl));
+  service()->DiscardSuggestion(kSnippetUrl);
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // Make sure that fetching the same snippet again does not re-add it.
@@ -517,7 +517,7 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The snippet can be added again after clearing discarded snippets.
-  service()->ClearDiscardedSnippets();
+  service()->ClearDiscardedSuggestionsForDebugging();
   EXPECT_THAT(service()->snippets(), IsEmpty());
   LoadFromJSONString(json_str);
   EXPECT_THAT(service()->snippets(), SizeIs(1));
@@ -526,8 +526,7 @@ TEST_F(NTPSnippetsServiceTest, Discard) {
 TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
   LoadFromJSONString(GetTestJson({GetSnippet()}));
 
-  // For the test, we need the snippet to get discarded.
-  ASSERT_TRUE(service()->DiscardSnippet(kSnippetUrl));
+  service()->DiscardSuggestion(kSnippetUrl);
   const NTPSnippet::PtrVector& snippets = service()->discarded_snippets();
   EXPECT_EQ(1u, snippets.size());
   for (auto& snippet : snippets) {
@@ -535,7 +534,7 @@ TEST_F(NTPSnippetsServiceTest, GetDiscarded) {
   }
 
   // There should be no discarded snippet after clearing the list.
-  service()->ClearDiscardedSnippets();
+  service()->ClearDiscardedSuggestionsForDebugging();
   EXPECT_EQ(0u, service()->discarded_snippets().size());
 }
 
@@ -648,7 +647,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
   }
 
-  service()->ClearSnippets();
+  service()->ClearCachedSuggestionsForDebugging();
   // Set Source 1 to have no AMP url, and Source 2 to have no publisher name
   // Source 1 should win in this case since we prefer publisher name to AMP url
   source_urls.clear();
@@ -674,7 +673,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleIncompleteSources) {
     EXPECT_EQ(snippet.best_source().amp_url, GURL());
   }
 
-  service()->ClearSnippets();
+  service()->ClearCachedSuggestionsForDebugging();
   // Set source 1 to have no AMP url and no source, and source 2 to only have
   // amp url. There should be no snippets since we only add sources we consider
   // complete
@@ -721,7 +720,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   }
 
   // Test 2 complete sources, we should choose the first complete source
-  service()->ClearSnippets();
+  service()->ClearCachedSuggestionsForDebugging();
   source_urls.clear();
   source_urls.push_back(std::string("http://source1.com"));
   source_urls.push_back(std::string("http://source2.com"));
@@ -749,7 +748,7 @@ TEST_F(NTPSnippetsServiceTest, TestMultipleCompleteSources) {
   }
 
   // Test 3 complete sources, we should choose the first complete source
-  service()->ClearSnippets();
+  service()->ClearCachedSuggestionsForDebugging();
   source_urls.clear();
   source_urls.push_back(std::string("http://source1.com"));
   source_urls.push_back(std::string("http://source2.com"));
@@ -813,7 +812,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
       IsEmpty());
   // Discarding a snippet should decrease the list size. This will only be
   // logged after the next fetch.
-  EXPECT_TRUE(service()->DiscardSnippet(kSnippetUrl));
+  service()->DiscardSuggestion(kSnippetUrl);
   LoadFromJSONString(GetTestJson({GetSnippet()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
@@ -852,7 +851,7 @@ TEST_F(NTPSnippetsServiceTest, DiscardShouldRespectAllKnownUrls) {
       source_urls[0], creation, expiry, source_urls, publishers, amp_urls)}));
   ASSERT_THAT(service()->snippets(), SizeIs(1));
   // Discard the snippet via the mashable source corpus ID.
-  EXPECT_TRUE(service()->DiscardSnippet(source_urls[0]));
+  service()->DiscardSuggestion(source_urls[0]);
   EXPECT_THAT(service()->snippets(), IsEmpty());
 
   // The same article from the AOL domain should now be detected as discarded.

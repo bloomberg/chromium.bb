@@ -62,7 +62,8 @@ class ContentSuggestionsProvider {
   };
 
   // Sets an observer which is notified about changes to the available
-  // suggestions, or removes it by passing a nullptr.
+  // suggestions, or removes it by passing a nullptr. The provider does not take
+  // ownership of the observer and the observer must outlive this provider.
   virtual void SetObserver(Observer* observer) = 0;
 
   // Determines the status of the given |category|, see
@@ -78,6 +79,8 @@ class ContentSuggestionsProvider {
 
   // Fetches the image for the suggestion with the given ID and returns it
   // through the callback. This fetch may occur locally or from the internet.
+  // If that suggestion doesn't exist, doesn't have an image or if the fetch
+  // fails, the callback gets a null image.
   virtual void FetchSuggestionImage(const std::string& suggestion_id,
                                     const ImageFetchedCallback& callback) = 0;
 

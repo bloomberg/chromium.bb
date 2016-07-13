@@ -193,10 +193,13 @@ NTPSnippetsService::NTPSnippetsService(
     std::unique_ptr<ImageDecoder> image_decoder,
     std::unique_ptr<NTPSnippetsDatabase> database,
     std::unique_ptr<NTPSnippetsStatusService> status_service)
-    : state_(State::NOT_INITED),
+    : ContentSuggestionsProvider({ContentSuggestionsCategory::ARTICLES}),
+      state_(State::NOT_INITED),
+      category_status_(ContentSuggestionsCategoryStatus::INITIALIZING),
       pref_service_(pref_service),
       suggestions_service_(suggestions_service),
       application_language_code_(application_language_code),
+      observer_(nullptr),
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
@@ -204,9 +207,15 @@ NTPSnippetsService::NTPSnippetsService(
       database_(std::move(database)),
       snippets_status_service_(std::move(status_service)),
       fetch_after_load_(false) {
-  if (!enabled || database_->IsErrorState()) {
-    // Don't even bother loading the database.
-    EnterState(State::SHUT_DOWN);
+  // In some cases, don't even bother loading the database.
+  if (!enabled) {
+    EnterState(State::SHUT_DOWN,
+               ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
+    return;
+  }
+  if (database_->IsErrorState()) {
+    EnterState(State::SHUT_DOWN,
+               ContentSuggestionsCategoryStatus::LOADING_ERROR);
     return;
   }
 
@@ -230,7 +239,7 @@ void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 // Inherited from KeyedService.
 void NTPSnippetsService::Shutdown() {
-  EnterState(State::SHUT_DOWN);
+  EnterState(State::SHUT_DOWN, ContentSuggestionsCategoryStatus::NOT_PROVIDED);
 }
 
 void NTPSnippetsService::FetchSnippets() {
@@ -263,16 +272,16 @@ void NTPSnippetsService::RescheduleFetching() {
   }
 }
 
-void NTPSnippetsService::FetchSnippetImage(
-    const std::string& snippet_id,
+void NTPSnippetsService::FetchSuggestionImage(
+    const std::string& suggestion_id,
     const ImageFetchedCallback& callback) {
   database_->LoadImage(
-      snippet_id,
+      suggestion_id,
       base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
-                 base::Unretained(this), snippet_id, callback));
+                 base::Unretained(this), suggestion_id, callback));
 }
 
-void NTPSnippetsService::ClearSnippets() {
+void NTPSnippetsService::ClearCachedSuggestionsForDebugging() {
   if (!initialized())
     return;
 
@@ -282,8 +291,7 @@ void NTPSnippetsService::ClearSnippets() {
   database_->DeleteSnippets(snippets_);
   snippets_.clear();
 
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded());
+  NotifyNewSuggestions();
 }
 
 std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
@@ -296,17 +304,17 @@ std::set<std::string> NTPSnippetsService::GetSuggestionsHosts() const {
       suggestions_service_->GetSuggestionsDataFromCache());
 }
 
-bool NTPSnippetsService::DiscardSnippet(const std::string& snippet_id) {
+void NTPSnippetsService::DiscardSuggestion(const std::string& suggestion_id) {
   if (!ready())
-    return false;
+    return;
 
-  auto it =
-      std::find_if(snippets_.begin(), snippets_.end(),
-                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
-                     return snippet->id() == snippet_id;
-                   });
+  auto it = std::find_if(
+      snippets_.begin(), snippets_.end(),
+      [&suggestion_id](const std::unique_ptr<NTPSnippet>& snippet) {
+        return snippet->id() == suggestion_id;
+      });
   if (it == snippets_.end())
-    return false;
+    return;
 
   (*it)->set_discarded(true);
 
@@ -316,12 +324,10 @@ bool NTPSnippetsService::DiscardSnippet(const std::string& snippet_id) {
   discarded_snippets_.push_back(std::move(*it));
   snippets_.erase(it);
 
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded());
-  return true;
+  NotifyNewSuggestions();
 }
 
-void NTPSnippetsService::ClearDiscardedSnippets() {
+void NTPSnippetsService::ClearDiscardedSuggestionsForDebugging() {
   if (!initialized())
     return;
 
@@ -330,6 +336,16 @@ void NTPSnippetsService::ClearDiscardedSnippets() {
 
   database_->DeleteSnippets(discarded_snippets_);
   discarded_snippets_.clear();
+}
+
+void NTPSnippetsService::SetObserver(Observer* observer) {
+  observer_ = observer;
+}
+
+ContentSuggestionsCategoryStatus NTPSnippetsService::GetCategoryStatus(
+    ContentSuggestionsCategory category) {
+  DCHECK_EQ(ContentSuggestionsCategory::ARTICLES, category);
+  return category_status_;
 }
 
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
@@ -390,7 +406,7 @@ void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
 }
 
 void NTPSnippetsService::OnDatabaseError() {
-  EnterState(State::SHUT_DOWN);
+  EnterState(State::SHUT_DOWN, ContentSuggestionsCategoryStatus::LOADING_ERROR);
 }
 
 void NTPSnippetsService::OnSuggestionsChanged(
@@ -416,8 +432,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
 
   StoreSnippetHostsToPrefs(hosts);
 
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded());
+  NotifyNewSuggestions();
 
   FetchSnippetsFromHosts(hosts);
 }
@@ -454,8 +469,7 @@ void NTPSnippetsService::OnFetchFinished(
                          discarded_snippets_.size());
   }
 
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded());
+  NotifyNewSuggestions();
 }
 
 void NTPSnippetsService::MergeSnippets(NTPSnippet::PtrVector new_snippets) {
@@ -647,8 +661,8 @@ void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
 }
 
 void NTPSnippetsService::EnterStateDisabled() {
-  ClearSnippets();
-  ClearDiscardedSnippets();
+  ClearCachedSuggestionsForDebugging();
+  ClearDiscardedSuggestionsForDebugging();
 
   expiry_timer_.Stop();
   suggestions_service_subscription_.reset();
@@ -679,8 +693,7 @@ void NTPSnippetsService::FinishInitialization() {
   snippets_status_service_->Init(base::Bind(
       &NTPSnippetsService::UpdateStateForStatus, base::Unretained(this)));
 
-  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
-                    NTPSnippetsServiceLoaded());
+  NotifyNewSuggestions();
 }
 
 void NTPSnippetsService::UpdateStateForStatus(DisabledReason disabled_reason) {
@@ -688,9 +701,11 @@ void NTPSnippetsService::UpdateStateForStatus(DisabledReason disabled_reason) {
                     NTPSnippetsServiceDisabledReasonChanged(disabled_reason));
 
   State new_state;
+  ContentSuggestionsCategoryStatus new_status;
   switch (disabled_reason) {
     case DisabledReason::NONE:
       new_state = State::READY;
+      new_status = ContentSuggestionsCategoryStatus::AVAILABLE;
       break;
 
     case DisabledReason::HISTORY_SYNC_STATE_UNKNOWN:
@@ -700,27 +715,54 @@ void NTPSnippetsService::UpdateStateForStatus(DisabledReason disabled_reason) {
       DVLOG(1) << "Sync configuration incomplete, continuing based on the "
                   "current state.";
       new_state = state_;
+      new_status = ContentSuggestionsCategoryStatus::INITIALIZING;
       break;
 
     case DisabledReason::EXPLICITLY_DISABLED:
+      new_state = State::DISABLED;
+      new_status =
+          ContentSuggestionsCategoryStatus::CATEGORY_EXPLICITLY_DISABLED;
+      break;
+
     case DisabledReason::SIGNED_OUT:
+      new_state = State::DISABLED;
+      new_status = ContentSuggestionsCategoryStatus::SIGNED_OUT;
+      break;
+
     case DisabledReason::SYNC_DISABLED:
+      new_state = State::DISABLED;
+      new_status = ContentSuggestionsCategoryStatus::SYNC_DISABLED;
+      break;
+
     case DisabledReason::PASSPHRASE_ENCRYPTION_ENABLED:
+      new_state = State::DISABLED;
+      new_status =
+          ContentSuggestionsCategoryStatus::PASSPHRASE_ENCRYPTION_ENABLED;
+      break;
+
     case DisabledReason::HISTORY_SYNC_DISABLED:
       new_state = State::DISABLED;
+      new_status = ContentSuggestionsCategoryStatus::HISTORY_SYNC_DISABLED;
       break;
 
     default:
       // All cases should be handled by the above switch
       NOTREACHED();
       new_state = State::DISABLED;
+      new_status = ContentSuggestionsCategoryStatus::LOADING_ERROR;
       break;
   }
 
-  EnterState(new_state);
+  EnterState(new_state, new_status);
 }
 
-void NTPSnippetsService::EnterState(State state) {
+void NTPSnippetsService::EnterState(State state,
+                                    ContentSuggestionsCategoryStatus status) {
+  if (status != category_status_) {
+    category_status_ = status;
+    NotifyCategoryStatusChanged();
+  }
+
   if (state == state_)
     return;
 
@@ -754,6 +796,40 @@ void NTPSnippetsService::EnterState(State state) {
       state_ = State::SHUT_DOWN;
       EnterStateShutdown();
       return;
+  }
+}
+
+void NTPSnippetsService::NotifyNewSuggestions() {
+  // TODO(pke): Remove this as soon as this becomes a pure provider.
+  FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
+                    NTPSnippetsServiceLoaded());
+
+  if (!observer_)
+    return;
+
+  std::vector<ContentSuggestion> result;
+  for (const std::unique_ptr<NTPSnippet>& snippet : snippets_) {
+    if (!snippet->is_complete())
+      continue;
+    ContentSuggestion suggestion(
+        MakeUniqueID(ContentSuggestionsCategory::ARTICLES, snippet->id()),
+        snippet->best_source().url);
+    suggestion.set_amp_url(snippet->best_source().amp_url);
+    suggestion.set_title(snippet->title());
+    suggestion.set_snippet_text(snippet->snippet());
+    suggestion.set_publish_date(snippet->publish_date());
+    suggestion.set_publisher_name(snippet->best_source().publisher_name);
+    suggestion.set_score(snippet->score());
+    result.emplace_back(std::move(suggestion));
+  }
+  observer_->OnNewSuggestions(ContentSuggestionsCategory::ARTICLES,
+                              std::move(result));
+}
+
+void NTPSnippetsService::NotifyCategoryStatusChanged() {
+  if (observer_) {
+    observer_->OnCategoryStatusChanged(ContentSuggestionsCategory::ARTICLES,
+                                       category_status_);
   }
 }
 

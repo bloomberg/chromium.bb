@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/search/suggestions/suggestions_service_factory.h"
@@ -22,6 +23,7 @@
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
@@ -48,6 +50,7 @@ using image_fetcher::ImageFetcherImpl;
 using suggestions::ImageDecoderImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
+using ntp_snippets::ContentSuggestionsService;
 
 // static
 NTPSnippetsServiceFactory* NTPSnippetsServiceFactory::GetInstance() {
@@ -70,6 +73,7 @@ NTPSnippetsServiceFactory::NTPSnippetsServiceFactory()
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SuggestionsServiceFactory::GetInstance());
+  DependsOn(ContentSuggestionsServiceFactory::GetInstance());
 }
 
 NTPSnippetsServiceFactory::~NTPSnippetsServiceFactory() {}
@@ -77,6 +81,13 @@ NTPSnippetsServiceFactory::~NTPSnippetsServiceFactory() {}
 KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+
+  ContentSuggestionsService* content_suggestions_service =
+      ContentSuggestionsServiceFactory::GetForProfile(profile);
+  // TODO(pke): When the AndroidBridge does not access the NTPSnippetsService
+  // directly anymore (for retrieving content), the NTPSnippetsService does not
+  // need to be created if content_suggestions_service->state() == DISABLED,
+  // just return nullptr then and remove the other "if" below.
 
   // TODO(mvanouwerkerk): Move the enable logic into the service once we start
   // observing pref changes.
@@ -111,18 +122,25 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
-  return new ntp_snippets::NTPSnippetsService(
-      enabled, profile->GetPrefs(), suggestions_service,
-      g_browser_process->GetApplicationLocale(), scheduler,
-      base::MakeUnique<ntp_snippets::NTPSnippetsFetcher>(
-          signin_manager, token_service, request_context,
-          base::Bind(&safe_json::SafeJsonParser::Parse),
-          chrome::GetChannel() == version_info::Channel::STABLE),
-      base::MakeUnique<ImageFetcherImpl>(
-          base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
-      base::MakeUnique<ImageDecoderImpl>(),
-      base::MakeUnique<ntp_snippets::NTPSnippetsDatabase>(database_dir,
-                                                          task_runner),
-      base::MakeUnique<ntp_snippets::NTPSnippetsStatusService>(signin_manager,
-                                                               sync_service));
+  ntp_snippets::NTPSnippetsService* ntp_snippets_service =
+      new ntp_snippets::NTPSnippetsService(
+          enabled, profile->GetPrefs(), suggestions_service,
+          g_browser_process->GetApplicationLocale(), scheduler,
+          base::MakeUnique<ntp_snippets::NTPSnippetsFetcher>(
+              signin_manager, token_service, request_context,
+              base::Bind(&safe_json::SafeJsonParser::Parse),
+              chrome::GetChannel() == version_info::Channel::STABLE),
+          base::MakeUnique<ImageFetcherImpl>(
+              base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
+          base::MakeUnique<ImageDecoderImpl>(),
+          base::MakeUnique<ntp_snippets::NTPSnippetsDatabase>(database_dir,
+                                                              task_runner),
+          base::MakeUnique<ntp_snippets::NTPSnippetsStatusService>(
+              signin_manager, sync_service));
+
+  if (content_suggestions_service->state() ==
+      ContentSuggestionsService::State::ENABLED) {
+    content_suggestions_service->RegisterProvider(ntp_snippets_service);
+  }
+  return ntp_snippets_service;
 }

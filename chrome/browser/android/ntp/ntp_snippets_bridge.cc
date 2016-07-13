@@ -93,7 +93,7 @@ void NTPSnippetsBridge::FetchImage(JNIEnv* env,
                                    const JavaParamRef<jstring>& snippet_id,
                                    const JavaParamRef<jobject>& j_callback) {
   base::android::ScopedJavaGlobalRef<jobject> callback(j_callback);
-  ntp_snippets_service_->FetchSnippetImage(
+  ntp_snippets_service_->FetchSuggestionImage(
       ConvertJavaStringToUTF8(env, snippet_id),
       base::Bind(&NTPSnippetsBridge::OnImageFetched,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -102,7 +102,7 @@ void NTPSnippetsBridge::FetchImage(JNIEnv* env,
 void NTPSnippetsBridge::DiscardSnippet(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        const JavaParamRef<jstring>& id) {
-  ntp_snippets_service_->DiscardSnippet(ConvertJavaStringToUTF8(env, id));
+  ntp_snippets_service_->DiscardSuggestion(ConvertJavaStringToUTF8(env, id));
 }
 
 void NTPSnippetsBridge::SnippetVisited(JNIEnv* env,

@@ -23,7 +23,8 @@ ContentSuggestionsProvider::~ContentSuggestionsProvider() {}
 std::string ContentSuggestionsProvider::MakeUniqueID(
     ContentSuggestionsCategory category,
     const std::string& within_category_id) {
-  return base::StringPrintf(kCombinedIDFormat, int(category),
+  return base::StringPrintf(kCombinedIDFormat,
+                            static_cast<int>(category),
                             within_category_id.c_str());
 }
 

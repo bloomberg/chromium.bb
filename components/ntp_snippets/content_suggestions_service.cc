@@ -61,7 +61,7 @@ void ContentSuggestionsService::FetchSuggestionImage(
   ContentSuggestionsCategory category = id_category_map_[suggestion_id];
   if (!providers_.count(category)) {
     LOG(WARNING) << "Requested image for suggestion " << suggestion_id
-                 << " for unavailable category " << int(category);
+                 << " for unavailable category " << static_cast<int>(category);
     callback.Run(suggestion_id, gfx::Image());
     return;
   }
@@ -92,7 +92,7 @@ void ContentSuggestionsService::DiscardSuggestion(
   ContentSuggestionsCategory category = id_category_map_[suggestion_id];
   if (!providers_.count(category)) {
     LOG(WARNING) << "Discarded suggestion " << suggestion_id
-                 << " for unavailable category " << int(category);
+                 << " for unavailable category " << static_cast<int>(category);
     return;
   }
   providers_[category]->DiscardSuggestion(suggestion_id);

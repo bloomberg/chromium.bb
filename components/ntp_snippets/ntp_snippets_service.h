@@ -19,6 +19,10 @@
 #include "base/timer/timer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/ntp_snippets/content_suggestion.h"
+#include "components/ntp_snippets/content_suggestions_category.h"
+#include "components/ntp_snippets/content_suggestions_category_status.h"
+#include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
@@ -58,11 +62,14 @@ class NTPSnippetsDatabase;
 class NTPSnippetsServiceObserver;
 
 // Stores and vends fresh content data for the NTP.
+// TODO(pke): Rename this service to ArticleSuggestionsService and move to
+// a subdirectory.
 class NTPSnippetsService : public KeyedService,
-                           public image_fetcher::ImageFetcherDelegate {
+                           public image_fetcher::ImageFetcherDelegate,
+                           public ContentSuggestionsProvider {
  public:
   using ImageFetchedCallback =
-      base::Callback<void(const std::string& snippet_id, const gfx::Image&)>;
+      base::Callback<void(const std::string& suggestion_id, const gfx::Image&)>;
 
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
@@ -126,21 +133,17 @@ class NTPSnippetsService : public KeyedService,
   // the schedule depends on the time of day.
   void RescheduleFetching();
 
-  // Fetches the image for the snippet with the given |snippet_id| and runs the
-  // |callback|. If that snippet doesn't exist or the fetch fails, the callback
-  // gets a null image.
-  void FetchSnippetImage(const std::string& snippet_id,
-                         const ImageFetchedCallback& callback);
-
-  // Deletes all currently stored snippets.
-  void ClearSnippets();
-
-  // Discards the snippet with the given |snippet_id|, if it exists. Returns
-  // true iff a snippet was discarded.
-  bool DiscardSnippet(const std::string& snippet_id);
-
-  // Clears the lists of snippets previously discarded by the user.
-  void ClearDiscardedSnippets();
+  // ContentSuggestionsProvider implementation
+  // TODO(pke): At some point reorder the implementations in the .cc file
+  // accordingly.
+  void SetObserver(Observer* observer) override;
+  ContentSuggestionsCategoryStatus GetCategoryStatus(
+      ContentSuggestionsCategory category) override;
+  void DiscardSuggestion(const std::string& suggestion_id) override;
+  void FetchSuggestionImage(const std::string& suggestion_id,
+                            const ImageFetchedCallback& callback) override;
+  void ClearCachedSuggestionsForDebugging() override;
+  void ClearDiscardedSuggestionsForDebugging() override;
 
   // Returns the lists of suggestion hosts the snippets are restricted to.
   std::set<std::string> GetSuggestionsHosts() const;
@@ -155,6 +158,9 @@ class NTPSnippetsService : public KeyedService,
  private:
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, HistorySyncStateChanges);
 
+  // TODO(pke): As soon as the DisabledReason is replaced with the new status,
+  // also remove the old State enum and replace it with
+  // ContentSuggestionsCategoryStatus and a similar status diagram.
   // Possible state transitions:
   //  +------- NOT_INITED ------+
   //  |        /       \        |
@@ -238,8 +244,9 @@ class NTPSnippetsService : public KeyedService,
   void UpdateStateForStatus(DisabledReason disabled_reason);
 
   // Verifies state transitions (see |State|'s documentation) and applies them.
-  // Does nothing if called with the current state.
-  void EnterState(State state);
+  // Also updates the provider status. Does nothing except updating the provider
+  // status if called with the current state.
+  void EnterState(State state, ContentSuggestionsCategoryStatus status);
 
   // Enables the service and triggers a fetch if required. Do not call directly,
   // use |EnterState| instead.
@@ -252,7 +259,17 @@ class NTPSnippetsService : public KeyedService,
   // directly, use |EnterState| instead.
   void EnterStateShutdown();
 
+  // Converts the cached snippets to article content suggestions and notifies
+  // the observers.
+  void NotifyNewSuggestions();
+
+  // Notifies the content suggestions observer about a change in the
+  // |category_status_|.
+  void NotifyCategoryStatusChanged();
+
   State state_;
+
+  ContentSuggestionsCategoryStatus category_status_;
 
   PrefService* pref_service_;
 
@@ -269,7 +286,11 @@ class NTPSnippetsService : public KeyedService,
   const std::string application_language_code_;
 
   // The observers.
+  // TODO(pke): This is an old kind of observers that will be removed.
   base::ObserverList<NTPSnippetsServiceObserver> observers_;
+
+  // The observer to deliver data to.
+  Observer* observer_;
 
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;
@@ -303,6 +324,8 @@ class NTPSnippetsService : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
 };
 
+// TODO(pke): Remove this when snippets internals don't access this service
+// directly anymore.
 class NTPSnippetsServiceObserver {
  public:
   // Sent every time the service loads a new set of data.

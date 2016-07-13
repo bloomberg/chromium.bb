@@ -114,14 +114,14 @@ void SnippetsInternalsMessageHandler::HandleLoaded(
 void SnippetsInternalsMessageHandler::HandleClear(const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
 
-  ntp_snippets_service_->ClearSnippets();
+  ntp_snippets_service_->ClearCachedSuggestionsForDebugging();
 }
 
 void SnippetsInternalsMessageHandler::HandleClearDiscarded(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
 
-  ntp_snippets_service_->ClearDiscardedSnippets();
+  ntp_snippets_service_->ClearDiscardedSuggestionsForDebugging();
   SendDiscardedSnippets();
 }
 
