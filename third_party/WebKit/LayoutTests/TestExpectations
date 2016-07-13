@@ -1357,3 +1357,7 @@ crbug.com/624709 [ Win ] virtual/gpu-rasterization/fast/images/webp-color-profil
 crbug.com/625020 [ Debug ] compositing/repaint/page-scale-repaint.html [ Timeout ]
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
+
+crbug.com/627754 [ Precise Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Failure ]
+crbug.com/627754 [ Precise Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
+
