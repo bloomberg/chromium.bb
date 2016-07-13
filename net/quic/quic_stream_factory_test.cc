@@ -321,6 +321,7 @@ class QuicStreamFactoryTestBase {
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         migrate_sessions_on_network_change_(false),
         migrate_sessions_early_(false),
+        allow_server_migration_(false),
         force_hol_blocking_(false) {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
@@ -353,8 +354,8 @@ class QuicStreamFactoryTestBase {
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
         idle_connection_timeout_seconds_, migrate_sessions_on_network_change_,
-        migrate_sessions_early_, force_hol_blocking_, QuicTagVector(),
-        /*enable_token_binding*/ false));
+        migrate_sessions_early_, allow_server_migration_, force_hol_blocking_,
+        QuicTagVector(), /*enable_token_binding*/ false));
     factory_->set_require_confirmation(false);
     EXPECT_FALSE(factory_->has_quic_server_info_factory());
     factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());
@@ -546,6 +547,7 @@ class QuicStreamFactoryTestBase {
   int idle_connection_timeout_seconds_;
   bool migrate_sessions_on_network_change_;
   bool migrate_sessions_early_;
+  bool allow_server_migration_;
   bool force_hol_blocking_;
 };
 
@@ -2653,6 +2655,107 @@ TEST_P(QuicStreamFactoryTest, MigrateSessionOnWriteErrorMigrationDisabled) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, ServerMigration) {
+  allow_server_migration_ = true;
+  Initialize();
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  std::unique_ptr<QuicEncryptedPacket> request_packet(
+      ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
+  MockWrite writes1[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
+                                   request_packet->length(), 1)};
+  MockRead reads1[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
+                                   arraysize(writes1));
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, url_, "GET", net_log_,
+                            callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<QuicHttpStream> stream = request.CreateStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  IPEndPoint ip;
+  session->GetDefaultSocket()->GetPeerAddress(&ip);
+  DVLOG(1) << "Socket connected to: " << ip.address().ToString() << " "
+           << ip.port();
+
+  // Set up second socket data provider that is used after
+  // migration. The request is rewritten to this new socket, and the
+  // response to the request is read on this new socket.
+  std::unique_ptr<QuicEncryptedPacket> ping(
+      client_maker_.MakePingPacket(2, /*include_version=*/true));
+  std::unique_ptr<QuicEncryptedPacket> client_rst(
+      client_maker_.MakeAckAndRstPacket(3, false, kClientDataStreamId1,
+                                        QUIC_STREAM_CANCELLED, 1, 1, 1, true));
+  MockWrite writes2[] = {
+      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0),
+      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 3)};
+  std::unique_ptr<QuicEncryptedPacket> response_headers_packet(
+      ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
+  MockRead reads2[] = {MockRead(ASYNC, response_headers_packet->data(),
+                                response_headers_packet->length(), 1),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
+  SequencedSocketData socket_data2(reads2, arraysize(reads2), writes2,
+                                   arraysize(writes2));
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+
+  const uint8_t kTestIpAddress[] = {1, 2, 3, 4};
+  const uint16_t kTestPort = 123;
+  factory_->MigrateSessionToNewPeerAddress(
+      session, IPEndPoint(IPAddress(kTestIpAddress), kTestPort), net_log_);
+
+  session->GetDefaultSocket()->GetPeerAddress(&ip);
+  DVLOG(1) << "Socket migrated to: " << ip.address().ToString() << " "
+           << ip.port();
+
+  // The session should be alive and active.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Run the message loop so that data queued in the new socket is read by the
+  // packet reader.
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  stream.reset();
+
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {

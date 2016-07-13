@@ -284,6 +284,14 @@ bool ShouldQuicMigrateSessionsEarly(
       GetVariationParam(quic_trial_params, "migrate_sessions_early"), "true");
 }
 
+bool ShouldQuicAllowServerMigration(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params,
+                        "allow_server_migration"),
+      "true");
+}
+
 size_t GetQuicMaxPacketLength(const base::CommandLine& command_line,
                               const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
@@ -394,6 +402,8 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
         ShouldQuicMigrateSessionsOnNetworkChange(quic_trial_params);
     params->quic_migrate_sessions_early =
         ShouldQuicMigrateSessionsEarly(quic_trial_params);
+    params->quic_allow_server_migration =
+        ShouldQuicAllowServerMigration(quic_trial_params);
   }
 
   size_t max_packet_length =

@@ -176,6 +176,9 @@ class NET_EXPORT HttpNetworkSession
     // If true, active QUIC sessions experiencing poor connectivity may be
     // migrated onto a new network.
     bool quic_migrate_sessions_early;
+    // If true, allows migration of QUIC connections to a server-specified
+    // alternate server address.
+    bool quic_allow_server_migration;
     // If true, bidirectional streams over QUIC will be disabled.
     bool quic_disable_bidirectional_streams;
     // If true, enable force HOL blocking.  For measurement purposes.
