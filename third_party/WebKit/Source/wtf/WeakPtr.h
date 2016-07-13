@@ -107,8 +107,7 @@ public:
         return get();
     }
 
-    typedef RefPtr<WeakReference<T>> (WeakPtr::*UnspecifiedBoolType);
-    operator UnspecifiedBoolType() const { return get() ? &WeakPtr::m_ref : 0; }
+    explicit operator bool() const { return get(); }
 
 private:
     RefPtr<WeakReference<T>> m_ref;

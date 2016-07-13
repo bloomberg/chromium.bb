@@ -47,8 +47,7 @@ public:
 
     LineLayoutItem() : m_layoutObject(0) { }
 
-    typedef LayoutObject* LineLayoutItem::*UnspecifiedBoolType;
-    operator UnspecifiedBoolType() const { return m_layoutObject ? &LineLayoutItem::m_layoutObject : nullptr; }
+    explicit operator bool() const { return m_layoutObject; }
 
     bool isEqual(const LayoutObject* layoutObject) const
     {

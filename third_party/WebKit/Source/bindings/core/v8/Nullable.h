@@ -65,9 +65,7 @@ public:
     T& get() { ASSERT(!m_isNull); return m_value; }
     bool isNull() const { return m_isNull; }
 
-    // See comment in RefPtr.h about what UnspecifiedBoolType is.
-    typedef const T* UnspecifiedBoolType;
-    operator UnspecifiedBoolType() const { return m_isNull ? 0 : &m_value; }
+    explicit operator bool() const { return !m_isNull; }
 
     bool operator==(const Nullable& other) const
     {

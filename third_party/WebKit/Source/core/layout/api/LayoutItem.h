@@ -32,12 +32,13 @@ public:
 
     LayoutItem() : m_layoutObject(0) { }
 
-    // TODO(leviw): This should be an UnspecifiedBoolType, but
+    // TODO(leviw): This should be "explicit operator bool", but
     // using this operator allows the API to be landed in pieces.
     // https://crbug.com/499321
     operator LayoutObject*() const { return m_layoutObject; }
 
-    // TODO(pilgrim): Remove this when we replace the operator above with UnspecifiedBoolType.
+    // TODO(pilgrim): Remove this when we replace the operator above with
+    // operator bool.
     bool isNull() const
     {
         return !m_layoutObject;
