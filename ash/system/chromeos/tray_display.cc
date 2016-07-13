@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/actionable_view.h"
@@ -111,13 +112,14 @@ base::string16 GetAllDisplayInfo() {
   return base::JoinString(lines, base::ASCIIToUTF16("\n"));
 }
 
-void OpenSettings() {
+// Attempts to open the display settings, returns true if successful.
+bool OpenSettings() {
   // switch is intentionally introduced without default, to cause an error when
   // a new type of login status is introduced.
   switch (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
     case LoginStatus::NOT_LOGGED_IN:
     case LoginStatus::LOCKED:
-      return;
+      return false;
 
     case LoginStatus::USER:
     case LoginStatus::OWNER:
@@ -126,8 +128,22 @@ void OpenSettings() {
     case LoginStatus::SUPERVISED:
     case LoginStatus::KIOSK_APP:
       SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-      if (delegate->ShouldShowSettings())
+      if (delegate->ShouldShowSettings()) {
         delegate->ShowDisplaySettings();
+        return true;
+      }
+  }
+
+  return false;
+}
+
+// Callback to handle a user selecting the notification view.
+void OpenSettingsFromNotification() {
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SELECTED);
+  if (OpenSettings()) {
+    WmShell::Get()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_DISPLAY_NOTIFICATION_SHOW_SETTINGS);
   }
 }
 
@@ -279,7 +295,12 @@ class DisplayView : public ActionableView {
 
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override {
-    OpenSettings();
+    WmShell::Get()->RecordUserMetricsAction(
+        UMA_STATUS_AREA_DISPLAY_DEFAULT_SELECTED);
+    if (OpenSettings()) {
+      WmShell::Get()->RecordUserMetricsAction(
+          UMA_STATUS_AREA_DISPLAY_DEFAULT_SHOW_SETTINGS);
+    }
     return true;
   }
 
@@ -404,8 +425,10 @@ void TrayDisplay::CreateOrUpdateNotification(
                                  system_notifier::kNotifierDisplay),
       message_center::RichNotificationData(),
       new message_center::HandleNotificationClickedDelegate(
-          base::Bind(&OpenSettings))));
+          base::Bind(&OpenSettingsFromNotification))));
 
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_DISPLAY_NOTIFICATION_CREATED);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
