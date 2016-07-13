@@ -159,8 +159,8 @@ class HttpsEngagementPageLoadMetricsBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        Simple_Https) {
   StartHttpsServer(false);
-  base::TimeDelta upper_bound =
-      NavigateInForegroundAndCloseWithTiming(https_test_server_->GetURL("/"));
+  base::TimeDelta upper_bound = NavigateInForegroundAndCloseWithTiming(
+      https_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
   int32_t bucket_min =
@@ -172,8 +172,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest, Simple_Http) {
   StartHttpServer();
-  base::TimeDelta upper_bound =
-      NavigateInForegroundAndCloseWithTiming(http_test_server_->GetURL("/"));
+  base::TimeDelta upper_bound = NavigateInForegroundAndCloseWithTiming(
+      http_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
   int32_t bucket_min =
@@ -211,7 +211,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        UncommittedLoadWithError) {
   StartHttpsServer(true);
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
-  ui_test_utils::NavigateToURL(browser(), https_test_server_->GetURL("/"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_test_server_->GetURL("/simple.html"));
   content::WebContentsDestroyedWatcher destroyed_watcher(
       tab_strip_model->GetActiveWebContents());
   EXPECT_TRUE(
@@ -224,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        Navigate_Https) {
   StartHttpsServer(false);
-  NavigateTwiceInTabAndClose(https_test_server_->GetURL("/"),
+  NavigateTwiceInTabAndClose(https_test_server_->GetURL("/simple.html"),
                              GURL(chrome::kChromeUIVersionURL));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
@@ -233,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        Navigate_Http) {
   StartHttpServer();
-  NavigateTwiceInTabAndClose(http_test_server_->GetURL("/"),
+  NavigateTwiceInTabAndClose(http_test_server_->GetURL("/simple.html"),
                              GURL(chrome::kChromeUIVersionURL));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
@@ -243,8 +244,22 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        Navigate_Both) {
   StartHttpServer();
   StartHttpsServer(false);
-  NavigateTwiceInTabAndClose(http_test_server_->GetURL("/"),
-                             https_test_server_->GetURL("/"));
+  NavigateTwiceInTabAndClose(http_test_server_->GetURL("/simple.html"),
+                             https_test_server_->GetURL("/simple.html"));
+  histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
+                       Navigate_Both_NonHtmlMainResource) {
+  StartHttpServer();
+  StartHttpsServer(false);
+  NavigateTwiceInTabAndClose(http_test_server_->GetURL("/circle.svg"),
+                             https_test_server_->GetURL("/circle.svg"));
+
+  // TODO(bmcquade): for the time being, the page load metrics infrastructure
+  // also tracks non-HTML resources. We should update these to expect 0
+  // histogram events once that gets fixed. See crbug.com/627536.
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
 }
@@ -254,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpsServer(false);
   base::TimeDelta upper_bound =
       NavigateInForegroundAndCloseInBackgroundWithTiming(
-          https_test_server_->GetURL("/"));
+          https_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
   int32_t bucket_min =
@@ -269,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpServer();
   base::TimeDelta upper_bound =
       NavigateInForegroundAndCloseInBackgroundWithTiming(
-          http_test_server_->GetURL("/"));
+          http_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
   int32_t bucket_min =
@@ -284,7 +299,7 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpsServer(false);
   base::TimeDelta upper_bound =
       NavigateInBackgroundAndCloseInForegroundWithTiming(
-          https_test_server_->GetURL("/"));
+          https_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
   int32_t bucket_min =
@@ -299,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   StartHttpServer();
   base::TimeDelta upper_bound =
       NavigateInBackgroundAndCloseInForegroundWithTiming(
-          http_test_server_->GetURL("/"));
+          http_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
   int32_t bucket_min =
@@ -313,8 +328,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        AlwaysInBackground) {
   StartHttpsServer(false);
   StartHttpServer();
-  NavigateInBackgroundAndClose(https_test_server_->GetURL("/"));
-  NavigateInBackgroundAndClose(http_test_server_->GetURL("/"));
+  NavigateInBackgroundAndClose(https_test_server_->GetURL("/simple.html"));
+  NavigateInBackgroundAndClose(http_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
   histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
 }
