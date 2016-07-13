@@ -28,6 +28,8 @@
 
 namespace password_manager {
 
+class SQLTableBuilder;
+
 extern const int kCurrentVersionNumber;
 extern const int kCompatibleVersionNumber;
 
@@ -170,9 +172,6 @@ class LoginDatabase {
   static EncryptionResult DecryptedString(const std::string& cipher_text,
                                           base::string16* plain_text);
 
-  bool InitLoginsTable();
-  bool MigrateOldVersionsAsNeeded();
-
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
   // Returns the EncryptionResult from decrypting the password in |s|; if not
@@ -195,6 +194,10 @@ class LoginDatabase {
                                const autofill::PasswordForm* matched_form,
                                ScopedVector<autofill::PasswordForm>* forms);
 
+  // Initializes all the *_statement_ data members with appropriate SQL
+  // fragments based on |builder|.
+  void InitializeStatementStrings(const SQLTableBuilder& builder);
+
   base::FilePath db_path_;
   mutable sql::Connection db_;
   sql::MetaTable meta_table_;
@@ -206,6 +209,21 @@ class LoginDatabase {
   // This is a temporary measure for migration the Keychain on Mac.
   // crbug.com/466638
   bool clear_password_values_;
+
+  // These cached strings are used to build SQL statements.
+  std::string add_statement_;
+  std::string add_replace_statement_;
+  std::string update_statement_;
+  std::string delete_statement_;
+  std::string autosignin_statement_;
+  std::string get_statement_;
+  std::string get_statement_psl_;
+  std::string get_statement_federated_;
+  std::string get_statement_psl_federated_;
+  std::string created_statement_;
+  std::string synced_statement_;
+  std::string blacklisted_statement_;
+  std::string encrypted_statement_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDatabase);
 };

@@ -128,6 +128,8 @@
         'password_manager/core/browser/password_ui_utils.h',
         'password_manager/core/browser/psl_matching_helper.cc',
         'password_manager/core/browser/psl_matching_helper.h',
+        'password_manager/core/browser/sql_table_builder.cc',
+        'password_manager/core/browser/sql_table_builder.h',
         'password_manager/core/browser/statistics_table.cc',
         'password_manager/core/browser/statistics_table.h',
         'password_manager/core/browser/test_affiliation_fetcher_factory.h',

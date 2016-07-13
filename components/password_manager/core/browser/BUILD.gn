@@ -108,6 +108,8 @@ source_set("browser") {
     "password_ui_utils.h",
     "psl_matching_helper.cc",
     "psl_matching_helper.h",
+    "sql_table_builder.cc",
+    "sql_table_builder.h",
     "statistics_table.cc",
     "statistics_table.h",
     "test_affiliation_fetcher_factory.h",
@@ -269,6 +271,7 @@ source_set("unit_tests") {
     "password_syncable_service_unittest.cc",
     "password_ui_utils_unittest.cc",
     "psl_matching_helper_unittest.cc",
+    "sql_table_builder_unittest.cc",
     "statistics_table_unittest.cc",
   ]
   if (is_mac) {
