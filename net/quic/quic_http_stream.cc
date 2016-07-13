@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
@@ -62,12 +63,14 @@ QuicHttpStream::QuicHttpStream(
       port_migration_detected_(false),
       found_promise_(false),
       push_handle_(nullptr),
+      in_loop_(false),
       weak_factory_(this) {
   DCHECK(session_);
   session_->AddObserver(this);
 }
 
 QuicHttpStream::~QuicHttpStream() {
+  CHECK(!in_loop_);
   Close(false);
   if (session_)
     session_->RemoveObserver(this);
@@ -555,6 +558,7 @@ void QuicHttpStream::OnIOComplete(int rv) {
 void QuicHttpStream::DoCallback(int rv) {
   CHECK_NE(rv, ERR_IO_PENDING);
   CHECK(!callback_.is_null());
+  CHECK(!in_loop_);
 
   // The client callback can do anything, including destroying this class,
   // so any pending callback must be issued after everything else is done.
@@ -562,6 +566,8 @@ void QuicHttpStream::DoCallback(int rv) {
 }
 
 int QuicHttpStream::DoLoop(int rv) {
+  CHECK(!in_loop_);
+  base::AutoReset<bool> auto_reset_in_loop(&in_loop_, true);
   do {
     State state = next_state_;
     next_state_ = STATE_NONE;
