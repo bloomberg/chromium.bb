@@ -77,6 +77,7 @@ const char kNotifierLocale[] = "ash.locale";
 const char kNotifierMultiProfileFirstRun[] = "ash.multi-profile.first-run";
 const char kNotifierNetworkPortalDetector[] = "ash.network.portal-detector";
 const char kNotifierPower[] = "ash.power";
+const char kNotifierQuickUnlock[] = "ash.quickunlock";
 const char kNotifierScreenshot[] = "ash.screenshot";
 const char kNotifierScreenCapture[] = "ash.screen-capture";
 const char kNotifierScreenShare[] = "ash.screen-share";

@@ -318,6 +318,9 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterInt64Pref(prefs::kHatsLastInteractionTimestamp,
                               base::Time().ToInternalValue());
 
+  registry->RegisterBooleanPref(prefs::kQuickUnlockFeatureNotificationShown,
+                                false);
+
   // We don't sync EOL related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kEolNotificationDismissed, false);
   registry->RegisterIntegerPref(prefs::kEolStatus,

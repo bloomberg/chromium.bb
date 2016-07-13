@@ -499,6 +499,14 @@ Press Shift + Alt to switch.
     Take our survey
   </message>
 
+  <!-- Quick Unlock Strings -->
+   <message name="IDS_ASH_QUICK_UNLOCK_NOTIFICATION_TITLE" desc="The title of the notification for Quick Unlock feature notification.">
+    QU Feature notification title here
+  </message>
+  <message name="IDS_ASH_QUICK_UNLOCK_NOTIFICATION_BODY" desc="The body of the notification for Quick Unlock feature notification.">
+    QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here.
+  </message>
+
   <!-- Deprecated Accelerators Messages -->
   <!-- Shortcut keys MUST be connected with pluses (e.g. Ctrl+Shift+L). -->
   <message name="IDS_SHORTCUT_LOCK_SCREEN_OLD" desc="the old deprecated shortcut to lock the screen.">

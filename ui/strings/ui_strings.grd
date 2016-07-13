@@ -591,6 +591,9 @@ need to be translated for each locale.-->
         <message name="IDS_MESSAGE_CENTER_NOTIFIER_HATS_NAME" desc="The name of hats notifier that is a system component">
           Hats
         </message>
+        <message name="IDS_MESSAGE_CENTER_NOTIFIER_QUICK_UNLOCK_FEATURE_NAME" desc="The name of quick unlock feature notifier that is a system component">
+          Quick Unlock Feature
+        </message>
       </if>
 
       <!-- App list -->
