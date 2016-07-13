@@ -38,12 +38,13 @@
     }
 
     function startExperiment() {
-      window.addEventListener('touchstart', onTouchStart);
-      window.addEventListener('touchmove', onTouchMove);
+      // Pass 'passive' false in to prevent any intervention.
+      window.addEventListener('touchstart', onTouchStart, {passive: false});
+      window.addEventListener('touchmove', onTouchMove, {passive: false});
       window.addEventListener('touchend', onTouchEnd);
       window.addEventListener('touchleave', onTouchEnd);
       window.addEventListener('touchcancel', onTouchEnd);
-      window.addEventListener('wheel', onMouseWheel);
+      window.addEventListener('wheel', onMouseWheel, {passive: false});
     }
 
     window.addEventListener('load', startExperiment);
