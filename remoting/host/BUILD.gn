@@ -987,6 +987,7 @@ if (enable_me2me_host) {
         ":credits",
         ":remoting_me2me_host_static",
         "//build/config/sanitizers:deps",
+        "//remoting/base:breakpad",
         "//remoting/resources",
       ]
       if (is_mac) {
@@ -1233,44 +1234,45 @@ if (enable_me2me_host) {
               root_build_dir)
       _extra_files = []
 
-      args = [
-               rebase_path("$root_gen_dir/installation", root_build_dir),
-               rebase_path(_output, root_build_dir),
-               "--source-file-roots",
-               rebase_path("//remoting/host/installer/win"),
-               "--source-files",
-               rebase_path("//remoting/host/installer/win/chromoting.wxs"),
-               rebase_path("//remoting/host/installer/win/parameters.json"),
+      args =
+          [
+            rebase_path("$root_gen_dir/remoting_installation", root_build_dir),
+            rebase_path(_output, root_build_dir),
+            "--source-file-roots",
+            rebase_path("//remoting/host/installer/win"),
+            "--source-files",
+            rebase_path("//remoting/host/installer/win/chromoting.wxs"),
+            rebase_path("//remoting/host/installer/win/parameters.json"),
 
-               # Input files
-               "--generated-files",
-             ] + _generated_files +
-             [
-               rebase_path("//remoting/resources/chromoting.ico"),
+            # Input files
+            "--generated-files",
+          ] + _generated_files +
+          [
+            rebase_path("//remoting/resources/chromoting.ico"),
 
-               # Position of files in zip file
-               "--generated-files-dst",
-               "files/remote_assistance_host.exe",
-               "files/remote_security_key.exe",
-               "files/remoting_core.dll",
-               "files/remoting_desktop.exe",
-               "files/remoting_host.exe",
-               "files/remoting_native_messaging_host.exe",
-               "files/remoting_start_host.exe",
-               "files/CREDITS.txt",
-               "files/com.google.chrome.remote_assistance.json",
-               "files/com.google.chrome.remote_desktop.json",
-               "files/chromoting.ico",
-               "files/icudtl.dat",
-             ] + _extra_files +  # Defs
-             [
-               "--defs",
-               "BRANDING=$_branding",
-               "DAEMON_CONTROLLER_CLSID={$daemon_controller_clsid}",
-               "RDP_DESKTOP_SESSION_CLSID={$rdp_desktop_session_clsid}",
-               "VERSION=$chrome_version_full",
-               "OFFICIAL_BUILD=$_official_build",
-             ]
+            # Position of files in zip file
+            "--generated-files-dst",
+            "files/remote_assistance_host.exe",
+            "files/remote_security_key.exe",
+            "files/remoting_core.dll",
+            "files/remoting_desktop.exe",
+            "files/remoting_host.exe",
+            "files/remoting_native_messaging_host.exe",
+            "files/remoting_start_host.exe",
+            "files/CREDITS.txt",
+            "files/com.google.chrome.remote_assistance.json",
+            "files/com.google.chrome.remote_desktop.json",
+            "files/chromoting.ico",
+            "files/icudtl.dat",
+          ] + _extra_files +  # Defs
+          [
+            "--defs",
+            "BRANDING=$_branding",
+            "DAEMON_CONTROLLER_CLSID={$daemon_controller_clsid}",
+            "RDP_DESKTOP_SESSION_CLSID={$rdp_desktop_session_clsid}",
+            "VERSION=$chrome_version_full",
+            "OFFICIAL_BUILD=$_official_build",
+          ]
     }
   } else if (is_mac) {
     import("//build/config/zip.gni")
@@ -1311,7 +1313,8 @@ if (enable_me2me_host) {
       host_uninstaller_name_nospace = host_uninstaller_name
 
       args = [
-               rebase_path(target_gen_dir, root_build_dir),
+               rebase_path("$target_gen_dir/remoting_installation",
+                           root_build_dir),
                rebase_path(zip_path, root_build_dir),
                "--source-file-roots",
                rebase_path("installer/mac/", root_build_dir),
@@ -1545,7 +1548,7 @@ if (enable_me2me_host) {
           "--wix_path",
           rebase_path("//third_party/wix"),
           "--intermediate_dir",
-          rebase_path("$root_gen_dir/installation", root_build_dir),
+          rebase_path("$root_gen_dir/remoting_installation", root_build_dir),
           "--target_arch",
           msi_script_arch,
           rebase_path("$root_out_dir/remoting-me2me-host-$current_os.zip",
