@@ -125,8 +125,12 @@ void V8WrapperInstantiationScope::securityCheck(v8::Isolate* isolate, v8::Local<
     }
     const DOMWrapperWorld& currentWorld = DOMWrapperWorld::world(m_context);
     RELEASE_ASSERT(currentWorld.worldId() == DOMWrapperWorld::world(contextForWrapper).worldId());
-    if (currentWorld.isMainWorld()) {
-        RELEASE_ASSERT(BindingSecurity::shouldAllowAccessToFrame(isolate, currentDOMWindow(isolate), frame, DoNotReportSecurityError));
+    if (currentWorld.isMainWorld() && !BindingSecurity::shouldAllowAccessToFrame(isolate, currentDOMWindow(isolate), frame, DoNotReportSecurityError)) {
+        // TODO(jochen): Add the interface name here once this is generalized.
+        ExceptionState exceptionState(ExceptionState::ConstructionContext, nullptr, contextForWrapper->Global(), isolate);
+        exceptionState.throwSecurityError(String(), String());
+        exceptionState.throwIfNeeded();
+        return;
     }
 }
 
