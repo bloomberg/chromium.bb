@@ -484,7 +484,13 @@ bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling)
             m_antiAliasingMode = ScreenSpaceAntialiasing;
         }
     }
-    m_storageTextureSupported = m_webGLVersion > WebGL1 || m_extensionsUtil->supportsExtension("GL_EXT_texture_storage");
+    // TODO(dshwang): enable storage texture on all platform. crbug.com/557848
+    // Linux ATI bot fails WebglConformance.conformance_textures_misc_tex_image_webgl
+    // So use storage texture only if ScreenSpaceAntialiasing is enabled,
+    // because ScreenSpaceAntialiasing is much faster with storage texture.
+    m_storageTextureSupported = (m_webGLVersion > WebGL1
+        ||  m_extensionsUtil->supportsExtension("GL_EXT_texture_storage"))
+        && m_antiAliasingMode == ScreenSpaceAntialiasing;
     m_sampleCount = std::min(4, maxSampleCount);
 
     m_gl->GenFramebuffers(1, &m_fbo);
