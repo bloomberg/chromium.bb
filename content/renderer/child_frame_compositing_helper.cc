@@ -67,25 +67,11 @@ ChildFrameCompositingHelper::ChildFrameCompositingHelper(
 ChildFrameCompositingHelper::~ChildFrameCompositingHelper() {
 }
 
-BrowserPluginManager* ChildFrameCompositingHelper::GetBrowserPluginManager() {
-  if (!browser_plugin_)
-    return nullptr;
-
-  return BrowserPluginManager::Get();
-}
-
 blink::WebPluginContainer* ChildFrameCompositingHelper::GetContainer() {
   if (!browser_plugin_)
     return nullptr;
 
   return browser_plugin_->container();
-}
-
-int ChildFrameCompositingHelper::GetInstanceID() {
-  if (!browser_plugin_)
-    return 0;
-
-  return browser_plugin_->browser_plugin_instance_id();
 }
 
 void ChildFrameCompositingHelper::UpdateWebLayer(blink::WebLayer* layer) {

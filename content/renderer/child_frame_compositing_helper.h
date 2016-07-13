@@ -84,9 +84,7 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
 
   virtual ~ChildFrameCompositingHelper();
 
-  BrowserPluginManager* GetBrowserPluginManager();
   blink::WebPluginContainer* GetContainer();
-  int GetInstanceID();
 
   void CheckSizeAndAdjustLayerProperties(const gfx::Size& new_size,
                                          float device_scale_factor,
