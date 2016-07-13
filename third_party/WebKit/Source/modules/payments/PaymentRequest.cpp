@@ -206,11 +206,18 @@ void validateDisplayItems(const HeapVector<PaymentItem>& items, ExceptionState& 
 
 void validateShippingOptions(const HeapVector<PaymentShippingOption>& options, ExceptionState& exceptionState)
 {
+    HashSet<String> uniqueIds;
     for (const auto& option : options) {
         if (!option.hasId() || option.id().isEmpty()) {
             exceptionState.throwTypeError("ShippingOption id required");
             return;
         }
+
+        if (uniqueIds.contains(option.id())) {
+            exceptionState.throwTypeError("Duplicate shipping option identifiers are not allowed");
+            return;
+        }
+        uniqueIds.add(option.id());
 
         validateShippingOptionOrPaymentItem(option, exceptionState);
         if (exceptionState.hadException())
@@ -231,6 +238,7 @@ void validatePaymentDetailsModifiers(const HeapVector<PaymentDetailsModifier>& m
             exceptionState.throwTypeError("Must specify at least one payment method identifier");
             return;
         }
+
         for (const auto& method : modifier.supportedMethods()) {
             if (uniqueMethods.contains(method)) {
                 exceptionState.throwTypeError("Duplicate payment method identifiers are not allowed");
@@ -304,6 +312,7 @@ void validateAndConvertPaymentMethodData(const HeapVector<PaymentMethodData>& pa
             exceptionState.throwTypeError("Must specify at least one payment method identifier");
             return;
         }
+
         for (const auto& method : pmd.supportedMethods()) {
             if (uniqueMethods.contains(method)) {
                 exceptionState.throwTypeError("Duplicate payment method identifiers are not allowed");
