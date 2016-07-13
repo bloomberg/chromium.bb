@@ -23,18 +23,18 @@ public:
     }
 
     void setCSSPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
-    void setCSSPropertyValue(CSSPropertyID, CSSValue*);
+    void setCSSPropertyValue(CSSPropertyID, const CSSValue*);
     void setPresentationAttributeValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
     void setSVGAttributeValue(const QualifiedName&, const String& value);
 
-    CSSValue* cssPropertyValue(CSSPropertyID property) const
+    const CSSValue* cssPropertyValue(CSSPropertyID property) const
     {
         int index = m_cssPropertyMap->findPropertyIndex(property);
         RELEASE_ASSERT(index >= 0);
         return m_cssPropertyMap->propertyAt(static_cast<unsigned>(index)).value();
     }
 
-    CSSValue* presentationAttributeValue(CSSPropertyID property) const
+    const CSSValue* presentationAttributeValue(CSSPropertyID property) const
     {
         int index = m_presentationAttributeMap->findPropertyIndex(property);
         RELEASE_ASSERT(index >= 0);

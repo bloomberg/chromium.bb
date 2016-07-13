@@ -307,7 +307,7 @@ bool MutableStylePropertySet::setProperty(const AtomicString& customPropertyName
     return CSSParser::parseValueForCustomProperty(this, customPropertyName, value, important, contextStyleSheet);
 }
 
-void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, CSSValue* value, bool important)
+void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, const CSSValue* value, bool important)
 {
     StylePropertyShorthand shorthand = shorthandForProperty(propertyID);
     if (!shorthand.length()) {

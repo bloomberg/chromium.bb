@@ -29,7 +29,7 @@ void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const String& v
         m_cssPropertyMap->setProperty(property, value, false, styleSheetContents);
 }
 
-void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, CSSValue* value)
+void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const CSSValue* value)
 {
     ASSERT(property != CSSPropertyInvalid);
     ASSERT(CSSAnimations::isAnimatableProperty(property));

@@ -61,8 +61,8 @@ private:
     bool parseViewportDescriptor(CSSPropertyID propId, bool important);
     bool parseFontFaceDescriptor(CSSPropertyID);
 
-    void addProperty(CSSPropertyID, CSSPropertyID, CSSValue*, bool important, bool implicit = false);
-    void addExpandedPropertyForValue(CSSPropertyID propId, CSSValue*, bool);
+    void addProperty(CSSPropertyID, CSSPropertyID, const CSSValue&, bool important, bool implicit = false);
+    void addExpandedPropertyForValue(CSSPropertyID propId, const CSSValue&, bool);
 
     bool consumeBorder(bool important);
 
