@@ -217,13 +217,13 @@ crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Fail
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
-crbug.com/498539 [ Win ] inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
+crbug.com/498539 [ Win ] inspector/tracing/timeline-misc/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/498539 inspector/console/console-log-syntax-error.html [ Pass Timeout ]
-crbug.com/498539 inspector/tracing/timeline-bound-function.html [ Pass Failure ]
-crbug.com/498539 virtual/threaded/inspector/tracing/timeline-bound-function.html [ Pass Failure ]
-crbug.com/498539 inspector/tracing/timeline-injected-script-eval.html [ Pass Failure ]
-crbug.com/498539 inspector/tracing/timeline-time.html [ Pass Failure Timeout ]
-crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
+crbug.com/498539 virtual/threaded/inspector/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-js/timeline-injected-script-eval.html [ Pass Failure ]
+crbug.com/498539 inspector/tracing/timeline-time/timeline-time.html [ Pass Failure Timeout ]
+crbug.com/498539 inspector/tracing/timeline-time/timeline-timer.html [ Pass Failure ]
 crbug.com/498539 inspector/elements/styles-3/styles-change-node-while-editing.html [ Failure Pass ]
 crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger/debug-inlined-scripts-fragment-id.html [ Pass Timeout ]
@@ -1222,7 +1222,7 @@ crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml 
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
-crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
+crbug.com/572726 inspector/tracing/timeline-misc/timeline-node-reference.html [ Timeout Pass Crash ]
 
 crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ Failure Pass ]
 

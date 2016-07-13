@@ -1,0 +1,66 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/timeline-test.js"></script>
+<script src="../resources/timeline-data.js"></script>
+<script>
+
+function test()
+{
+    var timeline = WebInspector.panels.timeline;
+    var overviewPane = timeline._overviewPane;
+
+    InspectorTest.loadTimeline(InspectorTest.timelineData());
+
+    timeline._currentViews[0].refreshRecords();
+
+    overviewPane._update();
+    InspectorTest.addResult("OverviewPane:");
+    overviewPane._overviewCalculator.setDisplayWindow(450);
+    dumpDividers(overviewPane._overviewCalculator);
+    InspectorTest.addResult("");
+
+    function dumpFlameChartRecordsCountForRange(windowLeft, windowRight)
+    {
+        var mainView = timeline._currentViews[0]._mainView;
+        mainView._muteAnimation = true;
+        overviewPane._overviewGrid.setWindow(windowLeft, windowRight);
+        mainView.update();
+        InspectorTest.addResult("range = " + windowLeft + " - " + windowRight);
+        InspectorTest.addResult("time range = " + mainView._timeWindowLeft + " - " + mainView._timeWindowRight);
+        InspectorTest.addResult("");
+    }
+
+    function dumpDividers(calculator)
+    {
+        var dividers = WebInspector.TimelineGrid.calculateDividerOffsets(calculator).offsets;
+        for (var i = 0; i < dividers.length; ++i)
+            dividers[i] -= calculator.zeroTime();
+        InspectorTest.addResult("divider offsets: [" + dividers.join(", ") + "]. We are expecting round numbers.");
+    }
+
+    dumpFlameChartRecordsCountForRange(0, 1);
+    dumpFlameChartRecordsCountForRange(0.25, 0.75);
+    dumpFlameChartRecordsCountForRange(0.33, 0.66);
+
+    overviewPane._overviewGrid.setWindow(0.1, 0.9);
+
+    InspectorTest.addResult("--------------------------------------------------------");
+    InspectorTest.addResult("time range = " + timeline._windowStartTime + " - " + timeline._windowEndTime);
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline window filter.
+</p>
+
+<p>
+It applies different ranges to the OverviewGrid and expects that current view reflects the change.
+</p>
+
+</body>
+</html>
