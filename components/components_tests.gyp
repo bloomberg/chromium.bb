@@ -877,6 +877,7 @@
       'tracing/core/trace_ring_buffer_unittest.cc',
       'tracing/core/scattered_stream_writer_unittest.cc',
       'tracing/test/fake_scattered_buffer.cc',
+      'tracing/test/proto_zero_generation_unittest.cc',
     ],
     'translate_unittest_sources': [
       'translate/core/browser/language_state_unittest.cc',
@@ -1382,6 +1383,7 @@
             'components.gyp:zoom',
             'scheduler/scheduler.gyp:scheduler',
             'test_runner/test_runner.gyp:test_runner',
+            'tracing.gyp:proto_zero_testing_messages',
             'tracing.gyp:tracing',
             'webcrypto/webcrypto.gyp:webcrypto',
             '../third_party/boringssl/boringssl.gyp:boringssl',

@@ -57,5 +57,41 @@
         }],
       ]
     },
+    {
+      'target_name': 'proto_zero_plugin',
+      'type': 'executable',
+      'toolsets': ['host'],
+      'sources': [
+        'tracing/tools/proto_zero_plugin/proto_zero_generator.cc',
+        'tracing/tools/proto_zero_plugin/proto_zero_generator.h',
+        'tracing/tools/proto_zero_plugin/proto_zero_plugin.cc',
+      ],
+      'include_dirs': [
+        '..',
+        '../third_party/protobuf/src',
+      ],
+      'dependencies': [
+        '../third_party/protobuf/protobuf.gyp:protoc_lib',
+      ],
+    },
+    {
+      'target_name': 'proto_zero_testing_messages',
+      'type': 'static_library',
+      'variables': {
+        'proto_in_dir': 'tracing/test',
+        'proto_out_dir': 'components/tracing/test',
+        'generator_plugin': 'proto_zero_plugin',
+        'generator_plugin_suffix': '.pbzero',
+        'generate_cc': 0,
+        'generate_python': 0,
+      },
+      'sources': [
+        'tracing/test/example_messages.proto',
+      ],
+      'dependencies': [
+        'proto_zero_plugin',
+      ],
+      'includes': ['../build/protoc.gypi'],
+    },
   ],
 }

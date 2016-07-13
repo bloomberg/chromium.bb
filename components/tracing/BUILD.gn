@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//third_party/protobuf/proto_library.gni")
+
 component("tracing") {
   sources = [
     "child/child_memory_dump_manager_delegate_impl.cc",
@@ -52,6 +54,38 @@ component("startup_tracing") {
   ]
 }
 
+# For unit testing of generated stubs.
+proto_library("proto_zero_testing_messages") {
+  visibility = [ "//components/tracing/*" ]
+
+  sources = [
+    "test/example_messages.proto",
+  ]
+
+  generator_plugin_label = "tools/proto_zero_plugin:proto_zero_plugin"
+  generator_plugin_suffix = ".pbzero"
+  generate_cc = false
+  generate_python = false
+
+  # TODO(kraynov) Move away this complex path evaluation and dependency
+  # injection to proto_library.gni. All lines below should be removed.
+  # The problem is that root_out_dir and root_build_dir may differ in case of
+  # cross compilation. Also .exe will be appended on Windows.
+
+  plugin_host_label = generator_plugin_label + "($host_toolchain)"
+  generator_plugin =
+      rebase_path(get_label_info(plugin_host_label, "root_out_dir") + "/" +
+                      get_label_info(plugin_host_label, "name"),
+                  root_build_dir)
+  if (is_win) {
+    generator_plugin += ".exe"
+  }
+
+  deps = [
+    plugin_host_label,
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 
@@ -63,9 +97,11 @@ source_set("unit_tests") {
     "core/scattered_stream_writer_unittest.cc",
     "core/trace_ring_buffer_unittest.cc",
     "test/fake_scattered_buffer.cc",
+    "test/proto_zero_generation_unittest.cc",
   ]
 
   deps = [
+    ":proto_zero_testing_messages",
     ":tracing",
     "//base/test:test_support",
     "//ipc",
