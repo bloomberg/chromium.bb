@@ -129,7 +129,7 @@ public:
 
     bool isIgnoredForHitTest() const override;
 
-    void willEnterFullScreen() override;
+    void willEnterFullscreen() override;
 
     DECLARE_TRACE();
 

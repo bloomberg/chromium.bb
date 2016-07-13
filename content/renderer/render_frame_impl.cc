@@ -4428,14 +4428,12 @@ void RenderFrameImpl::didChangeManifest() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, DidChangeManifest());
 }
 
-bool RenderFrameImpl::enterFullscreen() {
+void RenderFrameImpl::enterFullscreen() {
   Send(new FrameHostMsg_ToggleFullscreen(routing_id_, true));
-  return true;
 }
 
-bool RenderFrameImpl::exitFullscreen() {
+void RenderFrameImpl::exitFullscreen() {
   Send(new FrameHostMsg_ToggleFullscreen(routing_id_, false));
-  return true;
 }
 
 blink::WebPermissionClient* RenderFrameImpl::permissionClient() {

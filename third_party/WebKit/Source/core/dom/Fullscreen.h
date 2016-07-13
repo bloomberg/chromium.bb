@@ -83,8 +83,8 @@ public:
     // for its (local) iframe container and make sure to also set the
     // ContainsFullScreenElement flag on it (so that it gains the
     // -webkit-full-screen-ancestor style).
-    void didEnterFullScreenForElement(Element*);
-    void didExitFullScreenForElement();
+    void didEnterFullscreenForElement(Element*);
+    void didExitFullscreen();
 
     void setFullScreenLayoutObject(LayoutFullScreen*);
     LayoutFullScreen* fullScreenLayoutObject() const { return m_fullScreenLayoutObject; }

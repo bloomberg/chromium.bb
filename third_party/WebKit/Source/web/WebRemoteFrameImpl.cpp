@@ -524,7 +524,7 @@ bool WebRemoteFrameImpl::isIgnoredForHitTest() const
     return owner->layoutObject()->style()->pointerEvents() == PE_NONE;
 }
 
-void WebRemoteFrameImpl::willEnterFullScreen()
+void WebRemoteFrameImpl::willEnterFullscreen()
 {
     // This should only ever be called when the FrameOwner is local.
     HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(frame()->owner());

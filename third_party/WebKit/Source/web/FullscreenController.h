@@ -46,8 +46,8 @@ class FullscreenController final : public GarbageCollected<FullscreenController>
 public:
     static FullscreenController* create(WebViewImpl*);
 
-    void didEnterFullScreen();
-    void didExitFullScreen();
+    void didEnterFullscreen();
+    void didExitFullscreen();
 
     void enterFullScreenForElement(Element*);
     void exitFullScreenForElement(Element*);

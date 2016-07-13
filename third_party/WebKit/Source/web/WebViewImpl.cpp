@@ -1953,14 +1953,14 @@ void WebViewImpl::resize(const WebSize& newSize)
         newSize, topControls().height(), topControls().shrinkViewport());
 }
 
-void WebViewImpl::didEnterFullScreen()
+void WebViewImpl::didEnterFullscreen()
 {
-    m_fullscreenController->didEnterFullScreen();
+    m_fullscreenController->didEnterFullscreen();
 }
 
-void WebViewImpl::didExitFullScreen()
+void WebViewImpl::didExitFullscreen()
 {
-    m_fullscreenController->didExitFullScreen();
+    m_fullscreenController->didExitFullscreen();
 }
 
 void WebViewImpl::didUpdateFullScreenSize()

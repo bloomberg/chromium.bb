@@ -654,14 +654,11 @@ public:
     // Fullscreen ----------------------------------------------------------
 
     // Called to enter/exit fullscreen mode.
-    // After calling enterFullscreen, WebWidget::{will,Did}EnterFullScreen
-    // should bound resizing the WebWidget into fullscreen mode.
-    // Similarly, when exitFullScreen is called,
-    // WebWidget::{will,Did}ExitFullScreen should bound resizing the WebWidget
-    // out of fullscreen mode.
-    // Note: the return value is ignored.
-    virtual bool enterFullscreen() { return false; }
-    virtual bool exitFullscreen() { return false; }
+    // After calling enterFullscreen or exitFullscreen,
+    // WebWidget::didEnterFullscreen or WebWidget::didExitFullscreen
+    // respectively will be called once the fullscreen mode has changed.
+    virtual void enterFullscreen() { }
+    virtual void exitFullscreen() { }
 
 
     // Sudden termination --------------------------------------------------

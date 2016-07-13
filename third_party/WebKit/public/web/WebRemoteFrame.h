@@ -68,7 +68,7 @@ public:
     // corresponds to the HTMLFrameOwnerElement to be fullscreened. Calling
     // this prepares FullscreenController to enter fullscreen for that frame
     // owner.
-    virtual void willEnterFullScreen() = 0;
+    virtual void willEnterFullscreen() = 0;
 
     // Temporary method to allow embedders to get the script context of a
     // remote frame. This should only be used by legacy code that has not yet

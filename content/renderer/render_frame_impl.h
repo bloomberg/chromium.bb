@@ -623,8 +623,8 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebAXObject& end_object,
       int end_offset) override;
   void didChangeManifest() override;
-  bool enterFullscreen() override;
-  bool exitFullscreen() override;
+  void enterFullscreen() override;
+  void exitFullscreen() override;
   blink::WebPermissionClient* permissionClient() override;
   blink::WebAppBannerClient* appBannerClient() override;
   void registerProtocolHandler(const blink::WebString& scheme,

@@ -380,7 +380,7 @@ void RenderFrameProxy::OnSetFocusedFrame() {
 }
 
 void RenderFrameProxy::OnWillEnterFullscreen() {
-  web_frame_->willEnterFullScreen();
+  web_frame_->willEnterFullscreen();
 }
 
 void RenderFrameProxy::frameDetached(DetachType type) {

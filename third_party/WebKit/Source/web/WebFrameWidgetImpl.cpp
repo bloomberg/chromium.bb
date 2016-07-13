@@ -228,14 +228,14 @@ void WebFrameWidgetImpl::setIgnoreInputEvents(bool newValue)
     m_ignoreInputEvents = newValue;
 }
 
-void WebFrameWidgetImpl::didEnterFullScreen()
+void WebFrameWidgetImpl::didEnterFullscreen()
 {
-    view()->didEnterFullScreen();
+    view()->didEnterFullscreen();
 }
 
-void WebFrameWidgetImpl::didExitFullScreen()
+void WebFrameWidgetImpl::didExitFullscreen()
 {
-    view()->didExitFullScreen();
+    view()->didExitFullscreen();
 }
 
 void WebFrameWidgetImpl::beginFrame(double lastFrameTimeMonotonic)

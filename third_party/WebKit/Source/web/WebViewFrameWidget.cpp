@@ -53,14 +53,14 @@ void WebViewFrameWidget::resizeVisualViewport(const WebSize& size)
     return m_webView->resizeVisualViewport(size);
 }
 
-void WebViewFrameWidget::didEnterFullScreen()
+void WebViewFrameWidget::didEnterFullscreen()
 {
-    return m_webView->didEnterFullScreen();
+    return m_webView->didEnterFullscreen();
 }
 
-void WebViewFrameWidget::didExitFullScreen()
+void WebViewFrameWidget::didExitFullscreen()
 {
-    return m_webView->didExitFullScreen();
+    return m_webView->didExitFullscreen();
 }
 
 void WebViewFrameWidget::beginFrame(double lastFrameTimeMonotonic)

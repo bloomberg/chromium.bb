@@ -1186,7 +1186,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 
     Element* element = static_cast<Element*>(webViewImpl->mainFrame()->document().body());
     webViewImpl->enterFullScreenForElement(element);
-    webViewImpl->didEnterFullScreen();
+    webViewImpl->didEnterFullscreen();
 
     // Page scale factor must be 1.0 during fullscreen for elements to be sized
     // properly.
@@ -1197,7 +1197,7 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     webViewImpl->enterFullScreenForElement(otherElement);
 
     // Confirm that exiting fullscreen restores the parameters.
-    webViewImpl->didExitFullScreen();
+    webViewImpl->didExitFullscreen();
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);

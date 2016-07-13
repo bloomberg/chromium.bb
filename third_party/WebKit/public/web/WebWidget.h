@@ -72,8 +72,8 @@ public:
     virtual void resizeVisualViewport(const WebSize&) { }
 
     // Called to notify the WebWidget of entering/exiting fullscreen mode.
-    virtual void didEnterFullScreen() { }
-    virtual void didExitFullScreen() { }
+    virtual void didEnterFullscreen() { }
+    virtual void didExitFullscreen() { }
 
     // Called to update imperative animation state. This should be called before
     // paint, although the client can rate-limit these calls.

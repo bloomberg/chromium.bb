@@ -60,7 +60,7 @@ FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
 {
 }
 
-void FullscreenController::didEnterFullScreen()
+void FullscreenController::didEnterFullscreen()
 {
     if (!m_provisionalFullScreenElement)
         return;
@@ -81,7 +81,7 @@ void FullscreenController::didEnterFullScreen()
         m_haveEnteredFullscreen = true;
     }
 
-    Fullscreen::from(document).didEnterFullScreenForElement(element);
+    Fullscreen::from(document).didEnterFullscreenForElement(element);
     DCHECK_EQ(Fullscreen::currentFullScreenElementFrom(document), element);
 
     if (isHTMLVideoElement(element)) {
@@ -91,7 +91,7 @@ void FullscreenController::didEnterFullScreen()
     }
 }
 
-void FullscreenController::didExitFullScreen()
+void FullscreenController::didExitFullscreen()
 {
     if (!m_fullScreenFrame)
         return;
@@ -120,7 +120,7 @@ void FullscreenController::didExitFullScreen()
                     m_webViewImpl->setVisualViewportOffset(m_exitFullscreenVisualViewportOffset);
                 }
 
-                fullscreen->didExitFullScreenForElement();
+                fullscreen->didExitFullscreen();
             }
         }
     }
@@ -140,11 +140,11 @@ void FullscreenController::enterFullScreenForElement(Element* element)
     // We are already in fullscreen mode.
     if (m_fullScreenFrame) {
         m_provisionalFullScreenElement = element;
-        didEnterFullScreen();
+        didEnterFullscreen();
         return;
     }
 
-    // We need to store these values here rather than didEnterFullScreen since
+    // We need to store these values here rather than didEnterFullscreen since
     // by the time the latter is called, a Resize has already occured, clamping
     // the scroll offset.
     if (!m_haveEnteredFullscreen) {
@@ -216,4 +216,3 @@ DEFINE_TRACE(FullscreenController)
 }
 
 } // namespace blink
-

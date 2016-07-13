@@ -84,8 +84,8 @@ public:
     using WebWidget::size;
     using WebWidget::resize;
     using WebWidget::resizeVisualViewport;
-    using WebWidget::didEnterFullScreen;
-    using WebWidget::didExitFullScreen;
+    using WebWidget::didEnterFullscreen;
+    using WebWidget::didExitFullscreen;
     using WebWidget::beginFrame;
     using WebWidget::updateAllLifecyclePhases;
     using WebWidget::paint;

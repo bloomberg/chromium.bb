@@ -74,8 +74,8 @@ public:
     WebSize size() override;
     void resize(const WebSize&) override;
     void resizeVisualViewport(const WebSize&) override;
-    void didEnterFullScreen() override;
-    void didExitFullScreen() override;
+    void didEnterFullscreen() override;
+    void didExitFullscreen() override;
     void beginFrame(double lastFrameTimeMonotonic) override;
     void updateAllLifecyclePhases() override;
     void paint(WebCanvas*, const WebRect&) override;

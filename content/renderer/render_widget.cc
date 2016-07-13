@@ -1618,9 +1618,9 @@ void RenderWidget::DidToggleFullscreen() {
     return;
 
   if (is_fullscreen_granted_) {
-    webwidget_->didEnterFullScreen();
+    webwidget_->didEnterFullscreen();
   } else {
-    webwidget_->didExitFullScreen();
+    webwidget_->didExitFullscreen();
   }
 }
 
