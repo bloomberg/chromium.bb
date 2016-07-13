@@ -1480,7 +1480,7 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(0, git_cl.main(['set-commit']))
 
-  def test_cmd_set_commit_gerrit(self):
+  def _cmd_set_commit_gerrit_common(self, vote):
     self.mock(git_cl.gerrit_util, 'SetReview',
               lambda h, i, labels: self._mocked_call(
                   ['SetReview', h, i, labels]))
@@ -1491,12 +1491,20 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.feature.gerritserver'],),
          'https://chromium-review.googlesource.com'),
         ((['SetReview', 'chromium-review.googlesource.com', 123,
-           {'Commit-Queue': 1}],), ''),
+           {'Commit-Queue': vote}],), ''),
     ]
-    # TODO(tandrii): consider testing just set-commit and set-commit --clear,
-    # but without copy-pasting tons of expectations, as modifying them later is
-    # super tedious.
+
+  def test_cmd_set_commit_gerrit_clear(self):
+    self._cmd_set_commit_gerrit_common(0)
+    self.assertEqual(0, git_cl.main(['set-commit', '-c']))
+
+  def test_cmd_set_commit_gerrit_dry(self):
+    self._cmd_set_commit_gerrit_common(1)
     self.assertEqual(0, git_cl.main(['set-commit', '-d']))
+
+  def test_cmd_set_commit_gerrit(self):
+    self._cmd_set_commit_gerrit_common(2)
+    self.assertEqual(0, git_cl.main(['set-commit']))
 
   def test_description_display(self):
     out = StringIO.StringIO()

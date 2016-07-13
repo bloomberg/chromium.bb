@@ -4742,7 +4742,7 @@ def CMDset_commit(parser, args):
 
   cl = Changelist(auth_config=auth_config)
   if options.clear:
-    state = _CQState.CLEAR
+    state = _CQState.NONE
   elif options.dry_run:
     state = _CQState.DRY_RUN
   else:
