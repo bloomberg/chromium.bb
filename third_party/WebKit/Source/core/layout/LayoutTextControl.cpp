@@ -216,8 +216,9 @@ bool LayoutTextControl::hasValidAvgCharWidth(const SimpleFontData* font, const A
 float LayoutTextControl::getAvgCharWidth(const AtomicString& family) const
 {
     const Font& font = style()->font();
+
     const SimpleFontData* primaryFont = font.primaryFont();
-    if (hasValidAvgCharWidth(primaryFont, family))
+    if (primaryFont && hasValidAvgCharWidth(primaryFont, family))
         return roundf(primaryFont->avgCharWidth());
 
     const UChar ch = '0';
