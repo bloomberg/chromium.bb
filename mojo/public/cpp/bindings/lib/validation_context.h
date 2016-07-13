@@ -31,7 +31,7 @@ class ValidationContext {
   // provided, the MojoNotifyBadMessage API will be used to notify the system of
   // such errors.
   ValidationContext(const void* data,
-                    uint32_t data_num_bytes,
+                    size_t data_num_bytes,
                     size_t num_handles,
                     Message* message = nullptr,
                     const base::StringPiece& description = "");

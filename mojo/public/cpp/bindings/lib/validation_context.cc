@@ -16,7 +16,7 @@ namespace mojo {
 namespace internal {
 
 ValidationContext::ValidationContext(const void* data,
-                                     uint32_t data_num_bytes,
+                                     size_t data_num_bytes,
                                      size_t num_handles,
                                      Message* message,
                                      const base::StringPiece& description)
