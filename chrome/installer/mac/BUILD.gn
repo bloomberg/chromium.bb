@@ -10,6 +10,7 @@ group("mac") {
   public_deps = [
     ":copies",
     ":make_signers",
+    "app:downloader",
   ]
 }
 
