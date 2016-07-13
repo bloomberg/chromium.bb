@@ -147,6 +147,7 @@ public:
     // progress event throttle.
     EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE_WRAPPERS();
 
 private:
     class BlobLoader;

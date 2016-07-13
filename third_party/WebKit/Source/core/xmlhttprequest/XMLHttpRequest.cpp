@@ -1716,4 +1716,12 @@ DEFINE_TRACE(XMLHttpRequest)
     ActiveDOMObject::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(XMLHttpRequest)
+{
+    visitor->traceWrappers(m_responseBlob);
+    visitor->traceWrappers(m_responseLegacyStream);
+    visitor->traceWrappers(m_responseDocument);
+    visitor->traceWrappers(m_responseArrayBuffer);
+}
+
 } // namespace blink
