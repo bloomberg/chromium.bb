@@ -6,7 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
-#include "blimp/client/core/public/blimp_contents_observer.h"
+#include "blimp/client/public/blimp_contents_observer.h"
 
 #if defined(OS_ANDROID)
 #include "blimp/client/core/android/blimp_contents_impl_android.h"

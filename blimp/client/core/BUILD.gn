@@ -20,7 +20,7 @@ source_set("core") {
 
   deps = [
     "//base",
-    "//blimp/client/core/public",
+    "//blimp/client/public",
     "//url",
   ]
 
@@ -51,7 +51,7 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//blimp/client/core",
-    "//blimp/client/core/public",
+    "//blimp/client/public",
     "//testing/gtest",
     "//url",
   ]
@@ -70,7 +70,7 @@ if (is_android) {
 
     deps = [
       "//base:base_java",
-      "//blimp/client/core/public:public_java",
+      "//blimp/client/public:public_java",
     ]
   }
 

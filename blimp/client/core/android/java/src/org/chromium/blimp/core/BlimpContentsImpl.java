@@ -6,9 +6,9 @@ package org.chromium.blimp.core;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blimp.core_public.BlimpContents;
-import org.chromium.blimp.core_public.BlimpContentsObserver;
-import org.chromium.blimp.core_public.BlimpNavigationController;
+import org.chromium.blimp_public.BlimpContents;
+import org.chromium.blimp_public.BlimpContentsObserver;
+import org.chromium.blimp_public.BlimpNavigationController;
 
 /**
  * BlimpContentsImpl is a Java wrapper to allow communicating with the native BlimpContentsImpl

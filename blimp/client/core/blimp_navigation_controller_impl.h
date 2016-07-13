@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "blimp/client/core/public/blimp_navigation_controller.h"
+#include "blimp/client/public/blimp_navigation_controller.h"
 #include "url/gurl.h"
 
 namespace blimp {

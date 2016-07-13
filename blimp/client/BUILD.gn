@@ -423,7 +423,7 @@ if (is_android) {
       ":blimp_java_resources",
       "//base:base_java",
       "//blimp/client/core:core_java",
-      "//blimp/client/core/public:public_java",
+      "//blimp/client/public:public_java",
 
       # TODO(dtrainor): Remove the ui_java target once no more Android Toast
       # notifications are used.
@@ -462,7 +462,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//blimp/client/core:core_java",
-      "//blimp/client/core/public:public_java",
+      "//blimp/client/public:public_java",
       google_play_services_library,
     ]
 

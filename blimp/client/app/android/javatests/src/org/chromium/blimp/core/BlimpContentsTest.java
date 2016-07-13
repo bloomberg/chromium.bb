@@ -8,9 +8,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.blimp.BlimpNativeInstrumentationTestCase;
-import org.chromium.blimp.core_public.BlimpContents;
-import org.chromium.blimp.core_public.BlimpNavigationController;
-import org.chromium.blimp.core_public.EmptyBlimpContentsObserver;
+import org.chromium.blimp_public.BlimpContents;
+import org.chromium.blimp_public.BlimpNavigationController;
+import org.chromium.blimp_public.EmptyBlimpContentsObserver;
 
 import java.util.concurrent.atomic.AtomicReference;
 

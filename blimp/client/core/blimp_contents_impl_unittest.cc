@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "blimp/client/core/blimp_contents_impl.h"
-#include "blimp/client/core/public/blimp_contents_observer.h"
+#include "blimp/client/public/blimp_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {

@@ -7,7 +7,7 @@ package org.chromium.blimp.core;
 import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blimp.core_public.BlimpContentsObserver;
+import org.chromium.blimp_public.BlimpContentsObserver;
 
 /**
  * Serves as a compound observer proxy for dispatching BlimpContentsObserver callbacks,

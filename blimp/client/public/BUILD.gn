@@ -23,10 +23,10 @@ source_set("public") {
 if (is_android) {
   android_library("public_java") {
     java_files = [
-      "android/java/src/org/chromium/blimp/core_public/BlimpContents.java",
-      "android/java/src/org/chromium/blimp/core_public/BlimpContentsObserver.java",
-      "android/java/src/org/chromium/blimp/core_public/BlimpNavigationController.java",
-      "android/java/src/org/chromium/blimp/core_public/EmptyBlimpContentsObserver.java",
+      "android/java/src/org/chromium/blimp_public/BlimpContents.java",
+      "android/java/src/org/chromium/blimp_public/BlimpContentsObserver.java",
+      "android/java/src/org/chromium/blimp_public/BlimpNavigationController.java",
+      "android/java/src/org/chromium/blimp_public/EmptyBlimpContentsObserver.java",
     ]
   }
 }

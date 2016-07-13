@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLIMP_CLIENT_CORE_PUBLIC_BLIMP_CONTENTS_OBSERVER_H_
-#define BLIMP_CLIENT_CORE_PUBLIC_BLIMP_CONTENTS_OBSERVER_H_
+#ifndef BLIMP_CLIENT_PUBLIC_BLIMP_CONTENTS_OBSERVER_H_
+#define BLIMP_CLIENT_PUBLIC_BLIMP_CONTENTS_OBSERVER_H_
 
 #include "base/macros.h"
 #include "url/gurl.h"
@@ -30,4 +30,4 @@ class BlimpContentsObserver {
 }  // namespace client
 }  // namespace blimp
 
-#endif  // BLIMP_CLIENT_CORE_PUBLIC_BLIMP_CONTENTS_OBSERVER_H_
+#endif  // BLIMP_CLIENT_PUBLIC_BLIMP_CONTENTS_OBSERVER_H_

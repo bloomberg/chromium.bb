@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "blimp/client/core/android/blimp_contents_impl_android.h"
 #include "blimp/client/core/android/blimp_navigation_controller_impl_android.h"
-#include "blimp/client/core/public/blimp_contents_observer.h"
+#include "blimp/client/public/blimp_contents_observer.h"
 
 namespace blimp {
 namespace client {

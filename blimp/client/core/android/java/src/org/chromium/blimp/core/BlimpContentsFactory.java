@@ -5,7 +5,7 @@
 package org.chromium.blimp.core;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blimp.core_public.BlimpContents;
+import org.chromium.blimp_public.BlimpContents;
 
 /**
  * This factory creates BlimpContents objects and the associated native counterpart.

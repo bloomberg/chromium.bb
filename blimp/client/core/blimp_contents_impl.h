@@ -10,7 +10,7 @@
 #include "base/supports_user_data.h"
 #include "blimp/client/core/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/blimp_navigation_controller_impl.h"
-#include "blimp/client/core/public/blimp_contents.h"
+#include "blimp/client/public/blimp_contents.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
