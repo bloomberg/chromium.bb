@@ -4193,7 +4193,9 @@ bool WebViewImpl::tabsToLinks() const
 void WebViewImpl::registerViewportLayersWithCompositor()
 {
     DCHECK(m_layerTreeView);
-    DCHECK(page()->deprecatedLocalMainFrame());
+
+    if (!page()->mainFrame() || !page()->mainFrame()->isLocalFrame())
+        return;
 
     Document* document = page()->deprecatedLocalMainFrame()->document();
 
