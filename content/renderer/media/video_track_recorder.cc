@@ -39,13 +39,13 @@ extern "C" {
 
 using media::VideoFrame;
 using media::VideoFrameMetadata;
+using video_track_recorder::kVEAEncoderMinResolutionWidth;
+using video_track_recorder::kVEAEncoderMinResolutionHeight;
 
 namespace content {
 
 namespace {
 
-const int kVEAEncoderMinResolutionWidth = 640;
-const int kVEAEncoderMinResolutionHeight = 480;
 const int kVEAEncoderOutputBufferCount = 4;
 
 static struct {
@@ -71,13 +71,15 @@ media::VideoCodecProfile CodecIdToVEAProfile(
 #if defined(OS_CHROMEOS)
   return media::VIDEO_CODEC_PROFILE_UNKNOWN;
 #endif  // defined(OS_CHROMEOS)
-  content::RenderThreadImpl* render_thread_impl =
+  content::RenderThreadImpl* const render_thread_impl =
       content::RenderThreadImpl::current();
-  if (!render_thread_impl)
+  if (!render_thread_impl) {
+    DVLOG(3) << "Couldn't access the render thread";
     return media::VIDEO_CODEC_PROFILE_UNKNOWN;
+  }
 
-  media::GpuVideoAcceleratorFactories* gpu_factories =
-      content::RenderThreadImpl::current()->GetGpuFactories();
+  media::GpuVideoAcceleratorFactories* const gpu_factories =
+      render_thread_impl->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled()) {
     DVLOG(3) << "Couldn't initialize GpuVideoAcceleratorFactories";
     return media::VIDEO_CODEC_PROFILE_UNKNOWN;
@@ -250,7 +252,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   VEAEncoder(
       const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
       int32_t bits_per_second,
-      media::VideoCodecProfile codec);
+      media::VideoCodecProfile codec,
+      const gfx::Size& size);
 
   // media::VideoEncodeAccelerator::Client implementation.
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -291,8 +294,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   // Tracks error status.
   bool error_notified_;
 
-  // Tracks the first frame to encode.
-  std::unique_ptr<VideoFrameAndTimestamp> first_frame_;
+  // Tracks the last frame that we delay the encode.
+  std::unique_ptr<VideoFrameAndTimestamp> last_frame_;
 
   // Size used to initialize encoder.
   gfx::Size input_size_;
@@ -392,7 +395,8 @@ class H264Encoder final : public VideoTrackRecorder::Encoder {
 VEAEncoder::VEAEncoder(
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second,
-    media::VideoCodecProfile codec)
+    media::VideoCodecProfile codec,
+    const gfx::Size& size)
     : Encoder(on_encoded_video_callback,
               bits_per_second,
               RenderThreadImpl::current()->GetGpuFactories()->GetTaskRunner()),
@@ -400,6 +404,12 @@ VEAEncoder::VEAEncoder(
       codec_(codec),
       error_notified_(false) {
   DCHECK(gpu_factories_);
+  DCHECK_GE(size.width(), kVEAEncoderMinResolutionWidth);
+  DCHECK_GE(size.height(), kVEAEncoderMinResolutionHeight);
+
+  encoding_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner,
+                            this, size));
 }
 
 VEAEncoder::~VEAEncoder() {
@@ -485,12 +495,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
     video_encoder_.reset();
   }
 
-  if (!video_encoder_) {
+  if (!video_encoder_)
     ConfigureEncoderOnEncodingTaskRunner(frame->visible_rect().size());
-    first_frame_.reset(
-        new std::pair<scoped_refptr<VideoFrame>, base::TimeTicks>(
-            frame, capture_timestamp));
-  }
 
   if (error_notified_) {
     DVLOG(3) << "An error occurred in VEA encoder";
@@ -500,14 +506,17 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(
   // Drop frames if there is no output buffers available.
   if (output_buffers_.empty()) {
     // TODO(emircan): Investigate if resetting encoder would help.
-    DVLOG(3) << "Dropped frame.";
+    DVLOG(3) << "Might drop frame.";
+    last_frame_.reset(
+        new std::pair<scoped_refptr<VideoFrame>, base::TimeTicks>(
+            frame, capture_timestamp));
     return;
   }
 
   // If first frame hasn't been encoded, do it first.
-  if (first_frame_) {
-    std::unique_ptr<VideoFrameAndTimestamp> first_frame(first_frame_.release());
-    EncodeOnEncodingTaskRunner(first_frame->first, first_frame->second);
+  if (last_frame_) {
+    std::unique_ptr<VideoFrameAndTimestamp> last_frame(last_frame_.release());
+    EncodeOnEncodingTaskRunner(last_frame->first, last_frame->second);
   }
 
   // Lower resolutions may fall back to SW encoder in some platforms, i.e. Mac.
@@ -936,21 +945,81 @@ VideoTrackRecorder::VideoTrackRecorder(
     const blink::WebMediaStreamTrack& track,
     const OnEncodedVideoCB& on_encoded_video_callback,
     int32_t bits_per_second)
-    : track_(track) {
+    : track_(track),
+      paused_before_init_(false),
+      weak_ptr_factory_(this) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());
   DCHECK(track_.getTrackData());
 
+  initialize_encoder_callback_ = base::Bind(
+      &VideoTrackRecorder::InitializeEncoder, weak_ptr_factory_.GetWeakPtr(),
+      codec, on_encoded_video_callback, bits_per_second);
+
+  // InitializeEncoder() will be called on Render Main thread.
+  MediaStreamVideoSink::ConnectToTrack(
+      track_, media::BindToCurrentLoop(initialize_encoder_callback_), false);
+}
+
+VideoTrackRecorder::~VideoTrackRecorder() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  MediaStreamVideoSink::DisconnectFromTrack();
+  track_.reset();
+}
+
+void VideoTrackRecorder::Pause() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  if (encoder_)
+    encoder_->SetPaused(true);
+  else
+    paused_before_init_ = true;
+}
+
+void VideoTrackRecorder::Resume() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  if (encoder_)
+    encoder_->SetPaused(false);
+  else
+    paused_before_init_ = false;
+}
+
+void VideoTrackRecorder::OnVideoFrameForTesting(
+    const scoped_refptr<media::VideoFrame>& frame,
+    base::TimeTicks timestamp) {
+  DVLOG(3) << __FUNCTION__;
+
+  if (!encoder_) {
+    DCHECK(!initialize_encoder_callback_.is_null());
+    initialize_encoder_callback_.Run(frame, timestamp);
+  }
+
+  encoder_->StartFrameEncode(frame, timestamp);
+}
+
+void VideoTrackRecorder::InitializeEncoder(
+    CodecId codec,
+    const OnEncodedVideoCB& on_encoded_video_callback,
+    int32_t bits_per_second,
+    const scoped_refptr<media::VideoFrame>& frame,
+    base::TimeTicks capture_time) {
+  DVLOG(3) << __FUNCTION__ << frame->visible_rect().size().ToString();
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+
+  MediaStreamVideoSink::DisconnectFromTrack();
+
+  const gfx::Size& input_size = frame->visible_rect().size();
   const auto& vea_supported_profile = CodecIdToVEAProfile(codec);
-  // TODO(emircan): Prioritize software based encoders in lower resolutions.
-  if (vea_supported_profile != media::VIDEO_CODEC_PROFILE_UNKNOWN) {
+  if (vea_supported_profile != media::VIDEO_CODEC_PROFILE_UNKNOWN &&
+      input_size.width() >= kVEAEncoderMinResolutionWidth &&
+      input_size.height() >= kVEAEncoderMinResolutionHeight) {
     encoder_ = new VEAEncoder(on_encoded_video_callback, bits_per_second,
-                              vea_supported_profile);
+                              vea_supported_profile, input_size);
   } else {
     switch (codec) {
 #if BUILDFLAG(RTC_USE_H264)
       case CodecId::H264:
-        encoder_ = new H264Encoder(on_encoded_video_callback, bits_per_second);
+        encoder_ =
+            new H264Encoder(on_encoded_video_callback, bits_per_second);
         break;
 #endif
       case CodecId::VP8:
@@ -963,35 +1032,14 @@ VideoTrackRecorder::VideoTrackRecorder(
     }
   }
 
+  if (paused_before_init_)
+    encoder_->SetPaused(paused_before_init_);
+
   // StartFrameEncode() will be called on Render IO thread.
   MediaStreamVideoSink::ConnectToTrack(
       track_,
       base::Bind(&VideoTrackRecorder::Encoder::StartFrameEncode, encoder_),
       false);
-}
-
-VideoTrackRecorder::~VideoTrackRecorder() {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  MediaStreamVideoSink::DisconnectFromTrack();
-  track_.reset();
-}
-
-void VideoTrackRecorder::Pause() {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DCHECK(encoder_);
-  encoder_->SetPaused(true);
-}
-
-void VideoTrackRecorder::Resume() {
-  DCHECK(main_render_thread_checker_.CalledOnValidThread());
-  DCHECK(encoder_);
-  encoder_->SetPaused(false);
-}
-
-void VideoTrackRecorder::OnVideoFrameForTesting(
-    const scoped_refptr<media::VideoFrame>& frame,
-    base::TimeTicks timestamp) {
-  encoder_->StartFrameEncode(frame, timestamp);
 }
 
 }  // namespace content
