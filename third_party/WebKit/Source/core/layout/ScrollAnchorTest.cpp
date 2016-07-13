@@ -155,6 +155,45 @@ TEST_F(ScrollAnchorTest, VisualViewportAnchors)
     EXPECT_EQ(nullptr, scrollAnchor(lViewport).anchorObject());
 }
 
+// Test that we ignore the clipped content when computing visibility otherwise
+// we may end up with an anchor that we think is in the viewport but is not.
+TEST_F(ScrollAnchorTest, ClippedScrollersSkipped)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 2000px; }"
+        "    #scroller { overflow: scroll; width: 500px; height: 300px; }"
+        "    .anchor {"
+        "         position:relative; height: 100px; width: 150px;"
+        "         background-color: #afa; border: 1px solid gray;"
+        "    }"
+        "    #forceScrolling { height: 500px; background-color: #fcc; }"
+        "</style>"
+        "<div id='scroller'>"
+        "    <div id='innerChanger'></div>"
+        "    <div id='innerAnchor' class='anchor'></div>"
+        "    <div id='forceScrolling'></div>"
+        "</div>"
+        "<div id='outerChanger'></div>"
+        "<div id='outerAnchor' class='anchor'></div>");
+
+    ScrollableArea* scroller = scrollerForElement(document().getElementById("scroller"));
+    ScrollableArea* viewport = layoutViewport();
+
+    document().getElementById("scroller")->setScrollTop(100);
+    scrollLayoutViewport(DoubleSize(0, 350));
+
+    setHeight(document().getElementById("innerChanger"), 200);
+    setHeight(document().getElementById("outerChanger"), 150);
+
+    EXPECT_EQ(300, scroller->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("innerAnchor")->layoutObject(),
+        scrollAnchor(scroller).anchorObject());
+    EXPECT_EQ(500, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("outerAnchor")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+}
+
 TEST_F(ScrollAnchorTest, FractionalOffsetsAreRoundedBeforeComparing)
 {
     setBodyInnerHTML(

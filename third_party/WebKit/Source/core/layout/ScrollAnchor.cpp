@@ -79,14 +79,16 @@ static LayoutRect relativeBounds(const LayoutObject* layoutObject, const Scrolla
     LayoutRect localBounds;
     if (layoutObject->isBox()) {
         localBounds = toLayoutBox(layoutObject)->borderBoxRect();
-        // borderBoxRect doesn't include overflow content and floats.
-        LayoutUnit maxHeight = std::max(localBounds.height(), toLayoutBox(layoutObject)->layoutOverflowRect().height());
-        if (layoutObject->isLayoutBlockFlow() && toLayoutBlockFlow(layoutObject)->containsFloats()) {
-            // Note that lowestFloatLogicalBottom doesn't include floating
-            // grandchildren.
-            maxHeight = std::max(maxHeight, toLayoutBlockFlow(layoutObject)->lowestFloatLogicalBottom());
+        if (!layoutObject->hasOverflowClip()) {
+            // borderBoxRect doesn't include overflow content and floats.
+            LayoutUnit maxHeight = std::max(localBounds.height(), toLayoutBox(layoutObject)->layoutOverflowRect().height());
+            if (layoutObject->isLayoutBlockFlow() && toLayoutBlockFlow(layoutObject)->containsFloats()) {
+                // Note that lowestFloatLogicalBottom doesn't include floating
+                // grandchildren.
+                maxHeight = std::max(maxHeight, toLayoutBlockFlow(layoutObject)->lowestFloatLogicalBottom());
+            }
+            localBounds.setHeight(maxHeight);
         }
-        localBounds.setHeight(maxHeight);
     } else if (layoutObject->isText()) {
         // TODO(skobes): Use first and last InlineTextBox only?
         for (InlineTextBox* box = toLayoutText(layoutObject)->firstTextBox(); box; box = box->nextTextBox())
