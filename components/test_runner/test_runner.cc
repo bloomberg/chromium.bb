@@ -843,45 +843,45 @@ void TestRunnerBindings::SetMockDeviceMotion(gin::Arguments* args) {
   if (!runner_)
     return;
 
-  bool has_acceleration_x;
-  double acceleration_x;
-  bool has_acceleration_y;
-  double acceleration_y;
-  bool has_acceleration_z;
-  double acceleration_z;
-  bool has_acceleration_including_gravity_x;
-  double acceleration_including_gravity_x;
-  bool has_acceleration_including_gravity_y;
-  double acceleration_including_gravity_y;
-  bool has_acceleration_including_gravity_z;
-  double acceleration_including_gravity_z;
-  bool has_rotation_rate_alpha;
-  double rotation_rate_alpha;
-  bool has_rotation_rate_beta;
-  double rotation_rate_beta;
-  bool has_rotation_rate_gamma;
-  double rotation_rate_gamma;
-  double interval;
+  bool has_acceleration_x = false;
+  double acceleration_x = 0.0;
+  bool has_acceleration_y = false;
+  double acceleration_y = 0.0;
+  bool has_acceleration_z = false;
+  double acceleration_z = 0.0;
+  bool has_acceleration_including_gravity_x = false;
+  double acceleration_including_gravity_x = 0.0;
+  bool has_acceleration_including_gravity_y = false;
+  double acceleration_including_gravity_y = 0.0;
+  bool has_acceleration_including_gravity_z = false;
+  double acceleration_including_gravity_z = 0.0;
+  bool has_rotation_rate_alpha = false;
+  double rotation_rate_alpha = 0.0;
+  bool has_rotation_rate_beta = false;
+  double rotation_rate_beta = 0.0;
+  bool has_rotation_rate_gamma = false;
+  double rotation_rate_gamma = 0.0;
+  double interval = false;
 
   args->GetNext(&has_acceleration_x);
-  args->GetNext(& acceleration_x);
+  args->GetNext(&acceleration_x);
   args->GetNext(&has_acceleration_y);
-  args->GetNext(& acceleration_y);
+  args->GetNext(&acceleration_y);
   args->GetNext(&has_acceleration_z);
-  args->GetNext(& acceleration_z);
+  args->GetNext(&acceleration_z);
   args->GetNext(&has_acceleration_including_gravity_x);
-  args->GetNext(& acceleration_including_gravity_x);
+  args->GetNext(&acceleration_including_gravity_x);
   args->GetNext(&has_acceleration_including_gravity_y);
-  args->GetNext(& acceleration_including_gravity_y);
+  args->GetNext(&acceleration_including_gravity_y);
   args->GetNext(&has_acceleration_including_gravity_z);
-  args->GetNext(& acceleration_including_gravity_z);
+  args->GetNext(&acceleration_including_gravity_z);
   args->GetNext(&has_rotation_rate_alpha);
-  args->GetNext(& rotation_rate_alpha);
+  args->GetNext(&rotation_rate_alpha);
   args->GetNext(&has_rotation_rate_beta);
-  args->GetNext(& rotation_rate_beta);
+  args->GetNext(&rotation_rate_beta);
   args->GetNext(&has_rotation_rate_gamma);
-  args->GetNext(& rotation_rate_gamma);
-  args->GetNext(& interval);
+  args->GetNext(&rotation_rate_gamma);
+  args->GetNext(&interval);
 
   runner_->SetMockDeviceMotion(has_acceleration_x, acceleration_x,
                                has_acceleration_y, acceleration_y,
