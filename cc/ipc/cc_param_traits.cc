@@ -677,45 +677,18 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
 void ParamTraits<cc::CompositorFrameAck>::Write(base::Pickle* m,
                                                 const param_type& p) {
   WriteParam(m, p.resources);
-  if (p.gl_frame_data) {
-    WriteParam(m, static_cast<int>(GL_FRAME));
-    WriteParam(m, *p.gl_frame_data);
-  } else {
-    WriteParam(m, static_cast<int>(NO_FRAME));
-  }
 }
 
 bool ParamTraits<cc::CompositorFrameAck>::Read(const base::Pickle* m,
                                                base::PickleIterator* iter,
                                                param_type* p) {
-  if (!ReadParam(m, iter, &p->resources))
-    return false;
-
-  int compositor_frame_type;
-  if (!ReadParam(m, iter, &compositor_frame_type))
-    return false;
-
-  switch (compositor_frame_type) {
-    case NO_FRAME:
-      break;
-    case GL_FRAME:
-      p->gl_frame_data.reset(new cc::GLFrameData());
-      if (!ReadParam(m, iter, p->gl_frame_data.get()))
-        return false;
-      break;
-    default:
-      return false;
-  }
-  return true;
+  return ReadParam(m, iter, &p->resources);
 }
 
 void ParamTraits<cc::CompositorFrameAck>::Log(const param_type& p,
                                               std::string* l) {
   l->append("CompositorFrameAck(");
   LogParam(p.resources, l);
-  l->append(", ");
-  if (p.gl_frame_data)
-    LogParam(*p.gl_frame_data, l);
   l->append(")");
 }
 

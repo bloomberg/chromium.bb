@@ -1568,9 +1568,7 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     view_->DidReceiveRendererFrame();
   } else {
     cc::CompositorFrameAck ack;
-    if (frame.gl_frame_data) {
-      ack.gl_frame_data = std::move(frame.gl_frame_data);
-    } else if (frame.delegated_frame_data) {
+    if (frame.delegated_frame_data) {
       cc::TransferableResource::ReturnResources(
           frame.delegated_frame_data->resource_list, &ack.resources);
     }

@@ -20,7 +20,6 @@ class CC_EXPORT CompositorFrameAck {
   ~CompositorFrameAck();
 
   ReturnedResourceArray resources;
-  std::unique_ptr<GLFrameData> gl_frame_data;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CompositorFrameAck);
