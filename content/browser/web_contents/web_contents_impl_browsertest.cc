@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1207,6 +1208,18 @@ void DownloadImageTestInternal(Shell* shell,
   loop_runner->Run();
 }
 
+void ExpectNoValidImageCallback(const base::Closure& quit_closure,
+                                int id,
+                                int status_code,
+                                const GURL& image_url,
+                                const std::vector<SkBitmap>& bitmap,
+                                const std::vector<gfx::Size>& sizes) {
+  EXPECT_EQ(200, status_code);
+  EXPECT_TRUE(bitmap.empty());
+  EXPECT_TRUE(sizes.empty());
+  quit_closure.Run();
+}
+
 }  // anonymous namespace
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
@@ -1222,6 +1235,18 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   const GURL kImageUrl =
       GetTestUrl("", "image.jpg");
   DownloadImageTestInternal(shell(), kImageUrl, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_NoValidImage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kImageUrl = embedded_test_server()->GetURL("/invalid.ico");
+  shell()->LoadURL(GURL("about:blank"));
+  base::RunLoop run_loop;
+  shell()->web_contents()->DownloadImage(
+      kImageUrl, false, 2, false,
+      base::Bind(&ExpectNoValidImageCallback, run_loop.QuitClosure()));
+
+  run_loop.Run();
 }
 
 }  // namespace content

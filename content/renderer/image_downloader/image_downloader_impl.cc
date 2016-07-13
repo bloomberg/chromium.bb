@@ -107,7 +107,11 @@ void FilterAndResizeImagesForMaximalSize(
     return;
   // Proportionally resize the minimal image to fit in a box of size
   // |max_image_size|.
-  images->push_back(ResizeImage(*min_image, max_image_size));
+  SkBitmap resized = ResizeImage(*min_image, max_image_size);
+  // Drop null or empty SkBitmap.
+  if (resized.drawsNothing())
+    return;
+  images->push_back(resized);
   original_image_sizes->push_back(
       gfx::Size(min_image->width(), min_image->height()));
 }
@@ -154,8 +158,10 @@ void ImageDownloaderImpl::DownloadImage(const GURL& image_url,
 
   if (image_url.SchemeIs(url::kDataScheme)) {
     SkBitmap data_image = ImageFromDataUrl(image_url);
-    if (!data_image.empty()) {
-      result_images.push_back(ResizeImage(data_image, max_bitmap_size));
+    SkBitmap resized = ResizeImage(data_image, max_bitmap_size);
+    // Drop null or empty SkBitmap.
+    if (!resized.drawsNothing()) {
+      result_images.push_back(resized);
       result_original_image_sizes.push_back(
           gfx::Size(data_image.width(), data_image.height()));
     }
