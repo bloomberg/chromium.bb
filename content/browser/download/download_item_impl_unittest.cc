@@ -1309,10 +1309,12 @@ TEST_F(DownloadItemTest, EnabledActionsForNormalDownload) {
 }
 
 TEST_F(DownloadItemTest, EnabledActionsForTemporaryDownload) {
+  // A download created with a non-empty FilePath is considered a temporary
+  // download.
+  create_info()->save_info->file_path = base::FilePath(kDummyTargetPath);
   DownloadItemImpl* item = CreateDownloadItem();
   MockDownloadFile* download_file =
       DoIntermediateRename(item, DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
-  item->SetIsTemporary(true);
 
   // InProgress Temporary
   ASSERT_EQ(DownloadItem::IN_PROGRESS, item->GetState());

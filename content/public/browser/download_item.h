@@ -328,10 +328,6 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Mark the download to be auto-opened when completed.
   virtual void SetOpenWhenComplete(bool open) = 0;
 
-  // Mark the download as temporary (not visible in persisted store or
-  // SearchDownloads(), removed from main UI upon completion).
-  virtual void SetIsTemporary(bool temporary) = 0;
-
   // Mark the download as having been opened (without actually opening it).
   virtual void SetOpened(bool opened) = 0;
 

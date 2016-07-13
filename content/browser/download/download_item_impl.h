@@ -161,7 +161,6 @@ class CONTENT_EXPORT DownloadItemImpl
   WebContents* GetWebContents() const override;
   void OnContentCheckCompleted(DownloadDangerType danger_type) override;
   void SetOpenWhenComplete(bool open) override;
-  void SetIsTemporary(bool temporary) override;
   void SetOpened(bool opened) override;
   void SetDisplayName(const base::FilePath& name) override;
   std::string DebugString(bool verbose) const override;

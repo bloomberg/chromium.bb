@@ -766,10 +766,6 @@ void DownloadItemImpl::SetOpenWhenComplete(bool open) {
   open_when_complete_ = open;
 }
 
-void DownloadItemImpl::SetIsTemporary(bool temporary) {
-  is_temporary_ = temporary;
-}
-
 void DownloadItemImpl::SetOpened(bool opened) {
   opened_ = opened;
 }
