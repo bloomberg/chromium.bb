@@ -55,6 +55,7 @@
         '../content/content_shell_and_tests.gyp:content_unittests',
         '../crypto/crypto.gyp:crypto_unittests',
         '../device/device_tests.gyp:device_unittests',
+        '../gin/gin.gyp:gin_v8_snapshot_fingerprint',
         '../gpu/gpu.gyp:angle_unittests',
         '../gpu/gpu.gyp:gl_tests',
         '../gpu/gpu.gyp:gpu_perftests',

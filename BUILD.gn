@@ -344,6 +344,10 @@ group("both_gn_and_gyp") {
     deps += [ "//components/policy:policy_templates" ]
   }
 
+  if (v8_use_external_startup_data) {
+    deps += [ "//gin:gin_v8_snapshot_fingerprint" ]
+  }
+
   if (is_win) {
     deps += [
       "//chrome/installer/gcapi",

@@ -84,6 +84,30 @@
         'wrappable.h',
         'wrapper_info.cc',
       ],
+      'conditions': [
+        ['v8_use_external_startup_data==1 and OS=="win"', {
+          'dependencies': [
+            'gin_v8_snapshot_fingerprint',
+            '../crypto/crypto.gyp:crypto',
+          ],
+          'sources': [
+            '<(gin_gen_path)/v8_snapshot_fingerprint.cc',
+          ],
+          'defines': [
+            'V8_VERIFY_EXTERNAL_STARTUP_DATA',
+          ]
+        }],
+      ],
+    },
+    {
+      'target_name': 'gin_v8_snapshot_fingerprint',
+      'type': 'none',
+      'variables': {
+        'snapshot_file': '<(PRODUCT_DIR)/snapshot_blob.bin',
+        'natives_file': '<(PRODUCT_DIR)/natives_blob.bin',
+        'output_file': '<(gin_gen_path)/v8_snapshot_fingerprint.cc',
+      },
+      'includes': [ '../gin/fingerprint/fingerprint_v8_snapshot.gypi' ],
     },
     {
       'target_name': 'gin_shell',
