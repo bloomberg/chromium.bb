@@ -22,6 +22,14 @@ class _NoOverlaysSharedPageState(shared_page_state.SharedPageState):
       ['--disable-mac-overlays'])
 
 
+class _NoWebGLImageChromiumSharedPageState(shared_page_state.SharedPageState):
+  def __init__(self, test, finder_options, story_set):
+    super(_NoWebGLImageChromiumSharedPageState, self).__init__(
+      test, finder_options, story_set)
+    finder_options.browser_options.AppendExtraBrowserArgs(
+      ['--disable-webgl-image-chromium'])
+
+
 class TrivialScrollingPage(page_module.Page):
 
   def __init__(self, page_set, shared_page_state_class):
@@ -52,6 +60,16 @@ class TrivialCanvasPage(page_module.Page):
         shared_page_state_class=shared_page_state_class)
 
 
+class TrivialWebGLPage(page_module.Page):
+
+  def __init__(self, page_set, shared_page_state_class):
+    super(TrivialWebGLPage, self).__init__(
+        url='file://trivial_sites/trivial_webgl.html',
+        page_set=page_set,
+        name=self.__class__.__name__ + shared_page_state_class.__name__,
+        shared_page_state_class=shared_page_state_class)
+
+
 class MacGpuTrivialPagesStorySet(story.StorySet):
 
   def __init__(self):
@@ -60,12 +78,15 @@ class MacGpuTrivialPagesStorySet(story.StorySet):
     self.AddStory(TrivialBlinkingCursorPage(
         self, shared_page_state.SharedPageState))
     self.AddStory(TrivialCanvasPage(self, shared_page_state.SharedPageState))
+    self.AddStory(TrivialWebGLPage(self, shared_page_state.SharedPageState))
     self.AddStory(TrivialScrollingPage(self, _NoOverlaysSharedPageState))
     self.AddStory(TrivialBlinkingCursorPage(self, _NoOverlaysSharedPageState))
     self.AddStory(TrivialCanvasPage(self, _NoOverlaysSharedPageState))
+    self.AddStory(TrivialWebGLPage(self, _NoOverlaysSharedPageState))
     self.AddStory(TrivialScrollingPage(self, _NoGpuSharedPageState))
     self.AddStory(TrivialBlinkingCursorPage(self, _NoGpuSharedPageState))
     self.AddStory(TrivialCanvasPage(self, _NoGpuSharedPageState))
+    self.AddStory(TrivialWebGLPage(self, _NoWebGLImageChromiumSharedPageState))
 
   @property
   def allow_mixed_story_states(self):
