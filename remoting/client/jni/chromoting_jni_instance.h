@@ -200,6 +200,7 @@ class ChromotingJniInstance
   // thread.
   bool connected_ = false;
 
+  base::WeakPtr<ChromotingJniInstance> weak_ptr_;
   base::WeakPtrFactory<ChromotingJniInstance> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingJniInstance);

@@ -16,7 +16,9 @@ JniPairingSecretFetcher::JniPairingSecretFetcher(ChromotingJniRuntime* runtime,
     jni_runtime_(runtime),
     jni_client_(client),
     host_id_(host_id),
-    weak_factory_(this) {}
+    weak_factory_(this) {
+  weak_ptr_ = weak_factory_.GetWeakPtr();
+}
 
 JniPairingSecretFetcher::~JniPairingSecretFetcher() {
   DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
@@ -42,7 +44,7 @@ void JniPairingSecretFetcher::ProvideSecret(const std::string& pin) {
 }
 
 base::WeakPtr<JniPairingSecretFetcher> JniPairingSecretFetcher::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+  return weak_ptr_;
 }
 
 // static

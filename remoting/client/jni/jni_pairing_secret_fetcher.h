@@ -51,6 +51,7 @@ class JniPairingSecretFetcher {
   // the UI thread, but must be posted to the network thread to call it.
   protocol::SecretFetchedCallback callback_;
 
+  base::WeakPtr<JniPairingSecretFetcher> weak_ptr_;
   base::WeakPtrFactory<JniPairingSecretFetcher> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JniPairingSecretFetcher);

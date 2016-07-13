@@ -26,7 +26,9 @@ JniClient::JniClient(ChromotingJniRuntime* runtime,
                      base::android::ScopedJavaGlobalRef<jobject> java_client)
     : runtime_(runtime),
       java_client_(java_client),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  weak_ptr_ = weak_factory_.GetWeakPtr();
+}
 
 JniClient::~JniClient() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
@@ -295,7 +297,7 @@ void JniClient::Destroy(JNIEnv* env, const JavaParamRef<jobject>& caller) {
 }
 
 base::WeakPtr<JniClient> JniClient::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+  return weak_ptr_;
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {

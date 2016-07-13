@@ -60,6 +60,7 @@ class JniDisplayHandler : public DisplayUpdaterFactory {
   ChromotingJniRuntime* runtime_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_display_;
+  base::WeakPtr<JniDisplayHandler> weak_ptr_;
   base::WeakPtrFactory<JniDisplayHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JniDisplayHandler);

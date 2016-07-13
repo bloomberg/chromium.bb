@@ -74,6 +74,7 @@ ChromotingJniInstance::ChromotingJniInstance(
       capabilities_(capabilities),
       weak_factory_(this) {
   DCHECK(jni_runtime_->ui_task_runner()->BelongsToCurrentThread());
+  weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // Initialize XMPP config.
   xmpp_config_.host = kXmppServer;
@@ -369,7 +370,7 @@ void ChromotingJniInstance::InjectClipboardEvent(
 }
 
 base::WeakPtr<ChromotingJniInstance> ChromotingJniInstance::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
+  return weak_ptr_;
 }
 
 void ChromotingJniInstance::ConnectToHostOnNetworkThread() {

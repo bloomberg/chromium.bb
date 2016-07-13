@@ -166,6 +166,7 @@ class JniClient {
   std::unique_ptr<ChromotingJniInstance> session_;
 
   // Holds pointer for the UI thread.
+  base::WeakPtr<JniClient> weak_ptr_;
   base::WeakPtrFactory<JniClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JniClient);
