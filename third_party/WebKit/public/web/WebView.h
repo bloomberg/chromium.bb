@@ -53,7 +53,6 @@ class WebFrame;
 class WebHitTestResult;
 class WebLocalFrame;
 class WebPageImportanceSignals;
-class WebPageOverlay;
 class WebPrerendererClient;
 class WebRemoteFrame;
 class WebSettings;

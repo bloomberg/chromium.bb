@@ -39,14 +39,9 @@
 namespace blink {
 
 class GraphicsContext;
-class WebPageOverlay;
 class WebViewImpl;
 
 // Manages a layer that is overlaid on a WebView's content.
-// Clients can paint by implementing WebPageOverlay.
-//
-// With Slimming Paint, internal clients can extract a GraphicsContext to add
-// to the PaintController owned by the GraphicsLayer
 class WEB_EXPORT PageOverlay : public GraphicsLayerClient, public DisplayItemClient {
 public:
     class Delegate : public GarbageCollectedFinalized<Delegate> {

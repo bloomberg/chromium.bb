@@ -171,8 +171,7 @@ class TestRunnerForSpecificView {
   // Dump current PageImportanceSignals for the page.
   void DumpPageImportanceSignals();
 
-  // WebPageOverlay related functions. Permits the adding and removing of only
-  // one opaque overlay.
+  // Permits the adding and removing of only one opaque overlay.
   void AddWebPageOverlay();
   void RemoveWebPageOverlay();
 
