@@ -32,6 +32,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
@@ -324,14 +325,19 @@ HTMLConstructionSite::HTMLConstructionSite(Document& document, ParserContentPoli
     ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
 }
 
-void HTMLConstructionSite::initFragmentParsing(DocumentFragment* fragment)
+void HTMLConstructionSite::initFragmentParsing(DocumentFragment* fragment, Element* contextElement)
 {
+    DCHECK(contextElement);
     DCHECK_EQ(m_document, &fragment->document());
     DCHECK_EQ(m_inQuirksMode, fragment->document().inQuirksMode());
     DCHECK(!m_isParsingFragment);
+    DCHECK(!m_form);
 
     m_attachmentRoot = fragment;
     m_isParsingFragment = true;
+
+    if (!contextElement->document().isTemplateDocument())
+        m_form = Traversal<HTMLFormElement>::firstAncestorOrSelf(*contextElement);
 }
 
 HTMLConstructionSite::~HTMLConstructionSite()
@@ -364,13 +370,6 @@ void HTMLConstructionSite::detach()
     m_pendingText.discard();
     m_document = nullptr;
     m_attachmentRoot = nullptr;
-}
-
-void HTMLConstructionSite::setForm(HTMLFormElement* form)
-{
-    // This method should only be needed for HTMLTreeBuilder in the fragment case.
-    ASSERT(!m_form);
-    m_form = form;
 }
 
 HTMLFormElement* HTMLConstructionSite::takeForm()
@@ -600,10 +599,12 @@ void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token, bool is
 {
     HTMLElement* element = createHTMLElement(token);
     ASSERT(isHTMLFormElement(element));
-    m_form = toHTMLFormElement(element);
-    m_form->setDemoted(isDemoted);
-    attachLater(currentNode(), m_form.get());
-    m_openElements.push(HTMLStackItem::create(m_form.get(), token));
+    HTMLFormElement* formElement = toHTMLFormElement(element);
+    if (!ownerDocumentForCurrentNode().isTemplateDocument())
+        m_form = formElement;
+    formElement->setDemoted(isDemoted);
+    attachLater(currentNode(), formElement);
+    m_openElements.push(HTMLStackItem::create(formElement, token));
 }
 
 void HTMLConstructionSite::insertHTMLElement(AtomicHTMLToken* token)
@@ -751,7 +752,7 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
     Document& document = ownerDocumentForCurrentNode();
     // Only associate the element with the current form if we're creating the new element
     // in a document with a browsing context (rather than in <template> contents).
-    HTMLFormElement* form = document.frame() ? m_form.get() : 0;
+    HTMLFormElement* form = document.frame() ? m_form.get() : nullptr;
     // FIXME: This can't use HTMLConstructionSite::createElement because we
     // have to pass the current form element.  We should rework form association
     // to occur after construction to allow better code sharing here.

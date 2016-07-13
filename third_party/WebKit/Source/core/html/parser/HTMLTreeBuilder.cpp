@@ -38,6 +38,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -131,12 +132,6 @@ static bool isNonAnchorFormattingTag(const AtomicString& tagName)
 static bool isFormattingTag(const AtomicString& tagName)
 {
     return tagName == aTag || isNonAnchorFormattingTag(tagName);
-}
-
-static HTMLFormElement* closestFormAncestor(Element& element)
-{
-    ASSERT(isMainThread());
-    return Traversal<HTMLFormElement>::firstAncestorOrSelf(element);
 }
 
 class HTMLTreeBuilder::CharacterTokenBuffer {
@@ -287,7 +282,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* f
 {
     ASSERT(isMainThread());
     ASSERT(contextElement);
-    m_tree.initFragmentParsing(fragment);
+    m_tree.initFragmentParsing(fragment, contextElement);
     m_fragmentContext.init(fragment, contextElement);
 
     // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
@@ -300,7 +295,6 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser, DocumentFragment* f
         m_templateInsertionModes.append(TemplateContentsMode);
 
     resetInsertionModeAppropriately();
-    m_tree.setForm(closestFormAncestor(*contextElement));
 }
 
 HTMLTreeBuilder::~HTMLTreeBuilder()
@@ -674,7 +668,7 @@ void HTMLTreeBuilder::processStartTagForInBody(AtomicHTMLToken* token)
         return;
     }
     if (token->name() == formTag) {
-        if (m_tree.form()) {
+        if (m_tree.isFormElementPointerNonNull() && !isParsingTemplateContents()) {
             parseError(token);
             return;
         }
@@ -1039,7 +1033,7 @@ void HTMLTreeBuilder::processStartTagForInTable(AtomicHTMLToken* token)
     }
     if (token->name() == formTag) {
         parseError(token);
-        if (m_tree.form())
+        if (m_tree.isFormElementPointerNonNull() && !isParsingTemplateContents())
             return;
         m_tree.insertHTMLFormElement(token, true);
         m_tree.openElements()->pop();
@@ -1791,7 +1785,7 @@ void HTMLTreeBuilder::processEndTagForInBody(AtomicHTMLToken* token)
         m_tree.openElements()->popUntilPopped(token->name());
         return;
     }
-    if (token->name() == formTag) {
+    if (token->name() == formTag && !isParsingTemplateContents()) {
         Element* node = m_tree.takeForm();
         if (!node || !m_tree.openElements()->inScope(node)) {
             parseError(token);

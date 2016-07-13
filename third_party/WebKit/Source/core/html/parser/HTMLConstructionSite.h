@@ -113,7 +113,7 @@ public:
     ~HTMLConstructionSite();
     DECLARE_TRACE();
 
-    void initFragmentParsing(DocumentFragment*);
+    void initFragmentParsing(DocumentFragment*, Element* contextElement);
 
     void detach();
 
@@ -196,8 +196,7 @@ public:
     Element* head() const { return m_head->element(); }
     HTMLStackItem* headStackItem() const { return m_head.get(); }
 
-    void setForm(HTMLFormElement*);
-    HTMLFormElement* form() const { return m_form.get(); }
+    bool isFormElementPointerNonNull() const { return m_form; }
     HTMLFormElement* takeForm();
 
     ParserContentPolicy getParserContentPolicy() { return m_parserContentPolicy; }
