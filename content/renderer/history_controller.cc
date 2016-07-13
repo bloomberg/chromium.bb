@@ -201,7 +201,8 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
         // a different frame.  For main frames, it is not safe to leave the
         // current_entry_ in place, which may have a cross-site page and will be
         // included in the PageState for this commit.  Replace it with a new
-        // HistoryEntry corresponding to the commit.
+        // HistoryEntry corresponding to the commit, and clear any stale
+        // NavigationParams which might point to the wrong entry.
         //
         // This will lack any subframe history items that were in the original
         // provisional entry, but we don't know what those were after discarding
@@ -214,8 +215,10 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
         // main frame case.  Since this bug is not present in the new
         // FrameNavigationEntry-based navigation path (https://crbug.com/236848)
         // we'll wait for that to fix the subframe case.
-        if (frame->IsMainFrame())
+        if (frame->IsMainFrame()) {
           current_entry_.reset(new HistoryEntry(item));
+          navigation_params_.reset();
+        }
 
         return;
       }
@@ -251,6 +254,13 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
 
       if (HistoryEntry::HistoryNode* node =
               current_entry_->GetHistoryNodeForFrame(frame)) {
+        // Clear the children and any NavigationParams if this commit isn't for
+        // the same item.  Otherwise we might have stale data from a race.
+        if (node->item().itemSequenceNumber() != item.itemSequenceNumber()) {
+          node->RemoveChildren();
+          navigation_params_.reset();
+        }
+
         node->set_item(item);
       }
       break;

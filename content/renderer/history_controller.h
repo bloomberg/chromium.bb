@@ -153,11 +153,15 @@ class CONTENT_EXPORT HistoryController {
   // A HistoryEntry representing the page that is being loaded, or an empty
   // scoped_ptr if no page is being loaded.
   std::unique_ptr<HistoryEntry> provisional_entry_;
-  // The NavigationParams corresponding to the last load that was initiated by
-  // |GoToEntry|. This is kept around so that it can be passed into existing
-  // frames modified during a history navigation in GoToEntry(), and can be
+
+  // The NavigationParams corresponding to the last back/forward load that was
+  // initiated by |GoToEntry|. This is kept around so that it can be passed into
+  // existing frames affected by a history navigation in GoToEntry(), and can be
   // passed into frames created after the commit that resulted from the
   // navigation in GetItemForNewChildFrame().
+  //
+  // This is reset in UpdateForCommit if we see a commit from a different
+  // navigation, to avoid using stale parameters.
   std::unique_ptr<NavigationParams> navigation_params_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryController);
