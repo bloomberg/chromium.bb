@@ -372,7 +372,7 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromSource(
     std::unique_ptr<base::HistogramBase> histogram = histogram_iter.GetNext();
     if (!histogram)
       break;
-    snapshot_manager->PrepareFinalDeltaTakingOwnership(std::move(histogram));
+    snapshot_manager->PrepareFinalDelta(histogram.get());
     ++histogram_count;
   }
 

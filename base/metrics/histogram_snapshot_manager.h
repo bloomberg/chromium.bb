@@ -37,16 +37,12 @@ class BASE_EXPORT HistogramSnapshotManager {
   // |required_flags| is used to select histograms to be recorded.
   // Only histograms that have all the flags specified by the argument will be
   // chosen. If all histograms should be recorded, set it to
-  // |Histogram::kNoFlags|. Though any "forward" iterator will work, the
-  // histograms over which it iterates *must* remain valid until this method
-  // returns; the iterator cannot deallocate histograms once it iterates past
-  // them and FinishDeltas() has been called after.  StartDeltas() must be
-  // called before.
+  // |Histogram::kNoFlags|.
   template <class ForwardHistogramIterator>
-  void PrepareDeltasWithoutStartFinish(ForwardHistogramIterator begin,
-                                       ForwardHistogramIterator end,
-                                       HistogramBase::Flags flags_to_set,
-                                       HistogramBase::Flags required_flags) {
+  void PrepareDeltas(ForwardHistogramIterator begin,
+                     ForwardHistogramIterator end,
+                     HistogramBase::Flags flags_to_set,
+                     HistogramBase::Flags required_flags) {
     for (ForwardHistogramIterator it = begin; it != end; ++it) {
       (*it)->SetFlags(flags_to_set);
       if (((*it)->flags() & required_flags) == required_flags)
@@ -54,59 +50,21 @@ class BASE_EXPORT HistogramSnapshotManager {
     }
   }
 
-  // As above but also calls StartDeltas() and FinishDeltas().
-  template <class ForwardHistogramIterator>
-  void PrepareDeltas(ForwardHistogramIterator begin,
-                     ForwardHistogramIterator end,
-                     HistogramBase::Flags flags_to_set,
-                     HistogramBase::Flags required_flags) {
-    StartDeltas();
-    PrepareDeltasWithoutStartFinish(begin, end, flags_to_set, required_flags);
-    FinishDeltas();
-  }
-
   // When the collection is not so simple as can be done using a single
   // iterator, the steps can be performed separately. Call PerpareDelta()
-  // as many times as necessary with a single StartDeltas() before and
-  // a single FinishDeltas() after. All passed histograms must live
-  // until FinishDeltas() completes. PrepareAbsolute() works the same
-  // but assumes there were no previous logged values and no future deltas
-  // will be created (and thus can work on read-only histograms).
-  // PrepareFinalDelta() works like PrepareDelta() except that it does
-  // not update the previous logged values and can thus be used with
-  // read-only files.
-  // Use Prepare*TakingOwnership() if it is desireable to have this class
-  // automatically delete the histogram once it is "finished".
-  void StartDeltas();
+  // as many times as necessary. PrepareFinalDelta() works like PrepareDelta()
+  // except that it does not update the previous logged values and can thus
+  // be used with read-only files.
   void PrepareDelta(HistogramBase* histogram);
-  void PrepareDeltaTakingOwnership(std::unique_ptr<HistogramBase> histogram);
-  void PrepareAbsolute(const HistogramBase* histogram);
-  void PrepareAbsoluteTakingOwnership(
-      std::unique_ptr<const HistogramBase> histogram);
-  void PrepareFinalDeltaTakingOwnership(
-      std::unique_ptr<const HistogramBase> histogram);
-  void FinishDeltas();
+  void PrepareFinalDelta(const HistogramBase* histogram);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistogramSnapshotManagerTest, CheckMerge);
 
   // During a snapshot, samples are acquired and aggregated. This structure
-  // contains all the information collected for a given histogram. Once a
-  // snapshot operation is finished, it is generally emptied except for
-  // information that must persist from one report to the next, such as
-  // the "inconsistencies".
+  // contains all the information for a given histogram that persists between
+  // collections.
   struct SampleInfo {
-    // A histogram associated with this sample; it may be one of many if
-    // several have been aggregated into the same "accumulated" sample set.
-    // Ownership of the histogram remains elsewhere and this pointer is
-    // cleared by FinishDeltas().
-    const HistogramBase* histogram = nullptr;
-
-    // The current snapshot-delta values being accumulated.
-    // TODO(bcwhite): Change this to a scoped_ptr once all build architectures
-    // support such as the value of a std::map.
-    HistogramSamples* accumulated_samples = nullptr;
-
     // The set of inconsistencies (flags) already seen for the histogram.
     // See HistogramBase::Inconsistency for values.
     uint32_t inconsistencies = 0;
@@ -125,13 +83,6 @@ class BASE_EXPORT HistogramSnapshotManager {
   // For histograms, track what has been previously seen, indexed
   // by the hash of the histogram name.
   std::map<uint64_t, SampleInfo> known_histograms_;
-
-  // Collection of histograms of which ownership has been passed to this
-  // object. They will be deleted by FinishDeltas().
-  std::vector<std::unique_ptr<const HistogramBase>> owned_histograms_;
-
-  // Indicates if deltas are currently being prepared.
-  bool preparing_deltas_;
 
   // |histogram_flattener_| handles the logistics of recording the histogram
   // deltas.

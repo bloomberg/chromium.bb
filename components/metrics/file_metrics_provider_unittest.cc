@@ -411,9 +411,7 @@ TEST_P(FileMetricsProviderTest, AccessInitialMetrics) {
   {
     HistogramFlattenerDeltaRecorder flattener;
     base::HistogramSnapshotManager snapshot_manager(&flattener);
-    snapshot_manager.StartDeltas();
     RecordInitialHistogramSnapshots(&snapshot_manager);
-    snapshot_manager.FinishDeltas();
     EXPECT_EQ(2U, flattener.GetRecordedDeltaHistogramNames().size());
   }
   EXPECT_TRUE(base::PathExists(metrics_file()));
