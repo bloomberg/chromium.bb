@@ -1104,9 +1104,12 @@ bool LayoutInline::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* an
     // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
     rect.setLocation(topLeft);
 
-    if (container->isBox() && !toLayoutBox(container)->mapScrollingContentsRectToBoxSpace(rect, container == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
+    LayoutBox* containerBox = container->isBox() ? toLayoutBox(container) : nullptr;
+    if (containerBox && !containerBox->mapScrollingContentsRectToBoxSpace(rect, container == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
         return false;
 
+    if (containerBox)
+        containerBox->flipForWritingMode(rect);
     return container->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 

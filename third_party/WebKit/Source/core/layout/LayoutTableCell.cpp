@@ -360,15 +360,6 @@ LayoutRect LayoutTableCell::localOverflowRectForPaintInvalidation() const
     return LayoutRect(-location.x(), -location.y(), location.x() + std::max(size().width() + right, selfVisualOverflowRect.maxX()), location.y() + std::max(size().height() + bottom, selfVisualOverflowRect.maxY()));
 }
 
-bool LayoutTableCell::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, VisualRectFlags visualRectFlags) const
-{
-    if (ancestor == this)
-        return true;
-    if (parent())
-        r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    return LayoutBlockFlow::mapToVisualRectInAncestorSpace(ancestor, r, visualRectFlags);
-}
-
 int LayoutTableCell::cellBaselinePosition() const
 {
     // <http://www.w3.org/TR/2007/CR-CSS21-20070719/tables.html#height-layout>: The baseline of a cell is the baseline of

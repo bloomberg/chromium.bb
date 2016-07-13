@@ -873,9 +873,11 @@ public:
             return;
         rect.setX(m_frameRect.width() - rect.maxX());
     }
-    // These represent your location relative to your container as a physical offset.
-    // In layout related methods you almost always want the logical location (e.g. x() and y()).
-    LayoutPoint topLeftLocation() const;
+    // These represent your location relative to your container as a physical
+    // offset. In layout related methods you almost always want the logical
+    // location (e.g. x() and y()). Passing |container| causes flipped-block
+    // flipping w.r.t. that container, or containingBlock() otherwise.
+    LayoutPoint topLeftLocation(const LayoutBox* flippedBlocksContainer = nullptr) const;
     LayoutSize topLeftLocationOffset() const { return toLayoutSize(topLeftLocation()); }
 
     LayoutRect logicalVisualOverflowRectForPropagation(const ComputedStyle&) const;

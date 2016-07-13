@@ -77,3 +77,7 @@ writing-mode:       |          |          |/|
                     
                           overflow rect
                     |<--------------------->|
+
+## Coordinate Spaces
+
+TODO(wkorman): Document writing mode, particularly flipped blocks.

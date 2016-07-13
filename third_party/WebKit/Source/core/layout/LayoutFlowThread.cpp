@@ -102,9 +102,7 @@ bool LayoutFlowThread::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject
     // |rect| is a layout rectangle, where the block direction coordinate is flipped for writing
     // mode. fragmentsBoundingBox(), on the other hand, works on physical rectangles, so we need to
     // flip the rectangle before and after calling it.
-    flipForWritingMode(rect);
     rect = fragmentsBoundingBox(rect);
-    flipForWritingMode(rect);
     return LayoutBlockFlow::mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 

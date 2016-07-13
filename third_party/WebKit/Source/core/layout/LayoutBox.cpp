@@ -991,14 +991,10 @@ bool LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect, ApplyOverfl
         return true;
 
     LayoutSize offset = LayoutSize(-scrolledContentOffset());
-    if (UNLIKELY(hasFlippedBlocksWritingMode()))
-        offset.setWidth(-offset.width());
     rect.move(offset);
 
     if (applyOverflowClip == ApplyNonScrollOverflowClip && scrollsOverflow())
         return true;
-
-    flipForWritingMode(rect);
 
     LayoutRect clipRect = overflowClipRect(LayoutPoint());
 
@@ -1009,8 +1005,6 @@ bool LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect, ApplyOverfl
         rect.intersect(clipRect);
         doesIntersect = !rect.isEmpty();
     }
-    if (doesIntersect)
-        flipForWritingMode(rect);
     return doesIntersect;
 }
 
@@ -2043,33 +2037,24 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
 {
     inflateVisualRectForReflectionAndFilter(rect);
 
-    if (ancestor == this) {
-        // The final rect returned is always in the physical coordinate space of the ancestor.
-        flipForWritingMode(rect);
+    if (ancestor == this)
         return true;
-    }
 
     bool ancestorSkipped;
     bool filterOrReflectionSkipped;
     LayoutObject* container = this->container(ancestor, &ancestorSkipped, &filterOrReflectionSkipped);
+    LayoutBox* localContainingBlock = containingBlock();
+    // Skip table row because cells and rows are in the same coordinate space.
+    if (container->isTableRow()) {
+        DCHECK(isTableCell());
+        localContainingBlock = toLayoutBox(container->parent());
+        container = container->parent();
+    }
     if (!container)
         return true;
 
     if (filterOrReflectionSkipped)
         inflateVisualRectForReflectionAndFilterUnderContainer(rect, *container, ancestor);
-
-    // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
-    // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more
-    // appropriate offset corner for the enclosing container).
-    if (isWritingModeRoot()) {
-        flipForWritingMode(rect);
-        // Then flip rect currently in physical direction to container's block direction.
-        if (container->styleRef().isFlippedBlocksWritingMode())
-            rect.setX(m_frameRect.width() - rect.maxX());
-    }
-
-    LayoutPoint topLeft = rect.location();
-    topLeft.move(locationOffset());
 
     // We are now in our parent container's coordinate space.  Apply our transform to obtain a bounding box
     // in the parent's coordinate space that encloses us.
@@ -2078,9 +2063,12 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
         // the transform since we don't know the desired subpixel accumulation at this point, and the transform may
         // include a scale.
         rect = LayoutRect(layer()->transform()->mapRect(enclosingIntRect(rect)));
-        topLeft = rect.location();
-        topLeft.move(locationOffset());
     }
+    LayoutPoint topLeft = rect.location();
+    // TODO(wkorman): Look into and document why this conditional is needed.
+    // Currently present following logic in PaintLayer::updateLayerPosition.
+    if (!(isInline() && isLayoutInline()))
+        topLeft.moveBy(topLeftLocation(localContainingBlock));
 
     const ComputedStyle& styleToUse = styleRef();
     EPosition position = styleToUse.position();
@@ -2102,7 +2090,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
         return false;
 
     if (ancestorSkipped) {
-        // If the ancestor is below o, then we need to map the rect into ancestor's coordinates.
+        // If the ancestor is below the container, then we need to map the rect into ancestor's coordinates.
         LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(container);
         rect.move(-containerOffset);
         // If the ancestor is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
@@ -4478,12 +4466,12 @@ LayoutPoint LayoutBox::flipForWritingModeForChild(const LayoutBox* child, const 
     return LayoutPoint(point.x() + size().width() - child->size().width() - (2 * child->location().x()), point.y());
 }
 
-LayoutPoint LayoutBox::topLeftLocation() const
+LayoutPoint LayoutBox::topLeftLocation(const LayoutBox* flippedBlocksContainer) const
 {
-    LayoutBlock* containerBlock = containingBlock();
-    if (!containerBlock || containerBlock == this)
+    const LayoutBox* containerBox = flippedBlocksContainer ? flippedBlocksContainer : containingBlock();
+    if (!containerBox || containerBox == this)
         return location();
-    return containerBlock->flipForWritingModeForChild(this, location());
+    return containerBox->flipForWritingModeForChild(this, location());
 }
 
 bool LayoutBox::hasRelativeLogicalWidth() const

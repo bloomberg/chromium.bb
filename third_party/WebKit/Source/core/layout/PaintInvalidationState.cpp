@@ -389,6 +389,13 @@ LayoutRect PaintInvalidationState::computePaintInvalidationRectInBackingForSVG()
 
 static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const LayoutBoxModelObject& ancestor, LayoutRect& rect)
 {
+    // TODO(wkorman): The flip below is required because visual rects are
+    // currently in "physical coordinates with flipped block-flow direction"
+    // (see LayoutBoxModelObject.h) but we need them to be in physical
+    // coordinates.
+    if (object.isBox())
+        toLayoutBox(&object)->flipForWritingMode(rect);
+
     if (object.isLayoutView())
         toLayoutView(object).mapToVisualRectInAncestorSpace(&ancestor, rect, InputIsInFrameCoordinates, DefaultVisualRectFlags);
     else

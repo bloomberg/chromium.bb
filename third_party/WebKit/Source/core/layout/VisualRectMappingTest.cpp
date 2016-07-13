@@ -171,11 +171,18 @@ TEST_F(VisualRectMappingTest, SelfFlippedWritingMode)
     EXPECT_EQ(LayoutRect(-40, 0, 140, 70), overflowRect);
 
     LayoutRect rect = overflowRect;
+    // TODO(wkorman): The calls to flipForWritingMode() here and in other test
+    // cases below are necessary because mapToVisualRectInAncestorSpace()
+    // currently expects the input rect to be in "physical coordinates" (*not*
+    // "physical coordinates with flipped block-flow direction"), see
+    // LayoutBoxModelObject.h.
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
     // This rect is in physical coordinates of target.
     EXPECT_EQ(LayoutRect(0, 0, 140, 70), rect);
 
     rect = overflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
     EXPECT_EQ(LayoutRect(222, 111, 140, 70), rect);
     checkPaintInvalidationStateRectMapping(rect, overflowRect, *target, layoutView(), layoutView());
@@ -197,16 +204,19 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode)
     EXPECT_EQ(LayoutRect(-40, 0, 140, 110), targetOverflowRect);
 
     LayoutRect rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
     // This rect is in physical coordinates of target.
     EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
     LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
     rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
     // 100 is the physical x location of target in container.
     EXPECT_EQ(LayoutRect(100, 0, 140, 110), rect);
     rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
     EXPECT_EQ(LayoutRect(322, 111, 140, 110), rect);
     checkPaintInvalidationStateRectMapping(rect, targetOverflowRect, *target, layoutView(), layoutView());
@@ -214,9 +224,11 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingMode)
     LayoutRect containerOverflowRect = container->localOverflowRectForPaintInvalidation();
     EXPECT_EQ(LayoutRect(0, 0, 200, 100), containerOverflowRect);
     rect = containerOverflowRect;
+    container->flipForWritingMode(rect);
     EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(container, rect));
     EXPECT_EQ(LayoutRect(0, 0, 200, 100), rect);
     rect = containerOverflowRect;
+    container->flipForWritingMode(rect);
     EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(&layoutView(), rect));
     EXPECT_EQ(LayoutRect(222, 111, 200, 100), rect);
     checkPaintInvalidationStateRectMapping(rect, containerOverflowRect, *container, layoutView(), layoutView());
@@ -303,11 +315,13 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll)
     EXPECT_EQ(LayoutRect(-40, 0, 140, 110), targetOverflowRect);
 
     LayoutRect rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
     // This rect is in physical coordinates of target.
     EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
     rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
     // -2 = target_physical_x(100) + container_border_left(40) - scroll_left(142)
     // 3 = target_y(0) + container_border_top(10) - scroll_top(7)
@@ -315,6 +329,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll)
     EXPECT_EQ(LayoutRect(-2, 3, 140, 110), rect);
 
     rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(&layoutView(), rect));
     // (-2, 3, 140, 100) is first clipped by container's overflow clip, to (40, 10, 50, 80),
     // then is added by container's offset in LayoutView (111, 222).
@@ -330,10 +345,12 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll)
     EXPECT_EQ(LayoutRect(0, 0, 110, 120), containerOverflowRect);
 
     rect = containerOverflowRect;
+    container->flipForWritingMode(rect);
     EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(container, rect));
     EXPECT_EQ(LayoutRect(0, 0, 110, 120), rect);
 
     rect = containerOverflowRect;
+    container->flipForWritingMode(rect);
     EXPECT_TRUE(container->mapToVisualRectInAncestorSpace(&layoutView(), rect));
     // TODO(crbug.com/600039): rect.x() should be 222 (left), but is offset by extra horizontal
     // border-widths because of layout error.
@@ -398,11 +415,13 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden)
     EXPECT_EQ(LayoutRect(-40, 0, 140, 110), targetOverflowRect);
 
     LayoutRect rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(target, rect));
     // This rect is in physical coordinates of target.
     EXPECT_EQ(LayoutRect(0, 0, 140, 110), rect);
 
     rect = targetOverflowRect;
+    target->flipForWritingMode(rect);
     EXPECT_TRUE(target->mapToVisualRectInAncestorSpace(container, rect));
     // 58 = target_physical_x(100) + container_border_left(40) - scroll_left(58)
     // The other sides of the rect are clipped by container's overflow clip.

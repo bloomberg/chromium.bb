@@ -1567,15 +1567,20 @@ LayoutRect LayoutObject::localOverflowRectForPaintInvalidation() const
 bool LayoutObject::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     // For any layout object that doesn't override this method (the main example is LayoutText),
-    // the rect is assumed to be in the coordinate space of the object's parent.
+    // the rect is assumed to be in the parent's coordinate space, except for container flip.
 
     if (ancestor == this)
         return true;
 
     if (LayoutObject* parent = this->parent()) {
-        if (parent->isBox() && !toLayoutBox(parent)->mapScrollingContentsRectToBoxSpace(rect, parent == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
-            return false;
-
+        if (parent->isBox()) {
+            LayoutBox* parentBox = toLayoutBox(parent);
+            if (!parentBox->mapScrollingContentsRectToBoxSpace(rect, parent == ancestor ? ApplyNonScrollOverflowClip : ApplyOverflowClip, visualRectFlags))
+                return false;
+            // Never flip for SVG as it handles writing modes itself.
+            if (!isSVG())
+                parentBox->flipForWritingMode(rect);
+        }
         return parent->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
     }
     return true;
