@@ -1357,10 +1357,12 @@ crbug.com/625020 [ Debug ] compositing/repaint/page-scale-repaint.html [ Timeout
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
-crbug.com/627754 [ Precise Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Failure ]
-crbug.com/627754 [ Precise Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure ]
+crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
+crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
+
+crbug.com/627902 [ Win7 ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
 
 crbug.com/627798 [ Win ] fast/repaint/line-flow-with-floats-9.html [ Pass Failure ]
 crbug.com/627798 [ Win ] fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
