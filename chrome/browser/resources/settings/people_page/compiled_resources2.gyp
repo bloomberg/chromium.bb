@@ -105,12 +105,25 @@
     },
     {
       'target_name': 'quick_unlock_routing_behavior',
+      'dependencies': [
+        '../settings_page/compiled_resources2.gyp:settings_router',
+      ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
       'target_name': 'quick_unlock_password_detect_behavior',
       'dependencies': [
         'quick_unlock_routing_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'quick_unlock_setup_pin',
+      'dependencies': [
+        'quick_unlock_password_detect_behavior',
+        '../settings_page/compiled_resources2.gyp:settings_router',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(EXTERNS_GYP):quick_unlock_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

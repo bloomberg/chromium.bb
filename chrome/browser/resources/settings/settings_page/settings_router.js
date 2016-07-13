@@ -221,6 +221,12 @@ Polymer({
       subpage: ['quick-unlock-choose-method'],
     },
     {
+      url: '/quickUnlock/setupPin',
+      page: 'basic',
+      section: 'people',
+      subpage: ['quick-unlock-choose-method', 'quick-unlock-setup-pin'],
+    },
+    {
       url: '/accounts',
       page: 'basic',
       section: 'people',

@@ -787,6 +787,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PEOPLE_QUICK_UNLOCK_CONFIGURE_PIN_CHOOSE_PIN_TITLE},
     {"quickUnlockConfigurePinChoosePinWeakPinWarning",
      IDS_SETTINGS_PEOPLE_QUICK_UNLOCK_CONFIGURE_PIN_CHOOSE_PIN_WEAK_PIN_WARNING},
+    {"quickUnlockConfigurePinChoosePinTooShort",
+     IDS_SETTINGS_PEOPLE_QUICK_UNLOCK_CONFIGURE_PIN_CHOOSE_PIN_TOO_SHORT},
     {"quickUnlockConfigurePinContinueButton",
      IDS_SETTINGS_PEOPLE_QUICK_UNLOCK_CONFIGURE_PIN_CONTINUE_BUTTON},
     {"quickUnlockConfigurePinConfirmPinTitle",

@@ -985,6 +985,14 @@
                    type="chrome_html"
                    flattenhtml="true"
                    allowexternalscript="true" />
+        <structure name="IDR_SETTINGS_QUICK_UNLOCK_SETUP_PIN_JS"
+                   file="people_page/quick_unlock_setup_pin.js"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_QUICK_UNLOCK_SETUP_PIN_HTML"
+                   file="people_page/quick_unlock_setup_pin.html"
+                   type="chrome_html"
+                   flattenhtml="true"
+                   allowexternalscript="true" />
         <structure name="IDR_SETTINGS_QUICK_UNLOCK_ROUTING_BEHAVIOR_JS"
                    file="people_page/quick_unlock_routing_behavior.js"
                    type="chrome_html" />

@@ -1,0 +1,78 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="/people_page/pin_keyboard.html">
+<link rel="import" href="/people_page/quick_unlock_password_detect_behavior.html">
+<link rel="import" href="/people_page/quick_unlock_routing_behavior.html">
+<link rel="import" href="/settings_page/settings_section.html">
+<link rel="import" href="/settings_shared_css.html">
+
+<dom-module id="settings-quick-unlock-setup-pin">
+  <template>
+    <style include="settings-shared"></style>
+    <style>
+      iron-icon {
+        -webkit-margin-end: var(--iron-icon-spacing);
+      }
+
+      .warning {
+        color: var(--paper-grey-500);
+      }
+
+      .warning > iron-icon {
+        --iron-icon-fill-color: var(--paper-grey-500);
+      }
+
+      .error {
+        color: var(--paper-red-500);
+      }
+
+      .error > iron-icon {
+        --iron-icon-fill-color: var(--paper-red-500);
+      }
+
+      .align-center {
+        justify-content: center;
+      }
+
+      .align-end {
+        justify-content: flex-end;
+      }
+    </style>
+
+    <div>
+      <!-- Title; only shown if warning/error is hidden. -->
+      <div class="settings-box" hidden$="[[hasProblem_(problemMessage_)]]">
+        <span>[[getTitleMessage_(isConfirmStep_)]]</span>
+      </div>
+
+      <!-- Warning/error; only shown if title is hidden. -->
+      <div class$="[[problemClass_]] settings-box"
+           hidden$="[[!hasProblem_(problemMessage_)]]">
+        <iron-icon icon="icons:warning"></iron-icon>
+        <span>[[problemMessage_]]</span>
+      </div>
+
+      <!-- Pin keyboard -->
+      <div class="align-center settings-box continuation">
+        <pin-keyboard on-pin-change="onPinChange_" on-submit="onPinSubmit_"
+                      value="{{pinKeyboardValue_}}"></pin-keyboard>
+      </div>
+
+      <div class="align-end settings-box">
+        <paper-button class="cancel-button" on-tap="resetState_"
+                      hidden$="[[!isConfirmStep_]]">
+          $i18n{quickUnlockConfigurePinBackButton}
+        </paper-button>
+
+        <paper-button class="action-button" on-tap="onPinSubmit_"
+                      disabled$="[[!enableSubmit_]]">
+          <span>[[getContinueMessage_(isConfirmStep_)]]</span>
+        </paper-button>
+      </div>
+
+    </div>
+  </template>
+
+  <script src="quick_unlock_setup_pin.js"></script>
+</dom-module>
