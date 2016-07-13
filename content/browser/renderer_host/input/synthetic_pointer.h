@@ -40,6 +40,8 @@ class CONTENT_EXPORT SyntheticPointer {
                        SyntheticGestureTarget* target,
                        const base::TimeTicks& timestamp) = 0;
 
+  virtual SyntheticGestureParams::GestureSourceType SourceType() const = 0;
+
  protected:
   static double ConvertTimestampToSeconds(const base::TimeTicks& timestamp);
 

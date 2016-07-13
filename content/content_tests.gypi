@@ -567,6 +567,7 @@
       'browser/renderer_host/input/render_widget_host_latency_tracker_unittest.cc',
       'browser/renderer_host/input/stylus_text_selector_unittest.cc',
       'browser/renderer_host/input/synthetic_gesture_controller_unittest.cc',
+      'browser/renderer_host/input/synthetic_pointer_action_unittest.cc',
       'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
       'browser/renderer_host/input/touch_action_filter_unittest.cc',
       'browser/renderer_host/input/touch_emulator_unittest.cc',

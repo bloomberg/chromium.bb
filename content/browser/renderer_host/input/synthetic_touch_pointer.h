@@ -34,6 +34,8 @@ class CONTENT_EXPORT SyntheticTouchPointer : public SyntheticPointer {
                SyntheticGestureTarget* target,
                const base::TimeTicks& timestamp) override;
 
+  SyntheticGestureParams::GestureSourceType SourceType() const override;
+
  private:
   SyntheticWebTouchEvent touch_event_;
 

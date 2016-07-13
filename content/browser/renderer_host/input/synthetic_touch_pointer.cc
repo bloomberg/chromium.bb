@@ -43,4 +43,9 @@ void SyntheticTouchPointer::Release(int index,
   touch_event_.ReleasePoint(index);
 }
 
+SyntheticGestureParams::GestureSourceType SyntheticTouchPointer::SourceType()
+    const {
+  return SyntheticGestureParams::TOUCH_INPUT;
+}
+
 }  // namespace content

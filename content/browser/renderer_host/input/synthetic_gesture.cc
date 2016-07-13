@@ -43,12 +43,10 @@ std::unique_ptr<SyntheticGesture> SyntheticGesture::Create(
     case SyntheticGestureParams::TAP_GESTURE:
       return CreateGesture<SyntheticTapGesture,
                            SyntheticTapGestureParams>(gesture_params);
-    case SyntheticGestureParams::POINTER_ACTION:
-      return CreateGesture<SyntheticPointerAction,
-                           SyntheticPointerActionParams>(gesture_params);
+    default:
+      NOTREACHED() << "Invalid synthetic gesture type";
+      return nullptr;
   }
-  NOTREACHED() << "Invalid synthetic gesture type";
-  return std::unique_ptr<SyntheticGesture>();
 }
 
 }  // namespace content

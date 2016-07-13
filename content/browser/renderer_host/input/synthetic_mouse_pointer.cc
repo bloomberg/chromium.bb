@@ -46,4 +46,9 @@ void SyntheticMousePointer::Release(int index,
   mouse_event_.clickCount = 1;
 }
 
+SyntheticGestureParams::GestureSourceType SyntheticMousePointer::SourceType()
+    const {
+  return SyntheticGestureParams::MOUSE_INPUT;
+}
+
 }  // namespace content

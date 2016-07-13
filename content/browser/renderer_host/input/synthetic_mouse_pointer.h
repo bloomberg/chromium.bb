@@ -33,6 +33,8 @@ class CONTENT_EXPORT SyntheticMousePointer : public SyntheticPointer {
                SyntheticGestureTarget* target,
                const base::TimeTicks& timestamp) override;
 
+  SyntheticGestureParams::GestureSourceType SourceType() const override;
+
  private:
   blink::WebMouseEvent mouse_event_;
   DISALLOW_COPY_AND_ASSIGN(SyntheticMousePointer);

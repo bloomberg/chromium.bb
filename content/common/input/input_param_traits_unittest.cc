@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "content/common/input/input_event.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
@@ -89,7 +90,9 @@ class InputParamTraitsTest : public testing::Test {
       EXPECT_EQ(a->position(), b->position());
     }
     if (a->pointer_action_type() !=
-        SyntheticPointerActionParams::PointerActionType::PROCESS) {
+            SyntheticPointerActionParams::PointerActionType::PROCESS &&
+        a->pointer_action_type() !=
+            SyntheticPointerActionParams::PointerActionType::FINISH) {
       EXPECT_EQ(a->index(), b->index());
     }
   }
@@ -272,9 +275,9 @@ TEST_F(InputParamTraitsTest, SyntheticTapGestureParams) {
 }
 
 TEST_F(InputParamTraitsTest, SyntheticPointerActionParamsMove) {
-  std::unique_ptr<SyntheticPointerActionParams> gesture_params(
-      new SyntheticPointerActionParams(
-          SyntheticPointerActionParams::PointerActionType::MOVE));
+  std::unique_ptr<SyntheticPointerActionParams> gesture_params =
+      base::MakeUnique<SyntheticPointerActionParams>(
+          SyntheticPointerActionParams::PointerActionType::MOVE);
   gesture_params->gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   gesture_params->set_position(gfx::PointF(356, 287));
   gesture_params->set_index(0);
@@ -286,9 +289,9 @@ TEST_F(InputParamTraitsTest, SyntheticPointerActionParamsMove) {
 }
 
 TEST_F(InputParamTraitsTest, SyntheticPointerActionParamsRelease) {
-  std::unique_ptr<SyntheticPointerActionParams> gesture_params(
-      new SyntheticPointerActionParams(
-          SyntheticPointerActionParams::PointerActionType::RELEASE));
+  std::unique_ptr<SyntheticPointerActionParams> gesture_params =
+      base::MakeUnique<SyntheticPointerActionParams>(
+          SyntheticPointerActionParams::PointerActionType::RELEASE);
   gesture_params->gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   gesture_params->set_index(0);
   ASSERT_EQ(SyntheticGestureParams::POINTER_ACTION,
@@ -299,9 +302,21 @@ TEST_F(InputParamTraitsTest, SyntheticPointerActionParamsRelease) {
 }
 
 TEST_F(InputParamTraitsTest, SyntheticPointerActionParamsProcess) {
-  std::unique_ptr<SyntheticPointerActionParams> gesture_params(
-      new SyntheticPointerActionParams(
-          SyntheticPointerActionParams::PointerActionType::PROCESS));
+  std::unique_ptr<SyntheticPointerActionParams> gesture_params =
+      base::MakeUnique<SyntheticPointerActionParams>(
+          SyntheticPointerActionParams::PointerActionType::PROCESS);
+  gesture_params->gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  ASSERT_EQ(SyntheticGestureParams::POINTER_ACTION,
+            gesture_params->GetGestureType());
+  SyntheticGesturePacket packet_in;
+  packet_in.set_gesture_params(std::move(gesture_params));
+  Verify(packet_in);
+}
+
+TEST_F(InputParamTraitsTest, SyntheticPointerActionParamsFinish) {
+  std::unique_ptr<SyntheticPointerActionParams> gesture_params =
+      base::MakeUnique<SyntheticPointerActionParams>(
+          SyntheticPointerActionParams::PointerActionType::FINISH);
   gesture_params->gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
   ASSERT_EQ(SyntheticGestureParams::POINTER_ACTION,
             gesture_params->GetGestureType());

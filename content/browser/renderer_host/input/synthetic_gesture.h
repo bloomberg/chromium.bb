@@ -17,7 +17,7 @@ namespace content {
 class SyntheticGestureTarget;
 
 // Base class for synthetic gesture implementations. A synthetic gesture class
-// is responsible for forwaring InputEvents, simulating the gesture, to a
+// is responsible for forwarding InputEvents, simulating the gesture, to a
 // SyntheticGestureTarget.
 //
 // Adding new gesture types involved the following steps:
@@ -38,6 +38,9 @@ class CONTENT_EXPORT SyntheticGesture {
   enum Result {
     GESTURE_RUNNING,
     GESTURE_FINISHED,
+    // Received when the user input parameters for SyntheticPointerAction are
+    // invalid.
+    POINTER_ACTION_INPUT_INVALID,
     GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED,
     GESTURE_RESULT_MAX = GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED
   };
