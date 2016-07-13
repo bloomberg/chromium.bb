@@ -24,6 +24,10 @@
 <dom-module id="settings-about-page">
   <template>
     <style include="settings-shared settings-page-styles">
+      .copyable {
+        -webkit-user-select: text;
+      }
+
       .product-title {
         font-size: 20px;
         margin-bottom: auto;
@@ -98,7 +102,7 @@
                     $i18n{learnMore}
                   </a>
                 </span>
-                <div class="secondary">$i18n{aboutBrowserVersion}</div>
+                <div class="secondary copyable">$i18n{aboutBrowserVersion}</div>
               </div>
               <span class="secondary-action">
                 <paper-button id="relaunch" class="secondary-button"
@@ -144,7 +148,7 @@
               Detailed build info
             </div>
 </if>
-            <div class="settings-box product-info">
+            <div class="settings-box product-info copyable">
               <div class="info-section">
                 <div class="secondary">$i18n{aboutProductTitle}</div>
                 <div class="secondary">$i18n{aboutProductCopyright}</div>
