@@ -1165,25 +1165,35 @@ void WindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
 
   // Do not allow key events to be observed, as a compromised app could register
   // itself as an event observer and spy on keystrokes to another app.
-  if (!matcher->type_matcher) {
+  if (!matcher->type_matcher && !matcher->pointer_kind_matcher) {
     DVLOG(1) << "SetEventObserver must specify an event type.";
     return;
   }
+
   const ui::mojom::EventType event_type_whitelist[] = {
       ui::mojom::EventType::POINTER_CANCEL, ui::mojom::EventType::POINTER_DOWN,
       ui::mojom::EventType::POINTER_MOVE,   ui::mojom::EventType::POINTER_UP,
       ui::mojom::EventType::MOUSE_EXIT,     ui::mojom::EventType::WHEEL,
   };
-  bool allowed = false;
-  for (ui::mojom::EventType event_type : event_type_whitelist) {
-    if (matcher->type_matcher->type == event_type) {
-      allowed = true;
-      break;
+
+  if (matcher->type_matcher) {
+    auto iter =
+        std::find(std::begin(event_type_whitelist),
+                  std::end(event_type_whitelist), matcher->type_matcher->type);
+    if (iter == std::end(event_type_whitelist)) {
+      DVLOG(1) << "SetEventObserver event type not allowed";
+      return;
     }
   }
-  if (!allowed) {
-    DVLOG(1) << "SetEventObserver event type not allowed";
-    return;
+  if (matcher->pointer_kind_matcher) {
+    ui::mojom::PointerKind pointer_kind =
+        matcher->pointer_kind_matcher->pointer_kind;
+    if (pointer_kind != ui::mojom::PointerKind::MOUSE &&
+        pointer_kind != ui::mojom::PointerKind::TOUCH &&
+        pointer_kind != ui::mojom::PointerKind::PEN) {
+      DVLOG(1) << "SetEventObserver pointer kind not allowed";
+      return;
+    }
   }
 
   event_observer_matcher_.reset(new EventMatcher(*matcher));

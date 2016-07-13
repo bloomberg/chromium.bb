@@ -8,3 +8,4 @@
 // the resulting dynamic library.
 
 #include "ui/views/pointer_watcher.h"
+#include "ui/views/touch_event_watcher.h"

@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_POINTER_WATCHER_H_
 #define UI_VIEWS_POINTER_WATCHER_H_
 
+#include "base/macros.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -27,14 +28,19 @@ class Widget;
 // event.target() is always null.
 class VIEWS_EXPORT PointerWatcher {
  public:
-  virtual ~PointerWatcher() {}
-
+  PointerWatcher() {}
   virtual void OnMousePressed(const ui::MouseEvent& event,
                               const gfx::Point& location_in_screen,
                               Widget* target) = 0;
   virtual void OnTouchPressed(const ui::TouchEvent& event,
                               const gfx::Point& location_in_screen,
                               Widget* target) = 0;
+
+ protected:
+  virtual ~PointerWatcher() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PointerWatcher);
 };
 
 }  // namespace views
