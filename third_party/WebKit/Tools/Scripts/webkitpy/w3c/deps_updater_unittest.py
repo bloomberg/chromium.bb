@@ -66,5 +66,5 @@ Total: 8 tryjobs
             imported_dir + 'wpt_automation/a/x-manual-input.js': '',
             imported_dir + 'wpt_automation/a/y-manual-automation.js': '',
         })
+        self.assertTrue(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'x-manual.html'))
         self.assertFalse(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'y-manual.html'))
-        self.assertFalse(updater.is_manual_test(fs, imported_dir + 'wpt/a', 'x-manual.html'))

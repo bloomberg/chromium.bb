@@ -79,7 +79,7 @@
               document.head.appendChild(common_script);
             }
 
-            path = path.replace(/imported\/wpt\/(.*)\.html$/, "imported/wpt_automation/$1-input.js");
+            path = path.replace(/imported\/wpt\/(.*)\.html$/, "imported/wpt_automation/$1-automation.js");
             var input_script = document.createElement('script');
             input_script.setAttribute('src', path);
             document.head.appendChild(input_script);

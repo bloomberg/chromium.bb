@@ -202,9 +202,6 @@ class DepsUpdater(object):
             return False
         dir_from_wpt = fs.relpath(dirname, self.path_from_webkit_base('LayoutTests', 'imported', 'wpt'))
         automation_dir = self.path_from_webkit_base('LayoutTests', 'imported', 'wpt_automation', dir_from_wpt)
-        # TODO(qyearsley): Update this when all *-input.js are renamed to *-automation.js.
-        if fs.isfile(fs.join(automation_dir, '%s-input.js' % basename_without_extension)):
-            return False
         if fs.isfile(fs.join(automation_dir, '%s-automation.js' % basename_without_extension)):
             return False
         return True
