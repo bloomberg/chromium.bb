@@ -295,8 +295,8 @@ TEST_F(NotificationListTest, OldPopupShouldNotBeHidden) {
   }
   popups.clear();
   popups = GetPopups();
-  EXPECT_EQ(1u, popups.size());
-  EXPECT_EQ(ids[ids.size() - 1], (*popups.begin())->id());
+  ASSERT_EQ(1u, popups.size());
+  EXPECT_EQ(ids.back(), (*popups.begin())->id());
 }
 
 TEST_F(NotificationListTest, Priority) {

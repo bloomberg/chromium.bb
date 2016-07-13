@@ -283,8 +283,9 @@ void IMM32Manager::CompleteComposition(HWND window_handle, HIMC imm_context) {
   }
 }
 
-void IMM32Manager::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
-                                  CompositionText* composition) {
+void IMM32Manager::GetCompositionInfo(HIMC imm_context,
+                                      LPARAM lparam,
+                                      CompositionText* composition) {
   // We only care about GCS_COMPATTR, GCS_COMPCLAUSE and GCS_CURSORPOS, and
   // convert them into underlines and selection range respectively.
   composition->underlines.clear();
@@ -319,28 +320,29 @@ void IMM32Manager::GetCompositionInfo(HIMC imm_context, LPARAM lparam,
   }
 
   // Set default underlines in case there is no clause information.
-  if (!composition->underlines.size()) {
-    CompositionUnderline underline;
-    underline.color = SK_ColorBLACK;
-    underline.background_color = SK_ColorTRANSPARENT;
-    if (target_start > 0) {
-      underline.start_offset = 0U;
-      underline.end_offset = static_cast<uint32_t>(target_start);
-      underline.thick = false;
-      composition->underlines.push_back(underline);
-    }
-    if (target_end > target_start) {
-      underline.start_offset = static_cast<uint32_t>(target_start);
-      underline.end_offset = static_cast<uint32_t>(target_end);
-      underline.thick = true;
-      composition->underlines.push_back(underline);
-    }
-    if (target_end < length) {
-      underline.start_offset = static_cast<uint32_t>(target_end);
-      underline.end_offset = static_cast<uint32_t>(length);
-      underline.thick = false;
-      composition->underlines.push_back(underline);
-    }
+  if (!composition->underlines.empty())
+    return;
+
+  CompositionUnderline underline;
+  underline.color = SK_ColorBLACK;
+  underline.background_color = SK_ColorTRANSPARENT;
+  if (target_start > 0) {
+    underline.start_offset = 0U;
+    underline.end_offset = static_cast<uint32_t>(target_start);
+    underline.thick = false;
+    composition->underlines.push_back(underline);
+  }
+  if (target_end > target_start) {
+    underline.start_offset = static_cast<uint32_t>(target_start);
+    underline.end_offset = static_cast<uint32_t>(target_end);
+    underline.thick = true;
+    composition->underlines.push_back(underline);
+  }
+  if (target_end < length) {
+    underline.start_offset = static_cast<uint32_t>(target_end);
+    underline.end_offset = static_cast<uint32_t>(length);
+    underline.thick = false;
+    composition->underlines.push_back(underline);
   }
 }
 

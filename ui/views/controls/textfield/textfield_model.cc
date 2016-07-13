@@ -441,7 +441,7 @@ bool TextfieldModel::CanUndo() {
 }
 
 bool TextfieldModel::CanRedo() {
-  if (!edit_history_.size())
+  if (edit_history_.empty())
     return false;
   // There is no redo iff the current edit is the last element in the history.
   EditHistory::iterator iter = current_edit_;
@@ -464,7 +464,7 @@ bool TextfieldModel::Undo() {
   if (current_edit_ == edit_history_.begin())
     current_edit_ = edit_history_.end();
   else
-    current_edit_--;
+    --current_edit_;
   return old != text() || old_cursor != GetCursorPosition();
 }
 
@@ -478,7 +478,7 @@ bool TextfieldModel::Redo() {
   if (current_edit_ == edit_history_.end())
     current_edit_ = edit_history_.begin();
   else
-    current_edit_ ++;
+    ++current_edit_;
   base::string16 old = text();
   size_t old_cursor = GetCursorPosition();
   (*current_edit_)->Redo(this);
@@ -716,7 +716,7 @@ void TextfieldModel::ClearRedoHistory() {
     return;
   }
   EditHistory::iterator delete_start = current_edit_;
-  delete_start++;
+  ++delete_start;
   STLDeleteContainerPointers(delete_start, edit_history_.end());
   edit_history_.erase(delete_start, edit_history_.end());
 }
@@ -789,7 +789,7 @@ bool TextfieldModel::AddOrMergeEditHistory(Edit* edit) {
     DCHECK_EQ(1u, edit_history_.size());
     current_edit_ = edit_history_.begin();
   } else {
-    current_edit_++;
+    ++current_edit_;
   }
   return false;
 }

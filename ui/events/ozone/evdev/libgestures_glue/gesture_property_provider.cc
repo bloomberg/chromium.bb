@@ -1078,8 +1078,7 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
         // one.
         if (is_parsing) {
           // Stop parsing the current line if the format is wrong.
-          if (piece.size() <= 2 || piece[0] != '\"' ||
-              piece[piece.size() - 1] != '\"') {
+          if (piece.size() <= 2 || piece[0] != '\"' || piece.back() != '\"') {
             LOG(ERROR) << "Error parsing line: " << lines.token();
             has_error = true;
             if (next_is_section_type)

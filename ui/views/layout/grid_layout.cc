@@ -937,8 +937,8 @@ void GridLayout::SizeRowsAndColumns(bool layout, int width, int height,
   LayoutElement::CalculateLocationsFromSize(&rows_);
 
   // We now know the preferred height, set it here.
-  pref->set_height(rows_[rows_.size() - 1]->Location() +
-      rows_[rows_.size() - 1]->Size() + insets_.height());
+  pref->set_height(rows_.back()->Location() + rows_.back()->Size() +
+                   insets_.height());
 
   if (layout && height != pref->height()) {
     // We're doing a layout, and the height differs from the preferred height,

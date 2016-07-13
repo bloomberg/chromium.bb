@@ -95,7 +95,7 @@ std::unique_ptr<views::Border> MakeSeparatorBorder(int top,
 // message next to each other within a single column.
 class ItemView : public views::View {
  public:
-  ItemView(const message_center::NotificationItem& item);
+  explicit ItemView(const message_center::NotificationItem& item);
   ~ItemView() override;
 
   // Overridden from views::View:
@@ -435,7 +435,7 @@ void NotificationView::CreateOrUpdateMessageView(
     message_view_->SetText(text);
   }
 
-  message_view_->SetVisible(!notification.items().size());
+  message_view_->SetVisible(notification.items().empty());
 }
 
 base::string16 NotificationView::FormatContextMessage(
@@ -545,7 +545,7 @@ void NotificationView::CreateOrUpdateProgressBarView(
   if (!is_indeterminate)
     progress_bar_view_->SetValue(notification.progress() / 100.0);
 
-  progress_bar_view_->SetVisible(!notification.items().size());
+  progress_bar_view_->SetVisible(notification.items().empty());
 }
 
 void NotificationView::CreateOrUpdateListItemViews(

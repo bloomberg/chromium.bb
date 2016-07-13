@@ -24,7 +24,7 @@ LayerAnimatorCollection::~LayerAnimatorCollection() {
 void LayerAnimatorCollection::StartAnimator(
     scoped_refptr<LayerAnimator> animator) {
   DCHECK_EQ(0U, animators_.count(animator));
-  if (!animators_.size())
+  if (animators_.empty())
     last_tick_time_ = base::TimeTicks::Now();
   animators_.insert(animator);
   if (animators_.size() == 1U && compositor_)

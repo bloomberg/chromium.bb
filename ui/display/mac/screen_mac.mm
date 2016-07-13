@@ -262,10 +262,8 @@ class ScreenMac : public Screen {
       }
     }
 
-    if (!displays.size())
-      return std::vector<Display>(1, GetPrimaryDisplay());
-
-    return displays;
+    return displays.empty() ? std::vector<Display>(1, GetPrimaryDisplay())
+                            : displays;
   }
 
   // The displays currently attached to the device.

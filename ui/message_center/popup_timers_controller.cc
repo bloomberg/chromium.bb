@@ -96,7 +96,7 @@ void PopupTimersController::OnNotificationUpdated(const std::string& id) {
   NotificationList::PopupNotifications popup_notifications =
       message_center_->GetPopupNotifications();
 
-  if (!popup_notifications.size()) {
+  if (popup_notifications.empty()) {
     CancelAll();
     return;
   }

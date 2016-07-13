@@ -278,7 +278,7 @@ std::vector<GammaRampRGBEntry> ResampleLut(
                     (lut_in[base_index + 1].b - lut_in[base_index].b) *
                         remaining / desired_size;
     } else {
-      result[i] = lut_in[lut_in.size() - 1];
+      result[i] = lut_in.back();
     }
   }
 
@@ -304,8 +304,7 @@ class DrmDevice::PageFlipManager {
     }
 
     DrmDevice::PageFlipCallback callback = it->callback;
-    it->pending_calls -= 1;
-
+    it->pending_calls--;
     if (it->pending_calls)
       return;
 
@@ -329,11 +328,11 @@ class DrmDevice::PageFlipManager {
   };
 
   struct FindCallback {
-    FindCallback(uint64_t id) : id(id) {}
+    explicit FindCallback(uint64_t id) : id(id) {}
 
     bool operator()(const PageFlip& flip) const { return flip.id == id; }
 
-    uint64_t id;
+    const uint64_t id;
   };
 
   uint64_t next_id_;

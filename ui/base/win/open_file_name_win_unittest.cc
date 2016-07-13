@@ -19,7 +19,7 @@ void SetResult(const base::string16& result, ui::win::OpenFileName* ofn) {
     ADD_FAILURE() << "filename buffer insufficient.";
     return;
   }
-  if (!result.size()) {
+  if (result.empty()) {
     ofn->GetOPENFILENAME()->lpstrFile[0] = 0;
   } else {
     // Because the result has embedded nulls, we must memcpy.
