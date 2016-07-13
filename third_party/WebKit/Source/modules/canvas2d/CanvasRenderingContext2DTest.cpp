@@ -783,9 +783,15 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration)
     context2d()->getImageData(0, 0, 1, 1, exceptionState);
 
     EXPECT_FALSE(exceptionState.hadException());
-    EXPECT_FALSE(bridge->isAccelerated());
-    EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
-    EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+    if (ExpensiveCanvasHeuristicParameters::GetImageDataForcesNoAcceleration) {
+        EXPECT_FALSE(bridge->isAccelerated());
+        EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
+        EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+    } else {
+        EXPECT_TRUE(bridge->isAccelerated());
+        EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
+        EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
+    }
 
     // Restore global state to prevent side-effects on other tests
     RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(savedFixedRenderingMode);
