@@ -138,7 +138,7 @@ cr-menu.chrome-menu > [checked]::before {
   -webkit-margin-end: 0;
   -webkit-margin-start: 5px;
   font-weight: 500;
-  height: 32px;
+  min-height: 32px;
   min-width: 70px;
   padding: auto;
 }
