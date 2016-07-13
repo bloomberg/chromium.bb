@@ -60,8 +60,9 @@ function DidExecuteTests(result) {
     return;
 
   // Otherwise, we are in a subframe, so we can use this opportunity to resize
-  // ourselves.
-  AdjustHeight(window);
+  // ourselves.  This can only be done if the parent frame has the same origin.
+  if (window.frameElement)
+    AdjustHeight(window);
 }
 
 function AppendFrame(testcase, i) {

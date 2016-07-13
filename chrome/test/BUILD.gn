@@ -375,6 +375,10 @@ if (!is_android) {
       "//third_party/zlib/google/test/data/",
       "//tools/metrics/histograms/histograms.xml",
       "$root_out_dir/pyproto/google/",
+      "$root_out_dir/test_case.html",
+      "$root_out_dir/test_case.html.mock-http-headers",
+      "$root_out_dir/test_page.css",
+      "$root_out_dir/test_page.css.mock-http-headers",
       "$root_out_dir/ui_test.pak",
     ]
     if (is_linux || is_win) {

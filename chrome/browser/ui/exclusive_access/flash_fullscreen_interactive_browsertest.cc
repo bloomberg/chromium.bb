@@ -89,6 +89,38 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
     return !::testing::Test::HasFailure();
   }
 
+  bool LaunchFlashFullscreenInSubframe() {
+    // Start the embedded test server and set it up to serve PPAPI test case
+    // URLs.
+    base::FilePath document_root;
+    EXPECT_TRUE(ui_test_utils::GetRelativeBuildDirectory(&document_root));
+    embedded_test_server()->AddDefaultHandlers(document_root);
+    if (!embedded_test_server()->Start()) {
+      ADD_FAILURE() << "Failed to launch embedded test server.";
+      return false;
+    }
+
+    // Load a page with an <iframe> that points to the test case URL, which
+    // runs the simulated fullscreen Flash plugin.  In OOPIF modes, the frame
+    // will render in a separate process.  Block until the plugin has completed
+    // an attempt to enter Flash fullscreen mode.
+    GURL test_url = GetTestURL(*embedded_test_server(),
+                               "FlashFullscreenForBrowserUI", std::string());
+    GURL main_url("data:text/html,<iframe src='" + test_url.spec() +
+                  "'></iframe>");
+    OutOfProcessPPAPITest::RunTestURL(main_url);
+
+    if (::testing::Test::HasFailure()) {
+      ADD_FAILURE() << ("Failed to launch simulated fullscreen Flash plugin.  "
+                        "Interactive UI testing cannot proceed.");
+      return false;
+    }
+
+    EXPECT_TRUE(ObserveTabIsInFullscreen(true));
+
+    return !::testing::Test::HasFailure();
+  }
+
   void UseAcceleratorToOpenNewTab() {
     content::WebContents* const old_tab_contents = GetActiveWebContents();
     EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -266,6 +298,17 @@ IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   StartFakingTabCapture();
   ASSERT_TRUE(LaunchFlashFullscreen());
+  content::WebContents* const first_tab_contents = GetActiveWebContents();
+  EXPECT_TRUE(ObserveFlashHasFocus(first_tab_contents, true));
+  PressEscape();
+  EXPECT_TRUE(ObserveTabIsInFullscreen(false));
+}
+
+IN_PROC_BROWSER_TEST_F(FlashFullscreenInteractiveBrowserTest,
+                       FullscreenFromSubframe) {
+  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
+  StartFakingTabCapture();
+  ASSERT_TRUE(LaunchFlashFullscreenInSubframe());
   content::WebContents* const first_tab_contents = GetActiveWebContents();
   EXPECT_TRUE(ObserveFlashHasFocus(first_tab_contents, true));
   PressEscape();

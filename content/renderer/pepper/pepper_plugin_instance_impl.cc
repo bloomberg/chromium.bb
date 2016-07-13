@@ -179,6 +179,7 @@ using blink::WebURLResponse;
 using blink::WebUserGestureIndicator;
 using blink::WebUserGestureToken;
 using blink::WebView;
+using blink::WebWidget;
 
 namespace content {
 
@@ -2190,8 +2191,9 @@ void PepperPluginInstanceImpl::HandleMouseLockedInputEvent(
 
 void PepperPluginInstanceImpl::SimulateInputEvent(
     const InputEventData& input_event) {
-  WebView* web_view = container()->document().frame()->view();
-  if (!web_view) {
+  WebWidget* widget =
+      container()->document().frame()->localRoot()->frameWidget();
+  if (!widget) {
     NOTREACHED();
     return;
   }
@@ -2207,7 +2209,7 @@ void PepperPluginInstanceImpl::SimulateInputEvent(
   for (std::vector<std::unique_ptr<WebInputEvent>>::iterator it =
            events.begin();
        it != events.end(); ++it) {
-    web_view->handleInputEvent(*it->get());
+    widget->handleInputEvent(*it->get());
   }
 }
 
