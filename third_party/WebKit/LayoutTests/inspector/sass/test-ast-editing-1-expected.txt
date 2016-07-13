@@ -38,7 +38,7 @@ Running: testEnableProperties
 div {
     /* This is a regular comment */
     color: red;
-    position: absolute; 
+    position: absolute;
     display: block
 }
 

@@ -75,7 +75,7 @@ Edits:
 ===== test-edit-toggle-property.scss =====
     @for.$i.from.1.through.3.{
     .....box#{$i}.{
-    ........color:.red;.
+    ........color:.red;
     ........margin:.10px;
     ....}
     }
