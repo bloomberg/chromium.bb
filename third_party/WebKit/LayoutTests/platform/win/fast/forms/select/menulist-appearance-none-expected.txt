@@ -1,0 +1,24 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 120x17
+          text run at (0,0) width 120: "Rendering test for "
+        LayoutInline {I} at (0,0) size 739x35
+          LayoutInline {A} at (0,0) size 414x17 [color=#0000EE]
+            LayoutText {#text} at (119,0) size 414x17
+              text run at (119,0) width 414: "https://bugs.chromium.org/p/chromium/issues/detail?id=626278"
+          LayoutText {#text} at (532,0) size 739x35
+            text run at (532,0) width 5: " "
+            text run at (536,0) width 203: "Regression: HTML Select's text"
+            text run at (0,18) width 291: "appears chopped if appearance is set to none"
+        LayoutText {#text} at (290,18) size 5x17
+          text run at (290,18) width 5: "."
+      LayoutBlockFlow (anonymous) at (0,52) size 784x42
+        LayoutMenuList {SELECT} at (0,0) size 26x42 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 24x40
+            LayoutText (anonymous) at (0,12) size 24x16
+              text run at (0,12) width 24: "Test"
+        LayoutText {#text} at (0,0) size 0x0
