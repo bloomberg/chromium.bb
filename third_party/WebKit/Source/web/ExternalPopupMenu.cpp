@@ -213,7 +213,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices)
         ownerElement->valueChanged(static_cast<unsigned>(-1));
     } else {
         for (size_t i = 0; i < indices.size(); ++i)
-            ownerElement->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *ownerElement), (i > 0), false, (i == indices.size() - 1));
+            ownerElement->listBoxSelectItem(toPopupMenuItemIndex(indices[i], *ownerElement), (i > 0), (i == indices.size() - 1));
     }
 
     m_webExternalPopupMenu = 0;

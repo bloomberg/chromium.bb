@@ -123,13 +123,13 @@ const AtomicString& HTMLSelectElement::formControlType() const
     return m_multiple ? selectMultiple : selectOne;
 }
 
-void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeNow, bool allowMultipleSelection)
+void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeNow)
 {
     // User interaction such as mousedown events can cause list box select
     // elements to send change events.  This produces that same behavior for
     // changes triggered by other code running on behalf of the user.
     if (!usesMenuList()) {
-        updateSelectedState(item(optionIndex), allowMultipleSelection, false);
+        updateSelectedState(item(optionIndex), false, false);
         setNeedsValidityCheck();
         if (fireOnChangeNow)
             listBoxOnChange();
@@ -208,14 +208,14 @@ String HTMLSelectElement::defaultToolTip() const
     return validationMessage();
 }
 
-void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow)
+void HTMLSelectElement::listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool fireOnChangeNow)
 {
     if (!multiple()) {
-        optionSelectedByUser(listToOptionIndex(listIndex), fireOnChangeNow, false);
+        optionSelectedByUser(listToOptionIndex(listIndex), fireOnChangeNow);
     } else {
         HTMLElement* element = listItems()[listIndex];
         if (isHTMLOptionElement(element))
-            updateSelectedState(toHTMLOptionElement(element), allowMultiplySelections, shift);
+            updateSelectedState(toHTMLOptionElement(element), allowMultiplySelections, false);
         setNeedsValidityCheck();
         if (fireOnChangeNow)
             listBoxOnChange();

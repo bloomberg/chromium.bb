@@ -56,8 +56,6 @@ public:
     int selectedIndex() const;
     void setSelectedIndex(int);
 
-    void optionSelectedByUser(int index, bool dispatchChangeEvent, bool allowMultipleSelection = false);
-
     // For ValidityState
     String validationMessage() const override;
     bool valueMissing() const override;
@@ -114,8 +112,6 @@ public:
     void scrollToSelection();
     void scrollToOption(HTMLOptionElement*);
 
-    void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool shift, bool fireOnChangeNow = true);
-
     bool canSelectAll() const;
     void selectAll();
     int listToOptionIndex(int listIndex) const;
@@ -154,6 +150,9 @@ public:
     // Text starting offset in RTL.
     LayoutUnit clientPaddingRight() const;
     void valueChanged(unsigned listIndex);
+    // TODO(tkent): Rename this. This is used only for multiple-selection
+    // menulist.
+    void listBoxSelectItem(int listIndex, bool allowMultiplySelections, bool fireOnChangeNow);
     // A popup is canceled when the popup was hidden without selecting an item.
     void popupDidCancel();
     // Provisional selection is a selection made using arrow keys or type ahead.
@@ -222,6 +221,7 @@ private:
 
     bool hasPlaceholderLabelOption() const;
 
+    void optionSelectedByUser(int optionIndex, bool dispatchChangeEvent);
     enum SelectOptionFlag {
         DeselectOtherOptions = 1 << 0,
         DispatchInputAndChangeEvent = 1 << 1,
