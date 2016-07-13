@@ -4,19 +4,11 @@
 
 #include "chrome/browser/ui/search/instant_page.h"
 
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/url_constants.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/frame_navigate_params.h"
 
 InstantPage::Delegate::~Delegate() {
 }
@@ -33,21 +25,13 @@ bool InstantPage::supports_instant() const {
       SearchTabHelper::FromWebContents(web_contents())->SupportsInstant();
 }
 
-const std::string& InstantPage::instant_url() const {
-  return instant_url_;
-}
-
 bool InstantPage::IsLocal() const {
   return web_contents() &&
       web_contents()->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl);
 }
 
-InstantPage::InstantPage(Delegate* delegate,
-                         const std::string& instant_url,
-                         Profile* profile)
-    : profile_(profile),
-      delegate_(delegate),
-      instant_url_(instant_url) {
+InstantPage::InstantPage(Delegate* delegate)
+    : delegate_(delegate) {
 }
 
 void InstantPage::SetContents(content::WebContents* new_web_contents) {
@@ -75,8 +59,9 @@ void InstantPage::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     ui::PageTransition /* transition_type */) {
   if (!render_frame_host->GetParent() &&
-      ShouldProcessAboutToNavigateMainFrame())
+      ShouldProcessAboutToNavigateMainFrame()) {
     delegate_->InstantPageAboutToNavigateMainFrame(web_contents(), url);
+  }
 }
 
 void InstantPage::ModelChanged(const SearchModel::State& old_state,

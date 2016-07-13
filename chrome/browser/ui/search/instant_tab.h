@@ -9,13 +9,11 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/search/instant_page.h"
 
-class Profile;
-
 // InstantTab represents a committed page (i.e. an actual tab on the tab strip)
 // that supports the Instant API.
 class InstantTab : public InstantPage {
  public:
-  InstantTab(InstantPage::Delegate* delegate, Profile* profile);
+  explicit InstantTab(InstantPage::Delegate* delegate);
   ~InstantTab() override;
 
   // Start observing |contents| for messages. Sends a message to determine if

@@ -5,33 +5,23 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_INSTANT_PAGE_H_
 #define CHROME_BROWSER_UI_SEARCH_INSTANT_PAGE_H_
 
-#include <vector>
-
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-class Profile;
 
 namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
+class RenderFrameHost;
 class WebContents;
-}
-
-namespace gfx {
-class Rect;
 }
 
 // InstantPage is used to exchange messages with a page that implements the
 // Instant/Embedded Search API (http://dev.chromium.org/embeddedsearch).
-// InstantPage is not used directly but via one of its derived classes,
-// InstantNTP and InstantTab.
+// InstantPage is not used directly but via its derived class, InstantTab.
 class InstantPage : public content::WebContentsObserver,
                     public SearchModelObserver {
  public:
@@ -56,24 +46,18 @@ class InstantPage : public content::WebContentsObserver,
 
   ~InstantPage() override;
 
-  // Returns the Instant URL that was loaded for this page. Returns the empty
-  // string if no URL was explicitly loaded as is the case for InstantTab.
-  virtual const std::string& instant_url() const;
-
   // Returns true if the page is known to support the Instant API. This starts
   // out false, and is set to true whenever we get any message from the page.
   // Once true, it never becomes false (the page isn't expected to drop API
   // support suddenly).
-  virtual bool supports_instant() const;
+  bool supports_instant() const;
 
   // Returns true if the page is the local NTP (i.e. its URL is
   // chrome::kChromeSearchLocalNTPURL).
-  virtual bool IsLocal() const;
+  bool IsLocal() const;
 
  protected:
-  InstantPage(Delegate* delegate,
-              const std::string& instant_url,
-              Profile* profile);
+  explicit InstantPage(Delegate* delegate);
 
   // Sets |web_contents| as the page to communicate with. |web_contents| may be
   // NULL, which effectively stops all communication.
@@ -81,12 +65,7 @@ class InstantPage : public content::WebContentsObserver,
 
   Delegate* delegate() const { return delegate_; }
 
-  Profile* profile() const { return profile_; }
-
-  // These functions are called before processing messages received from the
-  // page. By default, all messages are handled, but any derived classes may
-  // choose to ignore some or all of the received messages by overriding these
-  // methods.
+  // This method is called before processing messages received from the page.
   virtual bool ShouldProcessAboutToNavigateMainFrame();
 
  private:
@@ -114,12 +93,7 @@ class InstantPage : public content::WebContentsObserver,
 
   void ClearContents();
 
-  // TODO(kmadhusu): Remove |profile_| from here and update InstantNTP to get
-  // |profile| from InstantNTPPrerenderer.
-  Profile* profile_;
-
   Delegate* const delegate_;
-  const std::string instant_url_;
 
   DISALLOW_COPY_AND_ASSIGN(InstantPage);
 };

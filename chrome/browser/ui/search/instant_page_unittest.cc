@@ -68,7 +68,7 @@ void InstantPageTest::SetUp() {
 }
 
 TEST_F(InstantPageTest, IsLocal) {
-  page.reset(new InstantPage(&delegate, "", NULL));
+  page.reset(new InstantPage(&delegate));
   EXPECT_FALSE(page->supports_instant());
   EXPECT_FALSE(page->IsLocal());
   page->SetContents(web_contents());
@@ -79,7 +79,7 @@ TEST_F(InstantPageTest, IsLocal) {
 }
 
 TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_Local) {
-  page.reset(new InstantPage(&delegate, "", NULL));
+  page.reset(new InstantPage(&delegate));
   EXPECT_FALSE(page->supports_instant());
   page->SetContents(web_contents());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
@@ -92,7 +92,7 @@ TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_Local) {
 }
 
 TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_NonLocal) {
-  page.reset(new InstantPage(&delegate, "", NULL));
+  page.reset(new InstantPage(&delegate));
   EXPECT_FALSE(page->supports_instant());
   page->SetContents(web_contents());
   NavigateAndCommit(GURL("chrome-search://foo/bar"));
@@ -107,7 +107,7 @@ TEST_F(InstantPageTest, DetermineIfPageSupportsInstant_NonLocal) {
 }
 
 TEST_F(InstantPageTest, PageURLDoesntBelongToInstantRenderer) {
-  page.reset(new InstantPage(&delegate, "", NULL));
+  page.reset(new InstantPage(&delegate));
   EXPECT_FALSE(page->supports_instant());
   NavigateAndCommit(GURL(chrome::kChromeSearchLocalNtpUrl));
   page->SetContents(web_contents());
@@ -132,7 +132,7 @@ TEST_F(InstantPageTest, PageURLDoesntBelongToInstantRenderer) {
 // Test to verify that ChromeViewMsg_DetermineIfPageSupportsInstant message
 // reply handler updates the instant support state in InstantPage.
 TEST_F(InstantPageTest, PageSupportsInstant) {
-  page.reset(new InstantPage(&delegate, "", NULL));
+  page.reset(new InstantPage(&delegate));
   EXPECT_FALSE(page->supports_instant());
   page->SetContents(web_contents());
   NavigateAndCommit(GURL("chrome-search://foo/bar"));

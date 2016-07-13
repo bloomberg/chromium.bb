@@ -11,14 +11,12 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/search/instant_page.h"
 #include "chrome/common/search/search_types.h"
-#include "ui/gfx/native_widget_types.h"
 
 class BrowserInstantController;
 class GURL;
@@ -30,10 +28,6 @@ struct EmbeddedSearchRequestParams;
 namespace content {
 class WebContents;
 }
-
-// Macro used for logging debug events. |message| should be a std::string.
-#define LOG_INSTANT_DEBUG_EVENT(controller, message) \
-    controller->LogDebugEvent(message)
 
 // InstantController drives Chrome Instant, i.e., the browser implementation of
 // the Embedded Search API (see http://dev.chromium.org/embeddedsearch).
@@ -118,18 +112,11 @@ class InstantController : public InstantPage::Delegate {
   void InstantPageAboutToNavigateMainFrame(const content::WebContents* contents,
                                            const GURL& url) override;
 
-  // Helper function to navigate the given contents to the local fallback
-  // Instant URL and trim the history correctly.
-  void RedirectToLocalNTP(content::WebContents* contents);
-
-  // Helper for OmniboxFocusChanged. Commit or discard the overlay.
-  void OmniboxLostFocus(gfx::NativeView view_gaining_focus);
-
   // If the active tab is an Instant search results page, sets |instant_tab_| to
   // point to it. Else, deletes any existing |instant_tab_|.
   void ResetInstantTab();
 
-  // Sends theme info, omnibox bounds, etc. down to the Instant tab.
+  // Sends theme info and most visited items to the Instant tab.
   void UpdateInfoForInstantTab();
 
   // Returns the InstantService for the browser profile.

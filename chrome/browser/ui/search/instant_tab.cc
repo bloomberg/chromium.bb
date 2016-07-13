@@ -4,13 +4,11 @@
 
 #include "chrome/browser/ui/search/instant_tab.h"
 
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
 #include "content/public/browser/web_contents.h"
 
-InstantTab::InstantTab(InstantPage::Delegate* delegate,
-                       Profile* profile)
-    : InstantPage(delegate, "", profile) {
+InstantTab::InstantTab(InstantPage::Delegate* delegate)
+    : InstantPage(delegate) {
 }
 
 InstantTab::~InstantTab() {
