@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/values.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "testing/gtest/include/gtest/gtest.h"

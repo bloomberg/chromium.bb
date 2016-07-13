@@ -43,12 +43,7 @@ class ComplexFeature : public Feature {
   bool IsIdInWhitelist(const std::string& extension_id) const override;
 
  protected:
-  // extensions::Feature:
-  std::string GetAvailabilityMessage(AvailabilityResult result,
-                                     Manifest::Type type,
-                                     const GURL& url,
-                                     Context context) const override;
-
+  // Feature:
   bool IsInternal() const override;
 
  private:

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/features/feature_channel.h"
+#include "extensions/common/features/feature_channel.h"
 
 #include "components/version_info/version_info.h"
 

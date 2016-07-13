@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/feature_util.h"
 #include "extensions/common/switches.h"
@@ -81,13 +82,12 @@ void ParseEnum(const std::string& string_value,
   *enum_value = iter->second;
 }
 
-template<typename T>
-void ParseEnum(const base::DictionaryValue* value,
-               const std::string& property,
+template <typename T>
+void ParseEnum(const base::Value* value,
                T* enum_value,
                const std::map<std::string, T>& mapping) {
   std::string string_value;
-  if (!value->GetString(property, &string_value))
+  if (!value->GetAsString(&string_value))
     return;
 
   ParseEnum(string_value, enum_value, mapping);
@@ -190,6 +190,23 @@ std::string GetDisplayName(Feature::Context context) {
   return "";
 }
 
+std::string GetDisplayName(version_info::Channel channel) {
+  switch (channel) {
+    case version_info::Channel::UNKNOWN:
+      return "trunk";
+    case version_info::Channel::CANARY:
+      return "canary";
+    case version_info::Channel::DEV:
+      return "dev";
+    case version_info::Channel::BETA:
+      return "beta";
+    case version_info::Channel::STABLE:
+      return "stable";
+  }
+  NOTREACHED();
+  return "";
+}
+
 // Gets a human-readable list of the display names (pluralized, comma separated
 // with the "and" in the correct place) for each of |enum_types|.
 template <typename EnumType>
@@ -274,12 +291,19 @@ struct SimpleFeature::Mappings {
     platforms["linux"] = Feature::LINUX_PLATFORM;
     platforms["mac"] = Feature::MACOSX_PLATFORM;
     platforms["win"] = Feature::WIN_PLATFORM;
+
+    channels["trunk"] = version_info::Channel::UNKNOWN;
+    channels["canary"] = version_info::Channel::CANARY;
+    channels["dev"] = version_info::Channel::DEV;
+    channels["beta"] = version_info::Channel::BETA;
+    channels["stable"] = version_info::Channel::STABLE;
   }
 
   std::map<std::string, Manifest::Type> extension_types;
   std::map<std::string, Feature::Context> contexts;
   std::map<std::string, SimpleFeature::Location> locations;
   std::map<std::string, Feature::Platform> platforms;
+  std::map<std::string, version_info::Channel> channels;
 };
 
 SimpleFeature::SimpleFeature()
@@ -289,14 +313,6 @@ SimpleFeature::SimpleFeature()
       component_extensions_auto_granted_(true) {}
 
 SimpleFeature::~SimpleFeature() {}
-
-bool SimpleFeature::HasDependencies() const {
-  return !dependencies_.empty();
-}
-
-void SimpleFeature::AddFilter(std::unique_ptr<SimpleFeatureFilter> filter) {
-  filters_.push_back(std::move(filter));
-}
 
 std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
   static base::LazyInstance<SimpleFeature::Mappings> mappings =
@@ -323,8 +339,7 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
       ParseEnumVector<Context>(value, &contexts_,
                                mappings.Get().contexts);
     } else if (key == "location") {
-      ParseEnum<Location>(dictionary, "location", &location_,
-                          mappings.Get().locations);
+      ParseEnum<Location>(value, &location_, mappings.Get().locations);
     } else if (key == "platforms") {
       ParseEnumVector<Platform>(value, &platforms_,
                                 mappings.Get().platforms);
@@ -339,6 +354,10 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
                              &component_extensions_auto_granted_);
     } else if (key == "command_line_switch") {
       dictionary->GetString("command_line_switch", &command_line_switch_);
+    } else if (key == "channel") {
+      channel_.reset(new version_info::Channel(version_info::Channel::UNKNOWN));
+      ParseEnum<version_info::Channel>(value, channel_.get(),
+                                       mappings.Get().channels);
     }
   }
 
@@ -351,14 +370,12 @@ std::string SimpleFeature::Parse(const base::DictionaryValue* dictionary) {
   // "matches" to be chromium.org/*. That sub-feature doesn't need to specify
   // "web_page" context because it's inherited, but we don't know that here.
 
-  std::string result;
-  for (const auto& filter : filters_) {
-    result = filter->Parse(dictionary);
-    if (!result.empty())
-      break;
-  }
+  // All features must be channel-restricted, either directly or through
+  // dependents.
+  if (!channel_ && dependencies_.empty())
+    return name() + ": Must supply a value for channel or dependencies.";
 
-  return result;
+  return std::string();
 }
 
 Feature::Availability SimpleFeature::IsAvailableToManifest(
@@ -410,12 +427,8 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     return CreateAvailability(MISSING_COMMAND_LINE_SWITCH, type);
   }
 
-  for (const auto& filter : filters_) {
-    Availability availability = filter->IsAvailableToManifest(
-        extension_id, type, location, manifest_version, platform);
-    if (!availability.is_available())
-      return availability;
-  }
+  if (channel_ && check_channel_ && *channel_ < GetCurrentChannel())
+    return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
 
   return CheckDependencies(base::Bind(&IsAvailableToManifestForBind,
                                       extension_id,
@@ -455,13 +468,6 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
     return CreateAvailability(INVALID_URL, url);
   }
 
-  for (const auto& filter : filters_) {
-    Availability availability =
-        filter->IsAvailableToContext(extension, context, url, platform);
-    if (!availability.is_available())
-      return availability;
-  }
-
   // TODO(kalman): Assert that if the context was a webpage or WebUI context
   // then at some point a "matches" restriction was checked.
   return CheckDependencies(base::Bind(
@@ -472,7 +478,8 @@ std::string SimpleFeature::GetAvailabilityMessage(
     AvailabilityResult result,
     Manifest::Type type,
     const GURL& url,
-    Context context) const {
+    Context context,
+    version_info::Channel channel) const {
   switch (result) {
     case IS_AVAILABLE:
       return std::string();
@@ -522,8 +529,9 @@ std::string SimpleFeature::GetAvailabilityMessage(
           name().c_str());
     case UNSUPPORTED_CHANNEL:
       return base::StringPrintf(
-          "'%s' is unsupported in this version of the platform.",
-          name().c_str());
+          "'%s' requires %s channel or newer, but this is the %s channel.",
+          name().c_str(), GetDisplayName(channel).c_str(),
+          GetDisplayName(GetCurrentChannel()).c_str());
     case MISSING_COMMAND_LINE_SWITCH:
       return base::StringPrintf(
           "'%s' requires the '%s' command line switch to be enabled.",
@@ -538,13 +546,15 @@ Feature::Availability SimpleFeature::CreateAvailability(
     AvailabilityResult result) const {
   return Availability(
       result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL(),
-                                     UNSPECIFIED_CONTEXT));
+                                     UNSPECIFIED_CONTEXT,
+                                     version_info::Channel::UNKNOWN));
 }
 
 Feature::Availability SimpleFeature::CreateAvailability(
     AvailabilityResult result, Manifest::Type type) const {
-  return Availability(result, GetAvailabilityMessage(result, type, GURL(),
-                                                     UNSPECIFIED_CONTEXT));
+  return Availability(
+      result, GetAvailabilityMessage(result, type, GURL(), UNSPECIFIED_CONTEXT,
+                                     version_info::Channel::UNKNOWN));
 }
 
 Feature::Availability SimpleFeature::CreateAvailability(
@@ -552,7 +562,8 @@ Feature::Availability SimpleFeature::CreateAvailability(
     const GURL& url) const {
   return Availability(
       result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, url,
-                                     UNSPECIFIED_CONTEXT));
+                                     UNSPECIFIED_CONTEXT,
+                                     version_info::Channel::UNKNOWN));
 }
 
 Feature::Availability SimpleFeature::CreateAvailability(
@@ -560,7 +571,15 @@ Feature::Availability SimpleFeature::CreateAvailability(
     Context context) const {
   return Availability(
       result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL(),
-                                     context));
+                                     context, version_info::Channel::UNKNOWN));
+}
+
+Feature::Availability SimpleFeature::CreateAvailability(
+    AvailabilityResult result,
+    version_info::Channel channel) const {
+  return Availability(
+      result, GetAvailabilityMessage(result, Manifest::TYPE_UNKNOWN, GURL(),
+                                     UNSPECIFIED_CONTEXT, channel));
 }
 
 bool SimpleFeature::IsInternal() const {

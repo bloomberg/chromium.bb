@@ -17,9 +17,9 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/values.h"
+#include "components/version_info/version_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
-#include "extensions/common/features/simple_feature_filter.h"
 #include "extensions/common/manifest.h"
 
 namespace extensions {
@@ -45,14 +45,6 @@ class SimpleFeature : public Feature {
 
   SimpleFeature();
   ~SimpleFeature() override;
-
-  // Dependency resolution is a property of Features that is preferrably
-  // handled internally to avoid temptation, but FeatureFilters may need
-  // to know if there are any at all.
-  bool HasDependencies() const;
-
-  // Adds a filter to this feature. The feature takes ownership of the filter.
-  void AddFilter(std::unique_ptr<SimpleFeatureFilter> filter);
 
   // Parses the JSON representation of a feature into the fields of this object.
   // Unspecified values in the JSON are not modified in the object. This allows
@@ -86,11 +78,6 @@ class SimpleFeature : public Feature {
                                     Context context,
                                     const GURL& url,
                                     Platform platform) const override;
-
-  std::string GetAvailabilityMessage(AvailabilityResult result,
-                                     Manifest::Type type,
-                                     const GURL& url,
-                                     Context context) const override;
 
   bool IsInternal() const override;
 
@@ -141,6 +128,12 @@ class SimpleFeature : public Feature {
     command_line_switch_ = command_line_switch;
   }
 
+  std::string GetAvailabilityMessage(AvailabilityResult result,
+                                     Manifest::Type type,
+                                     const GURL& url,
+                                     Context context,
+                                     version_info::Channel channel) const;
+
   // Handy utilities which construct the correct availability message.
   Availability CreateAvailability(AvailabilityResult result) const;
   Availability CreateAvailability(AvailabilityResult result,
@@ -149,6 +142,8 @@ class SimpleFeature : public Feature {
                                   const GURL& url) const;
   Availability CreateAvailability(AvailabilityResult result,
                                   Context context) const;
+  Availability CreateAvailability(AvailabilityResult result,
+                                  version_info::Channel channel) const;
 
  private:
   friend class SimpleFeatureTest;
@@ -204,8 +199,7 @@ class SimpleFeature : public Feature {
   int max_manifest_version_;
   bool component_extensions_auto_granted_;
   std::string command_line_switch_;
-
-  std::vector<std::unique_ptr<SimpleFeatureFilter>> filters_;
+  std::unique_ptr<version_info::Channel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleFeature);
 };

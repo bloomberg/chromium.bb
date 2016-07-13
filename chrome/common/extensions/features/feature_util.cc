@@ -4,8 +4,8 @@
 
 #include "chrome/common/extensions/features/feature_util.h"
 
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "components/version_info/version_info.h"
+#include "extensions/common/features/feature_channel.h"
 
 namespace extensions {
 namespace feature_util {

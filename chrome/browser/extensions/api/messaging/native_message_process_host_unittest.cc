@@ -28,11 +28,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)

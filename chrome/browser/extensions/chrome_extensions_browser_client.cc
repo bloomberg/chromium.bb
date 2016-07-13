@@ -41,7 +41,6 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/pref_names.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/update_client/update_client.h"
@@ -54,6 +53,7 @@
 #include "extensions/browser/mojo/service_registration.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/url_request_util.h"
+#include "extensions/common/features/feature_channel.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

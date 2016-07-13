@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/chrome_notification_observer.h"
 
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/features/feature_channel.h"
 
 namespace extensions {
 

@@ -141,11 +141,6 @@ class Feature {
                                             const GURL& url,
                                             Platform platform) const = 0;
 
-  virtual std::string GetAvailabilityMessage(AvailabilityResult result,
-                                             Manifest::Type type,
-                                             const GURL& url,
-                                             Context context) const = 0;
-
   // Returns true if the feature is available to the current environment,
   // without needing to know information about an Extension or any other
   // contextual information. Typically used when the Feature is purely
@@ -160,9 +155,13 @@ class Feature {
   virtual bool IsIdInBlacklist(const std::string& extension_id) const = 0;
   virtual bool IsIdInWhitelist(const std::string& extension_id) const = 0;
 
+  void set_check_channel(bool check_channel) { check_channel_ = check_channel; }
+
  protected:
   std::string name_;
   bool no_parent_;
+  // TODO(devlin): Remove this once we set the feature channel for tests.
+  bool check_channel_;
 };
 
 }  // namespace extensions

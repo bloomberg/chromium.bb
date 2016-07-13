@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_CHANNEL_H_
-#define CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_CHANNEL_H_
+#ifndef EXTENSIONS_COMMON_FEATURES_FEATURE_CHANNEL_H_
+#define EXTENSIONS_COMMON_FEATURES_FEATURE_CHANNEL_H_
 
 #include "base/macros.h"
 
@@ -38,4 +38,4 @@ class ScopedCurrentChannel {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_CHANNEL_H_
+#endif  // EXTENSIONS_COMMON_FEATURES_FEATURE_CHANNEL_H_

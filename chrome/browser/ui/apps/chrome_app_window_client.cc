@@ -7,11 +7,11 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/feature_channel.h"
 
 // TODO(jamescook): We probably shouldn't compile this class at all on Android.
 // See http://crbug.com/343612

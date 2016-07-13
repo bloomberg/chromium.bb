@@ -7,12 +7,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/features/feature_channel.h"
 
 class Profile;
 

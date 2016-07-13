@@ -13,6 +13,10 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
+#include "extensions/common/features/complex_feature.h"
+#include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/json_feature_provider.h"
+#include "extensions/common/features/permission_feature.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,10 +34,37 @@ struct IsAvailableTestData {
   Feature::AvailabilityResult expected_result;
 };
 
+template <class FeatureClass>
+SimpleFeature* CreateFeature() {
+  SimpleFeature* feature = new FeatureClass();
+  feature->set_check_channel(true);
+  return feature;
+}
+
+Feature::AvailabilityResult IsAvailableInChannel(
+    const std::string& channel,
+    version_info::Channel channel_for_testing) {
+  ScopedCurrentChannel current_channel(channel_for_testing);
+
+  SimpleFeature feature;
+
+  base::DictionaryValue feature_value;
+  feature_value.SetString("channel", channel);
+  feature.set_check_channel(true);
+  feature.Parse(&feature_value);
+
+  return feature
+      .IsAvailableToManifest("random-extension", Manifest::TYPE_UNKNOWN,
+                             Manifest::INVALID_LOCATION, -1,
+                             Feature::GetCurrentPlatform())
+      .result();
+}
+
 }  // namespace
 
 class SimpleFeatureTest : public testing::Test {
  protected:
+  SimpleFeatureTest() : current_channel_(version_info::Channel::UNKNOWN) {}
   bool LocationIsAvailable(SimpleFeature::Location feature_location,
                            Manifest::Location manifest_location) {
     SimpleFeature feature;
@@ -46,6 +77,10 @@ class SimpleFeatureTest : public testing::Test {
                                       Feature::UNSPECIFIED_PLATFORM).result();
     return availability_result == Feature::IS_AVAILABLE;
   }
+
+ private:
+  ScopedCurrentChannel current_channel_;
+  DISALLOW_COPY_AND_ASSIGN(SimpleFeatureTest);
 };
 
 TEST_F(SimpleFeatureTest, IsAvailableNullCase) {
@@ -741,6 +776,241 @@ TEST_F(SimpleFeatureTest, IsIdInArray) {
       "bbbbccccdddddddddeeeeeeffffgghhh", kIdArray, arraysize(kIdArray)));
   EXPECT_TRUE(SimpleFeature::IsIdInArray(
       "aaaabbbbccccddddeeeeffffgggghhhh", kIdArray, arraysize(kIdArray)));
+}
+
+// Tests that all combinations of feature channel and Chrome channel correctly
+// compute feature availability.
+TEST_F(SimpleFeatureTest, SupportedChannel) {
+  // stable supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("stable", version_info::Channel::UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("stable", version_info::Channel::CANARY));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("stable", version_info::Channel::DEV));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("stable", version_info::Channel::BETA));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("stable", version_info::Channel::STABLE));
+
+  // beta supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("beta", version_info::Channel::UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("beta", version_info::Channel::CANARY));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("beta", version_info::Channel::DEV));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("beta", version_info::Channel::BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("beta", version_info::Channel::STABLE));
+
+  // dev supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("dev", version_info::Channel::UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("dev", version_info::Channel::CANARY));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("dev", version_info::Channel::DEV));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("dev", version_info::Channel::BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("dev", version_info::Channel::STABLE));
+
+  // canary supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("canary", version_info::Channel::UNKNOWN));
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("canary", version_info::Channel::CANARY));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("canary", version_info::Channel::DEV));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("canary", version_info::Channel::BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("canary", version_info::Channel::STABLE));
+
+  // trunk supported.
+  EXPECT_EQ(Feature::IS_AVAILABLE,
+            IsAvailableInChannel("trunk", version_info::Channel::UNKNOWN));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("trunk", version_info::Channel::CANARY));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("trunk", version_info::Channel::DEV));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("trunk", version_info::Channel::BETA));
+  EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+            IsAvailableInChannel("trunk", version_info::Channel::STABLE));
+}
+
+// Tests the validation of features with channel entries.
+TEST_F(SimpleFeatureTest, FeatureValidation) {
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+
+  base::DictionaryValue* feature1 = new base::DictionaryValue();
+  feature1->SetString("channel", "trunk");
+  value->Set("feature1", feature1);
+
+  base::DictionaryValue* feature2 = new base::DictionaryValue();
+  feature2->SetString("channel", "trunk");
+  base::ListValue* extension_types = new base::ListValue();
+  extension_types->AppendString("extension");
+  feature2->Set("extension_types", extension_types);
+  base::ListValue* contexts = new base::ListValue();
+  contexts->AppendString("blessed_extension");
+  feature2->Set("contexts", contexts);
+  value->Set("feature2", feature2);
+
+  std::unique_ptr<JSONFeatureProvider> provider(
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
+
+  // feature1 won't validate because it lacks an extension type.
+  EXPECT_FALSE(provider->GetFeature("feature1"));
+
+  // If we add one, it works.
+  feature1->Set("extension_types", extension_types->DeepCopy());
+  provider.reset(
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
+  EXPECT_TRUE(provider->GetFeature("feature1"));
+
+  // Remove the channel, and feature1 won't validate.
+  feature1->Remove("channel", NULL);
+  provider.reset(
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
+  EXPECT_FALSE(provider->GetFeature("feature1"));
+
+  // feature2 won't validate because of the presence of "contexts".
+  EXPECT_FALSE(provider->GetFeature("feature2"));
+
+  // If we remove it, it works.
+  feature2->Remove("contexts", NULL);
+  provider.reset(
+      new JSONFeatureProvider(*value, CreateFeature<PermissionFeature>));
+  EXPECT_TRUE(provider->GetFeature("feature2"));
+}
+
+// Tests simple feature availability across channels.
+TEST_F(SimpleFeatureTest, SimpleFeatureAvailability) {
+  std::unique_ptr<base::DictionaryValue> rule(
+      DictionaryBuilder()
+          .Set("feature1",
+               ListBuilder()
+                   .Append(DictionaryBuilder()
+                               .Set("channel", "beta")
+                               .Set("extension_types",
+                                    ListBuilder().Append("extension").Build())
+                               .Build())
+                   .Append(DictionaryBuilder()
+                               .Set("channel", "beta")
+                               .Set("extension_types",
+                                    ListBuilder()
+                                        .Append("legacy_packaged_app")
+                                        .Build())
+                               .Build())
+                   .Build())
+          .Build());
+
+  std::unique_ptr<JSONFeatureProvider> provider(
+      new JSONFeatureProvider(*rule, CreateFeature<SimpleFeature>));
+
+  Feature* feature = provider->GetFeature("feature1");
+  EXPECT_TRUE(feature);
+
+  // Make sure both rules are applied correctly.
+  {
+    ScopedCurrentChannel current_channel(version_info::Channel::BETA);
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+  }
+  {
+    ScopedCurrentChannel current_channel(version_info::Channel::STABLE);
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM).result());
+  }
+}
+
+// Tests complex feature availability across channels.
+TEST_F(SimpleFeatureTest, ComplexFeatureAvailability) {
+  std::unique_ptr<ComplexFeature::FeatureList> features(
+      new ComplexFeature::FeatureList());
+
+  // Rule: "extension", channel trunk.
+  std::unique_ptr<SimpleFeature> simple_feature(CreateFeature<SimpleFeature>());
+  std::unique_ptr<base::DictionaryValue> rule(
+      DictionaryBuilder()
+          .Set("channel", "trunk")
+          .Set("extension_types", ListBuilder().Append("extension").Build())
+          .Build());
+  simple_feature->Parse(rule.get());
+  features->push_back(std::move(simple_feature));
+
+  // Rule: "legacy_packaged_app", channel stable.
+  simple_feature.reset(CreateFeature<SimpleFeature>());
+  rule = DictionaryBuilder()
+             .Set("channel", "stable")
+             .Set("extension_types",
+                  ListBuilder().Append("legacy_packaged_app").Build())
+             .Build();
+  simple_feature->Parse(rule.get());
+  features->push_back(std::move(simple_feature));
+
+  std::unique_ptr<ComplexFeature> feature(
+      new ComplexFeature(std::move(features)));
+
+  // Test match 1st rule.
+  {
+    ScopedCurrentChannel current_channel(version_info::Channel::UNKNOWN);
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM,
+                                       Feature::GetCurrentPlatform()).result());
+  }
+
+  // Test match 2nd rule.
+  {
+    ScopedCurrentChannel current_channel(version_info::Channel::BETA);
+    EXPECT_EQ(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("2",
+                                       Manifest::TYPE_LEGACY_PACKAGED_APP,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM,
+                                       Feature::GetCurrentPlatform()).result());
+  }
+
+  // Test feature not available to extensions above channel unknown.
+  {
+    ScopedCurrentChannel current_channel(version_info::Channel::BETA);
+    EXPECT_NE(
+        Feature::IS_AVAILABLE,
+        feature->IsAvailableToManifest("1",
+                                       Manifest::TYPE_EXTENSION,
+                                       Manifest::INVALID_LOCATION,
+                                       Feature::UNSPECIFIED_PLATFORM,
+                                       Feature::GetCurrentPlatform()).result());
+  }
 }
 
 }  // namespace extensions

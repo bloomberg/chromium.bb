@@ -6,7 +6,7 @@
 #define CHROME_COMMON_EXTENSIONS_MANIFEST_TESTS_CHROME_MANIFEST_TEST_H_
 
 #include "base/macros.h"
-#include "chrome/common/extensions/features/feature_channel.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_test.h"
 
 // Base class for unit tests that load manifest data from Chrome TEST_DATA_DIR.

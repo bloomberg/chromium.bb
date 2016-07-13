@@ -636,7 +636,6 @@
       'common/extensions/extension_icon_set_unittest.cc',
       'common/extensions/extension_unittest.cc',
       'common/extensions/feature_switch_unittest.cc',
-      'common/extensions/features/chrome_channel_feature_filter_unittest.cc',
       'common/extensions/manifest_handlers/automation_unittest.cc',
       'common/extensions/manifest_handlers/content_scripts_manifest_unittest.cc',
       'common/extensions/manifest_handlers/exclude_matches_manifest_unittest.cc',

@@ -37,7 +37,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/content_verifier.h"
@@ -54,6 +53,7 @@
 #include "extensions/browser/uninstall_ping_sender.h"
 #include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_url_handlers.h"
 
 #if defined(ENABLE_NOTIFICATIONS)
