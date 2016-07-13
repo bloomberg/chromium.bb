@@ -75,8 +75,8 @@
      * @private
      */
     onAddAddressTap_: function(e) {
-      // TODO(hcarmona): implement adding an address.
       e.preventDefault();
+      this.$.addressEditDialog.open({});
     },
 
     /**
@@ -88,9 +88,9 @@
       /** @type {chrome.autofillPrivate.AddressEntry} */
       var address = menu.itemData;
 
-      // TODO(hcarmona): implement editing a local address.
-
-      if (!address.metadata.isLocal)
+      if (address.metadata.isLocal)
+        this.$.addressEditDialog.open(address);
+      else
         window.open(this.i18n('manageAddressesUrl'));
 
       menu.closeMenu();

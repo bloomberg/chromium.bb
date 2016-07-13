@@ -16,6 +16,75 @@ GEN_INCLUDE([
 ]);
 
 /**
+ * Test implementation.
+ * @implements {settings.address.CountryDetailManager}
+ * @constructor
+ */
+function CountryDetailManagerTestImpl() {}
+CountryDetailManagerTestImpl.prototype = {
+  /** @override */
+  getCountryList: function() {
+    return new Promise(function(resolve) {
+      resolve([
+          {name: 'United States', countryCode: 'US'},  // Default test country.
+          {name: 'Israel', countryCode: 'IL'},
+          {name: 'United Kingdom', countryCode: 'GB'},
+      ]);
+    });
+  },
+
+  /** @override */
+  getAddressFormat: function(countryCode) {
+    return new Promise(function(resolve) {
+      chrome.autofillPrivate.getAddressComponents(countryCode, resolve);
+    });
+  },
+};
+
+/**
+ * Will call |loopBody| for each item in |items|. Will only move to the next
+ * item after the promise from |loopBody| resolves.
+ * @param {!Array<Object>} items
+ * @param {!function(!Object):!Promise} loopBody
+ * @return {!Promise}
+ */
+function asyncForEach(items, loopBody) {
+  return new Promise(function(finish) {
+    var index = 0;
+
+    function loop() {
+      var item = items[index++];
+      if (item)
+        loopBody(item).then(loop);
+      else
+        finish();
+    };
+
+    loop();
+  });
+}
+
+/**
+ * Resolves the promise after the element fires the expected event. Will add and
+ * remove the listener so it is only triggered once. |causeEvent| is called
+ * after adding a listener to make sure that the event is captured.
+ * @param {!Element} element
+ * @param {string} eventName
+ * @param {function():void} causeEvent
+ * @return {!Promise}
+ */
+function expectEvent(element, eventName, causeEvent) {
+  return new Promise(function(resolve) {
+    var callback = function() {
+      element.removeEventListener(eventName, callback);
+      resolve.apply(this, arguments);
+    };
+    element.addEventListener(eventName, callback);
+    causeEvent();
+  });
+}
+
+/**
  * @constructor
  * @extends {PolymerTest}
  */
@@ -31,6 +100,20 @@ SettingsAutofillSectionBrowserTest.prototype = {
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
 
+  /**
+   * TODO(hcarmona): Increases speed, but disables A11y checks. Enable checks
+   * when we "accessibilityIssuesAreErrors: true" for all tests.
+   * @override
+   */
+  runAccessibilityChecks: false,
+
+  i18nStrings: {
+    addAddressTitle: 'add-title',
+    addCreditCardTitle: 'add-title',
+    editAddressTitle: 'edit-title',
+    editCreditCardTitle: 'edit-title',
+  },
+
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
@@ -39,10 +122,10 @@ SettingsAutofillSectionBrowserTest.prototype = {
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
 
     // Faking 'strings.js' for this test.
-    loadTimeData.data = {
-      editCreditCardTitle: 'edit-title',
-      addCreditCardTitle: 'add-title'
-    };
+    loadTimeData.data = this.i18nStrings;
+
+    settings.address.CountryDetailManagerImpl.instance_ =
+        new CountryDetailManagerTestImpl();
   },
 
   /**
@@ -73,6 +156,30 @@ SettingsAutofillSectionBrowserTest.prototype = {
   },
 
   /**
+   * Creates the Edit Address dialog and fulfills the promise when the dialog
+   * has actually opened.
+   * @param {!chrome.autofillPrivate.AddressEntry} address
+   * @return {!Promise<Object>}
+   */
+  createAddressDialog_: function(address) {
+    return new Promise(function(resolve) {
+      var section = document.createElement('settings-address-edit-dialog');
+      document.body.appendChild(section);
+      var onOpen = function() {
+        resolve(section);
+      };
+      section.addEventListener('iron-overlay-opened', onOpen);
+
+      // |setTimeout| allows the dialog to async get the list of countries
+      // before running any tests.
+      window.setTimeout(function() {
+        section.open(address);  // Opening the dialog will add the item.
+        Polymer.dom.flush();
+      }, 0);
+    });
+  },
+
+  /**
    * Creates the Edit Credit Card dialog.
    * @param {!chrome.autofillPrivate.CreditCardEntry} creditCardItem
    * @return {!Object}
@@ -86,10 +193,7 @@ SettingsAutofillSectionBrowserTest.prototype = {
   },
 };
 
-/**
- * This test will validate that the section is loaded with data.
- */
-TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
+TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
   var self = this;
 
   suite('AutofillSection', function() {
@@ -135,7 +239,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
       assertNotEquals(oldCreditCardDialog.title_, newCreditCardDialog.title_);
       assertNotEquals('', newCreditCardDialog.title_);
       assertNotEquals('', oldCreditCardDialog.title_);
-    }),
+    });
 
     test('verifyExpiredCreditCardYear', function() {
       var creditCard = FakeDataMaker.creditCardEntry();
@@ -154,7 +258,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
 
       assertEquals('2015', firstSelectableYear.textContent);
       assertEquals(maxYear.toString(), lastSelectableYear.textContent);
-    }),
+    });
 
     test('verifyVeryFutureCreditCardYear', function() {
       var creditCard = FakeDataMaker.creditCardEntry();
@@ -172,7 +276,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
       assertEquals(now.getFullYear().toString(),
           firstSelectableYear.textContent);
       assertEquals(farFutureYear.toString(), lastSelectableYear.textContent);
-    }),
+    });
 
     test('verifyVeryNormalCreditCardYear', function() {
       var creditCard = FakeDataMaker.creditCardEntry();
@@ -191,7 +295,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
       assertEquals(now.getFullYear().toString(),
           firstSelectableYear.textContent);
       assertEquals(maxYear.toString(), lastSelectableYear.textContent);
-    }),
+    });
 
     // Test will timeout if event is not received.
     test('verifySaveCreditCardEdit', function(done) {
@@ -204,28 +308,36 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
       });
 
       MockInteractions.tap(creditCardDialog.$.saveButton);
-    }),
+    });
 
     test('verifyCancelCreditCardEdit', function(done) {
       var creditCard = FakeDataMaker.emptyCreditCardEntry();
       var creditCardDialog = self.createCreditCardDialog_(creditCard);
 
-      creditCardDialog.addEventListener('save-credit-card', function(event) {
+      creditCardDialog.addEventListener('save-credit-card', function() {
         // Fail the test because the save event should not be called when cancel
         // is clicked.
         assertTrue(false);
         done();
       });
 
-      creditCardDialog.addEventListener('iron-overlay-closed', function(event) {
+      creditCardDialog.addEventListener('iron-overlay-closed', function() {
         // Test is |done| in a timeout in order to ensure that
         // 'save-credit-card' is NOT fired after this test.
         window.setTimeout(done, 100);
       });
 
       MockInteractions.tap(creditCardDialog.$.cancelButton);
-    }),
+    });
+  });
 
+  mocha.run();
+});
+
+TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
+  var self = this;
+
+  suite('AutofillSection', function() {
     test('verifyAddressCount', function() {
       var addresses = [
         FakeDataMaker.addressEntry(),
@@ -257,6 +369,381 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'uiTests', function() {
 
       assertEquals(addressSummary,
                    row.querySelector('#addressSummary').textContent);
+    });
+
+    test('verifyAddAddressDialog', function() {
+      return self.createAddressDialog_(
+          FakeDataMaker.emptyAddressEntry()).then(function(dialog) {
+        var title = dialog.$$('.title');
+        assertEquals(self.i18nStrings.addAddressTitle, title.textContent);
+        // Shouldn't be possible to save until something is typed in.
+        assertTrue(dialog.$.saveButton.disabled);
+      });
+    });
+
+    test('verifyEditAddressDialog', function() {
+      return self.createAddressDialog_(
+          FakeDataMaker.addressEntry()).then(function(dialog) {
+        var title = dialog.$$('.title');
+        assertEquals(self.i18nStrings.editAddressTitle, title.textContent);
+        // Should be possible to save when editing because fields are populated.
+        assertFalse(dialog.$.saveButton.disabled);
+      });
+    });
+
+    test('verifyCountryIsSaved', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+      return self.createAddressDialog_(address).then(function(dialog) {
+        assertEquals(undefined, dialog.$.countryList.selected);
+        assertEquals(undefined, address.countryCode);
+        dialog.$.countryList.selected = 'US';
+        Polymer.dom.flush();
+        assertEquals('US', dialog.$.countryList.selected);
+        assertEquals('US', address.countryCode);
+      });
+    });
+
+    test('verifyPhoneAndEmailAreSaved', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+      return self.createAddressDialog_(address).then(function(dialog) {
+        assertEquals('', dialog.$.phoneInput.value);
+        assertFalse(!!(address.phoneNumbers && address.phoneNumbers[0]));
+
+        assertEquals('', dialog.$.emailInput.value);
+        assertFalse(!!(address.emailAddresses && address.emailAddresses[0]));
+
+        var phoneNumber = '(555) 555-5555';
+        var emailAddress = 'no-reply@chromium.org';
+
+        dialog.$.phoneInput.value = phoneNumber;
+        dialog.$.emailInput.value = emailAddress;
+
+        Polymer.dom.flush();
+
+        assertEquals(phoneNumber, dialog.$.phoneInput.value);
+        assertEquals(phoneNumber, address.phoneNumbers[0]);
+
+        assertEquals(emailAddress, dialog.$.emailInput.value);
+        assertEquals(emailAddress, address.emailAddresses[0]);
+      });
+    });
+
+    // Test will set a value of 'foo' in each text field and verify that the
+    // save button is enabled, then it will clear the field and verify that the
+    // save button is disabled. Test passes after all elements have been tested.
+    test('verifySaveIsNotClickableIfAllInputFieldsAreEmpty', function() {
+      return self.createAddressDialog_(
+          FakeDataMaker.emptyAddressEntry()).then(function(dialog) {
+        var saveButton = dialog.$.saveButton;
+        var testElements =
+            dialog.$.dialog.querySelectorAll('paper-input,paper-textarea');
+
+        // Default country is 'US' expecting: Name, Organization,
+        // Street address, City, State, ZIP code, Phone, and Email.
+        assertEquals(8, testElements.length);
+
+        return asyncForEach(testElements, function(element) {
+          return expectEvent(dialog, 'on-update-can-save', function() {
+            assertTrue(saveButton.disabled);
+            element.value = 'foo';
+          }).then(function() {
+            return expectEvent(dialog, 'on-update-can-save', function() {
+              assertFalse(saveButton.disabled);
+              element.value = '';
+            });
+          }).then(function() {
+            assertTrue(saveButton.disabled);
+          });
+        });
+      });
+    });
+
+    // Setting the country should allow the address to be saved.
+    test('verifySaveIsNotClickableIfCountryNotSet', function() {
+      return self.createAddressDialog_(
+          FakeDataMaker.emptyAddressEntry()).then(function(dialog) {
+        var saveButton = dialog.$.saveButton;
+        var countries = dialog.$.countryList;
+
+        return expectEvent(dialog, 'on-update-can-save', function() {
+          assertTrue(saveButton.disabled);
+          countries.selected = 'US';
+        }).then(function() {
+            assertFalse(saveButton.disabled);
+            countries.selected = '';
+        }).then(function() {
+          assertTrue(saveButton.disabled);
+        });
+      });
+    });
+
+    // Test will timeout if save-address event is not fired.
+    test('verifyDefaultCountryIsAppliedWhenSaving', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+      address.companyName = 'Google';
+      return self.createAddressDialog_(address).then(function(dialog) {
+        return expectEvent(dialog, 'save-address', function() {
+          // Verify |countryCode| is not set.
+          assertEquals(undefined, address.countryCode);
+          MockInteractions.tap(dialog.$.saveButton);
+        }).then(function(event) {
+          // 'US' is the default country for these tests.
+          assertEquals('US', event.detail.countryCode);
+        });
+      });
+    });
+
+    test('verifyCancelDoesNotSaveAddress', function(done) {
+      self.createAddressDialog_(
+          FakeDataMaker.addressEntry()).then(function(dialog) {
+        dialog.addEventListener('save-address', function() {
+          // Fail the test because the save event should not be called when
+          // cancel is clicked.
+          assertTrue(false);
+          done();
+        });
+
+        dialog.addEventListener('iron-overlay-closed', function() {
+          // Test is |done| in a timeout in order to ensure that
+          // 'save-address' is NOT fired after this test.
+          window.setTimeout(done, 100);
+        });
+
+        MockInteractions.tap(dialog.$.cancelButton);
+      });
+    });
+  });
+
+  mocha.run();
+});
+
+TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
+  var self = this;
+
+  suite('AutofillSection', function() {
+    // US address has 3 fields on the same line.
+    test('verifyEditingUSAddress', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+
+      address.fullNames = [ 'Name' ];
+      address.companyName = 'Organization';
+      address.addressLines = 'Street address';
+      address.addressLevel2 = 'City';
+      address.addressLevel1 = 'State';
+      address.postalCode = 'ZIP code';
+      address.countryCode = 'US';
+      address.phoneNumbers = [ 'Phone' ];
+      address.emailAddresses = [ 'Email' ];
+
+      return self.createAddressDialog_(address).then(function(dialog) {
+        var rows = dialog.$.dialog.querySelectorAll('.address-row');
+        assertEquals(6, rows.length);
+
+        // Name
+        var row = rows[0];
+        var cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.fullNames[0], cols[0].value);
+        // Organization
+        row = rows[1];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.companyName, cols[0].value);
+        // Street address
+        row = rows[2];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.addressLines, cols[0].value);
+        // City, State, ZIP code
+        row = rows[3];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(3, cols.length);
+        assertEquals(address.addressLevel2, cols[0].value);
+        assertEquals(address.addressLevel1, cols[1].value);
+        assertEquals(address.postalCode, cols[2].value);
+        // Country
+        row = rows[4];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals('United States', cols[0].value);
+        // Phone, Email
+        row = rows[5];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(2, cols.length);
+        assertEquals(address.phoneNumbers[0], cols[0].value);
+        assertEquals(address.emailAddresses[0], cols[1].value);
+      });
+    });
+
+    // GB address has 1 field per line for all lines that change.
+    test('verifyEditingGBAddress', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+
+      address.fullNames = [ 'Name' ];
+      address.companyName = 'Organization';
+      address.addressLines = 'Street address';
+      address.addressLevel2 = 'Post town';
+      address.addressLevel1 = 'County';
+      address.postalCode = 'Postal code';
+      address.countryCode = 'GB';
+      address.phoneNumbers = [ 'Phone' ];
+      address.emailAddresses = [ 'Email' ];
+
+      return self.createAddressDialog_(address).then(function(dialog) {
+        var rows = dialog.$.dialog.querySelectorAll('.address-row');
+        assertEquals(8, rows.length);
+
+        // Name
+        var row = rows[0];
+        var cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.fullNames[0], cols[0].value);
+        // Organization
+        row = rows[1];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.companyName, cols[0].value);
+        // Street address
+        row = rows[2];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.addressLines, cols[0].value);
+        // Post Town
+        row = rows[3];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.addressLevel2, cols[0].value);
+        // County
+        row = rows[4];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.addressLevel1, cols[0].value);
+        // Postal code
+        row = rows[5];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.postalCode, cols[0].value);
+        // Country
+        row = rows[6];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals('United Kingdom', cols[0].value);
+        // Phone, Email
+        row = rows[7];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(2, cols.length);
+        assertEquals(address.phoneNumbers[0], cols[0].value);
+        assertEquals(address.emailAddresses[0], cols[1].value);
+      });
+    });
+
+    // IL address has 2 fields on the same line and is an RTL locale.
+    // RTL locale shouldn't affect this test.
+    test('verifyEditingILAddress', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+
+      address.fullNames = [ 'Name' ];
+      address.companyName = 'Organization';
+      address.addressLines = 'Street address';
+      address.addressLevel2 = 'City';
+      address.postalCode = 'Postal code';
+      address.countryCode = 'IL';
+      address.phoneNumbers = [ 'Phone' ];
+      address.emailAddresses = [ 'Email' ];
+
+      return self.createAddressDialog_(address).then(function(dialog) {
+        var rows = dialog.$.dialog.querySelectorAll('.address-row');
+        assertEquals(6, rows.length);
+
+        // Name
+        var row = rows[0];
+        var cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.fullNames[0], cols[0].value);
+        // Organization
+        row = rows[1];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.companyName, cols[0].value);
+        // Street address
+        row = rows[2];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals(address.addressLines, cols[0].value);
+        // City, Postal code
+        row = rows[3];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(2, cols.length);
+        assertEquals(address.addressLevel2, cols[0].value);
+        assertEquals(address.postalCode, cols[1].value);
+        // Country
+        row = rows[4];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(1, cols.length);
+        assertEquals('Israel', cols[0].value);
+        // Phone, Email
+        row = rows[5];
+        cols = row.querySelectorAll('.address-column');
+        assertEquals(2, cols.length);
+        assertEquals(address.phoneNumbers[0], cols[0].value);
+        assertEquals(address.emailAddresses[0], cols[1].value);
+      });
+    });
+
+    // US has an extra field 'State'. Validate that this field is
+    // persisted when switching to IL then back to US.
+    test('verifyAddressPersistanceWhenSwitchingCountries', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+      address.countryCode = 'US';
+
+      return self.createAddressDialog_(address).then(function(dialog) {
+        var city = 'Los Angeles';
+        var state = 'CA';
+        var zip = '90291';
+
+        return expectEvent(dialog, 'on-update-address-wrapper', function() {
+          // US:
+          var rows = dialog.$.dialog.querySelectorAll('.address-row');
+          assertEquals(6, rows.length);
+
+          // City, State, ZIP code
+          var row = rows[3];
+          var cols = row.querySelectorAll('.address-column');
+          assertEquals(3, cols.length);
+          cols[0].value = city;
+          cols[1].value = state;
+          cols[2].value = zip;
+
+          dialog.$.countryList.selected = 'IL';
+        }).then(function() {
+          return expectEvent(dialog, 'on-update-address-wrapper', function() {
+            // IL:
+            rows = dialog.$.dialog.querySelectorAll('.address-row');
+            assertEquals(6, rows.length);
+
+            // City, Postal code
+            row = rows[3];
+            cols = row.querySelectorAll('.address-column');
+            assertEquals(2, cols.length);
+            assertEquals(city, cols[0].value);
+            assertEquals(zip, cols[1].value);
+
+            dialog.$.countryList.selected = 'US';
+          });
+        }).then(function() {
+          // US:
+          var rows = dialog.$.dialog.querySelectorAll('.address-row');
+          assertEquals(6, rows.length);
+
+          // City, State, ZIP code
+          row = rows[3];
+          cols = row.querySelectorAll('.address-column');
+          assertEquals(3, cols.length);
+          assertEquals(city, cols[0].value);
+          assertEquals(state, cols[1].value);
+          assertEquals(zip, cols[2].value);
+        });
+      });
     });
   });
 

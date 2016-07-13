@@ -22,7 +22,17 @@
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_shared_menu/compiled_resources2.gyp:cr_shared_menu',
         '<(EXTERNS_GYP):autofill_private',
+        'address_edit_dialog',
         'credit_card_edit_dialog',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'address_edit_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
+        '<(EXTERNS_GYP):autofill_private',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

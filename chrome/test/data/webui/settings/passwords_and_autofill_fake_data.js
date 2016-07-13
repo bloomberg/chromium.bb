@@ -44,17 +44,25 @@ FakeDataMaker.exceptionEntry = function(url) {
 };
 
 /**
+ * Creates a new fake address entry for testing.
+ * @return {!chrome.autofillPrivate.AddressEntry}
+ */
+FakeDataMaker.emptyAddressEntry = function() {
+  return {};
+}
+
+/**
  * Creates a fake address entry for testing.
  * @return {!chrome.autofillPrivate.AddressEntry}
  */
 FakeDataMaker.addressEntry = function() {
   var ret = {};
   ret.guid = FakeDataMaker.makeGuid_();
-  ret.fullNames = ['John', 'Doe'];
+  ret.fullNames = ['John Doe'];
   ret.companyName = 'Google';
   ret.addressLines = FakeDataMaker.patternMaker_('xxxx Main St', 10);
-  ret.addressLevel1 = "CA";
-  ret.addressLevel2 = "Venice";
+  ret.addressLevel1 = 'CA';
+  ret.addressLevel2 = 'Venice';
   ret.postalCode = FakeDataMaker.patternMaker_('xxxxx', 10);
   ret.countryCode = 'US';
   ret.phoneNumbers = [FakeDataMaker.patternMaker_('(xxx) xxx-xxxx', 10)];

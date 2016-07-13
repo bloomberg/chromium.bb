@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="/passwords_and_forms_page/address_edit_dialog.html">
 <link rel="import" href="/passwords_and_forms_page/credit_card_edit_dialog.html">
 <link rel="import" href="/passwords_and_forms_page/passwords_shared_css.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -67,6 +68,8 @@
       <div id="menuRemoveAddress" class="list-item menu-item"
           on-tap="onMenuRemoveAddressTap_">$i18n{removeAddress}</div>
     </cr-shared-menu>
+    <settings-address-edit-dialog id="addressEditDialog">
+    </settings-address-edit-dialog>
     <div class="heading">$i18n{creditCards}</div>
     <div class="item-list">
       <div class="list-item column-header">
