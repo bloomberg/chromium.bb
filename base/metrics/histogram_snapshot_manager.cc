@@ -46,13 +46,23 @@ void HistogramSnapshotManager::PrepareSamples(
   // crashes with other events, such as plugins, or usage patterns, etc.
   uint32_t corruption = histogram->FindCorruption(*samples);
   if (HistogramBase::BUCKET_ORDER_ERROR & corruption) {
+    // Extract fields useful during debug.
+    const BucketRanges* ranges =
+        static_cast<const Histogram*>(histogram)->bucket_ranges();
+    std::vector<HistogramBase::Sample> ranges_copy;
+    for (size_t i = 0; i < ranges->size(); ++i)
+      ranges_copy.push_back(ranges->range(i));
+    HistogramBase::Sample* ranges_ptr = &ranges_copy[0];
+    const char* histogram_name = histogram->histogram_name().c_str();
+    int32_t flags = histogram->flags();
     // The checksum should have caught this, so crash separately if it didn't.
     CHECK_NE(0U, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);
     CHECK(false);  // Crash for the bucket order corruption.
     // Ensure that compiler keeps around pointers to |histogram| and its
     // internal |bucket_ranges_| for any minidumps.
-    base::debug::Alias(
-        static_cast<const Histogram*>(histogram)->bucket_ranges());
+    base::debug::Alias(&ranges_ptr);
+    base::debug::Alias(&histogram_name);
+    base::debug::Alias(&flags);
   }
   // Checksum corruption might not have caused order corruption.
   CHECK_EQ(0U, HistogramBase::RANGE_CHECKSUM_ERROR & corruption);
