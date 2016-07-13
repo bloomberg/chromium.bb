@@ -51,7 +51,7 @@ declare_args() {
 declare_args() {
   # Whether or not the official builds should be built with full WPO. Enabled by
   # default for the PGO and the x64 builds.
-  if (chrome_pgo_phase > 0 || target_cpu == "x64") {
+  if (chrome_pgo_phase > 0) {
     full_wpo_on_official = true
   } else {
     full_wpo_on_official = false
