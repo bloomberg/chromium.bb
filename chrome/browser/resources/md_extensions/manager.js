@@ -43,6 +43,8 @@ cr.define('extensions', function() {
   var Manager = Polymer({
     is: 'extensions-manager',
 
+    behaviors: [I18nBehavior],
+
     properties: {
       /** @type {extensions.Sidebar} */
       sidebar: Object,
@@ -72,10 +74,6 @@ cr.define('extensions', function() {
         value: function() { return []; },
       },
     },
-
-    behaviors: [
-      I18nBehavior,
-    ],
 
     listeners: {
       'items-list.extension-item-show-details': 'showItemDetails_',

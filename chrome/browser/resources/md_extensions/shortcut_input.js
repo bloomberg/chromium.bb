@@ -9,6 +9,8 @@ cr.define('extensions', function() {
   var ShortcutInput = Polymer({
     is: 'extensions-shortcut-input',
 
+    behaviors: [I18nBehavior],
+
     properties: {
       item: {
         type: String,
@@ -33,8 +35,6 @@ cr.define('extensions', function() {
         value: '',
       },
     },
-
-    behaviors: [I18nBehavior],
 
     ready: function() {
       var node = this.$['input'];

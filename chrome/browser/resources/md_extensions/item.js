@@ -62,6 +62,8 @@ cr.define('extensions', function() {
   var Item = Polymer({
     is: 'extensions-item',
 
+    behaviors: [I18nBehavior],
+
     properties: {
       // The item's delegate, or null.
       delegate: {
@@ -74,23 +76,20 @@ cr.define('extensions', function() {
         value: false,
       },
 
-      // Whether or not the expanded view of the item is shown.
-      showingDetails_: {
-        type: Boolean,
-        value: false,
-      },
-
       // The underlying ExtensionInfo itself. Public for use in declarative
       // bindings.
       /** @type {chrome.developerPrivate.ExtensionInfo} */
       data: {
         type: Object,
       },
-    },
 
-    behaviors: [
-      I18nBehavior,
-    ],
+      // Whether or not the expanded view of the item is shown.
+      /** @private */
+      showingDetails_: {
+        type: Boolean,
+        value: false,
+      },
+    },
 
     observers: [
       'observeIdVisibility_(inDevMode, showingDetails_, data.id)',

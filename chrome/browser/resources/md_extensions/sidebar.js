@@ -49,14 +49,14 @@ cr.define('extensions', function() {
   var Sidebar = Polymer({
     is: 'extensions-sidebar',
 
+    behaviors: [I18nBehavior],
+
     properties: {
       inDevMode: {
         type: Boolean,
         value: false,
       },
     },
-
-    behaviors: [I18nBehavior],
 
     /** @param {extensions.SidebarDelegate} delegate */
     setDelegate: function(delegate) {
