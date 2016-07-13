@@ -121,6 +121,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/SpatialNavigation.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollCustomizationCallbacks.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/page/scrolling/ScrollStateCallback.h"
@@ -565,7 +566,7 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
 
     // We should only ever scroll the effective root scroller this way when the
     // page removes the default applyScroll (ViewportScrollCallback).
-    if (document().effectiveRootScroller() == this)
+    if (document().rootScrollerController()->effectiveRootScroller() == this)
         boxToScroll = document().layoutView();
     else if (layoutObject())
         boxToScroll = toLayoutBox(layoutObject());

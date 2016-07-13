@@ -88,6 +88,7 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageLoadDeferrer.h"
 #include "core/page/TouchDisambiguation.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
@@ -4192,31 +4193,31 @@ bool WebViewImpl::tabsToLinks() const
 void WebViewImpl::registerViewportLayersWithCompositor()
 {
     DCHECK(m_layerTreeView);
-    DCHECK(!page()->deprecatedLocalMainFrame()->contentLayoutItem().isNull());
+    DCHECK(page()->deprecatedLocalMainFrame());
 
-    PaintLayerCompositor* compositor =
-        page()->deprecatedLocalMainFrame()->contentLayoutItem().compositor();
+    Document* document = page()->deprecatedLocalMainFrame()->document();
 
-    DCHECK(compositor);
+    DCHECK(document);
 
     // Get the outer viewport scroll layer.
-    WebLayer* scrollLayer =
-        compositor->scrollLayer()
-            ? compositor->scrollLayer()->platformLayer()
-            : nullptr;
+    GraphicsLayer* layoutViewportScrollLayer =
+        document->rootScrollerController()->rootScrollerLayer();
+    WebLayer* layoutViewportWebLayer = layoutViewportScrollLayer
+        ? layoutViewportScrollLayer->platformLayer()
+        : nullptr;
 
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
     // TODO(bokan): This was moved here from when registerViewportLayers was a
     // part of VisualViewport and maybe doesn't belong here. See comment inside
     // the mehtod.
-    visualViewport.setScrollLayerOnScrollbars(scrollLayer);
+    visualViewport.setScrollLayerOnScrollbars(layoutViewportWebLayer);
 
     m_layerTreeView->registerViewportLayers(
         visualViewport.overscrollElasticityLayer()->platformLayer(),
         visualViewport.pageScaleLayer()->platformLayer(),
         visualViewport.scrollLayer()->platformLayer(),
-        scrollLayer);
+        layoutViewportWebLayer);
 }
 
 void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)

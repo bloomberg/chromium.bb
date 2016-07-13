@@ -16,6 +16,7 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollState.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/PlatformGestureEvent.h"
@@ -350,7 +351,7 @@ bool ScrollManager::isEffectiveRootScroller(const Node& node) const
     if (!node.isElementNode())
         return false;
 
-    return node.isSameNode(m_frame->document()->effectiveRootScroller());
+    return node.isSameNode(m_frame->document()->rootScrollerController()->effectiveRootScroller());
 }
 
 

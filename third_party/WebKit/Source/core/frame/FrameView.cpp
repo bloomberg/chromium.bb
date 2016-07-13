@@ -79,6 +79,7 @@
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ChildViewportScrollCallback.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/RootViewportScrollCallback.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
@@ -2556,6 +2557,7 @@ void FrameView::updateLifecyclePhasesInternal(DocumentLifecycle::LifecycleState 
                 if (view.compositor()->inCompositingMode())
                     scrollingCoordinator()->updateAfterCompositingChangeIfNeeded();
 
+                m_frame->document()->rootScrollerController()->didUpdateCompositing();
                 updateCompositedSelectionIfNeeded();
             }
         }

@@ -7,6 +7,7 @@
 #include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -155,6 +156,11 @@ public:
         return frameHost().topControls();
     }
 
+    Element* effectiveRootScroller(Document* doc) const
+    {
+        return doc->rootScrollerController()->effectiveRootScroller();
+    }
+
 protected:
     std::string m_baseURL;
     RootScrollerTestWebViewClient m_client;
@@ -172,7 +178,7 @@ TEST_F(RootScrollerTest, TestDefaultRootScroller)
     ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
 
     Element* htmlElement = mainFrame()->document()->documentElement();
-    EXPECT_EQ(htmlElement, mainFrame()->document()->effectiveRootScroller());
+    EXPECT_EQ(htmlElement, effectiveRootScroller(mainFrame()->document()));
 }
 
 // Tests that setting an element as the root scroller causes it to control url
@@ -294,13 +300,13 @@ TEST_F(RootScrollerTest, TestRemoveRootScrollerFromDom)
     mainFrame()->document()->setRootScroller(container, exceptionState);
 
     ASSERT_EQ(container, mainFrame()->document()->rootScroller());
-    ASSERT_EQ(container, mainFrame()->document()->effectiveRootScroller());
+    ASSERT_EQ(container, effectiveRootScroller(mainFrame()->document()));
 
     mainFrame()->document()->body()->removeChild(container);
     mainFrameView()->updateAllLifecyclePhases();
 
     ASSERT_EQ(container, mainFrame()->document()->rootScroller());
-    ASSERT_NE(container, mainFrame()->document()->effectiveRootScroller());
+    ASSERT_NE(container, effectiveRootScroller(mainFrame()->document()));
 }
 
 // Tests that setting an element that isn't a valid scroller as the root
@@ -317,7 +323,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement)
         mainFrame()->document()->setRootScroller(element, exceptionState);
         mainFrameView()->updateAllLifecyclePhases();
         ASSERT_EQ(element, mainFrame()->document()->rootScroller());
-        ASSERT_NE(element, mainFrame()->document()->effectiveRootScroller());
+        ASSERT_NE(element, effectiveRootScroller(mainFrame()->document()));
     }
 
     {
@@ -327,7 +333,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement)
         mainFrame()->document()->setRootScroller(element, exceptionState);
         mainFrameView()->updateAllLifecyclePhases();
         ASSERT_EQ(element, mainFrame()->document()->rootScroller());
-        ASSERT_NE(element, mainFrame()->document()->effectiveRootScroller());
+        ASSERT_NE(element, effectiveRootScroller(mainFrame()->document()));
     }
 }
 
@@ -342,14 +348,14 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid)
     TrackExceptionState exceptionState;
 
     ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
-    ASSERT_EQ(htmlElement, mainFrame()->document()->effectiveRootScroller());
+    ASSERT_EQ(htmlElement, effectiveRootScroller(mainFrame()->document()));
 
     {
         mainFrame()->document()->setRootScroller(container, exceptionState);
         mainFrameView()->updateAllLifecyclePhases();
 
         ASSERT_EQ(container, mainFrame()->document()->rootScroller());
-        ASSERT_EQ(container, mainFrame()->document()->effectiveRootScroller());
+        ASSERT_EQ(container, effectiveRootScroller(mainFrame()->document()));
 
         executeScript(
             "document.querySelector('#container').style.display = 'inline'");
@@ -357,7 +363,7 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid)
 
         ASSERT_EQ(container, mainFrame()->document()->rootScroller());
         ASSERT_EQ(htmlElement,
-            mainFrame()->document()->effectiveRootScroller());
+            effectiveRootScroller(mainFrame()->document()));
     }
 
     executeScript(
@@ -365,14 +371,14 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid)
     mainFrame()->document()->setRootScroller(nullptr, exceptionState);
     mainFrameView()->updateAllLifecyclePhases();
     ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
-    ASSERT_EQ(htmlElement, mainFrame()->document()->effectiveRootScroller());
+    ASSERT_EQ(htmlElement, effectiveRootScroller(mainFrame()->document()));
 
     {
         mainFrame()->document()->setRootScroller(container, exceptionState);
         mainFrameView()->updateAllLifecyclePhases();
 
         ASSERT_EQ(container, mainFrame()->document()->rootScroller());
-        ASSERT_EQ(container, mainFrame()->document()->effectiveRootScroller());
+        ASSERT_EQ(container, effectiveRootScroller(mainFrame()->document()));
 
         executeScript(
             "document.querySelector('#container').style.width = '98%'");
@@ -380,7 +386,7 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid)
 
         ASSERT_EQ(container, mainFrame()->document()->rootScroller());
         ASSERT_EQ(htmlElement,
-            mainFrame()->document()->effectiveRootScroller());
+            effectiveRootScroller(mainFrame()->document()));
     }
 }
 
@@ -407,7 +413,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe)
 
         ASSERT_EQ(innerContainer, mainFrame()->document()->rootScroller());
         ASSERT_EQ(innerContainer,
-            mainFrame()->document()->effectiveRootScroller());
+            effectiveRootScroller(mainFrame()->document()));
     }
 
     {
@@ -420,7 +426,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe)
         mainFrameView()->updateAllLifecyclePhases();
 
         ASSERT_EQ(iframe, mainFrame()->document()->rootScroller());
-        ASSERT_EQ(iframe, mainFrame()->document()->effectiveRootScroller());
+        ASSERT_EQ(iframe, effectiveRootScroller(mainFrame()->document()));
     }
 }
 
@@ -437,7 +443,7 @@ TEST_F(RootScrollerTest, TestRootScrollerWithinIframe)
             mainFrame()->document()->getElementById("iframe"));
 
         ASSERT_EQ(iframe->contentDocument()->documentElement(),
-            iframe->contentDocument()->effectiveRootScroller());
+            effectiveRootScroller(iframe->contentDocument()));
 
         Element* innerContainer =
             iframe->contentDocument()->getElementById("container");
@@ -449,7 +455,7 @@ TEST_F(RootScrollerTest, TestRootScrollerWithinIframe)
 
         ASSERT_EQ(innerContainer, iframe->contentDocument()->rootScroller());
         ASSERT_EQ(innerContainer,
-            iframe->contentDocument()->effectiveRootScroller());
+            effectiveRootScroller(iframe->contentDocument()));
     }
 }
 

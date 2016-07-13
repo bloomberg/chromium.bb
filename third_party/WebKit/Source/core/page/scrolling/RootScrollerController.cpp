@@ -9,11 +9,14 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/TopControls.h"
+#include "core/frame/VisualViewport.h"
 #include "core/layout/LayoutBox.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
@@ -158,6 +161,34 @@ bool RootScrollerController::moveViewportApplyScroll(Element* target)
     m_viewportApplyScroll->setScroller(targetScroller);
 
     return true;
+}
+
+void RootScrollerController::didUpdateCompositing()
+{
+    FrameHost& frameHost = *m_document->frameHost();
+
+    // Let the compositor-side counterpart know about this change.
+    if (m_document->isInMainFrame())
+        frameHost.chromeClient().registerViewportLayers();
+}
+
+GraphicsLayer* RootScrollerController::rootScrollerLayer()
+{
+    if (!m_effectiveRootScroller)
+        return nullptr;
+
+    ScrollableArea* area = scrollableAreaFor(*m_effectiveRootScroller);
+
+    if (!area)
+        return nullptr;
+
+    GraphicsLayer* graphicsLayer = area->layerForScrolling();
+
+    // TODO(bokan): We should assert graphicsLayer here and
+    // RootScrollerController should do whatever needs to happen to ensure
+    // the root scroller gets composited.
+
+    return graphicsLayer;
 }
 
 Element* RootScrollerController::defaultEffectiveRootScroller()

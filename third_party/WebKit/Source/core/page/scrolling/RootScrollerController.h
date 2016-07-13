@@ -12,6 +12,7 @@ namespace blink {
 
 class Document;
 class Element;
+class GraphicsLayer;
 class ViewportScrollCallback;
 
 // Manages the root scroller associated with a given document. The root scroller
@@ -69,6 +70,12 @@ public:
     // determine if the current root scroller is still valid or if it must be
     // replaced by the defualt root scroller.
     void didUpdateLayout();
+
+    // This class needs to be informed of changes to compositing so that it can
+    // update the compositor when the effective root scroller changes.
+    void didUpdateCompositing();
+
+    GraphicsLayer* rootScrollerLayer();
 
     // TODO(bokan): Temporarily exposed to allow ScrollCustomization to
     // differentiate between real custom callback and the built-in viewport

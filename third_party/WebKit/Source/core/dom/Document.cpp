@@ -602,11 +602,6 @@ Element* Document::rootScroller() const
     return m_rootScrollerController->get();
 }
 
-const Element* Document::effectiveRootScroller() const
-{
-    return m_rootScrollerController->effectiveRootScroller();
-}
-
 bool Document::isViewportScrollCallback(const ScrollStateCallback* callback)
 {
     if (!callback)

@@ -1088,7 +1088,7 @@ public:
     void initializeRootScroller(ViewportScrollCallback*);
     Element* rootScroller() const;
     void setRootScroller(Element*, ExceptionState&);
-    const Element* effectiveRootScroller() const;
+    RootScrollerController* rootScrollerController() const { return m_rootScrollerController.get(); }
 
     // TODO(bokan): Temporarily added to allow ScrollCustomization to properly
     // opt out for wheel scrolls. crbug.com/623079.
