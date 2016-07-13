@@ -19,6 +19,8 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     private final String[] mMostVisitedTitles;
     private final String[] mMostVisitedUrls;
     private final String[] mMostVisitedWhitelistIconPaths;
+    private final int[] mMostVisitedSources;
+    private final int[] mMostVisitedProviderIndexes;
 
     private final List<String> mBlacklistedUrls = new ArrayList<String>();
 
@@ -28,12 +30,15 @@ public class FakeMostVisitedSites extends MostVisitedSites {
      * @param mostVisitedUrls The URLs of the fixed list of most visited sites.
      */
     public FakeMostVisitedSites(Profile p, String[] mostVisitedTitles, String[] mostVisitedUrls,
-            String[] mostVisitedWhitelistIconPaths) {
+            String[] mostVisitedWhitelistIconPaths, int[] mostVisitedSources,
+            int[] mostVisitedProviderIndexes) {
         super(p);
         assert mostVisitedTitles.length == mostVisitedUrls.length;
         mMostVisitedTitles = mostVisitedTitles.clone();
         mMostVisitedUrls = mostVisitedUrls.clone();
         mMostVisitedWhitelistIconPaths = mostVisitedWhitelistIconPaths.clone();
+        mMostVisitedSources = mostVisitedSources.clone();
+        mMostVisitedProviderIndexes = mostVisitedProviderIndexes.clone();
     }
 
     @Override
@@ -42,7 +47,8 @@ public class FakeMostVisitedSites extends MostVisitedSites {
             @Override
             public void run() {
                 observer.onMostVisitedURLsAvailable(mMostVisitedTitles.clone(),
-                        mMostVisitedUrls.clone(), mMostVisitedWhitelistIconPaths.clone());
+                        mMostVisitedUrls.clone(), mMostVisitedWhitelistIconPaths.clone(),
+                        mMostVisitedSources.clone(), mMostVisitedProviderIndexes.clone());
             }
         });
     }
@@ -65,7 +71,7 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     }
 
     @Override
-    public void recordTileTypeMetrics(int[] tileTypes) {
+    public void recordTileTypeMetrics(int[] tileTypes, int[] sources, int[] providerIndices) {
         // Metrics are stubbed out.
     }
 

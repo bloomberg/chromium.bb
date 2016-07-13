@@ -53,6 +53,8 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
     private boolean mOfflineAvailable;
     private int mIndex;
     private int mTileType;
+    private int mSource;
+    private int mProviderIndex;
     private View mView;
 
     /**
@@ -66,9 +68,13 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      *                          visited item. Empty otherwise.
      * @param offlineAvailable Whether there is an offline copy of the URL available.
      * @param index The index of this item in the list of most visited items.
+     * @param source The {@link MostVisitedSource} that generated this item.
+     * @param providerIndex If this item comes from {@code MostVisitedSource.SUGGESTIONS_SERVICE},
+     *     this is the index of the source of the suggestion.
      */
     public MostVisitedItem(MostVisitedItemManager manager, String title, String url,
-            String whitelistIconPath, boolean offlineAvailable, int index) {
+            String whitelistIconPath, boolean offlineAvailable, int index, int source,
+            int providerIndex) {
         mManager = manager;
         mTitle = title;
         mUrl = url;
@@ -76,6 +82,8 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
         mOfflineAvailable = offlineAvailable;
         mIndex = index;
         mTileType = MostVisitedTileType.NONE;
+        mSource = source;
+        mProviderIndex = index;
     }
 
     /**
@@ -152,6 +160,21 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
      */
     public void setTileType(int type) {
         mTileType = type;
+    }
+
+    /**
+     * @return The source of this item.  Used for metrics tracking. Valid values are listed in
+     * {@link MostVisitedSource}.
+     */
+    public int getSource() {
+        return mSource;
+    }
+
+    /**
+     * @return The provider index of this item.  Used for metrics tracking.
+     */
+    public int getProviderIndex() {
+        return mProviderIndex;
     }
 
     @Override

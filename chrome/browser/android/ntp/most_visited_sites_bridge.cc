@@ -36,6 +36,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
+using base::android::ToJavaIntArray;
 using content::BrowserThread;
 using ntp_tiles::MostVisitedSites;
 using ntp_tiles::MostVisitedSitesSupervisor;
@@ -118,18 +119,27 @@ void MostVisitedSitesBridge::JavaObserver::OnMostVisitedURLsAvailable(
   std::vector<base::string16> titles;
   std::vector<std::string> urls;
   std::vector<std::string> whitelist_icon_paths;
+  std::vector<int> sources;
+  std::vector<int> provider_indexes;
+
   titles.reserve(suggestions.size());
   urls.reserve(suggestions.size());
   whitelist_icon_paths.reserve(suggestions.size());
+  sources.reserve(suggestions.size());
+  provider_indexes.reserve(suggestions.size());
   for (const auto& suggestion : suggestions) {
     titles.emplace_back(suggestion.title);
     urls.emplace_back(suggestion.url.spec());
     whitelist_icon_paths.emplace_back(suggestion.whitelist_icon_path.value());
+    sources.emplace_back(suggestion.source);
+    provider_indexes.emplace_back(suggestion.provider_index);
   }
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
       env, observer_.obj(), ToJavaArrayOfStrings(env, titles).obj(),
       ToJavaArrayOfStrings(env, urls).obj(),
-      ToJavaArrayOfStrings(env, whitelist_icon_paths).obj());
+      ToJavaArrayOfStrings(env, whitelist_icon_paths).obj(),
+      ToJavaIntArray(env, sources).obj(),
+      ToJavaIntArray(env, provider_indexes).obj());
 }
 
 void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
@@ -193,10 +203,19 @@ void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(
 void MostVisitedSitesBridge::RecordTileTypeMetrics(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jintArray>& jtile_types) {
+    const JavaParamRef<jintArray>& jtile_types,
+    const JavaParamRef<jintArray>& jsources,
+    const JavaParamRef<jintArray>& jprovider_indices) {
   std::vector<int> tile_types;
+  std::vector<int> sources;
+  std::vector<int> provider_indices;
+
   base::android::JavaIntArrayToIntVector(env, jtile_types, &tile_types);
-  most_visited_.RecordTileTypeMetrics(tile_types);
+  base::android::JavaIntArrayToIntVector(env, jsources, &sources);
+  base::android::JavaIntArrayToIntVector(env, jprovider_indices,
+                                         &provider_indices);
+
+  most_visited_.RecordTileTypeMetrics(tile_types, sources, provider_indices);
 }
 
 void MostVisitedSitesBridge::RecordOpenedMostVisitedItem(

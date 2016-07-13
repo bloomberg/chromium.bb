@@ -91,8 +91,38 @@ class MostVisitedSites : public history::TopSitesObserver,
   using SuggestionsVector = std::vector<Suggestion>;
   using PopularSitesVector = std::vector<PopularSites::Site>;
 
+  // The visual type of a most visited tile.
+  //
+  // These values must stay in sync with the MostVisitedTileType enum
+  // in histograms.xml.
+  //
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp
+  enum MostVisitedTileType {
+    // The icon or thumbnail hasn't loaded yet.
+    NONE,
+    // The item displays a site's actual favicon or touch icon.
+    ICON_REAL,
+    // The item displays a color derived from the site's favicon or touch icon.
+    ICON_COLOR,
+    // The item displays a default gray box in place of an icon.
+    ICON_DEFAULT,
+    NUM_TILE_TYPES,
+  };
+
   // The source of the Most Visited sites.
-  enum MostVisitedSource { TOP_SITES, SUGGESTIONS_SERVICE, POPULAR, WHITELIST };
+  // A Java counterpart will be generated for this enum.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp
+  enum MostVisitedSource {
+    // Item comes from the personal top sites list.
+    TOP_SITES,
+    // Item comes from the suggestions service.
+    SUGGESTIONS_SERVICE,
+    // Item is regionally popular.
+    POPULAR,
+    // Item is on an custodian-managed whitelist.
+    WHITELIST
+  };
 
   // The observer to be notified when the list of most visited sites changes.
   class Observer {
@@ -143,7 +173,9 @@ class MostVisitedSites : public history::TopSitesObserver,
   void SetMostVisitedURLsObserver(Observer* observer, int num_sites);
 
   void AddOrRemoveBlacklistedUrl(const GURL& url, bool add_url);
-  void RecordTileTypeMetrics(const std::vector<int>& tile_types);
+  void RecordTileTypeMetrics(const std::vector<int>& tile_types,
+                             const std::vector<int>& sources,
+                             const std::vector<int>& provider_indices);
   void RecordOpenedMostVisitedItem(int index, int tile_type);
 
   // MostVisitedSitesSupervisor::Observer implementation.

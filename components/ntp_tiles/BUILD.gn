@@ -54,7 +54,7 @@ source_set("unit_tests") {
 if (is_android) {
   java_cpp_enum("ntp_tiles_enums_java") {
     sources = [
-      "most_visited_sites.cc",
+      "most_visited_sites.h",
     ]
   }
 }

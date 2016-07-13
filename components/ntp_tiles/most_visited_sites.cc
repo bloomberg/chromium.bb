@@ -47,25 +47,6 @@ const char kHistogramWhitelistName[] = "whitelist";
 const base::Feature kDisplaySuggestionsServiceTiles{
     "DisplaySuggestionsServiceTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// The visual type of a most visited tile.
-//
-// These values must stay in sync with the MostVisitedTileType enum
-// in histograms.xml.
-//
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.ntp
-enum MostVisitedTileType {
-    // The icon or thumbnail hasn't loaded yet.
-    NONE,
-    // The item displays a site's actual favicon or touch icon.
-    ICON_REAL,
-    // The item displays a color derived from the site's favicon or touch icon.
-    ICON_COLOR,
-    // The item displays a default gray box in place of an icon.
-    ICON_DEFAULT,
-    NUM_TILE_TYPES,
-};
-
 // Log an event for a given |histogram| at a given element |position|. This
 // routine exists because regular histogram macros are cached thus can't be used
 // if the name of the histogram will change at a given call site.
@@ -121,9 +102,8 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
   return url1.host() == url2.host() && url1.path() == url2.path();
 }
 
-std::string GetSourceHistogramName(
-        const MostVisitedSites::Suggestion& suggestion) {
-  switch (suggestion.source) {
+std::string GetSourceHistogramName(int source, int provider_index) {
+  switch (source) {
     case MostVisitedSites::TOP_SITES:
       return kHistogramClientName;
     case MostVisitedSites::POPULAR:
@@ -131,13 +111,17 @@ std::string GetSourceHistogramName(
     case MostVisitedSites::WHITELIST:
       return kHistogramWhitelistName;
     case MostVisitedSites::SUGGESTIONS_SERVICE:
-      return suggestion.provider_index >= 0
-                 ? base::StringPrintf(kHistogramServerFormat,
-                                      suggestion.provider_index)
+      return provider_index >= 0
+                 ? base::StringPrintf(kHistogramServerFormat, provider_index)
                  : kHistogramServerName;
   }
   NOTREACHED();
   return std::string();
+}
+
+std::string GetSourceHistogramNameFromSuggestion(
+    const MostVisitedSites::Suggestion& suggestion) {
+  return GetSourceHistogramName(suggestion.source, suggestion.provider_index);
 }
 
 void AppendSuggestions(MostVisitedSites::SuggestionsVector src,
@@ -252,15 +236,16 @@ void MostVisitedSites::AddOrRemoveBlacklistedUrl(const GURL& url,
 }
 
 void MostVisitedSites::RecordTileTypeMetrics(
-    const std::vector<int>& tile_types) {
-  DCHECK_EQ(current_suggestions_.size(), tile_types.size());
+    const std::vector<int>& tile_types,
+    const std::vector<int>& sources,
+    const std::vector<int>& provider_indices) {
   int counts_per_type[NUM_TILE_TYPES] = {0};
   for (size_t i = 0; i < tile_types.size(); ++i) {
     int tile_type = tile_types[i];
     ++counts_per_type[tile_type];
     std::string histogram = base::StringPrintf(
         "NewTabPage.TileType.%s",
-        GetSourceHistogramName(current_suggestions_[i]).c_str());
+        GetSourceHistogramName(sources[i], provider_indices[i]).c_str());
     LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
   }
 
@@ -273,16 +258,21 @@ void MostVisitedSites::RecordTileTypeMetrics(
 }
 
 void MostVisitedSites::RecordOpenedMostVisitedItem(int index, int tile_type) {
+  // TODO(treib): |current_suggestions_| could be updated before this function
+  // is called, leading to DCHECKs and/or memory corruption.  Adjust this
+  // function to work with asynchronous UI.
   DCHECK_GE(index, 0);
   DCHECK_LT(index, static_cast<int>(current_suggestions_.size()));
   std::string histogram = base::StringPrintf(
       "NewTabPage.MostVisited.%s",
-      GetSourceHistogramName(current_suggestions_[index]).c_str());
+      GetSourceHistogramNameFromSuggestion(current_suggestions_[index])
+          .c_str());
   LogHistogramEvent(histogram, index, num_sites_);
 
   histogram = base::StringPrintf(
       "NewTabPage.TileTypeClicked.%s",
-      GetSourceHistogramName(current_suggestions_[index]).c_str());
+      GetSourceHistogramNameFromSuggestion(current_suggestions_[index])
+          .c_str());
   LogHistogramEvent(histogram, tile_type, NUM_TILE_TYPES);
 }
 
@@ -557,7 +547,7 @@ void MostVisitedSites::RecordImpressionUMAMetrics() {
   for (size_t i = 0; i < current_suggestions_.size(); i++) {
     std::string histogram = base::StringPrintf(
         "NewTabPage.SuggestionsImpression.%s",
-        GetSourceHistogramName(current_suggestions_[i]).c_str());
+        GetSourceHistogramNameFromSuggestion(current_suggestions_[i]).c_str());
     LogHistogramEvent(histogram, static_cast<int>(i), num_sites_);
   }
 }

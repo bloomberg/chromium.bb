@@ -49,7 +49,7 @@
           'target_name': 'ntp_tiles_enums_java',
           'type': 'none',
           'variables': {
-            'source_file': 'ntp_tiles/most_visited_sites.cc',
+            'source_file': 'ntp_tiles/most_visited_sites.h',
           },
           'includes': [
             '../build/android/java_cpp_enum.gypi'
