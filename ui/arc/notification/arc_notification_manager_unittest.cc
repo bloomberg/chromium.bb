@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "components/arc/instance_holder.h"
 #include "components/arc/test/fake_arc_bridge_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/arc/test/fake_notifications_instance.h"
@@ -52,17 +57,18 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
 
-class ArcBridgeServiceObserver : public ArcBridgeService::Observer {
+class NotificationsObserver
+    : public InstanceHolder<mojom::NotificationsInstance>::Observer {
  public:
-  ArcBridgeServiceObserver() = default;
-  void OnNotificationsInstanceReady() override { ready_ = true; }
+  NotificationsObserver() = default;
+  void OnInstanceReady() override { ready_ = true; }
 
   bool IsReady() { return ready_; }
 
  private:
   bool ready_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcBridgeServiceObserver);
+  DISALLOW_COPY_AND_ASSIGN(NotificationsObserver);
 };
 
 }  // anonymous namespace
@@ -117,15 +123,15 @@ class ArcNotificationManagerTest : public testing::Test {
     arc_notification_manager_.reset(new ArcNotificationManager(
         service(), EmptyAccountId(), message_center_.get()));
 
-    ArcBridgeServiceObserver observer;
-    service_->AddObserver(&observer);
+    NotificationsObserver observer;
+    service_->notifications()->AddObserver(&observer);
     service_->OnNotificationsInstanceReady(
         std::move(arc_notifications_instance));
 
     while (!observer.IsReady())
       loop_.RunUntilIdle();
 
-    service_->RemoveObserver(&observer);
+    service_->notifications()->RemoveObserver(&observer);
   }
 
   void TearDown() override {
@@ -177,7 +183,7 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByConnectionClose) {
   CreateNotificationWithKey("notification3");
   EXPECT_EQ(3u, message_center()->GetVisibleNotifications().size());
 
-  arc_notification_manager()->OnNotificationsInstanceClosed();
+  arc_notification_manager()->OnInstanceClosed();
 
   EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
 }

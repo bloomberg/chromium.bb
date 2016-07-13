@@ -16,6 +16,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/bluetooth.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -32,7 +33,7 @@ class ArcBridgeService;
 
 class ArcBluetoothBridge
     : public ArcService,
-      public ArcBridgeService::Observer,
+      public InstanceHolder<mojom::BluetoothInstance>::Observer,
       public device::BluetoothAdapter::Observer,
       public device::BluetoothAdapterFactory::AdapterCallback,
       public mojom::BluetoothHost {
@@ -40,8 +41,9 @@ class ArcBluetoothBridge
   explicit ArcBluetoothBridge(ArcBridgeService* bridge_service);
   ~ArcBluetoothBridge() override;
 
-  // Overridden from ArcBridgeService::Observer:
-  void OnBluetoothInstanceReady() override;
+  // Overridden from
+  // InstanceHolder<mojom::BluetoothInstance>::Observer:
+  void OnInstanceReady() override;
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
@@ -264,7 +266,7 @@ class ArcBluetoothBridge
 
   void SendCachedDevicesFound() const;
   bool HasBluetoothInstance() const;
-  bool CheckBluetoothInstanceVersion(int32_t version_need) const;
+  bool CheckBluetoothInstanceVersion(uint32_t version_need) const;
 
   template <class T>
   T* FindGattObjectFromUuid(const std::vector<T*> objs,

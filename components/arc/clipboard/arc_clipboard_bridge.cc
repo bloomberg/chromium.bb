@@ -29,23 +29,22 @@ namespace arc {
 
 ArcClipboardBridge::ArcClipboardBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->clipboard()->AddObserver(this);
 }
 
 ArcClipboardBridge::~ArcClipboardBridge() {
   DCHECK(CalledOnValidThread());
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->clipboard()->RemoveObserver(this);
 }
 
-void ArcClipboardBridge::OnClipboardInstanceReady() {
+void ArcClipboardBridge::OnInstanceReady() {
   mojom::ClipboardInstance* clipboard_instance =
-      arc_bridge_service()->clipboard_instance();
+      arc_bridge_service()->clipboard()->instance();
   if (!clipboard_instance) {
     LOG(ERROR) << "OnClipboardInstanceReady called, "
                << "but no clipboard instance found";
     return;
   }
-
   clipboard_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
@@ -63,7 +62,7 @@ void ArcClipboardBridge::GetTextContent() {
   clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
 
   mojom::ClipboardInstance* clipboard_instance =
-      arc_bridge_service()->clipboard_instance();
+      arc_bridge_service()->clipboard()->instance();
   clipboard_instance->OnGetTextContent(ConvertString16ToMojoString(text));
 }
 

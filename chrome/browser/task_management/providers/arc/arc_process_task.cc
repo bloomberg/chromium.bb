@@ -42,10 +42,8 @@ base::string16 MakeTitle(const std::string& process_name,
     default:
       break;
   }
-  base::string16 title =
-      l10n_util::GetStringFUTF16(
-          name_template,
-          base::UTF8ToUTF16(process_name));
+  base::string16 title = l10n_util::GetStringFUTF16(
+      name_template, base::UTF8ToUTF16(process_name));
   base::i18n::AdjustStringForLocaleDirection(&title);
   return title;
 }
@@ -69,8 +67,10 @@ ArcProcessTask::ArcProcessTask(base::ProcessId pid,
                                const std::string& process_name,
                                arc::mojom::ProcessState process_state,
                                const std::vector<std::string>& packages)
-    : Task(MakeTitle(process_name, process_state), process_name,
-           nullptr /* icon */, pid),
+    : Task(MakeTitle(process_name, process_state),
+           process_name,
+           nullptr /* icon */,
+           pid),
       nspid_(nspid),
       process_name_(process_name),
       process_state_(process_state),
@@ -103,12 +103,12 @@ void ArcProcessTask::StartIconLoading() {
 
   if (result == arc::ActivityIconLoader::GetResult::FAILED_ARC_NOT_READY) {
     // Need to retry loading the icon.
-    arc::ArcBridgeService::Get()->AddObserver(this);
+    arc::ArcBridgeService::Get()->intent_helper()->AddObserver(this);
   }
 }
 
 ArcProcessTask::~ArcProcessTask() {
-  arc::ArcBridgeService::Get()->RemoveObserver(this);
+  arc::ArcBridgeService::Get()->intent_helper()->RemoveObserver(this);
 }
 
 Task::Type ArcProcessTask::GetType() const {
@@ -127,25 +127,25 @@ bool ArcProcessTask::IsKillable() {
 
 void ArcProcessTask::Kill() {
   arc::mojom::ProcessInstance* arc_process_instance =
-      arc::ArcBridgeService::Get()->process_instance();
+      arc::ArcBridgeService::Get()->process()->instance();
   if (!arc_process_instance) {
     LOG(ERROR) << "ARC process instance is not ready.";
     return;
   }
-  if (arc::ArcBridgeService::Get()->process_version() < 1) {
+  if (arc::ArcBridgeService::Get()->process()->version() < 1) {
     LOG(ERROR) << "ARC KillProcess IPC is unavailable.";
     return;
   }
-  arc_process_instance->KillProcess(
-      nspid_, "Killed manually from Task Manager");
+  arc_process_instance->KillProcess(nspid_,
+                                    "Killed manually from Task Manager");
 }
 
-void ArcProcessTask::OnIntentHelperInstanceReady() {
+void ArcProcessTask::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   VLOG(2) << "intent_helper instance is ready. Fetching the icon for "
           << package_name_;
-  arc::ArcBridgeService::Get()->RemoveObserver(this);
+  arc::ArcBridgeService::Get()->intent_helper()->RemoveObserver(this);
 
   // Instead of calling into StartIconLoading() directly, return to the main
   // loop first to make sure other ArcBridgeService observers are notified.

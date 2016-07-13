@@ -27,17 +27,18 @@ ArcNotificationManager::ArcNotificationManager(
       main_profile_id_(main_profile_id),
       message_center_(message_center),
       binding_(this) {
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->notifications()->AddObserver(this);
 }
 
 ArcNotificationManager::~ArcNotificationManager() {
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->notifications()->RemoveObserver(this);
 }
 
-void ArcNotificationManager::OnNotificationsInstanceReady() {
+void ArcNotificationManager::OnInstanceReady() {
   DCHECK(!ready_);
 
-  auto notifications_instance = arc_bridge_service()->notifications_instance();
+  auto notifications_instance =
+      arc_bridge_service()->notifications()->instance();
   if (!notifications_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
@@ -47,7 +48,7 @@ void ArcNotificationManager::OnNotificationsInstanceReady() {
   ready_ = true;
 }
 
-void ArcNotificationManager::OnNotificationsInstanceClosed() {
+void ArcNotificationManager::OnInstanceClosed() {
   DCHECK(ready_);
   while (!items_.empty()) {
     auto it = items_.begin();
@@ -109,7 +110,8 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   std::unique_ptr<ArcNotificationItem> item = std::move(it->second);
   items_.erase(it);
 
-  auto notifications_instance = arc_bridge_service()->notifications_instance();
+  auto notifications_instance =
+      arc_bridge_service()->notifications()->instance();
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -130,7 +132,8 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
     return;
   }
 
-  auto notifications_instance = arc_bridge_service()->notifications_instance();
+  auto notifications_instance =
+      arc_bridge_service()->notifications()->instance();
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -144,14 +147,16 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
 }
 
 void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
-    const std::string& key, int button_index) {
+    const std::string& key,
+    int button_index) {
   if (items_.find(key) == items_.end()) {
     VLOG(3) << "Chrome requests to fire a click event on notification (key: "
             << key << "), but it is gone.";
     return;
   }
 
-  auto notifications_instance = arc_bridge_service()->notifications_instance();
+  auto notifications_instance =
+      arc_bridge_service()->notifications()->instance();
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -178,8 +183,8 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
       command = mojom::ArcNotificationEvent::BUTTON_5_CLICKED;
       break;
     default:
-      VLOG(3) << "Invalid button index (key: " << key << ", index: " <<
-          button_index << ").";
+      VLOG(3) << "Invalid button index (key: " << key
+              << ", index: " << button_index << ").";
       return;
   }
 

@@ -365,7 +365,7 @@ void ArcSettingsServiceImpl::SyncProxySettings() const {
 void ArcSettingsServiceImpl::SendSettingsBroadcast(
     const std::string& action,
     const base::DictionaryValue& extras) const {
-  if (!arc_bridge_service_->intent_helper_instance()) {
+  if (!arc_bridge_service_->intent_helper()->instance()) {
     LOG(ERROR) << "IntentHelper instance is not ready.";
     return;
   }
@@ -374,8 +374,8 @@ void ArcSettingsServiceImpl::SendSettingsBroadcast(
   bool write_success = base::JSONWriter::Write(extras, &extras_json);
   DCHECK(write_success);
 
-  if (arc_bridge_service_->intent_helper_version() >= 1) {
-    arc_bridge_service_->intent_helper_instance()->SendBroadcast(
+  if (arc_bridge_service_->intent_helper()->version() >= 1) {
+    arc_bridge_service_->intent_helper()->instance()->SendBroadcast(
         action, "org.chromium.arc.intent_helper",
         "org.chromium.arc.intent_helper.SettingsReceiver", extras_json);
   }
@@ -383,18 +383,18 @@ void ArcSettingsServiceImpl::SendSettingsBroadcast(
 
 ArcSettingsService::ArcSettingsService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service) {
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->intent_helper()->AddObserver(this);
 }
 
 ArcSettingsService::~ArcSettingsService() {
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->intent_helper()->RemoveObserver(this);
 }
 
-void ArcSettingsService::OnIntentHelperInstanceReady() {
+void ArcSettingsService::OnInstanceReady() {
   impl_.reset(new ArcSettingsServiceImpl(arc_bridge_service()));
 }
 
-void ArcSettingsService::OnIntentHelperInstanceClosed() {
+void ArcSettingsService::OnInstanceClosed() {
   impl_.reset();
 }
 

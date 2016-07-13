@@ -43,7 +43,7 @@ ArcProcessService::ArcProcessService(ArcBridgeService* bridge_service)
       worker_pool_(new SequencedWorkerPool(1, "arc_process_manager")),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->process()->AddObserver(this);
   DCHECK(!g_arc_process_service);
   g_arc_process_service = this;
   // Not intended to be used from the creating thread.
@@ -53,7 +53,7 @@ ArcProcessService::ArcProcessService(ArcBridgeService* bridge_service)
 ArcProcessService::~ArcProcessService() {
   DCHECK(g_arc_process_service == this);
   g_arc_process_service = nullptr;
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->process()->RemoveObserver(this);
   worker_pool_->Shutdown();
 }
 
@@ -63,7 +63,7 @@ ArcProcessService* ArcProcessService::Get() {
   return g_arc_process_service;
 }
 
-void ArcProcessService::OnProcessInstanceReady() {
+void ArcProcessService::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   worker_pool_->PostNamedSequencedWorkerTask(
       kSequenceToken,
@@ -82,7 +82,7 @@ bool ArcProcessService::RequestProcessList(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   arc::mojom::ProcessInstance* process_instance =
-      arc_bridge_service()->process_instance();
+      arc_bridge_service()->process()->instance();
   if (!process_instance) {
     return false;
   }

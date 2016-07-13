@@ -53,14 +53,14 @@ arc::mojom::AppInstance* GetAppInstance(int required_version,
     return nullptr;
   }
 
-  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
   if (!app_instance) {
     VLOG(2) << "Request to " << service_name
             << " when mojom::app_instance is not ready.";
     return nullptr;
   }
 
-  int bridge_version = bridge_service->app_version();
+  int bridge_version = bridge_service->app()->version();
   if (bridge_version < required_version) {
     VLOG(2) << "Request to " << service_name << " when Arc version "
             << bridge_version << " does not support it.";
@@ -109,10 +109,8 @@ class LaunchAppWithoutSize {
  public:
   LaunchAppWithoutSize(content::BrowserContext* context,
                        const std::string& app_id,
-                       bool landscape_mode) :
-      context_(context),
-      app_id_(app_id),
-      landscape_mode_(landscape_mode) {}
+                       bool landscape_mode)
+      : context_(context), app_id_(app_id), landscape_mode_(landscape_mode) {}
 
   // This will launch the request and after the return the creator does not
   // need to delete the object anymore.
@@ -130,7 +128,8 @@ class LaunchAppWithoutSize {
     // capability flags like [PHONE/TABLET]_[LANDSCAPE/PORTRAIT] and which
     // might also return the used DP->PIX conversion constant to do better
     // size calculations.
-    bool result = CanHandleResolution(context_, app_id_, landscape_,
+    bool result = CanHandleResolution(
+        context_, app_id_, landscape_,
         base::Bind(&LaunchAppWithoutSize::Callback, base::Unretained(this)));
     if (!result)
       delete this;
@@ -200,9 +199,8 @@ bool LaunchAppWithRect(content::BrowserContext* context,
 }
 
 bool LaunchAndroidSettingsApp(content::BrowserContext* context) {
-  return arc::LaunchApp(context,
-                        kSettingsAppId,
-                        true);  // landscape_layout
+  constexpr bool kUseLandscapeLayout = true;
+  return arc::LaunchApp(context, kSettingsAppId, kUseLandscapeLayout);
 }
 
 bool LaunchApp(content::BrowserContext* context, const std::string& app_id) {
@@ -225,15 +223,14 @@ bool LaunchApp(content::BrowserContext* context,
     return true;
   }
 
-  return (new LaunchAppWithoutSize(context,
-                                   app_id,
-                                   landscape_layout))->LaunchAndRelease();
+  return (new LaunchAppWithoutSize(context, app_id, landscape_layout))
+      ->LaunchAndRelease();
 }
 
 bool CanHandleResolution(content::BrowserContext* context,
-    const std::string& app_id,
-    const gfx::Rect& rect,
-    const CanHandleResolutionCallback& callback) {
+                         const std::string& app_id,
+                         const gfx::Rect& rect,
+                         const CanHandleResolutionCallback& callback) {
   const ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
   DCHECK(prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);

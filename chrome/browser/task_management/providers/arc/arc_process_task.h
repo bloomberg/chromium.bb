@@ -14,12 +14,15 @@
 #include "chrome/browser/task_management/providers/task.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/process.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 
 namespace task_management {
 
 // Defines a task that represents an ARC process.
-class ArcProcessTask : public Task, public arc::ArcBridgeService::Observer {
+class ArcProcessTask
+    : public Task,
+      public arc::InstanceHolder<arc::mojom::IntentHelperInstance>::Observer {
  public:
   ArcProcessTask(base::ProcessId pid,
                  base::ProcessId nspid,
@@ -34,8 +37,8 @@ class ArcProcessTask : public Task, public arc::ArcBridgeService::Observer {
   bool IsKillable() override;
   void Kill() override;
 
-  // arc::ArcBridgeService::Observer:
-  void OnIntentHelperInstanceReady() override;
+  // arc::InstanceHolder<arc::mojom::IntentHelperInstance>::Observer:
+  void OnInstanceReady() override;
 
   void SetProcessState(arc::mojom::ProcessState process_state);
 

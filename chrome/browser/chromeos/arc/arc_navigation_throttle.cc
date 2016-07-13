@@ -35,12 +35,12 @@ mojom::IntentHelperInstance* GetIntentHelper() {
     return nullptr;
   }
   mojom::IntentHelperInstance* intent_helper_instance =
-      bridge_service->intent_helper_instance();
+      bridge_service->intent_helper()->instance();
   if (!intent_helper_instance) {
     VLOG(1) << "ARC intent helper instance is not ready.";
     return nullptr;
   }
-  if (bridge_service->intent_helper_version() < kMinInstanceVersion) {
+  if (bridge_service->intent_helper()->version() < kMinInstanceVersion) {
     VLOG(1) << "ARC intent helper instance is too old.";
     return nullptr;
   }

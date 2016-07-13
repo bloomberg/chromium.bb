@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H
-#define COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H
+#ifndef COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H_
+#define COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H_
 
 #include <memory>
 
@@ -16,8 +16,7 @@
 namespace arc {
 
 // This class represents as a simple proxy of StorageManager to Chrome OS.
-class ArcStorageManager : public ArcService,
-                          public ArcBridgeService::Observer {
+class ArcStorageManager : public ArcService {
  public:
   explicit ArcStorageManager(ArcBridgeService* bridge_service);
   ~ArcStorageManager() override;
@@ -27,16 +26,13 @@ class ArcStorageManager : public ArcService,
   // nullptr (or aborts on Debug build).
   static ArcStorageManager* Get();
 
-  // ArcBridgeService::Observer
-  void OnStorageManagerInstanceReady() override;
-
   // Opens detailed preference screen of private volume on ARC.
   // Returns false when an instance of ARC-side isn't ready yet.
   bool OpenPrivateVolumeSettings();
 
   // Gets storage usage of all application's APK, data, and cache size.
-  using GetApplicationsSizeCallback = base::Callback<
-      void(bool succeeded, arc::mojom::ApplicationsSizePtr)>;
+  using GetApplicationsSizeCallback =
+      base::Callback<void(bool succeeded, arc::mojom::ApplicationsSizePtr)>;
   bool GetApplicationsSize(const GetApplicationsSizeCallback& callback);
 
   // Deletes all applications' cache files.
@@ -50,4 +46,4 @@ class ArcStorageManager : public ArcService,
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H
+#endif  // COMPONENTS_ARC_STORAGE_MANAGER_ARC_STORAGE_MANAGER_H_

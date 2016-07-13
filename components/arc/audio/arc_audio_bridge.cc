@@ -13,7 +13,7 @@ namespace arc {
 
 ArcAudioBridge::ArcAudioBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->audio()->AddObserver(this);
   if (chromeos::CrasAudioHandler::IsInitialized()) {
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
     cras_audio_handler_->AddAudioObserver(this);
@@ -21,21 +21,21 @@ ArcAudioBridge::ArcAudioBridge(ArcBridgeService* bridge_service)
 }
 
 ArcAudioBridge::~ArcAudioBridge() {
-  arc_bridge_service()->RemoveObserver(this);
   if (cras_audio_handler_ && chromeos::CrasAudioHandler::IsInitialized()) {
     cras_audio_handler_->RemoveAudioObserver(this);
   }
+  arc_bridge_service()->audio()->RemoveObserver(this);
 }
 
-void ArcAudioBridge::OnAudioInstanceReady() {
+void ArcAudioBridge::OnInstanceReady() {
   mojom::AudioInstance* audio_instance =
-      arc_bridge_service()->audio_instance();
+      arc_bridge_service()->audio()->instance();
   if (!audio_instance) {
     LOG(ERROR) << "OnAudioInstanceReady called, "
                << "but no audio instance found";
     return;
   }
-  if (arc_bridge_service()->audio_version() < 1) {
+  if (arc_bridge_service()->audio()->version() < 1) {
     LOG(WARNING) << "Audio instance is too old and does not support Init()";
     return;
   }
@@ -44,8 +44,8 @@ void ArcAudioBridge::OnAudioInstanceReady() {
 
 void ArcAudioBridge::ShowVolumeControls() {
   VLOG(2) << "ArcAudioBridge::ShowVolumeControls";
-  ash::WmShell::Get()->system_tray_notifier()->
-      NotifyAudioOutputVolumeChanged(0, 0);
+  ash::WmShell::Get()->system_tray_notifier()->NotifyAudioOutputVolumeChanged(
+      0, 0);
 }
 
 void ArcAudioBridge::OnAudioNodesChanged() {
@@ -53,18 +53,18 @@ void ArcAudioBridge::OnAudioNodesChanged() {
   const chromeos::AudioDevice* output_device =
       cras_audio_handler_->GetDeviceFromId(output_id);
   bool headphone_inserted =
-    (output_device &&
-     output_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_HEADPHONE);
+      (output_device &&
+       output_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_HEADPHONE);
 
   uint64_t input_id = cras_audio_handler_->GetPrimaryActiveInputNode();
   const chromeos::AudioDevice* input_device =
       cras_audio_handler_->GetDeviceFromId(input_id);
   bool microphone_inserted =
-    (input_device &&
-     input_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_MIC);
+      (input_device &&
+       input_device->type == chromeos::AudioDeviceType::AUDIO_TYPE_MIC);
 
-  VLOG(1) << "HEADPHONE " << headphone_inserted
-          << " MICROPHONE " << microphone_inserted;
+  VLOG(1) << "HEADPHONE " << headphone_inserted << " MICROPHONE "
+          << microphone_inserted;
   SendSwitchState(headphone_inserted, microphone_inserted);
 }
 
@@ -81,7 +81,8 @@ void ArcAudioBridge::SendSwitchState(bool headphone_inserted,
   }
 
   VLOG(1) << "Send switch state " << switch_state;
-  mojom::AudioInstance* audio_instance = arc_bridge_service()->audio_instance();
+  mojom::AudioInstance* audio_instance =
+      arc_bridge_service()->audio()->instance();
   if (audio_instance)
     audio_instance->NotifySwitchState(switch_state);
 }

@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/instance_holder.h"
 #include "components/policy/core/common/policy_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -27,7 +28,7 @@ enum ArcCertsSyncMode : int32_t {
 };
 
 class ArcPolicyBridge : public ArcService,
-                        public ArcBridgeService::Observer,
+                        public InstanceHolder<mojom::PolicyInstance>::Observer,
                         public mojom::PolicyHost,
                         public policy::PolicyService::Observer {
  public:
@@ -38,9 +39,9 @@ class ArcPolicyBridge : public ArcService,
 
   void OverrideIsManagedForTesting(bool is_managed);
 
-  // ArcBridgeService::Observer overrides.
-  void OnPolicyInstanceReady() override;
-  void OnPolicyInstanceClosed() override;
+  // InstanceHolder<mojom::PolicyInstance>::Observer overrides.
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // PolicyHost overrides.
   void GetPolicies(const GetPoliciesCallback& callback) override;

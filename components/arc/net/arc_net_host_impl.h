@@ -17,6 +17,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/net.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace base {
@@ -31,7 +32,7 @@ class ArcBridgeService;
 
 // Private implementation of ArcNetHost.
 class ArcNetHostImpl : public ArcService,
-                       public ArcBridgeService::Observer,
+                       public InstanceHolder<mojom::NetInstance>::Observer,
                        public chromeos::NetworkStateHandlerObserver,
                        public mojom::NetHost {
  public:
@@ -77,8 +78,8 @@ class ArcNetHostImpl : public ArcService,
   void DeviceListChanged() override;
   void GetDefaultNetwork(const GetDefaultNetworkCallback& callback) override;
 
-  // Overridden from ArcBridgeService::Observer:
-  void OnNetInstanceReady() override;
+  // Overridden from ArcBridgeService::InterfaceObserver<mojom::NetInstance>:
+  void OnInstanceReady() override;
 
  private:
   void DefaultNetworkSuccessCallback(const std::string& service_path,

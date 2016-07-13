@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 
+#include <string>
+
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
@@ -212,15 +214,15 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
   arc::mojom::AppInstance* GetAppInstance() {
     arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
     arc::mojom::AppInstance* app_instance =
-        bridge_service ? bridge_service->app_instance() : nullptr;
+        bridge_service ? bridge_service->app()->instance() : nullptr;
     if (!app_instance) {
       VLOG(2) << "Arc Bridge is not available.";
       return nullptr;
     }
 
-    if (bridge_service->app_version() < 3) {
+    if (bridge_service->app()->version() < 3) {
       VLOG(2) << "Arc Bridge has old version for apps."
-              << bridge_service->app_version();
+              << bridge_service->app()->version();
       return nullptr;
     }
     return app_instance;

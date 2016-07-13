@@ -10,19 +10,21 @@
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
 
-class ArcClipboardBridge : public ArcService,
-                           public ArcBridgeService::Observer,
-                           public mojom::ClipboardHost {
+class ArcClipboardBridge
+    : public ArcService,
+      public InstanceHolder<mojom::ClipboardInstance>::Observer,
+      public mojom::ClipboardHost {
  public:
   explicit ArcClipboardBridge(ArcBridgeService* bridge_service);
   ~ArcClipboardBridge() override;
 
-  // ArcBridgeService::Observer overrides.
-  void OnClipboardInstanceReady() override;
+  // InstanceHolder<mojom::ClipboardInstance>::Observer overrides.
+  void OnInstanceReady() override;
 
   // mojom::ClipboardHost overrides.
   void SetTextContent(const mojo::String& text) override;

@@ -9,6 +9,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/video.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
@@ -21,15 +22,16 @@ namespace arc {
 // process. The corresponding end "GpuArcVideoService" runs in the GPU process.
 //
 // Lives on the UI thread.
-class GpuArcVideoServiceHost : public arc::ArcService,
-                               public arc::ArcBridgeService::Observer,
-                               public arc::mojom::VideoHost {
+class GpuArcVideoServiceHost
+    : public arc::ArcService,
+      public arc::InstanceHolder<mojom::VideoInstance>::Observer,
+      public arc::mojom::VideoHost {
  public:
   explicit GpuArcVideoServiceHost(arc::ArcBridgeService* bridge_service);
   ~GpuArcVideoServiceHost() override;
 
-  // arc::ArcBridgeService::Observer implementation.
-  void OnVideoInstanceReady() override;
+  // arc::InstanceHolder<mojom::VideoInstance>::Observer implementation.
+  void OnInstanceReady() override;
 
   // arc::mojom::VideoHost implementation.
   void DeprecatedOnRequestArcVideoAcceleratorChannel(

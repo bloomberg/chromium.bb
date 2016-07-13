@@ -14,7 +14,7 @@ namespace arc {
 ArcWindowManagerBridge::ArcWindowManagerBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
       current_mode_(mojom::WindowManagerMode::MODE_NORMAL) {
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->window_manager()->AddObserver(this);
   if (!ash::WmShell::HasInstance()) {
     // The shell gets always loaded before ARC. If there is no shell it can only
     // mean that a unit test is running.
@@ -24,7 +24,7 @@ ArcWindowManagerBridge::ArcWindowManagerBridge(ArcBridgeService* bridge_service)
   ash::WmShell::Get()->AddShellObserver(this);
 }
 
-void ArcWindowManagerBridge::OnWindowManagerInstanceReady() {
+void ArcWindowManagerBridge::OnInstanceReady() {
   if (!ash::WmShell::HasInstance()) {
     // The shell gets always loaded before ARC. If there is no shell it can only
     // mean that a unit test is running.
@@ -42,7 +42,7 @@ void ArcWindowManagerBridge::OnWindowManagerInstanceReady() {
 ArcWindowManagerBridge::~ArcWindowManagerBridge() {
   if (ash::WmShell::HasInstance())
     ash::WmShell::Get()->RemoveShellObserver(this);
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->window_manager()->RemoveObserver(this);
 }
 
 void ArcWindowManagerBridge::OnMaximizeModeStarted() {
@@ -57,12 +57,12 @@ void ArcWindowManagerBridge::SendWindowManagerModeChange(
     bool touch_view_enabled) {
   // We let the ArcBridgeService check that we are calling on the right thread.
   DCHECK(ArcBridgeService::Get() != nullptr);
-  mojom::WindowManagerMode wm_mode = touch_view_enabled ?
-      mojom::WindowManagerMode::MODE_TOUCH_VIEW :
-      mojom::WindowManagerMode::MODE_NORMAL;
+  mojom::WindowManagerMode wm_mode =
+      touch_view_enabled ? mojom::WindowManagerMode::MODE_TOUCH_VIEW
+                         : mojom::WindowManagerMode::MODE_NORMAL;
 
   mojom::WindowManagerInstance* wm_instance =
-      arc_bridge_service()->window_manager_instance();
+      arc_bridge_service()->window_manager()->instance();
   if (!wm_instance || wm_mode == current_mode_) {
     return;
   }

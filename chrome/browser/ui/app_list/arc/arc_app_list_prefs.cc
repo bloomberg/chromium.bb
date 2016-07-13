@@ -108,9 +108,9 @@ bool InstallIconFromFileThread(const std::string& app_id,
 
   base::CreateDirectory(icon_path.DirName());
 
-  int wrote = base::WriteFile(icon_path,
-                              reinterpret_cast<const char*>(&content_png[0]),
-                              content_png.size());
+  int wrote =
+      base::WriteFile(icon_path, reinterpret_cast<const char*>(&content_png[0]),
+                      content_png.size());
   if (wrote != static_cast<int>(content_png.size())) {
     VLOG(2) << "Failed to write ARC icon file: " << icon_path.MaybeAsASCII()
             << ".";
@@ -234,6 +234,7 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
   DCHECK(bridge_service);
 
+  bridge_service->app()->AddObserver(this);
   bridge_service->AddObserver(this);
   if (!bridge_service->ready())
     OnBridgeStopped();
@@ -241,8 +242,10 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
 
 ArcAppListPrefs::~ArcAppListPrefs() {
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (bridge_service)
+  if (bridge_service) {
     bridge_service->RemoveObserver(this);
+    bridge_service->app()->RemoveObserver(this);
+  }
 
   arc::ArcAuthService* auth_service = arc::ArcAuthService::Get();
   if (auth_service)
@@ -258,35 +261,34 @@ base::FilePath ArcAppListPrefs::GetIconPath(
     ui::ScaleFactor scale_factor) const {
   const base::FilePath app_path = GetAppPath(app_id);
   switch (scale_factor) {
-  case ui::SCALE_FACTOR_100P:
-    return app_path.AppendASCII("icon_100p.png");
-  case ui::SCALE_FACTOR_125P:
-    return app_path.AppendASCII("icon_125p.png");
-  case ui::SCALE_FACTOR_133P:
-    return app_path.AppendASCII("icon_133p.png");
-  case ui::SCALE_FACTOR_140P:
-    return app_path.AppendASCII("icon_140p.png");
-  case ui::SCALE_FACTOR_150P:
-    return app_path.AppendASCII("icon_150p.png");
-  case ui::SCALE_FACTOR_180P:
-    return app_path.AppendASCII("icon_180p.png");
-  case ui::SCALE_FACTOR_200P:
-    return app_path.AppendASCII("icon_200p.png");
-  case ui::SCALE_FACTOR_250P:
-    return app_path.AppendASCII("icon_250p.png");
-  case ui::SCALE_FACTOR_300P:
-    return app_path.AppendASCII("icon_300p.png");
-  default:
-    NOTREACHED();
-    return base::FilePath();
+    case ui::SCALE_FACTOR_100P:
+      return app_path.AppendASCII("icon_100p.png");
+    case ui::SCALE_FACTOR_125P:
+      return app_path.AppendASCII("icon_125p.png");
+    case ui::SCALE_FACTOR_133P:
+      return app_path.AppendASCII("icon_133p.png");
+    case ui::SCALE_FACTOR_140P:
+      return app_path.AppendASCII("icon_140p.png");
+    case ui::SCALE_FACTOR_150P:
+      return app_path.AppendASCII("icon_150p.png");
+    case ui::SCALE_FACTOR_180P:
+      return app_path.AppendASCII("icon_180p.png");
+    case ui::SCALE_FACTOR_200P:
+      return app_path.AppendASCII("icon_200p.png");
+    case ui::SCALE_FACTOR_250P:
+      return app_path.AppendASCII("icon_250p.png");
+    case ui::SCALE_FACTOR_300P:
+      return app_path.AppendASCII("icon_300p.png");
+    default:
+      NOTREACHED();
+      return base::FilePath();
   }
 }
 
 void ArcAppListPrefs::RequestIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor) {
   if (!IsRegistered(app_id)) {
-    VLOG(2) << "Request to load icon for non-registered app: "
-            <<  app_id << ".";
+    VLOG(2) << "Request to load icon for non-registered app: " << app_id << ".";
     return;
   }
 
@@ -302,7 +304,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     NOTREACHED();
     return;
   }
-  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
   if (!app_instance) {
     // AppInstance should be ready since we have app_id in ready_apps_.
     NOTREACHED();
@@ -311,7 +313,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
 
   std::unique_ptr<AppInfo> app_info = GetApp(app_id);
   if (!app_info) {
-    VLOG(2) << "Failed to get app info: " <<  app_id << ".";
+    VLOG(2) << "Failed to get app info: " << app_id << ".";
     return;
   }
 
@@ -345,9 +347,9 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
   // In case app is not ready, defer this request.
   if (!ready_apps_.count(app_id)) {
     SetNotificationsEnabledDeferred(prefs_).Put(app_id, enabled);
-    FOR_EACH_OBSERVER(Observer, observer_list_,
-                      OnNotificationsEnabledChanged(
-                          app_info->package_name, enabled));
+    FOR_EACH_OBSERVER(
+        Observer, observer_list_,
+        OnNotificationsEnabledChanged(app_info->package_name, enabled));
     return;
   }
 
@@ -357,14 +359,14 @@ void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
     return;
   }
 
-  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
   if (!app_instance) {
     // AppInstance should be ready since we have app_id in ready_apps_.
     NOTREACHED();
     return;
   }
 
-  if (bridge_service->app_version() < kSetNotificationsEnabledMinVersion) {
+  if (bridge_service->app()->version() < kSetNotificationsEnabledMinVersion) {
     VLOG(2) << "app version is too small to set notifications enabled.";
     return;
   }
@@ -425,8 +427,8 @@ std::vector<std::string> ArcAppListPrefs::GetAppIdsNoArcEnabledCheck() const {
 
   // crx_file::id_util is de-facto utility for id generation.
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
-  for (base::DictionaryValue::Iterator app_id(*apps);
-       !app_id.IsAtEnd(); app_id.Advance()) {
+  for (base::DictionaryValue::Iterator app_id(*apps); !app_id.IsAtEnd();
+       app_id.Advance()) {
     if (!crx_file::id_util::IdIsValid(app_id.key()))
       continue;
 
@@ -524,8 +526,7 @@ void ArcAppListPrefs::DisableAllApps() {
   std::set<std::string> old_ready_apps;
   old_ready_apps.swap(ready_apps_);
   for (auto& app_id : old_ready_apps) {
-    FOR_EACH_OBSERVER(Observer,
-                      observer_list_,
+    FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnAppReadyChanged(app_id, false));
   }
 }
@@ -542,8 +543,7 @@ void ArcAppListPrefs::NotifyRegisteredApps() {
       NOTREACHED();
       continue;
     }
-    FOR_EACH_OBSERVER(Observer,
-                      observer_list_,
+    FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnAppRegistered(app_id, *app_info));
   }
 
@@ -567,13 +567,13 @@ void ArcAppListPrefs::OnBridgeStopped() {
   DisableAllApps();
 }
 
-void ArcAppListPrefs::OnAppInstanceReady() {
+void ArcAppListPrefs::OnInstanceReady() {
   arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
   if (!bridge_service) {
     NOTREACHED();
     return;
   }
-  arc::mojom::AppInstance* app_instance = bridge_service->app_instance();
+  arc::mojom::AppInstance* app_instance = bridge_service->app()->instance();
   if (!app_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
@@ -583,7 +583,7 @@ void ArcAppListPrefs::OnAppInstanceReady() {
   app_instance->RefreshAppList();
 }
 
-void ArcAppListPrefs::OnAppInstanceClosed() {
+void ArcAppListPrefs::OnInstanceClosed() {
   ready_apps_.clear();
 }
 
@@ -626,8 +626,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
     ready_apps_.insert(app_id);
 
   if (was_registered) {
-    FOR_EACH_OBSERVER(Observer,
-                      observer_list_,
+    FOR_EACH_OBSERVER(Observer, observer_list_,
                       OnAppReadyChanged(app_id, true));
   } else {
     AppInfo app_info(name, package_name, activity, intent_uri, icon_resource_id,
@@ -674,14 +673,11 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   // app_id may be released by observers, get the path first.
   const base::FilePath app_path = GetAppPath(app_id);
 
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
-                    OnAppRemoved(app_id));
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnAppRemoved(app_id));
 
   // Remove local data on file system.
   content::BrowserThread::GetBlockingPool()->PostTask(
-      FROM_HERE,
-      base::Bind(&DeleteAppFolderFromFileThread, app_path));
+      FROM_HERE, base::Bind(&DeleteAppFolderFromFileThread, app_path));
 }
 
 void ArcAppListPrefs::OnAppListRefreshed(
@@ -755,8 +751,8 @@ void ArcAppListPrefs::OnInstallShortcut(arc::mojom::ShortcutInfoPtr shortcut) {
 void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package_name) {
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   std::vector<std::string> apps_to_remove;
-  for (base::DictionaryValue::Iterator app_it(*apps);
-       !app_it.IsAtEnd(); app_it.Advance()) {
+  for (base::DictionaryValue::Iterator app_it(*apps); !app_it.IsAtEnd();
+       app_it.Advance()) {
     const base::Value* value = &app_it.value();
     const base::DictionaryValue* app;
     if (!value->GetAsDictionary(&app)) {
@@ -817,8 +813,7 @@ void ArcAppListPrefs::OnIcon(const mojo::String& app_id,
 void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
                                     const mojo::String& package_name,
                                     const mojo::String& activity) {
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
+  FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnTaskCreated(task_id, package_name, activity));
 }
 
@@ -831,10 +826,11 @@ void ArcAppListPrefs::OnTaskSetActive(int32_t task_id) {
 }
 
 void ArcAppListPrefs::OnNotificationsEnabledChanged(
-    const mojo::String& package_name, bool enabled) {
+    const mojo::String& package_name,
+    bool enabled) {
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
-  for (base::DictionaryValue::Iterator app(*apps);
-       !app.IsAtEnd(); app.Advance()) {
+  for (base::DictionaryValue::Iterator app(*apps); !app.IsAtEnd();
+       app.Advance()) {
     const base::DictionaryValue* app_dict;
     std::string app_package_name;
     if (!app.value().GetAsDictionary(&app_dict) ||
@@ -902,17 +898,12 @@ void ArcAppListPrefs::InstallIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor,
                                   const std::vector<uint8_t>& content_png) {
   base::FilePath icon_path = GetIconPath(app_id, scale_factor);
-  base::PostTaskAndReplyWithResult(content::BrowserThread::GetBlockingPool(),
-                                   FROM_HERE,
-                                   base::Bind(&InstallIconFromFileThread,
-                                              app_id,
-                                              scale_factor,
-                                              icon_path,
-                                              content_png),
-                                   base::Bind(&ArcAppListPrefs::OnIconInstalled,
-                                              weak_ptr_factory_.GetWeakPtr(),
-                                              app_id,
-                                              scale_factor));
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(), FROM_HERE,
+      base::Bind(&InstallIconFromFileThread, app_id, scale_factor, icon_path,
+                 content_png),
+      base::Bind(&ArcAppListPrefs::OnIconInstalled,
+                 weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
 }
 
 void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
@@ -922,8 +913,7 @@ void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
   if (!install_succeed)
     return;
 
-  FOR_EACH_OBSERVER(Observer,
-                    observer_list_,
+  FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnAppIconUpdated(app_id, scale_factor));
 }
 

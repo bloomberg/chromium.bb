@@ -7,12 +7,14 @@
 
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/policy.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/arc/test/fake_arc_bridge_instance.h"
 
 namespace arc {
 
-class FakePolicyInstance : public mojom::PolicyInstance,
-                           public arc::ArcBridgeService::Observer {
+class FakePolicyInstance
+    : public mojom::PolicyInstance,
+      public arc::InstanceHolder<mojom::PolicyInstance>::Observer {
  public:
   // bridge_service should not be destroyed before the destructor is called.
   FakePolicyInstance(mojo::InterfaceRequest<mojom::PolicyInstance> request,
@@ -23,8 +25,8 @@ class FakePolicyInstance : public mojom::PolicyInstance,
   void Init(mojom::PolicyHostPtr host_ptr) override;
   void OnPolicyUpdated() override;
 
-  // arc::ArcBridgeService::Observer
-  void OnPolicyInstanceReady() override;
+  // arc::InstanceHolder<mojom::PolicyInstance>::Observer
+  void OnInstanceReady() override;
 
   void WaitForOnPolicyInstanceReady();
   void CallGetPolicies(const mojom::PolicyHost::GetPoliciesCallback& callback);

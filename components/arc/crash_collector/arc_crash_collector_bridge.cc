@@ -14,26 +14,25 @@
 #include "mojo/edk/embedder/embedder.h"
 
 namespace {
-
 const char kCrashReporterPath[] = "/sbin/crash_reporter";
-
 }
 
 namespace arc {
 
 ArcCrashCollectorBridge::ArcCrashCollectorBridge(ArcBridgeService* bridge)
     : ArcService(bridge), binding_(this) {
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->crash_collector()->AddObserver(this);
 }
 
 ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->crash_collector()->RemoveObserver(this);
 }
 
-void ArcCrashCollectorBridge::OnCrashCollectorInstanceReady() {
+void ArcCrashCollectorBridge::OnInstanceReady() {
   mojom::CrashCollectorHostPtr host_ptr;
   binding_.Bind(mojo::GetProxy(&host_ptr));
-  arc_bridge_service()->crash_collector_instance()->Init(std::move(host_ptr));
+  arc_bridge_service()->crash_collector()->instance()->Init(
+      std::move(host_ptr));
 }
 
 void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
@@ -42,19 +41,16 @@ void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
   mojo::edk::PassWrappedPlatformHandle(pipe.get().value(), &handle);
 
   base::FileHandleMappingVector fd_map = {
-    std::make_pair(handle.get().handle, STDIN_FILENO)
-  };
+      std::make_pair(handle.get().handle, STDIN_FILENO)};
 
   base::LaunchOptions options;
   options.fds_to_remap = &fd_map;
 
-  auto process = base::LaunchProcess({
-    kCrashReporterPath,
-    "--arc_java_crash=" + type.get(),
-    "--arc_device=" + device_,
-    "--arc_board=" + board_,
-    "--arc_cpu_abi=" + cpu_abi_
-  }, options);
+  auto process =
+      base::LaunchProcess({kCrashReporterPath, "--arc_java_crash=" + type.get(),
+                           "--arc_device=" + device_, "--arc_board=" + board_,
+                           "--arc_cpu_abi=" + cpu_abi_},
+                          options);
 
   int exit_code;
   if (!process.WaitForExit(&exit_code)) {

@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/app.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/layout.h"
@@ -44,10 +45,12 @@ class PrefRegistrySyncable;
 // information is used to pre-create non-ready app items while ARC bridge
 // service is not ready to provide information about available ARC apps.
 // NOTE: ArcAppListPrefs is only created for the primary user.
-class ArcAppListPrefs : public KeyedService,
-                        public arc::mojom::AppHost,
-                        public arc::ArcBridgeService::Observer,
-                        public arc::ArcAuthService::Observer {
+class ArcAppListPrefs
+    : public KeyedService,
+      public arc::mojom::AppHost,
+      public arc::ArcBridgeService::Observer,
+      public arc::InstanceHolder<arc::mojom::AppInstance>::Observer,
+      public arc::ArcAuthService::Observer {
  public:
   struct AppInfo {
     AppInfo(const std::string& name,
@@ -207,8 +210,10 @@ class ArcAppListPrefs : public KeyedService,
 
   // arc::ArcBridgeService::Observer:
   void OnBridgeStopped() override;
-  void OnAppInstanceReady() override;
-  void OnAppInstanceClosed() override;
+
+  // arc::InstanceHolder<arc::mojom::AppInstance>::Observer:
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // arc::mojom::AppHost:
   void OnAppListRefreshed(mojo::Array<arc::mojom::AppInfoPtr> apps) override;

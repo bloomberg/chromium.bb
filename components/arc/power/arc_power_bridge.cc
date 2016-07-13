@@ -16,16 +16,17 @@ namespace arc {
 
 ArcPowerBridge::ArcPowerBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->power()->AddObserver(this);
 }
 
 ArcPowerBridge::~ArcPowerBridge() {
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->power()->RemoveObserver(this);
   ReleaseAllDisplayWakeLocks();
 }
 
-void ArcPowerBridge::OnPowerInstanceReady() {
-  mojom::PowerInstance* power_instance = arc_bridge_service()->power_instance();
+void ArcPowerBridge::OnInstanceReady() {
+  mojom::PowerInstance* power_instance =
+      arc_bridge_service()->power()->instance();
   if (!power_instance) {
     LOG(ERROR) << "OnPowerInstanceReady called, but no power instance found";
     return;
@@ -35,14 +36,15 @@ void ArcPowerBridge::OnPowerInstanceReady() {
   ash::Shell::GetInstance()->display_configurator()->AddObserver(this);
 }
 
-void ArcPowerBridge::OnPowerInstanceClosed() {
+void ArcPowerBridge::OnInstanceClosed() {
   ash::Shell::GetInstance()->display_configurator()->RemoveObserver(this);
   ReleaseAllDisplayWakeLocks();
 }
 
 void ArcPowerBridge::OnPowerStateChanged(
     chromeos::DisplayPowerState power_state) {
-  mojom::PowerInstance* power_instance = arc_bridge_service()->power_instance();
+  mojom::PowerInstance* power_instance =
+      arc_bridge_service()->power()->instance();
   if (!power_instance) {
     LOG(ERROR) << "PowerInstance is not available";
     return;

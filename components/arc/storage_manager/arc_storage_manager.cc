@@ -22,7 +22,7 @@ ArcStorageManager* g_arc_storage_manager = nullptr;
 
 }  // namespace
 
-ArcStorageManager::ArcStorageManager(ArcBridgeService *bridge_service)
+ArcStorageManager::ArcStorageManager(ArcBridgeService* bridge_service)
     : ArcService(bridge_service) {
   DCHECK(!g_arc_storage_manager);
   g_arc_storage_manager = this;
@@ -37,10 +37,6 @@ ArcStorageManager::~ArcStorageManager() {
 ArcStorageManager* ArcStorageManager::Get() {
   DCHECK(g_arc_storage_manager);
   return g_arc_storage_manager;
-}
-
-void ArcStorageManager::OnStorageManagerInstanceReady() {
-  VLOG(1) << "ArcStorageManagerInstance is ready";
 }
 
 bool ArcStorageManager::OpenPrivateVolumeSettings() {
@@ -74,12 +70,12 @@ bool ArcStorageManager::DeleteApplicationsCache(
 
 mojom::StorageManagerInstance* ArcStorageManager::GetStorageManagerInstance() {
   auto bridge_service = arc_bridge_service();
-  auto storage_manager_instance = bridge_service->storage_manager_instance();
+  auto storage_manager_instance = bridge_service->storage_manager()->instance();
   if (!storage_manager_instance) {
     DLOG(WARNING) << "ARC storage manager instance is not ready.";
     return nullptr;
   }
-  auto storage_manager_version = bridge_service->storage_manager_version();
+  auto storage_manager_version = bridge_service->storage_manager()->version();
   if (storage_manager_version < kMinInstanceVersion) {
     DLOG(ERROR) << "ARC storage manager instance (version "
                 << storage_manager_version << ") is too old.";

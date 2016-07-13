@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/instance_holder.h"
 
 namespace arc {
 
@@ -34,8 +35,9 @@ namespace arc {
 //           base::Bind(&OnUpdateProcessList)) {
 //     LOG(ERROR) << "ARC process instance not ready.";
 //   }
-class ArcProcessService : public ArcService,
-                          public ArcBridgeService::Observer {
+class ArcProcessService
+    : public ArcService,
+      public InstanceHolder<mojom::ProcessInstance>::Observer {
  public:
   using RequestProcessListCallback =
       base::Callback<void(const std::vector<ArcProcess>&)>;
@@ -46,8 +48,8 @@ class ArcProcessService : public ArcService,
   // Returns nullptr before the global instance is ready.
   static ArcProcessService* Get();
 
-  // ArcBridgeService::Observer overrides.
-  void OnProcessInstanceReady() override;
+  // InstanceHolder<mojom::ProcessInstance>::Observer overrides.
+  void OnInstanceReady() override;
 
   // Returns true if ARC IPC is ready for process list request,
   // otherwise false.

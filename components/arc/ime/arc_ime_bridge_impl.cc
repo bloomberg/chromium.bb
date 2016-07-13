@@ -64,9 +64,10 @@ mojo::Array<arc::mojom::CompositionSegmentPtr> ConvertSegments(
         arc::mojom::CompositionSegment::New();
     segment->start_offset = underline.start_offset;
     segment->end_offset = underline.end_offset;
-    segment->emphasized = (underline.thick ||
-        (composition.selection.start() == underline.start_offset &&
-         composition.selection.end() == underline.end_offset));
+    segment->emphasized =
+        (underline.thick ||
+         (composition.selection.start() == underline.start_offset &&
+          composition.selection.end() == underline.end_offset));
     segments.push_back(std::move(segment));
   }
   return segments;
@@ -77,20 +78,21 @@ mojo::Array<arc::mojom::CompositionSegmentPtr> ConvertSegments(
 ArcImeBridgeImpl::ArcImeBridgeImpl(Delegate* delegate,
                                    ArcBridgeService* bridge_service)
     : binding_(this), delegate_(delegate), bridge_service_(bridge_service) {
-  bridge_service_->AddObserver(this);
+  bridge_service_->ime()->AddObserver(this);
 }
 
 ArcImeBridgeImpl::~ArcImeBridgeImpl() {
-  bridge_service_->RemoveObserver(this);
+  bridge_service_->ime()->RemoveObserver(this);
 }
 
-void ArcImeBridgeImpl::OnImeInstanceReady() {
-  bridge_service_->ime_instance()->Init(binding_.CreateInterfacePtrAndBind());
+void ArcImeBridgeImpl::OnInstanceReady() {
+  bridge_service_->ime()->instance()->Init(
+      binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcImeBridgeImpl::SendSetCompositionText(
     const ui::CompositionText& composition) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime_instance();
+  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
     return;
@@ -101,7 +103,7 @@ void ArcImeBridgeImpl::SendSetCompositionText(
 }
 
 void ArcImeBridgeImpl::SendConfirmCompositionText() {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime_instance();
+  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
     return;
@@ -111,7 +113,7 @@ void ArcImeBridgeImpl::SendConfirmCompositionText() {
 }
 
 void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime_instance();
+  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
     return;
@@ -122,12 +124,12 @@ void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
 
 void ArcImeBridgeImpl::SendOnKeyboardBoundsChanging(
     const gfx::Rect& new_bounds) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime_instance();
+  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
     return;
   }
-  if (bridge_service_->ime_version() <
+  if (bridge_service_->ime()->version() <
       kMinVersionForOnKeyboardsBoundsChanging) {
     LOG(ERROR) << "ArcImeInstance is too old for OnKeyboardsBoundsChanging.";
     return;
@@ -138,12 +140,12 @@ void ArcImeBridgeImpl::SendOnKeyboardBoundsChanging(
 
 void ArcImeBridgeImpl::SendExtendSelectionAndDelete(
     size_t before, size_t after) {
-  mojom::ImeInstance* ime_instance = bridge_service_->ime_instance();
+  mojom::ImeInstance* ime_instance = bridge_service_->ime()->instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
     return;
   }
-  if (bridge_service_->ime_version() <
+  if (bridge_service_->ime()->version() <
       kMinVersionForExtendSelectionAndDelete) {
     LOG(ERROR) << "ArcImeInstance is too old for ExtendSelectionAndDelete.";
     return;
@@ -157,11 +159,9 @@ void ArcImeBridgeImpl::OnTextInputTypeChanged(arc::mojom::TextInputType type) {
 }
 
 void ArcImeBridgeImpl::OnCursorRectChanged(arc::mojom::CursorRectPtr rect) {
-  delegate_->OnCursorRectChanged(gfx::Rect(
-      rect->left,
-      rect->top,
-      rect->right - rect->left,
-      rect->bottom - rect->top));
+  delegate_->OnCursorRectChanged(gfx::Rect(rect->left, rect->top,
+                                           rect->right - rect->left,
+                                           rect->bottom - rect->top));
 }
 
 void ArcImeBridgeImpl::OnCancelComposition() {

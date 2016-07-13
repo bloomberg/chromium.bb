@@ -108,7 +108,7 @@ class ArcPolicyBridgeTest : public testing::Test {
     mojom::PolicyInstancePtr policy_instance_ptr;
     policy_instance_ = base::MakeUnique<FakePolicyInstance>(
         GetProxy(&policy_instance_ptr), bridge_service_.get());
-    bridge_service_->OnPolicyInstanceReady(std::move(policy_instance_ptr));
+    bridge_service_->policy()->OnInstanceReady(std::move(policy_instance_ptr));
     policy_instance()->WaitForOnPolicyInstanceReady();
   }
 
@@ -159,11 +159,11 @@ TEST_F(ArcPolicyBridgeTest, ArcPolicyTest) {
       nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"applications\":"
-          "[{\"installType\":\"REQUIRED\","
-            "\"lockTaskAllowed\":false,"
-            "\"packageName\":\"com.google.android.apps.youtube.kids\","
-            "\"permissionGrants\":[]"
-          "}],"
+      "[{\"installType\":\"REQUIRED\","
+      "\"lockTaskAllowed\":false,"
+      "\"packageName\":\"com.google.android.apps.youtube.kids\","
+      "\"permissionGrants\":[]"
+      "}],"
       "\"defaultPermissionPolicy\":\"GRANT\""
       "}"));
 }
@@ -319,13 +319,13 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
       base::WrapUnique(new base::FundamentalValue(false)), nullptr);
   policy_bridge()->GetPolicies(PolicyStringCallback(
       "{\"applications\":"
-          "[{\"installType\":\"REQUIRED\","
-            "\"lockTaskAllowed\":false,"
-            "\"packageName\":\"com.google.android.apps.youtube.kids\","
-            "\"permissionGrants\":[]"
-          "}],"
-        "\"cameraDisabled\":true,"
-        "\"defaultPermissionPolicy\":\"GRANT\""
+      "[{\"installType\":\"REQUIRED\","
+      "\"lockTaskAllowed\":false,"
+      "\"packageName\":\"com.google.android.apps.youtube.kids\","
+      "\"permissionGrants\":[]"
+      "}],"
+      "\"cameraDisabled\":true,"
+      "\"defaultPermissionPolicy\":\"GRANT\""
       "}"));
 }
 

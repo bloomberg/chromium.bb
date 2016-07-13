@@ -15,6 +15,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
@@ -30,10 +31,11 @@ class LocalActivityResolver;
 class SetWallpaperDelegate;
 
 // Receives intents from ARC.
-class ArcIntentHelperBridge : public ArcService,
-                              public ArcBridgeService::Observer,
-                              public mojom::IntentHelperHost,
-                              public ash::LinkHandlerModelFactory {
+class ArcIntentHelperBridge
+    : public ArcService,
+      public InstanceHolder<mojom::IntentHelperInstance>::Observer,
+      public mojom::IntentHelperHost,
+      public ash::LinkHandlerModelFactory {
  public:
   ArcIntentHelperBridge(
       ArcBridgeService* bridge_service,
@@ -42,9 +44,9 @@ class ArcIntentHelperBridge : public ArcService,
       const scoped_refptr<LocalActivityResolver>& activity_resolver);
   ~ArcIntentHelperBridge() override;
 
-  // ArcBridgeService::Observer
-  void OnIntentHelperInstanceReady() override;
-  void OnIntentHelperInstanceClosed() override;
+  // InstanceHolder<mojom::IntentHelperInstance>::Observer
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // arc::mojom::IntentHelperHost
   void OnIconInvalidated(const mojo::String& package_name) override;

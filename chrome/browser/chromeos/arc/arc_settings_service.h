@@ -10,20 +10,22 @@
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/instance_holder.h"
 
 namespace arc {
 
 class ArcSettingsServiceImpl;
 
-class ArcSettingsService : public ArcService,
-                           public ArcBridgeService::Observer {
+class ArcSettingsService
+    : public ArcService,
+      public InstanceHolder<mojom::IntentHelperInstance>::Observer {
  public:
   explicit ArcSettingsService(ArcBridgeService* bridge_service);
   ~ArcSettingsService() override;
 
-  // ArcBridgeService::Observer
-  void OnIntentHelperInstanceReady() override;
-  void OnIntentHelperInstanceClosed() override;
+  // InstanceHolder<mojom::IntentHelperInstance>::Observer
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
  private:
   std::unique_ptr<ArcSettingsServiceImpl> impl_;

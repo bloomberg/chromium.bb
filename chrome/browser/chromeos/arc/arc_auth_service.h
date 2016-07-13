@@ -17,6 +17,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "components/syncable_prefs/synced_pref_observer.h"
@@ -43,6 +44,7 @@ class ArcAuthContext;
 class ArcAuthService : public ArcService,
                        public mojom::AuthHost,
                        public ArcBridgeService::Observer,
+                       public InstanceHolder<mojom::AuthInstance>::Observer,
                        public ArcAndroidManagementCheckerDelegate,
                        public ArcAuthContextDelegate,
                        public syncable_prefs::PrefServiceSyncableObserver,
@@ -122,8 +124,10 @@ class ArcAuthService : public ArcService,
   void RemoveObserver(Observer* observer);
 
   // ArcBridgeService::Observer:
-  void OnAuthInstanceReady() override;
   void OnBridgeStopped() override;
+
+  // InstanceHolder<mojom::AuthInstance>::Observer:
+  void OnInstanceReady() override;
 
   // AuthHost:
   // For security reason this code can be used only once and exists for specific

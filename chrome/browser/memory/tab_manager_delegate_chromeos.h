@@ -20,6 +20,7 @@
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/instance_holder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -75,10 +76,11 @@ enum ProcessPriority {
 // Note that AdjustOomPriorities will be called on the UI thread by
 // TabManager, but the actual work will take place on the file thread
 // (see implementation of AdjustOomPriorities).
-class TabManagerDelegate : public arc::ArcBridgeService::Observer,
-                           public aura::client::ActivationChangeObserver,
-                           public content::NotificationObserver,
-                           public chrome::BrowserListObserver {
+class TabManagerDelegate
+    : public arc::InstanceHolder<arc::mojom::ProcessInstance>::Observer,
+      public aura::client::ActivationChangeObserver,
+      public content::NotificationObserver,
+      public chrome::BrowserListObserver {
  public:
   class MemoryStat;
 
@@ -91,9 +93,9 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
 
   void OnBrowserSetLastActive(Browser* browser) override;
 
-  // ArcBridgeService::Observer overrides.
-  void OnProcessInstanceReady() override;
-  void OnProcessInstanceClosed() override;
+  // InstanceHolder<arc::mojom::ProcessInstance>::Observer overrides.
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // aura::ActivationChangeObserver overrides.
   void OnWindowActivated(
@@ -136,8 +138,8 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   class FocusedProcess;
   class UmaReporter;
 
-  friend std::ostream& operator<<(
-      std::ostream& out, const Candidate& candidate);
+  friend std::ostream& operator<<(std::ostream& out,
+                                  const Candidate& candidate);
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -148,7 +150,7 @@ class TabManagerDelegate : public arc::ArcBridgeService::Observer,
   typedef std::pair<int, base::ProcessHandle> ProcessInfo;
 
   // Cache OOM scores in memory.
-  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;
+  typedef base::hash_map<base::ProcessHandle, int> ProcessScoreMap;  // NOLINT
 
   // Get the list of candidates to kill, sorted by reversed importance.
   static std::vector<Candidate> GetSortedCandidates(
@@ -243,9 +245,7 @@ struct TabManagerDelegate::Candidate {
   Candidate(const arc::ArcProcess* _app, int _priority)
       : app(_app), priority(_priority), is_arc_app(true) {}
 
-  bool operator<(const Candidate& rhs) const {
-    return priority < rhs.priority;
-  }
+  bool operator<(const Candidate& rhs) const { return priority < rhs.priority; }
 
   union {
     const TabStats* tab;

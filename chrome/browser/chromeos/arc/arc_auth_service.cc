@@ -97,6 +97,7 @@ ArcAuthService::ArcAuthService(ArcBridgeService* bridge_service)
   g_arc_auth_service = this;
 
   arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->auth()->AddObserver(this);
 }
 
 ArcAuthService::~ArcAuthService() {
@@ -104,6 +105,7 @@ ArcAuthService::~ArcAuthService() {
   DCHECK_EQ(this, g_arc_auth_service);
 
   Shutdown();
+  arc_bridge_service()->auth()->RemoveObserver(this);
   arc_bridge_service()->RemoveObserver(this);
 
   g_arc_auth_service = nullptr;
@@ -185,8 +187,8 @@ bool ArcAuthService::IsAllowedForProfile(const Profile* profile) {
   return true;
 }
 
-void ArcAuthService::OnAuthInstanceReady() {
-  arc_bridge_service()->auth_instance()->Init(
+void ArcAuthService::OnInstanceReady() {
+  arc_bridge_service()->auth()->instance()->Init(
       binding_.CreateInterfacePtrAndBind());
 }
 

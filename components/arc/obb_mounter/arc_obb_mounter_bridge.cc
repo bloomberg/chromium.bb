@@ -22,18 +22,17 @@ void RunObbCallback(const base::Callback<void(bool)>& callback,
 }  // namespace
 
 ArcObbMounterBridge::ArcObbMounterBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service),
-      binding_(this) {
-  arc_bridge_service()->AddObserver(this);
+    : ArcService(bridge_service), binding_(this) {
+  arc_bridge_service()->obb_mounter()->AddObserver(this);
 }
 
 ArcObbMounterBridge::~ArcObbMounterBridge() {
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->obb_mounter()->RemoveObserver(this);
 }
 
-void ArcObbMounterBridge::OnObbMounterInstanceReady() {
+void ArcObbMounterBridge::OnInstanceReady() {
   mojom::ObbMounterInstance* obb_mounter_instance =
-      arc_bridge_service()->obb_mounter_instance();
+      arc_bridge_service()->obb_mounter()->instance();
   obb_mounter_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 

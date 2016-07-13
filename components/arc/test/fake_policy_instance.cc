@@ -11,11 +11,11 @@ FakePolicyInstance::FakePolicyInstance(
     mojo::InterfaceRequest<mojom::PolicyInstance> request,
     ArcBridgeService* bridge_service)
     : binding_(this, std::move(request)), bridge_service_(bridge_service) {
-  bridge_service_->AddObserver(this);
+  bridge_service_->policy()->AddObserver(this);
 }
 
 FakePolicyInstance::~FakePolicyInstance() {
-  bridge_service_->RemoveObserver(this);
+  bridge_service_->policy()->RemoveObserver(this);
 }
 
 void FakePolicyInstance::OnPolicyUpdated() {}
@@ -24,7 +24,7 @@ void FakePolicyInstance::Init(mojom::PolicyHostPtr host_ptr) {
   host_ptr_ = std::move(host_ptr);
 }
 
-void FakePolicyInstance::OnPolicyInstanceReady() {
+void FakePolicyInstance::OnInstanceReady() {
   ready_ = true;
 }
 

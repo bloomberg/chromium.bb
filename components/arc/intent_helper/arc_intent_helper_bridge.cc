@@ -39,22 +39,22 @@ ArcIntentHelperBridge::ArcIntentHelperBridge(
       set_wallpaper_delegate_(std::move(set_wallpaper_delegate)),
       activity_resolver_(activity_resolver) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->intent_helper()->AddObserver(this);
 }
 
 ArcIntentHelperBridge::~ArcIntentHelperBridge() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->intent_helper()->RemoveObserver(this);
 }
 
-void ArcIntentHelperBridge::OnIntentHelperInstanceReady() {
+void ArcIntentHelperBridge::OnInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ash::Shell::GetInstance()->set_link_handler_model_factory(this);
-  arc_bridge_service()->intent_helper_instance()->Init(
+  arc_bridge_service()->intent_helper()->instance()->Init(
       binding_.CreateInterfacePtrAndBind());
 }
 
-void ArcIntentHelperBridge::OnIntentHelperInstanceClosed() {
+void ArcIntentHelperBridge::OnInstanceClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ash::Shell::GetInstance()->set_link_handler_model_factory(nullptr);
 }

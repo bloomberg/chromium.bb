@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/instance_holder.h"
 
 namespace base {
 class FilePath;
@@ -21,15 +22,16 @@ namespace arc {
 
 // Watches Downloads directory and registers newly created media files to
 // Android MediaProvider.
-class ArcDownloadsWatcherService : public ArcService,
-                                   public ArcBridgeService::Observer {
+class ArcDownloadsWatcherService
+    : public ArcService,
+      public InstanceHolder<mojom::FileSystemInstance>::Observer {
  public:
   explicit ArcDownloadsWatcherService(ArcBridgeService* bridge_service);
   ~ArcDownloadsWatcherService() override;
 
-  // ArcBridgeService::Observer
-  void OnFileSystemInstanceReady() override;
-  void OnFileSystemInstanceClosed() override;
+  // InstanceHolder<mojom::FileSystemInstance>::Observer
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
  private:
   class DownloadsWatcher;

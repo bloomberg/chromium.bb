@@ -8,20 +8,22 @@
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
 
 // This class handles OBB mount/unmount requests from Android.
-class ArcObbMounterBridge : public ArcService,
-                            public ArcBridgeService::Observer,
-                            public mojom::ObbMounterHost {
+class ArcObbMounterBridge
+    : public ArcService,
+      public InstanceHolder<mojom::ObbMounterInstance>::Observer,
+      public mojom::ObbMounterHost {
  public:
   explicit ArcObbMounterBridge(ArcBridgeService* bridge_service);
   ~ArcObbMounterBridge() override;
 
-  // ArcBridgeService::Observer overrides:
-  void OnObbMounterInstanceReady() override;
+  // InstanceHolder<mojom::ObbMounterInstance>::Observer overrides:
+  void OnInstanceReady() override;
 
   // mojom::ObbMounterHost overrides:
   void MountObb(const mojo::String& obb_file,

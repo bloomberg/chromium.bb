@@ -11,6 +11,7 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/notifications.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/message_center/message_center.h"
@@ -19,9 +20,10 @@ namespace arc {
 
 class ArcNotificationItem;
 
-class ArcNotificationManager : public ArcService,
-                               public ArcBridgeService::Observer,
-                               public mojom::NotificationsHost {
+class ArcNotificationManager
+    : public ArcService,
+      public InstanceHolder<mojom::NotificationsInstance>::Observer,
+      public mojom::NotificationsHost {
  public:
   ArcNotificationManager(ArcBridgeService* bridge_service,
                          const AccountId& main_profile_id);
@@ -32,9 +34,9 @@ class ArcNotificationManager : public ArcService,
 
   ~ArcNotificationManager() override;
 
-  // ArcBridgeService::Observer implementation:
-  void OnNotificationsInstanceReady() override;
-  void OnNotificationsInstanceClosed() override;
+  // InstanceHolder<mojom::NotificationsInstance>::Observer implementation:
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // mojom::NotificationsHost implementation:
   void OnNotificationPosted(mojom::ArcNotificationDataPtr data) override;
@@ -45,8 +47,8 @@ class ArcNotificationManager : public ArcService,
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
   void SendNotificationClickedOnChrome(const std::string& key);
-  void SendNotificationButtonClickedOnChrome(
-      const std::string& key, int button_index);
+  void SendNotificationButtonClickedOnChrome(const std::string& key,
+                                             int button_index);
 
  private:
   const AccountId main_profile_id_;

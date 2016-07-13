@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_downloads_watcher_service.h"
 
+#include <map>
 #include <memory>
 #include <utility>
 
@@ -175,22 +176,22 @@ ArcDownloadsWatcherService::ArcDownloadsWatcherService(
     ArcBridgeService* bridge_service)
     : ArcService(bridge_service), weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  arc_bridge_service()->AddObserver(this);
+  arc_bridge_service()->file_system()->AddObserver(this);
 }
 
 ArcDownloadsWatcherService::~ArcDownloadsWatcherService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  arc_bridge_service()->RemoveObserver(this);
+  arc_bridge_service()->file_system()->RemoveObserver(this);
   StopWatchingDownloads();
   DCHECK(!watcher_);
 }
 
-void ArcDownloadsWatcherService::OnFileSystemInstanceReady() {
+void ArcDownloadsWatcherService::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartWatchingDownloads();
 }
 
-void ArcDownloadsWatcherService::OnFileSystemInstanceClosed() {
+void ArcDownloadsWatcherService::OnInstanceClosed() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StopWatchingDownloads();
 }
@@ -219,7 +220,7 @@ void ArcDownloadsWatcherService::OnDownloadsChanged(
     const std::vector<base::FilePath>& paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  auto* instance = arc_bridge_service()->file_system_instance();
+  auto* instance = arc_bridge_service()->file_system()->instance();
   if (!instance)
     return;
 
