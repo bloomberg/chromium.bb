@@ -20,7 +20,7 @@ template <class WebTestT>
 class WebJsTest : public WebTestT {
  public:
   WebJsTest(NSArray* java_script_paths)
-      : java_script_paths_([java_script_paths retain]) {}
+      : java_script_paths_([java_script_paths copy]) {}
 
  protected:
   // Loads |html| and inject JavaScripts at |javaScriptPaths_|.
@@ -60,11 +60,10 @@ class WebJsTest : public WebTestT {
 
 template <class WebTestT>
 void WebJsTest<WebTestT>::Inject() {
-  // Wait until main web injection has occured.
-  NSString* beacon = nil;
-  do {
-    beacon = WebTestT::EvaluateJavaScriptAsString(@"typeof __gCrWeb");
-  } while (![beacon isEqualToString:@"object"]);
+  // Main web injection should have occured.
+  ASSERT_NSEQ(@"object",
+              WebTestT::EvaluateJavaScriptAsString(@"typeof __gCrWeb"));
+
   for (NSString* java_script_path in java_script_paths_.get()) {
     NSString* path =
         [base::mac::FrameworkBundle() pathForResource:java_script_path
