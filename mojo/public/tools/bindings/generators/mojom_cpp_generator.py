@@ -216,8 +216,7 @@ def IsMoveOnlyKind(kind):
   if IsTypemappedKind(kind):
     if mojom.IsEnumKind(kind):
       return False
-    # TODO(yzshen): Change the attribute to "move_only".
-    return _current_typemap[GetFullMojomNameForKind(kind)]["pass_by_value"]
+    return _current_typemap[GetFullMojomNameForKind(kind)]["move_only"]
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return True
   if mojom.IsArrayKind(kind):

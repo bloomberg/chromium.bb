@@ -15,4 +15,4 @@ sources = [
 ]
 
 # TODO(moshayedi): crbug.com/617167. Map mojom.Event directly to ui::Event.
-type_mappings = [ "ui.mojom.Event=std::unique_ptr<ui::Event>[pass_by_value]" ]
+type_mappings = [ "ui.mojom.Event=std::unique_ptr<ui::Event>[move_only]" ]

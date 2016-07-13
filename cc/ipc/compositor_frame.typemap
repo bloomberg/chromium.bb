@@ -12,4 +12,4 @@ public_deps = [
   "//cc",
 ]
 type_mappings =
-    [ "cc.mojom.CompositorFrame=cc::CompositorFrame[pass_by_value]" ]
+    [ "cc.mojom.CompositorFrame=cc::CompositorFrame[move_only]" ]
