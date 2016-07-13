@@ -1,0 +1,47 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutInline SPAN id='target'",
+          "rect": [6, 6, 204, 58],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [8, 8, 200, 50],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutInline SPAN id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "InlineFlowBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "forced by layout"
+    }
+  ]
+}
+

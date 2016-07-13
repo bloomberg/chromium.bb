@@ -1304,8 +1304,6 @@ crbug.com/624019 [ Mac ] bluetooth/notifications/start-succeeds.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-twice.html [ Skip ]
 crbug.com/624019 [ Mac ] bluetooth/notifications/stop-without-starting.html [ Skip ]
 
-crbug.com/626992 paint/invalidation/outline-containing-image-in-non-standard-mode.html [ NeedsRebaseline ]
-
 crbug.com/487344 compositing/video/video-controls-layer-creation.html [ Failure ]
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
