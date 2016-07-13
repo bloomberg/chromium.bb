@@ -36,7 +36,7 @@ extern const int kCompatibleVersionNumber;
 // the login information.
 class LoginDatabase {
  public:
-  LoginDatabase(const base::FilePath& db_path);
+  explicit LoginDatabase(const base::FilePath& db_path);
   virtual ~LoginDatabase();
 
   // Actually creates/opens the database. If false is returned, no other method
@@ -179,7 +179,7 @@ class LoginDatabase {
   // ENCRYPTION_RESULT_SUCCESS, |form| is not filled.
   static EncryptionResult InitPasswordFormFromStatement(
       autofill::PasswordForm* form,
-      sql::Statement& s);
+      const sql::Statement& s);
 
   // Gets all blacklisted or all non-blacklisted (depending on |blacklisted|)
   // credentials. On success returns true and overwrites |forms| with the

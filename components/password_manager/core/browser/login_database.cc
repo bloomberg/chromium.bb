@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <utility>
 
 #include "base/bind.h"
@@ -1059,7 +1060,7 @@ bool LoginDatabase::DisableAutoSignInForOrigin(const GURL& origin) {
 // static
 LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
     PasswordForm* form,
-    sql::Statement& s) {
+    const sql::Statement& s) {
   std::string encrypted_password;
   s.ColumnBlobAsString(COLUMN_PASSWORD_VALUE, &encrypted_password);
   base::string16 decrypted_password;

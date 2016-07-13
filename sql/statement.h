@@ -139,7 +139,7 @@ class SQL_EXPORT Statement {
   // vector. Danger! ColumnBlob may return NULL if there is no data!
   int ColumnByteLength(int col) const;
   const void* ColumnBlob(int col) const;
-  bool ColumnBlobAsString(int col, std::string* blob);
+  bool ColumnBlobAsString(int col, std::string* blob) const;
   bool ColumnBlobAsString16(int col, base::string16* val) const;
   bool ColumnBlobAsVector(int col, std::vector<char>* val) const;
   bool ColumnBlobAsVector(int col, std::vector<unsigned char>* val) const;

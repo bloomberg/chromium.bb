@@ -294,7 +294,7 @@ const void* Statement::ColumnBlob(int col) const {
   return sqlite3_column_blob(ref_->stmt(), col);
 }
 
-bool Statement::ColumnBlobAsString(int col, std::string* blob) {
+bool Statement::ColumnBlobAsString(int col, std::string* blob) const {
   if (!CheckValid())
     return false;
 
