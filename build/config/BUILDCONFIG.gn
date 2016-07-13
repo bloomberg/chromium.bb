@@ -639,9 +639,14 @@ template("component") {
     assert(invoker.static_component_type == "static_library" ||
            invoker.static_component_type == "source_set")
     _component_mode = invoker.static_component_type
-  } else if (!defined(invoker.sources)) {
+  } else if (is_android || !defined(invoker.sources)) {
     # When there are no sources defined, use a source set to avoid creating
     # an empty static library (which generally don't work).
+    #
+    # TODO(brettw) remove the Android condition or comment why it needs to be
+    # kept after some analysis. Source sets vs. static libraries seem to be
+    # causing some performance differences. As part of the analysis for
+    # http://crbug.com/619593 we're testing source sets for components again.
     _component_mode = "source_set"
   } else {
     _component_mode = "static_library"
