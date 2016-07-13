@@ -46,13 +46,6 @@ crbug.com/142301 [ Linux ] plugins/get-url-notify-with-url-that-fails-to-load.ht
 #     #0 0x8c2ee4 in WebCore::reportFatalErrorInMainThread
 crbug.com/173366 [ Linux ] fast/js/string-replacement-outofmemory.html [ Skip ]
 
-# Crash in fast/speechsynthesis/speech-synthesis-cancel.html:
-# ==10454==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x00000558b918 sp 0x7fff3153dcf0 bp 0x7fff3153dcf0 T0)
-# AddressSanitizer can not provide additional info.
-#     #0 0x558b917 in WebCore::PlatformSpeechSynthesisUtterance::client() const /mnt/data/b/build/slave/WebKit_Linux_ASAN/build/src/out/Release/../../third_party/WebKit/Source/core/platform/PlatformSpeechSynthesisUtterance.h:71:0
-# [pkasting] July 23 2014: Now timing out instead of crashing.
-crbug.com/250520 [ Linux ] fast/speechsynthesis/speech-synthesis-cancel.html [ Timeout ]
-
 # These tests consistently fail on slow bots.
 crbug.com/231357 [ Linux ] compositing/video-page-visibility.html [ Failure ]
 
