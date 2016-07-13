@@ -77,16 +77,20 @@ bool ShouldShowPopularSites() {
 
 // Determine whether we need any popular suggestions to fill up a grid of
 // |num_tiles| tiles.
-bool NeedPopularSites(const PrefService* prefs, size_t num_tiles) {
+bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
+  if (num_tiles <= prefs->GetInteger(prefs::kNumPersonalSuggestions))
+    return false;
+
+  // TODO(treib): Remove after M55.
   const base::ListValue* source_list =
-      prefs->GetList(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
+      prefs->GetList(ntp_tiles::prefs::kDeprecatedNTPSuggestionsIsPersonal);
   // If there aren't enough previous suggestions to fill the grid, we need
   // popular suggestions.
-  if (source_list->GetSize() < num_tiles)
+  if (static_cast<int>(source_list->GetSize()) < num_tiles)
     return true;
   // Otherwise, if any of the previous suggestions is not personal, then also
   // get popular suggestions.
-  for (size_t i = 0; i < num_tiles; ++i) {
+  for (int i = 0; i < num_tiles; ++i) {
     bool is_personal = false;
     if (source_list->GetBoolean(i, &is_personal) && !is_personal)
       return true;
@@ -268,13 +272,10 @@ void MostVisitedSites::OnBlockedSitesChanged() {
 // static
 void MostVisitedSites::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  // TODO(treib): Remove this, it's unused. Do we need migration code to clean
-  // up existing entries?
-  registry->RegisterListPref(ntp_tiles::prefs::kNTPSuggestionsURL);
-  // TODO(treib): Remove this. It's only used to determine if we need
-  // PopularSites at all. Find a way to do that without prefs, or failing that,
-  // replace this list pref by a simple bool.
-  registry->RegisterListPref(ntp_tiles::prefs::kNTPSuggestionsIsPersonal);
+  registry->RegisterIntegerPref(prefs::kNumPersonalSuggestions, 0);
+  // TODO(treib): Remove after M55.
+  registry->RegisterListPref(prefs::kDeprecatedNTPSuggestionsURL);
+  registry->RegisterListPref(prefs::kDeprecatedNTPSuggestionsIsPersonal);
 }
 
 void MostVisitedSites::BuildCurrentSuggestions() {
@@ -468,8 +469,15 @@ void MostVisitedSites::SaveNewSuggestions(
                                           std::move(popular_sites_suggestions));
   DCHECK_EQ(num_actual_tiles, current_suggestions_.size());
 
-  if (received_popular_sites_)
-    SaveCurrentSuggestionsToPrefs();
+  int num_personal_suggestions = 0;
+  for (const auto& suggestion : current_suggestions_) {
+    if (suggestion.source != POPULAR)
+      num_personal_suggestions++;
+  }
+  prefs_->SetInteger(prefs::kNumPersonalSuggestions, num_personal_suggestions);
+  // TODO(treib): Remove after M55.
+  prefs_->ClearPref(prefs::kDeprecatedNTPSuggestionsIsPersonal);
+  prefs_->ClearPref(prefs::kDeprecatedNTPSuggestionsURL);
 }
 
 // static
@@ -482,17 +490,6 @@ MostVisitedSites::SuggestionsVector MostVisitedSites::MergeSuggestions(
   AppendSuggestions(std::move(whitelist_suggestions), &merged_suggestions);
   AppendSuggestions(std::move(popular_suggestions), &merged_suggestions);
   return merged_suggestions;
-}
-
-void MostVisitedSites::SaveCurrentSuggestionsToPrefs() {
-  base::ListValue url_list;
-  base::ListValue source_list;
-  for (const auto& suggestion : current_suggestions_) {
-    url_list.AppendString(suggestion.url.spec());
-    source_list.AppendBoolean(suggestion.source != POPULAR);
-  }
-  prefs_->Set(ntp_tiles::prefs::kNTPSuggestionsIsPersonal, source_list);
-  prefs_->Set(ntp_tiles::prefs::kNTPSuggestionsURL, url_list);
 }
 
 void MostVisitedSites::NotifyMostVisitedURLsObserver() {

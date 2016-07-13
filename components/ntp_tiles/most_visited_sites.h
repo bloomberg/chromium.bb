@@ -221,8 +221,6 @@ class MostVisitedSites : public history::TopSitesObserver,
       SuggestionsVector whitelist_suggestions,
       SuggestionsVector popular_suggestions);
 
-  void SaveCurrentSuggestionsToPrefs();
-
   // Notifies the observer about the availability of suggestions.
   // Also records impressions UMA if not done already.
   void NotifyMostVisitedURLsObserver();

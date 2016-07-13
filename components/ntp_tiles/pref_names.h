@@ -8,8 +8,11 @@
 namespace ntp_tiles {
 namespace prefs {
 
-extern const char kNTPSuggestionsURL[];
-extern const char kNTPSuggestionsIsPersonal[];
+// TODO(treib): Remove after M55.
+extern const char kDeprecatedNTPSuggestionsURL[];
+extern const char kDeprecatedNTPSuggestionsIsPersonal[];
+
+extern const char kNumPersonalSuggestions[];
 
 extern const char kPopularSitesOverrideURL[];
 extern const char kPopularSitesOverrideCountry[];
