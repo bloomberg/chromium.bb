@@ -2039,9 +2039,10 @@ void ConvertFlagsToSwitches(flags_ui::FlagsStorage* flags_storage,
 }
 
 void RegisterAllFeatureVariationParameters(
-    flags_ui::FlagsStorage* flags_storage) {
+    flags_ui::FlagsStorage* flags_storage,
+    base::FeatureList* feature_list) {
   FlagsStateSingleton::GetFlagsState()->RegisterAllFeatureVariationParameters(
-      flags_storage);
+      flags_storage, feature_list);
 }
 
 bool AreSwitchesIdenticalToCurrentCommandLine(

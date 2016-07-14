@@ -727,12 +727,14 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
     metrics->AddSyntheticTrialObserver(provider);
   }
 
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+
   // Associate parameters chosen in about:flags and create trial/group for them.
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
-  about_flags::RegisterAllFeatureVariationParameters(&flags_storage);
+  about_flags::RegisterAllFeatureVariationParameters(&flags_storage,
+    feature_list.get());
 
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
       command_line->GetSwitchValueASCII(switches::kEnableFeatures),
       command_line->GetSwitchValueASCII(switches::kDisableFeatures));

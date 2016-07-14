@@ -267,10 +267,13 @@ TEST_F(FlagsStateTest, ConvertFlagsToSwitches) {
 
 TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
   const FeatureEntry& entry = kEntries[7];
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+
   // Select the "Default" variation.
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, entry.NameForOption(0),
                                        true);
-  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_);
+  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
+                                                      feature_list.get());
   // No value should be associated.
   EXPECT_EQ("", variations::GetVariationParamValue(kTestTrial, kTestParam));
   // The trial should not be created.
@@ -281,7 +284,8 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, entry.NameForOption(1),
                                        true);
 
-  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_);
+  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
+                                                      feature_list.get());
   // No value should be associated as this is the default option.
   EXPECT_EQ("",
             variations::GetVariationParamValue(kTestTrial, kTestParam));
@@ -295,7 +299,8 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
   // Select the only one variation.
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, entry.NameForOption(2),
                                        true);
-  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_);
+  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
+                                                      feature_list.get());
   // Associating for the second time should not change the value.
   EXPECT_EQ("",
             variations::GetVariationParamValue(kTestTrial, kTestParam));
@@ -303,13 +308,26 @@ TEST_F(FlagsStateTest, RegisterAllFeatureVariationParameters) {
 
 TEST_F(FlagsStateTest, RegisterAllFeatureVariationParametersNonDefault) {
   const FeatureEntry& entry = kEntries[7];
+  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+
   // Select the only one variation.
   flags_state_->SetFeatureEntryEnabled(&flags_storage_, entry.NameForOption(2),
                                        true);
-  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_);
+  flags_state_->RegisterAllFeatureVariationParameters(&flags_storage_,
+                                                      feature_list.get());
+
+  // Set the feature_list as the main instance so that
+  // variations::GetVariationParamValueByFeature below works.
+  base::FeatureList::ClearInstanceForTesting();
+  base::FeatureList::SetInstance(std::move(feature_list));
+
   // The param should have the value predefined in this variation.
   EXPECT_EQ(kTestParamValue,
             variations::GetVariationParamValue(kTestTrial, kTestParam));
+
+  // The value should be associated also via the name of the feature.
+  EXPECT_EQ(kTestParamValue, variations::GetVariationParamValueByFeature(
+                                  kTestFeature2, kTestParam));
 }
 
 base::CommandLine::StringType CreateSwitch(const std::string& value) {

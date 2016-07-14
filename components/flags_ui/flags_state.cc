@@ -197,7 +197,7 @@ base::Value* CreateOptionsData(const FeatureEntry& entry,
 // been created (e.g. via command-line switches that take precedence over
 // about:flags). In the trial, the function creates a new constant group called
 // |kTrialGroupAboutFlags|.
-void RegisterFeatureVariationParameters(
+base::FieldTrial* RegisterFeatureVariationParameters(
     const std::string& feature_trial_name,
     const FeatureEntry::FeatureVariation* feature_variation) {
   std::map<std::string, std::string> params;
@@ -211,18 +211,19 @@ void RegisterFeatureVariationParameters(
 
   bool success = variations::AssociateVariationParams(
       feature_trial_name, internal::kTrialGroupAboutFlags, params);
-  if (success) {
-    // Successful association also means that no group is created and selected
-    // for the trial, yet. Thus, create the trial to select the group. This way,
-    // the parameters cannot get overwritten in later phases (such as from the
-    // server).
-    base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-        feature_trial_name, internal::kTrialGroupAboutFlags);
-    if (!trial) {
-      DLOG(WARNING) << "Could not create the trial " << feature_trial_name
-                    << " with group " << internal::kTrialGroupAboutFlags;
-    }
+  if (!success)
+    return nullptr;
+  // Successful association also means that no group is created and selected
+  // for the trial, yet. Thus, create the trial to select the group. This way,
+  // the parameters cannot get overwritten in later phases (such as from the
+  // server).
+  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
+      feature_trial_name, internal::kTrialGroupAboutFlags);
+  if (!trial) {
+    DLOG(WARNING) << "Could not create the trial " << feature_trial_name
+                  << " with group " << internal::kTrialGroupAboutFlags;
   }
+  return trial;
 }
 
 }  // namespace
@@ -436,7 +437,8 @@ void FlagsState::Reset() {
 }
 
 void FlagsState::RegisterAllFeatureVariationParameters(
-    FlagsStorage* flags_storage) {
+    FlagsStorage* flags_storage,
+    base::FeatureList* feature_list) {
   std::set<std::string> enabled_entries;
   GetSanitizedEnabledFlagsForCurrentPlatform(flags_storage, &enabled_entries);
 
@@ -448,20 +450,16 @@ void FlagsState::RegisterAllFeatureVariationParameters(
             e.VariationForOption(j);
         if (e.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
             enabled_entries.count(e.NameForOption(j))) {
-          // If the option is enabled by the user, register it.
-          RegisterFeatureVariationParameters(e.feature_trial_name, variation);
-          // TODO(jkrcal) The code does not associate the feature with the field
-          // trial |e.feature_trial_name|. The reason is that features
-          // overridden in chrome://flags are translated to command-line flags
-          // and thus treated earlier in the initialization. The fix requires
-          // larger changes. As a result:
-          //  - the API calls to variations::GetVariationParamValueByFeature and
-          //    to variations::GetVariationParamsByFeature do not work; and
-          //  - the API call to base::FeatureList::IsEnabled does not mark the
-          //    field trial as active (and the trial does not appear in UMA).
-          // If the code calls variations::GetVariationParamValue or
-          // variations::GetVariationParams providing the trial name, everything
-          // should work fine.
+          // If the option is selected by the user & has variation, register it.
+          base::FieldTrial* field_trial = RegisterFeatureVariationParameters(
+              e.feature_trial_name, variation);
+
+          if (!field_trial)
+            continue;
+          feature_list->RegisterFieldTrialOverride(
+              e.feature->name,
+              base::FeatureList::OverrideState::OVERRIDE_ENABLE_FEATURE,
+              field_trial);
         }
       }
     }
