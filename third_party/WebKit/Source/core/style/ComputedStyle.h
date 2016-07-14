@@ -218,6 +218,7 @@ protected:
         {
             return m_effectiveDisplay == other.m_effectiveDisplay
                 && m_originalDisplay == other.m_originalDisplay
+                && m_overflowAnchor == other.m_overflowAnchor
                 && m_overflowX == other.m_overflowX
                 && m_overflowY == other.m_overflowY
                 && m_verticalAlign == other.m_verticalAlign
@@ -246,6 +247,7 @@ protected:
 
         unsigned m_effectiveDisplay : 5; // EDisplay
         unsigned m_originalDisplay : 5; // EDisplay
+        unsigned m_overflowAnchor : 2; // EOverflowAnchor
         unsigned m_overflowX : 3; // EOverflow
         unsigned m_overflowY : 3; // EOverflow
         unsigned m_verticalAlign : 4; // EVerticalAlign
@@ -312,6 +314,7 @@ protected:
         m_inheritedData.m_writingMode = initialWritingMode();
 
         m_nonInheritedData.m_effectiveDisplay = m_nonInheritedData.m_originalDisplay = initialDisplay();
+        m_nonInheritedData.m_overflowAnchor = initialOverflowAnchor();
         m_nonInheritedData.m_overflowX = initialOverflowX();
         m_nonInheritedData.m_overflowY = initialOverflowY();
         m_nonInheritedData.m_verticalAlign = initialVerticalAlign();
@@ -576,6 +579,7 @@ public:
     OutlineIsAuto outlineStyleIsAuto() const { return static_cast<OutlineIsAuto>(m_background->outline().isAuto()); }
     int outlineOutsetExtent() const;
 
+    EOverflowAnchor overflowAnchor() const { return static_cast<EOverflowAnchor>(m_nonInheritedData.m_overflowAnchor); }
     EOverflow overflowX() const { return static_cast<EOverflow>(m_nonInheritedData.m_overflowX); }
     EOverflow overflowY() const { return static_cast<EOverflow>(m_nonInheritedData.m_overflowY); }
     // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
@@ -1174,6 +1178,7 @@ public:
         m_background.access()->m_outline = o.m_background->m_outline;
     }
 
+    void setOverflowAnchor(EOverflowAnchor v) { m_nonInheritedData.m_overflowAnchor = v; }
     void setOverflowX(EOverflow v) { m_nonInheritedData.m_overflowX = v; }
     void setOverflowY(EOverflow v) { m_nonInheritedData.m_overflowY = v; }
     void setVisibility(EVisibility v) { m_inheritedData.m_visibility = v; }
@@ -1703,6 +1708,7 @@ public:
     static EFloat initialFloating() { return NoFloat; }
     static EListStylePosition initialListStylePosition() { return ListStylePositionOutside; }
     static EListStyleType initialListStyleType() { return Disc; }
+    static EOverflowAnchor initialOverflowAnchor() { return AnchorAuto; }
     static EOverflow initialOverflowX() { return OverflowVisible; }
     static EOverflow initialOverflowY() { return OverflowVisible; }
     static EBreak initialBreakAfter() { return BreakAuto; }

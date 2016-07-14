@@ -2162,6 +2162,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
         return zoomAdjustedPixelValue(style.outlineWidth(), style);
     case CSSPropertyOverflow:
         return CSSPrimitiveValue::create(max(style.overflowX(), style.overflowY()));
+    case CSSPropertyOverflowAnchor:
+        return CSSPrimitiveValue::create(style.overflowAnchor());
     case CSSPropertyOverflowWrap:
         return CSSPrimitiveValue::create(style.overflowWrap());
     case CSSPropertyOverflowX:

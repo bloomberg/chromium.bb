@@ -261,6 +261,7 @@ outline-color interpolable, custom_all
 outline-offset interpolable, converter=convertComputedLength<int>
 outline-style custom_all
 outline-width interpolable, converter=convertLineWidth<unsigned short>
+overflow-anchor runtime_flag=ScrollAnchoring, type_name=EOverflowAnchor
 overflow-wrap inherited
 overflow-x type_name=EOverflow
 overflow-y type_name=EOverflow

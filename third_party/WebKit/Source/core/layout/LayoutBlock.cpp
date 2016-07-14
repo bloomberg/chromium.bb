@@ -364,7 +364,8 @@ void LayoutBlock::layout()
 {
     LayoutAnalyzer::Scope analyzer(*this);
 
-    bool needsScrollAnchoring = RuntimeEnabledFeatures::scrollAnchoringEnabled() && hasOverflowClip();
+    bool needsScrollAnchoring = hasOverflowClip()
+        && getScrollableArea()->shouldPerformScrollAnchoring();
     if (needsScrollAnchoring)
         getScrollableArea()->scrollAnchor().save();
 

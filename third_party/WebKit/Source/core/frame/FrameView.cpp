@@ -823,7 +823,7 @@ void FrameView::performPreLayoutTasks()
     if (!m_scrollAnchor.hasScroller())
         m_scrollAnchor.setScroller(m_viewportScrollableArea ? m_viewportScrollableArea : this);
 
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+    if (shouldPerformScrollAnchoring())
         m_scrollAnchor.save();
 }
 
@@ -2122,7 +2122,7 @@ void FrameView::performPostLayoutTasks()
 
     scrollToFragmentAnchor();
     // TODO(skobes): Figure out interactions between scroll anchor, fragment anchor, and history restoration.
-    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+    if (shouldPerformScrollAnchoring())
         m_scrollAnchor.restore();
 
     sendResizeEventIfNeeded();
@@ -4100,7 +4100,7 @@ ScrollableArea* FrameView::layoutViewportScrollableArea()
     return layoutViewItem.isNull() ? nullptr : layoutViewItem.getScrollableArea();
 }
 
-LayoutObject* FrameView::viewportLayoutObject()
+LayoutObject* FrameView::viewportLayoutObject() const
 {
     if (Document* document = frame().document()) {
         if (Element* element = document->viewportDefiningElement())

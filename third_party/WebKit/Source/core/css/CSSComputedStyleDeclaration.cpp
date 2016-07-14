@@ -146,6 +146,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyOutlineOffset,
     CSSPropertyOutlineStyle,
     CSSPropertyOutlineWidth,
+    CSSPropertyOverflowAnchor,
     CSSPropertyOverflowWrap,
     CSSPropertyOverflowX,
     CSSPropertyOverflowY,

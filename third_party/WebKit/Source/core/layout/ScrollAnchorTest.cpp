@@ -508,6 +508,85 @@ TEST_F(ScrollAnchorTest, DescendsIntoContainerWithFloat)
         scrollAnchor(viewport).anchorObject());
 }
 
+TEST_F(ScrollAnchorTest, OptOutBody)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 2000px; overflow-anchor: none; }"
+        "    #scroller { overflow: scroll; width: 500px; height: 300px; }"
+        "    .anchor {"
+        "        position:relative; height: 100px; width: 150px;"
+        "        background-color: #afa; border: 1px solid gray;"
+        "    }"
+        "    #forceScrolling { height: 500px; background-color: #fcc; }"
+        "</style>"
+        "<div id='outerChanger'></div>"
+        "<div id='outerAnchor' class='anchor'></div>"
+        "<div id='scroller'>"
+        "    <div id='innerChanger'></div>"
+        "    <div id='innerAnchor' class='anchor'></div>"
+        "    <div id='forceScrolling'></div>"
+        "</div>");
+
+    ScrollableArea* scroller = scrollerForElement(document().getElementById("scroller"));
+    ScrollableArea* viewport = layoutViewport();
+
+    document().getElementById("scroller")->setScrollTop(100);
+    scrollLayoutViewport(DoubleSize(0, 100));
+
+    setHeight(document().getElementById("innerChanger"), 200);
+    setHeight(document().getElementById("outerChanger"), 150);
+
+    // Scroll anchoring should apply within #scroller.
+    EXPECT_EQ(300, scroller->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("innerAnchor")->layoutObject(),
+        scrollAnchor(scroller).anchorObject());
+    // Scroll anchoring should not apply within main frame.
+    EXPECT_EQ(100, viewport->scrollPosition().y());
+    EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
+}
+
+TEST_F(ScrollAnchorTest, OptOutScrollingDiv)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 2000px; }"
+        "    #scroller {"
+        "        overflow: scroll; width: 500px; height: 300px;"
+        "        overflow-anchor: none;"
+        "    }"
+        "    .anchor {"
+        "        position:relative; height: 100px; width: 150px;"
+        "        background-color: #afa; border: 1px solid gray;"
+        "    }"
+        "    #forceScrolling { height: 500px; background-color: #fcc; }"
+        "</style>"
+        "<div id='outerChanger'></div>"
+        "<div id='outerAnchor' class='anchor'></div>"
+        "<div id='scroller'>"
+        "    <div id='innerChanger'></div>"
+        "    <div id='innerAnchor' class='anchor'></div>"
+        "    <div id='forceScrolling'></div>"
+        "</div>");
+
+    ScrollableArea* scroller = scrollerForElement(document().getElementById("scroller"));
+    ScrollableArea* viewport = layoutViewport();
+
+    document().getElementById("scroller")->setScrollTop(100);
+    scrollLayoutViewport(DoubleSize(0, 100));
+
+    setHeight(document().getElementById("innerChanger"), 200);
+    setHeight(document().getElementById("outerChanger"), 150);
+
+    // Scroll anchoring should not apply within #scroller.
+    EXPECT_EQ(100, scroller->scrollPosition().y());
+    EXPECT_EQ(nullptr, scrollAnchor(scroller).anchorObject());
+    // Scroll anchoring should apply within main frame.
+    EXPECT_EQ(250, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("outerAnchor")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
+}
+
 class ScrollAnchorCornerTest : public ScrollAnchorTest {
 protected:
     void checkCorner(const AtomicString& id, Corner corner, DoublePoint startPos, DoubleSize expectedAdjustment)

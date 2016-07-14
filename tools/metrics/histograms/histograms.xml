@@ -82710,6 +82710,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="535" label="font-variant-numeric"/>
   <int value="536" label="text-size-adjust"/>
   <int value="537" label="alias-webkit-text-size-adjust"/>
+  <int value="538" label="overflow-anchor"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">

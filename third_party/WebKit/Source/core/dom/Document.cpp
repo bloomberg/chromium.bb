@@ -1578,10 +1578,12 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         documentElement()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FontSizeChange));
     }
 
+    EOverflowAnchor overflowAnchor = AnchorAuto;
     EOverflow overflowX = OverflowAuto;
     EOverflow overflowY = OverflowAuto;
     float columnGap = 0;
     if (overflowStyle) {
+        overflowAnchor = overflowStyle->overflowAnchor();
         overflowX = overflowStyle->overflowX();
         overflowY = overflowStyle->overflowY();
         // Visible overflow on the viewport is meaningless, and the spec says to treat it as 'auto':
@@ -1589,6 +1591,8 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
             overflowX = OverflowAuto;
         if (overflowY == OverflowVisible)
             overflowY = OverflowAuto;
+        if (overflowAnchor == AnchorVisible)
+            overflowAnchor = AnchorAuto;
         // Column-gap is (ab)used by the current paged overflow implementation (in lack of other
         // ways to specify gaps between pages), so we have to propagate it too.
         columnGap = overflowStyle->columnGap();
@@ -1603,6 +1607,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         || documentStyle->visitedDependentColor(CSSPropertyBackgroundColor) != backgroundColor
         || documentStyle->backgroundLayers() != backgroundLayers
         || documentStyle->imageRendering() != imageRendering
+        || documentStyle->overflowAnchor() != overflowAnchor
         || documentStyle->overflowX() != overflowX
         || documentStyle->overflowY() != overflowY
         || documentStyle->columnGap() != columnGap
@@ -1614,6 +1619,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
         newStyle->setBackgroundColor(backgroundColor);
         newStyle->accessBackgroundLayers() = backgroundLayers;
         newStyle->setImageRendering(imageRendering);
+        newStyle->setOverflowAnchor(overflowAnchor);
         newStyle->setOverflowX(overflowX);
         newStyle->setOverflowY(overflowY);
         newStyle->setColumnGap(columnGap);

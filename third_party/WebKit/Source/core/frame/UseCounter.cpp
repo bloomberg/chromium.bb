@@ -565,6 +565,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyFontVariantNumeric: return 535;
     case CSSPropertyTextSizeAdjust: return 536;
     case CSSPropertyAliasWebkitTextSizeAdjust: return 537;
+    case CSSPropertyOverflowAnchor: return 538;
 
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
@@ -582,7 +583,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
 }
 
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
-static int maximumCSSSampleId() { return 537; }
+static int maximumCSSSampleId() { return 538; }
 
 static EnumerationHistogram& featureObserverHistogram()
 {

@@ -766,7 +766,7 @@ private:
     std::unique_ptr<TracedValue> analyzerCounters();
 
     // LayoutObject for the viewport-defining element (see Document::viewportDefiningElement).
-    LayoutObject* viewportLayoutObject();
+    LayoutObject* viewportLayoutObject() const;
 
     void collectAnnotatedRegions(LayoutObject&, Vector<AnnotatedRegionValue>&) const;
 

@@ -294,6 +294,7 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     // See comments for each skipped flag below.
     m_nonInheritedData.m_effectiveDisplay = other.m_nonInheritedData.m_effectiveDisplay;
     m_nonInheritedData.m_originalDisplay = other.m_nonInheritedData.m_originalDisplay;
+    m_nonInheritedData.m_overflowAnchor = other.m_nonInheritedData.m_overflowAnchor;
     m_nonInheritedData.m_overflowX = other.m_nonInheritedData.m_overflowX;
     m_nonInheritedData.m_overflowY = other.m_nonInheritedData.m_overflowY;
     m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;

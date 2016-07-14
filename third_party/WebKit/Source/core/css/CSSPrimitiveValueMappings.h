@@ -2629,6 +2629,41 @@ template<> inline EWordBreak CSSPrimitiveValue::convertTo() const
     return NormalWordBreak;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EOverflowAnchor e)
+    : CSSValue(PrimitiveClass)
+{
+    init(UnitType::ValueID);
+    switch (e) {
+    case AnchorVisible:
+        m_value.valueID = CSSValueVisible;
+        break;
+    case AnchorNone:
+        m_value.valueID = CSSValueNone;
+        break;
+    case AnchorAuto:
+        m_value.valueID = CSSValueAuto;
+        break;
+    }
+}
+
+template<> inline EOverflowAnchor CSSPrimitiveValue::convertTo() const
+{
+    DCHECK(isValueID());
+    switch (m_value.valueID) {
+    case CSSValueVisible:
+        return AnchorVisible;
+    case CSSValueNone:
+        return AnchorNone;
+    case CSSValueAuto:
+        return AnchorAuto;
+    default:
+        break;
+    }
+
+    NOTREACHED();
+    return AnchorNone;
+}
+
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EOverflowWrap e)
     : CSSValue(PrimitiveClass)
 {

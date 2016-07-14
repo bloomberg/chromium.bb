@@ -278,6 +278,10 @@ public:
     virtual bool isPaintLayerScrollableArea() const { return false; }
     virtual bool isRootFrameViewport() const { return false; }
 
+    // Returns true if the scroller adjusts the scroll position to compensate
+    // for layout movements (bit.ly/scroll-anchoring).
+    virtual bool shouldPerformScrollAnchoring() const { return false; }
+
     // Need to promptly let go of owned animator objects.
     EAGERLY_FINALIZE();
     DECLARE_VIRTUAL_TRACE();
