@@ -1527,8 +1527,11 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
     selection_.clear();
     return true;
   }
-  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+
+  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
+      event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
     return false;
+  }
 
   SelectionChangeInvalidator selection_invalidator(this);
   selection_.clear();
@@ -1545,6 +1548,10 @@ bool PDFiumEngine::OnMouseDown(const pp::MouseInputEvent& event) {
   // mouse move events.
   if (area == PDFiumPage::WEBLINK_AREA)
     return true;
+
+  // Prevent middle mouse button from selecting texts.
+  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
+    return false;
 
   if (area == PDFiumPage::DOCLINK_AREA) {
     client_->ScrollToPage(target.page);
@@ -1620,8 +1627,11 @@ void PDFiumEngine::OnMultipleClick(int click_count,
 }
 
 bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
-  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT)
+
+  if (event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_LEFT &&
+      event.GetButton() != PP_INPUTEVENT_MOUSEBUTTON_MIDDLE) {
     return false;
+  }
 
   int page_index = -1;
   int char_index = -1;
@@ -1633,12 +1643,17 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
   // Open link on mouse up for same link for which mouse down happened earlier.
   if (mouse_down_state_.Matches(area, target)) {
     if (area == PDFiumPage::WEBLINK_AREA) {
-      bool open_in_new_tab = !!(event.GetModifiers() & kDefaultKeyModifier);
+      bool open_in_new_tab = !!(event.GetModifiers() & kDefaultKeyModifier) ||
+          !!(event.GetModifiers() & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN);
       client_->NavigateTo(target.url, open_in_new_tab);
       client_->FormTextFieldFocusChange(false);
       return true;
     }
   }
+
+  // Prevent middle mouse button from selecting texts.
+  if (event.GetButton() == PP_INPUTEVENT_MOUSEBUTTON_MIDDLE)
+    return false;
 
   if (page_index != -1) {
     double page_x, page_y;

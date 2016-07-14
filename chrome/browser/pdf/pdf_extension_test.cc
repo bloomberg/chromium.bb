@@ -39,6 +39,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -48,6 +49,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "extensions/test/result_catcher.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -584,4 +586,58 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
   ASSERT_TRUE(expected_ax_tree == ax_tree_dump)
       << "Expected:\n" << expected_ax_tree
       << "\n\nActual:\n" << ax_tree_dump;
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  // The link position of the test-link.pdf in page coordinates is (110, 110).
+  // Convert the link position from page coordinates to screen coordinates.
+  ASSERT_TRUE(content::ExecuteScript(guest_contents,
+      "var visiblePage = viewer.viewport.getMostVisiblePage();"
+      "var visiblePageDimensions ="
+      "    viewer.viewport.getPageScreenRect(visiblePage);"
+      "var viewportPosition = viewer.viewport.position;"
+      "var screenOffsetX = visiblePageDimensions.x - viewportPosition.x;"
+      "var screenOffsetY = visiblePageDimensions.y - viewportPosition.y;"
+      "var linkScreenPositionX = Math.floor(110 + screenOffsetX);"
+      "var linkScreenPositionY = Math.floor(110 + screenOffsetY);"));
+
+  int x;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      guest_contents,
+      "window.domAutomationController.send(linkScreenPositionX);",
+      &x));
+
+  int y;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
+      guest_contents,
+      "window.domAutomationController.send(linkScreenPositionY);",
+      &y));
+
+  gfx::Point point(x, y);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_ADDED,
+      content::NotificationService::AllSources());
+  content::SimulateMouseClickAt(web_contents, 0,
+      blink::WebMouseEvent::ButtonMiddle, point);
+  observer.Wait();
+
+  int tab_count = browser()->tab_strip_model()->count();
+  ASSERT_EQ(2, tab_count);
+
+  // TODO(jaepark): Middle mouse clicking on a link should not change
+  // the focus of the tab. See http://crbug.com/628054.
+  content::WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(web_contents, new_web_contents);
+
+  const GURL& url = new_web_contents->GetURL();
+  ASSERT_EQ(std::string("http://www.example.com/"), url.spec());
 }
