@@ -42,7 +42,7 @@ public:
 
     ~String16() { }
 
-    static String16 number(int i) { return String::number(i); }
+    static String16 fromInteger(int i) { return String::number(i); }
     static String16 fromDouble(double number) { return Decimal::fromDouble(number).toString(); }
     static String16 fromDoubleFixedPrecision(double number, int precision) { return String::numberToStringFixedWidth(number, precision); }
 

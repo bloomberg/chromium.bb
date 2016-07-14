@@ -146,7 +146,7 @@ void InjectedScript::releaseObject(const String16& objectId)
     if (!object)
         return;
     int boundId = 0;
-    if (!object->getNumber("id", &boundId))
+    if (!object->getInteger("id", &boundId))
         return;
     m_native->unbind(boundId);
 }
@@ -309,7 +309,7 @@ std::unique_ptr<protocol::Runtime::ExceptionDetails> InjectedScript::createExcep
 {
     std::unique_ptr<protocol::Runtime::ExceptionDetails> exceptionDetailsObject = protocol::Runtime::ExceptionDetails::create().setText(toProtocolString(message->Get())).build();
     exceptionDetailsObject->setUrl(toProtocolStringWithTypeCheck(message->GetScriptResourceName()));
-    exceptionDetailsObject->setScriptId(String16::number(message->GetScriptOrigin().ScriptID()->Value()));
+    exceptionDetailsObject->setScriptId(String16::fromInteger(message->GetScriptOrigin().ScriptID()->Value()));
 
     v8::Maybe<int> lineNumber = message->GetLineNumber(m_context->context());
     if (lineNumber.IsJust())

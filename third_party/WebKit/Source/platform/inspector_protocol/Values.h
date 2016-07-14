@@ -34,7 +34,8 @@ public:
     enum ValueType {
         TypeNull = 0,
         TypeBoolean,
-        TypeNumber,
+        TypeInteger,
+        TypeDouble,
         TypeString,
         TypeObject,
         TypeArray
@@ -45,8 +46,8 @@ public:
     bool isNull() const { return m_type == TypeNull; }
 
     virtual bool asBoolean(bool* output) const;
-    virtual bool asNumber(double* output) const;
-    virtual bool asNumber(int* output) const;
+    virtual bool asDouble(double* output) const;
+    virtual bool asInteger(int* output) const;
     virtual bool asString(String16* output) const;
 
     String16 toJSONString() const;
@@ -82,19 +83,20 @@ public:
     }
 
     bool asBoolean(bool* output) const override;
-    bool asNumber(double* output) const override;
-    bool asNumber(int* output) const override;
+    bool asDouble(double* output) const override;
+    bool asInteger(int* output) const override;
     void writeJSON(String16Builder* output) const override;
     std::unique_ptr<Value> clone() const override;
 
 private:
     explicit FundamentalValue(bool value) : Value(TypeBoolean), m_boolValue(value) { }
-    explicit FundamentalValue(int value) : Value(TypeNumber), m_doubleValue((double)value) { }
-    explicit FundamentalValue(double value) : Value(TypeNumber), m_doubleValue(value) { }
+    explicit FundamentalValue(int value) : Value(TypeInteger), m_integerValue(value) { }
+    explicit FundamentalValue(double value) : Value(TypeDouble), m_doubleValue(value) { }
 
     union {
         bool m_boolValue;
         double m_doubleValue;
+        int m_integerValue;
     };
 };
 
@@ -147,20 +149,16 @@ public:
     size_t size() const { return m_data.size(); }
 
     void setBoolean(const String16& name, bool);
-    void setNumber(const String16& name, double);
+    void setInteger(const String16& name, int);
+    void setDouble(const String16& name, double);
     void setString(const String16& name, const String16&);
     void setValue(const String16& name, std::unique_ptr<Value>);
     void setObject(const String16& name, std::unique_ptr<DictionaryValue>);
     void setArray(const String16& name, std::unique_ptr<ListValue>);
 
     bool getBoolean(const String16& name, bool* output) const;
-    template<class T> bool getNumber(const String16& name, T* output) const
-    {
-        Value* value = get(name);
-        if (!value)
-            return false;
-        return value->asNumber(output);
-    }
+    bool getInteger(const String16& name, int* output) const;
+    bool getDouble(const String16& name, double* output) const;
     bool getString(const String16& name, String16* output) const;
 
     DictionaryValue* getObject(const String16& name) const;
@@ -169,7 +167,8 @@ public:
     Entry at(size_t index) const;
 
     bool booleanProperty(const String16& name, bool defaultValue) const;
-    double numberProperty(const String16& name, double defaultValue) const;
+    int integerProperty(const String16& name, int defaultValue) const;
+    double doubleProperty(const String16& name, double defaultValue) const;
     void remove(const String16& name);
 
     ~DictionaryValue() override;

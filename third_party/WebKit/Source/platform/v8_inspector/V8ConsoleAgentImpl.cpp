@@ -77,7 +77,7 @@ void V8ConsoleAgentImpl::reportAllMessages()
         std::unique_ptr<protocol::Console::ConsoleMessage> expired = protocol::Console::ConsoleMessage::create()
             .setSource(protocol::Console::ConsoleMessage::SourceEnum::Other)
             .setLevel(protocol::Console::ConsoleMessage::LevelEnum::Warning)
-            .setText(String16::number(storage->expiredCount()) + String16("console messages are not shown."))
+            .setText(String16::fromInteger(storage->expiredCount()) + String16("console messages are not shown."))
             .setTimestamp(0)
             .build();
         expired->setType(protocol::Console::ConsoleMessage::TypeEnum::Log);

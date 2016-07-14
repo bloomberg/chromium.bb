@@ -354,7 +354,7 @@ void V8Console::countCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (title.isEmpty()) {
         std::unique_ptr<V8StackTraceImpl> stackTrace = V8StackTraceImpl::capture(nullptr, 0, 1);
         if (stackTrace)
-            identifier = stackTrace->topSourceURL() + ":" + String16::number(stackTrace->topLineNumber());
+            identifier = stackTrace->topSourceURL() + ":" + String16::fromInteger(stackTrace->topLineNumber());
     } else {
         identifier = title + "@";
     }
@@ -364,7 +364,7 @@ void V8Console::countCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     int64_t count = helper.getIntFromMap(countMap, identifier, 0) + 1;
     helper.setIntOnMap(countMap, identifier, count);
-    helper.addMessage(ConsoleAPIType::kCount, DebugMessageLevel, title + ": " + String16::number(count));
+    helper.addMessage(ConsoleAPIType::kCount, DebugMessageLevel, title + ": " + String16::fromInteger(count));
 }
 
 void V8Console::assertCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -522,7 +522,7 @@ static void setFunctionBreakpoint(ConsoleHelper& helper, v8::Local<v8::Function>
     V8DebuggerAgentImpl* debuggerAgent = helper.debuggerAgent();
     if (!debuggerAgent)
         return;
-    String16 scriptId = String16::number(function->ScriptId());
+    String16 scriptId = String16::fromInteger(function->ScriptId());
     int lineNumber = function->GetScriptLineNumber();
     int columnNumber = function->GetScriptColumnNumber();
     if (lineNumber == v8::Function::kLineOffsetNotFound || columnNumber == v8::Function::kLineOffsetNotFound)

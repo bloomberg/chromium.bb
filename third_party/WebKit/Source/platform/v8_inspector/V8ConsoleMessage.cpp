@@ -243,7 +243,7 @@ void V8ConsoleMessage::reportToFrontend(protocol::Console::Frontend* frontend, V
     result->setLine(static_cast<int>(m_lineNumber));
     result->setColumn(static_cast<int>(m_columnNumber));
     if (m_scriptId)
-        result->setScriptId(String16::number(m_scriptId));
+        result->setScriptId(String16::fromInteger(m_scriptId));
     result->setUrl(m_url);
     if (m_source == NetworkMessageSource && !m_requestIdentifier.isEmpty())
         result->setNetworkRequestId(m_requestIdentifier);
@@ -304,7 +304,7 @@ void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V
         if (m_columnNumber)
             details->setColumnNumber(static_cast<int>(m_columnNumber) - 1);
         if (m_scriptId)
-            details->setScriptId(String16::number(m_scriptId));
+            details->setScriptId(String16::fromInteger(m_scriptId));
         if (m_stackTrace)
             details->setStack(m_stackTrace->buildInspectorObject());
 

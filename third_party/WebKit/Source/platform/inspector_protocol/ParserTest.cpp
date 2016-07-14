@@ -41,13 +41,13 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(Value::TypeNull, root->type());
     root = parseJSON("40 /* comment */");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
-    EXPECT_TRUE(root->asNumber(&intVal));
+    EXPECT_EQ(Value::TypeInteger, root->type());
+    EXPECT_TRUE(root->asInteger(&intVal));
     EXPECT_EQ(40, intVal);
     root = parseJSON("/**/ 40 /* multi-line\n comment */ // more comment");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
-    EXPECT_TRUE(root->asNumber(&intVal));
+    EXPECT_EQ(Value::TypeInteger, root->type());
+    EXPECT_TRUE(root->asInteger(&intVal));
     EXPECT_EQ(40, intVal);
     root = parseJSON("true // comment");
     ASSERT_TRUE(root.get());
@@ -63,11 +63,11 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(2u, list->size());
     tmpValue = list->at(0);
     ASSERT_TRUE(tmpValue);
-    EXPECT_TRUE(tmpValue->asNumber(&intVal));
+    EXPECT_TRUE(tmpValue->asInteger(&intVal));
     EXPECT_EQ(1, intVal);
     tmpValue = list->at(1);
     ASSERT_TRUE(tmpValue);
-    EXPECT_TRUE(tmpValue->asNumber(&intVal));
+    EXPECT_TRUE(tmpValue->asInteger(&intVal));
     EXPECT_EQ(3, intVal);
     root = parseJSON("[1, /*a*/2, 3]");
     ASSERT_TRUE(root.get());
@@ -76,23 +76,23 @@ TEST(ParserTest, Reading)
     EXPECT_EQ(3u, list->size());
     root = parseJSON("/* comment **/42");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
-    EXPECT_TRUE(root->asNumber(&intVal));
+    EXPECT_EQ(Value::TypeInteger, root->type());
+    EXPECT_TRUE(root->asInteger(&intVal));
     EXPECT_EQ(42, intVal);
     root = parseJSON(
         "/* comment **/\n"
         "// */ 43\n"
         "44");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
-    EXPECT_TRUE(root->asNumber(&intVal));
+    EXPECT_EQ(Value::TypeInteger, root->type());
+    EXPECT_TRUE(root->asInteger(&intVal));
     EXPECT_EQ(44, intVal);
 
     // Test number formats
     root = parseJSON("43");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
-    EXPECT_TRUE(root->asNumber(&intVal));
+    EXPECT_EQ(Value::TypeInteger, root->type());
+    EXPECT_TRUE(root->asInteger(&intVal));
     EXPECT_EQ(43, intVal);
 
     // According to RFC4627, oct, hex, and leading zeros are invalid JSON.
@@ -107,9 +107,9 @@ TEST(ParserTest, Reading)
     // clause).
     root = parseJSON("0");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeInteger, root->type());
     intVal = 1;
-    EXPECT_TRUE(root->asNumber(&intVal));
+    EXPECT_TRUE(root->asInteger(&intVal));
     EXPECT_EQ(0, intVal);
 
     // Numbers that overflow ints should succeed, being internally promoted to
@@ -117,58 +117,58 @@ TEST(ParserTest, Reading)
     root = parseJSON("2147483648");
     ASSERT_TRUE(root.get());
     double doubleVal;
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeDouble, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(2147483648.0, doubleVal);
     root = parseJSON("-2147483649");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeDouble, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(-2147483649.0, doubleVal);
 
     // Parse a double
     root = parseJSON("43.1");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeDouble, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(43.1, doubleVal);
 
     root = parseJSON("4.3e-1");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeDouble, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(.43, doubleVal);
 
     root = parseJSON("2.1e0");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeDouble, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(2.1, doubleVal);
 
     root = parseJSON("2.1e+0001");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeInteger, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(21.0, doubleVal);
 
     root = parseJSON("0.01");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeDouble, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(0.01, doubleVal);
 
     root = parseJSON("1.00");
     ASSERT_TRUE(root.get());
-    EXPECT_EQ(Value::TypeNumber, root->type());
+    EXPECT_EQ(Value::TypeInteger, root->type());
     doubleVal = 0.0;
-    EXPECT_TRUE(root->asNumber(&doubleVal));
+    EXPECT_TRUE(root->asDouble(&doubleVal));
     EXPECT_DOUBLE_EQ(1.0, doubleVal);
 
     // Fractional parts must have a digit before and after the decimal point.
@@ -312,7 +312,7 @@ TEST(ParserTest, Reading)
     protocol::DictionaryValue* objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
     doubleVal = 0.0;
-    EXPECT_TRUE(objectVal->getNumber("number", &doubleVal));
+    EXPECT_TRUE(objectVal->getDouble("number", &doubleVal));
     EXPECT_DOUBLE_EQ(9.87654321, doubleVal);
     protocol::Value* nullVal = objectVal->get("null");
     ASSERT_TRUE(nullVal);
@@ -363,14 +363,14 @@ TEST(ParserTest, Reading)
     objectVal = DictionaryValue::cast(root.get());
     ASSERT_TRUE(objectVal);
     int integerValue = 0;
-    EXPECT_TRUE(objectVal->getNumber("a.b", &integerValue));
+    EXPECT_TRUE(objectVal->getInteger("a.b", &integerValue));
     EXPECT_EQ(3, integerValue);
-    EXPECT_TRUE(objectVal->getNumber("c", &integerValue));
+    EXPECT_TRUE(objectVal->getInteger("c", &integerValue));
     EXPECT_EQ(2, integerValue);
     innerObject = objectVal->getObject("d.e.f");
     ASSERT_TRUE(innerObject);
     EXPECT_EQ(1U, innerObject->size());
-    EXPECT_TRUE(innerObject->getNumber("g.h.i.j", &integerValue));
+    EXPECT_TRUE(innerObject->getInteger("g.h.i.j", &integerValue));
     EXPECT_EQ(1, integerValue);
 
     root = parseJSON("{\"a\":{\"b\":2},\"a.b\":1}");
@@ -380,9 +380,9 @@ TEST(ParserTest, Reading)
     ASSERT_TRUE(objectVal);
     innerObject = objectVal->getObject("a");
     ASSERT_TRUE(innerObject);
-    EXPECT_TRUE(innerObject->getNumber("b", &integerValue));
+    EXPECT_TRUE(innerObject->getInteger("b", &integerValue));
     EXPECT_EQ(2, integerValue);
-    EXPECT_TRUE(objectVal->getNumber("a.b", &integerValue));
+    EXPECT_TRUE(objectVal->getInteger("a.b", &integerValue));
     EXPECT_EQ(1, integerValue);
 
     // Invalid, no closing brace
@@ -469,7 +469,7 @@ TEST(ParserTest, Reading)
 
     root = parseJSON("10");
     ASSERT_TRUE(root.get());
-    EXPECT_TRUE(root->asNumber(&integerValue));
+    EXPECT_TRUE(root->asInteger(&integerValue));
     EXPECT_EQ(10, integerValue);
 
     root = parseJSON("\"root\"");

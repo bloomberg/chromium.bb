@@ -382,7 +382,11 @@ std::unique_ptr<Value> buildValue(const UChar* start, const UChar* end, const UC
         double value = String16::charactersToDouble(tokenStart, tokenEnd - tokenStart, &ok);
         if (!ok)
             return nullptr;
-        result = FundamentalValue::create(value);
+        int number = static_cast<int>(value);
+        if (number == value)
+            result = FundamentalValue::create(number);
+        else
+            result = FundamentalValue::create(value);
         break;
     }
     case StringLiteral: {

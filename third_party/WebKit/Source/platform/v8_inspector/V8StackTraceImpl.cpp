@@ -26,7 +26,7 @@ static const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v
 
 V8StackTraceImpl::Frame toFrame(v8::Local<v8::StackFrame> frame)
 {
-    String16 scriptId = String16::number(frame->GetScriptId());
+    String16 scriptId = String16::fromInteger(frame->GetScriptId());
     String16 sourceName;
     v8::Local<v8::String> sourceNameValue(frame->GetScriptNameOrSourceURL());
     if (!sourceNameValue.IsEmpty())

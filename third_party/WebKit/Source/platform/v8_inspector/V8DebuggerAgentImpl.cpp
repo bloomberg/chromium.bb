@@ -68,7 +68,7 @@ static String16 breakpointIdSuffix(V8DebuggerAgentImpl::BreakpointSource source)
 
 static String16 generateBreakpointId(const String16& scriptId, int lineNumber, int columnNumber, V8DebuggerAgentImpl::BreakpointSource source)
 {
-    return scriptId + ":" + String16::number(lineNumber) + ":" + String16::number(columnNumber) + breakpointIdSuffix(source);
+    return scriptId + ":" + String16::fromInteger(lineNumber) + ":" + String16::fromInteger(columnNumber) + breakpointIdSuffix(source);
 }
 
 static bool positionComparator(const std::pair<int, int>& a, const std::pair<int, int>& b)
@@ -167,8 +167,8 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
         return;
 
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, protocol::DictionaryValue::create());
-    m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
-    m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, 0);
+    m_state->setInteger(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
+    m_state->setInteger(DebuggerAgentState::asyncCallStackDepth, 0);
 
     if (!m_pausedContext.IsEmpty())
         debugger().continueProgram();
@@ -208,14 +208,14 @@ void V8DebuggerAgentImpl::restore()
     ErrorString error;
 
     int pauseState = V8DebuggerImpl::DontPauseOnExceptions;
-    m_state->getNumber(DebuggerAgentState::pauseOnExceptionsState, &pauseState);
+    m_state->getInteger(DebuggerAgentState::pauseOnExceptionsState, &pauseState);
     setPauseOnExceptionsImpl(&error, pauseState);
     DCHECK(error.isEmpty());
 
     m_skipAllPauses = m_state->booleanProperty(DebuggerAgentState::skipAllPauses, false);
 
     int asyncCallStackDepth = 0;
-    m_state->getNumber(DebuggerAgentState::asyncCallStackDepth, &asyncCallStackDepth);
+    m_state->getInteger(DebuggerAgentState::asyncCallStackDepth, &asyncCallStackDepth);
     m_debugger->setAsyncCallStackDepth(this, asyncCallStackDepth);
 
     String16 blackboxPattern;
@@ -242,8 +242,8 @@ static std::unique_ptr<protocol::DictionaryValue> buildObjectForBreakpointCookie
 {
     std::unique_ptr<protocol::DictionaryValue> breakpointObject = protocol::DictionaryValue::create();
     breakpointObject->setString(DebuggerAgentState::url, url);
-    breakpointObject->setNumber(DebuggerAgentState::lineNumber, lineNumber);
-    breakpointObject->setNumber(DebuggerAgentState::columnNumber, columnNumber);
+    breakpointObject->setInteger(DebuggerAgentState::lineNumber, lineNumber);
+    breakpointObject->setInteger(DebuggerAgentState::columnNumber, columnNumber);
     breakpointObject->setString(DebuggerAgentState::condition, condition);
     breakpointObject->setBoolean(DebuggerAgentState::isRegex, isRegex);
     return breakpointObject;
@@ -285,7 +285,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString,
     String16 condition = optionalCondition.fromMaybe("");
     bool isRegex = optionalURLRegex.isJust();
 
-    String16 breakpointId = (isRegex ? "/" + url + "/" : url) + ":" + String16::number(lineNumber) + ":" + String16::number(columnNumber);
+    String16 breakpointId = (isRegex ? "/" + url + "/" : url) + ":" + String16::fromInteger(lineNumber) + ":" + String16::fromInteger(columnNumber);
     protocol::DictionaryValue* breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     if (!breakpointsCookie) {
         std::unique_ptr<protocol::DictionaryValue> newValue = protocol::DictionaryValue::create();
@@ -430,7 +430,7 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCal
 {
     if (!frame)
         return true;
-    ScriptsMap::iterator it = m_scripts.find(String16::number(frame->sourceID()));
+    ScriptsMap::iterator it = m_scripts.find(String16::fromInteger(frame->sourceID()));
     if (it == m_scripts.end()) {
         // Unknown scripts are blackboxed.
         return true;
@@ -440,7 +440,7 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCal
         if (!scriptSourceURL.isEmpty() && m_blackboxPattern->match(scriptSourceURL) != -1)
             return true;
     }
-    auto itBlackboxedPositions = m_blackboxedPositions.find(String16::number(frame->sourceID()));
+    auto itBlackboxedPositions = m_blackboxedPositions.find(String16::fromInteger(frame->sourceID()));
     if (itBlackboxedPositions == m_blackboxedPositions.end())
         return false;
 
@@ -712,7 +712,7 @@ void V8DebuggerAgentImpl::setPauseOnExceptionsImpl(ErrorString* errorString, int
     if (debugger().getPauseOnExceptionsState() != pauseState)
         *errorString = "Internal error. Could not change pause on exceptions state";
     else
-        m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, pauseState);
+        m_state->setInteger(DebuggerAgentState::pauseOnExceptionsState, pauseState);
 }
 
 void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
@@ -791,7 +791,7 @@ void V8DebuggerAgentImpl::setAsyncCallStackDepth(ErrorString* errorString, int d
 {
     if (!checkEnabled(errorString))
         return;
-    m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, depth);
+    m_state->setInteger(DebuggerAgentState::asyncCallStackDepth, depth);
     m_debugger->setAsyncCallStackDepth(this, depth);
 }
 
@@ -875,7 +875,7 @@ void V8DebuggerAgentImpl::willExecuteScript(int scriptId)
     if (m_scheduledDebuggerStep != StepInto)
         return;
     // Skip unknown scripts (e.g. InjectedScript).
-    if (m_scripts.find(String16::number(scriptId)) == m_scripts.end())
+    if (m_scripts.find(String16::fromInteger(scriptId)) == m_scripts.end())
         return;
     schedulePauseOnNextStatementIfSteppingInto();
 }
@@ -1041,8 +1041,8 @@ void V8DebuggerAgentImpl::didParseSource(std::unique_ptr<V8DebuggerScript> scrip
         if (!matches(m_debugger, scriptURL, url, isRegex))
             continue;
         ScriptBreakpoint breakpoint;
-        breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
-        breakpointObject->getNumber(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
+        breakpointObject->getInteger(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);
+        breakpointObject->getInteger(DebuggerAgentState::columnNumber, &breakpoint.columnNumber);
         breakpointObject->getString(DebuggerAgentState::condition, &breakpoint.condition);
         std::unique_ptr<protocol::Debugger::Location> location = resolveBreakpoint(cookie.first, scriptId, breakpoint, UserBreakpointSource);
         if (location)

@@ -215,8 +215,8 @@ def create_primitive_type_definition(type):
         "boolean": "false"
     }
     jsontypes = {
-        "number": "TypeNumber",
-        "integer": "TypeNumber",
+        "number": "TypeDouble",
+        "integer": "TypeInteger",
         "boolean": "TypeBoolean",
     }
     return {

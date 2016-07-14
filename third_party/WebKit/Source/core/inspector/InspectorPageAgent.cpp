@@ -349,7 +349,7 @@ void InspectorPageAgent::restore()
     ErrorString error;
     if (m_state->booleanProperty(PageAgentState::pageAgentEnabled, false))
         enable(&error);
-    setBlockedEventsWarningThreshold(&error, m_state->numberProperty(PageAgentState::blockedEventsWarningThreshold, 0.0));
+    setBlockedEventsWarningThreshold(&error, m_state->doubleProperty(PageAgentState::blockedEventsWarningThreshold, 0.0));
 }
 
 void InspectorPageAgent::enable(ErrorString*)
@@ -750,7 +750,7 @@ void InspectorPageAgent::setOverlayMessage(ErrorString*, const Maybe<String>& me
 
 void InspectorPageAgent::setBlockedEventsWarningThreshold(ErrorString*, double threshold)
 {
-    m_state->setNumber(PageAgentState::blockedEventsWarningThreshold, threshold);
+    m_state->setDouble(PageAgentState::blockedEventsWarningThreshold, threshold);
     FrameHost* host = m_inspectedFrames->root()->host();
     if (!host)
         return;

@@ -69,7 +69,7 @@ V8DebuggerScript::V8DebuggerScript(v8::Isolate* isolate, v8::Local<v8::Object> o
 {
     v8::Local<v8::Value> idValue = object->Get(toV8StringInternalized(isolate, "id"));
     DCHECK(!idValue.IsEmpty() && idValue->IsInt32());
-    m_id = String16::number(idValue->Int32Value());
+    m_id = String16::fromInteger(idValue->Int32Value());
 
     m_url = toProtocolStringWithTypeCheck(object->Get(toV8StringInternalized(isolate, "name")));
     m_sourceURL = toProtocolStringWithTypeCheck(object->Get(toV8StringInternalized(isolate, "sourceURL")));

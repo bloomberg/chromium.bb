@@ -34,7 +34,7 @@ public:
         errors->push();
         std::unique_ptr<Array<T>> result(new Array<T>());
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName(String16::number(i));
+            errors->setName(String16::fromInteger(i));
             T item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.push_back(item);
         }
@@ -95,7 +95,7 @@ public:
         std::unique_ptr<Array<T>> result(new Array<T>());
         errors->push();
         for (size_t i = 0; i < array->size(); ++i) {
-            errors->setName(String16::number(i));
+            errors->setName(String16::fromInteger(i));
             std::unique_ptr<T> item = FromValue<T>::parse(array->at(i), errors);
             result->m_vector.push_back(std::move(item));
         }

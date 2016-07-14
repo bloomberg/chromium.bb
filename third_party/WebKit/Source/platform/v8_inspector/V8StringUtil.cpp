@@ -224,8 +224,13 @@ std::unique_ptr<protocol::Value> toProtocolValue(v8::Local<v8::Context> context,
         return protocol::Value::null();
     if (value->IsBoolean())
         return protocol::FundamentalValue::create(value.As<v8::Boolean>()->Value());
-    if (value->IsNumber())
-        return protocol::FundamentalValue::create(value.As<v8::Number>()->Value());
+    if (value->IsNumber()) {
+        double doubleValue = value.As<v8::Number>()->Value();
+        int intValue = static_cast<int>(doubleValue);
+        if (intValue == doubleValue)
+            return protocol::FundamentalValue::create(intValue);
+        return protocol::FundamentalValue::create(doubleValue);
+    }
     if (value->IsString())
         return protocol::StringValue::create(toProtocolString(value.As<v8::String>()));
     if (value->IsArray()) {

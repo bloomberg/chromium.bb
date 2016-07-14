@@ -541,7 +541,7 @@ void InspectorDOMDebuggerAgent::descriptionForDOMEvent(Node* target, int breakpo
 
     int breakpointOwnerNodeId = m_domAgent->boundNodeId(breakpointOwner);
     ASSERT(breakpointOwnerNodeId);
-    description->setNumber("nodeId", breakpointOwnerNodeId);
+    description->setInteger("nodeId", breakpointOwnerNodeId);
     description->setString("type", domTypeName(breakpointType));
 }
 

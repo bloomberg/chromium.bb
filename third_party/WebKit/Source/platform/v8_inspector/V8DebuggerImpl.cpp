@@ -499,7 +499,7 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
         for (size_t i = 0; i < hitBreakpointNumbers->Length(); i++) {
             v8::Local<v8::Value> hitBreakpointNumber = hitBreakpointNumbers->Get(i);
             DCHECK(!hitBreakpointNumber.IsEmpty() && hitBreakpointNumber->IsInt32());
-            breakpointIds.push_back(String16::number(hitBreakpointNumber->Int32Value()));
+            breakpointIds.push_back(String16::fromInteger(hitBreakpointNumber->Int32Value()));
         }
     }
 
@@ -754,7 +754,7 @@ v8::Local<v8::Value> V8DebuggerImpl::functionLocation(v8::Local<v8::Context> con
     if (lineNumber == v8::Function::kLineOffsetNotFound || columnNumber == v8::Function::kLineOffsetNotFound)
         return v8::Null(m_isolate);
     v8::Local<v8::Object> location = v8::Object::New(m_isolate);
-    if (!location->Set(context, v8InternalizedString("scriptId"), toV8String(m_isolate, String16::number(scriptId))).FromMaybe(false))
+    if (!location->Set(context, v8InternalizedString("scriptId"), toV8String(m_isolate, String16::fromInteger(scriptId))).FromMaybe(false))
         return v8::Null(m_isolate);
     if (!location->Set(context, v8InternalizedString("lineNumber"), v8::Integer::New(m_isolate, lineNumber)).FromMaybe(false))
         return v8::Null(m_isolate);
@@ -893,7 +893,7 @@ void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
     DCHECK(info.context->GetIsolate() == m_isolate);
     // TODO(dgozman): make s_lastContextId non-static.
     int contextId = atomicIncrement(&s_lastContextId);
-    String16 debugData = String16::number(info.contextGroupId) + "," + String16::number(contextId) + "," + (info.isDefault ? "default" : "nondefault");
+    String16 debugData = String16::fromInteger(info.contextGroupId) + "," + String16::fromInteger(contextId) + "," + (info.isDefault ? "default" : "nondefault");
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(info.context);
     info.context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(m_isolate, debugData));

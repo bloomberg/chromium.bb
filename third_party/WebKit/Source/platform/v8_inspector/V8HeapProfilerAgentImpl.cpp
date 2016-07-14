@@ -169,7 +169,7 @@ void V8HeapProfilerAgentImpl::restore()
 #if V8_MAJOR_VERSION >= 5
     if (m_state->booleanProperty(HeapProfilerAgentState::samplingHeapProfilerEnabled, false)) {
         ErrorString error;
-        double samplingInterval = m_state->numberProperty(HeapProfilerAgentState::samplingHeapProfilerInterval, -1);
+        double samplingInterval = m_state->doubleProperty(HeapProfilerAgentState::samplingHeapProfilerInterval, -1);
         DCHECK_GE(samplingInterval, 0);
         startSampling(&error, Maybe<double>(samplingInterval));
     }
@@ -295,7 +295,7 @@ void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const St
         return;
 
     v8::SnapshotObjectId id = m_isolate->GetHeapProfiler()->GetObjectId(value);
-    *heapSnapshotObjectId = String16::number(id);
+    *heapSnapshotObjectId = String16::fromInteger(id);
 }
 
 void V8HeapProfilerAgentImpl::requestHeapStatsUpdate()
@@ -341,7 +341,7 @@ void V8HeapProfilerAgentImpl::startSampling(ErrorString* errorString, const Mayb
     }
     const unsigned defaultSamplingInterval = 1 << 15;
     double samplingIntervalValue = samplingInterval.fromMaybe(defaultSamplingInterval);
-    m_state->setNumber(HeapProfilerAgentState::samplingHeapProfilerInterval, samplingIntervalValue);
+    m_state->setDouble(HeapProfilerAgentState::samplingHeapProfilerInterval, samplingIntervalValue);
     m_state->setBoolean(HeapProfilerAgentState::samplingHeapProfilerEnabled, true);
 #if V8_MAJOR_VERSION * 1000 + V8_MINOR_VERSION >= 5002
     profiler->StartSamplingHeapProfiler(static_cast<uint64_t>(samplingIntervalValue), 128, v8::HeapProfiler::kSamplingForceGC);
@@ -363,7 +363,7 @@ std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHea
         selfSize += allocation.size * allocation.count;
     std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
         .setFunctionName(toProtocolString(node->name))
-        .setScriptId(String16::number(node->script_id))
+        .setScriptId(String16::fromInteger(node->script_id))
         .setUrl(toProtocolString(node->script_name))
         .setLineNumber(node->line_number)
         .setColumnNumber(node->column_number)

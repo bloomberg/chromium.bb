@@ -77,12 +77,12 @@ bool Value::asBoolean(bool*) const
     return false;
 }
 
-bool Value::asNumber(double*) const
+bool Value::asDouble(double*) const
 {
     return false;
 }
 
-bool Value::asNumber(int*) const
+bool Value::asInteger(int*) const
 {
     return false;
 }
@@ -119,42 +119,56 @@ bool FundamentalValue::asBoolean(bool* output) const
     return true;
 }
 
-bool FundamentalValue::asNumber(double* output) const
+bool FundamentalValue::asDouble(double* output) const
 {
-    if (type() != TypeNumber)
-        return false;
-    *output = m_doubleValue;
-    return true;
+    if (type() == TypeDouble) {
+        *output = m_doubleValue;
+        return true;
+    }
+    if (type() == TypeInteger) {
+        *output = m_integerValue;
+        return true;
+    }
+    return false;
 }
 
-bool FundamentalValue::asNumber(int* output) const
+bool FundamentalValue::asInteger(int* output) const
 {
-    if (type() != TypeNumber)
+    if (type() != TypeInteger)
         return false;
-    *output = static_cast<int>(m_doubleValue);
+    *output = m_integerValue;
     return true;
 }
 
 void FundamentalValue::writeJSON(String16Builder* output) const
 {
-    DCHECK(type() == TypeBoolean || type() == TypeNumber);
+    DCHECK(type() == TypeBoolean || type() == TypeInteger || type() == TypeDouble);
     if (type() == TypeBoolean) {
         if (m_boolValue)
             output->append(trueString, 4);
         else
             output->append(falseString, 5);
-    } else if (type() == TypeNumber) {
+    } else if (type() == TypeDouble) {
         if (!std::isfinite(m_doubleValue)) {
             output->append(nullString, 4);
             return;
         }
         output->append(String16::fromDouble(m_doubleValue));
+    } else if (type() == TypeInteger) {
+        output->append(String16::fromInteger(m_integerValue));
     }
 }
 
 std::unique_ptr<Value> FundamentalValue::clone() const
 {
-    return type() == TypeNumber ? FundamentalValue::create(m_doubleValue) : FundamentalValue::create(m_boolValue);
+    switch (type()) {
+    case TypeDouble: return FundamentalValue::create(m_doubleValue);
+    case TypeInteger: return FundamentalValue::create(m_integerValue);
+    case TypeBoolean: return FundamentalValue::create(m_boolValue);
+    default:
+        NOTREACHED();
+    }
+    return nullptr;
 }
 
 bool StringValue::asString(String16* output) const
@@ -183,7 +197,12 @@ void DictionaryValue::setBoolean(const String16& name, bool value)
     setValue(name, FundamentalValue::create(value));
 }
 
-void DictionaryValue::setNumber(const String16& name, double value)
+void DictionaryValue::setInteger(const String16& name, int value)
+{
+    setValue(name, FundamentalValue::create(value));
+}
+
+void DictionaryValue::setDouble(const String16& name, double value)
 {
     setValue(name, FundamentalValue::create(value));
 }
@@ -214,6 +233,22 @@ bool DictionaryValue::getBoolean(const String16& name, bool* output) const
     if (!value)
         return false;
     return value->asBoolean(output);
+}
+
+bool DictionaryValue::getInteger(const String16& name, int* output) const
+{
+    Value* value = get(name);
+    if (!value)
+        return false;
+    return value->asInteger(output);
+}
+
+bool DictionaryValue::getDouble(const String16& name, double* output) const
+{
+    Value* value = get(name);
+    if (!value)
+        return false;
+    return value->asDouble(output);
 }
 
 bool DictionaryValue::getString(const String16& name, String16* output) const
@@ -255,10 +290,17 @@ bool DictionaryValue::booleanProperty(const String16& name, bool defaultValue) c
     return result;
 }
 
-double DictionaryValue::numberProperty(const String16& name, double defaultValue) const
+int DictionaryValue::integerProperty(const String16& name, int defaultValue) const
+{
+    int result = defaultValue;
+    getInteger(name, &result);
+    return result;
+}
+
+double DictionaryValue::doubleProperty(const String16& name, double defaultValue) const
 {
     double result = defaultValue;
-    getNumber(name, &result);
+    getDouble(name, &result);
     return result;
 }
 

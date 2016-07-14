@@ -19,7 +19,7 @@ std::unique_ptr<protocol::DictionaryValue> RemoteObjectIdBase::parseInjectedScri
         return nullptr;
 
     std::unique_ptr<protocol::DictionaryValue> parsedObjectId(protocol::DictionaryValue::cast(parsedValue.release()));
-    bool success = parsedObjectId->getNumber("injectedScriptId", &m_injectedScriptId);
+    bool success = parsedObjectId->getInteger("injectedScriptId", &m_injectedScriptId);
     if (success)
         return parsedObjectId;
     return nullptr;
@@ -36,7 +36,7 @@ std::unique_ptr<RemoteObjectId> RemoteObjectId::parse(ErrorString* errorString, 
         return nullptr;
     }
 
-    bool success = parsedObjectId->getNumber("id", &result->m_id);
+    bool success = parsedObjectId->getInteger("id", &result->m_id);
     if (!success) {
         *errorString = "Invalid remote object id";
         return nullptr;
@@ -55,7 +55,7 @@ std::unique_ptr<RemoteCallFrameId> RemoteCallFrameId::parse(ErrorString* errorSt
         return nullptr;
     }
 
-    bool success = parsedObjectId->getNumber("ordinal", &result->m_frameOrdinal);
+    bool success = parsedObjectId->getInteger("ordinal", &result->m_frameOrdinal);
     if (!success) {
         *errorString = "Invalid call frame id";
         return nullptr;
@@ -66,7 +66,7 @@ std::unique_ptr<RemoteCallFrameId> RemoteCallFrameId::parse(ErrorString* errorSt
 
 String16 RemoteCallFrameId::serialize(int injectedScriptId, int frameOrdinal)
 {
-    return "{\"ordinal\":" + String16::number(frameOrdinal) + ",\"injectedScriptId\":" + String16::number(injectedScriptId) + "}";
+    return "{\"ordinal\":" + String16::fromInteger(frameOrdinal) + ",\"injectedScriptId\":" + String16::fromInteger(injectedScriptId) + "}";
 }
 
 } // namespace blink

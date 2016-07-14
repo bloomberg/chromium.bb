@@ -64,7 +64,7 @@ struct FromValue<int> {
     static int parse(protocol::Value* value, ErrorSupport* errors)
     {
         int result = 0;
-        bool success = value ? value->asNumber(&result) : false;
+        bool success = value ? value->asInteger(&result) : false;
         if (!success)
             errors->addError("integer value expected");
         return result;
@@ -76,7 +76,7 @@ struct FromValue<double> {
     static double parse(protocol::Value* value, ErrorSupport* errors)
     {
         double result = 0;
-        bool success = value ? value->asNumber(&result) : false;
+        bool success = value ? value->asDouble(&result) : false;
         if (!success)
             errors->addError("double value expected");
         return result;

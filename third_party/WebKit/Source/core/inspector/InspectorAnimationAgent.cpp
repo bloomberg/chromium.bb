@@ -53,7 +53,7 @@ void InspectorAnimationAgent::restore()
         ErrorString error;
         enable(&error);
         double playbackRate = 1;
-        m_state->getNumber(AnimationAgentState::animationAgentPlaybackRate, &playbackRate);
+        m_state->getDouble(AnimationAgentState::animationAgentPlaybackRate, &playbackRate);
         setPlaybackRate(nullptr, playbackRate);
     }
 }
@@ -86,7 +86,7 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
         m_clearedAnimations.clear();
     }
     double playbackRate = 1;
-    m_state->getNumber(AnimationAgentState::animationAgentPlaybackRate, &playbackRate);
+    m_state->getDouble(AnimationAgentState::animationAgentPlaybackRate, &playbackRate);
     setPlaybackRate(nullptr, playbackRate);
 }
 
@@ -202,7 +202,7 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
 {
     for (LocalFrame* frame : *m_inspectedFrames)
         frame->document()->timeline().setPlaybackRate(playbackRate);
-    m_state->setNumber(AnimationAgentState::animationAgentPlaybackRate, playbackRate);
+    m_state->setDouble(AnimationAgentState::animationAgentPlaybackRate, playbackRate);
 }
 
 void InspectorAnimationAgent::getCurrentTime(ErrorString* errorString, const String& id, double* currentTime)

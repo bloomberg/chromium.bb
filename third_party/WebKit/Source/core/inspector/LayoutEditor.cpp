@@ -36,8 +36,8 @@ std::unique_ptr<protocol::DictionaryValue> createAnchor(const String& type, cons
 std::unique_ptr<protocol::DictionaryValue> pointToJSON(FloatPoint point)
 {
     std::unique_ptr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
-    object->setNumber("x", point.x());
-    object->setNumber("y", point.y());
+    object->setDouble("x", point.x());
+    object->setDouble("y", point.y());
     return object;
 }
 
@@ -259,7 +259,7 @@ std::unique_ptr<protocol::DictionaryValue> LayoutEditor::createValueDescription(
         return nullptr;
 
     std::unique_ptr<protocol::DictionaryValue> object = protocol::DictionaryValue::create();
-    object->setNumber("value", cssValue ? cssValue->getFloatValue() : 0);
+    object->setDouble("value", cssValue ? cssValue->getFloatValue() : 0);
     CSSPrimitiveValue::UnitType unitType = cssValue ? cssValue->typeWithCalcResolved() : CSSPrimitiveValue::UnitType::Pixels;
     object->setString("unit", CSSPrimitiveValue::unitTypeToString(unitType));
     object->setBoolean("mutable", isMutableUnitType(unitType));

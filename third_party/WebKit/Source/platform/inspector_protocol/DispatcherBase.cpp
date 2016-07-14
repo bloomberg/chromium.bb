@@ -73,7 +73,7 @@ void DispatcherBase::sendResponse(int callId, const ErrorString& invocationError
     }
 
     std::unique_ptr<protocol::DictionaryValue> responseMessage = DictionaryValue::create();
-    responseMessage->setNumber("id", callId);
+    responseMessage->setInteger("id", callId);
     responseMessage->setObject("result", std::move(result));
     if (m_frontendChannel)
         m_frontendChannel->sendProtocolResponse(callId, responseMessage->toJSONString());
@@ -92,14 +92,14 @@ void DispatcherBase::sendResponse(int callId, const ErrorString& invocationError
 static void reportProtocolError(FrontendChannel* frontendChannel, int callId, DispatcherBase::CommonErrorCode code, const String16& errorMessage, ErrorSupport* errors)
 {
     std::unique_ptr<protocol::DictionaryValue> error = DictionaryValue::create();
-    error->setNumber("code", code);
+    error->setInteger("code", code);
     error->setString("message", errorMessage);
     DCHECK(error);
     if (errors && errors->hasErrors())
         error->setString("data", errors->errors());
     std::unique_ptr<protocol::DictionaryValue> message = DictionaryValue::create();
     message->setObject("error", std::move(error));
-    message->setNumber("id", callId);
+    message->setInteger("id", callId);
     frontendChannel->sendProtocolResponse(callId, message->toJSONString());
 }
 
@@ -143,7 +143,7 @@ void UberDispatcher::dispatch(const String16& message)
 
     int callId = 0;
     protocol::Value* callIdValue = messageObject->get("id");
-    bool success = callIdValue->asNumber(&callId);
+    bool success = callIdValue->asInteger(&callId);
     if (!success)
         return;
 
