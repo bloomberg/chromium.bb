@@ -147,7 +147,7 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   DCHECK(!bitmap.drawsNothing());
   DCHECK(bitmap.getPixels());
   if (bitmap.colorType() != kN32_SkColorType) {
-    DLOG(ERROR) << "Only supported capture format is ARGB";
+    DLOG(ERROR) << "Only supported color type is kN32_SkColorType (ARGB/ABGR)";
     return;
   }
 
@@ -155,6 +155,10 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
       media::PIXEL_FORMAT_I420, resolution, gfx::Rect(resolution), resolution,
       base::TimeTicks::Now() - base::TimeTicks());
   DCHECK(frame);
+
+  const uint32 source_pixel_format =
+      (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
+                                                   : libyuv::FOURCC_ARGB;
 
   if (libyuv::ConvertToI420(static_cast<uint8*>(bitmap.getPixels()),
                             bitmap.getSize(),
@@ -171,7 +175,7 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
                             frame->coded_size().width(),
                             frame->coded_size().height(),
                             libyuv::kRotate0,
-                            libyuv::FOURCC_ARGB) == 0) {
+                            source_pixel_format) == 0) {
     // Success!
     io_task_runner_->PostTask(
         FROM_HERE, base::Bind(new_frame_callback_, frame, current_time));

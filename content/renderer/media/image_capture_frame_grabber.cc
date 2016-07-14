@@ -79,14 +79,19 @@ void ImageCaptureFrameGrabber::SingleShotFrameHandler::OnVideoFrameOnIOThread(
     return;
   }
 
-  libyuv::I420ToARGB(frame->visible_data(media::VideoFrame::kYPlane),
-                     frame->stride(media::VideoFrame::kYPlane),
-                     frame->visible_data(media::VideoFrame::kUPlane),
-                     frame->stride(media::VideoFrame::kUPlane),
-                     frame->visible_data(media::VideoFrame::kVPlane),
-                     frame->stride(media::VideoFrame::kVPlane),
-                     static_cast<uint8*>(pixmap.writable_addr()),
-                     pixmap.width() * 4, pixmap.width(), pixmap.height());
+  const uint32 destination_pixel_format =
+      (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
+                                                   : libyuv::FOURCC_ARGB;
+
+  libyuv::ConvertFromI420(frame->visible_data(media::VideoFrame::kYPlane),
+                          frame->stride(media::VideoFrame::kYPlane),
+                          frame->visible_data(media::VideoFrame::kUPlane),
+                          frame->stride(media::VideoFrame::kUPlane),
+                          frame->visible_data(media::VideoFrame::kVPlane),
+                          frame->stride(media::VideoFrame::kVPlane),
+                          static_cast<uint8*>(pixmap.writable_addr()),
+                          pixmap.width() * 4, pixmap.width(), pixmap.height(),
+                          destination_pixel_format);
 
   if (frame->format() == media::PIXEL_FORMAT_YV12A) {
     DCHECK(!info.isOpaque());
