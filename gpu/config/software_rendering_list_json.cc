@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.4",
+  "version": "11.5",
   "entries": [
     {
       "id": 1,
@@ -1183,6 +1183,22 @@ LONG_STRING_CONST(
       "multi_gpu_category": "any",
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 117,
+      "description": "MediaCodec on Vivante hangs in MediaCodec often",
+      "cr_bugs": [626814],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.4.4"
+        }
+      },
+      "gl_renderer": ".*Vivante.*",
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]
