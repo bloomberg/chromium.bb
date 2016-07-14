@@ -304,8 +304,7 @@ void SMConnection::HandleEvents() {
 }
 
 // Decide if SPDY was negotiated.
-bool SMConnection::WasSpdyNegotiated(SpdyMajorVersion* version_negotiated) {
-  *version_negotiated = SPDY3;
+bool SMConnection::WasSpdyNegotiated() {
   if (force_spdy())
     return true;
 
@@ -321,13 +320,11 @@ bool SMConnection::WasSpdyNegotiated(SpdyMajorVersion* version_negotiated) {
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
                    "spdy/3",
                    npn_proto_len)) {
-        *version_negotiated = SPDY3;
         return true;
       }
       if (!strncmp(reinterpret_cast<const char*>(npn_proto),
                    "spdy/4a2",
                    npn_proto_len)) {
-        *version_negotiated = HTTP2;
         return true;
       }
     }
@@ -340,8 +337,7 @@ bool SMConnection::SetupProtocolInterfaces() {
   DCHECK(!protocol_detected_);
   protocol_detected_ = true;
 
-  SpdyMajorVersion version;
-  bool spdy_negotiated = WasSpdyNegotiated(&version);
+  bool spdy_negotiated = WasSpdyNegotiated();
   bool using_ssl = ssl_ != NULL;
 
   if (using_ssl)
@@ -387,10 +383,10 @@ bool SMConnection::SetupProtocolInterfaces() {
               << (sm_spdy_interface_ ? "Creating" : "Reusing")
               << " SPDY interface.";
       if (sm_spdy_interface_)
-        sm_spdy_interface_->CreateFramer(version);
+        sm_spdy_interface_->CreateFramer();
       else
-        sm_spdy_interface_ = new SpdySM(
-            this, NULL, epoll_server_, memory_cache_, acceptor_, version);
+        sm_spdy_interface_ =
+            new SpdySM(this, NULL, epoll_server_, memory_cache_, acceptor_);
       sm_interface_ = sm_spdy_interface_;
       break;
     }

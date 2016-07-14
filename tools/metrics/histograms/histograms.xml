@@ -31052,6 +31052,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SpdySettingsCwndSent" units="packets">
+  <obsolete>
+    Deprecated 2016 July with removal of SPDY/3.1.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     The congestion window (in pkts) sent at the beginning of a SpdySession.
@@ -31169,6 +31172,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SpdyVersion3" enum="SpdyProtocolVersion">
   <owner>bnc@chromium.org</owner>
+  <obsolete>
+    Deprecated 2016 July with removal of SPDY/3.1.
+  </obsolete>
   <summary>
     The SPDY protocol version that is used to talk to SPDY servers.  Logged
     every time a SPDY session is initialized.

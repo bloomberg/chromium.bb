@@ -317,8 +317,7 @@ int main(int argc, char* argv[]) {
   // Send the request.
   net::SpdyHeaderBlock header_block;
   net::CreateSpdyHeadersFromHttpRequest(request, request.extra_headers,
-                                        net::HTTP2, /*direct=*/true,
-                                        &header_block);
+                                        /*direct=*/true, &header_block);
   client.SendRequestAndWaitForResponse(request, body, /*fin=*/true);
 
   // Print request and response details.

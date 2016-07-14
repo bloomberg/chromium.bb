@@ -80,9 +80,7 @@ void TestLoadTimingInfoNoDns(const ClientSocketHandle& handle) {
   ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
-class SSLClientSocketPoolTest
-    : public testing::Test,
-      public ::testing::WithParamInterface<NextProto> {
+class SSLClientSocketPoolTest : public testing::Test {
  protected:
   SSLClientSocketPoolTest()
       : cert_verifier_(new MockCertVerifier),
@@ -178,7 +176,6 @@ class SSLClientSocketPoolTest
     params.ssl_config_service = ssl_config_service_.get();
     params.http_auth_handler_factory = http_auth_handler_factory_.get();
     params.http_server_properties = http_server_properties_.get();
-    params.spdy_default_protocol = kProtoHTTP2;
     return new HttpNetworkSession(params);
   }
 

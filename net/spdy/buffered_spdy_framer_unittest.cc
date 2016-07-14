@@ -17,11 +17,9 @@ namespace {
 class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
  public:
   explicit TestBufferedSpdyVisitor()
-      : buffered_spdy_framer_(HTTP2),
+      : buffered_spdy_framer_(),
         error_count_(0),
         setting_count_(0),
-        syn_frame_count_(0),
-        syn_reply_frame_count_(0),
         headers_frame_count_(0),
         push_promise_frame_count_(0),
         goaway_count_(0),
@@ -39,27 +37,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
     VLOG(1) << "SpdyFramer Error on stream: " << stream_id << " "
             << description;
     error_count_++;
-  }
-
-  void OnSynStream(SpdyStreamId stream_id,
-                   SpdyStreamId associated_stream_id,
-                   SpdyPriority priority,
-                   bool fin,
-                   bool unidirectional,
-                   const SpdyHeaderBlock& headers) override {
-    header_stream_id_ = stream_id;
-    EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
-    syn_frame_count_++;
-    headers_ = headers.Clone();
-  }
-
-  void OnSynReply(SpdyStreamId stream_id,
-                  bool fin,
-                  const SpdyHeaderBlock& headers) override {
-    header_stream_id_ = stream_id;
-    EXPECT_NE(header_stream_id_, SpdyFramer::kInvalidStream);
-    syn_reply_frame_count_++;
-    headers_ = headers.Clone();
   }
 
   void OnHeaders(SpdyStreamId stream_id,
@@ -174,8 +151,6 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   // Counters from the visitor callbacks.
   int error_count_;
   int setting_count_;
-  int syn_frame_count_;
-  int syn_reply_frame_count_;
   int headers_frame_count_;
   int push_promise_frame_count_;
   int goaway_count_;
@@ -185,8 +160,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   SpdyStreamId header_stream_id_;
   SpdyStreamId promised_stream_id_;
 
-  // Headers from OnSyn, OnSynReply, OnHeaders and OnPushPromise for
-  // verification.
+  // Headers from OnHeaders and OnPushPromise for verification.
   SpdyHeaderBlock headers_;
 
   // OnGoAway parameters.
@@ -223,7 +197,7 @@ TEST_F(BufferedSpdyFramerTest, HeaderListTooLarge) {
   SpdyHeaderBlock headers;
   std::string long_header_value(256 * 1024, 'x');
   headers["foo"] = long_header_value;
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
@@ -237,8 +211,6 @@ TEST_F(BufferedSpdyFramerTest, HeaderListTooLarge) {
       control_frame.get()->size());
 
   EXPECT_EQ(1, visitor.error_count_);
-  EXPECT_EQ(0, visitor.syn_frame_count_);
-  EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.push_promise_frame_count_);
   EXPECT_EQ(SpdyHeaderBlock(), visitor.headers_);
@@ -248,7 +220,7 @@ TEST_F(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
@@ -261,8 +233,6 @@ TEST_F(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
       control_frame.get()->size());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(0, visitor.syn_frame_count_);
-  EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(0, visitor.push_promise_frame_count_);
   EXPECT_EQ(headers, visitor.headers_);
@@ -272,7 +242,7 @@ TEST_F(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
   SpdyHeaderBlock headers;
   headers["alpha"] = "beta";
   headers["gamma"] = "delta";
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreatePushPromise(1, 2, headers.Clone()));
   EXPECT_TRUE(control_frame.get() != NULL);
@@ -282,8 +252,6 @@ TEST_F(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
       reinterpret_cast<unsigned char*>(control_frame.get()->data()),
       control_frame.get()->size());
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(0, visitor.syn_frame_count_);
-  EXPECT_EQ(0, visitor.syn_reply_frame_count_);
   EXPECT_EQ(0, visitor.headers_frame_count_);
   EXPECT_EQ(1, visitor.push_promise_frame_count_);
   EXPECT_EQ(headers, visitor.headers_);
@@ -292,7 +260,7 @@ TEST_F(BufferedSpdyFramerTest, ReadPushPromiseHeaderBlock) {
 }
 
 TEST_F(BufferedSpdyFramerTest, GoAwayDebugData) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   std::unique_ptr<SpdySerializedFrame> goaway_frame(
       framer.CreateGoAway(2u, GOAWAY_FRAME_SIZE_ERROR, "foo"));
 
@@ -316,7 +284,7 @@ TEST_F(BufferedSpdyFramerTest, OnAltSvc) {
       SpdyAltSvcWireFormat::VersionVector());
   altsvc_ir.add_altsvc(alternative_service);
   altsvc_ir.set_origin(altsvc_origin);
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   SpdySerializedFrame altsvc_frame(framer.SerializeFrame(altsvc_ir));
 
   TestBufferedSpdyVisitor visitor;

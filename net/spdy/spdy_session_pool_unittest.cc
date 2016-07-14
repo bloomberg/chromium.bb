@@ -27,8 +27,7 @@ using net::test::IsOk;
 
 namespace net {
 
-class SpdySessionPoolTest : public ::testing::Test,
-                            public ::testing::WithParamInterface<NextProto> {
+class SpdySessionPoolTest : public ::testing::Test {
  protected:
   // Used by RunIPPoolingTest().
   enum SpdyPoolCloseSessionsType {

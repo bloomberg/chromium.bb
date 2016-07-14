@@ -19,7 +19,6 @@
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
-#include "net/socket/next_proto.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -88,8 +87,7 @@ bool QuicHttpStream::CheckVary(const SpdyHeaderBlock& client_request,
   ConvertHeaderBlockToHttpRequestHeaders(client_request,
                                          &client_request_info.extra_headers);
 
-  if (!SpdyHeadersToHttpResponse(promise_response, HTTP2,
-                                 &promise_response_info)) {
+  if (!SpdyHeadersToHttpResponse(promise_response, &promise_response_info)) {
     DLOG(WARNING) << "Invalid headers";
     return false;
   }
@@ -272,7 +270,7 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   }
 
   // Store the serialized request headers.
-  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers, HTTP2,
+  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
                                    /*direct=*/true, &request_headers_);
 
   // Store the request body.
@@ -777,7 +775,7 @@ int QuicHttpStream::DoSendBodyComplete(int rv) {
 }
 
 int QuicHttpStream::ProcessResponseHeaders(const SpdyHeaderBlock& headers) {
-  if (!SpdyHeadersToHttpResponse(headers, HTTP2, response_info_)) {
+  if (!SpdyHeadersToHttpResponse(headers, response_info_)) {
     DLOG(WARNING) << "Invalid headers";
     return ERR_QUIC_PROTOCOL_ERROR;
   }

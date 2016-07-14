@@ -1823,7 +1823,7 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
 
 // Test that a POST without any post data works.
 TEST_P(SpdyNetworkTransactionTest, NullPost) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
@@ -1865,7 +1865,7 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   // Create an empty UploadDataStream.
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   ElementsUploadDataStream stream(std::move(element_readers), 0);
@@ -3592,7 +3592,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
 // on the network, but issued a Read for only 5 of those bytes) that the data
 // flow still works correctly.
 TEST_P(SpdyNetworkTransactionTest, BufferFull) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3685,7 +3685,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
 // at the same time, ensure that we don't notify a read completion for
 // each data frame individually.
 TEST_P(SpdyNetworkTransactionTest, Buffering) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3777,7 +3777,7 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
 
 // Verify the case where we buffer data but read it after it has been buffered.
 TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3863,7 +3863,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
 
 // Verify the case where we buffer data and close the connection.
 TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -3950,7 +3950,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
 
 // Verify the case where we buffer data and cancel the transaction.
 TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
@@ -5836,10 +5836,10 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   SpdyHttpStream* stream = static_cast<SpdyHttpStream*>(trans->stream_.get());
   ASSERT_TRUE(stream);
   ASSERT_TRUE(stream->stream());
-  EXPECT_EQ(
-      static_cast<int>(SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2)) +
-          kDeltaWindowSize * kDeltaCount - kMaxSpdyFrameChunkSize * kFrameCount,
-      stream->stream()->send_window_size());
+  EXPECT_EQ(static_cast<int>(kDefaultInitialWindowSize) +
+                kDeltaWindowSize * kDeltaCount -
+                kMaxSpdyFrameChunkSize * kFrameCount,
+            stream->stream()->send_window_size());
 
   data.Resume();
   base::RunLoop().RunUntilIdle();
@@ -5853,12 +5853,10 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
 // Test that received data frames and sent WINDOW_UPDATE frames change
 // the recv_window_size_ correctly.
 TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
-  const int32_t default_initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
   // Session level maximum window size that is more than twice the default
   // initial window size so that an initial window update is sent.
   const int32_t session_max_recv_window_size = 5 * 64 * 1024;
-  ASSERT_LT(2 * default_initial_window_size, session_max_recv_window_size);
+  ASSERT_LT(2 * kDefaultInitialWindowSize, session_max_recv_window_size);
   // Stream level maximum window size that is less than the session level
   // maximum window size so that we test for confusion between the two.
   const int32_t stream_max_recv_window_size = 4 * 64 * 1024;
@@ -5892,7 +5890,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
   std::unique_ptr<SpdySerializedFrame> initial_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId,
-          session_max_recv_window_size - default_initial_window_size));
+          session_max_recv_window_size - kDefaultInitialWindowSize));
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   std::unique_ptr<SpdySerializedFrame> session_window_update(
@@ -6060,8 +6058,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 // After that, next read is artifically enforced, which causes a
 // WINDOW_UPDATE to be read and I/O process resumes.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
-  const int32_t initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
+  const int32_t initial_window_size = kDefaultInitialWindowSize;
   // Number of upload data buffers we need to send to zero out the window size
   // is the minimal number of upload buffers takes to be bigger than
   // |initial_window_size|.
@@ -6209,8 +6206,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
 // Test we correctly handle the case where the SETTINGS frame results in
 // unstalling the send window.
 TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
-  const int32_t initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
+  const int32_t initial_window_size = kDefaultInitialWindowSize;
   // Number of upload data buffers we need to send to zero out the window size
   // is the minimal number of upload buffers takes to be bigger than
   // |initial_window_size|.
@@ -6375,8 +6371,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 // Test we correctly handle the case where the SETTINGS frame results in a
 // negative send window size.
 TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
-  const int32_t initial_window_size =
-      SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2);
+  const int32_t initial_window_size = kDefaultInitialWindowSize;
   // Number of upload data buffers we need to send to zero out the window size
   // is the minimal number of upload buffers takes to be bigger than
   // |initial_window_size|.

@@ -257,8 +257,8 @@ void QuicSimpleClient::SendRequest(const HttpRequestInfo& headers,
     return;
   }
   SpdyHeaderBlock header_block;
-  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, net::HTTP2,
-                                   true, &header_block);
+  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, true,
+                                   &header_block);
   stream->set_visitor(this);
   stream->SendRequest(std::move(header_block), body, fin);
   if (FLAGS_enable_quic_stateless_reject_support) {
@@ -350,8 +350,7 @@ void QuicSimpleClient::OnClose(QuicSpdyStream* stream) {
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
   HttpResponseInfo response;
-  SpdyHeadersToHttpResponse(client_stream->response_headers(), net::HTTP2,
-                            &response);
+  SpdyHeadersToHttpResponse(client_stream->response_headers(), &response);
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(stream->id(), *response.headers,
                                            client_stream->data());

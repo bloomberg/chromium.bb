@@ -22,7 +22,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/log/test_net_log.h"
-#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/spdy/spdy_session.h"
@@ -347,7 +346,7 @@ TEST_P(SpdyHttpStreamTest, LoadTimingTwoRequests) {
 }
 
 TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
@@ -367,7 +366,6 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPost) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
   const int kFirstChunkSize = kUploadDataSize/2;
@@ -428,7 +426,6 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
   upload_stream.AppendData(nullptr, 0, true);
@@ -464,7 +461,7 @@ TEST_P(SpdyHttpStreamTest, SendChunkedPostLastEmpty) {
 }
 
 TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructChunkedSpdyPost(nullptr, 0));
@@ -482,7 +479,6 @@ TEST_P(SpdyHttpStreamTest, ConnectionClosedDuringChunkedPost) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ChunkedUploadDataStream upload_stream(0);
   // Append first chunk.
@@ -904,8 +900,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
 
   // Verify that the window size has decreased.
   ASSERT_TRUE(http_stream->stream() != nullptr);
-  EXPECT_NE(static_cast<int>(
-                SpdySession::GetDefaultInitialWindowSize(session_->protocol())),
+  EXPECT_NE(static_cast<int>(kDefaultInitialWindowSize),
             http_stream->stream()->send_window_size());
 
   // Read window update.
@@ -918,8 +913,7 @@ TEST_P(SpdyHttpStreamTest, DelayedSendChunkedPostWithWindowUpdate) {
 
   // Verify the window update.
   ASSERT_TRUE(http_stream->stream() != nullptr);
-  EXPECT_EQ(static_cast<int>(
-                SpdySession::GetDefaultInitialWindowSize(session_->protocol())),
+  EXPECT_EQ(static_cast<int>(kDefaultInitialWindowSize),
             http_stream->stream()->send_window_size());
 
   // Read rest of data.
@@ -968,7 +962,6 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorSynchronous) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::SYNC);
@@ -1019,7 +1012,6 @@ TEST_P(SpdyHttpStreamTest, DataReadErrorAsynchronous) {
   };
 
   InitSession(reads, arraysize(reads), writes, arraysize(writes));
-  EXPECT_EQ(HTTP2, session_->GetProtocolVersion());
 
   ReadErrorUploadDataStream upload_data_stream(
       ReadErrorUploadDataStream::FailureMode::ASYNC);

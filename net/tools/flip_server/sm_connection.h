@@ -99,7 +99,7 @@ class SMConnection : public SMConnectionInterface,
 
  private:
   // Decide if SPDY was negotiated.
-  bool WasSpdyNegotiated(SpdyMajorVersion* version_negotiated);
+  bool WasSpdyNegotiated();
 
   // Initialize the protocol interfaces we'll need for this connection.
   // Returns true if successful, false otherwise.

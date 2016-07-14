@@ -34,8 +34,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
          SMInterface* sm_http_interface,
          EpollServer* epoll_server,
          MemoryCache* memory_cache,
-         FlipAcceptor* acceptor,
-         SpdyMajorVersion spdy_version);
+         FlipAcceptor* acceptor);
   ~SpdySM() override;
 
   void InitSMInterface(SMInterface* sm_http_interface,
@@ -51,7 +50,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
                         bool use_ssl) override;
 
   // Create new SPDY framer after reusing SpdySM and negotiating new version
-  void CreateFramer(SpdyMajorVersion spdy_version);
+  void CreateFramer();
 
  private:
   void set_is_request() override {}
@@ -70,18 +69,6 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   void OnError(SpdyFramer::SpdyError error_code) override {}
   void OnStreamError(SpdyStreamId stream_id,
                      const std::string& description) override {}
-  // Called after all the header data for SYN_STREAM control frame is received.
-  void OnSynStream(SpdyStreamId stream_id,
-                   SpdyStreamId associated_stream_id,
-                   SpdyPriority priority,
-                   bool fin,
-                   bool unidirectional,
-                   const SpdyHeaderBlock& headers) override;
-
-  // Called after all the header data for SYN_REPLY control frame is received.
-  void OnSynReply(SpdyStreamId stream_id,
-                  bool fin,
-                  const SpdyHeaderBlock& headers) override;
 
   // Called after all the header data for HEADERS control frame is received.
   void OnHeaders(SpdyStreamId stream_id,
@@ -190,10 +177,6 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
   static std::string forward_ip_header() { return forward_ip_header_; }
   static void set_forward_ip_header(const std::string& value) {
     forward_ip_header_ = value;
-  }
-  SpdyMajorVersion spdy_version() const {
-    DCHECK(buffered_spdy_framer_);
-    return buffered_spdy_framer_->protocol_version();
   }
 
  private:

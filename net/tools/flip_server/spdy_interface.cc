@@ -38,9 +38,8 @@ SpdySM::SpdySM(SMConnection* connection,
                SMInterface* sm_http_interface,
                EpollServer* epoll_server,
                MemoryCache* memory_cache,
-               FlipAcceptor* acceptor,
-               SpdyMajorVersion spdy_version)
-    : buffered_spdy_framer_(new BufferedSpdyFramer(spdy_version)),
+               FlipAcceptor* acceptor)
+    : buffered_spdy_framer_(new BufferedSpdyFramer()),
       valid_spdy_session_(false),
       connection_(connection),
       client_output_list_(connection->output_list()),
@@ -238,50 +237,6 @@ void SpdySM::OnStreamEnd(SpdyStreamId stream_id) {
 void SpdySM::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: StreamPadding(" << stream_id
           << ", [" << len << "])";
-}
-
-void SpdySM::OnSynStream(SpdyStreamId stream_id,
-                         SpdyStreamId associated_stream_id,
-                         SpdyPriority priority,
-                         bool fin,
-                         bool unidirectional,
-                         const SpdyHeaderBlock& headers) {
-  std::string http_data;
-  bool is_https_scheme;
-  int ret = SpdyHandleNewStream(
-      stream_id, priority, headers, http_data, &is_https_scheme);
-  if (!ret) {
-    LOG(ERROR) << "SpdySM: Could not convert spdy into http.";
-    return;
-  }
-  // We've seen a valid looking SYN_STREAM, consider this to have
-  // been a real spdy session.
-  valid_spdy_session_ = true;
-
-  if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
-    std::string server_ip;
-    std::string server_port;
-    if (is_https_scheme) {
-      server_ip = acceptor_->https_server_ip_;
-      server_port = acceptor_->https_server_port_;
-    } else {
-      server_ip = acceptor_->http_server_ip_;
-      server_port = acceptor_->http_server_port_;
-    }
-    SMInterface* sm_http_interface =
-        FindOrMakeNewSMConnectionInterface(server_ip, server_port);
-    stream_to_smif_[stream_id] = sm_http_interface;
-    sm_http_interface->SetStreamID(stream_id);
-    sm_http_interface->ProcessWriteInput(http_data.c_str(), http_data.size());
-  }
-}
-
-void SpdySM::OnSynReply(SpdyStreamId stream_id,
-                        bool fin,
-                        const SpdyHeaderBlock& headers) {
-  // TODO(willchan): if there is an error parsing headers, we
-  // should send a RST_STREAM.
-  VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnSynReply(" << stream_id << ")";
 }
 
 void SpdySM::OnHeaders(SpdyStreamId stream_id,
@@ -607,9 +562,9 @@ void SpdySM::GetOutput() {
   }
 }
 
-void SpdySM::CreateFramer(SpdyMajorVersion spdy_version) {
+void SpdySM::CreateFramer() {
   DCHECK(!buffered_spdy_framer_);
-  buffered_spdy_framer_.reset(new BufferedSpdyFramer(spdy_version));
+  buffered_spdy_framer_.reset(new BufferedSpdyFramer());
   buffered_spdy_framer_->set_visitor(this);
 }
 

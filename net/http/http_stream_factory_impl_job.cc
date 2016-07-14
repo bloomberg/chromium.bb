@@ -1331,8 +1331,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   bool was_npn_negotiated;
   NextProto protocol_negotiated;
   if (spdy_session->GetSSLInfo(&ssl_info, &was_npn_negotiated,
-                               &protocol_negotiated) &&
-      spdy_session->GetProtocolVersion() >= HTTP2) {
+                               &protocol_negotiated)) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Net.Http2SSLCipherSuite",
         SSLConnectionStatusToCipherSuite(ssl_info.connection_status));

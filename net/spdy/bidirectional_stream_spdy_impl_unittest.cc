@@ -306,7 +306,7 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
 }
 
 TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterCancelStream) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));

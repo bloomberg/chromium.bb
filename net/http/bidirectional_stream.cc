@@ -235,7 +235,7 @@ void BidirectionalStream::OnStreamReady(bool request_headers_sent) {
 void BidirectionalStream::OnHeadersReceived(
     const SpdyHeaderBlock& response_headers) {
   HttpResponseInfo response_info;
-  if (!SpdyHeadersToHttpResponse(response_headers, HTTP2, &response_info)) {
+  if (!SpdyHeadersToHttpResponse(response_headers, &response_info)) {
     DLOG(WARNING) << "Invalid headers";
     NotifyFailed(ERR_FAILED);
     return;

@@ -22,7 +22,6 @@
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/socket/client_socket_factory.h"
-#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -168,7 +167,7 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
     : spdy_util_(GetDependenciesFromPriority()),
       read_buf_(NULL),
       connect_data_(SYNCHRONOUS, OK),
-      framer_(HTTP2),
+      framer_(),
       user_agent_(kUserAgent),
       url_(kRequestUrl),
       proxy_host_port_(kProxyHost, kProxyPort),

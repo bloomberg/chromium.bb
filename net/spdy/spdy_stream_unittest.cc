@@ -21,7 +21,6 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
-#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/buffered_spdy_framer.h"
 #include "net/spdy/spdy_http_utils.h"
@@ -1119,8 +1118,7 @@ TEST_P(SpdyStreamTest, ReceivedBytes) {
   EXPECT_EQ(kStreamUrl, stream->GetUrlFromHeaders().spec());
 
   int64_t reply_frame_len = reply->size();
-  int64_t data_header_len = SpdyConstants::GetDataFrameMinimumSize(
-      NextProtoToSpdyMajorVersion(kProtoHTTP2));
+  int64_t data_header_len = SpdyConstants::GetDataFrameMinimumSize(HTTP2);
   int64_t data_frame_len = data_header_len + kPostBodyLength;
   int64_t response_len = reply_frame_len + data_frame_len;
 

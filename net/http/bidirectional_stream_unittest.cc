@@ -510,7 +510,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
 
 // Tests that the NetLog contains correct entries.
 TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -653,7 +653,7 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
 }
 
 TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -757,7 +757,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
 }
 
 TEST_F(BidirectionalStreamTest, TestCoalesceSmallDataBuffers) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 1, LOWEST, nullptr, 0));
@@ -1083,7 +1083,7 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
 }
 
 TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));
@@ -1150,7 +1150,7 @@ TEST_F(BidirectionalStreamTest, CancelStreamAfterSendData) {
 }
 
 TEST_F(BidirectionalStreamTest, CancelStreamDuringReadData) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
 
   std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kBodyDataSize * 3, LOWEST, nullptr, 0));

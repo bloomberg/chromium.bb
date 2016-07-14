@@ -188,17 +188,6 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
   void OnError(SpdyFramer::SpdyError error_code) override {}
   void OnStreamError(SpdyStreamId stream_id,
                      const std::string& description) override {}
-  void OnSynStream(SpdyStreamId stream_id,
-                   SpdyStreamId associated_stream_id,
-                   SpdyPriority priority,
-                   bool fin,
-                   bool unidirectional,
-                   const SpdyHeaderBlock& headers) override {
-    priority_ = priority;
-  }
-  void OnSynReply(SpdyStreamId stream_id,
-                  bool fin,
-                  const SpdyHeaderBlock& headers) override {}
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
@@ -245,7 +234,7 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
 }  // namespace
 
 bool GetSpdyPriority(const SpdySerializedFrame& frame, SpdyPriority* priority) {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   PriorityGetter priority_getter;
   framer.set_visitor(&priority_getter);
   size_t frame_size = frame.size();
@@ -351,10 +340,8 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_user_alternate_protocol_ports(false),
       enable_priority_dependencies(true),
       enable_quic(false),
-      session_max_recv_window_size(
-          SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2)),
-      stream_max_recv_window_size(
-          SpdySession::GetDefaultInitialWindowSize(kProtoHTTP2)),
+      session_max_recv_window_size(kDefaultInitialWindowSize),
+      stream_max_recv_window_size(kDefaultInitialWindowSize),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service_with_different_host(false),
       net_log(NULL) {
@@ -404,7 +391,6 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_priority_dependencies =
       session_deps->enable_priority_dependencies;
   params.enable_quic = session_deps->enable_quic;
-  params.spdy_default_protocol = kProtoHTTP2;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
   params.spdy_stream_max_recv_window_size =
@@ -439,7 +425,6 @@ SpdyURLRequestContext::SpdyURLRequestContext() : storage_(this) {
   params.ssl_config_service = ssl_config_service();
   params.http_auth_handler_factory = http_auth_handler_factory();
   params.enable_spdy_ping_based_connection_checking = false;
-  params.spdy_default_protocol = kProtoHTTP2;
   params.http_server_properties = http_server_properties();
   storage_.set_http_network_session(
       base::WrapUnique(new HttpNetworkSession(params)));
@@ -708,7 +693,7 @@ SpdyHeaderBlock SpdyTestUtil::ConstructPutHeaderBlock(
 SpdySerializedFrame* SpdyTestUtil::ConstructSpdyFrame(
     const SpdyHeaderInfo& header_info,
     SpdyHeaderBlock headers) const {
-  BufferedSpdyFramer framer(HTTP2);
+  BufferedSpdyFramer framer;
   SpdySerializedFrame* frame = NULL;
   switch (header_info.kind) {
     case DATA:
@@ -996,7 +981,7 @@ SpdySerializedFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
   SpdyHeadersIR headers(stream_id, std::move(block));
   headers.set_has_priority(true);
   headers.set_weight(Spdy3PriorityToHttp2Weight(
-      ConvertRequestPriorityToSpdyPriority(priority, HTTP2)));
+      ConvertRequestPriorityToSpdyPriority(priority)));
   if (dependency_priorities_) {
     headers.set_parent_stream_id(parent_stream_id);
     headers.set_exclusive(true);
@@ -1174,7 +1159,7 @@ SpdyHeaderBlock SpdyTestUtil::ConstructHeaderBlock(
 
 void SpdyTestUtil::SetPriority(RequestPriority priority,
                                SpdySynStreamIR* ir) const {
-  ir->set_priority(ConvertRequestPriorityToSpdyPriority(priority, HTTP2));
+  ir->set_priority(ConvertRequestPriorityToSpdyPriority(priority));
 }
 
 }  // namespace net
