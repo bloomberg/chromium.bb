@@ -44,7 +44,7 @@ declare_args() {
   enable_webrtc = !is_ios
 
   # Enables the Media Router.
-  enable_media_router = !is_ios
+  enable_media_router = !is_ios && !is_chromecast
 
   # Enables proprietary codecs and demuxers; e.g. H264, AAC, MP3, and MP4.
   # We always build Google Chrome and Chromecast with proprietary codecs.
@@ -81,7 +81,7 @@ declare_args() {
   # external API.
   if (is_android) {
     safe_browsing_mode = 2
-  } else if (is_ios) {
+  } else if (is_ios || is_chromecast) {
     safe_browsing_mode = 0
   } else {
     safe_browsing_mode = 1
