@@ -2828,6 +2828,8 @@
             'events/WindowEventContext.h',
             'input/EventHandler.cpp',
             'input/EventHandler.h',
+            'input/GestureManager.cpp',
+            'input/GestureManager.h',
             'input/InputDeviceCapabilities.cpp',
             'input/InputDeviceCapabilities.h',
             'input/KeyboardEventManager.cpp',

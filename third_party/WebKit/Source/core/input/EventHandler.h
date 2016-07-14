@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/events/TextEventInputType.h"
+#include "core/input/GestureManager.h"
 #include "core/input/KeyboardEventManager.h"
 #include "core/input/PointerEventManager.h"
 #include "core/input/ScrollManager.h"
@@ -325,6 +326,10 @@ private:
 
     void setLastKnownMousePosition(const PlatformMouseEvent&);
 
+    void setClickNode(Node*);
+    bool handleDragDropIfPossible(const GestureEventWithHitTestResults&);
+    static ContainerNode* parentForClickEvent(const Node&);
+
     bool shouldTopControlsConsumeScroll(FloatSize) const;
 
     // If the given element is a shadow host and its root has delegatesFocus=false flag,
@@ -392,6 +397,7 @@ private:
     PointerEventManager m_pointerEventManager;
     ScrollManager m_scrollManager;
     KeyboardEventManager m_keyboardEventManager;
+    GestureManager m_gestureManager;
 
     double m_maxMouseMovedDuration;
 
@@ -405,6 +411,9 @@ private:
     // triggering |touchstart| event was canceled. This suppresses mouse event
     // firing for the current gesture sequence (i.e. until next GestureTapDown).
     bool m_suppressMouseEventsFromGestures;
+
+    // TODO(nzolghadr): Temporary until further refactoring
+    friend GestureManager;
 };
 
 } // namespace blink

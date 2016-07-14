@@ -24,7 +24,7 @@ class CORE_EXPORT KeyboardEventManager {
     WTF_MAKE_NONCOPYABLE(KeyboardEventManager);
     DISALLOW_NEW();
 public:
-    explicit KeyboardEventManager(LocalFrame*, ScrollManager*);
+    KeyboardEventManager(LocalFrame*, ScrollManager*);
     ~KeyboardEventManager();
     DECLARE_TRACE();
 
