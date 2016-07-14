@@ -91,7 +91,6 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->new_password_value = base::ASCIIToUTF16("new_password_value");
   form->new_password_value_is_default = false;
   form->new_password_marked_by_site = false;
-  form->ssl_valid = true;
   form->preferred = false;
   form->date_created = base::Time::Now();
   form->date_synced = base::Time::Now();

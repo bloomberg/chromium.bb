@@ -42,10 +42,10 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 17;
+const int kCurrentVersionNumber = 18;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
-const int kCompatibleVersionNumber = 14;
+const int kCompatibleVersionNumber = 18;
 
 base::Pickle SerializeVector(const std::vector<base::string16>& vec) {
   base::Pickle p;
@@ -78,7 +78,6 @@ enum LoginTableColumns {
   COLUMN_PASSWORD_VALUE,
   COLUMN_SUBMIT_ELEMENT,
   COLUMN_SIGNON_REALM,
-  COLUMN_SSL_VALID,
   COLUMN_PREFERRED,
   COLUMN_DATE_CREATED,
   COLUMN_BLACKLISTED_BY_USER,
@@ -125,7 +124,6 @@ void BindAddStatement(const PasswordForm& form,
               static_cast<int>(encrypted_password.length()));
   s->BindString16(COLUMN_SUBMIT_ELEMENT, form.submit_element);
   s->BindString(COLUMN_SIGNON_REALM, form.signon_realm);
-  s->BindInt(COLUMN_SSL_VALID, form.ssl_valid);
   s->BindInt(COLUMN_PREFERRED, form.preferred);
   s->BindInt64(COLUMN_DATE_CREATED, form.date_created.ToInternalValue());
   s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
@@ -425,6 +423,11 @@ void InitializeBuilder(SQLTableBuilder* builder) {
   // Version 17.
   version = builder->SealVersion();
   DCHECK_EQ(17u, version);
+
+  // Version 18.
+  builder->DropColumn("ssl_valid");
+  version = builder->SealVersion();
+  DCHECK_EQ(18u, version);
 
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builder->NumberOfColumns())
       << "Adjust LoginTableColumns if you change column definitions here.";
@@ -728,8 +731,7 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
   }
 
   sql::Statement logins_with_schemes_statement(db_.GetUniqueStatement(
-      "SELECT signon_realm, origin_url, ssl_valid, blacklisted_by_user "
-      "FROM logins;"));
+      "SELECT signon_realm, origin_url, blacklisted_by_user FROM logins;"));
 
   if (!logins_with_schemes_statement.is_valid())
     return;
@@ -743,8 +745,7 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
   while (logins_with_schemes_statement.Step()) {
     std::string signon_realm = logins_with_schemes_statement.ColumnString(0);
     GURL origin_url = GURL(logins_with_schemes_statement.ColumnString(1));
-    bool ssl_valid = !!logins_with_schemes_statement.ColumnInt(2);
-    bool blacklisted_by_user = !!logins_with_schemes_statement.ColumnInt(3);
+    bool blacklisted_by_user = !!logins_with_schemes_statement.ColumnInt(2);
     if (blacklisted_by_user)
       continue;
 
@@ -752,8 +753,6 @@ void LoginDatabase::ReportMetrics(const std::string& sync_username,
       ++android_logins;
     } else if (origin_url.SchemeIs(url::kHttpsScheme)) {
       ++https_logins;
-      metrics_util::LogUMAHistogramBoolean(
-          "PasswordManager.UserStoredPasswordWithInvalidSSLCert", !ssl_valid);
     } else if (origin_url.SchemeIs(url::kHttpScheme)) {
       ++http_logins;
     } else if (origin_url.SchemeIs(url::kFtpScheme)) {
@@ -842,34 +841,33 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindBlob(1, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
   s.BindString16(2, form.submit_element);
-  s.BindInt(3, form.ssl_valid);
-  s.BindInt(4, form.preferred);
-  s.BindInt64(5, form.date_created.ToInternalValue());
-  s.BindInt(6, form.blacklisted_by_user);
-  s.BindInt(7, form.scheme);
-  s.BindInt(8, form.type);
+  s.BindInt(3, form.preferred);
+  s.BindInt64(4, form.date_created.ToInternalValue());
+  s.BindInt(5, form.blacklisted_by_user);
+  s.BindInt(6, form.scheme);
+  s.BindInt(7, form.type);
   base::Pickle pickle = SerializeVector(form.other_possible_usernames);
-  s.BindBlob(9, pickle.data(), pickle.size());
-  s.BindInt(10, form.times_used);
+  s.BindBlob(8, pickle.data(), pickle.size());
+  s.BindInt(9, form.times_used);
   base::Pickle form_data_pickle;
   autofill::SerializeFormData(form.form_data, &form_data_pickle);
-  s.BindBlob(11, form_data_pickle.data(), form_data_pickle.size());
-  s.BindInt64(12, form.date_synced.ToInternalValue());
-  s.BindString16(13, form.display_name);
-  s.BindString(14, form.icon_url.spec());
+  s.BindBlob(10, form_data_pickle.data(), form_data_pickle.size());
+  s.BindInt64(11, form.date_synced.ToInternalValue());
+  s.BindString16(12, form.display_name);
+  s.BindString(13, form.icon_url.spec());
   // An empty Origin serializes as "null" which would be strange to store here.
-  s.BindString(15, form.federation_origin.unique()
+  s.BindString(14, form.federation_origin.unique()
                        ? std::string()
                        : form.federation_origin.Serialize());
-  s.BindInt(16, form.skip_zero_click);
-  s.BindInt(17, form.generation_upload_status);
+  s.BindInt(15, form.skip_zero_click);
+  s.BindInt(16, form.generation_upload_status);
 
   // WHERE starts here.
-  s.BindString(18, form.origin.spec());
-  s.BindString16(19, form.username_element);
-  s.BindString16(20, form.username_value);
-  s.BindString16(21, form.password_element);
-  s.BindString(22, form.signon_realm);
+  s.BindString(17, form.origin.spec());
+  s.BindString16(18, form.username_element);
+  s.BindString16(19, form.username_value);
+  s.BindString16(20, form.password_element);
+  s.BindString(21, form.signon_realm);
 
   if (!s.Run())
     return PasswordStoreChangeList();
@@ -982,7 +980,6 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->submit_element = s.ColumnString16(COLUMN_SUBMIT_ELEMENT);
   tmp = s.ColumnString(COLUMN_SIGNON_REALM);
   form->signon_realm = tmp;
-  form->ssl_valid = (s.ColumnInt(COLUMN_SSL_VALID) > 0);
   form->preferred = (s.ColumnInt(COLUMN_PREFERRED) > 0);
   form->date_created =
       base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_CREATED));

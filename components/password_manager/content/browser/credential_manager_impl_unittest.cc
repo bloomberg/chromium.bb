@@ -224,7 +224,6 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
     form_.signon_realm = form_.origin.spec();
     form_.scheme = autofill::PasswordForm::SCHEME_HTML;
     form_.skip_zero_click = false;
-    form_.ssl_valid = true;
 
     affiliated_form1_.username_value = base::ASCIIToUTF16("Affiliated 1");
     affiliated_form1_.display_name = base::ASCIIToUTF16("Display Name");
@@ -233,7 +232,6 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
     affiliated_form1_.signon_realm = kTestAndroidRealm1;
     affiliated_form1_.scheme = autofill::PasswordForm::SCHEME_HTML;
     affiliated_form1_.skip_zero_click = false;
-    affiliated_form1_.ssl_valid = true;
 
     affiliated_form2_.username_value = base::ASCIIToUTF16("Affiliated 2");
     affiliated_form2_.display_name = base::ASCIIToUTF16("Display Name");
@@ -242,7 +240,6 @@ class CredentialManagerImplTest : public content::RenderViewHostTestHarness {
     affiliated_form2_.signon_realm = kTestAndroidRealm2;
     affiliated_form2_.scheme = autofill::PasswordForm::SCHEME_HTML;
     affiliated_form2_.skip_zero_click = false;
-    affiliated_form2_.ssl_valid = true;
 
     origin_path_form_.username_value = base::ASCIIToUTF16("Username 2");
     origin_path_form_.display_name = base::ASCIIToUTF16("Display Name 2");
@@ -1224,7 +1221,6 @@ TEST_F(CredentialManagerImplTest, GetSynthesizedFormForOrigin) {
   EXPECT_EQ(kTestWebOrigin, synthesized.origin.spec());
   EXPECT_EQ(kTestWebOrigin, synthesized.signon_realm);
   EXPECT_EQ(autofill::PasswordForm::SCHEME_HTML, synthesized.scheme);
-  EXPECT_TRUE(synthesized.ssl_valid);
 }
 
 TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
@@ -1249,7 +1245,6 @@ TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = form_.signon_realm;
   blacklisted.type = autofill::PasswordForm::TYPE_API;
-  blacklisted.ssl_valid = true;
   blacklisted.date_created = passwords[form_.signon_realm][0].date_created;
   EXPECT_THAT(passwords[form_.signon_realm], testing::ElementsAre(blacklisted));
 }
@@ -1280,7 +1275,6 @@ TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = blacklisted.origin.spec();
   blacklisted.type = autofill::PasswordForm::TYPE_API;
-  blacklisted.ssl_valid = true;
   blacklisted.date_created =
       passwords[blacklisted.signon_realm][0].date_created;
   EXPECT_THAT(passwords[blacklisted.signon_realm],
@@ -1292,7 +1286,6 @@ TEST_F(CredentialManagerImplTest, RespectBlacklistingPasswordCredential) {
   blacklisted.blacklisted_by_user = true;
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.ssl_valid = true;
   store_->AddLogin(blacklisted);
 
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_PASSWORD);
@@ -1312,7 +1305,6 @@ TEST_F(CredentialManagerImplTest, RespectBlacklistingFederatedCredential) {
   blacklisted.blacklisted_by_user = true;
   blacklisted.origin = form_.origin;
   blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.ssl_valid = true;
   store_->AddLogin(blacklisted);
 
   form_.federation_origin = url::Origin(GURL("https://example.com/"));

@@ -244,7 +244,6 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       L"",
       L"",
       true,
-      false,
       1,
   };
   std::unique_ptr<PasswordForm> form =
@@ -263,7 +262,6 @@ TEST_F(PasswordStoreWinTest, DISABLED_ConvertIE7Login) {
       L"abcdefgh",
       L"abcdefghijkl",
       true,
-      false,
       1,
   };
   ScopedVector<autofill::PasswordForm> expected_forms;
@@ -294,7 +292,6 @@ TEST_F(PasswordStoreWinTest, OutstandingWDSQueries) {
       L"",
       L"",
       true,
-      false,
       1,
   };
   std::unique_ptr<PasswordForm> form =
@@ -350,7 +347,6 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
       L"",
       L"",
       true,
-      false,
       1,
   };
   std::unique_ptr<PasswordForm> form =
@@ -367,7 +363,6 @@ TEST_F(PasswordStoreWinTest, DISABLED_MultipleWDSQueriesOnDifferentThreads) {
       L"abcdefgh",
       L"abcdefghijkl",
       true,
-      false,
       1,
   };
   ScopedVector<autofill::PasswordForm> expected_forms;
@@ -410,7 +405,6 @@ TEST_F(PasswordStoreWinTest, EmptyLogins) {
       L"",
       L"",
       true,
-      false,
       1,
   };
   std::unique_ptr<PasswordForm> form =

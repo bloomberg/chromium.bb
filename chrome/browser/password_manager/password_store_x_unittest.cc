@@ -277,7 +277,6 @@ void InitExpectedForms(bool autofillable,
         autofillable ? L"username_value" : nullptr,
         autofillable ? L"password_value" : nullptr,
         autofillable,
-        false,
         static_cast<double>(i + 1)};
     forms->push_back(CreatePasswordFormFromDataForTesting(data));
   }
@@ -412,12 +411,17 @@ TEST_P(PasswordStoreXTest, Notifications) {
   store->Init(syncer::SyncableService::StartSyncFlare());
 
   password_manager::PasswordFormData form_data = {
-      PasswordForm::SCHEME_HTML,       "http://bar.example.com",
-      "http://bar.example.com/origin", "http://bar.example.com/action",
-      L"submit_element",               L"username_element",
-      L"password_element",             L"username_value",
-      L"password_value",               true,
-      false,                           1};
+      PasswordForm::SCHEME_HTML,
+      "http://bar.example.com",
+      "http://bar.example.com/origin",
+      "http://bar.example.com/action",
+      L"submit_element",
+      L"username_element",
+      L"password_element",
+      L"username_value",
+      L"password_value",
+      true,
+      1};
   std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(form_data);
 

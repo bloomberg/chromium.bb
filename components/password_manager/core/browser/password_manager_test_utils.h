@@ -52,7 +52,6 @@ struct PasswordFormData {
   const wchar_t* username_value;  // Set to NULL for a blacklist entry.
   const wchar_t* password_value;
   const bool preferred;
-  const bool ssl_valid;
   const double creation_time;
 };
 

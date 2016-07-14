@@ -129,7 +129,6 @@ ScopedVector<autofill::PasswordForm> PasswordStoreWin::DBHandler::GetIE7Results(
         autofill->signon_realm = form.signon_realm;
         autofill->origin = form.origin;
         autofill->preferred = true;
-        autofill->ssl_valid = form.origin.SchemeIsCryptographic();
         autofill->date_created = info.date_created;
 
         matched_forms.push_back(autofill);

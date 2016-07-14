@@ -55,7 +55,6 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->password_value = ASCIIToUTF16("test");
   form->submit_element = ASCIIToUTF16("signIn");
   form->signon_realm = "http://www.google.com/";
-  form->ssl_valid = false;
   form->preferred = false;
   form->scheme = PasswordForm::SCHEME_HTML;
   form->times_used = 1;
@@ -256,7 +255,6 @@ TEST_F(LoginDatabaseTest, Logins) {
   // Imagine the site moves to a secure server for login.
   PasswordForm form4(form3);
   form4.signon_realm = "https://www.google.com/";
-  form4.ssl_valid = true;
 
   // We have only an http record, so no match for this.
   EXPECT_TRUE(db().GetLogins(form4, &result));
@@ -283,24 +281,14 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db().GetLogins(form, &result));
   EXPECT_EQ(0U, result.size());
 
-  // The user's request for the HTTPS site is intercepted
-  // by an attacker who presents an invalid SSL cert.
-  PasswordForm form5(form4);
-  form5.ssl_valid = 0;
-
-  // It will match in this case.
-  EXPECT_TRUE(db().GetLogins(form5, &result));
-  EXPECT_EQ(1U, result.size());
-  result.clear();
-
   // User changes their password.
-  PasswordForm form6(form5);
-  form6.password_value = ASCIIToUTF16("test6");
-  form6.preferred = true;
+  PasswordForm form5(form4);
+  form5.password_value = ASCIIToUTF16("test6");
+  form5.preferred = true;
 
   // We update, and check to make sure it matches the
   // old form, and there is only one record.
-  EXPECT_EQ(UpdateChangeForForm(form6), db().UpdateLogin(form6));
+  EXPECT_EQ(UpdateChangeForForm(form5), db().UpdateLogin(form5));
   // matches
   EXPECT_TRUE(db().GetLogins(form5, &result));
   EXPECT_EQ(1U, result.size());
@@ -309,9 +297,9 @@ TEST_F(LoginDatabaseTest, Logins) {
   EXPECT_TRUE(db().GetAutofillableLogins(&result));
   EXPECT_EQ(1U, result.size());
   // Password element was updated.
-  EXPECT_EQ(form6.password_value, result[0]->password_value);
+  EXPECT_EQ(form5.password_value, result[0]->password_value);
   // Preferred login.
-  EXPECT_TRUE(form6.preferred);
+  EXPECT_TRUE(form5.preferred);
   result.clear();
 
   // Make sure everything can disappear.
@@ -337,7 +325,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatching) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://foo.com/";
-  form.ssl_valid = true;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
 
@@ -383,7 +370,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   form.username_value = ASCIIToUTF16("test@gmail.com");
   form.password_value = ASCIIToUTF16("test");
   form.signon_realm = "https://foo.com/";
-  form.ssl_valid = true;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
 
@@ -458,7 +444,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingShouldMatchingApply) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://accounts.google.com/";
-  form.ssl_valid = true;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
 
@@ -498,7 +483,6 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form.username_value = ASCIIToUTF16("test@gmail.com");
   form.password_value = ASCIIToUTF16("test");
   form.signon_realm = "https://accounts.google.com/";
-  form.ssl_valid = true;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
 
@@ -555,7 +539,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://foo.com/";
-  form.ssl_valid = true;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
 
@@ -592,7 +575,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingDifferentSites) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "https://baz.com/";
-  form.ssl_valid = true;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
 
@@ -642,7 +624,6 @@ TEST_F(LoginDatabaseTest, TestPublicSuffixDomainMatchingRegexp) {
   form.password_value = ASCIIToUTF16("test");
   form.submit_element = ASCIIToUTF16("");
   form.signon_realm = "http://foo.com/";
-  form.ssl_valid = false;
   form.preferred = false;
   form.scheme = PasswordForm::SCHEME_HTML;
 
@@ -913,7 +894,6 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.password_element = ASCIIToUTF16("Passwd");
   form.submit_element = ASCIIToUTF16("signIn");
   form.signon_realm = "http://www.google.com/";
-  form.ssl_valid = false;
   form.preferred = true;
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::SCHEME_HTML;
@@ -973,7 +953,6 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   incomplete_form.signon_realm = "http://accounts.google.com/";
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
-  incomplete_form.ssl_valid = false;
   incomplete_form.preferred = true;
   incomplete_form.blacklisted_by_user = false;
   incomplete_form.scheme = PasswordForm::SCHEME_HTML;
@@ -996,7 +975,6 @@ TEST_F(LoginDatabaseTest, UpdateIncompleteCredentials) {
   EXPECT_EQ(incomplete_form.username_value, result[0]->username_value);
   EXPECT_EQ(incomplete_form.password_value, result[0]->password_value);
   EXPECT_TRUE(result[0]->preferred);
-  EXPECT_FALSE(result[0]->ssl_valid);
 
   // We should return empty 'action', 'username_element', 'password_element'
   // and 'submit_element' as we can't be sure if the credentials were entered
@@ -1038,7 +1016,6 @@ TEST_F(LoginDatabaseTest, UpdateOverlappingCredentials) {
   incomplete_form.signon_realm = "http://accounts.google.com/";
   incomplete_form.username_value = ASCIIToUTF16("my_username");
   incomplete_form.password_value = ASCIIToUTF16("my_password");
-  incomplete_form.ssl_valid = false;
   incomplete_form.preferred = true;
   incomplete_form.blacklisted_by_user = false;
   incomplete_form.scheme = PasswordForm::SCHEME_HTML;
@@ -1085,7 +1062,6 @@ TEST_F(LoginDatabaseTest, DoubleAdd) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.ssl_valid = false;
   form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::SCHEME_HTML;
@@ -1106,7 +1082,6 @@ TEST_F(LoginDatabaseTest, AddWrongForm) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.ssl_valid = false;
   form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::SCHEME_HTML;
@@ -1124,7 +1099,6 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.ssl_valid = false;
   form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::SCHEME_HTML;
@@ -1132,7 +1106,6 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
 
   form.action = GURL("http://accounts.google.com/login");
   form.password_value = ASCIIToUTF16("my_new_password");
-  form.ssl_valid = true;
   form.preferred = false;
   form.other_possible_usernames.push_back(ASCIIToUTF16("my_new_username"));
   form.times_used = 20;
@@ -1161,7 +1134,6 @@ TEST_F(LoginDatabaseTest, RemoveWrongForm) {
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = ASCIIToUTF16("my_username");
   form.password_value = ASCIIToUTF16("my_password");
-  form.ssl_valid = false;
   form.preferred = true;
   form.blacklisted_by_user = false;
   form.scheme = PasswordForm::SCHEME_HTML;

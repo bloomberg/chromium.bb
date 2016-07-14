@@ -30,7 +30,6 @@ password_manager::PasswordFormData kFormData = {
     L"",
     L"",
     true,
-    false,
     1,
 };
 

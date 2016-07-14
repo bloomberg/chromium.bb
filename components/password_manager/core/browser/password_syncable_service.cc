@@ -50,7 +50,6 @@ bool AreLocalAndSyncPasswordsEqual(
               password_specifics.username_value() &&
           base::UTF16ToUTF8(password_form.password_value) ==
               password_specifics.password_value() &&
-          password_form.ssl_valid == password_specifics.ssl_valid() &&
           password_form.preferred == password_specifics.preferred() &&
           password_form.date_created.ToInternalValue() ==
               password_specifics.date_created() &&
@@ -454,7 +453,6 @@ syncer::SyncData SyncDataFromPassword(
   CopyStringField(password_element);
   CopyStringField(username_value);
   CopyStringField(password_value);
-  CopyField(ssl_valid);
   CopyField(preferred);
   password_specifics->set_date_created(
       password_form.date_created.ToInternalValue());
@@ -488,7 +486,6 @@ autofill::PasswordForm PasswordFromSpecifics(
       base::UTF8ToUTF16(password.password_element());
   new_password.username_value = base::UTF8ToUTF16(password.username_value());
   new_password.password_value = base::UTF8ToUTF16(password.password_value());
-  new_password.ssl_valid = password.ssl_valid();
   new_password.preferred = password.preferred();
   new_password.date_created =
       base::Time::FromInternalValue(password.date_created());

@@ -231,7 +231,6 @@ std::unique_ptr<base::DictionaryValue> PasswordSpecificsDataToValue(
   SET_STR(username_value);
   SET_STR(password_element);
   value->SetString("password_value", "<redacted>");
-  SET_BOOL(ssl_valid);
   SET_BOOL(preferred);
   SET_INT64(date_created);
   SET_BOOL(blacklisted);

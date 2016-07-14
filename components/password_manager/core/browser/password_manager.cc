@@ -229,9 +229,8 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
   // If there is no corresponding PasswordFormManager, we create one. This is
   // not the common case, and should only happen when there is a bug in our
   // ability to detect forms.
-  bool ssl_valid = form.origin.SchemeIsCryptographic();
   PasswordFormManager* manager = new PasswordFormManager(
-      this, client_, driver->AsWeakPtr(), form, ssl_valid,
+      this, client_, driver->AsWeakPtr(), form,
       base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
   pending_login_managers_.push_back(manager);
   manager->FetchDataFromPasswordStore();
@@ -342,9 +341,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   }
 
   PasswordForm provisionally_saved_form(form);
-  provisionally_saved_form.ssl_valid =
-      form.origin.SchemeIsCryptographic() &&
-      !client_->DidLastPageLoadEncounterSSLErrors();
   provisionally_saved_form.preferred = true;
   if (logger) {
     logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVED_FORM,
@@ -530,11 +526,10 @@ void PasswordManager::CreatePendingLoginManagers(
 
     if (logger)
       logger->LogFormSignatures(Logger::STRING_ADDING_SIGNATURE, *iter);
-    bool ssl_valid = iter->origin.SchemeIsCryptographic();
     PasswordFormManager* manager = new PasswordFormManager(
         this, client_,
         (driver ? driver->AsWeakPtr() : base::WeakPtr<PasswordManagerDriver>()),
-        *iter, ssl_valid,
+        *iter,
         base::WrapUnique(new FormSaverImpl(client_->GetPasswordStore())));
     pending_login_managers_.push_back(manager);
 

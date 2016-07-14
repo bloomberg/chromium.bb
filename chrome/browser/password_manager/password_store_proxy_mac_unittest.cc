@@ -359,7 +359,6 @@ TEST_P(PasswordStoreProxyMacTest, OperationsOnABadDatabaseSilentlyFail) {
       L"not_joe_user",
       L"12345",
       true,
-      false,
       1};
   std::unique_ptr<PasswordForm> form =
       CreatePasswordFormFromDataForTesting(www_form_data);

@@ -140,7 +140,7 @@ bool AffiliatedMatchHelper::IsValidAndroidCredential(
 bool AffiliatedMatchHelper::IsValidWebCredential(
     const autofill::PasswordForm& form) {
   FacetURI facet_uri(FacetURI::FromPotentiallyInvalidSpec(form.signon_realm));
-  return form.scheme == autofill::PasswordForm::SCHEME_HTML && form.ssl_valid &&
+  return form.scheme == autofill::PasswordForm::SCHEME_HTML &&
          facet_uri.IsValidWebFacetURI();
 }
 

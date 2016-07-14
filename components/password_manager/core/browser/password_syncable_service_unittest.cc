@@ -88,7 +88,6 @@ MATCHER_P(PasswordIs, form, "") {
           actual_password.password_element() &&
       expected_password.username_value() == actual_password.username_value() &&
       expected_password.password_value() == actual_password.password_value() &&
-      expected_password.ssl_valid() == actual_password.ssl_valid() &&
       expected_password.preferred() == actual_password.preferred() &&
       expected_password.date_created() == actual_password.date_created() &&
       expected_password.blacklisted() == actual_password.blacklisted() &&
@@ -630,8 +629,6 @@ TEST_F(PasswordSyncableServiceTest, SerializeEmptyPasswordForm) {
   EXPECT_EQ("", specifics.password_element());
   EXPECT_TRUE(specifics.has_password_value());
   EXPECT_EQ("", specifics.password_value());
-  EXPECT_TRUE(specifics.has_ssl_valid());
-  EXPECT_FALSE(specifics.ssl_valid());
   EXPECT_TRUE(specifics.has_preferred());
   EXPECT_FALSE(specifics.preferred());
   EXPECT_TRUE(specifics.has_date_created());
@@ -662,7 +659,6 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   form.username_value = base::ASCIIToUTF16("god@google.com");
   form.password_element = base::ASCIIToUTF16("password_element");
   form.password_value = base::ASCIIToUTF16("!@#$%^&*()");
-  form.ssl_valid = true;
   form.preferred = true;
   form.date_created = base::Time::FromInternalValue(100);
   form.blacklisted_by_user = true;
@@ -690,8 +686,6 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   EXPECT_EQ("password_element", specifics.password_element());
   EXPECT_TRUE(specifics.has_password_value());
   EXPECT_EQ("!@#$%^&*()", specifics.password_value());
-  EXPECT_TRUE(specifics.has_ssl_valid());
-  EXPECT_TRUE(specifics.ssl_valid());
   EXPECT_TRUE(specifics.has_preferred());
   EXPECT_TRUE(specifics.preferred());
   EXPECT_TRUE(specifics.has_date_created());

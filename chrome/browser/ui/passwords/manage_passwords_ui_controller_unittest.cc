@@ -236,7 +236,7 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           &password_manager_, &client_, driver_.AsWeakPtr(), observed_form,
-          true, base::WrapUnique(new password_manager::StubFormSaver)));
+          base::WrapUnique(new password_manager::StubFormSaver)));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   test_form_manager->OnGetPasswordStoreResults(std::move(best_matches));
   return test_form_manager;

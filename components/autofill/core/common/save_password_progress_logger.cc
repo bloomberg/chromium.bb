@@ -90,7 +90,6 @@ void SavePasswordProgressLogger::LogPasswordForm(
                 ScrubElementID(form.password_element));
   log.SetString(GetStringFromID(STRING_NEW_PASSWORD_ELEMENT),
                 ScrubElementID(form.new_password_element));
-  log.SetBoolean(GetStringFromID(STRING_SSL_VALID), form.ssl_valid);
   log.SetBoolean(GetStringFromID(STRING_PASSWORD_GENERATED),
                  form.type == PasswordForm::TYPE_GENERATED);
   log.SetInteger(GetStringFromID(STRING_TIMES_USED), form.times_used);
@@ -197,8 +196,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Password element";
     case SavePasswordProgressLogger::STRING_NEW_PASSWORD_ELEMENT:
       return "New password element";
-    case SavePasswordProgressLogger::STRING_SSL_VALID:
-      return "SSL valid";
     case SavePasswordProgressLogger::STRING_PASSWORD_GENERATED:
       return "Password generated";
     case SavePasswordProgressLogger::STRING_TIMES_USED:

@@ -363,6 +363,7 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
   std::string server;
   std::string security_domain;
   std::string path;
+  bool is_secure = false;
   for (unsigned int i = 0; i < attrList->count; i++) {
     SecKeychainAttribute attr = attrList->attr[i];
     if (!attr.data) {
@@ -386,7 +387,7 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
       {
         SecProtocolType protocol = *(static_cast<SecProtocolType*>(attr.data));
         // TODO(stuartmorgan): Handle proxy types
-        form->ssl_valid = (protocol == kSecProtocolTypeHTTPS);
+        is_secure = (protocol == kSecProtocolTypeHTTPS);
         break;
       }
       case kSecAuthenticationTypeItemAttr:
@@ -429,9 +430,8 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
   if (password_manager::IsValidAndroidFacetURI(server)) {
     form->signon_realm = server;
     form->origin = GURL();
-    form->ssl_valid = true;
   } else {
-    form->origin = URLFromComponents(form->ssl_valid, server, port, path);
+    form->origin = URLFromComponents(is_secure, server, port, path);
     // TODO(stuartmorgan): Handle proxies, which need a different signon_realm
     // format.
     form->signon_realm = form->origin.GetOrigin().spec();

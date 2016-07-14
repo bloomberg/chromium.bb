@@ -23,7 +23,6 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
   form.signon_realm = signon_realm;
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
-  form.ssl_valid = true;
   return form;
 }
 

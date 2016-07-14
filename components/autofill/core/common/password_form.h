@@ -176,15 +176,6 @@ struct PasswordForm {
   // attribute. This is only used in parsed HTML forms.
   bool new_password_marked_by_site;
 
-  // Whether or not this login was saved under an HTTPS session with a valid
-  // SSL cert. We will never match or autofill a PasswordForm where
-  // ssl_valid == true with a PasswordForm where ssl_valid == false. This means
-  // passwords saved under HTTPS will never get autofilled onto an HTTP page.
-  // When importing, this should be set to true if the page URL is HTTPS, thus
-  // giving it "the benefit of the doubt" that the SSL cert was valid when it
-  // was saved. Default to false.
-  bool ssl_valid;
-
   // True if this PasswordForm represents the last username/password login the
   // user selected to log in to the site. If there is only one saved entry for
   // the site, this will always be true, but when there are multiple entries

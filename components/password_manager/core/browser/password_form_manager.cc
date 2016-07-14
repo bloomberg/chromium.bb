@@ -52,13 +52,6 @@ namespace password_manager {
 
 namespace {
 
-PasswordForm CopyAndModifySSLValidity(const PasswordForm& orig,
-                                      bool ssl_valid) {
-  PasswordForm result(orig);
-  result.ssl_valid = ssl_valid;
-  return result;
-}
-
 // Returns true if user-typed username and password field values match with one
 // of the password form within |credentials| map; otherwise false.
 bool DoesUsenameAndPasswordMatchCredentials(
@@ -172,9 +165,8 @@ PasswordFormManager::PasswordFormManager(
     PasswordManagerClient* client,
     const base::WeakPtr<PasswordManagerDriver>& driver,
     const PasswordForm& observed_form,
-    bool ssl_valid,
     std::unique_ptr<FormSaver> form_saver)
-    : observed_form_(CopyAndModifySSLValidity(observed_form, ssl_valid)),
+    : observed_form_(observed_form),
       provisionally_saved_form_(nullptr),
       other_possible_username_action_(
           PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES),
@@ -488,12 +480,6 @@ void PasswordFormManager::OnRequestDone(
   }
 
   // Remove credentials which need to be ignored from |logins_result|.
-  if (!observed_form_.ssl_valid) {
-    logins_result.erase(
-        std::partition(logins_result.begin(), logins_result.end(),
-                       [](PasswordForm* form) { return !form->ssl_valid; }),
-        logins_result.end());
-  }
   logins_result =
       client_->GetStoreResultFilter()->FilterResults(std::move(logins_result));
 

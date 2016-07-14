@@ -39,7 +39,6 @@ PasswordFormData CreateTestPasswordFormDataByOrigin(const char* origin_url) {
                            L"username_value",
                            L"password_value",
                            true,
-                           false,
                            1};
   return data;
 }

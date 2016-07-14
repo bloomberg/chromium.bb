@@ -35,13 +35,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
  public:
   // |password_manager| owns this object
   // |form_on_page| is the form that may be submitted and could need login data.
-  // |ssl_valid| represents the security of the page containing observed_form,
-  //           used to filter login results from database.
   PasswordFormManager(PasswordManager* password_manager,
                       PasswordManagerClient* client,
                       const base::WeakPtr<PasswordManagerDriver>& driver,
                       const autofill::PasswordForm& observed_form,
-                      bool ssl_valid,
                       std::unique_ptr<FormSaver> form_saver);
   ~PasswordFormManager() override;
 

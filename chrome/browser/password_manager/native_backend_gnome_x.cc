@@ -135,7 +135,6 @@ std::unique_ptr<PasswordForm> FormFromAttributes(
   form->password_element = UTF8ToUTF16(string_attr_map["password_element"]);
   form->submit_element = UTF8ToUTF16(string_attr_map["submit_element"]);
   form->signon_realm = string_attr_map["signon_realm"];
-  form->ssl_valid = uint_attr_map["ssl_valid"];
   form->preferred = uint_attr_map["preferred"];
   int64_t date_created = 0;
   bool date_ok = base::StringToInt64(string_attr_map["date_created"],
@@ -235,7 +234,7 @@ ScopedVector<PasswordForm> ConvertFormList(GList* found,
   return forms;
 }
 
-// Schema is analagous to the fields in PasswordForm.
+// Schema is analogous to the fields in PasswordForm.
 const GnomeKeyringPasswordSchema kGnomeSchema = {
     GNOME_KEYRING_ITEM_GENERIC_SECRET,
     {{"origin_url", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
@@ -245,7 +244,6 @@ const GnomeKeyringPasswordSchema kGnomeSchema = {
      {"password_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
      {"submit_element", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
      {"signon_realm", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
-     {"ssl_valid", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
      {"preferred", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
      {"date_created", GNOME_KEYRING_ATTRIBUTE_TYPE_STRING},
      {"blacklisted_by_user", GNOME_KEYRING_ATTRIBUTE_TYPE_UINT32},
@@ -372,7 +370,6 @@ void GKRMethod::AddLogin(const PasswordForm& form, const char* app_string) {
       "password_element", UTF16ToUTF8(form.password_element).c_str(),
       "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
       "signon_realm", form.signon_realm.c_str(),
-      "ssl_valid", form.ssl_valid,
       "preferred", form.preferred,
       "date_created", base::Int64ToString(date_created).c_str(),
       "blacklisted_by_user", form.blacklisted_by_user,

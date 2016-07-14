@@ -371,7 +371,6 @@ bool NSSDecryptor::CreatePasswordFormFromRawInfo(
     // digest_auth entry, so let's assume basic_auth.
     form->scheme = autofill::PasswordForm::SCHEME_BASIC;
   }
-  form->ssl_valid = form->origin.SchemeIsCryptographic();
   form->username_element = raw_password_info.username_element;
   form->username_value = Decrypt(raw_password_info.encrypted_username);
   form->password_element = raw_password_info.password_element;

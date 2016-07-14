@@ -38,7 +38,6 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromDataForTesting(
   std::unique_ptr<PasswordForm> form(new PasswordForm());
   form->scheme = form_data.scheme;
   form->preferred = form_data.preferred;
-  form->ssl_valid = form_data.ssl_valid;
   form->date_created = base::Time::FromDoubleT(form_data.creation_time);
   form->date_synced =
       form->date_created +

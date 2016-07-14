@@ -119,7 +119,7 @@ ManagePasswordsStateTest::CreateFormManagerInternal(bool include_federated) {
   std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
       new password_manager::PasswordFormManager(
           &password_manager_, &stub_client_, driver_.AsWeakPtr(),
-          test_local_form(), false,
+          test_local_form(),
           base::WrapUnique(new password_manager::StubFormSaver)));
   test_form_manager->SimulateFetchMatchingLoginsFromPasswordStore();
   if (include_federated) {

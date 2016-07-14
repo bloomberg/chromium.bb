@@ -29,7 +29,6 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   form_on_page.password_value = ASCIIToUTF16("test");
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
-  form_on_page.ssl_valid = true;
   form_on_page.preferred = false;
   form_on_page.scheme = PasswordForm::SCHEME_HTML;
 
@@ -43,7 +42,6 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   preferred_match.password_value = ASCIIToUTF16("test");
   preferred_match.submit_element = ASCIIToUTF16("");
   preferred_match.signon_realm = "https://foo.com/";
-  preferred_match.ssl_valid = true;
   preferred_match.preferred = true;
   preferred_match.scheme = PasswordForm::SCHEME_HTML;
 
@@ -92,7 +90,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   form_on_page.password_value = ASCIIToUTF16("test");
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
-  form_on_page.ssl_valid = true;
   form_on_page.preferred = false;
   form_on_page.scheme = PasswordForm::SCHEME_HTML;
 
@@ -107,7 +104,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   preferred_match.submit_element = ASCIIToUTF16("");
   preferred_match.signon_realm = "https://foo.com/";
   preferred_match.is_public_suffix_match = true;
-  preferred_match.ssl_valid = true;
   preferred_match.preferred = true;
   preferred_match.scheme = PasswordForm::SCHEME_HTML;
 
@@ -123,7 +119,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   exact_match.password_value = ASCIIToUTF16("test");
   exact_match.submit_element = ASCIIToUTF16("");
   exact_match.signon_realm = "https://foo.com/";
-  exact_match.ssl_valid = true;
   exact_match.preferred = false;
   exact_match.scheme = PasswordForm::SCHEME_HTML;
 
@@ -140,7 +135,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
   public_suffix_match.submit_element = ASCIIToUTF16("");
   public_suffix_match.is_public_suffix_match = true;
   public_suffix_match.signon_realm = "https://foo.com/";
-  public_suffix_match.ssl_valid = true;
   public_suffix_match.preferred = false;
   public_suffix_match.scheme = PasswordForm::SCHEME_HTML;
 
@@ -189,7 +183,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   form_on_page.password_value = ASCIIToUTF16("test");
   form_on_page.submit_element = ASCIIToUTF16("");
   form_on_page.signon_realm = "https://foo.com/";
-  form_on_page.ssl_valid = true;
   form_on_page.preferred = false;
   form_on_page.scheme = PasswordForm::SCHEME_HTML;
 
@@ -200,7 +193,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   preferred_match.password_value = ASCIIToUTF16("test");
   preferred_match.signon_realm = "android://hash@foo.com/";
   preferred_match.is_affiliation_based_match = true;
-  preferred_match.ssl_valid = true;
   preferred_match.preferred = true;
 
   // Create a match that matches exactly, so |is_affiliation_based_match| has a
@@ -215,7 +207,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   exact_match.password_value = ASCIIToUTF16("test");
   exact_match.submit_element = ASCIIToUTF16("");
   exact_match.signon_realm = "https://foo.com/";
-  exact_match.ssl_valid = true;
   exact_match.preferred = false;
   exact_match.scheme = PasswordForm::SCHEME_HTML;
 
@@ -228,7 +219,6 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
   affiliated_match.password_value = ASCIIToUTF16("test");
   affiliated_match.is_affiliation_based_match = true;
   affiliated_match.signon_realm = "https://foo1.com/";
-  affiliated_match.ssl_valid = true;
   affiliated_match.preferred = false;
   affiliated_match.scheme = PasswordForm::SCHEME_HTML;
 

@@ -39,7 +39,6 @@ class PasswordStoreChange {
            form().password_value == other.form().password_value &&
            form().new_password_element == other.form().new_password_element &&
            form().new_password_value == other.form().new_password_value &&
-           form().ssl_valid == other.form().ssl_valid &&
            form().preferred == other.form().preferred &&
            form().date_created == other.form().date_created &&
            form().blacklisted_by_user == other.form().blacklisted_by_user;

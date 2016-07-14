@@ -28,7 +28,6 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
           client,
           driver,
           observed_form,
-          true,
           base::WrapUnique(new FormSaverImpl(client->GetPasswordStore()))),
       delegate_(delegate),
       saved_form_(std::move(saved_form)) {

@@ -45,7 +45,6 @@ void PasswordFormToJSON(const PasswordForm& form,
                                      base::ASCIIToUTF16("|")));
   target->SetBoolean("blacklisted", form.blacklisted_by_user);
   target->SetBoolean("preferred", form.preferred);
-  target->SetBoolean("ssl_valid", form.ssl_valid);
   target->SetDouble("date_created", form.date_created.ToDoubleT());
   target->SetDouble("date_synced", form.date_synced.ToDoubleT());
   target->SetInteger("type", form.type);
@@ -76,7 +75,6 @@ PasswordForm::PasswordForm()
       password_value_is_default(false),
       new_password_value_is_default(false),
       new_password_marked_by_site(false),
-      ssl_valid(false),
       preferred(false),
       blacklisted_by_user(false),
       type(TYPE_MANUAL),
@@ -116,8 +114,8 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          new_password_element == form.new_password_element &&
          new_password_marked_by_site == form.new_password_marked_by_site &&
          new_password_value == form.new_password_value &&
-         ssl_valid == form.ssl_valid && preferred == form.preferred &&
-         date_created == form.date_created && date_synced == form.date_synced &&
+         preferred == form.preferred && date_created == form.date_created &&
+         date_synced == form.date_synced &&
          blacklisted_by_user == form.blacklisted_by_user && type == form.type &&
          times_used == form.times_used &&
          form_data.SameFormAs(form.form_data) &&

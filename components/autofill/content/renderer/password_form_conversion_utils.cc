@@ -594,7 +594,6 @@ bool GetPasswordForm(const SyntheticForm& form,
   }
 
   password_form->scheme = PasswordForm::SCHEME_HTML;
-  password_form->ssl_valid = false;
   password_form->preferred = false;
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;

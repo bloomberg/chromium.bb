@@ -153,7 +153,6 @@ struct PasswordForm {
   string new_password_value;
   bool new_password_value_is_default;
   bool new_password_marked_by_site;
-  bool ssl_valid;
   bool preferred;
   mojo.common.mojom.Time date_created;
   mojo.common.mojom.Time date_synced;

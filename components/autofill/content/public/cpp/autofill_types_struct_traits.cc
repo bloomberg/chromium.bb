@@ -496,7 +496,6 @@ bool StructTraits<mojom::PasswordForm, PasswordForm>::Read(
 
   out->new_password_value_is_default = data.new_password_value_is_default();
   out->new_password_marked_by_site = data.new_password_marked_by_site();
-  out->ssl_valid = data.ssl_valid();
   out->preferred = data.preferred();
 
   if (!data.ReadDateCreated(&out->date_created) ||

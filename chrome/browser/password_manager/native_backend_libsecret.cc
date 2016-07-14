@@ -50,7 +50,6 @@ const SecretSchema kLibsecretSchema = {
      {"password_element", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"submit_element", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"signon_realm", SECRET_SCHEMA_ATTRIBUTE_STRING},
-     {"ssl_valid", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
      {"preferred", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
      {"date_created", SECRET_SCHEMA_ATTRIBUTE_STRING},
      {"blacklisted_by_user", SECRET_SCHEMA_ATTRIBUTE_INTEGER},
@@ -103,7 +102,6 @@ std::unique_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->submit_element =
       UTF8ToUTF16(GetStringFromAttributes(attrs, "submit_element"));
   form->signon_realm = GetStringFromAttributes(attrs, "signon_realm");
-  form->ssl_valid = GetUintFromAttributes(attrs, "ssl_valid");
   form->preferred = GetUintFromAttributes(attrs, "preferred");
   int64_t date_created = 0;
   bool date_ok = base::StringToInt64(
@@ -359,7 +357,6 @@ bool NativeBackendLibsecret::RawAddLogin(const PasswordForm& form) {
       "password_element", UTF16ToUTF8(form.password_element).c_str(),
       "submit_element", UTF16ToUTF8(form.submit_element).c_str(),
       "signon_realm", form.signon_realm.c_str(),
-      "ssl_valid", form.ssl_valid,
       "preferred", form.preferred,
       "date_created", base::Int64ToString(date_created).c_str(),
       "blacklisted_by_user", form.blacklisted_by_user,

@@ -441,8 +441,6 @@ struct StructTraits<autofill::mojom::PasswordForm, autofill::PasswordForm> {
     return r.new_password_marked_by_site;
   }
 
-  static bool ssl_valid(const autofill::PasswordForm& r) { return r.ssl_valid; }
-
   static bool preferred(const autofill::PasswordForm& r) { return r.preferred; }
 
   static const base::Time& date_created(const autofill::PasswordForm& r) {

@@ -38741,6 +38741,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="PasswordManager.UserStoredPasswordWithInvalidSSLCert"
     enum="Boolean">
+  <obsolete>
+    Deprecated 07/2016 because this information is no longer stored in
+    PasswordForm. See also http://crbug.com/413020.
+  </obsolete>
   <owner>xunlu@chromium.org</owner>
   <owner>gcasto@chromium.org</owner>
   <summary>

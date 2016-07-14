@@ -61,7 +61,6 @@ autofill::PasswordForm GetTestPasswordForm1(bool zero_click_allowed) {
   form.username_value = base::ASCIIToUTF16("foo");
   form.password_value = base::ASCIIToUTF16("bar");
   form.skip_zero_click = !zero_click_allowed;
-  form.ssl_valid = true;
   form.type = autofill::PasswordForm::Type::TYPE_API;
   return form;
 }
@@ -82,7 +81,6 @@ autofill::PasswordForm GetTestPasswordForm2(bool zero_click_allowed) {
   form.username_value = base::ASCIIToUTF16("baz");
   form.password_value = base::ASCIIToUTF16("bah");
   form.skip_zero_click = !zero_click_allowed;
-  form.ssl_valid = true;
   return form;
 }
 

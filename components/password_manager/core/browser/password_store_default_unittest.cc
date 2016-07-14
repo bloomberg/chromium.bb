@@ -71,7 +71,6 @@ PasswordFormData CreateTestPasswordFormData() {
                            L"username_value",
                            L"password_value",
                            true,
-                           false,
                            1};
   return data;
 }
@@ -168,8 +167,7 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
   static const PasswordFormData form_data[] = {
       {PasswordForm::SCHEME_HTML, "http://foo.example.com",
        "http://foo.example.com/origin", "http://foo.example.com/action",
-       L"มีสีสัน", L"お元気ですか?", L"盆栽", L"أحب كرة", L"£éä국수çà", true,
-       false, 1},
+       L"มีสีสัน", L"お元気ですか?", L"盆栽", L"أحب كرة", L"£éä국수çà", true, 1},
   };
 
   // Build the expected forms vector and add the forms to the store.

@@ -317,8 +317,6 @@ autofill::PasswordForm CredentialManager::GetSynthesizedFormForOrigin() const {
   synthetic_form.origin = web_state()->GetLastCommittedURL().GetOrigin();
   synthetic_form.signon_realm = synthetic_form.origin.spec();
   synthetic_form.scheme = autofill::PasswordForm::SCHEME_HTML;
-  synthetic_form.ssl_valid = synthetic_form.origin.SchemeIsCryptographic() &&
-                             !client_->DidLastPageLoadEncounterSSLErrors();
   return synthetic_form;
 }
 

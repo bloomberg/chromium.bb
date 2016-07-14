@@ -260,7 +260,6 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, BasicFormAttributes) {
   EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
   EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
   EXPECT_EQ(PasswordForm::SCHEME_HTML, password_form->scheme);
-  EXPECT_FALSE(password_form->ssl_valid);
   EXPECT_FALSE(password_form->preferred);
   EXPECT_FALSE(password_form->blacklisted_by_user);
   EXPECT_EQ(PasswordForm::TYPE_MANUAL, password_form->type);

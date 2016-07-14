@@ -40,7 +40,6 @@ class MockPasswordFormManager : public password_manager::PasswordFormManager {
             client,
             driver,
             form,
-            false,
             base::WrapUnique(new password_manager::StubFormSaver)) {}
 
   ~MockPasswordFormManager() override {}

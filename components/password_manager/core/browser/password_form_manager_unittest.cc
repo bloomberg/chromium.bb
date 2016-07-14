@@ -416,7 +416,7 @@ class PasswordFormManagerTest : public testing::Test {
     password_manager_.reset(new PasswordManager(client_.get()));
     form_manager_.reset(new PasswordFormManager(
         password_manager_.get(), client_.get(), client_.get()->driver(),
-        observed_form_, false, base::WrapUnique(new MockFormSaver())));
+        observed_form_, base::WrapUnique(new MockFormSaver())));
   }
 
   void TearDown() override {
@@ -458,7 +458,7 @@ class PasswordFormManagerTest : public testing::Test {
     form.form_data = observed_form_data;
 
     PasswordFormManager form_manager(password_manager(), client(),
-                                     client()->driver(), form, false,
+                                     client()->driver(), form,
                                      base::WrapUnique(new MockFormSaver()));
     ScopedVector<PasswordForm> result;
     result.push_back(CreateSavedMatch(false));
@@ -535,9 +535,9 @@ class PasswordFormManagerTest : public testing::Test {
     observed_form()->form_data.fields.push_back(field);
 
     client()->set_is_update_password_ui_enabled(true);
-    PasswordFormManager form_manager(
-        password_manager(), client(), client()->driver(), *observed_form(),
-        false, base::WrapUnique(new MockFormSaver()));
+    PasswordFormManager form_manager(password_manager(), client(),
+                                     client()->driver(), *observed_form(),
+                                     base::WrapUnique(new MockFormSaver()));
 
     SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
 
@@ -665,7 +665,7 @@ class PasswordFormManagerTest : public testing::Test {
     }
 
     PasswordFormManager form_manager(password_manager(), client(),
-                                     client()->driver(), form, false,
+                                     client()->driver(), form,
                                      base::WrapUnique(new MockFormSaver()));
 
     ScopedVector<PasswordForm> result;
@@ -852,7 +852,7 @@ TEST_F(PasswordFormManagerTest, TestBlacklistMatching) {
   observed_form()->action = GURL("http://accounts.google.com/a/Login");
   observed_form()->signon_realm = "http://accounts.google.com";
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
 
@@ -991,7 +991,7 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
   observed_form()->username_marked_by_site = true;
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&form_manager, RESULT_NO_MATCH);
 
@@ -1072,7 +1072,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   saved_match()->submit_element.clear();
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
 
@@ -1113,31 +1113,6 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   EXPECT_EQ(saved_match()->submit_element, new_credentials.submit_element);
 }
 
-TEST_F(PasswordFormManagerTest, TestIgnoreResult_SSL) {
-  const bool kObservedFormSSLValid = false;
-  PasswordFormManager form_manager(
-      password_manager(), client(), client()->driver(), *observed_form(),
-      kObservedFormSSLValid, base::WrapUnique(new MockFormSaver()));
-
-  PasswordForm saved_form = *observed_form();
-  saved_form.ssl_valid = !kObservedFormSSLValid;
-  saved_form.username_value = ASCIIToUTF16("test1@gmail.com");
-  ScopedVector<PasswordForm> result;
-  result.push_back(new PasswordForm(saved_form));
-  saved_form.username_value = ASCIIToUTF16("test2@gmail.com");
-  result.push_back(new PasswordForm(saved_form));
-  saved_form.username_value = ASCIIToUTF16("test3@gmail.com");
-  saved_form.ssl_valid = kObservedFormSSLValid;
-  result.push_back(new PasswordForm(saved_form));
-  form_manager.SimulateFetchMatchingLoginsFromPasswordStore();
-  form_manager.OnGetPasswordStoreResults(std::move(result));
-
-  // Make sure we don't match a PasswordForm if it was originally saved on
-  // an SSL-valid page and we are now on a page with invalid certificate.
-  EXPECT_EQ(1u, form_manager.best_matches().count(saved_form.username_value));
-  EXPECT_EQ(1u, form_manager.best_matches().size());
-}
-
 TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
   PasswordForm observed(*observed_form());
   observed.origin = GURL("https://accounts.google.com/a/LoginAuth");
@@ -1145,7 +1120,7 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_Paths) {
   observed.signon_realm = "https://accounts.google.com";
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), observed, false,
+                                   client()->driver(), observed,
                                    base::WrapUnique(new MockFormSaver()));
 
   PasswordForm saved_form = observed;
@@ -1167,7 +1142,7 @@ TEST_F(PasswordFormManagerTest, TestIgnoreResult_IgnoredCredentials) {
   observed.signon_realm = "https://accounts.google.com";
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), observed, false,
+                                   client()->driver(), observed,
                                    base::WrapUnique(new MockFormSaver()));
   client()->FilterAllResults();
 
@@ -1334,7 +1309,7 @@ TEST_F(PasswordFormManagerTest,
   signup_form.new_password_element = base::ASCIIToUTF16("new_password_field");
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), signup_form, false,
+                                   client()->driver(), signup_form,
                                    base::WrapUnique(new MockFormSaver()));
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
       .Times(1);
@@ -1502,7 +1477,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), encountered_form, false,
+                                   client()->driver(), encountered_form,
                                    base::WrapUnique(new MockFormSaver()));
 
   EXPECT_CALL(*mock_store(), GetLogins(encountered_form, &form_manager));
@@ -1515,7 +1490,6 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   incomplete_form->password_value = ASCIIToUTF16("my_password");
   incomplete_form->username_value = ASCIIToUTF16("my_username");
   incomplete_form->preferred = true;
-  incomplete_form->ssl_valid = false;
   incomplete_form->scheme = PasswordForm::SCHEME_HTML;
 
   // We expect to see this form eventually sent to the Password store. It
@@ -1690,9 +1664,9 @@ TEST_F(PasswordFormManagerTest, InvalidActionURLsDoNotMatch) {
                    PasswordFormManager::RESULT_ACTION_MATCH);
   // Then when the observed form has an invalid URL:
   PasswordForm valid_action_form(*observed_form());
-  PasswordFormManager invalid_manager(
-      password_manager(), client(), client()->driver(), invalid_action_form,
-      false, base::WrapUnique(new MockFormSaver()));
+  PasswordFormManager invalid_manager(password_manager(), client(),
+                                      client()->driver(), invalid_action_form,
+                                      base::WrapUnique(new MockFormSaver()));
   EXPECT_EQ(0,
             invalid_manager.DoesManage(valid_action_form) &
                 PasswordFormManager::RESULT_ACTION_MATCH);
@@ -1710,7 +1684,7 @@ TEST_F(PasswordFormManagerTest, EmptyActionURLsDoNotMatchNonEmpty) {
   PasswordForm valid_action_form(*observed_form());
   PasswordFormManager empty_action_manager(
       password_manager(), client(), client()->driver(), empty_action_form,
-      false, base::WrapUnique(new MockFormSaver()));
+      base::WrapUnique(new MockFormSaver()));
   EXPECT_EQ(0,
             empty_action_manager.DoesManage(valid_action_form) &
                 PasswordFormManager::RESULT_ACTION_MATCH);
@@ -1726,7 +1700,7 @@ TEST_F(PasswordFormManagerTest, NonHTMLFormsDoNotMatchHTMLForms) {
   // The other way round: observing a non-HTML form, don't match a HTML form.
   PasswordForm html_form(*observed_form());
   PasswordFormManager non_html_manager(password_manager(), client(), kNoDriver,
-                                       non_html_form, false,
+                                       non_html_form,
                                        base::WrapUnique(new MockFormSaver()));
   EXPECT_EQ(0, non_html_manager.DoesManage(html_form) &
                    PasswordFormManager::RESULT_HTML_ATTRIBUTES_MATCH);
@@ -1762,9 +1736,9 @@ TEST_F(PasswordFormManagerTest,
 
   PasswordForm secure_observed_form(*observed_form());
   secure_observed_form.origin = GURL("https://accounts.google.com/a/LoginAuth");
-  PasswordFormManager secure_manager(
-      password_manager(), client(), client()->driver(), secure_observed_form,
-      true, base::WrapUnique(new MockFormSaver()));
+  PasswordFormManager secure_manager(password_manager(), client(),
+                                     client()->driver(), secure_observed_form,
+                                     base::WrapUnique(new MockFormSaver()));
   // Also for HTTPS in the observed form, and HTTP in the compared form, an
   // exact path match is expected.
   EXPECT_EQ(0, secure_manager.DoesManage(form_longer_path) &
@@ -1840,7 +1814,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   // For newly saved passwords, upload a password vote for autofill::PASSWORD.
   // Don't vote for the username field yet.
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *saved_match(), false,
+                                   client()->driver(), *saved_match(),
                                    base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&form_manager, RESULT_NO_MATCH);
 
@@ -1862,7 +1836,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
 
   // Do not upload a vote if the user is blacklisting the form.
   PasswordFormManager blacklist_form_manager(
-      password_manager(), client(), client()->driver(), *saved_match(), false,
+      password_manager(), client(), client()->driver(), *saved_match(),
       base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&blacklist_form_manager, RESULT_NO_MATCH);
 
@@ -1958,7 +1932,7 @@ TEST_F(PasswordFormManagerTest, DriverDeletedBeforeStoreDone) {
   form->submit_element = ASCIIToUTF16("s");
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *form, false,
+                                   client()->driver(), *form,
                                    base::WrapUnique(new MockFormSaver()));
 
   EXPECT_CALL(*mock_store(), GetLogins(*form, &form_manager));
@@ -2006,7 +1980,7 @@ TEST_F(PasswordFormManagerTest,
       base::ASCIIToUTF16("new_password_field");
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
 
@@ -2103,10 +2077,9 @@ TEST_F(PasswordFormManagerTest, TestSuggestingPasswordChangeForms) {
   PasswordForm observed_change_password_form = *observed_form();
   observed_change_password_form.new_password_element =
       base::ASCIIToUTF16("new_pwd");
-  PasswordFormManager manager_creds(password_manager(), client(),
-                                    client()->driver(),
-                                    observed_change_password_form, false,
-                                    base::WrapUnique(new MockFormSaver()));
+  PasswordFormManager manager_creds(
+      password_manager(), client(), client()->driver(),
+      observed_change_password_form, base::WrapUnique(new MockFormSaver()));
   manager_creds.SimulateFetchMatchingLoginsFromPasswordStore();
   ScopedVector<PasswordForm> simulated_results;
   simulated_results.push_back(CreateSavedMatch(false));
@@ -2142,7 +2115,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
 
   client()->set_is_update_password_ui_enabled(true);
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
 
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
@@ -2205,7 +2178,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
 
   client()->set_is_update_password_ui_enabled(true);
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
 
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
@@ -2255,7 +2228,7 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
   ASSERT_FALSE(form.password_value.empty());
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), form, false,
+                                   client()->driver(), form,
                                    base::WrapUnique(new MockFormSaver()));
 
   // Do not notify the store observer after this GetLogins call.
@@ -2449,7 +2422,7 @@ TEST_F(PasswordFormManagerTest, UploadChangePasswordForm_NOT_NEW_PASSWORD) {
 
 TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH | RESULT_PSL_MATCH);
 
@@ -2500,7 +2473,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
 TEST_F(PasswordFormManagerTest,
        TestNotUpdatePSLMatchedCredentialsWithAnotherUsername) {
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   psl_saved_match()->username_value += ASCIIToUTF16("1");
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH | RESULT_PSL_MATCH);
@@ -2540,7 +2513,7 @@ TEST_F(PasswordFormManagerTest,
 TEST_F(PasswordFormManagerTest,
        TestNotUpdatePSLMatchedCredentialsWithAnotherPassword) {
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   psl_saved_match()->password_value += ASCIIToUTF16("1");
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH | RESULT_PSL_MATCH);
@@ -2579,7 +2552,7 @@ TEST_F(PasswordFormManagerTest,
 
 TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPSLMatched) {
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&form_manager, RESULT_PSL_MATCH);
 
@@ -2764,7 +2737,7 @@ TEST_F(PasswordFormManagerTest,
 
   client()->set_is_update_password_ui_enabled(true);
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
 
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
@@ -2841,7 +2814,7 @@ TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
     submitted_form.password_value = saved_match()->password_value;
 
     PasswordFormManager form_manager(password_manager(), client(),
-                                     client()->driver(), form, false,
+                                     client()->driver(), form,
                                      base::WrapUnique(new MockFormSaver()));
     base::string16 generation_element = form.password_element;
     if (found_generation_element)
@@ -2875,7 +2848,7 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
   saved_match()->type = autofill::PasswordForm::TYPE_API;
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), *observed_form(), false,
+                                   client()->driver(), *observed_form(),
                                    base::WrapUnique(new MockFormSaver()));
   SimulateMatchingPhase(&form_manager, RESULT_SAVED_MATCH);
 
@@ -2932,7 +2905,7 @@ TEST_F(PasswordFormManagerTest, ProbablyAccountCreationUpload) {
   form.form_data = saved_match()->form_data;
 
   PasswordFormManager form_manager(password_manager(), client(),
-                                   client()->driver(), form, false,
+                                   client()->driver(), form,
                                    base::WrapUnique(new MockFormSaver()));
 
   PasswordForm form_to_save(form);

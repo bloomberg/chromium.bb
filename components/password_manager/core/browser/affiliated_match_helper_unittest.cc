@@ -144,7 +144,6 @@ autofill::PasswordForm GetTestAndroidCredentials(const char* signon_realm) {
   form.signon_realm = signon_realm;
   form.username_value = base::ASCIIToUTF16(kTestUsername);
   form.password_value = base::ASCIIToUTF16(kTestPassword);
-  form.ssl_valid = true;
   return form;
 }
 
@@ -162,7 +161,6 @@ autofill::PasswordForm GetTestObservedWebForm(const char* signon_realm,
   form.signon_realm = signon_realm;
   if (origin)
     form.origin = GURL(origin);
-  form.ssl_valid = true;
   return form;
 }
 
@@ -377,15 +375,6 @@ TEST_F(AffiliatedMatchHelperTest,
   // This verifies that |kTestWebRealmAlpha2| is not returned.
   EXPECT_THAT(GetAffiliatedAndroidRealms(web_observed_form),
               testing::UnorderedElementsAre(kTestAndroidRealmAlpha3));
-}
-
-TEST_F(AffiliatedMatchHelperTest,
-       GetAffiliatedAndroidRealmsYieldsEmptyResultsForInsecureForms) {
-  autofill::PasswordForm insecure_observed_form(
-      GetTestObservedWebForm(kTestWebRealmAlpha1, nullptr));
-  insecure_observed_form.ssl_valid = false;
-  EXPECT_THAT(GetAffiliatedAndroidRealms(insecure_observed_form),
-              testing::IsEmpty());
 }
 
 TEST_F(AffiliatedMatchHelperTest,

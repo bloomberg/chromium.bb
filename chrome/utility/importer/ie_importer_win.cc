@@ -662,13 +662,6 @@ void IEImporter::ImportPasswordsIE6() {
     form.password_value = ac_list[i].data[1];
     form.signon_realm = url.GetOrigin().spec();
 
-    // This is not precise, because a scheme of https does not imply a valid
-    // certificate was presented; however we assign it this way so that if we
-    // import a password from IE whose scheme is https, we give it the benefit
-    // of the doubt and DON'T auto-fill it unless the form appears under
-    // valid TLS conditions.
-    form.ssl_valid = url.SchemeIsCryptographic();
-
     // Goes through the list to find out the username field
     // of the web page.
     size_t list_it, item_it;
