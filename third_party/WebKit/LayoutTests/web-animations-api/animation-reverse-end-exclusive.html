@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Animation Reverse End Exclusive</title>
+<link rel="help" ­href="https://w3c.github.io/web-animations/#speed-control">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+test(function() {
+  document.documentElement.style.opacity = 1;
+  var animation = document.documentElement.animate([{opacity: 0.5}, {opacity: 0.5}], 100000);
+  animation.playbackRate = -1;
+  animation.currentTime = 0;
+  assert_equals(getComputedStyle(document.documentElement).opacity, "1");
+}, "An animation which is not filling backwards should not be in effect at time 0 when playing backwards");
+</script>
