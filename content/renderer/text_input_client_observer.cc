@@ -88,9 +88,14 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
 #endif
   {
     blink::WebLocalFrame* frame = webview()->focusedFrame();
-    blink::WebRect web_rect;
-    frame->firstRectForCharacterRange(range.start(), range.length(), web_rect);
-    rect = web_rect;
+    // TODO(yabinh): Null check should not be necessary.
+    // See crbug.com/304341
+    if (frame) {
+      blink::WebRect web_rect;
+      frame->firstRectForCharacterRange(range.start(), range.length(),
+                                        web_rect);
+      rect = web_rect;
+    }
   }
   Send(new TextInputClientReplyMsg_GotFirstRectForRange(routing_id(), rect));
 }
@@ -100,8 +105,12 @@ void TextInputClientObserver::OnStringForRange(gfx::Range range) {
   blink::WebPoint baselinePoint;
   NSAttributedString* string = nil;
   blink::WebLocalFrame* frame = webview()->focusedFrame();
-  string = blink::WebSubstringUtil::attributedSubstringInRange(
-      frame, range.start(), range.length(), &baselinePoint);
+  // TODO(yabinh): Null check should not be necessary.
+  // See crbug.com/304341
+  if (frame) {
+    string = blink::WebSubstringUtil::attributedSubstringInRange(
+        frame, range.start(), range.length(), &baselinePoint);
+  }
   std::unique_ptr<const mac::AttributedStringCoder::EncodedString> encoded(
       mac::AttributedStringCoder::Encode(string));
   Send(new TextInputClientReplyMsg_GotStringForRange(routing_id(),
