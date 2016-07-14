@@ -336,6 +336,13 @@ int main(int argc, char* const argv[]) {
     exit(kExitSuccess);
   }
 
+  KillSimulator();
+  if (wants_wipe) {
+    WipeDevice(udid);
+    printf("Device wiped.\n");
+    exit(kExitSuccess);
+  }
+
   // There should be at least one arg left, specifying the app path. Any
   // additional args are passed as arguments to the app.
   if (optind < argc) {
@@ -362,11 +369,6 @@ int main(int argc, char* const argv[]) {
     LogError(@"Unable to parse command line arguments.");
     PrintUsage();
     exit(kExitInvalidArguments);
-  }
-
-  KillSimulator();
-  if (wants_wipe) {
-    WipeDevice(udid);
   }
 
   RunApplication(app_path, xctest_path, udid, app_env, cmd_args);
