@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -1310,6 +1312,131 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, ExecuteScriptOnDevTools) {
       manifest_errors::kCannotAccessPageWithUrl));
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
+}
+
+// TODO(georgesak): change this browsertest to an unittest.
+IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
+  ASSERT_TRUE(g_browser_process && g_browser_process->GetTabManager());
+  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+
+  // Create two aditional tabs.
+  content::OpenURLParams params(GURL(url::kAboutBlankURL), content::Referrer(),
+                                NEW_BACKGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+                                false);
+  content::WebContents* web_contents_a = browser()->OpenURL(params);
+  content::WebContents* web_contents_b = browser()->OpenURL(params);
+
+  // Set up query function with an extension.
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  auto RunQueryFunction = [this, &extension](const char* query_info) {
+    scoped_refptr<TabsQueryFunction> function = new TabsQueryFunction();
+    function->set_extension(extension.get());
+    return utils::ToList(utils::RunFunctionAndReturnSingleResult(
+        function.get(), query_info, browser()));
+  };
+
+  // Get non-discarded tabs.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": false}]"));
+
+    // The two created plus the default tab.
+    EXPECT_EQ(3u, result->GetSize());
+  }
+
+  // Get discarded tabs.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(0u, result->GetSize());
+  }
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+
+  // Creates Tab object to ensure the property is correct for the extension.
+  std::unique_ptr<api::tabs::Tab> tab_object_a =
+      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+  EXPECT_FALSE(tab_object_a->discarded);
+
+  // Discards one tab.
+  EXPECT_TRUE(
+      tab_manager->DiscardTabById(reinterpret_cast<int64_t>(web_contents_a)));
+  web_contents_a = tab_strip_model->GetWebContentsAt(1);
+
+  // Make sure the property is changed accordingly after discarding the tab.
+  tab_object_a =
+      ExtensionTabUtil::CreateTabObject(web_contents_a, tab_strip_model, 0);
+  EXPECT_TRUE(tab_object_a->discarded);
+
+  // Get non-discarded tabs after discarding one tab.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": false}]"));
+    EXPECT_EQ(2u, result->GetSize());
+  }
+
+  // Get discarded tabs after discarding one tab.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(1u, result->GetSize());
+
+    // Make sure the returned tab is the correct one.
+    int tab_id_a = ExtensionTabUtil::GetTabId(web_contents_a);
+
+    int id = -1;
+    base::Value* tab = nullptr;
+    EXPECT_TRUE(result->Get(0, &tab));
+    utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
+
+    EXPECT_EQ(tab_id_a, id);
+  }
+
+  // Discards another created tab.
+  EXPECT_TRUE(
+      tab_manager->DiscardTabById(reinterpret_cast<int64_t>(web_contents_b)));
+
+  // Get non-discarded tabs after discarding two created tabs.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": false}]"));
+    EXPECT_EQ(1u, result->GetSize());
+
+    // Make sure the returned tab is the correct one.
+    int tab_id_c =
+        ExtensionTabUtil::GetTabId(tab_strip_model->GetWebContentsAt(0));
+
+    int id = -1;
+    base::Value* tab = nullptr;
+    EXPECT_TRUE(result->Get(0, &tab));
+    utils::ToDictionary(tab)->GetInteger(keys::kIdKey, &id);
+
+    EXPECT_EQ(tab_id_c, id);
+  }
+
+  // Get discarded tabs after discarding two created tabs.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(2u, result->GetSize());
+  }
+
+  // Activates the first created tab.
+  tab_strip_model->ActivateTabAt(1, false);
+
+  // Get non-discarded tabs after activating a discarded tab.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": false}]"));
+    EXPECT_EQ(2u, result->GetSize());
+  }
+
+  // Get discarded tabs after activating a discarded tab.
+  {
+    std::unique_ptr<base::ListValue> result(
+        RunQueryFunction("[{\"discarded\": true}]"));
+    EXPECT_EQ(1u, result->GetSize());
+  }
 }
 
 // Tester class for the tabs.zoom* api functions.

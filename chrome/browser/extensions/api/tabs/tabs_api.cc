@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/api/tabs/windows_util.h"
@@ -34,6 +35,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
+#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -966,6 +968,7 @@ bool TabsQueryFunction::RunSync() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int i = 0; i < tab_strip->count(); ++i) {
       WebContents* web_contents = tab_strip->GetWebContentsAt(i);
+      memory::TabManager* tab_manager = g_browser_process->GetTabManager();
 
       if (index > -1 && i != index)
         continue;
@@ -989,6 +992,11 @@ bool TabsQueryFunction::RunSync() {
                        web_contents->WasRecentlyAudible())) {
         continue;
       }
+
+      // If tab_manager isn't present, then no tabs are discarded.
+      bool discarded = tab_manager && tab_manager->IsTabDiscarded(web_contents);
+      if (!MatchesBool(params->query_info.discarded.get(), discarded))
+        continue;
 
       if (!MatchesBool(params->query_info.muted.get(),
                        web_contents->IsAudioMuted())) {
