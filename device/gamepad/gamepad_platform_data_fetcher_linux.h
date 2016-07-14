@@ -24,7 +24,8 @@ class UdevLinux;
 
 namespace device {
 
-class GamepadPlatformDataFetcherLinux : public GamepadDataFetcher {
+class DEVICE_GAMEPAD_EXPORT GamepadPlatformDataFetcherLinux
+    : public GamepadDataFetcher {
  public:
   GamepadPlatformDataFetcherLinux();
   ~GamepadPlatformDataFetcherLinux() override;

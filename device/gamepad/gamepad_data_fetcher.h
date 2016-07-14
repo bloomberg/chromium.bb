@@ -10,6 +10,7 @@
 #include <limits>
 
 #include "build/build_config.h"
+#include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
@@ -17,7 +18,7 @@ namespace device {
 
 // Abstract interface for imlementing platform- (and test-) specific behaviro
 // for getting the gamepad data.
-class GamepadDataFetcher {
+class DEVICE_GAMEPAD_EXPORT GamepadDataFetcher {
  public:
   virtual ~GamepadDataFetcher() {}
   virtual void GetGamepadData(blink::WebGamepads* pads,

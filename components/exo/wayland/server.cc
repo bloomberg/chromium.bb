@@ -14,6 +14,7 @@
 
 // Note: core wayland headers need to be included before protocol headers.
 #include <alpha-compositing-unstable-v1-server-protocol.h>  // NOLINT
+#include <gaming-input-unstable-v1-server-protocol.h>       // NOLINT
 #include <remote-shell-unstable-v1-server-protocol.h>       // NOLINT
 #include <secure-output-unstable-v1-server-protocol.h>      // NOLINT
 #include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
@@ -40,9 +41,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
+#include "components/exo/gamepad.h"
+#include "components/exo/gamepad_delegate.h"
 #include "components/exo/keyboard.h"
 #include "components/exo/keyboard_delegate.h"
 #include "components/exo/notification_surface.h"
@@ -129,6 +133,10 @@ void SetImplementation(wl_resource* resource,
 // potentially overflow.
 uint32_t TimeTicksToMilliseconds(base::TimeTicks ticks) {
   return (ticks - base::TimeTicks()).InMilliseconds();
+}
+
+uint32_t NowInMilliseconds() {
+  return TimeTicksToMilliseconds(base::TimeTicks::Now());
 }
 
 // A property key containing the surface resource that is associated with
@@ -2794,6 +2802,96 @@ void bind_alpha_compositing(wl_client* client,
                                  data, nullptr);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// gaming_input_interface:
+
+// Gamepad delegate class that forwards gamepad events to the client resource.
+class WaylandGamepadDelegate : public GamepadDelegate {
+ public:
+  explicit WaylandGamepadDelegate(wl_resource* gamepad_resource)
+      : gamepad_resource_(gamepad_resource) {}
+
+  // Overridden from GamepadDelegate:
+  void OnGamepadDestroying(Gamepad* gamepad) override { delete this; }
+  bool CanAcceptGamepadEventsForSurface(Surface* surface) const override {
+    wl_resource* surface_resource = GetSurfaceResource(surface);
+    return surface_resource &&
+           wl_resource_get_client(surface_resource) == client();
+  }
+  void OnStateChange(bool connected) override {
+    uint32_t status = connected ? ZWP_GAMEPAD_V1_GAMEPAD_STATE_ON
+                                : ZWP_GAMEPAD_V1_GAMEPAD_STATE_OFF;
+    zwp_gamepad_v1_send_state_change(gamepad_resource_, status);
+    wl_client_flush(client());
+  }
+  void OnAxis(int axis, double value) override {
+    zwp_gamepad_v1_send_axis(gamepad_resource_, NowInMilliseconds(), axis,
+                             wl_fixed_from_double(value));
+  }
+  void OnButton(int button, bool pressed, double value) override {
+    uint32_t state = pressed ? ZWP_GAMEPAD_V1_BUTTON_STATE_PRESSED
+                             : ZWP_GAMEPAD_V1_BUTTON_STATE_RELEASED;
+    zwp_gamepad_v1_send_button(gamepad_resource_, NowInMilliseconds(), button,
+                               state, wl_fixed_from_double(value));
+  }
+  void OnFrame() override {
+    zwp_gamepad_v1_send_frame(gamepad_resource_, NowInMilliseconds());
+    wl_client_flush(client());
+  }
+
+ private:
+  // The client who own this gamepad instance.
+  wl_client* client() const {
+    return wl_resource_get_client(gamepad_resource_);
+  }
+
+  // The gamepad resource associated with the gamepad.
+  wl_resource* const gamepad_resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandGamepadDelegate);
+};
+
+void gamepad_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zwp_gamepad_v1_interface gamepad_implementation = {
+    gamepad_destroy};
+
+void gaming_input_get_gamepad(wl_client* client,
+                              wl_resource* resource,
+                              uint32_t id,
+                              wl_resource* seat) {
+  wl_resource* gamepad_resource = wl_resource_create(
+      client, &zwp_gamepad_v1_interface, wl_resource_get_version(resource), id);
+
+  base::Thread* gaming_input_thread = GetUserDataAs<base::Thread>(resource);
+
+  SetImplementation(
+      gamepad_resource, &gamepad_implementation,
+      base::WrapUnique(new Gamepad(new WaylandGamepadDelegate(gamepad_resource),
+                                   gaming_input_thread->task_runner().get())));
+}
+
+const struct zwp_gaming_input_v1_interface gaming_input_implementation = {
+    gaming_input_get_gamepad};
+
+void bind_gaming_input(wl_client* client,
+                       void* data,
+                       uint32_t version,
+                       uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zwp_gaming_input_v1_interface, version, id);
+
+  std::unique_ptr<base::Thread> gaming_input_thread(
+      new base::Thread("Exo gaming input polling thread."));
+  gaming_input_thread->StartWithOptions(
+      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+
+  SetImplementation(resource, &gaming_input_implementation,
+                    std::move(gaming_input_thread));
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2832,6 +2930,8 @@ Server::Server(Display* display)
                    display_, bind_alpha_compositing);
   wl_global_create(wl_display_.get(), &zwp_remote_shell_v1_interface,
                    remote_shell_version, display_, bind_remote_shell);
+  wl_global_create(wl_display_.get(), &zwp_gaming_input_v1_interface, 1,
+                   display_, bind_gaming_input);
 }
 
 Server::~Server() {}
