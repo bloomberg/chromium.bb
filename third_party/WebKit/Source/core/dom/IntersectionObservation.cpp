@@ -143,7 +143,8 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) co
     // effectively means "if the previous observed state was that root and target were
     // intersecting, then generate a notification indicating that they are no longer
     // intersecting."  This happens, for example, when root or target is removed from the
-    // DOM tree and not reinserted before the next frame is generated.
+    // DOM tree and not reinserted before the next frame is generated, or display:none
+    // is set on the root or target.
     Element* targetElement = target();
     if (!targetElement)
         return false;
@@ -156,13 +157,13 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) co
 
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     if (!rootLayoutObject || !rootLayoutObject->isBoxModelObject())
-        return false;
+        return true;
     // TODO(szager): Support SVG
     LayoutObject* targetLayoutObject = targetElement->layoutObject();
     if (!targetLayoutObject)
-        return false;
+        return true;
     if (!targetLayoutObject->isBoxModelObject() && !targetLayoutObject->isText())
-        return false;
+        return true;
     if (!isContainingBlockChainDescendant(targetLayoutObject, rootLayoutObject))
         return true;
 
