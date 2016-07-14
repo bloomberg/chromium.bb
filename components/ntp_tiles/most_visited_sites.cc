@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/callback.h"
@@ -25,7 +26,6 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "url/gurl.h"
 
 using history::TopSites;
 using suggestions::ChromeSuggestion;
@@ -67,9 +67,9 @@ bool ShouldShowPopularSites() {
   const std::string group_name =
       base::FieldTrialList::FindFullName(kPopularSitesFieldTrialName);
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(ntp_tiles::switches::kDisableNTPPopularSites))
+  if (cmd_line->HasSwitch(switches::kDisableNTPPopularSites))
     return false;
-  if (cmd_line->HasSwitch(ntp_tiles::switches::kEnableNTPPopularSites))
+  if (cmd_line->HasSwitch(switches::kEnableNTPPopularSites))
     return true;
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
@@ -83,7 +83,7 @@ bool NeedPopularSites(const PrefService* prefs, int num_tiles) {
 
   // TODO(treib): Remove after M55.
   const base::ListValue* source_list =
-      prefs->GetList(ntp_tiles::prefs::kDeprecatedNTPSuggestionsIsPersonal);
+      prefs->GetList(prefs::kDeprecatedNTPSuggestionsIsPersonal);
   // If there aren't enough previous suggestions to fill the grid, we need
   // popular suggestions.
   if (static_cast<int>(source_list->GetSize()) < num_tiles)
@@ -119,16 +119,9 @@ std::string GetSourceHistogramName(int source) {
   return std::string();
 }
 
-void AppendSuggestions(MostVisitedSites::SuggestionsVector src,
-                       MostVisitedSites::SuggestionsVector* dst) {
-  dst->insert(dst->end(),
-              std::make_move_iterator(src.begin()),
-              std::make_move_iterator(src.end()));
-}
-
 }  // namespace
 
-MostVisitedSites::Suggestion::Suggestion() {}
+MostVisitedSites::Suggestion::Suggestion() : source(TOP_SITES) {}
 
 MostVisitedSites::Suggestion::~Suggestion() {}
 
@@ -179,8 +172,7 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
   observer_ = observer;
   num_sites_ = num_sites;
 
-  if (ShouldShowPopularSites() &&
-      NeedPopularSites(prefs_, num_sites_)) {
+  if (ShouldShowPopularSites() && NeedPopularSites(prefs_, num_sites_)) {
     popular_sites_.reset(new PopularSites(
         blocking_pool_, prefs_, template_url_service_, variations_service_,
         download_context_, popular_sites_directory_, false,
@@ -351,18 +343,18 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
 
   SuggestionsVector suggestions;
   for (int i = 0; i < num_tiles; ++i) {
-    const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
-    if (supervisor_->IsBlocked(GURL(suggestion.url())))
+    const ChromeSuggestion& suggestion_pb = suggestions_profile.suggestions(i);
+    GURL url(suggestion_pb.url());
+    if (supervisor_->IsBlocked(url))
       continue;
 
-    Suggestion generated_suggestion;
-    generated_suggestion.title = base::UTF8ToUTF16(suggestion.title());
-    generated_suggestion.url = GURL(suggestion.url());
-    generated_suggestion.source = SUGGESTIONS_SERVICE;
-    generated_suggestion.whitelist_icon_path =
-        GetWhitelistLargeIconPath(GURL(suggestion.url()));
+    Suggestion suggestion;
+    suggestion.title = base::UTF8ToUTF16(suggestion_pb.title());
+    suggestion.url = url;
+    suggestion.source = SUGGESTIONS_SERVICE;
+    suggestion.whitelist_icon_path = GetWhitelistLargeIconPath(url);
 
-    suggestions.push_back(std::move(generated_suggestion));
+    suggestions.push_back(std::move(suggestion));
   }
 
   received_most_visited_sites_ = true;
@@ -492,9 +484,12 @@ MostVisitedSites::SuggestionsVector MostVisitedSites::MergeSuggestions(
     SuggestionsVector whitelist_suggestions,
     SuggestionsVector popular_suggestions) {
   SuggestionsVector merged_suggestions;
-  AppendSuggestions(std::move(personal_suggestions), &merged_suggestions);
-  AppendSuggestions(std::move(whitelist_suggestions), &merged_suggestions);
-  AppendSuggestions(std::move(popular_suggestions), &merged_suggestions);
+  std::move(personal_suggestions.begin(), personal_suggestions.end(),
+            std::back_inserter(merged_suggestions));
+  std::move(whitelist_suggestions.begin(), whitelist_suggestions.end(),
+            std::back_inserter(merged_suggestions));
+  std::move(popular_suggestions.begin(), popular_suggestions.end(),
+            std::back_inserter(merged_suggestions));
   return merged_suggestions;
 }
 

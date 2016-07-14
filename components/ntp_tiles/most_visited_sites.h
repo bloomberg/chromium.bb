@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -16,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string16.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/top_sites_observer.h"
 #include "components/ntp_tiles/popular_sites.h"
@@ -25,10 +25,6 @@
 
 namespace history {
 class TopSites;
-}
-
-namespace suggestions {
-class SuggestionsService;
 }
 
 namespace user_prefs {
