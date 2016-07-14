@@ -379,9 +379,12 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesCras) {
 
   // Setup expectation with physical devices.
   std::map<uint64_t, std::string> expectation;
-  expectation[kJabraMic1.id] = kJabraMic1.device_name;
-  expectation[kJabraMic2.id] = kJabraMic2.device_name;
-  expectation[kUSBCameraMic.id] = kUSBCameraMic.device_name;
+  expectation[kJabraMic1.id] =
+      cras_audio_handler_->GetDeviceFromId(kJabraMic1.id)->display_name;
+  expectation[kJabraMic2.id] =
+      cras_audio_handler_->GetDeviceFromId(kJabraMic2.id)->display_name;
+  expectation[kUSBCameraMic.id] =
+      cras_audio_handler_->GetDeviceFromId(kUSBCameraMic.id)->display_name;
 
   DVLOG(2) << "Testing AudioManagerCras.";
   CreateAudioManagerForTesting<AudioManagerCras>();
@@ -405,8 +408,10 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesCras) {
 
   // Setup expectation with physical devices.
   std::map<uint64_t, std::string> expectation;
-  expectation[kHDMIOutput.id] = kHDMIOutput.device_name;
-  expectation[kJabraSpeaker1.id] = kJabraSpeaker1.device_name;
+  expectation[kHDMIOutput.id] =
+      cras_audio_handler_->GetDeviceFromId(kHDMIOutput.id)->display_name;
+  expectation[kJabraSpeaker1.id] =
+      cras_audio_handler_->GetDeviceFromId(kJabraSpeaker1.id)->display_name;
 
   DVLOG(2) << "Testing AudioManagerCras.";
   CreateAudioManagerForTesting<AudioManagerCras>();
