@@ -4,8 +4,6 @@ include_rules = [
   "+components/filesystem",
   "+components/leveldb",
   "+components/link_header_util",
-  "+components/memory_coordinator/browser",
-  "+components/memory_coordinator/common",
   "+components/mime_util",
   "+components/network_session_configurator/switches.h",
   "+components/profile_service",

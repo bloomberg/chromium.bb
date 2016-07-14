@@ -254,7 +254,6 @@
       'browser/media/session/media_session_visibility_browsertest.cc',
       'browser/media/session/mock_media_session_observer.cc',
       'browser/media/session/mock_media_session_observer.h',
-      'browser/memory/memory_coordinator_browsertest.cc',
       'browser/memory/memory_pressure_controller_impl_browsertest.cc',
       'browser/message_port_provider_browsertest.cc',
       'browser/net_info_browsertest.cc',
