@@ -29,11 +29,14 @@
         </span>
       </div>
       <div class="button-container">
-        <paper-spinner id="resetSpinner"></paper-spinner>
+        <paper-spinner id="resetSpinner" active="[[clearingInProgress_]]">
+        </paper-spinner>
         <paper-button class="cancel-button" on-tap="onCancelTap_"
             id="cancel">$i18n{cancel}</paper-button>
         <paper-button class="action-button" on-tap="onResetTap_"
-            id="reset">$i18n{resetPageCommit}</paper-button>
+            id="reset" disabled="[[clearingInProgress_]]">
+          $i18n{resetPageCommit}
+        </paper-button>
       </div>
       <div class="footer">
         <paper-checkbox id="sendSettings"

@@ -12,6 +12,16 @@ Polymer({
 
   behaviors: [WebUIListenerBehavior],
 
+  properties: {
+    // TODO(dpapad): Evaluate whether this needs to be synced across different
+    // settings tabs.
+    /** @private */
+    clearingInProgress_: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
   /** @private {!settings.ResetBrowserProxy} */
   browserProxy_: null,
 
@@ -36,10 +46,10 @@ Polymer({
 
   /** @private */
   onResetTap_: function() {
-    this.$.resetSpinner.active = true;
+    this.clearingInProgress_ = true;
     this.browserProxy_.performResetProfileSettings(
         this.$.sendSettings.checked).then(function() {
-      this.$.resetSpinner.active = false;
+      this.clearingInProgress_ = false;
       this.$.dialog.close();
       this.dispatchEvent(new CustomEvent('reset-done'));
     }.bind(this));

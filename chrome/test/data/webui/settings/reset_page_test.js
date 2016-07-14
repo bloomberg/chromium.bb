@@ -212,7 +212,11 @@ cr.define('settings_reset_page', function() {
 
         return resetPageBrowserProxy.whenCalled('showReportedSettings').then(
             function() {
+              assertFalse(dialog.$.reset.disabled);
+              assertFalse(dialog.$.resetSpinner.active);
               MockInteractions.tap(dialog.$.reset);
+              assertTrue(dialog.$.reset.disabled);
+              assertTrue(dialog.$.resetSpinner.active);
               return resetPageBrowserProxy.whenCalled(
                   'performResetProfileSettings');
             });
