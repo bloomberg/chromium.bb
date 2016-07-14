@@ -60,10 +60,6 @@ void DictionaryHashStoreContents::RegisterProfilePrefs(
   registry->RegisterStringPref(kSuperMACPref, std::string());
 }
 
-std::string DictionaryHashStoreContents::hash_store_id() const {
-  return "";
-}
-
 void DictionaryHashStoreContents::Reset() {
   storage_->Remove(kPreferenceMACs, NULL);
 }

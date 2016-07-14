@@ -56,14 +56,8 @@ class ProfilePrefStoreManager {
 
   static const bool kPlatformSupportsPreferenceTracking;
 
-  // Register local state prefs used by the profile preferences system.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
   // Register user prefs used by the profile preferences system.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Deletes stored hashes for all profiles from |local_state|.
-  static void ResetAllPrefHashStores(PrefService* local_state);
 
   // Retrieves the time of the last preference reset event, if any, for
   // |pref_service|. Assumes that |pref_service| is backed by a PrefStore that

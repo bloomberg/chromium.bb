@@ -36,9 +36,6 @@ class HashStoreContents {
 
   virtual ~HashStoreContents() {}
 
-  // Returns the hash-store ID. May be empty.
-  virtual std::string hash_store_id() const = 0;
-
   // Discards all data related to this hash store.
   virtual void Reset() = 0;
 

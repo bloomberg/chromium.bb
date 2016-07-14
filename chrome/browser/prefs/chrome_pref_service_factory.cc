@@ -545,8 +545,4 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ProfilePrefStoreManager::RegisterProfilePrefs(registry);
 }
 
-void RegisterPrefs(PrefRegistrySimple* registry) {
-  ProfilePrefStoreManager::RegisterPrefs(registry);
-}
-
 }  // namespace chrome_prefs

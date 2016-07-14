@@ -41,11 +41,6 @@ class PrefHashStoreImpl : public PrefHashStore {
 
   ~PrefHashStoreImpl() override;
 
-  // Provides an external HashStoreContents implementation to be used.
-  // BeginTransaction() will ignore |storage| if this is provided.
-  void set_legacy_hash_store_contents(
-      std::unique_ptr<HashStoreContents> legacy_hash_store_contents);
-
   // Clears the contents of this PrefHashStore. |IsInitialized()| will return
   // false after this call.
   void Reset();
@@ -58,7 +53,6 @@ class PrefHashStoreImpl : public PrefHashStore {
   class PrefHashStoreTransactionImpl;
 
   const PrefHashCalculator pref_hash_calculator_;
-  std::unique_ptr<HashStoreContents> legacy_hash_store_contents_;
   bool use_super_mac_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashStoreImpl);

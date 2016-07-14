@@ -51,8 +51,6 @@
         'user_prefs/tracked/pref_hash_store_transaction.h',
         'user_prefs/tracked/pref_names.cc',
         'user_prefs/tracked/pref_names.h',
-        'user_prefs/tracked/pref_service_hash_store_contents.cc',
-        'user_prefs/tracked/pref_service_hash_store_contents.h',
         'user_prefs/tracked/segregated_pref_store.cc',
         'user_prefs/tracked/segregated_pref_store.h',
         'user_prefs/tracked/tracked_atomic_preference.cc',

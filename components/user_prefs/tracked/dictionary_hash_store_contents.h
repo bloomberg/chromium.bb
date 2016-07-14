@@ -31,7 +31,6 @@ class DictionaryHashStoreContents : public HashStoreContents {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // HashStoreContents implementation
-  std::string hash_store_id() const override;
   void Reset() override;
   bool IsInitialized() const override;
   const base::DictionaryValue* GetContents() const override;

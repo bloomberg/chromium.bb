@@ -23,8 +23,6 @@ static_library("user_prefs_tracked") {
     "pref_hash_store_transaction.h",
     "pref_names.cc",
     "pref_names.h",
-    "pref_service_hash_store_contents.cc",
-    "pref_service_hash_store_contents.h",
     "segregated_pref_store.cc",
     "segregated_pref_store.h",
     "tracked_atomic_preference.cc",
@@ -76,7 +74,6 @@ source_set("unit_tests") {
     "pref_hash_calculator_unittest.cc",
     "pref_hash_filter_unittest.cc",
     "pref_hash_store_impl_unittest.cc",
-    "pref_service_hash_store_contents_unittest.cc",
     "segregated_pref_store_unittest.cc",
     "tracked_preferences_migration_unittest.cc",
   ]

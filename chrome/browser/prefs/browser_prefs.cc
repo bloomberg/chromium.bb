@@ -323,7 +323,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   BrowserProcessImpl::RegisterPrefs(registry);
   ChromeMetricsServiceClient::RegisterPrefs(registry);
   ChromeTracingDelegate::RegisterPrefs(registry);
-  chrome_prefs::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
   component_updater::RegisterPrefsForRecoveryComponent(registry);
   component_updater::SupervisedUserWhitelistInstaller::RegisterPrefs(registry);

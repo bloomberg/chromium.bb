@@ -52191,6 +52191,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Settings.MigratedHashesFromLocalState" enum="BooleanMigrated">
+  <obsolete>
+    Deprecated in Chrome 54, as we stopped legacy migration of preferences.
+  </obsolete>
   <owner>csharp@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>

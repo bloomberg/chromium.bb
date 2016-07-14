@@ -23,12 +23,11 @@ class PrefHashStore;
 // (un)protected_store_cleaner| and
 // |register_on_successful_(un)protected_store_write_callback| are used to do
 // post-migration cleanup tasks. Those should be bound to weak pointers to avoid
-// blocking shutdown. |(un)protected_pref_hash_store| and
-// |legacy_pref_hash_store| are used to migrate MACs along with their protected
-// preferences and/or from the legacy location in Local State. Migrated MACs
-// will only be cleared from their old location in a subsequent run. The
-// migration framework is resilient to a failed cleanup (it will simply try
-// again in the next Chrome run).
+// blocking shutdown. |(un)protected_pref_hash_store| is used to migrate MACs
+// along with their protected preferences. Migrated MACs will only be cleared
+// from their old location in a subsequent run. The migration framework is
+// resilient to a failed cleanup (it will simply try again in the next Chrome
+// run).
 void SetupTrackedPreferencesMigration(
     const std::set<std::string>& unprotected_pref_names,
     const std::set<std::string>& protected_pref_names,
@@ -41,7 +40,6 @@ void SetupTrackedPreferencesMigration(
         register_on_successful_protected_store_write_callback,
     std::unique_ptr<PrefHashStore> unprotected_pref_hash_store,
     std::unique_ptr<PrefHashStore> protected_pref_hash_store,
-    std::unique_ptr<HashStoreContents> legacy_pref_hash_store,
     InterceptablePrefFilter* unprotected_pref_filter,
     InterceptablePrefFilter* protected_pref_filter);
 

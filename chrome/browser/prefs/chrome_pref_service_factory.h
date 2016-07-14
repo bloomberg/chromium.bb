@@ -100,9 +100,6 @@ base::Time GetResetTime(Profile* profile);
 // profile.
 void ClearResetTime(Profile* profile);
 
-// Register local state prefs used by chrome preference system.
-void RegisterPrefs(PrefRegistrySimple* registry);
-
 // Register user prefs used by chrome preference system.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

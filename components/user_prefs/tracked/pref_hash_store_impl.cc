@@ -43,18 +43,6 @@ class PrefHashStoreImpl::PrefHashStoreTransactionImpl
   bool GetSplitMacs(const std::string& path,
                     std::map<std::string, std::string>* split_macs) const;
 
-  HashStoreContents* contents() {
-    return outer_->legacy_hash_store_contents_
-               ? outer_->legacy_hash_store_contents_.get()
-               : contents_.get();
-  }
-
-  const HashStoreContents* contents() const {
-    return outer_->legacy_hash_store_contents_
-               ? outer_->legacy_hash_store_contents_.get()
-               : contents_.get();
-  }
-
   PrefHashStoreImpl* outer_;
   std::unique_ptr<HashStoreContents> contents_;
 
@@ -71,11 +59,6 @@ PrefHashStoreImpl::PrefHashStoreImpl(const std::string& seed,
 }
 
 PrefHashStoreImpl::~PrefHashStoreImpl() {
-}
-
-void PrefHashStoreImpl::set_legacy_hash_store_contents(
-    std::unique_ptr<HashStoreContents> legacy_hash_store_contents) {
-  legacy_hash_store_contents_ = std::move(legacy_hash_store_contents);
 }
 
 std::unique_ptr<PrefHashStoreTransaction> PrefHashStoreImpl::BeginTransaction(
@@ -96,26 +79,26 @@ PrefHashStoreImpl::PrefHashStoreTransactionImpl::PrefHashStoreTransactionImpl(
 
   // The store must be initialized and have a valid super MAC to be trusted.
 
-  const base::DictionaryValue* store_contents = contents()->GetContents();
+  const base::DictionaryValue* store_contents = contents_->GetContents();
   if (!store_contents)
     return;
 
-  std::string super_mac = contents()->GetSuperMac();
+  std::string super_mac = contents_->GetSuperMac();
   if (super_mac.empty())
     return;
 
-  super_mac_valid_ = outer_->pref_hash_calculator_.Validate(
-                         contents()->hash_store_id(), store_contents,
-                         super_mac) == PrefHashCalculator::VALID;
+  super_mac_valid_ =
+      outer_->pref_hash_calculator_.Validate("", store_contents, super_mac) ==
+      PrefHashCalculator::VALID;
 }
 
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::
     ~PrefHashStoreTransactionImpl() {
   if (super_mac_dirty_ && outer_->use_super_mac_) {
     // Get the dictionary of hashes (or NULL if it doesn't exist).
-    const base::DictionaryValue* hashes_dict = contents()->GetContents();
-    contents()->SetSuperMac(outer_->pref_hash_calculator_.Calculate(
-        contents()->hash_store_id(), hashes_dict));
+    const base::DictionaryValue* hashes_dict = contents_->GetContents();
+    contents_->SetSuperMac(
+        outer_->pref_hash_calculator_.Calculate("", hashes_dict));
   }
 }
 
@@ -123,7 +106,7 @@ PrefHashStoreTransaction::ValueState
 PrefHashStoreImpl::PrefHashStoreTransactionImpl::CheckValue(
     const std::string& path,
     const base::Value* initial_value) const {
-  const base::DictionaryValue* hashes_dict = contents()->GetContents();
+  const base::DictionaryValue* hashes_dict = contents_->GetContents();
 
   std::string last_hash;
   if (hashes_dict)
@@ -160,7 +143,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreHash(
     const base::Value* new_value) {
   const std::string mac =
       outer_->pref_hash_calculator_.Calculate(path, new_value);
-  (*contents()->GetMutableContents())->SetString(path, mac);
+  (*contents_->GetMutableContents())->SetString(path, mac);
   super_mac_dirty_ = true;
 }
 
@@ -233,7 +216,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::StoreSplitHash(
     const std::string& path,
     const base::DictionaryValue* split_value) {
   std::unique_ptr<HashStoreContents::MutableDictionary> mutable_dictionary =
-      contents()->GetMutableContents();
+      contents_->GetMutableContents();
   (*mutable_dictionary)->Remove(path, NULL);
 
   if (split_value) {
@@ -259,7 +242,7 @@ bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::GetSplitMacs(
   DCHECK(split_macs);
   DCHECK(split_macs->empty());
 
-  const base::DictionaryValue* hashes_dict = contents()->GetContents();
+  const base::DictionaryValue* hashes_dict = contents_->GetContents();
   const base::DictionaryValue* split_mac_dictionary = NULL;
   if (!hashes_dict || !hashes_dict->GetDictionary(key, &split_mac_dictionary))
     return false;
@@ -277,7 +260,7 @@ bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::GetSplitMacs(
 
 bool PrefHashStoreImpl::PrefHashStoreTransactionImpl::HasHash(
     const std::string& path) const {
-  const base::DictionaryValue* hashes_dict = contents()->GetContents();
+  const base::DictionaryValue* hashes_dict = contents_->GetContents();
   return hashes_dict && hashes_dict->Get(path, NULL);
 }
 
@@ -286,7 +269,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ImportHash(
     const base::Value* hash) {
   DCHECK(hash);
 
-  (*contents()->GetMutableContents())->Set(path, hash->DeepCopy());
+  (*contents_->GetMutableContents())->Set(path, hash->DeepCopy());
 
   if (super_mac_valid_)
     super_mac_dirty_ = true;
@@ -294,7 +277,7 @@ void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ImportHash(
 
 void PrefHashStoreImpl::PrefHashStoreTransactionImpl::ClearHash(
     const std::string& path) {
-  if ((*contents()->GetMutableContents())->RemovePath(path, NULL) &&
+  if ((*contents_->GetMutableContents())->RemovePath(path, NULL) &&
       super_mac_valid_) {
     super_mac_dirty_ = true;
   }

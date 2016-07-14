@@ -20,7 +20,6 @@
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/user_prefs/tracked/pref_hash_store_impl.h"
-#include "components/user_prefs/tracked/pref_service_hash_store_contents.h"
 #include "components/user_prefs/tracked/segregated_pref_store.h"
 #include "components/user_prefs/tracked/tracked_preferences_migration.h"
 
@@ -63,19 +62,9 @@ ProfilePrefStoreManager::ProfilePrefStoreManager(
 ProfilePrefStoreManager::~ProfilePrefStoreManager() {}
 
 // static
-void ProfilePrefStoreManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  PrefServiceHashStoreContents::RegisterPrefs(registry);
-}
-
-// static
 void ProfilePrefStoreManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   PrefHashFilter::RegisterProfilePrefs(registry);
-}
-
-// static
-void ProfilePrefStoreManager::ResetAllPrefHashStores(PrefService* local_state) {
-  PrefServiceHashStoreContents::ResetAllPrefHashStores(local_state);
 }
 
 //  static
@@ -150,8 +139,6 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
       base::Bind(&JsonPrefStore::RegisterOnNextSuccessfulWriteCallback,
                  protected_pref_store->AsWeakPtr()),
       GetPrefHashStore(false), GetPrefHashStore(true),
-      std::unique_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
-          profile_path_.AsUTF8Unsafe(), local_state_)),
       raw_unprotected_pref_hash_filter, raw_protected_pref_hash_filter);
 
   return new SegregatedPrefStore(unprotected_pref_store, protected_pref_store,
@@ -193,24 +180,6 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
 
   UMA_HISTOGRAM_BOOLEAN("Settings.InitializedFromMasterPrefs", success);
   return success;
-}
-
-PersistentPrefStore*
-ProfilePrefStoreManager::CreateDeprecatedCombinedProfilePrefStore(
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
-  std::unique_ptr<PrefFilter> pref_filter;
-  if (kPlatformSupportsPreferenceTracking) {
-    std::unique_ptr<PrefHashStoreImpl> pref_hash_store_impl(
-        new PrefHashStoreImpl(seed_, device_id_, true));
-    pref_hash_store_impl->set_legacy_hash_store_contents(
-        std::unique_ptr<HashStoreContents>(new PrefServiceHashStoreContents(
-            profile_path_.AsUTF8Unsafe(), local_state_)));
-    pref_filter.reset(new PrefHashFilter(
-        std::move(pref_hash_store_impl), tracking_configuration_,
-        base::Closure(), NULL, reporting_ids_count_, false));
-  }
-  return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
-                           io_task_runner.get(), std::move(pref_filter));
 }
 
 std::unique_ptr<PrefHashStore> ProfilePrefStoreManager::GetPrefHashStore(
