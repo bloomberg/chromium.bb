@@ -284,6 +284,51 @@ bool EnumTraits<mojom::PasswordFormScheme, PasswordForm::Scheme>::FromMojom(
 }
 
 // static
+mojom::PasswordFormFieldPredictionType EnumTraits<
+    mojom::PasswordFormFieldPredictionType,
+    PasswordFormFieldPredictionType>::ToMojom(PasswordFormFieldPredictionType
+                                                  input) {
+  switch (input) {
+    case PasswordFormFieldPredictionType::PREDICTION_USERNAME:
+      return mojom::PasswordFormFieldPredictionType::PREDICTION_USERNAME;
+    case PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD:
+      return mojom::PasswordFormFieldPredictionType::
+          PREDICTION_CURRENT_PASSWORD;
+    case PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD:
+      return mojom::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
+    case PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD:
+      return mojom::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+  }
+
+  NOTREACHED();
+  return mojom::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+}
+
+// static
+bool EnumTraits<mojom::PasswordFormFieldPredictionType,
+                PasswordFormFieldPredictionType>::
+    FromMojom(mojom::PasswordFormFieldPredictionType input,
+              PasswordFormFieldPredictionType* output) {
+  switch (input) {
+    case mojom::PasswordFormFieldPredictionType::PREDICTION_USERNAME:
+      *output = PasswordFormFieldPredictionType::PREDICTION_USERNAME;
+      return true;
+    case mojom::PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD:
+      *output = PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD;
+      return true;
+    case mojom::PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD:
+      *output = PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
+      return true;
+    case mojom::PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD:
+      *output = PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+      return true;
+  }
+
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<mojom::FormFieldData, FormFieldData>::Read(
     mojom::FormFieldDataDataView data,
     FormFieldData* out) {
@@ -526,6 +571,88 @@ bool StructTraits<mojom::PasswordForm, PasswordForm>::Read(
   out->is_public_suffix_match = data.is_public_suffix_match();
   out->is_affiliation_based_match = data.is_affiliation_based_match();
   out->does_look_like_signup_form = data.does_look_like_signup_form();
+
+  return true;
+}
+
+// static
+void* StructTraits<mojom::PasswordFormFieldPredictionMap,
+                   PasswordFormFieldPredictionMap>::
+    SetUpContext(const PasswordFormFieldPredictionMap& r) {
+  // Extracts keys vector and values vector from the map, saves them as a pair.
+  auto* pair = new KeysValuesPair();
+  for (const auto& i : r) {
+    pair->first.push_back(i.first);
+    pair->second.push_back(i.second);
+  }
+
+  return pair;
+}
+
+// static
+void StructTraits<mojom::PasswordFormFieldPredictionMap,
+                  PasswordFormFieldPredictionMap>::
+    TearDownContext(const PasswordFormFieldPredictionMap& r, void* context) {
+  delete static_cast<KeysValuesPair*>(context);
+}
+
+// static
+bool StructTraits<mojom::PasswordFormFieldPredictionMap,
+                  PasswordFormFieldPredictionMap>::
+    Read(mojom::PasswordFormFieldPredictionMapDataView data,
+         PasswordFormFieldPredictionMap* out) {
+  // Combines keys vector and values vector to the map.
+  std::vector<FormFieldData> keys;
+  if (!data.ReadKeys(&keys))
+    return false;
+  std::vector<PasswordFormFieldPredictionType> values;
+  if (!data.ReadValues(&values))
+    return false;
+  if (keys.size() != values.size())
+    return false;
+  out->clear();
+  for (size_t i = 0; i < keys.size(); ++i)
+    out->insert({keys[i], values[i]});
+
+  return true;
+}
+
+// static
+void* StructTraits<mojom::FormsPredictionsMap,
+                   FormsPredictionsMap>::SetUpContext(const FormsPredictionsMap&
+                                                          r) {
+  // Extracts keys vector and values vector from the map, saves them as a pair.
+  auto* pair = new KeysValuesPair();
+  for (const auto& i : r) {
+    pair->first.push_back(i.first);
+    pair->second.push_back(i.second);
+  }
+
+  return pair;
+}
+
+// static
+void StructTraits<mojom::FormsPredictionsMap, FormsPredictionsMap>::
+    TearDownContext(const FormsPredictionsMap& r, void* context) {
+  delete static_cast<KeysValuesPair*>(context);
+}
+
+// static
+bool StructTraits<mojom::FormsPredictionsMap, FormsPredictionsMap>::Read(
+    mojom::FormsPredictionsMapDataView data,
+    FormsPredictionsMap* out) {
+  // Combines keys vector and values vector to the map.
+  std::vector<FormData> keys;
+  if (!data.ReadKeys(&keys))
+    return false;
+  std::vector<PasswordFormFieldPredictionMap> values;
+  if (!data.ReadValues(&values))
+    return false;
+  if (keys.size() != values.size())
+    return false;
+  out->clear();
+  for (size_t i = 0; i < keys.size(); ++i)
+    out->insert({keys[i], values[i]});
 
   return true;
 }

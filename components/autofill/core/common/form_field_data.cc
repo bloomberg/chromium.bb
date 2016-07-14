@@ -147,13 +147,24 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // should not be considered changes in the structure of the form.
 }
 
+bool FormFieldData::operator==(const FormFieldData& field) const {
+  return SameFieldAs(field) && is_autofilled == field.is_autofilled &&
+         check_status == field.check_status &&
+         option_values == field.option_values &&
+         option_contents == field.option_contents;
+}
+
+bool FormFieldData::operator!=(const FormFieldData& field) const {
+  return !(*this == field);
+}
+
 bool FormFieldData::operator<(const FormFieldData& field) const {
   // This does not use std::tie() as that generates more implicit variables
   // than the max-vartrack-size for var-tracking-assignments when compiling
   // for Android, producing build warnings. (See https://crbug.com/555171 for
   // context.)
 
-  // Like operator==, this ignores the value.
+  // Like SameFieldAs this ignores the value.
   if (label < field.label) return true;
   if (label > field.label) return false;
   if (name < field.name) return true;
@@ -179,7 +190,7 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (role > field.role) return false;
   if (text_direction < field.text_direction) return true;
   if (text_direction > field.text_direction) return false;
-  // See operator== above for why we don't check option_values/contents.
+  // See SameFieldAs above for why we don't check option_values/contents.
   return false;
 }
 

@@ -142,12 +142,12 @@ component("ipc") {
 
   public_deps = [
     ":param_traits",
+    "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
   ]
   deps = [
     ":mojom",
     "//base",
-    "//mojo/public/cpp/bindings",
   ]
 
   if (is_win || is_mac) {

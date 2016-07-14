@@ -28,6 +28,7 @@ static_library("common") {
     "form_field_data_predictions.h",
     "password_form.cc",
     "password_form.h",
+    "password_form_field_prediction_map.h",
     "password_form_fill_data.cc",
     "password_form_fill_data.h",
     "password_form_generation_data.h",

@@ -42,10 +42,16 @@ struct FormFieldData {
   // Returns true if two form fields are the same, not counting the value.
   bool SameFieldAs(const FormFieldData& field) const;
 
+  // Note: operator==() performs a full-field-comparison(byte by byte), this is
+  // different from SameFieldAs(), which ignores comparison for those "values"
+  // not regarded as part of identity of the field, such as is_autofilled and
+  // the option_values/contents etc.
+  bool operator==(const FormFieldData& field) const;
+  bool operator!=(const FormFieldData& field) const;
   // Comparison operator exposed for STL map. Uses label, then name to sort.
   bool operator<(const FormFieldData& field) const;
 
-  // If you add more, be sure to update the comparison operator, SameFieldAs,
+  // If you add more, be sure to update the comparison operators, SameFieldAs,
   // serializing functions (in the .cc file) and the constructor.
   base::string16 label;
   base::string16 name;

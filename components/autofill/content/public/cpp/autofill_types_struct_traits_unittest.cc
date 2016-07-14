@@ -113,13 +113,47 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->does_look_like_signup_form = true;
 }
 
+void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {
+  FormsPredictionsMap& result_map = *predictions;
+  // 1st element.
+  FormData form_data;
+  test::CreateTestAddressFormData(&form_data);
+  ASSERT_TRUE(form_data.fields.size() >= 4);
+  result_map[form_data][form_data.fields[0]] =
+      PasswordFormFieldPredictionType::PREDICTION_USERNAME;
+  result_map[form_data][form_data.fields[1]] =
+      PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD;
+  result_map[form_data][form_data.fields[2]] =
+      PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
+  result_map[form_data][form_data.fields[3]] =
+      PasswordFormFieldPredictionType::PREDICTION_NOT_PASSWORD;
+
+  // 2nd element.
+  form_data.fields.clear();
+  result_map[form_data] =
+      std::map<FormFieldData, PasswordFormFieldPredictionType>();
+
+  // 3rd element.
+  FormFieldData field_data;
+  test::CreateTestSelectField("TestLabel1", "TestName1", "TestValue1", kOptions,
+                              kOptions, 4, &field_data);
+  form_data.fields.push_back(field_data);
+  test::CreateTestSelectField("TestLabel2", "TestName2", "TestValue2", kOptions,
+                              kOptions, 4, &field_data);
+  form_data.fields.push_back(field_data);
+  result_map[form_data][form_data.fields[0]] =
+      PasswordFormFieldPredictionType::PREDICTION_NEW_PASSWORD;
+  result_map[form_data][form_data.fields[1]] =
+      PasswordFormFieldPredictionType::PREDICTION_CURRENT_PASSWORD;
+}
+
 void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
                                     const PasswordFormFillData& actual) {
   EXPECT_EQ(expected.name, actual.name);
   EXPECT_EQ(expected.origin, actual.origin);
   EXPECT_EQ(expected.action, actual.action);
-  EXPECT_TRUE(expected.username_field.SameFieldAs(actual.username_field));
-  EXPECT_TRUE(expected.password_field.SameFieldAs(actual.password_field));
+  EXPECT_EQ(expected.username_field, actual.username_field);
+  EXPECT_EQ(expected.password_field, actual.password_field);
   EXPECT_EQ(expected.preferred_realm, actual.preferred_realm);
 
   {
@@ -165,11 +199,7 @@ void CheckEqualPasswordFormGenerationData(
     const PasswordFormGenerationData& actual) {
   EXPECT_EQ(expected.name, actual.name);
   EXPECT_EQ(expected.action, actual.action);
-  EXPECT_TRUE(expected.generation_field.SameFieldAs(actual.generation_field));
-  EXPECT_EQ(expected.generation_field.option_values,
-            actual.generation_field.option_values);
-  EXPECT_EQ(expected.generation_field.option_contents,
-            actual.generation_field.option_contents);
+  EXPECT_EQ(expected.generation_field, actual.generation_field);
 }
 
 }  // namespace
@@ -223,6 +253,12 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
     callback.Run(s);
   }
 
+  void PassFormsPredictionsMap(
+      const FormsPredictionsMap& s,
+      const PassFormsPredictionsMapCallback& callback) override {
+    callback.Run(s);
+  }
+
  private:
   base::MessageLoop loop_;
 
@@ -232,16 +268,14 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
 void ExpectFormFieldData(const FormFieldData& expected,
                          const base::Closure& closure,
                          const FormFieldData& passed) {
-  EXPECT_TRUE(expected.SameFieldAs(passed));
-  EXPECT_EQ(expected.option_values, passed.option_values);
-  EXPECT_EQ(expected.option_contents, passed.option_contents);
+  EXPECT_EQ(expected, passed);
   closure.Run();
 }
 
 void ExpectFormData(const FormData& expected,
                     const base::Closure& closure,
                     const FormData& passed) {
-  EXPECT_TRUE(expected.SameFormAs(passed));
+  EXPECT_EQ(expected, passed);
   closure.Run();
 }
 
@@ -277,6 +311,13 @@ void ExpectPasswordFormGenerationData(
 void ExpectPasswordForm(const PasswordForm& expected,
                         const base::Closure& closure,
                         const PasswordForm& passed) {
+  EXPECT_EQ(expected, passed);
+  closure.Run();
+}
+
+void ExpectFormsPredictionsMap(const FormsPredictionsMap& expected,
+                               const base::Closure& closure,
+                               const FormsPredictionsMap& passed) {
   EXPECT_EQ(expected, passed);
   closure.Run();
 }
@@ -369,6 +410,17 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordForm) {
   mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
   proxy->PassPasswordForm(
       input, base::Bind(&ExpectPasswordForm, input, loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(AutofillTypeTraitsTestImpl, PassFormsPredictionsMap) {
+  FormsPredictionsMap input;
+  CreateTestFormsPredictionsMap(&input);
+
+  base::RunLoop loop;
+  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
+  proxy->PassFormsPredictionsMap(
+      input, base::Bind(&ExpectFormsPredictionsMap, input, loop.QuitClosure()));
   loop.Run();
 }
 

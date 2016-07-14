@@ -86,6 +86,17 @@ bool FormData::SameFormAs(const FormData& form) const {
   return true;
 }
 
+bool FormData::operator==(const FormData& form) const {
+  return name == form.name && origin == form.origin && action == form.action &&
+         is_form_tag == form.is_form_tag &&
+         is_formless_checkout == form.is_formless_checkout &&
+         fields == form.fields;
+}
+
+bool FormData::operator!=(const FormData& form) const {
+  return !(*this == form);
+}
+
 bool FormData::operator<(const FormData& form) const {
   return std::tie(name, origin, action, is_form_tag, is_formless_checkout,
                   fields) < std::tie(form.name, form.origin, form.action,

@@ -23,6 +23,11 @@ struct FormData {
   // form elements.
   bool SameFormAs(const FormData& other) const;
 
+  // Note: operator==() performs a full-field-comparison(byte by byte), this is
+  // different from SameFormAs(), which ignores comparison for those "values" of
+  // all form fields, just like what FormFieldData::SameFieldAs() ignores.
+  bool operator==(const FormData& form) const;
+  bool operator!=(const FormData& form) const;
   // Allow FormData to be a key in STL containers.
   bool operator<(const FormData& form) const;
 

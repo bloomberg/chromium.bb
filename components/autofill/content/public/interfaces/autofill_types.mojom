@@ -50,6 +50,7 @@ enum PasswordFormType {
   TYPE_API
 };
 
+// autofill::PasswordForm::Scheme
 enum PasswordFormScheme {
   SCHEME_HTML,
   SCHEME_BASIC,
@@ -58,6 +59,15 @@ enum PasswordFormScheme {
   SCHEME_USERNAME_ONLY
 };
 
+// autofill::PasswordFormFieldPredictionType
+enum PasswordFormFieldPredictionType {
+  PREDICTION_USERNAME,
+  PREDICTION_CURRENT_PASSWORD,
+  PREDICTION_NEW_PASSWORD,
+  PREDICTION_NOT_PASSWORD
+};
+
+// autofill::FormFieldData
 struct FormFieldData {
   string label;
   string name;
@@ -78,6 +88,7 @@ struct FormFieldData {
   array<string> option_contents;
 };
 
+// autofill::FormData
 struct FormData {
   string name;
   url.mojom.Url origin;
@@ -87,6 +98,7 @@ struct FormData {
   array<FormFieldData> fields;
 };
 
+// autofill::FormFieldDataPredictions
 struct FormFieldDataPredictions {
   FormFieldData field;
   string signature;
@@ -96,23 +108,27 @@ struct FormFieldDataPredictions {
   string parseable_name;
 };
 
+// autofill::FormDataPredictions
 struct FormDataPredictions {
   FormData data;
   string signature;
   array<FormFieldDataPredictions> fields;
 };
 
+// autofill::PasswordAndRealm
 struct PasswordAndRealm {
   string password;
   string realm;
 };
 
+// autofill::UsernamesCollectionKey
 struct UsernamesCollectionKey {
   string username;
   string password;
   string realm;
 };
 
+// autofill::PasswordFormFillData
 struct PasswordFormFillData {
   string name;
   url.mojom.Url origin;
@@ -121,6 +137,7 @@ struct PasswordFormFillData {
   FormFieldData password_field;
   string preferred_realm;
   map<string, PasswordAndRealm> additional_logins;
+  // TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
   // Keys for std::map<UsernamesCollectionKey, std::vector<base::string16>>
   array<UsernamesCollectionKey> other_possible_usernames_keys;
   // Values for std::map<UsernamesCollectionKey, std::vector<base::string16>>
@@ -129,12 +146,14 @@ struct PasswordFormFillData {
   bool is_possible_change_password_form;
 };
 
+// autofill::PasswordFormGenerationData
 struct PasswordFormGenerationData {
   string name;
   url.mojom.Url action;
   FormFieldData generation_field;
 };
 
+// autofill::PasswordForm
 struct PasswordForm {
   PasswordFormScheme scheme;
   string signon_realm;
@@ -170,4 +189,20 @@ struct PasswordForm {
   bool is_public_suffix_match;
   bool is_affiliation_based_match;
   bool does_look_like_signup_form;
+};
+
+// TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
+// autofill::PasswordFormFieldPredictionMap
+// --> std::map<FormFieldData, PasswordFormFieldPredictionType>
+struct PasswordFormFieldPredictionMap {
+  array<FormFieldData> keys;
+  array<PasswordFormFieldPredictionType> values;
+};
+
+// TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
+// autofill::FormsPredictionsMap
+// --> std::map<FormData, PasswordFormFieldPredictionMap>
+struct FormsPredictionsMap {
+  array<FormData> keys;
+  array<PasswordFormFieldPredictionMap> values;
 };
