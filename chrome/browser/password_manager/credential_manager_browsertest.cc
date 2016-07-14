@@ -81,8 +81,16 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_FALSE(form.skip_zero_click);
 }
 
+// TODO(crbug.com/626759): flakily failing on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_AutoSigninOldCredentialAndNavigation \
+    DISABLED_AutoSigninOldCredentialAndNavigation
+#else
+#define MAYBE_AutoSigninOldCredentialAndNavigation \
+    AutoSigninOldCredentialAndNavigation
+#endif
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
-                       AutoSigninOldCredentialAndNavigation) {
+                       MAYBE_AutoSigninOldCredentialAndNavigation) {
   // Save credentials with 'skip_zero_click' false.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
