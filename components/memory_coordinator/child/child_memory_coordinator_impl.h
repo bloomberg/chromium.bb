@@ -8,8 +8,11 @@
 #include "base/compiler_specific.h"
 #include "base/observer_list_threadsafe.h"
 #include "components/memory_coordinator/common/memory_coordinator_client.h"
+#include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/memory_coordinator/public/interfaces/child_memory_coordinator.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "components/memory_coordinator/public/interfaces/memory_coordinator.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "services/shell/public/cpp/interface_provider.h"
 
 namespace memory_coordinator {
 
@@ -19,18 +22,23 @@ namespace memory_coordinator {
 class ChildMemoryCoordinatorImpl
     : NON_EXPORTED_BASE(public mojom::ChildMemoryCoordinator) {
  public:
-  using ClientList = base::ObserverListThreadSafe<MemoryCoordinatorClient>;
-  ChildMemoryCoordinatorImpl(
-      mojo::InterfaceRequest<mojom::ChildMemoryCoordinator> request,
-      scoped_refptr<ClientList> clients);
+  ChildMemoryCoordinatorImpl(shell::InterfaceProvider* remote_interfaces);
   ~ChildMemoryCoordinatorImpl() override;
+
+  // Registers/unregisters a client. Does not take ownership of client.
+  void RegisterClient(MemoryCoordinatorClient* client);
+  void UnregisterClient(MemoryCoordinatorClient* client);
 
   // mojom::ChildMemoryCoordinator implementations:
   void OnStateChange(mojom::MemoryState state) override;
 
  private:
-  mojo::StrongBinding<mojom::ChildMemoryCoordinator> binding_;
+  friend class ChildMemoryCoordinatorImplTest;
+
+  mojo::Binding<mojom::ChildMemoryCoordinator> binding_;
+  using ClientList = base::ObserverListThreadSafe<MemoryCoordinatorClient>;
   scoped_refptr<ClientList> clients_;
+  mojom::MemoryCoordinatorHandlePtr parent_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildMemoryCoordinatorImpl);
 };
