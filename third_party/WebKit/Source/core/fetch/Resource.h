@@ -262,10 +262,6 @@ protected:
     void didRemoveClientOrObserver();
     virtual void allClientsAndObserversRemoved();
 
-    HashCountedSet<ResourceClient*> m_clients;
-    HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
-    HashCountedSet<ResourceClient*> m_finishedClients;
-
     bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client) || m_finishedClients.contains(client); }
 
     struct RedirectPair {
@@ -290,15 +286,15 @@ protected:
     // Returns the memory dump name used for tracing. See Resource::onMemoryDump.
     String getMemoryDumpName() const;
 
+    const HashCountedSet<ResourceClient*>& clients() const { return m_clients; }
+    DataBufferingPolicy dataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
+
     ResourceRequest m_resourceRequest;
     Member<ResourceLoader> m_loader;
-    ResourceLoaderOptions m_options;
 
     ResourceResponse m_response;
-    double m_responseTimestamp;
 
     RefPtr<SharedBuffer> m_data;
-    Timer<Resource> m_cancelTimer;
 
 private:
     class ResourceCallback;
@@ -348,6 +344,16 @@ private:
 
     // Ordered list of all redirects followed while fetching this resource.
     Vector<RedirectPair> m_redirectChain;
+
+    HashCountedSet<ResourceClient*> m_clients;
+    HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
+    HashCountedSet<ResourceClient*> m_finishedClients;
+
+    ResourceLoaderOptions m_options;
+
+    double m_responseTimestamp;
+
+    Timer<Resource> m_cancelTimer;
 };
 
 class ResourceFactory {

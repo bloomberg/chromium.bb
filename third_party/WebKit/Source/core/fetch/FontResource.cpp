@@ -151,7 +151,7 @@ void FontResource::fontLoadShortLimitCallback(Timer<FontResource>*)
         return;
     ASSERT(m_loadLimitState == UnderLimit);
     m_loadLimitState = ShortLimitExceeded;
-    ResourceClientWalker<FontResourceClient> walker(m_clients);
+    ResourceClientWalker<FontResourceClient> walker(clients());
     while (FontResourceClient* client = walker.next())
         client->fontLoadShortLimitExceeded(this);
 }
@@ -162,7 +162,7 @@ void FontResource::fontLoadLongLimitCallback(Timer<FontResource>*)
         return;
     ASSERT(m_loadLimitState == ShortLimitExceeded);
     m_loadLimitState = LongLimitExceeded;
-    ResourceClientWalker<FontResourceClient> walker(m_clients);
+    ResourceClientWalker<FontResourceClient> walker(clients());
     while (FontResourceClient* client = walker.next())
         client->fontLoadLongLimitExceeded(this);
 }

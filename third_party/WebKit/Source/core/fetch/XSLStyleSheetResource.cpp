@@ -85,7 +85,7 @@ void XSLStyleSheetResource::checkNotify()
     if (m_data.get())
         m_sheet = decodedText();
 
-    ResourceClientWalker<StyleSheetResourceClient> w(m_clients);
+    ResourceClientWalker<StyleSheetResourceClient> w(clients());
     while (StyleSheetResourceClient* c = w.next())
         c->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }
