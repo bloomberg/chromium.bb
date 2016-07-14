@@ -27,6 +27,12 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
+namespace {
+
+// The color of the icons in dark mode theme.
+const SkColor kDarkModeIconColor = SkColorSetARGB(0xFF, 0xC4, 0xC4, 0xC4);
+
+}  // namespace
 
 // The amount of time in seconds during which each type of glow increases, holds
 // steady, and decreases, respectively.
@@ -631,8 +637,23 @@ CGFloat LineWidthFromContext(CGContextRef context) {
   [self setNeedsDisplayInRect:[titleView_ frame]];
 }
 
-- (SkColor)closeButtonColor {
-  return [[controller_ closeButton] iconColor];
+- (SkColor)iconColor {
+  if ([[self window] hasDarkTheme])
+    return kDarkModeIconColor;
+
+  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (themeProvider) {
+    bool useActiveTabTextColor = [self isActiveTab];
+
+    const SkColor titleColor =
+        useActiveTabTextColor
+            ? themeProvider->GetColor(ThemeProperties::COLOR_TAB_TEXT)
+            : themeProvider->GetColor(
+                  ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+    return SkColorSetA(titleColor, 0xA0);
+  }
+
+  return tabs::kDefaultTabTextColor;
 }
 
 - (void)accessibilityOptionsDidChange:(id)ignored {

@@ -159,26 +159,6 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
   return base::mac::ObjCCast<TabView>([self superview]);
 }
 
-- (SkColor)iconColor {
-  if ([[self window] hasDarkTheme]) {
-    return SkColorSetARGB(0xFF, 0xC4, 0xC4, 0xC4);
-  }
-
-  const ui::ThemeProvider* themeProvider = [[self window] themeProvider];
-  if (themeProvider) {
-    TabView* tabView = [self tabView];
-    bool use_active_tab_text_color = !tabView || [tabView isActiveTab];
-
-    const SkColor titleColor = use_active_tab_text_color ?
-        themeProvider->GetColor(ThemeProperties::COLOR_TAB_TEXT) :
-        themeProvider->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-    return SkColorSetA(titleColor, 0xA0);
-  }
-
-  // Return the default COLOR_TAB_TEXT color.
-  return SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
-}
-
 - (NSImage*)imageForHoverState:(HoverState)hoverState {
   int imageID = IDR_CLOSE_1;
 
@@ -200,11 +180,13 @@ NSString* const kFadeOutValueKeyPath = @"fadeOutValue";
 
   gfx::VectorIconId vectorIconID;
   SkColor vectorIconColor = gfx::kPlaceholderColor;
+  TabView* tabView = [self tabView];
 
   switch (hoverState) {
     case kHoverStateNone:
       vectorIconID = gfx::VectorIconId::TAB_CLOSE_NORMAL;
-      vectorIconColor = [self iconColor];
+      vectorIconColor =
+          tabView ? [tabView iconColor] : tabs::kDefaultTabTextColor;
       break;
     case kHoverStateMouseOver:
       // For mouse over, the icon color is the fill color of the circle.

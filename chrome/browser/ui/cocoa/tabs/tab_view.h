@@ -35,6 +35,9 @@ enum AlertState {
 // slightly lighter color. We do this by just reducing the alpha.
 const CGFloat kImageNoFocusAlpha = 0.65;
 
+// The default COLOR_TAB_TEXT color.
+const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
+
 }  // namespace tabs
 
 @class TabController, TabWindowController, GTMFadeTruncatingTextFieldCell;
@@ -121,8 +124,9 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 // user to click to select/activate the tab.
 - (int)widthOfLargestSelectableRegion;
 
-// Returns the Material Design color of the "x".
-- (SkColor)closeButtonColor;
+// Returns the Material Design color of the icons. Used by the alert indicator,
+// the "x", and the default favicon.
+- (SkColor)iconColor;
 
 // Updates the label font after changes to either state or the system "Increase
 // Contrast" setting.

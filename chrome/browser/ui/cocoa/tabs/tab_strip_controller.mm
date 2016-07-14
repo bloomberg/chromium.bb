@@ -142,7 +142,8 @@ private:
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
 - (NSInteger)indexForContentsView:(NSView*)view;
-- (NSImage*)iconImageForContents:(content::WebContents*)contents;
+- (NSImage*)iconImageForContents:(content::WebContents*)contents
+                         atIndex:(NSInteger)modelIndex;
 - (void)updateIconsForContents:(content::WebContents*)contents
                        atIndex:(NSInteger)modelIndex;
 - (void)layoutTabsWithAnimation:(BOOL)animate
@@ -1297,6 +1298,7 @@ private:
                                           NSUInteger index,
                                           BOOL* stop) {
       [current setActive:index == activeIndex];
+      [self updateIconsForContents:newContents atIndex:modelIndex];
   }];
 
   // Tell the new tab contents it is about to become the selected tab. Here it
@@ -1328,6 +1330,7 @@ private:
     BOOL selected = iter != selection.end() &&
         [self indexFromModelIndex:*iter] == i;
     [current setSelected:selected];
+    [self updateIconsForContents:tabStripModel_->GetWebContentsAt(i) atIndex:i];
     if (selected)
       ++iter;
     ++i;
@@ -1474,7 +1477,8 @@ private:
 
 // A helper routine for creating an NSImageView to hold the favicon or app icon
 // for |contents|.
-- (NSImage*)iconImageForContents:(content::WebContents*)contents {
+- (NSImage*)iconImageForContents:(content::WebContents*)contents
+                         atIndex:(NSInteger)modelIndex {
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(contents);
   BOOL isApp = extensions_tab_helper->is_app();
@@ -1487,12 +1491,8 @@ private:
     if (icon)
       image = skia::SkBitmapToNSImageWithColorSpace(*icon, colorSpace);
   } else {
-    TabController* tab = [tabArray_ firstObject];
-    NSColor* titleColor = [[tab tabView] titleColor];
-    NSColor* deviceColor =
-        [titleColor colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
-    image = mac::FaviconForWebContents(
-        contents, skia::NSDeviceColorToSkColor(deviceColor));
+    TabController* tab = [tabArray_ objectAtIndex:modelIndex];
+    image = mac::FaviconForWebContents(contents, [[tab tabView] iconColor]);
   }
 
   // Either we don't have a valid favicon or there was some issue converting it
@@ -1571,7 +1571,8 @@ private:
       oldHasIcon != newHasIcon) {
     if (newHasIcon) {
       if (newState == kTabDone) {
-        [tabController setIconImage:[self iconImageForContents:contents]];
+        [tabController setIconImage:[self iconImageForContents:contents
+                                                       atIndex:modelIndex]];
       } else if (newState == kTabCrashed) {
         [tabController setIconImage:sadFaviconImage withToastAnimation:YES];
       } else {
@@ -2307,6 +2308,9 @@ private:
 
 - (void)themeDidChangeNotification:(NSNotification*)notification {
   [newTabButton_ setImages];
+  for (int i = 0; i < tabStripModel_->count(); i++) {
+    [self updateIconsForContents:tabStripModel_->GetWebContentsAt(i) atIndex:i];
+  }
 }
 
 - (void)setVisualEffectsDisabledForFullscreen:(BOOL)fullscreen {
