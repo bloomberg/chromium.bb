@@ -72,25 +72,23 @@ bool ContentTypeIsRequested(content::PermissionType type,
 }
 
 using PermissionActionCallback =
-    base::Callback<void(content::PermissionType, const GURL&, Profile*)>;
+    base::Callback<void(content::PermissionType, const GURL&)>;
 
 void RecordSinglePermissionAction(const content::MediaStreamRequest& request,
                                   content::PermissionType permission_type,
-                                  Profile* profile,
                                   PermissionActionCallback callback) {
   if (ContentTypeIsRequested(permission_type, request)) {
-    callback.Run(permission_type, request.security_origin, profile);
+    callback.Run(permission_type, request.security_origin);
   }
 }
 
 // Calls |action_function| for each permission requested by |request|.
 void RecordPermissionAction(const content::MediaStreamRequest& request,
-                            Profile* profile,
                             PermissionActionCallback callback) {
   RecordSinglePermissionAction(request, content::PermissionType::AUDIO_CAPTURE,
-                               profile, callback);
+                               callback);
   RecordSinglePermissionAction(request, content::PermissionType::VIDEO_CAPTURE,
-                               profile, callback);
+                               callback);
 }
 
 // This helper class helps to measure the number of media stream requests that
@@ -206,8 +204,8 @@ MediaStreamDevicesController::MediaStreamDevicesController(
 
 MediaStreamDevicesController::~MediaStreamDevicesController() {
   if (!callback_.is_null()) {
-    RecordPermissionAction(request_, profile_,
-                           base::Bind(PermissionUmaUtil::PermissionIgnored));
+    RecordPermissionAction(
+        request_, base::Bind(PermissionUmaUtil::PermissionIgnored));
     callback_.Run(content::MediaStreamDevices(),
                   content::MEDIA_DEVICE_FAILED_DUE_TO_SHUTDOWN,
                   std::unique_ptr<content::MediaStreamUI>());
@@ -282,8 +280,8 @@ GURL MediaStreamDevicesController::GetOrigin() const {
 }
 
 void MediaStreamDevicesController::PermissionGranted() {
-  RecordPermissionAction(request_, profile_,
-                         base::Bind(PermissionUmaUtil::PermissionGranted));
+  RecordPermissionAction(
+      request_, base::Bind(PermissionUmaUtil::PermissionGranted));
   RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                             old_audio_setting_, CONTENT_SETTING_ALLOW),
               GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
@@ -292,8 +290,8 @@ void MediaStreamDevicesController::PermissionGranted() {
 }
 
 void MediaStreamDevicesController::PermissionDenied() {
-  RecordPermissionAction(request_, profile_,
-                         base::Bind(PermissionUmaUtil::PermissionDenied));
+  RecordPermissionAction(
+      request_, base::Bind(PermissionUmaUtil::PermissionDenied));
   RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
                             old_audio_setting_, CONTENT_SETTING_BLOCK),
               GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
@@ -304,11 +302,11 @@ void MediaStreamDevicesController::PermissionDenied() {
 void MediaStreamDevicesController::GroupedRequestFinished(bool audio_accepted,
                                                           bool video_accepted) {
   RecordSinglePermissionAction(
-      request_, content::PermissionType::AUDIO_CAPTURE, profile_,
+      request_, content::PermissionType::AUDIO_CAPTURE,
       base::Bind(audio_accepted ? PermissionUmaUtil::PermissionGranted
                                 : PermissionUmaUtil::PermissionDenied));
   RecordSinglePermissionAction(
-      request_, content::PermissionType::VIDEO_CAPTURE, profile_,
+      request_, content::PermissionType::VIDEO_CAPTURE,
       base::Bind(video_accepted ? PermissionUmaUtil::PermissionGranted
                                 : PermissionUmaUtil::PermissionDenied));
 
@@ -324,8 +322,8 @@ void MediaStreamDevicesController::GroupedRequestFinished(bool audio_accepted,
 }
 
 void MediaStreamDevicesController::Cancelled() {
-  RecordPermissionAction(request_, profile_,
-                         base::Bind(PermissionUmaUtil::PermissionDismissed));
+  RecordPermissionAction(
+      request_, base::Bind(PermissionUmaUtil::PermissionDismissed));
   RunCallback(old_audio_setting_, old_video_setting_,
               content::MEDIA_DEVICE_PERMISSION_DISMISSED);
 }

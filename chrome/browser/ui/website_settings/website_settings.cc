@@ -293,8 +293,8 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     // in the permissions layer. See crbug.com/469221.
     content::PermissionType permission_type;
     if (PermissionUtil::GetPermissionType(type, &permission_type)) {
-      PermissionUmaUtil::PermissionRevoked(permission_type, this->site_url_,
-                                           this->profile_);
+      PermissionUmaUtil::PermissionRevoked(permission_type,
+                                           this->site_url_);
     }
   }
 

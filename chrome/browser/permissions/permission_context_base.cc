@@ -216,15 +216,12 @@ void PermissionContextBase::PermissionDecided(
     DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
            content_setting == CONTENT_SETTING_BLOCK);
     if (content_setting == CONTENT_SETTING_ALLOW)
-      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_origin,
-                                           profile_);
+      PermissionUmaUtil::PermissionGranted(permission_type_, requesting_origin);
     else
-      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_origin,
-                                          profile_);
+      PermissionUmaUtil::PermissionDenied(permission_type_, requesting_origin);
   } else {
     DCHECK_EQ(content_setting, CONTENT_SETTING_DEFAULT);
-    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_origin,
-                                           profile_);
+    PermissionUmaUtil::PermissionDismissed(permission_type_, requesting_origin);
   }
 #endif
 

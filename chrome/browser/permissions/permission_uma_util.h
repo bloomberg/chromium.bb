@@ -51,20 +51,15 @@ class PermissionUmaUtil {
                                   const GURL& embedding_origin,
                                   Profile* profile);
   static void PermissionGranted(content::PermissionType permission,
-                                const GURL& requesting_origin,
-                                Profile* profile);
+                                const GURL& requesting_origin);
   static void PermissionDenied(content::PermissionType permission,
-                               const GURL& requesting_origin,
-                               Profile* profile);
+                               const GURL& requesting_origin);
   static void PermissionDismissed(content::PermissionType permission,
-                                  const GURL& requesting_origin,
-                                  Profile* profile);
+                                  const GURL& requesting_origin);
   static void PermissionIgnored(content::PermissionType permission,
-                                const GURL& requesting_origin,
-                                Profile* profile);
+                                const GURL& requesting_origin);
   static void PermissionRevoked(content::PermissionType permission,
-                                const GURL& revoked_origin,
-                                Profile* profile);
+                                const GURL& revoked_origin);
 
   // UMA specifically for when permission prompts are shown. This should be
   // roughly equivalent to the metrics above, however it is
@@ -91,16 +86,7 @@ class PermissionUmaUtil {
       const std::vector<PermissionBubbleRequest*>& requests);
 
  private:
-  friend class PermissionUmaUtilTest;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);
-
-  static bool IsOptedIntoPermissionActionReporting(Profile* profile);
-
-  static void RecordPermissionAction(content::PermissionType permission,
-                                     PermissionAction action,
-                                     const GURL& requesting_origin,
-                                     Profile* profile);
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_UMA_UTIL_H_

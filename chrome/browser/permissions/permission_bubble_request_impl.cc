@@ -29,9 +29,7 @@ PermissionBubbleRequestImpl::PermissionBubbleRequestImpl(
 PermissionBubbleRequestImpl::~PermissionBubbleRequestImpl() {
   DCHECK(is_finished_);
   if (!action_taken_)
-    // TODO(stefanocs): Pass in a non null profile.
-    PermissionUmaUtil::PermissionIgnored(permission_type_, request_origin_,
-                                         nullptr);
+    PermissionUmaUtil::PermissionIgnored(permission_type_, request_origin_);
 }
 
 gfx::VectorIconId PermissionBubbleRequestImpl::GetVectorIconId() const {

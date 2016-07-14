@@ -12,9 +12,7 @@
 
 PermissionInfobarDelegate::~PermissionInfobarDelegate() {
   if (!action_taken_)
-    // TODO(stefanocs): Pass in a non null profile.
-    PermissionUmaUtil::PermissionIgnored(permission_type_, requesting_origin_,
-                                         nullptr);
+    PermissionUmaUtil::PermissionIgnored(permission_type_, requesting_origin_);
 }
 
 PermissionInfobarDelegate::PermissionInfobarDelegate(

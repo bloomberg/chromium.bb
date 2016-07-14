@@ -11,7 +11,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/safe_browsing/permission_reporter.h"
 #include "components/certificate_reporting/error_reporter.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
@@ -65,9 +64,6 @@ SafeBrowsingPingManager::SafeBrowsingPingManager(
     certificate_error_reporter_.reset(new certificate_reporting::ErrorReporter(
         request_context_getter->GetURLRequestContext(), certificate_upload_url,
         cookies_preference));
-
-    permission_reporter_.reset(
-        new PermissionReporter(request_context_getter->GetURLRequestContext()));
   }
 
   version_ = SafeBrowsingProtocolManagerHelper::Version();
@@ -133,13 +129,6 @@ void SafeBrowsingPingManager::SetCertificateErrorReporterForTesting(
     std::unique_ptr<certificate_reporting::ErrorReporter>
         certificate_error_reporter) {
   certificate_error_reporter_ = std::move(certificate_error_reporter);
-}
-
-void SafeBrowsingPingManager::ReportPermissionAction(
-    const GURL& origin,
-    content::PermissionType permission,
-    PermissionAction action) {
-  permission_reporter_->SendReport(origin, permission, action);
 }
 
 GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(

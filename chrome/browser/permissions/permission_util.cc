@@ -100,8 +100,7 @@ void PermissionUtil::SetContentSettingAndRecordRevocation(
       final_value != CONTENT_SETTING_ALLOW) {
     PermissionType permission_type;
     if (PermissionUtil::GetPermissionType(content_type, &permission_type)) {
-      PermissionUmaUtil::PermissionRevoked(permission_type, primary_url,
-                                           profile);
+      PermissionUmaUtil::PermissionRevoked(permission_type, primary_url);
     }
   }
 }

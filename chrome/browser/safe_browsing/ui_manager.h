@@ -16,11 +16,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -150,12 +148,6 @@ class SafeBrowsingUIManager
   void ReportInvalidCertificateChain(const std::string& serialized_report,
                                      const base::Closure& callback);
 
-  // Report permission action to SafeBrowsing servers. Can only be called on UI
-  // thread.
-  void ReportPermissionAction(const GURL& origin,
-                              content::PermissionType permission,
-                              PermissionAction action);
-
   // Add and remove observers.  These methods must be invoked on the UI thread.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* remove);
@@ -175,11 +167,6 @@ class SafeBrowsingUIManager
   // Sends an invalid certificate chain report over the network.
   void ReportInvalidCertificateChainOnIOThread(
       const std::string& serialized_report);
-
-  // Report permission action to SafeBrowsing servers.
-  void ReportPermissionActionOnIOThread(const GURL& origin,
-                                        content::PermissionType permission,
-                                        PermissionAction action);
 
   // Updates the whitelist state.  Called on the UI thread.
   void AddToWhitelist(const UnsafeResource& resource);

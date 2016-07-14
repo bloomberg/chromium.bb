@@ -118,8 +118,7 @@ void PushMessagingPermissionContext::DecidePushPermission(
 
   if (push_content_setting == CONTENT_SETTING_BLOCK) {
     DVLOG(1) << "Push permission was explicitly blocked.";
-    PermissionUmaUtil::PermissionDenied(permission_type(), requesting_origin,
-                                        profile_);
+    PermissionUmaUtil::PermissionDenied(permission_type(), requesting_origin);
     NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                         true /* persist */, CONTENT_SETTING_BLOCK);
     return;
@@ -132,8 +131,7 @@ void PushMessagingPermissionContext::DecidePushPermission(
     return;
   }
 
-  PermissionUmaUtil::PermissionGranted(permission_type(), requesting_origin,
-                                       profile_);
+  PermissionUmaUtil::PermissionGranted(permission_type(), requesting_origin);
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       true /* persist */, CONTENT_SETTING_ALLOW);
 }
