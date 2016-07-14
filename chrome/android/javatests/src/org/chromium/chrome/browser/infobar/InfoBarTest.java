@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.infobar;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.content.Context;
 import android.os.Environment;
 import android.test.UiThreadTest;
 import android.test.suitebuilder.annotation.MediumTest;
@@ -14,6 +15,8 @@ import android.test.suitebuilder.annotation.Smoke;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.AdvancedMockContext;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -54,6 +57,26 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private EmbeddedTestServer mTestServer;
     private InfoBarTestAnimationListener mListener;
 
+    private void waitUntilNoInfoBarsExist() throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getInfoBars().isEmpty();
+            }
+        });
+    }
+
+    private void waitUntilDataReductionPromoInfoBarAppears() throws InterruptedException {
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                List<InfoBar> infobars = getInfoBars();
+                if (infobars.size() != 1) return false;
+                return infobars.get(0) instanceof DataReductionPromoInfoBar;
+            }
+        });
+    }
+
     public InfoBarTest() {
         super(ChromeActivity.class);
     }
@@ -82,6 +105,11 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         mTestServer = EmbeddedTestServer.createAndStartFileServer(
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+
+        // Using an AdvancedMockContext allows us to use a fresh in-memory SharedPreference.
+        Context context = new AdvancedMockContext(
+                getInstrumentation().getTargetContext().getApplicationContext());
+        ContextUtils.initApplicationContextForTests(context);
     }
 
     @Override
@@ -174,10 +202,10 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * it.
      */
     @MediumTest
+    @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
-    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBar() throws InterruptedException {
-        ThreadUtils.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertFalse("Data Reduction Proxy enabled",
@@ -189,21 +217,20 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, M51_VERSION)
                         .apply();
                 // Add an infobar.
-                DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
+                assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
                         getActivity(), getActivity().getActivityTab().getWebContents(),
-                        "http://google.com", false, false, HttpURLConnection.HTTP_OK);
+                        "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });
 
-        assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
+        waitUntilDataReductionPromoInfoBarAppears();
         final List<InfoBar> infoBars = getInfoBars();
-        assertEquals("Wrong infobar count", 1, infoBars.size());
         assertTrue("InfoBar does not have primary button",
                 InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         assertTrue("InfoBar does not have secondary button",
                 InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
-        ThreadUtils.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 InfoBarUtil.clickPrimaryButton(infoBars.get(0));
@@ -211,10 +238,9 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         // The renderer should have been killed and the infobar removed.
-        assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        assertTrue("Wrong infobar count", getInfoBars().isEmpty());
+        waitUntilNoInfoBarsExist();
 
-        ThreadUtils.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertTrue("Data Reduction Proxy not enabled",
@@ -236,10 +262,10 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * it.
      */
     @MediumTest
+    @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
-    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBarDismissed() throws InterruptedException {
-        ThreadUtils.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertFalse("Data Reduction Proxy enabled",
@@ -251,21 +277,20 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                         .putString(SHARED_PREF_DISPLAYED_FRE_OR_SECOND_PROMO_VERSION, M51_VERSION)
                         .apply();
                 // Add an infobar.
-                DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
+                assertTrue(DataReductionPromoInfoBar.maybeLaunchPromoInfoBar(
                         getActivity(), getActivity().getActivityTab().getWebContents(),
-                        "http://google.com", false, false, HttpURLConnection.HTTP_OK);
+                        "http://google.com", false, false, HttpURLConnection.HTTP_OK));
             }
         });
 
-        assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
+        waitUntilDataReductionPromoInfoBarAppears();
         final List<InfoBar> infoBars = getInfoBars();
-        assertEquals("Wrong infobar count", 1, infoBars.size());
         assertTrue("InfoBar does not have primary button",
                 InfoBarUtil.hasPrimaryButton(infoBars.get(0)));
         assertTrue("InfoBar does not have secondary button",
                 InfoBarUtil.hasSecondaryButton(infoBars.get(0)));
 
-        ThreadUtils.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 InfoBarUtil.clickSecondaryButton(infoBars.get(0));
@@ -273,10 +298,9 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         // The renderer should have been killed and the infobar removed.
-        assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        assertTrue("Wrong infobar count", getInfoBars().isEmpty());
+        waitUntilNoInfoBarsExist();
 
-        ThreadUtils.runOnUiThread(new Runnable() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assertFalse("Data Reduction Proxy enabled",
@@ -296,8 +320,8 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @UiThreadTest
     @MediumTest
+    @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
-    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBarPostM48Install() {
         assertFalse("Data Reduction Proxy enabled",
                 DataReductionProxySettings.getInstance().isDataReductionProxyEnabled());
@@ -321,8 +345,8 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @UiThreadTest
     @MediumTest
+    @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
-    @DisabledTest // crbug.com/625038
     public void testDataReductionPromoInfoBarFreOptOut() {
         // Try to add an infobar. Infobar should not be added since the first run experience or
         // second run promo hasn't been shown.
