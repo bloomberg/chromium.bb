@@ -363,6 +363,14 @@ class IdlArrayOrSequenceType(IdlTypeBase):
         return True
 
     @property
+    def is_array_type(self):
+        return False
+
+    @property
+    def is_sequence_type(self):
+        return False
+
+    @property
     def is_frozen_array(self):
         return False
 
@@ -391,6 +399,10 @@ class IdlArrayType(IdlArrayOrSequenceType):
     def name(self):
         return self.element_type.name + 'Array'
 
+    @property
+    def is_array_type(self):
+        return True
+
 
 class IdlSequenceType(IdlArrayOrSequenceType):
     def __init__(self, element_type):
@@ -402,6 +414,10 @@ class IdlSequenceType(IdlArrayOrSequenceType):
     @property
     def name(self):
         return self.element_type.name + 'Sequence'
+
+    @property
+    def is_sequence_type(self):
+        return True
 
 
 class IdlFrozenArrayType(IdlArrayOrSequenceType):
@@ -418,7 +434,6 @@ class IdlFrozenArrayType(IdlArrayOrSequenceType):
     @property
     def is_frozen_array(self):
         return True
-
 
 
 ################################################################################
