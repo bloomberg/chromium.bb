@@ -52,9 +52,6 @@ class SearchTabHelper : public content::WebContentsObserver,
     return &model_;
   }
 
-  // Sets up the initial state correctly for a preloaded NTP.
-  void InitForPreloadedNTP();
-
   // Invoked when the omnibox input state is changed in some way that might
   // affect the search mode.
   void OmniboxInputStateChanged();
@@ -69,9 +66,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // virtual URL of the active entry. Regular navigations are captured through
   // the notification system and shouldn't call this method.
   void NavigationEntryUpdated();
-
-  // Invoked to update the instant support state.
-  void InstantSupportChanged(bool supports_instant);
 
   // Returns true if the page supports instant. If the instant support state is
   // not determined or if the page does not support instant returns false.
@@ -177,12 +171,13 @@ class SearchTabHelper : public content::WebContentsObserver,
   void MostVisitedItemsChanged(
       const std::vector<InstantMostVisitedItem>& items) override;
 
+  // Invoked to update the instant support state.
+  void InstantSupportChanged(bool supports_instant);
+
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,
-  // otherwise keeps the current origin. If |is_preloaded_ntp| is true, the mode
-  // is set to NTP regardless of the current URL; this is used to ensure that
-  // InstantController can bind InstantTab to new tab pages immediately.
-  void UpdateMode(bool update_origin, bool is_preloaded_ntp);
+  // otherwise keeps the current origin.
+  void UpdateMode(bool update_origin);
 
   // Tells the renderer to determine if the page supports the Instant API, which
   // results in a call to OnInstantSupportDetermined() when the reply is

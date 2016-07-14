@@ -171,15 +171,11 @@ SearchTabHelper::~SearchTabHelper() {
     instant_service_->RemoveObserver(this);
 }
 
-void SearchTabHelper::InitForPreloadedNTP() {
-  UpdateMode(true, true);
-}
-
 void SearchTabHelper::OmniboxInputStateChanged() {
   if (!is_search_enabled_)
     return;
 
-  UpdateMode(false, false);
+  UpdateMode(false);
 }
 
 void SearchTabHelper::OmniboxFocusChanged(OmniboxFocusState state,
@@ -219,25 +215,7 @@ void SearchTabHelper::NavigationEntryUpdated() {
   if (!is_search_enabled_)
     return;
 
-  UpdateMode(false, false);
-}
-
-void SearchTabHelper::InstantSupportChanged(bool instant_support) {
-  if (!is_search_enabled_)
-    return;
-
-  InstantSupportState new_state = instant_support ? INSTANT_SUPPORT_YES :
-      INSTANT_SUPPORT_NO;
-
-  model_.SetInstantSupportState(new_state);
-
-  content::NavigationEntry* entry =
-      web_contents_->GetController().GetLastCommittedEntry();
-  if (entry) {
-    search::SetInstantSupportStateInNavigationEntry(new_state, entry);
-    if (delegate_ && !instant_support)
-      delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
-  }
+  UpdateMode(false);
 }
 
 bool SearchTabHelper::SupportsInstant() const {
@@ -346,7 +324,7 @@ void SearchTabHelper::NavigationEntryCommitted(
                                                profile()))
     ipc_router_.SetDisplayInstantResults();
 
-  UpdateMode(true, false);
+  UpdateMode(true);
 
   content::NavigationEntry* entry =
       web_contents_->GetController().GetVisibleEntry();
@@ -515,10 +493,28 @@ void SearchTabHelper::OnHistorySyncCheck() {
   ipc_router_.SendHistorySyncCheckResult(IsHistorySyncEnabled(profile()));
 }
 
-void SearchTabHelper::UpdateMode(bool update_origin, bool is_preloaded_ntp) {
+void SearchTabHelper::InstantSupportChanged(bool instant_support) {
+  if (!is_search_enabled_)
+    return;
+
+  InstantSupportState new_state = instant_support ? INSTANT_SUPPORT_YES :
+      INSTANT_SUPPORT_NO;
+
+  model_.SetInstantSupportState(new_state);
+
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetLastCommittedEntry();
+  if (entry) {
+    search::SetInstantSupportStateInNavigationEntry(new_state, entry);
+    if (delegate_ && !instant_support)
+      delegate_->OnWebContentsInstantSupportDisabled(web_contents_);
+  }
+}
+
+void SearchTabHelper::UpdateMode(bool update_origin) {
   SearchMode::Type type = SearchMode::MODE_DEFAULT;
   SearchMode::Origin origin = SearchMode::ORIGIN_DEFAULT;
-  if (IsNTP(web_contents_) || is_preloaded_ntp) {
+  if (IsNTP(web_contents_)) {
     type = SearchMode::MODE_NTP;
     origin = SearchMode::ORIGIN_NTP;
   } else if (IsSearchResults(web_contents_)) {
