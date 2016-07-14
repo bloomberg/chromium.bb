@@ -55,10 +55,6 @@ class InstantServiceTest : public InstantUnitTestBase {
     return instant_service_->most_visited_items_;
   }
 
-  std::vector<InstantMostVisitedItem>& suggestions_items() {
-    return instant_service_->suggestions_items_;
-  }
-
   std::unique_ptr<MockInstantServiceObserver> instant_service_observer_;
 };
 
@@ -161,17 +157,6 @@ TEST_F(InstantServiceEnabledTest,
   const std::string new_base_url = "https://www.google.es/";
   NotifyGoogleBaseURLUpdate(new_base_url);
   EXPECT_NE(old_prerenderer, GetInstantSearchPrerenderer());
-}
-
-TEST_F(InstantServiceTest, GetSuggestionFromServiceSide) {
-  auto profile = suggestions::SuggestionsProfile();
-  profile.add_suggestions();
-
-  instant_service_->OnSuggestionsAvailable(profile);
-
-  auto items = instant_service_->suggestions_items_;
-  ASSERT_EQ(1, (int)items.size());
-  ASSERT_TRUE(items[0].is_server_side_suggestion);
 }
 
 TEST_F(InstantServiceTest, GetSuggestionFromClientSide) {

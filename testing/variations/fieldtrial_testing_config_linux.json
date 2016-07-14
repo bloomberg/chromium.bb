@@ -97,11 +97,6 @@
             "group_name": "Enabled"
         }
     ],
-    "LocalNTPSuggestionsService": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "MainFrameBeforeActivation": [
         {
             "enable_features": [

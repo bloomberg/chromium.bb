@@ -129,11 +129,6 @@
             "group_name": "Enabled"
         }
     ],
-    "LocalNTPSuggestionsService": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "MacMemoryMechanism": [
         {
             "group_name": "Mach"
