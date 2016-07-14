@@ -99,9 +99,6 @@ void LayoutFlowThread::validateColumnSets()
 bool LayoutFlowThread::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
     ASSERT(ancestor != this); // A flow thread should never be an invalidation container.
-    // |rect| is a layout rectangle, where the block direction coordinate is flipped for writing
-    // mode. fragmentsBoundingBox(), on the other hand, works on physical rectangles, so we need to
-    // flip the rectangle before and after calling it.
     rect = fragmentsBoundingBox(rect);
     return LayoutBlockFlow::mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
