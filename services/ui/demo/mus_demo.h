@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -22,14 +23,15 @@ namespace bitmap_uploader {
 class BitmapUploader;
 }
 
-namespace mus_demo {
+namespace ui {
+namespace demo {
 
 // A simple MUS Demo mojo app. This app connects to the mojo:ui, creates a new
 // window and draws a spinning square in the center of the window. Provides a
 // simple way to demonstrate that the graphic stack works as intended.
 class MusDemo : public shell::Service,
-                public ui::WindowTreeClientDelegate,
-                public ui::WindowManagerDelegate {
+                public WindowTreeClientDelegate,
+                public WindowManagerDelegate {
  public:
   MusDemo();
   ~MusDemo() override;
@@ -42,28 +44,27 @@ class MusDemo : public shell::Service,
   bool OnConnect(shell::Connection* connection) override;
 
   // WindowTreeClientDelegate:
-  void OnEmbed(ui::Window* root) override;
-  void OnDidDestroyClient(ui::WindowTreeClient* client) override;
-  void OnEventObserved(const ui::Event& event, ui::Window* target) override;
+  void OnEmbed(Window* root) override;
+  void OnDidDestroyClient(WindowTreeClient* client) override;
+  void OnEventObserved(const Event& event, Window* target) override;
 
   // WindowManagerDelegate:
-  void SetWindowManagerClient(ui::WindowManagerClient* client) override;
-  bool OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) override;
+  void SetWindowManagerClient(WindowManagerClient* client) override;
+  bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override;
   bool OnWmSetProperty(
-      ui::Window* window,
+      Window* window,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
-  ui::Window* OnWmCreateTopLevelWindow(
+  Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnWmClientJankinessChanged(const std::set<ui::Window*>& client_windows,
+  void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override;
-  void OnWmNewDisplay(ui::Window* window,
-                      const display::Display& display) override;
-  void OnWmPerformMoveLoop(ui::Window* window,
-                           ui::mojom::MoveLoopSource source,
+  void OnWmNewDisplay(Window* window, const display::Display& display) override;
+  void OnWmPerformMoveLoop(Window* window,
+                           mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
-  void OnWmCancelMoveLoop(ui::Window* window) override;
+  void OnWmCancelMoveLoop(Window* window) override;
 
   // Allocate a bitmap the same size as the window to draw into.
   void AllocBitmap();
@@ -73,8 +74,8 @@ class MusDemo : public shell::Service,
 
   shell::Connector* connector_ = nullptr;
 
-  ui::Window* window_ = nullptr;
-  ui::WindowTreeClient* window_tree_client_ = nullptr;
+  Window* window_ = nullptr;
+  WindowTreeClient* window_tree_client_ = nullptr;
 
   // Used to send frames to mus.
   std::unique_ptr<bitmap_uploader::BitmapUploader> uploader_;
@@ -91,6 +92,7 @@ class MusDemo : public shell::Service,
   DISALLOW_COPY_AND_ASSIGN(MusDemo);
 };
 
-}  // namespace ui_demo
+}  // namespace demo
+}  // namespace ui
 
 #endif  // SERVICES_UI_DEMO_MUS_DEMO_H_

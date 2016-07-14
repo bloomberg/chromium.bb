@@ -17,7 +17,8 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace mus_demo {
+namespace ui {
+namespace demo {
 
 namespace {
 
@@ -67,8 +68,8 @@ void MusDemo::OnStart(shell::Connector* connector,
                       const shell::Identity& identity,
                       uint32_t id) {
   connector_ = connector;
-  ui::GpuService::Initialize(connector_);
-  window_tree_client_ = new ui::WindowTreeClient(this, this, nullptr);
+  GpuService::Initialize(connector_);
+  window_tree_client_ = new WindowTreeClient(this, this, nullptr);
   window_tree_client_->ConnectAsWindowManager(connector);
 }
 
@@ -76,43 +77,42 @@ bool MusDemo::OnConnect(shell::Connection* connection) {
   return true;
 }
 
-void MusDemo::OnEmbed(ui::Window* window) {
+void MusDemo::OnEmbed(Window* window) {
   // Not called for the WindowManager.
   NOTREACHED();
 }
 
-void MusDemo::OnDidDestroyClient(ui::WindowTreeClient* client) {
+void MusDemo::OnDidDestroyClient(WindowTreeClient* client) {
   window_tree_client_ = nullptr;
   timer_.Stop();
 }
 
-void MusDemo::OnEventObserved(const ui::Event& event, ui::Window* target) {}
+void MusDemo::OnEventObserved(const Event& event, Window* target) {}
 
-void MusDemo::SetWindowManagerClient(ui::WindowManagerClient* client) {}
+void MusDemo::SetWindowManagerClient(WindowManagerClient* client) {}
 
-bool MusDemo::OnWmSetBounds(ui::Window* window, gfx::Rect* bounds) {
+bool MusDemo::OnWmSetBounds(Window* window, gfx::Rect* bounds) {
   return true;
 }
 
-bool MusDemo::OnWmSetProperty(ui::Window* window,
+bool MusDemo::OnWmSetProperty(Window* window,
                               const std::string& name,
                               std::unique_ptr<std::vector<uint8_t>>* new_data) {
   return true;
 }
 
-ui::Window* MusDemo::OnWmCreateTopLevelWindow(
+Window* MusDemo::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   return nullptr;
 }
 
 void MusDemo::OnWmClientJankinessChanged(
-    const std::set<ui::Window*>& client_windows,
+    const std::set<Window*>& client_windows,
     bool janky) {
   // Don't care
 }
 
-void MusDemo::OnWmNewDisplay(ui::Window* window,
-                             const display::Display& display) {
+void MusDemo::OnWmNewDisplay(Window* window, const display::Display& display) {
   DCHECK(!window_);  // Only support one display.
   window_ = window;
 
@@ -126,14 +126,14 @@ void MusDemo::OnWmNewDisplay(ui::Window* window,
                base::Bind(&MusDemo::DrawFrame, base::Unretained(this)));
 }
 
-void MusDemo::OnWmPerformMoveLoop(ui::Window* window,
-                                  ui::mojom::MoveLoopSource source,
+void MusDemo::OnWmPerformMoveLoop(Window* window,
+                                  mojom::MoveLoopSource source,
                                   const gfx::Point& cursor_location,
                                   const base::Callback<void(bool)>& on_done) {
   // Don't care
 }
 
-void MusDemo::OnWmCancelMoveLoop(ui::Window* window) {}
+void MusDemo::OnWmCancelMoveLoop(Window* window) {}
 
 void MusDemo::AllocBitmap() {
   const gfx::Rect bounds = window_->GetBoundsInRoot();
@@ -181,4 +181,5 @@ void MusDemo::DrawFrame() {
                        bitmap_uploader::BitmapUploader::BGRA);
 }
 
-}  // namespace ui_demo
+}  // namespace demo
+}  // namespace ui

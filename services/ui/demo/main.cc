@@ -7,7 +7,7 @@
 #include "services/ui/demo/mus_demo.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  shell::ApplicationRunner runner(new mus_demo::MusDemo);
+  shell::ApplicationRunner runner(new ui::demo::MusDemo);
   runner.set_message_loop_type(base::MessageLoop::TYPE_UI);
   return runner.Run(shell_handle);
 }

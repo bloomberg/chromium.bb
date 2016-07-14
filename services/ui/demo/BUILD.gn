@@ -4,6 +4,7 @@
 
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
+import("//testing/test.gni")
 
 mojo_native_application("mus_demo") {
   sources = [
@@ -33,6 +34,34 @@ mojo_native_application("mus_demo") {
 mojo_application_manifest("manifest") {
   application_name = "mus_demo"
   source = "manifest.json"
+}
+
+mojo_application_manifest("test_manifest") {
+  type = "exe"
+  application_name = "mus_demo_unittests"
+  source = "test_manifest.json"
+}
+
+test("mus_demo_unittests") {
+  testonly = true
+
+  sources = [
+    "mus_demo_unittests.cc",
+  ]
+
+  deps = [
+    ":demo",
+    "//base",
+    "//services/shell/public/cpp",
+    "//services/shell/public/cpp:service_test_support",
+    "//services/ui/common:run_all_shelltests",
+    "//services/ui/public/interfaces",
+    "//testing/gtest",
+  ]
+
+  data_deps = [
+    ":test_manifest",
+  ]
 }
 
 group("demo") {
