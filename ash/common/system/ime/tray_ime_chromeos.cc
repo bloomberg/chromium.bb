@@ -8,6 +8,7 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -17,7 +18,6 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"

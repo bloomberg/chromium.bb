@@ -6,11 +6,11 @@
 
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"

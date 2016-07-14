@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/tray/system_tray.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"

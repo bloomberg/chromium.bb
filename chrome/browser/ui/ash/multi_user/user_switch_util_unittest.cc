@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
-#include "ash/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "chrome/browser/ui/ash/multi_user/user_switch_util.h"
 

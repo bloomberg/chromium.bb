@@ -5,10 +5,10 @@
 #include "ash/common/system/chromeos/media_security/multi_profile_media_tray_item.h"
 
 #include "ash/common/ash_view_ids.h"
+#include "ash/common/system/status_area_widget.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/tray_item_view.h"
-#include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"

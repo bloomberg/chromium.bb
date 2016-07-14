@@ -8,9 +8,9 @@
 
 #include <set>
 
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/root_window_controller.h"
-#include "ash/system/status_area_widget.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

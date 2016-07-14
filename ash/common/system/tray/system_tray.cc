@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray.h"
 
 #include "ash/common/ash_switches.h"
 #include "ash/common/login_status.h"

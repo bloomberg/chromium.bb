@@ -7,7 +7,7 @@
 #include <set>
 #include <string>
 
-#include "ash/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "base/location.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"

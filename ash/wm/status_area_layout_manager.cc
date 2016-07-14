@@ -4,9 +4,9 @@
 
 #include "ash/wm/status_area_layout_manager.h"
 
+#include "ash/common/system/status_area_widget.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/system/status_area_widget.h"
 #include "base/auto_reset.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"

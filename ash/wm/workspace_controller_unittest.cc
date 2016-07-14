@@ -8,6 +8,7 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
@@ -16,7 +17,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"

@@ -4,7 +4,7 @@
 
 #include "ash/common/system/chromeos/session/tray_session_length_limit.h"
 
-#include "ash/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/time/time.h"

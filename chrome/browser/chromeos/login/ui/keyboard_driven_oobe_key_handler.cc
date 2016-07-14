@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/ui/keyboard_driven_oobe_key_handler.h"
 
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
 
 namespace chromeos {
 

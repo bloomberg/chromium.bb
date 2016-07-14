@@ -4,12 +4,12 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"

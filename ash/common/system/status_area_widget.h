@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_STATUS_AREA_WIDGET_H_
-#define ASH_SYSTEM_STATUS_AREA_WIDGET_H_
+#ifndef ASH_COMMON_SYSTEM_STATUS_AREA_WIDGET_H_
+#define ASH_COMMON_SYSTEM_STATUS_AREA_WIDGET_H_
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
@@ -100,4 +100,4 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_STATUS_AREA_WIDGET_H_
+#endif  // ASH_COMMON_SYSTEM_STATUS_AREA_WIDGET_H_

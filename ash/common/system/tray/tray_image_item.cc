@@ -6,10 +6,10 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_utils.h"
-#include "ash/system/tray/system_tray.h"
 #include "grit/ash_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"

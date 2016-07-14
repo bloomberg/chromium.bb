@@ -6,12 +6,12 @@
 
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_types.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
-#include "ash/system/status_area_widget.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"

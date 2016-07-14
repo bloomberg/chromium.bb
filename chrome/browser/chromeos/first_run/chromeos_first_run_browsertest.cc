@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/first_run/first_run_helper.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/step_names.h"

@@ -5,12 +5,12 @@
 #include <vector>
 
 #include "ash/common/shell_delegate.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/user/tray_user.h"
 #include "ash/common/system/user/tray_user_separator.h"
 #include "ash/common/system/user/user_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_session_state_delegate.h"

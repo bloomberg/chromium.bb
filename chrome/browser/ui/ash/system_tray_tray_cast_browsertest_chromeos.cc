@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "ash/common/system/cast/tray_cast.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/test/tray_cast_test_api.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

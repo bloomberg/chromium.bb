@@ -7,10 +7,10 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/date/date_default_view.h"
 #include "ash/common/system/date/date_view.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/system/tray/system_tray.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/system_clock_observer.h"

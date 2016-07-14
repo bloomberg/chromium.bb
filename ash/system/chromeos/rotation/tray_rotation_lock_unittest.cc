@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/common/ash_switches.h"
+#include "ash/common/system/status_area_widget.h"
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
@@ -14,8 +16,6 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/command_line.h"

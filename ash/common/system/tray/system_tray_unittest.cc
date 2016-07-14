@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray.h"
 
 #include <vector>
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_container.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/shell.h"
-#include "ash/system/status_area_widget.h"
+#include "ash/common/wm_window.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
-#include "ash/wm/window_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
@@ -41,6 +41,23 @@ namespace ash {
 namespace test {
 
 namespace {
+
+std::unique_ptr<views::Widget> CreateTestWidget(views::WidgetDelegate* delegate,
+                                                int container_id) {
+  std::unique_ptr<views::Widget> widget(new views::Widget);
+  views::Widget::InitParams params;
+  params.delegate = delegate;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 100, 100);
+  WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
+                                              &params);
+  widget->Init(params);
+  widget->Show();
+  return widget;
+}
 
 // Trivial item implementation that tracks its views for testing.
 class TestItem : public SystemTrayItem {
@@ -387,21 +404,21 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(test_item);
 
-  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer));
 
-  // Tests for usual default view.
-  // Activating window.
+  // Tests for usual default view while activating a window.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   ASSERT_TRUE(tray->HasSystemBubble());
-  wm::ActivateWindow(window.get());
+  widget->Activate();
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(tray->HasSystemBubble());
 
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   ASSERT_TRUE(tray->HasSystemBubble());
   {
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       gfx::Point(5, 5));
+    ui::test::EventGenerator& generator = GetEventGenerator();
+    generator.set_current_location(gfx::Point(5, 5));
     generator.ClickLeftButton();
     ASSERT_FALSE(tray->HasSystemBubble());
   }
@@ -409,13 +426,13 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   // Same tests for persistent default view.
   tray->ShowPersistentDefaultView();
   ASSERT_TRUE(tray->HasSystemBubble());
-  wm::ActivateWindow(window.get());
+  widget->Activate();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(tray->HasSystemBubble());
 
   {
-    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
-                                       gfx::Point(5, 5));
+    ui::test::EventGenerator& generator = GetEventGenerator();
+    generator.set_current_location(gfx::Point(5, 5));
     generator.ClickLeftButton();
     ASSERT_TRUE(tray->HasSystemBubble());
   }
@@ -430,10 +447,8 @@ TEST_F(SystemTrayTest, PersistentBubble) {
 TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
   // Check if the accessibility item is created even with system modal dialog.
   WmShell::Get()->GetAccessibilityDelegate()->SetVirtualKeyboardEnabled(true);
-  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
-      new ModalWidgetDelegate(), Shell::GetPrimaryRootWindow(),
-      gfx::Rect(0, 0, 100, 100));
-  widget->Show();
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(
+      new ModalWidgetDelegate, kShellWindowId_SystemModalContainer));
 
   SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -447,7 +462,8 @@ TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
   EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetViewByID(
       test::kSettingsTrayItemViewId));
 
-  widget->Close();
+  // Close the modal dialog.
+  widget.reset();
 
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   // System modal is gone. The bubble should now contains settings
@@ -495,7 +511,7 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
       tray->GetSystemBubble()->bubble_view()->child_at(0));
   EXPECT_FALSE(view->active());
 
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(view->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(view->active());
@@ -515,7 +531,7 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
   EXPECT_FALSE(view->active());
 
   gfx::Rect view_bounds = view->GetBoundsInScreen();
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(view_bounds.CenterPoint());
   generator.PressTouch();
   EXPECT_TRUE(view->active());

@@ -4,8 +4,8 @@
 
 #include "ash/common/system/tray/system_tray_item.h"
 
+#include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/system/tray/system_tray.h"
 #include "ui/views/view.h"
 
 namespace ash {

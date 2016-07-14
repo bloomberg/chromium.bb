@@ -1,4 +1,0 @@
-include_rules = [
-  # NOTE: Use WmRootWindowController or WmShell instead. http://crbug.com/615502
-  "-ash/root_window_controller.h",
-]
