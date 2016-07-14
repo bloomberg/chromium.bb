@@ -137,7 +137,7 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
         "Secondary layer, to house contents that can be scrolled" },
     { CompositingReasonLayerForScrollingContainer,
         "layerForScrollingContainer",
-        "Secondary layer, used to position the scolling contents while scrolling" },
+        "Secondary layer, used to position the scrolling contents while scrolling" },
     { CompositingReasonLayerForSquashingContents,
         "layerForSquashingContents",
         "Secondary layer, home for a group of squashable content" },
