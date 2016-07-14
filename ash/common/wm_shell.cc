@@ -42,6 +42,12 @@ WmShell* WmShell::Get() {
   return instance_;
 }
 
+void WmShell::Initialize() {
+  // Some delegates access WmShell during their construction. Create them here
+  // instead of the WmShell constructor.
+  media_delegate_.reset(delegate_->CreateMediaDelegate());
+}
+
 void WmShell::OnMaximizeModeStarted() {
   FOR_EACH_OBSERVER(ShellObserver, shell_observers_, OnMaximizeModeStarted());
 }
@@ -103,10 +109,6 @@ bool WmShell::IsSystemModalWindowOpen() {
 
 void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {
   keyboard_ui_ = std::move(keyboard_ui);
-}
-
-void WmShell::SetMediaDelegate(std::unique_ptr<MediaDelegate> delegate) {
-  media_delegate_ = std::move(delegate);
 }
 
 void WmShell::SetSystemTrayDelegate(

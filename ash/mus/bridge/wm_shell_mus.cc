@@ -138,7 +138,6 @@ WmShellMus::WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
   CreateMruWindowTracker();
 
   accessibility_delegate_.reset(new AccessibilityDelegateMus(connector_));
-  SetMediaDelegate(base::WrapUnique(delegate()->CreateMediaDelegate()));
   SetSystemTrayDelegate(base::WrapUnique(new DefaultSystemTrayDelegate));
 
   // TODO(jamescook): Port ash::sysui::KeyboardUIMus and use it here.

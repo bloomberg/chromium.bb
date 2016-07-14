@@ -59,6 +59,8 @@ class ASH_EXPORT WmShell {
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
 
+  void Initialize();
+
   ShellDelegate* delegate() { return delegate_.get(); }
 
   BrightnessControlDelegate* brightness_control_delegate() {
@@ -229,7 +231,6 @@ class ASH_EXPORT WmShell {
 
   // Helpers to set (and initialize) or destroy various delegates.
   // TODO(msw|jamescook): Remove these once ShellDelegate, etc. are ported.
-  void SetMediaDelegate(std::unique_ptr<MediaDelegate> delegate);
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
 

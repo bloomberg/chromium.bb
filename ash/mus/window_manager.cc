@@ -99,6 +99,7 @@ void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
       new ShellDelegateMus(base::MakeUnique<AppListPresenterStub>()));
   shell_.reset(new WmShellMus(std::move(shell_delegate), window_tree_client_,
                               connector_));
+  shell_->Initialize();
   lookup_.reset(new WmLookupMus);
 }
 

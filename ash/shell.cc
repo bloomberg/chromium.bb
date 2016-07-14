@@ -802,6 +802,8 @@ Shell::~Shell() {
 }
 
 void Shell::Init(const ShellInitParams& init_params) {
+  wm_shell_->Initialize();
+
   in_mus_ = init_params.in_mus;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -1016,8 +1018,6 @@ void Shell::Init(const ShellInitParams& init_params) {
   accessibility_delegate_.reset(
       wm_shell_->delegate()->CreateAccessibilityDelegate());
   new_window_delegate_.reset(wm_shell_->delegate()->CreateNewWindowDelegate());
-  wm_shell_->SetMediaDelegate(
-      base::WrapUnique(wm_shell_->delegate()->CreateMediaDelegate()));
   pointer_watcher_delegate_ =
       wm_shell_->delegate()->CreatePointerWatcherDelegate();
 
