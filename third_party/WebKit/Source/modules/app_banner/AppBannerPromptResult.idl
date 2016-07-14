@@ -4,9 +4,7 @@
 
 enum AppBannerPromptOutcome { "accepted", "dismissed" };
 
-[
-    RuntimeEnabled=AppBanner,
-] interface AppBannerPromptResult {
+interface AppBannerPromptResult {
     readonly attribute DOMString platform;
     readonly attribute AppBannerPromptOutcome outcome;
 };

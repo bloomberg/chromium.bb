@@ -1940,7 +1940,7 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
 
 void WebLocalFrameImpl::willShowInstallBannerPrompt(int requestId, const WebVector<WebString>& platforms, WebAppBannerPromptReply* reply)
 {
-    if (!RuntimeEnabledFeatures::appBannerEnabled() || !frame())
+    if (!frame())
         return;
 
     AppBannerController::willShowInstallBannerPrompt(requestId, client()->appBannerClient(), frame(), platforms, reply);
