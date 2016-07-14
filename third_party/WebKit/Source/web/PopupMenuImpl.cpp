@@ -253,7 +253,7 @@ void PopupMenuImpl::writeDocument(SharedBuffer* data)
     data->append(Platform::current()->loadResource("listPicker.css"));
     PagePopupClient::addString("</style></head><body><div id=main>Loading...</div><script>\n"
         "window.dialogArguments = {\n", data);
-    addProperty("selectedIndex", ownerElement.optionToListIndex(ownerElement.selectedIndex()), data);
+    addProperty("selectedIndex", ownerElement.selectedListIndex(), data);
     const ComputedStyle* ownerStyle = ownerElement.computedStyle();
     ItemIterationContext context(*ownerStyle, data);
     context.serializeBaseStyle();

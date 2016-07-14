@@ -873,6 +873,17 @@ void HTMLSelectElement::setSelectedIndex(int index)
     selectOption(item(index), DeselectOtherOptions | MakeOptionDirty);
 }
 
+int HTMLSelectElement::selectedListIndex() const
+{
+    int index = 0;
+    for (const auto& item : listItems()) {
+        if (isHTMLOptionElement(item) && toHTMLOptionElement(item)->selected())
+            return index;
+        ++index;
+    }
+    return -1;
+}
+
 void HTMLSelectElement::setSuggestedOption(HTMLOptionElement* option)
 {
     if (m_suggestedOption == option)
@@ -1674,7 +1685,7 @@ HTMLOptionElement* HTMLSelectElement::lastSelectedOption() const
 
 int HTMLSelectElement::indexOfSelectedOption() const
 {
-    return optionToListIndex(selectedIndex());
+    return selectedListIndex();
 }
 
 int HTMLSelectElement::optionCount() const

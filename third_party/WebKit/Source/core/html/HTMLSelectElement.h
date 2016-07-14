@@ -55,6 +55,8 @@ public:
 
     int selectedIndex() const;
     void setSelectedIndex(int);
+    // `listIndex' version of |selectedIndex|.
+    int selectedListIndex() const;
 
     // For ValidityState
     String validationMessage() const override;
