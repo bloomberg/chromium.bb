@@ -241,6 +241,9 @@ private:
     void setIndexToSelectOnCancel(int listIndex);
     void setSuggestedOption(HTMLOptionElement*);
 
+    // Returns nullptr if listIndex is out of bounds, or it doesn't point an
+    // HTMLOptionElement.
+    HTMLOptionElement* optionAtListIndex(int listIndex) const;
     enum SkipDirection {
         SkipBackwards = -1,
         SkipForwards = 1

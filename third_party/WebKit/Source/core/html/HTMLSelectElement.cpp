@@ -189,9 +189,8 @@ void HTMLSelectElement::selectMultipleOptionsByPopup(const Vector<int>& listIndi
     DCHECK(!multiple());
     for (size_t i = 0; i < listIndices.size(); ++i) {
         bool addSelectionIfNotFirst = i > 0;
-        HTMLElement* element = listItems()[listIndices[i]];
-        if (isHTMLOptionElement(element))
-            updateSelectedState(toHTMLOptionElement(element), addSelectionIfNotFirst, false);
+        if (HTMLOptionElement* option = optionAtListIndex(listIndices[i]))
+            updateSelectedState(option, addSelectionIfNotFirst, false);
     }
     setNeedsValidityCheck();
     // TODO(tkent): Using listBoxOnChange() is very confusing.
@@ -479,6 +478,16 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
 bool HTMLSelectElement::isRequiredFormControl() const
 {
     return isRequired();
+}
+
+HTMLOptionElement* HTMLSelectElement::optionAtListIndex(int listIndex) const
+{
+    if (listIndex < 0)
+        return nullptr;
+    const ListItems& items = listItems();
+    if (static_cast<size_t>(listIndex) >= items.size() || !isHTMLOptionElement(items[listIndex]))
+        return nullptr;
+    return toHTMLOptionElement(items[listIndex]);
 }
 
 // Returns the 1st valid OPTION |skip| items from |listIndex| in direction
@@ -1058,7 +1067,7 @@ int HTMLSelectElement::optionToListIndex(int optionIndex) const
 int HTMLSelectElement::listToOptionIndex(int listIndex) const
 {
     const ListItems& items = listItems();
-    if (listIndex < 0 || listIndex >= static_cast<int>(items.size()) || !isHTMLOptionElement(*items[listIndex]))
+    if (!optionAtListIndex(listIndex))
         return -1;
 
     // Actual index of option not counting OPTGROUP entries that may be in list.
@@ -1674,9 +1683,10 @@ HTMLOptionElement* HTMLSelectElement::lastSelectedOption() const
 {
     const ListItems& items = listItems();
     for (size_t i = items.size(); i;) {
-        HTMLElement* element = items[--i];
-        if (isHTMLOptionElement(*element) && toHTMLOptionElement(element)->selected())
-            return toHTMLOptionElement(element);
+        if (HTMLOptionElement* option = optionAtListIndex(--i)) {
+            if (option->selected())
+                return option;
+        }
     }
     return nullptr;
 }
@@ -1693,11 +1703,11 @@ int HTMLSelectElement::optionCount() const
 
 String HTMLSelectElement::optionAtIndex(int index) const
 {
-    const ListItems& items = listItems();
-    HTMLElement* element = items[index];
-    if (!isHTMLOptionElement(*element) || toHTMLOptionElement(element)->isDisabledFormControl())
-        return String();
-    return toHTMLOptionElement(element)->displayLabel();
+    if (HTMLOptionElement* option = optionAtListIndex(index)) {
+        if (!option->isDisabledFormControl())
+            return option->displayLabel();
+    }
+    return String();
 }
 
 void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
@@ -1705,10 +1715,7 @@ void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
     int index = m_typeAhead.handleEvent(event, TypeAhead::MatchPrefix | TypeAhead::CycleFirstChar);
     if (index < 0)
         return;
-    HTMLOptionElement* option = nullptr;
-    if (static_cast<size_t>(index) < listItems().size() && isHTMLOptionElement(listItems()[index]))
-        option = toHTMLOptionElement(listItems()[index]);
-    selectOption(option, DeselectOtherOptions | MakeOptionDirty | DispatchInputAndChangeEvent);
+    selectOption(optionAtListIndex(index), DeselectOtherOptions | MakeOptionDirty | DispatchInputAndChangeEvent);
     if (!usesMenuList())
         listBoxOnChange();
 }
@@ -1888,8 +1895,8 @@ void HTMLSelectElement::setIndexToSelectOnCancel(int listIndex)
 
 HTMLOptionElement* HTMLSelectElement::optionToBeShown() const
 {
-    if (m_indexToSelectOnCancel >= 0 && static_cast<size_t>(m_indexToSelectOnCancel) < listItems().size() && isHTMLOptionElement(listItems()[m_indexToSelectOnCancel]))
-        return toHTMLOptionElement(listItems()[m_indexToSelectOnCancel]);
+    if (HTMLOptionElement* option = optionAtListIndex(m_indexToSelectOnCancel))
+        return option;
     if (m_suggestedOption)
         return m_suggestedOption;
     // TODO(tkent): We should not call optionToBeShown() in multiple() case.
@@ -1910,9 +1917,7 @@ void HTMLSelectElement::selectOptionByPopup(int listIndex)
 
     setIndexToSelectOnCancel(-1);
 
-    HTMLOptionElement* option = nullptr;
-    if (listIndex >= 0 && isHTMLOptionElement(listItems()[listIndex]))
-        option = toHTMLOptionElement(listItems()[listIndex]);
+    HTMLOptionElement* option = optionAtListIndex(listIndex);
     // Bail out if this index is already the selected one, to avoid running
     // unnecessary JavaScript that can mess up autofill when there is no actual
     // change (see https://bugs.webkit.org/show_bug.cgi?id=35256 and
