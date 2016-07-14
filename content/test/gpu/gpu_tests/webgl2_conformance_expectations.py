@@ -610,6 +610,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderderivate_dfdx.html',
         ['linux', 'intel'], bug=618408)
 
+    # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
+    self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
+        ['linux', 'intel'], bug=540543)  # GPU timeout
+
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     # It has been fixed in Mesa 12.0

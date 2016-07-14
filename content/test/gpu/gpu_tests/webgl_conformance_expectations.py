@@ -698,6 +698,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/glsl/samplers/glsl-function-texture2dprojlod.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     # Intel
+    # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
         ['linux', 'intel'], bug=540543)  # GPU timeout
     self.Fail('conformance/glsl/bugs/qualcomm-loop-with-continue-crash.html',
