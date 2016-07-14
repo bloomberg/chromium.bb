@@ -1,0 +1,159 @@
+# Liblouis: Danish table for 6 dots grade 2 limited (lille forkortelse)
+#
+#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
+#------------
+#
+# This file is the Danish main table for 6 dots grade 2.
+# If used alone, it will create 6 dots grade 2 with capital letters.
+# Use together with da-dk-nocaps.uti to eliminate marking of caps except all caps.
+#
+# Version: Bue Vester-Andersen, 160713
+
+include da-dk-common6.uti
+
+
+# special rules for q w x and z
+noback always q 6-12345
+noback always Q 6-12345
+#nofor always Q 46-6-q
+noback always w 6-2456
+noback #always W 6-2456
+always x 6-1346
+always z 6-1356
+always \x00fc 6-1256
+
+endnum nd 6-1345-145
+endnum st 6-234-2345
+endnum ve 6-1236-15
+
+# Various punctuation
+always /\s 6-34-0
+always \s/ 0-6-34
+always \s-\s 0-36-36-0
+always (...) 236-3-3-3-356
+always ") 2356-356
+always "-" 2356-6-36-2356
+always fra! 124-1235-1-235
+always !fra 235-124-1235-1
+always !! 235-235
+always !!! 235-235-235
+always ?! 26-6-235
+always )! 356-6-235
+always (!) 236-6-235-356
+always "fra" 2356-124-1235-1-2356
+always "!" 2356-6-235-2356
+postpunc .! 3-235
+postpunc "! 2356-6-235
+always '! 4-6-235
+always \s! 0-6-235
+prepunc ! 6-235
+nofor always ! 6-235
+
+nocont \\
+nocont @
+nocont ://
+nocont www
+nocont .com
+nocont .dk
+nocont .eu
+nocont .edu
+nocont .gov
+nocont .mil
+nocont .net
+nocont .org
+nocont .uk
+nocont .doc
+nocont .exe
+nocont .htm
+nocont .tex
+nocont .txt
+nocont .gif
+nocont .jpg
+nocont .png
+nocont .wav
+nocont .tar
+nocont .zip
+
+#Words
+word at 1
+word bliver 12
+word den 12346
+word der 23456
+word det 2346
+word de 1456
+word du 145
+word efter 1356
+word eller 15
+word en 126
+word er 156
+word et 346
+word for 124
+word før 246
+word gennem 12456
+word gør 1245
+word han 13456
+word har 125
+word hun 136
+word hvad 2456
+word hvor 34
+word jeg 245
+word kan 13
+word lige 123
+word med 134
+word men 146
+word ned 1246
+word når 1345
+word og 14
+word op 135
+word over 1346
+word på 1234
+word ret 12356
+word rigtig 1235
+word skal 123456
+word som 234
+word så 16
+word te 1256
+word til 2345
+word under 12345
+word ve 3456
+word ved 1236
+word være 345
+
+
+noback context `["!"] @6-235
+
+
+
+noback context $l[]$D @6
+
+noback context $d[]"i" @6
+noback context $d$p[]"i" @6
+
+noback context ["-t"]~ @36-6-2345
+noback context `["-\s"] @36-36-0
+
+# Pass 2
+
+noback pass2 @6-46-5 @46-5
+noback pass2 @6-46 @46-6
+
+# Ensure there is only one letsign
+noback pass2 @6-6 @6
+

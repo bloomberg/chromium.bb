@@ -26,8 +26,7 @@
 # Version: Bue Vester-Andersen, 140511
 
 # Display upcodes
-
-include da-ansi8.dis
+include da-dk-octobraille.dis
 
 #Character definitions
 include da-chardefs6.cti

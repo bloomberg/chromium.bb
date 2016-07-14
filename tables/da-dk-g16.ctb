@@ -1,0 +1,35 @@
+# Liblouis: Danish table for 6 dots grade 1
+#
+#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
+#------------
+#
+# This file is the Danish main 6 dots grade 1 table.
+# If used alone, it will create 6 dots grade 1 with capital letters.
+# to eliminate capital letters except all caps, use this file together with da-dk-nocaps.uti.
+#
+# Version: Bue Vester-Andersen, 10713
+
+include da-dk-common6.uti
+
+
+noletsign abcdefghjklmnopqrstuvwxyz\x00e4\x00e5\x00e6\x00f6\x00f8\x00fc
+
+#ensure dot 6 between a digit and a letter
+context $d[]$u @6

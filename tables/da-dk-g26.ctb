@@ -1,6 +1,6 @@
 # Liblouis: Danish table for 6 dots grade 2
 #
-#  Copyright (C) 2014, Bue Vester-Andersen <bue@vester-andersen.dk>
+#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
 #
 #  This file is part of liblouis.
 #
@@ -24,7 +24,7 @@
 # If used alone, it will create 6 dots grade 2 with capital letters.
 # Use together with da-dk-nocaps.uti to eliminate marking of caps except all caps.
 #
-# Version: Bue Vester-Andersen, 140511
+# Version: Bue Vester-Andersen, 160713
 
 include da-dk-common6.uti
 
@@ -229,4 +229,4 @@ noback context `["-\s"] @36-36-0
 
 # Ensure there is only one letsign
 noback pass2 @6-6 @6
-include hyph_da_DK.dic
+include hyph_brl_da_dk.dic
