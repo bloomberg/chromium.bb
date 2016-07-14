@@ -100,9 +100,7 @@ class TranslatorCompileListener : public IPC::Listener {
 
 void ServeTranslateRequest(const struct nacl_irt_pnacl_compile_funcs* funcs) {
   base::MessageLoop loop;
-  int fd = ppapi::GetRendererIPCFileDescriptor();
-  IPC::ChannelHandle handle("NaCl IPC", base::FileDescriptor(fd, false));
-  new TranslatorCompileListener(handle, funcs);
+  new TranslatorCompileListener(ppapi::GetRendererIPCChannelHandle(), funcs);
   loop.Run();
 }
 

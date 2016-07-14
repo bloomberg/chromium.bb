@@ -71,9 +71,7 @@ class TranslatorLinkListener : public IPC::Listener {
 
 void ServeLinkRequest(CallbackFunc func) {
   base::MessageLoop loop;
-  int fd = ppapi::GetRendererIPCFileDescriptor();
-  IPC::ChannelHandle handle("NaCl IPC", base::FileDescriptor(fd, false));
-  new TranslatorLinkListener(handle, func);
+  new TranslatorLinkListener(ppapi::GetRendererIPCChannelHandle(), func);
   loop.Run();
 }
 

@@ -38,8 +38,8 @@ int irt_ppapi_start(const struct PP_StartFunctions* funcs) {
 
   ppapi::PpapiDispatcher ppapi_dispatcher(
       ppapi::GetIOThread()->task_runner(), ppapi::GetShutdownEvent(),
-      ppapi::GetBrowserIPCFileDescriptor(),
-      ppapi::GetRendererIPCFileDescriptor());
+      ppapi::GetBrowserIPCChannelHandle(),
+      ppapi::GetRendererIPCChannelHandle());
   plugin_globals.SetPluginProxyDelegate(&ppapi_dispatcher);
 
   loop.Run();

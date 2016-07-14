@@ -19,13 +19,18 @@
 namespace ppapi {
 namespace {
 
-int g_nacl_browser_ipc_fd = -1;
-int g_nacl_renderer_ipc_fd = -1;
-int g_manifest_service_fd = -1;
+IPC::ChannelHandle* g_nacl_browser_ipc_handle = nullptr;
+IPC::ChannelHandle* g_nacl_renderer_ipc_handle = nullptr;
+IPC::ChannelHandle* g_manifest_service_handle = nullptr;
 
 base::WaitableEvent* g_shutdown_event = NULL;
 base::Thread* g_io_thread = NULL;
 ManifestService* g_manifest_service = NULL;
+
+bool IsValidChannelHandle(IPC::ChannelHandle* handle) {
+  // ChannelMojo not yet supported.
+  return handle && handle->socket.fd != -1 && !handle->mojo_handle.is_valid();
+}
 
 // Creates the manifest service on IO thread so that its Listener's thread and
 // IO thread are shared. Upon completion of the manifest service creation,
@@ -33,30 +38,31 @@ ManifestService* g_manifest_service = NULL;
 void StartUpManifestServiceOnIOThread(base::WaitableEvent* event) {
   // The start up must be called only once.
   DCHECK(!g_manifest_service);
-  // manifest_service_fd must be set.
-  DCHECK_NE(g_manifest_service_fd, -1);
+  // manifest_service_handle must be set.
+  DCHECK(IsValidChannelHandle(g_manifest_service_handle));
   // IOThread and shutdown event must be initialized in advance.
   DCHECK(g_io_thread);
   DCHECK(g_shutdown_event);
 
   g_manifest_service = new ManifestService(
-      IPC::ChannelHandle("NaCl IPC",
-                         base::FileDescriptor(g_manifest_service_fd, false)),
-      g_io_thread->task_runner(), g_shutdown_event);
+      *g_manifest_service_handle, g_io_thread->task_runner(),
+      g_shutdown_event);
   event->Signal();
 }
 
 }  // namespace
 
-void SetIPCFileDescriptors(
-    int browser_ipc_fd, int renderer_ipc_fd, int manifest_service_fd) {
+void SetIPCChannelHandles(
+    IPC::ChannelHandle browser_ipc_handle,
+    IPC::ChannelHandle renderer_ipc_handle,
+    IPC::ChannelHandle manifest_service_handle) {
   // The initialization must be only once.
-  DCHECK_EQ(g_nacl_browser_ipc_fd, -1);
-  DCHECK_EQ(g_nacl_renderer_ipc_fd, -1);
-  DCHECK_EQ(g_manifest_service_fd, -1);
-  g_nacl_browser_ipc_fd = browser_ipc_fd;
-  g_nacl_renderer_ipc_fd = renderer_ipc_fd;
-  g_manifest_service_fd = manifest_service_fd;
+  DCHECK(!g_nacl_browser_ipc_handle);
+  DCHECK(!g_nacl_renderer_ipc_handle);
+  DCHECK(!g_nacl_renderer_ipc_handle);
+  g_nacl_browser_ipc_handle = new IPC::ChannelHandle(browser_ipc_handle);
+  g_nacl_renderer_ipc_handle = new IPC::ChannelHandle(renderer_ipc_handle);
+  g_manifest_service_handle = new IPC::ChannelHandle(manifest_service_handle);
 }
 
 void StartUpPlugin() {
@@ -74,7 +80,7 @@ void StartUpPlugin() {
   g_io_thread->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-  if (g_manifest_service_fd != -1) {
+  if (IsValidChannelHandle(g_manifest_service_handle)) {
     // Manifest service must be created on IOThread so that the main message
     // handling will be done on the thread, which has a message loop
     // even before irt_ppapi_start invocation.
@@ -91,16 +97,16 @@ void StartUpPlugin() {
   PPB_Audio_Shared::SetNaClMode();
 }
 
-int GetBrowserIPCFileDescriptor() {
-  // The descriptor must be initialized in advance.
-  DCHECK_NE(g_nacl_browser_ipc_fd, -1);
-  return g_nacl_browser_ipc_fd;
+IPC::ChannelHandle GetBrowserIPCChannelHandle() {
+  // The handle must be initialized in advance.
+  DCHECK(IsValidChannelHandle(g_nacl_browser_ipc_handle));
+  return *g_nacl_browser_ipc_handle;
 }
 
-int GetRendererIPCFileDescriptor() {
-  // The descriptor must be initialized in advance.
-  DCHECK_NE(g_nacl_renderer_ipc_fd, -1);
-  return g_nacl_renderer_ipc_fd;
+IPC::ChannelHandle GetRendererIPCChannelHandle() {
+  // The handle must be initialized in advance.
+  DCHECK(IsValidChannelHandle(g_nacl_renderer_ipc_handle));
+  return *g_nacl_renderer_ipc_handle;
 }
 
 base::WaitableEvent* GetShutdownEvent() {

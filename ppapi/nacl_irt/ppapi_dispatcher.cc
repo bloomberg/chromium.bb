@@ -34,15 +34,12 @@ namespace ppapi {
 PpapiDispatcher::PpapiDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WaitableEvent* shutdown_event,
-    int browser_ipc_fd,
-    int renderer_ipc_fd)
+    IPC::ChannelHandle browser_ipc_handle,
+    IPC::ChannelHandle renderer_ipc_handle)
     : next_plugin_dispatcher_id_(0),
       task_runner_(io_task_runner),
       shutdown_event_(shutdown_event),
-      renderer_ipc_fd_(renderer_ipc_fd) {
-  IPC::ChannelHandle channel_handle(
-      "NaCl IPC", base::FileDescriptor(browser_ipc_fd, false));
-
+      renderer_ipc_handle_(renderer_ipc_handle) {
   proxy::PluginGlobals* globals = proxy::PluginGlobals::Get();
   // Delay initializing the SyncChannel until after we add filters. This
   // ensures that the filters won't miss any messages received by
@@ -56,7 +53,7 @@ PpapiDispatcher::PpapiDispatcher(
   globals->RegisterResourceMessageFilters(plugin_filter.get());
 
   channel_->AddFilter(new tracing::ChildTraceMessageFilter(task_runner_.get()));
-  channel_->Init(channel_handle, IPC::Channel::MODE_SERVER, true);
+  channel_->Init(browser_ipc_handle, IPC::Channel::MODE_SERVER, true);
 }
 
 base::SingleThreadTaskRunner* PpapiDispatcher::GetIPCTaskRunner() {
@@ -184,11 +181,8 @@ void PpapiDispatcher::OnMsgInitializeNaClDispatcher(
   proxy::PluginDispatcher* dispatcher =
       new proxy::PluginDispatcher(::PPP_GetInterface, args.permissions,
                                   args.off_the_record);
-  IPC::ChannelHandle channel_handle(
-      "nacl",
-      base::FileDescriptor(renderer_ipc_fd_, false));
   if (!dispatcher->InitPluginWithChannel(this, base::kNullProcessId,
-                                         channel_handle, false)) {
+                                         renderer_ipc_handle_, false)) {
     delete dispatcher;
     return;
   }
