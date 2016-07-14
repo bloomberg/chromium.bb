@@ -16,8 +16,8 @@ class SolidColorLayer;
 class UIResourceLayer;
 }
 
-namespace content {
-class ContentViewCore;
+namespace cc {
+class Layer;
 }
 
 namespace ui {
@@ -49,7 +49,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      int peek_promo_ripple_resource_id,
                      int peek_promo_text_resource_id,
                      float dp_to_px,
-                     content::ContentViewCore* content_view_core,
+                     const scoped_refptr<cc::Layer>& content_layer,
                      bool search_promo_visible,
                      float search_promo_height,
                      float search_promo_opacity,

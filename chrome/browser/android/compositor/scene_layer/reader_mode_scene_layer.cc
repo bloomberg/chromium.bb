@@ -9,9 +9,10 @@
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/layer/reader_mode_layer.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ReaderModeSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 namespace chrome {
@@ -67,7 +68,7 @@ void ReaderModeSceneLayer::Update(
     jfloat dp_to_px,
     jfloat base_page_brightness,
     jfloat base_page_offset,
-    const JavaParamRef<jobject>& jcontent_view_core,
+    const JavaParamRef<jobject>& jweb_contents,
     jfloat panel_X,
     jfloat panel_y,
     jfloat panel_width,
@@ -80,12 +81,13 @@ void ReaderModeSceneLayer::Update(
     jboolean bar_shadow_visible,
     jfloat bar_shadow_opacity) {
   // NOTE(mdjones): It is possible to render the panel before content has been
-  // created. If this is the case, do not attempt to access the ContentViewCore
+  // created. If this is the case, do not attempt to access the WebContents
   // and instead pass null.
-  content::ContentViewCore* content_view_core =
-      !jcontent_view_core ? NULL
-                          : content::ContentViewCore::GetNativeContentViewCore(
-                                env, jcontent_view_core);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+
+  scoped_refptr<cc::Layer> content_layer =
+      web_contents ? web_contents->GetNativeView()->GetLayer() : nullptr;
 
   // Fade the base page out.
   if (base_page_brightness_ != base_page_brightness) {
@@ -103,7 +105,7 @@ void ReaderModeSceneLayer::Update(
 
   reader_mode_layer_->SetProperties(
       dp_to_px,
-      content_view_core,
+      content_layer,
       panel_X,
       panel_y,
       panel_width,

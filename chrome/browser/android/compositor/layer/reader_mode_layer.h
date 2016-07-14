@@ -9,8 +9,8 @@
 
 #include "chrome/browser/android/compositor/layer/overlay_panel_layer.h"
 
-namespace content {
-class ContentViewCore;
+namespace cc {
+class Layer;
 }
 
 namespace ui {
@@ -26,7 +26,7 @@ class ReaderModeLayer : public OverlayPanelLayer {
       ui::ResourceManager* resource_manager);
 
   void SetProperties(float dp_to_px,
-                     content::ContentViewCore* content_view_core,
+                     const scoped_refptr<cc::Layer>& content_layer,
                      float panel_x,
                      float panel_y,
                      float panel_width,

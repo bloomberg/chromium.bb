@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPeekPromoControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPromoControl;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -106,6 +106,9 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float progressBarOpacity = panel.getProgressBarOpacity();
         int progressBarCompletion = panel.getProgressBarCompletion();
 
+        WebContents panelWebContents = panel.getContentViewCore() != null
+                ? panel.getContentViewCore().getWebContents() : null;
+
         nativeUpdateContextualSearchLayer(mNativePtr,
                 R.drawable.contextual_search_bar_background,
                 searchContextViewId,
@@ -124,7 +127,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 mDpToPx,
                 panel.getBasePageBrightness(),
                 panel.getBasePageY() * mDpToPx,
-                panel.getContentViewCore(),
+                panelWebContents,
                 searchPromoVisible,
                 searchPromoHeightPx,
                 searchPromoOpacity,
@@ -218,7 +221,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             float dpToPx,
             float basePageBrightness,
             float basePageYOffset,
-            ContentViewCore contentViewCore,
+            WebContents webContents,
             boolean searchPromoVisible,
             float searchPromoHeight,
             float searchPromoOpacity,

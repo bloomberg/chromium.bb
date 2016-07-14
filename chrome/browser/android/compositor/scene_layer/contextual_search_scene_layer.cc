@@ -9,9 +9,10 @@
 #include "cc/layers/solid_color_layer.h"
 #include "chrome/browser/android/compositor/layer/contextual_search_layer.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/web_contents.h"
 #include "jni/ContextualSearchSceneLayer_jni.h"
 #include "ui/android/resources/resource_manager_impl.h"
+#include "ui/android/view_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 namespace chrome {
@@ -65,7 +66,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat dp_to_px,
     jfloat base_page_brightness,
     jfloat base_page_offset,
-    const JavaParamRef<jobject>& jcontent_view_core,
+    const JavaParamRef<jobject>& jweb_contents,
     jboolean search_promo_visible,
     jfloat search_promo_height,
     jfloat search_promo_opacity,
@@ -98,13 +99,14 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
     jfloat progress_bar_height,
     jfloat progress_bar_opacity,
     jint progress_bar_completion) {
-  // NOTE(pedrosimonetti): The ContentViewCore might not exist at this time if
+  // NOTE(pedrosimonetti): The WebContents might not exist at this time if
   // the Contextual Search Result has not been requested yet. In this case,
   // we'll pass NULL to Contextual Search's Layer Tree.
-  content::ContentViewCore* content_view_core =
-      !jcontent_view_core ? NULL
-                          : content::ContentViewCore::GetNativeContentViewCore(
-                                env, jcontent_view_core);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+
+  scoped_refptr<cc::Layer> content_layer =
+      web_contents ? web_contents->GetNativeView()->GetLayer() : nullptr;
 
   // Fade the base page out.
   if (base_page_brightness_ != base_page_brightness) {
@@ -136,7 +138,7 @@ void ContextualSearchSceneLayer::UpdateContextualSearchLayer(
       peek_promo_ripple_resource_id,
       peek_promo_text_resource_id,
       dp_to_px,
-      content_view_core,
+      content_layer,
       search_promo_visible,
       search_promo_height,
       search_promo_opacity,

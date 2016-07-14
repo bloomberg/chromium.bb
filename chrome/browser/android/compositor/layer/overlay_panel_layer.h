@@ -16,10 +16,6 @@ class SolidColorLayer;
 class UIResourceLayer;
 }
 
-namespace content {
-class ContentViewCore;
-}
-
 namespace ui {
 class ResourceManager;
 }
@@ -36,8 +32,8 @@ class OverlayPanelLayer : public Layer {
                       int close_icon_resource_id);
 
   void SetProperties(float dp_to_px,
-                     content::ContentViewCore* content_view_core,
-                     float content_view_core_offset_y,
+                     const scoped_refptr<cc::Layer>& content_layer,
+                     float content_offset_y,
                      float panel_x,
                      float panel_y,
                      float panel_width,
@@ -70,7 +66,7 @@ class OverlayPanelLayer : public Layer {
   scoped_refptr<cc::UIResourceLayer> bar_shadow_;
   scoped_refptr<cc::UIResourceLayer> panel_icon_;
   scoped_refptr<cc::UIResourceLayer> close_icon_;
-  scoped_refptr<cc::Layer> content_view_container_;
+  scoped_refptr<cc::Layer> content_container_;
   scoped_refptr<cc::Layer> text_container_;
   scoped_refptr<cc::SolidColorLayer> bar_border_;
 

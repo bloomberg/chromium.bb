@@ -10,7 +10,6 @@
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/resources/resource_manager.h"
@@ -66,8 +65,8 @@ void OverlayPanelLayer::SetResourceIds(
 
 void OverlayPanelLayer::SetProperties(
     float dp_to_px,
-    content::ContentViewCore* content_view_core,
-    float content_view_core_offset_y,
+    const scoped_refptr<cc::Layer>& content_layer,
+    float content_offset_y,
     float panel_x,
     float panel_y,
     float panel_width,
@@ -197,17 +196,16 @@ void OverlayPanelLayer::SetProperties(
   close_icon_->SetOpacity(close_icon_opacity);
 
   // ---------------------------------------------------------------------------
-  // Content View
+  // Content
   // ---------------------------------------------------------------------------
-  content_view_container_->SetPosition(
-      gfx::PointF(0.f, content_view_core_offset_y));
-  content_view_container_->SetBounds(gfx::Size(panel_width, panel_height));
-  if (content_view_core && content_view_core->GetLayer()) {
-    scoped_refptr<cc::Layer> content_view_layer = content_view_core->GetLayer();
-    if (content_view_layer->parent() != content_view_container_)
-      content_view_container_->AddChild(content_view_layer);
+  content_container_->SetPosition(
+      gfx::PointF(0.f, content_offset_y));
+  content_container_->SetBounds(gfx::Size(panel_width, panel_height));
+  if (content_layer) {
+    if (content_layer->parent() != content_container_)
+      content_container_->AddChild(content_layer);
   } else {
-    content_view_container_->RemoveAllChildren();
+    content_container_->RemoveAllChildren();
   }
 
   // ---------------------------------------------------------------------------
@@ -266,7 +264,7 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
       bar_shadow_(cc::UIResourceLayer::Create()),
       panel_icon_(cc::UIResourceLayer::Create()),
       close_icon_(cc::UIResourceLayer::Create()),
-      content_view_container_(cc::SolidColorLayer::Create()),
+      content_container_(cc::SolidColorLayer::Create()),
       text_container_(cc::Layer::Create()),
       bar_border_(cc::SolidColorLayer::Create()) {
   layer_->SetMasksToBounds(false);
@@ -297,10 +295,10 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
   close_icon_->SetIsDrawable(true);
   layer_->AddChild(close_icon_);
 
-  // Content View Container
-  content_view_container_->SetIsDrawable(true);
-  content_view_container_->SetBackgroundColor(kBarBackgroundColor);
-  layer_->AddChild(content_view_container_);
+  // Content Container
+  content_container_->SetIsDrawable(true);
+  content_container_->SetBackgroundColor(kBarBackgroundColor);
+  layer_->AddChild(content_container_);
 
   // Bar Border
   bar_border_->SetIsDrawable(true);

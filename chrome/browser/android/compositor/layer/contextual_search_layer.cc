@@ -11,7 +11,6 @@
 #include "cc/resources/scoped_ui_resource.h"
 #include "chrome/browser/android/compositor/layer/crushed_sprite_layer.h"
 #include "content/public/browser/android/compositor.h"
-#include "content/public/browser/android/content_view_core.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
 #include "ui/android/resources/resource_manager.h"
@@ -77,7 +76,7 @@ void ContextualSearchLayer::SetProperties(
     int peek_promo_ripple_resource_id,
     int peek_promo_text_resource_id,
     float dp_to_px,
-    content::ContentViewCore* content_view_core,
+    const scoped_refptr<cc::Layer>& content_layer,
     bool search_promo_visible,
     float search_promo_height,
     float search_promo_opacity,
@@ -146,7 +145,7 @@ void ContextualSearchLayer::SetProperties(
   // -----------------------------------------------------------------
   OverlayPanelLayer::SetProperties(
       dp_to_px,
-      content_view_core,
+      content_layer,
       content_view_top,
       search_panel_x,
       search_panel_y,
