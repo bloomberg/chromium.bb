@@ -500,8 +500,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 };
 
 LayerTreeTest::LayerTreeTest()
-    : output_surface_(nullptr),
-      external_begin_frame_source_(nullptr),
+    : external_begin_frame_source_(nullptr),
       remote_proto_channel_bridge_(this),
       image_serialization_processor_(
           base::WrapUnique(new FakeImageSerializationProcessor)),
@@ -905,32 +904,16 @@ void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
 }
 
 void LayerTreeTest::RequestNewOutputSurface() {
-  SetOutputSurfaceOnLayerTreeHost(CreateOutputSurface());
-}
-
-std::unique_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
-  std::unique_ptr<FakeOutputSurface> output_surface = CreateFakeOutputSurface();
-  DCHECK_EQ(delegating_renderer_,
-            output_surface->capabilities().delegated_rendering);
-  output_surface_ = output_surface.get();
-
   if (settings_.use_external_begin_frame_source &&
       settings_.wait_for_beginframe_interval) {
     DCHECK(external_begin_frame_source_);
   }
-  return std::move(output_surface);
+  SetOutputSurfaceOnLayerTreeHost(CreateOutputSurface());
 }
 
-std::unique_ptr<FakeOutputSurface> LayerTreeTest::CreateFakeOutputSurface() {
-  if (delegating_renderer_)
-    return FakeOutputSurface::CreateDelegating3d();
-  else
-    return FakeOutputSurface::Create3d();
-}
-
-TestWebGraphicsContext3D* LayerTreeTest::TestContext() {
-  return static_cast<TestContextProvider*>(output_surface_->context_provider())
-      ->TestContext3d();
+std::unique_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface() {
+  return delegating_renderer_ ? FakeOutputSurface::CreateDelegating3d()
+                              : FakeOutputSurface::Create3d();
 }
 
 void LayerTreeTest::DestroyLayerTreeHost() {

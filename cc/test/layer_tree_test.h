@@ -148,7 +148,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   LayerTreeHost* layer_tree_host();
   LayerTreeHost* remote_client_layer_tree_host();
   bool delegating_renderer() const { return delegating_renderer_; }
-  FakeOutputSurface* output_surface() { return output_surface_; }
   SharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
   }
@@ -174,12 +173,9 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   // By default, output surface recreation is synchronous.
   void RequestNewOutputSurface() override;
-  // Override this for pixel tests, where you need a real output surface.
+  // Override this for pixel tests, where you need a real output surface, or
+  // if you want to control the output surface used for drawing.
   virtual std::unique_ptr<OutputSurface> CreateOutputSurface();
-  // Override this for unit tests, which should not produce pixel output.
-  virtual std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface();
-
-  TestWebGraphicsContext3D* TestContext();
 
   bool IsRemoteTest() const;
 
@@ -196,7 +192,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   // The LayerTreeHost created by the cc embedder on the client in remote mode.
   std::unique_ptr<LayerTreeHostForTesting> remote_client_layer_tree_host_;
 
-  FakeOutputSurface* output_surface_;
   FakeExternalBeginFrameSource* external_begin_frame_source_;
   RemoteProtoChannelBridge remote_proto_channel_bridge_;
 

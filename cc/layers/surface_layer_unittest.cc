@@ -181,6 +181,13 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
  public:
   SurfaceLayerSwapPromiseWithDraw() : SurfaceLayerSwapPromise() {}
 
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
+    auto ret = delegating_renderer() ? FakeOutputSurface::CreateDelegating3d()
+                                     : FakeOutputSurface::Create3d();
+    output_surface_ = ret.get();
+    return std::move(ret);
+  }
+
   void ChangeTree() override {
     ++commit_count_;
     switch (commit_count_) {
@@ -198,7 +205,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
 
   void SwapBuffersCompleteOnThread() override {
     std::vector<uint32_t>& satisfied =
-        output_surface()->last_sent_frame()->metadata.satisfies_sequences;
+        output_surface_->last_sent_frame()->metadata.satisfies_sequences;
     EXPECT_LE(satisfied.size(), 1u);
     if (satisfied.size() == 1) {
       // Eventually the one SurfaceSequence should be satisfied, but only
@@ -218,6 +225,8 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
     // callback.
     EXPECT_TRUE(satisfied_sequence_.is_null());
   }
+
+  FakeOutputSurface* output_surface_;
 };
 
 // TODO(jbauman): Reenable on single thread once http://crbug.com/421923 is

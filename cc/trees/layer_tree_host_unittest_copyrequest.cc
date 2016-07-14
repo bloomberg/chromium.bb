@@ -126,7 +126,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
 
   void AfterTest() override { EXPECT_EQ(4u, callbacks_.size()); }
 
-  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
     if (!use_gl_renderer_) {
       return FakeOutputSurface::CreateSoftware(
           base::WrapUnique(new SoftwareOutputDevice));
@@ -136,7 +136,7 @@ class LayerTreeHostCopyRequestTestMultipleRequests
     TestContextSupport* context_support = static_cast<TestContextSupport*>(
         output_surface->context_provider()->ContextSupport());
     context_support->set_out_of_order_callbacks(out_of_order_callbacks_);
-    return output_surface;
+    return std::move(output_surface);
   }
 
   bool use_gl_renderer_;
@@ -708,7 +708,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 class LayerTreeHostCopyRequestTestLostOutputSurface
     : public LayerTreeHostCopyRequestTest {
  protected:
-  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
     if (!first_context_provider_) {
       first_context_provider_ = TestContextProvider::Create();
       return FakeOutputSurface::Create3d(first_context_provider_);
@@ -844,7 +844,7 @@ SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
 class LayerTreeHostCopyRequestTestCountTextures
     : public LayerTreeHostCopyRequestTest {
  protected:
-  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
     context_provider_ = TestContextProvider::Create();
     return FakeOutputSurface::Create3d(context_provider_);
   }

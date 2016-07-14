@@ -80,7 +80,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     return TestWebGraphicsContext3D::Create();
   }
 
-  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
     if (times_to_fail_create_) {
       --times_to_fail_create_;
       ExpectCreateToFail();
@@ -1062,14 +1062,14 @@ class LayerTreeHostContextTestDontUseLostResources
     return draw_result;
   }
 
-  std::unique_ptr<FakeOutputSurface> CreateFakeOutputSurface() override {
+  std::unique_ptr<OutputSurface> CreateOutputSurface() override {
     // This will get called twice:
     // First when we create the initial output surface...
     if (layer_tree_host()->source_frame_number() > 0) {
       // ... and then again after we forced the context to be lost.
       lost_context_ = true;
     }
-    return LayerTreeHostContextTest::CreateFakeOutputSurface();
+    return LayerTreeHostContextTest::CreateOutputSurface();
   }
 
   void DidCommitAndDrawFrame() override {
@@ -1507,9 +1507,8 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
 
   void DidSetVisibleOnImplTree(LayerTreeHostImpl* impl, bool visible) override {
     if (!visible) {
-      TestWebGraphicsContext3D* context = TestContext();
       // All resources should have been evicted.
-      ASSERT_EQ(0u, context->NumTextures());
+      ASSERT_EQ(0u, context3d_->NumTextures());
       EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
       EXPECT_EQ(2, ui_resource_->resource_create_count);
       EXPECT_EQ(1, ui_resource_->lost_resource_count);
@@ -1522,19 +1521,18 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
   }
 
   void StepCompleteOnImplThread(LayerTreeHostImpl* impl) override {
-    TestWebGraphicsContext3D* context = TestContext();
     LayerTreeHostContextTest::CommitCompleteOnThread(impl);
     switch (time_step_) {
       case 1:
         // The resource should have been created on LTHI after the commit.
-        ASSERT_EQ(1u, context->NumTextures());
+        ASSERT_EQ(1u, context3d_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
         EXPECT_EQ(0, ui_resource_->lost_resource_count);
         EXPECT_TRUE(impl->CanDraw());
         // Evict all UI resources. This will trigger a commit.
         impl->EvictAllUIResources();
-        ASSERT_EQ(0u, context->NumTextures());
+        ASSERT_EQ(0u, context3d_->NumTextures());
         EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(1, ui_resource_->resource_create_count);
         EXPECT_EQ(0, ui_resource_->lost_resource_count);
@@ -1542,7 +1540,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
         break;
       case 2:
         // The resource should have been recreated.
-        ASSERT_EQ(1u, context->NumTextures());
+        ASSERT_EQ(1u, context3d_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(2, ui_resource_->resource_create_count);
         EXPECT_EQ(1, ui_resource_->lost_resource_count);
@@ -1551,7 +1549,7 @@ class UIResourceLostEviction : public UIResourceLostTestSimple {
       case 3:
         // The resource should have been recreated after visibility was
         // restored.
-        ASSERT_EQ(1u, context->NumTextures());
+        ASSERT_EQ(1u, context3d_->NumTextures());
         EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
         EXPECT_EQ(3, ui_resource_->resource_create_count);
         EXPECT_EQ(2, ui_resource_->lost_resource_count);
