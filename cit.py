@@ -9,6 +9,7 @@
 This tool does a two things:
 * Maintains a infra.git checkout pinned at "deployed" in the home dir
 * Acts as an alias to infra.tools.*
+* Acts as an alias to infra.git/cipd/<executable>
 """
 
 # TODO(hinoka): Use cipd/glyco instead of git/gclient.
@@ -75,33 +76,66 @@ def ensure_infra(branch):
   sys.stderr.flush()
 
 
+def is_exe(filename):
+  """Given a full filepath, return true if the file is an executable."""
+  if sys.platform.startswith('win'):
+    return filename.endswith('.exe')
+  else:
+    return os.path.isfile(filename) and os.access(filename, os.X_OK)
+
+
 def get_available_tools():
-  tools = []
+  """Returns a tuple of (list of infra tools, list of cipd tools)"""
+  infra_tools = []
+  cipd_tools = []
   starting = os.path.join(TARGET_DIR, 'infra', 'infra', 'tools')
   for root, _, files in os.walk(starting):
     if '__main__.py' in files:
-      tools.append(root[len(starting)+1:].replace(os.path.sep, '.'))
-  return sorted(tools)
+      infra_tools.append(root[len(starting)+1:].replace(os.path.sep, '.'))
+  cipd = os.path.join(TARGET_DIR, 'infra', 'cipd')
+  for fn in os.listdir(cipd):
+    if is_exe(os.path.join(cipd, fn)):
+      cipd_tools.append(fn)
+  return (sorted(infra_tools), sorted(cipd_tools))
 
 
 def run(args):
   if args:
     tool_name = args[0]
-    cmd = [
-        sys.executable, os.path.join(TARGET_DIR, 'infra', 'run.py'),
-        'infra.tools.%s' % tool_name]
+    # Check to see if it is a infra tool first.
+    infra_dir = os.path.join(
+      TARGET_DIR, 'infra', 'infra', 'tools', *tool_name.split('.'))
+    cipd_file = os.path.join(TARGET_DIR, 'infra', 'cipd', tool_name)
+    if sys.platform.startswith('win'):
+      cipd_file += '.exe'
+    if (os.path.isdir(infra_dir)
+        and os.path.isfile(os.path.join(infra_dir, '__main__.py'))):
+      cmd = [
+          sys.executable, os.path.join(TARGET_DIR, 'infra', 'run.py'),
+          'infra.tools.%s' % tool_name]
+    elif os.path.isfile(cipd_file) and is_exe(cipd_file):
+      cmd = [cipd_file]
+
+    # Add the remaining arguments.
     cmd.extend(args[1:])
     return subprocess.call(cmd)
 
-  tools = get_available_tools()
+  infra_tools, cipd_tools = get_available_tools()
   print """usage: cit.py <name of tool> [args for tool]
 
-  Wrapper for maintaining and calling tools in "infra.git/run.py infra.tools.*"
+  Wrapper for maintaining and calling tools in:
+    "infra.git/run.py infra.tools.*"
+    "infra.git/cipd/*"
 
-  Available tools are:
-  """
-  for tool in tools:
+  Available infra tools are:"""
+  for tool in infra_tools:
     print '  * %s' % tool
+
+  print """
+  Available cipd tools are:"""
+  for tool in cipd_tools:
+    print '  * %s' % tool
+
 
 
 def main():
