@@ -29,7 +29,10 @@ Browser* GetBrowser() {
 BluetoothChooserController::BluetoothChooserController(
     content::RenderFrameHost* owner,
     const content::BluetoothChooser::EventHandler& event_handler)
-    : ChooserController(owner), event_handler_(event_handler) {}
+    : ChooserController(owner,
+                        IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN,
+                        IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
+      event_handler_(event_handler) {}
 
 BluetoothChooserController::~BluetoothChooserController() {}
 

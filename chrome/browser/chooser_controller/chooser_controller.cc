@@ -5,7 +5,6 @@
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -14,8 +13,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
-ChooserController::ChooserController(content::RenderFrameHost* owner)
-    : owning_frame_(owner) {}
+ChooserController::ChooserController(content::RenderFrameHost* owner,
+                                     int title_string_id_origin,
+                                     int title_string_id_extension)
+    : owning_frame_(owner),
+      title_string_id_origin_(title_string_id_origin),
+      title_string_id_extension_(title_string_id_extension) {}
 
 ChooserController::~ChooserController() {}
 
@@ -36,15 +39,14 @@ base::string16 ChooserController::GetTitle() const {
       const extensions::Extension* extension =
           extension_registry->enabled_extensions().GetByID(origin.host());
       if (extension) {
-        return l10n_util::GetStringFUTF16(
-            IDS_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME,
-            base::UTF8ToUTF16(extension->name()));
+        return l10n_util::GetStringFUTF16(title_string_id_extension_,
+                                          base::UTF8ToUTF16(extension->name()));
       }
     }
   }
 
   return l10n_util::GetStringFUTF16(
-      IDS_DEVICE_CHOOSER_PROMPT_ORIGIN,
+      title_string_id_origin_,
       url_formatter::FormatOriginForSecurityDisplay(
           origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }

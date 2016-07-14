@@ -21,7 +21,9 @@ class RenderFrameHost;
 // calls back into it are not allowed.
 class ChooserController {
  public:
-  explicit ChooserController(content::RenderFrameHost* owner);
+  ChooserController(content::RenderFrameHost* owner,
+                    int title_string_id_origin,
+                    int title_string_id_extension);
   virtual ~ChooserController();
 
   // Since the set of options can change while the UI is visible an
@@ -82,7 +84,9 @@ class ChooserController {
   Observer* observer() const { return observer_; }
 
  private:
-  content::RenderFrameHost* owning_frame_;
+  content::RenderFrameHost* const owning_frame_;
+  const int title_string_id_origin_;
+  const int title_string_id_extension_;
   Observer* observer_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ChooserController);
