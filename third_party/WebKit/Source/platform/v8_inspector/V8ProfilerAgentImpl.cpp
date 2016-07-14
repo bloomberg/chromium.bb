@@ -63,7 +63,6 @@ std::unique_ptr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::
         .setLineNumber(node->GetLineNumber())
         .setColumnNumber(node->GetColumnNumber())
         .setHitCount(node->GetHitCount())
-        .setCallUID(node->GetCallUid())
         .setChildren(std::move(children))
         .setPositionTicks(std::move(positionTicks))
         .setDeoptReason(node->GetBailoutReason())
