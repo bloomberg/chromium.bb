@@ -174,12 +174,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     public void onWindowVisibilityChanged(int visibility) {
         super.onWindowVisibilityChanged(visibility);
         if (visibility == View.VISIBLE) {
-            if (updateAccounts()) {
-                // A new account has been added and the visibility has returned to us.
-                // The updateAccounts function will have selected the new account.
-                // Shortcut to confirm sign in page.
-                showConfirmSigninPageAccountTrackerServiceCheck();
-            }
+            updateAccounts();
         }
     }
 
@@ -221,12 +216,10 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     }
 
     /**
-     * Refresh the list of available system account.
-     * @return Whether any new accounts were added (the first newly added account will now be
-     *         selected).
+     * Refresh the list of available system accounts.
      */
-    private boolean updateAccounts() {
-        if (mSignedIn || mProfileData == null) return false;
+    private void updateAccounts() {
+        if (mSignedIn || mProfileData == null) return;
 
         List<String> oldAccountNames = mAccountNames;
         mAccountNames = mAccountManagerHelper.getGoogleAccountNames();
@@ -235,25 +228,38 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
             accountToSelect = mAccountNames.indexOf(mForcedAccountName);
             if (accountToSelect < 0) {
                 mListener.onFailedToSetForcedAccount(mForcedAccountName);
-                return false;
+                return;
             }
         } else {
             accountToSelect = getIndexOfNewElement(
                     oldAccountNames, mAccountNames, mSigninChooseView.getSelectedAccountPosition());
         }
 
+        int oldSelectedAccount = mSigninChooseView.getSelectedAccountPosition();
         mSigninChooseView.updateAccounts(mAccountNames, accountToSelect, mProfileData);
         if (mAccountNames.isEmpty()) {
             setUpSigninButton(false);
-            return false;
+            return;
         }
         setUpSigninButton(true);
 
         mProfileData.update();
 
-        return oldAccountNames != null
-                && !(oldAccountNames.size() == mAccountNames.size()
-                    && oldAccountNames.containsAll(mAccountNames));
+        // Determine how the accounts have changed. Each list should only have unique elements.
+        if (oldAccountNames == null) return;
+
+        if (!mAccountNames.get(accountToSelect).equals(oldAccountNames.get(oldSelectedAccount))) {
+            // Any dialogs that may have been showing are now invalid (they were created for the
+            // previously selected account).
+            ConfirmSyncDataStateMachine.cancelAllDialogs(mDelegate.getFragmentManager());
+
+            if (mAccountNames.containsAll(oldAccountNames)) {
+                // A new account has been added and no accounts have been deleted. We will have
+                // changed the account selection to the newly added account, so shortcut to the
+                // confirm signin page.
+                showConfirmSigninPageAccountTrackerServiceCheck();
+            }
+        }
     }
 
     /**
