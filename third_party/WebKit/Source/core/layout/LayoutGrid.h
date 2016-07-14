@@ -121,10 +121,10 @@ private:
     class GridIterator;
     struct GridSizingData;
     enum SizingOperation { TrackSizing, IntrinsicSizeComputation };
-    void computeUsedBreadthOfGridTracks(GridTrackSizingDirection, GridSizingData&, LayoutUnit& baseSizesWithoutMaximization, LayoutUnit& growthLimitsWithoutMaximization);
+    void computeUsedBreadthOfGridTracks(GridTrackSizingDirection, GridSizingData&, LayoutUnit& baseSizesWithoutMaximization, LayoutUnit& growthLimitsWithoutMaximization) const;
     LayoutUnit computeUsedBreadthOfMinLength(const GridLength&, LayoutUnit maxBreadth) const;
     LayoutUnit computeUsedBreadthOfMaxLength(const GridLength&, LayoutUnit usedBreadth, LayoutUnit maxBreadth) const;
-    void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&);
+    void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&) const;
 
     void ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize);
     void insertItemIntoGrid(LayoutBox&, const GridArea&);
@@ -153,10 +153,10 @@ private:
     void populateGridPositionsForDirection(GridSizingData&, GridTrackSizingDirection);
 
     typedef struct GridItemsSpanGroupRange GridItemsSpanGroupRange;
-    LayoutUnit currentItemSizeForTrackSizeComputationPhase(TrackSizeComputationPhase, LayoutBox&, GridTrackSizingDirection, GridSizingData&);
-    void resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection, const GridSpan&, LayoutBox& gridItem, GridTrack&, GridSizingData&);
-    template <TrackSizeComputationPhase> void resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizingDirection, GridSizingData&, const GridItemsSpanGroupRange&);
-    template <TrackSizeComputationPhase> void distributeSpaceToTracks(Vector<GridTrack*>&, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, GridSizingData&, LayoutUnit& availableLogicalSpace);
+    LayoutUnit currentItemSizeForTrackSizeComputationPhase(TrackSizeComputationPhase, LayoutBox&, GridTrackSizingDirection, GridSizingData&) const;
+    void resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection, const GridSpan&, LayoutBox& gridItem, GridTrack&, GridSizingData&) const;
+    template <TrackSizeComputationPhase> void resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizingDirection, GridSizingData&, const GridItemsSpanGroupRange&) const;
+    template <TrackSizeComputationPhase> void distributeSpaceToTracks(Vector<GridTrack*>&, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, GridSizingData&, LayoutUnit& availableLogicalSpace) const;
 
     typedef HashSet<size_t, DefaultHash<size_t>::Hash, WTF::UnsignedWithZeroKeyHashTraits<size_t>> TrackIndexSet;
     double computeFlexFactorUnitSize(const Vector<GridTrack>&, GridTrackSizingDirection, double flexFactorSum, LayoutUnit& leftOverSpace, const Vector<size_t, 8>& flexibleTracksIndexes, std::unique_ptr<TrackIndexSet> tracksToTreatAsInflexible = nullptr) const;
@@ -165,11 +165,11 @@ private:
     const GridTrackSize& rawGridTrackSize(GridTrackSizingDirection, size_t) const;
     GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t, SizingOperation = TrackSizing) const;
 
-    bool updateOverrideContainingBlockContentSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
-    LayoutUnit logicalHeightForChild(LayoutBox&, GridSizingData&);
-    LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
-    LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
-    LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
+    bool updateOverrideContainingBlockContentSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&) const;
+    LayoutUnit logicalHeightForChild(LayoutBox&, GridSizingData&) const;
+    LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&) const;
+    LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&) const;
+    LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&) const;
     GridAxisPosition columnAxisPositionForChild(const LayoutBox&) const;
     GridAxisPosition rowAxisPositionForChild(const LayoutBox&) const;
     LayoutUnit rowAxisOffsetForChild(const LayoutBox&, GridSizingData&) const;
