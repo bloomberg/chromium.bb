@@ -17,6 +17,7 @@ namespace gfx {
 
 // static
 ColorSpace ColorSpace::FromBestMonitor() {
+  ColorSpace color_space;
   Atom property = XInternAtom(GetXDisplay(), "_ICC_PROFILE", true);
   if (property != None) {
     Atom prop_type = None;
@@ -29,13 +30,11 @@ ColorSpace ColorSpace::FromBestMonitor() {
             0x1FFFFFFF /* MAXINT32 / 4 */, False, AnyPropertyType, &prop_type,
             &prop_format, &nitems, &nbytes,
             reinterpret_cast<unsigned char**>(&property_data)) == Success) {
-      std::vector<char> icc_profile;
-      icc_profile.assign(property_data, property_data + nitems);
+      color_space.icc_profile_.assign(property_data, property_data + nitems);
       XFree(property_data);
-      return FromICCProfile(icc_profile);
     }
   }
-  return ColorSpace();
+  return color_space;
 }
 
 }  // namespace gfx
