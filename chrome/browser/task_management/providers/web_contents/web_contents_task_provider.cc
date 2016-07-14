@@ -55,9 +55,8 @@ class WebContentsEntry : public content::WebContentsObserver {
   void WebContentsDestroyed() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void OnRendererUnresponsive(RenderWidgetHost* render_widget_host) override;
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
 
  private:
@@ -163,43 +162,43 @@ void WebContentsEntry::RenderProcessGone(base::TerminationStatus status) {
 
 void WebContentsEntry::OnRendererUnresponsive(
     RenderWidgetHost* render_widget_host) {
-  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
-  if (itr == tasks_by_frames_.end())
+  RendererTask* task = GetTaskForFrame(web_contents()->GetMainFrame());
+  if (!task)
     return;
 
   DCHECK_EQ(render_widget_host->GetProcess(),
             web_contents()->GetMainFrame()->GetProcess());
 
-  provider_->NotifyObserverTaskUnresponsive(itr->second);
+  provider_->NotifyObserverTaskUnresponsive(task);
 }
 
-void WebContentsEntry::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
-  if (itr == tasks_by_frames_.end())
+void WebContentsEntry::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  RendererTask* task = GetTaskForFrame(web_contents()->GetMainFrame());
+  if (!task)
     return;
 
   // Listening to WebContentsObserver::TitleWasSet() only is not enough in
   // some cases when the the webpage doesn't have a title. That's why we update
   // the title here as well.
-  itr->second->UpdateTitle();
+  task->UpdateTitle();
 
   // Call RendererTask::UpdateFavicon() to set the current favicon to the
   // default favicon. If the page has a non-default favicon,
   // RendererTask::OnFaviconUpdated() will update the current favicon once
   // FaviconDriver figures out the correct favicon for the page.
-  itr->second->UpdateFavicon();
-  itr->second->UpdateRapporSampleName();
+  task->UpdateFavicon();
+  task->UpdateRapporSampleName();
 }
 
 void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
                                    bool explicit_set) {
-  auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
-  if (itr == tasks_by_frames_.end())
+  RendererTask* task = GetTaskForFrame(web_contents()->GetMainFrame());
+  if (!task)
     return;
 
-  itr->second->UpdateTitle();
+  task->UpdateTitle();
+  task->UpdateFavicon();
 }
 
 void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {

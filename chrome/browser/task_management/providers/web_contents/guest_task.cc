@@ -40,7 +40,13 @@ base::string16 GuestTask::GetCurrentTitle(
   guest_view::GuestViewBase* guest =
       guest_view::GuestViewBase::FromWebContents(web_contents);
 
-  DCHECK(guest);
+  if (!guest) {
+    // This can happen when an AppWindowContentsImpl is destroyed. It emits a
+    // DidFinishNavigation() events to the WebContentsObservers which triggers a
+    // title update in WebContentsTaskProvider. This happens before
+    // WebContentsDestroyed() is emitted.
+    return title();
+  }
 
   base::string16 title =
       l10n_util::GetStringFUTF16(guest->GetTaskPrefix(),
