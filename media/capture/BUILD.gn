@@ -171,7 +171,10 @@ test("capture_unittests") {
   ]
 
   if (is_android) {
-    deps += [ "//media/capture/video/android:capture_java" ]
+    deps += [
+      "//media/capture/video/android",
+      "//media/capture/video/android:capture_java",
+    ]
   }
 
   if (is_win) {

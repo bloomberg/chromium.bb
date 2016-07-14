@@ -404,14 +404,6 @@ source_set("test_support") {
     "//testing/gmock",
     "//ui/gfx:test_support",
   ]
-  if (is_android) {
-    deps += [
-      # Needed to register capture Java/Jni objects. TODO(mcasas): Remove when
-      # the dependency to capture is not needed, see https://crbug.com/618718.
-      "//media/capture",
-      "//media/capture/video/android",
-    ]
-  }
 }
 
 source_set("unittests") {

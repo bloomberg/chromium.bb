@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_ANDROID_PHOTO_CAPABILITIES_H_
-#define MEDIA_VIDEO_CAPTURE_ANDROID_PHOTO_CAPABILITIES_H_
+#ifndef MEDIA_CAPTURE_VIDEO_ANDROID_PHOTO_CAPABILITIES_H_
+#define MEDIA_CAPTURE_VIDEO_ANDROID_PHOTO_CAPABILITIES_H_
 
 #include <jni.h>
 #include <string>
@@ -30,4 +30,4 @@ class PhotoCapabilities {
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_ANDROID_PHOTO_CAPABILITIES_H_
+#endif  // MEDIA_CAPTURE_VIDEO_ANDROID_PHOTO_CAPABILITIES_H_

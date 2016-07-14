@@ -7,12 +7,10 @@
 
 #include <jni.h>
 
-#include "media/base/media_export.h"
-
 namespace media {
 
 // Register all JNI bindings necessary for screen capture.
-MEDIA_EXPORT bool RegisterScreenCaptureJni(JNIEnv* env);
+bool RegisterScreenCaptureJni(JNIEnv* env);
 
 }  // namespace media
 

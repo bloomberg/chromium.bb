@@ -343,6 +343,7 @@ source_set("browser") {
     deps += [
       "//content/public/android:jni",
       "//media",
+      "//media/capture/content/android",
       "//media/capture/video/android",
       "//media/mojo/interfaces",
       "//mojo/android:libsystem_java",

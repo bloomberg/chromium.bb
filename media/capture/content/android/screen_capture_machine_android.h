@@ -14,8 +14,7 @@
 namespace media {
 
 // ScreenCaptureMachineAndroid captures 32bit RGB or YUV420 triplanar.
-class MEDIA_EXPORT ScreenCaptureMachineAndroid
-    : public media::VideoCaptureMachine {
+class ScreenCaptureMachineAndroid : public media::VideoCaptureMachine {
  public:
   ScreenCaptureMachineAndroid();
   ~ScreenCaptureMachineAndroid() override;
