@@ -96,6 +96,7 @@ include_rules = [
   # For tests.
   "+ios/chrome/test",
   "+ios/public/test",
+  "+ios/testing",
 
   # Only parts of skia are compiled on iOS, so we explicitly list the
   # files that can be included to avoid bringing in more code.
