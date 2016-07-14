@@ -1286,9 +1286,10 @@ static void set_default_kf_interval(struct stream_state *stream,
    * specified on the command line.
    */
   if (!stream->config.have_kf_max_dist) {
-    double framerate = (double)global->framerate.num / global->framerate.den;
-    if (framerate > 0.0)
-      stream->config.cfg.kf_max_dist = (unsigned int)(5.0 * framerate);
+    double global_framerate =
+        (double)global->framerate.num / global->framerate.den;
+    if (global_framerate > 0.0)
+      stream->config.cfg.kf_max_dist = (unsigned int)(5.0 * global_framerate);
   }
 }
 
@@ -2115,10 +2116,10 @@ int main(int argc, const char **argv_) {
           } else {
             const int64_t input_pos = ftello(input.file);
             const int64_t input_pos_lagged = input_pos - lagged_count;
-            const int64_t limit = input.length;
+            const int64_t input_limit = input.length;
 
             rate = cx_time ? input_pos_lagged * (int64_t)1000000 / cx_time : 0;
-            remaining = limit - input_pos + lagged_count;
+            remaining = input_limit - input_pos + lagged_count;
           }
 
           average_rate =
