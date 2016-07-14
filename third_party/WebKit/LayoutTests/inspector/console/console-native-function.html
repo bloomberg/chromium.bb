@@ -7,7 +7,12 @@ function test()
 {
     InspectorTest.evaluateInConsole("Math.random", step1);
 
-    function step1(current, total)
+    function step1()
+    {
+        InspectorTest.evaluateInConsole("document.appendChild", step2);
+    }
+
+    function step2()
     {
         InspectorTest.expandConsoleMessages(onExpanded);
     }
