@@ -65,8 +65,6 @@ public:
     static ServiceWorkerContainer* create(ExecutionContext*);
     ~ServiceWorkerContainer();
 
-    void willBeDetachedFromFrame();
-
     DECLARE_VIRTUAL_TRACE();
 
     ServiceWorker* controller() { return m_controller; }
@@ -78,6 +76,8 @@ public:
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const RegistrationOptions&);
     ScriptPromise getRegistration(ScriptState*, const String& documentURL);
     ScriptPromise getRegistrations(ScriptState*);
+
+    void contextDestroyed() override;
 
     // WebServiceWorkerProviderClient overrides.
     void setController(std::unique_ptr<WebServiceWorker::Handle>, bool shouldNotifyControllerChange) override;

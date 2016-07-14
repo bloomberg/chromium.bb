@@ -73,10 +73,7 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(LocalFrame* frame,
 
 void NavigatorServiceWorker::contextDestroyed()
 {
-    if (m_serviceWorker) {
-        m_serviceWorker->willBeDetachedFromFrame();
-        m_serviceWorker = nullptr;
-    }
+    m_serviceWorker = nullptr;
 }
 
 DEFINE_TRACE(NavigatorServiceWorker)

@@ -188,8 +188,6 @@ protected:
         options.setScope(scope);
         ScriptPromise promise = container->registerServiceWorker(getScriptState(), scriptURL, options);
         expectRejected(getScriptState(), promise, valueTest);
-
-        container->willBeDetachedFromFrame();
     }
 
     void testGetRegistrationRejected(const String& documentURL, const ScriptValueTest& valueTest)
@@ -200,8 +198,6 @@ protected:
         ScriptState::Scope scriptScope(getScriptState());
         ScriptPromise promise = container->getRegistration(getScriptState(), documentURL);
         expectRejected(getScriptState(), promise, valueTest);
-
-        container->willBeDetachedFromFrame();
     }
 
 private:
@@ -338,8 +334,6 @@ TEST_F(ServiceWorkerContainerTest, RegisterUnregister_NonHttpsSecureOriginDelega
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/")), stubProvider.registerScope());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/y/worker.js")), stubProvider.registerScriptURL());
     }
-
-    container->willBeDetachedFromFrame();
 }
 
 TEST_F(ServiceWorkerContainerTest, GetRegistration_OmittedDocumentURLDefaultsToPageURL)
@@ -357,8 +351,6 @@ TEST_F(ServiceWorkerContainerTest, GetRegistration_OmittedDocumentURLDefaultsToP
         EXPECT_EQ(1ul, stubProvider.getRegistrationCallCount());
         EXPECT_EQ(WebURL(KURL(KURL(), "http://localhost/x/index.html")), stubProvider.getRegistrationURL());
     }
-
-    container->willBeDetachedFromFrame();
 }
 
 } // namespace

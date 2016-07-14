@@ -182,7 +182,7 @@ ServiceWorkerContainer::~ServiceWorkerContainer()
     ASSERT(!m_provider);
 }
 
-void ServiceWorkerContainer::willBeDetachedFromFrame()
+void ServiceWorkerContainer::contextDestroyed()
 {
     if (m_provider) {
         m_provider->setClient(0);
