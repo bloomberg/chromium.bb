@@ -138,19 +138,12 @@ void CommandBufferService::SetGetOffset(int32_t get_offset) {
 
 scoped_refptr<Buffer> CommandBufferService::CreateTransferBuffer(size_t size,
                                                                  int32_t* id) {
-  *id = -1;
   static int32_t next_id = 1;
   *id = next_id++;
-
-  if (!RegisterTransferBuffer(*id,
-                              base::MakeUnique<MemoryBufferBacking>(size))) {
-    if (error_ == error::kNoError)
-      error_ = gpu::error::kOutOfBounds;
+  auto result = CreateTransferBufferWithId(size, *id);
+  if (!result)
     *id = -1;
-    return NULL;
-  }
-
-  return GetTransferBuffer(*id);
+  return result;
 }
 
 void CommandBufferService::DestroyTransferBuffer(int32_t id) {
@@ -174,6 +167,20 @@ bool CommandBufferService::RegisterTransferBuffer(
   return transfer_buffer_manager_->RegisterTransferBuffer(id,
                                                           std::move(buffer));
 }
+
+scoped_refptr<Buffer> CommandBufferService::CreateTransferBufferWithId(
+    size_t size,
+    int32_t id) {
+  if (!RegisterTransferBuffer(id,
+                              base::MakeUnique<MemoryBufferBacking>(size))) {
+    if (error_ == error::kNoError)
+      error_ = gpu::error::kOutOfBounds;
+    return NULL;
+  }
+
+  return GetTransferBuffer(id);
+}
+
 
 void CommandBufferService::SetToken(int32_t token) {
   token_ = token;

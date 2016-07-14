@@ -27,6 +27,9 @@
 
 namespace gpu {
 namespace gles2 {
+namespace {
+static const GLsizeiptr kDefaultMaxBufferSize = 1u << 30;  // 1GB
+}
 
 BufferManager::BufferManager(MemoryTracker* memory_tracker,
                              FeatureInfo* feature_info)
@@ -34,6 +37,7 @@ BufferManager::BufferManager(MemoryTracker* memory_tracker,
           new MemoryTypeTracker(memory_tracker)),
       memory_tracker_(memory_tracker),
       feature_info_(feature_info),
+      max_buffer_size_(kDefaultMaxBufferSize),
       allow_buffers_on_multiple_targets_(false),
       allow_fixed_attribs_(false),
       buffer_count_(0),
@@ -395,7 +399,7 @@ void BufferManager::ValidateAndDoBufferData(
     return;
   }
 
-  if (size > 1024 * 1024 * 1024) {
+  if (size > max_buffer_size_) {
     ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY, "glBufferData",
                             "cannot allocate more than 1GB.");
     return;

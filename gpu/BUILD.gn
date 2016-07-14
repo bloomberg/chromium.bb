@@ -31,6 +31,7 @@
 #
 # gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings => //gpu/skia_bindings
 
+import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//build/config/ui.gni")
 
@@ -404,4 +405,25 @@ test("gpu_perftests") {
 
   # This target should not require the Chrome executable to run.
   assert_no_deps = [ "//chrome" ]
+}
+
+fuzzer_test("gpu_fuzzer") {
+  sources = [
+    "command_buffer/tests/fuzzer_main.cc",
+  ]
+
+  deps = [
+    ":gpu",
+    "//base",
+    "//base/third_party/dynamic_annotations",
+    "//gpu/command_buffer/common:gles2_utils",
+    "//ui/gfx/geometry",
+    "//ui/gl",
+    "//ui/gl:test_support",
+  ]
+
+  libfuzzer_options = [
+    "max_len=16384",
+    "use_traces=1",
+  ]
 }

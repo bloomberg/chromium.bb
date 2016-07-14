@@ -95,6 +95,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   // to identify it in the command buffer.
   bool RegisterTransferBuffer(int32_t id,
                               std::unique_ptr<BufferBacking> buffer);
+  scoped_refptr<Buffer> CreateTransferBufferWithId(size_t size, int32_t id);
 
  private:
   int32_t ring_buffer_id_;

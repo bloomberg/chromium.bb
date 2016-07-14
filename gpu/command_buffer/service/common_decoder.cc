@@ -13,6 +13,9 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 
 namespace gpu {
+namespace {
+static const size_t kDefaultMaxBucketSize = 1u << 30;  // 1 GB
+}
 
 const CommonDecoder::CommandInfo CommonDecoder::command_info[] = {
 #define COMMON_COMMAND_BUFFER_CMD_OP(name)                       \
@@ -123,7 +126,8 @@ bool CommonDecoder::Bucket::GetAsStrings(
   return true;
 }
 
-CommonDecoder::CommonDecoder() : engine_(NULL) {}
+CommonDecoder::CommonDecoder()
+    : engine_(NULL), max_bucket_size_(kDefaultMaxBucketSize) {}
 
 CommonDecoder::~CommonDecoder() {}
 
@@ -237,6 +241,8 @@ error::Error CommonDecoder::HandleSetBucketSize(uint32_t immediate_data_size,
       *static_cast<const cmd::SetBucketSize*>(cmd_data);
   uint32_t bucket_id = args.bucket_id;
   uint32_t size = args.size;
+  if (size > max_bucket_size_)
+    return error::kOutOfBounds;
 
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(size);

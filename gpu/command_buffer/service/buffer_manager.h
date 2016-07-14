@@ -264,6 +264,10 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   // Sets the target of a buffer. Returns false if the target can not be set.
   bool SetTarget(Buffer* buffer, GLenum target);
 
+  void set_max_buffer_size(GLsizeiptr max_buffer_size) {
+    max_buffer_size_ = max_buffer_size;
+  }
+
   void set_allow_buffers_on_multiple_targets(bool allow) {
     allow_buffers_on_multiple_targets_ = allow;
   }
@@ -338,6 +342,9 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   // Info for each buffer in the system.
   typedef base::hash_map<GLuint, scoped_refptr<Buffer> > BufferMap;
   BufferMap buffers_;
+
+  // The maximum size of buffers.
+  GLsizeiptr max_buffer_size_;
 
   // Whether or not buffers can be bound to multiple targets.
   bool allow_buffers_on_multiple_targets_;
