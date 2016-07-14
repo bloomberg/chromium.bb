@@ -958,7 +958,8 @@ def GetConfig():
 
   # An anchor of Laktiu' test customizations.
   lakitu_test_customizations = config_lib.BuildConfig(
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       run_gce_tests=True,
   )
 
