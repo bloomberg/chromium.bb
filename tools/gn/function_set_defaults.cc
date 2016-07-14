@@ -27,9 +27,14 @@ const char kSetDefaults_Help[] =
     "\n"
     "  set_defaults can be used for built-in target types (\"executable\",\n"
     "  \"shared_library\", etc.) and custom ones defined via the \"template\"\n"
-    "  command.\n"
+    "  command. It can be called more than once and the most recent call in\n"
+    "  any scope will apply, but there is no way to refer to the previous\n"
+    "  defaults and modify them (each call to set_defaults must supply a\n"
+    "  complete list of all defaults it wants). If you want to share\n"
+    "  defaults, store them in a separate variable.\n"
     "\n"
-    "Example:\n"
+    "Example\n"
+    "\n"
     "  set_defaults(\"static_library\") {\n"
     "    configs = [ \"//tools/mything:settings\" ]\n"
     "  }\n"
@@ -48,27 +53,6 @@ Value RunSetDefaults(Scope* scope,
   if (!EnsureSingleStringArg(function, args, err))
     return Value();
   const std::string& target_type(args[0].string_value());
-
-  // Ensure there aren't defaults already set.
-  //
-  // It might be nice to allow multiple calls set mutate the defaults. The
-  // main case for this is where some local portions of the code want
-  // additional defaults they specify in an imported file.
-  //
-  // Currently, we don't allow imports to clobber anything, so this wouldn't
-  // work. Additionally, allowing this would be undesirable since we don't
-  // want multiple imports to each try to set defaults, since it might look
-  // like the defaults are modified by each one in sequence, while in fact
-  // imports would always clobber previous values and it would be confusing.
-  //
-  // If we wanted this, the solution would be to allow imports to overwrite
-  // target defaults set up by the default build config only. That way there
-  // are no ordering issues, but this would be more work.
-  if (scope->GetTargetDefaults(target_type)) {
-    *err = Err(function->function(),
-               "This target type defaults were already set.");
-    return Value();
-  }
 
   if (!block) {
     FillNeedsBlockError(function, err);

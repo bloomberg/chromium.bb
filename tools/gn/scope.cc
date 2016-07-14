@@ -298,18 +298,27 @@ bool Scope::NonRecursiveMergeTo(Scope* dest,
     }
 
     if (!options.clobber_existing) {
-      if (dest->GetTargetDefaults(current_name)) {
-        // TODO(brettw) it would be nice to know the origin of a
-        // set_target_defaults so we can give locations for the colliding target
-        // defaults.
-        std::string desc_string(desc_for_err);
-        *err = Err(node_for_err, "Target defaults collision.",
-            "This " + desc_string + " contains target defaults for\n"
-            "\"" + current_name + "\" which would clobber one for the\n"
-            "same target type in your current scope. It's unfortunate that I'm "
-            "too stupid\nto tell you the location of where the target defaults "
-            "were set. Usually\nthis happens in the BUILDCONFIG.gn file.");
-        return false;
+      const Scope* dest_defaults = dest->GetTargetDefaults(current_name);
+      if (dest_defaults) {
+        if (RecordMapValuesEqual(pair.second->values_,
+                                 dest_defaults->values_)) {
+          // Values of the two defaults are equivalent, just ignore the
+          // collision.
+          continue;
+        } else {
+          // TODO(brettw) it would be nice to know the origin of a
+          // set_target_defaults so we can give locations for the colliding
+          // target defaults.
+          std::string desc_string(desc_for_err);
+          *err = Err(node_for_err, "Target defaults collision.",
+              "This " + desc_string + " contains target defaults for\n"
+              "\"" + current_name + "\" which would clobber one for the\n"
+              "same target type in your current scope. It's unfortunate that "
+              "I'm too stupid\nto tell you the location of where the target "
+              "defaults were set. Usually\nthis happens in the BUILDCONFIG.gn "
+              "file or in a related .gni file.\n");
+          return false;
+        }
       }
     }
 
@@ -404,14 +413,7 @@ std::unique_ptr<Scope> Scope::MakeClosure() const {
 }
 
 Scope* Scope::MakeTargetDefaults(const std::string& target_type) {
-  if (GetTargetDefaults(target_type))
-    return nullptr;
-
   std::unique_ptr<Scope>& dest = target_defaults_[target_type];
-  if (dest) {
-    NOTREACHED();  // Already set.
-    return dest.get();
-  }
   dest = base::WrapUnique(new Scope(settings_));
   return dest.get();
 }
@@ -513,4 +515,18 @@ void Scope::AddProvider(ProgrammaticProvider* p) {
 void Scope::RemoveProvider(ProgrammaticProvider* p) {
   DCHECK(programmatic_providers_.find(p) != programmatic_providers_.end());
   programmatic_providers_.erase(p);
+}
+
+// static
+bool Scope::RecordMapValuesEqual(const RecordMap& a, const RecordMap& b) {
+  if (a.size() != b.size())
+    return false;
+  for (const auto& pair : a) {
+    const auto& found_b = b.find(pair.first);
+    if (found_b == b.end())
+      return false;  // Item in 'a' but not 'b'.
+    if (pair.second.value != found_b->second.value)
+      return false;  // Values for variable in 'a' and 'b' are different.
+  }
+  return true;
 }

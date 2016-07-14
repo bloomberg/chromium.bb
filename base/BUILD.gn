@@ -108,8 +108,10 @@ if (is_nacl) {
   }
 }
 
-config("android_system_libs") {
-  libs = [ "log" ]  # Used by logging.cc.
+if (is_android) {
+  config("android_system_libs") {
+    libs = [ "log" ]  # Used by logging.cc.
+  }
 }
 
 # Base and everything it depends on should be a static library rather than

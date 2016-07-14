@@ -229,8 +229,7 @@ class Scope {
   // change, we don't have to copy its values).
   std::unique_ptr<Scope> MakeClosure() const;
 
-  // Makes an empty scope with the given name. Returns NULL if the name is
-  // already set.
+  // Makes an empty scope with the given name. Overwrites any existing one.
   Scope* MakeTargetDefaults(const std::string& target_type);
 
   // Gets the scope associated with the given target name, or null if it hasn't
@@ -311,8 +310,15 @@ class Scope {
     Value value;
   };
 
+  typedef base::hash_map<base::StringPiece, Record, base::StringPieceHash>
+      RecordMap;
+
   void AddProvider(ProgrammaticProvider* p);
   void RemoveProvider(ProgrammaticProvider* p);
+
+  // Returns true if the two RecordMaps contain the same values (the origins
+  // of the values may be different).
+  static bool RecordMapValuesEqual(const RecordMap& a, const RecordMap& b);
 
   // Scopes can have no containing scope (both null), a mutable containing
   // scope, or a const containing scope. The reason is that when we're doing
@@ -329,8 +335,6 @@ class Scope {
   // for more.
   unsigned mode_flags_;
 
-  typedef base::hash_map<base::StringPiece, Record, base::StringPieceHash>
-      RecordMap;
   RecordMap values_;
 
   // Note that this can't use string pieces since the names are constructed from
