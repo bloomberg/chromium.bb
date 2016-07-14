@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+<meta charset=utf-8>
+<title>Test keyframes with null offsets</title>
+<link rel="help" ­href="https://w3c.github.io/web-animations/#keyframes-section">
+
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="resources/keyframes-test.js"></script>
@@ -14,7 +18,7 @@ test(function() {
     0.5: {opacity: '0', left: '0px'},
     0.75: {opacity: '0.375', left: '37.5px'},
     1: {opacity: '0.75', left: '75px'},
-  }, 'case A');
+  }, 'Null and missing offsets behave identically');
   assertAnimationStyles([
     {opacity: '0.5', left: '50px', offset: null},
     {opacity: '0', left: '0px', offset: 0.25},
@@ -26,7 +30,7 @@ test(function() {
     0.5: {opacity: '0.25', left: '25px'},
     0.75: {opacity: '0.5', left: '50px'},
     1: {opacity: '0.75', left: '75px'},
-  }, 'case B');
+  }, 'Null and explicit offsets behave as with missing and explicit offsets.');
 },
 'element.animate() with null offsets specified',
 {
