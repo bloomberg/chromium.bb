@@ -228,6 +228,15 @@ class OwnersDatabaseTest(_BaseTestCase):
     self.assert_files_not_covered_by(['content/garply/baz.cc'],
                                      [tom], ['content/garply/baz.cc'])
 
+  def test_file_include_relative_path_non_empty_root(self):
+    old_root = self.root
+    self.root = '/content'
+    self.assert_files_not_covered_by(['garply/foo.cc'], [peter], [])
+    self.assert_files_not_covered_by(['garply/bar.cc'], [darin], [])
+    self.assert_files_not_covered_by(['garply/baz.cc'],
+                                     [tom], ['garply/baz.cc'])
+    self.root = old_root
+
   def test_file_include_per_file_absolute_path(self):
     self.files['/content/qux/OWNERS'] = owners_file(peter,
         lines=['per-file foo.*=file://content/baz/OWNERS'])

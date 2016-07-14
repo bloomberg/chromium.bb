@@ -86,9 +86,9 @@ class MockFileSystem(object):
       _RaiseNotFound(path)
     return self.files[path]
 
-  @staticmethod
-  def relpath(path, base):
+  def relpath(self, path, base):
     # This implementation is wrong in many ways; assert to check them for now.
+    if not base.endswith(self.sep):
+      base += self.sep
     assert path.startswith(base)
-    assert base.endswith('/')
     return path[len(base):]

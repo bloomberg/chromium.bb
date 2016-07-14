@@ -99,7 +99,7 @@ class Database(object):
       root: the path to the root of the Repository
       open: function callback to open a text file for reading
       os_path: module/object callback with fields for 'abspath', 'dirname',
-          'exists', and 'join'
+          'exists', 'join', and 'relpath'
       glob: function callback to list entries in a directory match a glob
           (i.e., glob.glob)
     """
@@ -292,7 +292,7 @@ class Database(object):
       include_path = path[2:]
     else:
       assert start.startswith(self.root)
-      start = self.os_path.dirname(start[len(self.root):])
+      start = self.os_path.dirname(self.os_path.relpath(start, self.root))
       include_path = self.os_path.join(start, path)
 
     owners_path = self.os_path.join(self.root, include_path)
