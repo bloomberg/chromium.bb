@@ -27,6 +27,17 @@
 
 namespace IPC {
 
+namespace {
+
+void BindAssociatedInterfaceOnTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const ChannelProxy::GenericAssociatedInterfaceFactory& factory,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  task_runner->PostTask(FROM_HERE, base::Bind(factory, base::Passed(&handle)));
+}
+
+}  // namespace
+
 //------------------------------------------------------------------------------
 
 ChannelProxy::Context::Context(
@@ -147,6 +158,23 @@ void ChannelProxy::Context::OnChannelOpened() {
 
   for (size_t i = 0; i < filters_.size(); ++i)
     filters_[i]->OnFilterAdded(channel_.get());
+
+  Channel::AssociatedInterfaceSupport* support =
+      channel_->GetAssociatedInterfaceSupport();
+  if (support) {
+    support->SetProxyTaskRunner(listener_task_runner_);
+    for (auto& entry : io_thread_interfaces_)
+      support->AddGenericAssociatedInterface(entry.first, entry.second);
+    for (auto& entry : proxy_thread_interfaces_) {
+      support->AddGenericAssociatedInterface(
+          entry.first, base::Bind(&BindAssociatedInterfaceOnTaskRunner,
+                                  listener_task_runner_, entry.second));
+    }
+  } else {
+    // Sanity check to ensure nobody's expecting to use associated interfaces on
+    // a Channel that doesn't support them.
+    DCHECK(io_thread_interfaces_.empty() && proxy_thread_interfaces_.empty());
+  }
 }
 
 // Called on the IPC::Channel thread
@@ -296,6 +324,15 @@ void ChannelProxy::Context::OnDispatchConnected() {
   if (channel_connected_called_)
     return;
 
+  if (channel_) {
+    Channel::AssociatedInterfaceSupport* associated_interface_support =
+        channel_->GetAssociatedInterfaceSupport();
+    if (associated_interface_support) {
+      channel_associated_group_.reset(new mojo::AssociatedGroup(
+          *associated_interface_support->GetAssociatedGroup()));
+    }
+  }
+
   channel_connected_called_ = true;
   if (listener_)
     listener_->OnChannelConnected(peer_pid_);
@@ -339,6 +376,19 @@ void ChannelProxy::Context::Send(Message* message) {
 
 bool ChannelProxy::Context::IsChannelSendThreadSafe() const {
   return channel_send_thread_safe_;
+}
+
+// Called on the IPC::Channel thread
+void ChannelProxy::Context::GetRemoteAssociatedInterface(
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  if (!channel_)
+    return;
+  Channel::AssociatedInterfaceSupport* associated_interface_support =
+      channel_->GetAssociatedInterfaceSupport();
+  DCHECK(associated_interface_support);
+  associated_interface_support->GetGenericRemoteAssociatedInterface(
+      name, std::move(handle));
 }
 
 //-----------------------------------------------------------------------------
@@ -477,6 +527,34 @@ void ChannelProxy::RemoveFilter(MessageFilter* filter) {
   context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_.get(),
                             base::RetainedRef(filter)));
+}
+
+void ChannelProxy::AddGenericAssociatedInterfaceForIOThread(
+    const std::string& name,
+    const GenericAssociatedInterfaceFactory& factory) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!did_init_);
+  context_->io_thread_interfaces_.insert({ name, factory });
+}
+
+void ChannelProxy::AddGenericAssociatedInterface(
+    const std::string& name,
+    const GenericAssociatedInterfaceFactory& factory) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!did_init_);
+  context_->proxy_thread_interfaces_.insert({ name, factory });
+}
+
+mojo::AssociatedGroup* ChannelProxy::GetAssociatedGroup() {
+  return context_->channel_associated_group_.get();
+}
+
+void ChannelProxy::GetGenericRemoteAssociatedInterface(
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  context_->ipc_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&Context::GetRemoteAssociatedInterface,
+                            context_.get(), name, base::Passed(&handle)));
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {

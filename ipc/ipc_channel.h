@@ -13,7 +13,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/ref_counted.h"
 #include "base/process/process.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_endpoint.h"
@@ -119,6 +121,11 @@ class IPC_EXPORT Channel : public Endpoint {
     virtual void GetGenericRemoteAssociatedInterface(
         const std::string& name,
         mojo::ScopedInterfaceEndpointHandle handle) = 0;
+
+    // Sets the TaskRunner on which to support proxied dispatch for associated
+    // interfaces.
+    virtual void SetProxyTaskRunner(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
 
     // Template helper to add an interface factory to this channel.
     template <typename Interface>

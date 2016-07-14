@@ -498,4 +498,10 @@ void ChannelMojo::GetGenericRemoteAssociatedInterface(
   message_reader_->GetRemoteInterface(name, std::move(handle));
 }
 
+void ChannelMojo::SetProxyTaskRunner(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  DCHECK(bootstrap_);
+  bootstrap_->SetProxyTaskRunner(task_runner);
+}
+
 }  // namespace IPC

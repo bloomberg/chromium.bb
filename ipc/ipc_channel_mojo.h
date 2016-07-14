@@ -111,6 +111,8 @@ class IPC_EXPORT ChannelMojo
   void GetGenericRemoteAssociatedInterface(
       const std::string& name,
       mojo::ScopedInterfaceEndpointHandle handle) override;
+  void SetProxyTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
 
   // ChannelMojo needs to kill its MessagePipeReader in delayed manner
   // because the channel wants to kill these readers during the
