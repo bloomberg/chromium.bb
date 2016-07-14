@@ -18,7 +18,7 @@ typedef CanvasAsyncBlobCreator::IdleTaskStatus IdleTaskStatus;
 class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
 public:
     MockCanvasAsyncBlobCreator(DOMUint8ClampedArray* data, const IntSize& size, MimeType mimeType)
-        : CanvasAsyncBlobCreator(data, mimeType, size, nullptr, 0)
+        : CanvasAsyncBlobCreator(data, mimeType, size, nullptr, 0, nullptr)
     {
     }
 

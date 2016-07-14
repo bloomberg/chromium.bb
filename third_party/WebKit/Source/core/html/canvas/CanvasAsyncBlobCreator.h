@@ -13,12 +13,13 @@
 
 namespace blink {
 
-class PNGImageEncoderState;
+class Document;
 class JPEGImageEncoderState;
+class PNGImageEncoderState;
 
 class CORE_EXPORT CanvasAsyncBlobCreator : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
 public:
-    static CanvasAsyncBlobCreator* create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*, double);
+    static CanvasAsyncBlobCreator* create(DOMUint8ClampedArray* unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, BlobCallback*, double, Document*);
     void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, const double& quality = 0.0);
     virtual ~CanvasAsyncBlobCreator();
     enum MimeType {
@@ -41,14 +42,10 @@ public:
     virtual void signalTaskSwitchInStartTimeoutEventForTesting() { }
     virtual void signalTaskSwitchInCompleteTimeoutEventForTesting() { }
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_data);
-        visitor->trace(m_callback);
-    }
+    DECLARE_VIRTUAL_TRACE();
 
 protected:
-    CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, MimeType, const IntSize&, BlobCallback*, double);
+    CanvasAsyncBlobCreator(DOMUint8ClampedArray* data, MimeType, const IntSize&, BlobCallback*, double, Document*);
     // Methods are virtual for unit testing
     virtual void scheduleInitiatePngEncoding();
     virtual void scheduleInitiateJpegEncoding(const double&);
@@ -73,6 +70,7 @@ private:
     Member<DOMUint8ClampedArray> m_data;
     std::unique_ptr<Vector<unsigned char>> m_encodedImage;
     int m_numRowsCompleted;
+    Member<Document> m_document;
 
     const IntSize m_size;
     size_t m_pixelRowStride;
