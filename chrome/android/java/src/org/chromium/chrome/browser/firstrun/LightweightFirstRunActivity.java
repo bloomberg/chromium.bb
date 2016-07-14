@@ -60,7 +60,7 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
                         FirstRunStatus.setLightweightFirstRunFlowComplete(
                                 LightweightFirstRunActivity.this, true);
                         Intent intent = new Intent();
-                        finishAllFREActivities(Activity.RESULT_OK, intent);
+                        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, intent);
                     }
                 });
 

@@ -260,7 +260,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         Intent intent = new Intent();
         if (mFreProperties != null) intent.putExtras(mFreProperties);
         intent.putExtra(RESULT_CLOSE_APP, true);
-        finishAllFREActivities(Activity.RESULT_CANCELED, intent);
+        finishAllTheActivities(getLocalClassName(), Activity.RESULT_CANCELED, intent);
     }
 
     @Override
@@ -318,7 +318,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
         Intent resultData = new Intent();
         resultData.putExtras(mFreProperties);
-        finishAllFREActivities(Activity.RESULT_OK, resultData);
+        finishAllTheActivities(getLocalClassName(), Activity.RESULT_OK, resultData);
     }
 
     @Override
@@ -368,11 +368,17 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mNativeSideIsInitialized) ChromeApplication.flushPersistentData();
     }
 
-    protected static void finishAllFREActivities(int result, Intent data) {
+    /**
+    * Finish all the instances of the given Activity.
+    * @param targetActivity The class name of the target Activity.
+    * @param result The result code to propagate back to the originating activity.
+    * @param data The data to propagate back to the originating activity.
+    */
+    protected static void finishAllTheActivities(String targetActivity, int result, Intent data) {
         List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
         for (WeakReference<Activity> weakActivity : activities) {
             Activity activity = weakActivity.get();
-            if (activity instanceof FirstRunActivity) {
+            if (activity != null && activity.getLocalClassName().equals(targetActivity)) {
                 activity.setResult(result, data);
                 activity.finish();
             }
