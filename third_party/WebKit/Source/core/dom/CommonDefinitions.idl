@@ -6,3 +6,7 @@
 
 typedef (ArrayBuffer or ArrayBufferView) BufferSource;
 typedef unsigned long long DOMTimeStamp;
+
+// typedefs used in multiple files.
+
+typedef object JSON;

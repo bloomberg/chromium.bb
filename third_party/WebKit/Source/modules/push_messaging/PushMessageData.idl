@@ -4,8 +4,6 @@
 
 // http://w3c.github.io/push-api/#pushmessagedata-interface
 
-typedef object JSON;
-
 [
     Exposed=ServiceWorker,
 ] interface PushMessageData {

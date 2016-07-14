@@ -2,20 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-typedef unsigned long  GLenum;
-typedef boolean        GLboolean;
-typedef unsigned long  GLbitfield;
-typedef byte           GLbyte; // 'byte' should be a signed 8 bit type.
-typedef short          GLshort;
-typedef long           GLint;
-typedef long           GLsizei;
-typedef long long      GLintptr;
-typedef long long      GLsizeiptr;
-typedef octet          GLubyte; // 'octet' should be an unsigned 8 bit type.
-typedef unsigned short GLushort;
-typedef unsigned long  GLuint;
-typedef unrestricted float GLfloat;
-typedef unrestricted float GLclampf;
 typedef long long      GLint64;
 
 [

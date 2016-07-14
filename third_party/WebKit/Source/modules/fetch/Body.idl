@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // http://fetch.spec.whatwg.org/#body
-typedef object JSON;
+
 [
     ActiveScriptWrappable,
     DependentLifetime,

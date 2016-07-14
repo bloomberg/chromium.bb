@@ -23,8 +23,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-typedef unsigned long GLenum;
-
 [
     NoInterfaceObject,
     DoNotCheckConstants,
