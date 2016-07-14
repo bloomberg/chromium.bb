@@ -12,7 +12,6 @@ namespace mojo {
 // static
 void* StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::
     SetUpContext(const std::unique_ptr<cc::RenderPass>& input) {
-  DCHECK_GT(input->quad_list.size(), 0u);
   std::unique_ptr<mojo::Array<uint32_t>> sqs_references(
       new mojo::Array<uint32_t>(input->quad_list.size()));
   cc::SharedQuadStateList::ConstIterator sqs_iter =
@@ -25,7 +24,8 @@ void* StructTraits<cc::mojom::RenderPass, std::unique_ptr<cc::RenderPass>>::
     DCHECK_NE(nullptr, (*it)->shared_quad_state);
     DCHECK_EQ(*sqs_iter, (*it)->shared_quad_state);
   }
-  DCHECK_EQ(input->shared_quad_state_list.size() - 1, sqs_iter.index());
+  DCHECK(input->shared_quad_state_list.empty() ||
+         input->shared_quad_state_list.size() - 1 == sqs_iter.index());
   return sqs_references.release();
 }
 

@@ -852,7 +852,7 @@ void RenderThreadImpl::Init(
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
   // We may not have a MojoShellConnection object in tests that directly
   // instantiate a RenderThreadImpl.
-  if (MojoShellConnection::GetForProcess() &&
+  if (ChildThread::Get()->GetMojoShellConnection() &&
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseMusInRenderer))
     CreateRenderWidgetWindowTreeClientFactory();
@@ -1837,8 +1837,7 @@ RenderThreadImpl::CreateCompositorOutputSurface(
     use_software = true;
 
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-  auto* shell_connection = MojoShellConnection::GetForProcess();
-  if (shell_connection && !use_software &&
+  if (ChildThread::Get()->GetMojoShellConnection() && !use_software &&
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);

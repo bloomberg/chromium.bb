@@ -47,7 +47,7 @@ RenderWidgetMusConnection::CreateOutputSurface() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!window_surface_binding_);
   scoped_refptr<cc::ContextProvider> context_provider(new ui::ContextProvider(
-      MojoShellConnection::GetForProcess()->GetConnector()));
+      ChildThread::Get()->GetMojoShellConnection()->GetConnector()));
 
   std::unique_ptr<cc::OutputSurface> surface(new ui::OutputSurface(
       context_provider, ui::WindowSurface::Create(&window_surface_binding_)));

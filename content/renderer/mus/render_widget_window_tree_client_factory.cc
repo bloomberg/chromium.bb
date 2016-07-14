@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
+#include "content/public/child/child_thread.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -32,7 +33,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
       public mojom::RenderWidgetWindowTreeClientFactory {
  public:
   RenderWidgetWindowTreeClientFactoryImpl() {
-    DCHECK(MojoShellConnection::GetForProcess());
+    DCHECK(ChildThread::Get()->GetMojoShellConnection());
   }
 
   ~RenderWidgetWindowTreeClientFactoryImpl() override {}
@@ -68,7 +69,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
 }  // namespace
 
 void CreateRenderWidgetWindowTreeClientFactory() {
-  MojoShellConnection::GetForProcess()->MergeService(
+  ChildThread::Get()->GetMojoShellConnection()->MergeService(
       base::WrapUnique(new RenderWidgetWindowTreeClientFactoryImpl));
 }
 

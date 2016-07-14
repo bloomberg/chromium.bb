@@ -21,6 +21,7 @@ source_set("mus") {
     "//base",
     "//cc",
     "//content/common",
+    "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//mojo/common",
     "//mojo/converters/blink",
