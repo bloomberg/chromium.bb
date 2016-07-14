@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("open_from_clipboard") {
+static_library("open_from_clipboard") {
   sources = [
     "clipboard_recent_content.cc",
     "clipboard_recent_content.h",
@@ -16,7 +16,7 @@ source_set("open_from_clipboard") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "fake_clipboard_recent_content.cc",

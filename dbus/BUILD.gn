@@ -59,7 +59,7 @@ proto_library("test_proto") {
 
 # This target contains mocks that can be used to write unit tests without
 # issuing actual D-Bus calls.
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "mock_bus.cc",

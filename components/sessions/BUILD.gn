@@ -129,7 +129,7 @@ source_set("shared") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "core/serialized_navigation_entry_test_helper.cc",

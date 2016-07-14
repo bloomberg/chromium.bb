@@ -4,7 +4,7 @@
 
 import("//build/config/ui.gni")
 
-source_set("toolbar") {
+static_library("toolbar") {
   sources = [
     "toolbar_model.cc",
     "toolbar_model.h",
@@ -28,7 +28,7 @@ source_set("toolbar") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

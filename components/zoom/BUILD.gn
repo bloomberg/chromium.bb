@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("zoom") {
+static_library("zoom") {
   sources = [
     "page_zoom.cc",
     "page_zoom.h",
@@ -27,7 +27,7 @@ source_set("zoom") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/zoom_test_utils.cc",

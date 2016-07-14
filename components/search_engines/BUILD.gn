@@ -94,7 +94,7 @@ static_library("search_engines") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "default_search_pref_test_util.cc",

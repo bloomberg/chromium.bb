@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
-source_set("os_crypt") {
+static_library("os_crypt") {
   sources = [
     "ie7_password_win.cc",
     "ie7_password_win.h",
@@ -75,7 +75,7 @@ source_set("os_crypt") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "os_crypt_mocker.cc",
@@ -123,10 +123,7 @@ source_set("unit_tests") {
     }
     if (use_dbus) {
       sources += [ "kwallet_dbus_unittest.cc" ]
-      deps += [
-        "//dbus",
-        "//dbus:test_support",
-      ]
+      deps += [ "//dbus:test_support" ]
       defines += [ "USE_KWALLET" ]
     }
   }

@@ -111,7 +111,7 @@ component("scheduler") {
 }
 
 # GYP version: components/scheduler.gypi:scheduler_common
-source_set("common") {
+static_library("common") {
   sources = [
     "common/scheduler_switches.cc",
     "common/scheduler_switches.h",
@@ -163,7 +163,7 @@ source_set("unit_tests") {
 }
 
 # GYP version: components/scheduler.gypi:scheduler_test_support
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

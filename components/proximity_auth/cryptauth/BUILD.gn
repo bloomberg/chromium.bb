@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cryptauth") {
+static_library("cryptauth") {
   sources = [
     "cryptauth_access_token_fetcher.h",
     "cryptauth_access_token_fetcher_impl.cc",
@@ -53,7 +53,7 @@ source_set("cryptauth") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

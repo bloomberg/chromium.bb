@@ -23,7 +23,7 @@ static_library("webdata_services") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "web_data_service_test_util.cc",

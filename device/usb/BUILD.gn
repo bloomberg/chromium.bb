@@ -14,7 +14,7 @@ if (is_android) {
 source_ids = "//third_party/usb_ids/usb.ids"
 generated_ids = "$target_gen_dir/usb_ids_gen.cc"
 
-source_set("usb") {
+static_library("usb") {
   sources = [
     "android/usb_jni_registrar.cc",
     "android/usb_jni_registrar.h",
@@ -102,7 +102,7 @@ source_set("usb") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

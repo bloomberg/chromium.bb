@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("browser") {
+static_library("browser") {
   sources = [
     "ruleset_distributor.h",
     "ruleset_service.cc",
@@ -20,7 +20,7 @@ source_set("browser") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "subresource_filter_features_test_support.cc",

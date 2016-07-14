@@ -6,7 +6,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("browser") {
+static_library("browser") {
   sources = [
     "about_signin_internals.cc",
     "about_signin_internals.h",
@@ -113,7 +113,7 @@ source_set("browser") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "fake_account_fetcher_service.cc",

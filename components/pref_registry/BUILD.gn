@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("pref_registry") {
+static_library("pref_registry") {
   sources = [
     "pref_registry_syncable.cc",
     "pref_registry_syncable.h",
@@ -15,7 +15,7 @@ source_set("pref_registry") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "testing_pref_service_syncable.cc",

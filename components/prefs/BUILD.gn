@@ -55,7 +55,7 @@ component("prefs") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "mock_pref_change_callback.cc",

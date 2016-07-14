@@ -50,7 +50,6 @@ static_library("test_support") {
     ":browsertest_base",
     ":content_test_mojo_bindings",
     "//base/third_party/dynamic_annotations",
-    "//cc",
     "//cc:test_support",
     "//cc/blink",
     "//cc/ipc",
@@ -207,7 +206,7 @@ static_library("test_support") {
 
 # browsertest_support can be used by targets that run content_shell based
 # browser tests.
-source_set("browsertest_support") {
+static_library("browsertest_support") {
   testonly = true
 
   # See comment at the top of //content/BUILD.gn for why this is disabled in
@@ -258,7 +257,7 @@ source_set("browsertest_support") {
 }
 
 # browsertest_base can be used by any browser test target.
-source_set("browsertest_base") {
+static_library("browsertest_base") {
   testonly = true
 
   sources = [

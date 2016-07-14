@@ -5,7 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 
-source_set("sync_driver") {
+static_library("sync_driver") {
   sources = [
     "about_sync_util.cc",
     "about_sync_util.h",
@@ -156,7 +156,7 @@ source_set("sync_driver") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "change_processor_mock.cc",

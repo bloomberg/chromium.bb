@@ -56,7 +56,7 @@ static_library("user_prefs_tracked") {
   ]
 }
 
-source_set("user_prefs_tracked_test_support") {
+static_library("user_prefs_tracked_test_support") {
   testonly = true
   sources = [
     "mock_validation_delegate.cc",

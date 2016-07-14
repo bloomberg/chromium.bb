@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-source_set("syncable_prefs") {
+static_library("syncable_prefs") {
   sources = [
     "pref_model_associator.cc",
     "pref_model_associator.h",
@@ -37,7 +37,7 @@ source_set("syncable_prefs") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "pref_service_mock_factory.cc",
