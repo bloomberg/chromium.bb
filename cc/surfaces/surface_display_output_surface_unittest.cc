@@ -51,8 +51,7 @@ class SurfaceDisplayOutputSurfaceTest : public testing::Test {
         begin_frame_source.get(), task_runner_.get(), max_frames_pending));
 
     display_.reset(new Display(
-        &surface_manager_, &bitmap_manager_, &gpu_memory_buffer_manager_,
-        RendererSettings(), allocator_.client_id(),
+        &bitmap_manager_, &gpu_memory_buffer_manager_, RendererSettings(),
         std::move(begin_frame_source), std::move(display_output_surface),
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));

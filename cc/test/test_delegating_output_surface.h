@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_PIXEL_TEST_DELEGATING_OUTPUT_SURFACE_H_
-#define CC_TEST_PIXEL_TEST_DELEGATING_OUTPUT_SURFACE_H_
+#ifndef CC_TEST_TEST_DELEGATING_OUTPUT_SURFACE_H_
+#define CC_TEST_TEST_DELEGATING_OUTPUT_SURFACE_H_
 
 #include "base/memory/weak_ptr.h"
 #include "cc/output/output_surface.h"
@@ -18,20 +18,16 @@
 
 namespace cc {
 
-class PixelTestDelegatingOutputSurface : public OutputSurface,
-                                         public SurfaceFactoryClient {
+class TestDelegatingOutputSurface : public OutputSurface,
+                                    public SurfaceFactoryClient {
  public:
-  PixelTestDelegatingOutputSurface(
+  TestDelegatingOutputSurface(
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider,
-      scoped_refptr<ContextProvider> display_context_provider,
-      const RendererSettings& renderer_settings,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      const gfx::Size& surface_expansion_size,
-      bool allow_force_reclaim_resources,
-      bool synchronous_composite);
-  ~PixelTestDelegatingOutputSurface() override;
+      std::unique_ptr<Display> display,
+      bool context_shared_with_compositor,
+      bool allow_force_reclaim_resources);
+  ~TestDelegatingOutputSurface() override;
 
   // OutputSurface implementation.
   bool BindToClient(OutputSurfaceClient* client) override;
@@ -45,11 +41,6 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
   void ReturnResources(const ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override;
 
-  // Allow tests to enlarge the backing texture for a non-root render pass, to
-  // simulate reusing a larger texture from a previous frame for a new
-  // render pass. This should be called before the output surface is bound.
-  void SetEnlargePassTextureAmount(const gfx::Size& amount);
-
  private:
   void DrawCallback(SurfaceDrawStatus);
 
@@ -57,18 +48,6 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
     void DisplayOutputSurfaceLost() override {}
     void DisplaySetMemoryPolicy(const ManagedMemoryPolicy& policy) override {}
   };
-
-  SharedBitmapManager* const shared_bitmap_manager_;
-  gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
-  const gfx::Size surface_expansion_size_;
-  const bool allow_force_reclaim_resources_;
-  const bool synchronous_composite_;
-  const RendererSettings renderer_settings_;
-
-  // Passed to the Display.
-  scoped_refptr<ContextProvider> display_context_provider_;
-
-  gfx::Size enlarge_pass_texture_amount_;
 
   // TODO(danakj): These don't to be stored in unique_ptrs when OutputSurface
   // is owned/destroyed on the compositor thread.
@@ -83,9 +62,9 @@ class PixelTestDelegatingOutputSurface : public OutputSurface,
   // Uses surface_manager_.
   std::unique_ptr<Display> display_;
 
-  base::WeakPtrFactory<PixelTestDelegatingOutputSurface> weak_ptrs_;
+  base::WeakPtrFactory<TestDelegatingOutputSurface> weak_ptrs_;
 };
 
 }  // namespace cc
 
-#endif  // CC_TEST_PIXEL_TEST_DELEGATING_OUTPUT_SURFACE_H_
+#endif  // CC_TEST_TEST_DELEGATING_OUTPUT_SURFACE_H_

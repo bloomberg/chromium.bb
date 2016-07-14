@@ -67,12 +67,12 @@ DisplayCompositor::DisplayCompositor(
                                task_runner_.get(), max_frames_pending));
 
   display_.reset(new cc::Display(
-      surfaces_state_->manager(), nullptr /* bitmap_manager */,
-      nullptr /* gpu_memory_buffer_manager */, cc::RendererSettings(),
-      allocator_.client_id(), std::move(synthetic_begin_frame_source),
+      nullptr /* bitmap_manager */, nullptr /* gpu_memory_buffer_manager */,
+      cc::RendererSettings(), std::move(synthetic_begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
-  display_->Initialize(this);
+  display_->Initialize(this, surfaces_state_->manager(),
+                       allocator_.client_id());
 }
 
 DisplayCompositor::~DisplayCompositor() {

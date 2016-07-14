@@ -701,11 +701,10 @@ void CompositorImpl::CreateOutputSurface() {
       display_output_surface->capabilities().max_frames_pending));
 
   display_.reset(new cc::Display(
-      manager, HostSharedBitmapManager::current(),
+      HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
-      host_->settings().renderer_settings, surface_id_allocator_->client_id(),
-      std::move(begin_frame_source), std::move(display_output_surface),
-      std::move(scheduler),
+      host_->settings().renderer_settings, std::move(begin_frame_source),
+      std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
   std::unique_ptr<cc::SurfaceDisplayOutputSurface> delegated_output_surface(

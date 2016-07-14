@@ -176,12 +176,11 @@ void InProcessContextFactory::CreateOutputSurface(
         begin_frame_source.get(), compositor->task_runner().get(),
         display_output_surface->capabilities().max_frames_pending));
     per_compositor_data_[compositor.get()] = base::MakeUnique<cc::Display>(
-        surface_manager_, GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
-        compositor->GetRendererSettings(),
-        compositor->surface_id_allocator()->client_id(),
-        std::move(begin_frame_source), std::move(display_output_surface),
-        std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
-                                  compositor->task_runner().get()));
+        GetSharedBitmapManager(), GetGpuMemoryBufferManager(),
+        compositor->GetRendererSettings(), std::move(begin_frame_source),
+        std::move(display_output_surface), std::move(scheduler),
+        base::MakeUnique<cc::TextureMailboxDeleter>(
+            compositor->task_runner().get()));
 
     auto* display = per_compositor_data_[compositor.get()].get();
     std::unique_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(

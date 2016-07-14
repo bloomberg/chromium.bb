@@ -66,12 +66,12 @@ SurfacesInstance::SurfacesInstance()
       begin_frame_source.get(), nullptr,
       output_surface_holder->capabilities().max_frames_pending));
   display_.reset(new cc::Display(
-      surface_manager_.get(), nullptr /* shared_bitmap_manager */,
+      nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings,
-      surface_id_allocator_->client_id(), std::move(begin_frame_source),
-      std::move(output_surface_holder), std::move(scheduler),
-      std::move(texture_mailbox_deleter)));
-  display_->Initialize(this);
+      std::move(begin_frame_source), std::move(output_surface_holder),
+      std::move(scheduler), std::move(texture_mailbox_deleter)));
+  display_->Initialize(this, surface_manager_.get(),
+                       surface_id_allocator_->client_id());
 
   surface_factory_.reset(new cc::SurfaceFactory(surface_manager_.get(), this));
 

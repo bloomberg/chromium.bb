@@ -40,6 +40,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   LayerTreePixelTest();
   ~LayerTreePixelTest() override;
 
+  // LayerTreeTest overrides.
   void InitializeSettings(LayerTreeSettings* settings) override;
   std::unique_ptr<OutputSurface> CreateOutputSurface() override;
 
@@ -81,6 +82,9 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   void Finish();
 
+  // Allow tests to enlarge the backing texture for a non-root render pass, to
+  // simulate reusing a larger texture from a previous frame for a new
+  // render pass. This should be called before the output surface is bound.
   void set_enlarge_texture_amount(const gfx::Size& enlarge_texture_amount) {
     enlarge_texture_amount_ = enlarge_texture_amount;
   }

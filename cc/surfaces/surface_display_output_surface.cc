@@ -97,7 +97,8 @@ bool SurfaceDisplayOutputSurface::BindToClient(OutputSurfaceClient* client) {
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
-  display_->Initialize(this);
+  display_->Initialize(this, surface_manager_,
+                       surface_id_allocator_->client_id());
   return true;
 }
 

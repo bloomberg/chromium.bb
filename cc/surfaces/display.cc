@@ -32,40 +32,33 @@
 
 namespace cc {
 
-Display::Display(SurfaceManager* manager,
-                 SharedBitmapManager* bitmap_manager,
+Display::Display(SharedBitmapManager* bitmap_manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                  const RendererSettings& settings,
-                 uint32_t compositor_surface_namespace,
                  std::unique_ptr<BeginFrameSource> begin_frame_source,
                  std::unique_ptr<OutputSurface> output_surface,
                  std::unique_ptr<DisplayScheduler> scheduler,
                  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter)
-    : surface_manager_(manager),
-      bitmap_manager_(bitmap_manager),
+    : bitmap_manager_(bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
-      compositor_surface_namespace_(compositor_surface_namespace),
       begin_frame_source_(std::move(begin_frame_source)),
       output_surface_(std::move(output_surface)),
       scheduler_(std::move(scheduler)),
       texture_mailbox_deleter_(std::move(texture_mailbox_deleter)) {
-  DCHECK(surface_manager_);
   DCHECK(output_surface_);
   DCHECK_EQ(!scheduler_, !begin_frame_source_);
-
-  surface_manager_->AddObserver(this);
-
   if (scheduler_)
     scheduler_->SetClient(this);
 }
 
 Display::~Display() {
   // Only do this if Initialize() happened.
-  if (begin_frame_source_ && client_)
-    surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
-
-  surface_manager_->RemoveObserver(this);
+  if (client_) {
+    if (begin_frame_source_)
+      surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
+    surface_manager_->RemoveObserver(this);
+  }
   if (aggregator_) {
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
@@ -75,9 +68,16 @@ Display::~Display() {
   }
 }
 
-void Display::Initialize(DisplayClient* client) {
+void Display::Initialize(DisplayClient* client,
+                         SurfaceManager* surface_manager,
+                         uint32_t compositor_surface_namespace) {
   DCHECK(client);
+  DCHECK(surface_manager);
   client_ = client;
+  surface_manager_ = surface_manager;
+  compositor_surface_namespace_ = compositor_surface_namespace;
+
+  surface_manager_->AddObserver(this);
 
   // This must be done in Initialize() so that the caller can delay this until
   // they are ready to receive a BeginFrameSource.

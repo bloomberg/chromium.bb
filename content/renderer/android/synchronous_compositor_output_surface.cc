@@ -153,13 +153,14 @@ bool SynchronousCompositorOutputSurface::BindToClient(
   // resources are included in the frame swapped from the compositor. So there
   // is no need for these.
   display_.reset(new cc::Display(
-      surface_manager_.get(), nullptr /* shared_bitmap_manager */,
+      nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      surface_id_allocator_->client_id(), nullptr /* begin_frame_source */,
+      nullptr /* begin_frame_source */,
       base::MakeUnique<SoftwareOutputSurface>(
           base::MakeUnique<SoftwareDevice>(&current_sw_canvas_)),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
-  display_->Initialize(&display_client_);
+  display_->Initialize(&display_client_, surface_manager_.get(),
+                       surface_id_allocator_->client_id());
   return true;
 }
 

@@ -56,11 +56,9 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
  public:
   // The |begin_frame_source| and |scheduler| may be null (together). In that
   // case, DrawAndSwap must be called externally when needed.
-  Display(SurfaceManager* manager,
-          SharedBitmapManager* bitmap_manager,
+  Display(SharedBitmapManager* bitmap_manager,
           gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
           const RendererSettings& settings,
-          uint32_t compositor_surface_namespace,
           std::unique_ptr<BeginFrameSource> begin_frame_source,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<DisplayScheduler> scheduler,
@@ -68,7 +66,9 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   ~Display() override;
 
-  void Initialize(DisplayClient* client);
+  void Initialize(DisplayClient* client,
+                  SurfaceManager* surface_manager,
+                  uint32_t compositor_surface_namespace);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
@@ -114,17 +114,20 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
     enlarge_texture_amount_ = enlarge_texture_amount;
   }
 
+  bool has_scheduler() const { return !!scheduler_; }
+
  private:
   void InitializeRenderer();
   void UpdateRootSurfaceResourcesLocked();
 
+  SharedBitmapManager* const bitmap_manager_;
+  gpu::GpuMemoryBufferManager* const gpu_memory_buffer_manager_;
+  const RendererSettings settings_;
+
   DisplayClient* client_;
   SurfaceManager* surface_manager_;
-  SharedBitmapManager* bitmap_manager_;
-  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  RendererSettings settings_;
-  SurfaceId current_surface_id_;
   uint32_t compositor_surface_namespace_;
+  SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
   gfx::ColorSpace device_color_space_;

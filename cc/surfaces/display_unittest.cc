@@ -123,10 +123,9 @@ class DisplayTest : public testing::Test {
     scheduler_ = scheduler.get();
 
     display_ = base::MakeUnique<Display>(
-        &manager_, &shared_bitmap_manager_,
-        nullptr /* gpu_memory_buffer_manager */, settings,
-        id_allocator_.client_id(), std::move(begin_frame_source),
-        std::move(output_surface), std::move(scheduler),
+        &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
+        settings, std::move(begin_frame_source), std::move(output_surface),
+        std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
   }
 
@@ -175,7 +174,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   SetUpDisplay(settings, nullptr);
 
   StubDisplayClient client;
-  display_->Initialize(&client);
+  display_->Initialize(&client, &manager_, id_allocator_.client_id());
 
   SurfaceId surface_id(id_allocator_.GenerateId());
   EXPECT_FALSE(scheduler_->damaged);
@@ -438,7 +437,7 @@ TEST_F(DisplayTest, Finish) {
   SetUpDisplay(settings, std::move(context));
 
   StubDisplayClient client;
-  display_->Initialize(&client);
+  display_->Initialize(&client, &manager_, id_allocator_.client_id());
 
   display_->SetSurfaceId(surface_id, 1.f);
 
