@@ -91,23 +91,12 @@ def GetAllDepsConfigsInOrder(deps_config_paths):
   return build_utils.GetSortedTransitiveDependencies(deps_config_paths, GetDeps)
 
 
-def ResolveGroups(configs):
-  while True:
-    groups = DepsOfType('group', configs)
-    if not groups:
-      return configs
-    for config in groups:
-      index = configs.index(config)
-      expanded_configs = [GetDepConfig(p) for p in config['deps_configs']]
-      configs[index:index + 1] = expanded_configs
-
-
 class Deps(object):
   def __init__(self, direct_deps_config_paths):
     self.all_deps_config_paths = GetAllDepsConfigsInOrder(
         direct_deps_config_paths)
-    self.direct_deps_configs = ResolveGroups(
-        [GetDepConfig(p) for p in direct_deps_config_paths])
+    self.direct_deps_configs = [
+        GetDepConfig(p) for p in direct_deps_config_paths]
     self.all_deps_configs = [
         GetDepConfig(p) for p in self.all_deps_config_paths]
     self.direct_deps_config_paths = direct_deps_config_paths
@@ -174,14 +163,34 @@ def _MergeAssets(all_assets):
   return create_list(compressed), create_list(uncompressed)
 
 
-def _FilterUnwantedDepsPaths(dep_paths, target_type):
+def _ResolveGroups(configs):
+  """Returns a list of configs with all groups inlined."""
+  ret = list(configs)
+  while True:
+    groups = DepsOfType('group', ret)
+    if not groups:
+      return ret
+    for config in groups:
+      index = ret.index(config)
+      expanded_configs = [GetDepConfig(p) for p in config['deps_configs']]
+      ret[index:index + 1] = expanded_configs
+
+
+def _FilterDepsPaths(dep_paths, target_type):
+  """Resolves all groups and trims dependency branches that we never want.
+
+  E.g. When a resource or asset depends on an apk target, the intent is to
+  include the .apk as a resource/asset, not to have the apk's classpath added.
+  """
+  configs = [GetDepConfig(p) for p in dep_paths]
+  configs = _ResolveGroups(configs)
   # Don't allow root targets to be considered as a dep.
-  ret = [p for p in dep_paths if GetDepConfig(p)['type'] not in _ROOT_TYPES]
+  configs = [c for c in configs if c['type'] not in _ROOT_TYPES]
 
   # Don't allow java libraries to cross through assets/resources.
   if target_type in _RESOURCE_TYPES:
-    ret = [p for p in ret if GetDepConfig(p)['type'] in _RESOURCE_TYPES]
-  return ret
+    configs = [c for c in configs if c['type'] in _RESOURCE_TYPES]
+  return [c['path'] for c in configs]
 
 
 def _AsInterfaceJar(jar_path):
@@ -307,8 +316,8 @@ def main(argv):
           '--supports-android is required when using --requires-android')
 
   direct_deps_config_paths = build_utils.ParseGypList(options.deps_configs)
-  direct_deps_config_paths = _FilterUnwantedDepsPaths(direct_deps_config_paths,
-                                                      options.type)
+  direct_deps_config_paths = _FilterDepsPaths(direct_deps_config_paths,
+                                              options.type)
 
   deps = Deps(direct_deps_config_paths)
   all_inputs = deps.AllConfigPaths() + build_utils.GetPythonDependencies()
