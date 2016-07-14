@@ -156,6 +156,31 @@ $(IT).emcc.html: $(SRC) $(CPPSRC)
 	../fixup_asmjs.py $@.ref.html
 	touch $@
 
+# WebAssembly build
+# Sadly, we have to build two versions -- one for "ref" and one for "train" --
+# due to the way Emscripten packages data files.
+# It will actually create .ref.js and .train.js files.
+# Environment variable $WASM_INSTALL_DIR must point to the wasm install
+# directory in the waterfall, which is WATERFALL_DIR/src/work/wasm-install where
+# WATERFALL_DIR is the top waterfall directory. Refer to run_wasm.sh for
+# details.
+$(IT).js: $(SRC) $(CPPSRC)
+	$(WASM_INSTALL_DIR)/bin/emscripten/emcc $^ -o $(IT).train.js \
+		-s BINARYEN=1 -s 'BINARYEN_METHOD="native-wasm"' \
+		--em-config $(WASM_INSTALL_DIR)/emscripten_config_vanilla \
+		$(CFLAGS) -s TOTAL_MEMORY=268435456 \
+		-Wno-implicit-function-declaration -O2 \
+		$(shell python ../prepare_input.py --gen-emcc-embed --config \
+			$(SPEC_COMPONENT) train)
+	$(WASM_INSTALL_DIR)/bin/emscripten/emcc $^ -o $(IT).ref.js \
+		-s BINARYEN=1 -s 'BINARYEN_METHOD="native-wasm"' \
+		--em-config $(WASM_INSTALL_DIR)/emscripten_config_vanilla \
+		$(CFLAGS) -s TOTAL_MEMORY=268435456 \
+		-Wno-implicit-function-declaration -O2 \
+		$(shell python ../prepare_input.py --gen-emcc-embed- --config \
+			$(SPEC_COMPONENT) ref)
+	touch $@
+
 ######################################################################
 ## NON-SANDBOXING LLVM TOOLCHAINS
 ######################################################################

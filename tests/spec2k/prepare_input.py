@@ -3,10 +3,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
 import glob
-from optparse import OptionParser
+import os
+import sys
 from collections import namedtuple
+from optparse import OptionParser
 
 Config = namedtuple('Config', 'linkfiles linkfileglobs ' +
                               'rmfiles rmfileglobs no_rmfileglobs')
@@ -227,6 +228,10 @@ def PrepareInput():
                     help='Use predefined config for component SpecDir')
   parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
                     default=False, help='Verbose file messages')
+  parser.add_option('--gen-emcc-embed', action='store_true',
+                    dest='gen_emcc_embed', default=False,
+                    help='Generate --embed-file options for input files for ' +
+                    'Wasm test')
   options, args = parser.parse_args()
   if args:
     parser.print_help()
@@ -252,6 +257,27 @@ def PrepareInput():
     rmfiles.extend(glob.glob(pattern))
   for pattern in options.no_rmfileglobs:
     no_rmfiles.extend(glob.glob(pattern))
+
+  # Wasm needs to embed input files into a js file
+  if options.gen_emcc_embed:
+    # Some benchmarks directly access input files in data/[config]/input
+    # directory, while others create symlinks into the current directory.
+    # When symlinks are created (=linkfileglobs is NOT empty), we embed those
+    # files assuming they are in the current directory.
+    # When symlinks are NOT created, we assume files in data/ will be accessed
+    # directly, and embed those files in the subdirectories.
+    input_dir = 'data/' + options.config[1] + '/input/*'
+    opts = ''
+    linkfiles_in_input_dir = []
+    if input_dir not in configs[options.config].linkfileglobs:
+      linkfiles_in_input_dir.extend(glob.glob(input_dir))
+    for file in linkfiles_in_input_dir:
+      opts += '--embed-file %s ' % file
+    for file in linkfiles:
+      opts += '--embed-file %s@%s ' % (file, os.path.basename(file))
+    sys.stdout.write(opts)
+    return 0
+
   for file in set(rmfiles) - set(no_rmfiles):
     try:
       if options.verbose:
@@ -271,5 +297,4 @@ def PrepareInput():
   return 0
 
 if __name__ == '__main__':
-  import sys
   sys.exit(PrepareInput())

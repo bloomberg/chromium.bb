@@ -609,7 +609,20 @@ SetupPnaclTranslatorFast1ThreadArmOptSzHW() {
   SUFFIX=pnacl_translator_fast_1thread.opt.hw.sz.arm
 }
 
-
+#@
+#@ SetupWasm
+#@   use emcc with wasm backend.
+SetupWasm() {
+  if [ -z $WASM_INSTALL_DIR ]; then
+    echo 'error: WASM_INSTALL_DIR is not set'
+    exit 1
+  fi
+  PREFIX=../run_wasm.sh
+  SUFFIX=js
+  # When running in d8, emcc does not support persistent output files.
+  # So we don't verify the results.
+  VERIFY=no
+}
 
 ConfigInfo() {
   SubBanner "Config Info"
