@@ -163,7 +163,7 @@ void LayoutListMarker::layout()
 void LayoutListMarker::imageChanged(WrappedImagePtr o, const IntRect*)
 {
     // A list marker can't have a background or border image, so no need to call the base class method.
-    if (o != m_image->data())
+    if (!m_image || o != m_image->data())
         return;
 
     LayoutSize imageSize = isImage() ? imageBulletSize() : LayoutSize();
