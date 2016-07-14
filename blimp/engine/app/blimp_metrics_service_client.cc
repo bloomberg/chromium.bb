@@ -118,8 +118,11 @@ bool BlimpMetricsServiceClient::GetBrand(std::string* brand_code) {
 }
 
 metrics::SystemProfileProto::Channel BlimpMetricsServiceClient::GetChannel() {
-  // Blimp engine does not have channel info yet.
-  return metrics::SystemProfileProto::CHANNEL_UNKNOWN;
+  // Blimp engine does not have channel info yet, however metrics data with
+  // CHANNEL_UNKNOWN is filtered in metrics visualization tools since the value
+  // typically implies a non-official build.
+  // Using CHANNEL_CANARY as a work around until channel is set here.
+  return metrics::SystemProfileProto::CHANNEL_CANARY;
 }
 
 std::string BlimpMetricsServiceClient::GetVersionString() {
