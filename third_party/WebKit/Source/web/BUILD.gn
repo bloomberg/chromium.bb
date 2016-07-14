@@ -66,7 +66,7 @@ component("web") {
 }
 
 # GYP version: WebKit/Source/web/web.gyp:blink_web_test_support
-source_set("test_support") {
+static_library("test_support") {
   deps = [
     "//skia",
     "//third_party/WebKit/Source/core:testing",

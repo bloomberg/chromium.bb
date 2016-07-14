@@ -537,7 +537,7 @@ source_set("memory_buffer_sources") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "image/image_unittest_util.cc",

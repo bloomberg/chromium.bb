@@ -166,7 +166,7 @@ component("message_center") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   if (enable_notifications && !is_android) {

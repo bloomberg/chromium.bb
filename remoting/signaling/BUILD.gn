@@ -4,7 +4,7 @@
 
 import("//remoting/remoting_srcs.gni")
 
-source_set("signaling") {
+static_library("signaling") {
   sources = rebase_path(remoting_srcs_gypi_values.remoting_signaling_sources,
                         ".",
                         "//remoting")
@@ -36,7 +36,7 @@ source_set("signaling") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

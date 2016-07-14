@@ -69,7 +69,7 @@ grit("extensions_renderer_resources") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = rebase_path(extensions_gypi_values.extensions_test_support_sources,
                         ".",

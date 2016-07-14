@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//remoting/remoting_srcs.gni")
 
-source_set("protocol") {
+static_library("protocol") {
   sources = rebase_path(remoting_srcs_gypi_values.remoting_protocol_sources,
                         ".",
                         "//remoting")
@@ -50,7 +50,7 @@ source_set("protocol") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

@@ -123,7 +123,7 @@ if (is_android) {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   sources = [
     "platform/test_ax_node_wrapper.cc",
     "platform/test_ax_node_wrapper.h",

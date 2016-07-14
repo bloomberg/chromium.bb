@@ -182,7 +182,7 @@ google_apis_tmpl("google_apis") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "gaia/fake_gaia.cc",
@@ -202,7 +202,6 @@ source_set("test_support") {
     ":google_apis",
     "//base",
     "//base/test:test_support",
-    "//net",
     "//net:test_support",
   ]
 

@@ -4,7 +4,7 @@
 
 import("//remoting/remoting_srcs.gni")
 
-source_set("client") {
+static_library("client") {
   # Disabled the source filters because there are _mac files that need to
   # be compiled on all platforms.
   set_sources_assignment_filter([])
@@ -62,7 +62,7 @@ if (is_android || is_ios) {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

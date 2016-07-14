@@ -44,7 +44,7 @@ component("webview") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "../../test/webview_test_helper.cc",

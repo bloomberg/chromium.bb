@@ -4,7 +4,7 @@
 
 import("//testing/test.gni")
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "mojo_test_base.cc",
@@ -73,7 +73,7 @@ source_set("run_all_perftests") {
   }
 }
 
-source_set("test_support_impl") {
+static_library("test_support_impl") {
   testonly = true
   deps = [
     "//base",

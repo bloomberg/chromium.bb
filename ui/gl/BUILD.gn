@@ -290,7 +290,7 @@ component("gl") {
   }
 }
 
-source_set("gl_unittest_utils") {
+static_library("gl_unittest_utils") {
   testonly = true
   sources = [
     "gl_bindings_autogen_mock.cc",
@@ -311,7 +311,7 @@ source_set("gl_unittest_utils") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/gl_image_test_support.cc",

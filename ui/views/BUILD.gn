@@ -148,7 +148,7 @@ component("views") {
   }
 }
 
-source_set("test_support_internal") {
+static_library("test_support_internal") {
   testonly = true
   sources = gypi_values.views_test_support_sources
 

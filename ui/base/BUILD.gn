@@ -611,7 +611,7 @@ component("base") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/material_design_controller_test_api.cc",

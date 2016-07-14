@@ -3,14 +3,14 @@
 # found in the LICENSE file.
 
 # GYP version: mojo/mojo_base.gyp:mojo_application_base
-source_set("cpp") {
+group("cpp") {
   public_deps = [
     ":sources",
   ]
 }
 
 # TODO(rockot): Rename this to "cpp".
-source_set("sources") {
+static_library("sources") {
   sources = [
     "application_runner.h",
     "capabilities.h",
@@ -55,7 +55,7 @@ source_set("sources") {
 }
 
 if (!is_ios) {
-  source_set("application_support") {
+  static_library("application_support") {
     sources = [
       "lib/init_commandline.cc",
       "lib/initialize_base_and_icu.cc",
@@ -68,7 +68,7 @@ if (!is_ios) {
     ]
   }
 
-  source_set("service_test_support") {
+  static_library("service_test_support") {
     testonly = true
     sources = [
       "lib/service_test.cc",

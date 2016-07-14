@@ -140,7 +140,7 @@ if (is_chromeos) {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "chromeos/test/action_logger.cc",

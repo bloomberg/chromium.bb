@@ -282,7 +282,7 @@ if (!is_ios) {
     ]
   }
 
-  source_set("test_support") {
+  static_library("test_support") {
     testonly = true
     sources = [
       "ipc_multiprocess_test.cc",

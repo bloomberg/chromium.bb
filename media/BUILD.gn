@@ -483,7 +483,7 @@ component("media") {
   ]
 }
 
-source_set("cdm_paths") {
+static_library("cdm_paths") {
   sources = [
     "cdm/cdm_paths.cc",
     "cdm/cdm_paths.h",
@@ -755,7 +755,7 @@ test("audio_unittests") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "renderers/mock_gpu_memory_buffer_video_frame_pool.cc",

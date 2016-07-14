@@ -118,7 +118,7 @@ group("for_mojo_application") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

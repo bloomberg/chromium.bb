@@ -274,7 +274,7 @@ if (use_pulseaudio && link_pulseaudio) {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "audio_unittest_util.cc",

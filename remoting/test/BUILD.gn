@@ -4,7 +4,7 @@
 
 import("//remoting/remoting_enable.gni")
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [
@@ -106,7 +106,7 @@ executable("chromoting_test_driver") {
   ]
 }
 
-source_set("ar_test_driver_common") {
+static_library("ar_test_driver_common") {
   testonly = true
 
   sources = [

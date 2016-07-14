@@ -127,7 +127,7 @@ test("command_buffer_gles2_tests") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "command_buffer/client/gles2_interface_stub.cc",

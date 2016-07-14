@@ -96,7 +96,7 @@ component("compositor") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/context_factories_for_test.cc",

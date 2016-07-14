@@ -5,7 +5,7 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
-source_set("unittest_support") {
+static_library("unittest_support") {
   testonly = true
 
   sources = [
@@ -27,7 +27,7 @@ source_set("unittest_support") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [

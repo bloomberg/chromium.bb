@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # GYP version: mojo/public/mojo_public.gyp:mojo_public_test_utils
-source_set("test_utils") {
+static_library("test_utils") {
   testonly = true
 
   sources = [

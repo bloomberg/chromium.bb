@@ -46,7 +46,7 @@ mojom("mojom") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   sources = [
     "test/app_list_presenter_impl_test_api.cc",
     "test/app_list_presenter_impl_test_api.h",

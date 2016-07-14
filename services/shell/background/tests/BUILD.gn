@@ -6,7 +6,7 @@ import("//mojo/public/mojo_application.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-source_set("test_support") {
+static_library("test_support") {
   sources = [
     "test_catalog_store.cc",
     "test_catalog_store.h",

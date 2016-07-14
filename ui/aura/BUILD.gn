@@ -150,7 +150,7 @@ component("aura") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "test/aura_test_base.cc",

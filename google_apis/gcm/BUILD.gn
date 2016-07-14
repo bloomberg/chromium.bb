@@ -85,7 +85,7 @@ proto_library("proto") {
   defines = [ "GCM_IMPLEMENTATION" ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "base/fake_encryptor.cc",

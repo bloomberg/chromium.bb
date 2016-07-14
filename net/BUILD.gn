@@ -506,7 +506,7 @@ bundle_data("test_support_bundle_data") {
   ]
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
   sources = [
     "base/load_timing_info_test_util.cc",
@@ -1749,7 +1749,7 @@ if (!is_ios) {
 
 # Fuzzers
 
-source_set("net_fuzzer_test_support") {
+static_library("net_fuzzer_test_support") {
   testonly = true
 
   sources = [

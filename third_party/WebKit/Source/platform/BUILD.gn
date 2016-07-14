@@ -472,7 +472,7 @@ component("platform") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   sources = platform_test_support_files
   visibility += [ "//third_party/WebKit/*" ]
   testonly = true

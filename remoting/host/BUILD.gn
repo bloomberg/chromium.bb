@@ -234,7 +234,7 @@ static_library("host") {
   }
 }
 
-source_set("test_support") {
+static_library("test_support") {
   testonly = true
 
   sources = [
@@ -864,7 +864,7 @@ if (enable_remoting_host && !is_android) {
 }
 
 if (enable_me2me_host) {
-  source_set("remoting_me2me_host_static") {
+  static_library("remoting_me2me_host_static") {
     sources = [
       "pam_authorization_factory_posix.cc",
       "pam_authorization_factory_posix.h",
