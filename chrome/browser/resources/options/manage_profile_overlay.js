@@ -17,7 +17,7 @@ cr.define('options', function() {
     Page.call(this, 'manageProfile',
               loadTimeData.getString('manageProfileTabTitle'),
               'manage-profile-overlay');
-  };
+  }
 
   cr.addSingletonGetter(ManageProfileOverlay);
 
@@ -595,9 +595,7 @@ cr.define('options', function() {
           loadTimeData.getString('disconnectManagedProfileText');
       $('manage-profile-overlay-disconnect-managed').hidden = false;
 
-      // Because this dialog isn't useful when refreshing or as part of the
-      // history, don't create a history entry for it when showing.
-      PageManager.showPageByName('manageProfile', false);
+      PageManager.showPageByName('signOut');
     },
 
     /**
@@ -623,16 +621,46 @@ cr.define('options', function() {
     'showCreateDialog',
   ]);
 
+  /**
+   * @constructor
+   * @extends {options.ManageProfileOverlay}
+   */
+  function DisconnectAccountOverlay() {
+    Page.call(this, 'signOut',
+              loadTimeData.getString('disconnectAccountTabTitle'),
+              'manage-profile-overlay');
+  }
+
+  cr.addSingletonGetter(DisconnectAccountOverlay);
+
+  DisconnectAccountOverlay.prototype = {
+    __proto__: ManageProfileOverlay.prototype,
+
+    /** @override */
+    canShowPage: function() {
+      var syncData = loadTimeData.getValue('syncData');
+      return syncData.signedIn && !syncData.signoutAllowed;
+    },
+
+    /** @override */
+    didShowPage: function() {
+      chrome.send('showDisconnectManagedProfileDialog');
+    }
+  };
+
+  /**
+   * @constructor
+   * @extends {options.ManageProfileOverlay}
+   */
   function CreateProfileOverlay() {
     Page.call(this, 'createProfile',
               loadTimeData.getString('createProfileTabTitle'),
               'manage-profile-overlay');
-  };
+  }
 
   cr.addSingletonGetter(CreateProfileOverlay);
 
   CreateProfileOverlay.prototype = {
-    // Inherit from ManageProfileOverlay.
     __proto__: ManageProfileOverlay.prototype,
 
     // The signed-in email address of the current profile, or empty if they're
@@ -883,6 +911,7 @@ cr.define('options', function() {
   // Export
   return {
     ManageProfileOverlay: ManageProfileOverlay,
+    DisconnectAccountOverlay: DisconnectAccountOverlay,
     CreateProfileOverlay: CreateProfileOverlay,
   };
 });

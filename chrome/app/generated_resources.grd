@@ -11635,7 +11635,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Disconnect your Google Account...
         </message>
         <message name="IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL" desc="The text to display on the button to confirm the user wishes to stop syncing.">
-          Disconnect account
+          Sign Out
         </message>
         <message name="IDS_SYNC_STOP_SYNCING_DIALOG_TITLE" desc="The title of the dialog that explains what 'stop syncing' means.">
           Disconnect your Google Account
@@ -12914,6 +12914,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <!-- Android does not support multiple profiles and supervised users -->
       <if expr="not is_android">
         <!-- Manage Profile Dialog -->
+        <message name="IDS_DISCONNECT_ACCOUNT_TITLE" desc="Title of the disconnect account dialog">
+          Disconnect Account
+        </message>
         <message name="IDS_PROFILES_MANAGE_TITLE" desc="Title of the manage profile dialog">
           Edit
         </message>

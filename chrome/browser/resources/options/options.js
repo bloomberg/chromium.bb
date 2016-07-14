@@ -30,6 +30,7 @@ var HotwordConfirmDialog = options.HotwordConfirmDialog;
 var ImportDataOverlay = options.ImportDataOverlay;
 var LanguageOptions = options.LanguageOptions;
 var ManageProfileOverlay = options.ManageProfileOverlay;
+var DisconnectAccountOverlay = options.DisconnectAccountOverlay;
 var OptionsFocusManager = options.OptionsFocusManager;
 var OptionsPage = options.OptionsPage;
 var PageManager = cr.ui.pageManager.PageManager;
@@ -122,6 +123,8 @@ function load() {
                               [$('privacyContentSettingsButton'),
                                $('show-cookies-button')]);
   PageManager.registerOverlay(CreateProfileOverlay.getInstance(),
+                              BrowserOptions.getInstance());
+  PageManager.registerOverlay(DisconnectAccountOverlay.getInstance(),
                               BrowserOptions.getInstance());
   PageManager.registerOverlay(EasyUnlockTurnOffOverlay.getInstance(),
                               BrowserOptions.getInstance(),

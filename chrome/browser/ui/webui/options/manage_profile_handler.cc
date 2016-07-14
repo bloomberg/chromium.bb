@@ -123,6 +123,8 @@ void ManageProfileHandler::GetLocalizedValues(
   RegisterStrings(localized_strings, resources, arraysize(resources));
   RegisterTitle(localized_strings, "manageProfile", IDS_PROFILES_MANAGE_TITLE);
   RegisterTitle(localized_strings, "createProfile", IDS_PROFILES_CREATE_TITLE);
+  RegisterTitle(localized_strings, "disconnectAccount",
+      IDS_DISCONNECT_ACCOUNT_TITLE);
 
   base::string16 supervised_user_dashboard_url =
       base::ASCIIToUTF16(chrome::kLegacySupervisedUserManagementURL);
