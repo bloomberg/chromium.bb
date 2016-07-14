@@ -3031,6 +3031,10 @@
         # TODO: Enable on Windows too, http://crbug.com/404525
         'variables': { 'clang_warning_flags': ['-Wexit-time-destructors']},
       }],
+      ['"<!(python <(DEPTH)/tools/clang/scripts/update.py --print-revision)"!="274369-1"', {
+        # TODO(eugenis): https://crbug.com/619640
+        'variables': { 'clang_warning_flags': ['-Wno-address-of-packed-member']},
+      }],
       ['chromium_code==0', {
         'variables': {
           'clang_warning_flags': [
