@@ -87,6 +87,10 @@ class NavigationEntry {
   // The caller is responsible for detecting when there is no title and
   // displaying the appropriate "Untitled" label if this is being displayed to
   // the user.
+  // Use WebContents::UpdateTitleForEntry() in most cases, since that notifies
+  // observers when the visible title changes. Only call
+  // NavigationEntry::SetTitle() below directly when this entry is known not to
+  // be visible.
   virtual void SetTitle(const base::string16& title) = 0;
   virtual const base::string16& GetTitle() const = 0;
 

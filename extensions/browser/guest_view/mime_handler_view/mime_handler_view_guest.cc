@@ -182,7 +182,8 @@ void MimeHandlerViewGuest::NavigationStateChanged(
   content::NavigationEntry* last_committed_entry =
       embedder_web_contents()->GetController().GetLastCommittedEntry();
   if (last_committed_entry) {
-    last_committed_entry->SetTitle(source->GetTitle());
+    embedder_web_contents()->UpdateTitleForEntry(last_committed_entry,
+                                                 source->GetTitle());
     embedder_web_contents()->GetDelegate()->NavigationStateChanged(
         embedder_web_contents(), changed_flags);
   }

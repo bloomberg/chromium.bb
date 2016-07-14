@@ -177,11 +177,8 @@ void WebContentsEntry::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
-  if (itr == tasks_by_frames_.end()) {
-    // TODO(afakhry): Validate whether this actually happens in practice.
-    NOTREACHED();
+  if (itr == tasks_by_frames_.end())
     return;
-  }
 
   // Listening to WebContentsObserver::TitleWasSet() only is not enough in
   // some cases when the the webpage doesn't have a title. That's why we update
@@ -199,11 +196,8 @@ void WebContentsEntry::DidNavigateMainFrame(
 void WebContentsEntry::TitleWasSet(content::NavigationEntry* entry,
                                    bool explicit_set) {
   auto itr = tasks_by_frames_.find(web_contents()->GetMainFrame());
-  if (itr == tasks_by_frames_.end()) {
-    // TODO(afakhry): Validate whether this actually happens in practice.
-    NOTREACHED();
+  if (itr == tasks_by_frames_.end())
     return;
-  }
 
   itr->second->UpdateTitle();
 }

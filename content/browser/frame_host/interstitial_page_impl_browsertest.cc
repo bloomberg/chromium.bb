@@ -64,61 +64,6 @@ class TestInterstitialPageDelegate : public InterstitialPageDelegate {
   }
 };
 
-// A title watcher for interstitial pages. The existing TitleWatcher does not
-// work for interstitial pages. Note that this title watcher waits for the
-// title update IPC message not the actual title update. So, the new title is
-// probably not propagated completely, yet.
-class InterstitialTitleUpdateWatcher : public BrowserMessageFilter {
- public:
-  explicit InterstitialTitleUpdateWatcher(InterstitialPage* interstitial)
-      : BrowserMessageFilter(FrameMsgStart) {
-    interstitial->GetMainFrame()->GetProcess()->AddFilter(this);
-  }
-
-  void InitWait(const std::string& expected_title) {
-    DCHECK(!run_loop_);
-    expected_title_ = base::UTF8ToUTF16(expected_title);
-    run_loop_.reset(new base::RunLoop());
-  }
-
-  void Wait() {
-    DCHECK(run_loop_);
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
- private:
-  ~InterstitialTitleUpdateWatcher() override {}
-
-  void OnTitleUpdateReceived(const base::string16& title) {
-    DCHECK(run_loop_);
-    if (title == expected_title_)
-      run_loop_->Quit();
-  }
-
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (!run_loop_)
-      return false;
-
-    if (message.type() == FrameHostMsg_UpdateTitle::ID) {
-      FrameHostMsg_UpdateTitle::Param params;
-      if (FrameHostMsg_UpdateTitle::Read(&message, &params)) {
-        BrowserThread::PostTask(
-            BrowserThread::UI, FROM_HERE,
-            base::Bind(&InterstitialTitleUpdateWatcher::OnTitleUpdateReceived,
-                       this, std::get<0>(params)));
-      }
-    }
-    return false;
-  }
-
-  base::string16 expected_title_;
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(InterstitialTitleUpdateWatcher);
-};
-
 // A message filter that watches for WriteText and CommitWrite clipboard IPC
 // messages to make sure cut/copy is working properly. It will mark these events
 // as handled to prevent modification of the actual clipboard.
@@ -252,8 +197,6 @@ class InterstitialPageImplTest : public ContentBrowserTest {
 
     clipboard_message_watcher_ =
         new ClipboardMessageWatcher(interstitial_.get());
-    title_update_watcher_ =
-        new InterstitialTitleUpdateWatcher(interstitial_.get());
 
     // Wait until page loads completely.
     ASSERT_TRUE(WaitForRenderFrameReady(interstitial_->GetMainFrame()));
@@ -292,12 +235,14 @@ class InterstitialPageImplTest : public ContentBrowserTest {
 
   std::string PerformCut() {
     clipboard_message_watcher_->InitWait();
-    title_update_watcher_->InitWait("TEXT_CHANGED");
+    const base::string16 expected_title = base::UTF8ToUTF16("TEXT_CHANGED");
+    content::TitleWatcher title_watcher(shell()->web_contents(),
+                                        expected_title);
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(interstitial_->GetMainFrame());
     rfh->GetRenderWidgetHost()->delegate()->Cut();
     clipboard_message_watcher_->WaitForWriteCommit();
-    title_update_watcher_->Wait();
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
     return clipboard_message_watcher_->last_text();
   }
 
@@ -311,19 +256,24 @@ class InterstitialPageImplTest : public ContentBrowserTest {
   }
 
   void PerformPaste() {
-    title_update_watcher_->InitWait("TEXT_CHANGED");
+    const base::string16 expected_title = base::UTF8ToUTF16("TEXT_CHANGED");
+    content::TitleWatcher title_watcher(shell()->web_contents(),
+                                        expected_title);
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(interstitial_->GetMainFrame());
     rfh->GetRenderWidgetHost()->delegate()->Paste();
-    title_update_watcher_->Wait();
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
   void PerformSelectAll() {
-    title_update_watcher_->InitWait("SELECTION_CHANGED");
+    const base::string16 expected_title =
+        base::UTF8ToUTF16("SELECTION_CHANGED");
+    content::TitleWatcher title_watcher(shell()->web_contents(),
+                                        expected_title);
     RenderFrameHostImpl* rfh =
         static_cast<RenderFrameHostImpl*>(interstitial_->GetMainFrame());
     rfh->GetRenderWidgetHost()->delegate()->SelectAll();
-    title_update_watcher_->Wait();
+    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
 
  private:
@@ -344,7 +294,6 @@ class InterstitialPageImplTest : public ContentBrowserTest {
 
   std::unique_ptr<InterstitialPageImpl> interstitial_;
   scoped_refptr<ClipboardMessageWatcher> clipboard_message_watcher_;
-  scoped_refptr<InterstitialTitleUpdateWatcher> title_update_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageImplTest);
 };

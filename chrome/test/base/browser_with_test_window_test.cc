@@ -183,10 +183,11 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
     Browser* navigating_browser,
     const GURL& url,
     const base::string16& title) {
-  NavigationController* controller = &navigating_browser->tab_strip_model()->
-      GetActiveWebContents()->GetController();
+  WebContents* contents =
+      navigating_browser->tab_strip_model()->GetActiveWebContents();
+  NavigationController* controller = &contents->GetController();
   NavigateAndCommit(controller, url);
-  controller->GetActiveEntry()->SetTitle(title);
+  contents->UpdateTitleForEntry(controller->GetActiveEntry(), title);
 }
 
 void BrowserWithTestWindowTest::DestroyBrowserAndProfile() {

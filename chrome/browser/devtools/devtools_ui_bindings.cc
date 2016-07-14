@@ -44,7 +44,6 @@
 #include "components/zoom/page_zoom.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
-#include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_source.h"
@@ -536,9 +535,8 @@ void DevToolsUIBindings::InspectedURLChanged(const std::string& url) {
   content::NavigationController& controller = web_contents()->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
   // DevTools UI is not localized.
-  entry->SetTitle(
-      base::UTF8ToUTF16(base::StringPrintf(kTitleFormat, url.c_str())));
-  web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TITLE);
+  web_contents()->UpdateTitleForEntry(
+      entry, base::UTF8ToUTF16(base::StringPrintf(kTitleFormat, url.c_str())));
 }
 
 void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,

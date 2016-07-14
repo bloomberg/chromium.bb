@@ -298,11 +298,8 @@ void InterstitialPageImpl::Hide() {
   controller_->delegate()->DetachInterstitialPage();
   // Let's revert to the original title if necessary.
   NavigationEntry* entry = controller_->GetVisibleEntry();
-  if (entry && !new_navigation_ && should_revert_web_contents_title_) {
-    entry->SetTitle(original_web_contents_title_);
-    controller_->delegate()->NotifyNavigationStateChanged(
-        INVALIDATE_TYPE_TITLE);
-  }
+  if (entry && !new_navigation_ && should_revert_web_contents_title_)
+    web_contents_->UpdateTitleForEntry(entry, original_web_contents_title_);
 
   static_cast<WebContentsImpl*>(web_contents_)->DidChangeVisibleSSLState();
 
@@ -411,8 +408,7 @@ void InterstitialPageImpl::UpdateTitle(
   }
   // TODO(evan): make use of title_direction.
   // http://code.google.com/p/chromium/issues/detail?id=27094
-  entry->SetTitle(title);
-  controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TITLE);
+  web_contents_->UpdateTitleForEntry(entry, title);
 }
 
 InterstitialPage* InterstitialPageImpl::GetAsInterstitialPage() {
@@ -669,7 +665,7 @@ void InterstitialPageImpl::DontProceed() {
 
   if (should_discard_pending_nav_entry_) {
     // Since no navigation happens we have to discard the transient entry
-    // explicitely.  Note that by calling DiscardNonCommittedEntries() we also
+    // explicitly.  Note that by calling DiscardNonCommittedEntries() we also
     // discard the pending entry, which is what we want, since the navigation is
     // cancelled.
     controller_->DiscardNonCommittedEntries();

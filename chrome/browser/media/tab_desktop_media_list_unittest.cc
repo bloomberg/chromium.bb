@@ -139,7 +139,7 @@ class TabDesktopMediaListTest : public testing::Test {
       entry = contents->GetController().GetTransientEntry();
     }
 
-    entry->SetTitle(base::UTF8ToUTF16("Test tab"));
+    contents->UpdateTitleForEntry(entry, base::ASCIIToUTF16("Test tab"));
 
     content::FaviconStatus favicon_info;
     favicon_info.image =
@@ -325,8 +325,9 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
   WebContents* contents =
       tab_strip_model->GetWebContentsAt(kDefaultSourceCount - 1);
   ASSERT_TRUE(contents);
-  contents->GetController().GetTransientEntry()->SetTitle(
-      base::UTF8ToUTF16("New test tab"));
+  const content::NavigationController& controller = contents->GetController();
+  contents->UpdateTitleForEntry(controller.GetTransientEntry(),
+                                base::ASCIIToUTF16("New test tab"));
 
   EXPECT_CALL(observer_, OnSourceNameChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());

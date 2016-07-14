@@ -277,8 +277,10 @@ void SearchTabHelper::DidStartNavigationToPendingEntry(
     // prevents any flickering of the tab title.
     content::NavigationEntry* entry =
         web_contents_->GetController().GetPendingEntry();
-    if (entry)
-      entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+    if (entry) {
+      web_contents_->UpdateTitleForEntry(
+          entry, l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+    }
   }
 }
 
@@ -306,7 +308,8 @@ void SearchTabHelper::DidNavigateMainFrame(
   if (entry && entry->GetTitle().empty() &&
       (entry->GetVirtualURL() == GURL(chrome::kChromeUINewTabURL) ||
        search::NavEntryIsInstantNTP(web_contents_, entry))) {
-    entry->SetTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+    web_contents_->UpdateTitleForEntry(
+        entry, l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   }
 }
 
