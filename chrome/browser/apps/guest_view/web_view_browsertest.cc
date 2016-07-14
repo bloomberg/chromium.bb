@@ -1541,16 +1541,9 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
 
 // This test makes sure the browser process does not crash if browser is shut
 // down while an interstitial page is being shown in guest.
-// Flaky on Windows. http://crbug.com/619508.
-#if defined(OS_WIN)
-#define MAYBE_InterstitialTeardownOnBrowserShutdown \
-    DISABLED_InterstitialTeardownOnBrowserShutdown
-#else
-#define MAYBE_InterstitialTeardownOnBrowserShutdown \
-    InterstitialTeardownOnBrowserShutdown
-#endif
+// Flaky. http://crbug.com/627962.
 IN_PROC_BROWSER_TEST_P(WebViewTest,
-                       MAYBE_InterstitialTeardownOnBrowserShutdown) {
+                       DISABLED_InterstitialTeardownOnBrowserShutdown) {
   InterstitialTeardownTestHelper();
 
   // Now close the app while interstitial page being shown in guest.
