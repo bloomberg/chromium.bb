@@ -88,7 +88,8 @@ class LayoutTestResultsTest(unittest.TestCase):
     "fixable": 1220,
     "num_flaky": 0,
     "chromium_revision": "1234",
-    "has_wdiff": false
+    "has_wdiff": false,
+    "builder_name": "mock_builder_name"
 });"""
 
     def test_results_from_string(self):
