@@ -259,6 +259,7 @@ bool TracingControllerImpl::StartTracing(
   start_tracing_done_callback_ = callback;
   start_tracing_trace_config_.reset(
       new base::trace_event::TraceConfig(trace_config));
+  metadata_.reset(new base::DictionaryValue());
   pending_start_tracing_ack_count_ = 0;
 
 #if defined(OS_ANDROID)
@@ -336,6 +337,10 @@ void TracingControllerImpl::OnAllTracingAgentsStarted() {
   start_tracing_trace_config_.reset();
 }
 
+void TracingControllerImpl::AddMetadata(const base::DictionaryValue& data) {
+  metadata_->MergeDictionary(&data);
+}
+
 bool TracingControllerImpl::StopTracing(
     const scoped_refptr<TraceDataSink>& trace_data_sink) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -354,16 +359,20 @@ bool TracingControllerImpl::StopTracing(
   }
 
   if (trace_data_sink) {
+    MetadataFilterPredicate metadata_filter;
     if (TraceLog::GetInstance()->GetCurrentTraceConfig()
         .IsArgumentFilterEnabled()) {
       std::unique_ptr<TracingDelegate> delegate(
           GetContentClient()->browser()->GetTracingDelegate());
-      if (delegate) {
-        trace_data_sink->SetMetadataFilterPredicate(
-            delegate->GetMetadataFilterPredicate());
-      }
+      if (delegate)
+        metadata_filter = delegate->GetMetadataFilterPredicate();
     }
-    trace_data_sink->AddMetadata(*GenerateTracingMetadataDict().get());
+    AddFilteredMetadata(trace_data_sink.get(), GenerateTracingMetadataDict(),
+                        metadata_filter);
+    AddFilteredMetadata(trace_data_sink.get(), std::move(metadata_),
+                        metadata_filter);
+  } else {
+    metadata_.reset();
   }
 
   trace_data_sink_ = trace_data_sink;
@@ -917,6 +926,26 @@ void TracingControllerImpl::OnClockSyncMarkerRecordedByAgent(
     clock_sync_timer_.Stop();
     StopTracingAfterClockSync();
   }
+}
+
+void TracingControllerImpl::AddFilteredMetadata(
+    TracingController::TraceDataSink* sink,
+    std::unique_ptr<base::DictionaryValue> metadata,
+    const MetadataFilterPredicate& filter) {
+  if (filter.is_null()) {
+    sink->AddMetadata(std::move(metadata));
+    return;
+  }
+  std::unique_ptr<base::DictionaryValue> filtered_metadata(
+      new base::DictionaryValue);
+  for (base::DictionaryValue::Iterator it(*metadata); !it.IsAtEnd();
+       it.Advance()) {
+    if (filter.Run(it.key()))
+      filtered_metadata->Set(it.key(), it.value().DeepCopy());
+    else
+      filtered_metadata->SetString(it.key(), "__stripped__");
+  }
+  sink->AddMetadata(std::move(filtered_metadata));
 }
 
 void TracingControllerImpl::RequestGlobalMemoryDump(

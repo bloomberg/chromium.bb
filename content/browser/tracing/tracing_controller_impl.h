@@ -34,7 +34,8 @@ class TracingUI;
 // TraceDataSink, and receives chunks of the final trace data as it's being
 // constructed.
 // Methods may be called from any thread.
-class TraceDataEndpoint : public base::RefCountedThreadSafe<TraceDataEndpoint> {
+class CONTENT_EXPORT TraceDataEndpoint
+    : public base::RefCountedThreadSafe<TraceDataEndpoint> {
  public:
   virtual void ReceiveTraceChunk(const std::string& chunk) {}
   virtual void ReceiveTraceFinalContents(
@@ -69,6 +70,8 @@ class TracingControllerImpl
   bool StopTracing(const scoped_refptr<TraceDataSink>& sink) override;
   bool GetTraceBufferUsage(
       const GetTraceBufferUsageCallback& callback) override;
+  void AddMetadata(const base::DictionaryValue& metadata) override;
+
   bool SetWatchEvent(const std::string& category_name,
                      const std::string& event_name,
                      const WatchEventCallback& callback) override;
@@ -202,6 +205,10 @@ class TracingControllerImpl
       const base::TimeTicks& issue_ts,
       const base::TimeTicks& issue_end_ts);
 
+  void AddFilteredMetadata(TracingController::TraceDataSink* sink,
+                           std::unique_ptr<base::DictionaryValue> metadata,
+                           const MetadataFilterPredicate& filter);
+
   typedef std::set<scoped_refptr<TraceMessageFilter>> TraceMessageFilterSet;
   TraceMessageFilterSet trace_message_filters_;
 
@@ -248,6 +255,7 @@ class TracingControllerImpl
   std::set<TracingUI*> tracing_uis_;
   scoped_refptr<TraceDataSink> trace_data_sink_;
   scoped_refptr<TraceDataSink> monitoring_data_sink_;
+  std::unique_ptr<base::DictionaryValue> metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingControllerImpl);
 };

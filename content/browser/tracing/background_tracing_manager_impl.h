@@ -63,7 +63,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   void BeginFinalizing(StartedFinalizingCallback);
   void ValidateStartupScenario();
 
-  void AddCustomMetadata(TracingControllerImpl::TraceDataSink*);
+  void AddCustomMetadata();
 
   std::string GetTriggerNameFromHandle(TriggerHandle handle) const;
   bool IsTriggerHandleValid(TriggerHandle handle) const;

@@ -115,7 +115,30 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
   DISALLOW_COPY_AND_ASSIGN(FileTraceDataEndpoint);
 };
 
-class StringTraceDataSink : public TracingController::TraceDataSink {
+class TraceDataSinkImplBase : public TracingController::TraceDataSink {
+ public:
+  void AddAgentTrace(const std::string& trace_label,
+                     const std::string& trace_data) override;
+  void AddMetadata(std::unique_ptr<base::DictionaryValue> data) override;
+
+ protected:
+  TraceDataSinkImplBase() : metadata_(new base::DictionaryValue()) {}
+  ~TraceDataSinkImplBase() override {}
+
+  // Get a map of TracingAgent's data, which is previously added by
+  // AddAgentTrace(). The map's key is the trace label and the map's value is
+  // the trace data.
+  const std::map<std::string, std::string>& GetAgentTrace() const;
+  std::unique_ptr<base::DictionaryValue> TakeMetadata();
+
+ private:
+  std::map<std::string, std::string> additional_tracing_agent_trace_;
+  std::unique_ptr<base::DictionaryValue> metadata_;
+
+  DISALLOW_COPY_AND_ASSIGN(TraceDataSinkImplBase);
+};
+
+class StringTraceDataSink : public TraceDataSinkImplBase {
  public:
   explicit StringTraceDataSink(scoped_refptr<TraceDataEndpoint> endpoint)
       : endpoint_(endpoint) {}
@@ -143,8 +166,10 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
     for (auto const &it : GetAgentTrace())
       AddTraceChunkAndPassToEndpoint(",\"" + it.first + "\": " + it.second);
 
+    std::unique_ptr<base::DictionaryValue> metadata(TakeMetadata());
     std::string metadataJSON;
-    if (base::JSONWriter::Write(*GetMetadataCopy(), &metadataJSON) &&
+
+    if (base::JSONWriter::Write(*metadata, &metadataJSON) &&
         !metadataJSON.empty()) {
       AddTraceChunkAndPassToEndpoint(
           ",\"" + std::string(kMetadataTraceLabel) + "\": " + metadataJSON);
@@ -152,7 +177,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
 
     AddTraceChunkAndPassToEndpoint("}");
 
-    endpoint_->ReceiveTraceFinalContents(GetMetadataCopy(), trace_);
+    endpoint_->ReceiveTraceFinalContents(std::move(metadata), trace_);
   }
 
  private:
@@ -164,7 +189,7 @@ class StringTraceDataSink : public TracingController::TraceDataSink {
   DISALLOW_COPY_AND_ASSIGN(StringTraceDataSink);
 };
 
-class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
+class CompressedStringTraceDataSink : public TraceDataSinkImplBase {
  public:
   explicit CompressedStringTraceDataSink(
       scoped_refptr<TraceDataEndpoint> endpoint)
@@ -270,8 +295,9 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
           ",\"" + it.first + "\": " + it.second, false);
     }
 
+    std::unique_ptr<base::DictionaryValue> metadata(TakeMetadata());
     std::string metadataJSON;
-    if (base::JSONWriter::Write(*GetMetadataCopy(), &metadataJSON) &&
+    if (base::JSONWriter::Write(*metadata, &metadataJSON) &&
         !metadataJSON.empty()) {
       AddTraceChunkAndCompressOnFileThread(
           ",\"" + std::string(kMetadataTraceLabel) + "\": " + metadataJSON,
@@ -282,7 +308,7 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
     deflateEnd(stream_.get());
     stream_.reset();
 
-    endpoint_->ReceiveTraceFinalContents(GetMetadataCopy(),
+    endpoint_->ReceiveTraceFinalContents(std::move(metadata),
                                          compressed_trace_data_);
   }
 
@@ -297,47 +323,27 @@ class CompressedStringTraceDataSink : public TracingController::TraceDataSink {
 }  // namespace
 
 TracingController::TraceDataSink::TraceDataSink() {}
-
 TracingController::TraceDataSink::~TraceDataSink() {}
 
-void TracingController::TraceDataSink::AddAgentTrace(
-    const std::string& trace_label,
-    const std::string& trace_data) {
+void TraceDataSinkImplBase::AddAgentTrace(const std::string& trace_label,
+                                          const std::string& trace_data) {
   DCHECK(additional_tracing_agent_trace_.find(trace_label) ==
          additional_tracing_agent_trace_.end());
   additional_tracing_agent_trace_[trace_label] = trace_data;
 }
 
-const std::map<std::string, std::string>&
-    TracingController::TraceDataSink::GetAgentTrace() const {
+const std::map<std::string, std::string>& TraceDataSinkImplBase::GetAgentTrace()
+    const {
   return additional_tracing_agent_trace_;
 }
 
-void TracingController::TraceDataSink::AddMetadata(
-    const base::DictionaryValue& data) {
-  metadata_.MergeDictionary(&data);
+void TraceDataSinkImplBase::AddMetadata(
+    std::unique_ptr<base::DictionaryValue> data) {
+  metadata_->MergeDictionary(data.get());
 }
 
-void TracingController::TraceDataSink::SetMetadataFilterPredicate(
-    const MetadataFilterPredicate& metadata_filter_predicate) {
-  metadata_filter_predicate_ = metadata_filter_predicate;
-}
-
-std::unique_ptr<const base::DictionaryValue>
-TracingController::TraceDataSink::GetMetadataCopy() const {
-  if (metadata_filter_predicate_.is_null())
-    return std::unique_ptr<const base::DictionaryValue>(metadata_.DeepCopy());
-
-  std::unique_ptr<base::DictionaryValue> metadata_copy(
-      new base::DictionaryValue);
-  for (base::DictionaryValue::Iterator it(metadata_); !it.IsAtEnd();
-       it.Advance()) {
-    if (metadata_filter_predicate_.Run(it.key()))
-      metadata_copy->Set(it.key(), it.value().DeepCopy());
-    else
-      metadata_copy->SetString(it.key(), "__stripped__");
-  }
-  return std::move(metadata_copy);
+std::unique_ptr<base::DictionaryValue> TraceDataSinkImplBase::TakeMetadata() {
+  return std::move(metadata_);
 }
 
 scoped_refptr<TracingController::TraceDataSink>

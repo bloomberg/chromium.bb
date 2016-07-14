@@ -14,10 +14,12 @@
 #include "build/build_config.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/trace_uploader.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/test_content_browser_client.h"
 
 using base::trace_event::RECORD_CONTINUOUSLY;
 using base::trace_event::RECORD_UNTIL_FULL;
@@ -90,6 +92,25 @@ class TracingControllerTestEndpoint : public TraceDataEndpoint {
   base::Callback<void(std::unique_ptr<const base::DictionaryValue>,
                       base::RefCountedString*)>
       done_callback_;
+};
+
+class TracingTestBrowserClient : public TestContentBrowserClient {
+ public:
+  TracingDelegate* GetTracingDelegate() override {
+    return new TestTracingDelegate();
+  };
+
+ private:
+  class TestTracingDelegate : public TracingDelegate {
+   public:
+    std::unique_ptr<TraceUploader> GetTraceUploader(
+        net::URLRequestContextGetter* request_context) override {
+      return nullptr;
+    }
+    MetadataFilterPredicate GetMetadataFilterPredicate() override {
+      return base::Bind(IsMetadataWhitelisted);
+    }
+  };
 };
 
 class TracingControllerTest : public ContentBrowserTest {
@@ -201,10 +222,13 @@ class TracingControllerTest : public ContentBrowserTest {
   }
 
   void TestStartAndStopTracingStringWithFilter() {
+    TracingTestBrowserClient client;
+    ContentBrowserClient* old_client = SetBrowserClientForTesting(&client);
     Navigate(shell());
 
     base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
         base::Bind(&IsTraceEventArgsWhitelisted));
+
     TracingController* controller = TracingController::GetInstance();
 
     {
@@ -234,17 +258,16 @@ class TracingControllerTest : public ContentBrowserTest {
       scoped_refptr<TracingController::TraceDataSink> trace_data_sink =
           TracingController::CreateStringSink(callback);
 
-      trace_data_sink->SetMetadataFilterPredicate(
-          base::Bind(&IsMetadataWhitelisted));
       base::DictionaryValue metadata;
       metadata.SetString("not-whitelisted", "this_not_found");
-      trace_data_sink->AddMetadata(metadata);
+      controller->AddMetadata(metadata);
 
       bool result = controller->StopTracing(trace_data_sink);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(disable_recording_done_callback_count(), 1);
     }
+    SetBrowserClientForTesting(old_client);
   }
 
   void TestStartAndStopTracingCompressed() {

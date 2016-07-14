@@ -155,12 +155,12 @@ void TracingCallbackWrapperBase64(
   callback.Run(data_base64);
 }
 
-void AddCustomMetadata(TracingControllerImpl::TraceDataSink* trace_data_sink) {
+void AddCustomMetadata() {
   base::DictionaryValue metadata_dict;
   metadata_dict.SetString(
       "command_line",
       base::CommandLine::ForCurrentProcess()->GetCommandLineString());
-  trace_data_sink->AddMetadata(metadata_dict);
+  TracingController::GetInstance()->AddMetadata(metadata_dict);
 }
 
 bool OnBeginJSONRequest(const std::string& path,
@@ -185,11 +185,13 @@ bool OnBeginJSONRequest(const std::string& path,
         base::Bind(OnTraceBufferStatusResult, callback));
   }
   if (path == "json/end_recording_compressed") {
+    if (!TracingController::GetInstance()->IsTracing())
+      return false;
     scoped_refptr<TracingControllerImpl::TraceDataSink> data_sink =
         TracingControllerImpl::CreateCompressedStringSink(
             TracingControllerImpl::CreateCallbackEndpoint(
                 base::Bind(TracingCallbackWrapperBase64, callback)));
-    AddCustomMetadata(data_sink.get());
+    AddCustomMetadata();
     return TracingController::GetInstance()->StopTracing(data_sink);
   }
 
