@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/callback_list.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -20,6 +21,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/process_manager_observer.h"
 #include "extensions/common/extension.h"
 
 using extensions::Extension;
@@ -58,10 +60,15 @@ bool IsExtensionNotIdle(const std::string& extension_id,
 // ExtensionTestNotificationObserver::NotificationSet
 
 class ExtensionTestNotificationObserver::NotificationSet
-    : public content::NotificationObserver {
+    : public content::NotificationObserver,
+      public extensions::ProcessManagerObserver {
  public:
+  NotificationSet() : process_manager_observer_(this) {}
+  ~NotificationSet() override {}
+
   void Add(int type, const content::NotificationSource& source);
   void Add(int type);
+  void AddExtensionFrameUnregistration(extensions::ProcessManager* manager);
 
   // Notified any time an Add()ed notification is received.
   // The details of the notification are dropped.
@@ -75,8 +82,15 @@ class ExtensionTestNotificationObserver::NotificationSet
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // extensions::ProcessManagerObserver:
+  void OnExtensionFrameUnregistered(
+      const std::string& extension_id,
+      content::RenderFrameHost* render_frame_host) override;
+
   content::NotificationRegistrar notification_registrar_;
   base::CallbackList<void()> callback_list_;
+  ScopedObserver<extensions::ProcessManager, extensions::ProcessManagerObserver>
+      process_manager_observer_;
 };
 
 void ExtensionTestNotificationObserver::NotificationSet::Add(
@@ -89,10 +103,21 @@ void ExtensionTestNotificationObserver::NotificationSet::Add(int type) {
   Add(type, content::NotificationService::AllSources());
 }
 
+void ExtensionTestNotificationObserver::NotificationSet::
+    AddExtensionFrameUnregistration(extensions::ProcessManager* manager) {
+  process_manager_observer_.Add(manager);
+}
+
 void ExtensionTestNotificationObserver::NotificationSet::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  callback_list_.Notify();
+}
+
+void ExtensionTestNotificationObserver::NotificationSet::
+    OnExtensionFrameUnregistered(const std::string& extension_id,
+                                 content::RenderFrameHost* render_frame_host) {
   callback_list_.Notify();
 }
 
@@ -149,6 +174,7 @@ bool ExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
   NotificationSet notification_set;
   notification_set.Add(content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
   notification_set.Add(content::NOTIFICATION_LOAD_STOP);
+  notification_set.AddExtensionFrameUnregistration(manager);
   WaitForCondition(
       base::Bind(&HaveAllExtensionRenderFrameHostsFinishedLoading, manager),
       &notification_set);
