@@ -236,6 +236,8 @@ def main(argv):
   # java library options
   parser.add_option('--jar-path', help='Path to target\'s jar output.')
   parser.add_option('--java-sources-file', help='Path to .sources file')
+  parser.add_option('--bundled-srcjars',
+      help='GYP-list of .srcjars that have been included in this java_library.')
   parser.add_option('--supports-android', action='store_true',
       help='Whether this library supports running on the Android platform.')
   parser.add_option('--requires-android', action='store_true',
@@ -364,9 +366,20 @@ def main(argv):
   if options.type in ('java_binary', 'java_library', 'android_apk'):
     if options.java_sources_file:
       gradle['java_sources_file'] = options.java_sources_file
+    if options.bundled_srcjars:
+      gradle['bundled_srcjars'] = (
+          build_utils.ParseGypList(options.bundled_srcjars))
+
     gradle['dependent_prebuilt_jars'] = deps.PrebuiltJarPaths()
-    gradle['dependent_projects'] = (
-        [c['path'] for c in direct_library_deps if not c['is_prebuilt']])
+
+    gradle['dependent_android_projects'] = []
+    gradle['dependent_java_projects'] = []
+    for c in direct_library_deps:
+      if not c['is_prebuilt']:
+        if c['requires_android']:
+          gradle['dependent_android_projects'].append(c['path'])
+        else:
+          gradle['dependent_java_projects'].append(c['path'])
 
 
   if (options.type in ('java_binary', 'java_library') and

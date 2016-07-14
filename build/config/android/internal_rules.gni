@@ -327,6 +327,11 @@ template("write_build_config") {
         rebase_path(invoker.srcjar, root_build_dir),
       ]
     }
+    if (defined(invoker.bundled_srcjars)) {
+      _rebased_bundled_srcjars =
+          rebase_path(invoker.bundled_srcjars, root_build_dir)
+      args += [ "--bundled-srcjars=$_rebased_bundled_srcjars" ]
+    }
   }
 }
 
@@ -2156,6 +2161,15 @@ if (enable_java_templates) {
         }
         if (_java_files != []) {
           java_sources_file = _java_sources_file
+        }
+
+        if (defined(invoker.srcjar_deps)) {
+          bundled_srcjars = []
+          foreach(d, invoker.srcjar_deps) {
+            _dep_gen_dir = get_label_info(d, "target_gen_dir")
+            _dep_name = get_label_info(d, "name")
+            bundled_srcjars += [ "$_dep_gen_dir/$_dep_name.srcjar" ]
+          }
         }
       }
       _accumulated_deps += [ ":$build_config_target_name" ]

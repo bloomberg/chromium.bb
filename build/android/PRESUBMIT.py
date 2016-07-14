@@ -21,7 +21,6 @@ def CommonChecks(input_api, output_api):
   build_pys = [
       r'gyp/.*\.py$',
       r'gn/.*\.py',
-      r'incremental_install/.*\.py',
   ]
   output.extend(input_api.canned_checks.RunPylint(
       input_api,
@@ -30,6 +29,7 @@ def CommonChecks(input_api, output_api):
       black_list=build_pys,
       extra_paths_list=[
           J(),
+          J('gyp'),
           J('buildbot'),
           J('..', '..', 'third_party', 'catapult', 'devil')
       ]))
