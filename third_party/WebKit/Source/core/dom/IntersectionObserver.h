@@ -36,7 +36,7 @@ public:
     // API methods.
     void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
     void unobserve(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
-    void disconnect(ExceptionState&);
+    void disconnect(ExceptionState& = ASSERT_NO_EXCEPTION);
     HeapVector<Member<IntersectionObserverEntry>> takeRecords(ExceptionState&);
 
     // API attributes.

@@ -25,14 +25,14 @@ void ElementVisibilityObserver::start()
         Vector<Length>(), Vector<float>({std::numeric_limits<float>::min()}), &m_element->document(),
         WTF::bind(&ElementVisibilityObserver::onVisibilityChanged, wrapWeakPersistent(this)));
     DCHECK(m_intersectionObserver);
-    m_intersectionObserver->observe(m_element);
+    m_intersectionObserver->observe(m_element.release());
 }
 
 void ElementVisibilityObserver::stop()
 {
     DCHECK(m_intersectionObserver);
 
-    m_intersectionObserver->unobserve(m_element);
+    m_intersectionObserver->disconnect();
     m_intersectionObserver = nullptr;
 }
 
