@@ -340,6 +340,12 @@ bool GetComponentUpdatedPepperFlash(content::PepperPluginInfo* plugin) {
 }
 #endif  // defined(OS_LINUX)
 
+// Similar to GetComponentUpdatedPepperFlash, this should be used on Linux only
+// because on other platforms the component updater can take responsibility for
+// locating and registering the bundled version of Flash.
+// However, a large number of tests depend upon having Flash registered
+// *synchronously* during browser startup.
+// TODO(waffles): Fix those tests and then compile / run this only on Linux.
 bool GetBundledPepperFlash(content::PepperPluginInfo* plugin) {
 #if defined(FLAPPER_AVAILABLE)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
