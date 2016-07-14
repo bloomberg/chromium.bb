@@ -133,7 +133,7 @@ std::unique_ptr<Entry> ReadManifest(const base::FilePath& package_dir,
 }
 
 void AddEntryToCache(EntryCache* cache, std::unique_ptr<Entry> entry) {
-  for (auto child : entry->applications())
+  for (auto* child : entry->applications())
     AddEntryToCache(cache, base::WrapUnique(child));
   (*cache)[entry->name()] = std::move(entry);
 }

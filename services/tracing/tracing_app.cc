@@ -107,7 +107,7 @@ void TracingApp::StopAndFlush() {
     MojoDeadline mojo_deadline = end - now;
     std::vector<mojo::Handle> handles;
     std::vector<MojoHandleSignals> signals;
-    for (const auto& it : recorder_impls_) {
+    for (auto* it : recorder_impls_) {
       handles.push_back(it->TraceRecorderHandle());
       signals.push_back(MOJO_HANDLE_SIGNAL_READABLE |
                         MOJO_HANDLE_SIGNAL_PEER_CLOSED);

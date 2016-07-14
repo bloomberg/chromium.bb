@@ -556,7 +556,7 @@ void WebrtcTransport::AddPendingCandidatesIfPossible() {
 
   if (peer_connection_->signaling_state() ==
       webrtc::PeerConnectionInterface::kStable) {
-    for (auto candidate : pending_incoming_candidates_) {
+    for (auto* candidate : pending_incoming_candidates_) {
       if (!peer_connection_->AddIceCandidate(candidate)) {
         LOG(ERROR) << "Failed to add incoming candidate";
         Close(INCOMPATIBLE_PROTOCOL);

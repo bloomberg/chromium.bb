@@ -343,7 +343,7 @@ void MessageCenterImpl::NotificationCache::Rebuild(
 
 void MessageCenterImpl::NotificationCache::RecountUnread() {
   unread_count = 0;
-  for (const auto& notification : visible_notifications) {
+  for (auto* notification : visible_notifications) {
     if (!notification->IsRead())
       ++unread_count;
   }
@@ -641,7 +641,7 @@ void MessageCenterImpl::RemoveNotificationsForNotifierId(
     const NotifierId& notifier_id) {
   NotificationList::Notifications notifications =
       notification_list_->GetNotificationsByNotifierId(notifier_id);
-  for (const auto& notification : notifications)
+  for (auto* notification : notifications)
     RemoveNotification(notification->id(), false);
   if (!notifications.empty()) {
     notification_cache_.Rebuild(
@@ -659,7 +659,7 @@ void MessageCenterImpl::RemoveAllNotifications(bool by_user, RemoveType type) {
   const NotificationList::Notifications notifications =
       notification_list_->GetVisibleNotifications(blockers);
   std::set<std::string> ids;
-  for (const auto& notification : notifications) {
+  for (auto* notification : notifications) {
     if (!remove_pinned && notification->pinned())
       continue;
 

@@ -26,7 +26,7 @@ TEST(SchemeHostPortTest, Invalid) {
                         "blob:https://example.com/uuid-goes-here",
                         "filesystem:https://example.com/temporary/yay.png"};
 
-  for (const auto& test : urls) {
+  for (auto* test : urls) {
     SCOPED_TRACE(test);
     GURL url(test);
     url::SchemeHostPort tuple(url);

@@ -27,7 +27,7 @@ TEST(OriginTest, UniqueOriginComparison) {
                               "yay",
                               "http::///invalid.example.com/"};
 
-  for (const auto& test_url : urls) {
+  for (auto* test_url : urls) {
     SCOPED_TRACE(test_url);
     GURL url(test_url);
     url::Origin origin(url);

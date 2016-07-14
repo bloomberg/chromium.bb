@@ -3193,7 +3193,7 @@ TEST_F(RenderTextTest, MAYBE_TextDoesntClip) {
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 
-  for (auto string : kTestStrings) {
+  for (auto* string : kTestStrings) {
     surface->getCanvas()->clear(SK_ColorWHITE);
     render_text->SetText(WideToUTF16(string));
     const Size string_size = render_text->GetStringSize();
@@ -3285,7 +3285,7 @@ TEST_F(RenderTextTest, TextDoesClip) {
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 
-  for (auto string : kTestStrings) {
+  for (auto* string : kTestStrings) {
     surface->getCanvas()->clear(SK_ColorWHITE);
     render_text->SetText(WideToUTF16(string));
     const Size string_size = render_text->GetStringSize();
