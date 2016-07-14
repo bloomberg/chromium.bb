@@ -80,9 +80,7 @@ Scheduler::~Scheduler() {
 base::TimeTicks Scheduler::Now() const {
   base::TimeTicks now = base::TimeTicks::Now();
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.now"),
-               "Scheduler::Now",
-               "now",
-               now);
+               "Scheduler::Now", "now", now);
   return now;
 }
 
@@ -314,8 +312,8 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
 
   if (should_defer_begin_frame) {
     begin_retro_frame_args_.push_back(adjusted_args);
-    TRACE_EVENT_INSTANT0(
-        "cc", "Scheduler::BeginFrame deferred", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginFrame deferred",
+                         TRACE_EVENT_SCOPE_THREAD);
     // Queuing the frame counts as "using it", so we need to return true.
   } else {
     BeginImplFrameWithDeadline(adjusted_args);
@@ -332,7 +330,7 @@ void Scheduler::OnDrawForOutputSurface(bool resourceless_software_draw) {
   DCHECK(settings_.using_synchronous_renderer_compositor);
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
-  DCHECK(!BeginImplFrameDeadlinePending());
+  DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
 
   state_machine_.SetResourcelessSoftwareDraw(resourceless_software_draw);
   state_machine_.OnBeginImplFrameDeadline();
@@ -379,8 +377,7 @@ void Scheduler::BeginRetroFrame() {
   }
 
   if (begin_retro_frame_args_.empty()) {
-    TRACE_EVENT_INSTANT0("cc",
-                         "Scheduler::BeginRetroFrames all expired",
+    TRACE_EVENT_INSTANT0("cc", "Scheduler::BeginRetroFrames all expired",
                          TRACE_EVENT_SCOPE_THREAD);
   } else {
     BeginFrameArgs front = begin_retro_frame_args_.front();
@@ -395,9 +392,7 @@ void Scheduler::BeginRetroFrame() {
 // BeginFrames in FIFO order.
 void Scheduler::PostBeginRetroFrameIfNeeded() {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
-               "Scheduler::PostBeginRetroFrameIfNeeded",
-               "state",
-               AsValue());
+               "Scheduler::PostBeginRetroFrameIfNeeded", "state", AsValue());
   if (!observing_begin_frame_source_)
     return;
 
@@ -508,7 +503,7 @@ void Scheduler::FinishImplFrame() {
 void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   DCHECK_EQ(state_machine_.begin_impl_frame_state(),
             SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
-  DCHECK(!BeginImplFrameDeadlinePending());
+  DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
   DCHECK(state_machine_.HasInitializedOutputSurface());
 
   begin_impl_frame_tracker_.Start(args);
@@ -580,8 +575,9 @@ void Scheduler::ScheduleBeginImplFrameDeadlineIfNeeded() {
 
   if (begin_impl_frame_deadline_mode_ ==
           state_machine_.CurrentBeginImplFrameDeadlineMode() &&
-      BeginImplFrameDeadlinePending())
+      !begin_impl_frame_deadline_task_.IsCancelled()) {
     return;
+  }
 
   ScheduleBeginImplFrameDeadline();
 }
@@ -637,9 +633,8 @@ void Scheduler::DrawAndSwapForced() {
 }
 
 void Scheduler::SetDeferCommits(bool defer_commits) {
-  TRACE_EVENT1("cc", "Scheduler::SetDeferCommits",
-                "defer_commits",
-                defer_commits);
+  TRACE_EVENT1("cc", "Scheduler::SetDeferCommits", "defer_commits",
+               defer_commits);
   state_machine_.SetDeferCommits(defer_commits);
   ProcessScheduledActions();
 }
@@ -656,11 +651,9 @@ void Scheduler::ProcessScheduledActions() {
   do {
     action = state_machine_.NextAction();
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler"),
-                 "SchedulerStateMachine",
-                 "state",
-                 AsValue());
-    base::AutoReset<SchedulerStateMachine::Action>
-        mark_inside_action(&inside_action_, action);
+                 "SchedulerStateMachine", "state", AsValue());
+    base::AutoReset<SchedulerStateMachine::Action> mark_inside_action(
+        &inside_action_, action);
     switch (action) {
       case SchedulerStateMachine::ACTION_NONE:
         break;

@@ -117,9 +117,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   bool PrepareTilesPending() const {
     return state_machine_.PrepareTilesPending();
   }
-  bool BeginImplFrameDeadlinePending() const {
-    return !begin_impl_frame_deadline_task_.IsCancelled();
-  }
   bool ImplLatencyTakesPriority() const {
     return state_machine_.ImplLatencyTakesPriority();
   }
