@@ -20,6 +20,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
@@ -372,6 +373,93 @@ TEST_F(SystemModalContainerLayoutManagerTest, EventFocusContainers) {
     EXPECT_EQ(1, transient_delegate->mouse_presses());
     UnblockUserSession();
   }
+}
+
+TEST_F(SystemModalContainerLayoutManagerTest, ModalTransientChildEvents) {
+  // Create a normal window and attempt to receive a click event.
+  EventTestWindow* main_delegate = new EventTestWindow(false);
+  std::unique_ptr<aura::Window> main(
+      main_delegate->OpenTestWindowWithContext(CurrentContext()));
+  EXPECT_TRUE(wm::IsActiveWindow(main.get()));
+  ui::test::EventGenerator e1(Shell::GetPrimaryRootWindow(), main.get());
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Create a modal window for the main window and verify that the main window
+  // no longer receives mouse events.
+  EventTestWindow* modal1_delegate = new EventTestWindow(true);
+  aura::Window* modal1 = modal1_delegate->OpenTestWindowWithParent(main.get());
+  EXPECT_TRUE(wm::IsActiveWindow(modal1));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, modal1_delegate->mouse_presses());
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Create a non-modal transient child of modal1 and verify it receives mouse
+  // events instead of main and modal1.
+  EventTestWindow* modal1_transient_delegate = new EventTestWindow(false);
+  aura::Window* modal1_transient =
+      modal1_transient_delegate->OpenTestWindowWithParent(modal1);
+  EXPECT_TRUE(wm::IsActiveWindow(modal1_transient));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, modal1_transient_delegate->mouse_presses());
+  EXPECT_EQ(1, modal1_delegate->mouse_presses());
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Create a child control for modal1_transient and it receives mouse events.
+  aura::test::EventCountDelegate control_delegate;
+  control_delegate.set_window_component(HTCLIENT);
+  std::unique_ptr<aura::Window> child(new aura::Window(&control_delegate));
+  child->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  child->Init(ui::LAYER_TEXTURED);
+  modal1_transient->AddChild(child.get());
+  child->SetBounds(gfx::Rect(100, 100));
+  child->Show();
+  e1.ClickLeftButton();
+  EXPECT_EQ("1 1", control_delegate.GetMouseButtonCountsAndReset());
+  EXPECT_EQ(1, modal1_transient_delegate->mouse_presses());
+  EXPECT_EQ(1, modal1_delegate->mouse_presses());
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Create another modal window for the main window and it receives mouse
+  // events instead of all others.
+  EventTestWindow* modal2_delegate = new EventTestWindow(true);
+  aura::Window* modal2 = modal2_delegate->OpenTestWindowWithParent(main.get());
+  EXPECT_TRUE(wm::IsActiveWindow(modal2));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, modal2_delegate->mouse_presses());
+  EXPECT_EQ("0 0", control_delegate.GetMouseButtonCountsAndReset());
+  EXPECT_EQ(1, modal1_transient_delegate->mouse_presses());
+  EXPECT_EQ(1, modal1_delegate->mouse_presses());
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Create a non-modal transient child of modal2 and it receives events.
+  EventTestWindow* modal2_transient_delegate = new EventTestWindow(false);
+  aura::Window* modal2_transient =
+      modal2_transient_delegate->OpenTestWindowWithParent(modal2);
+  EXPECT_TRUE(wm::IsActiveWindow(modal2_transient));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, modal2_transient_delegate->mouse_presses());
+  EXPECT_EQ(1, modal2_delegate->mouse_presses());
+  EXPECT_EQ("0 0", control_delegate.GetMouseButtonCountsAndReset());
+  EXPECT_EQ(1, modal1_transient_delegate->mouse_presses());
+  EXPECT_EQ(1, modal1_delegate->mouse_presses());
+  EXPECT_EQ(1, main_delegate->mouse_presses());
+
+  // Create a non-modal transient grandchild of modal2 and it receives events.
+  EventTestWindow* modal2_transient_grandchild_delegate =
+      new EventTestWindow(false);
+  aura::Window* modal2_transient_grandchild =
+      modal2_transient_grandchild_delegate->OpenTestWindowWithParent(
+          modal2_transient);
+  EXPECT_TRUE(wm::IsActiveWindow(modal2_transient_grandchild));
+  e1.ClickLeftButton();
+  EXPECT_EQ(1, modal2_transient_grandchild_delegate->mouse_presses());
+  EXPECT_EQ(1, modal2_transient_delegate->mouse_presses());
+  EXPECT_EQ(1, modal2_delegate->mouse_presses());
+  EXPECT_EQ("0 0", control_delegate.GetMouseButtonCountsAndReset());
+  EXPECT_EQ(1, modal1_transient_delegate->mouse_presses());
+  EXPECT_EQ(1, modal1_delegate->mouse_presses());
+  EXPECT_EQ(1, main_delegate->mouse_presses());
 }
 
 // Makes sure we don't crash if a modal window is shown while the parent window

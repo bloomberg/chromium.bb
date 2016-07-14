@@ -19,6 +19,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/compositor/layer.h"
 #include "ui/keyboard/keyboard_controller.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -140,7 +141,10 @@ void SystemModalContainerLayoutManager::OnKeyboardBoundsChanging(
 
 bool SystemModalContainerLayoutManager::IsPartOfActiveModalWindow(
     aura::Window* window) {
-  return modal_window() && modal_window()->Contains(window);
+  return modal_window() &&
+         (modal_window()->Contains(window) ||
+          ::wm::HasTransientAncestor(::wm::GetToplevelWindow(window),
+                                     modal_window()));
 }
 
 bool SystemModalContainerLayoutManager::ActivateNextModalWindow() {
