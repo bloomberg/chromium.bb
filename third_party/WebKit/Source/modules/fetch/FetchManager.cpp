@@ -143,6 +143,8 @@ public:
     private:
         std::unique_ptr<WebDataConsumerHandle> m_handle;
         Member<CompositeDataConsumerHandle::Updater> m_updater;
+        // We cannot store a Response because its JS wrapper can be collected.
+        // TODO(yhirano): Fix this.
         Member<Response> m_response;
         Member<FetchManager::Loader> m_loader;
         String m_integrityMetadata;
@@ -209,6 +211,8 @@ DEFINE_TRACE(FetchManager::Loader)
 void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response, std::unique_ptr<WebDataConsumerHandle> handle)
 {
     ASSERT(handle);
+    ScriptState* scriptState = m_resolver->getScriptState();
+    ScriptState::Scope scope(scriptState);
 
     if (response.url().protocolIs("blob") && response.httpStatusCode() == 404) {
         // "If |blob| is null, return a network error."
@@ -290,7 +294,6 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         }
     }
 
-    ScriptState* scriptState = m_resolver->getScriptState();
     FetchResponseData* responseData = nullptr;
     CompositeDataConsumerHandle::Updater* updater = nullptr;
     if (m_request->integrity().isEmpty())

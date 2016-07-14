@@ -31,8 +31,10 @@ public:
     // Needed because we have to release |m_reader| promptly.
     EAGERLY_FINALIZE();
     // |handle| cannot be null and cannot be locked.
+    // This function must be called with entering an appropriate V8 context.
     BodyStreamBuffer(ScriptState*, std::unique_ptr<FetchDataConsumerHandle> /* handle */);
     // |ReadableStreamOperations::isReadableStream(stream)| must hold.
+    // This function must be called with entering an appropriate V8 context.
     BodyStreamBuffer(ScriptState*, ScriptValue stream);
 
     ScriptValue stream();

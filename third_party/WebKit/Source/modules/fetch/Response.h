@@ -30,6 +30,8 @@ class MODULES_EXPORT Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Response);
 public:
+    // These "create" function which takes a ScriptState* must be called with
+    // entering an appropriate V8 context.
     // From Response.idl:
     static Response* create(ScriptState*, ExceptionState&);
     static Response* create(ScriptState*, ScriptValue body, const Dictionary&, ExceptionState&);
@@ -54,6 +56,7 @@ public:
     Headers* headers() const;
 
     // From Response.idl:
+    // This function must be called with entering an appropriate V8 context.
     Response* clone(ScriptState*, ExceptionState&);
 
     // ActiveScriptWrappable

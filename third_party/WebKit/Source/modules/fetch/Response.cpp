@@ -433,7 +433,6 @@ void Response::installBody()
 
 void Response::refreshBody(ScriptState* scriptState)
 {
-    ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> bodyBuffer = toV8(internalBodyBuffer(), scriptState);
     v8::Local<v8::Value> response = toV8(this, scriptState);
     if (response.IsEmpty()) {

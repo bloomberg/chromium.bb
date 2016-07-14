@@ -106,7 +106,6 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, std::unique_ptr<Fet
     , m_madeFromReadableStream(false)
 {
     if (RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled()) {
-        ScriptState::Scope scope(scriptState);
         if (isTerminating(scriptState)) {
             m_reader = nullptr;
             m_handle = nullptr;
@@ -141,7 +140,6 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
     , m_scriptState(scriptState)
     , m_madeFromReadableStream(true)
 {
-    ScriptState::Scope scope(scriptState);
     DCHECK(RuntimeEnabledFeatures::responseBodyWithV8ExtraStreamEnabled());
     DCHECK(ReadableStreamOperations::isReadableStream(scriptState, stream));
     if (isTerminating(scriptState))
@@ -228,7 +226,6 @@ void BodyStreamBuffer::tee(BodyStreamBuffer** branch1, BodyStreamBuffer** branch
     *branch2 = nullptr;
 
     if (m_madeFromReadableStream) {
-        ScriptState::Scope scope(m_scriptState.get());
         ScriptValue stream1, stream2;
         ReadableStreamOperations::tee(m_scriptState.get(), stream(), &stream1, &stream2);
         *branch1 = new BodyStreamBuffer(m_scriptState.get(), stream1);

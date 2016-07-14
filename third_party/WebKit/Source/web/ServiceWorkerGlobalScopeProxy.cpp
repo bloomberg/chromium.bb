@@ -133,6 +133,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, 
 
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest)
 {
+    ScriptState::Scope scope(workerGlobalScope()->scriptController()->getScriptState());
     WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Fetch, eventFinishID);
     RespondWithObserver* respondWithObserver = RespondWithObserver::create(workerGlobalScope(), responseID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext(), waitUntilObserver);
     Request* request = Request::create(workerGlobalScope()->scriptController()->getScriptState(), webRequest);
@@ -153,6 +154,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int responseID, int event
 
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int responseID, int eventFinishID, const WebServiceWorkerRequest& webRequest)
 {
+    ScriptState::Scope scope(workerGlobalScope()->scriptController()->getScriptState());
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(webRequest.referrerUrl());
     WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Fetch, eventFinishID);
     ForeignFetchRespondWithObserver* respondWithObserver = ForeignFetchRespondWithObserver::create(workerGlobalScope(), responseID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext(), origin, waitUntilObserver);

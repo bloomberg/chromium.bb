@@ -31,6 +31,8 @@ class MODULES_EXPORT Request final : public Body {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(Request);
 public:
+    // These "create" function must be called with entering an appropriate
+    // V8 context.
     // From Request.idl:
     static Request* create(ScriptState*, const RequestInfo&, const Dictionary&, ExceptionState&);
 
@@ -54,6 +56,7 @@ public:
     String integrity() const;
 
     // From Request.idl:
+    // This function must be called with entering an appropriate V8 context.
     Request* clone(ScriptState*, ExceptionState&);
 
     FetchRequestData* passRequestData(ScriptState*);

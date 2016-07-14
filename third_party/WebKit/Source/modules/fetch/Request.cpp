@@ -678,7 +678,6 @@ String Request::mimeType() const
 
 void Request::refreshBody(ScriptState* scriptState)
 {
-    ScriptState::Scope scope(scriptState);
     v8::Local<v8::Value> bodyBuffer = toV8(this->bodyBuffer(), scriptState);
     v8::Local<v8::Value> request = toV8(this, scriptState);
     if (request.IsEmpty()) {

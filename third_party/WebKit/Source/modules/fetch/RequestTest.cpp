@@ -6,9 +6,8 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/dom/Document.h"
-#include "core/frame/Frame.h"
-#include "core/testing/DummyPageHolder.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,45 +18,36 @@
 namespace blink {
 namespace {
 
-class ServiceWorkerRequestTest : public ::testing::Test {
-public:
-    ServiceWorkerRequestTest()
-        : m_page(DummyPageHolder::create(IntSize(1, 1))) { }
-
-    ScriptState* getScriptState() { return ScriptState::forMainWorld(m_page->document().frame()); }
-    ExecutionContext* getExecutionContext() { return getScriptState()->getExecutionContext(); }
-
-private:
-    std::unique_ptr<DummyPageHolder> m_page;
-};
-
-TEST_F(ServiceWorkerRequestTest, FromString)
+TEST(ServiceWorkerRequestTest, FromString)
 {
+    V8TestingScope scope;
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    Request* request = Request::create(getScriptState(), url, exceptionState);
+    Request* request = Request::create(scope.getScriptState(), url, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request);
     EXPECT_EQ(url, request->url());
 }
 
-TEST_F(ServiceWorkerRequestTest, FromRequest)
+TEST(ServiceWorkerRequestTest, FromRequest)
 {
+    V8TestingScope scope;
     TrackExceptionState exceptionState;
 
     KURL url(ParsedURLString, "http://www.example.com/");
-    Request* request1 = Request::create(getScriptState(), url, exceptionState);
+    Request* request1 = Request::create(scope.getScriptState(), url, exceptionState);
     ASSERT(request1);
 
-    Request* request2 = Request::create(getScriptState(), request1, exceptionState);
+    Request* request2 = Request::create(scope.getScriptState(), request1, exceptionState);
     ASSERT_FALSE(exceptionState.hadException());
     ASSERT(request2);
     EXPECT_EQ(url, request2->url());
 }
 
-TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
+TEST(ServiceWorkerRequestTest, FromAndToWebRequest)
 {
+    V8TestingScope scope;
     WebServiceWorkerRequest webRequest;
 
     const KURL url(ParsedURLString, "http://www.example.com/");
@@ -79,7 +69,7 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
         webRequest.setHeader(WebString::fromUTF8(headers[i].key), WebString::fromUTF8(headers[i].value));
     webRequest.setReferrer(referrer, referrerPolicy);
 
-    Request* request = Request::create(getScriptState(), webRequest);
+    Request* request = Request::create(scope.getScriptState(), webRequest);
     ASSERT(request);
     EXPECT_EQ(url, request->url());
     EXPECT_EQ(method, request->method());
@@ -110,12 +100,13 @@ TEST_F(ServiceWorkerRequestTest, FromAndToWebRequest)
     EXPECT_EQ(WebURLRequest::FetchRequestModeNoCORS, secondWebRequest.mode());
 }
 
-TEST_F(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment)
+TEST(ServiceWorkerRequestTest, ToWebRequestStripsURLFragment)
 {
+    V8TestingScope scope;
     TrackExceptionState exceptionState;
     String urlWithoutFragment = "http://www.example.com/";
     String url = urlWithoutFragment + "#fragment";
-    Request* request = Request::create(getScriptState(), url, exceptionState);
+    Request* request = Request::create(scope.getScriptState(), url, exceptionState);
     ASSERT(request);
 
     WebServiceWorkerRequest webRequest;
