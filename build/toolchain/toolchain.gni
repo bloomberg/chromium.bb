@@ -20,7 +20,7 @@ declare_args() {
   # with the shipped LLVM toolchain, or on Linux with a self-built top-of-tree
   # LLVM toolchain (see llvm_force_head_revision in
   # build/config/compiler/BUILD.gn).
-  use_lld = false
+  use_lld = is_win && host_os != "win"
 
   if (is_clang) {
     # Clang compiler version. Clang files are placed at version-dependent paths.
