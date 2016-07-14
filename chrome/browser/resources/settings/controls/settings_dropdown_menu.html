@@ -16,17 +16,16 @@
       <paper-listbox class="dropdown-content" selected="{{selected_}}"
           attr-for-selected="data-value">
         <template is="dom-repeat" items="[[menuOptions]]" initial-count="5">
-          <!--TODO(dpapad): Use <button class="paper-item">..</button> once it
-              lands in paper-item-shared-styles.html-->
-          <div class="dropdown-item" role="option" data-value$="[[item.value]]">
+          <button class="dropdown-item" role="option"
+              data-value$="[[item.value]]">
             [[item.name]]
-          </div>
+          </button>
         </template>
-        <div class="dropdown-item" role="option"
+        <button class="dropdown-item" role="option"
             data-value$="[[notFoundValue_]]"
             hidden$="[[!isSelectedNotFound_(selected_)]]">
           $i18n{custom}
-        </div>
+        </button>
       </paper-listbox>
     </paper-dropdown-menu>
   </template>
