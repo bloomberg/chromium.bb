@@ -211,12 +211,12 @@ bool GPUTracer::BeginDecoding() {
   if (gpu_executing_)
     return false;
 
-  if (!outputter_) {
-    outputter_ = CreateOutputter(gpu_timing_client_->GetTimerTypeName());
-  }
-
   gpu_executing_ = true;
   if (IsTracing()) {
+    if (!outputter_) {
+      outputter_ = CreateOutputter(gpu_timing_client_->GetTimerTypeName());
+    }
+
     CheckDisjointStatus();
     // Begin a Trace for all active markers
     for (int n = 0; n < NUM_TRACER_SOURCES; n++) {
