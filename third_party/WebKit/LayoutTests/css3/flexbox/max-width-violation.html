@@ -27,6 +27,10 @@
   height: 10px;
   z-index: -1;
 }
+
+.abspos {
+  position: absolute;
+}
 </style>
 
 <script src="../../resources/testharness.js"></script>
@@ -45,6 +49,17 @@
     Column 1
   </div>
   <div class="column2" data-expected-width="520">
+    Column 2
+  </div>
+</div>
+
+<p>This second part is just to ensure we don't assert</p>
+
+<div class="columns">
+  <div class="column1 abspos" data-expected-width="150">
+    Column 1
+  </div>
+  <div class="column2" data-expected-width="640">
     Column 2
   </div>
 </div>

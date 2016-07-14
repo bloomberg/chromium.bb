@@ -1251,6 +1251,7 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
 void LayoutFlexibleBox::freezeViolations(Vector<FlexItem*>& violations, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink)
 {
     for (size_t i = 0; i < violations.size(); ++i) {
+        DCHECK(!violations[i]->frozen) << i;
         LayoutBox* child = violations[i]->box;
         LayoutUnit childSize = violations[i]->flexedContentSize;
         availableFreeSpace -= childSize - violations[i]->innerFlexBaseSize;
@@ -1273,6 +1274,9 @@ void LayoutFlexibleBox::freezeInflexibleItems(FlexSign flexSign, OrderedFlexItem
     for (size_t i = 0; i < children.size(); ++i) {
         FlexItem& flexItem = children[i];
         LayoutBox* child = flexItem.box;
+        if (child->isOutOfFlowPositioned())
+            continue;
+        DCHECK(!flexItem.frozen) << i;
         float flexFactor = (flexSign == PositiveFlexibility) ? child->style()->flexGrow() : child->style()->flexShrink();
         if (flexFactor == 0
             || (flexSign == PositiveFlexibility && flexItem.innerFlexBaseSize > flexItem.hypotheticalMainSize)
@@ -1302,12 +1306,12 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, OrderedFlexIte
     for (size_t i = 0; i < children.size(); ++i) {
         FlexItem& flexItem = children[i];
         LayoutBox* child = flexItem.box;
-        if (child->isOutOfFlowPositioned()) {
+        if (child->isOutOfFlowPositioned())
             continue;
-        }
 
         if (flexItem.frozen)
             continue;
+
         LayoutUnit childSize = flexItem.innerFlexBaseSize;
         double extraSpace = 0;
         if (remainingFreeSpace > 0 && totalFlexGrow > 0 && flexSign == PositiveFlexibility && std::isfinite(totalFlexGrow)) {
