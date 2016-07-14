@@ -109,8 +109,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
     virtual void OnControlleeRemoved(ServiceWorkerVersion* version,
                                      ServiceWorkerProviderHost* provider_host) {
     }
-    // Fires when a version transitions from having a controllee to not.
     virtual void OnNoControllees(ServiceWorkerVersion* version) {}
+    virtual void OnNoWork(ServiceWorkerVersion* version) {}
     virtual void OnCachedMetadataUpdated(ServiceWorkerVersion* version) {}
 
    protected:
@@ -274,8 +274,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchSimpleEvent(int request_id, const IPC::Message& message);
 
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
-  // A potential controllee is a host having the version as its .installing
-  // or .waiting version.
   void AddControllee(ServiceWorkerProviderHost* provider_host);
   void RemoveControllee(ServiceWorkerProviderHost* provider_host);
 
@@ -344,6 +342,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Simulate ping timeout. Should be used for tests-only.
   void SimulatePingTimeoutForTesting();
 
+  // Returns true if the service worker has work to do: it has pending
+  // requests, in-progress streaming URLRequestJobs, or pending start callbacks.
+  bool HasWork() const;
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerMetrics;
@@ -382,6 +384,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, MixedRequestTimeouts);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerActivationTest, SkipWaiting);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerActivationTest,
+                           SkipWaitingWithInflightRequest);
 
   class Metrics;
   class PingController;
@@ -601,7 +606,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Stops the worker if it is idle (has no in-flight requests) or timed out
   // ping.
   void StopWorkerIfIdle();
-  bool HasInflightRequests() const;
 
   // RecordStartWorkerResult is added as a start callback by StartTimeoutTimer
   // and records metrics about startup.

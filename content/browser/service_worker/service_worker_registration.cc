@@ -107,9 +107,10 @@ ServiceWorkerRegistrationInfo ServiceWorkerRegistration::GetInfo() {
 
 void ServiceWorkerRegistration::SetActiveVersion(
     const scoped_refptr<ServiceWorkerVersion>& version) {
-  should_activate_when_ready_ = false;
   if (active_version_ == version)
     return;
+
+  should_activate_when_ready_ = false;
 
   ChangedVersionAttributesMask mask;
   if (version)
@@ -126,9 +127,10 @@ void ServiceWorkerRegistration::SetActiveVersion(
 
 void ServiceWorkerRegistration::SetWaitingVersion(
     const scoped_refptr<ServiceWorkerVersion>& version) {
-  should_activate_when_ready_ = false;
   if (waiting_version_ == version)
     return;
+
+  should_activate_when_ready_ = false;
 
   ChangedVersionAttributesMask mask;
   if (version)
@@ -171,6 +173,7 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
     mask->add(ChangedVersionAttributesMask::INSTALLING_VERSION);
   } else if (waiting_version_.get() == version) {
     waiting_version_ = NULL;
+    should_activate_when_ready_ = false;
     mask->add(ChangedVersionAttributesMask::WAITING_VERSION);
   } else if (active_version_.get() == version) {
     active_version_->RemoveListener(this);
@@ -182,11 +185,8 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
 void ServiceWorkerRegistration::ActivateWaitingVersionWhenReady() {
   DCHECK(waiting_version());
   should_activate_when_ready_ = true;
-
-  if (!active_version() || !active_version()->HasControllee() ||
-      waiting_version()->skip_waiting()) {
-    ActivateWaitingVersion(false);
-  }
+  if (IsReadyToActivate())
+    ActivateWaitingVersion(false /* delay */);
 }
 
 void ServiceWorkerRegistration::ClaimClients() {
@@ -253,15 +253,37 @@ void ServiceWorkerRegistration::OnNoControllees(ServiceWorkerVersion* version) {
   DCHECK_EQ(active_version(), version);
   if (is_uninstalling_)
     Clear();
-  else if (should_activate_when_ready_)
-    ActivateWaitingVersion(true);
+  else if (IsReadyToActivate())
+    ActivateWaitingVersion(true /* delay */);
+}
+
+void ServiceWorkerRegistration::OnNoWork(ServiceWorkerVersion* version) {
+  if (!context_)
+    return;
+  DCHECK_EQ(active_version(), version);
+  if (IsReadyToActivate())
+    ActivateWaitingVersion(false /* delay */);
+}
+
+bool ServiceWorkerRegistration::IsReadyToActivate() const {
+  if (!should_activate_when_ready_)
+    return false;
+
+  DCHECK(waiting_version());
+  const ServiceWorkerVersion* active = active_version();
+  if (!active)
+    return true;
+  if (!active->HasWork() &&
+      (!active->HasControllee() || waiting_version()->skip_waiting())) {
+    return true;
+  }
+  return false;
 }
 
 void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(context_);
-  DCHECK(waiting_version());
-  DCHECK(should_activate_when_ready_);
+  DCHECK(IsReadyToActivate());
   should_activate_when_ready_ = false;
   scoped_refptr<ServiceWorkerVersion> activating_version = waiting_version();
   scoped_refptr<ServiceWorkerVersion> exiting_version = active_version();
@@ -271,8 +293,11 @@ void ServiceWorkerRegistration::ActivateWaitingVersion(bool delay) {
 
   // "5. If exitingWorker is not null,
   if (exiting_version.get()) {
-    // TODO(michaeln): should wait for events to be complete
+    // TODO(falken): Update the quoted spec comments once
+    // https://github.com/slightlyoff/ServiceWorker/issues/916 is codified in
+    // the spec.
     // "1. Wait for exitingWorker to finish handling any in-progress requests."
+    // This is already handled by IsReadyToActivate().
     // "2. Terminate exitingWorker."
     exiting_version->StopWorker(
         base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));

@@ -231,6 +231,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   friend class ServiceWorkerDispatcherHostTest;
   friend class ServiceWorkerHandleTest;
   friend class ServiceWorkerStorageTest;
+  friend class ServiceWorkerRegistrationTest;
   friend class ServiceWorkerResourceStorageTest;
   friend class ServiceWorkerControlleeRequestHandlerTest;
   friend class ServiceWorkerContextRequestHandlerTest;

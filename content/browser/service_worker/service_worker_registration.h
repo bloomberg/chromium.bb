@@ -161,6 +161,9 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   // ServiceWorkerVersion::Listener override.
   void OnNoControllees(ServiceWorkerVersion* version) override;
+  void OnNoWork(ServiceWorkerVersion* version) override;
+
+  bool IsReadyToActivate() const;
 
   // Promotes the waiting version to active version. If |delay| is true, waits
   // a short time before attempting to start and dispatch the activate event

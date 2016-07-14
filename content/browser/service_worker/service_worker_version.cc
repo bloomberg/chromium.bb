@@ -545,6 +545,9 @@ bool ServiceWorkerVersion::FinishRequest(int request_id, bool was_handled) {
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                          request, "Handled", was_handled);
   pending_requests_.Remove(request_id);
+  if (!HasWork())
+    FOR_EACH_OBSERVER(Listener, listeners_, OnNoWork(this));
+
   return true;
 }
 
@@ -601,9 +604,8 @@ void ServiceWorkerVersion::RemoveControllee(
   controllee_map_.erase(uuid);
   FOR_EACH_OBSERVER(Listener, listeners_,
                     OnControlleeRemoved(this, provider_host));
-  if (HasControllee())
-    return;
-  FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
+  if (!HasControllee())
+    FOR_EACH_OBSERVER(Listener, listeners_, OnNoControllees(this));
 }
 
 void ServiceWorkerVersion::AddStreamingURLRequestJob(
@@ -616,6 +618,8 @@ void ServiceWorkerVersion::AddStreamingURLRequestJob(
 void ServiceWorkerVersion::RemoveStreamingURLRequestJob(
     const ServiceWorkerURLRequestJob* request_job) {
   streaming_url_request_jobs_.erase(request_job);
+  if (!HasWork())
+    FOR_EACH_OBSERVER(Listener, listeners_, OnNoWork(this));
 }
 
 void ServiceWorkerVersion::AddListener(Listener* listener) {
@@ -1514,7 +1518,7 @@ void ServiceWorkerVersion::OnPingTimeout() {
 }
 
 void ServiceWorkerVersion::StopWorkerIfIdle() {
-  if (HasInflightRequests() && !ping_controller_->IsTimedOut())
+  if (HasWork() && !ping_controller_->IsTimedOut())
     return;
   if (running_status() == EmbeddedWorkerStatus::STOPPED ||
       running_status() == EmbeddedWorkerStatus::STOPPING ||
@@ -1525,8 +1529,9 @@ void ServiceWorkerVersion::StopWorkerIfIdle() {
   embedded_worker_->StopIfIdle();
 }
 
-bool ServiceWorkerVersion::HasInflightRequests() const {
-  return !pending_requests_.IsEmpty() || !streaming_url_request_jobs_.empty();
+bool ServiceWorkerVersion::HasWork() const {
+  return !pending_requests_.IsEmpty() || !streaming_url_request_jobs_.empty() ||
+         !start_callbacks_.empty();
 }
 
 void ServiceWorkerVersion::RecordStartWorkerResult(
@@ -1716,9 +1721,10 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   streaming_url_request_jobs_.clear();
 
   FOR_EACH_OBSERVER(Listener, listeners_, OnRunningStateChanged(this));
-
   if (should_restart)
     StartWorkerInternal();
+  else if (!HasWork())
+    FOR_EACH_OBSERVER(Listener, listeners_, OnNoWork(this));
 }
 
 void ServiceWorkerVersion::OnMojoConnectionError(const char* service_name) {
