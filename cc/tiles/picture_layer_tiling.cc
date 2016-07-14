@@ -778,7 +778,7 @@ PrioritizedTile PictureLayerTiling::MakePrioritizedTile(
                                    1.f / tile->contents_scale())
              .ToString();
 
-  return PrioritizedTile(tile, raster_source(),
+  return PrioritizedTile(tile, this,
                          ComputePriorityForTile(tile, priority_rect_type),
                          IsTileOccluded(tile));
 }

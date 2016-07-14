@@ -7,6 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/playback/raster_source.h"
+#include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_priority.h"
 
@@ -19,16 +20,15 @@ class CC_EXPORT PrioritizedTile {
   // This class is constructed and returned by a |PictureLayerTiling|, and
   // represents a tile and its priority.
   PrioritizedTile();
-  PrioritizedTile(const PrioritizedTile& other);
-  PrioritizedTile(PrioritizedTile&& other);
+  PrioritizedTile(Tile* tile,
+                  const PictureLayerTiling* source_tiling,
+                  const TilePriority priority,
+                  bool is_occluded);
   ~PrioritizedTile();
-
-  PrioritizedTile& operator=(const PrioritizedTile& other);
-  PrioritizedTile& operator=(PrioritizedTile&& other);
 
   Tile* tile() const { return tile_; }
   const scoped_refptr<RasterSource>& raster_source() const {
-    return raster_source_;
+    return source_tiling_->raster_source();
   }
   const TilePriority& priority() const { return priority_; }
   bool is_occluded() const { return is_occluded_; }
@@ -36,17 +36,10 @@ class CC_EXPORT PrioritizedTile {
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
  private:
-  friend class PictureLayerTiling;
-
-  PrioritizedTile(Tile* tile,
-                  scoped_refptr<RasterSource> raster_source,
-                  const TilePriority priority,
-                  bool is_occluded);
-
-  Tile* tile_;
-  scoped_refptr<RasterSource> raster_source_;
+  Tile* tile_ = nullptr;
+  const PictureLayerTiling* source_tiling_ = nullptr;
   TilePriority priority_;
-  bool is_occluded_;
+  bool is_occluded_ = false;
 };
 
 }  // namespace cc
