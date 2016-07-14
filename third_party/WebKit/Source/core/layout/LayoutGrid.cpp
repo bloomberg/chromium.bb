@@ -443,7 +443,11 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
 
         TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
-        placeItemsOnGrid();
+        // TODO(svillar): we won't need to do this once the intrinsic width computation is isolated
+        // from the LayoutGrid object state (it should not touch any attribute) (see crbug.com/627812)
+        if (m_autoRepeatColumns && m_autoRepeatColumns != computeAutoRepeatTracksCount(ForColumns))
+            dirtyGrid();
+        placeItemsOnGrid(TrackSizing);
 
         GridSizingData sizingData(gridColumnCount(), gridRowCount());
 
@@ -511,7 +515,7 @@ LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t sp
 
 void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
-    const_cast<LayoutGrid*>(this)->placeItemsOnGrid();
+    const_cast<LayoutGrid*>(this)->placeItemsOnGrid(IntrinsicSizeComputation);
 
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
     sizingData.freeSpaceForDirection(ForColumns) = LayoutUnit();
@@ -1384,14 +1388,17 @@ size_t LayoutGrid::computeAutoRepeatTracksCount(GridTrackSizingDirection directi
     return repetitions;
 }
 
-void LayoutGrid::placeItemsOnGrid()
+void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation)
 {
     if (!m_gridIsDirty)
         return;
 
     ASSERT(m_gridItemArea.isEmpty());
 
-    m_autoRepeatColumns = computeAutoRepeatTracksCount(ForColumns);
+    if (sizingOperation == IntrinsicSizeComputation)
+        m_autoRepeatColumns = styleRef().gridAutoRepeatColumns().isEmpty() ? 0 : 1;
+    else
+        m_autoRepeatColumns = computeAutoRepeatTracksCount(ForColumns);
     m_autoRepeatRows = computeAutoRepeatTracksCount(ForRows);
 
     populateExplicitGridAndOrderIterator();
@@ -1631,6 +1638,8 @@ void LayoutGrid::dirtyGrid()
     m_gridItemArea.clear();
     m_gridItemsOverflowingGridArea.resize(0);
     m_gridItemsIndexesMap.clear();
+    m_autoRepeatColumns = 0;
+    m_autoRepeatRows = 0;
     m_gridIsDirty = true;
 }
 

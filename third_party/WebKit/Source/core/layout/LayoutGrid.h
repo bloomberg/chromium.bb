@@ -131,7 +131,7 @@ private:
 
     size_t computeAutoRepeatTracksCount(GridTrackSizingDirection) const;
 
-    void placeItemsOnGrid();
+    void placeItemsOnGrid(SizingOperation);
     void populateExplicitGridAndOrderIterator();
     std::unique_ptr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(const LayoutBox&, GridTrackSizingDirection, const GridSpan& specifiedPositions) const;
     void placeSpecifiedMajorAxisItemsOnGrid(const Vector<LayoutBox*>&);
