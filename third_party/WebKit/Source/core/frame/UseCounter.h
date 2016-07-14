@@ -1243,6 +1243,7 @@ public:
         BeforeInstallPromptEventUserChoice = 1437,
         BeforeInstallPromptEventPreventDefault = 1438,
         BeforeInstallPromptEventPrompt = 1439,
+        ExecCommandAltersHTMLStructure = 1440,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

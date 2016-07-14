@@ -76730,6 +76730,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1437" label="BeforeInstallPromptEventUserChoice"/>
   <int value="1438" label="BeforeInstallPromptEventPreventDefault"/>
   <int value="1439" label="BeforeInstallPromptEventPrompt"/>
+  <int value="1440" label="ExecCommandAltersHTMLStructure"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
