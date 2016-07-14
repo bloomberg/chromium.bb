@@ -1362,13 +1362,12 @@ crbug.com/593567 [ Linux Debug ] virtual/scalefactor150/fast/hidpi/static/data-s
 
 crbug.com/627782 [ Win ] svg/filters/filter-source-position.svg [ Pass Failure ]
 
-crbug.com/627902 [ Win7 ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
-
-crbug.com/627798 [ Win ] fast/repaint/line-flow-with-floats-9.html [ Pass Failure ]
-crbug.com/627798 [ Win ] fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
-crbug.com/627798 [ Win ] fast/repaint/repaint-during-scroll-with-zoom.html [ Pass Failure ]
-crbug.com/627798 [ Win ] fast/repaint/resize-scrollable-iframe.html [ Pass Failure ]
-crbug.com/627798 [ Win ] fast/repaint/text-match-document-change.html [ Pass Failure ]
+crbug.com/627798 editing/spelling/inline-spelling-markers-hidpi-composited.html [ Pass Failure ]
+crbug.com/627798 fast/repaint/line-flow-with-floats-9.html [ Pass Failure ]
+crbug.com/627798 fast/repaint/nested-fixed-iframe-scrolled.html [ Pass Failure ]
+crbug.com/627798 fast/repaint/repaint-during-scroll-with-zoom.html [ Pass Failure ]
+crbug.com/627798 fast/repaint/resize-scrollable-iframe.html [ Pass Failure ]
+crbug.com/627798 fast/repaint/text-match-document-change.html [ Pass Failure ]
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu-rasterization/fast/images/color-profile-background-image-space.html [ NeedsManualRebaseline ]
