@@ -24,6 +24,12 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
+namespace aura {
+class RootWindow;
+class Window;
+class WindowDelegate;
+}  // namespace aura
+
 namespace gfx {
 class Rect;
 }
@@ -34,11 +40,10 @@ class EventGenerator;
 }
 }
 
-namespace aura {
-class RootWindow;
-class Window;
-class WindowDelegate;
-}  // namespace aura
+namespace views {
+class Widget;
+class WidgetDelegate;
+}
 
 namespace ash {
 class DisplayManager;
@@ -74,6 +79,13 @@ class AshTestBase : public testing::Test {
   // method can return NULL sometimes, and in those cases, we fall back on the
   // primary root Window.
   aura::Window* CurrentContext();
+
+  // Creates and shows a widget. See ash/common/shell_window_ids.h for values
+  // for |container_id|.
+  static std::unique_ptr<views::Widget> CreateTestWidget(
+      views::WidgetDelegate* delegate,
+      int container_id,
+      const gfx::Rect& bounds);
 
   // Versions of the functions in aura::test:: that go through our shell
   // StackingController instead of taking a parent.

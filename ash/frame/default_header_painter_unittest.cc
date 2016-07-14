@@ -6,11 +6,9 @@
 
 #include <memory>
 
-#include "ash/common/wm/window_state.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
-#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ui/gfx/font_list.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -21,22 +19,12 @@ using views::Widget;
 
 namespace ash {
 
-class DefaultHeaderPainterTest : public ash::test::AshTestBase {
- public:
-  // Creates a test widget that owns its native widget.
-  Widget* CreateTestWidget() {
-    Widget* widget = new Widget;
-    Widget::InitParams params;
-    params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.context = CurrentContext();
-    widget->Init(params);
-    return widget;
-  }
-};
+using DefaultHeaderPainterTest = test::AshTestBase;
 
 // Ensure the title text is vertically aligned with the window icon.
 TEST_F(DefaultHeaderPainterTest, TitleIconAlignment) {
-  std::unique_ptr<Widget> w(CreateTestWidget());
+  std::unique_ptr<Widget> w = CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   ash::FrameCaptionButtonContainerView container(w.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);
@@ -54,7 +42,8 @@ TEST_F(DefaultHeaderPainterTest, TitleIconAlignment) {
 
 // Ensure the light icons are used when appropriate.
 TEST_F(DefaultHeaderPainterTest, LightIcons) {
-  std::unique_ptr<Widget> w(CreateTestWidget());
+  std::unique_ptr<Widget> w = CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   ash::FrameCaptionButtonContainerView container(w.get());
   views::StaticSizedView window_icon(gfx::Size(16, 16));
   window_icon.SetBounds(0, 0, 16, 16);

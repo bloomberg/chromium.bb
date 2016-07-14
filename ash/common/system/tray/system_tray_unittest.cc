@@ -42,23 +42,6 @@ namespace test {
 
 namespace {
 
-std::unique_ptr<views::Widget> CreateTestWidget(views::WidgetDelegate* delegate,
-                                                int container_id) {
-  std::unique_ptr<views::Widget> widget(new views::Widget);
-  views::Widget::InitParams params;
-  params.delegate = delegate;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(0, 0, 100, 100);
-  WmShell::Get()
-      ->GetPrimaryRootWindow()
-      ->GetRootWindowController()
-      ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
-                                              &params);
-  widget->Init(params);
-  widget->Show();
-  return widget;
-}
-
 // Trivial item implementation that tracks its views for testing.
 class TestItem : public SystemTrayItem {
  public:
@@ -404,8 +387,8 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   TestItem* test_item = new TestItem;
   tray->AddTrayItem(test_item);
 
-  std::unique_ptr<views::Widget> widget(
-      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer));
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
 
   // Tests for usual default view while activating a window.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
@@ -448,7 +431,8 @@ TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
   // Check if the accessibility item is created even with system modal dialog.
   WmShell::Get()->GetAccessibilityDelegate()->SetVirtualKeyboardEnabled(true);
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
-      new ModalWidgetDelegate, kShellWindowId_SystemModalContainer));
+      new ModalWidgetDelegate, kShellWindowId_SystemModalContainer,
+      gfx::Rect(0, 0, 100, 100)));
 
   SystemTray* tray = GetPrimarySystemTray();
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);

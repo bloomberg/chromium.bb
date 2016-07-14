@@ -15,8 +15,6 @@
 #include "ash/common/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_lookup.h"
-#include "ash/common/wm_root_window_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -144,19 +142,9 @@ class WebNotificationTrayTest : public test::AshTestBase {
 
   bool IsPopupVisible() { return GetTray()->IsPopupVisible(); }
 
-  std::unique_ptr<views::Widget> CreateTestWidget() {
-    std::unique_ptr<views::Widget> widget(new views::Widget);
-    views::Widget::InitParams params;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect(1, 2, 3, 4);
-    WmShell::Get()
-        ->GetPrimaryRootWindow()
-        ->GetRootWindowController()
-        ->ConfigureWidgetInitParamsForContainer(
-            widget.get(), kShellWindowId_DefaultContainer, &params);
-    widget->Init(params);
-    widget->Show();
-    return widget;
+  static std::unique_ptr<views::Widget> CreateTestWidget() {
+    return AshTestBase::CreateTestWidget(
+        nullptr, kShellWindowId_DefaultContainer, gfx::Rect(1, 2, 3, 4));
   }
 
  private:

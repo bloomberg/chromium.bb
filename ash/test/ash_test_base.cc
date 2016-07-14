@@ -223,6 +223,26 @@ aura::Window* AshTestBase::CurrentContext() {
   return ash_test_helper_->CurrentContext();
 }
 
+// static
+std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
+    views::WidgetDelegate* delegate,
+    int container_id,
+    const gfx::Rect& bounds) {
+  std::unique_ptr<views::Widget> widget(new views::Widget);
+  views::Widget::InitParams params;
+  params.delegate = delegate;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = bounds;
+  WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
+                                              &params);
+  widget->Init(params);
+  widget->Show();
+  return widget;
+}
+
 aura::Window* AshTestBase::CreateTestWindowInShellWithId(int id) {
   return CreateTestWindowInShellWithDelegate(NULL, id, gfx::Rect());
 }

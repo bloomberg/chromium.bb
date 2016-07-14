@@ -12,7 +12,6 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
@@ -88,21 +87,6 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
 
   gfx::Rect GetWorkArea() { return alignment_delegate_->work_area_; }
 
-  std::unique_ptr<views::Widget> CreateTestWidget(int container_id) {
-    std::unique_ptr<views::Widget> widget(new views::Widget);
-    views::Widget::InitParams params;
-    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    params.bounds = gfx::Rect(0, 0, 50, 50);
-    WmShell::Get()
-        ->GetPrimaryRootWindow()
-        ->GetRootWindowController()
-        ->ConfigureWidgetInitParamsForContainer(widget.get(), container_id,
-                                                &params);
-    widget->Init(params);
-    widget->Show();
-    return widget;
-  }
-
  private:
   std::unique_ptr<AshPopupAlignmentDelegate> alignment_delegate_;
 
@@ -169,8 +153,8 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   int baseline = alignment_delegate()->GetBaseLine();
 
   // Create a window, otherwise autohide doesn't work.
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(kShellWindowId_DefaultContainer);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 50, 50));
   WmShelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
@@ -184,8 +168,8 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
   int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
   int baseline = alignment_delegate()->GetBaseLine();
 
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(kShellWindowId_DockedContainer);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      nullptr, kShellWindowId_DockedContainer, gfx::Rect(0, 0, 50, 50));
 
   // Left-side dock should not affect popup alignment
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
