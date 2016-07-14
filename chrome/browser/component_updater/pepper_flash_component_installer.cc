@@ -168,7 +168,9 @@ void NotifyPathServiceAndChrome(const base::FilePath& path,
   PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RegisterPepperFlashWithChrome, path, version));
+      base::Bind(&RegisterPepperFlashWithChrome,
+                 path.Append(chrome::kPepperFlashPluginFilename),
+                 version));
 }
 #endif  // !defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
 
