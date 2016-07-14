@@ -50,7 +50,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#if defined(ARCH_CPU_ARMEL) || (defined(USE_OZONE) && defined(USE_V4L2_CODEC))
+#if defined(USE_V4L2_CODEC)
 #include "media/gpu/v4l2_video_encode_accelerator.h"
 #endif
 #if defined(ARCH_CPU_X86_FAMILY)
@@ -1078,8 +1078,7 @@ std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateFakeVEA() {
 
 std::unique_ptr<VideoEncodeAccelerator> VEAClient::CreateV4L2VEA() {
   std::unique_ptr<VideoEncodeAccelerator> encoder;
-#if defined(OS_CHROMEOS) && (defined(ARCH_CPU_ARMEL) || \
-                             (defined(USE_OZONE) && defined(USE_V4L2_CODEC)))
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
   scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kEncoder);
   if (device)
     encoder.reset(new V4L2VideoEncodeAccelerator(device));

@@ -385,7 +385,10 @@ if (is_win || is_android || is_chromeos) {
       "//ui/gl/init",
     ]
 
-    configs += [ "//third_party/khronos:khronos_headers" ]
+    configs += [
+      "//third_party/khronos:khronos_headers",
+      ":gpu_config",
+    ]
     if (is_chromeos && current_cpu != "arm") {
       configs += [ "//third_party/libva:libva_config" ]
     }
@@ -450,6 +453,7 @@ if (is_chromeos || is_mac) {
     configs += [
       "//third_party/libva:libva_config",
       "//third_party/libyuv:libyuv_config",
+      ":gpu_config",
     ]
     sources = [
       "video_accelerator_unittest_helpers.h",

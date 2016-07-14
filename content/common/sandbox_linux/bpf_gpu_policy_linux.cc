@@ -78,8 +78,8 @@ inline bool IsArchitectureArm() {
 #endif
 }
 
-inline bool IsOzone() {
-#if defined(USE_OZONE)
+inline bool UseV4L2Codec() {
+#if defined(USE_V4L2_CODEC)
   return true;
 #else
   return false;
@@ -343,7 +343,7 @@ void GpuProcessPolicy::InitGpuBrokerProcess(
   if (!IsChromeOS()) {
     permissions.push_back(
         BrokerFilePermission::ReadWriteCreateUnlinkRecursive(kDevShm));
-  } else if (IsArchitectureArm() || IsOzone()){
+  } else if (UseV4L2Codec()){
     AddV4L2GpuWhitelist(&permissions);
     if (UseLibV4L2()) {
       dlopen("/usr/lib/libv4l2.so", RTLD_NOW|RTLD_GLOBAL|RTLD_NODELETE);

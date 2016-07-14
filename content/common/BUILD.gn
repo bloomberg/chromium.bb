@@ -27,6 +27,7 @@ source_set("common") {
     "//content:content_implementation",
     "//build/config:precompiled_headers",
     "//build/config/compiler:no_size_t_to_int_warning",
+    "//media/gpu:gpu_config",
   ]
 
   public_deps = [
