@@ -46,7 +46,7 @@ public class ChildProcessService extends Service {
         // child processes do not currently support reconnect; they must be initialized from
         // scratch every time.
         stopSelf();
-        return mChildProcessServiceImpl.bind(intent);
+        return mChildProcessServiceImpl.bind(intent, -1);
     }
 
     /**

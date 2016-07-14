@@ -59,8 +59,11 @@ public class WebApkSandboxedProcessService extends Service {
         stopSelf();
         try {
             Method bindMethod = mChildProcessServiceImplClass.getMethod(
-                    "bind", Intent.class);
-            return (IBinder) bindMethod.invoke(mChildProcessServiceImplInstance, intent);
+                    "bind", Intent.class, int.class);
+            int hostBrowserUid = WebApkUtils.getHostBrowserUid(this);
+            assert hostBrowserUid >= 0;
+            return (IBinder) bindMethod.invoke(
+                    mChildProcessServiceImplInstance, intent, hostBrowserUid);
         } catch (Exception e) {
             Log.v(TAG, "Unable to bind to the WebApkSandboxedProcessService.", e);
         }

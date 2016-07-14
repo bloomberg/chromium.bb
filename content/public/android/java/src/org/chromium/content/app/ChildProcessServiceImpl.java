@@ -7,8 +7,10 @@ package org.chromium.content.app;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.SurfaceTexture;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Process;
 import android.os.RemoteException;
@@ -68,6 +70,13 @@ public class ChildProcessServiceImpl {
     // Becomes true once the service is bound. Access must synchronize around mMainThread.
     private boolean mIsBound = false;
 
+    /**
+     * If >= 0 enables "validation of caller of {@link mBinder}'s methods". A RemoteException
+     * is thrown when an application with a uid other than {@link mAuthorizedCallerUid} calls
+     * {@link mBinder}'s methods.
+     */
+    private int mAuthorizedCallerUid;
+
     private final Semaphore mActivitySemaphore = new Semaphore(1);
 
     // Return a Linker instance. If testing, the Linker needs special setup.
@@ -96,6 +105,19 @@ public class ChildProcessServiceImpl {
         @Override
         public void crashIntentionallyForTesting() {
             Process.killProcess(Process.myPid());
+        }
+
+        @Override
+        public boolean onTransact(int arg0, Parcel arg1, Parcel arg2, int arg3)
+                throws RemoteException {
+            if (mAuthorizedCallerUid >= 0) {
+                int callingUid = Binder.getCallingUid();
+                if (callingUid != mAuthorizedCallerUid) {
+                    throw new RemoteException("Unauthorized caller " + callingUid
+                            + "does not match expected host=" + mAuthorizedCallerUid);
+                }
+            }
+            return super.onTransact(arg0, arg1, arg2, arg3);
         }
     };
 
@@ -240,7 +262,15 @@ public class ChildProcessServiceImpl {
         nativeShutdownMainThread();
     }
 
-    public IBinder bind(Intent intent) {
+    /*
+     * Returns communication channel to service.
+     * @param intent The intent that was used to bind to the service.
+     * @param authorizedCallerUid If >= 0, enables "validation of service caller". A RemoteException
+     *        is thrown when an application with a uid other than
+     *        {@link authorizedCallerUid} calls the service's methods.
+     */
+    public IBinder bind(Intent intent, int authorizedCallerUid) {
+        mAuthorizedCallerUid = authorizedCallerUid;
         initializeParams(intent);
         return mBinder;
     }
