@@ -37,7 +37,6 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/layout/LayoutFullScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/web/WebFrameClient.h"
@@ -131,6 +130,13 @@ void FullscreenController::didExitFullscreen()
 
 void FullscreenController::enterFullScreenForElement(Element* element)
 {
+    // TODO(dsinclair): This should not be needed because we addToTopLayer
+    // in Fullscreen::pushFullscreenElementStack but, the WebView code doesn't
+    // call Fullscreen::requestFullscreen() and, instead, just enters and
+    // exists itself. This should be unified so there is one way to go
+    // fullscreen.  crbug.com/538158
+    element->document().addToTopLayer(element);
+
     // We are already transitioning to fullscreen for a different element.
     if (m_provisionalFullScreenElement) {
         m_provisionalFullScreenElement = element;
@@ -166,6 +172,13 @@ void FullscreenController::exitFullScreenForElement(Element* element)
 {
     DCHECK(element);
 
+    // TODO(dsinclair): This should not be needed because we addToTopLayer
+    // in Fullscreen::popFullscreenElementStack but, the WebView code doesn't
+    // call Fullscreen::requestFullscreen() and, instead, just enters and
+    // exists itself. This should be unified so there is one way to go
+    // fullscreen.  crbug.com/538158
+    element->document().removeFromTopLayer(element);
+
     // The client is exiting full screen, so don't send a notification.
     if (m_isCancelingFullScreen)
         return;
@@ -182,9 +195,9 @@ void FullscreenController::updateSize()
 
     updatePageScaleConstraints(false);
 
-    LayoutFullScreen* layoutObject = Fullscreen::from(*m_fullScreenFrame->document()).fullScreenLayoutObject();
-    if (layoutObject)
-        layoutObject->updateStyle();
+    Document* document = m_fullScreenFrame->document();
+    if (Element* fullscreenElement = Fullscreen::currentFullScreenElementFrom(*document))
+        Fullscreen::from(fullscreenElement->document()).didUpdateSize(*fullscreenElement);
 }
 
 void FullscreenController::updatePageScaleConstraints(bool removeConstraints)

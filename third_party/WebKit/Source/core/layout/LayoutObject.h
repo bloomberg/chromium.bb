@@ -499,8 +499,6 @@ public:
     bool isProgress() const { return isOfType(LayoutObjectProgress); }
     bool isQuote() const { return isOfType(LayoutObjectQuote); }
     bool isLayoutButton() const { return isOfType(LayoutObjectLayoutButton); }
-    bool isLayoutFullScreen() const { return isOfType(LayoutObjectLayoutFullScreen); }
-    bool isLayoutFullScreenPlaceholder() const { return isOfType(LayoutObjectLayoutFullScreenPlaceholder); }
     bool isLayoutGrid() const { return isOfType(LayoutObjectLayoutGrid); }
     bool isLayoutIFrame() const { return isOfType(LayoutObjectLayoutIFrame); }
     bool isLayoutImage() const { return isOfType(LayoutObjectLayoutImage); }
@@ -649,9 +647,7 @@ public:
         // LayoutBlock::createAnonymousBlock(). This includes creating an anonymous
         // LayoutBlock having a BLOCK or BOX display. Other classes such as LayoutTextFragment
         // are not LayoutBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
-        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == PseudoIdNone && isLayoutBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet()
-            && !isLayoutFullScreen()
-            && !isLayoutFullScreenPlaceholder();
+        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == PseudoIdNone && isLayoutBlock() && !isListMarker() && !isLayoutFlowThread() && !isLayoutMultiColumnSet();
     }
     bool isElementContinuation() const { return node() && node()->layoutObject() != this; }
     bool isInlineElementContinuation() const { return isElementContinuation() && isInline(); }
@@ -1425,8 +1421,6 @@ protected:
         LayoutObjectQuote,
         LayoutObjectLayoutButton,
         LayoutObjectLayoutFlowThread,
-        LayoutObjectLayoutFullScreen,
-        LayoutObjectLayoutFullScreenPlaceholder,
         LayoutObjectLayoutGrid,
         LayoutObjectLayoutIFrame,
         LayoutObjectLayoutImage,

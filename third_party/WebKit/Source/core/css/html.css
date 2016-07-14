@@ -968,19 +968,19 @@ nobr {
 
 /* states */
 
-:focus { 
+:focus {
     outline: auto 5px -webkit-focus-ring-color
 }
 
 /* Read-only text fields do not show a focus ring but do still receive focus */
-html:focus, body:focus, input[readonly]:focus { 
+html:focus, body:focus, input[readonly]:focus {
     outline: none
 }
 
 embed:focus, iframe:focus, object:focus {
     outline: none
 }
-  
+
 input:focus, textarea:focus, keygen:focus, select:focus {
     outline-offset: -2px
 }
@@ -996,7 +996,7 @@ input[type="submit" i]:focus,
 input[type="file" i]:focus::-webkit-file-upload-button {
     outline-offset: 0
 }
-    
+
 a:-webkit-any-link {
     color: -webkit-link;
     text-decoration: underline;
@@ -1094,6 +1094,8 @@ dialog {
     color: black
 }
 
+/* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the
+   properties shared with :fullscreen::backdrop (see fullscreen.css). */
 dialog::backdrop {
     position: fixed;
     top: 0;
@@ -1119,4 +1121,3 @@ dialog::backdrop {
 }
 
 /* noscript is handled internally, as it depends on settings. */
-
