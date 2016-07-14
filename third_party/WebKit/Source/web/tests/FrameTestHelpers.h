@@ -54,6 +54,7 @@ class WebFrameWidget;
 class WebLocalFrame;
 class WebRemoteFrame;
 class WebRemoteFrameImpl;
+class WebSettings;
 enum class WebCachePolicy;
 
 namespace FrameTestHelpers {
@@ -86,6 +87,10 @@ WebMouseEvent createMouseEvent(WebInputEvent::Type, WebMouseEvent::Button, const
 WebLocalFrame* createLocalChild(WebRemoteFrame* parent, const WebString& name = WebString(), WebFrameClient* = nullptr, WebWidgetClient* = nullptr, WebFrame* previousSibling = nullptr, const WebFrameOwnerProperties& = WebFrameOwnerProperties());
 WebRemoteFrame* createRemoteChild(WebRemoteFrame* parent, WebRemoteFrameClient*, const WebString& name = WebString());
 
+// Helpers for unit tests with parameterized WebSettings overrides.
+typedef void (*SettingOverrideFunction)(WebSettings*);
+void DefaultSettingOverride(WebSettings*);
+void RootLayerScrollsSettingOverride(WebSettings*);
 class SettingOverrider {
 public:
     virtual void overrideSettings(WebSettings*) = 0;

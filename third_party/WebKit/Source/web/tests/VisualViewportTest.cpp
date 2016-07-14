@@ -188,15 +188,9 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
-typedef void (*SettingOverrideFunction)(WebSettings*);
-
-static void DefaultSettingOverride(WebSettings *)
-{
-}
-
 class ParameterizedVisualViewportTest
     : public VisualViewportTest
-    , public testing::WithParamInterface<SettingOverrideFunction> {
+    , public testing::WithParamInterface<FrameTestHelpers::SettingOverrideFunction> {
 public:
     void overrideSettings(WebSettings *settings) override
     {
@@ -204,13 +198,9 @@ public:
     }
 };
 
-static void RootLayerScrollsSettingOverride(WebSettings *settings)
-{
-    settings->setRootLayerScrolls(true);
-}
 INSTANTIATE_TEST_CASE_P(All, ParameterizedVisualViewportTest, ::testing::Values(
-    DefaultSettingOverride,
-    RootLayerScrollsSettingOverride));
+    FrameTestHelpers::DefaultSettingOverride,
+    FrameTestHelpers::RootLayerScrollsSettingOverride));
 
 // Test that resizing the VisualViewport works as expected and that resizing the
 // WebView resizes the VisualViewport.

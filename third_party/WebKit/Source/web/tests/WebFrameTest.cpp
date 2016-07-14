@@ -278,45 +278,21 @@ protected:
     std::string m_chromeURL;
 };
 
-enum ParameterizedWebFrameTestConfig {
-    Default,
-    RootLayerScrolls
-};
-
 class ParameterizedWebFrameTest
     : public WebFrameTest
-    , public ::testing::WithParamInterface<ParameterizedWebFrameTestConfig>
+    , public ::testing::WithParamInterface<FrameTestHelpers::SettingOverrideFunction>
     , public FrameTestHelpers::SettingOverrider {
 public:
 
-    void overrideSettings(WebSettings* settings)
+    void overrideSettings(WebSettings *settings) override
     {
-        switch (GetParam()) {
-        case Default:
-            break;
-        case RootLayerScrolls:
-            settings->setRootLayerScrolls(true);
-            break;
-        }
+        GetParam()(settings);
     }
 };
 
-// Friendly string for gtest failure messages.
-void PrintTo(ParameterizedWebFrameTestConfig config, ::std::ostream* os)
-{
-    switch (config) {
-    case Default:
-        *os << "Default";
-        break;
-    case RootLayerScrolls:
-        *os << "RootLayerScrolls";
-        break;
-    }
-}
-
 INSTANTIATE_TEST_CASE_P(All, ParameterizedWebFrameTest, ::testing::Values(
-    ParameterizedWebFrameTestConfig::Default,
-    ParameterizedWebFrameTestConfig::RootLayerScrolls));
+    FrameTestHelpers::DefaultSettingOverride,
+    FrameTestHelpers::RootLayerScrollsSettingOverride));
 
 TEST_P(ParameterizedWebFrameTest, ContentText)
 {
@@ -2324,8 +2300,8 @@ protected:
 };
 
 INSTANTIATE_TEST_CASE_P(All, WebFrameResizeTest, ::testing::Values(
-    ParameterizedWebFrameTestConfig::Default,
-    ParameterizedWebFrameTestConfig::RootLayerScrolls));
+    FrameTestHelpers::DefaultSettingOverride,
+    FrameTestHelpers::RootLayerScrollsSettingOverride));
 
 TEST_P(WebFrameResizeTest, ResizeYieldsCorrectScrollAndScaleForWidthEqualsDeviceWidth)
 {
@@ -8053,8 +8029,8 @@ protected:
 };
 
 INSTANTIATE_TEST_CASE_P(All, DeviceEmulationTest, ::testing::Values(
-    ParameterizedWebFrameTestConfig::Default,
-    ParameterizedWebFrameTestConfig::RootLayerScrolls));
+    FrameTestHelpers::DefaultSettingOverride,
+    FrameTestHelpers::RootLayerScrollsSettingOverride));
 
 TEST_P(DeviceEmulationTest, DeviceSizeInvalidatedOnResize)
 {
