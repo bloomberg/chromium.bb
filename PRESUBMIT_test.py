@@ -706,7 +706,7 @@ class IDLParsingTest(unittest.TestCase):
 class TryServerMasterTest(unittest.TestCase):
   def testTryServerMasters(self):
     bots = {
-        'tryserver.chromium.android': [
+        'master.tryserver.chromium.android': [
             'android_archive_rel_ng',
             'android_arm64_dbg_recipe',
             'android_blink_rel',
@@ -730,7 +730,7 @@ class TryServerMasterTest(unittest.TestCase):
             'linux_android_dbg_ng',
             'linux_android_rel_ng',
         ],
-        'tryserver.chromium.mac': [
+        'master.tryserver.chromium.mac': [
             'ios_dbg_simulator',
             'ios_rel_device',
             'ios_rel_device_ninja',
@@ -746,7 +746,7 @@ class TryServerMasterTest(unittest.TestCase):
             'mac_x64_rel',
             'mac_xcodebuild',
         ],
-        'tryserver.chromium.linux': [
+        'master.tryserver.chromium.linux': [
             'chromium_presubmit',
             'linux_arm_cross_compile',
             'linux_arm_tester',
@@ -781,7 +781,7 @@ class TryServerMasterTest(unittest.TestCase):
             'linux_valgrind',
             'tools_build_presubmit',
         ],
-        'tryserver.chromium.win': [
+        'master.tryserver.chromium.win': [
             'win8_aura',
             'win8_chromium_dbg',
             'win8_chromium_rel',

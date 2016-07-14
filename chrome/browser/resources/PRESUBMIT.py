@@ -105,7 +105,8 @@ def PostUploadHook(cl, change, output_api):
 
   existing_bots = (change.CQ_INCLUDE_TRYBOTS or '').split(';')
   clean_bots = set(filter(None, map(lambda s: s.strip(), existing_bots)))
-  new_bots = clean_bots | set(['tryserver.chromium.linux:closure_compilation'])
+  new_bots = clean_bots | set(
+      ['master.tryserver.chromium.linux:closure_compilation'])
   new_tag = 'CQ_INCLUDE_TRYBOTS=%s' % ';'.join(new_bots)
 
   if clean_bots:

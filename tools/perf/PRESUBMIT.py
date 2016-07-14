@@ -131,7 +131,7 @@ def PostUploadHook(cl, change, output_api):
     # TODO(prasadv): Uncomment this once crbug.com/601699 is fixed.
     # 'linux_perf_cq'
   ]
-  bots = ['tryserver.chromium.perf:%s' % s for s in bots]
+  bots = ['master.tryserver.chromium.perf:%s' % s for s in bots]
   bots_string = ';'.join(bots)
   description = original_description
   description += '\nCQ_INCLUDE_TRYBOTS=%s' % bots_string

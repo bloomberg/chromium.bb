@@ -2184,19 +2184,19 @@ def GetTryServerMasterForBot(bot):
   """
   # Potentially ambiguous bot names are listed explicitly.
   master_map = {
-      'chromium_presubmit': 'tryserver.chromium.linux',
-      'tools_build_presubmit': 'tryserver.chromium.linux',
+      'chromium_presubmit': 'master.tryserver.chromium.linux',
+      'tools_build_presubmit': 'master.tryserver.chromium.linux',
   }
   master = master_map.get(bot)
   if not master:
     if 'android' in bot:
-      master = 'tryserver.chromium.android'
+      master = 'master.tryserver.chromium.android'
     elif 'linux' in bot or 'presubmit' in bot:
-      master = 'tryserver.chromium.linux'
+      master = 'master.tryserver.chromium.linux'
     elif 'win' in bot:
-      master = 'tryserver.chromium.win'
+      master = 'master.tryserver.chromium.win'
     elif 'mac' in bot or 'ios' in bot:
-      master = 'tryserver.chromium.mac'
+      master = 'master.tryserver.chromium.mac'
   return master
 
 

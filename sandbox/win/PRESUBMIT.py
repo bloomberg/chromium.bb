@@ -23,7 +23,7 @@ def PostUploadHook(cl, change, output_api):
     return []
 
   bots = [
-    'tryserver.chromium.win:win10_chromium_x64_rel_ng',
+    'master.tryserver.chromium.win:win10_chromium_x64_rel_ng',
   ]
 
   results = []

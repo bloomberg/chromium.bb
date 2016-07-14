@@ -12,7 +12,7 @@ import re
 
 def _GetTryMasters(project, change):
   return {
-    'tryserver.chromium.linux': {
+    'master.tryserver.chromium.linux': {
       'linux_site_isolation': [],
      },
   }

@@ -41,15 +41,15 @@ def CheckChangeOnCommit(input_api, output_api):
 
 def GetPreferredTryMasters(project, change):
   return {
-    'tryserver.chromium.linux': {
+    'master.tryserver.chromium.linux': {
       'linux_nacl_sdk': set(['defaulttests']),
       'linux_nacl_sdk_build': set(['defaulttests']),
     },
-    'tryserver.chromium.win': {
+    'master.ryserver.chromium.win': {
       'win_nacl_sdk': set(['defaulttests']),
       'win_nacl_sdk_build': set(['defaulttests']),
     },
-    'tryserver.chromium.mac': {
+    'master.tryserver.chromium.mac': {
       'mac_nacl_sdk': set(['defaulttests']),
       'mac_nacl_sdk_build': set(['defaulttests']),
     }
