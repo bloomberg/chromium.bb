@@ -1022,13 +1022,6 @@ config("default_warnings") {
         # TODO(thakis): https://crbug.com/617318
         "-Wno-nonportable-include-path",
       ]
-
-      if (llvm_force_head_revision) {
-        cflags += [
-          # TODO(eugenis): Clean up, http://crbug.com/619640
-          "-Wno-address-of-packed-member",
-        ]
-      }
     }
   }
 }
