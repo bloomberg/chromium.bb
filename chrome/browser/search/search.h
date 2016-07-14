@@ -36,16 +36,6 @@ enum CacheableNTPLoad {
   CACHEABLE_NTP_LOAD_MAX = 2
 };
 
-enum OptInState {
-  // The user has not manually opted in/out of InstantExtended.
-  INSTANT_EXTENDED_NOT_SET,
-  // The user has opted-in to InstantExtended.
-  INSTANT_EXTENDED_OPT_IN,
-  // The user has opted-out of InstantExtended.
-  INSTANT_EXTENDED_OPT_OUT,
-  INSTANT_EXTENDED_OPT_IN_STATE_ENUM_COUNT,
-};
-
 // Returns whether the suggest is enabled for the given |profile|.
 bool IsSuggestPrefEnabled(Profile* profile);
 
@@ -134,9 +124,10 @@ GURL GetSearchResultPrefetchBaseURL(Profile* profile);
 // focused.
 bool ShouldPrerenderInstantUrlOnOmniboxFocus();
 
-// Transforms the input |url| into its "effective URL". The returned URL
-// facilitates grouping process-per-site. The |url| is transformed, for
-// example, from
+// Transforms the input |url| into its "effective URL". |url| must be an
+// Instant URL, i.e. ShouldAssignURLToInstantRenderer must return true. The
+// returned URL facilitates grouping process-per-site. The |url| is transformed,
+// for example, from
 //
 //   https://www.google.com/search?espv=1&q=tractors
 //
@@ -148,16 +139,15 @@ bool ShouldPrerenderInstantUrlOnOmniboxFocus();
 //
 // If the input is already a privileged URL then that same URL is returned.
 //
-// If |url| is that of the online NTP, its host is replaced with "online-ntp".
+// If |url| is that of the online NTP, its host is replaced with "remote-ntp".
 // This forces the NTP and search results pages to have different SiteIntances,
 // and hence different processes.
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile);
 
-// Rewrites |url| if
-//   1. |url| is kChromeUINewTabURL,
+// Rewrites |url| to the actual NTP URL to use if
+//   1. |url| is "chrome://newtab",
 //   2. InstantExtended is enabled, and
-//   3. The --instant-new-tab-url switch is set to a valid URL.
-// |url| is rewritten to the value of --instant-new-tab-url.
+//   3. |browser_context| doesn't correspond to an incognito profile.
 bool HandleNewTabURLRewrite(GURL* url,
                             content::BrowserContext* browser_context);
 // Reverses the operation from HandleNewTabURLRewrite.

@@ -507,8 +507,6 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   if (url.SchemeIs(chrome::kChromeSearchScheme))
     return url;
 
-  GURL effective_url(url);
-
   // Replace the scheme with "chrome-search:", and clear the port, since
   // chrome-search is a scheme without port.
   url::Replacements<char> replacements;
@@ -527,8 +525,7 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
                          url::Component(0, remote_ntp_host.length()));
   }
 
-  effective_url = effective_url.ReplaceComponents(replacements);
-  return effective_url;
+  return url.ReplaceComponents(replacements);
 }
 
 bool HandleNewTabURLRewrite(GURL* url,
