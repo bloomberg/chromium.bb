@@ -4630,7 +4630,14 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
   const bool test_expect_success[num_tests] =
       { true, true, false, false, true };
 
-  for (int i = 0; i < num_tests ; i++) {
+  base::FilePath file_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &file_path);
+  file_path = file_path.Append(kTestFilePath);
+  file_path = file_path.Append(FILE_PATH_LITERAL("BullRunSpeech.txt"));
+  std::string expected_content;
+  ASSERT_TRUE(base::ReadFileToString(file_path, &expected_content));
+
+  for (int i = 0; i < num_tests; i++) {
     TestDelegate d;
     {
       std::string test_file = base::StringPrintf(
@@ -4656,6 +4663,13 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
       if (test_expect_success[i]) {
         EXPECT_EQ(URLRequestStatus::SUCCESS, r->status().status())
             << " Parameter = \"" << test_file << "\"";
+        if (test_parameters[i] == 'S') {
+          // When content length is smaller than both compressed length and
+          // uncompressed length, HttpStreamParser might not read the full
+          // response body.
+          continue;
+        }
+        EXPECT_EQ(expected_content, d.data_received());
       } else {
         EXPECT_EQ(URLRequestStatus::FAILED, r->status().status());
         EXPECT_EQ(ERR_CONTENT_LENGTH_MISMATCH, r->status().error())
