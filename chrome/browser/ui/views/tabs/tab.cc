@@ -116,6 +116,135 @@ const int kImmersiveLoadingStepCount = 32;
 
 const char kTabCloseButtonName[] = "TabCloseButton";
 
+////////////////////////////////////////////////////////////////////////////////
+// ImageCacheEntryMetadata
+//
+// All metadata necessary to uniquely identify a cached image.
+struct ImageCacheEntryMetadata {
+  ImageCacheEntryMetadata(int resource_id,
+                          SkColor fill_color,
+                          SkColor stroke_color,
+                          ui::ScaleFactor scale_factor,
+                          const gfx::Size& size);
+
+  ~ImageCacheEntryMetadata();
+
+  bool operator==(const ImageCacheEntryMetadata& rhs) const;
+
+  int resource_id;     // Only needed by pre-MD
+  SkColor fill_color;  // Both colors only needed by MD
+  SkColor stroke_color;
+  ui::ScaleFactor scale_factor;
+  gfx::Size size;
+};
+
+ImageCacheEntryMetadata::ImageCacheEntryMetadata(int resource_id,
+                                                 SkColor fill_color,
+                                                 SkColor stroke_color,
+                                                 ui::ScaleFactor scale_factor,
+                                                 const gfx::Size& size)
+    : resource_id(resource_id),
+      fill_color(fill_color),
+      stroke_color(stroke_color),
+      scale_factor(scale_factor),
+      size(size) {
+  DCHECK_NE(ui::SCALE_FACTOR_NONE, scale_factor);
+
+  // Some fields are only relevant for pre-MD vs. MD.  Erase the irrelevant ones
+  // so they don't cause incorrect cache misses.
+  // TODO(pkasting): Remove |resource_id| field when non-MD code is deleted.
+  if (ui::MaterialDesignController::IsModeMaterial())
+    resource_id = 0;
+  else
+    fill_color = stroke_color = SK_ColorTRANSPARENT;
+}
+
+ImageCacheEntryMetadata::~ImageCacheEntryMetadata() {}
+
+bool ImageCacheEntryMetadata::operator==(
+    const ImageCacheEntryMetadata& rhs) const {
+  return resource_id == rhs.resource_id && fill_color == rhs.fill_color &&
+         stroke_color == rhs.stroke_color && scale_factor == rhs.scale_factor &&
+         size == rhs.size;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ImageCacheEntry and cache management
+//
+// A cached image and the metadata used to generate it.
+struct ImageCacheEntry {
+  ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
+                  const gfx::ImageSkia& image);
+  ~ImageCacheEntry();
+
+  ImageCacheEntryMetadata metadata;
+  gfx::ImageSkia image;
+};
+
+ImageCacheEntry::ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
+                                 const gfx::ImageSkia& image)
+    : metadata(metadata), image(image) {}
+
+ImageCacheEntry::~ImageCacheEntry() {}
+
+typedef std::list<ImageCacheEntry> ImageCache;
+
+// As the majority of the tabs are inactive, and painting tabs is slowish,
+// we cache a handful of the inactive tab backgrounds here.
+static ImageCache* g_image_cache = nullptr;
+
+struct TabImages {
+  gfx::ImageSkia* image_l;
+  gfx::ImageSkia* image_c;
+  gfx::ImageSkia* image_r;
+  int l_width;
+  int r_width;
+};
+static TabImages g_active_images = {0};
+static TabImages g_inactive_images = {0};
+static TabImages g_mask_images = {0};
+
+// Loads the images to be used for the tab background.
+void LoadTabImages() {
+  g_image_cache->clear();
+
+  // We're not letting people override tab images just yet.
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  g_active_images.image_l = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_LEFT);
+  g_active_images.image_c = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_CENTER);
+  g_active_images.image_r = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_RIGHT);
+  g_active_images.l_width = g_active_images.image_l->width();
+  g_active_images.r_width = g_active_images.image_r->width();
+
+  g_inactive_images.image_l = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_LEFT);
+  g_inactive_images.image_c = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_CENTER);
+  g_inactive_images.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
+  g_inactive_images.l_width = g_inactive_images.image_l->width();
+  g_inactive_images.r_width = g_inactive_images.image_r->width();
+
+  g_mask_images.image_l = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_LEFT);
+  g_mask_images.image_r = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_RIGHT);
+  g_mask_images.l_width = g_mask_images.image_l->width();
+  g_mask_images.r_width = g_mask_images.image_r->width();
+}
+
+// Performs a one-time initialization of static resources such as tab images.
+void InitTabResources() {
+  static bool initialized = false;
+  if (initialized)
+    return;
+
+  initialized = true;
+  g_image_cache = new ImageCache();
+
+  // Load the tab images once now, and maybe again later if the theme changes.
+  LoadTabImages();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Drawing and utility functions
+
 // Returns the width of the tab endcap at scale 1.  More precisely, this is the
 // width of the curve making up either the outer or inner edge of the stroke;
 // since these two curves are horizontally offset by 1 px (regardless of scale),
@@ -145,6 +274,119 @@ bool ShouldThemifyFaviconForUrl(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
          url.host() != chrome::kChromeUIHelpHost &&
          url.host() != chrome::kChromeUIUberHost;
+}
+
+// Computes a path corresponding to the tab's content region inside the outer
+// stroke.
+void GetFillPath(float scale, const gfx::Size& size, SkPath* fill) {
+  const float right = size.width() * scale;
+  // The bottom of the tab needs to be pixel-aligned or else when we call
+  // ClipPath with anti-aliasing enabled it can cause artifacts.
+  const float bottom = std::ceil(size.height() * scale);
+  const float unscaled_endcap_width = GetUnscaledEndcapWidth();
+
+  fill->moveTo(right - 1, bottom);
+  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
+                 -1.5 * scale);
+  fill->lineTo(right - 1 - (unscaled_endcap_width - 2) * scale, 2.5 * scale);
+  // Prevent overdraw in the center near minimum width (only happens if
+  // scale < 2).  We could instead avoid this by increasing the tab inset
+  // values, but that would shift all the content inward as well, unless we
+  // then overlapped the content on the endcaps, by which point we'd have a
+  // huge mess.
+  const float scaled_endcap_width = 1 + unscaled_endcap_width * scale;
+  const float overlap = scaled_endcap_width * 2 - right;
+  const float offset = (overlap > 0) ? (overlap / 2) : 0;
+  fill->rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale + offset,
+                 -1.5 * scale, -2 * scale + offset, -1.5 * scale);
+  if (overlap < 0)
+    fill->lineTo(scaled_endcap_width, scale);
+  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale - offset, 0.5 * scale,
+                 -2 * scale - offset, 1.5 * scale);
+  fill->lineTo(1 + 2 * scale, bottom - 1.5 * scale);
+  fill->rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale, -2 * scale,
+                 1.5 * scale);
+  fill->close();
+}
+
+// Computes a path corresponding to the tab's outer border for a given |scale|
+// and stores it in |path|.  If |extend_to_top| is true, the path is extended
+// vertically to the top of the tab bounds.  The caller uses this for Fitts'
+// Law purposes in maximized/fullscreen mode.
+void GetBorderPath(float scale,
+                   const gfx::Size& size,
+                   bool extend_to_top,
+                   SkPath* path) {
+  const float top = scale - 1;
+  const float right = size.width() * scale;
+  const float bottom = size.height() * scale;
+  const float unscaled_endcap_width = GetUnscaledEndcapWidth();
+
+  path->moveTo(0, bottom);
+  path->rLineTo(0, -1);
+  path->rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
+                 -1.5 * scale);
+  path->lineTo((unscaled_endcap_width - 2) * scale, top + 1.5 * scale);
+  if (extend_to_top) {
+    // Create the vertical extension by extending the side diagonals until they
+    // reach the top of the bounds.
+    const float dy = 2.5 * scale - 1;
+    const float dx = Tab::GetInverseDiagonalSlope() * dy;
+    path->rLineTo(dx, -dy);
+    path->lineTo(right - (unscaled_endcap_width - 2) * scale - dx, 0);
+    path->rLineTo(dx, dy);
+  } else {
+    path->rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
+                   -1.5 * scale);
+    path->lineTo(right - unscaled_endcap_width * scale, top);
+    path->rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
+                   1.5 * scale);
+  }
+  path->lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
+  path->rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
+                 1.5 * scale);
+  path->rLineTo(0, 1);
+  path->close();
+}
+
+void PaintTabFill(gfx::Canvas* canvas,
+                  gfx::ImageSkia* fill_image,
+                  int x_offset,
+                  int y_offset,
+                  const gfx::Size& size,
+                  bool is_active) {
+  const gfx::Insets tab_insets(GetLayoutInsets(TAB));
+  // If this isn't the foreground tab, don't draw over the toolbar, but do
+  // include the 1 px divider stroke at the bottom.
+  const int toolbar_overlap = is_active ? 0 : (tab_insets.bottom() - 1);
+
+  // Draw left edge.
+  gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
+      *fill_image, x_offset, y_offset, g_mask_images.l_width, size.height());
+  gfx::ImageSkia theme_l = gfx::ImageSkiaOperations::CreateMaskedImage(
+      tab_l, *g_mask_images.image_l);
+  canvas->DrawImageInt(
+      theme_l, 0, 0, theme_l.width(), theme_l.height() - toolbar_overlap, 0, 0,
+      theme_l.width(), theme_l.height() - toolbar_overlap, false);
+
+  // Draw right edge.
+  gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(
+      *fill_image, x_offset + size.width() - g_mask_images.r_width, y_offset,
+      g_mask_images.r_width, size.height());
+  gfx::ImageSkia theme_r = gfx::ImageSkiaOperations::CreateMaskedImage(
+      tab_r, *g_mask_images.image_r);
+  canvas->DrawImageInt(theme_r, 0, 0, theme_r.width(),
+                       theme_r.height() - toolbar_overlap,
+                       size.width() - theme_r.width(), 0, theme_r.width(),
+                       theme_r.height() - toolbar_overlap, false);
+
+  // Draw center.  Instead of masking out the top portion we simply skip over it
+  // by incrementing by the top padding, since it's a simple rectangle.
+  canvas->TileImageInt(
+      *fill_image, x_offset + g_mask_images.l_width,
+      y_offset + tab_insets.top(), g_mask_images.l_width, tab_insets.top(),
+      size.width() - g_mask_images.l_width - g_mask_images.r_width,
+      size.height() - tab_insets.top() - toolbar_overlap);
 }
 
 }  // namespace
@@ -412,88 +654,10 @@ void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Tab::ImageCacheEntryMetadata
-
-struct Tab::ImageCacheEntryMetadata {
-  ImageCacheEntryMetadata(int resource_id,
-                          SkColor fill_color,
-                          SkColor stroke_color,
-                          ui::ScaleFactor scale_factor,
-                          const gfx::Size& size);
-
-  ~ImageCacheEntryMetadata();
-
-  // Making this a non-member would require a friend declaration in Tab.  Bleh.
-  bool operator==(const ImageCacheEntryMetadata& rhs) const;
-
-  int resource_id;     // Only needed by pre-MD
-  SkColor fill_color;  // Both colors only needed by MD
-  SkColor stroke_color;
-  ui::ScaleFactor scale_factor;
-  gfx::Size size;
-};
-
-Tab::ImageCacheEntryMetadata::ImageCacheEntryMetadata(
-    int resource_id,
-    SkColor fill_color,
-    SkColor stroke_color,
-    ui::ScaleFactor scale_factor,
-    const gfx::Size& size)
-    : resource_id(resource_id),
-      fill_color(fill_color),
-      stroke_color(stroke_color),
-      scale_factor(scale_factor),
-      size(size) {
-  DCHECK_NE(ui::SCALE_FACTOR_NONE, scale_factor);
-
-  // Some fields are only relevant for pre-MD vs. MD.  Erase the irrelevant ones
-  // so they don't cause incorrect cache misses.
-  // TODO(pkasting): Remove |resource_id| field when non-MD code is deleted.
-  if (ui::MaterialDesignController::IsModeMaterial())
-    resource_id = 0;
-  else
-    fill_color = stroke_color = SK_ColorTRANSPARENT;
-}
-
-Tab::ImageCacheEntryMetadata::~ImageCacheEntryMetadata() {}
-
-bool Tab::ImageCacheEntryMetadata::operator==(
-    const ImageCacheEntryMetadata& rhs) const {
-  return resource_id == rhs.resource_id && fill_color == rhs.fill_color &&
-      stroke_color == rhs.stroke_color && scale_factor == rhs.scale_factor &&
-      size == rhs.size;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Tab::ImageCacheEntry
-
-struct Tab::ImageCacheEntry {
-  ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
-                  const gfx::ImageSkia& image);
-  ~ImageCacheEntry();
-
-  ImageCacheEntryMetadata metadata;
-  gfx::ImageSkia image;
-};
-
-Tab::ImageCacheEntry::ImageCacheEntry(const ImageCacheEntryMetadata& metadata,
-                                      const gfx::ImageSkia& image)
-    : metadata(metadata), image(image) {}
-
-Tab::ImageCacheEntry::~ImageCacheEntry() {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Tab, statics:
+// Tab, public:
 
 // static
 const char Tab::kViewClassName[] = "Tab";
-Tab::TabImages Tab::active_images_ = {0};
-Tab::TabImages Tab::inactive_images_ = {0};
-Tab::TabImages Tab::mask_images_ = {0};
-Tab::ImageCache* Tab::image_cache_ = NULL;
-
-////////////////////////////////////////////////////////////////////////////////
-// Tab, public:
 
 Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
     : controller_(controller),
@@ -810,7 +974,7 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     SkPath border;
     const float scale = GetWidget()->GetCompositor()->device_scale_factor();
-    GetBorderPath(scale, extend_to_top, &border);
+    GetBorderPath(scale, size(), extend_to_top, &border);
     mask->addPath(border, SkMatrix::MakeScale(1 / scale));
   } else {
     // Hit mask constants.
@@ -1292,16 +1456,16 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
       controller_->GetToolbarTopSeparatorColor(),
       ui::GetSupportedScaleFactor(canvas->image_scale()), size());
   auto it = std::find_if(
-      image_cache_->begin(), image_cache_->end(),
+      g_image_cache->begin(), g_image_cache->end(),
       [&metadata](const ImageCacheEntry& e) { return e.metadata == metadata; });
-  if (it == image_cache_->end()) {
+  if (it == g_image_cache->end()) {
     gfx::Canvas tmp_canvas(size(), canvas->image_scale(), false);
     PaintTabBackgroundUsingFillId(&tmp_canvas, false, fill_id, false, y_offset);
-    image_cache_->emplace_front(metadata,
-                                gfx::ImageSkia(tmp_canvas.ExtractImageRep()));
-    if (image_cache_->size() > kMaxImageCacheSize)
-      image_cache_->pop_back();
-    it = image_cache_->begin();
+    g_image_cache->emplace_front(metadata,
+                                 gfx::ImageSkia(tmp_canvas.ExtractImageRep()));
+    if (g_image_cache->size() > kMaxImageCacheSize)
+      g_image_cache->pop_back();
+    it = g_image_cache->begin();
   }
   canvas->DrawImageInt(it->image, 0, 0);
 }
@@ -1333,7 +1497,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
 
     // Draw the fill.
     SkPath fill;
-    GetFillPath(scale, &fill);
+    GetFillPath(scale, size(), &fill);
     SkPaint paint;
     paint.setAntiAlias(true);
     {
@@ -1359,7 +1523,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
 
     // Draw the stroke.
     SkPath stroke;
-    GetBorderPath(scale, false, &stroke);
+    GetBorderPath(scale, size(), false, &stroke);
     Op(stroke, fill, kDifference_SkPathOp, &stroke);
     if (!is_active) {
       // Clip out the bottom line; this will be drawn for us by
@@ -1374,7 +1538,7 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
       // Draw everything to a temporary canvas so we can extract an image for
       // use in masking the hover glow.
       gfx::Canvas background_canvas(size(), canvas->image_scale(), false);
-      PaintTabFill(&background_canvas, fill_image, x_offset, y_offset,
+      PaintTabFill(&background_canvas, fill_image, x_offset, y_offset, size(),
                    is_active);
       gfx::ImageSkia background_image(background_canvas.ExtractImageRep());
       canvas->DrawImageInt(background_image, 0, 0);
@@ -1385,11 +1549,12 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
           gfx::ImageSkia(hover_canvas.ExtractImageRep()), background_image);
       canvas->DrawImageInt(result, 0, 0);
     } else {
-      PaintTabFill(canvas, fill_image, x_offset, y_offset, is_active);
+      PaintTabFill(canvas, fill_image, x_offset, y_offset, size(), is_active);
     }
 
     // Now draw the stroke, highlights, and shadows around the tab edge.
-    TabImages* stroke_images = is_active ? &active_images_ : &inactive_images_;
+    TabImages* stroke_images =
+        is_active ? &g_active_images : &g_inactive_images;
     canvas->DrawImageInt(*stroke_images->image_l, 0, 0);
     canvas->TileImageInt(
         *stroke_images->image_c, stroke_images->l_width, 0,
@@ -1397,45 +1562,6 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
     canvas->DrawImageInt(*stroke_images->image_r,
                          width() - stroke_images->r_width, 0);
   }
-}
-
-void Tab::PaintTabFill(gfx::Canvas* canvas,
-                       gfx::ImageSkia* fill_image,
-                       int x_offset,
-                       int y_offset,
-                       bool is_active) {
-  const gfx::Insets tab_insets(GetLayoutInsets(TAB));
-  // If this isn't the foreground tab, don't draw over the toolbar, but do
-  // include the 1 px divider stroke at the bottom.
-  const int toolbar_overlap = is_active ? 0 : (tab_insets.bottom() - 1);
-
-  // Draw left edge.
-  gfx::ImageSkia tab_l = gfx::ImageSkiaOperations::CreateTiledImage(
-      *fill_image, x_offset, y_offset, mask_images_.l_width, height());
-  gfx::ImageSkia theme_l =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_l, *mask_images_.image_l);
-  canvas->DrawImageInt(
-      theme_l, 0, 0, theme_l.width(), theme_l.height() - toolbar_overlap, 0, 0,
-      theme_l.width(), theme_l.height() - toolbar_overlap, false);
-
-  // Draw right edge.
-  gfx::ImageSkia tab_r = gfx::ImageSkiaOperations::CreateTiledImage(
-      *fill_image, x_offset + width() - mask_images_.r_width, y_offset,
-      mask_images_.r_width, height());
-  gfx::ImageSkia theme_r =
-      gfx::ImageSkiaOperations::CreateMaskedImage(tab_r, *mask_images_.image_r);
-  canvas->DrawImageInt(theme_r, 0, 0, theme_r.width(),
-                       theme_r.height() - toolbar_overlap,
-                       width() - theme_r.width(), 0, theme_r.width(),
-                       theme_r.height() - toolbar_overlap, false);
-
-  // Draw center.  Instead of masking out the top portion we simply skip over it
-  // by incrementing by the top padding, since it's a simple rectangle.
-  canvas->TileImageInt(*fill_image, x_offset + mask_images_.l_width,
-                       y_offset + tab_insets.top(), mask_images_.l_width,
-                       tab_insets.top(),
-                       width() - mask_images_.l_width - mask_images_.r_width,
-                       height() - tab_insets.top() - toolbar_overlap);
 }
 
 void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
@@ -1674,118 +1800,13 @@ void Tab::ScheduleIconPaint() {
   SchedulePaintInRect(bounds);
 }
 
-void Tab::GetFillPath(float scale, SkPath* fill) const {
-  const float right = width() * scale;
-  // The bottom of the tab needs to be pixel-aligned or else when we call
-  // ClipPath with anti-aliasing enabled it can cause artifacts.
-  const float bottom = std::ceil(height() * scale);
-  const float unscaled_endcap_width = GetUnscaledEndcapWidth();
-
-  fill->moveTo(right - 1, bottom);
-  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale, -0.5 * scale, -2 * scale,
-                 -1.5 * scale);
-  fill->lineTo(right - 1 - (unscaled_endcap_width - 2) * scale, 2.5 * scale);
-  // Prevent overdraw in the center near minimum width (only happens if
-  // scale < 2).  We could instead avoid this by increasing the tab inset
-  // values, but that would shift all the content inward as well, unless we
-  // then overlapped the content on the endcaps, by which point we'd have a
-  // huge mess.
-  const float scaled_endcap_width = 1 + unscaled_endcap_width * scale;
-  const float overlap = scaled_endcap_width * 2 - right;
-  const float offset = (overlap > 0) ? (overlap / 2) : 0;
-  fill->rCubicTo(-0.375 * scale, -1 * scale, -1.25 * scale + offset,
-                 -1.5 * scale, -2 * scale + offset, -1.5 * scale);
-  if (overlap < 0)
-    fill->lineTo(scaled_endcap_width, scale);
-  fill->rCubicTo(-0.75 * scale, 0, -1.625 * scale - offset, 0.5 * scale,
-                 -2 * scale - offset, 1.5 * scale);
-  fill->lineTo(1 + 2 * scale, bottom - 1.5 * scale);
-  fill->rCubicTo(-0.375 * scale, scale, -1.25 * scale, 1.5 * scale, -2 * scale,
-                 1.5 * scale);
-  fill->close();
-}
-
-void Tab::GetBorderPath(float scale, bool extend_to_top, SkPath* path) const {
-  const float top = scale - 1;
-  const float right = width() * scale;
-  const float bottom = height() * scale;
-  const float unscaled_endcap_width = GetUnscaledEndcapWidth();
-
-  path->moveTo(0, bottom);
-  path->rLineTo(0, -1);
-  path->rCubicTo(0.75 * scale, 0, 1.625 * scale, -0.5 * scale, 2 * scale,
-                 -1.5 * scale);
-  path->lineTo((unscaled_endcap_width - 2) * scale, top + 1.5 * scale);
-  if (extend_to_top) {
-    // Create the vertical extension by extending the side diagonals until they
-    // reach the top of the bounds.
-    const float dy = 2.5 * scale - 1;
-    const float dx = GetInverseDiagonalSlope() * dy;
-    path->rLineTo(dx, -dy);
-    path->lineTo(right - (unscaled_endcap_width - 2) * scale - dx, 0);
-    path->rLineTo(dx, dy);
-  } else {
-    path->rCubicTo(0.375 * scale, -scale, 1.25 * scale, -1.5 * scale, 2 * scale,
-                   -1.5 * scale);
-    path->lineTo(right - unscaled_endcap_width * scale, top);
-    path->rCubicTo(0.75 * scale, 0, 1.625 * scale, 0.5 * scale, 2 * scale,
-                   1.5 * scale);
-  }
-  path->lineTo(right - 2 * scale, bottom - 1 - 1.5 * scale);
-  path->rCubicTo(0.375 * scale, scale, 1.25 * scale, 1.5 * scale, 2 * scale,
-                 1.5 * scale);
-  path->rLineTo(0, 1);
-  path->close();
-}
-
 gfx::Rect Tab::GetImmersiveBarRect() const {
   // The main bar is as wide as the normal tab's horizontal top line.
   // This top line of the tab extends a few pixels left and right of the
   // center image due to pixels in the rounded corner images.
   const int kBarPadding = 1;
-  int main_bar_left = active_images_.l_width - kBarPadding;
-  int main_bar_right = width() - active_images_.r_width + kBarPadding;
+  int main_bar_left = g_active_images.l_width - kBarPadding;
+  int main_bar_right = width() - g_active_images.r_width + kBarPadding;
   return gfx::Rect(
       main_bar_left, 0, main_bar_right - main_bar_left, kImmersiveBarHeight);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Tab, private static:
-
-// static
-void Tab::InitTabResources() {
-  static bool initialized = false;
-  if (initialized)
-    return;
-
-  initialized = true;
-  image_cache_ = new ImageCache();
-
-  // Load the tab images once now, and maybe again later if the theme changes.
-  LoadTabImages();
-}
-
-// static
-void Tab::LoadTabImages() {
-  image_cache_->clear();
-
-  // We're not letting people override tab images just yet.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-  active_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_LEFT);
-  active_images_.image_c = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_CENTER);
-  active_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ACTIVE_RIGHT);
-  active_images_.l_width = active_images_.image_l->width();
-  active_images_.r_width = active_images_.image_r->width();
-
-  inactive_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_LEFT);
-  inactive_images_.image_c = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_CENTER);
-  inactive_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_INACTIVE_RIGHT);
-  inactive_images_.l_width = inactive_images_.image_l->width();
-  inactive_images_.r_width = inactive_images_.image_r->width();
-
-  mask_images_.image_l = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_LEFT);
-  mask_images_.image_r = rb.GetImageSkiaNamed(IDR_TAB_ALPHA_RIGHT);
-  mask_images_.l_width = mask_images_.image_l->width();
-  mask_images_.r_width = mask_images_.image_r->width();
 }
