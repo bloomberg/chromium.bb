@@ -2993,8 +2993,9 @@ void drmFreeDevices(drmDevicePtr devices[], int count)
     if (devices == NULL)
         return;
 
-    for (i = 0; i < count && devices[i] != NULL; i++)
-        drmFreeDevice(&devices[i]);
+    for (i = 0; i < count; i++)
+        if (devices[i])
+            drmFreeDevice(&devices[i]);
 }
 
 static int drmProcessPciDevice(drmDevicePtr *device, const char *d_name,
