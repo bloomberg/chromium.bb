@@ -4985,13 +4985,10 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
                         info.navigationType != blink::WebNavigationTypeReload);
 
     if (!should_fork && url.SchemeIs(url::kFileScheme)) {
-      // Fork non-file to file opens.  Check the opener URL if this is the
-      // initial navigation in a newly opened window.
-      GURL source_url(old_url);
-      if (is_initial_navigation && source_url.is_empty() && frame_->opener())
-        source_url = frame_->opener()->top()->document().url();
-      DCHECK(!source_url.is_empty());
-      should_fork = !source_url.SchemeIs(url::kFileScheme);
+      // Fork non-file to file opens.  Note that this may fork unnecessarily if
+      // another tab (hosting a file or not) targeted this one before its
+      // initial navigation, but that shouldn't cause a problem.
+      should_fork = !old_url.SchemeIs(url::kFileScheme);
     }
 
     if (!should_fork) {
