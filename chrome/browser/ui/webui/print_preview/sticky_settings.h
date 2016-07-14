@@ -14,7 +14,6 @@ class PrefService;
 
 namespace base {
 class DictionaryValue;
-class FilePath;
 }
 
 namespace user_prefs {
@@ -31,20 +30,16 @@ class StickySettings {
   StickySettings();
   ~StickySettings();
 
-  base::FilePath* save_path();
   std::string* printer_app_state();
 
   // Stores app state for the last used printer.
   void StoreAppState(const std::string& app_state);
-  // Stores the last path the user used to save to pdf.
-  void StoreSavePath(const base::FilePath& path);
 
   void SaveInPrefs(PrefService* profile);
   void RestoreFromPrefs(PrefService* profile);
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  std::unique_ptr<base::FilePath> save_path_;
   std::unique_ptr<std::string> printer_app_state_;
 };
 

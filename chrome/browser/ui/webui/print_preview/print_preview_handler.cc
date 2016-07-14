@@ -23,17 +23,16 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/printing/print_dialog_cloud.h"
 #include "chrome/browser/printing/print_error_dialog.h"
@@ -52,7 +51,6 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/browser/ui/webui/print_preview/printer_handler.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/cloud_print/cloud_print_cdd_conversion.h"
 #include "chrome/common/cloud_print/cloud_print_constants.h"
@@ -1357,20 +1355,13 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
     }
   }
 
-  // Initializing |save_path_| if it is not already initialized.
+  // Get save location from Download Preferences.
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext());
+  base::FilePath file_path = download_prefs->SaveFilePath();
   printing::StickySettings* sticky_settings = GetStickySettings();
-  if (!sticky_settings->save_path()) {
-    // Allowing IO operation temporarily. It is ok to do so here because
-    // the select file dialog performs IO anyway in order to display the
-    // folders and also it is modal.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
-    base::FilePath file_path;
-    PathService::Get(chrome::DIR_USER_DOCUMENTS, &file_path);
-    sticky_settings->StoreSavePath(file_path);
-    sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
-        preview_web_contents()->GetBrowserContext())->GetPrefs());
-  }
-
+  sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext())->GetPrefs());
   // Handle the no prompting case. Like the dialog prompt, this function
   // returns and eventually FileSelected() gets called.
   if (!prompt_user) {
@@ -1378,7 +1369,7 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
         BrowserThread::GetBlockingPool(),
         FROM_HERE,
         base::Bind(&GetUniquePath,
-                   sticky_settings->save_path()->Append(default_filename)),
+                   download_prefs->SaveFilePath().Append(default_filename)),
         base::Bind(&PrintPreviewHandler::OnGotUniqueFileName,
                    weak_factory_.GetWeakPtr()));
     return;
@@ -1394,7 +1385,7 @@ void PrintPreviewHandler::SelectFile(const base::FilePath& default_filename,
   select_file_dialog_->SelectFile(
       ui::SelectFileDialog::SELECT_SAVEAS_FILE,
       base::string16(),
-      sticky_settings->save_path()->Append(default_filename),
+      download_prefs->SaveFilePath().Append(default_filename),
       &file_type_info,
       0,
       base::FilePath::StringType(),
@@ -1422,10 +1413,12 @@ void PrintPreviewHandler::ShowSystemDialog() {
 void PrintPreviewHandler::FileSelected(const base::FilePath& path,
                                        int /* index */,
                                        void* /* params */) {
-  // Updating |save_path_| to the newly selected folder.
+  // Update downloads location and save sticky settings.
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+      preview_web_contents()->GetBrowserContext());
+  download_prefs->SetSaveFilePath(path.DirName());
   printing::StickySettings* sticky_settings = GetStickySettings();
-  sticky_settings->StoreSavePath(path.DirName());
-  sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
+   sticky_settings->SaveInPrefs(Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext())->GetPrefs());
   web_ui()->CallJavascriptFunctionUnsafe("fileSelectionCompleted");
   print_to_pdf_path_ = path;
