@@ -87,7 +87,7 @@ void TabModelJniBridge::CreateTab(TabAndroid* parent,
   JNIEnv* env = AttachCurrentThread();
   Java_TabModelJniBridge_createTabWithWebContents(
       env, java_object_.get(env).obj(),
-      parent->GetJavaObject().obj(),
+      (parent ? parent->GetJavaObject().obj() : nullptr),
       web_contents->GetBrowserContext()->IsOffTheRecord(),
       web_contents->GetJavaWebContents().obj(),
       parent_tab_id);

@@ -10,6 +10,8 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "components/sessions/core/live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/RecentlyClosedBridge_jni.h"
@@ -124,6 +126,23 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(
                                            session_tab,
                                            disposition);
   return true;
+}
+
+jboolean RecentlyClosedTabsBridge::OpenMostRecentlyClosedTab(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) {
+  EnsureTabRestoreService();
+  if (!tab_restore_service_ || TabModelList::empty() ||
+      tab_restore_service_->entries().empty())
+    return false;
+
+  // Passing nullptr here because LiveTabContext will be determined later by
+  // a call to AndroidLiveTabContext::FindLiveTabContextWithID in
+  // ChromeTabRestoreServiceClient.
+  std::vector<sessions::LiveTab*> restored_tab =
+      tab_restore_service_->RestoreMostRecentEntry(nullptr);
+
+  return !restored_tab.empty();
 }
 
 void RecentlyClosedTabsBridge::ClearRecentlyClosedTabs(

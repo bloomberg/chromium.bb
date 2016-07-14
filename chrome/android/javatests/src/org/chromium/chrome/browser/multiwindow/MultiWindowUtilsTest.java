@@ -44,7 +44,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     @Feature("MultiWindow")
     public void testTabbedActivityForIntentWithExtraWindowId() throws InterruptedException {
         ChromeTabbedActivity activity1 = getActivity();
-        createSecondChromeTabbedActivity();
+        createSecondChromeTabbedActivity(activity1);
 
         Intent intent = activity1.getIntent();
         intent.putExtra(IntentHandler.EXTRA_WINDOW_ID, 2);
@@ -63,7 +63,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     @Feature("MultiWindow")
     public void testTabbedActivityForIntentLastResumedActivity() throws InterruptedException {
         ChromeTabbedActivity activity1 = getActivity();
-        final ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity();
+        final ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity(activity1);
 
         assertFalse("ChromeTabbedActivity should not be resumed",
                 ApplicationStatus.getStateForActivity(activity1) == ActivityState.RESUMED);
@@ -95,7 +95,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     public void testTabbedActivityForIntentOnlyActivity1IsRunning()
             throws InterruptedException {
         ChromeTabbedActivity activity1 = getActivity();
-        ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity();
+        ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity(activity1);
         activity2.finishAndRemoveTask();
 
         assertEquals("ChromeTabbedActivity should be used for intents if ChromeTabbedActivity2 is "
@@ -114,7 +114,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     public void testTabbedActivityForIntentOnlyActivity2IsRunning()
             throws InterruptedException {
         ChromeTabbedActivity activity1 = getActivity();
-        createSecondChromeTabbedActivity();
+        createSecondChromeTabbedActivity(activity1);
         activity1.finishAndRemoveTask();
 
         assertEquals("ChromeTabbedActivity2 should be used for intents if ChromeTabbedActivity is "
@@ -148,7 +148,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     @Feature("MultiWindow")
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void testTabbedActivity2TaskRunning() throws InterruptedException {
-        ChromeTabbedActivity activity2 = createSecondChromeTabbedActivity();
+        ChromeTabbedActivity activity2 = createSecondChromeTabbedActivity(getActivity());
         assertTrue(MultiWindowUtils.getInstance().getTabbedActivity2TaskRunning());
 
         activity2.finishAndRemoveTask();
@@ -157,7 +157,8 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
         assertFalse(MultiWindowUtils.getInstance().getTabbedActivity2TaskRunning());
     }
 
-    private ChromeTabbedActivity2 createSecondChromeTabbedActivity() throws InterruptedException {
+    public static ChromeTabbedActivity2 createSecondChromeTabbedActivity(Activity activity)
+            throws InterruptedException {
         // TODO(twellington): after there is test support for putting an activity into multi-window
         // mode, this should be changed to use the menu item for opening a new window.
 
@@ -166,7 +167,6 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
 
         // Get the class name to use for the second ChromeTabbedActivity. This step is important
         // for initializing things in MultiWindowUtils.java.
-        ChromeTabbedActivity activity = getActivity();
         Class<? extends Activity> secondActivityClass =
                 MultiWindowUtils.getInstance().getOpenInOtherWindowActivity(activity);
         assertEquals("ChromeTabbedActivity2 should be used as the 'open in other window' activity.",

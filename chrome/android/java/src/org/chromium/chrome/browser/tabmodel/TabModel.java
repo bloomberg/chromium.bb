@@ -148,6 +148,12 @@ public interface TabModel extends TabList {
     public void cancelTabClosure(int tabId);
 
     /**
+     * Opens the most recently closed tab, bringing the tab back into its original tab model or
+     * this model if the original model no longer exists.
+     */
+    public void openMostRecentlyClosedTab();
+
+    /**
      * @return The complete {@link TabList} this {@link TabModel} represents.  Note that this may
      *         be different than this actual {@link TabModel} if it supports pending closures
      *         {@link #supportsPendingClosures()}, as this will include all pending closure tabs.

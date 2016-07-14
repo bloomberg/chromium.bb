@@ -140,4 +140,8 @@ public class EmptyTabModel implements TabModel {
     public void removeTab(Tab tab) {
     }
 
+    @Override
+    public void openMostRecentlyClosedTab() {
+    }
+
 }

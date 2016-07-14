@@ -55,6 +55,7 @@
     <!-- Keyboard shortcuts -->
     <item type="id" name="focus_url_bar" />
     <item type="id" name="show_menu" />
+    <item type="id" name="open_recently_closed_tab" />
 
     <!-- PaymentRequest -->
     <item type="id" name="payments_section" />

@@ -237,4 +237,8 @@ public class OffTheRecordTabModel implements TabModel {
         destroyIncognitoIfNecessary();
     }
 
+    @Override
+    public void openMostRecentlyClosedTab() {
+    }
+
 }

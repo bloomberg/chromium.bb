@@ -23,6 +23,8 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser_live_tab_context.h"
+#else
+#include "chrome/browser/ui/android/tab_model/android_live_tab_context.h"
 #endif
 
 namespace {
@@ -51,8 +53,8 @@ ChromeTabRestoreServiceClient::~ChromeTabRestoreServiceClient() {}
 sessions::LiveTabContext* ChromeTabRestoreServiceClient::CreateLiveTabContext(
     const std::string& app_name) {
 #if defined(OS_ANDROID)
-  // Android does not support LiveTabContext, as tab persistence
-  // is implemented on the Java side.
+  // Android does not support creating a LiveTabContext here.
+  NOTREACHED();
   return nullptr;
 #else
   return BrowserLiveTabContext::Create(profile_, app_name);
@@ -63,9 +65,8 @@ sessions::LiveTabContext*
 ChromeTabRestoreServiceClient::FindLiveTabContextForTab(
     const sessions::LiveTab* tab) {
 #if defined(OS_ANDROID)
-  // Android does not support LiveTabContext, as tab persistence
-  // is implemented on the Java side.
-  return nullptr;
+  return AndroidLiveTabContext::FindContextForWebContents(
+      static_cast<const sessions::ContentLiveTab*>(tab)->web_contents());
 #else
   return BrowserLiveTabContext::FindContextForWebContents(
       static_cast<const sessions::ContentLiveTab*>(tab)->web_contents());
@@ -76,9 +77,7 @@ sessions::LiveTabContext*
 ChromeTabRestoreServiceClient::FindLiveTabContextWithID(
     SessionID::id_type desired_id) {
 #if defined(OS_ANDROID)
-  // Android does not support LiveTabContext, as tab persistence
-  // is implemented on the Java side.
-  return nullptr;
+  return AndroidLiveTabContext::FindContextWithID(desired_id);;
 #else
   return BrowserLiveTabContext::FindContextWithID(desired_id);
 #endif

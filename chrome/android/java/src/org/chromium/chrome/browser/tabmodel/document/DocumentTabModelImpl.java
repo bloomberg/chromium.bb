@@ -337,4 +337,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     @Override
     public void removeObserver(TabModelObserver observer) {
     }
+
+    @Override
+    public void openMostRecentlyClosedTab() {
+    }
 }

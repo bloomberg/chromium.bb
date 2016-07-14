@@ -98,8 +98,10 @@ using content::WebContents;
 using navigation_interception::InterceptNavigationDelegate;
 using navigation_interception::NavigationParams;
 
-TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
-  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
+TabAndroid* TabAndroid::FromWebContents(
+  const content::WebContents* web_contents) {
+  const CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(
+      web_contents);
   if (!core_tab_helper)
     return NULL;
 

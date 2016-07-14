@@ -188,4 +188,8 @@ public class SingleTabModel implements TabModel {
 
     private static native void nativePermanentlyBlockAllNewWindows(Tab nativeTabAndroid);
 
+    @Override
+    public void openMostRecentlyClosedTab() {
+    }
+
 }

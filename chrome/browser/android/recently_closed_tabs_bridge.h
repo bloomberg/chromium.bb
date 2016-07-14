@@ -35,6 +35,9 @@ class RecentlyClosedTabsBridge : public sessions::TabRestoreServiceObserver {
       const base::android::JavaParamRef<jobject>& jtab,
       jint tab_id,
       jint j_disposition);
+  jboolean OpenMostRecentlyClosedTab(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void ClearRecentlyClosedTabs(JNIEnv* env,
                                const base::android::JavaParamRef<jobject>& obj);
 

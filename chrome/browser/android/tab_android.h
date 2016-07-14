@@ -74,7 +74,7 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // Convenience method to retrieve the Tab associated with the passed
   // WebContents.  Can return NULL.
-  static TabAndroid* FromWebContents(content::WebContents* web_contents);
+  static TabAndroid* FromWebContents(const content::WebContents* web_contents);
 
   // Returns the native TabAndroid stored in the Java Tab represented by
   // |obj|.
@@ -96,6 +96,8 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   // Return specific id information regarding this TabAndroid.
   const SessionID& session_id() const { return session_tab_id_; }
+  const SessionID& window_id() const { return session_window_id_; }
+
   int GetAndroidId() const;
   int GetSyncId() const;
 

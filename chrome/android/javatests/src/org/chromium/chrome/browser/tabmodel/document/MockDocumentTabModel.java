@@ -157,4 +157,8 @@ public class MockDocumentTabModel implements DocumentTabModel {
         Assert.fail();
         return null;
     }
+
+    @Override
+    public void openMostRecentlyClosedTab() {
+    }
 }

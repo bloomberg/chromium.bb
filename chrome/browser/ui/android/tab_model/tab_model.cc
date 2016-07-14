@@ -22,6 +22,7 @@ static int INVALID_TAB_INDEX = -1;
 
 TabModel::TabModel(Profile* profile)
   : profile_(profile),
+    live_tab_context_(new AndroidLiveTabContext(this)),
     synced_window_delegate_(
         new browser_sync::SyncedWindowDelegateAndroid(this)) {
 
@@ -62,6 +63,14 @@ browser_sync::SyncedWindowDelegate* TabModel::GetSyncedWindowDelegate() const {
 
 SessionID::id_type TabModel::GetSessionId() const {
   return session_id_.id();
+}
+
+const SessionID& TabModel::SessionId() const {
+  return session_id_;
+}
+
+sessions::LiveTabContext* TabModel::GetLiveTabContext() const{
+  return live_tab_context_.get();
 }
 
 content::WebContents* TabModel::GetActiveWebContents() const {

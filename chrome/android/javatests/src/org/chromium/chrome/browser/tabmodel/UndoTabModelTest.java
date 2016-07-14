@@ -4,19 +4,31 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.test.suitebuilder.annotation.MediumTest;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.FlakyTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ChromeTabbedActivity2;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtilsTest;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -24,6 +36,8 @@ import java.util.concurrent.TimeoutException;
  */
 public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
     private static final Tab[] EMPTY = new Tab[] { };
+    private static final String TEST_URL_0 = UrlUtils.encodeHtmlDataUri("<html>test_url_0.</html>");
+    private static final String TEST_URL_1 = UrlUtils.encodeHtmlDataUri("<html>test_url_1.</html>");
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -73,6 +87,27 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
                         TabLaunchType.FROM_CHROME_UI, null);
             }
         });
+    }
+
+    private void createFullyLoadedTabOnUiThread(final ChromeTabbedActivity activity,
+            final String url) {
+        final CallbackHelper tabCallbackHelper = new CallbackHelper();
+        final TabLoadedObserver observer = new TabLoadedObserver(tabCallbackHelper);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                activity.getTabCreator(false).createNewTab(new LoadUrlParams(url),
+                        TabLaunchType.FROM_CHROME_UI, null).addObserver(observer);
+            }
+        });
+
+        // Must wait for the page to be fully loaded.
+        try {
+            tabCallbackHelper.waitForCallback(0);
+        } catch (TimeoutException | InterruptedException e) {
+            fail("Failed to load the tab.");
+        }
     }
 
     private void selectTabOnUiThread(final TabModel model, final Tab tab) {
@@ -318,6 +353,44 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
             for (int j = 0; j < tabs.getCount(); j++) {
                 assertFalse(tabs.isClosurePending(tabs.getTabAt(j).getId()));
             }
+        }
+    }
+
+    private void openMostRecentlyClosedTabOnUiThread(final TabModelSelector selector) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                selector.getCurrentModel().openMostRecentlyClosedTab();
+            }
+        });
+    }
+
+    // Helper class that notifies when a page load is finished.
+    private static class TabLoadedObserver extends EmptyTabObserver {
+        private CallbackHelper mLoadedCallback;
+
+        public TabLoadedObserver(CallbackHelper loadCallback) {
+            super();
+            mLoadedCallback = loadCallback;
+        }
+        @Override
+        public void onPageLoadFinished(Tab tab) {
+            mLoadedCallback.notifyCalled();
+        }
+    }
+
+    // Helper class that notifies after the tab is closed, and a tab restore service entry has been
+    // created in tab restore service.
+    private static class TabClosedObserver extends EmptyTabModelObserver {
+        private CallbackHelper mTabClosedCallback;
+
+        public TabClosedObserver(CallbackHelper closedCallback) {
+            mTabClosedCallback = closedCallback;
+        }
+
+        @Override
+        public void didCloseTab(int tabId, boolean incognito) {
+            mTabClosedCallback.notifyCalled();
         }
     }
 
@@ -1409,5 +1482,205 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
         checkState(model, new Tab[] { tab1 }, tab1, EMPTY, fullList, tab1);
         assertTrue(tab0.isClosing());
         assertFalse(tab0.isInitialized());
+    }
+
+    /**
+     * Test opening recently closed tabs using the rewound list in Java.
+     * @throws InterruptedException
+     */
+    @MediumTest
+    public void testOpenRecentlyClosedTab() throws InterruptedException {
+        TabModelSelector selector = getActivity().getTabModelSelector();
+        TabModel model = selector.getModel(false);
+        ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
+
+        createTabOnUiThread(tabCreator);
+
+        Tab tab0 = model.getTabAt(0);
+        Tab tab1 = model.getTabAt(1);
+        Tab[] allTabs = new Tab[]{tab0, tab1};
+
+        closeTabOnUiThread(model, tab1, true);
+        checkState(model, new Tab[]{tab0}, tab0, new Tab[]{tab1}, allTabs, tab0);
+
+        // Ensure tab recovery, and reuse of {@link Tab} objects in Java.
+        openMostRecentlyClosedTabOnUiThread(selector);
+        checkState(model, allTabs, tab0, EMPTY, allTabs, tab0);
+    }
+
+    /**
+     * Test opening recently closed tab using native tab restore service.
+     * @throws InterruptedException
+     */
+    @MediumTest
+    public void testOpenRecentlyClosedTabNative() throws InterruptedException {
+        final TabModelSelector selector = getActivity().getTabModelSelector();
+        final TabModel model = selector.getModel(false);
+
+        // Create new tab and attach observer to listen to loaded event.
+        // Native can only successfully recover the tab after a page load has finished and
+        // it has navigation history.
+        createFullyLoadedTabOnUiThread(getActivity(), TEST_URL_0);
+
+        // Close the tab, and commit pending closure.
+        assertEquals(model.getCount(), 2);
+        closeTabOnUiThread(model, model.getTabAt(1), false);
+        assertEquals(1, model.getCount());
+        Tab tab0 = model.getTabAt(0);
+        Tab[] tabs = new Tab[]{tab0};
+        checkState(model, tabs, tab0, EMPTY, tabs, tab0);
+
+        // Recover the page.
+        openMostRecentlyClosedTabOnUiThread(selector);
+
+        assertEquals(2, model.getCount());
+        tab0 = model.getTabAt(0);
+        Tab tab1 = model.getTabAt(1);
+        tabs = new Tab[]{tab0, tab1};
+        assertEquals(TEST_URL_0, tab1.getUrl());
+        checkState(model, tabs, tab0, EMPTY, tabs, tab0);
+    }
+
+    /**
+     * Test opening recently closed tab when we have multiple windows.
+     * |  Action                    |   Result
+     * 1. Create second window.     |
+     * 2. Open tab in window 1.     |
+     * 3. Open tab in window 2.     |
+     * 4. Close tab in window 1.    |
+     * 5. Close tab in window 2.    |
+     * 6. Restore tab.              | Tab restored in window 2.
+     * 7. Restore tab.              | Tab restored in window 1.
+     * @throws InterruptedException
+     */
+    @MediumTest
+    @MinAndroidSdkLevel(24)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testOpenRecentlyClosedTabMultiWindow() throws InterruptedException {
+        final ChromeTabbedActivity2 secondActivity =
+                MultiWindowUtilsTest.createSecondChromeTabbedActivity(getActivity());
+
+        // Wait for the second window to be fully initialized.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return secondActivity.getTabModelSelector().isTabStateInitialized();
+            }
+        });
+        // First window context.
+        final TabModelSelector firstSelector = getActivity().getTabModelSelector();
+        final TabModel firstModel = firstSelector.getModel(false);
+
+        // Second window context.
+        final TabModel secondModel = secondActivity.getTabModelSelector().getModel(false);
+
+        // Create tabs.
+        createFullyLoadedTabOnUiThread(getActivity(), TEST_URL_0);
+        createFullyLoadedTabOnUiThread(secondActivity, TEST_URL_1);
+
+        assertEquals("Unexpected number of tabs in first window.", 2, firstModel.getCount());
+        assertEquals("Unexpected number of tabs in second window.", 2, secondModel.getCount());
+
+        // Close one tab in the first window.
+        closeTabOnUiThread(firstModel, firstModel.getTabAt(1), false);
+        assertEquals("Unexpected number of tabs in first window.", 1, firstModel.getCount());
+        assertEquals("Unexpected number of tabs in second window.", 2, secondModel.getCount());
+
+        // Close one tab in the second window.
+        closeTabOnUiThread(secondModel, secondModel.getTabAt(1), false);
+        assertEquals("Unexpected number of tabs in first window.", 1, firstModel.getCount());
+        assertEquals("Unexpected number of tabs in second window.", 1, secondModel.getCount());
+
+        // Restore one tab.
+        openMostRecentlyClosedTabOnUiThread(firstSelector);
+        assertEquals("Unexpected number of tabs in first window.", 1, firstModel.getCount());
+        assertEquals("Unexpected number of tabs in second window.", 2, secondModel.getCount());
+
+        // Restore one more tab.
+        openMostRecentlyClosedTabOnUiThread(firstSelector);
+
+        // Check final states of both windows.
+        Tab firstModelTab = firstModel.getTabAt(0);
+        Tab secondModelTab = secondModel.getTabAt(0);
+        Tab[] firstWindowTabs = new Tab[]{firstModelTab, firstModel.getTabAt(1)};
+        Tab[] secondWindowTabs = new Tab[]{secondModelTab, secondModel.getTabAt(1)};
+        checkState(firstModel, firstWindowTabs, firstModelTab, EMPTY, firstWindowTabs,
+                firstModelTab);
+        checkState(secondModel, secondWindowTabs, secondModelTab, EMPTY, secondWindowTabs,
+                secondModelTab);
+        assertEquals(TEST_URL_0, firstWindowTabs[1].getUrl());
+        assertEquals(TEST_URL_1, secondWindowTabs[1].getUrl());
+
+        secondActivity.finishAndRemoveTask();
+    }
+
+    /**
+     * Test restoring closed tab from a closed window.
+     * |  Action                    |   Result
+     * 1. Create second window.     |
+     * 2. Open tab in window 2.     |
+     * 3. Close tab in window 2.    |
+     * 4. Close second window.      |
+     * 5. Restore tab.              | Tab restored in first window.
+     * @throws InterruptedException
+     */
+    @MediumTest
+    @MinAndroidSdkLevel(24)
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    public void testOpenRecentlyClosedTabMultiWindowFallback() throws InterruptedException {
+        final ChromeTabbedActivity2 secondActivity =
+                MultiWindowUtilsTest.createSecondChromeTabbedActivity(getActivity());
+        // Wait for the second window to be fully initialized.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return secondActivity.getTabModelSelector().isTabStateInitialized();
+            }
+        });
+
+        // First window context.
+        final TabModelSelector firstSelector = getActivity().getTabModelSelector();
+        final TabModel firstModel = firstSelector.getModel(false);
+
+        // Second window context.
+        final TabModel secondModel = secondActivity.getTabModelSelector().getModel(false);
+
+        // Create tab on second window.
+        createFullyLoadedTabOnUiThread(secondActivity, TEST_URL_1);
+        assertEquals("Window 2 should have 2 tab.", 2, secondModel.getCount());
+
+        // Close tab in second window, wait until tab restore service history is created.
+        CallbackHelper closedCallback = new CallbackHelper();
+        secondModel.addObserver(new TabClosedObserver(closedCallback));
+        closeTabOnUiThread(secondModel, secondModel.getTabAt(1), false);
+
+        try {
+            closedCallback.waitForCallback(0);
+        } catch (TimeoutException | InterruptedException e) {
+            fail("Failed to close the tab on the second window.");
+        }
+
+        assertEquals("Window 2 should have 1 tab.", 1, secondModel.getCount());
+
+        // Closed the second window. Must wait until it's totally closed.
+        int numExpectedActivities = ApplicationStatus.getRunningActivities().size() - 1;
+        secondActivity.finishAndRemoveTask();
+        CriteriaHelper.pollUiThread(Criteria.equals(numExpectedActivities, new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return ApplicationStatus.getRunningActivities().size();
+            }
+        }));
+        assertEquals("Window 1 should have 1 tab.", 1, firstModel.getCount());
+
+        // Restore closed tab from second window. It should be created in first window.
+        openMostRecentlyClosedTabOnUiThread(firstSelector);
+        assertEquals("Closed tab in second window should be restored in the first window.", 2,
+                firstModel.getCount());
+        Tab tab0 = firstModel.getTabAt(0);
+        Tab tab1 = firstModel.getTabAt(1);
+        Tab[] firstWindowTabs = new Tab[]{tab0, tab1};
+        checkState(firstModel, firstWindowTabs, tab0, EMPTY, firstWindowTabs, tab0);
+        assertEquals(TEST_URL_1, tab1.getUrl());
     }
 }

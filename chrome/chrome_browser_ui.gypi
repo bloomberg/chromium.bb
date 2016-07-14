@@ -468,6 +468,8 @@
       'browser/ui/android/ssl_client_certificate_request.h',
       'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.cc',
       'browser/ui/android/tab_contents/chrome_web_contents_view_delegate_android.h',
+      'browser/ui/android/tab_model/android_live_tab_context.cc',
+      'browser/ui/android/tab_model/android_live_tab_context.h',
       'browser/ui/android/tab_model/single_tab_model.cc',
       'browser/ui/android/tab_model/single_tab_model.h',
       'browser/ui/android/tab_model/tab_model.cc',

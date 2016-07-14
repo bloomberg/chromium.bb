@@ -123,6 +123,9 @@ public class KeyboardShortcuts {
         int keyCodeAndMeta = keyCode | metaState;
 
         switch (keyCodeAndMeta) {
+            case CTRL | SHIFT | KeyEvent.KEYCODE_T:
+                activity.onMenuOrKeyboardAction(R.id.open_recently_closed_tab, false);
+                return true;
             case CTRL | KeyEvent.KEYCODE_T:
                 activity.onMenuOrKeyboardAction(curModel.isIncognito()
                         ? R.id.new_incognito_tab_menu_id
