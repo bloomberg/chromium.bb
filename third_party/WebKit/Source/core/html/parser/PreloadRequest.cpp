@@ -47,6 +47,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     request.setResourceWidth(m_resourceWidth);
     request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);
     request.setIntegrityMetadata(m_integrityMetadata);
+    request.setContentSecurityPolicyNonce(m_nonce);
 
     if (m_requestType == RequestTypeLinkRelPreload)
         request.setLinkPreload(true);

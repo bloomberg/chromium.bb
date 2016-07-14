@@ -46,6 +46,10 @@ public:
     {
         return m_crossOrigin;
     }
+
+    void setNonce(const String& nonce) { m_nonce = nonce.isolatedCopy(); }
+    const String& nonce() const { return m_nonce; }
+
     Resource::Type resourceType() const { return m_resourceType; }
 
     const String& resourceURL() const { return m_resourceURL; }
@@ -97,6 +101,7 @@ private:
     String m_charset;
     Resource::Type m_resourceType;
     CrossOriginAttributeValue m_crossOrigin;
+    String m_nonce;
     double m_discoveryTime;
     FetchRequest::DeferOption m_defer;
     FetchRequest::ResourceWidth m_resourceWidth;

@@ -44,6 +44,12 @@ struct ReferrerPolicyTestCase {
     ReferrerPolicy referrerPolicy;
 };
 
+struct NonceTestCase {
+    const char* baseURL;
+    const char* inputHTML;
+    const char* nonce;
+};
+
 class MockHTMLResourcePreloader : public ResourcePreloader {
 public:
     void preloadRequestVerification(Resource::Type type, const char* url, const char* baseURL, int width, const ClientHintsPreferences& preferences)
@@ -78,6 +84,15 @@ public:
             EXPECT_STREQ(m_preloadRequest->resourceURL().ascii().data(), host.ascii().data());
             EXPECT_EQ(m_preloadRequest->crossOrigin(), crossOrigin);
         }
+    }
+
+    void nonceRequestVerification(const char* nonce)
+    {
+        ASSERT_TRUE(m_preloadRequest.get());
+        if (strlen(nonce))
+            EXPECT_EQ(nonce, m_preloadRequest->nonce());
+        else
+            EXPECT_TRUE(m_preloadRequest->nonce().isEmpty());
     }
 
 protected:
@@ -169,6 +184,16 @@ protected:
         m_scanner->scanAndPreload(&preloader, baseURL, nullptr);
 
         preloader.preloadRequestVerification(testCase.type, testCase.preloadedURL, testCase.outputBaseURL, testCase.resourceWidth, testCase.referrerPolicy);
+    }
+
+    void test(NonceTestCase testCase)
+    {
+        MockHTMLResourcePreloader preloader;
+        KURL baseURL(ParsedURLString, testCase.baseURL);
+        m_scanner->appendToEnd(String(testCase.inputHTML));
+        m_scanner->scanAndPreload(&preloader, baseURL, nullptr);
+
+        preloader.nonceRequestVerification(testCase.nonce);
     }
 
 private:
@@ -372,6 +397,31 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy)
 
     for (const auto& testCase : testCases)
         test(testCase);
+}
+
+TEST_F(HTMLPreloadScannerTest, testNonce)
+{
+    NonceTestCase testCases[] = {
+        { "http://example.test", "<script src='/script'></script>", "" },
+        { "http://example.test", "<script src='/script' nonce=''></script>", "" },
+        { "http://example.test", "<script src='/script' nonce='abc'></script>", "abc" },
+        { "http://example.test", "<link rel='import' href='/import'>", "" },
+        { "http://example.test", "<link rel='import' href='/import' nonce=''>", "" },
+        { "http://example.test", "<link rel='import' href='/import' nonce='abc'>", "abc" },
+        { "http://example.test", "<link rel='stylesheet' href='/style'>", "" },
+        { "http://example.test", "<link rel='stylesheet' href='/style' nonce=''>", "" },
+        { "http://example.test", "<link rel='stylesheet' href='/style' nonce='abc'>", "abc" },
+
+        // <img> doesn't support nonces:
+        { "http://example.test", "<img src='/image'>", "" },
+        { "http://example.test", "<img src='/image' nonce=''>", "" },
+        { "http://example.test", "<img src='/image' nonce='abc'>", "" },
+    };
+
+    for (const auto& testCase : testCases) {
+        SCOPED_TRACE(testCase.inputHTML);
+        test(testCase);
+    }
 }
 
 // Tests that a document-level referrer policy (e.g. one set by HTTP
