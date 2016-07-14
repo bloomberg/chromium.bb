@@ -2670,10 +2670,9 @@ void EventSender::FinishDragAndDrop(const WebMouseEvent& unscaled_event,
   } else {
     view()->dragTargetDragLeave();
   }
+  current_drag_data_.reset();
   view()->dragSourceEndedAt(client_point, screen_point, current_drag_effect_);
   view()->dragSourceSystemDragEnded();
-
-  current_drag_data_.reset();
 }
 
 void EventSender::DoDragAfterMouseUp(const WebMouseEvent& unscaled_event) {
