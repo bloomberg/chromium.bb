@@ -163,6 +163,7 @@
     boolean hasGrammarMarker(Document document, long from, long length);
     void setContinuousSpellCheckingEnabled(boolean enabled);
 
+    bool canHyphenate(DOMString locale);
     void setMockHyphenation(DOMString locale);
 
     boolean isOverwriteModeEnabled(Document document);

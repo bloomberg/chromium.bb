@@ -18582,6 +18582,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The type of Vary header for a given GET response.</summary>
 </histogram>
 
+<histogram name="Hyphenation.Open" units="ms">
+  <owner>kojii@chromium.org</owner>
+  <summary>The time it takes to open a hyphenation dictionary.</summary>
+</histogram>
+
 <histogram name="Import.ImporterType.AutoImport" enum="ImporterType">
   <owner>gab@chromium.org</owner>
   <summary>The importer used on first run Auto Import.</summary>

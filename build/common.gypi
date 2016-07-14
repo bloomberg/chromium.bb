@@ -571,6 +571,9 @@
       # SpellCheckerSession on Android.
       'use_browser_spellchecker%': 0,
 
+      # Use Minikin hyphenation engine.
+      'use_minikin_hyphenation%': 0,
+
       # Webrtc compilation is enabled by default. Set to 0 to disable.
       'enable_webrtc%': 1,
 
@@ -826,6 +829,11 @@
         # Android and OSX have built-in spellcheckers that can be utilized.
         ['OS=="android" or OS=="mac"', {
           'use_browser_spellchecker%': 1,
+        }],
+
+        # Android has hyphenation dictionaries for Minikin to use.
+        ['OS=="android"', {
+          'use_minikin_hyphenation%': 1,
         }],
 
         # Enables proprietary codecs and demuxers; e.g. H264, AAC, MP3, and MP4.
@@ -1221,6 +1229,7 @@
     'enable_print_preview%': '<(enable_print_preview)',
     'enable_spellcheck%': '<(enable_spellcheck)',
     'use_browser_spellchecker%': '<(use_browser_spellchecker)',
+    'use_minikin_hyphenation%': '<(use_minikin_hyphenation)',
     'cld2_table_size%': '<(cld2_table_size)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_file_support%': '<(disable_file_support)',
@@ -2932,6 +2941,9 @@
       }],
       ['use_browser_spellchecker', {
         'defines': ['USE_BROWSER_SPELLCHECKER=1'],
+      }],
+      ['use_minikin_hyphenation', {
+        'defines': ['USE_MINIKIN_HYPHENATION=1'],
       }],
       ['enable_captive_portal_detection==1', {
         'defines': ['ENABLE_CAPTIVE_PORTAL_DETECTION=1'],

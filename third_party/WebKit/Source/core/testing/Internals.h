@@ -212,6 +212,7 @@ public:
     bool hasGrammarMarker(Document*, int from, int length);
     void setContinuousSpellCheckingEnabled(bool);
 
+    bool canHyphenate(const AtomicString& locale);
     void setMockHyphenation(const AtomicString& locale);
 
     bool isOverwriteModeEnabled(Document*);

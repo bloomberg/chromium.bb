@@ -1036,7 +1036,6 @@
       'text/UnicodeRange.h',
       'text/UnicodeUtilities.cpp',
       'text/UnicodeUtilities.h',
-      'text/android/HyphenationAndroid.cpp',
       'text/linux/HyphenationLinux.cpp',
       'text/mac/HyphenationMac.cpp',
       'text/win/HyphenationWin.cpp',

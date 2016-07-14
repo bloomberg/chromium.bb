@@ -508,6 +508,14 @@ source_set("browser") {
   if (enable_ipc_fuzzer) {
     configs += [ "//tools/ipc_fuzzer:ipc_fuzzer_config" ]
   }
+
+  if (use_minikin_hyphenation) {
+    sources += [
+      "hyphenation/hyphenation_impl.cc",
+      "hyphenation/hyphenation_impl.h",
+    ]
+    defines += [ "USE_MINIKIN_HYPHENATION=1" ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

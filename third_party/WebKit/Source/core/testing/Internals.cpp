@@ -1557,6 +1557,11 @@ void Internals::setContinuousSpellCheckingEnabled(bool enabled)
         contextDocument()->frame()->spellChecker().toggleContinuousSpellChecking();
 }
 
+bool Internals::canHyphenate(const AtomicString& locale)
+{
+    return Hyphenation::get(locale);
+}
+
 void Internals::setMockHyphenation(const AtomicString& locale)
 {
     Hyphenation::setForTesting(locale, adoptRef(new MockHyphenation));

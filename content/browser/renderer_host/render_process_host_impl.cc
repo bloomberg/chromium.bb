@@ -236,6 +236,10 @@
 #include "services/ui/common/switches.h"  // nogncheck
 #endif
 
+#if defined(USE_MINIKIN_HYPHENATION)
+#include "content/browser/hyphenation/hyphenation_impl.h"
+#endif
+
 #if defined(OS_WIN)
 #define IntToStringType base::IntToString16
 #else
@@ -1083,9 +1087,15 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
                  base::Unretained(
                      storage_partition_impl_->GetBroadcastChannelProvider())));
 
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner =
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE);
   GetInterfaceRegistry()->AddInterface(
-      base::Bind(&MimeRegistryImpl::Create),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+      base::Bind(&MimeRegistryImpl::Create), file_task_runner);
+
+#if defined(USE_MINIKIN_HYPHENATION)
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&hyphenation::HyphenationImpl::Create), file_task_runner);
+#endif
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);

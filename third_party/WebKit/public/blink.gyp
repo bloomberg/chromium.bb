@@ -38,6 +38,7 @@
             'platform/modules/background_sync/background_sync.mojom',
             'platform/modules/bluetooth/web_bluetooth.mojom',
             'platform/modules/geolocation/geolocation.mojom',
+            'platform/modules/hyphenation/hyphenation.mojom',
             'platform/modules/notifications/notification.mojom',
             'platform/modules/notifications/notification_service.mojom',
             'platform/modules/offscreencanvas/offscreen_canvas_surface.mojom',

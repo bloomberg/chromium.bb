@@ -128,6 +128,9 @@ enable_spellcheck = !is_ios
 # Use the operating system's spellchecker rather than hunspell.
 use_browser_spellchecker = is_android || is_mac
 
+# Use Minikin hyphenation engine.
+use_minikin_hyphenation = is_android
+
 # Enables the use of CDMs in pepper plugins.
 enable_pepper_cdms =
     enable_plugins && (is_linux || is_mac || is_win) && !is_chromecast
