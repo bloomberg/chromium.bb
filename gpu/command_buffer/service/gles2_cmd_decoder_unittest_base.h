@@ -348,6 +348,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
       GLenum target, GLenum attachment, GLenum tex_target,
       GLuint texture_client_id, GLuint texture_service_id,
       GLint level, GLenum error);
+  GLenum DoCheckFramebufferStatus(GLenum target);
   void DoVertexAttribPointer(
       GLuint index, GLint size, GLenum type, GLsizei stride, GLuint offset);
   void DoVertexAttribDivisorANGLE(GLuint index, GLuint divisor);

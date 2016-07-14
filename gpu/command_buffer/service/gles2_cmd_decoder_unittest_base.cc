@@ -551,7 +551,7 @@ void GLES2DecoderTestBase::ResetDecoder() {
           .Times(1)
           .RetiresOnSaturation();
     }
-    if (group_->feature_info()->IsES3Capable()) {
+    if (group_->feature_info()->IsES3Enabled()) {
       // fake default transform feedback.
       EXPECT_CALL(*gl_, DeleteTransformFeedbacks(1, _))
           .Times(1)
@@ -1397,6 +1397,16 @@ void GLES2DecoderTestBase::DoFramebufferRenderbuffer(
   cmds::FramebufferRenderbuffer cmd;
   cmd.Init(target, attachment, renderbuffer_target, renderbuffer_client_id);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+GLenum GLES2DecoderTestBase::DoCheckFramebufferStatus(GLenum target) {
+  auto* result = static_cast<cmds::CheckFramebufferStatus::Result*>(
+      shared_memory_address_);
+  *result = 0;
+  cmds::CheckFramebufferStatus cmd;
+  cmd.Init(GL_FRAMEBUFFER, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  return *result;
 }
 
 void GLES2DecoderTestBase::DoVertexAttribPointer(

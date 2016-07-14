@@ -12667,9 +12667,22 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
   }
 
   uint32_t pixels_size = 0;
-  GLenum format = TextureManager::ExtractFormatFromStorageFormat(
-      internal_format);
+  // TODO(piman): OpenGL ES 3.0.4 Section 3.8.5 specifies how to pick an
+  // effective internal format if internal_format is unsized, which is a fairly
+  // involved logic. For now, just make sure we pick something valid.
+  GLenum format =
+      TextureManager::ExtractFormatFromStorageFormat(internal_format);
   GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
+  if (!format || !type) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        func_name, "Invalid unsized internal format.");
+    return;
+  }
+
+  DCHECK(texture_manager()->ValidateTextureParameters(
+      GetErrorState(), func_name, true, format, type, internal_format, level));
+
   // Only target image size is validated here.
   if (!GLES2Util::ComputeImageDataSizes(
       width, height, 1, format, type,
