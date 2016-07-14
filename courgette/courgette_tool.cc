@@ -57,20 +57,14 @@ void Problem(const char* format, ...) {
 class BufferedFileReader {
  public:
   BufferedFileReader(const base::FilePath& file_name, const char* kind) {
-    int64_t file_size = 0;
-    if (!base::GetFileSize(file_name, &file_size))
-      Problem("Can't read %s file.", kind);
-    buffer_.reserve(static_cast<size_t>(file_size));
-    if (!base::ReadFileToString(file_name, &buffer_))
+    if (!buffer_.Initialize(file_name))
       Problem("Can't read %s file.", kind);
   }
-  const uint8_t* data() {
-    return reinterpret_cast<const uint8_t*>(buffer_.data());
-  }
-  size_t length() { return buffer_.length(); }
+  const uint8_t* data() const { return buffer_.data(); }
+  size_t length() const { return buffer_.length(); }
 
  private:
-  std::string buffer_;
+  base::MemoryMappedFile buffer_;
 };
 
 void WriteSinkToFile(const courgette::SinkStream *sink,
