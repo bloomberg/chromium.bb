@@ -48,6 +48,14 @@ Occlusion OcclusionTracker::GetCurrentOcclusionForContributingSurface(
                    second_last.occlusion_from_inside_target);
 }
 
+const RenderSurfaceImpl*
+OcclusionTracker::OcclusionSurfaceForContributingSurface() const {
+  // A contributing surface doesn't get occluded by things inside its own
+  // surface, so only things outside the surface can occlude it. That occlusion
+  // is found just below the top of the stack (if it exists).
+  return (stack_.size() < 2) ? nullptr : stack_[stack_.size() - 2].target;
+}
+
 void OcclusionTracker::EnterLayer(const LayerIteratorPosition& layer_iterator) {
   LayerImpl* render_target = layer_iterator.target_render_surface_layer;
 

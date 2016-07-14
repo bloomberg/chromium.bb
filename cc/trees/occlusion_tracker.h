@@ -40,6 +40,7 @@ class CC_EXPORT OcclusionTracker {
   Occlusion GetCurrentOcclusionForContributingSurface(
       const gfx::Transform& draw_transform) const;
 
+  const RenderSurfaceImpl* OcclusionSurfaceForContributingSurface() const;
   // Called at the beginning of each step in the LayerIterator's front-to-back
   // traversal.
   void EnterLayer(const LayerIteratorPosition& layer_iterator);

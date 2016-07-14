@@ -28,6 +28,13 @@ class PropertyTrees;
 
 namespace draw_property_utils {
 
+void CC_EXPORT PostConcatSublayerScale(const int effect_node_id,
+                                       const EffectTree& effect_tree,
+                                       gfx::Transform* transform);
+
+void CC_EXPORT ConcatInverseSublayerScale(const int effect_node_id,
+                                          const EffectTree& effect_tree,
+                                          gfx::Transform* transform);
 // Computes combined clips for every node in |clip_tree|. This function requires
 // that |transform_tree| has been updated via |ComputeTransforms|.
 void CC_EXPORT ComputeClips(ClipTree* clip_tree,

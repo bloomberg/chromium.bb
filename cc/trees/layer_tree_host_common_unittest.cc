@@ -25,6 +25,7 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_iterator.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/layers/texture_layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/proto/begin_main_frame_and_commit_state.pb.h"
@@ -3683,6 +3684,93 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(), grand_child->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
+  FakeImplTaskRunnerProvider task_runner_provider;
+  TestSharedBitmapManager shared_bitmap_manager;
+  TestTaskGraphRunner task_graph_runner;
+  std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
+  FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
+                                  &task_graph_runner);
+
+  std::unique_ptr<LayerImpl> root =
+      LayerImpl::Create(host_impl.active_tree(), 1);
+  std::unique_ptr<LayerImpl> child =
+      LayerImpl::Create(host_impl.active_tree(), 2);
+  std::unique_ptr<TextureLayerImpl> surface =
+      TextureLayerImpl::Create(host_impl.active_tree(), 3);
+  std::unique_ptr<TextureLayerImpl> surface_child =
+      TextureLayerImpl::Create(host_impl.active_tree(), 4);
+  std::unique_ptr<TextureLayerImpl> surface_sibling =
+      TextureLayerImpl::Create(host_impl.active_tree(), 5);
+  std::unique_ptr<TextureLayerImpl> surface_child_mask =
+      TextureLayerImpl::Create(host_impl.active_tree(), 6);
+
+  surface->SetDrawsContent(true);
+  surface_child->SetDrawsContent(true);
+  surface_sibling->SetDrawsContent(true);
+  surface_child_mask->SetDrawsContent(true);
+  surface->SetContentsOpaque(true);
+  surface_child->SetContentsOpaque(true);
+  surface_sibling->SetContentsOpaque(true);
+  surface_child_mask->SetContentsOpaque(true);
+
+  surface->test_properties()->opacity = 0.5f;
+  surface_child->test_properties()->opacity = 0.6f;
+
+  gfx::Transform identity_matrix;
+  gfx::Transform translate;
+  translate.Translate(20.f, 20.f);
+
+  SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(1000, 1000), true,
+                               false, true);
+  SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(300, 300), false, true,
+                               false);
+  SetLayerPropertiesForTesting(surface.get(), translate, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(300, 300), false, true,
+                               true);
+  SetLayerPropertiesForTesting(surface_child.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(300, 300), false, false, true);
+  SetLayerPropertiesForTesting(surface_sibling.get(), identity_matrix,
+                               gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(200, 200), false, false, false);
+
+  LayerImpl* surface_ptr = surface.get();
+  LayerImpl* surface_child_ptr = surface_child.get();
+  LayerImpl* surface_child_mask_ptr = surface_child_mask.get();
+
+  host_impl.SetViewportSize(root->bounds());
+
+  surface_child->test_properties()->SetMaskLayer(std::move(surface_child_mask));
+  surface->test_properties()->AddChild(std::move(surface_child));
+  child->test_properties()->AddChild(std::move(surface));
+  child->test_properties()->AddChild(std::move(surface_sibling));
+  root->test_properties()->AddChild(std::move(child));
+  host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
+  host_impl.SetVisible(true);
+  host_impl.InitializeRenderer(output_surface.get());
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  bool update_lcd_text = false;
+  host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
+
+  EXPECT_TRANSFORMATION_MATRIX_EQ(
+      surface_ptr->render_surface()->draw_transform(), translate);
+  // surface_sibling draws into the root render surface and occludes
+  // surface_child's contents.
+  Occlusion actual_occlusion =
+      surface_child_ptr->render_surface()->occlusion_in_content_space();
+  Occlusion expected_occlusion(translate, SimpleEnclosedRegion(gfx::Rect()),
+                               SimpleEnclosedRegion(gfx::Rect(200, 200)));
+  EXPECT_TRUE(expected_occlusion.IsEqual(actual_occlusion));
+
+  // Mask layer should have the same occlusion.
+  actual_occlusion =
+      surface_child_mask_ptr->draw_properties().occlusion_in_content_space;
+  EXPECT_TRUE(expected_occlusion.IsEqual(actual_occlusion));
+}
+
 TEST_F(LayerTreeHostCommonTest,
        OcclusionForLayerWithUninvertibleDrawTransform) {
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -3691,6 +3779,7 @@ TEST_F(LayerTreeHostCommonTest,
   std::unique_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &shared_bitmap_manager,
                                   &task_graph_runner);
+
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl.active_tree(), 1);
   std::unique_ptr<LayerImpl> child =

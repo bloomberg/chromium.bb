@@ -958,9 +958,30 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
       if (it.represents_contributing_render_surface()) {
         // Surfaces aren't used by the tile raster code, so they can have
         // occlusion regardless of replicas.
+        const RenderSurfaceImpl* occlusion_surface =
+            occlusion_tracker.OcclusionSurfaceForContributingSurface();
+        gfx::Transform draw_transform;
+        if (occlusion_surface) {
+          // We are calculating transform between two render surfaces. So, we
+          // need to apply the sublayer scale at target and remove the sublayer
+          // scale at source.
+          property_trees()->transform_tree.ComputeTransform(
+              it->render_surface()->TransformTreeIndex(),
+              occlusion_surface->TransformTreeIndex(), &draw_transform);
+          // We don't have to apply sublayer scale when target is root.
+          if (occlusion_surface->TransformTreeIndex() != 0) {
+            draw_property_utils::PostConcatSublayerScale(
+                occlusion_surface->EffectTreeIndex(),
+                property_trees()->effect_tree, &draw_transform);
+          }
+          draw_property_utils::ConcatInverseSublayerScale(
+              it->render_surface()->EffectTreeIndex(),
+              property_trees()->effect_tree, &draw_transform);
+        }
+
         Occlusion occlusion =
             occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-                it->render_surface()->draw_transform());
+                draw_transform);
         it->render_surface()->set_occlusion_in_content_space(occlusion);
         // Masks are used to draw the contributing surface, so should have
         // the same occlusion as the surface (nothing inside the surface
@@ -970,8 +991,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
               inside_replica
                   ? Occlusion()
                   : occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-                        it->render_surface()->draw_transform() *
-                        it->DrawTransform());
+                        draw_transform * it->DrawTransform());
           mask->draw_properties().occlusion_in_content_space = mask_occlusion;
         }
         if (LayerImpl* replica_mask =

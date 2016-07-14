@@ -54,21 +54,6 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
   DCHECK(effect_node->background_filters.IsEmpty());
 }
 
-#endif
-
-static void ApplySublayerScale(const int effect_node_id,
-                               const EffectTree& effect_tree,
-                               gfx::Transform* transform) {
-  const EffectNode* effect_node = effect_tree.Node(effect_node_id);
-  const EffectNode* target_effect_node =
-      effect_node->has_render_surface
-          ? effect_node
-          : effect_tree.Node(effect_node->target_id);
-  transform->matrix().postScale(target_effect_node->sublayer_scale.x(),
-                                target_effect_node->sublayer_scale.y(), 1.f);
-}
-
-#if DCHECK_IS_ON()
 void VerifySublayerScalesMatch(const int effect_node_id,
                                const int target_transform_id,
                                const EffectTree& effect_tree,
@@ -108,8 +93,8 @@ bool ComputeClipRectInTargetSpace(const LayerType* layer,
                                         target_node_id, &clip_to_target)) {
       // We don't have to apply sublayer scale when target is root.
       if (target_node_id != 0) {
-        ApplySublayerScale(layer->effect_tree_index(), effect_tree,
-                           &clip_to_target);
+        PostConcatSublayerScale(layer->effect_tree_index(), effect_tree,
+                                &clip_to_target);
 #if DCHECK_IS_ON()
         VerifySublayerScalesMatch(layer->effect_tree_index(), target_node_id,
                                   effect_tree, transform_tree);
@@ -177,7 +162,7 @@ static ConditionalClip ComputeLocalRectInTargetSpace(
     return ConditionalClip{false, gfx::RectF()};
   // We don't have to apply sublayer scale when target is root.
   if (target_transform_id != 0) {
-    ApplySublayerScale(target_effect_id, effect_tree, &current_to_target);
+    PostConcatSublayerScale(target_effect_id, effect_tree, &current_to_target);
 #if DCHECK_IS_ON()
     VerifySublayerScalesMatch(target_effect_id, target_transform_id,
                               effect_tree, transform_tree);
@@ -715,6 +700,30 @@ static void ResetIfHasNanCoordinate(gfx::RectF* rect) {
     *rect = gfx::RectF();
 }
 
+void PostConcatSublayerScale(const int effect_node_id,
+                             const EffectTree& effect_tree,
+                             gfx::Transform* transform) {
+  // TODO(jaydasika): This function should not compute target effect node id. It
+  // should receive it from callers.
+  const EffectNode* effect_node = effect_tree.Node(effect_node_id);
+  const EffectNode* target_effect_node =
+      effect_node->has_render_surface
+          ? effect_node
+          : effect_tree.Node(effect_node->target_id);
+  transform->matrix().postScale(target_effect_node->sublayer_scale.x(),
+                                target_effect_node->sublayer_scale.y(), 1.f);
+}
+
+void ConcatInverseSublayerScale(const int effect_node_id,
+                                const EffectTree& effect_tree,
+                                gfx::Transform* transform) {
+  const EffectNode* effect_node = effect_tree.Node(effect_node_id);
+  if (effect_node->sublayer_scale.x() != 0.0 &&
+      effect_node->sublayer_scale.y() != 0.0)
+    transform->Scale(1.0 / effect_node->sublayer_scale.x(),
+                     1.0 / effect_node->sublayer_scale.y());
+}
+
 void ComputeClips(ClipTree* clip_tree,
                   const TransformTree& transform_tree,
                   const EffectTree& effect_tree,
@@ -761,8 +770,8 @@ void ComputeClips(ClipTree* clip_tree,
           &parent_to_current);
       // We don't have to apply sublayer scale when target is root.
       if (clip_node->target_transform_id != 0) {
-        ApplySublayerScale(clip_node->target_effect_id, effect_tree,
-                           &parent_to_current);
+        PostConcatSublayerScale(clip_node->target_effect_id, effect_tree,
+                                &parent_to_current);
 #if DCHECK_IS_ON()
         VerifySublayerScalesMatch(clip_node->target_effect_id,
                                   clip_node->target_transform_id, effect_tree,
@@ -835,8 +844,8 @@ void ComputeClips(ClipTree* clip_tree,
             &source_to_target);
         // We don't have to apply sublayer scale when target is root.
         if (clip_node->target_transform_id != 0) {
-          ApplySublayerScale(clip_node->target_effect_id, effect_tree,
-                             &source_to_target);
+          PostConcatSublayerScale(clip_node->target_effect_id, effect_tree,
+                                  &source_to_target);
 #if DCHECK_IS_ON()
           VerifySublayerScalesMatch(clip_node->target_effect_id,
                                     clip_node->target_transform_id, effect_tree,
@@ -997,8 +1006,8 @@ static void VerifyDrawTransformsMatch(LayerImpl* layer,
                                                   &draw_transform);
   // We don't have to apply sublayer scale when target is root.
   if (destination_id != 0) {
-    ApplySublayerScale(layer->effect_tree_index(), property_trees->effect_tree,
-                       &draw_transform);
+    PostConcatSublayerScale(layer->effect_tree_index(),
+                            property_trees->effect_tree, &draw_transform);
 #if DCHECK_IS_ON()
     VerifySublayerScalesMatch(layer->effect_tree_index(), destination_id,
                               property_trees->effect_tree,
@@ -1194,8 +1203,8 @@ static void SetSurfaceDrawTransform(const TransformTree& transform_tree,
                                   &render_surface_transform);
   // We don't have to apply sublayer scale when target is root.
   if (target_transform_node->id != 0) {
-    ApplySublayerScale(effect_node->target_id, effect_tree,
-                       &render_surface_transform);
+    PostConcatSublayerScale(effect_node->target_id, effect_tree,
+                            &render_surface_transform);
 #if DCHECK_IS_ON()
     VerifySublayerScalesMatch(effect_node->target_id, target_transform_node->id,
                               effect_tree, transform_tree);
@@ -1252,8 +1261,8 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
 
   // We don't have to apply sublayer scale when target is root.
   if (transform_tree.TargetId(transform_node->id) != 0) {
-    ApplySublayerScale(render_surface->EffectTreeIndex(), effect_tree,
-                       &clip_parent_target_to_target);
+    PostConcatSublayerScale(render_surface->EffectTreeIndex(), effect_tree,
+                            &clip_parent_target_to_target);
 #if DCHECK_IS_ON()
     VerifySublayerScalesMatch(render_surface->EffectTreeIndex(),
                               transform_tree.TargetId(transform_node->id),
