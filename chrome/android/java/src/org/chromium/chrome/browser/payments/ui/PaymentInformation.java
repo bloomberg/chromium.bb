@@ -17,11 +17,11 @@ public class PaymentInformation {
     /**
      * Builds the payment information to show in the PaymentRequest view.
      *
-     * @param shoppingCart     The shopping cart.
-     * @param sippingAddresses The shipping addresses.
-     * @param shippingOptions  The shipping options.
-     * @param contactDetails   The contact details.
-     * @param paymentMethods   The payment methods.
+     * @param shoppingCart      The shopping cart.
+     * @param shippingAddresses The shipping addresses.
+     * @param shippingOptions   The shipping options.
+     * @param contactDetails    The contact details.
+     * @param paymentMethods    The payment methods.
      */
     public PaymentInformation(ShoppingCart shoppingCart, SectionInformation shippingAddresses,
             SectionInformation shippingOptions, SectionInformation contactDetails,
