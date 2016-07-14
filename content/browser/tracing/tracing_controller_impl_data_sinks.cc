@@ -265,7 +265,7 @@ class CompressedStringTraceDataSink : public TraceDataSinkImplBase {
       stream_->avail_out = kChunkSize;
       stream_->next_out = (unsigned char*)buffer;
       err = deflate(stream_.get(), finished ? Z_FINISH : Z_NO_FLUSH);
-      if (err != Z_OK && (err != Z_STREAM_END && finished)) {
+      if (err != (finished ? Z_STREAM_END : Z_OK)) {
         stream_.reset();
         return;
       }
