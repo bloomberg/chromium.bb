@@ -336,10 +336,10 @@
         'gyp_chromeos_asan_lsan_edge_fuzzer_v8_heap_release_bot',
       'MSAN Release (chained origins)': 'gn_msan_edge_release_bot',
       'MSAN Release (no origins)': 'gn_msan_no_origins_edge_release_bot',
-      'Mac ASAN Debug': 'gyp_asan_fuzzer_v8_heap_debug_symbols_static_bot',
+      'Mac ASAN Debug': 'gyp_asan_edge_fuzzer_v8_heap_debug_symbols_static_bot',
       'Mac ASAN Release Media':
-        'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot',
-      'Mac ASAN Release': 'gyp_asan_fuzzer_v8_heap_release_bot',
+        'gyp_asan_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot',
+      'Mac ASAN Release': 'gyp_asan_edge_fuzzer_v8_heap_release_bot',
       'TSAN Debug': 'gyp_tsan_disable_nacl_line_tables_debug_bot',
       'TSAN Release': 'gyp_tsan_disable_nacl_line_tables_release_bot',
       'Telemetry Harness Upload': 'none',
@@ -1227,21 +1227,22 @@
       'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot', 'x86',
     ],
 
-    'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
-      'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs', 'release_bot',
+    'gyp_asan_edge_fuzzer_v8_heap_chrome_with_codecs_release_bot': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'chrome_with_codecs',
+      'release_bot',
+    ],
+
+    'gyp_asan_edge_fuzzer_v8_heap_debug_symbols_static_bot': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap',  'debug_symbols_static_bot',
+    ],
+
+    'gyp_asan_edge_fuzzer_v8_heap_release_bot': [
+      'gyp', 'asan', 'edge', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'gyp_asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_x86': [
       'gyp', 'asan', 'fuzzer', 'v8_heap', 'chrome_with_codecs',
       'release_bot', 'x86',
-    ],
-
-    'gyp_asan_fuzzer_v8_heap_debug_symbols_static_bot': [
-      'gyp', 'asan', 'fuzzer', 'v8_heap',  'debug_symbols_static_bot',
-    ],
-
-    'gyp_asan_fuzzer_v8_heap_release_bot': [
-      'gyp', 'asan', 'fuzzer', 'v8_heap', 'release_bot',
     ],
 
     'gyp_asan_fuzzer_v8_heap_release_bot_x86': [
