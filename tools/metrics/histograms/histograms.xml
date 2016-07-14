@@ -60073,8 +60073,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="PersistentHistogramsInitResult">
   <owner>bcwhite@chromium.org</owner>
   <summary>
-    A count of successes and various failure modes related to collecting and
-    processing performance data obtained through &quot;perf&quot; on Chrome OS.
+    A count of successes and failures for the creation of various forms of
+    persistent memory used to store histograms.
   </summary>
 </histogram>
 
