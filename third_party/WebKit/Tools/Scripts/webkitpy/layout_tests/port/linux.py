@@ -27,10 +27,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
+import os
 
-from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderLinux
-from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import win
 
@@ -68,6 +67,9 @@ class LinuxPort(base.Port):
         if not self.get_option('disable_breakpad'):
             self._dump_reader = DumpReaderLinux(host, self._build_path())
 
+        self._original_home = os.environ['HOME']
+        self._dummy_home = None
+
     def additional_driver_flag(self):
         flags = super(LinuxPort, self).additional_driver_flag()
         if not self.get_option('disable_breakpad'):
@@ -104,9 +106,44 @@ class LinuxPort(base.Port):
         _log.error("Could not find apache. Not installed or unknown path.")
         return None
 
+    def setup_test_run(self):
+        super(LinuxPort, self).setup_test_run()
+        self._setup_dummy_home_dir()
+
+    def clean_up_test_run(self):
+        super(LinuxPort, self).clean_up_test_run()
+        self._clean_up_dummy_home_dir()
+
     #
     # PROTECTED METHODS
     #
+
+    def _setup_dummy_home_dir(self):
+        """Creates a dummy home directory for running the test.
+
+        This is a workaround for crbug.com/595504; see crbug.com/612730.
+        If crbug.com/612730 is resolved in another way, then this may be
+        unnecessary.
+        """
+        dummy_home = str(self._filesystem.mkdtemp())
+        os.environ['HOME'] = dummy_home
+        self._copy_files_to_dummy_home_dir(dummy_home)
+
+    def _copy_files_to_dummy_home_dir(self, dummy_home):
+        # Note: This may be unnecessary.
+        fs = self._filesystem
+        for filename in ['.Xauthority']:
+            original_path = fs.join(self._original_home, filename)
+            if not fs.exists(original_path):
+                continue
+            fs.copyfile(original_path, fs.join(dummy_home, filename))
+
+    def _clean_up_dummy_home_dir(self):
+        """Cleans up the dummy dir and resets the HOME environment variable."""
+        dummy_home = os.environ['HOME']
+        assert dummy_home != self._original_home
+        self._filesystem.rmtree(dummy_home)
+        os.environ['HOME'] = self._original_home
 
     def _check_apache_install(self):
         result = self._check_file_exists(self.path_to_apache(), "apache2")
