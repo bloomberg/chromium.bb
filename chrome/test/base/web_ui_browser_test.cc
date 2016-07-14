@@ -459,7 +459,12 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     test_handler_->RunJavaScript(content);
 
   if (error_messages_.Get().size() > 0) {
-    LOG(ERROR) << "Encountered javascript console error(s)";
+    LOG(ERROR) << "CONDITION FAILURE: encountered javascript console error(s):";
+    for (const auto& msg : error_messages_.Get()) {
+      LOG(ERROR) << "JS ERROR: '" << msg << "'";
+    }
+    LOG(ERROR) << "JS call assumed failed, because JS console error(s) found.";
+
     result = false;
     error_messages_.Get().clear();
   }
