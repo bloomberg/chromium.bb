@@ -13,7 +13,6 @@ from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
 import base64
 import collections
-import glob
 import httplib
 import json
 import logging
@@ -2721,7 +2720,7 @@ class ChangeDescription(object):
         reviewers.append(name)
     if add_owners_tbr:
       owners_db = owners.Database(change.RepositoryRoot(),
-        fopen=file, os_path=os.path, glob=glob.glob)
+        fopen=file, os_path=os.path)
       all_reviewers = set(tbr_names + reviewers)
       missing_files = owners_db.files_not_covered_by(change.LocalPaths(),
                                                      all_reviewers)
@@ -4841,7 +4840,7 @@ def CMDowners(parser, args):
       [f.LocalPath() for f in
           cl.GetChange(base_branch, None).AffectedFiles()],
       change.RepositoryRoot(), author,
-      fopen=file, os_path=os.path, glob=glob.glob,
+      fopen=file, os_path=os.path,
       disable_color=options.no_color).run()
 
 

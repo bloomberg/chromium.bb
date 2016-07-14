@@ -23,7 +23,7 @@ class OwnersFinder(object):
   indentation = 0
 
   def __init__(self, files, local_root, author,
-               fopen, os_path, glob,
+               fopen, os_path,
                email_postfix='@chromium.org',
                disable_color=False):
     self.email_postfix = email_postfix
@@ -34,7 +34,7 @@ class OwnersFinder(object):
       self.COLOR_GREY = ''
       self.COLOR_RESET = ''
 
-    self.db = owners_module.Database(local_root, fopen, os_path, glob)
+    self.db = owners_module.Database(local_root, fopen, os_path)
     self.db.load_data_needed_for(files)
 
     self.os_path = os_path
@@ -43,28 +43,15 @@ class OwnersFinder(object):
 
     filtered_files = files
 
-    # Eliminate files that author himself can review.
-    if author:
-      if author in self.db.owned_by:
-        for dir_name in self.db.owned_by[author]:
-          filtered_files = [
-              file_name for file_name in filtered_files
-              if not file_name.startswith(dir_name)]
-
-        filtered_files = list(filtered_files)
-
-    # Eliminate files that everyone can review.
-    if owners_module.EVERYONE in self.db.owned_by:
-      for dir_name in self.db.owned_by[owners_module.EVERYONE]:
-        filtered_files = filter(
-            lambda file_name: not file_name.startswith(dir_name),
-            filtered_files)
+    # Eliminate files that the author can review.
+    filtered_files = list(self.db.files_not_covered_by(
+      filtered_files, [author] if author else []))
 
     # If some files are eliminated.
     if len(filtered_files) != len(files):
       files = filtered_files
       # Reload the database.
-      self.db = owners_module.Database(local_root, fopen, os_path, glob)
+      self.db = owners_module.Database(local_root, fopen, os_path)
       self.db.load_data_needed_for(files)
 
     self.all_possible_owners = self.db.all_possible_owners(files, None)

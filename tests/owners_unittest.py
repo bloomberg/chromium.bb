@@ -73,14 +73,12 @@ class _BaseTestCase(unittest.TestCase):
     self.files = self.repo.files
     self.root = '/'
     self.fopen = self.repo.open_for_reading
-    self.glob = self.repo.glob
 
-  def db(self, root=None, fopen=None, os_path=None, glob=None):
+  def db(self, root=None, fopen=None, os_path=None):
     root = root or self.root
     fopen = fopen or self.fopen
     os_path = os_path or self.repo
-    glob = glob or self.glob
-    return owners.Database(root, fopen, os_path, glob)
+    return owners.Database(root, fopen, os_path)
 
 
 class OwnersDatabaseTest(_BaseTestCase):
@@ -150,9 +148,15 @@ class OwnersDatabaseTest(_BaseTestCase):
         ['content/content.gyp', 'content/bar/foo.cc', 'content/baz/froboz.h'])
 
   def test_per_file(self):
-    # brett isn't allowed to approve ugly.cc
     self.files['/content/baz/OWNERS'] = owners_file(brett,
         lines=['per-file ugly.*=tom@example.com'])
+
+    # peter isn't allowed to approve ugly.cc
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
+                                    [peter],
+                                    ['content/baz/ugly.cc'])
+
+    # brett is allowed to approve ugly.cc
     self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [brett],
                                     [])
@@ -167,20 +171,43 @@ class OwnersDatabaseTest(_BaseTestCase):
 
   def test_per_file_with_spaces(self):
     # This is the same as test_per_file(), except that we include spaces
-    # on the per-file line. brett isn't allowed to approve ugly.cc;
+    # on the per-file line.
     # tom is allowed to approve ugly.cc, but not froboz.h
     self.files['/content/baz/OWNERS'] = owners_file(brett,
         lines=['per-file ugly.* = tom@example.com'])
+
+    # peter isn't allowed to approve ugly.cc
+    self.assert_files_not_covered_by(['content/baz/ugly.cc'],
+                                    [peter],
+                                    ['content/baz/ugly.cc'])
+
+    # brett is allowed to approve ugly.cc
     self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [brett],
                                     [])
 
+    # tom is allowed to approve ugly.cc, but not froboz.h
     self.assert_files_not_covered_by(['content/baz/ugly.cc'],
                                     [tom],
                                     [])
     self.assert_files_not_covered_by(['content/baz/froboz.h'],
                                     [tom],
                                     ['content/baz/froboz.h'])
+
+  def test_per_file_with_nonexistent_file(self):
+    self.files['/content/baz/OWNERS'] = owners_file(brett,
+        lines=['per-file ugly.*=tom@example.com'])
+
+    # peter isn't allowed to approve ugly.nonexistent.cc, but brett and tom are.
+    self.assert_files_not_covered_by(['content/baz/ugly.nonexistent.cc'],
+                                    [peter],
+                                    ['content/baz/ugly.nonexistent.cc'])
+    self.assert_files_not_covered_by(['content/baz/ugly.nonexistent.cc'],
+                                    [brett],
+                                    [])
+    self.assert_files_not_covered_by(['content/baz/ugly.nonexistent.cc'],
+                                    [tom],
+                                    [])
 
   def test_per_file__set_noparent(self):
     self.files['/content/baz/OWNERS'] = owners_file(brett,

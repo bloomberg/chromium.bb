@@ -65,11 +65,10 @@ def test_repo():
 
 class OutputInterceptedOwnersFinder(owners_finder.OwnersFinder):
   def __init__(self, files, local_root,
-               fopen, os_path, glob,
-               disable_color=False):
+               fopen, os_path, disable_color=False):
     super(OutputInterceptedOwnersFinder, self).__init__(
       files, local_root, None,
-      fopen, os_path, glob, disable_color=disable_color)
+      fopen, os_path, disable_color=disable_color)
     self.output = []
     self.indentation_stack = []
 
@@ -108,13 +107,11 @@ class _BaseTestCase(unittest.TestCase):
     self.repo = test_repo()
     self.root = '/'
     self.fopen = self.repo.open_for_reading
-    self.glob = self.repo.glob
 
   def ownersFinder(self, files):
     finder = OutputInterceptedOwnersFinder(files, self.root,
                                            fopen=self.fopen,
                                            os_path=self.repo,
-                                           glob=self.glob,
                                            disable_color=True)
     return finder
 
