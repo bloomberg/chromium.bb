@@ -773,7 +773,7 @@ Value RunTarget(Scope* scope,
   // Run a template if it is one.
   const Template* templ = scope->GetTemplate(target_type);
   if (templ)
-    return templ->Invoke(scope, function, sub_args, block, err);
+    return templ->Invoke(scope, function, target_type, sub_args, block, err);
 
   // Otherwise, assume the target is a built-in target type.
   return ExecuteGenericTarget(target_type.c_str(), scope, function, sub_args,

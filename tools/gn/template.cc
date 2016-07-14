@@ -26,6 +26,7 @@ Template::~Template() {
 
 Value Template::Invoke(Scope* scope,
                        const FunctionCallNode* invocation,
+                       const std::string& template_name,
                        const std::vector<Value>& args,
                        BlockNode* block,
                        Err* err) const {
@@ -37,8 +38,7 @@ Value Template::Invoke(Scope* scope,
   // First run the invocation's block. Need to allocate the scope on the heap
   // so we can pass ownership to the template.
   std::unique_ptr<Scope> invocation_scope(new Scope(scope));
-  if (!FillTargetBlockScope(scope, invocation,
-                            invocation->function().value().as_string(),
+  if (!FillTargetBlockScope(scope, invocation, template_name,
                             block, args, invocation_scope.get(), err))
     return Value();
 

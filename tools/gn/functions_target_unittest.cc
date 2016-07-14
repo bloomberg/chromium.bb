@@ -36,3 +36,37 @@ TEST(FunctionsTarget, CheckUnused) {
   source_set_input.parsed()->Execute(setup.scope(), &err);
   ASSERT_TRUE(err.has_error());
 }
+
+// Checks that the defaults applied to a template invoked by target() use
+// the name of the template, rather than the string "target" (which is the
+// name of the actual function being called).
+TEST(FunctionsTarget, TemplateDefaults) {
+  Scheduler scheduler;
+  TestWithScope setup;
+
+  // The target generator needs a place to put the targets or it will fail.
+  Scope::ItemVector item_collector;
+  setup.scope()->set_item_collector(&item_collector);
+
+  // Test a good one first.
+  TestParseInput good_input(
+      // Make a template with defaults set.
+      "template(\"my_templ\") {\n"
+      "  source_set(target_name) {\n"
+      "    forward_variables_from(invoker, \"*\")\n"
+      "  }\n"
+      "}\n"
+      "set_defaults(\"my_templ\") {\n"
+      "  default_value = 1\n"
+      "}\n"
+
+      // Invoke the template with target(). This will fail to execute if the
+      // defaults were not set properly, because "default_value" won't exist.
+      "target(\"my_templ\", \"foo\") {\n"
+      "  print(default_value)\n"
+      "}\n");
+  ASSERT_FALSE(good_input.has_error());
+  Err err;
+  good_input.parsed()->Execute(setup.scope(), &err);
+  ASSERT_FALSE(err.has_error()) << err.message();
+}

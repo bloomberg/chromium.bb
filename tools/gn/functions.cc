@@ -1036,13 +1036,14 @@ Value RunFunction(Scope* scope,
       function_map.find(name.value());
   if (found_function == function_map.end()) {
     // No built-in function matching this, check for a template.
-    const Template* templ =
-        scope->GetTemplate(function->function().value().as_string());
+    std::string template_name = function->function().value().as_string();
+    const Template* templ = scope->GetTemplate(template_name);
     if (templ) {
       Value args = args_list->Execute(scope, err);
       if (err->has_error())
         return Value();
-      return templ->Invoke(scope, function, args.list_value(), block, err);
+      return templ->Invoke(scope, function, template_name, args.list_value(),
+                           block, err);
     }
 
     *err = Err(name, "Unknown function.");
