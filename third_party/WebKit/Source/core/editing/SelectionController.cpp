@@ -87,6 +87,10 @@ VisibleSelectionInFlatTree expandSelectionToRespectUserSelectAll(Node* targetNod
     Node* rootUserSelectAll = EditingInFlatTreeStrategy::rootUserSelectAllForNode(targetNode);
     if (!rootUserSelectAll)
         return selection;
+    if (rootUserSelectAll->isHTMLElement() && toHTMLElement(rootUserSelectAll)->isTextFormControl())
+        return selection;
+    if (rootUserSelectAll->layoutObject()->style()->userModify() != READ_ONLY)
+        return selection;
 
     VisibleSelectionInFlatTree newSelection(selection);
     newSelection.setBase(mostBackwardCaretPosition(PositionInFlatTree::beforeNode(rootUserSelectAll), CanCrossEditingBoundary));
