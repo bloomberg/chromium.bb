@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL animation.effect should be read-only assert_approx_equals: expected 1000 +/- 0.0005 but got 1500
+Harness: the test ran to completion.
+

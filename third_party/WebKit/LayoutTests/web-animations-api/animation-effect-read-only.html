@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Test that extending effect should not cause a change in start time</title>
+<link rel="https://w3c.github.io/web-animations/#the-animation-interface">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
+<script>
+test(function() {
+  var animation = document.documentElement.animate([], 1000);
+  animation.effect.timing.duration = 1500;
+  assert_times_equal(animation.effect.timing.duration, 1000);
+}, 'animation.effect should be read-only');
+</script>
