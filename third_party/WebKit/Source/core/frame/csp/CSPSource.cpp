@@ -53,7 +53,7 @@ bool CSPSource::hostMatches(const KURL& url) const
 
     bool equalHosts = equalIgnoringCase(host, m_host);
     if (m_hostWildcard == HasWildcard) {
-        match = host.endsWith("." + m_host, TextCaseInsensitive);
+        match = host.endsWith(String("." + m_host), TextCaseInsensitive);
 
         // Chrome used to, incorrectly, match *.x.y to x.y. This was fixed, but
         // the following count measures when a match fails that would have

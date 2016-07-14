@@ -11,6 +11,7 @@
 #include "wtf/text/StringConcatenate.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringToNumber.h"
+#include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -34,6 +35,7 @@ public:
     String16(WTF::HashTableDeletedValueType) : m_impl(WTF::HashTableDeletedValue) { }
     bool isHashTableDeletedValue() const { return m_impl.isHashTableDeletedValue(); }
     operator WTF::String() const { return m_impl; }
+    operator WTF::StringView() const { return StringView(m_impl); }
     operator WebString() { return m_impl; }
     const WTF::String& impl() const { return m_impl; }
     String16 isolatedCopy() const { return String16(m_impl.isolatedCopy()); }
@@ -75,7 +77,7 @@ private:
 class String16Builder {
 public:
     String16Builder() { }
-    void append(const String16& str) { m_impl.append(StringView(str)); };
+    void append(const String16& str) { m_impl.append(str); };
     void append(UChar c) { m_impl.append(c); };
     void append(LChar c) { m_impl.append(c); };
     void append(char c) { m_impl.append(c); };

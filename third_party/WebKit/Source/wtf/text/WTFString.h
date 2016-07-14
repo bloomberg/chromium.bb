@@ -232,21 +232,15 @@ public:
     bool contains(const LChar* str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
     bool contains(const String& str, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const { return find(str, 0, caseSensitivity) != kNotFound; }
 
-    bool startsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->startsWith, (s.impl())) : s.isEmpty(); }
+    bool startsWith(const StringView& prefix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->startsWith, (prefix)) : prefix.isEmpty(); }
     bool startsWith(UChar character) const
         { return m_impl ? m_impl->startsWith(character) : false; }
-    template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->startsWith, (prefix, matchLength - 1)) : !matchLength; }
 
-    bool endsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->endsWith, (s.impl())) : s.isEmpty(); }
+    bool endsWith(const StringView& suffix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->endsWith, (suffix)) : suffix.isEmpty(); }
     bool endsWith(UChar character) const
         { return m_impl ? m_impl->endsWith(character) : false; }
-    template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_impl ? DISPATCH_CASE_OP(caseSensitivity, m_impl->endsWith, (prefix, matchLength - 1)) : !matchLength; }
 
     void append(const String&);
     void append(LChar);
@@ -454,10 +448,6 @@ inline bool equalIgnoringCase(const String& a, const LChar* b) { return equalIgn
 inline bool equalIgnoringCase(const String& a, const char* b) { return equalIgnoringCase(a.impl(), reinterpret_cast<const LChar*>(b)); }
 inline bool equalIgnoringCase(const LChar* a, const String& b) { return equalIgnoringCase(a, b.impl()); }
 inline bool equalIgnoringCase(const char* a, const String& b) { return equalIgnoringCase(reinterpret_cast<const LChar*>(a), b.impl()); }
-
-inline bool equalIgnoringASCIICase(const String& a, const String& b) { return equalIgnoringASCIICase(a.impl(), b.impl()); }
-inline bool equalIgnoringASCIICase(const String& a, const LChar* b) { return equalIgnoringASCIICase(a.impl(), b); }
-inline bool equalIgnoringASCIICase(const String& a, const char* b) { return equalIgnoringASCIICase(a.impl(), b); }
 
 inline bool equalPossiblyIgnoringCase(const String& a, const String& b, bool ignoreCase)
 {

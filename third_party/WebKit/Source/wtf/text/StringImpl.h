@@ -383,20 +383,14 @@ public:
     size_t reverseFind(StringImpl*, unsigned index = UINT_MAX);
 
     bool startsWith(UChar) const;
-    bool startsWith(const char*, unsigned prefixLength) const;
-    bool startsWith(const StringImpl*) const;
-    bool startsWithIgnoringCase(const char*, unsigned prefixLength) const;
-    bool startsWithIgnoringCase(const StringImpl*) const;
-    bool startsWithIgnoringASCIICase(const char*, unsigned prefixLength) const;
-    bool startsWithIgnoringASCIICase(const StringImpl*) const;
+    bool startsWith(const StringView&) const;
+    bool startsWithIgnoringCase(const StringView&) const;
+    bool startsWithIgnoringASCIICase(const StringView&) const;
 
     bool endsWith(UChar) const;
-    bool endsWith(const char*, unsigned suffixLength) const;
-    bool endsWith(const StringImpl*) const;
-    bool endsWithIgnoringCase(const char*, unsigned suffixLength) const;
-    bool endsWithIgnoringCase(const StringImpl*) const;
-    bool endsWithIgnoringASCIICase(const char*, unsigned suffixLength) const;
-    bool endsWithIgnoringASCIICase(const StringImpl*) const;
+    bool endsWith(const StringView&) const;
+    bool endsWithIgnoringCase(const StringView&) const;
+    bool endsWithIgnoringASCIICase(const StringView&) const;
 
     PassRefPtr<StringImpl> replace(UChar, UChar);
     PassRefPtr<StringImpl> replace(UChar, StringImpl*);
@@ -510,16 +504,6 @@ inline bool equalIgnoringASCIICase(const CharacterTypeA* a, const CharacterTypeB
     }
     return true;
 }
-
-WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const StringImpl*);
-WTF_EXPORT bool equalIgnoringASCIICase(const StringImpl*, const LChar*, unsigned length);
-inline bool equalIgnoringASCIICase(const StringImpl* a, const char* b, unsigned length) { return equalIgnoringASCIICase(a, reinterpret_cast<const LChar*>(b), length); }
-inline bool equalIgnoringASCIICase(const StringImpl* a, const LChar* b)
-{
-    size_t length = b ? strlen(reinterpret_cast<const char*>(b)) : 0;
-    return equalIgnoringASCIICase(a, b, length);
-}
-inline bool equalIgnoringASCIICase(const StringImpl* a, const char* b) { return equalIgnoringASCIICase(a, reinterpret_cast<const LChar*>(b)); }
 
 WTF_EXPORT int codePointCompareIgnoringASCIICase(const StringImpl*, const LChar*);
 

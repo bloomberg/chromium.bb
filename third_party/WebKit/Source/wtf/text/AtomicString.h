@@ -87,21 +87,15 @@ public:
     size_t find(const String& s, size_t start = 0, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
         { return m_string.find(s, start, caseSensitivity); }
 
-    bool startsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.startsWith(s, caseSensitivity); }
+    bool startsWith(const StringView& prefix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.startsWith(prefix, caseSensitivity); }
     bool startsWith(UChar character) const
         { return m_string.startsWith(character); }
-    template<unsigned matchLength>
-    bool startsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.startsWith<matchLength>(prefix, caseSensitivity); }
 
-    bool endsWith(const String& s, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.endsWith(s, caseSensitivity); }
+    bool endsWith(const StringView& suffix, TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
+        { return m_string.endsWith(suffix, caseSensitivity); }
     bool endsWith(UChar character) const
         { return m_string.endsWith(character); }
-    template<unsigned matchLength>
-    bool endsWith(const char (&prefix)[matchLength], TextCaseSensitivity caseSensitivity = TextCaseSensitive) const
-        { return m_string.endsWith<matchLength>(prefix, caseSensitivity); }
 
     AtomicString lower() const;
     AtomicString lowerASCII() const;
@@ -183,9 +177,6 @@ inline bool equalIgnoringCase(const AtomicString& a, const String& b) { return e
 inline bool equalIgnoringCase(const LChar* a, const AtomicString& b) { return equalIgnoringCase(a, b.impl()); }
 inline bool equalIgnoringCase(const char* a, const AtomicString& b) { return equalIgnoringCase(reinterpret_cast<const LChar*>(a), b.impl()); }
 inline bool equalIgnoringCase(const String& a, const AtomicString& b) { return equalIgnoringCase(a.impl(), b.impl()); }
-
-inline bool equalIgnoringASCIICase(const AtomicString& a, const AtomicString& b) { return equalIgnoringASCIICase(a.impl(), b.impl()); }
-inline bool equalIgnoringASCIICase(const AtomicString& a, const char* b) { return equalIgnoringASCIICase(a.impl(), reinterpret_cast<const LChar*>(b)); }
 
 // Define external global variables for the commonly used atomic strings.
 // These are only usable from the main thread.
