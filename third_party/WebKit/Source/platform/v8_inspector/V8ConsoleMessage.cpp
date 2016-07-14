@@ -470,7 +470,6 @@ void V8ConsoleMessageStorage::clear()
     m_expiredCount = 0;
     V8InspectorSessionImpl* session = m_debugger->sessionForContextGroup(m_contextGroupId);
     if (session) {
-        session->consoleAgent()->reset();
         session->releaseObjectGroup("console");
         session->client()->consoleCleared();
     }

@@ -8,11 +8,12 @@ function test()
     function dumpMessages(next, message)
     {
         InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
-        InspectorTest.consoleModel.requestClearMessages();
-        
-        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
 
-        function afterCleared() {
+        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
+        InspectorTest.consoleModel.requestClearMessages();
+
+        function afterCleared()
+        {
             InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, afterCleared);
             next();
         }

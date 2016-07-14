@@ -55,7 +55,6 @@ void V8ConsoleAgentImpl::restore()
 {
     if (!m_state->booleanProperty(ConsoleAgentState::consoleEnabled, false))
         return;
-    m_frontend.messagesCleared();
     ErrorString ignored;
     enable(&ignored);
 }
@@ -64,12 +63,6 @@ void V8ConsoleAgentImpl::messageAdded(V8ConsoleMessage* message)
 {
     if (m_enabled)
         reportMessage(message, true);
-}
-
-void V8ConsoleAgentImpl::reset()
-{
-    if (m_enabled)
-        m_frontend.messagesCleared();
 }
 
 bool V8ConsoleAgentImpl::enabled()

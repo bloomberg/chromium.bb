@@ -769,7 +769,8 @@
             },
             {
                 "name": "messagesCleared",
-                "description": "Issued when console is cleared. This happens either upon <code>clearMessages</code> command or after page navigation."
+                "description": "Not issued.",
+                "deprecated": true
             }
         ]
     },

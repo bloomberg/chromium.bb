@@ -107,7 +107,6 @@ void V8InspectorSessionImpl::reset()
 {
     m_debuggerAgent->reset();
     m_runtimeAgent->reset();
-    m_consoleAgent->reset();
     discardInjectedScripts();
 }
 
