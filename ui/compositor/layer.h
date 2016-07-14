@@ -372,6 +372,7 @@ class COMPOSITOR_EXPORT Layer
   // LayerClient
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
       cc::Layer* layer) override;
+  void didUpdateMainThreadScrollingReasons() override;
 
   // Whether this layer has animations waiting to get sent to its cc::Layer.
   bool HasPendingThreadedAnimationsForTesting() const;

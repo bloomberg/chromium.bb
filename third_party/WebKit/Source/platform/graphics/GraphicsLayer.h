@@ -240,6 +240,7 @@ public:
 
     // cc::LayerClient implementation.
     std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(cc::Layer*) override;
+    void didUpdateMainThreadScrollingReasons() override;
 
     PaintController& getPaintController();
 

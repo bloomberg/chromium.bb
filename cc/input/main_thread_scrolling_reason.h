@@ -5,6 +5,10 @@
 #ifndef CC_INPUT_MAIN_THREAD_SCROLLING_REASON_H_
 #define CC_INPUT_MAIN_THREAD_SCROLLING_REASON_H_
 
+#include <string>
+
+#include "base/trace_event/trace_event_argument.h"
+
 namespace cc {
 
 // Ensure this stays in sync with MainThreadScrollingReason in histograms.xml.
@@ -54,6 +58,60 @@ struct MainThreadScrollingReason {
         kNoScrollingLayer | kNotScrollable | kContinuingMainThreadScroll |
         kNonInvertibleTransform | kPageBasedScrolling;
     return (reasons & reasons_set_by_compositor) == reasons;
+  }
+
+  static std::string mainThreadScrollingReasonsAsText(uint32_t reasons) {
+    base::trace_event::TracedValue tracedValue;
+    mainThreadScrollingReasonsAsTracedValue(reasons, &tracedValue);
+    std::string result_in_array_foramt = tracedValue.ToString();
+    // Remove '{main_thread_scrolling_reasons:[', ']}', and any '"' chars.
+    std::string result =
+        result_in_array_foramt.substr(34, result_in_array_foramt.length() - 36);
+    result.erase(std::remove(result.begin(), result.end(), '\"'), result.end());
+    return result;
+  }
+
+  static void mainThreadScrollingReasonsAsTracedValue(
+      uint32_t reasons,
+      base::trace_event::TracedValue* tracedValue) {
+    tracedValue->BeginArray("main_thread_scrolling_reasons");
+    if (reasons &
+        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects)
+      tracedValue->AppendString("Has background-attachment:fixed");
+    if (reasons &
+        MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects)
+      tracedValue->AppendString("Has non-layer viewport-constrained objects");
+    if (reasons & MainThreadScrollingReason::kThreadedScrollingDisabled)
+      tracedValue->AppendString("Threaded scrolling is disabled");
+    if (reasons & MainThreadScrollingReason::kScrollbarScrolling)
+      tracedValue->AppendString("Scrollbar scrolling");
+    if (reasons & MainThreadScrollingReason::kPageOverlay)
+      tracedValue->AppendString("Page overlay");
+    if (reasons & MainThreadScrollingReason::kAnimatingScrollOnMainThread)
+      tracedValue->AppendString("Animating scroll on main thread");
+    if (reasons & MainThreadScrollingReason::kHasStickyPositionObjects)
+      tracedValue->AppendString("Has sticky position objects");
+    if (reasons & MainThreadScrollingReason::kCustomScrollbarScrolling)
+      tracedValue->AppendString("Custom scrollbar scrolling");
+
+    // Transient scrolling reasons.
+    if (reasons & MainThreadScrollingReason::kNonFastScrollableRegion)
+      tracedValue->AppendString("Non fast scrollable region");
+    if (reasons & MainThreadScrollingReason::kEventHandlers)
+      tracedValue->AppendString("Event handlers");
+    if (reasons & MainThreadScrollingReason::kFailedHitTest)
+      tracedValue->AppendString("Failed hit test");
+    if (reasons & MainThreadScrollingReason::kNoScrollingLayer)
+      tracedValue->AppendString("No scrolling layer");
+    if (reasons & MainThreadScrollingReason::kNotScrollable)
+      tracedValue->AppendString("Not scrollable");
+    if (reasons & MainThreadScrollingReason::kContinuingMainThreadScroll)
+      tracedValue->AppendString("Continuing main thread scroll");
+    if (reasons & MainThreadScrollingReason::kNonInvertibleTransform)
+      tracedValue->AppendString("Non-invertible transform");
+    if (reasons & MainThreadScrollingReason::kPageBasedScrolling)
+      tracedValue->AppendString("Page-based scrolling");
+    tracedValue->EndArray();
   }
 };
 

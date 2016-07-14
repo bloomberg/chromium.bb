@@ -1054,33 +1054,16 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
     return reasons;
 }
 
-String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollingReasons reasons)
-{
-    StringBuilder stringBuilder;
-
-    if (reasons & MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects)
-        stringBuilder.append("Has background-attachment:fixed, ");
-    if (reasons & MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects)
-        stringBuilder.append("Has non-layer viewport-constrained objects, ");
-    if (reasons & MainThreadScrollingReason::kHasStickyPositionObjects)
-        stringBuilder.append("Has sticky position objects, ");
-    if (reasons & MainThreadScrollingReason::kThreadedScrollingDisabled)
-        stringBuilder.append("Threaded scrolling is disabled, ");
-    if (reasons & MainThreadScrollingReason::kAnimatingScrollOnMainThread)
-        stringBuilder.append("Animating scroll on main thread, ");
-
-    if (stringBuilder.length())
-        stringBuilder.resize(stringBuilder.length() - 2);
-    return stringBuilder.toString();
-}
-
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const
 {
     ASSERT(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >= DocumentLifecycle::CompositingClean);
-    if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling()))
-        return mainThreadScrollingReasonsAsText(scrollLayer->mainThreadScrollingReasons());
+    if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
+        String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(scrollLayer->mainThreadScrollingReasons()).c_str());
+        return result;
+    }
 
-    return mainThreadScrollingReasonsAsText(m_lastMainThreadScrollingReasons);
+    String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(m_lastMainThreadScrollingReasons).c_str());
+    return result;
 }
 
 bool ScrollingCoordinator::frameViewIsDirty() const

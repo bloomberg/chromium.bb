@@ -816,6 +816,8 @@ Layer::TakeDebugInfo(cc::Layer* layer) {
   return base::WrapUnique(new LayerDebugInfo(name_));
 }
 
+void Layer::didUpdateMainThreadScrollingReasons() {}
+
 void Layer::CollectAnimators(
     std::vector<scoped_refptr<LayerAnimator>>* animators) {
   if (animator_ && animator_->is_animating())

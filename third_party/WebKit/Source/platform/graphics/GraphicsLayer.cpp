@@ -1256,6 +1256,11 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> GraphicsLayer::Take
     return std::move(tracedValue);
 }
 
+void GraphicsLayer::didUpdateMainThreadScrollingReasons()
+{
+    m_debugInfo.setMainThreadScrollingReasons(platformLayer()->mainThreadScrollingReasons());
+}
+
 PaintController& GraphicsLayer::getPaintController()
 {
     RELEASE_ASSERT(drawsContent());

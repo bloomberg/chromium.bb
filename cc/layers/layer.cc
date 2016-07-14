@@ -870,6 +870,7 @@ void Layer::AddMainThreadScrollingReasons(
   if (inputs_.main_thread_scrolling_reasons == new_reasons)
     return;
   inputs_.main_thread_scrolling_reasons = new_reasons;
+  didUpdateMainThreadScrollingReasons();
   SetNeedsCommit();
 }
 
@@ -882,6 +883,7 @@ void Layer::ClearMainThreadScrollingReasons(
   if (new_reasons == inputs_.main_thread_scrolling_reasons)
     return;
   inputs_.main_thread_scrolling_reasons = new_reasons;
+  didUpdateMainThreadScrollingReasons();
   SetNeedsCommit();
 }
 
@@ -1577,6 +1579,11 @@ Layer::TakeDebugInfo() {
     return inputs_.client->TakeDebugInfo(this);
   else
     return nullptr;
+}
+
+void Layer::didUpdateMainThreadScrollingReasons() {
+  if (inputs_.client)
+    inputs_.client->didUpdateMainThreadScrollingReasons();
 }
 
 void Layer::SetSubtreePropertyChanged() {

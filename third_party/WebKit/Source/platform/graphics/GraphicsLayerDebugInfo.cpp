@@ -20,6 +20,7 @@
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
 
 #include "base/trace_event/trace_event_argument.h"
+#include "platform/scroll/MainThreadScrollingReason.h"
 
 namespace blink {
 
@@ -27,6 +28,7 @@ GraphicsLayerDebugInfo::GraphicsLayerDebugInfo()
     : m_compositingReasons(CompositingReasonNone)
     , m_squashingDisallowedReasons(SquashingDisallowedReasonsNone)
     , m_ownerNodeId(0)
+    , m_mainThreadScrollingReasons(0)
 {
 }
 
@@ -40,6 +42,7 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayerDebugInfo::asTraced
     appendCompositingReasons(tracedValue.get());
     appendSquashingDisallowedReasons(tracedValue.get());
     appendOwnerNodeId(tracedValue.get());
+    appendMainThreadScrollingReasons(tracedValue.get());
     return tracedValue;
 }
 
@@ -104,6 +107,11 @@ void GraphicsLayerDebugInfo::clearAnnotatedInvalidateRects()
 {
     m_previousInvalidations.clear();
     m_previousInvalidations.swap(m_invalidations);
+}
+
+void GraphicsLayerDebugInfo::appendMainThreadScrollingReasons(base::trace_event::TracedValue* tracedValue) const
+{
+    MainThreadScrollingReason::mainThreadScrollingReasonsAsTracedValue(m_mainThreadScrollingReasons, tracedValue);
 }
 
 } // namespace blink

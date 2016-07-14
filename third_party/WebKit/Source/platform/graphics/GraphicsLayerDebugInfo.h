@@ -68,11 +68,15 @@ public:
     void appendAnnotatedInvalidateRect(const FloatRect&, PaintInvalidationReason);
     void clearAnnotatedInvalidateRects();
 
+    uint32_t getMainThreadScrollingReasons() const { return m_mainThreadScrollingReasons; }
+    void setMainThreadScrollingReasons(uint32_t reasons) { m_mainThreadScrollingReasons = reasons; }
+
 private:
     void appendAnnotatedInvalidateRects(base::trace_event::TracedValue*) const;
     void appendCompositingReasons(base::trace_event::TracedValue*) const;
     void appendSquashingDisallowedReasons(base::trace_event::TracedValue*) const;
     void appendOwnerNodeId(base::trace_event::TracedValue*) const;
+    void appendMainThreadScrollingReasons(base::trace_event::TracedValue*) const;
 
     struct AnnotatedInvalidationRect {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -85,6 +89,7 @@ private:
     int m_ownerNodeId;
     Vector<AnnotatedInvalidationRect> m_invalidations;
     Vector<AnnotatedInvalidationRect> m_previousInvalidations;
+    uint32_t m_mainThreadScrollingReasons;
 };
 
 } // namespace blink

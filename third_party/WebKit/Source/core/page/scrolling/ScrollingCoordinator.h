@@ -110,7 +110,6 @@ public:
     void updateScrollParentForGraphicsLayer(GraphicsLayer* child, const PaintLayer* parent);
     void updateClipParentForGraphicsLayer(GraphicsLayer* child, const PaintLayer* parent);
 
-    static String mainThreadScrollingReasonsAsText(MainThreadScrollingReasons);
     String mainThreadScrollingReasonsAsText() const;
     Region computeShouldHandleScrollGestureOnMainThreadRegion(const LocalFrame*, const IntPoint& frameLocation) const;
 

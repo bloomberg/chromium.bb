@@ -30,6 +30,7 @@ class CC_EXPORT LayerClient {
   // which service multiple layers.
   virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   TakeDebugInfo(Layer* layer) = 0;
+  virtual void didUpdateMainThreadScrollingReasons() = 0;
 
  protected:
   virtual ~LayerClient() {}

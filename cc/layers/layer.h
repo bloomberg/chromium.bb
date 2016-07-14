@@ -341,6 +341,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   TakeDebugInfo();
+  virtual void didUpdateMainThreadScrollingReasons();
 
   void SetLayerClient(LayerClient* client) { inputs_.client = client; }
 
