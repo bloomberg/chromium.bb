@@ -1,6 +1,7 @@
 include_rules = [
   # Allow inclusion of specific components that we depend on.
   # See comment in content/DEPS for which components are allowed.
+  "+components/memory_coordinator/child",
   "+components/scheduler",
   "+components/url_formatter",
 
