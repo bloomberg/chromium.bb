@@ -106,7 +106,7 @@ public class AutofillPaymentInstrument
 
             json.endObject();
         } catch (IOException e) {
-            mCallback.onInstrumentDetailsError();
+            onFullCardError();
             return;
         }
 
@@ -120,6 +120,7 @@ public class AutofillPaymentInstrument
     @Override
     public void onFullCardError() {
         mCallback.onInstrumentDetailsError();
+        mCallback = null;
     }
 
     @Override
