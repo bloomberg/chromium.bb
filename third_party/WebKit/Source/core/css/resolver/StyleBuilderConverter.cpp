@@ -750,6 +750,7 @@ StyleMotionRotation StyleBuilderConverter::convertMotionRotation(const CSSValue&
             result.angle += primitiveValue.computeDegrees();
         }
     }
+    result.angle = clampTo<float>(result.angle);
 
     return result;
 }
