@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/numerics/safe_conversions.h"
 #include "components/test_runner/test_common.h"
 #include "components/webcrypto/algorithm_dispatch.h"
 #include "components/webcrypto/crypto_data.h"
@@ -83,7 +84,7 @@ void ImportEcKeyFromDerFuzzData(const uint8_t* data,
 
   blink::WebCryptoKey key;
   webcrypto::Status status = webcrypto::ImportKey(
-      format, webcrypto::CryptoData(data, size),
+      format, webcrypto::CryptoData(data, base::checked_cast<uint32_t>(size)),
       CreateEcImportAlgorithm(algorithm_id, curve), true, usages, &key);
 
   // These errors imply a bad setup of parameters, and means ImportKey() may not
@@ -116,7 +117,7 @@ void ImportRsaKeyFromDerFuzzData(const uint8_t* data,
 
   blink::WebCryptoKey key;
   webcrypto::Status status = webcrypto::ImportKey(
-      format, webcrypto::CryptoData(data, size),
+      format, webcrypto::CryptoData(data, base::checked_cast<uint32_t>(size)),
       CreateRsaHashedImportAlgorithm(algorithm_id, hash_id), true, usages,
       &key);
 
