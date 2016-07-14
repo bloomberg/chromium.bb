@@ -3113,6 +3113,14 @@ should be able to be added at any place in this file.
   <obsolete>Renamed to DefaultBrowserInfoBar_Cancel in M52.</obsolete>
 </action>
 
+<action name="DefaultBrowserInfoBar_Ignore">
+  <owner>pmonette@chromium.org</owner>
+  <description>
+    The hosting tab was closed before any user interaction happened with the
+    info bar.
+  </description>
+</action>
+
 <action name="Delete">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

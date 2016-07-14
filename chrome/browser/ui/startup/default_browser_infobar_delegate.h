@@ -42,8 +42,8 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   enum InfoBarUserInteraction {
     // The user clicked the "OK" (i.e., "Set as default") button.
     ACCEPT_INFO_BAR = 0,
-    // The user clicked the "Cancel" (i.e., "Don't ask again") button.
-    CANCEL_INFO_BAR = 1,
+    // The cancel button is deprecated.
+    // CANCEL_INFO_BAR = 1,
     // The user did not interact with the info bar.
     IGNORE_INFO_BAR = 2,
     // The user explicitly closed the infobar.
@@ -64,10 +64,10 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
   base::string16 GetMessageText() const override;
+  int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool OKButtonTriggersUACPrompt() const override;
   bool Accept() override;
-  bool Cancel() override;
 
   // Declared virtual so tests can override.
   virtual scoped_refptr<shell_integration::DefaultBrowserWorker>

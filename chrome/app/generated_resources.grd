@@ -11461,9 +11461,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
           Set as default
         </message>
       </if>
-      <message name="IDS_DEFAULT_BROWSER_INFOBAR_CANCEL_BUTTON_LABEL" desc="The label of the 'don't ask again' button on the default browser infobar.">
-        Don't ask again
-      </message>
 
       <if expr="is_linux and not chromeos">
         <message name="IDS_SHOW_WINDOW_DECORATIONS_MENU" desc="The menu entry text in the tab strip context menu.  This toggles the system title bar and window borders (window decorations) on linux.">
