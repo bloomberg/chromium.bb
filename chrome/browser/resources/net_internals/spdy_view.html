@@ -1,22 +1,19 @@
 <div id=spdy-view-tab-content class=content-box>
   <ul id=spdy-view-status style='margin-top:0'>
-    <!-- "enable_http2" and "enable_spdy31" are used since release 50, see
-         https://crrev.com/1651123002.  "spdy_enabled" is here to support
-         importing netlog json files from earlier browsers.
-         TODO(bnc): Deprecate around 2016 July. -->
-    <li>HTTP/2 Enabled: <span jscontent="$this.enable_http2 == undefined ? $this.spdy_enabled : $this.enable_http2"></span></li>
-    <li>SPDY/3.1 Enabled: <span jscontent="$this.enable_spdy31 == undefined ? $this.spdy_enabled : $this.enable_spdy31"></span></li>
-    <!-- "use_alternative_service" is used here since release 46, see
-         https://crrev.com/1268313004.  "use_alternate_protocols" is here to
-         support importing netlog json files from earlier browsers.
-         TODO(bnc): Deprecate around 2016 February. -->
-    <li>Use Alternative Service: <span jscontent="$this.use_alternative_services == undefined ? $this.use_alternate_protocols : $this.use_alternative_services"></span></li>
-    <!-- "alpn_protos" and "npn_protos" are used here since release 48, see
-         https://crrev.com/1387363004.  "next_protos" is here to support
-         importing netlog json files from earlier browsers.
-         TODO(bnc): Deprecate around 2016 April. -->
-    <li>ALPN Protocols: <span jscontent="$this.alpn_protos || $this.next_protos"></span></li>
-    <li>NPN Protocols: <span jscontent="$this.npn_protos || $this.next_protos"></span></li>
+    <li>HTTP/2 Enabled: <span jscontent="enable_http2"></span></li>
+    <!-- "enable_spdy31" was removed at https://crrev.com/2115213002 in release 54.
+         It is here to support netlog json files from earlier browsers.
+         TODO(bnc): Remove around 2016 December. -->
+    <li>SPDY/3.1 Enabled: <span jscontent="enable_spdy31"></span></li>
+    <!-- "use_alternative_services" was removed at https://crrev.com/2011983002
+         in release 53.  It is here to support netlog json files from earlier browsers.
+         TODO(bnc): Remove around 2016 December. -->
+    <li>Use Alternative Service: <span jscontent="use_alternative_services"></span></li>
+    <li>ALPN Protocols: <span jscontent="alpn_protos"></span></li>
+    <!-- "npn_protos" was removed at https://crrev.com/2111243004 in release 54.
+         It is here to support netlog json files from earlier browsers.
+         TODO(bnc): Remove around 2016 December. -->
+    <li>NPN Protocols: <span jscontent="npn_protos"></span></li>
   </ul>
 
   <h4>HTTP/2 sessions</h4>
