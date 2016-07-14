@@ -9,30 +9,32 @@
     android:layout_height="match_parent" >
 
     <!-- MAIN CONTENT -->
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#ffffff">
+        android:background="#ffffff"
+        android:orientation="vertical" >
         
         <org.chromium.chrome.browser.download.ui.DownloadManagerToolbar
             android:id="@id/action_bar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:background="@color/appbar_background" >
-        </org.chromium.chrome.browser.download.ui.DownloadManagerToolbar>
-    
+            android:background="@color/appbar_background" />
+
         <org.chromium.chrome.browser.widget.FadingShadowView
             android:id="@+id/shadow"
             android:layout_width="match_parent"
             android:layout_height="10dp"
-            android:layout_below="@id/action_bar" />
+            android:layout_marginBottom="-10dp" />
+    
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
-        <!-- Insert RecyclerView here for showing items (or lack thereof). -->
-    </RelativeLayout>
+    </LinearLayout>
 
     <!-- NAVIGATION DRAWER
          We can't assign a paddingStart or paddingEnd because the section highlights are full-bleed.

@@ -13,6 +13,8 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.text.format.Formatter;
@@ -29,8 +31,10 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -191,6 +195,7 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
     private DownloadManagerToolbar mToolbar;
     private SpaceDisplay mSpaceDisplay;
     private ListView mFilterView;
+    private RecyclerView mRecyclerView;
 
     public DownloadManagerUi(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -208,6 +213,12 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
         mFilterView = (ListView) findViewById(R.id.section_list);
         mFilterView.setAdapter(mFilterAdapter);
         mFilterView.setOnItemClickListener(mFilterAdapter);
+
+        mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+        mRecyclerView.setAdapter(getDownloadManagerService().getDownloadHistoryAdapter());
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        getDownloadManagerService().getAllDownloads();
     }
 
     /**
@@ -258,6 +269,11 @@ public class DownloadManagerUi extends DrawerLayout implements OnMenuItemClickLi
             return true;
         }
         return false;
+    }
+
+    private DownloadManagerService getDownloadManagerService() {
+        return DownloadManagerService.getDownloadManagerService(
+                ContextUtils.getApplicationContext());
     }
 
 }

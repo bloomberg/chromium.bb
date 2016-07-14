@@ -52,6 +52,10 @@ class DownloadManagerService : public DownloadHistory::Observer {
                      jobject obj,
                      const JavaParamRef<jstring>& jdownload_guid);
 
+  // Called to request that the DownloadManagerService return data about all
+  // downloads in the user's history.
+  void GetAllDownloads(JNIEnv* env, const JavaParamRef<jobject>& obj);
+
   // DownloadHistory::Observer methods.
   void OnHistoryQueryComplete() override;
 
@@ -73,6 +77,9 @@ class DownloadManagerService : public DownloadHistory::Observer {
   // Helper function to pause a download.
   void PauseDownloadInternal(const std::string& download_guid);
 
+  // Helper function to send info about all downloads to the Java-side.
+  void GetAllDownloadsInternal();
+
   // Called to notify the java side that download resumption failed.
   void OnResumptionFailed(const std::string& download_guid);
 
@@ -88,7 +95,7 @@ class DownloadManagerService : public DownloadHistory::Observer {
 
   bool is_history_query_complete_;
 
-  enum DownloadAction { RESUME, PAUSE, CANCEL, UNKNOWN };
+  enum DownloadAction { RESUME, PAUSE, CANCEL, INITIALIZE_UI, UNKNOWN };
 
   using PendingDownloadActions = std::map<std::string, DownloadAction>;
   PendingDownloadActions pending_actions_;

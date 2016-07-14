@@ -29,6 +29,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifierAutoDetect;
@@ -123,6 +124,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @VisibleForTesting protected final Vector<String> mAutoResumableDownloadIds =
             new Vector<String>();
     private final List<DownloadUmaStatsEntry> mUmaEntries = new ArrayList<DownloadUmaStatsEntry>();
+    private final DownloadHistoryAdapter mDownloadHistoryAdapter;
+
     private OMADownloadHandler mOMADownloadHandler;
     private DownloadSnackbarController mDownloadSnackbarController;
     private long mNativeDownloadManagerService;
@@ -232,6 +235,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mOMADownloadHandler = new OMADownloadHandler(context);
         mDownloadSnackbarController = new DownloadSnackbarController(context);
         mDownloadManagerDelegate = new DownloadManagerDelegate(mContext);
+        mDownloadHistoryAdapter = new DownloadHistoryAdapter();
         if (mSharedPrefs.contains(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS)) {
             mSharedPrefs.edit().remove(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS).apply();
         }
@@ -1449,6 +1453,49 @@ public class DownloadManagerService extends BroadcastReceiver implements
         }
     }
 
+    /**
+     * Returns the Adapter that provides a view into the download history.
+     */
+    public DownloadHistoryAdapter getDownloadHistoryAdapter() {
+        return mDownloadHistoryAdapter;
+    }
+
+    /**
+     * Begins sending back information about all entries in the user's DownloadHistory, with each
+     * individual DownloadItem's data passed back via
+     * {@link #onDownloadInfoAdded(String, String, String, String, long, long)}.
+     *
+     * This call will be delayed if the native side has not yet been initialized.
+     */
+    public void getAllDownloads() {
+        mDownloadHistoryAdapter.clear();
+        nativeGetAllDownloads(getNativeDownloadManagerService());
+    }
+
+    @CalledByNative
+    private List<DownloadItem> createDownloadItemList() {
+        return new ArrayList<DownloadItem>();
+    }
+
+    @CalledByNative
+    private void addDownloadItemToList(List<DownloadItem> list, String guid, String filename,
+            String url, String mimeType, long startTimestamp, long totalBytes) {
+        DownloadInfo.Builder builder = new DownloadInfo.Builder()
+                .setDownloadGuid(guid)
+                .setFileName(filename)
+                .setUrl(url)
+                .setMimeType(mimeType)
+                .setContentLength(totalBytes);
+        DownloadItem downloadItem = new DownloadItem(false, builder.build());
+        downloadItem.setStartTime(startTimestamp);
+        list.add(downloadItem);
+    }
+
+    @CalledByNative
+    private void onAllDownloadsRetrieved(final List<DownloadItem> list) {
+        mDownloadHistoryAdapter.onAllDownloadsRetrieved(list);
+    }
+
     @Override
     public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
 
@@ -1471,4 +1518,5 @@ public class DownloadManagerService extends BroadcastReceiver implements
             long nativeDownloadManagerService, String downloadGuid, boolean isOffTheRecord,
             boolean isNotificationDismissed);
     private native void nativePauseDownload(long nativeDownloadManagerService, String downloadGuid);
+    private native void nativeGetAllDownloads(long nativeDownloadManagerService);
 }

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.download;
 /**
  * Class representing the state of a single download.
  */
-final class DownloadInfo {
+public final class DownloadInfo {
     private final String mUrl;
     private final String mUserAgent;
     private final String mMimeType;

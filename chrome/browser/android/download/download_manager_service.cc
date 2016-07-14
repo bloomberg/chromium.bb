@@ -23,6 +23,16 @@ using base::android::JavaParamRef;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 
+namespace {
+
+bool ShouldShowDownloadItem(content::DownloadItem* item) {
+  return !item->IsTemporary() &&
+      !item->GetFileNameToReportUser().empty() &&
+      !item->GetTargetFilePath().empty();
+}
+
+}  // namespace
+
 // static
 bool DownloadManagerService::RegisterDownloadManagerService(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -73,6 +83,50 @@ void DownloadManagerService::PauseDownload(
     EnqueueDownloadAction(download_guid, PAUSE);
 }
 
+void DownloadManagerService::GetAllDownloads(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  if (is_history_query_complete_)
+    GetAllDownloadsInternal();
+  else
+    EnqueueDownloadAction(std::string(), INITIALIZE_UI);
+}
+
+void DownloadManagerService::GetAllDownloadsInternal() {
+  content::DownloadManager* manager = GetDownloadManager(false);
+  if (java_ref_.is_null() || !manager)
+    return;
+
+  content::DownloadManager::DownloadVector all_items;
+  manager->GetAllDownloads(&all_items);
+
+  // Create a Java array of all of the visible DownloadItems.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_download_item_list =
+      Java_DownloadManagerService_createDownloadItemList(env, java_ref_.obj());
+
+  for (size_t i = 0; i < all_items.size(); i++) {
+    content::DownloadItem* item = all_items[i];
+    if (!ShouldShowDownloadItem(item))
+      continue;
+
+    Java_DownloadManagerService_addDownloadItemToList(
+        env,
+        java_ref_.obj(),
+        j_download_item_list.obj(),
+        ConvertUTF8ToJavaString(env, item->GetGuid()).obj(),
+        ConvertUTF8ToJavaString(
+            env, item->GetFileNameToReportUser().BaseName().value()).obj(),
+        ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()).obj(),
+        ConvertUTF8ToJavaString(env, item->GetMimeType()).obj(),
+        item->GetStartTime().ToJavaTime(),
+        item->GetTotalBytes());
+  }
+
+  Java_DownloadManagerService_onAllDownloadsRetrieved(
+      env, java_ref_.obj(), j_download_item_list.obj());
+}
+
+
 void DownloadManagerService::CancelDownload(
     JNIEnv* env,
     jobject obj,
@@ -113,6 +167,9 @@ void DownloadManagerService::OnHistoryQueryComplete() {
         break;
       case CANCEL:
         CancelDownloadInternal(download_guid, false);
+        break;
+      case INITIALIZE_UI:
+        GetAllDownloadsInternal();
         break;
       default:
         NOTREACHED();
@@ -186,6 +243,9 @@ void DownloadManagerService::EnqueueDownloadAction(
         iter->second = action;
       break;
     case CANCEL:
+      iter->second = action;
+      break;
+    case INITIALIZE_UI:
       iter->second = action;
       break;
     default:
