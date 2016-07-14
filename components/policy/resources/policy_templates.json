@@ -4859,13 +4859,13 @@
       },
       'example_value': False,
       'id': 293,
-      'caption': '''Send monitoring heartbeats to the management server''',
+      'caption': '''Send network packets to the management server to monitor online status''',
       'tags': ['admin-sharing'],
-      'desc': '''Send monitoring heartbeats to the management server, to allow
+      'desc': '''Send network packets to the management server to monitor online status, to allow
       the server to detect if the device is offline.
 
-      If this policy is set to true, monitoring heartbeats will be sent. If set
-      to false or unset, then no heartbeats will be sent.''',
+      If this policy is set to true, monitoring network packets (so-called <ph name="HEARTBEATS_TERM">heartbeats</ph>) will be sent.
+      If set to false or unset, no packets will be sent.''',
     },
     {
       'name': 'HeartbeatFrequency',
@@ -4878,9 +4878,9 @@
       },
       'example_value': 180000,
       'id': 294,
-      'caption': '''Frequency of monitoring heartbeats''',
+      'caption': '''Frequency of monitoring network packets''',
       'tags': [],
-      'desc': '''How frequently monitoring heartbeats are sent, in milliseconds.
+      'desc': '''How frequently monitoring network packets are sent, in milliseconds.
 
       If this policy is unset, the default frequency is 3 minutes. The minimum
       frequency is 30 seconds and the maximum frequency is 24 hours - values
