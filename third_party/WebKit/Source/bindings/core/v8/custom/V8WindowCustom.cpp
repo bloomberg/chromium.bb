@@ -173,6 +173,10 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     // None of these need to be RefPtr because info and context are guaranteed
     // to hold on to them.
     DOMWindow* window = V8Window::toImpl(info.Holder());
+    // TODO(yukishiino): The HTML spec specifies that we should use the
+    // Incumbent Realm instead of the Current Realm, but currently we don't have
+    // a way to retrieve the Incumbent Realm.  See also:
+    // https://html.spec.whatwg.org/multipage/comms.html#dom-window-postmessage
     LocalDOMWindow* source = currentDOMWindow(info.GetIsolate());
 
     ASSERT(window);
