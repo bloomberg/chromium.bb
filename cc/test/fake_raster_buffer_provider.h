@@ -24,7 +24,7 @@ class FakeRasterBufferProviderImpl : public RasterBufferProvider {
   void OrderingBarrier() override;
   ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
   bool IsResourceSwizzleRequired(bool must_support_alpha) const override;
-  bool IsPartialRasterSupported() const override;
+  bool CanPartialRasterIntoProvidedResource() const override;
   void Shutdown() override;
 };
 

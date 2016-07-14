@@ -108,7 +108,7 @@ bool BitmapRasterBufferProvider::IsResourceSwizzleRequired(
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
 }
 
-bool BitmapRasterBufferProvider::IsPartialRasterSupported() const {
+bool BitmapRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
   return true;
 }
 

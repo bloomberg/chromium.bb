@@ -1331,7 +1331,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
   EXPECT_FALSE(host_impl()->is_likely_to_require_a_draw());
 
-  host_impl()->resource_pool()->ReleaseResource(resource, 0);
+  host_impl()->resource_pool()->ReleaseResource(resource);
 }
 
 TEST_F(TileManagerTilePriorityQueueTest, DefaultMemoryPolicy) {
@@ -1783,8 +1783,11 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   // Make sure that the tile we invalidated above was not returned to the pool
   // with its invalidated resource ID.
   host_impl()->resource_pool()->CheckBusyResources();
-  EXPECT_FALSE(host_impl()->resource_pool()->TryAcquireResourceWithContentId(
-      kInvalidatedId));
+  gfx::Rect total_invalidated_rect;
+  EXPECT_FALSE(host_impl()->resource_pool()->TryAcquireResourceForPartialRaster(
+      kInvalidatedId + 1, gfx::Rect(), kInvalidatedId,
+      &total_invalidated_rect));
+  EXPECT_EQ(gfx::Rect(), total_invalidated_rect);
 
   // Free our host_impl_ before the tile_task_manager we passed it, as it
   // will use that class in clean up.
@@ -1836,9 +1839,10 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
       &raster_buffer_provider);
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
-  host_impl->resource_pool()->ReleaseResource(
-      host_impl->resource_pool()->AcquireResource(kTileSize, RGBA_8888),
-      kInvalidatedId);
+  auto* resource =
+      host_impl->resource_pool()->AcquireResource(kTileSize, RGBA_8888);
+  host_impl->resource_pool()->OnContentReplaced(resource->id(), kInvalidatedId);
+  host_impl->resource_pool()->ReleaseResource(resource);
   host_impl->resource_pool()->CheckBusyResources();
 
   scoped_refptr<FakeRasterSource> pending_raster_source =

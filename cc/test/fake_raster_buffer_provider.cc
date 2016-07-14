@@ -33,7 +33,8 @@ bool FakeRasterBufferProviderImpl::IsResourceSwizzleRequired(
   return ResourceFormatRequiresSwizzle(GetResourceFormat(must_support_alpha));
 }
 
-bool FakeRasterBufferProviderImpl::IsPartialRasterSupported() const {
+bool FakeRasterBufferProviderImpl::CanPartialRasterIntoProvidedResource()
+    const {
   return true;
 }
 

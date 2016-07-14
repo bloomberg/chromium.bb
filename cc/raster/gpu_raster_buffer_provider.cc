@@ -194,7 +194,7 @@ bool GpuRasterBufferProvider::IsResourceSwizzleRequired(
   return false;
 }
 
-bool GpuRasterBufferProvider::IsPartialRasterSupported() const {
+bool GpuRasterBufferProvider::CanPartialRasterIntoProvidedResource() const {
   return true;
 }
 

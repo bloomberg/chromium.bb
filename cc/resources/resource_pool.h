@@ -42,8 +42,20 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   ~ResourcePool() override;
 
   Resource* AcquireResource(const gfx::Size& size, ResourceFormat format);
-  Resource* TryAcquireResourceWithContentId(uint64_t content_id);
-  void ReleaseResource(Resource* resource, uint64_t content_id);
+
+  // Tries to acquire the resource with |previous_content_id| for us in partial
+  // raster. If successful, this function will retun the invalidated rect which
+  // must be re-rastered in |total_invalidated_rect|.
+  Resource* TryAcquireResourceForPartialRaster(
+      uint64_t new_content_id,
+      const gfx::Rect& new_invalidated_rect,
+      uint64_t previous_content_id,
+      gfx::Rect* total_invalidated_rect);
+
+  // Called when a resource's content has been fully replaced (and is completely
+  // valid). Updates the resource's content ID to its new value.
+  void OnContentReplaced(ResourceId resource_id, uint64_t content_id);
+  void ReleaseResource(Resource* resource);
 
   void SetResourceUsageLimits(size_t max_memory_usage_bytes,
                               size_t max_resource_count);
@@ -95,11 +107,17 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
     base::TimeTicks last_usage() const { return last_usage_; }
     void set_last_usage(base::TimeTicks time) { last_usage_ = time; }
 
+    gfx::Rect invalidated_rect() const { return invalidated_rect_; }
+    void set_invalidated_rect(const gfx::Rect& invalidated_rect) {
+      invalidated_rect_ = invalidated_rect;
+    }
+
    private:
     explicit PoolResource(ResourceProvider* resource_provider)
         : ScopedResource(resource_provider), content_id_(0) {}
     uint64_t content_id_;
     base::TimeTicks last_usage_;
+    gfx::Rect invalidated_rect_;
   };
 
   void DidFinishUsingResource(std::unique_ptr<PoolResource> resource);
@@ -125,7 +143,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
   ResourceDeque unused_resources_;
   ResourceDeque busy_resources_;
 
-  std::map<ResourceId, std::unique_ptr<PoolResource>> in_use_resources_;
+  using InUseResourceMap = std::map<ResourceId, std::unique_ptr<PoolResource>>;
+  InUseResourceMap in_use_resources_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   bool evict_expired_resources_pending_;

@@ -50,6 +50,7 @@ class RasterTaskImpl : public TileTask {
                  scoped_refptr<RasterSource> raster_source,
                  const RasterSource::PlaybackSettings& playback_settings,
                  TileResolution tile_resolution,
+                 gfx::Rect invalidated_rect,
                  uint64_t source_prepare_tiles_id,
                  std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
@@ -60,7 +61,7 @@ class RasterTaskImpl : public TileTask {
         resource_(resource),
         raster_source_(std::move(raster_source)),
         content_rect_(tile->content_rect()),
-        invalid_content_rect_(tile->invalidated_content_rect()),
+        invalid_content_rect_(invalidated_rect),
         contents_scale_(tile->contents_scale()),
         playback_settings_(playback_settings),
         tile_resolution_(tile_resolution),
@@ -745,7 +746,7 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
 void TileManager::FreeResourcesForTile(Tile* tile) {
   TileDrawInfo& draw_info = tile->draw_info();
   if (draw_info.resource_) {
-    resource_pool_->ReleaseResource(draw_info.resource_, tile->id());
+    resource_pool_->ReleaseResource(draw_info.resource_);
     draw_info.resource_ = nullptr;
   }
 }
@@ -932,12 +933,13 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   // Get the resource.
   uint64_t resource_content_id = 0;
   Resource* resource = nullptr;
+  gfx::Rect invalidated_rect = tile->invalidated_content_rect();
   if (UsePartialRaster() && tile->invalidated_id()) {
-    // TODO(danakj): For resources that are in use, we should still grab them
-    // and copy from them instead of rastering everything. crbug.com/492754
-    resource =
-        resource_pool_->TryAcquireResourceWithContentId(tile->invalidated_id());
+    resource = resource_pool_->TryAcquireResourceForPartialRaster(
+        tile->id(), tile->invalidated_content_rect(), tile->invalidated_id(),
+        &invalidated_rect);
   }
+
   if (resource) {
     resource_content_id = tile->invalidated_id();
     DCHECK_EQ(DetermineResourceFormat(tile), resource->format());
@@ -977,15 +979,15 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
     else
       it = images.erase(it);
   }
-
   bool supports_concurrent_execution = !use_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer =
       raster_buffer_provider_->AcquireBufferForRaster(
           resource, resource_content_id, tile->invalidated_id());
   return make_scoped_refptr(new RasterTaskImpl(
       this, tile, resource, prioritized_tile.raster_source(), playback_settings,
-      prioritized_tile.priority().resolution, prepare_tiles_count_,
-      std::move(raster_buffer), &decode_tasks, supports_concurrent_execution));
+      prioritized_tile.priority().resolution, invalidated_rect,
+      prepare_tiles_count_, std::move(raster_buffer), &decode_tasks,
+      supports_concurrent_execution));
 }
 
 void TileManager::OnRasterTaskCompleted(
@@ -1011,14 +1013,11 @@ void TileManager::OnRasterTaskCompleted(
 
   if (was_canceled) {
     ++flush_stats_.canceled_count;
-    // TODO(ericrk): If more partial raster work is done in the future, it may
-    // be worth returning the resource to the pool with its previous ID (not
-    // currently tracked). crrev.com/1370333002/#ps40001 has a possible method
-    // of achieving this.
-    resource_pool_->ReleaseResource(resource, 0 /* content_id */);
+    resource_pool_->ReleaseResource(resource);
     return;
   }
 
+  resource_pool_->OnContentReplaced(resource->id(), tile->id());
   ++flush_stats_.completed_count;
 
   draw_info.set_use_resource();
@@ -1247,7 +1246,7 @@ TileManager::ScheduledTasksStateAsValue() const {
 
 bool TileManager::UsePartialRaster() const {
   return use_partial_raster_ &&
-         raster_buffer_provider_->IsPartialRasterSupported();
+         raster_buffer_provider_->CanPartialRasterIntoProvidedResource();
 }
 
 // Utility function that can be used to create a "Task set finished" task that
