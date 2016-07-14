@@ -1601,7 +1601,7 @@ bool PaintLayer::hitTest(HitTestResult& result)
 
     // LayoutView should make sure to update layout before entering hit testing
     ASSERT(!layoutObject()->frame()->view()->layoutPending());
-    ASSERT(!layoutObject()->document().layoutView()->needsLayout());
+    ASSERT(!layoutObject()->document().layoutViewItem().needsLayout());
 
     const HitTestRequest& request = result.hitTestRequest();
     const HitTestLocation& hitTestLocation = result.hitTestLocation();
