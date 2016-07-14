@@ -56,7 +56,10 @@ class CONTENT_EXPORT NavigatorDelegate {
   // A provisional load in |render_frame_host| failed.
   virtual void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
-      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
+      const GURL& validated_url,
+      int error_code,
+      const base::string16& error_description,
+      bool was_ignored_by_handler) {}
 
   // Document load in |render_frame_host| failed.
   virtual void DidFailLoadWithError(

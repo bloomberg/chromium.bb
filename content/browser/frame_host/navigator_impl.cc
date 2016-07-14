@@ -248,8 +248,11 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
         render_frame_host->navigation_handle());
   }
 
-  if (delegate_)
-    delegate_->DidFailProvisionalLoadWithError(render_frame_host, params);
+  if (delegate_) {
+    delegate_->DidFailProvisionalLoadWithError(
+        render_frame_host, validated_url, params.error_code,
+        params.error_description, params.was_ignored_by_handler);
+  }
 }
 
 void NavigatorImpl::DidFailLoadWithError(
