@@ -123,31 +123,6 @@ const AtomicString& HTMLSelectElement::formControlType() const
     return m_multiple ? selectMultiple : selectOne;
 }
 
-void HTMLSelectElement::optionSelectedByUser(int optionIndex, bool fireOnChangeNow)
-{
-    // User interaction such as mousedown events can cause list box select
-    // elements to send change events.  This produces that same behavior for
-    // changes triggered by other code running on behalf of the user.
-    if (!usesMenuList()) {
-        updateSelectedState(item(optionIndex), false, false);
-        setNeedsValidityCheck();
-        if (fireOnChangeNow)
-            listBoxOnChange();
-        return;
-    }
-
-    // Bail out if this index is already the selected one, to avoid running
-    // unnecessary JavaScript that can mess up autofill when there is no actual
-    // change (see https://bugs.webkit.org/show_bug.cgi?id=35256 and
-    // <rdar://7467917>).  The selectOption function does not behave this way,
-    // possibly because other callers need a change event even in cases where
-    // the selected option is not change.
-    if (optionIndex == selectedIndex())
-        return;
-
-    selectOption(item(optionIndex), DeselectOtherOptions | MakeOptionDirty | (fireOnChangeNow ? DispatchInputAndChangeEvent : 0));
-}
-
 bool HTMLSelectElement::hasPlaceholderLabelOption() const
 {
     // The select element has no placeholder label option if it has an attribute
@@ -1934,7 +1909,19 @@ void HTMLSelectElement::selectOptionByPopup(int listIndex)
         return;
 
     setIndexToSelectOnCancel(-1);
-    optionSelectedByUser(listToOptionIndex(listIndex), true);
+
+    HTMLOptionElement* option = nullptr;
+    if (listIndex >= 0 && isHTMLOptionElement(listItems()[listIndex]))
+        option = toHTMLOptionElement(listItems()[listIndex]);
+    // Bail out if this index is already the selected one, to avoid running
+    // unnecessary JavaScript that can mess up autofill when there is no actual
+    // change (see https://bugs.webkit.org/show_bug.cgi?id=35256 and
+    // <rdar://7467917>).  The selectOption function does not behave this way,
+    // possibly because other callers need a change event even in cases where
+    // the selected option is not change.
+    if (option == selectedOption())
+        return;
+    selectOption(option, DeselectOtherOptions | MakeOptionDirty | DispatchInputAndChangeEvent);
 }
 
 void HTMLSelectElement::popupDidCancel()

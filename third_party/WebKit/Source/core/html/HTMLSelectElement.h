@@ -219,7 +219,6 @@ private:
 
     bool hasPlaceholderLabelOption() const;
 
-    void optionSelectedByUser(int optionIndex, bool dispatchChangeEvent);
     enum SelectOptionFlag {
         DeselectOtherOptions = 1 << 0,
         DispatchInputAndChangeEvent = 1 << 1,
