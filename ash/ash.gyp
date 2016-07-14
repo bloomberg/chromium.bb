@@ -1071,6 +1071,7 @@
         '../url/url.gyp:url_lib',
         'ash_resources.gyp:ash_resources',
         'ash_strings.gyp:ash_strings',
+        'ash_touch_hud.gyp:ash_touch_hud',
       ],
       'defines': [
         'ASH_IMPLEMENTATION',
@@ -1278,6 +1279,7 @@
         'ash_strings.gyp:ash_strings',
         'ash_strings.gyp:ash_test_strings',
         'ash_test_support',
+        'ash_touch_hud.gyp:ash_touch_hud',
         'ash_with_content',
       ],
       'sources': [

@@ -13,6 +13,7 @@
 #include "ash/test/display_manager_test_api.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/touch/touch_hud_projection.h"
+#include "ash/touch_hud/touch_hud_renderer.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
@@ -283,7 +284,7 @@ class TouchHudProjectionTest : public TouchHudTestBase {
   }
 
   int GetInternalTouchPointsCount() {
-    return GetInternalTouchHudProjection()->points_.size();
+    return GetInternalTouchHudProjection()->touch_hud_renderer_->points_.size();
   }
 
   void SendTouchEventToInternalHud(ui::EventType type,
