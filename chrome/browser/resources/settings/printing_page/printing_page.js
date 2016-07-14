@@ -6,14 +6,28 @@ Polymer({
   is: 'settings-printing-page',
 
   properties: {
+    /** Preferences state. */
     prefs: {
+      type: Object,
+      notify: true,
+    },
+
+    /** The current active route. */
+    currentRoute: {
       type: Object,
       notify: true,
     },
   },
 
+<if expr="chromeos">
   /** @private */
-  onManageTap_: function() {
-    window.open(loadTimeData.getString('devicesUrl'));
+  onTapCupsPrinters_: function() {
+    this.$.pages.setSubpageChain(['cups-printers']);
+  },
+</if>
+
+  /** @private */
+  onTapCloudPrinters_: function() {
+    this.$.pages.setSubpageChain(['cloud-printers']);
   },
 });

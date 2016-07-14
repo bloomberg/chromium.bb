@@ -1,28 +1,48 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="/icons.html">
+<link rel="import" href="/printing_page/cloud_printers.html">
+<if expr="chromeos">
+<link rel="import" href="/printing_page/cups_printers.html">
+</if>
+<link rel="import" href="/settings_page/settings_animated_pages.html">
+<link rel="import" href="/settings_page/settings_subpage.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-printing-page">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first">
-      <span>
-        $i18n{printingCloudPrintLearnMoreLabel}
-        <a href="$i18n{printingCloudPrintLearnMoreUrl}" target="_blank">
-          $i18n{learnMore}
-        </a>
-      </span>
-    </div>
-    <div class="settings-box">
-      <settings-checkbox pref="{{prefs.local_discovery.notifications_enabled}}"
-          label="$i18n{printingNotificationsLabel}"></settings-checkbox>
-    </div>
-    <div class="settings-box">
-      <paper-button class="primary-button" on-tap="onManageTap_">
-        $i18n{printingManageCloudPrintDevices}
-      </paper-button>
-    </div>
+    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
+        section="printing">
+      <neon-animatable id="main">
+<if expr="chromeos">
+        <div id="cupsPrinters" class="settings-box first"
+            on-tap="onTapCupsPrinters_" actionable>
+          <iron-icon icon="cr:print"></iron-icon>
+          <div class="middle">$i18n{cupsPrintersTitle}</div>
+        </div>
+</if>
+        <div id="cloudPrinters" class="settings-box"
+            on-tap="onTapCloudPrinters_" actionable>
+          <iron-icon icon="settings:cloud-printing"></iron-icon>
+          <div class="middle">$i18n{cloudPrintersTitle}</div>
+        </div>
+      </neon-animatable>
+<if expr="chromeos">
+      <template is="dom-if" name="cups-printers">
+        <settings-subpage page-title="$i18n{cupsPrintersTitle}">
+          <settings-cups-printers></settings-cups-printers>
+        </settings-subpage>
+      </template>
+</if>
+      <template is="dom-if" name="cloud-printers">
+        <settings-subpage page-title="$i18n{cloudPrintersTitle}">
+          <settings-cloud-printers prefs="{{prefs}}">
+          </settings-cloud-printers>
+        </settings-subpage>
+      </template>
+    </settings-animated-pages>
   </template>
   <script src="printing_page.js"></script>
 </dom-module>

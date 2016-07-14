@@ -81,7 +81,9 @@
       <template is="dom-if" if="[[showPage(pageVisibility.printing)]]" restamp>
         <settings-section page-title="$i18n{printingPageTitle}"
             current-route="[[currentRoute]]" section="printing">
-          <settings-printing-page prefs="{{prefs}}"></settings-printing-page>
+          <settings-printing-page prefs="{{prefs}}"
+              current-route="{{currentRoute}}">
+          </settings-printing-page>
         </settings-section>
       </template>
       <template is="dom-if" if="[[showPage(pageVisibility.a11y)]]" restamp>

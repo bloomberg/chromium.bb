@@ -632,9 +632,26 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PRINTING_PAGE_HTML"
                  file="printing_page/printing_page.html"
+                 flattenhtml="true"
+                 allowexternalscript="true" 
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PRINTING_PAGE_JS"
                  file="printing_page/printing_page.js"
+                 flattenhtml="true"
+                 type="chrome_html" />
+      <if expr="chromeos">
+        <structure name="IDR_SETTINGS_CUPS_PRINTING_PAGE_HTML"
+                   file="printing_page/cups_printers.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CUPS_PRINTING_PAGE_JS"
+                   file="printing_page/cups_printers.js"
+                   type="chrome_html" />
+      </if>
+      <structure name="IDR_SETTINGS_CLOUD_PRINTING_PAGE_HTML"
+                 file="printing_page/cloud_printers.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CLOUD_PRINTING_PAGE_JS"
+                 file="printing_page/cloud_printers.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_HTML"
                  file="privacy_page/privacy_page.html"

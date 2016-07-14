@@ -6,6 +6,17 @@
     {
       'target_name': 'printing_page',
       'dependencies': [
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'cups_printers',
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'cloud_printers',
+      'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

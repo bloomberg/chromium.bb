@@ -904,12 +904,16 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"printingPageTitle", IDS_SETTINGS_PRINTING},
-      {"printingCloudPrintLearnMoreLabel",
-       IDS_SETTINGS_PRINTING_CLOUD_PRINT_LEARN_MORE_LABEL},
-      {"printingNotificationsLabel", IDS_SETTINGS_PRINTING_NOTIFICATIONS_LABEL},
-      {"printingManageCloudPrintDevices",
-       IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES},
+    {"printingPageTitle", IDS_SETTINGS_PRINTING},
+    {"printingCloudPrintLearnMoreLabel",
+     IDS_SETTINGS_PRINTING_CLOUD_PRINT_LEARN_MORE_LABEL},
+    {"printingNotificationsLabel", IDS_SETTINGS_PRINTING_NOTIFICATIONS_LABEL},
+    {"printingManageCloudPrintDevices",
+     IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES},
+    {"cloudPrintersTitle", IDS_SETTINGS_PRINTING_CLOUD_PRINTERS},
+#if defined(OS_CHROMEOS)
+    {"cupsPrintersTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTERS},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

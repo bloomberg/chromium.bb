@@ -550,6 +550,20 @@ Polymer({
       section: 'printing',
       subpage: [],
     },
+<if expr="chromeos">
+    {
+      url: '/cupsPrinters',
+      page: 'advanced',
+      section: 'printing',
+      subpage: ['cups-printers'],
+    },
+</if>
+    {
+      url: '/cloudPrinters',
+      page: 'advanced',
+      section: 'printing',
+      subpage: ['cloud-printers'],
+    },
     {
       url: '/accessibility',
       page: 'advanced',
