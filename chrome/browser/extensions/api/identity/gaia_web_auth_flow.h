@@ -10,6 +10,12 @@
 #include "chrome/browser/extensions/api/identity/web_auth_flow.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
+#include "net/http/http_cache.h"
+
+namespace net {
+class HttpNetworkSession;
+class TrivialURLRequestContextGetter;
+}
 
 namespace extensions {
 
@@ -83,14 +89,44 @@ class GaiaWebAuthFlow : public UbertokenConsumer, public WebAuthFlow::Delegate {
   // for testing. Used to kick off the MergeSession (step #2).
   virtual std::unique_ptr<WebAuthFlow> CreateWebAuthFlow(GURL url);
 
+  class IOHelper {
+   public:
+    IOHelper(base::WeakPtr<GaiaWebAuthFlow> gaia_web_auth_flow,
+             net::URLRequestContextGetter* main_context);
+    ~IOHelper();
+
+    void PrepareRequestContext();
+    void Cleanup();
+
+    net::URLRequestContext* ubertoken_request_context() {
+      return ubertoken_request_context_.get();
+    }
+
+   private:
+    std::unique_ptr<net::HttpCache::BackendFactory> app_backend_;
+    std::unique_ptr<net::HttpNetworkSession> http_network_session_;
+    std::unique_ptr<net::HttpCache> app_http_cache_;
+    std::unique_ptr<net::URLRequestContext> ubertoken_request_context_;
+
+    base::WeakPtr<GaiaWebAuthFlow> gaia_web_auth_flow_;
+    net::URLRequestContextGetter* main_context_;
+  };
+
+  void StartUberTokenFetch();
+
   Delegate* delegate_;
   Profile* profile_;
   std::string account_id_;
   std::string redirect_scheme_;
   std::string redirect_path_prefix_;
   GURL auth_url_;
+
+  std::unique_ptr<IOHelper> io_helper_;
   std::unique_ptr<UbertokenFetcher> ubertoken_fetcher_;
   std::unique_ptr<WebAuthFlow> web_flow_;
+  scoped_refptr<net::TrivialURLRequestContextGetter> context_getter_;
+
+  base::WeakPtrFactory<GaiaWebAuthFlow> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GaiaWebAuthFlow);
 };

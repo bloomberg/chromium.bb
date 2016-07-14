@@ -15,9 +15,13 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace extensions {
 
@@ -28,7 +32,8 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
                                  const std::string& locale)
     : delegate_(delegate),
       profile_(profile),
-      account_id_(token_key->account_id) {
+      account_id_(token_key->account_id),
+      weak_ptr_factory_(this) {
   TRACE_EVENT_ASYNC_BEGIN2("identity",
                            "GaiaWebAuthFlow",
                            this,
@@ -86,17 +91,38 @@ GaiaWebAuthFlow::GaiaWebAuthFlow(Delegate* delegate,
 GaiaWebAuthFlow::~GaiaWebAuthFlow() {
   TRACE_EVENT_ASYNC_END0("identity", "GaiaWebAuthFlow", this);
 
+  if (io_helper_) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&GaiaWebAuthFlow::IOHelper::Cleanup,
+                   base::Unretained(io_helper_.release())));
+  }
+
   if (web_flow_)
     web_flow_.release()->DetachDelegateAndDelete();
 }
 
 void GaiaWebAuthFlow::Start() {
+  io_helper_.reset(new IOHelper(weak_ptr_factory_.GetWeakPtr(),
+                                profile_->GetRequestContext()));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&GaiaWebAuthFlow::IOHelper::PrepareRequestContext,
+                 base::Unretained(io_helper_.get())));
+}
+
+void GaiaWebAuthFlow::StartUberTokenFetch() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
+  context_getter_ = new net::TrivialURLRequestContextGetter(
+      io_helper_->ubertoken_request_context(),
+      profile_->GetRequestContext()->GetNetworkTaskRunner());
   ubertoken_fetcher_.reset(new UbertokenFetcher(token_service,
                                                 this,
                                                 GaiaConstants::kChromeSource,
-                                                profile_->GetRequestContext()));
+                                                context_getter_.get()));
   ubertoken_fetcher_->StartFetchingToken(account_id_);
 }
 
@@ -234,6 +260,49 @@ void GaiaWebAuthFlow::OnAuthFlowTitleChange(const std::string& title) {
 std::unique_ptr<WebAuthFlow> GaiaWebAuthFlow::CreateWebAuthFlow(GURL url) {
   return std::unique_ptr<WebAuthFlow>(
       new WebAuthFlow(this, profile_, url, WebAuthFlow::INTERACTIVE));
+}
+
+GaiaWebAuthFlow::IOHelper::IOHelper(
+    base::WeakPtr<GaiaWebAuthFlow> gaia_web_auth_flow,
+    net::URLRequestContextGetter* main_context)
+    : gaia_web_auth_flow_(gaia_web_auth_flow),
+      main_context_(main_context) {}
+
+GaiaWebAuthFlow::IOHelper::~IOHelper() {}
+
+void GaiaWebAuthFlow::IOHelper::PrepareRequestContext() {
+  net::URLRequestContext* base_context = main_context_->GetURLRequestContext();
+  // Create a temporary request context for the Uber Token Fetch that doesn't
+  // have a Channel ID. This way, the Uber Token will not be channel bound and
+  // will be useable for the MergeSession call that will take place in the app's
+  // request context.
+  ubertoken_request_context_.reset(new net::URLRequestContext);
+
+  ubertoken_request_context_->CopyFrom(base_context);
+  ubertoken_request_context_->set_channel_id_service(nullptr);
+
+  // Merely setting the Channel ID Service isn't enough, we also have to build a
+  // new HttpNetworkSession.
+  app_backend_ = net::HttpCache::DefaultBackend::InMemory(0);
+  net::HttpNetworkSession::Params network_params =
+      *base_context->GetNetworkSessionParams();
+  network_params.channel_id_service = nullptr;
+  http_network_session_.reset(new net::HttpNetworkSession(network_params));
+  app_http_cache_.reset(new net::HttpCache(
+      http_network_session_.get(), std::move(app_backend_), true));
+
+  ubertoken_request_context_->set_http_transaction_factory(
+      app_http_cache_.get());
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&GaiaWebAuthFlow::StartUberTokenFetch,
+                 gaia_web_auth_flow_));
+}
+
+void GaiaWebAuthFlow::IOHelper::Cleanup() {
+  delete this;
 }
 
 }  // namespace extensions
