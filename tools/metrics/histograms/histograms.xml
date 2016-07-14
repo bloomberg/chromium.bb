@@ -28149,6 +28149,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpAuthPromptType" enum="HttpAuthPromptType">
+  <owner>meacer@chromium.org</owner>
+  <summary>Type of the HTTP auth prompt displayed.</summary>
+</histogram>
+
 <histogram name="Net.HttpAuthResource" enum="HttpAuthResource">
   <obsolete>
     Removed in https://crrev.com/209100
@@ -79007,6 +79012,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="NTLM Reject"/>
   <int value="6" label="Negotiate Start"/>
   <int value="7" label="Negotiate Reject"/>
+</enum>
+
+<enum name="HttpAuthPromptType" type="int">
+  <int value="0" label="Main frame with interstitial">
+    Auth prompt displayed over a blank interstitial
+  </int>
+  <int value="1" label="Main frame without interstitial">
+    Auth prompt displayed for the main frame, without a blank interstitial
+  </int>
+  <int value="2" label="Subresource">
+    Auth prompt displayed for a subresource
+  </int>
 </enum>
 
 <enum name="HttpAuthResource" type="int">
