@@ -246,7 +246,11 @@ public:
     int outerBorderStart() const { return m_outerBorderStart; }
     int outerBorderEnd() const { return m_outerBorderEnd; }
 
-    unsigned numRows() const { return m_grid.size(); }
+    unsigned numRows() const
+    {
+        DCHECK(!needsCellRecalc());
+        return m_grid.size();
+    }
     unsigned numEffectiveColumns() const;
 
     // recalcCells() is used when we are not sure about the section's structure

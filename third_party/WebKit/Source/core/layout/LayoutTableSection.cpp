@@ -1227,10 +1227,7 @@ bool LayoutTableSection::recalcChildOverflowAfterStyleChange()
 
 void LayoutTableSection::markAllCellsWidthsDirtyAndOrNeedsLayout(WhatToMarkAllCells whatToMark)
 {
-    for (unsigned i = 0; i < numRows(); i++) {
-        LayoutTableRow* row = rowLayoutObjectAt(i);
-        if (!row)
-            continue;
+    for (LayoutTableRow* row = firstRow(); row; row = row->nextRow()) {
         for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
             cell->setPreferredLogicalWidthsDirty();
             if (whatToMark == MarkDirtyAndNeedsLayout)
