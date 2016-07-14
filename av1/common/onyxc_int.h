@@ -452,8 +452,8 @@ static INLINE int calc_mi_size(int len) {
   return len + MAX_MIB_SIZE;
 }
 
-static void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh, int bwl,
-                         int bhl) {
+static INLINE void set_plane_n4(MACROBLOCKD *const xd, int bw, int bh, int bwl,
+                                int bhl) {
   int i;
   for (i = 0; i < MAX_MB_PLANE; i++) {
     xd->plane[i].n4_w = (bw << 1) >> xd->plane[i].subsampling_x;

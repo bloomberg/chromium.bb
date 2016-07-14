@@ -77,10 +77,6 @@ typedef std::tr1::tuple<FwdTxfmFunc, InvTxfmFunc, int, aom_bit_depth_t>
     Trans32x32Param;
 
 #if CONFIG_AOM_HIGHBITDEPTH
-void idct32x32_8(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_idct32x32_1024_add_c(in, out, stride, 8);
-}
-
 void idct32x32_10(const tran_low_t *in, uint8_t *out, int stride) {
   aom_highbd_idct32x32_1024_add_c(in, out, stride, 10);
 }

@@ -1755,20 +1755,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   return best_rd;
 }
 
-static int64_t rd_sbuv_dcpred(const AV1_COMP *cpi, MACROBLOCK *x, int *rate,
-                              int *rate_tokenonly, int64_t *distortion,
-                              int *skippable, BLOCK_SIZE bsize) {
-  int64_t unused;
-
-  x->e_mbd.mi[0]->mbmi.uv_mode = DC_PRED;
-  memset(x->skip_txfm, SKIP_TXFM_NONE, sizeof(x->skip_txfm));
-  super_block_uvrd(cpi, x, rate_tokenonly, distortion, skippable, &unused,
-                   bsize, INT64_MAX);
-  *rate = *rate_tokenonly +
-          cpi->intra_uv_mode_cost[x->e_mbd.mi[0]->mbmi.mode][DC_PRED];
-  return RDCOST(x->rdmult, x->rddiv, *rate, *distortion);
-}
-
 static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
                                  PICK_MODE_CONTEXT *ctx, BLOCK_SIZE bsize,
                                  TX_SIZE max_tx_size, int *rate_uv,
