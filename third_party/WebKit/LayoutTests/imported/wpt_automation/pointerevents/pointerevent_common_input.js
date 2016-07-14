@@ -59,6 +59,8 @@ function touchTapInTarget(targetId) {
   if (window.chrome && chrome.gpuBenchmarking) {
     var target = document.getElementById(targetId);
     var targetRect = target.getBoundingClientRect();
+    window.scrollTo(targetRect.left, targetRect.top);
+    targetRect = target.getBoundingClientRect();
     chrome.gpuBenchmarking.tap(targetRect.left+5, targetRect.top+5);
   }
 }
@@ -67,6 +69,8 @@ function touchScrollUpInTarget(targetId) {
   if (window.chrome && chrome.gpuBenchmarking) {
     var target = document.getElementById(targetId);
     var targetRect = target.getBoundingClientRect();
+    window.scrollTo(targetRect.left, targetRect.top);
+    targetRect = target.getBoundingClientRect();
     chrome.gpuBenchmarking.smoothDrag(targetRect.left, targetRect.bottom-5, targetRect.left, targetRect.top+5);
   }
 }
@@ -75,6 +79,8 @@ function touchScrollLeftInTarget(targetId) {
   if (window.chrome && chrome.gpuBenchmarking) {
     var target = document.getElementById(targetId);
     var targetRect = target.getBoundingClientRect();
+    window.scrollTo(targetRect.left, targetRect.top);
+    targetRect = target.getBoundingClientRect();
     chrome.gpuBenchmarking.smoothDrag(targetRect.right-5, targetRect.top+5, targetRect.left+5, targetRect.top+5);
   }
 }

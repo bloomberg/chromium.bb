@@ -309,10 +309,11 @@ void OnSyntheticGestureCompleted(CallbackAndContext* callback_and_context) {
   v8::HandleScope scope(isolate);
   v8::Local<v8::Context> context = callback_and_context->GetContext();
   v8::Context::Scope context_scope(context);
+  v8::Local<v8::Function> callback = callback_and_context->GetCallback();
   WebLocalFrame* frame = WebLocalFrame::frameForContext(context);
-  if (frame) {
+  if (frame && !callback.IsEmpty()) {
     frame->callFunctionEvenIfScriptDisabled(
-        callback_and_context->GetCallback(), v8::Object::New(isolate), 0, NULL);
+        callback, v8::Object::New(isolate), 0, NULL);
   }
 }
 
