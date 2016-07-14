@@ -11,7 +11,6 @@
       'content/animated_content_sampler.h',
       'content/capture_resolution_chooser.cc',
       'content/capture_resolution_chooser.h',
-      'content/feedback_signal_accumulator.h',
       'content/screen_capture_device_core.cc',
       'content/screen_capture_device_core.h',
       'content/smooth_event_sampler.cc',
@@ -81,7 +80,6 @@
     'capture_unittests_sources': [
       'content/animated_content_sampler_unittest.cc',
       'content/capture_resolution_chooser_unittest.cc',
-      'content/feedback_signal_accumulator_unittest.cc',
       'content/smooth_event_sampler_unittest.cc',
       'content/video_capture_oracle_unittest.cc',
       'system_message_window_win_unittest.cc',

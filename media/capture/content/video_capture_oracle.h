@@ -7,10 +7,10 @@
 
 #include "base/callback_forward.h"
 #include "base/time/time.h"
+#include "media/base/feedback_signal_accumulator.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/content/animated_content_sampler.h"
 #include "media/capture/content/capture_resolution_chooser.h"
-#include "media/capture/content/feedback_signal_accumulator.h"
 #include "media/capture/content/smooth_event_sampler.h"
 #include "ui/gfx/geometry/rect.h"
 
