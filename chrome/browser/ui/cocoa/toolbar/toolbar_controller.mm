@@ -161,6 +161,7 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 - (void)browserActionsContainerWillAnimate:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
 - (void)updateAppMenuButtonSeverity:(AppMenuIconPainter::Severity)severity
+                           iconType:(AppMenuIconController::IconType)iconType
                             animate:(BOOL)animate;
 @end
 
@@ -205,7 +206,9 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   void UpdateSeverity(AppMenuIconController::IconType type,
                       AppMenuIconPainter::Severity severity,
                       bool animate) override {
-    [controller_ updateAppMenuButtonSeverity:severity animate:animate];
+    [controller_ updateAppMenuButtonSeverity:severity
+                                    iconType:type
+                                     animate:animate];
   }
 
   void OnPreferenceChanged(const std::string& pref_name) {
@@ -817,6 +820,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 }
 
 - (void)updateAppMenuButtonSeverity:(AppMenuIconPainter::Severity)severity
+                           iconType:(AppMenuIconController::IconType)iconType
                             animate:(BOOL)animate {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     AppToolbarButtonCell* cell =
@@ -826,7 +830,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   }
   AppToolbarButton* appMenuButton =
       base::mac::ObjCCastStrict<AppToolbarButton>(appMenuButton_);
-  [appMenuButton setSeverity:severity shouldAnimate:animate];
+  [appMenuButton setSeverity:severity iconType:iconType shouldAnimate:animate];
 }
 
 - (void)prefChanged:(const std::string&)prefName {

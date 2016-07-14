@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 
 class AppMenuButtonIconPainterDelegateMac :
@@ -47,17 +48,34 @@ class AppMenuButtonIconPainterDelegateMac :
   view_id_util::SetID(self, VIEW_ID_APP_MENU);
   delegate_.reset(new AppMenuButtonIconPainterDelegateMac(self));
   severity_ = AppMenuIconPainter::Severity::SEVERITY_NONE;
+  type_ = AppMenuIconController::IconType::NONE;
 }
 
 - (gfx::VectorIconId)vectorIconId {
-  return gfx::VectorIconId::BROWSER_TOOLS;
+  CHECK(ui::MaterialDesignController::IsModeMaterial());
+  switch (type_) {
+    case AppMenuIconController::IconType::NONE:
+      DCHECK_EQ(severity_, AppMenuIconPainter::SEVERITY_NONE);
+      return gfx::VectorIconId::BROWSER_TOOLS;
+    case AppMenuIconController::IconType::UPGRADE_NOTIFICATION:
+      return gfx::VectorIconId::BROWSER_TOOLS_UPDATE;
+    case AppMenuIconController::IconType::GLOBAL_ERROR:
+      return gfx::VectorIconId::BROWSER_TOOLS_ERROR;
+    case AppMenuIconController::IconType::INCOMPATIBILITY_WARNING:
+      return gfx::VectorIconId::BROWSER_TOOLS_WARNING;
+  }
+
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
 - (SkColor)vectorIconColor:(BOOL)themeIsDark {
   switch (severity_) {
     case AppMenuIconPainter::Severity::SEVERITY_NONE:
-    case AppMenuIconPainter::Severity::SEVERITY_LOW:
       return themeIsDark ? SK_ColorWHITE : gfx::kChromeIconGrey;
+      break;
+
+    case AppMenuIconPainter::Severity::SEVERITY_LOW:
+      return themeIsDark ? gfx::kGoogleGreen300 : gfx::kGoogleGreen700;
       break;
 
     case AppMenuIconPainter::Severity::SEVERITY_MEDIUM:
@@ -74,10 +92,12 @@ class AppMenuButtonIconPainterDelegateMac :
 }
 
 - (void)setSeverity:(AppMenuIconPainter::Severity)severity
+           iconType:(AppMenuIconController::IconType)type
       shouldAnimate:(BOOL)shouldAnimate {
-  if (severity != severity_) {
+  if (severity != severity_ || type != type_) {
     severity_ = severity;
-    // Update the button state images with the new severity color.
+    type_ = type;
+    // Update the button state images with the new severity color or icon type.
     [self resetButtonStateImages];
   }
 }
