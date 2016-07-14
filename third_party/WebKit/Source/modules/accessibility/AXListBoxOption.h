@@ -62,7 +62,6 @@ private:
     bool computeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
     HTMLSelectElement* listBoxOptionParentNode() const;
-    int listBoxOptionIndex() const;
     bool isParentPresentationalRole() const;
 };
 

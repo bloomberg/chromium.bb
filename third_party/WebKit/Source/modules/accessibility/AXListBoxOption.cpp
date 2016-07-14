@@ -108,7 +108,7 @@ bool AXListBoxOption::isSelectedOptionActive() const
     if (!listBoxParentNode)
         return false;
 
-    return listBoxParentNode->activeSelectionEndListIndex() == listBoxOptionIndex();
+    return listBoxParentNode->activeSelectionEnd() == getNode();
 }
 
 bool AXListBoxOption::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const
@@ -176,9 +176,7 @@ void AXListBoxOption::setSelected(bool selected)
     if ((isOptionSelected && selected) || (!isOptionSelected && !selected))
         return;
 
-    // Convert from the entire list index to the option index.
-    int optionIndex = selectElement->listToOptionIndex(listBoxOptionIndex());
-    selectElement->accessKeySetSelectedIndex(optionIndex);
+    selectElement->selectOptionByAccessKey(toHTMLOptionElement(getNode()));
 }
 
 HTMLSelectElement* AXListBoxOption::listBoxOptionParentNode() const
@@ -190,22 +188,6 @@ HTMLSelectElement* AXListBoxOption::listBoxOptionParentNode() const
         return toHTMLOptionElement(getNode())->ownerSelectElement();
 
     return 0;
-}
-
-int AXListBoxOption::listBoxOptionIndex() const
-{
-    HTMLSelectElement* selectElement = listBoxOptionParentNode();
-    if (!selectElement)
-        return -1;
-
-    const HeapVector<Member<HTMLElement>>& listItems = selectElement->listItems();
-    unsigned length = listItems.size();
-    for (unsigned i = 0; i < length; i++) {
-        if (listItems[i] == getNode())
-            return i;
-    }
-
-    return -1;
 }
 
 } // namespace blink

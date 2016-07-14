@@ -1064,22 +1064,6 @@ int HTMLSelectElement::optionToListIndex(int optionIndex) const
     return -1;
 }
 
-int HTMLSelectElement::listToOptionIndex(int listIndex) const
-{
-    const ListItems& items = listItems();
-    if (!optionAtListIndex(listIndex))
-        return -1;
-
-    // Actual index of option not counting OPTGROUP entries that may be in list.
-    int optionIndex = 0;
-    for (int i = 0; i < listIndex; ++i) {
-        if (isHTMLOptionElement(*items[i]))
-            ++optionIndex;
-    }
-
-    return optionIndex;
-}
-
 void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
 {
     // Save the selection so it can be compared to the new selection when
@@ -1717,14 +1701,13 @@ void HTMLSelectElement::typeAheadFind(KeyboardEvent* event)
         listBoxOnChange();
 }
 
-void HTMLSelectElement::accessKeySetSelectedIndex(int index)
+void HTMLSelectElement::selectOptionByAccessKey(HTMLOptionElement* option)
 {
     // First bring into focus the list box.
     if (!focused())
         accessKeyAction(false);
 
-    HTMLOptionElement* option = item(index);
-    if (!option)
+    if (!option || option->ownerSelectElement() != this)
         return;
     EventQueueScope scope;
     // If this index is already selected, unselect. otherwise update the

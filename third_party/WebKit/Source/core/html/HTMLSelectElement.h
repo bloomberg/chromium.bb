@@ -102,7 +102,7 @@ public:
     const ListItems& listItems() const;
 
     void accessKeyAction(bool sendMouseEvents) override;
-    void accessKeySetSelectedIndex(int);
+    void selectOptionByAccessKey(HTMLOptionElement*);
 
     void setOption(unsigned index, HTMLOptionElement*, ExceptionState&);
 
@@ -114,7 +114,6 @@ public:
 
     bool canSelectAll() const;
     void selectAll();
-    int listToOptionIndex(int listIndex) const;
     void listBoxOnChange();
     int optionToListIndex(int optionIndex) const;
     int activeSelectionEndListIndex() const;

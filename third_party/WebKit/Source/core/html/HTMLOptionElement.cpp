@@ -171,7 +171,7 @@ void HTMLOptionElement::setText(const String &text, ExceptionState& exceptionSta
 void HTMLOptionElement::accessKeyAction(bool)
 {
     if (HTMLSelectElement* select = ownerSelectElement())
-        select->accessKeySetSelectedIndex(index());
+        select->selectOptionByAccessKey(this);
 }
 
 int HTMLOptionElement::index() const
