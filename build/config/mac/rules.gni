@@ -193,6 +193,10 @@ template("mac_framework_bundle") {
   }
 }
 
+set_defaults("mac_framework_bundle") {
+  configs = default_shared_library_configs
+}
+
 # Template to create a Mac executable application bundle.
 #
 # Arguments

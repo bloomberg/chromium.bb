@@ -455,9 +455,8 @@ set_sources_assignment_filter(sources_assignment_filter)
 # corresponding target. Target definitions can add or remove to the settings
 # here as needed.
 
-# Holds all configs used for making native executables and libraries, to avoid
-# duplication in each target below.
-_native_compiler_configs = [
+# Holds all configs used for running the compiler.
+default_compiler_configs = [
   "//build/config:feature_flags",
   "//build/config/compiler:compiler",
   "//build/config/compiler:clang_stackrealign",
@@ -471,7 +470,7 @@ _native_compiler_configs = [
   "//build/config/sanitizers:default_sanitizer_flags",
 ]
 if (is_win) {
-  _native_compiler_configs += [
+  default_compiler_configs += [
     "//build/config/win:lean_and_mean",
     "//build/config/win:nominmax",
     "//build/config/win:unicode",
@@ -481,22 +480,22 @@ if (is_win) {
 }
 if (current_os == "winrt_81" || current_os == "winrt_81_phone" ||
     current_os == "winrt_10") {
-  _native_compiler_configs += [ "//build/config/win:target_winrt" ]
+  default_compiler_configs += [ "//build/config/win:target_winrt" ]
 }
 if (is_posix) {
-  _native_compiler_configs += [
+  default_compiler_configs += [
     "//build/config/gcc:no_exceptions",
     "//build/config/gcc:symbol_visibility_hidden",
   ]
 }
 
 if (is_android) {
-  _native_compiler_configs +=
+  default_compiler_configs +=
       [ "//build/config/android:default_cygprofile_instrumentation" ]
 }
 
 if (is_clang && !is_nacl) {
-  _native_compiler_configs += [
+  default_compiler_configs += [
     "//build/config/clang:find_bad_constructs",
     "//build/config/clang:extra_warnings",
   ]
@@ -504,15 +503,25 @@ if (is_clang && !is_nacl) {
 
 # Debug/release-related defines.
 if (is_debug) {
-  _native_compiler_configs += [ "//build/config:debug" ]
+  default_compiler_configs += [ "//build/config:debug" ]
 } else {
-  _native_compiler_configs += [ "//build/config:release" ]
+  default_compiler_configs += [ "//build/config:release" ]
 }
 
+# Static libraries and source sets use only the compiler ones.
+set_defaults("static_library") {
+  configs = default_compiler_configs
+}
+set_defaults("source_set") {
+  configs = default_compiler_configs
+}
+
+# Compute the set of configs common to all linked targets (shared libraries,
+# loadable modules, executables) to avoid duplication below.
 if (is_win) {
   # Many targets remove these configs, so they are not contained within
   # //build/config:executable_config for easy removal.
-  _windows_linker_configs = [
+  _linker_configs = [
     "//build/config/win:default_incremental_linking",
 
     # Default to console-mode apps. Most of our targets are tests and such
@@ -520,101 +529,37 @@ if (is_win) {
     "//build/config/win:console",
   ]
 } else if (is_mac) {
-  _mac_linker_configs = [ "//build/config/mac:strip_all" ]
+  _linker_configs = [ "//build/config/mac:strip_all" ]
+} else {
+  _linker_configs = []
 }
 
 # Executable defaults.
-_executable_configs = _native_compiler_configs + [
-                        "//build/config:default_libs",
-                        "//build/config:executable_config",
-                      ]
-if (is_win) {
-  _executable_configs += _windows_linker_configs
-} else if (is_mac) {
-  _executable_configs += _mac_linker_configs
-}
+default_executable_configs = default_compiler_configs + [
+                               "//build/config:default_libs",
+                               "//build/config:executable_config",
+                             ] + _linker_configs
 set_defaults("executable") {
-  configs = _executable_configs
-}
-
-if (is_ios) {
-  set_defaults("ios_app_bundle") {
-    configs = _executable_configs
-  }
-  set_defaults("ios_appex_bundle") {
-    configs = _executable_configs
-  }
-}
-
-# Static library defaults.
-set_defaults("static_library") {
-  configs = _native_compiler_configs
+  configs = default_executable_configs
 }
 
 # Shared library and loadable module defaults (also for components in component
 # mode).
-_shared_library_configs = _native_compiler_configs + [
-                            "//build/config:default_libs",
-                            "//build/config:shared_library_config",
-                          ]
-if (is_win) {
-  _shared_library_configs += _windows_linker_configs
-} else if (is_android) {
+default_shared_library_configs = default_compiler_configs + [
+                                   "//build/config:default_libs",
+                                   "//build/config:shared_library_config",
+                                 ] + _linker_configs
+if (is_android) {
   # Strip native JNI exports from shared libraries by default. Binaries that
   # want this can remove this config.
-  _shared_library_configs +=
+  default_shared_library_configs +=
       [ "//build/config/android:hide_native_jni_exports" ]
-} else if (is_mac) {
-  _shared_library_configs += _mac_linker_configs
 }
 set_defaults("shared_library") {
-  configs = _shared_library_configs
+  configs = default_shared_library_configs
 }
 set_defaults("loadable_module") {
-  configs = _shared_library_configs
-}
-if (is_component_build) {
-  set_defaults("component") {
-    configs = _shared_library_configs
-    if (is_android) {
-      configs -= [ "//build/config/android:hide_native_jni_exports" ]
-    }
-  }
-}
-if (is_ios) {
-  set_defaults("ios_framework_bundle") {
-    configs = _shared_library_configs
-  }
-}
-if (is_mac) {
-  set_defaults("mac_framework_bundle") {
-    configs = _shared_library_configs
-  }
-}
-
-# Source set defaults (also for components in non-component mode).
-set_defaults("source_set") {
-  configs = _native_compiler_configs
-}
-if (!is_component_build) {
-  set_defaults("component") {
-    configs = _native_compiler_configs
-  }
-}
-
-# TODO(brettw) move to //build/split_static_library.gni when set_defaults can
-# be practically implemented outside of this file.
-set_defaults("split_static_library") {
-  configs = _native_compiler_configs
-}
-
-# Test defaults.
-set_defaults("test") {
-  if (is_android) {
-    configs = _shared_library_configs
-  } else {
-    configs = _executable_configs
-  }
+  configs = default_shared_library_configs
 }
 
 # ==============================================================================
@@ -678,5 +623,17 @@ template("component") {
       deps = []
     }
     deps += [ "//build/config/sanitizers:deps" ]
+  }
+}
+
+# Component defaults
+set_defaults("component") {
+  if (is_component_build) {
+    configs = default_shared_library_configs
+    if (is_android) {
+      configs -= [ "//build/config/android:hide_native_jni_exports" ]
+    }
+  } else {
+    configs = default_compiler_configs
   }
 }

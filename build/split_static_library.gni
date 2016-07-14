@@ -51,3 +51,7 @@ template("split_static_library") {
     }
   }
 }
+
+set_defaults("split_static_library") {
+  configs = default_compiler_configs
+}

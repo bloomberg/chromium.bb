@@ -438,6 +438,10 @@ template("ios_app_bundle") {
   }
 }
 
+set_defaults("ios_app_bundle") {
+  configs = default_executable_configs
+}
+
 # Template to build an application extension bundle for iOS.
 #
 # This should be used instead of "executable" built-in target type on iOS.
@@ -488,6 +492,10 @@ template("ios_appex_bundle") {
       "-fapplication-extension",
     ]
   }
+}
+
+set_defaults("ios_appex_bundle") {
+  configs = default_executable_configs
 }
 
 # Compile a xib or storyboard file and add it to a bundle_data so that it is
@@ -783,4 +791,8 @@ template("ios_framework_bundle") {
       ]
     }
   }
+}
+
+set_defaults("ios_framework_bundle") {
+  configs = default_shared_library_configs
 }
