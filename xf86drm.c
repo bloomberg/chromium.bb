@@ -3050,6 +3050,11 @@ free_device:
     return ret;
 }
 
+/* Consider devices located on the same bus as duplicate and fold the respective
+ * entries into a single one.
+ *
+ * Note: this leaves "gaps" in the array, while preserving the length.
+ */
 static void drmFoldDuplicatedDevices(drmDevicePtr local_devices[], int count)
 {
     int node_type, i, j;
@@ -3088,6 +3093,7 @@ int drmGetDevice(int fd, drmDevicePtr *device)
     int maj, min;
     int ret, i, node_count;
     int max_count = 16;
+    dev_t find_rdev;
 
     if (fd == -1 || device == NULL)
         return -EINVAL;
@@ -3095,6 +3101,7 @@ int drmGetDevice(int fd, drmDevicePtr *device)
     if (fstat(fd, &sbuf))
         return -errno;
 
+    find_rdev = sbuf.st_rdev;
     maj = major(sbuf.st_rdev);
     min = minor(sbuf.st_rdev);
 
@@ -3155,17 +3162,21 @@ int drmGetDevice(int fd, drmDevicePtr *device)
             local_devices = temp;
         }
 
-        local_devices[i] = d;
+        /* store target at local_devices[0] for ease to use below */
+        if (find_rdev == sbuf.st_rdev && i) {
+            local_devices[i] = local_devices[0];
+            local_devices[0] = d;
+        }
+        else
+            local_devices[i] = d;
         i++;
     }
     node_count = i;
 
-    /* Fold nodes into a single device if they share the same bus info */
     drmFoldDuplicatedDevices(local_devices, node_count);
 
     *device = local_devices[0];
-    for (i = 1; i < node_count && local_devices[i]; i++)
-            drmFreeDevice(&local_devices[i]);
+    drmFreeDevices(&local_devices[1], node_count - 1);
 
     closedir(sysdir);
     free(local_devices);
@@ -3264,7 +3275,6 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     }
     node_count = i;
 
-    /* Fold nodes into a single device if they share the same bus info */
     drmFoldDuplicatedDevices(local_devices, node_count);
 
     device_count = 0;
