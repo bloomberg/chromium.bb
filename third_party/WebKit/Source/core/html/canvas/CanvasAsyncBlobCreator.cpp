@@ -112,6 +112,7 @@ void CanvasAsyncBlobCreator::dispose()
     // Eagerly let go of references to prevent retention of these
     // resources while any remaining posted tasks are queued.
     m_data.clear();
+    m_document.clear();
     m_callback.clear();
 }
 
