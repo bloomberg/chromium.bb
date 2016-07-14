@@ -63,7 +63,7 @@ public:
         m_value = CSSPrimitiveValue::create(value, m_value->typeWithCalcResolved());
     }
 
-    CSSPrimitiveValue* asCSSPrimitiveValue() const { return m_value.get(); }
+    const CSSPrimitiveValue* asCSSPrimitiveValue() const { return m_value.get(); }
 
     // Resolves LengthTypePercentage into a normalized floating point number (full value is 1.0).
     float valueAsPercentage() const;
@@ -102,7 +102,7 @@ private:
     SVGLength(SVGLengthMode);
     SVGLength(const SVGLength&);
 
-    Member<CSSPrimitiveValue> m_value;
+    Member<const CSSPrimitiveValue> m_value;
     unsigned m_unitMode : 2;
 };
 
