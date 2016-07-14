@@ -42,6 +42,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
@@ -54,7 +55,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/worker_service.h"
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
@@ -1358,4 +1361,75 @@ class DevToolsNetInfoTest : public DevToolsSanityTest {
 
 IN_PROC_BROWSER_TEST_F(DevToolsNetInfoTest, EmulateNetworkConditions) {
   RunTest("testEmulateNetworkConditions", kEmulateNetworkConditionsPage);
+}
+
+class StaticURLDataSource : public content::URLDataSource {
+ public:
+  StaticURLDataSource(const std::string& source, const std::string& content)
+      : source_(source), content_(content) {}
+
+  std::string GetSource() const override { return source_; }
+  void StartDataRequest(const std::string& path,
+                        int render_process_id,
+                        int render_frame_id,
+                        const GotDataCallback& callback) override {
+    std::string data(content_);
+    callback.Run(base::RefCountedString::TakeString(&data));
+  }
+  std::string GetMimeType(const std::string& path) const override {
+    return "text/html";
+  }
+  bool ShouldAddContentSecurityPolicy() const override { return false; }
+
+ private:
+  std::string source_;
+  std::string content_;
+  DISALLOW_COPY_AND_ASSIGN(StaticURLDataSource);
+};
+
+class MockWebUIProvider
+    : public TestChromeWebUIControllerFactory::WebUIProvider {
+ public:
+  MockWebUIProvider(const std::string& source, const std::string& content)
+      : source_(source), content_(content) {}
+
+  content::WebUIController* NewWebUI(content::WebUI* web_ui,
+                                     const GURL& url) override {
+    content::URLDataSource::Add(Profile::FromWebUI(web_ui),
+                                new StaticURLDataSource(source_, content_));
+    return new content::WebUIController(web_ui);
+  }
+
+ private:
+  std::string source_;
+  std::string content_;
+  DISALLOW_COPY_AND_ASSIGN(MockWebUIProvider);
+};
+
+// This tests checks that window is correctly initialized when DevTools is
+// opened while navigation through history with forward and back actions.
+// (crbug.com/627407)
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
+                       TestWindowInitializedOnNavigateBack) {
+  TestChromeWebUIControllerFactory test_factory;
+  MockWebUIProvider mock_provider("dummyurl",
+                                  "<script>\n"
+                                  "  window.abc = 239;\n"
+                                  "  console.log(abc);\n"
+                                  "</script>");
+  test_factory.AddFactoryOverride(GURL("chrome://dummyurl").host(),
+                                  &mock_provider);
+  content::WebUIControllerFactory::RegisterFactory(&test_factory);
+
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://dummyurl"));
+  DevToolsWindow* window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(GetInspectedTab(), true);
+  chrome::DuplicateTab(browser());
+  chrome::SelectPreviousTab(browser());
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  chrome::GoBack(browser(), CURRENT_TAB);
+  RunTestFunction(window, "testWindowInitializedOnNavigateBack");
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(window);
+  content::WebUIControllerFactory::UnregisterFactoryForTesting(&test_factory);
 }

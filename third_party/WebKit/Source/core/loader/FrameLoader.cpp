@@ -1542,6 +1542,9 @@ void FrameLoader::dispatchDidClearDocumentOfWindowObject()
     if (!m_frame->script().canExecuteScripts(NotAboutToExecuteScript))
         return;
 
+    Settings* settings = m_frame->settings();
+    if (settings && settings->forceMainWorldInitialization())
+        m_frame->script().initializeMainWorld();
     InspectorInstrumentation::didClearDocumentOfWindowObject(m_frame);
 
     if (m_dispatchingDidClearWindowObjectInMainWorld)
