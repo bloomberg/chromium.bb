@@ -65,6 +65,8 @@ public:
     bool allowStyleHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
     bool allowDynamic() const;
 
+    bool allowRequestWithoutIntegrity(WebURLRequest::RequestContext, const KURL&, ResourceRequest::RedirectStatus, ContentSecurityPolicy::ReportingStatus) const;
+
     bool strictMixedContentChecking() const { return m_strictMixedContentCheckingEnforced; }
     void reportMixedContent(const KURL& mixedURL, ResourceRequest::RedirectStatus) const;
 
@@ -74,6 +76,7 @@ public:
     bool didSetReferrerPolicy() const { return m_didSetReferrerPolicy; }
     bool isReportOnly() const { return m_reportOnly; }
     const Vector<String>& reportEndpoints() const { return m_reportEndpoints; }
+    uint8_t requireSRIForTokens() const { return m_requireSRIFor; }
     bool isFrameAncestorsEnforced() const { return m_frameAncestors.get() && !m_reportOnly; }
 
     // Used to copy plugin-types into a plugin document in a nested
@@ -88,9 +91,16 @@ public:
 private:
     FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, IsMatchingNoncePresent);
 
+    enum RequireSRIForToken {
+        None = 0,
+        Script = 1 << 0,
+        Style = 1 << 1
+    };
+
     CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     bool parseDirective(const UChar* begin, const UChar* end, String& name, String& value);
+    void parseRequireSRIFor(const String& name, const String& value);
     void parseReportURI(const String& name, const String& value);
     void parsePluginTypes(const String& name, const String& value);
     void parseReflectedXSS(const String& name, const String& value);
@@ -120,6 +130,7 @@ private:
     bool checkSource(SourceListDirective*, const KURL&, ResourceRequest::RedirectStatus) const;
     bool checkMediaType(MediaListDirective*, const String& type, const String& typeAttribute) const;
     bool checkAncestors(SourceListDirective*, LocalFrame*) const;
+    bool checkRequestWithoutIntegrity(WebURLRequest::RequestContext) const;
 
     void setEvalDisabledErrorMessage(const String& errorMessage) { m_evalDisabledErrorMessage = errorMessage; }
 
@@ -129,6 +140,7 @@ private:
     bool checkSourceAndReportViolation(SourceListDirective*, const KURL&, const String& effectiveDirective, ResourceRequest::RedirectStatus) const;
     bool checkMediaTypeAndReportViolation(MediaListDirective*, const String& type, const String& typeAttribute, const String& consoleMessage) const;
     bool checkAncestorsAndReportViolation(SourceListDirective*, LocalFrame*, const KURL&) const;
+    bool checkRequestWithoutIntegrityAndReportViolation(WebURLRequest::RequestContext, const KURL&, ResourceRequest::RedirectStatus) const;
 
     bool denyIfEnforcingPolicy() const { return m_reportOnly; }
 
@@ -165,6 +177,8 @@ private:
     Member<SourceListDirective> m_objectSrc;
     Member<SourceListDirective> m_scriptSrc;
     Member<SourceListDirective> m_styleSrc;
+
+    uint8_t m_requireSRIFor;
 
     Vector<String> m_reportEndpoints;
 

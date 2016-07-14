@@ -47,7 +47,8 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context, const String& ur
 {
     suspendIfNeeded();
 
-    KURL scriptURL = resolveURL(url, exceptionState);
+    // TODO(mkwst): Revisit the context as https://drafts.css-houdini.org/worklets/ evolves.
+    KURL scriptURL = resolveURL(url, exceptionState, WebURLRequest::RequestContextScript);
     if (scriptURL.isEmpty())
         return false;
 

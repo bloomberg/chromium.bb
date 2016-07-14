@@ -47,7 +47,7 @@ AbstractWorker::~AbstractWorker()
 {
 }
 
-KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionState)
+KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionState, WebURLRequest::RequestContext requestContext)
 {
     // FIXME: This should use the dynamic global scope (bug #27887)
     KURL scriptURL = getExecutionContext()->completeURL(url);
@@ -62,7 +62,9 @@ KURL AbstractWorker::resolveURL(const String& url, ExceptionState& exceptionStat
         return KURL();
     }
 
-    if (getExecutionContext()->contentSecurityPolicy() && !getExecutionContext()->contentSecurityPolicy()->allowWorkerContextFromSource(scriptURL)) {
+    if (getExecutionContext()->contentSecurityPolicy()
+        && !(getExecutionContext()->contentSecurityPolicy()->allowRequestWithoutIntegrity(requestContext, scriptURL)
+            && getExecutionContext()->contentSecurityPolicy()->allowWorkerContextFromSource(scriptURL))) {
         exceptionState.throwSecurityError("Access to the script at '" + scriptURL.elidedString() + "' is denied by the document's Content Security Policy.");
         return KURL();
     }

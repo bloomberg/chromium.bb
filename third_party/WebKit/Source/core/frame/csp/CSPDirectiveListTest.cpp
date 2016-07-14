@@ -183,4 +183,81 @@ TEST_F(CSPDirectiveListTest, AllowFromSourceWithNonce)
     }
 }
 
+TEST_F(CSPDirectiveListTest, allowRequestWithoutIntegrity)
+{
+    struct TestCase {
+        const char* list;
+        const char* url;
+        const WebURLRequest::RequestContext context;
+        bool expected;
+    } cases[] = {
+
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+
+        // Extra WSP
+        { "require-sri-for  script     script  ", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+        { "require-sri-for      style    script", "https://example.com/file", WebURLRequest::RequestContextStyle, false },
+
+        { "require-sri-for style script", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+        { "require-sri-for style script", "https://example.com/file", WebURLRequest::RequestContextImport, false },
+        { "require-sri-for style script", "https://example.com/file", WebURLRequest::RequestContextImage, true },
+
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextAudio, true },
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextImport, false },
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextServiceWorker, false },
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextSharedWorker, false },
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextWorker, false },
+        { "require-sri-for script", "https://example.com/file", WebURLRequest::RequestContextStyle, true },
+
+        { "require-sri-for style", "https://example.com/file", WebURLRequest::RequestContextAudio, true },
+        { "require-sri-for style", "https://example.com/file", WebURLRequest::RequestContextScript, true },
+        { "require-sri-for style", "https://example.com/file", WebURLRequest::RequestContextImport, true },
+        { "require-sri-for style", "https://example.com/file", WebURLRequest::RequestContextServiceWorker, true },
+        { "require-sri-for style", "https://example.com/file", WebURLRequest::RequestContextSharedWorker, true },
+        { "require-sri-for style", "https://example.com/file", WebURLRequest::RequestContextWorker, true },
+        { "require-sri-for style", "https://example.com/file", WebURLRequest::RequestContextStyle, false },
+
+        // Multiple tokens
+        { "require-sri-for script style", "https://example.com/file", WebURLRequest::RequestContextStyle, false },
+        { "require-sri-for script style", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+        { "require-sri-for script style", "https://example.com/file", WebURLRequest::RequestContextImport, false },
+        { "require-sri-for script style", "https://example.com/file", WebURLRequest::RequestContextImage, true },
+
+        // Matching is case-insensitive
+        { "require-sri-for Script", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+
+        // Unknown tokens do not affect result
+        { "require-sri-for blabla12 as", "https://example.com/file", WebURLRequest::RequestContextScript, true },
+        { "require-sri-for blabla12 as  script", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+        { "require-sri-for script style img", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+        { "require-sri-for script style img", "https://example.com/file", WebURLRequest::RequestContextImport, false },
+        { "require-sri-for script style img", "https://example.com/file", WebURLRequest::RequestContextStyle, false },
+        { "require-sri-for script style img", "https://example.com/file", WebURLRequest::RequestContextImage, true },
+
+        // Empty token list has no effect
+        { "require-sri-for      ", "https://example.com/file", WebURLRequest::RequestContextScript, true },
+        { "require-sri-for      ", "https://example.com/file", WebURLRequest::RequestContextImport, true },
+        { "require-sri-for      ", "https://example.com/file", WebURLRequest::RequestContextStyle, true },
+        { "require-sri-for      ", "https://example.com/file", WebURLRequest::RequestContextServiceWorker, true },
+        { "require-sri-for      ", "https://example.com/file", WebURLRequest::RequestContextSharedWorker, true },
+        { "require-sri-for      ", "https://example.com/file", WebURLRequest::RequestContextWorker, true },
+
+        // Order does not matter
+        { "require-sri-for a b script", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+        { "require-sri-for a script b", "https://example.com/file", WebURLRequest::RequestContextScript, false },
+    };
+
+    for (const auto& test : cases) {
+        KURL resource = KURL(KURL(), test.url);
+        // Report-only
+        Member<CSPDirectiveList> directiveList = createList(test.list, ContentSecurityPolicyHeaderTypeReport);
+        EXPECT_EQ(true, directiveList->allowRequestWithoutIntegrity(test.context, resource, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+
+        // Enforce
+        directiveList = createList(test.list, ContentSecurityPolicyHeaderTypeEnforce);
+        EXPECT_EQ(test.expected, directiveList->allowRequestWithoutIntegrity(test.context, resource, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    }
+}
+
 } // namespace blink

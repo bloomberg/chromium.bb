@@ -106,6 +106,9 @@ public:
     // https://mikewest.github.io/cors-rfc1918/#csp
     static const char TreatAsPublicAddress[];
 
+    // https://w3c.github.io/webappsec-subresource-integrity/#require-sri-for
+    static const char RequireSRIFor[];
+
     enum ReportingStatus {
         SendReport,
         SuppressReport
@@ -206,7 +209,9 @@ public:
     bool allowScriptWithHash(const String& source, InlineType) const;
     bool allowStyleWithHash(const String& source, InlineType) const;
 
-    bool allowRequest(WebURLRequest::RequestContext, const KURL&, const String& nonce, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
+    bool allowRequestWithoutIntegrity(WebURLRequest::RequestContext, const KURL&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
+
+    bool allowRequest(WebURLRequest::RequestContext, const KURL&, const String& nonce, const IntegrityMetadataSet&, RedirectStatus = RedirectStatus::NoRedirect, ReportingStatus = SendReport) const;
 
     void usesScriptHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
     void usesStyleHashAlgorithms(uint8_t ContentSecurityPolicyHashAlgorithm);
@@ -229,6 +234,7 @@ public:
     void reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value);
     void reportInvalidPathCharacter(const String& directiveName, const String& value, const char);
     void reportInvalidPluginTypes(const String&);
+    void reportInvalidRequireSRIForTokens(const String&);
     void reportInvalidSandboxFlags(const String&);
     void reportInvalidSourceExpression(const String& directiveName, const String& source);
     void reportInvalidReflectedXSS(const String&);

@@ -5,9 +5,11 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 
 #include "core/dom/Document.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/frame/csp/CSPDirectiveList.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/Crypto.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/network/ResourceRequest.h"
@@ -108,8 +110,8 @@ TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled)
 
 TEST_F(ContentSecurityPolicyTest, CopyStateFrom)
 {
-    csp->didReceiveHeader("script-src 'none'; plugin-types application/x-type-1", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
-    csp->didReceiveHeader("img-src http://example.com", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    csp->didReceiveHeader("script-src 'none'; plugin-types application/x-type-1", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
+    csp->didReceiveHeader("img-src http://example.com", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
 
     KURL exampleUrl(KURL(), "http://example.com");
     KURL notExampleUrl(KURL(), "http://not-example.com");
@@ -230,9 +232,134 @@ TEST_F(ContentSecurityPolicyTest, ObjectSrc)
     KURL url(KURL(), "https://example.test");
     csp->bindToExecutionContext(document.get());
     csp->didReceiveHeader("object-src 'none';", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
-    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextObject, url, String(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
-    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextEmbed, url, String(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
-    EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextPlugin, url, String(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextObject, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextEmbed, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextPlugin, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+}
+
+// Tests that requests for scripts and styles are blocked
+// if `require-sri-for` delivered in HTTP header requires integrity be present
+TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderMissingIntegrity)
+{
+    KURL url(KURL(), "https://example.test");
+    // Enforce
+    Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    // Report
+    policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+}
+
+// Tests that requests for scripts and styles are allowed
+// if `require-sri-for` delivered in HTTP header requires integrity be present
+TEST_F(ContentSecurityPolicyTest, RequireSRIForInHeaderPresentIntegrity)
+{
+    KURL url(KURL(), "https://example.test");
+    IntegrityMetadataSet integrityMetadata;
+    integrityMetadata.add(IntegrityMetadata("1234", HashAlgorithmSha384).toPair());
+    csp->bindToExecutionContext(document.get());
+    // Enforce
+    Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    // Content-Security-Policy-Report-Only is not supported in meta element,
+    // so nothing should be blocked
+    policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceHTTP);
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+}
+
+// Tests that requests for scripts and styles are blocked
+// if `require-sri-for` delivered in meta tag requires integrity be present
+TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaMissingIntegrity)
+{
+    KURL url(KURL(), "https://example.test");
+    // Enforce
+    Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    // Content-Security-Policy-Report-Only is not supported in meta element,
+    // so nothing should be blocked
+    policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceMeta);
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), IntegrityMetadataSet(), ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+}
+
+// Tests that requests for scripts and styles are allowed
+// if `require-sri-for` delivered meta tag requires integrity be present
+TEST_F(ContentSecurityPolicyTest, RequireSRIForInMetaPresentIntegrity)
+{
+    KURL url(KURL(), "https://example.test");
+    IntegrityMetadataSet integrityMetadata;
+    integrityMetadata.add(IntegrityMetadata("1234", HashAlgorithmSha384).toPair());
+    csp->bindToExecutionContext(document.get());
+    // Enforce
+    Persistent<ContentSecurityPolicy> policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    // Content-Security-Policy-Report-Only is not supported in meta element,
+    // so nothing should be blocked
+    policy = ContentSecurityPolicy::create();
+    policy->bindToExecutionContext(document.get());
+    policy->didReceiveHeader("require-sri-for script style", ContentSecurityPolicyHeaderTypeReport, ContentSecurityPolicyHeaderSourceMeta);
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextScript, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImport, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextStyle, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextServiceWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextSharedWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextWorker, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(policy->allowRequest(WebURLRequest::RequestContextImage, url, String(), integrityMetadata, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
 }
 
 TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy)

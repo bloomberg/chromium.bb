@@ -96,8 +96,8 @@ public:
     void setCrossOriginAccessControl(SecurityOrigin*, CrossOriginAttributeValue);
     OriginRestriction getOriginRestriction() const { return m_originRestriction; }
     void setOriginRestriction(OriginRestriction restriction) { m_originRestriction = restriction; }
-    const IntegrityMetadataSet& integrityMetadata() const { return m_integrityMetadata; }
-    void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_integrityMetadata = metadata; }
+    const IntegrityMetadataSet integrityMetadata() const { return m_options.integrityMetadata; }
+    void setIntegrityMetadata(const IntegrityMetadataSet& metadata) { m_options.integrityMetadata = metadata; }
 
     String contentSecurityPolicyNonce() const { return m_options.contentSecurityPolicyNonce; }
     void setContentSecurityPolicyNonce(const String& nonce) { m_options.contentSecurityPolicyNonce = nonce; }
@@ -114,7 +114,6 @@ private:
     OriginRestriction m_originRestriction;
     ResourceWidth m_resourceWidth;
     ClientHintsPreferences m_clientHintPreferences;
-    IntegrityMetadataSet m_integrityMetadata;
 };
 
 } // namespace blink

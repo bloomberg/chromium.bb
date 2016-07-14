@@ -76,7 +76,7 @@ SharedWorker* SharedWorker::create(ExecutionContext* context, const String& url,
         return nullptr;
     }
 
-    KURL scriptURL = worker->resolveURL(url, exceptionState);
+    KURL scriptURL = worker->resolveURL(url, exceptionState, WebURLRequest::RequestContextSharedWorker);
     if (scriptURL.isEmpty())
         return nullptr;
 

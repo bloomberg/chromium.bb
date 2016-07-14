@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
+#include "core/fetch/IntegrityMetadata.h"
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
@@ -104,6 +105,9 @@ const char ContentSecurityPolicy::UpgradeInsecureRequests[] = "upgrade-insecure-
 // https://mikewest.github.io/cors-rfc1918/#csp
 const char ContentSecurityPolicy::TreatAsPublicAddress[] = "treat-as-public-address";
 
+// https://w3c.github.io/webappsec-subresource-integrity/#require-sri-for
+const char ContentSecurityPolicy::RequireSRIFor[] = "require-sri-for";
+
 bool ContentSecurityPolicy::isDirectiveName(const String& name)
 {
     return (equalIgnoringCase(name, ConnectSrc)
@@ -127,7 +131,8 @@ bool ContentSecurityPolicy::isDirectiveName(const String& name)
         || equalIgnoringCase(name, ManifestSrc)
         || equalIgnoringCase(name, BlockAllMixedContent)
         || equalIgnoringCase(name, UpgradeInsecureRequests)
-        || equalIgnoringCase(name, TreatAsPublicAddress));
+        || equalIgnoringCase(name, TreatAsPublicAddress)
+        || equalIgnoringCase(name, RequireSRIFor));
 }
 
 static UseCounter::Feature getUseCounterType(ContentSecurityPolicyHeaderType type)
@@ -560,8 +565,21 @@ bool ContentSecurityPolicy::allowStyleWithHash(const String& source, InlineType 
     return checkDigest<&CSPDirectiveList::allowStyleHash>(source, type, m_styleHashAlgorithmsUsed, m_policies);
 }
 
-bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, const KURL& url, const String& nonce, RedirectStatus redirectStatus, ReportingStatus reportingStatus) const
+bool ContentSecurityPolicy::allowRequestWithoutIntegrity(WebURLRequest::RequestContext context, const KURL& url, RedirectStatus redirectStatus, ContentSecurityPolicy::ReportingStatus reportingStatus) const
 {
+    for (const auto& policy : m_policies) {
+        if (!policy->allowRequestWithoutIntegrity(context, url, redirectStatus, reportingStatus))
+            return false;
+    }
+    return true;
+}
+
+bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, const KURL& url, const String& nonce, const IntegrityMetadataSet& integrityMetadata, RedirectStatus redirectStatus, ReportingStatus reportingStatus) const
+{
+    if (integrityMetadata.isEmpty()
+        && !allowRequestWithoutIntegrity(context, url, redirectStatus, reportingStatus))
+        return false;
+
     switch (context) {
     case WebURLRequest::RequestContextAudio:
     case WebURLRequest::RequestContextTrack:
@@ -588,6 +606,7 @@ bool ContentSecurityPolicy::allowRequest(WebURLRequest::RequestContext context, 
         return allowChildFrameFromSource(url, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextImport:
     case WebURLRequest::RequestContextScript:
+        return allowScriptFromSource(url, nonce, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextXSLT:
         return allowScriptFromSource(url, nonce, redirectStatus, reportingStatus);
     case WebURLRequest::RequestContextManifest:
@@ -993,6 +1012,11 @@ void ContentSecurityPolicy::reportInvalidSandboxFlags(const String& invalidFlags
 void ContentSecurityPolicy::reportInvalidReflectedXSS(const String& invalidValue)
 {
     logToConsole("The 'reflected-xss' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"allow\", \"filter\", and \"block\".");
+}
+
+void ContentSecurityPolicy::reportInvalidRequireSRIForTokens(const String& invalidTokens)
+{
+    logToConsole("Error while parsing the 'require-sri-for' Content Security Policy directive: " + invalidTokens);
 }
 
 void ContentSecurityPolicy::reportInvalidDirectiveValueCharacter(const String& directiveName, const String& value)

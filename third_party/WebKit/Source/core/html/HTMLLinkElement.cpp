@@ -688,6 +688,13 @@ void LinkStyle::process()
             request.setCrossOriginAccessControl(document().getSecurityOrigin(), crossOrigin);
             setFetchFollowingCORS();
         }
+
+        String integrityAttr = m_owner->fastGetAttribute(HTMLNames::integrityAttr);
+        if (!integrityAttr.isEmpty()) {
+            IntegrityMetadataSet metadataSet;
+            SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet);
+            request.setIntegrityMetadata(metadataSet);
+        }
         setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));
 
         if (m_loading && !resource()) {

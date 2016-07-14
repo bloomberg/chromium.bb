@@ -252,7 +252,7 @@ void ServiceWorkerContainer::registerServiceWorkerImpl(ExecutionContext* executi
 
     ContentSecurityPolicy* csp = executionContext->contentSecurityPolicy();
     if (csp) {
-        if (!csp->allowWorkerContextFromSource(scriptURL, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SendReport)) {
+        if (!(csp->allowRequestWithoutIntegrity(WebURLRequest::RequestContextServiceWorker, scriptURL) && csp->allowWorkerContextFromSource(scriptURL, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SendReport))) {
             callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity, String("Failed to register a ServiceWorker: The provided scriptURL ('" + scriptURL.getString() + "') violates the Content Security Policy.")));
             return;
         }

@@ -59,7 +59,7 @@ public:
 
 protected:
     // Helper function that converts a URL to an absolute URL and checks the result for validity.
-    KURL resolveURL(const String& url, ExceptionState&);
+    KURL resolveURL(const String& url, ExceptionState&, WebURLRequest::RequestContext);
 };
 
 } // namespace blink
