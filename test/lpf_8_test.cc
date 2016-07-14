@@ -260,7 +260,7 @@ TEST_P(Loop8Test6Param, OperationCheck) {
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, count_));
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-    for (int j = 0; j < kNumCoeffs; ++j) {
+    for (j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
     }
     if (err_count && !err_count_total) {
@@ -424,7 +424,7 @@ TEST_P(Loop8Test9Param, OperationCheck) {
     ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
                                             thresh0, blimit1, limit1, thresh1));
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-    for (int j = 0; j < kNumCoeffs; ++j) {
+    for (j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
     }
     if (err_count && !err_count_total) {
