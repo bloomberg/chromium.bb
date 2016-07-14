@@ -8,10 +8,14 @@
 
 # Keep all runtime visible annotations.
 -keepattributes RuntimeVisibleAnnotations
-
-# Disable optimization as this causes proguard to remove seemingly random stuff,
-# including things explicitly kept in this configuration.
--dontoptimize
+# Keeping annotations - if we remove these keeps, ProGuard will eliminate the
+# annotations themselves, which will prevent them from affecting ProGuard's
+# optimization run.
+-keep @interface **.AccessedByNative
+-keep @interface **.CalledByNative
+-keep @interface **.CalledByNativeUnchecked
+-keep @interface **.RemovableInRelease
+-keep @interface **.UsedByReflection
 
 # Keep the factory and its public members; it's the main entry point used by the
 # framework.
@@ -39,9 +43,17 @@
   native <methods>;
 }
 
-# Keep things explicitly marked as used by reflection
+# Keep classes marked as used by reflection
+-keep @**.UsedByReflection class com.android.webview.chromium.**,org.chromium.**
+
+# Keep members explicitly marked as used by reflection
 -keepclasseswithmembers class com.android.webview.chromium.**,org.chromium.** {
   @**.UsedByReflection *;
+}
+
+# Remove methods annotated with this if their return value is unused
+-assumenosideeffects class ** {
+  @org.chromium.base.annotations.RemovableInRelease <methods>;
 }
 
 # Linker dynamically casts to $TestRunner when running tests. We don't run these
