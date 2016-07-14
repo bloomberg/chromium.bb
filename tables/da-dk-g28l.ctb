@@ -1,0 +1,742 @@
+# liblouis: Danish, table for 8 dots grade 2
+#
+#  Copyright (C) 2014-2016, Bue Vester-Andersen <bue@vester-andersen.dk>
+#
+#  This file is part of liblouis.
+#
+#  liblouis is free software: you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as
+#  published by the Free Software Foundation, either version 2.1 of the
+#  License, or (at your option) any later version.
+#
+#  liblouis is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with liblouis. If not, see
+#  <http://www.gnu.org/licenses/>.
+#
+#------------
+#
+#
+# This  is the Danish table for 8 dots grade 2 limited contractions (lille forkortelse).
+# Use this table for translation and back-translation of Danish 8 dots grade 2 limited.
+#
+# Version: Bue Vester-Andersen, 160713
+
+
+include da-dk-octobraille.dis
+
+### Character definitions ###
+
+sign \x0000 8 NULL
+sign \x0001 178 START OF HEADING
+sign \x0002 1278 START OF TEXT
+sign \x0003 1478 END OF TEXT
+sign \x0004 14578 END OF TRANSMISSION
+sign \x0005 24568 ENQUIRY
+sign \x0006 12478 ACKNOWLEDGE
+sign \x0007 124578 BELL
+sign \x0008 12578 BACKSPACE
+space \t 2478 CHARACTER TABULATION
+space \n 678 LINE FEED (LF)
+space \v 1368 LINE TABULATION
+space \f 12378 FORM FEED (FF)
+space \r 257 CARRIAGE RETURN (CR)
+sign \x000e 134578 SHIFT OUT
+sign \x000f 12358 SHIFT IN
+sign \x0010 123478 DATA LINK ESCAPE
+sign \x0011 1234578 DEVICE CONTROL ONE
+sign \x0012 13568 DEVICE CONTROL TWO
+sign \x0013 4578 DEVICE CONTROL THREE
+sign \x0014 268 DEVICE CONTROL FOUR
+sign \x0015 13678 NEGATIVE ACKNOWLEDGE
+sign \x0016 278 SYNCHRONOUS IDLE
+sign \x0017 3578 END OF TRANSMISSION BLOCK
+sign \x0018 78 CANCEL
+sign \x0019 68 END OF MEDIUM
+sign \x001a 135678 SUBSTITUTE
+sign \x001b 2678 ESCAPE
+sign \x001c 45678 INFORMATION SEPARATOR FOUR
+sign \x001d 12368 INFORMATION SEPARATOR THREE
+sign \x001e 1234678 INFORMATION SEPARATOR TWO
+sign \x001f 235678 INFORMATION SEPARATOR ONE
+space \s 0 SPACE
+punctuation ! 235 EXCLAMATION MARK
+punctuation " 2356 QUOTATION MARK
+punctuation # 34568 NUMBER SIGN
+sign $ 25678 DOLLAR SIGN
+math % 24578 PERCENT SIGN
+sign & 123468 AMPERSAND
+punctuation ' 4 APOSTROPHE
+punctuation ( 2368 LEFT PARENTHESIS
+punctuation ) 3568 RIGHT PARENTHESIS
+math + 2358 PLUS SIGN
+punctuation , 2 COMMA
+punctuation - 368 HYPHEN-MINUS
+punctuation . 3 FULL STOP
+punctuation / 348 SLASH
+include digits8Dots.uti
+punctuation : 25 COLON
+punctuation ; 23 SEMICOLON
+math < 358 LESS-THAN SIGN
+math = 23568 EQUALS SIGN
+math > 267 GREATER-THAN SIGN
+punctuation ? 26 QUESTION MARK
+sign @ 478 COMMERCIAL AT
+uppercase A 17 LATIN CAPITAL LETTER A
+uppercase B 127 LATIN CAPITAL LETTER B
+uppercase C 147 LATIN CAPITAL LETTER C
+uppercase D 1457 LATIN CAPITAL LETTER D
+uppercase E 157 LATIN CAPITAL LETTER E
+uppercase F 1247 LATIN CAPITAL LETTER F
+uppercase G 12457 LATIN CAPITAL LETTER G
+uppercase H 1257 LATIN CAPITAL LETTER H
+uppercase I 247 LATIN CAPITAL LETTER I
+uppercase J 2457 LATIN CAPITAL LETTER J
+uppercase K 137 LATIN CAPITAL LETTER K
+uppercase L 1237 LATIN CAPITAL LETTER L
+uppercase M 1347 LATIN CAPITAL LETTER M
+uppercase N 13457 LATIN CAPITAL LETTER N
+uppercase O 1357 LATIN CAPITAL LETTER O
+uppercase P 12347 LATIN CAPITAL LETTER P
+uppercase R 12357 LATIN CAPITAL LETTER R
+uppercase S 2347 LATIN CAPITAL LETTER S
+uppercase T 23457 LATIN CAPITAL LETTER T
+uppercase U 1367 LATIN CAPITAL LETTER U
+uppercase V 12367 LATIN CAPITAL LETTER V
+uppercase Y 134567 LATIN CAPITAL LETTER Y
+punctuation [ 23678 LEFT SQUARE BRACKET
+punctuation ] 35678 RIGHT SQUARE BRACKET
+punctuation ^ 12348 CIRCUMFLEX ACCENT
+punctuation _ 3678 LOW LINE
+punctuation ` 5 GRAVE ACCENT
+lowercase a 1 LATIN SMALL LETTER A
+lowercase b 12 LATIN SMALL LETTER B
+lowercase c 14 LATIN SMALL LETTER C
+lowercase d 145 LATIN SMALL LETTER D
+lowercase e 15 LATIN SMALL LETTER E
+lowercase f 124 LATIN SMALL LETTER F
+lowercase g 1245 LATIN SMALL LETTER G
+lowercase h 125 LATIN SMALL LETTER H
+lowercase i 24 LATIN SMALL LETTER I
+lowercase j 245 LATIN SMALL LETTER J
+lowercase k 13 LATIN SMALL LETTER K
+lowercase l 123 LATIN SMALL LETTER L
+lowercase m 134 LATIN SMALL LETTER M
+lowercase n 1345 LATIN SMALL LETTER N
+lowercase o 135 LATIN SMALL LETTER O
+lowercase p 1234 LATIN SMALL LETTER P
+lowercase r 1235 LATIN SMALL LETTER R
+lowercase s 234 LATIN SMALL LETTER S
+lowercase t 2345 LATIN SMALL LETTER T
+lowercase u 136 LATIN SMALL LETTER U
+lowercase v 1236 LATIN SMALL LETTER V
+lowercase y 13456 LATIN SMALL LETTER Y
+punctuation { 123678 LEFT CURLY BRACKET
+punctuation | 4568 VERTICAL LINE
+punctuation } 345678 RIGHT CURLY BRACKET
+punctuation ~ 467 TILDE
+sign \x007f 7 DELETE
+sign \x20AC 1578 #EURO SIGN (0x80)
+noback sign \x0080 1578 #EURO SIGN (0x80)
+sign \x0081 45 <control-0081>
+punctuation \x201A 457 #Low single quote (0x82)
+noback punctuation \x0082 457 #Low single quote (0x82)
+sign \x0192 58 #Flurihn (0x83)
+noback sign \x0083 58 #Flurihn (0x83)
+punctuation \x201E 2378 #Low quote (0x84)
+noback punctuation \x0084 2378 #Low quote (0x84)
+letter \x2020 2357 #Dagger (0x86
+noback letter \x0086 2357 #Dagger (0x86
+letter \x2021 23578 #Double dagger (0x87
+noback letter \x0087 23578 #Double dagger (0x87
+letter \x02c6 5678 #Modifier letter circumflex (0x88)
+noback letter \x0088 5678 #Modifier letter circumflex (0x88)
+math \x2030 245678 #permille sign (0x89)
+noback math \x0089 245678 #permille sign (0x89)
+uplow \x0160\x0161 23478,2348 #LATIN CAPITAL LETTER S WITH CARON (0x8a)
+noback uplow \x008a\x009a 23478,2348 #LATIN LETTER S WITH CARON (0x8a)
+punctuation \x2039 456 #SINGLE LEFT-POINTING ANGLE QUOTATION MARK (0x8b)
+noback punctuation \x008b 456 #SINGLE LEFT-POINTING ANGLE QUOTATION MARK (0x8b)
+uplow \x0152\x0153 13578,1358 #LATIN CAPITAL LIGATURE OE (0x8c)
+noback uplow \x008c\x009c 13578,1358 #LATIN LIGATURE OE (0x8c)
+sign \x008d 3567 REVERSE LINE FEED (not defined in cp1252)
+letter \x008f 27 SINGLE SHIFT THREE (not defined in cp1252)
+letter \x0090 357 DEVICE CONTROL STRING (not defined in cp1252)
+punctuation \x2018 47 #LEFT SINGLE QUOTATION MARK (0x91)
+noback punctuation \x0091 47 #LEFT SINGLE QUOTATION MARK (0x91)
+punctuation \x2019 48 #RIGHT SINGLE QUOTATION MARK (0x92)
+noback punctuation \x0092 48 #RIGHT SINGLE QUOTATION MARK (0x92)
+punctuation \x201c 237 #LEFT DOUBLE QUOTATION MARK (0x93)
+noback punctuation \x0093 237 #LEFT DOUBLE QUOTATION MARK (0x93)
+punctuation \x201d 568 #RIGHT DOUBLE QUOTATION MARK (0x94)
+noback punctuation \x0094 568 #RIGHT DOUBLE QUOTATION MARK (0x94)
+sign \x2022 37 #Bullit (0x95)
+noback sign \x0095 37 #Bullit (0x95)
+sign \x02DC 46 #SMALL TILDE (0x98)
+noback sign \x0098 46 #SMALL TILDE (0x98)
+sign \x2122 234578 #TRADE MARK SIGN (0x99)
+noback sign \x0099 234578 #TRADE MARK SIGN (0x99)
+punctuation \x203A 4567 #SINGLE RIGHT-POINTING ANGLE QUOTATION MARK (0x9b)
+noback punctuation \x009b 4567 #SINGLE RIGHT-POINTING ANGLE QUOTATION MARK (0x9b)
+letter \x009d 2567 OPERATING SYSTEM COMMAND
+uppercase \x0178 2345678 #LATIN CAPITAL LETTER Y WITH DIAERESIS (0x9f)
+noback uppercase \x009f 2345678 #LATIN CAPITAL LETTER Y WITH DIAERESIS (0x9f)
+punctuation \x00a0 23458 NO-BREAK SPACE (0xa0)
+punctuation \x00a1 256 INVERTED EXCLAMATION MARK )0xa1)
+punctuation \x00a2 2578 CENT SIGN (0xa2)
+punctuation \x00a3 1238 POUND SIGN (0xa3)
+punctuation \x00a5 67 YEN SIGN (0xa5)
+punctuation \x00a6 3478 BROKEN BAR (0xa6)
+punctuation \x00a7 578 SECTION SIGN (0xa7)
+punctuation \x00a9 134678 COPYRIGHT SIGN (0xa9)
+letter \x00aa 234678 FEMININE ORDINAL INDICATOR (0xaa)
+punctuation \x00ab 57 LEFT-POINTING DOUBLE ANGLE QUOTATION MARK (0xab)
+letter \x00ad 378 SOFT HYPHEN (0xad)
+punctuation \x00ae 123578 REGISTERED SIGN (0xae)
+punctuation \x00af 23567 MACRON (0xaf)
+math \x00b1 123458 PLUS-MINUS SIGN
+punctuation \x00b2 238 SUPERSCRIPT TWO
+punctuation \x00b3 258 SUPERSCRIPT THREE
+punctuation \x00b4 468 ACUTE ACCENT
+punctuation \x00b6 1234568 PILCROW SIGN
+punctuation \x00b7 38 MIDDLE DOT
+punctuation \x00b8 4678 CEDILLA
+punctuation \x00b9 28 SUPERSCRIPT ONE
+letter \x00ba 12345678 MASCULINE ORDINAL INDICATOR
+punctuation \x00bb 567 RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+punctuation \x00bc 13458 VULGAR FRACTION ONE QUARTER
+punctuation \x00bd 458 VULGAR FRACTION ONE HALF
+uplow \x00c1\x00e1 1235678,123568 LATIN  LETTER A WITH ACUTE
+uplow \x00c2\x00e2 1678,168 LATIN  LETTER A WITH CIRCUMFLEX
+uplow \x00c3\x00e3 14678,1468 LATIN  LETTER A WITH TILDE
+uplow \x00c4\x00e4 34578,3458 LATIN  LETTER A WITH DIAERESIS
+uppercase \x00c5 167 LATIN  capital LETTER A WITH RING ABOVE
+uppercase \x00c6 3457 LATIN  capitalLETTER AE
+uplow \x00cc\x00ec 15678,1568 LATIN  LETTER I WITH GRAVE
+uplow \x00cd\x00ed 12678,1268 LATIN  LETTER I WITH ACUTE
+uplow \x00d0\x00f0 1345678,134568 LATIN  LETTER ETH
+uplow \x00d1\x00f1 1245678,124568 LATIN  LETTER N WITH TILDE
+uplow \x00d2\x00f2 124678,12468 LATIN  LETTER O WITH GRAVE
+uplow \x00d3\x00f3 34678,3468 LATIN  LETTER O WITH ACUTE
+uplow \x00d5\x00f5 145678,14568 LATIN  LETTER O WITH TILDE
+uplow \x00d6\x00f6 24678,2468 LATIN  LETTER O WITH DIAERESIS
+math \x00d7 13468 MULTIPLICATION SIGN
+uppercase \x00d8 2467 LATIN CAPITAL LETTER O WITH STROKE
+uplow \x00da\x00fa 125678,12568 LATIN  LETTER U WITH ACUTE
+uplow \x00dd\x00fd 13478,1348 LATIN  LETTER Y WITH ACUTE (infinite?)
+uplow \x00de\x00fe 1378,138 LATIN  LETTER THORN
+lowercase \x00df 23468 LATIN SMALL LETTER SHARP S
+lowercase \x00e5 16 LATIN SMALL LETTER A WITH RING ABOVE
+lowercase \x00e6 345 LATIN SMALL LETTER AE
+math \x00f7 2568 DIVISION SIGN
+lowercase \x00f8 246 LATIN SMALL LETTER O WITH STROKE
+lowercase \x00ff 234568 LATIN SMALL LETTER Y WITH DIAERESIS
+
+
+#Unicode Braille patterns
+include braille-patterns.cti
+
+# characters that have letsign as part of their definition
+# (to be removed when the alwaysletsign opcode has been implemented).
+punctuation * 6-35 ASTERISK
+uppercase Q 6-123457 LATIN CAPITAL LETTER Q
+uppercase W 6-24567 LATIN CAPITAL LETTER W
+uppercase X 6-13467 LATIN CAPITAL LETTER X
+uppercase Z 6-13567 LATIN CAPITAL LETTER Z
+punctuation \\ 6-347 REVERSE SLASH
+lowercase q 6-12345 LATIN SMALL LETTER Q
+lowercase w 6-2456 LATIN SMALL LETTER W
+lowercase x 6-1346 LATIN SMALL LETTER X
+lowercase z 6-1356 LATIN SMALL LETTER Z
+punctuation \x2026 6-3-3-3 #Elipsis (0x85)
+noback punctuation \x0085 6-3-3-3 #Elipsis (0x85)
+uplow \x017d\x017e 6-3467,6-346 #LATIN  LETTER Z WITH CARON (0x8e)
+noback uplow \x008e\x009e 6-3467,6-346 #LATIN  LETTER Z WITH CARON (0x8e)
+letter \x2013 6-36 #EN DASH (0x96)
+noback sign \x0096 6-36 #EN DASH (0x96)
+letter \x2014 6-367 #Em DASH (0x97)
+noback sign \x0097 6-367 #Em DASH (0x97)
+punctuation \x00a4 6-2367 CURRENCY SIGN (0xa4)
+punctuation \x00a8 6-56 DIAERESIS (0xa8)
+punctuation \x00ac 6-34567 NOT SIGN (0xac)
+sign \x00b0 4-356 DEGREE SIGN (0xb0)
+sign \x00b5 6-236 MICRO SIGN
+punctuation \x00be 6-3456 VULGAR FRACTION THREE QUARTERS
+punctuation \x00bf 6-34 INVERTED QUESTION MARK
+uplow \x00c0\x00e0 6-123567,6-12356 LATIN  LETTER A WITH GRAVE
+uplow \x00c7\x00e7 6-123467,6-12346 LATIN  LETTER C WITH CEDILLA
+uplow \x00c8\x00e8 6-23467,6-2346 LATIN  LETTER E WITH GRAVE
+uplow \x00c9\x00e9 6-1234567,6-123456 LATIN  LETTER E WITH ACUTE
+uplow \x00ca\x00ea 6-1267,6-126 LATIN  LETTER E WITH CIRCUMFLEX
+uplow \x00cb\x00eb 6-12467,6-1246 LATIN  LETTER E WITH DIAERESIS
+uplow \x00ce\x00ee 6-1467,6-146 LATIN  LETTER I WITH CIRCUMFLEX
+uplow \x00cf\x00ef 6-124567,6-12456 LATIN  LETTER I WITH DIAERESIS
+uplow \x00d4\x00f4 6-14567,6-1456 LATIN  LETTER O WITH CIRCUMFLEX
+uplow \x00d9\x00f9 6-234567,6-23456 LATIN  LETTER U WITH GRAVE
+uplow \x00db\x00fb 6-1567,6-156 LATIN  LETTER U WITH CIRCUMFLEX
+uplow \x00dc\x00fc 6-12567,6-1256 LATIN  LETTER U WITH DIAERESIS
+
+# Misc letters from other character sets prefixed with dot 5
+# to be implemented
+
+### misc opcodes ###
+
+# Emphasis opcodes
+emphclass italic
+emphclass underline
+emphclass bold
+
+begemphphrase italic 56
+endemphphrase italic after 56
+begemphword italic 56
+endemphword italic 56
+
+begemphphrase bold 56
+endemphphrase bold after 56
+begemphword bold 56
+endemphword bold 56
+
+begemphphrase underline 56
+endemphphrase underline after 56
+begemphword underline 56
+endemphword underline 56
+
+# special symbols
+decpoint , 2
+hyphen - 368
+letsign 6
+noletsign Ii
+noletsignbefore 1234567890
+
+# Special characters that always need letsigns because they represent contractions
+always * 6-35
+always ° 6-356
+always µ 6-236
+always \\ 6-347
+always \x2013 6-36 # en dash
+noback always \x0096 6-36 # en dash
+always \x2014 6-367 # em dash
+noback always \x0097 6-367 # em dash
+always \x00a1 6-256 # inverted exclamationmark
+always \x00bf 6-34 # inverted questionmark
+
+always \x2026 6-3-3-3
+noback always \x0085 6-3-3-3
+
+always ¾ 6-3456 # 3/4 or ve
+always \x00ac 6-34567 # not sign or Ve
+
+#Special sequences, urls emails and file names.
+
+nocont $
+nocont \\
+nocont @
+nocont ://
+nocont www
+nocont .com
+nocont .dk
+nocont .eu
+nocont .edu
+nocont .gov
+nocont .mil
+nocont .net
+nocont .org
+nocont .uk
+nocont .doc
+nocont .exe
+nocont .htm
+nocont .tex
+nocont .txt
+nocont .gif
+nocont .jpg
+nocont .png
+nocont .wav
+nocont .tar
+nocont .zip
+
+# Word contractions with only 1 cell
+word at 1
+word bliver 12
+word den 12346
+word der 23456
+word det 2346
+word de 1456
+word du 145
+word efter 1356
+word eller 15
+word en 126
+word er 156
+word et 346
+word for 124
+word før 246
+word gennem 12456
+word gør 1245
+word han 13456
+word har 125
+word hun 136
+word hvad 2456
+word hvor 34
+word jeg 245
+word kan 13
+word lige 123
+word med 134
+word men 146
+word ned 1246
+word når 1345
+word og 14
+word op 135
+word over 1346
+word på 1234
+word ret 12356
+word rigtig 1235
+word skal 123456
+word som 234
+word så 16
+word te 1256
+word til 2345
+word under 12345
+word ved 1236
+word ve 3456
+word være 345
+
+# Word contractions with only 1 cell (capital version)
+word At 17
+word Bliver 127
+word Den 123467
+word Der 234567
+word Det 23467
+word De 14567
+word Du 1457
+word Efter 13567
+word Eller 157
+word En 1267
+word Er 1567
+word Et 3467
+word For 1247
+word Før 2467
+word Gennem 124567
+word Gør 12457
+word Han 134567
+word Har 1257
+word Hun 1367
+word Hvad 24567
+word Hvor 347
+word Jeg 2457
+word Kan 137
+word Lige 1237
+word Med 1347
+word Men 1467
+word Ned 12467
+word Når 13457
+word Og 147
+word Op 1357
+word Over 13467
+word På 12347
+word Ret 123567
+word Rigtig 12357
+word Skal 1234567
+word Som 2347
+word Så 167
+word Te 12567
+word Til 23457
+word Under 123457
+word Ved 12367
+word Ve 34567
+word Være 3457
+
+### Exceptions ###
+
+# Ensure no single cell word contraction before or after a dash
+word -at 368-1-2345
+word at- 1-2345-368
+word -bliver 368-12-123-24-1236-15-1235
+word bliver- 12-123-24-1236-15-1235-368
+word -den 368-145-15-1345
+word den- 145-15-1345-368
+word -der 368-145-15-1235
+word der- 145-15-1235-368
+word -det 368-145-15-2345
+word det- 145-15-2345-368
+word -de 368-145-15
+word de- 145-15-368
+word -du 368-145-136
+word du- 145-136-368
+word -efter 368-15-124-2345-15-1235
+word efter- 15-124-2345-15-1235-368
+word -er 368-15-1235
+word er- 15-1235-368
+word -et 368-15-2345
+word et- 15-2345-368
+word -for 368-124-135-1235
+word for- 124-135-1235-368
+word -før 368-124-246-1235
+word før- 124-246-1235-368
+word -gennem 368-1245-15-1345-1345-15-134
+word gennem- 1245-15-1345-1345-15-134-368
+word -gør 368-1245-246-1235
+word gør- 1245-246-1235-368
+word -han 368-125-1-1345
+word han- 125-1-1345-368
+word -har 368-125-1-1235
+word har- 125-1-1235-368
+word -hun 368-125-136-1345
+word hun- 125-136-1345-368
+word -kan 368-13-1-1345
+word kan- 13-1-1345-368
+word -lige 368-123-24-12456
+word lige- 123-24-12456-368
+word -med 368-146-145
+word med- 146-145-368
+word -men 368-134-126
+word men- 134-126-368
+word -ned 368-1345-15-145
+word ned- 1345-15-145-368
+word -når 368-1345-16-1235
+word når- 1345-16-1235-368
+word -og 368-135-1245
+word og- 135-1245-368
+word -op 368-135-1234
+word op- 135-1234-368
+word -over 368-135-1236-15-1235
+word over- 135-1236-15-1235-368
+word -på 368-1234-16
+word på- 1234-16-368
+word -ret 368-1235-15-2345
+word ret- 1235-15-2345-368
+word -rigtig 368-1235-24-1245-2345-24-1245
+word rigtig- 1235-24-1245-2345-24-1245-368
+word -skal 368-234-13-1-123
+word skal- 234-13-1-123-368
+word -som 368-234-135-134
+word som- 234-135-134-368
+word -så 368-234-16
+word så- 234-16-368
+word -te 368-2345-15
+word te- 2345-15-368
+word -til 368-2345-24-123
+word til- 2345-24-123-368
+word -under 368-136-1345-145-15-1235
+word under- 136-1345-145-15-1235-368
+word -ved 368-1236-15-145
+word ved- 1236-15-145-368
+word -ve 368-1236-15
+word ve- 1236-15-368
+word -være 368-1236-345-1235-15
+word Være- 1236-345-1235-15-368
+
+# - Capital version
+word At- 17-2345-368
+word Bliver- 127-123-24-1236-15-1235-368
+word Den- 1457-15-1345-368
+word Der- 1457-15-1235-368
+word Det- 1457-15-2345-368
+word De- 1457-15-368
+word Du- 1457-136-368
+word Efter- 157-124-2345-15-1235-368
+word Er- 157-1235-368
+word Et- 157-2345-368
+word For- 1247-135-1235-368
+word Før- 1247-246-1235-368
+word Gennem- 12457-15-1345-1345-15-134-368
+word Gør- 12457-246-1235-368
+word Han- 1257-1-1345-368
+word Har- 1257-1-1235-368
+word Hun- 1257-136-1345-368
+word Kan- 137-1-1345-368
+word Lige- 1237-24-12456-368
+word Med- 1467-145-368
+word Men- 1347-126-368
+word Ned- 13457-15-145-368
+word Når- 13457-16-1235-368
+word Og- 1357-1245-368
+word Op- 1357-1234-368
+word Over- 1357-1236-15-1235-368
+word På- 12347-16-368
+word Ret- 12357-15-2345-368
+word Rigtig- 12357-24-1245-2345-24-1245-368
+word Skal- 2347-13-1-123-368
+word Som- 2347-135-134-368
+word Så- 2347-16-368
+word Te- 23457-15-368
+word Til- 23457-24-123-368
+word Under- 1367-1345-145-15-1235-368
+word Ved- 12367-15-145-368
+word Ve- 12367-15-368
+word Være- 12367-345-1235-15-368
+
+### Patches ###
+# the following sections are to compensate for various behaviours and problems in liblouis.
+# They will be removed, as the issues are resolved.
+
+# Ensure correct back-translation of word contractions before various punctuation.
+
+nofor always a 6-1
+nofor always b 6-12
+nofor always c 6-14
+nofor always d 6-145
+nofor always e 6-15
+nofor always f 6-124
+nofor always g 6-1245
+nofor always h 6-125
+nofor always j 6-245
+nofor always k 6-13
+nofor always l 6-123
+nofor always m 6-134
+nofor always n 6-1345
+nofor always o 6-135
+nofor always p 6-1234
+nofor always q 6-12345
+nofor always r 6-1235
+nofor always s 6-234
+nofor always t 6-2345
+nofor always u 6-136
+nofor always v 6-1236
+nofor always w 6-2456
+nofor always x 6-1346
+nofor always y 6-13456
+nofor always z 6-1356
+nofor always æ 6-345
+nofor always ø 6-246
+nofor always å 6-16
+
+nofor always A 6-17
+nofor always B 6-127
+nofor always C 6-147
+nofor always D 6-1457
+nofor always E 6-157
+nofor always F 6-1247
+nofor always G 6-12457
+nofor always H 6-1257
+nofor always J 6-2457
+nofor always K 6-137
+nofor always L 6-1237
+nofor always M 6-1347
+nofor always N 6-13457
+nofor always O 6-1357
+nofor always P 6-12347
+nofor always Q 6-123457
+nofor always R 6-12357
+nofor always S 6-2347
+nofor always T 6-23457
+nofor always U 6-1367
+nofor always V 6-12367
+nofor always W 6-24567
+nofor always X 6-13467
+nofor always Y 6-134567
+nofor always Z 6-13567
+nofor always Æ 6-3457
+nofor always Ø 6-2467
+nofor always Å 6-167
+
+# if a word contraction is followed by a punctuation and another word immediately after,
+# The contracted word before the punctuation will back-translate as its components
+class wordlimit /,!.:’()?"'\x00ab_\x201d\x0094\x2019\x0092\x00bb
+
+nofor before wordlimit sufword at 1
+nofor before wordlimit sufword bliver 12
+nofor before wordlimit sufword den 12346
+nofor before wordlimit sufword der 23456
+nofor before wordlimit sufword det 2346
+nofor before wordlimit sufword de 1456
+nofor before wordlimit sufword du 145
+nofor before wordlimit sufword efter 1356
+nofor before wordlimit sufword eller 15
+nofor before wordlimit sufword en 126
+nofor before wordlimit sufword er 156
+nofor before wordlimit sufword et 346
+nofor before wordlimit sufword for 124
+nofor before wordlimit sufword før 246
+nofor before wordlimit sufword gennem 12456
+nofor before wordlimit sufword gør 1245
+nofor before wordlimit sufword han 13456
+nofor before wordlimit sufword har 125
+nofor before wordlimit sufword hun 136
+nofor before wordlimit sufword hvad 2456
+nofor before wordlimit sufword hvor 34
+nofor before wordlimit sufword jeg 245
+nofor before wordlimit sufword kan 13
+nofor before wordlimit sufword lige 123
+nofor before wordlimit sufword med 134
+nofor before wordlimit sufword men 146
+nofor before wordlimit sufword ned 1246
+nofor before wordlimit sufword når 1345
+nofor before wordlimit sufword og 14
+nofor before wordlimit sufword op 135
+nofor before wordlimit sufword over 1346
+nofor before wordlimit sufword på 1234
+nofor before wordlimit sufword ret 12356
+nofor before wordlimit sufword rigtig 1235
+nofor before wordlimit sufword skal 123456
+nofor before wordlimit sufword som 234
+nofor before wordlimit sufword så 16
+nofor before wordlimit sufword te 1256
+nofor before wordlimit sufword til 2345
+nofor before wordlimit sufword under 12345
+nofor before wordlimit sufword ved 1236
+nofor before wordlimit sufword være 345
+
+# Capital version (to be removed when dot 7 can be used as capsign).
+nofor before wordlimit sufword At 17
+nofor before wordlimit sufword Bliver 127
+nofor before wordlimit sufword Den 123467
+nofor before wordlimit sufword Der 234567
+nofor before wordlimit sufword Det 23467
+nofor before wordlimit sufword De 14567
+nofor before wordlimit sufword Du 1457
+nofor before wordlimit sufword Efter 13567
+nofor before wordlimit sufword Eller 157
+nofor before wordlimit sufword En 1267
+nofor before wordlimit sufword Er 1567
+nofor before wordlimit sufword Et 3467
+nofor before wordlimit sufword For 1247
+nofor before wordlimit sufword Før 2467
+nofor before wordlimit sufword Gennem 124567
+nofor before wordlimit sufword Gør 12457
+nofor before wordlimit sufword Han 134567
+nofor before wordlimit sufword Har 1257
+nofor before wordlimit sufword Hun 1367
+nofor before wordlimit sufword Hvad 24567
+nofor before wordlimit sufword Hvor 347
+nofor before wordlimit sufword Jeg 2457
+nofor before wordlimit sufword Kan 137
+nofor before wordlimit sufword Lige 1237
+nofor before wordlimit sufword Med 1347
+nofor before wordlimit sufword Men 1467
+nofor before wordlimit sufword Ned 12467
+nofor before wordlimit sufword Når 13457
+nofor before wordlimit sufword Og 147
+nofor before wordlimit sufword Op 1357
+nofor before wordlimit sufword Over 13467
+nofor before wordlimit sufword På 12347
+nofor before wordlimit sufword Ret 123567
+nofor before wordlimit sufword Rigtig 12357
+nofor before wordlimit sufword Skal 1234567
+nofor before wordlimit sufword Som 2347
+nofor before wordlimit sufword Så 167
+nofor before wordlimit sufword Te 12567
+nofor before wordlimit sufword Til 23457
+nofor before wordlimit sufword Under 123457
+nofor before wordlimit sufword Ved 12367
+nofor before wordlimit sufword Være 3457
+
+### Problems solved with pass 2 ###
+
+
+# The Danish use of letsign differs somewhat from the LibLouis way.
+# In order to be sure that we are getting a letsign when we want one, we are sometimes getting an overlap.
+
+# Ensure that we have letsign between a digit and "st"
+# and nd after a digit is not contracted
+context _$d["st"]!$l @6-234-2345
+context _$d["nd"]!$l @1345-145
+# Ensure that we get a letsign between a digit and a single letter.
+context $d[]$l!$l @6
+context $d[]$l~ @6
+
+
+# the next line is to remove any superfluous letsigns and only keep one.
+pass2 @6-6 @6

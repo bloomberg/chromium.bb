@@ -49,6 +49,15 @@ parameter has changed.
   - Conforms better to the standard.
   - nl-BE-g1.ctb renamed to nl-BE-g0.utb
   - nl-NL-g1.ctb renamed to nl-NL-g0.utb
+- Improvements to Danish tables: Added grade 2 with limited
+  contractions to 6 and 8 dots. Corrected contraction of many words.
+  - Renamed:
+    - da-ansi8.dis -> da-dk-octobraille.dis
+    - da-dk-g16.utb -> da-dk-g16.ctb
+    - da-dk-g18.utb -> da-dk-g18.ctb
+    - hyph_da_DK.dic -> hyph_brl_da_dk.dic
+  - Removed: da-dk-g28caps.cti, da-dk-g28-patches.cti and
+    da-chardefs8.cti
 ** Backwards incompatible changes
 - The json based harness test suite has been removed as its
   functionality has been superceded by the YAML tests. Please use

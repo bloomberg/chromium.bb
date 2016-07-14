@@ -31,20 +31,20 @@ table_files = \
 	cy-cy-g1.utb \
 	cy-cy-g2.ctb \
 	Cz-Cz-g1.utb \
-	da-ansi8.dis \
 	da-chardefs6.cti \
-	da-chardefs8.cti \
 	da-dk-common6.uti \
 	da-dk.dis \
-	da-dk-g16.utb \
-	da-dk-g18.utb \
+	da-dk-g08.ctb \
+	da-dk-g16.ctb \
+	da-dk-g18.ctb \
 	da-dk-g26.ctb \
+	da-dk-g26l.ctb \
 	da-dk-g26-patches.cti \
-	da-dk-g28caps.cti \
 	da-dk-g28.ctb \
-	da-dk-g28-patches.cti \
+	da-dk-g28l.ctb \
 	da-dk-g2core.cti \
 	da-dk-nocaps.uti \
+	da-dk-octobraille.dis \
 	da-lt.ctb \
 	de-ch-accents.cti \
 	de-chardefs6.cti \
@@ -131,8 +131,8 @@ table_files = \
 	hu-hu-comp8.ctb \
 	hu-hu-g1.ctb \
 	hy.ctb \
+	hyph_brl_da_dk.dic \
 	hyph_cs_CZ.dic \
-	hyph_da_DK.dic \
 	hyph_de_DE.dic \
 	hyph_en_US.dic \
 	hyph_eo.dic \
