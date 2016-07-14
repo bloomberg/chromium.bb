@@ -1154,10 +1154,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state)
     if (itemsSize == 0)
         return;
 
-    for (auto& item : items) {
-        if (isHTMLOptionElement(item))
-            toHTMLOptionElement(item)->setSelectedState(false);
-    }
+    selectOption(nullptr, DeselectOtherOptions);
 
     // The saved state should have at least one value and an index.
     ASSERT(state.valueSize() >= 2);

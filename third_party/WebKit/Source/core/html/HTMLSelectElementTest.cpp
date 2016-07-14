@@ -102,6 +102,38 @@ TEST_F(HTMLSelectElementTest, SaveRestoreSelectMultipleFormControlState)
     EXPECT_TRUE(opt3->selected());
 }
 
+TEST_F(HTMLSelectElementTest, RestoreUnmatchedFormControlState)
+{
+    // We had a bug that selectedOption() and m_lastOnChangeOption were
+    // mismatched in optionToBeShown(). It happened when
+    // restoreFormControlState() couldn't find matched OPTIONs.
+    // crbug.com/627833.
+
+    document().documentElement()->setInnerHTML("<select id='sel'>"
+        "<option selected>Default</option>"
+        "<option id='2'>222</option>"
+        "</select>", ASSERT_NO_EXCEPTION);
+    document().view()->updateAllLifecyclePhases();
+    Element* element = document().getElementById("sel");
+    HTMLFormControlElementWithState* select = toHTMLSelectElement(element);
+    HTMLOptionElement* opt2 = toHTMLOptionElement(document().getElementById("2"));
+
+    toHTMLSelectElement(element)->setSelectedIndex(1);
+    // Save the current state.
+    FormControlState selectState = select->saveFormControlState();
+    EXPECT_EQ(2U, selectState.valueSize());
+
+    // Reset the status.
+    select->reset();
+    ASSERT_FALSE(opt2->selected());
+    element->removeChild(opt2);
+
+    // Restore
+    select->restoreFormControlState(selectState);
+    EXPECT_EQ(-1, toHTMLSelectElement(element)->selectedIndex());
+    EXPECT_EQ(nullptr, toHTMLSelectElement(element)->optionToBeShown());
+}
+
 TEST_F(HTMLSelectElementTest, ElementRectRelativeToViewport)
 {
     document().documentElement()->setInnerHTML("<select style='position:fixed; top:12.3px; height:24px; -webkit-appearance:none;'><option>o1</select>", ASSERT_NO_EXCEPTION);
