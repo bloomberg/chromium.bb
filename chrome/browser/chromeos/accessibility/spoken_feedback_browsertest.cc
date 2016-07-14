@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxNavigateAndSelect) {
 #else
 #define MAYBE_ChromeVoxStickyMode ChromeVoxStickyMode
 #endif
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ChromeVoxStickyMode) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxStickyMode) {
   LoadChromeVoxAndThenNavigateToURL(
       GURL("data:text/html;charset=utf-8,"
            "<label>Enter your name <input autofocus></label>"
