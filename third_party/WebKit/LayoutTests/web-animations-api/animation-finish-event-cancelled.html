@@ -6,28 +6,21 @@
 <script src="../resources/testharnessreport.js"></script>
 <body>
 <script>
-var anim1 = document.body.animate([], 100000);
-var anim2 = document.body.animate([], 100000);
-var anim3 = document.body.animate([], 100000);
+async_test(t => {
+  var anim1 = document.body.animate([], 100000);
+  var anim2 = document.body.animate([], 100000);
 
-var noFinish = async_test('Animation finish event should not fire when cancelled');
-
-anim1.onfinish = function() {
-  noFinish.step(function() {
-    anim3.finish();
+  var success = false;
+  anim2.finished.catch(function() {
+    success = true;
   });
-};
 
-anim2.onfinish = function() {
-  noFinish.step(function() {
-    assert_true(false);
+  anim1.finished.then(function() {
+    assert_true(success, 'anim2 finished promise should be rejected on cancelation');
+    t.done();
   });
-};
 
-anim3.onfinish = function() {
-  noFinish.done();
-};
-
-anim1.finish();
-anim2.cancel();
+  anim2.cancel();
+  anim1.finish();
+}, 'Animation finished promise should be rejected when animation canceled');
 </script>
