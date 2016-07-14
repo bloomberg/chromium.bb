@@ -61,7 +61,14 @@ bool EmbeddedWorkerRegistry::OnMessageReceived(const IPC::Message& message,
     // purposely handling the message as no-op.
     return true;
   }
-  return worker->OnMessageReceived(message);
+  bool handled = worker->OnMessageReceived(message);
+
+  // Assume an unhandled message for a stopping worker is because the message
+  // was timed out and its handler removed prior to stopping.
+  // We might be more precise and record timed out request ids, but some
+  // cumbersome bookkeeping is needed and the IPC messaging will soon migrate
+  // to Mojo anyway.
+  return handled || worker->status() == EmbeddedWorkerStatus::STOPPING;
 }
 
 void EmbeddedWorkerRegistry::Shutdown() {

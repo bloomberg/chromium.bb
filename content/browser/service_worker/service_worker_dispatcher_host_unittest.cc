@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_handle.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -767,6 +768,32 @@ TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_AssociateRegistration::ID));
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, ReceivedTimedOutRequestResponse) {
+  GURL pattern = GURL("https://www.example.com/");
+  GURL script_url = GURL("https://www.example.com/service_worker.js");
+
+  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_WINDOW, pattern);
+  SetUpRegistration(pattern, script_url);
+
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+
+  // Set the worker status to STOPPING.
+  version_->embedded_worker()->Stop();
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
+
+  // Receive a response for a timed out request. The bad message count should
+  // not increase.
+  const int kRequestId = 91;  // Dummy value
+  dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_FetchEventResponse(
+      version_->embedded_worker()->embedded_worker_id(), kRequestId,
+      SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK, ServiceWorkerResponse()));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, dispatcher_host_->bad_messages_received_count_);
 }
 
 }  // namespace content
