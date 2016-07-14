@@ -37,6 +37,9 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
                                           const gfx::Point& viewport_point,
                                           bool is_direct_manipulation,
                                           bool affect_top_controls) {
+  if (!OuterScrollLayer())
+    return ScrollResult();
+
   gfx::Vector2dF content_delta = delta;
 
   if (affect_top_controls && ShouldTopControlsConsumeScroll(delta))
@@ -75,6 +78,9 @@ bool Viewport::ShouldAnimateViewport(const gfx::Vector2dF& viewport_delta,
 }
 
 gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta) {
+  if (!OuterScrollLayer())
+    return gfx::Vector2dF(0, 0);
+
   ScrollTree& scroll_tree =
       host_impl_->active_tree()->property_trees()->scroll_tree;
 
