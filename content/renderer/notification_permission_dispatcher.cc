@@ -11,7 +11,6 @@
 #include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom-blink.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/modules/notifications/WebNotificationPermissionCallback.h"
@@ -50,8 +49,8 @@ void NotificationPermissionDispatcher::OnPermissionRequestComplete(
     blink::mojom::PermissionStatus status) {
   DCHECK(callback);
 
-  blink::mojom::blink::PermissionStatus blink_status =
-      static_cast<blink::mojom::blink::PermissionStatus>(status);
+  // Blink can't use non-blink bindings so we need to cast to int32.
+  int32_t blink_status = static_cast<int32_t>(status);
 
   callback->permissionRequestComplete(blink_status);
 }

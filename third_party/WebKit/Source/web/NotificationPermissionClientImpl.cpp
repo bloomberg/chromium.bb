@@ -28,9 +28,9 @@ public:
 
     ~WebNotificationPermissionCallbackImpl() override { }
 
-    void permissionRequestComplete(mojom::blink::PermissionStatus permissionStatus) override
+    void permissionRequestComplete(int32_t permissionStatus) override
     {
-        String permissionString = Notification::permissionString(permissionStatus);
+        String permissionString = Notification::permissionString(static_cast<mojom::blink::PermissionStatus>(permissionStatus));
         if (m_deprecatedCallback)
             m_deprecatedCallback->handleEvent(permissionString);
 
