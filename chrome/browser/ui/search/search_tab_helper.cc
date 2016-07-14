@@ -235,6 +235,14 @@ void SearchTabHelper::Submit(const base::string16& text,
 void SearchTabHelper::OnTabActivated() {
   ipc_router_.OnTabActivated();
 
+  if (search::IsInstantNTP(web_contents_)) {
+    // Force creation of NTPUserDataLogger, if we loaded an NTP. The
+    // NTPUserDataLogger tries to detect whether the NTP is being created at
+    // startup or from the user opening a new tab, and if we wait until later,
+    // it won't correctly detect this case.
+    NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_);
+  }
+
   OmniboxView* omnibox_view = GetOmniboxView();
   if (search::ShouldPrerenderInstantUrlOnOmniboxFocus() &&
       omnibox_has_focus_fn_(omnibox_view)) {
