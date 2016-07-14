@@ -40,12 +40,12 @@
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebMessagePortChannel.h"
-#include "public/platform/WebPrivateOwnPtr.h"
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/web/WebFrameLoadType.h"
 #include "public/web/WebTreeScopeType.h"
+#include <memory>
 
 struct NPObject;
 
@@ -516,7 +516,7 @@ private:
     WebFrame* m_lastChild;
 
     WebFrame* m_opener;
-    WebPrivateOwnPtr<OpenedFrameTracker> m_openedFrameTracker;
+    std::unique_ptr<OpenedFrameTracker> m_openedFrameTracker;
 };
 
 } // namespace blink

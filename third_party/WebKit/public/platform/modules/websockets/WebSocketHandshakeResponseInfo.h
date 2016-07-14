@@ -33,7 +33,7 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebNonCopyable.h"
-#include "public/platform/WebPrivateOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -55,7 +55,7 @@ public:
 #endif // INSIDE_BLINK
 
 private:
-    WebPrivateOwnPtr<WebSocketHandshakeResponse> m_private;
+    std::unique_ptr<WebSocketHandshakeResponse> m_private;
 };
 
 } // namespace blink

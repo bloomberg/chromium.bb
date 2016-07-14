@@ -35,20 +35,19 @@
 
 namespace blink {
 
-void WebScopedUserGesture::initialize()
-{
-    m_indicator.reset(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
-}
-
-void WebScopedUserGesture::initializeWithToken(const WebUserGestureToken& token)
+WebScopedUserGesture::WebScopedUserGesture(const WebUserGestureToken& token)
 {
     if (!token.isNull())
         m_indicator.reset(new UserGestureIndicator(token));
 }
 
-void WebScopedUserGesture::reset()
+WebScopedUserGesture::WebScopedUserGesture()
 {
-    m_indicator.reset(0);
+    m_indicator.reset(new UserGestureIndicator(DefinitelyProcessingNewUserGesture));
+}
+
+WebScopedUserGesture::~WebScopedUserGesture()
+{
 }
 
 } // namespace blink

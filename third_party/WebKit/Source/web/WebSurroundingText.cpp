@@ -36,6 +36,14 @@
 
 namespace blink {
 
+WebSurroundingText::WebSurroundingText()
+{
+}
+
+WebSurroundingText::~WebSurroundingText()
+{
+}
+
 void WebSurroundingText::initialize(const WebNode& webNode, const WebPoint& nodePoint, size_t maxLength)
 {
     const Node* node = webNode.constUnwrap<Node>();
@@ -80,11 +88,6 @@ WebRange WebSurroundingText::rangeFromContentOffsets(size_t startOffsetInContent
 bool WebSurroundingText::isNull() const
 {
     return !m_private.get();
-}
-
-void WebSurroundingText::reset()
-{
-    m_private.reset(0);
 }
 
 } // namespace blink

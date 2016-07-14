@@ -32,7 +32,6 @@
 #define WebBlobData_h
 
 #include "WebNonCopyable.h"
-#include "WebPrivateOwnPtr.h"
 #include "WebString.h"
 #include "WebThreadSafeData.h"
 #include "WebURL.h"
@@ -83,7 +82,7 @@ public:
 #endif
 
 private:
-    WebPrivateOwnPtr<BlobData> m_private;
+    std::unique_ptr<BlobData> m_private;
 };
 
 } // namespace blink

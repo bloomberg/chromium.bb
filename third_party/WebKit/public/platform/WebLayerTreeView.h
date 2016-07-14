@@ -31,8 +31,6 @@
 #include "WebCompositorMutatorClient.h"
 #include "WebEventListenerProperties.h"
 #include "WebFloatPoint.h"
-#include "WebNonCopyable.h"
-#include "WebPrivateOwnPtr.h"
 #include "WebSize.h"
 #include "WebTopControlsState.h"
 

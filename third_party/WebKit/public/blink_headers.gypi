@@ -152,7 +152,6 @@
       "platform/WebPrerender.h",
       "platform/WebPrerenderingSupport.h",
       "platform/WebPrescientNetworking.h",
-      "platform/WebPrivateOwnPtr.h",
       "platform/WebPrivatePtr.h",
       "platform/WebPublicSuffixList.h",
       "platform/WebRTCCertificate.h",

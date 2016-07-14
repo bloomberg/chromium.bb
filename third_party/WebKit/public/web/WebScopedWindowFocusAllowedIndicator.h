@@ -31,7 +31,8 @@
 #ifndef WebScopedWindowFocusAllowedIndicator_h
 #define WebScopedWindowFocusAllowedIndicator_h
 
-#include "public/platform/WebPrivateOwnPtr.h"
+#include "public/platform/WebCommon.h"
+#include <memory>
 
 namespace blink {
 
@@ -40,14 +41,11 @@ class WebDocument;
 
 class WebScopedWindowFocusAllowedIndicator {
 public:
-    explicit WebScopedWindowFocusAllowedIndicator(WebDocument* document) { initialize(document); }
-    ~WebScopedWindowFocusAllowedIndicator() { reset(); }
+    BLINK_EXPORT explicit WebScopedWindowFocusAllowedIndicator(WebDocument* document);
+    BLINK_EXPORT ~WebScopedWindowFocusAllowedIndicator();
 
 private:
-    BLINK_EXPORT void initialize(WebDocument*);
-    BLINK_EXPORT void reset();
-
-    WebPrivateOwnPtr<ScopedWindowFocusAllowedIndicator> m_private;
+    std::unique_ptr<ScopedWindowFocusAllowedIndicator> m_private;
 };
 
 }

@@ -25,10 +25,10 @@
 #ifndef WebSurroundingText_h
 #define WebSurroundingText_h
 
-#include "../platform/WebPrivateOwnPtr.h"
 #include "../platform/WebString.h"
 #include "WebNode.h"
 #include "WebRange.h"
+#include <memory>
 
 namespace blink {
 
@@ -41,11 +41,10 @@ struct WebPoint;
 // API. It allows caller to know the text surrounding a point or a range.
 class WebSurroundingText {
 public:
-    WebSurroundingText() { }
-    ~WebSurroundingText() { reset(); }
+    BLINK_EXPORT WebSurroundingText();
+    BLINK_EXPORT ~WebSurroundingText();
 
     BLINK_EXPORT bool isNull() const;
-    BLINK_EXPORT void reset();
 
     // Initializes the object to get the surrounding text centered in the
     // position relative to a provided node.
@@ -78,7 +77,7 @@ public:
     BLINK_EXPORT WebRange rangeFromContentOffsets(size_t startOffsetInContent, size_t endOffsetInContent);
 
 protected:
-    WebPrivateOwnPtr<SurroundingText> m_private;
+    std::unique_ptr<SurroundingText> m_private;
 };
 
 } // namespace blink

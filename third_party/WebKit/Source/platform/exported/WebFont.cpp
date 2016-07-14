@@ -45,7 +45,6 @@ WebFont::WebFont(const WebFontDescription& description)
 
 WebFont::~WebFont()
 {
-    m_private.reset(0);
 }
 
 WebFontDescription WebFont::getFontDescription() const

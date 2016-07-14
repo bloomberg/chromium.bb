@@ -42,7 +42,6 @@ WebBlobData::WebBlobData()
 
 WebBlobData::~WebBlobData()
 {
-    m_private.reset(0);
 }
 
 size_t WebBlobData::itemCount() const
@@ -101,13 +100,13 @@ WebBlobData::WebBlobData(std::unique_ptr<BlobData> data)
 
 WebBlobData& WebBlobData::operator=(std::unique_ptr<BlobData> data)
 {
-    m_private.reset(std::move(data));
+    m_private = std::move(data);
     return *this;
 }
 
 WebBlobData::operator std::unique_ptr<BlobData>()
 {
-    return m_private.release();
+    return std::move(m_private);
 }
 
 } // namespace blink

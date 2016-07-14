@@ -33,10 +33,10 @@
 
 #include "../platform/WebCommon.h"
 #include "../platform/WebPoint.h"
-#include "../platform/WebPrivateOwnPtr.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebVector.h"
 #include "WebAXEnums.h"
+#include <memory>
 
 #if BLINK_IMPLEMENTATION
 namespace WTF { template <typename T> class PassRefPtr; }
@@ -68,7 +68,7 @@ public:
     BLINK_EXPORT WebAXObject root() const;
 
 private:
-    WebPrivateOwnPtr<ScopedAXObjectCache> m_private;
+    std::unique_ptr<ScopedAXObjectCache> m_private;
 };
 
 // A container for passing around a reference to AXObject.

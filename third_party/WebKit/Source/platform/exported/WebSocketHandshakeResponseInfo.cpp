@@ -41,7 +41,6 @@ WebSocketHandshakeResponseInfo::WebSocketHandshakeResponseInfo() : m_private(new
 
 WebSocketHandshakeResponseInfo::~WebSocketHandshakeResponseInfo()
 {
-    m_private.reset(0);
 }
 
 void WebSocketHandshakeResponseInfo::setStatusCode(int statusCode)

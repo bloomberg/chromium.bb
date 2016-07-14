@@ -8,7 +8,7 @@
 #include "WebCanvas.h"
 #include "WebColor.h"
 #include "WebCommon.h"
-#include "WebPrivateOwnPtr.h"
+#include <memory>
 
 namespace blink {
 
@@ -45,7 +45,7 @@ private:
     explicit WebFont(const WebFontDescription&);
 
     class Impl;
-    WebPrivateOwnPtr<Impl> m_private;
+    std::unique_ptr<Impl> m_private;
 };
 
 } // namespace blink
