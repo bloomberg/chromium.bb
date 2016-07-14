@@ -369,13 +369,14 @@
     },
 
     'chromium.memory': {
-      'Linux ASan LSan Builder': 'swarming_asan_lsan_gn_release_bot',
+      'Linux ASan LSan Builder': 'swarming_asan_lsan_gn_release_trybot',
       'Linux ASan LSan Tests (1)': 'none',
       'Linux ASan Tests (sandboxed)': 'none',
-      'Mac ASan 64 Builder': 'swarming_asan_lsan_full_symbols_gyp_release_bot',
+      'Mac ASan 64 Builder':
+        'swarming_asan_lsan_full_symbols_gyp_release_trybot',
       'Mac ASan 64 Tests (1)': 'none',
       'Linux Chromium OS ASan LSan Builder':
-        'swarming_asan_lsan_chromeos_gn_release_bot',
+        'swarming_asan_lsan_chromeos_gn_release_trybot',
       'Linux Chromium OS ASan LSan Tests (1)': 'none',
     },
 
@@ -1480,16 +1481,13 @@
       'swarming', 'asan', 'dcheck_always_on', 'gyp', 'release_bot',
     ],
 
-    'swarming_asan_lsan_chromeos_gn_release_bot': [
-      'swarming', 'asan', 'lsan', 'chromeos', 'gn', 'release_bot',
-    ],
-
     'swarming_asan_lsan_chromeos_gn_release_trybot': [
       'swarming', 'asan', 'lsan', 'chromeos', 'gyp', 'release_trybot',
     ],
 
-    'swarming_asan_lsan_full_symbols_gyp_release_bot': [
+    'swarming_asan_lsan_full_symbols_gyp_release_trybot': [
       'swarming', 'asan', 'lsan', 'full_symbols', 'gyp', 'release_bot',
+      'dcheck_always_on',
     ],
 
     'swarming_asan_lsan_gn_release_bot': [
