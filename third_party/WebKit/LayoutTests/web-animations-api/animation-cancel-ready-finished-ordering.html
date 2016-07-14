@@ -8,12 +8,12 @@
 async_test(function(t) {
   var animation = document.documentElement.animate([], 100000);
   var ready = false;
-  animation.ready.then(null, function() {
+  animation.ready.catch(function() {
     t.step(function() {
       ready = true;
     });
   });
-  animation.finished.then(null, function() {
+  animation.finished.catch(function() {
     t.step(function() {
       assert_true(ready);
     });
