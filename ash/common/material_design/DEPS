@@ -1,4 +1,0 @@
-include_rules = [
-  "+ash/ash_switches.h",
-  "+ash/test",
-]
