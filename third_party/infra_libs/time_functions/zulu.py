@@ -43,8 +43,6 @@ def to_zulu_string(dt):
   # Assume non-tz-aware datetimes are in UTC.
   if dt.tzinfo is None or dt.tzinfo.utcoffset(dt) is None:
     dt = dt.replace(tzinfo=pytz.UTC)
-  else:
-    print dt
 
   # Convert datetime into UTC.
   isodate = dt.astimezone(pytz.UTC).isoformat().split('+')[0]

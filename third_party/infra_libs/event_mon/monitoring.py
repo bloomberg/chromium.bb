@@ -271,7 +271,8 @@ def get_build_event(event_type,
                     goma_stats=None,
                     goma_error=None,
                     goma_crash_report_id=None,
-                    patch_url=None):
+                    patch_url=None,
+                    bbucket_id=None):
   """Compute a ChromeInfraEvent filled with a BuildEvent.
 
   Arguments are identical to those in send_build_event(), please refer
@@ -330,13 +331,19 @@ def get_build_event(event_type,
                     event.build_event.build_scheduling_time_ms)
 
   if step_name:
-    event.build_event.step_name = step_name
+    event.build_event.step_name = str(step_name)
   if step_text:
-    event.build_event.step_text = step_text
+    event.build_event.step_text = str(step_text)
+
   if step_number is not None:
     event.build_event.step_number = step_number
   if patch_url is not None:
     event.build_event.patch_url = patch_url
+  if bbucket_id is not None:
+    try:
+      event.build_event.bbucket_id = int(bbucket_id)
+    except (ValueError, TypeError):
+      pass
 
   if event.build_event.step_name:
     if event_type != 'STEP':
@@ -431,7 +438,8 @@ def send_build_event(event_type,
                      goma_stats=None,
                      goma_error=None,
                      goma_crash_report_id=None,
-                     patch_url=None):
+                     patch_url=None,
+                     bbucket_id=None):
   """Send a ChromeInfraEvent filled with a BuildEvent
 
   Args:
@@ -459,6 +467,7 @@ def send_build_event(event_type,
     goma_error (string): goma error type defined as GomaErrorType.
     goma_crash_report_id (string): id of goma crash report.
     patch_url (string): URL of the patch that triggered build
+    bbucket_id (long): Buildbucket ID of the build.
 
   Returns:
     success (bool): False if some error happened.
@@ -478,7 +487,8 @@ def send_build_event(event_type,
                          goma_stats=goma_stats,
                          goma_error=goma_error,
                          goma_crash_report_id=goma_crash_report_id,
-                         patch_url=patch_url).send()
+                         patch_url=patch_url,
+                         bbucket_id=bbucket_id).send()
 
 
 def send_events(events):

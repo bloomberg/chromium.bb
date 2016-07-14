@@ -232,10 +232,10 @@ class _HttpRouter(_Router):
       logging.error("Received invalid https endpoint: %s", self.endpoint)
       return False
 
-    logging.info('event_mon: POSTing events to %s', self.endpoint)
+    logging.debug('event_mon: POSTing events to %s', self.endpoint)
 
     attempt = 0  # silencing pylint
-    for attempt in xrange(self.try_num - 1):  # pragma: no branch
+    for attempt in xrange(self.try_num):  # pragma: no branch
       # (re)set this time at the very last moment
       events.request_time_ms = time_ms()
       response = None
@@ -251,7 +251,9 @@ class _HttpRouter(_Router):
           )
 
         if self._dry_run or response.status == 200:
+          logging.debug('Succeeded POSTing data after %d attempts', attempt + 1)
           return True
+
       except Exception:
         logging.exception('exception when POSTing data')
 
@@ -260,7 +262,7 @@ class _HttpRouter(_Router):
                       self.endpoint, response.status, attempt)
 
       if attempt == 0:
-        logging.error('data: %s', str(events)[:200])
+        logging.error('data: %s', str(events)[:2000])
 
       self._sleep_fn(backoff_time(attempt, retry_backoff=self.retry_backoff))
 

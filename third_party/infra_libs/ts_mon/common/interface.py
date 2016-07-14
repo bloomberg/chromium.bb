@@ -77,6 +77,8 @@ class State(object):
     self.store = store_ctor(self)
     # Cached time of the last flush. Useful mostly in AppEngine apps.
     self.last_flushed = datetime.datetime.utcfromtimestamp(0)
+    # Metric name prefix
+    self.metric_name_prefix = '/chrome/infra/'
 
   def reset_for_unittest(self):
     self.metrics = {}
@@ -88,12 +90,13 @@ state = State()
 
 def flush():
   """Send all metrics that are registered in the application."""
-  if not state.global_monitor or not state.target:
-    raise errors.MonitoringNoConfiguredMonitorError(None)
 
   if not state.flush_enabled_fn():
     logging.debug('ts_mon: sending metrics is disabled.')
     return
+
+  if not state.global_monitor or not state.target:
+    raise errors.MonitoringNoConfiguredMonitorError(None)
 
   proto = metrics_pb2.MetricsCollection()
 

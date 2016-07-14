@@ -39,6 +39,9 @@ class BaseApplication(object):
                sys.argv[0].  Passed to argparse.ArgumentParser.
     DESCRIPTION: Text to display in the --help message.  Passed to
                  argparse.ArgumentParser.
+    USES_STANDARD_LOGGING: Whether to configure the standard logging libraries.
+                           Defaults to True.
+    USES_TS_MON: Whether to configure timeseries monitoring.  Defaults to True.
 
   Instance variables (use these in your application):
     opts: The argparse.Namespace containing parsed commandline arguments.
@@ -46,9 +49,12 @@ class BaseApplication(object):
 
   PROG_NAME = None
   DESCRIPTION = None
+  USES_STANDARD_LOGGING = True
+  USES_TS_MON = True
 
   def __init__(self):
     self.opts = None
+    self.parser = None
 
   def add_argparse_options(self, parser):
     """Register any arguments used by this application.
@@ -59,8 +65,10 @@ class BaseApplication(object):
       parser: An argparse.ArgumentParser object.
     """
 
-    logs.add_argparse_options(parser)
-    ts_mon.add_argparse_options(parser)
+    if self.USES_STANDARD_LOGGING:
+      logs.add_argparse_options(parser)
+    if self.USES_TS_MON:
+      ts_mon.add_argparse_options(parser)
 
   def process_argparse_options(self, options):
     """Process any commandline arguments.
@@ -69,8 +77,10 @@ class BaseApplication(object):
       options: An argparse.Namespace object.
     """
 
-    logs.process_argparse_options(options)
-    ts_mon.process_argparse_options(options)
+    if self.USES_STANDARD_LOGGING:
+      logs.process_argparse_options(options)
+    if self.USES_TS_MON:
+      ts_mon.process_argparse_options(options)
 
   def main(self, opts):
     """Your application's main method.
@@ -95,13 +105,13 @@ class BaseApplication(object):
       args = sys.argv
 
     # Add and parse commandline args.
-    parser = argparse.ArgumentParser(
+    self.parser = argparse.ArgumentParser(
         description=self.DESCRIPTION,
         prog=self.PROG_NAME or args[0],
         formatter_class=argparse.RawTextHelpFormatter)
 
-    self.add_argparse_options(parser)
-    self.opts = parser.parse_args(args[1:])
+    self.add_argparse_options(self.parser)
+    self.opts = self.parser.parse_args(args[1:])
     self.process_argparse_options(self.opts)
 
     # Print a startup log message.
@@ -118,6 +128,9 @@ class BaseApplication(object):
       status = self.main(self.opts)
     except Exception:
       logging.exception('Uncaught exception, exiting:')
+      if self.USES_TS_MON:
+        # Flushing ts_mon to try to report the exception.
+        ts_mon.flush()
       status = 1
 
     sys.exit(status)

@@ -4,7 +4,7 @@
 
 import collections
 import copy
-import logging
+import itertools
 import threading
 import time
 
@@ -205,7 +205,8 @@ class TargetFieldsValues(object):
       values = copy.copy(self._values)
     for target_fields, fields_values in values.iteritems():
       target = copy.copy(self._store._state.target)
-      target.update({k: v for k, v in target_fields})
+      if target_fields:
+        target.update({k: v for k, v in target_fields})
       yield target, fields_values
 
 
@@ -246,6 +247,10 @@ class InProcessMetricStore(MetricStore):
 
   def get(self, name, fields, target_fields, default=None):
     return self._entry(name).get_value(fields, target_fields, default)
+
+  def iter_field_values(self, name):
+    return itertools.chain.from_iterable(
+        x.iteritems() for _, x in self._entry(name).values.iter_targets())
 
   def get_all(self):
     # Make a copy of the metric values in case another thread (or this

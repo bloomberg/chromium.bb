@@ -83,8 +83,9 @@ def add_argparse_options(parser):
            'whitelisting and deployment of credentials. (default: %(default)s)')
   parser.add_argument(
       '--ts-mon-endpoint',
-      help='url (including file://, pubsub://project/topic) to post monitoring '
-           'metrics to. If set, overrides the value in --ts-mon-config-file')
+      help='url (including file://, pubsub://project/topic, https://) to post '
+           'monitoring metrics to. If set, overrides the value in '
+           '--ts-mon-config-file')
   parser.add_argument(
       '--ts-mon-credentials',
       help='path to a pkcs8 json credential file. If set, overrides the value '
@@ -159,6 +160,10 @@ def add_argparse_options(parser):
       help='number (e.g. for replication) of this instance of this task '
            '(default: %(default)s)')
 
+  parser.add_argument(
+      '--ts-mon-metric-name-prefix',
+      default='/chrome/infra/',
+      help='metric name prefix for all metrics (default: %(default)s)')
 
 def process_argparse_options(args):
   """Process command line arguments to initialize the global monitor.
@@ -175,6 +180,7 @@ def process_argparse_options(args):
   config = load_machine_config(args.ts_mon_config_file)
   endpoint = config.get('endpoint', '')
   credentials = config.get('credentials', '')
+  autogen_hostname = config.get('autogen_hostname', False)
 
   # Command-line args override the values in the config file.
   if args.ts_mon_endpoint is not None:
@@ -184,7 +190,7 @@ def process_argparse_options(args):
 
   if args.ts_mon_target_type == 'device':
     hostname = args.ts_mon_device_hostname
-    if args.ts_mon_autogen_hostname:
+    if args.ts_mon_autogen_hostname or autogen_hostname:
       hostname = 'autogen:' + hostname
     interface.state.target = targets.DeviceTarget(
         args.ts_mon_device_region,
@@ -202,7 +208,7 @@ def process_argparse_options(args):
                             'when the target type is "task".')
       sys.exit(2)
     hostname = args.ts_mon_task_hostname
-    if args.ts_mon_autogen_hostname:
+    if args.ts_mon_autogen_hostname or autogen_hostname:
       hostname = 'autogen:' + hostname
     interface.state.target = targets.TaskTarget(
         args.ts_mon_task_service_name,
@@ -211,6 +217,7 @@ def process_argparse_options(args):
         hostname,
         args.ts_mon_task_number)
 
+  interface.state.metric_name_prefix = args.ts_mon_metric_name_prefix
   interface.state.global_monitor = monitors.NullMonitor()
 
   if endpoint.startswith('file://'):
@@ -226,6 +233,9 @@ def process_argparse_options(args):
     else:
       logging.error('ts_mon monitoring is disabled because credentials are not '
                     'available')
+  elif endpoint.startswith('https://'):
+    interface.state.global_monitor = monitors.HttpsMonitor(endpoint,
+                                                           credentials)
   elif endpoint.lower() == 'none':
     logging.info('ts_mon monitoring has been explicitly disabled')
   else:

@@ -64,6 +64,12 @@ def add_argparse_options(parser):
                      help="Directory containing service accounts credentials.\n"
                      "Defaults to %(default)s"
                      )
+  group.add_argument('--event-mon-http-timeout', default=10, type=int,
+                     help='Timeout in seconds for HTTP requests to send events')
+  group.add_argument('--event-mon-http-retry-backoff', default=2., type=float,
+                     help='Time in seconds before retrying POSTing to the HTTP '
+                     'endpoint. Randomized exponential backoff is applied on '
+                     'subsequent retries.')
 
 
 def process_argparse_options(args):  # pragma: no cover
@@ -80,7 +86,9 @@ def process_argparse_options(args):  # pragma: no cover
     service_account_creds=args.event_mon_service_account_creds,
     service_accounts_creds_root=args.event_mon_service_accounts_creds_root,
     output_file=args.event_mon_output_file,
-    dry_run=args.dry_run
+    dry_run=args.dry_run,
+    http_timeout=args.event_mon_http_timeout,
+    http_retry_backoff=args.event_mon_http_retry_backoff
   )
 
 
@@ -91,7 +99,9 @@ def setup_monitoring(run_type='dry',
                      service_account_creds=None,
                      service_accounts_creds_root=None,
                      output_file=None,
-                     dry_run=False):
+                     dry_run=False,
+                     http_timeout=10,
+                     http_retry_backoff=2.):
   """Initializes event monitoring.
 
   This function is mainly used to provide default global values which are
@@ -124,6 +134,12 @@ def setup_monitoring(run_type='dry',
 
     dry_run (bool): if True, the code has no side-effect, what would have been
       done is printed instead.
+
+    http_timeout (int): timeout in seconds for HTTP requests to send events.
+
+    http_retry_backoff (float): time in seconds before retrying POSTing to the
+         HTTP endpoint. Randomized exponential backoff is applied on subsequent
+         retries.
   """
   global _router
   logging.debug('event_mon: setting up monitoring.')
@@ -169,7 +185,9 @@ def setup_monitoring(run_type='dry',
     else:
       _router = ev_router._HttpRouter(_cache,
                                       ENDPOINTS.get(run_type),
-                                      dry_run=dry_run)
+                                      dry_run=dry_run,
+                                      timeout=http_timeout,
+                                      retry_backoff=http_retry_backoff)
 
 
 def get_default_event():

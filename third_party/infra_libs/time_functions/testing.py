@@ -68,6 +68,10 @@ def mock_datetime_utc(*dec_args, **dec_kwargs):
     @classmethod
     def fromtimestamp(cls, timestamp, tz=None):
       if not tz:
+        # TODO(sergiyb): This may fail for some unclear reason because pytz
+        # doesn't find normal timezones such as 'Europe/Berlin'. This seems to
+        # happen only in appengine/chromium_try_flakes tests, and not in tests
+        # for this module itself.
         tz = tzlocal.get_localzone()
       tzaware_dt = pytz.utc.localize(cls.utcfromtimestamp(timestamp))
       return tz.normalize(tzaware_dt.astimezone(tz)).replace(tzinfo=None)
