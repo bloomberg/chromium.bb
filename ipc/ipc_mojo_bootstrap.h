@@ -15,6 +15,7 @@
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
@@ -50,6 +51,8 @@ class IPC_EXPORT MojoBootstrap {
 
   // Start the handshake over the underlying message pipe.
   virtual void Connect() = 0;
+
+  virtual mojo::AssociatedGroup* GetAssociatedGroup() = 0;
 
   // GetSelfPID returns our PID.
   base::ProcessId GetSelfPID() const;

@@ -7,7 +7,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -37,6 +39,7 @@ namespace IPC {
 //
 class IPC_EXPORT ChannelMojo
     : public Channel,
+      public Channel::AssociatedInterfaceSupport,
       public MojoBootstrap::Delegate,
       public NON_EXPORTED_BASE(internal::MessagePipeReader::Delegate) {
  public:
@@ -62,6 +65,7 @@ class IPC_EXPORT ChannelMojo
   bool IsSendThreadSafe() const override;
   base::ProcessId GetPeerPID() const override;
   base::ProcessId GetSelfPID() const override;
+  Channel::AssociatedInterfaceSupport* GetAssociatedInterfaceSupport() override;
 
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
   int GetClientFileDescriptor() const override;
@@ -82,6 +86,9 @@ class IPC_EXPORT ChannelMojo
                         mojom::ChannelAssociatedRequest receive_channel,
                         int32_t peer_pid) override;
   void OnBootstrapError() override;
+  void OnAssociatedInterfaceRequest(
+      const std::string& name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
 
   // MessagePipeReader::Delegate
   void OnMessageReceived(const Message& message) override;
@@ -96,6 +103,15 @@ class IPC_EXPORT ChannelMojo
                          mojom::ChannelAssociatedRequest receiver,
                          base::ProcessId peer_pid);
 
+  // Channel::AssociatedInterfaceSupport:
+  mojo::AssociatedGroup* GetAssociatedGroup() override;
+  void AddGenericAssociatedInterface(
+      const std::string& name,
+      const GenericAssociatedInterfaceFactory& factory) override;
+  void GetGenericRemoteAssociatedInterface(
+      const std::string& name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
+
   // ChannelMojo needs to kill its MessagePipeReader in delayed manner
   // because the channel wants to kill these readers during the
   // notifications invoked by them.
@@ -107,6 +123,9 @@ class IPC_EXPORT ChannelMojo
   const mojo::MessagePipeHandle pipe_;
   std::unique_ptr<MojoBootstrap> bootstrap_;
   Listener* listener_;
+
+  std::map<std::string, GenericAssociatedInterfaceFactory>
+      associated_interfaces_;
 
   // Guards access to the fields below.
   mutable base::Lock lock_;

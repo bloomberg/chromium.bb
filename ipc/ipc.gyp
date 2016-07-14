@@ -61,6 +61,14 @@
       ],
     },
     {
+      'target_name': 'ipc_test_interfaces',
+      'type': 'static_library',
+      'sources': [
+        'ipc_test.mojom',
+      ],
+      'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
+    },
+    {
       'target_name': 'ipc_run_all_unittests',
       'type': 'static_library',
       'dependencies': [
@@ -83,6 +91,7 @@
       'dependencies': [
         'ipc',
         'ipc_run_all_unittests',
+        'ipc_test_interfaces',
         'test_support_ipc',
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',

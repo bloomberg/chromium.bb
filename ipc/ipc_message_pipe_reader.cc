@@ -115,6 +115,14 @@ bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
   return result == MOJO_RESULT_OK;
 }
 
+void MessagePipeReader::GetRemoteInterface(
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  mojom::GenericInterfaceAssociatedRequest request;
+  request.Bind(std::move(handle));
+  sender_->GetAssociatedInterface(name, std::move(request));
+}
+
 void MessagePipeReader::Receive(
     mojo::Array<uint8_t> data,
     mojo::Array<mojom::SerializedHandlePtr> handles) {
@@ -136,6 +144,14 @@ void MessagePipeReader::Receive(
                          message.flags(),
                          TRACE_EVENT_FLAG_FLOW_IN);
   delegate_->OnMessageReceived(message);
+}
+
+void MessagePipeReader::GetAssociatedInterface(
+    const mojo::String& name,
+    mojom::GenericInterfaceAssociatedRequest request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (delegate_)
+    delegate_->OnAssociatedInterfaceRequest(name, request.PassHandle());
 }
 
 void MessagePipeReader::OnPipeError(MojoResult error) {
