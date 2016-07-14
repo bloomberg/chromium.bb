@@ -122,11 +122,11 @@ public:
         m_resolver->resolve(domDataView);
     }
 
-    void onError(const WebBluetoothError& e) override
+    void onError(int32_t error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */) override
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(BluetoothError::take(m_resolver, e));
+        m_resolver->reject(BluetoothError::take(m_resolver, error));
     }
 
 private:
@@ -160,11 +160,11 @@ public:
         m_resolver->resolve();
     }
 
-    void onError(const WebBluetoothError& e) override
+    void onError(int32_t error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */) override
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(BluetoothError::take(m_resolver, e));
+        m_resolver->reject(BluetoothError::take(m_resolver, error));
     }
 
 private:

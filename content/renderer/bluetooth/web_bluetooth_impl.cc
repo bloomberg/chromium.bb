@@ -25,6 +25,16 @@
 
 namespace content {
 
+namespace {
+
+// Blink can't use non-blink mojo enums like blink::mojom::WebBluetoothError, so
+// we pass it as an int32 across the boundary.
+int32_t ToInt32(blink::mojom::WebBluetoothError error) {
+  return static_cast<int32_t>(error);
+}
+
+}  // namespace
+
 WebBluetoothImpl::WebBluetoothImpl(shell::InterfaceProvider* remote_interfaces)
     : remote_interfaces_(remote_interfaces), binding_(this) {}
 
@@ -64,12 +74,14 @@ void WebBluetoothImpl::disconnect(const blink::WebString& device_id) {
 
 void WebBluetoothImpl::getPrimaryServices(
     const blink::WebString& device_id,
-
-    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    int32_t quantity,
     const blink::WebString& services_uuid,
     blink::WebBluetoothGetPrimaryServicesCallbacks* callbacks) {
+  DCHECK(blink::mojom::IsKnownEnumValue(
+      static_cast<blink::mojom::WebBluetoothGATTQueryQuantity>(quantity)));
   GetWebBluetoothService().RemoteServerGetPrimaryServices(
-      mojo::String::From(device_id), quantity,
+      mojo::String::From(device_id),
+      static_cast<blink::mojom::WebBluetoothGATTQueryQuantity>(quantity),
       services_uuid.isEmpty()
           ? base::nullopt
           : base::make_optional(device::BluetoothUUID(services_uuid.utf8())),
@@ -80,11 +92,14 @@ void WebBluetoothImpl::getPrimaryServices(
 
 void WebBluetoothImpl::getCharacteristics(
     const blink::WebString& service_instance_id,
-    blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+    int32_t quantity,
     const blink::WebString& characteristics_uuid,
     blink::WebBluetoothGetCharacteristicsCallbacks* callbacks) {
+  DCHECK(blink::mojom::IsKnownEnumValue(
+      static_cast<blink::mojom::WebBluetoothGATTQueryQuantity>(quantity)));
   GetWebBluetoothService().RemoteServiceGetCharacteristics(
-      mojo::String::From(service_instance_id), quantity,
+      mojo::String::From(service_instance_id),
+      static_cast<blink::mojom::WebBluetoothGATTQueryQuantity>(quantity),
       characteristics_uuid.isEmpty()
           ? base::nullopt
           : base::make_optional(
@@ -176,7 +191,7 @@ void WebBluetoothImpl::OnRequestDeviceComplete(
         blink::WebString::fromUTF8(device->id),
         blink::WebString::fromUTF8(device->name), uuids)));
   } else {
-    callbacks->onError(error);
+    callbacks->onError(ToInt32(error));
   }
 }
 
@@ -199,7 +214,7 @@ void WebBluetoothImpl::OnConnectComplete(
   if (error == blink::mojom::WebBluetoothError::SUCCESS) {
     callbacks->onSuccess();
   } else {
-    callbacks->onError(error);
+    callbacks->onError(ToInt32(error));
   }
 }
 
@@ -221,7 +236,7 @@ void WebBluetoothImpl::OnGetPrimaryServicesComplete(
     }
     callbacks->onSuccess(promise_services);
   } else {
-    callbacks->onError(error);
+    callbacks->onError(ToInt32(error));
   }
 }
 
@@ -246,7 +261,7 @@ void WebBluetoothImpl::OnGetCharacteristicsComplete(
     }
     callbacks->onSuccess(promise_characteristics);
   } else {
-    callbacks->onError(error);
+    callbacks->onError(ToInt32(error));
   }
 }
 
@@ -257,7 +272,7 @@ void WebBluetoothImpl::OnReadValueComplete(
   if (error == blink::mojom::WebBluetoothError::SUCCESS) {
     callbacks->onSuccess(value.PassStorage());
   } else {
-    callbacks->onError(error);
+    callbacks->onError(ToInt32(error));
   }
 }
 
@@ -268,7 +283,7 @@ void WebBluetoothImpl::OnWriteValueComplete(
   if (error == blink::mojom::WebBluetoothError::SUCCESS) {
     callbacks->onSuccess(value);
   } else {
-    callbacks->onError(error);
+    callbacks->onError(ToInt32(error));
   }
 }
 
@@ -278,7 +293,7 @@ void WebBluetoothImpl::OnStartNotificationsComplete(
   if (error == blink::mojom::WebBluetoothError::SUCCESS) {
     callbacks->onSuccess();
   } else {
-    callbacks->onError(error);
+    callbacks->onError(ToInt32(error));
   }
 }
 

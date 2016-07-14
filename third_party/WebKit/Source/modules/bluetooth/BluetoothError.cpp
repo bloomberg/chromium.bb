@@ -6,17 +6,18 @@
 
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 
 namespace blink {
 
-DOMException* BluetoothError::take(ScriptPromiseResolver*, const WebBluetoothError& webError)
+DOMException* BluetoothError::take(ScriptPromiseResolver*, int32_t webError /* Corresponds to WebBluetoothError in web_bluetooth.mojom */)
 {
-    switch (webError) {
-    case WebBluetoothError::SUCCESS:
+    switch (static_cast<mojom::blink::WebBluetoothError>(webError)) {
+    case mojom::blink::WebBluetoothError::SUCCESS:
         ASSERT_NOT_REACHED();
         return DOMException::create(UnknownError);
-#define MAP_ERROR(enumeration, name, message) \
-    case WebBluetoothError::enumeration:      \
+#define MAP_ERROR(enumeration, name, message)          \
+    case mojom::blink::WebBluetoothError::enumeration: \
         return DOMException::create(name, message)
 
         // InvalidModificationErrors:

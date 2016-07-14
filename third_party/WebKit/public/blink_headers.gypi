@@ -231,7 +231,6 @@
       "platform/modules/background_sync/WebSyncRegistration.h",
       "platform/modules/bluetooth/WebBluetooth.h",
       "platform/modules/bluetooth/WebBluetoothDevice.h",
-      "platform/modules/bluetooth/WebBluetoothError.h",
       "platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h",
       "platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h",
       "platform/modules/bluetooth/WebBluetoothRemoteGATTService.h",

@@ -18,7 +18,6 @@ component("blink") {
     "//net",
     "//skia",
     "//third_party/WebKit/public:blink",
-    "//third_party/WebKit/public:mojo_bindings",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",

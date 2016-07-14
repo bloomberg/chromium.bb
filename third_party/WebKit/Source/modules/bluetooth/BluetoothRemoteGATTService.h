@@ -11,7 +11,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
-#include "public/platform/modules/bluetooth/web_bluetooth.mojom.h"
+#include "public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -52,7 +52,7 @@ public:
     ScriptPromise getCharacteristics(ScriptState*, ExceptionState&);
 
 private:
-    ScriptPromise getCharacteristicsImpl(ScriptState*, mojom::WebBluetoothGATTQueryQuantity, String characteristicUUID = String());
+    ScriptPromise getCharacteristicsImpl(ScriptState*, mojom::blink::WebBluetoothGATTQueryQuantity, String characteristicUUID = String());
 
     std::unique_ptr<WebBluetoothRemoteGATTService> m_webService;
     Member<BluetoothDevice> m_device;

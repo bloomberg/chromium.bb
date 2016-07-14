@@ -54,12 +54,14 @@ class CONTENT_EXPORT WebBluetoothImpl
   void disconnect(const blink::WebString& device_id) override;
   void getPrimaryServices(
       const blink::WebString& device_id,
-      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+      int32_t quantity /* Corresponds to WebBluetoothGATTQueryQuantity in
+                        web_bluetooth.mojom */,
       const blink::WebString& services_uuid,
       blink::WebBluetoothGetPrimaryServicesCallbacks* callbacks) override;
   void getCharacteristics(
       const blink::WebString& service_instance_id,
-      blink::mojom::WebBluetoothGATTQueryQuantity quantity,
+      int32_t quantity /* Corresponds to WebBluetoothGATTQueryQuantity in
+                        web_bluetooth.mojom */,
       const blink::WebString& characteristics_uuid,
       blink::WebBluetoothGetCharacteristicsCallbacks* callbacks) override;
   void readValue(const blink::WebString& characteristic_instance_id,

@@ -6,7 +6,6 @@
 #define BluetoothError_h
 
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/bluetooth/WebBluetoothError.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -20,8 +19,8 @@ class BluetoothError {
     STATIC_ONLY(BluetoothError);
 public:
     // Interface required by CallbackPromiseAdapter:
-    using WebType = const WebBluetoothError&;
-    static DOMException* take(ScriptPromiseResolver*, const WebBluetoothError&);
+    using WebType = int32_t /* Corresponds to WebBluetoothError in web_bluetooth.mojom */;
+    static DOMException* take(ScriptPromiseResolver*, int32_t error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */);
 };
 
 } // namespace blink

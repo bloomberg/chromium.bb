@@ -43,7 +43,7 @@ DEFINE_TRACE(BluetoothRemoteGATTService)
 // with a vector owning the characteristics.
 class GetCharacteristicsCallback : public WebBluetoothGetCharacteristicsCallbacks {
 public:
-    GetCharacteristicsCallback(BluetoothRemoteGATTService* service, mojom::WebBluetoothGATTQueryQuantity quantity, ScriptPromiseResolver* resolver)
+    GetCharacteristicsCallback(BluetoothRemoteGATTService* service, mojom::blink::WebBluetoothGATTQueryQuantity quantity, ScriptPromiseResolver* resolver)
         : m_service(service)
         , m_quantity(quantity)
         , m_resolver(resolver) {}
@@ -53,7 +53,7 @@ public:
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
 
-        if (m_quantity == mojom::WebBluetoothGATTQueryQuantity::SINGLE) {
+        if (m_quantity == mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE) {
             DCHECK_EQ(1u, webCharacteristics.size());
             m_resolver->resolve(BluetoothRemoteGATTCharacteristic::take(m_resolver, wrapUnique(webCharacteristics[0]), m_service));
             return;
@@ -67,15 +67,15 @@ public:
         m_resolver->resolve(characteristics);
     }
 
-    void onError(const WebBluetoothError& e) override
+    void onError(int32_t error /* Corresponds to WebBluetoothError in web_bluetooth.mojom */) override
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(BluetoothError::take(m_resolver, e));
+        m_resolver->reject(BluetoothError::take(m_resolver, error));
     }
 private:
     Persistent<BluetoothRemoteGATTService> m_service;
-    mojom::WebBluetoothGATTQueryQuantity m_quantity;
+    mojom::blink::WebBluetoothGATTQueryQuantity m_quantity;
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
@@ -85,7 +85,7 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristic(ScriptState* scriptS
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
-    return getCharacteristicsImpl(scriptState, mojom::WebBluetoothGATTQueryQuantity::SINGLE, characteristicUUID);
+    return getCharacteristicsImpl(scriptState, mojom::blink::WebBluetoothGATTQueryQuantity::SINGLE, characteristicUUID);
 }
 
 ScriptPromise BluetoothRemoteGATTService::getCharacteristics(ScriptState* scriptState, const StringOrUnsignedLong& characteristic, ExceptionState& exceptionState)
@@ -94,21 +94,21 @@ ScriptPromise BluetoothRemoteGATTService::getCharacteristics(ScriptState* script
     if (exceptionState.hadException())
         return exceptionState.reject(scriptState);
 
-    return getCharacteristicsImpl(scriptState, mojom::WebBluetoothGATTQueryQuantity::MULTIPLE, characteristicUUID);
+    return getCharacteristicsImpl(scriptState, mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE, characteristicUUID);
 }
 
 ScriptPromise BluetoothRemoteGATTService::getCharacteristics(ScriptState* scriptState, ExceptionState&)
 {
-    return getCharacteristicsImpl(scriptState, mojom::WebBluetoothGATTQueryQuantity::MULTIPLE);
+    return getCharacteristicsImpl(scriptState, mojom::blink::WebBluetoothGATTQueryQuantity::MULTIPLE);
 }
 
-ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(ScriptState* scriptState, mojom::WebBluetoothGATTQueryQuantity quantity, String characteristicsUUID)
+ScriptPromise BluetoothRemoteGATTService::getCharacteristicsImpl(ScriptState* scriptState, mojom::blink::WebBluetoothGATTQueryQuantity quantity, String characteristicsUUID)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
-    webbluetooth->getCharacteristics(m_webService->serviceInstanceID, quantity, characteristicsUUID, new GetCharacteristicsCallback(this, quantity, resolver));
+    webbluetooth->getCharacteristics(m_webService->serviceInstanceID, static_cast<int32_t>(quantity), characteristicsUUID, new GetCharacteristicsCallback(this, quantity, resolver));
 
     return promise;
 }

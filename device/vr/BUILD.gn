@@ -24,7 +24,6 @@ component("vr") {
     ":mojo_bindings",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//third_party/WebKit/public:mojo_bindings",
     "//ui/gfx",
   ]
 
@@ -56,7 +55,6 @@ static_library("fakes") {
     ":vr",
     "//base",
     "//mojo/public/cpp/bindings",
-    "//third_party/WebKit/public:mojo_bindings",
   ]
 }
 

@@ -9,7 +9,7 @@
 #include "bindings/modules/v8/StringOrUnsignedLong.h"
 #include "modules/bluetooth/BluetoothDevice.h"
 #include "platform/heap/Heap.h"
-#include "public/platform/modules/bluetooth/WebBluetoothError.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom-blink.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -44,7 +44,7 @@ public:
     ScriptPromise getPrimaryServices(ScriptState*, ExceptionState&);
 
 private:
-    ScriptPromise getPrimaryServicesImpl(ScriptState*, mojom::WebBluetoothGATTQueryQuantity, String serviceUUID = String());
+    ScriptPromise getPrimaryServicesImpl(ScriptState*, mojom::blink::WebBluetoothGATTQueryQuantity, String serviceUUID = String());
 
     Member<BluetoothDevice> m_device;
     bool m_connected;
