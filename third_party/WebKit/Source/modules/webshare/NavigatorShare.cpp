@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class NavigatorShare::ShareClientImpl : public GarbageCollectedFinalized<ShareClientImpl> {
+class NavigatorShare::ShareClientImpl final : public GarbageCollected<ShareClientImpl> {
 public:
     ShareClientImpl(NavigatorShare*, ScriptPromiseResolver*);
 
