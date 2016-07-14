@@ -19,6 +19,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.tab.Tab;
@@ -74,7 +75,7 @@ public class WebappLauncherActivity extends Activity {
                             intent, ShortcutHelper.EXTRA_MAC))
                     || wasIntentFromChrome(intent)) {
                 LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
-                launchIntent = createWebappLaunchIntent(webappInfo, isValidWebApk);
+                launchIntent = createWebappLaunchIntent(webappInfo, webappSource, isValidWebApk);
             } else {
                 Log.e(TAG, "Shortcut (%s) opened in Chrome.", webappUrl);
 
@@ -119,7 +120,7 @@ public class WebappLauncherActivity extends Activity {
      * @param isWebApk If true, launch the app as a WebApkActivity.  If false, launch the app as
      *                 a WebappActivity.
      */
-    private Intent createWebappLaunchIntent(WebappInfo info, boolean isWebApk) {
+    private Intent createWebappLaunchIntent(WebappInfo info, int source, boolean isWebApk) {
         String activityName = isWebApk ? WebApkActivity.class.getName()
                 : WebappActivity.class.getName();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -145,6 +146,17 @@ public class WebappLauncherActivity extends Activity {
             // of the WebAPK's main activity and in the same task.
             launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+
+            // If this is launching from a notification, we want to ensure that the URL being
+            // launched is the URL in the intent. If a paused WebappActivity exists for this id,
+            // then by default it will be focused and we have no way of sending the desired URL to
+            // it (the intent is swallowed). As a workaround, set the CLEAR_TOP flag to ensure that
+            // the existing Activity is cleared and relaunched with this intent.
+            // TODO(dominickn): ideally, we want be able to route an intent to
+            // WebappActivity.onNewIntent instead of restarting the Activity.
+            if (source == ShortcutSource.NOTIFICATION) {
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            }
         }
         return launchIntent;
     }

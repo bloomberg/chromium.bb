@@ -105,6 +105,9 @@ public class ServiceTabLauncher {
 
                         @Override
                         protected final void onPostExecute(Intent intent) {
+                            // Replace the web app URL with the URL from the notification. This is
+                            // within the webapp's scope, so it is valid.
+                            intent.putExtra(ShortcutHelper.EXTRA_URL, url);
                             intent.putExtra(ShortcutHelper.EXTRA_SOURCE,
                                     ShortcutSource.NOTIFICATION);
                             tabDelegate.createNewStandaloneFrame(intent);
