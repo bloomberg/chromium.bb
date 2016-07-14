@@ -48,7 +48,7 @@ typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t> Dct8x8Param;
 typedef std::tr1::tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t> Ht8x8Param;
 typedef std::tr1::tuple<IdctFunc, IdctFunc, int, aom_bit_depth_t> Idct8x8Param;
 
-void reference_8x8_dct_1d(const double in[8], double out[8], int stride) {
+void reference_8x8_dct_1d(const double in[8], double out[8]) {
   const double kInvSqrt2 = 0.707106781186547524400844362104;
   for (int k = 0; k < 8; k++) {
     out[k] = 0.0;
@@ -64,20 +64,21 @@ void reference_8x8_dct_2d(const int16_t input[kNumCoeffs],
   for (int i = 0; i < 8; ++i) {
     double temp_in[8], temp_out[8];
     for (int j = 0; j < 8; ++j) temp_in[j] = input[j * 8 + i];
-    reference_8x8_dct_1d(temp_in, temp_out, 1);
+    reference_8x8_dct_1d(temp_in, temp_out);
     for (int j = 0; j < 8; ++j) output[j * 8 + i] = temp_out[j];
   }
   // Then transform rows
   for (int i = 0; i < 8; ++i) {
     double temp_in[8], temp_out[8];
     for (int j = 0; j < 8; ++j) temp_in[j] = output[j + i * 8];
-    reference_8x8_dct_1d(temp_in, temp_out, 1);
+    reference_8x8_dct_1d(temp_in, temp_out);
     // Scale by some magic number
     for (int j = 0; j < 8; ++j) output[j + i * 8] = temp_out[j] * 2;
   }
 }
 
-void fdct8x8_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
+void fdct8x8_ref(const int16_t *in, tran_low_t *out, int stride,
+                 int /*tx_type*/) {
   aom_fdct8x8_c(in, out, stride);
 }
 
@@ -608,7 +609,7 @@ class InvTrans8x8DCT : public FwdTrans8x8TestBase,
   void RunInvTxfm(tran_low_t *out, uint8_t *dst, int stride) {
     inv_txfm_(out, dst, stride);
   }
-  void RunFwdTxfm(int16_t *out, tran_low_t *dst, int stride) {}
+  void RunFwdTxfm(int16_t * /*out*/, tran_low_t * /*dst*/, int /*stride*/) {}
 
   IdctFunc ref_txfm_;
   IdctFunc inv_txfm_;

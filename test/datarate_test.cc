@@ -287,11 +287,6 @@ class DatarateTestAV1Large
     denoiser_offon_period_ = -1;
   }
 
-  int SetFrameFlags(int frame_num, int num_temp_layers) {
-    int frame_flags = 0;
-    return frame_flags;
-  }
-
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);

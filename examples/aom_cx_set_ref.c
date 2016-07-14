@@ -191,8 +191,7 @@ static void find_mismatch(const aom_image_t *const img1,
 }
 
 static void testing_decode(aom_codec_ctx_t *encoder, aom_codec_ctx_t *decoder,
-                           aom_codec_enc_cfg_t *cfg, unsigned int frame_out,
-                           int *mismatch_seen) {
+                           unsigned int frame_out, int *mismatch_seen) {
   aom_image_t enc_img, dec_img;
   struct av1_ref_frame ref_enc, ref_dec;
 
@@ -226,11 +225,10 @@ static void testing_decode(aom_codec_ctx_t *encoder, aom_codec_ctx_t *decoder,
   aom_img_free(&dec_img);
 }
 
-static int encode_frame(aom_codec_ctx_t *ecodec, aom_codec_enc_cfg_t *cfg,
-                        aom_image_t *img, unsigned int frame_in,
-                        AvxVideoWriter *writer, int test_decode,
-                        aom_codec_ctx_t *dcodec, unsigned int *frame_out,
-                        int *mismatch_seen) {
+static int encode_frame(aom_codec_ctx_t *ecodec, aom_image_t *img,
+                        unsigned int frame_in, AvxVideoWriter *writer,
+                        int test_decode, aom_codec_ctx_t *dcodec,
+                        unsigned int *frame_out, int *mismatch_seen) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
@@ -271,7 +269,7 @@ static int encode_frame(aom_codec_ctx_t *ecodec, aom_codec_enc_cfg_t *cfg,
 
   // Mismatch checking
   if (got_data && test_decode) {
-    testing_decode(ecodec, dcodec, cfg, *frame_out, mismatch_seen);
+    testing_decode(ecodec, dcodec, *frame_out, mismatch_seen);
   }
 
   return got_pkts;
@@ -404,7 +402,7 @@ int main(int argc, char **argv) {
       }
     }
 
-    encode_frame(&ecodec, &cfg, &raw, frame_in, writer, test_decode, &dcodec,
+    encode_frame(&ecodec, &raw, frame_in, writer, test_decode, &dcodec,
                  &frame_out, &mismatch_seen);
     frame_in++;
     if (mismatch_seen) break;
@@ -412,8 +410,8 @@ int main(int argc, char **argv) {
 
   // Flush encoder.
   if (!mismatch_seen)
-    while (encode_frame(&ecodec, &cfg, NULL, frame_in, writer, test_decode,
-                        &dcodec, &frame_out, &mismatch_seen)) {
+    while (encode_frame(&ecodec, NULL, frame_in, writer, test_decode, &dcodec,
+                        &frame_out, &mismatch_seen)) {
     }
 
   printf("\n");

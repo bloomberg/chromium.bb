@@ -46,9 +46,9 @@ struct EncodeParameters {
 };
 
 const EncodeParameters kAV1EncodeParameterSet[] = {
-  { 0, 0, 0, 1, 0, AOM_CR_STUDIO_RANGE, AOM_CS_BT_601 },
-  { 0, 0, 0, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_709 },
-  { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020 },
+  { 0, 0, 0, 1, 0, AOM_CR_STUDIO_RANGE, AOM_CS_BT_601, { 0, 0 } },
+  { 0, 0, 0, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_709, { 0, 0 } },
+  { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020, { 0, 0 } },
   { 0, 2, 0, 0, 1, AOM_CR_STUDIO_RANGE, AOM_CS_UNKNOWN, { 640, 480 } },
   // TODO(JBB): Test profiles (requires more work).
 };
@@ -94,7 +94,6 @@ class AvxEncoderParmsGetToDecoder
   }
 
   virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
-                                  const libaom_test::VideoSource &video,
                                   libaom_test::Decoder *decoder) {
     aom_codec_ctx_t *const av1_decoder = decoder->GetDecoder();
     aom_codec_alg_priv_t *const priv =

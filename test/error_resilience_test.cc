@@ -55,8 +55,7 @@ class ErrorResilienceTestLarge
     nframes_++;
   }
 
-  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
-                                  ::libaom_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video) {
     frame_flags_ &=
         ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF);
     // For temporal layer case.
@@ -253,48 +252,6 @@ class ErrorResilienceTestLargeCodecControls
   virtual void SetUp() {
     InitializeConfig();
     SetMode(encoding_mode_);
-  }
-
-  //
-  // Frame flags and layer id for temporal layers.
-  //
-
-  // For two layers, test pattern is:
-  //   1     3
-  // 0    2     .....
-  // For three layers, test pattern is:
-  //   1      3    5      7
-  //      2           6
-  // 0          4            ....
-  // LAST is always update on base/layer 0, GOLDEN is updated on layer 1,
-  // and ALTREF is updated on top layer for 3 layer pattern.
-  int SetFrameFlags(int frame_num, int num_temp_layers) {
-    int frame_flags = 0;
-    if (num_temp_layers == 2) {
-      if (frame_num % 2 == 0) {
-        // Layer 0: predict from L and ARF, update L.
-        frame_flags =
-            AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
-      } else {
-        // Layer 1: predict from L, G and ARF, and update G.
-        frame_flags = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST |
-                      AOM_EFLAG_NO_UPD_ENTROPY;
-      }
-    } else if (num_temp_layers == 3) {
-      if (frame_num % 4 == 0) {
-        // Layer 0: predict from L, update L.
-        frame_flags = AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
-                      AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF;
-      } else if ((frame_num - 2) % 4 == 0) {
-        // Layer 1: predict from L, G,  update G.
-        frame_flags =
-            AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_REF_ARF;
-      } else if ((frame_num - 1) % 2 == 0) {
-        // Layer 2: predict from L, G, ARF; update ARG.
-        frame_flags = AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_LAST;
-      }
-    }
-    return frame_flags;
   }
 
   virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {

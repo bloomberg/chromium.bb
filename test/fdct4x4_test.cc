@@ -40,7 +40,8 @@ typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
 typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t> Dct4x4Param;
 typedef std::tr1::tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t> Ht4x4Param;
 
-void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
+void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride,
+                 int /*tx_type*/) {
   aom_fdct4x4_c(in, out, stride);
 }
 
@@ -48,7 +49,8 @@ void fht4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
   av1_fht4x4_c(in, out, stride, tx_type);
 }
 
-void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
+void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
+                 int /*tx_type*/) {
   av1_fwht4x4_c(in, out, stride);
 }
 

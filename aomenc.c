@@ -1387,10 +1387,11 @@ static void open_output_file(struct stream_state *stream,
 #if CONFIG_WEBM_IO
   if (stream->config.write_webm) {
     stream->ebml.stream = stream->file;
-    write_webm_file_header(&stream->ebml, cfg, &global->framerate,
-                           stream->config.stereo_fmt, global->codec->fourcc,
-                           pixel_aspect_ratio);
+    write_webm_file_header(&stream->ebml, cfg, stream->config.stereo_fmt,
+                           global->codec->fourcc, pixel_aspect_ratio);
   }
+#else
+  (void)pixel_aspect_ratio;
 #endif
 
   if (!stream->config.write_webm) {
@@ -1710,8 +1711,7 @@ static float usec_to_fps(uint64_t usec, unsigned int frames) {
 }
 
 static void test_decode(struct stream_state *stream,
-                        enum TestDecodeFatality fatal,
-                        const AvxInterface *codec) {
+                        enum TestDecodeFatality fatal) {
   aom_image_t enc_img, dec_img;
   struct av1_ref_frame ref_enc, ref_dec;
 
@@ -2128,7 +2128,7 @@ int main(int argc, const char **argv_) {
         }
 
         if (got_data && global.test_decode != TEST_DECODE_OFF)
-          FOREACH_STREAM(test_decode(stream, global.test_decode, global.codec));
+          FOREACH_STREAM(test_decode(stream, global.test_decode));
       }
 
       fflush(stdout);

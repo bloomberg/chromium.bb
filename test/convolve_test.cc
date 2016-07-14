@@ -246,7 +246,7 @@ void highbd_filter_block2d_8_c(const uint16_t *src_ptr,
 void highbd_block2d_average_c(uint16_t *src, unsigned int src_stride,
                               uint16_t *output_ptr, unsigned int output_stride,
                               unsigned int output_width,
-                              unsigned int output_height, int bd) {
+                              unsigned int output_height) {
   unsigned int i, j;
   for (i = 0; i < output_height; ++i) {
     for (j = 0; j < output_width; ++j) {
@@ -268,7 +268,7 @@ void highbd_filter_average_block2d_8_c(
   highbd_filter_block2d_8_c(src_ptr, src_stride, HFilter, VFilter, tmp, 64,
                             output_width, output_height, bd);
   highbd_block2d_average_c(tmp, 64, dst_ptr, dst_stride, output_width,
-                           output_height, bd);
+                           output_height);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 

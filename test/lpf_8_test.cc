@@ -60,49 +60,49 @@ typedef std::tr1::tuple<dual_loop_op_t, dual_loop_op_t, int> dualloop8_param_t;
 #if CONFIG_AOM_HIGHBITDEPTH
 void wrapper_vertical_16_sse2(uint16_t *s, int p, const uint8_t *blimit,
                               const uint8_t *limit, const uint8_t *thresh,
-                              int count, int bd) {
+                              int /*count*/, int bd) {
   aom_highbd_lpf_vertical_16_sse2(s, p, blimit, limit, thresh, bd);
 }
 
 void wrapper_vertical_16_c(uint16_t *s, int p, const uint8_t *blimit,
                            const uint8_t *limit, const uint8_t *thresh,
-                           int count, int bd) {
+                           int /*count*/, int bd) {
   aom_highbd_lpf_vertical_16_c(s, p, blimit, limit, thresh, bd);
 }
 
 void wrapper_vertical_16_dual_sse2(uint16_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
-                                   int count, int bd) {
+                                   int /*count*/, int bd) {
   aom_highbd_lpf_vertical_16_dual_sse2(s, p, blimit, limit, thresh, bd);
 }
 
 void wrapper_vertical_16_dual_c(uint16_t *s, int p, const uint8_t *blimit,
                                 const uint8_t *limit, const uint8_t *thresh,
-                                int count, int bd) {
+                                int /*count*/, int bd) {
   aom_highbd_lpf_vertical_16_dual_c(s, p, blimit, limit, thresh, bd);
 }
 #else
 void wrapper_vertical_16_sse2(uint8_t *s, int p, const uint8_t *blimit,
                               const uint8_t *limit, const uint8_t *thresh,
-                              int count) {
+                              int /*count*/) {
   aom_lpf_vertical_16_sse2(s, p, blimit, limit, thresh);
 }
 
 void wrapper_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
                            const uint8_t *limit, const uint8_t *thresh,
-                           int count) {
+                           int /*count*/) {
   aom_lpf_vertical_16_c(s, p, blimit, limit, thresh);
 }
 
 void wrapper_vertical_16_dual_sse2(uint8_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
-                                   int count) {
+                                   int /*count*/) {
   aom_lpf_vertical_16_dual_sse2(s, p, blimit, limit, thresh);
 }
 
 void wrapper_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                 const uint8_t *limit, const uint8_t *thresh,
-                                int count) {
+                                int /*count*/) {
   aom_lpf_vertical_16_dual_c(s, p, blimit, limit, thresh);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -114,25 +114,25 @@ void wrapper_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
 #else
 void wrapper_vertical_16_neon(uint8_t *s, int p, const uint8_t *blimit,
                               const uint8_t *limit, const uint8_t *thresh,
-                              int count) {
+                              int /*count*/) {
   aom_lpf_vertical_16_neon(s, p, blimit, limit, thresh);
 }
 
 void wrapper_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
                            const uint8_t *limit, const uint8_t *thresh,
-                           int count) {
+                           int /*count*/) {
   aom_lpf_vertical_16_c(s, p, blimit, limit, thresh);
 }
 
 void wrapper_vertical_16_dual_neon(uint8_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
-                                   int count) {
+                                   int /*count*/) {
   aom_lpf_vertical_16_dual_neon(s, p, blimit, limit, thresh);
 }
 
 void wrapper_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                 const uint8_t *limit, const uint8_t *thresh,
-                                int count) {
+                                int /*count*/) {
   aom_lpf_vertical_16_dual_c(s, p, blimit, limit, thresh);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -141,13 +141,13 @@ void wrapper_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
 #if HAVE_MSA && (!CONFIG_AOM_HIGHBITDEPTH)
 void wrapper_vertical_16_msa(uint8_t *s, int p, const uint8_t *blimit,
                              const uint8_t *limit, const uint8_t *thresh,
-                             int count) {
+                             int /*count*/) {
   aom_lpf_vertical_16_msa(s, p, blimit, limit, thresh);
 }
 
 void wrapper_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
                            const uint8_t *limit, const uint8_t *thresh,
-                           int count) {
+                           int /*count*/) {
   aom_lpf_vertical_16_c(s, p, blimit, limit, thresh);
 }
 #endif  // HAVE_MSA && (!CONFIG_AOM_HIGHBITDEPTH)

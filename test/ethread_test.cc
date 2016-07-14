@@ -54,7 +54,7 @@ class AVxEncoderThreadTest
     encoder_initialized_ = false;
   }
 
-  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource * /*video*/,
                                   ::libaom_test::Encoder *encoder) {
     if (!encoder_initialized_) {
       // Encode 4 column tiles.
@@ -81,7 +81,6 @@ class AVxEncoderThreadTest
   }
 
   virtual bool HandleDecodeResult(const aom_codec_err_t res,
-                                  const libaom_test::VideoSource & /*video*/,
                                   libaom_test::Decoder * /*decoder*/) {
     if (res != AOM_CODEC_OK) {
       EXPECT_EQ(AOM_CODEC_OK, res);
