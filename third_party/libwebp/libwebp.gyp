@@ -62,6 +62,7 @@
         'dsp/dec_clip_tables.c',
         'dsp/dec_mips32.c',
         'dsp/dec_mips_dsp_r2.c',
+        'dsp/dec_msa.c',
         'dsp/enc.c',
         'dsp/enc_avx2.c',
         'dsp/enc_mips32.c',
