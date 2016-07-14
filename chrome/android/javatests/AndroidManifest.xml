@@ -59,6 +59,10 @@
                 </action>
             </intent-filter>
         </receiver>
+
+        <service android:name="org.chromium.chrome.test.webapk.TestWebApkServiceImplWrapper"
+            android:exported="true">
+        </service>
     </application>
 
     <instrumentation android:name="org.chromium.chrome.test.ChromeInstrumentationTestRunner"

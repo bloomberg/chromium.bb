@@ -639,9 +639,6 @@
       },
       {
         "test": "webapk_client_junit_tests"
-      },
-      {
-        "test": "webapk_runtime_library_junit_tests"
       }
     ],
     "scripts": [

@@ -55,11 +55,13 @@ android_library("chrome_java_test_support") {
     "javatests/src/org/chromium/chrome/test/util/PrerenderTestHelper.java",
     "javatests/src/org/chromium/chrome/test/util/TabStripUtils.java",
     "javatests/src/org/chromium/chrome/test/util/TranslateUtil.java",
+    "javatests/src/org/chromium/chrome/test/webapk/TestWebApkServiceImplWrapper.java",
   ]
   deps = [
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
+    "//chrome/android/webapk/libs/runtime_library:runtime_library_java",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/invalidation/impl:java",
     "//components/location/android:location_java",

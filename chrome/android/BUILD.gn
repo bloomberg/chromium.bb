@@ -561,6 +561,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
 
   deps = [
     ":chrome_test_java",
+    "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
   ]
   additional_apks = [

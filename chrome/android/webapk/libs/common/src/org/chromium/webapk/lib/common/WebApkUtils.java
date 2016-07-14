@@ -60,6 +60,27 @@ public class WebApkUtils {
     }
 
     /**
+     * Returns the uid for the host browser that was specified when building the WebAPK.
+     * @param context A context.
+     * @return The application uid. Returns -1 on an error.
+     */
+    public static int getHostBrowserUid(Context context) {
+        String hostPackageName = getHostBrowserPackageName(context);
+        if (hostPackageName == null) {
+            return -1;
+        }
+        try {
+            PackageManager packageManager = context.getPackageManager();
+            ApplicationInfo appInfo = packageManager.getApplicationInfo(
+                    hostPackageName, PackageManager.GET_META_DATA);
+            return appInfo.uid;
+        } catch (NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    /**
      * Returns name of "Runtime Dex" asset in Chrome APK based on version.
      * @param version
      * @return Dex asset name.

@@ -3,5 +3,6 @@
 include_rules = [
   "-base",
   "-chrome",
+  "-content",
   "-testing",
 ]

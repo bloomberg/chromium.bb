@@ -34,9 +34,9 @@ public class WebApkServiceFactory extends Service {
     private static final String KEY_SMALL_ICON_ID = "small_icon_id";
 
     /**
-     * Key for passing package name of only process allowed to call the service's methods.
+     * Key for passing uid of only application allowed to call the service's methods.
      */
-    private static final String KEY_HOST_BROWSER_PACKAGE = "host_browser_package";
+    private static final String KEY_HOST_BROWSER_UID = "host_browser_uid";
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -52,10 +52,10 @@ public class WebApkServiceFactory extends Service {
                     webApkClassLoader.loadClass(WEBAPK_SERVICE_IMPL_CLASS_NAME);
             Constructor<?> webApkServiceImplConstructor =
                     webApkServiceImplClass.getConstructor(Context.class, Bundle.class);
-            String hostPackageName = WebApkUtils.getHostBrowserPackageName(this);
+            int hostBrowserUid = WebApkUtils.getHostBrowserUid(this);
             Bundle bundle = new Bundle();
             bundle.putInt(KEY_SMALL_ICON_ID, R.drawable.app_icon);
-            bundle.putString(KEY_HOST_BROWSER_PACKAGE, hostPackageName);
+            bundle.putInt(KEY_HOST_BROWSER_UID, hostBrowserUid);
             return (IBinder) webApkServiceImplConstructor.newInstance(new Object[] {this, bundle});
         } catch (Exception e) {
             Log.w(TAG, "Unable to create WebApkServiceImpl.");
