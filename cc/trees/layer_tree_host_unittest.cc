@@ -130,7 +130,6 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
     IMPL_COMMIT_COMPLETE,
     IMPL_ACTIVATE,
     IMPL_DRAW,
-    IMPL_SWAP,
     IMPL_END,
   };
 
@@ -171,11 +170,6 @@ class LayerTreeHostTestFrameOrdering : public LayerTreeHostTest {
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     EXPECT_TRUE(CheckStep(IMPL_DRAW, &impl_));
-  }
-
-  void SwapBuffersCompleteOnThread(LayerTreeHostImpl* impl) override {
-    EXPECT_TRUE(CheckStep(IMPL_SWAP, &impl_));
-
     EndTest();
   }
 
@@ -2802,7 +2796,7 @@ class LayerTreeHostTestResourcelessSoftwareDraw : public LayerTreeHostTest {
     return draw_result;
   }
 
-  void SwapBuffersCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     swap_count_++;
     switch (swap_count_) {
       case 1:
@@ -4286,7 +4280,7 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
     }
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* impl, bool result) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     switch (impl->active_tree()->source_frame_number()) {
       case 1:
         EXPECT_EQ(first_output_surface_memory_limit_,
@@ -4391,9 +4385,7 @@ class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
     }
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    EndTest();
-  }
+  void SwapBuffersCompleteOnThread() override { EndTest(); }
 
   void AfterTest() override {
     // The pending swap promise should activate and swap.
@@ -4465,7 +4457,7 @@ class LayerTreeHostTestBreakSwapPromise : public LayerTreeHostTest {
     }
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     int frame = host_impl->active_tree()->source_frame_number();
     if (frame == 2) {
       EndTest();
@@ -4585,9 +4577,8 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeTest {
             : base::Closure());
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    EXPECT_TRUE(result);
-    if (host_impl->active_tree()->source_frame_number() >= 1) {
+  void SwapBuffersCompleteOnThread() override {
+    if (num_swaps_++ >= 1) {
       // The commit changes layers so it should cause a swap.
       base::AutoLock lock(swap_promise_result_.lock);
       EXPECT_TRUE(swap_promise_result_.did_swap_called);
@@ -4600,6 +4591,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeTest {
   void AfterTest() override {}
 
  private:
+  int num_swaps_ = 0;
   scoped_refptr<Layer> layer_;
   TestSwapPromiseResult swap_promise_result_;
 };
@@ -6769,12 +6761,15 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_EQ(2.0f, host_impl->active_tree()->painted_device_scale_factor());
+    EXPECT_EQ(1.0f, host_impl->active_tree()->device_scale_factor());
+  }
+
+  void SwapBuffersCompleteOnThread() override {
     EXPECT_EQ(
         2.0f,
         output_surface()->last_sent_frame()->metadata.device_scale_factor);
-    EXPECT_EQ(2.0f, host_impl->active_tree()->painted_device_scale_factor());
-    EXPECT_EQ(1.0f, host_impl->active_tree()->device_scale_factor());
     EndTest();
   }
 

@@ -196,8 +196,7 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
     }
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    EXPECT_TRUE(result);
+  void SwapBuffersCompleteOnThread() override {
     std::vector<uint32_t>& satisfied =
         output_surface()->last_sent_frame()->metadata.satisfies_sequences;
     EXPECT_LE(satisfied.size(), 1u);

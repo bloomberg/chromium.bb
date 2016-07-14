@@ -1066,9 +1066,6 @@ class TextureLayerNoExtraCommitForMailboxTest
   }
 
   void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {
-    // Source frame number during callback is the same as the source frame
-    // on which it was released.
-    EXPECT_EQ(1, layer_tree_host()->source_frame_number());
     EXPECT_TRUE(sync_token.HasData());
     EndTest();
   }
@@ -1103,23 +1100,6 @@ class TextureLayerNoExtraCommitForMailboxTest
         NOTREACHED();
         break;
     }
-  }
-
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    ASSERT_TRUE(result);
-    DelegatedFrameData* delegated_frame_data =
-        output_surface()->last_sent_frame()->delegated_frame_data.get();
-    if (!delegated_frame_data)
-      return;
-
-    // Return all resources immediately.
-    TransferableResourceArray resources_to_return =
-        output_surface()->resources_held_by_parent();
-
-    CompositorFrameAck ack;
-    for (size_t i = 0; i < resources_to_return.size(); ++i)
-      output_surface()->ReturnResource(resources_to_return[i].id, &ack);
-    host_impl->ReclaimResources(&ack);
   }
 
   void AfterTest() override {}
@@ -1240,23 +1220,6 @@ class TextureLayerChangeInvisibleMailboxTest
         NOTREACHED();
         break;
     }
-  }
-
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    ASSERT_TRUE(result);
-    DelegatedFrameData* delegated_frame_data =
-        output_surface()->last_sent_frame()->delegated_frame_data.get();
-    if (!delegated_frame_data)
-      return;
-
-    // Return all resources immediately.
-    TransferableResourceArray resources_to_return =
-        output_surface()->resources_held_by_parent();
-
-    CompositorFrameAck ack;
-    for (size_t i = 0; i < resources_to_return.size(); ++i)
-      output_surface()->ReturnResource(resources_to_return[i].id, &ack);
-    host_impl->ReclaimResources(&ack);
   }
 
   void AfterTest() override {}

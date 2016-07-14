@@ -242,15 +242,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DrawLayersOnThread(this);
   }
 
-  bool SwapBuffers(const LayerTreeHostImpl::FrameData& frame) override {
-    bool result = LayerTreeHostImpl::SwapBuffers(frame);
-    test_hooks_->SwapBuffersOnThread(this, result);
-    return result;
-  }
-
   void DidSwapBuffersComplete() override {
     LayerTreeHostImpl::DidSwapBuffersComplete();
-    test_hooks_->SwapBuffersCompleteOnThread(this);
+    test_hooks_->SwapBuffersCompleteOnThread();
   }
 
   void ReclaimResources(const CompositorFrameAck* ack) override {

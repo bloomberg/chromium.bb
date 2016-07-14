@@ -109,6 +109,7 @@ class FakeOutputSurface : public OutputSurface {
 
   OutputSurfaceClient* client() { return client_; }
   bool BindToClient(OutputSurfaceClient* client) override;
+  void DetachFromClient() override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;
@@ -122,8 +123,6 @@ class FakeOutputSurface : public OutputSurface {
   const TransferableResourceArray& resources_held_by_parent() {
     return resources_held_by_parent_;
   }
-
-  void ReturnResource(unsigned id, CompositorFrameAck* ack);
 
   bool HasExternalStencilTest() const override;
 
@@ -148,6 +147,8 @@ class FakeOutputSurface : public OutputSurface {
   gfx::Rect last_swap_rect() const {
     return last_swap_rect_;
   }
+
+  void ReturnResourcesHeldByParent();
 
  protected:
   FakeOutputSurface(scoped_refptr<ContextProvider> context_provider,

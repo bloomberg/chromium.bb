@@ -424,7 +424,7 @@ class CC_EXPORT LayerTreeHostImpl
   }
   const RendererCapabilitiesImpl& GetRendererCapabilities() const;
 
-  virtual bool SwapBuffers(const FrameData& frame);
+  bool SwapBuffers(const FrameData& frame);
   virtual void WillBeginImplFrame(const BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
   void DidModifyTilePriorities();

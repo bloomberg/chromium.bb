@@ -1338,11 +1338,21 @@ class LayerTreeHostAnimationTestAddAnimationAfterAnimating
     }
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     // After both animations have started, verify that they have valid
     // start times.
     if (host_impl->active_tree()->source_frame_number() < 2)
       return;
+
+    // Animation state is updated after drawing.
+    ImplThreadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::Bind(&LayerTreeHostAnimationTestAddAnimationAfterAnimating::
+                       CheckAnimations,
+                   base::Unretained(this), host_impl));
+  }
+
+  void CheckAnimations(LayerTreeHostImpl* host_impl) {
     AnimationHost::ElementToAnimationsMap element_animations_copy =
         host_impl->animation_host()->active_element_animations_for_testing();
     EXPECT_EQ(2u, element_animations_copy.size());

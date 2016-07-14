@@ -34,6 +34,11 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void SetBeginFrameSource(BeginFrameSource* source) = 0;
 
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
+  // For LayerTreeHostImpl, this is more of a OnSwapBuffersAck from the display
+  // compositor that it received and will use the frame, unblocking it from
+  // producing more frames.
+  // For the display compositor this is literally a notification that the swap
+  // to the hardware is complete.
   virtual void DidSwapBuffersComplete() = 0;
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) = 0;

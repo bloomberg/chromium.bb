@@ -46,8 +46,11 @@ class TestHooks : public AnimationDelegate {
       LayerTreeHostImpl::FrameData* frame_data,
       DrawResult draw_result);
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) {}
-  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) {}
-  virtual void SwapBuffersCompleteOnThread(LayerTreeHostImpl* host_impl) {}
+  // Note that this is called asynchronously from the LayerTreeHostImpl
+  // performing its draw, so you should record state you want to use here
+  // in DrawLayersOnThread() instead. For that reason this method does not
+  // receive a LayerTreeHostImpl pointer.
+  virtual void SwapBuffersCompleteOnThread() {}
   virtual void NotifyReadyToActivateOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyReadyToDrawOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyAllTileTasksCompleted(LayerTreeHostImpl* host_impl) {}

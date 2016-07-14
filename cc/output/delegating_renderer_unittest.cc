@@ -51,10 +51,10 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
+    drawn_viewport_ = host_impl->DeviceViewport();
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    EXPECT_TRUE(result);
+  void SwapBuffersCompleteOnThread() override {
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
     const CompositorFrame* last_frame = output_surface_->last_sent_frame();
@@ -62,8 +62,8 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
         last_frame->delegated_frame_data.get();
     ASSERT_TRUE(last_frame->delegated_frame_data);
     EXPECT_FALSE(last_frame->gl_frame_data);
-    EXPECT_EQ(host_impl->DeviceViewport().ToString(),
-              last_frame_data->render_pass_list.back()->output_rect.ToString());
+    EXPECT_EQ(drawn_viewport_,
+              last_frame_data->render_pass_list.back()->output_rect);
     EXPECT_EQ(0.5f, last_frame->metadata.min_page_scale_factor);
     EXPECT_EQ(4.f, last_frame->metadata.max_page_scale_factor);
 
@@ -72,6 +72,8 @@ class DelegatingRendererTestDraw : public DelegatingRendererTest {
 
     EndTest();
   }
+
+  gfx::Rect drawn_viewport_;
 };
 
 SINGLE_AND_MULTI_THREAD_DELEGATING_RENDERER_TEST_F(DelegatingRendererTestDraw);
@@ -105,8 +107,7 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
     EXPECT_EQ(0u, output_surface_->num_sent_frames());
   }
 
-  void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) override {
-    EXPECT_TRUE(result);
+  void SwapBuffersCompleteOnThread() override {
     EXPECT_EQ(1u, output_surface_->num_sent_frames());
 
     const CompositorFrame* last_frame = output_surface_->last_sent_frame();

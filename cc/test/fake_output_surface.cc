@@ -42,9 +42,11 @@ FakeOutputSurface::FakeOutputSurface(
   capabilities_.delegated_rendering = delegated_rendering;
 }
 
-FakeOutputSurface::~FakeOutputSurface() {}
+FakeOutputSurface::~FakeOutputSurface() = default;
 
 void FakeOutputSurface::SwapBuffers(CompositorFrame frame) {
+  ReturnResourcesHeldByParent();
+
   std::unique_ptr<CompositorFrame> frame_copy(new CompositorFrame);
   *frame_copy = std::move(frame);
   if (frame_copy->delegated_frame_data || !context_provider()) {
@@ -95,23 +97,15 @@ bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
   }
 }
 
+void FakeOutputSurface::DetachFromClient() {
+  ReturnResourcesHeldByParent();
+  OutputSurface::DetachFromClient();
+}
+
 void FakeOutputSurface::SetTreeActivationCallback(
     const base::Closure& callback) {
   DCHECK(client_);
   client_->SetTreeActivationCallback(callback);
-}
-
-void FakeOutputSurface::ReturnResource(unsigned id, CompositorFrameAck* ack) {
-  TransferableResourceArray::iterator it;
-  for (it = resources_held_by_parent_.begin();
-       it != resources_held_by_parent_.end();
-       ++it) {
-    if (it->id == id)
-      break;
-  }
-  DCHECK(it != resources_held_by_parent_.end());
-  ack->resources.push_back(it->ToReturnedResource());
-  resources_held_by_parent_.erase(it);
 }
 
 bool FakeOutputSurface::HasExternalStencilTest() const {
@@ -130,6 +124,19 @@ OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
 void FakeOutputSurface::SetMemoryPolicyToSetAtBind(
     std::unique_ptr<ManagedMemoryPolicy> memory_policy_to_set_at_bind) {
   memory_policy_to_set_at_bind_.swap(memory_policy_to_set_at_bind);
+}
+
+void FakeOutputSurface::ReturnResourcesHeldByParent() {
+  // Check |delegated_frame_data| because we shouldn't reclaim resources
+  // for the Display which does not swap delegated frames.
+  if (last_sent_frame_ && last_sent_frame_->delegated_frame_data) {
+    // Return the last frame's resources immediately.
+    CompositorFrameAck ack;
+    for (const auto& resource : resources_held_by_parent_)
+      ack.resources.push_back(resource.ToReturnedResource());
+    resources_held_by_parent_.clear();
+    client_->ReclaimResources(&ack);
+  }
 }
 
 }  // namespace cc
