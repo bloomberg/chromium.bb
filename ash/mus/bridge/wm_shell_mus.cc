@@ -4,9 +4,13 @@
 
 #include "ash/mus/bridge/wm_shell_mus.h"
 
+#include <utility>
+
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/display/display_info.h"
+#include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
@@ -119,10 +123,10 @@ class AccessibilityDelegateMus : public DefaultAccessibilityDelegate {
 
 }  // namespace
 
-WmShellMus::WmShellMus(ShellDelegate* delegate,
+WmShellMus::WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
                        ::ui::WindowTreeClient* client,
                        shell::Connector* connector)
-    : WmShell(delegate),
+    : WmShell(std::move(shell_delegate)),
       client_(client),
       connector_(connector),
       session_state_delegate_(new SessionStateDelegateStub) {
@@ -134,7 +138,11 @@ WmShellMus::WmShellMus(ShellDelegate* delegate,
   CreateMruWindowTracker();
 
   accessibility_delegate_.reset(new AccessibilityDelegateMus(connector_));
+  SetMediaDelegate(base::WrapUnique(delegate()->CreateMediaDelegate()));
   SetSystemTrayDelegate(base::WrapUnique(new DefaultSystemTrayDelegate));
+
+  // TODO(jamescook): Port ash::sysui::KeyboardUIMus and use it here.
+  SetKeyboardUI(KeyboardUI::Create());
 }
 
 WmShellMus::~WmShellMus() {

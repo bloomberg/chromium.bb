@@ -17,6 +17,7 @@
 #include "ash/mus/property_util.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/shadow_controller.h"
+#include "ash/mus/shell_delegate_mus.h"
 #include "ash/mus/window_manager_observer.h"
 #include "ash/public/interfaces/container.mojom.h"
 #include "services/ui/common/event_matcher_util.h"
@@ -27,6 +28,7 @@
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/views/mus/screen_mus.h"
@@ -39,6 +41,29 @@ const uint32_t kWindowSwitchAccelerator = 1;
 void AssertTrue(bool success) {
   DCHECK(success);
 }
+
+// TODO(jamescook): Port ash::sysui::AppListPresenterMus and eliminate this.
+class AppListPresenterStub : public app_list::AppListPresenter {
+ public:
+  AppListPresenterStub() {}
+  ~AppListPresenterStub() override {}
+
+  // app_list::AppListPresenter:
+  void Show(int64_t display_id) override { NOTIMPLEMENTED(); }
+  void Dismiss() override { NOTIMPLEMENTED(); }
+  void ToggleAppList(int64_t display_id) override { NOTIMPLEMENTED(); }
+  bool IsVisible() const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+  bool GetTargetVisibility() const override {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterStub);
+};
 
 WindowManager::WindowManager(shell::Connector* connector)
     : connector_(connector) {}
@@ -70,8 +95,10 @@ void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
 
-  // TODO(msw): Provide a valid ShellDelegate here; maybe port ShellDelegateMus?
-  shell_.reset(new WmShellMus(nullptr, window_tree_client_, connector_));
+  std::unique_ptr<ShellDelegate> shell_delegate(
+      new ShellDelegateMus(base::MakeUnique<AppListPresenterStub>()));
+  shell_.reset(new WmShellMus(std::move(shell_delegate), window_tree_client_,
+                              connector_));
   lookup_.reset(new WmLookupMus);
 }
 

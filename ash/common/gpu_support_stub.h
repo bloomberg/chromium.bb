@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_GPU_SUPPORT_STUB_H_
-#define ASH_GPU_SUPPORT_STUB_H_
+#ifndef ASH_COMMON_GPU_SUPPORT_STUB_H_
+#define ASH_COMMON_GPU_SUPPORT_STUB_H_
 
 #include "ash/ash_export.h"
-#include "ash/gpu_support.h"
-#include "base/compiler_specific.h"
+#include "ash/common/gpu_support.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -30,4 +29,4 @@ class ASH_EXPORT GPUSupportStub : public GPUSupport {
 
 }  // namespace ash
 
-#endif  // ASH_GPU_SUPPORT_STUB_H_
+#endif  // ASH_COMMON_GPU_SUPPORT_STUB_H_

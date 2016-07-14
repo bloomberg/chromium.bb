@@ -5,6 +5,8 @@
 #ifndef ASH_AURA_WM_SHELL_AURA_H_
 #define ASH_AURA_WM_SHELL_AURA_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "ash/aura/wm_lookup_aura.h"
 #include "ash/common/wm_shell.h"
@@ -19,7 +21,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
                                public aura::client::ActivationChangeObserver,
                                public WindowTreeHostManager::Observer {
  public:
-  explicit WmShellAura(ShellDelegate* delegate);
+  explicit WmShellAura(std::unique_ptr<ShellDelegate> shell_delegate);
   ~WmShellAura() override;
 
   static WmShellAura* Get();

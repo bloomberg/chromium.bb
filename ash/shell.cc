@@ -16,8 +16,10 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
+#include "ash/common/gpu_support.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/login_status.h"
+#include "ash/common/pointer_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_delegate_manager.h"
@@ -47,7 +49,6 @@
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/first_run/first_run_helper_impl.h"
 #include "ash/frame/custom_frame_view_ash.h"
-#include "ash/gpu_support.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/ime/input_method_event_handler.h"
@@ -55,7 +56,6 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/new_window_delegate.h"
-#include "ash/pointer_watcher_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf.h"
@@ -600,7 +600,7 @@ void Shell::DoInitialWorkspaceAnimation() {
 // Shell, private:
 
 Shell::Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool)
-    : wm_shell_(new WmShellAura(delegate)),
+    : wm_shell_(new WmShellAura(base::WrapUnique(delegate))),
       target_root_window_(nullptr),
       scoped_target_root_window_(nullptr),
       shelf_model_(new ShelfModel),

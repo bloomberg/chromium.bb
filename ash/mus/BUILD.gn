@@ -65,6 +65,8 @@ source_set("lib") {
     "shelf_layout_manager.cc",
     "shelf_layout_manager.h",
     "shelf_layout_manager_delegate.h",
+    "shell_delegate_mus.cc",
+    "shell_delegate_mus.h",
     "status_layout_manager.cc",
     "status_layout_manager.h",
     "user_window_controller_impl.cc",
@@ -78,6 +80,7 @@ source_set("lib") {
 
   deps = [
     "//components/user_manager",
+    "//ui/app_list/presenter",
   ]
 
   public_deps = [

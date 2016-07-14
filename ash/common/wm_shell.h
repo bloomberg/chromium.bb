@@ -218,7 +218,7 @@ class ASH_EXPORT WmShell {
 #endif
 
  protected:
-  explicit WmShell(ShellDelegate* delegate);
+  explicit WmShell(std::unique_ptr<ShellDelegate> shell_delegate);
   virtual ~WmShell();
 
   base::ObserverList<ShellObserver>* shell_observers() {

@@ -5,7 +5,7 @@
 #ifndef ASH_SYSUI_POINTER_WATCHER_DELEGATE_MUS_H_
 #define ASH_SYSUI_POINTER_WATCHER_DELEGATE_MUS_H_
 
-#include "ash/pointer_watcher_delegate.h"
+#include "ash/common/pointer_watcher_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

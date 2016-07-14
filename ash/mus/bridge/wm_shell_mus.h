@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "ash/common/wm_shell.h"
@@ -31,7 +32,7 @@ class WmWindowMus;
 // WmShell implementation for mus.
 class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
  public:
-  WmShellMus(ShellDelegate* delegate,
+  WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
              ::ui::WindowTreeClient* client,
              shell::Connector* connector);
   ~WmShellMus() override;

@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/sysui/shell_delegate_mus.h"
+#include "ash/mus/shell_delegate_mus.h"
+
+#include <utility>
 
 #include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
+#include "ash/common/pointer_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
-#include "ash/sysui/app_list_presenter_mus.h"
-#include "ash/sysui/context_menu_mus.h"
-#include "ash/sysui/pointer_watcher_delegate_mus.h"
-#include "ash/sysui/shelf_delegate_mus.h"
-#include "ash/sysui/user_wallpaper_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
@@ -21,8 +19,6 @@
 #include "ui/gfx/image/image.h"
 
 namespace ash {
-namespace sysui {
-
 namespace {
 
 class SessionStateDelegateStub : public SessionStateDelegate {
@@ -102,7 +98,7 @@ class MediaDelegateStub : public MediaDelegate {
 }  // namespace
 
 ShellDelegateMus::ShellDelegateMus(
-    std::unique_ptr<AppListPresenterMus> app_list_presenter)
+    std::unique_ptr<app_list::AppListPresenter> app_list_presenter)
     : app_list_presenter_(std::move(app_list_presenter)) {}
 
 ShellDelegateMus::~ShellDelegateMus() {}
@@ -163,7 +159,8 @@ app_list::AppListPresenter* ShellDelegateMus::GetAppListPresenter() {
 }
 
 ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
-  return new ShelfDelegateMus(model);
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
@@ -172,7 +169,8 @@ SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
 }
 
 UserWallpaperDelegate* ShellDelegateMus::CreateUserWallpaperDelegate() {
-  return new UserWallpaperDelegateMus();
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {
@@ -197,12 +195,14 @@ MediaDelegate* ShellDelegateMus::CreateMediaDelegate() {
 
 std::unique_ptr<PointerWatcherDelegate>
 ShellDelegateMus::CreatePointerWatcherDelegate() {
-  return base::WrapUnique(new PointerWatcherDelegateMus);
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 ui::MenuModel* ShellDelegateMus::CreateContextMenu(WmShelf* wm_shelf,
                                                    const ShelfItem* item) {
-  return new ContextMenuMus(wm_shelf);
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 GPUSupport* ShellDelegateMus::CreateGPUSupport() {
@@ -220,5 +220,4 @@ gfx::Image ShellDelegateMus::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
 }
 
-}  // namespace sysui
 }  // namespace ash

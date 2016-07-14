@@ -4,6 +4,8 @@
 
 #include "ash/aura/wm_shell_aura.h"
 
+#include <utility>
+
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
@@ -38,7 +40,8 @@
 
 namespace ash {
 
-WmShellAura::WmShellAura(ShellDelegate* delegate) : WmShell(delegate) {
+WmShellAura::WmShellAura(std::unique_ptr<ShellDelegate> shell_delegate)
+    : WmShell(std::move(shell_delegate)) {
   WmShell::Set(this);
 }
 

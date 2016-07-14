@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef ASH_COMMON_POINTER_WATCHER_DELEGATE_H_
+#define ASH_COMMON_POINTER_WATCHER_DELEGATE_H_
+
 #include "ash/ash_export.h"
 
 namespace views {
@@ -20,3 +23,5 @@ class ASH_EXPORT PointerWatcherDelegate {
 };
 
 }  // namespace ash
+
+#endif  // ASH_COMMON_POINTER_WATCHER_DELEGATE_H_

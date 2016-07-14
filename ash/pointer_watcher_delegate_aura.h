@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/ash_export.h"
-#include "ash/pointer_watcher_delegate.h"
+#include "ash/common/pointer_watcher_delegate.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/events/event_handler.h"
