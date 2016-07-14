@@ -235,14 +235,12 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
   std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
       validator;
 #if defined(USE_OZONE)
-  std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
-      ui::OzonePlatform::GetInstance()
-          ->GetOverlayManager()
-          ->CreateOverlayCandidates(widget);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (overlay_candidates &&
-      (command_line->HasSwitch(switches::kEnableHardwareOverlays) ||
-       command_line->HasSwitch(switches::kOzoneTestSingleOverlaySupport))) {
+  if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
+    std::unique_ptr<ui::OverlayCandidatesOzone> overlay_candidates =
+        ui::OzonePlatform::GetInstance()
+            ->GetOverlayManager()
+            ->CreateOverlayCandidates(widget);
     validator.reset(
         new display_compositor::CompositorOverlayCandidateValidatorOzone(
             std::move(overlay_candidates)));

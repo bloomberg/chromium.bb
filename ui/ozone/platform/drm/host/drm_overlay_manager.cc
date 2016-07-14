@@ -29,8 +29,6 @@ const size_t kMaxCacheSize = 200;
 DrmOverlayManager::DrmOverlayManager(GpuThreadAdapter* proxy,
                                      DrmWindowHostManager* window_manager)
     : proxy_(proxy), window_manager_(window_manager), cache_(kMaxCacheSize) {
-  is_supported_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kOzoneTestSingleOverlaySupport);
   proxy_->RegisterHandlerForDrmOverlayManager(this);
 }
 
@@ -40,8 +38,6 @@ DrmOverlayManager::~DrmOverlayManager() {
 
 std::unique_ptr<OverlayCandidatesOzone>
 DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
-  if (!is_supported_)
-    return nullptr;
   return base::WrapUnique(new DrmOverlayCandidatesHost(this, w));
 }
 

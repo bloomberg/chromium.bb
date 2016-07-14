@@ -1512,12 +1512,6 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableChildAccountDetection,
                                switches::kDisableChildAccountDetection)},
 #endif
-#if defined(OS_CHROMEOS) && defined(USE_OZONE)
-    {"ozone-test-single-overlay-support",
-     IDS_FLAGS_OZONE_TEST_SINGLE_HARDWARE_OVERLAY,
-     IDS_FLAGS_OZONE_TEST_SINGLE_HARDWARE_OVERLAY_DESCRIPTION, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kOzoneTestSingleOverlaySupport)},
-#endif  // defined(OS_CHROMEOS) && defined(USE_OZONE)
     {"v8-pac-mojo-out-of-process", IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_NAME,
      IDS_FLAGS_V8_PAC_MOJO_OUT_OF_PROCESS_DESCRIPTION, kOsDesktop,
      ENABLE_DISABLE_VALUE_TYPE(switches::kV8PacMojoOutOfProcess,

@@ -49,7 +49,6 @@ class DrmOverlayManager : public OverlayManagerOzone {
       const OverlayCandidatesOzone::OverlaySurfaceCandidate& candidate,
       gfx::AcceleratedWidget widget) const;
 
-  bool is_supported_;
   GpuThreadAdapter* proxy_;               // Not owned.
   DrmWindowHostManager* window_manager_;  // Not owned.
 

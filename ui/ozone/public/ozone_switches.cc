@@ -12,10 +12,6 @@ const char kOzonePlatform[] = "ozone-platform";
 // Specify location for image dumps.
 const char kOzoneDumpFile[] = "ozone-dump-file";
 
-// Enable support for a single overlay plane.
-const char kOzoneTestSingleOverlaySupport[] =
-    "ozone-test-single-overlay-support";
-
 // Specifies the size of the primary display at initialization.
 const char kOzoneInitialDisplayBounds[] = "ozone-initial-display-bounds";
 
