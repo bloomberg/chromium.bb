@@ -20,6 +20,8 @@ class PrefService;
 namespace autofill {
 
 extern const base::Feature kAutofillProfileCleanup;
+extern const base::Feature kAutofillCreditCardSigninPromo;
+extern const char kCreditCardSigninPromoImpressionLimitParamKey[];
 
 // Returns true if autofill should be enabled. See also
 // IsInAutofillSuggestionsDisabledExperiment below.
@@ -33,6 +35,13 @@ bool IsInAutofillSuggestionsDisabledExperiment();
 
 // Returns whether the Autofill profile cleanup feature is enabled.
 bool IsAutofillProfileCleanupEnabled();
+
+// Returns whether the Autofill credit card signin promo should be shown.
+bool IsAutofillCreditCardSigninPromoEnabled();
+
+// Returns the maximum number of impressions of the credit card signin promo, or
+// 0 if there are no limits.
+int GetCreditCardSigninPromoImpressionLimit();
 
 // Returns true if the user should be offered to locally store unmasked cards.
 // This controls whether the option is presented at all rather than the default

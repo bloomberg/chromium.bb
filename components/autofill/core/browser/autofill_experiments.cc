@@ -7,18 +7,23 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_driver/sync_service.h"
+#include "components/variations/variations_associated_data.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace autofill {
 
 const base::Feature kAutofillProfileCleanup{"AutofillProfileCleanup",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillCreditCardSigninPromo{
+    "AutofillCreditCardSigninPromo", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kCreditCardSigninPromoImpressionLimitParamKey[] = "impression_limit";
 
 bool IsAutofillEnabled(const PrefService* pref_service) {
   return pref_service->GetBoolean(prefs::kAutofillEnabled);
@@ -32,6 +37,21 @@ bool IsInAutofillSuggestionsDisabledExperiment() {
 
 bool IsAutofillProfileCleanupEnabled() {
   return base::FeatureList::IsEnabled(kAutofillProfileCleanup);
+}
+
+bool IsAutofillCreditCardSigninPromoEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillCreditCardSigninPromo);
+}
+
+int GetCreditCardSigninPromoImpressionLimit() {
+  int impression_limit;
+  std::string param_value = variations::GetVariationParamValueByFeature(
+      kAutofillCreditCardSigninPromo,
+      kCreditCardSigninPromoImpressionLimitParamKey);
+  if (!param_value.empty() && base::StringToInt(param_value, &impression_limit))
+    return impression_limit;
+
+  return 0;
 }
 
 bool OfferStoreUnmaskedCards() {

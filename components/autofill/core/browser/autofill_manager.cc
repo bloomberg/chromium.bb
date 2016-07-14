@@ -221,6 +221,10 @@ AutofillManager::~AutofillManager() {}
 // static
 void AutofillManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
+  // This pref is not synced because it's for a signin promo, which by
+  // definition will not be synced.
+  registry->RegisterIntegerPref(
+      prefs::kAutofillCreditCardSigninPromoImpressionCount, 0);
   registry->RegisterBooleanPref(
       prefs::kAutofillEnabled,
       true,
@@ -274,11 +278,30 @@ bool AutofillManager::ShouldShowScanCreditCard(const FormData& form,
 bool AutofillManager::ShouldShowCreditCardSigninPromo(
     const FormData& form,
     const FormFieldData& field) {
+  if (!IsAutofillCreditCardSigninPromoEnabled())
+    return false;
+
   // Check whether we are dealing with a credit card field and whether it's
   // appropriate to show the promo (e.g. the platform is supported).
   AutofillField* autofill_field = GetAutofillField(form, field);
-  return autofill_field && autofill_field->Type().group() == CREDIT_CARD &&
-         client_->ShouldShowSigninPromo();
+  if (!autofill_field || autofill_field->Type().group() != CREDIT_CARD ||
+      !client_->ShouldShowSigninPromo())
+    return false;
+
+  // The last step is checking if we are under the limit of impressions (a limit
+  // of 0 means there is no limit);
+  int impression_limit = GetCreditCardSigninPromoImpressionLimit();
+  int impression_count = client_->GetPrefs()->GetInteger(
+      prefs::kAutofillCreditCardSigninPromoImpressionCount);
+  if (impression_limit == 0 || impression_count < impression_limit) {
+    // The promo will be shown. Increment the impression count.
+    client_->GetPrefs()->SetInteger(
+        prefs::kAutofillCreditCardSigninPromoImpressionCount,
+        impression_count + 1);
+    return true;
+  }
+
+  return false;
 }
 
 void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
