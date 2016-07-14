@@ -18,7 +18,7 @@ static char log_buffer[1024];
 static int log_buffer_pos = 0;
 
 static void
-log_to_buffer(int level, const char *message)
+log_to_buffer(logLevels level, const char *message)
 {
   switch(level) {
     case LOG_DEBUG:
