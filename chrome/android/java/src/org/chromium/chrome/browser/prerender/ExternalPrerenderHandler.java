@@ -4,8 +4,15 @@
 
 package org.chromium.chrome.browser.prerender;
 
+import android.app.Application;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Point;
+import android.view.WindowManager;
+
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content_public.browser.WebContents;
@@ -100,6 +107,41 @@ public class ExternalPrerenderHandler {
     public static boolean hasPrerenderedAndFinishedLoadingUrl(
             Profile profile, String url, WebContents webContents) {
         return nativeHasPrerenderedAndFinishedLoadingUrl(profile, url, webContents);
+    }
+
+    /**
+     * Provides an estimate of the contents size.
+     *
+     * The estimate is likely to be incorrect. This is not a problem, as the aim
+     * is to avoid getting a different layout and resources than needed at
+     * render time.
+     * @param application The application to use for getting resources.
+     * @param convertToDp Whether the value should be converted to dp from pixels.
+     * @return The estimated prerender size in pixels or dp.
+     */
+    public static Point estimateContentSize(Application application, boolean convertToDp) {
+        // The size is estimated as:
+        // X = screenSizeX
+        // Y = screenSizeY - top bar - bottom bar - custom tabs bar
+        Point screenSize = new Point();
+        WindowManager wm = (WindowManager) application.getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getSize(screenSize);
+        Resources resources = application.getResources();
+        int statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android");
+        try {
+            screenSize.y -=
+                    resources.getDimensionPixelSize(R.dimen.custom_tabs_control_container_height);
+            screenSize.y -= resources.getDimensionPixelSize(statusBarId);
+        } catch (Resources.NotFoundException e) {
+            // Nothing, this is just a best effort estimate.
+        }
+
+        if (convertToDp) {
+            float density = resources.getDisplayMetrics().density;
+            screenSize.x = (int) Math.ceil(screenSize.x / density);
+            screenSize.y = (int) Math.ceil(screenSize.y / density);
+        }
+        return screenSize;
     }
 
     private static native long nativeInit();

@@ -1701,7 +1701,13 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     overscroll_controller_.reset();
     selection_controller_.reset();
     ReleaseLocksOnSurface();
-    resize = true;
+    // TODO(yusufo) : Get rid of the below conditions and have a better handling
+    // for resizing after crbug.com/628302 is handled.
+    bool is_size_initialized = !content_view_core
+        || content_view_core->GetViewportSizeDip().width() != 0
+        || content_view_core->GetViewportSizeDip().height() != 0;
+    if (content_view_core_ || is_size_initialized)
+      resize = true;
     if (content_view_core_) {
       content_view_core_->RemoveObserver(this);
       content_view_core_->GetViewAndroid()->RemoveChild(&view_);

@@ -9,7 +9,6 @@ import android.app.Application;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.ConnectivityManager;
@@ -25,7 +24,6 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
-import android.view.WindowManager;
 import android.widget.RemoteViews;
 
 import org.chromium.base.CommandLine;
@@ -712,7 +710,7 @@ public class CustomTabsConnection {
         if (mExternalPrerenderHandler == null) {
             mExternalPrerenderHandler = new ExternalPrerenderHandler();
         }
-        Point contentSize = estimateContentSize();
+        Point contentSize = ExternalPrerenderHandler.estimateContentSize(mApplication, true);
         Context context = mApplication.getApplicationContext();
         String referrer = IntentHandler.getReferrerUrlIncludingExtraHeaders(extrasIntent, context);
         if (referrer == null && getReferrerForSession(session) != null) {
@@ -728,34 +726,7 @@ public class CustomTabsConnection {
         return true;
     }
 
-    /**
-     * Provides an estimate of the contents size.
-     *
-     * The estimate is likely to be incorrect. This is not a problem, as the aim
-     * is to avoid getting a different layout and resources than needed at
-     * render time.
-     */
-    private Point estimateContentSize() {
-        // The size is estimated as:
-        // X = screenSizeX
-        // Y = screenSizeY - top bar - bottom bar - custom tabs bar
-        Point screenSize = new Point();
-        WindowManager wm = (WindowManager) mApplication.getSystemService(Context.WINDOW_SERVICE);
-        wm.getDefaultDisplay().getSize(screenSize);
-        Resources resources = mApplication.getResources();
-        int statusBarId = resources.getIdentifier("status_bar_height", "dimen", "android");
-        try {
-            screenSize.y -=
-                    resources.getDimensionPixelSize(R.dimen.custom_tabs_control_container_height);
-            screenSize.y -= resources.getDimensionPixelSize(statusBarId);
-        } catch (Resources.NotFoundException e) {
-            // Nothing, this is just a best effort estimate.
-        }
-        float density = resources.getDisplayMetrics().density;
-        screenSize.x /= density;
-        screenSize.y /= density;
-        return screenSize;
-    }
+
 
     @VisibleForTesting
     void resetThrottling(Context context, int uid) {

@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.tab;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -68,6 +70,7 @@ import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
+import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
@@ -2488,17 +2491,26 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             originalHeight = mContentViewCore.getViewportHeightPix();
             mContentViewCore.onHide();
         }
+
+        if (originalWidth == 0 && originalHeight == 0) {
+            Point size = ExternalPrerenderHandler.estimateContentSize(
+                    (Application) getApplicationContext(), false);
+            originalWidth = size.x;
+            originalHeight = size.y;
+        }
+
         destroyContentViewCore(deleteOldNativeWebContents);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
-        setContentViewCore(newContentViewCore);
         // Size of the new ContentViewCore is zero at this point. If we don't call onSizeChanged(),
         // next onShow() call would send a resize message with the current ContentViewCore size
         // (zero) to the renderer process, although the new size will be set soon.
         // However, this size fluttering may confuse Blink and rendered result can be broken
         // (see http://crbug.com/340987).
-        mContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
-        mContentViewCore.onShow();
+        newContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
+        newContentViewCore.onShow();
+        setContentViewCore(newContentViewCore);
+
         mContentViewCore.attachImeAdapter();
 
         // If the URL has already committed (e.g. prerendering), tell process management logic that
