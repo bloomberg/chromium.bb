@@ -422,10 +422,9 @@ void GCMClientImplTest::SetUp() {
   InitializeGCMClient();
   StartGCMClient();
   SetUpUrlFetcherFactory();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  std::string(),
-                  std::map<std::string, std::string>());
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken, std::string(),
+                      std::map<std::string, std::string>()));
 }
 
 void GCMClientImplTest::SetUpUrlFetcherFactory() {
@@ -658,10 +657,9 @@ TEST_F(GCMClientImplTest, LoadingBusted) {
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
   StartGCMClient();
-  CompleteCheckin(kDeviceAndroidId2,
-                  kDeviceSecurityToken2,
-                  std::string(),
-                  std::map<std::string, std::string>());
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId2, kDeviceSecurityToken2, std::string(),
+                      std::map<std::string, std::string>()));
 
   EXPECT_EQ(LOADING_COMPLETED, last_event());
   EXPECT_EQ(kDeviceAndroidId2, mcs_client()->last_android_id());
@@ -699,7 +697,7 @@ TEST_F(GCMClientImplTest, RegisterApp) {
   std::vector<std::string> senders;
   senders.push_back("sender");
   Register(kAppId, senders);
-  CompleteRegistration("reg_id");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("reg_id"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -714,7 +712,7 @@ TEST_F(GCMClientImplTest, DISABLED_RegisterAppFromCache) {
   std::vector<std::string> senders;
   senders.push_back("sender");
   Register(kAppId, senders);
-  CompleteRegistration("reg_id");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("reg_id"));
   EXPECT_TRUE(ExistsRegistration(kAppId));
 
   EXPECT_EQ(kAppId, last_app_id());
@@ -737,7 +735,7 @@ TEST_F(GCMClientImplTest, RegisterPreviousSenderAgain) {
   std::vector<std::string> senders;
   senders.push_back("sender");
   Register(kAppId, senders);
-  CompleteRegistration("reg_id");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("reg_id"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -752,7 +750,7 @@ TEST_F(GCMClientImplTest, RegisterPreviousSenderAgain) {
   std::vector<std::string> senders2;
   senders2.push_back("sender2");
   Register(kAppId, senders2);
-  CompleteRegistration("reg_id2");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("reg_id2"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -767,7 +765,7 @@ TEST_F(GCMClientImplTest, RegisterPreviousSenderAgain) {
   std::vector<std::string> senders3;
   senders3.push_back("sender");
   Register(kAppId, senders3);
-  CompleteRegistration("reg_id");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("reg_id"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -782,11 +780,11 @@ TEST_F(GCMClientImplTest, UnregisterApp) {
   std::vector<std::string> senders;
   senders.push_back("sender");
   Register(kAppId, senders);
-  CompleteRegistration("reg_id");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("reg_id"));
   EXPECT_TRUE(ExistsRegistration(kAppId));
 
   Unregister(kAppId);
-  CompleteUnregistration(kAppId);
+  ASSERT_NO_FATAL_FAILURE(CompleteUnregistration(kAppId));
 
   EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -967,10 +965,9 @@ TEST_F(GCMClientImplCheckinTest, GServicesSettingsAfterInitialCheckin) {
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
   settings["gcm_registration_url"] = "http://alternative.url/registration";
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
   EXPECT_EQ(base::TimeDelta::FromSeconds(kSettingsCheckinInterval),
             gservices_settings().GetCheckinInterval());
   EXPECT_EQ(GURL("http://alternative.url/checkin"),
@@ -991,18 +988,16 @@ TEST_F(GCMClientImplCheckinTest, PeriodicCheckin) {
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
   settings["gcm_registration_url"] = "http://alternative.url/registration";
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   EXPECT_EQ(2, clock()->call_count());
 
   PumpLoopUntilIdle();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 }
 
 TEST_F(GCMClientImplCheckinTest, LoadGSettingsFromStore) {
@@ -1012,10 +1007,9 @@ TEST_F(GCMClientImplCheckinTest, LoadGSettingsFromStore) {
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
   settings["gcm_registration_url"] = "http://alternative.url/registration";
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   BuildGCMClient(base::TimeDelta());
   InitializeGCMClient();
@@ -1041,10 +1035,9 @@ TEST_F(GCMClientImplCheckinTest, CheckinWithAccounts) {
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
   settings["gcm_registration_url"] = "http://alternative.url/registration";
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   std::vector<GCMClient::AccountTokenInfo> account_tokens;
   account_tokens.push_back(MakeAccountToken("test_user1@gmail.com", "token1"));
@@ -1057,10 +1050,9 @@ TEST_F(GCMClientImplCheckinTest, CheckinWithAccounts) {
             device_checkin_info().account_tokens);
 
   PumpLoopUntilIdle();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   std::set<std::string> accounts;
   accounts.insert("test_user1@gmail.com");
@@ -1079,20 +1071,18 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountRemoved) {
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
   settings["gcm_registration_url"] = "http://alternative.url/registration";
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   std::vector<GCMClient::AccountTokenInfo> account_tokens;
   account_tokens.push_back(MakeAccountToken("test_user1@gmail.com", "token1"));
   account_tokens.push_back(MakeAccountToken("test_user2@gmail.com", "token2"));
   gcm_client()->SetAccountTokens(account_tokens);
   PumpLoopUntilIdle();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   EXPECT_EQ(2UL, device_checkin_info().last_checkin_accounts.size());
   EXPECT_TRUE(device_checkin_info().accounts_set);
@@ -1103,10 +1093,9 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountRemoved) {
   gcm_client()->SetAccountTokens(account_tokens);
 
   PumpLoopUntilIdle();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   std::set<std::string> accounts;
   accounts.insert("test_user1@gmail.com");
@@ -1124,20 +1113,18 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
   settings["gcm_registration_url"] = "http://alternative.url/registration";
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   std::vector<GCMClient::AccountTokenInfo> account_tokens;
   account_tokens.push_back(MakeAccountToken("test_user1@gmail.com", "token1"));
   gcm_client()->SetAccountTokens(account_tokens);
 
   PumpLoopUntilIdle();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   std::set<std::string> accounts;
   accounts.insert("test_user1@gmail.com");
@@ -1150,10 +1137,9 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
   gcm_client()->SetAccountTokens(account_tokens);
 
   PumpLoopUntilIdle();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  GServicesSettings::CalculateDigest(settings),
-                  settings);
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken,
+                      GServicesSettings::CalculateDigest(settings), settings));
 
   accounts.clear();
   accounts.insert("test_user2@gmail.com");
@@ -1188,10 +1174,9 @@ void GCMClientImplStartAndStopTest::SetUp() {
 
 void GCMClientImplStartAndStopTest::DefaultCompleteCheckin() {
   SetUpUrlFetcherFactory();
-  CompleteCheckin(kDeviceAndroidId,
-                  kDeviceSecurityToken,
-                  std::string(),
-                  std::map<std::string, std::string>());
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId, kDeviceSecurityToken, std::string(),
+                      std::map<std::string, std::string>()));
   PumpLoopUntilIdle();
 }
 
@@ -1269,7 +1254,7 @@ TEST_F(GCMClientImplStartAndStopTest, ImmediateStartAndThenImmediateStart) {
   gcm_client()->Start(GCMClient::IMMEDIATE_START);
   PumpLoopUntilIdle();
   EXPECT_EQ(GCMClientImpl::INITIAL_DEVICE_CHECKIN, gcm_client_state());
-  DefaultCompleteCheckin();
+  ASSERT_NO_FATAL_FAILURE(DefaultCompleteCheckin());
   EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
 
   // Stop the GCM.
@@ -1293,7 +1278,7 @@ TEST_F(GCMClientImplStartAndStopTest, ImmediateStartAndThenDelayStart) {
   gcm_client()->Start(GCMClient::IMMEDIATE_START);
   PumpLoopUntilIdle();
   EXPECT_EQ(GCMClientImpl::INITIAL_DEVICE_CHECKIN, gcm_client_state());
-  DefaultCompleteCheckin();
+  ASSERT_NO_FATAL_FAILURE(DefaultCompleteCheckin());
   EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
 
   // Stop the GCM.
@@ -1318,7 +1303,7 @@ TEST_F(GCMClientImplStartAndStopTest, DelayedStartRace) {
   gcm_client()->Start(GCMClient::IMMEDIATE_START);
   PumpLoopUntilIdle();
   EXPECT_EQ(GCMClientImpl::INITIAL_DEVICE_CHECKIN, gcm_client_state());
-  DefaultCompleteCheckin();
+  ASSERT_NO_FATAL_FAILURE(DefaultCompleteCheckin());
   EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
 }
 
@@ -1336,14 +1321,14 @@ TEST_F(GCMClientImplStartAndStopTest, DelayedStart) {
   gcm_client()->Start(GCMClient::IMMEDIATE_START);
   PumpLoopUntilIdle();
   EXPECT_EQ(GCMClientImpl::INITIAL_DEVICE_CHECKIN, gcm_client_state());
-  DefaultCompleteCheckin();
+  ASSERT_NO_FATAL_FAILURE(DefaultCompleteCheckin());
   EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
 
   // Registration.
   std::vector<std::string> senders;
   senders.push_back("sender");
   Register(kAppId, senders);
-  CompleteRegistration("reg_id");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("reg_id"));
   EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
 
   // Stop the GCM.
@@ -1366,7 +1351,7 @@ TEST_F(GCMClientImplStartAndStopTest, OnGCMReadyAccountsAndTokenFetchingTime) {
   // Start the GCM and wait until it is ready.
   gcm_client()->Start(GCMClient::IMMEDIATE_START);
   PumpLoopUntilIdle();
-  DefaultCompleteCheckin();
+  ASSERT_NO_FATAL_FAILURE(DefaultCompleteCheckin());
 
   base::Time expected_time = base::Time::Now();
   gcm_client()->SetLastTokenFetchTime(expected_time);
@@ -1486,7 +1471,7 @@ TEST_F(GCMClientInstanceIDTest, GetToken) {
   // Get a token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
   GetToken(kAppId, kSender, kScope);
-  CompleteRegistration("token1");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token1"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1497,7 +1482,7 @@ TEST_F(GCMClientInstanceIDTest, GetToken) {
   // Get another token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
   GetToken(kAppId, kSender2, kScope);
-  CompleteRegistration("token2");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token2"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1536,7 +1521,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   // Get a token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
   GetToken(kAppId, kSender, kScope);
-  CompleteRegistration("token1");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token1"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1549,7 +1534,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
   // Get another token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
   GetToken(kAppId, kSender2, kScope);
-  CompleteRegistration("token2");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token2"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1563,7 +1548,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
 
   // Delete the 2nd token.
   DeleteToken(kAppId, kSender2, kScope);
-  CompleteDeleteToken();
+  ASSERT_NO_FATAL_FAILURE(CompleteDeleteToken());
 
   EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1576,7 +1561,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteSingleToken) {
 
   // Delete the 1st token.
   DeleteToken(kAppId, kSender, kScope);
-  CompleteDeleteToken();
+  ASSERT_NO_FATAL_FAILURE(CompleteDeleteToken());
 
   EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1602,7 +1587,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
   // Get a token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender, kScope));
   GetToken(kAppId, kSender, kScope);
-  CompleteRegistration("token1");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token1"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1615,7 +1600,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
   // Get another token.
   EXPECT_FALSE(ExistsToken(kAppId, kSender2, kScope));
   GetToken(kAppId, kSender2, kScope);
-  CompleteRegistration("token2");
+  ASSERT_NO_FATAL_FAILURE(CompleteRegistration("token2"));
 
   EXPECT_EQ(REGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
@@ -1629,7 +1614,7 @@ TEST_F(GCMClientInstanceIDTest, DeleteAllTokens) {
 
   // Delete all tokens.
   DeleteToken(kAppId, "*", "*");
-  CompleteDeleteToken();
+  ASSERT_NO_FATAL_FAILURE(CompleteDeleteToken());
 
   EXPECT_EQ(UNREGISTRATION_COMPLETED, last_event());
   EXPECT_EQ(kAppId, last_app_id());
