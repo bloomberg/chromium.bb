@@ -95680,6 +95680,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Autofill"/>
   <suffix name="Policy"/>
   <suffix name="SpellChecker"/>
+  <suffix name="NTPSnippets"/>
   <affected-histogram name="DataUse.MessageSize"/>
 </histogram_suffixes>
 
