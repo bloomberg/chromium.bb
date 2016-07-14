@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<meta charset=utf-8>
+<title>AnimationEffectTiming easing tests</title>
+<link rel="help" href="https://w3c.github.io/web-animations/#the-animationeffecttiming-interface">
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
@@ -53,11 +56,9 @@ test(function() {
   assert_animate_with_easing_throws('steps(3, nowhere)');
   assert_animate_with_easing_throws('steps(-3, end)');
   assert_animate_with_easing_throws('cubic-bezier(0.1, 0, 4, 0.4)');
-}, 'Invalid easing values should throw a TypeError');
-
-test(function() {
-  assert_animate_with_easing_succeeds('function (a){return a}', 'linear');
+  assert_animate_with_easing_throws('function (a){return a}');
   assert_animate_with_easing_throws('function (x){return x}');
   assert_animate_with_easing_throws('function(x, y){return 0.3}');
-}, 'Function values for easing should throw a TypeError, except for one special linear case, which is deprecated for now and returns the default');
+  assert_animate_with_easing_throws('7');
+}, 'Invalid easing values should throw a TypeError');
 </script>
