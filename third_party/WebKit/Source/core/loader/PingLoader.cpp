@@ -62,7 +62,7 @@ static void finishPingRequestInitialization(ResourceRequest& request, LocalFrame
 {
     request.setRequestContext(WebURLRequest::RequestContextPing);
     frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
-    frame->document()->fetcher()->context().setFirstPartyForCookies(request);
+    frame->document()->fetcher()->context().populateRequestData(request);
 }
 
 void PingLoader::loadImage(LocalFrame* frame, const KURL& url)

@@ -3940,7 +3940,7 @@ void RenderFrameImpl::willSendRequest(
   //
   // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
   // initialize itself with a `nullptr` initiator so that this can be a simple
-  // `isNull()` check.
+  // `isNull()` check. https://crbug.com/625969
   if (request.requestorOrigin().isUnique() &&
       !frame->document().getSecurityOrigin().isUnique()) {
     request.setRequestorOrigin(frame->document().getSecurityOrigin());

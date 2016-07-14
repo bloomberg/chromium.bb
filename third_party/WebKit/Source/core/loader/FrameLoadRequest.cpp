@@ -53,10 +53,22 @@ FrameLoadRequest::FrameLoadRequest(Document* originDocument, const ResourceReque
 
     if (originDocument) {
         m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(originDocument->url()));
-    } else {
-        if (m_resourceRequest.frameType() == WebURLRequest::FrameTypeTopLevel) {
-            m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(resourceRequest.url()));
-        }
+        return;
+    }
+
+    // If we don't have an origin document, and we're going to throw away the response data
+    // regardless, set the requestor to a unique origin.
+    if (m_substituteData.isValid()) {
+        m_resourceRequest.setRequestorOrigin(SecurityOrigin::createUnique());
+        return;
+    }
+
+    // If we're dealing with a top-level request, use the origin of the requested URL as the initiator.
+    //
+    // TODO(mkwst): This should be `nullptr`. https://crbug.com/625969
+    if (m_resourceRequest.frameType() == WebURLRequest::FrameTypeTopLevel) {
+        m_resourceRequest.setRequestorOrigin(SecurityOrigin::create(resourceRequest.url()));
+        return;
     }
 }
 

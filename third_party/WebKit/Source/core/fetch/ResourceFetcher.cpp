@@ -410,6 +410,7 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
 
+    context().populateRequestData(request.mutableResourceRequest());
     if (request.resourceRequest().httpHeaderField("Upgrade-Insecure-Requests") != AtomicString("1"))
         context().upgradeInsecureRequest(request.mutableResourceRequest());
     context().addClientHintsIfNecessary(request);

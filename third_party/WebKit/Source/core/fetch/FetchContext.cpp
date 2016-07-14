@@ -47,10 +47,6 @@ void FetchContext::addAdditionalRequestHeaders(ResourceRequest&, FetchResourceTy
 {
 }
 
-void FetchContext::setFirstPartyForCookies(ResourceRequest&)
-{
-}
-
 CachePolicy FetchContext::getCachePolicy() const
 {
     return CachePolicyVerify;
@@ -118,6 +114,10 @@ void FetchContext::addClientHintsIfNecessary(FetchRequest&)
 }
 
 void FetchContext::addCSPHeaderIfNecessary(Resource::Type, FetchRequest&)
+{
+}
+
+void FetchContext::populateRequestData(ResourceRequest&)
 {
 }
 

@@ -67,7 +67,6 @@ public:
     bool isLiveContext() { return true; }
 
     void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType) override;
-    void setFirstPartyForCookies(ResourceRequest&) override;
     CachePolicy getCachePolicy() const override;
     WebCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type, FetchRequest::DeferOption) const override;
     void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue) override;
@@ -102,6 +101,7 @@ public:
     void upgradeInsecureRequest(ResourceRequest&) override;
     void addClientHintsIfNecessary(FetchRequest&) override;
     void addCSPHeaderIfNecessary(Resource::Type, FetchRequest&) override;
+    void populateRequestData(ResourceRequest&) override;
 
     MHTMLArchive* archive() const override;
 

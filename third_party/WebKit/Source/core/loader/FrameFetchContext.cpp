@@ -198,12 +198,6 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request, Fe
     frame()->loader().applyUserAgent(request);
 }
 
-void FrameFetchContext::setFirstPartyForCookies(ResourceRequest& request)
-{
-    if (frame()->tree().top()->isLocalFrame())
-        request.setFirstPartyForCookies(toLocalFrame(frame()->tree().top())->document()->firstPartyForCookies());
-}
-
 CachePolicy FrameFetchContext::getCachePolicy() const
 {
     if (m_document && m_document->loadEventFinished())
@@ -746,6 +740,27 @@ void FrameFetchContext::addCSPHeaderIfNecessary(Resource::Type type, FetchReques
     const ContentSecurityPolicy* csp = m_document->contentSecurityPolicy();
     if (csp->shouldSendCSPHeader(type))
         fetchRequest.mutableResourceRequest().addHTTPHeaderField("CSP", "active");
+}
+
+void FrameFetchContext::populateRequestData(ResourceRequest& request)
+{
+    if (!m_document)
+        return;
+
+    if (request.firstPartyForCookies().isNull()) {
+        request.setFirstPartyForCookies(m_document
+            ? m_document->firstPartyForCookies()
+            : SecurityOrigin::urlWithUniqueSecurityOrigin());
+    }
+
+    // Subresource requests inherit their requestor origin from |m_document| directly.
+    // Top-level and nested frame types are taken care of in 'FrameLoadRequest()'.
+    // Auxiliary frame types in 'createWindow()' and 'FrameLoader::load'.
+    if (request.frameType() == WebURLRequest::FrameTypeNone && !request.requestorOrigin()) {
+        request.setRequestorOrigin(m_document->isSandboxed(SandboxOrigin)
+            ? SecurityOrigin::create(m_document->url())
+            : m_document->getSecurityOrigin());
+    }
 }
 
 MHTMLArchive* FrameFetchContext::archive() const

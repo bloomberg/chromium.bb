@@ -818,18 +818,56 @@ class RequestDataResourceDispatcherHostBrowserTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
-  GURL top_url(embedded_test_server()->GetURL("/simple_page.html"));
+  GURL top_url(embedded_test_server()->GetURL("/page_with_subresources.html"));
   url::Origin top_origin(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
-  EXPECT_EQ(1u, delegate_->data().size());
+  EXPECT_EQ(8u, delegate_->data().size());
 
-  // User-initiated top-level navigations have a first-party and initiator that
-  // matches the URL to which they navigate.
+  // All resources loaded directly by the top-level document (including the
+  // top-level document itself) should have a |first_party| and |initiator|
+  // that match the URL of the top-level document.
+  for (const auto& request : delegate_->data()) {
+    SCOPED_TRACE(request->url);
+    EXPECT_EQ(top_url, request->first_party);
+    EXPECT_EQ(top_origin, request->initiator);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
+                       BasicCrossSite) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  GURL top_url(embedded_test_server()->GetURL(
+      "a.com", "/nested_page_with_subresources.html"));
+  GURL nested_url(embedded_test_server()->GetURL(
+      "not-a.com", "/page_with_subresources.html"));
+  url::Origin top_origin(top_url);
+  url::Origin nested_origin(nested_url);
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
+
+  EXPECT_EQ(9u, delegate_->data().size());
+
+  // The first items loaded are the top-level and nested documents. These should
+  // both have a |first_party| and |initiator| that match the URL of the
+  // top-level document:
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
   EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+
+  EXPECT_EQ(nested_url, delegate_->data()[1]->url);
+  EXPECT_EQ(top_url, delegate_->data()[1]->first_party);
+  EXPECT_EQ(top_origin, delegate_->data()[1]->initiator);
+
+  // The remaining items are loaded as subresources in the nested document, and
+  // should have a unique first-party, and an initiator that matches the
+  // document in which they're embedded.
+  for (size_t i = 2; i < delegate_->data().size(); i++) {
+    SCOPED_TRACE(delegate_->data()[i]->url);
+    EXPECT_EQ(kURLWithUniqueOrigin, delegate_->data()[i]->first_party);
+    EXPECT_EQ(nested_origin, delegate_->data()[i]->initiator);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,

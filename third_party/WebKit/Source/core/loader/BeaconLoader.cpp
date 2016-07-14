@@ -172,7 +172,7 @@ public:
         request.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=0");
         request.setAllowStoredCredentials(true);
         frame->document()->fetcher()->context().addAdditionalRequestHeaders(request, FetchSubresource);
-        frame->document()->fetcher()->context().setFirstPartyForCookies(request);
+        frame->document()->fetcher()->context().populateRequestData(request);
 
         if (MixedContentChecker::shouldBlockFetch(frame, request, request.url()))
             return false;

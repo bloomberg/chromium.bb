@@ -448,6 +448,66 @@ TEST_F(FrameFetchContextTest, MainResource)
     EXPECT_EQ(WebCachePolicy::BypassingCache, childFetchContext->resourceRequestCachePolicy(request, Resource::MainResource, FetchRequest::NoDefer));
 }
 
+TEST_F(FrameFetchContextTest, PopulateRequestData)
+{
+    struct TestCase {
+        const char* documentURL;
+        bool documentSandboxed;
+        const char* requestorOrigin; // "" => nullptr, "null" => unique origin
+        WebURLRequest::FrameType frameType;
+        const char* serializedOrigin; // "" => nullptr, "null" => unique origin
+    } cases[] = {
+        // No document origin => unique request origin
+        { "", false, "", WebURLRequest::FrameTypeNone, "null" },
+        { "", true, "", WebURLRequest::FrameTypeNone, "null" },
+
+        // Document origin => request origin
+        { "http://example.test", false, "", WebURLRequest::FrameTypeNone, "http://example.test" },
+        { "http://example.test", true, "", WebURLRequest::FrameTypeNone, "http://example.test" },
+
+        // If the request already has a requestor origin, then 'populateRequestData' leaves it alone:
+        { "http://example.test", false, "http://not-example.test", WebURLRequest::FrameTypeNone, "http://not-example.test" },
+        { "http://example.test", true, "http://not-example.test", WebURLRequest::FrameTypeNone, "http://not-example.test" },
+
+        // If the request's frame type is not 'none', then 'populateRequestData' leaves it alone:
+        { "http://example.test", false, "", WebURLRequest::FrameTypeTopLevel, "" },
+        { "http://example.test", false, "", WebURLRequest::FrameTypeAuxiliary, "" },
+        { "http://example.test", false, "", WebURLRequest::FrameTypeNested, "" },
+    };
+
+    for (const auto& test : cases) {
+        SCOPED_TRACE(::testing::Message() << test.documentURL << " => " << test.serializedOrigin);
+        // Set up a new document to ensure sandbox flags are cleared:
+        dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
+        dummyPageHolder->page().setDeviceScaleFactor(1.0);
+        document = toHTMLDocument(&dummyPageHolder->document());
+        FrameFetchContext::provideDocumentToContext(*fetchContext, document.get());
+
+        // Setup the test:
+        document->setURL(KURL(ParsedURLString, test.documentURL));
+        document->setSecurityOrigin(SecurityOrigin::create(document->url()));
+
+        if (test.documentSandboxed)
+            document->enforceSandboxFlags(SandboxOrigin);
+
+        ResourceRequest request("http://example.test/");
+        request.setFrameType(test.frameType);
+        if (strlen(test.requestorOrigin) == 0)
+            request.setRequestorOrigin(nullptr);
+        else
+            request.setRequestorOrigin(SecurityOrigin::create(KURL(ParsedURLString, test.requestorOrigin)));
+
+        // Compare the populated |requestorOrigin| against |test.serializedOrigin|
+        fetchContext->populateRequestData(request);
+        if (strlen(test.serializedOrigin) == 0)
+            EXPECT_EQ(nullptr, request.requestorOrigin().get());
+        else
+            EXPECT_EQ(String(test.serializedOrigin), request.requestorOrigin()->toString());
+
+        EXPECT_EQ(document->firstPartyForCookies(), request.firstPartyForCookies());
+    }
+}
+
 TEST_F(FrameFetchContextTest, ModifyPriorityForLowPriorityIframes)
 {
     Settings* settings = document->frame()->settings();
