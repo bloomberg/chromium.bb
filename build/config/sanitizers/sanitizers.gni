@@ -142,3 +142,6 @@ prebuilt_instrumented_libraries_available =
 # For one-off testing, just comment this assertion out.
 assert(!is_debug || !(is_msan || is_ubsan || is_ubsan_null || is_ubsan_vptr),
        "Sanitizers should generally be used in release (set is_debug=false).")
+
+assert(!is_msan || (is_linux && current_cpu == "x64"),
+       "MSan currently only works on 64-bit Linux and ChromeOS builds.")

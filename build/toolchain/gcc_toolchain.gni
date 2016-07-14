@@ -5,6 +5,7 @@
 import("//build/config/clang/clang.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/config/v8_target_cpu.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
@@ -99,6 +100,9 @@ import("//build/toolchain/concurrent_links.gni")
 #  - use_gold
 #      Override the global use_gold setting, useful if the particular
 #      toolchain has a custom link step that is not actually using Gold.
+#  - v8_toolchain_cpu
+#      If defined, set v8_current_cpu to this, else set v8_current_cpu
+#      to current_cpu.
 template("gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ar\" value")
@@ -465,6 +469,17 @@ template("gcc_toolchain") {
       if (defined(invoker.use_sysroot)) {
         use_sysroot = invoker.use_sysroot
       }
+      if (defined(invoker.v8_toolchain_cpu)) {
+        v8_current_cpu = invoker.v8_toolchain_cpu
+      } else {
+        v8_current_cpu = current_cpu
+      }
+
+      # TODO(crbug.com/625353) - Delete after v8 has been updated
+      # to only refer to v8_current_cpu. Until then, we need to make
+      # sure that v8_current_cpu always has the same value as v8_target_cpu,
+      # so that //build defines evaluate the way v8 is expecting them to.
+      v8_current_cpu = v8_target_cpu
 
       # Disable sanitizers for non-default toolchains.
       is_asan = false
@@ -523,10 +538,11 @@ template("clang_toolchain") {
 
     forward_variables_from(invoker,
                            [
+                             "strip",
                              "toolchain_cpu",
                              "toolchain_os",
                              "use_gold",
-                             "strip",
+                             "v8_toolchain_cpu",
                            ])
 
     if (defined(invoker.use_debug_fission)) {

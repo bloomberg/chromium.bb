@@ -37,7 +37,7 @@ template("js2gtest") {
 
     sources = invoker.sources
 
-    v8_shell_path = get_label_info("//v8:v8_shell($snapshot_toolchain)",
+    v8_shell_path = get_label_info("//v8:v8_shell($v8_snapshot_toolchain)",
                                    "root_out_dir") + "/v8_shell"
     if (is_win) {
       v8_shell_path += ".exe"
@@ -90,7 +90,7 @@ template("js2gtest") {
     ]
 
     deps = [
-      "//v8:v8_shell($snapshot_toolchain)",
+      "//v8:v8_shell($v8_snapshot_toolchain)",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
