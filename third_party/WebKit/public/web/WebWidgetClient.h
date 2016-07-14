@@ -58,9 +58,6 @@ public:
     // Called when a region of the WebWidget needs to be re-painted.
     virtual void didInvalidateRect(const WebRect&) { }
 
-    // Called when the Widget has changed size as a result of an auto-resize.
-    virtual void didAutoResize(const WebSize& newSize) { }
-
     // Attempt to initialize compositing for this widget. If this is successful,
     // layerTreeView() will return a valid WebLayerTreeView.
     virtual void initializeLayerTreeView() { }

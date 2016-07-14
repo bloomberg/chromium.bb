@@ -1075,29 +1075,6 @@ void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
 ///////////////////////////////////////////////////////////////////////////////
 // WebWidgetClient
 
-void RenderWidget::didAutoResize(const WebSize& new_size) {
-  WebRect new_size_in_window(0, 0, new_size.width, new_size.height);
-  convertViewportToWindow(&new_size_in_window);
-  if (size_.width() != new_size_in_window.width ||
-      size_.height() != new_size_in_window.height) {
-    size_ = gfx::Size(new_size_in_window.width, new_size_in_window.height);
-
-    if (resizing_mode_selector_->is_synchronous_mode()) {
-      gfx::Rect new_pos(rootWindowRect().x,
-                        rootWindowRect().y,
-                        size_.width(),
-                        size_.height());
-      view_screen_rect_ = new_pos;
-      window_screen_rect_ = new_pos;
-    }
-
-    AutoResizeCompositor();
-
-    if (!resizing_mode_selector_->is_synchronous_mode())
-      need_update_rect_for_auto_resize_ = true;
-  }
-}
-
 void RenderWidget::AutoResizeCompositor()  {
   physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
   if (compositor_)
@@ -1730,6 +1707,27 @@ void RenderWidget::ResetDeviceColorProfileForTesting() {
   std::vector<char> color_profile;
   color_profile.push_back('0');
   SetDeviceColorProfile(color_profile);
+}
+
+void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
+  WebRect new_size_in_window(0, 0, new_size.width(), new_size.height());
+  convertViewportToWindow(&new_size_in_window);
+  if (size_.width() != new_size_in_window.width ||
+      size_.height() != new_size_in_window.height) {
+    size_ = gfx::Size(new_size_in_window.width, new_size_in_window.height);
+
+    if (resizing_mode_selector_->is_synchronous_mode()) {
+      gfx::Rect new_pos(rootWindowRect().x, rootWindowRect().y, size_.width(),
+                        size_.height());
+      view_screen_rect_ = new_pos;
+      window_screen_rect_ = new_pos;
+    }
+
+    AutoResizeCompositor();
+
+    if (!resizing_mode_selector_->is_synchronous_mode())
+      need_update_rect_for_auto_resize_ = true;
+  }
 }
 
 // Check blink::WebTextInputType and ui::TextInputType is kept in sync.

@@ -297,7 +297,6 @@ class CONTENT_EXPORT RenderViewImpl
   void closeWidgetSoon() override;
   void convertViewportToWindow(blink::WebRect* rect) override;
   void convertWindowToViewport(blink::WebFloatRect* rect) override;
-  void didAutoResize(const blink::WebSize& newSize) override;
   void didInvalidateRect(const blink::WebRect& rect) override;
   void didOverscroll(const blink::WebFloatSize& overscrollDelta,
                      const blink::WebFloatSize& accumulatedOverscroll,
@@ -381,6 +380,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual double zoomFactorToZoomLevel(double factor) const;
   void draggableRegionsChanged() override;
   void pageImportanceSignalsChanged() override;
+  void didAutoResize(const blink::WebSize& newSize) override;
 
 #if defined(OS_ANDROID)
   void scheduleContentIntent(const blink::WebURL& intent,

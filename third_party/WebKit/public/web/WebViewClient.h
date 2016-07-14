@@ -187,6 +187,9 @@ public:
     // Returns comma separated list of accept languages.
     virtual WebString acceptLanguages() { return WebString(); }
 
+    // Called when the View has changed size as a result of an auto-resize.
+    virtual void didAutoResize(const WebSize& newSize) {}
+
 
     // Session history -----------------------------------------------------
 
@@ -254,7 +257,6 @@ public:
     void closeWidgetSoon() override {}
     void convertViewportToWindow(WebRect* rect) override {}
     void convertWindowToViewport(WebFloatRect* rect) override {}
-    void didAutoResize(const WebSize& newSize) override {}
     void didFocus() override {}
     void didHandleGestureEvent(const WebGestureEvent& event, bool eventCancelled) override {}
     void didInvalidateRect(const WebRect&) override {}
