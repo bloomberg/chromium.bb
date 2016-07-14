@@ -96,7 +96,6 @@ void StreamTexture::GetTextureMatrix(float xform[16]) {
     surface_texture_->GetTransformMatrix(current_matrix_);
   }
   memcpy(xform, current_matrix_, sizeof(current_matrix_));
-  YInvertMatrix(xform);
 }
 
 void StreamTexture::OnWillDestroyStub() {

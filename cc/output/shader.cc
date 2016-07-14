@@ -752,7 +752,8 @@ std::string VertexShaderVideoTransform::GetShaderBody() {
   return SHADER0([]() {
     void main() {
       gl_Position = matrix * a_position;
-      v_texCoord = (texMatrix * vec4(a_texCoord.xy, 0.0, 1.0)).xy;
+      v_texCoord =
+          vec2(texMatrix * vec4(a_texCoord.x, 1.0 - a_texCoord.y, 0.0, 1.0));
     }
   });
 }

@@ -317,9 +317,10 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       scale.Scale(tex_width_scale, tex_height_scale);
       StreamVideoDrawQuad* stream_video_quad =
           render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
-      stream_video_quad->SetNew(shared_quad_state, quad_rect, opaque_rect,
-                                visible_quad_rect, frame_resources_[0].id,
-                                frame_resources_[0].size_in_pixels, scale);
+      stream_video_quad->SetNew(
+          shared_quad_state, quad_rect, opaque_rect, visible_quad_rect,
+          frame_resources_[0].id, frame_resources_[0].size_in_pixels,
+          scale * provider_client_impl_->StreamTextureMatrix());
       ValidateQuadResources(stream_video_quad);
       break;
     }

@@ -8393,8 +8393,15 @@ void GLES2DecoderImpl::DoUniformMatrix4fv(
 void GLES2DecoderImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint fake_location,
     GLboolean transpose,
-    const GLfloat* transform) {
+    const GLfloat* default_value) {
   float gl_matrix[16];
+
+  // If we can't get a matrix from the texture, then use a default.
+  // TODO(liberato): remove |default_value| and replace with an identity matrix.
+  // It is only present as a transitionary step until StreamTexture supplies
+  // the matrix via GLImage.  Once that happens, GLRenderer can quit sending
+  // in a default.
+  memcpy(gl_matrix, default_value, sizeof(gl_matrix));
 
   // This refers to the bound external texture on the active unit.
   TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
@@ -8402,17 +8409,7 @@ void GLES2DecoderImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     if (GLStreamTextureImage* image =
             texture_ref->texture()->GetLevelStreamTextureImage(
                 GL_TEXTURE_EXTERNAL_OES, 0)) {
-      gfx::Transform st_transform(gfx::Transform::kSkipInitialization);
-      gfx::Transform pre_transform(gfx::Transform::kSkipInitialization);
       image->GetTextureMatrix(gl_matrix);
-      st_transform.matrix().setColMajorf(gl_matrix);
-      pre_transform.matrix().setColMajorf(transform);
-      gfx::Transform(pre_transform, st_transform)
-          .matrix()
-          .asColMajorf(gl_matrix);
-    } else {
-      // Missing stream texture. Treat matrix as identity.
-      memcpy(gl_matrix, transform, sizeof(gl_matrix));
     }
   } else {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
@@ -14874,8 +14871,10 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     if (GLStreamTextureImage* image =
             source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
                                                        0)) {
+      // The coordinate system of this matrix is y-up, not y-down, so a flip is
+      // needed.
       GLfloat transform_matrix[16];
-      image->GetTextureMatrix(transform_matrix);
+      image->GetFlippedTextureMatrix(transform_matrix);
       copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
           this, source_target, source_texture->service_id(), dest_target,
           dest_texture->service_id(), source_width, source_height,
@@ -15050,14 +15049,17 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
 
   DoCopyTexImageIfNeeded(source_texture, source_target);
 
+
   // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
   // before presenting.
   if (source_target == GL_TEXTURE_EXTERNAL_OES) {
     if (GLStreamTextureImage* image =
             source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
                                                        0)) {
+      // The coordinate system of this matrix is y-up, not y-down, so a flip is
+      // needed.
       GLfloat transform_matrix[16];
-      image->GetTextureMatrix(transform_matrix);
+      image->GetFlippedTextureMatrix(transform_matrix);
       copy_texture_CHROMIUM_->DoCopySubTextureWithTransform(
           this, source_target, source_texture->service_id(),
           source_internal_format, dest_target, dest_texture->service_id(),

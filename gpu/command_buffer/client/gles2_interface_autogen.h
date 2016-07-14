@@ -879,5 +879,5 @@ virtual GLint GetFragDataIndexEXT(GLuint program, const char* name) = 0;
 virtual void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
-    const GLfloat* transform) = 0;
+    const GLfloat* default_value) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

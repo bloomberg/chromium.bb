@@ -5512,12 +5512,13 @@ GLES2DecoderImpl::HandleUniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate(
   if (data_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  const GLfloat* transform =
+  const GLfloat* default_value =
       GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
-  if (transform == NULL) {
+  if (default_value == NULL) {
     return error::kOutOfBounds;
   }
-  DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(location, transpose, transform);
+  DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(location, transpose,
+                                                default_value);
   return error::kNoError;
 }
 

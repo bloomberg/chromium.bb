@@ -1176,6 +1176,6 @@ GLint GetFragDataIndexEXT(GLuint program, const char* name) override;
 void UniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint location,
     GLboolean transpose,
-    const GLfloat* transform) override;
+    const GLfloat* default_value) override;
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

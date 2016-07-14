@@ -15457,18 +15457,20 @@ struct UniformMatrix4fvStreamTextureMatrixCHROMIUMImmediate {
 
   void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
 
-  void Init(GLint _location, GLboolean _transpose, const GLfloat* _transform) {
+  void Init(GLint _location,
+            GLboolean _transpose,
+            const GLfloat* _default_value) {
     SetHeader();
     location = _location;
     transpose = _transpose;
-    memcpy(ImmediateDataAddress(this), _transform, ComputeDataSize());
+    memcpy(ImmediateDataAddress(this), _default_value, ComputeDataSize());
   }
 
   void* Set(void* cmd,
             GLint _location,
             GLboolean _transpose,
-            const GLfloat* _transform) {
-    static_cast<ValueType*>(cmd)->Init(_location, _transpose, _transform);
+            const GLfloat* _default_value) {
+    static_cast<ValueType*>(cmd)->Init(_location, _transpose, _default_value);
     const uint32_t size = ComputeSize();
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
   }
