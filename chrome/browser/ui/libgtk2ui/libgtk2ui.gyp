@@ -17,6 +17,7 @@
         '../../../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../../../build/linux/system.gyp:gconf',
         '../../../../build/linux/system.gyp:x11',
+        '../../../../build/linux/system.gyp:xcursor',
         '../../../../components/components_resources.gyp:components_resources',
         '../../../../content/content.gyp:content',
         '../../../../skia/skia.gyp:skia',
