@@ -107,16 +107,18 @@ void RuntimeCustomBindings::GetManifest(
 
 void RuntimeCustomBindings::GetExtensionViews(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(args.Length(), 2);
+  CHECK_EQ(args.Length(), 3);
   CHECK(args[0]->IsInt32());
-  CHECK(args[1]->IsString());
+  CHECK(args[1]->IsInt32());
+  CHECK(args[2]->IsString());
 
   // |browser_window_id| == extension_misc::kUnknownWindowId means getting
   // all views for the current extension.
   int browser_window_id = args[0]->Int32Value();
+  int tab_id = args[1]->Int32Value();
 
   std::string view_type_string =
-      base::ToUpperASCII(*v8::String::Utf8Value(args[1]));
+      base::ToUpperASCII(*v8::String::Utf8Value(args[2]));
   // |view_type| == VIEW_TYPE_INVALID means getting any type of
   // views.
   ViewType view_type = VIEW_TYPE_INVALID;
@@ -144,7 +146,7 @@ void RuntimeCustomBindings::GetExtensionViews(
 
   std::vector<content::RenderFrame*> frames =
       ExtensionFrameHelper::GetExtensionFrames(extension_id, browser_window_id,
-                                               view_type);
+                                               tab_id, view_type);
   v8::Local<v8::Context> v8_context = args.GetIsolate()->GetCurrentContext();
   v8::Local<v8::Array> v8_views = v8::Array::New(args.GetIsolate());
   int v8_index = 0;

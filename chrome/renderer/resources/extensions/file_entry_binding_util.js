@@ -18,7 +18,7 @@ var GetExtensionViews = requireNative('runtime').GetExtensionViews;
 //   previously saved file entries.
 function getFileBindingsForApi(apiName) {
   // Fallback to using the current window if no background page is running.
-  var backgroundPage = GetExtensionViews(-1, 'BACKGROUND')[0] || window;
+  var backgroundPage = GetExtensionViews(-1, -1, 'BACKGROUND')[0] || window;
   var backgroundPageModuleSystem = GetModuleSystem(backgroundPage);
 
   // All windows use the bindFileEntryCallback from the background page so their

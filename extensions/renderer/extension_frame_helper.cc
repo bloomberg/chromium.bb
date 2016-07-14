@@ -32,6 +32,7 @@ base::LazyInstance<std::set<const ExtensionFrameHelper*>> g_frame_helpers =
 bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
                         ViewType match_view_type,
                         int match_window_id,
+                        int match_tab_id,
                         const std::string& match_extension_id) {
   if (match_view_type != VIEW_TYPE_INVALID &&
       frame_helper->view_type() != match_view_type)
@@ -55,6 +56,11 @@ bool RenderFrameMatches(const ExtensionFrameHelper* frame_helper,
   if (match_window_id != extension_misc::kUnknownWindowId &&
       frame_helper->browser_window_id() != match_window_id)
     return false;
+
+  if (match_tab_id != extension_misc::kUnknownTabId &&
+      frame_helper->tab_id() != match_tab_id)
+    return false;
+
   return true;
 }
 
@@ -97,10 +103,12 @@ ExtensionFrameHelper::~ExtensionFrameHelper() {
 std::vector<content::RenderFrame*> ExtensionFrameHelper::GetExtensionFrames(
     const std::string& extension_id,
     int browser_window_id,
+    int tab_id,
     ViewType view_type) {
   std::vector<content::RenderFrame*> render_frames;
   for (const ExtensionFrameHelper* helper : g_frame_helpers.Get()) {
-    if (RenderFrameMatches(helper, view_type, browser_window_id, extension_id))
+    if (RenderFrameMatches(helper, view_type, browser_window_id, tab_id,
+                           extension_id))
       render_frames.push_back(helper->render_frame());
   }
   return render_frames;
@@ -111,7 +119,8 @@ content::RenderFrame* ExtensionFrameHelper::GetBackgroundPageFrame(
     const std::string& extension_id) {
   for (const ExtensionFrameHelper* helper : g_frame_helpers.Get()) {
     if (RenderFrameMatches(helper, VIEW_TYPE_EXTENSION_BACKGROUND_PAGE,
-                           extension_misc::kUnknownWindowId, extension_id)) {
+                           extension_misc::kUnknownWindowId,
+                           extension_misc::kUnknownTabId, extension_id)) {
       blink::WebLocalFrame* web_frame = helper->render_frame()->GetWebFrame();
       // Check if this is the top frame.
       if (web_frame->top() == web_frame)

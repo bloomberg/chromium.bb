@@ -170,6 +170,9 @@ enum LaunchContainer {
 
 namespace extension_misc {
 
+// Matches chrome.tabs.TAB_ID_NONE.
+const int kUnknownTabId = -1;
+
 // Matches chrome.windows.WINDOW_ID_NONE.
 const int kUnknownWindowId = -1;
 

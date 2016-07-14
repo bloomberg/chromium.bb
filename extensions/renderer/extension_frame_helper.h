@@ -42,6 +42,7 @@ class ExtensionFrameHelper
   static std::vector<content::RenderFrame*> GetExtensionFrames(
       const std::string& extension_id,
       int browser_window_id,
+      int tab_id,
       ViewType view_type);
 
   // Returns the main frame of the extension's background page, or null if there

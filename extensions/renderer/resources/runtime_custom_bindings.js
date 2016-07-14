@@ -31,7 +31,7 @@ if (contextType == 'BLESSED_EXTENSION' ||
   if (manifest.app && manifest.app.background) {
     // Get the background page if one exists. Otherwise, default to the current
     // window.
-    backgroundPage = runtimeNatives.GetExtensionViews(-1, 'BACKGROUND')[0];
+    backgroundPage = runtimeNatives.GetExtensionViews(-1, -1, 'BACKGROUND')[0];
     if (backgroundPage) {
       var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
       backgroundRequire = GetModuleSystem(backgroundPage).require;
@@ -177,7 +177,8 @@ binding.registerCustomHook(function(binding, id, contextType) {
   apiFunctions.setCustomCallback('getBackgroundPage',
                                  function(name, request, callback, response) {
     if (callback) {
-      var bg = runtimeNatives.GetExtensionViews(-1, 'BACKGROUND')[0] || null;
+      var bg =
+          runtimeNatives.GetExtensionViews(-1, -1, 'BACKGROUND')[0] || null;
       callback(bg);
     }
   });

@@ -22,6 +22,7 @@ var manifestVersion = requireNative('process').GetManifestVersion();
 // chrome.windows API won't exist unless this extension has permission for it;
 // which may not be the case.
 var WINDOW_ID_NONE = -1;
+var TAB_ID_NONE = -1;
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var extension = bindingsAPI.compiledApi;
@@ -35,6 +36,7 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
 
   apiFunctions.setHandleRequest('getViews', function(properties) {
     var windowId = WINDOW_ID_NONE;
+    var tabId = TAB_ID_NONE;
     var type = 'ALL';
     if (properties) {
       if (properties.type != null) {
@@ -43,18 +45,21 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       if (properties.windowId != null) {
         windowId = properties.windowId;
       }
+      if (properties.tabId != null) {
+        tabId = properties.tabId;
+      }
     }
-    return GetExtensionViews(windowId, type);
+    return GetExtensionViews(windowId, tabId, type);
   });
 
   apiFunctions.setHandleRequest('getBackgroundPage', function() {
-    return GetExtensionViews(-1, 'BACKGROUND')[0] || null;
+    return GetExtensionViews(-1, -1, 'BACKGROUND')[0] || null;
   });
 
   apiFunctions.setHandleRequest('getExtensionTabs', function(windowId) {
     if (windowId == null)
       windowId = WINDOW_ID_NONE;
-    return GetExtensionViews(windowId, 'TAB');
+    return GetExtensionViews(windowId, -1, 'TAB');
   });
 
   apiFunctions.setHandleRequest('getURL', function(path) {

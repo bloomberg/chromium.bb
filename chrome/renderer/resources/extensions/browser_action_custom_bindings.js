@@ -28,7 +28,7 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (lastError.hasError(chrome)) {
       callback();
     } else {
-      var views = getExtensionViews(-1, 'POPUP');
+      var views = getExtensionViews(-1, -1, 'POPUP');
       callback(views.length > 0 ? views[0] : null);
     }
   });
