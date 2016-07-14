@@ -48,6 +48,10 @@ cr.define('offlineInternals', function() {
       cell.textContent = Math.round(pages[i].size / 1024);
       row.appendChild(cell);
 
+      cell = document.createElement('td');
+      cell.textContent = pages[i].isExpired;
+      row.appendChild(cell);
+
       storedPagesTable.appendChild(row);
     }
     offlinePages = pages;

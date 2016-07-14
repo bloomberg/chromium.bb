@@ -202,6 +202,7 @@ void OfflineInternalsUIMessageHandler::HandleStoredPagesCallback(
     offline_page->SetDouble("lastAccessTime",
                               page.last_access_time.ToJsTime());
     offline_page->SetInteger("accessCount", page.access_count);
+    offline_page->SetString("isExpired", page.IsExpired() ? "Yes" : "No");
   }
   ResolveJavascriptCallback(base::StringValue(callback_id), results);
 }

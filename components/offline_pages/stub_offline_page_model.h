@@ -39,6 +39,8 @@ class StubOfflinePageModel : public OfflinePageModel {
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback) override;
   void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
+  void GetAllPagesWithExpired(
+      const MultipleOfflinePageItemCallback& callback) override;
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;

@@ -31,6 +31,8 @@ void StubOfflinePageModel::CheckPagesExistOffline(
     const CheckPagesExistOfflineCallback& callback) {}
 void StubOfflinePageModel::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {}
+void StubOfflinePageModel::GetAllPagesWithExpired(
+    const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) {}

@@ -81,6 +81,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback) override;
   void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
+  void GetAllPagesWithExpired(
+      const MultipleOfflinePageItemCallback& callback) override;
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
@@ -127,12 +129,18 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
  private:
   FRIEND_TEST_ALL_PREFIXES(OfflinePageModelImplTest, MarkPageForDeletion);
 
+  enum class GetAllPageMode {
+    ALL,               // Get all active page entries.
+    ALL_WITH_EXPIRED,  // Get all pages entries including expired ones.
+  };
+
   typedef ScopedVector<OfflinePageArchiver> PendingArchivers;
 
   // Callback for ensuring archive directory is created.
   void OnEnsureArchivesDirCreatedDone(const base::TimeTicks& start_time);
 
   void GetAllPagesAfterLoadDone(
+      GetAllPageMode mode,
       const MultipleOfflinePageItemCallback& callback) const;
   void CheckPagesExistOfflineAfterLoadDone(
       const std::set<GURL>& urls,

@@ -450,16 +450,26 @@ void OfflinePageModelImpl::CheckPagesExistOfflineAfterLoadDone(
 void OfflinePageModelImpl::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {
   RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetAllPagesAfterLoadDone,
-                           weak_ptr_factory_.GetWeakPtr(), callback));
+                           weak_ptr_factory_.GetWeakPtr(), GetAllPageMode::ALL,
+                           callback));
+}
+
+void OfflinePageModelImpl::GetAllPagesWithExpired(
+    const MultipleOfflinePageItemCallback& callback) {
+  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetAllPagesAfterLoadDone,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           GetAllPageMode::ALL_WITH_EXPIRED, callback));
 }
 
 void OfflinePageModelImpl::GetAllPagesAfterLoadDone(
+    GetAllPageMode mode,
     const MultipleOfflinePageItemCallback& callback) const {
   DCHECK(is_loaded_);
 
   MultipleOfflinePageItemResult offline_pages;
   for (const auto& id_page_pair : offline_pages_) {
-    if (!id_page_pair.second.IsExpired())
+    if (mode == GetAllPageMode::ALL_WITH_EXPIRED ||
+        !id_page_pair.second.IsExpired())
       offline_pages.push_back(id_page_pair.second);
   }
 

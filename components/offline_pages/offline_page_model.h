@@ -119,6 +119,10 @@ class OfflinePageModel : public base::SupportsUserData {
   // Gets all offline pages.
   virtual void GetAllPages(const MultipleOfflinePageItemCallback& callback) = 0;
 
+  // Gets all offline pages including expired ones.
+  virtual void GetAllPagesWithExpired(
+      const MultipleOfflinePageItemCallback& callback) = 0;
+
   // Gets all offline ids where the offline page has the matching client id.
   virtual void GetOfflineIdsForClientId(
       const ClientId& client_id,

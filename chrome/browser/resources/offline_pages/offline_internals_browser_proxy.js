@@ -11,7 +11,8 @@
  *   size: string,
  *   filePath: string,
  *   lastAccessTime: number,
- *   accessCount: number
+ *   accessCount: number,
+ *   isExpired: string
  * }}
  */
 var OfflinePage;
