@@ -4444,9 +4444,9 @@ interface Permissions
     method revoke
 interface PhotoCapabilities
     attribute @@toStringTag
+    getter focusMode
     getter zoom
     method constructor
-    setter zoom
 interface Plugin
     attribute @@toStringTag
     getter description

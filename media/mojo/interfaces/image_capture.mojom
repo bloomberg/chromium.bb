@@ -13,10 +13,14 @@ struct Range {
   uint32 current;
 };
 
+// https://w3c.github.io/mediacapture-image/#idl-def-FocusMode
+enum FocusMode { UNAVAILABLE, AUTO, MANUAL };
+
 // Equivalent to idl PhotoCapabilities,
 // https://w3c.github.io/mediacapture-image/#photocapabilities
 struct PhotoCapabilities {
   Range zoom;
+  FocusMode focus_mode;
 };
 
 // Equivalent to idl PhotoSettings,

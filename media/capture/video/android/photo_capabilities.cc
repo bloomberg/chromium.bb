@@ -42,4 +42,10 @@ int PhotoCapabilities::getCurrentZoom() const {
                                                object_.obj());
 }
 
+bool PhotoCapabilities::getAutoFocusInUse() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getAutoFocusInUse(AttachCurrentThread(),
+                                                  object_.obj());
+}
+
 }  // namespace media

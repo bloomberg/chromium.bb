@@ -296,16 +296,27 @@ public abstract class VideoCaptureCamera
     @Override
     public PhotoCapabilities getPhotoCapabilities() {
         final android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
-        if (!parameters.isZoomSupported()) return new PhotoCapabilities(0, 0, 0);
 
-        Log.d(TAG, "parameters.getZoomRatios(): " + parameters.getZoomRatios().toString());
+        int maxZoom = 0;
+        int currentZoom = 0;
+        int minZoom = 0;
+        if (parameters.isZoomSupported()) {
+            Log.d(TAG, "parameters.getZoomRatios(): " + parameters.getZoomRatios().toString());
 
-        // The Max zoom is returned as x100 by the API to avoid using floating point.
-        final int maxZoom = parameters.getZoomRatios().get(parameters.getMaxZoom());
-        final int currentZoom = 100 + 100 * parameters.getZoom();
+            // The Max zoom is returned as x100 by the API to avoid using floating point.
+            maxZoom = parameters.getZoomRatios().get(parameters.getMaxZoom());
+            currentZoom = 100 + 100 * parameters.getZoom();
+            minZoom = parameters.getZoomRatios().get(0);
+        }
 
-        // Min zoom is always 100. TODO(mcasas): consider double-checking.
-        return new PhotoCapabilities(maxZoom, 100, currentZoom);
+        Log.d(TAG, "parameters.getFocusMode(): " + parameters.getFocusMode());
+        final String focusMode = parameters.getFocusMode();
+        final boolean isFocusManual =
+                focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_FIXED)
+                || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_INFINITY)
+                || focusMode.equals(android.hardware.Camera.Parameters.FOCUS_MODE_EDOF);
+
+        return new PhotoCapabilities(maxZoom, minZoom, currentZoom, !isFocusManual);
     }
 
     @Override

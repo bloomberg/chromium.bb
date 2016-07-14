@@ -3,10 +3,18 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/mediacapture-image/index.html#idl-def-PhotoCapabilities
+
+enum FocusMode {
+    "unavailable",
+    "auto",
+    "manual"
+};
+
 [
     RuntimeEnabled=ImageCapture,
 ] interface PhotoCapabilities {
-    attribute MediaSettingsRange zoom;
+    readonly attribute MediaSettingsRange zoom;
+    readonly attribute FocusMode focusMode;
     // TODO(mcasas): Implement all other PhotoCapabilities fields
     // https://crbug.com/518807
 };

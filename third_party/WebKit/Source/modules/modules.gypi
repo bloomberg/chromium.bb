@@ -1168,6 +1168,7 @@
       'imagecapture/ImageCapture.cpp',
       'imagecapture/ImageCapture.h',
       'imagecapture/MediaSettingsRange.h',
+      'imagecapture/PhotoCapabilities.cpp',
       'imagecapture/PhotoCapabilities.h',
       'indexeddb/GlobalIndexedDB.cpp',
       'indexeddb/GlobalIndexedDB.h',

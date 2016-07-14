@@ -572,7 +572,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 / cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
                           .width();
 
-        return new PhotoCapabilities(maxZoom, minZoom, currentZoom);
+        final int focusMode = mPreviewRequest.get(CaptureRequest.CONTROL_AF_MODE);
+        Log.d(TAG, "focusMode " + focusMode);
+        final boolean isFocusManual = (focusMode == CameraMetadata.CONTROL_AF_MODE_OFF)
+                || (focusMode == CameraMetadata.CONTROL_AF_MODE_EDOF);
+
+        return new PhotoCapabilities(maxZoom, minZoom, currentZoom, !isFocusManual);
     }
 
     @Override

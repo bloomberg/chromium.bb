@@ -175,6 +175,9 @@ void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
   photo_capabilities->zoom->current = caps.getCurrentZoom();
   photo_capabilities->zoom->max = caps.getMaxZoom();
   photo_capabilities->zoom->min = caps.getMinZoom();
+  photo_capabilities->focus_mode = caps.getAutoFocusInUse()
+                                       ? mojom::FocusMode::AUTO
+                                       : mojom::FocusMode::MANUAL;
   callback.Run(std::move(photo_capabilities));
 }
 

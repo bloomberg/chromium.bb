@@ -6,6 +6,7 @@
 #define PhotoCapabilities_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "media/mojo/interfaces/image_capture.mojom-blink.h"
 #include "modules/imagecapture/MediaSettingsRange.h"
 #include "wtf/text/WTFString.h"
 
@@ -16,24 +17,22 @@ class PhotoCapabilities final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PhotoCapabilities* create()
-    {
-        return new PhotoCapabilities();
-    }
+    static PhotoCapabilities* create();
     virtual ~PhotoCapabilities() = default;
 
-    MediaSettingsRange* zoom() const { return m_zoom; }
-    void setZoom(MediaSettingsRange* value) { m_zoom = value; }
+    MediaSettingsRange* zoom() const;
+    void setZoom(MediaSettingsRange* value);
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_zoom);
-    }
+    String focusMode() const;
+    void setFocusMode(media::mojom::blink::FocusMode);
+
+    DECLARE_VIRTUAL_TRACE();
 
 private:
     PhotoCapabilities() = default;
 
     Member<MediaSettingsRange> m_zoom;
+    media::mojom::blink::FocusMode m_focusMode = media::mojom::blink::FocusMode::UNAVAILABLE;
 };
 
 } // namespace blink

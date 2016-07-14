@@ -200,6 +200,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         MediaSettingsRange* zoom = MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->current);
         PhotoCapabilities* caps = PhotoCapabilities::create();
         caps->setZoom(zoom);
+        caps->setFocusMode(capabilities->focus_mode);
         resolver->resolve(caps);
     }
     m_serviceRequests.remove(resolver);

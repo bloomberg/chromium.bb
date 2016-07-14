@@ -22,6 +22,7 @@ class PhotoCapabilities {
   int getMinZoom() const;
   int getMaxZoom() const;
   int getCurrentZoom() const;
+  bool getAutoFocusInUse() const;
 
  private:
   const base::android::ScopedJavaLocalRef<jobject> object_;
