@@ -96,6 +96,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder,
   // MediaCodecLoop::Client implementation
   bool IsAnyInputPending() const override;
   MediaCodecLoop::InputData ProvideInputData() override;
+  void OnInputDataQueued(bool) override;
   void OnDecodedEos(const MediaCodecLoop::OutputBuffer& out) override;
   bool OnDecodedFrame(const MediaCodecLoop::OutputBuffer& out) override;
   bool OnOutputFormatChanged() override;

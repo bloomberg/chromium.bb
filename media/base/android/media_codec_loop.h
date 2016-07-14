@@ -126,9 +126,6 @@ class MEDIA_EXPORT MediaCodecLoop {
 
     base::TimeDelta presentation_time;
 
-    // Called when this is queued.
-    DecodeCB completion_cb;
-
     bool is_eos = false;
     bool is_encrypted = false;
   };
@@ -162,12 +159,20 @@ class MEDIA_EXPORT MediaCodecLoop {
     // Return true if and only if there is input that is pending to be
     // queued with MediaCodec.  ProvideInputData() will not be called more than
     // once in response to this returning true once.  It is not guaranteed that
-    // ProvideInputData will be called at all.
+    // ProvideInputData will be called at all.  If ProvideInputData is called,
+    // then OnInputDataQueued will also be called before calling again.
     virtual bool IsAnyInputPending() const = 0;
 
     // Fills and returns an input buffer for MediaCodecLoop to queue.  It is
     // an error for MediaCodecLoop to call this while !IsAnyInputPending().
     virtual InputData ProvideInputData() = 0;
+
+    // Called to notify the client that the previous data (or eos) provided by
+    // ProvideInputData has been queued with the codec.  IsAnyInputPending and
+    // ProvideInputData will not be called again until this is called.
+    // Note that if the codec is flushed while a call back is pending, then that
+    // call back won't happen.
+    virtual void OnInputDataQueued(bool success) = 0;
 
     // Called when an EOS buffer is dequeued from the output.
     virtual void OnDecodedEos(const OutputBuffer& out) = 0;
@@ -205,6 +210,9 @@ class MEDIA_EXPORT MediaCodecLoop {
   // Try to flush this media codec.  Returns true on success, false on failure.
   // Failures can result in a state change to the Error state.  If this returns
   // false but the state is still READY, then the codec may continue to be used.
+  // In that case, we may still call back into the client for decoding later.
+  // The client must handle this case if it really does want to switch codecs.
+  // If it immediately destroys us, then that's fine.
   bool TryFlush();
 
   // This should be called when a new key is added.  Decoding will resume if it
@@ -292,10 +300,6 @@ class MEDIA_EXPORT MediaCodecLoop {
   // When processing a pending input buffer, this is the data that was returned
   // to us by the client.  |memory| has been cleared, since the codec has it.
   InputData pending_input_buf_data_;
-
-  // When an EOS is queued, we defer its completion callback until the EOS
-  // arrives at the output queue.  This is valid when we're in STATE_DRAINING.
-  DecodeCB pending_eos_completion_cb_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaCodecLoop> weak_factory_;

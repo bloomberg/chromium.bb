@@ -321,12 +321,23 @@ MediaCodecLoop::InputData MediaCodecAudioDecoder::ProvideInputData() {
     input_data.presentation_time = decoder_buffer->timestamp();
   }
 
-  // Note that for EOS, the completion callback will be delayed until the EOS
-  // actually arrives on the output queue.
-  input_data.completion_cb = input_queue_.front().second;
-  input_queue_.pop_front();
+  // We do not pop |input_queue_| here.  MediaCodecLoop may refer to data that
+  // it owns until OnInputDataQueued is called.
 
   return input_data;
+}
+
+void MediaCodecAudioDecoder::OnInputDataQueued(bool success) {
+  // If this is an EOS buffer, then wait to call back until we are notified that
+  // it has been processed via OnDecodedEos().  If the EOS was not queued
+  // successfully, then we do want to signal error now since there is no queued
+  // EOS to process later.
+  if (input_queue_.front().first->end_of_stream() && success)
+    return;
+
+  input_queue_.front().second.Run(success ? DecodeStatus::OK
+                                          : DecodeStatus::DECODE_ERROR);
+  input_queue_.pop_front();
 }
 
 void MediaCodecAudioDecoder::ClearInputQueue(DecodeStatus decode_status) {
@@ -353,6 +364,11 @@ void MediaCodecAudioDecoder::OnCodecLoopError() {
 void MediaCodecAudioDecoder::OnDecodedEos(
     const MediaCodecLoop::OutputBuffer& out) {
   DVLOG(2) << __FUNCTION__ << " pts:" << out.pts;
+
+  DCHECK(input_queue_.size());
+  DCHECK(input_queue_.front().first->end_of_stream());
+  input_queue_.front().second.Run(DecodeStatus::OK);
+  input_queue_.pop_front();
 }
 
 bool MediaCodecAudioDecoder::OnDecodedFrame(

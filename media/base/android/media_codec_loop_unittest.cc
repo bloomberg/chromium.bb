@@ -15,6 +15,7 @@ class MockMediaCodecLoopClient : public MediaCodecLoop::Client {
  public:
   MOCK_CONST_METHOD0(IsAnyInputPending, bool());
   MOCK_METHOD0(ProvideInputData, MediaCodecLoop::InputData());
+  MOCK_METHOD1(OnInputDataQueued, void(bool));
   MOCK_METHOD1(OnDecodedEos, void(const MediaCodecLoop::OutputBuffer&));
   MOCK_METHOD1(OnDecodedFrame, bool(const MediaCodecLoop::OutputBuffer&));
   MOCK_METHOD0(OnOutputFormatChanged, bool());

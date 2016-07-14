@@ -38,7 +38,6 @@ MediaCodecLoop::InputData::InputData(const InputData& other)
       iv(other.iv),
       subsamples(other.subsamples),
       presentation_time(other.presentation_time),
-      completion_cb(other.completion_cb),
       is_eos(other.is_eos),
       is_encrypted(other.is_encrypted) {}
 
@@ -56,7 +55,9 @@ MediaCodecLoop::MediaCodecLoop(Client* client,
     SetState(STATE_ERROR);
 }
 
-MediaCodecLoop::~MediaCodecLoop() {}
+MediaCodecLoop::~MediaCodecLoop() {
+  io_timer_.Stop();
+}
 
 void MediaCodecLoop::OnKeyAdded() {
   if (state_ == STATE_WAITING_FOR_KEY)
@@ -70,7 +71,7 @@ bool MediaCodecLoop::TryFlush() {
   // For decoder reset, then it is appropriate.  Otherwise, the requests might
   // simply be sent to us later, such as on a format change.
 
-  // STATE_DRAINED seems like it allow flush, but it causes test failures.
+  // STATE_DRAINED seems like it allows flush, but it causes test failures.
   // crbug.com/624878
   if (state_ == STATE_ERROR || state_ == STATE_DRAINED)
     return false;
@@ -183,10 +184,7 @@ void MediaCodecLoop::EnqueueInputBuffer(const InputBuffer& input_buffer) {
   if (input_data.is_eos) {
     media_codec_->QueueEOS(input_buffer.index);
     SetState(STATE_DRAINING);
-
-    // For EOS, the completion callback is called when the EOS arrives at the
-    // output queue.
-    pending_eos_completion_cb_ = input_data.completion_cb;
+    client_->OnInputDataQueued(true);
     return;
   }
 
@@ -211,7 +209,7 @@ void MediaCodecLoop::EnqueueInputBuffer(const InputBuffer& input_buffer) {
     case MEDIA_CODEC_ERROR:
       DLOG(ERROR) << __FUNCTION__
                   << ": MEDIA_CODEC_ERROR from QueueInputBuffer";
-      input_data.completion_cb.Run(DecodeStatus::DECODE_ERROR);
+      client_->OnInputDataQueued(false);
       // Transition to the error state after running the completion cb, to keep
       // it in order if the client chooses to flush its queue.
       SetState(STATE_ERROR);
@@ -227,15 +225,16 @@ void MediaCodecLoop::EnqueueInputBuffer(const InputBuffer& input_buffer) {
       // guarantee that the pointer will remain valid after we return anyway.
       pending_input_buf_data_.memory = nullptr;
       SetState(STATE_WAITING_FOR_KEY);
+      // Do not call OnInputDataQueued yet.
       break;
 
     case MEDIA_CODEC_OK:
-      input_data.completion_cb.Run(DecodeStatus::OK);
+      client_->OnInputDataQueued(true);
       break;
 
     default:
       NOTREACHED() << "Unknown Queue(Secure)InputBuffer status " << status;
-      input_data.completion_cb.Run(DecodeStatus::DECODE_ERROR);
+      client_->OnInputDataQueued(false);
       SetState(STATE_ERROR);
       break;
   }
@@ -276,11 +275,6 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
         DCHECK(media_codec_);
 
         media_codec_->ReleaseOutputBuffer(out.index, false);
-
-        // Run the EOS completion callback now, since we deferred it until
-        // the EOS was completely processed.
-        pending_eos_completion_cb_.Run(DecodeStatus::OK);
-        pending_eos_completion_cb_ = DecodeCB();
 
         client_->OnDecodedEos(out);
       } else {
