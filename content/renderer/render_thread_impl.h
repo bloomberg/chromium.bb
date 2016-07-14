@@ -79,10 +79,6 @@ class AudioHardwareConfig;
 class GpuVideoAcceleratorFactories;
 }
 
-namespace memory_coordinator {
-class ChildMemoryCoordinatorImpl;
-}
-
 namespace scheduler {
 class WebThreadBase;
 }
@@ -647,8 +643,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   std::unique_ptr<MemoryObserver> memory_observer_;
-  std::unique_ptr<memory_coordinator::ChildMemoryCoordinatorImpl>
-      memory_coordinator_;
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;
