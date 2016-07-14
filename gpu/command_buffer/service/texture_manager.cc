@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bits.h"
+#include "base/format_macros.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -3068,9 +3069,9 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   if (size == 0)
     return;
 
-  std::string dump_name =
-      base::StringPrintf("gpu/gl/textures/client_%d/texture_%d",
-                         memory_tracker_->ClientId(), ref->client_id());
+  std::string dump_name = base::StringPrintf(
+      "gpu/gl/textures/share_group_%" PRIu64 "/texture_%d",
+      memory_tracker_->ShareGroupTracingGUID(), ref->client_id());
 
   base::trace_event::MemoryAllocatorDump* dump =
       pmd->CreateAllocatorDump(dump_name);

@@ -34,12 +34,6 @@ def GetSystemHealthBenchmarksToSmokeTest():
 _DISABLED_TESTS = frozenset({
   # crbug.com/624474
   'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_desktop.load:tools:dropbox',  # pylint: disable=line-too-long
-  # crbug.com/624701
-  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.load:games:bubbles',  # pylint: disable=line-too-long
-  # crbug.com/624840
-  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.load:tools:drive',  # pylint: disable=line-too-long
-  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.load:tools:gmail',  # pylint: disable=line-too-long
-  'benchmarks.system_health_smoke_test.SystemHealthBenchmarkSmokeTest.system_health.memory_mobile.load:tools:dropbox',  # pylint: disable=line-too-long
 })
 
 

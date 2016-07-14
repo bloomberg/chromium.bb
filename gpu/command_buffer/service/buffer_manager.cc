@@ -8,6 +8,7 @@
 
 #include <limits>
 
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -638,21 +639,23 @@ void BufferManager::SetPrimitiveRestartFixedIndexIfNecessary(GLenum type) {
 
 bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                  base::trace_event::ProcessMemoryDump* pmd) {
-  const int client_id = memory_tracker_->ClientId();
+  const uint64_t share_group_tracing_guid =
+      memory_tracker_->ShareGroupTracingGUID();
   for (const auto& buffer_entry : buffers_) {
     const auto& client_buffer_id = buffer_entry.first;
     const auto& buffer = buffer_entry.second;
 
-    std::string dump_name = base::StringPrintf(
-        "gpu/gl/buffers/client_%d/buffer_%d", client_id, client_buffer_id);
+    std::string dump_name =
+        base::StringPrintf("gpu/gl/buffers/share_group_%" PRIu64 "/buffer_%d",
+                           share_group_tracing_guid, client_buffer_id);
     base::trace_event::MemoryAllocatorDump* dump =
         pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     static_cast<uint64_t>(buffer->size()));
 
-    auto guid = gl::GetGLBufferGUIDForTracing(
-        memory_tracker_->ShareGroupTracingGUID(), client_buffer_id);
+    auto guid = gl::GetGLBufferGUIDForTracing(share_group_tracing_guid,
+                                              client_buffer_id);
     pmd->CreateSharedGlobalAllocatorDump(guid);
     pmd->AddOwnershipEdge(dump->guid(), guid);
   }
