@@ -208,14 +208,6 @@ char *EXPORT_CALL lou_setDataPath(const char *path);
  * Get the path set in the previous function. */
 char *EXPORT_CALL lou_getDataPath();
 
-typedef void (*logcallback)(int level, const char *message);
-
-/**
- * Register logging callbacks
- * Set to NULL for default callback.
- */
-void EXPORT_CALL lou_registerLogCallback(logcallback callback);
-
 typedef enum {
   LOG_ALL = 0,
   LOG_DEBUG = 10000,
@@ -225,6 +217,14 @@ typedef enum {
   LOG_FATAL = 50000,
   LOG_OFF = 60000
 } logLevels;
+
+typedef void (*logcallback)(logLevels level, const char *message);
+
+/**
+ * Register logging callbacks
+ * Set to NULL for default callback.
+ */
+void EXPORT_CALL lou_registerLogCallback(logcallback callback);
 
 /**
  * Set the level for logging callback to be called at
