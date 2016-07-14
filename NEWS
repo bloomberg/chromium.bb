@@ -1,19 +1,26 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 3.0.0.alpha1 (2016-06-17)
-This is the biggest release of liblouis in years. In order to support
-UEB the internals of liblouis have seen a major rewrite. New Opcodes
-have been added to support the requirements for proper UEB for example
-for emphasis handling or to handle proper translation of numbers.
-Changes to the opcodes are described in the documentation.
+* Noteworthy changes in release 3.0.0 (2016-07-14)
+This is the biggest release of liblouis in years. The major news are
+that we now have proper support for UEB and secondly that liblouis is
+now licensed under [[https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html][LGPLv2.1+]].
 
-Some of these changes are not backwards compatible. All tables that
-come with liblouis have been migrated. If you have private tables look
-at the section on upgrading from previous versions in the [[https://github.com/liblouis/liblouis/wiki/Emphasis-Opcodes#upgrade-from-previous-versions][wiki]].
+In order to support UEB the internals of liblouis have seen a major
+rewrite. New Opcodes have been added to support the requirements for
+proper UEB for example for emphasis handling or to handle proper
+translation of numbers. Changes to the opcodes are described in the
+documentation. Some of these changes are not backwards compatible. All
+tables that come with liblouis have been migrated. If you have private
+tables look at the section on upgrading from previous versions in the
+[[https://github.com/liblouis/liblouis/wiki/Emphasis-Opcodes#upgrade-from-previous-versions][wiki]].
 
 This release also changes the C API. External applications will have
 to adapt the way they call liblouis. In particular the typeform
 parameter has changed.
+
+The license of the library and most of the tables has been changed to
+LGPLv2.1. For a detailed list which tables are still in the process of
+migrating the license refer to the [[https://github.com/liblouis/liblouis/wiki/Licensing-of-liblouis-tables][wiki page about the license change]].
 
 ** New features
 - Numerous features to support UEB properly. Thanks to Mike Gray,
@@ -22,13 +29,18 @@ parameter has changed.
   - support the many emphasis classes needed for UEB.
   - support translation of numbers according to the rules of UEB.
   - Capitalization is now handled just like emphasis.
-- UTF-8 support for lou_trace thanks to Christian Egli.
+  - support for numeric mode
+- UTF-8 support for all tools thanks to Christian Egli.
 - The YAML tests now allow for an optional test description. See the
   documentation for more details.
+- Add ~lou_checkTable~ and ~lou_getTypeformForEmphClass~ to the C API
+  and to the Python bindings
 ** Bug fixes
 - Stop buffer overrun in lou_getProgramPath, and also free memory
   after usage. Thanks to Michael Curran.
 ** Other changes
+- The license of the library and most of the tables has been changed
+  to [[https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html][LGPLv2.1+]].
 - Improvements to the test suite:
   - Output is printed to stderr. This helps with locating errors when
     testing with the YAML test suite.
