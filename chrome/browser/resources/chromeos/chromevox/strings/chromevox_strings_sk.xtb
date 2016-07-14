@@ -388,7 +388,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4842108708071771135">Žiadny ďalší prvok blockquote</translation>
 <translation id="4848993367330139335">časovač</translation>
 <translation id="4850023505158945298">Predchádzajúci podobný prvok</translation>
-<translation id="485011152882364255">Na čítačke ChromeVox Next slúži kláves Hľadať ako kláves modifikátora. Väčšina skratiek čítačky ChromeVox začína klávesom Hľadať. Na navigáciu budete tiež používať klávesy so šípkami.</translation>
+<translation id="485011152882364255">Na čítačke ChromeVox Next slúži kláves Hľadať ako kláves modifikátora. Väčšina skratiek čítačky ChromeVox sa začína klávesom Hľadať. Na navigáciu budete tiež používať klávesy so šípkami.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Povoliť zapisovanie do denníka TTS</translation>
 <translation id="4877261390094455813">Zadajte vyhľadávací dopyt</translation>
@@ -518,7 +518,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="5876817486144482042">Znížiť hlasitosť reči</translation>
 <translation id="5887397643266327462">Titulky v Braillovom písme sú zapnuté</translation>
 <translation id="5891934789323004067">Tabuľka</translation>
-<translation id="5919442531159595654">kopírovať</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{znak rovnosti}few{# znaky rovnosti}many{# equal signs}other{# znakov rovnosti}}</translation>
 <translation id="5939518447894949180">Obnoviť</translation>
 <translation id="5948123859135882163">Prepnúť medzi štrukturálnou a sémantickou interpretáciou matematických výrazov</translation>
@@ -653,7 +652,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7532613204005497612">jún</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, posúvač</translation>
 <translation id="7552432549459840808">Užitočné skratky Chromu</translation>
-<translation id="7586163296341959563">prilepiť</translation>
 <translation id="7596919493010894443">výber bol vymazaný</translation>
 <translation id="7604026522577407655">Prejsť na začiatok aktuálneho stĺpca</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="817440585505441544">{COUNT,plural, =1{podčiarkovník}few{# podčiarkovníky}many{# underscores}other{# podčiarkovníkov}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">prepnutie na celú obrazovku</translation>
-<translation id="81960742267269908">vystrihnúť</translation>
 <translation id="8199231515320852133">Oznámiť hlavičky aktuálnej bunky</translation>
 <translation id="820417203470636242">Prázdna bunka</translation>
 <translation id="8215202828671303819">Hromadný výber</translation>

@@ -172,7 +172,6 @@
 <translation id="2913331724188855103">سایت‌ها مجاز به ذخیره و خواندن داده‌های کوکی باشند (توصیه می‌شود)</translation>
 <translation id="2932150158123903946">‏فضای ذخیره‌سازی Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" /> این حساب را مدیریت می‌کنند.</translation>
-<translation id="2959609938957585241">‏برای دسترسی به برگه‌هایتان در دستگاه‌های دیگر، «همگام‌سازی خودکار داده‌ها» را در تنظیمات حساب Android روشن کنید.</translation>
 <translation id="2960796085439532066">‏حق نسخه‌برداری ‪<ph name="YEAR" /> Google Inc.‬. کلیه حقوق محفوظ است.</translation>
 <translation id="2968755619301702150">بیننده گواهی</translation>
 <translation id="2979025552038692506">برگه ناشناس انتخاب‌شده</translation>
@@ -415,7 +414,6 @@
 <translation id="5765780083710877561">توضیح:</translation>
 <translation id="5771382037724542929">آیا می‌خواهید <ph name="FILE_NAME" /> موجود در <ph name="DIRECTORY_NAME" /> را جایگرین کنید؟</translation>
 <translation id="5777170031995031090">‏نحوه استفاده Google را از سابقه مرورتان برای شخصی‌سازی جستجو، آگهی‌ها و سایر سرویس‌های Google کنترل کنید.</translation>
-<translation id="579919059055796498">پاک کردن فضای ذخیره سایت</translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="5817918615728894473">مرتبط‌سازی</translation>
@@ -553,7 +551,6 @@
 <translation id="7301833672208172928">روشن کردن همگام‌سازی سابقه</translation>
 <translation id="7327835590071894791">اکنون برگه‌تان در پس‌زمینه قرار دارد.</translation>
 <translation id="7347770551817603360">محتوای آفلاین</translation>
-<translation id="7358452246665489050">درحال محاسبه...</translation>
 <translation id="7363354739009474003">در حال بارگیری «<ph name="VIDEO_TITLE" />»</translation>
 <translation id="7366340029385295517">درحال فرستادن به <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">نوع:</translation>

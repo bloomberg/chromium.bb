@@ -506,7 +506,7 @@
 <translation id="268577405881275241">Activează funcția proxy de comprimare a datelor</translation>
 <translation id="2692168654831544772">Dezactivează capturile de ecran.
 
-      Dacă este activată, capturile de ecran nu pot fi făcute folosind comenzile rapide de la tastatură sau API-urile extensiei.
+      Dacă este activată, capturile de ecran nu pot fi făcute folosind comenzile rapide de la tastatură sau API-urile pentru extensii.
       În plus, captura de ecran este dezactivată pentru aplicațiile ARC.
 
       Dacă este dezactivată sau nu este specificată, capturile de ecran sunt permise.</translation>
@@ -901,11 +901,6 @@
 <translation id="3864818549971490907">Setare prestabilită pentru pluginuri</translation>
 <translation id="3866249974567520381">Descriere</translation>
 <translation id="3866530186104388232">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va afișa utilizatorii existenți pe ecranul de conectare și va permite alegerea unuia. Dacă această politică nu este configurată, <ph name="PRODUCT_OS_NAME" /> va utiliza pentru conectare un ecran pentru nume de utilizator/parolă.</translation>
-<translation id="3866824067696705379">Frecvența de trimitere a semnalelor de monitorizare, în milisecunde.
-
-      Dacă această politică nu este configurată, frecvența prestabilită este de 3 minute. Frecvența
-      maximă este de 30 de secunde, iar cea minimă este de 24 de ore. Valorile
-      care nu se află în acest interval vor fi fixate în acesta.</translation>
 <translation id="3868347814555911633">Această politică este activă numai în modul Vânzare.
 
       Politica indică extensiile instalate automat pentru utilizatorul demonstrativ, pentru dispozitivele în modul Vânzare. Aceste extensii sunt salvate pe dispozitiv și pot fi instalate offline, după instalare.
@@ -1106,7 +1101,6 @@
 
           Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> nu va delega datele de conectare ale utilizatorului, chiar dacă detectează un server ca fiind în intranet.</translation>
 <translation id="4752880493649142945">Certificat de client pentru conectarea la RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Frecvența semnalelor de monitorizare</translation>
 <translation id="4791031774429044540">Activați funcția de accesibilitate pentru cursorul mare.
 
           Dacă această politică este activată, cursorul mare va fi întotdeauna activat.
@@ -1835,7 +1829,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7511361072385293666">Dacă această politică este activată sau nu este configurată, este permisă folosirea protocolului QUIC în <ph name="PRODUCT_NAME" />.
       Dacă această politică este dezactivată, nu este permisă folosirea protocolului QUIC.</translation>
 <translation id="7519251620064708155">Permite generarea cheilor pe aceste site-uri</translation>
-<translation id="7523476810162382273">Trimite semnale de monitorizare serverului de gestionare</translation>
 <translation id="7529100000224450960">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7529144158022474049">Factor de difuzare pentru actualizări automate</translation>
 <translation id="7553535237300701827">Când această politică este configurată, fluxul de autentificare la conectare va fi unul dintre următoarele, în funcție de valoarea setării:
@@ -1897,6 +1890,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 
           Dacă această setare este dezactivată sau neconfigurată, atunci autentificarea cu doi factori nu va fi activată și se va aplica setarea prestabilită, folosind un PIN definit de utilizator.</translation>
 <translation id="7750991880413385988">Deschideți pagina Filă nouă</translation>
+<translation id="7761446981238915769">Configurează lista cu aplicațiile instalate pe ecranul de conectare</translation>
 <translation id="7761526206824804472">Setează una sau mai multe limbi recomandate pentru o sesiune publică, astfel încât utilizatorii să poată alege cu ușurință una dintre limbile respective.
 
       Utilizatorul poate să aleagă o limbă și un aranjament al tastaturii înainte de a începe o sesiune publică. În mod prestabilit, toate limbile acceptate de <ph name="PRODUCT_OS_NAME" /> sunt afișate în ordine alfabetică. Poți să folosești această politică pentru a muta un set de limbi recomandate în partea de sus a listei.
@@ -2283,6 +2277,28 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8858642179038618439">Forțează Modul sigur pe YouTube</translation>
 <translation id="8864975621965365890">Elimină solicitarea de refuzare care apare atunci când un site web este redat de <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Pagina de pornire</translation>
+<translation id="88890388118515381">
+      Specifică o listă cu aplicații care sunt instalate în fundal pe ecranul de conectare,
+      fără intervenția utilizatorului și care nu pot fi dezinstalate.
+      Toate permisiunile solicitate de aplicații sunt acordate
+      implicit, fără intervenția utilizatorului, inclusiv orice
+      permisiune suplimentară solicitată de versiunile ulterioare ale aplicațiilor.
+
+      Dacă o aplicație care a fost instalată forțat anterior este eliminată din
+      această listă, aplicația este dezinstalată automat de <ph name="PRODUCT_NAME" />.
+
+      Fiecare element din lista politicii este un șir care include un ID al extensiei
+      și o adresă URL pentru „actualizare”, separat prin punct și virgulă (<ph name="SEMICOLON" />). ID-ul extensiei este șirul alcătuit din 32 de litere
+      aflat, de exemplu, la <ph name="CHROME_EXTENSIONS_LINK" /> când te afli
+      în modul pentru dezvoltatori. Adresa URL pentru „actualizare” trebuie să trimită la
+      un document XML cu manifestul de actualizare, conform descrierii de la <ph name="LINK_TO_EXTENSION_DOC1" />. Reține
+      că adresa URL pentru „actualizare” setată în această politică este folosită numai pentru
+      instalarea inițială. Actualizările ulterioare ale extensiei vor folosi adresa URL
+      pentru actualizare indicată în manifestul extensiei.
+
+      De exemplu, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      instalează aplicația <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> de la adresa URL standard de „actualizare” din Magazinul web Chrome.
+      Pentru mai multe informații despre găzduirea extensiilor, accesează: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server oferă fișiere de configurare specifice hardware-ului, cum ar fi
       profiluri de afișare ICC pentru ajustarea calibrării monitorului.
 
@@ -2336,11 +2352,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="9088444059179765143">Configurează metoda de detectare automată a fusului orar</translation>
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>
 <translation id="9098553063150791878">Politici pentru autentificarea HTTP</translation>
-<translation id="9104138886225968319">Trimite semnale de monitorizare către serverul de gestionare, pentru a permite
-      serverului să detecteze dacă dispozitivul este offline.
-
-      Dacă această politică este activată, semnalele de monitorizare vor fi trimise. Dacă 
-      este dezactivată sau nu este configurată, nu va fi trimis niciun semnal de monitorizare.</translation>
 <translation id="9112897538922695510">Vă permite să înregistrați o listă de handlere de protocol. Aceasta poate fi doar o politică recomandată. Valoarea proprietății |protocol| trebuie setată la o schemă ca „mailto”, iar valoarea proprietății |url| trebuie setată la șablonul adresei URL al aplicației care gestionează schema. Șablonul poate include „%s”, care, dacă este prezent, va fi înlocuit cu adresa URL gestionată.
 
           Handlerele de protocol înregistrate de politică sunt combinate cu cele înregistrate de utilizator și ambele sunt disponibile pentru a fi utilizate. Utilizatorul poate înlocui handlerele de protocol instalate de politică instalând un nou handler prestabilit, dar nu poate elimina un handler de protocol înregistrat de politică.</translation>

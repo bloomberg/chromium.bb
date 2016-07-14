@@ -6,7 +6,7 @@
 <translation id="1023866615269196768">ಸ್ಪ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1025074108959230262">ಸ್ಟಿಕಿ ಮೋಡ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1031961866430398710">ನಂತರ</translation>
-<translation id="1038795173450935438">ಪುಟದಲ್ಲಿ ಐಟಂಗಳ ನಡುವೆ ಮುಂದಕ್ಕೆ ಚಲಿಸಲು, ಹುಡುಕಾಟ + ಬಲ ಬಾಣ ಒತ್ತಿ ಅಥವಾ ಮರಳಿ ಬರಲು ಹುಡುಕಾಟ + ಎಡ ಬಾಣ ಒತ್ತಿರಿ. ಮುಂದಿನ ಸಾಲಿಗೆ ಹೋಗಲು, ಹುಡುಕಾಟ + ಕೆಳಗಿನ ಬಾಣವನ್ನು ಒತ್ತಿ. ಹಿಂದಿನ ಸಾಲಿಗೆ ಹೋಗಲು, ಹುಡುಕಾಟ + ಮೇಲಿನ ಬಾಣ ಒತ್ತಿ. ನೀವು ಕ್ಲಿಕ್ ಮಾಡಲು ಬಯಸುವ ಐಟಂಗೆ ನೀವು ತಲುಪಿದರೆ, ಹುಡುಕಾಟ + ಸ್ಪೇಸ್ ಒತ್ತಿ.</translation>
+<translation id="1038795173450935438">ಪುಟದಲ್ಲಿ ಐಟಂಗಳ ನಡುವೆ ಮುಂದಕ್ಕೆ ಚಲಿಸಲು, ಹುಡುಕಾಟ + ಬಲಗಡೆ ಬಾಣ ಅಥವಾ ಮರಳಿ ಬರಲು ಹುಡುಕಾಟ + ಎಡಗಡೆ ಬಾಣ ಒತ್ತಿರಿ. ಮುಂದಿನ ಸಾಲಿಗೆ ಹೋಗಲು, ಹುಡುಕಾಟ + ಕೆಳಗಿನ ಬಾಣವನ್ನು ಒತ್ತಿ. ಹಿಂದಿನ ಸಾಲಿಗೆ ಹೋಗಲು, ಹುಡುಕಾಟ + ಮೇಲಿನ ಬಾಣ ಒತ್ತಿ. ನೀವು ಕ್ಲಿಕ್ ಮಾಡಲು ಬಯಸುವ ಐಟಂಗೆ ನೀವು ತಲುಪಿದರೆ, ಹುಡುಕಾಟ + ಸ್ಪೇಸ್ ಒತ್ತಿ.</translation>
 <translation id="1044777062731150180">ಯಾವುದೇ ಶಿರೋನಾಮೆಗಳಿಲ್ಲ</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">ಅಮಾನ್ಯ ಇನ್‌ಪುಟ್</translation>
@@ -316,7 +316,7 @@
 <translation id="4047216625641135770">ಗುರುತು</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
-<translation id="4065205963140826639">ಮುಂದೆ ಬಟನ್ ಹುಡುಕುವುದಕ್ಕಾಗಿ ಇದೀಗ ಹುಡುಕಾಟ + ಬಲ ಬಾಣ ಬಳಸಲು ಪ್ರಯತ್ನಿಸಿ, ನಂತರ ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಹುಡುಕಾಟ + ಸ್ಪೇಸ್ ಒತ್ತಿ.</translation>
+<translation id="4065205963140826639">ಮುಂದೆ ಬಟನ್ ಹುಡುಕುವುದಕ್ಕಾಗಿ ಇದೀಗ ಹುಡುಕಾಟ + ಬಲಗಡೆ ಬಾಣ ಬಳಸಲು ಪ್ರಯತ್ನಿಸಿ, ನಂತರ ಅದನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಹುಡುಕಾಟ + ಸ್ಪೇಸ್ ಒತ್ತಿ.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ಟಿಲ್ಡ್‌}one{# ಟಿಲ್ಡ್‌ಗಳು}other{# ಟಿಲ್ಡ್‌ಗಳು}}</translation>
 <translation id="409334809956508737">ಹಿಂದಿನ ವಿಷಯ</translation>
 <translation id="4099274309791143834">ಉಪಮೆನುವಿನೊಂದಿಗೆ</translation>
@@ -518,7 +518,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="5876817486144482042">ಧ್ವನಿಯ ವಾಲ್ಯೂಮ್ ಕಡಿಮೆ ಮಾಡಿ</translation>
 <translation id="5887397643266327462">ಬ್ರೈಲಿ ಶೀರ್ಷಿಕೆಗಳು ಸಕ್ರಿಯವಾಗಿವೆ.</translation>
 <translation id="5891934789323004067">ಕೋಷ್ಠಕ</translation>
-<translation id="5919442531159595654">ನಕಲು ಮಾಡಿ.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{ಸಮ}one{# ಸಮ ಚಿಹ್ನೆಗಳು}other{# ಸಮ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5939518447894949180">ಮರುಹೊಂದಿಸು</translation>
 <translation id="5948123859135882163">ರಚನಾತ್ಮಕ ಮತ್ತು ಶಬ್ದಾರ್ಥದ ನಡುವಿನ ಗಣಿತದ ಅಭಿವ್ಯಕ್ತಿಗಳ ವ್ಯಾಖ್ಯಾನವನ್ನು ಬದಲಾಯಿಸಿ</translation>
@@ -653,7 +652,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="7532613204005497612">ಜೂನ್</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, ಸ್ಲೈಡರ್</translation>
 <translation id="7552432549459840808">ಉಪಯುಕ್ತ Chrome ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
-<translation id="7586163296341959563">ಅಂಟಿಸು.</translation>
 <translation id="7596919493010894443">ಆಯ್ಕೆ ತೆರವುಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7604026522577407655">ಪ್ರಸ್ತುತ ಕಾಲಮ್‌ನ ಆರಂಭಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="817440585505441544">{COUNT,plural, =1{ಅಡಿಗೆರೆ}one{# ಅಡಿಗೆರೆಗಳು}other{# ಅಡಿಗೆರೆಗಳು}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">ಪೂರ್ಣ ಪರದೆಯನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
-<translation id="81960742267269908">ಕತ್ತರಿಸಿ.</translation>
 <translation id="8199231515320852133">ಪ್ರಸ್ತುತ ಸೆಲ್‌ನ ಶಿರೋನಾಮೆಗಳನ್ನು ಪ್ರಕಟಿಸಿ</translation>
 <translation id="820417203470636242">ಕೋಶವನ್ನು ಖಾಲಿಗೊಳಿಸಿ.</translation>
 <translation id="8215202828671303819">ಬಹು ಆಯ್ಕೆ</translation>

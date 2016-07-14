@@ -119,7 +119,7 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 
 <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="2343328333327081434">Installazione…</translation>
-<translation id="2346253980530904022">I server di Google ottimizzeranno le pagine che visiti, ad eccezione  di quelle con protocollo HTTPS e di quelle aperte con la modalità di navigazione in incognito.</translation>
+<translation id="2346253980530904022">I server di Google ottimizzeranno le pagine che visiti, ad eccezione di quelle con protocollo HTTPS e di quelle aperte con la modalità di navigazione in incognito.</translation>
 <translation id="2349710944427398404">Dati totali utilizzati da Chrome, tra cui account, preferiti e impostazioni salvate</translation>
 <translation id="2351097562818989364">Le impostazioni di traduzione sono state reimpostate.</translation>
 <translation id="2359808026110333948">Continua</translation>
@@ -172,7 +172,6 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="2913331724188855103">Consenti ai siti di salvare e leggere i dati dei cookie (opzione consigliata)</translation>
 <translation id="2932150158123903946">Spazio di archiviazione di Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Questo account è gestito da <ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" /></translation>
-<translation id="2959609938957585241">Attiva la funzione "Sincronizzazione automatica dei dati" nelle impostazioni dell'account Android per trovare le tue schede sugli altri tuoi dispositivi.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2968755619301702150">Visualizzatore certificati</translation>
 <translation id="2979025552038692506">Scheda in incognito selezionata</translation>
@@ -416,7 +415,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5771382037724542929">Vuoi sostituire il file <ph name="FILE_NAME" /> esistente in <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5777170031995031090">Controlla il modo in cui Google utilizza la tua cronologia di navigazione per personalizzare la Ricerca, gli annunci e altri servizi Google.</translation>
-<translation id="579919059055796498">Cancellazione memoria usata da siti…</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# ora fa}other{# ore fa}}</translation>
 <translation id="5817918615728894473">Accoppia</translation>
@@ -554,7 +552,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7301833672208172928">Attiva sincronizzazione della cronologia</translation>
 <translation id="7327835590071894791">La scheda è ora in secondo piano.</translation>
 <translation id="7347770551817603360">Contenuto offline</translation>
-<translation id="7358452246665489050">Elaborazione...</translation>
 <translation id="7363354739009474003">Caricamento di "<ph name="VIDEO_TITLE" />" in corso</translation>
 <translation id="7366340029385295517">Trasmissione su <ph name="SCREEN_NAME" /> in corso</translation>
 <translation id="7375125077091615385">Tipo:</translation>

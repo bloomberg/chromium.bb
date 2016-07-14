@@ -518,7 +518,6 @@
 <translation id="5876817486144482042">Зменшити гучність мовлення</translation>
 <translation id="5887397643266327462">Брайлівські субтитри ввімкнено.</translation>
 <translation id="5891934789323004067">Таблиця</translation>
-<translation id="5919442531159595654">копіювати.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак рівності}one{# знак рівності}few{# знаки рівності}many{# знаків рівності}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5948123859135882163">Переключення між структурним і семантичним аналізом математичних виразів</translation>
@@ -653,7 +652,6 @@
 <translation id="7532613204005497612">червень</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, повзунок</translation>
 <translation id="7552432549459840808">Корисні комбінації клавіш у Chrome</translation>
-<translation id="7586163296341959563">вставити.</translation>
 <translation id="7596919493010894443">виділення очищено</translation>
 <translation id="7604026522577407655">Перейти на початок поточного стовпця</translation>
 <translation id="7604451927827590395">заголовок</translation>
@@ -705,7 +703,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{підкреслення}one{# підкреслення}few{# підкреслення}many{# підкреслень}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">увімкнути або вимкнути повноекранний режим</translation>
-<translation id="81960742267269908">вирізати.</translation>
 <translation id="8199231515320852133">Повідомити заголовки поточної клітинки</translation>
 <translation id="820417203470636242">Порожня клітинка.</translation>
 <translation id="8215202828671303819">Вибір кількох елементів</translation>

@@ -6,7 +6,7 @@
 <translation id="1023866615269196768">Cellule fractionnée</translation>
 <translation id="1025074108959230262">Mode permanent désactivé</translation>
 <translation id="1031961866430398710">puis</translation>
-<translation id="1038795173450935438">Pour passer à l'élément suivant sur une page, appuyez sur la touche de recherche + la flèche vers la droite, et pour revenir directement à l'élément précédent, appuyez sur la touche de recherche + la flèche vers la gauche. Pour passer à la ligne suivante, appuyez sur la touche de recherche + la flèche vers le bas, et pour revenir à la ligne précédente, appuyez sur la touche de recherche + la flèche vers le haut. Si vous atteignez un élément à sélectionner, appuyez sur la touche de recherche + la barre d'espace.</translation>
+<translation id="1038795173450935438">Pour passer à l'élément suivant sur une page, appuyez sur la touche de recherche + la flèche vers la droite, et pour revenir directement à l'élément précédent, appuyez sur la touche de recherche + la flèche vers la gauche. Pour passer à la ligne suivante, appuyez sur la touche de recherche + la flèche vers le bas, et pour revenir à la ligne précédente, appuyez sur la touche de recherche + la flèche vers le haut. Si vous atteignez un élément sur lequel vous souhaitez cliquer, appuyez sur la touche de recherche + la barre d'espace.</translation>
 <translation id="1044777062731150180">Aucun en-tête</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Données incorrectes</translation>
@@ -44,7 +44,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, zone de texte du mot de passe</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1474557363159888097">Aucun ancrage précédent</translation>
-<translation id="1487494366197411587">Sur un Chromebook, la touche de recherche se trouve immédiatement au-dessus de la touche Maj.</translation>
+<translation id="1487494366197411587">Sur un Chromebook, la touche de recherche se trouve juste au-dessus de la touche Maj.</translation>
 <translation id="1499041187027566160">augmenter le volume</translation>
 <translation id="1502086903961450562">Élément graphique précédent</translation>
 <translation id="1506187449813838456">Augmenter le timbre de la voix</translation>
@@ -151,7 +151,7 @@
 <translation id="2777845298774924149">Fermé</translation>
 <translation id="2800204403141299078">Aucun autre élément différent</translation>
 <translation id="2800780099804980316">Aucun titre de niveau 1 précédent</translation>
-<translation id="2811019999044652585">Pour accéder directement à d'autres parties de l'écran, comme les barres d'outils ou la barre d'état système, appuyez sur Ctrl+Suivant. Sur un Chromebook, la touche d'avance rapide se trouve immédiatement au-dessus de la touche numérotée 2.</translation>
+<translation id="2811019999044652585">Pour accéder directement à d'autres parties de l'écran, comme les barres d'outils ou la barre d'état système, appuyez sur Ctrl+touche d'avance rapide. Sur un Chromebook, la touche d'avance rapide se trouve immédiatement au-dessus de la touche numérotée 2.</translation>
 <translation id="2811204574343810641">Ligne</translation>
 <translation id="2816654101880605877">Aucun curseur suivant</translation>
 <translation id="2841013758207633010">Heure</translation>
@@ -518,7 +518,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="5876817486144482042">Diminuer le volume de la voix</translation>
 <translation id="5887397643266327462">Sous-titres braille activés</translation>
 <translation id="5891934789323004067">Tableau</translation>
-<translation id="5919442531159595654">copier</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{signe égal}one{# signe égal}other{# signes égal}}</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="5948123859135882163">Passer de l'interprétation structurelle à l'interprétation sémantique des expressions mathématiques et vice versa</translation>
@@ -653,7 +652,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="7532613204005497612">Juin</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, curseur</translation>
 <translation id="7552432549459840808">Raccourcis Chrome utiles</translation>
-<translation id="7586163296341959563">coller</translation>
 <translation id="7596919493010894443">sélection effacée</translation>
 <translation id="7604026522577407655">Accéder au début de la colonne actuelle</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{trait de soulignement}one{# trait de soulignement}other{# traits de soulignement}}</translation>
 <translation id="8179976553408161302">Entrée</translation>
 <translation id="8186185314313222077">activer/désactiver le mode plein écran</translation>
-<translation id="81960742267269908">couper</translation>
 <translation id="8199231515320852133">Énoncer les en-têtes de la cellule actuelle</translation>
 <translation id="820417203470636242">Cellule vide</translation>
 <translation id="8215202828671303819">Sélection multiple</translation>

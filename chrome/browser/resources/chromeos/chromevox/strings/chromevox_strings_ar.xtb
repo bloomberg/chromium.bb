@@ -518,7 +518,6 @@
 <translation id="5876817486144482042">خفض مستوى صوت النطق</translation>
 <translation id="5887397643266327462">تم تمكين تسميات برايل التوضيحية.</translation>
 <translation id="5891934789323004067">جدول</translation>
-<translation id="5919442531159595654">نسخ.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{علامة تساوي واحدة}zero{# equal signs}two{علامتا تساوي (#)}few{# علامات تساوي}many{# علامة تساوي}other{# من علامات التساوي}}</translation>
 <translation id="5939518447894949180">إعادة</translation>
 <translation id="5948123859135882163">تبديل تفسير مصطلحات الرياضيات بين البنيوية والدلالية</translation>
@@ -653,7 +652,6 @@
 <translation id="7532613204005497612">حزيران (يونيو)</translation>
 <translation id="7540083713905917247">شريط التمرير <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="7552432549459840808">‏اختصارات Chrome المفيدة</translation>
-<translation id="7586163296341959563">لصق.</translation>
 <translation id="7596919493010894443">تم مسح التحديد</translation>
 <translation id="7604026522577407655">الانتقال إلى بداية العمود الحالي</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{شرطة سفلية واحدة}zero{# underscores}two{شرطتان سفليتان (#)}few{# شرطات سفلية}many{# شرطة سفلية}other{# من الشرطات السفلية}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">تبديل وضع ملء الشاشة</translation>
-<translation id="81960742267269908">قص.</translation>
 <translation id="8199231515320852133">الإعلان عن عناوين الخلية الحالية</translation>
 <translation id="820417203470636242">خلية فارغة.</translation>
 <translation id="8215202828671303819">تحديد متعدد</translation>

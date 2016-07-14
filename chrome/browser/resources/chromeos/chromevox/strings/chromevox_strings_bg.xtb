@@ -518,7 +518,6 @@
 <translation id="5876817486144482042">Намаляване на силата на звука на говора</translation>
 <translation id="5887397643266327462">Брайловите надписи са активирани.</translation>
 <translation id="5891934789323004067">Таблица</translation>
-<translation id="5919442531159595654">копиране.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак за равенство}other{# знака за равенство}}</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="5948123859135882163">Превключвайте между структурно и семантично интерпретиране на математическите изрази</translation>
@@ -653,7 +652,6 @@
 <translation id="7532613204005497612">юни</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, „<ph name="NAME" />“, плъзгач</translation>
 <translation id="7552432549459840808">Полезни клавишни комбинации в Chrome</translation>
-<translation id="7586163296341959563">поставяне.</translation>
 <translation id="7596919493010894443">открояването е изчистено</translation>
 <translation id="7604026522577407655">Към началото на текущата графа</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{долна черта}other{# долни черти}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">превключване на режима на цял екран</translation>
-<translation id="81960742267269908">изрязване.</translation>
 <translation id="8199231515320852133">Съобщаване на заглавките за текущата клетка</translation>
 <translation id="820417203470636242">Празна клетка.</translation>
 <translation id="8215202828671303819">Избор на няколко елемента</translation>

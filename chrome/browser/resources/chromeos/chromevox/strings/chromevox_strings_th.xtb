@@ -6,7 +6,7 @@
 <translation id="1023866615269196768">มีการขยาย</translation>
 <translation id="1025074108959230262">ปิดโหมดติดหนึบแล้ว</translation>
 <translation id="1031961866430398710">จากนั้น</translation>
-<translation id="1038795173450935438">หากต้องการเลื่อนไปข้างหน้าระหว่างรายการบนหน้า ให้กด Search + ลูกศรขวา หรือ Search + ลูกศรซ้ายเพื่อข้ามกลับ หากต้องการเลื่อนไปยังบรรทัดถัดไป ให้กด Search + ลูกศรลง หากต้องการกลับไปยังบรรทัดก่อนหน้า ให้ใช้ Search + ลูกศรขึ้น หากคุณมาถึงรายการที่ต้องการคลิก ให้กด Search + Space</translation>
+<translation id="1038795173450935438">หากต้องการเลื่อนไปดูรายการถัดไปภายในหน้าเดียวกัน ให้กด Search + ลูกศรขวา หรือ Search + ลูกศรซ้ายเพื่อข้ามกลับ หากต้องการเลื่อนไปยังบรรทัดถัดไป ให้กด Search + ลูกศรลง หากต้องการกลับไปยังบรรทัดก่อนหน้า ให้ใช้ Search + ลูกศรขึ้น หากคุณมาถึงรายการที่ต้องการคลิก ให้กด Search + Space</translation>
 <translation id="1044777062731150180">ไม่มีส่วนหัว</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">อินพุตไม่ถูกต้อง</translation>
@@ -158,7 +158,7 @@
 <translation id="2843837985843789981">กลุ่มก่อนหน้า</translation>
 <translation id="2844995807198708617">เมนูบริบท</translation>
 <translation id="2849332794118375855">ไม่มีช่องทำเครื่องหมายถัดไป</translation>
-<translation id="2858017024918511904">หากต้องการดูคำสั่งและแป้นพิมพ์ลัดของ ChromeVox ให้กด Search + มหัพภาค และใช้ปุ่มลูกศรนำไปยังเมนู แล้วกด Enter เพื่อเปิดใช้งานคำสั่ง</translation>
+<translation id="2858017024918511904">หากต้องการดูคำสั่งและแป้นพิมพ์ลัดของ ChromeVox ให้กด Search + จุด และใช้ปุ่มลูกศรนำไปยังเมนู แล้วกด Enter เพื่อเปิดใช้งานคำสั่ง</translation>
 <translation id="2864481629947106776">ลิงก์ก่อนหน้านี้</translation>
 <translation id="2873259058405069099">ไปที่ด้านบนของตาราง</translation>
 <translation id="288178314850623291">ใช้คำสั่งข้ามเพื่อข้ามไปยังประเภทองค์ประกอบที่ต้องการ หากต้องการข้ามไปข้างหน้าระหว่างส่วนหัว ให้กด Search + H หรือหากต้องการข้ามย้อนกลับ ให้กด Search + Shift + H</translation>
@@ -199,7 +199,7 @@
 <translation id="3163593631834463955">ส่วนหัวของคอลัมน์ว่างเปล่า</translation>
 <translation id="316542773973815724">การนำทาง</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{ช่องว่าง}other{# ช่องว่าง}}</translation>
-<translation id="3183233191569362040">ยินดีด้วย! คุณได้เรียนรู้ส่วนสำคัญในการใช้ ChromeVox Next (เบต้า) โดยสมบูรณ์แล้ว โปรดทราบว่าคุณสามารถเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อด้วยการกด Search+มหัพภาค หากต้องการเรียนรู้เพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ให้ดูบทความต่อไปนี้ หากคุณดูบทแนะนำเสร็จแล้ว ให้ใช้ ChromeVox ไปยังปุ่ม "ปิด" แล้วคลิก</translation>
+<translation id="3183233191569362040">ยินดีด้วย! คุณได้เรียนรู้ส่วนสำคัญในการใช้ ChromeVox Next (เบต้า) โดยสมบูรณ์แล้ว โปรดทราบว่าคุณสามารถเปิดเมนูคำสั่ง ChromeVox ได้ทุกเมื่อด้วยการกด Search+จุด หากต้องการเรียนรู้เพิ่มเติมเกี่ยวกับ ChromeVox และ Chrome OS ให้ดูบทความต่อไปนี้ หากคุณดูบทแนะนำเสร็จแล้ว ให้ใช้ ChromeVox ไปยังปุ่ม "ปิด" แล้วคลิก</translation>
 <translation id="320961988183078793">ป้อน <ph name="TYPE" /> แล้ว</translation>
 <translation id="3223701887221307104">แท็บ <ph name="NAME" /></translation>
 <translation id="3226035351387556942">chk</translation>
@@ -517,7 +517,6 @@
 <translation id="5876817486144482042">ลดความดังเสียงพูด</translation>
 <translation id="5887397643266327462">เปิดใช้คำบรรยายอักษรเบรลล์แล้ว</translation>
 <translation id="5891934789323004067">ตาราง</translation>
-<translation id="5919442531159595654">คัดลอก</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{เครื่องหมายเท่ากับ}other{# เครื่องหมายเท่ากับ}}</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
 <translation id="5948123859135882163">สลับการตีความสูตรคณิตศาสตร์ระหว่างโครงสร้างและความหมาย</translation>
@@ -652,7 +651,6 @@
 <translation id="7532613204005497612">มิถุนายน</translation>
 <translation id="7540083713905917247">แถบเลื่อน <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="7552432549459840808">แป้นพิมพ์ลัดของ Chrome ที่มีประโยชน์</translation>
-<translation id="7586163296341959563">วาง</translation>
 <translation id="7596919493010894443">ล้างการเลือกแล้ว</translation>
 <translation id="7604026522577407655">ไปที่ด้านบนของคอลัมน์ปัจจุบัน</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -704,7 +702,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{เครื่องหมายขีดล่าง}other{# เครื่องหมายขีดล่าง}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">เปลี่ยนเป็นเต็มหน้าจอ</translation>
-<translation id="81960742267269908">ตัด</translation>
 <translation id="8199231515320852133">แจ้งส่วนหัวของเซลล์ปัจจุบัน</translation>
 <translation id="820417203470636242">เซลล์ว่างเปล่า</translation>
 <translation id="8215202828671303819">เลือกหลายรายการ</translation>

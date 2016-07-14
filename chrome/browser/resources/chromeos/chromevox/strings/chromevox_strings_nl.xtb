@@ -489,12 +489,12 @@ Als je klaar bent met de handleiding, gebruik je ChromeVox om naar de knop Sluit
 <translation id="5683155931978483559">Vorig selectievakje</translation>
 <translation id="5684277895745049190">Lijst</translation>
 <translation id="5684905390246898631">Welkom bij ChromeVox Next</translation>
-<translation id="5695831708991916435">De volgende snelkoppelingen zijn geen ChromeVox-opdrachten, maar wel handig om optimaal gebruik van Chrome te maken.
-Als je vooruit door actiegerichte items, zoals knoppen en links, wilt navigeren, druk je op de Tab-toets. Als je terug wilt navigeren, druk je op Shift + Tab. 
+<translation id="5695831708991916435">De volgende snelkoppelingen zijn geen ChromeVox-opdrachten, maar wel handig om optimaal gebruik te maken van Chrome.
+Als je vooruit door actiegerichte items (zoals knoppen en links) wilt navigeren, druk je op de Tab-toets. Als je terug wilt navigeren, druk je op Shift + Tab. 
 Als je de cursor naar het adresvak van de Chrome-browser (ook wel omnibox genoemd) wilt verplaatsen, druk je op Ctrl + L. 
 Druk op Ctrl + T om automatisch naar een nieuw tabblad te gaan. Je cursor wordt in de omnibox geplaatst. 
 Druk op Ctrl + W om een tabblad te sluiten. 
-Gebruik Ctrl + Tab om vooruit door de geopende tabbladen te bladeren. 
+Gebruik Ctrl + Tab om vooruit door de geopende tabbladen te browsen. 
 Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="5700650669149824506">Geen vorige kop voor niveau 4.</translation>
 <translation id="5703716265115423771">volume omlaag</translation>
@@ -518,7 +518,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="5876817486144482042">Spraakvolume verlagen</translation>
 <translation id="5887397643266327462">Braille-ondertiteling ingeschakeld.</translation>
 <translation id="5891934789323004067">Tabel</translation>
-<translation id="5919442531159595654">kopiëren.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{gelijkteken}other{# gelijktekens}}</translation>
 <translation id="5939518447894949180">Resetten</translation>
 <translation id="5948123859135882163">Interpretatie van wiskundige formules schakelen tussen structureel en semantisch</translation>
@@ -653,7 +652,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="7532613204005497612">juni</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, schuifbalk</translation>
 <translation id="7552432549459840808">Handige Chrome-snelkoppelingen</translation>
-<translation id="7586163296341959563">plakken.</translation>
 <translation id="7596919493010894443">selectie gewist</translation>
 <translation id="7604026522577407655">Naar het begin van de huidige kolom gaan</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">volledig scherm in- of uitschakelen</translation>
-<translation id="81960742267269908">knippen.</translation>
 <translation id="8199231515320852133">De koppen van de huidige cel melden</translation>
 <translation id="820417203470636242">Lege cel.</translation>
 <translation id="8215202828671303819">Meervoudige selectie</translation>

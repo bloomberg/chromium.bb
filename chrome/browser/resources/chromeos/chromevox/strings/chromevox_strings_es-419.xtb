@@ -137,7 +137,7 @@
 <translation id="2644542693584024604">error ortográfico</translation>
 <translation id="2667291555398229137">Hacer clic en el elemento que aparece debajo de una clave de enrutamiento</translation>
 <translation id="267442004702508783">actualizar</translation>
-<translation id="2684412629217766642">Cierra el tutorial de ChromeVox</translation>
+<translation id="2684412629217766642">Cierra el instructivo de ChromeVox</translation>
 <translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{paréntesis de apertura}other{# paréntesis de apertura}}</translation>
 <translation id="2705875883745373140">Sin presionar</translation>
@@ -158,7 +158,7 @@
 <translation id="2843837985843789981">Grupo anterior</translation>
 <translation id="2844995807198708617">Menú contextual</translation>
 <translation id="2849332794118375855">No hay ninguna casilla de verificación posterior.</translation>
-<translation id="2858017024918511904">Para explorar todos los comandos y accesos directos de ChromeVox, presiona Búsqueda + Punto. Luego, usa las teclas de flechas para navegar por los menús e Intro para activar un comando.</translation>
+<translation id="2858017024918511904">Para explorar todos los comandos y accesos directos de ChromeVox, presiona Búsqueda + punto. Luego, usa las teclas de flechas para navegar por los menús e Intro para activar un comando.</translation>
 <translation id="2864481629947106776">Vínculo anterior</translation>
 <translation id="2873259058405069099">Ir al principio de la tabla</translation>
 <translation id="288178314850623291">Usa los comandos de navegación para ir directamente a tipos de elementos específicos. Para avanzar entre encabezados, presiona Búsqueda + H; para ir hacia atrás, presiona Búsqueda + mayúscula + H.</translation>
@@ -199,8 +199,8 @@
 <translation id="3163593631834463955">Encabezado de columna vacío</translation>
 <translation id="316542773973815724">Navegación</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{espacio}other{# espacios}}</translation>
-<translation id="3183233191569362040">¡Felicitaciones! Aprendiste los conceptos básicos para usar ChromeVox Next (beta) de forma correcta. Presiona Búsqueda + Punto para abrir el menú de comandos de ChromeVox en cualquier momento. Para obtener más información sobre ChromeVox y el Sistema operativo Chrome, visita los siguientes artículos.
-Si completaste este turorial, usa ChromeVox para navegar hasta el botón Cerrar y, luego, haz clic en él.</translation>
+<translation id="3183233191569362040">¡Felicitaciones! Aprendiste los conceptos básicos para usar ChromeVox Next (Beta) de forma correcta. Presiona Búsqueda + punto para abrir el menú de comandos de ChromeVox en cualquier momento. Para obtener más información sobre ChromeVox y el Sistema operativo Chrome, visita los siguientes artículos.
+Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerrar y, luego, haz clic en él.</translation>
 <translation id="320961988183078793">Se ingresó <ph name="TYPE" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, pestaña</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -305,7 +305,7 @@ Si completaste este turorial, usa ChromeVox para navegar hasta el botón Cerrar 
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3909320334364316587">Encabezado anterior de nivel 6</translation>
 <translation id="3914173277599553213">Permisos requeridos</translation>
-<translation id="3951424903203718058">¿Estás usando los comentarios por voz de ChromeVox Next por primera vez? Este tutorial rápido explica los aspectos básicos para comenzar a usar ChromeVox Next.</translation>
+<translation id="3951424903203718058">¿Estás usando los comentarios por voz de ChromeVox Next por primera vez? Este instructivo rápido explica los aspectos básicos para comenzar a usar ChromeVox Next.</translation>
 <translation id="3962990492275676168">Comenzar a leer desde la ubicación actual</translation>
 <translation id="4004802134384979325">seleccionada</translation>
 <translation id="4006140876663370126">img</translation>
@@ -454,7 +454,7 @@ Si completaste este turorial, usa ChromeVox para navegar hasta el botón Cerrar 
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# signos menor que}}</translation>
 <translation id="5444587279251314700">(activo)</translation>
 <translation id="5455441614648621694">Complementario</translation>
-<translation id="5458780372341732962">Usar ChromeVox Next (beta)</translation>
+<translation id="5458780372341732962">Usar ChromeVox Next (Beta)</translation>
 <translation id="5485036206801896268">No hay ningún gráfico anterior.</translation>
 <translation id="5486947920110100234">No hay ningún punto de salto posterior.</translation>
 <translation id="549602578321198708">Palabra</translation>
@@ -513,12 +513,11 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="5851548754964597211">Lista de pestañas</translation>
 <translation id="5859752971144398932">Buscar en la página se cerró.</translation>
 <translation id="5866042630553435010">Seleccionado parcialmente</translation>
-<translation id="5867591286054666064">Durante este tutorial, presiona cualquier tecla para escuchar su nombre.</translation>
+<translation id="5867591286054666064">Durante este instructivo, presiona cualquier tecla para escuchar su nombre.</translation>
 <translation id="5869546221129391014">Cuadrícula</translation>
 <translation id="5876817486144482042">Disminuir el volumen de voz</translation>
 <translation id="5887397643266327462">Subtítulos en braille habilitados</translation>
 <translation id="5891934789323004067">Tabla</translation>
-<translation id="5919442531159595654">Copiar</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{igual}other{# signos igual}}</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="5948123859135882163">Alternar interpretación de expresiones matemáticas entre estructural y semántica</translation>
@@ -653,7 +652,6 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="7532613204005497612">Junio</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, control deslizante</translation>
 <translation id="7552432549459840808">Accesos directos útiles de Chrome</translation>
-<translation id="7586163296341959563">pegar</translation>
 <translation id="7596919493010894443">selección borrada</translation>
 <translation id="7604026522577407655">Ir al principio de la columna actual</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{guion bajo}other{# guiones bajos}}</translation>
 <translation id="8179976553408161302">Intro</translation>
 <translation id="8186185314313222077">activar o desactivar pantalla completa</translation>
-<translation id="81960742267269908">Cortar</translation>
 <translation id="8199231515320852133">Indicar los encabezados de la celda actual</translation>
 <translation id="820417203470636242">Celda vacía</translation>
 <translation id="8215202828671303819">Selección múltiple</translation>

@@ -518,7 +518,6 @@
 <translation id="5876817486144482042">Уменьшить громкость речи</translation>
 <translation id="5887397643266327462">Титры шрифтом Брайля включены.</translation>
 <translation id="5891934789323004067">Таблица.</translation>
-<translation id="5919442531159595654">Копировать.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{знак равенства}one{# знак равенства}few{# знака равенства}many{# знаков равенства}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5948123859135882163">Переключение между структурным и семантическим методами интерпретации математических выражений</translation>
@@ -653,7 +652,6 @@
 <translation id="7532613204005497612">июнь</translation>
 <translation id="7540083713905917247">Ползунок "<ph name="NAME" />" со значением "<ph name="VALUE" />"</translation>
 <translation id="7552432549459840808">Быстрые клавиши для работы с Chrome</translation>
-<translation id="7586163296341959563">Вставить.</translation>
 <translation id="7596919493010894443">Отмена выбора.</translation>
 <translation id="7604026522577407655">Перейти к началу текущего столбца</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{символ подчеркивания}one{# символ подчеркивания}few{# символа подчеркивания}many{# символов подчеркивания}other{# underscores}}</translation>
 <translation id="8179976553408161302">ВВОД</translation>
 <translation id="8186185314313222077">включить полноэкранный режим</translation>
-<translation id="81960742267269908">Вырезать.</translation>
 <translation id="8199231515320852133">Назвать заголовки текущей ячейки</translation>
 <translation id="820417203470636242">Пустая ячейка.</translation>
 <translation id="8215202828671303819">Множественный выбор</translation>

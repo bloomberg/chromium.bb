@@ -884,11 +884,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="3864818549971490907">Laajennuksien oletusasetus</translation>
 <translation id="3866249974567520381">Kuvaus</translation>
 <translation id="3866530186104388232">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> näyttää määritetyt käyttäjät valittavissa kirjautumisruudulla. Jos tälle käytännölle asetetaan epätosi-arvo, <ph name="PRODUCT_OS_NAME" /> näyttää kirjautumisruudulla käyttäjänimen ja salasanan kehotteen.</translation>
-<translation id="3866824067696705379">Tarkistuspakettien lähetystiheys millisekunteina.
-
-      Jos tätä käytäntöä ei aseteta, käytetään oletustiheyttä 3 minuuttia. Pienin sallittu
-      arvo on 30 sekuntia ja suurin sallittu arvo on 24 tuntia.
-      Tämän välin ulkopuolella olevat arvot pyöristetään lähimpään sallittuun arvoon.</translation>
 <translation id="3868347814555911633">Tämä käytäntö toimii vain myyntitilassa.
 
       Luettelee laajennukset, jotka asennetaan automaattisesti esittelykäyttäjälle myyntitilassa olevilla laitteilla. Tällaiset laajennukset on tallennettu laitteelle, ja niitä on mahdollista asentaa offline-tilassa.
@@ -1090,7 +1085,6 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Jos et määritä käytäntöä, <ph name="PRODUCT_NAME" /> ei siirrä käyttöoikeustietoja, vaikka palvelin sijaitsisi sisäverkossa.</translation>
 <translation id="4752880493649142945">Asiakasvarmenne yhteyden muodostamiseksi osoitteeseen RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Tarkistuspakettien lähetystiheys</translation>
 <translation id="4791031774429044540">Ota käyttöön suuren osoittimen käytettävyysominaisuus.
 
           Jos tämän käytännön arvoksi on määritetty tosi, suuri osoitin on aina käytössä.
@@ -1812,7 +1806,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7511361072385293666">Jos tämän käytännön arvo on Tosi tai sitä ei aseteta, <ph name="PRODUCT_NAME" /> sallii QUIC-protokollan käytön.
       Jos käytännön arvo on Epätosi, QUIC-protokollan käyttöä ei sallita.</translation>
 <translation id="7519251620064708155">Salli avainten luominen näillä sivustoilla.</translation>
-<translation id="7523476810162382273">Lähetä tarkistuspaketteja hallintapalvelimelle</translation>
 <translation id="7529100000224450960">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7529144158022474049">Hajontatekijän automaattinen päivitys</translation>
 <translation id="7553535237300701827">Kun tämä käytäntö on määritetty, kirjautumistodennuksen työnkulku riippuu asetuksen arvosta jollain seuraavista tavoista:
@@ -1874,6 +1867,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos tämä asetus ei ole käytössä tai sitä ei ole määritetty, kahden tekijän todennus ei ole käytössä, vaan käytetään käyttäjän määrittämää PIN-koodia.</translation>
 <translation id="7750991880413385988">Avaa Uusi välilehti -sivu</translation>
+<translation id="7761446981238915769">Muokkaa kirjautumisnäytöllä asennettavien sovellusten luetteloa</translation>
 <translation id="7761526206824804472">Asettaa julkisia käyttökertoja varten yhden tai useamman suositellun kielen, joista käyttäjät voivat valita haluamansa.
 
       Käyttäjä voi valita kielen ja näppäimistöasettelun ennen julkisen käyttökerran aloittamista. Oletuksena kaikki kielet, joita <ph name="PRODUCT_OS_NAME" /> tukee, näytetään aakkosjärjestyksessä. Tämän käytännön avulla suositellut kielet voidaan näyttää listan alussa.
@@ -2254,6 +2248,28 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8858642179038618439">Pakota YouTuben rajoitettu tila käyttöön</translation>
 <translation id="8864975621965365890">Torjuu hylkäyskehotuksen, joka tulee näkyviin, kun sivu on hahmonnettu tuotteella <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Etusivu</translation>
+<translation id="88890388118515381">
+      Määrittää luettelon sovelluksista, jotka asennetaan kirjautumisnäytöllä hiljaisesti
+      ilman käyttäjän toimenpiteitä ja joita ei voi poistaa.
+      Kaikki sovellusten pyytämät käyttöluvat myönnetään
+      ilman käyttäjän toimenpiteitä, mikä koskee myös
+      sovelluksen myöhempien versioiden mahdollisesti pyytämiä lupia.
+
+      Jos jonkin sovelluksen asennus on aikaisemmin pakotettu mutta sovellus poistetaan tästä luettelosta,
+      <ph name="PRODUCT_NAME" /> poistaa sen automaattisesti.
+
+      Käytännön jokainen rivikohta on merkkijono, joka sisältää laajennustunnuksen
+      ja puolipisteellä (<ph name="SEMICOLON" />) erotetun päivitysosoitteen. Laajennustunnus on 32-kirjaiminen merkkijono, jonka
+      esimerkiksi <ph name="CHROME_EXTENSIONS_LINK" /> näyttää kehittäjätilassa.
+      Päivitysosoitteen tulee johtaa päivitysluettelotyyppiseen
+      XML-asiakirjaan. Katso <ph name="LINK_TO_EXTENSION_DOC1" />. Huomaa,
+      että tässä käytännössä määritettyä päivitysosoitetta käytetään vain ensimmäiseen
+      asennukseen. Laajennuksen myöhempiin päivityksiin käytetään
+      laajennuksen luettelossa ilmoitettua URL-osoitetta.
+
+      Esimerkiksi <ph name="EXTENSION_POLICY_EXAMPLE" />
+      asentaa sovelluksen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> Chrome Web Storen tavallisen päivitysosoitteen kautta.
+      Lisätietoja laajennusten isännöinnistä on osoitteessa <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server tarjoaa laitekohtaisia määritystiedostoja, kuten
       ICC-näyttöprofiileja näytön kalibrointiin.
 
@@ -2307,11 +2323,6 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="9088444059179765143">Määritä aikavyöhykkeen automaattinen tunnistamistapa.</translation>
 <translation id="9096086085182305205">Sallittujen todennuspalvelimien luettelo</translation>
 <translation id="9098553063150791878">HTTP-todennuksen käytännöt</translation>
-<translation id="9104138886225968319">Lähettää hallintapalvelimelle tarkistuspaketteja, joiden avulla
-      palvelin huomaa, jos laite siirtyy offline-tilaan.
-
-      Jos käytännön arvo on Tosi, tarkistuspaketteja lähetetään. Jos sen arvo on
-      Epätosi tai sitä ei aseteta, tarkistuspaketteja ei lähetetä.</translation>
 <translation id="9112897538922695510">Tämän käytännön avulla voit rekisteröidä luettelon protokollan käsittelijöitä. Tämä voi olla vain suositeltu käytäntö. |protocol|-ominaisuudeksi tulee asettaa malli, kuten "mailto", ja |url|-ominaisuudeksi tulee asettaa kyseistä mallia käsittelevän sovelluksen URL-osoitemalli. Osoitemalli voi sisältää merkin %s, joka korvataan käsiteltävällä URL-osoitteella.
 
           Käytännön avulla rekisteröidyt protokollan käsittelijät yhdistetään käyttäjän rekisteröimien käsittelijöiden kanssa, ja molemmat ovat käytettävissä. Käyttäjä voi ohittaa käytännön määrittämät protokollan käsittelijät asentamalla uuden oletuskäsittelijän. Käyttäjä ei kuitenkaan voi poistaa käytännön avulla rekisteröityjä protokollan käsittelijöitä.</translation>

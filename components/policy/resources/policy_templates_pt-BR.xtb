@@ -434,7 +434,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="2483146640187052324">Prever ações da rede em qualquer conexão de rede</translation>
 <translation id="2486371469462493753">Desativa a aplicação dos requisitos de Transparência dos certificados para os URLs listados.
 
-      Esta política permite que os certificados dos nomes de host nos URLs especificados não sejam divulgados pela Transparência dos certificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados, mas dificultam a detecção de certificados usados erroneamente por esses hosts.
+      Esta política permite que os certificados dos nomes de host nos URLs especificados não sejam divulgados pela Transparência dos certificados. Dessa forma, os certificados que não seriam confiáveis por não terem sido devidamente divulgados publicamente continuam a ser utilizados, mas a detecção de certificados usados erroneamente por esses hosts é dificultada.
 
       Um padrão de URL é formatado de acordo com https://www.chromium.org/administrators/url-blacklist-filter-format. No entanto, como os certificados são válidos para um nome de host específico independente do esquema, porta ou caminho, apenas a parte do nome do host do URL é considerada. Hosts curingas não são compatíveis.
 
@@ -878,11 +878,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3864818549971490907">Configuração padrão de plug-ins</translation>
 <translation id="3866249974567520381">Descrição</translation>
 <translation id="3866530186104388232">Se esta política for configurada como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> mostrará os usuários existentes na tela de login e permitirá a escolha de um deles. Se a política for configurada como false, o <ph name="PRODUCT_OS_NAME" /> usará o prompt de nome de usuário/senha no login.</translation>
-<translation id="3866824067696705379">Frequência com que os batimentos cardíacos de monitoramento são enviados, em milissegundos.
-
-      Se esta política é configurada, a frequência padrão é de três minutos. A frequência
-      mínima é de 30 segundos, e a frequência máxima é de 24 horas. Valores
-      fora desse intervalo são fixados nesse intervalo.</translation>
 <translation id="3868347814555911633">Esta política só fica ativada em modo de varejo.
 
       Lista extensões que são instaladas automaticamente para o usuário Demo, para dispositivos em modo de varejo. Essas extensões são salvas no dispositivo e podem ser instaladas off-line, após a instalação.
@@ -1082,7 +1077,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se esta política não é definida, o <ph name="PRODUCT_NAME" /> não delega credenciais do usuário mesmo que um servidor seja detectado como Intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conexão a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Frequência de batimentos cardíacos de monitoramento</translation>
 <translation id="4791031774429044540">Ativar o recurso de acessibilidade do cursor grande.
 
           Se esta política for definida como "verdadeira", o cursor grande estará sempre ativado.
@@ -1793,7 +1787,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7511361072385293666">Se esta política é definida como "true" ou não é configurada, o uso do protocolo QUIC no <ph name="PRODUCT_NAME" /> é permitido.
       Se esta política é definida como "false", o uso do protocolo QUIC não é permitido.</translation>
 <translation id="7519251620064708155">Permitir a geração de chaves nesses sites</translation>
-<translation id="7523476810162382273">Enviar batimentos cardíacos monitorados para o servidor de gerenciamento</translation>
 <translation id="7529100000224450960">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPopupsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualizações automáticas</translation>
 <translation id="7553535237300701827">Quando esta política está definida, o fluxo de autenticação de login acontece em uma das seguintes formas, dependendo do valor da configuração:
@@ -1855,6 +1848,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se esta configuração for desativada ou não for definida, a autenticação de dois fatores não será ativada, e será usada a opção padrão (PIN definido pelo usuário).</translation>
 <translation id="7750991880413385988">Abrir a página Nova guia</translation>
+<translation id="7761446981238915769">Configurar a lista de apps instalados na tela de login</translation>
 <translation id="7761526206824804472">Define uma ou mais localidades recomendadas para uma sessão pública, permitindo que os usuários escolham com facilidade uma dessas localidades.
 
       O usuário pode escolher uma localidade e um layout de teclado antes de iniciar uma sessão pública. Por padrão, todas as localidades compatíveis com <ph name="PRODUCT_OS_NAME" /> são listadas em ordem alfabética. Você pode usar esta política para mover um conjunto de localidades recomendadas para o topo da lista.
@@ -2229,6 +2223,28 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8858642179038618439">Forçar modo de segurança do YouTube</translation>
 <translation id="8864975621965365890">Remove a solicitação de recusa que aparece quando um site é processado pelo <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Página inicial</translation>
+<translation id="88890388118515381">
+      Especifica uma lista de apps que são instalados silenciosamente na tela de login,
+      sem a interação do usuário, e que não podem ser desinstalados.
+      Todas as permissões solicitadas por apps são concedidas
+      implicitamente, sem a interação do usuário, incluindo quaisquer permissões
+      adicionais solicitadas por versões futuras do app.
+
+      Se um app que foi instalado à força anteriormente é removido
+      dessa lista, ele é automaticamente desinstalado pelo <ph name="PRODUCT_NAME" />.
+
+      Cada item da lista da política é uma string que contém um código de extensão
+      e um URL de "atualização" separados por ponto e vírgula (<ph name="SEMICOLON" />). O código da extensão é a string de 32 letras
+      encontrada, por exemplo, em <ph name="CHROME_EXTENSIONS_LINK" /> no
+      modo de desenvolvedor. O URL de "atualização" deve apontar para um documento de atualização
+      do Manifesto XML, conforme descrito em <ph name="LINK_TO_EXTENSION_DOC1" />. O
+      URL de "atualização" definido nessa política só é usado para a instalação
+      inicial. As atualizações subsequentes da extensão empregam o
+      URL de atualização indicado no manifesto da extensão.
+
+      Por exemplo, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      instala o app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> a partir do URL padrão de "atualização" da
+      Chrome Web Store. Para ver mais informações sobre extensões de hospedagem, consulte: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">O Servidor Quirks fornece arquivos de configuração específicos de hardware, como
       perfis de exibição ICC para ajustar a calibragem do monitor.
 
@@ -2282,11 +2298,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="9088444059179765143">Configurar o método de detecção automática de fuso horário</translation>
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
-<translation id="9104138886225968319">Enviar batimentos cardíacos de monitoramento ao servidor de gerenciamento para permitir
-      que o servidor detecte se o dispositivo está off-line.
-
-      Se esta política é definida como "true", os batimentos cardíacos de monitoramento são enviados. Se definida
-      como "false" ou não configurada, nenhum batimento cardíaco é enviado.</translation>
 <translation id="9112897538922695510">Permite registrar uma lista de gerenciadores de protocolo. Essa política só pode ser uma política recomendada. A propriedade |protocolo| deve ser definida para o esquema, por exemplo, 'mailto', e a propriedade |url| deve ser definida para o padrão URL do aplicativo que administra o esquema. O padrão pode incluir '%s', que, se presente, será substituído por um URL administrado.
 
           Os gerenciadores de protocolos registrados pela política são misturados com os registrados pelo usuário, e ambos estão disponíveis para uso. O usuário pode substituir os gerenciadores de protocolos instalados por política, instalando um novo administrador padrão. Entretanto, o usuário não pode remover um gerenciador de protocolos registrado pela política.</translation>

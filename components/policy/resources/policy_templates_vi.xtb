@@ -927,11 +927,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3864818549971490907">Cài đặt plugin mặc định</translation>
 <translation id="3866249974567520381">Mô tả</translation>
 <translation id="3866530186104388232">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ hiển thị những người dùng hiện có trên màn hình đăng nhập và cho phép chọn một người dùng. Nếu chính sách này được đặt thành sai, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng lời nhắc nhập tên người dùng/mật khẩu để đăng nhập.</translation>
-<translation id="3866824067696705379">Tần suất gửi thông tin theo dõi nhịp tim, bằng mili giây.
-
-      Nếu chính sách này không được đặt thì tần suất mặc định là 3 phút. Tần suất
-      nhỏ nhất là 30 giây và tần suất lớn nhất là 24 giờ - các giá trị
-      nằm ngoài phạm vi này sẽ được giới hạn vào phạm vi này.</translation>
 <translation id="3868347814555911633">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Liệt kê các tiện ích được tự động cài đặt cho người dùng Bản trình diễn, cho các thiết bị ở chế độ bán lẻ. Các tiện ích này được lưu trong thiết bị và có thể được cài đặt khi ngoại tuyến, sau quá trình cài đặt này.
@@ -1157,7 +1152,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ không ủy quyền thông tin xác thực cho người dùng ngay cả khi máy chủ được phát hiện là mạng nội bộ.</translation>
 <translation id="4752880493649142945">Chứng chỉ ứng dụng để kết nối với RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Tần suất theo dõi nhịp tim</translation>
 <translation id="4791031774429044540">Bật tính năng trợ năng con trỏ lớn.
 
           Nếu chính sách này được đặt thành true, con trỏ lớn sẽ luôn được bật.
@@ -1947,7 +1941,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
 <translation id="7519251620064708155">Cho phép tạo khóa trên các trang web này</translation>
-<translation id="7523476810162382273">Gửi thông tin theo dõi nhịp tim đến máy chủ quản lý</translation>
 <translation id="7529100000224450960">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép mở cửa sổ bật lên.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultPopupsSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -2008,6 +2001,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu cài đặt này bị tắt hoặc không được đặt thì tính năng xác thực hai bước sẽ không được bật và hành vi mặc định là có mã PIN do người dùng xác định sẽ được sử dụng.</translation>
 <translation id="7750991880413385988">Mở trang tab mới</translation>
+<translation id="7761446981238915769">Định cấu hình danh sách ứng dụng đã cài đặt trên màn hình đăng nhập</translation>
 <translation id="7761526206824804472">Đặt một hoặc nhiều ngôn ngữ được đề xuất cho phiên công khai, nhờ đó cho phép người dùng dễ dàng chọn một trong các ngôn ngữ này.
 
       Người dùng có thể chọn ngôn ngữ và bố cục bàn phím trước khi bắt đầu một phiên công khai. Theo mặc định, tất cả ngôn ngữ được <ph name="PRODUCT_OS_NAME" /> hỗ trợ sẽ được liệt kê theo thứ tự trong bảng chữ cái. Bạn có thể sử dụng chính sách này để di chuyển một nhóm ngôn ngữ được đề xuất lên đầu danh sách.
@@ -2421,6 +2415,28 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8858642179038618439">Bật Chế độ an toàn trên YouTube</translation>
 <translation id="8864975621965365890">Loại bỏ lời nhắc từ chối xuất hiện khi một trang web được hiển thị bởi <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
+<translation id="88890388118515381">
+      Chỉ định danh sách ứng dụng được cài đặt tĩnh trên màn hình đăng nhập
+      mà không có sự tương tác của người dùng và không thể gỡ cài đặt.
+      Tất cả các quyền do ứng dụng yêu cầu được cấp
+      hoàn toàn mà không có sự tương tác của người dùng, bao gồm mọi quyền
+      bổ sung do các phiên bản trong tương lai của ứng dụng yêu cầu.
+
+      Nếu một ứng dụng trước đây bị buộc cài đặt được xóa khỏi
+      danh sách này thì ứng dụng đó sẽ tự động được <ph name="PRODUCT_NAME" /> gỡ cài đặt.
+
+      Mỗi mục danh sách của chính sách này là một chuỗi chứa ID tiện ích
+      và một URL "cập nhật" được phân tách bằng dấu chấm phẩy (<ph name="SEMICOLON" />). ID tiện ích là chuỗi gồm 32 chữ cái
+      được tìm thấy, chẳng hạn như trên <ph name="CHROME_EXTENSIONS_LINK" /> khi ở
+      chế độ nhà phát triển. URL "cập nhật" sẽ trỏ tới tài liệu XML của
+      tệp kê khai cập nhật như được mô tả tại <ph name="LINK_TO_EXTENSION_DOC1" />. Lưu ý
+      rằng URL "cập nhật" được đặt trong chính sách này chỉ dùng cho 
+      cài đặt ban đầu; các lần cập nhật tiện ích tiếp theo sẽ sử dụng URL
+      cập nhật được chỉ ra trong tệp kê khai của tiện ích.
+
+      Ví dụ: <ph name="EXTENSION_POLICY_EXAMPLE" />
+      cài đặt ứng dụng <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> từ URL "cập nhật" của Cửa hàng Chrome trực tuyến.
+      tiêu chuẩn. Để biết thêm thông tin về cách lưu trữ tiện ích, hãy xem: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Máy chủ Quirks cung cấp các tệp cấu hình dành riêng cho phần cứng, chẳng hạn như
       Cấu hình hiển thị ICC để hiệu chỉnh màn hình.
 
@@ -2474,11 +2490,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="9088444059179765143">Định cấu hình phương thức phát hiện múi giờ tự động</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
 <translation id="9098553063150791878">Chính sách xác thực HTTP</translation>
-<translation id="9104138886225968319">Gửi thông tin theo dõi nhịp tim tới máy chủ quản lý để cho phép
-      máy chủ phát hiện xem thiết bị có ngoại tuyến hay không.
-
-      Nếu chính sách này được đặt thành true, thông tin theo dõi nhịp tim sẽ
-      được gửi. Nếu được đặt thành false hoặc không được đặt thì sẽ không có thông tin nhịp tim nào được gửi.</translation>
 <translation id="9112897538922695510">Cho phép bạn đăng ký danh sách trình xử lý giao thức. Đây có thể chỉ là một chính sách được đề xuất. Thuộc tính |protocol| của sản phẩm nên được đặt thành lược đồ chẳng hạn như 'mailto' và thuộc tính |url| nên được đặt thành mẫu URL của ứng dụng xử lý lược đồ. Mẫu có thể bao gồm '%s' mà nếu có mặt sẽ được thay thế bằng URL đã xử lý.
 
           Trình xử lý giao thức do chính sách đăng ký được hợp nhất với trình xử lý do người dùng đăng ký và cả hai đều khả dụng. Người dùng có thể ghi đè trình xử lý giao thức do chính sách cài đặt bằng cách cài đặt trình xử lý mặc định mới nhưng không thể xóa trình xử lý giao thức do chính sách đăng ký.</translation>

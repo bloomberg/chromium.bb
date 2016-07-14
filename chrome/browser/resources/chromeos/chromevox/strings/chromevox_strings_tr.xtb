@@ -518,7 +518,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="5876817486144482042">Konuşma ses düzeyini düşür</translation>
 <translation id="5887397643266327462">Braille altyazıları etkinleştirildi.</translation>
 <translation id="5891934789323004067">Tablo</translation>
-<translation id="5919442531159595654">kopyala.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{eşit işareti}other{# eşit işareti}}</translation>
 <translation id="5939518447894949180">Sıfırla</translation>
 <translation id="5948123859135882163">Matematik ifadelerde yapısal ve anlamsal yorum arasında geçiş yap</translation>
@@ -653,7 +652,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7532613204005497612">Haziran</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, kaydırma çubuğu</translation>
 <translation id="7552432549459840808">Yararlı Chrome Kısayolları</translation>
-<translation id="7586163296341959563">yapıştır.</translation>
 <translation id="7596919493010894443">seçim temizlendi</translation>
 <translation id="7604026522577407655">Mevcut sütunun başlangıcına git</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="817440585505441544">{COUNT,plural, =1{alt çizgi}other{# alt çizgi}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">tam ekrana geç</translation>
-<translation id="81960742267269908">kesildi.</translation>
 <translation id="8199231515320852133">Mevcut hücrenin üst bilgilerini söyle</translation>
 <translation id="820417203470636242">Boş hücre.</translation>
 <translation id="8215202828671303819">Çoklu seçim</translation>

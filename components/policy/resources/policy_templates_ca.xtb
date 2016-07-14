@@ -439,7 +439,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2483146640187052324">Prediu accions de xarxa en qualsevol connexió de xarxa</translation>
 <translation id="2486371469462493753">Desactiva l'aplicació dels requisits de Transparència de certificats als URL esmentats.
 
-      Aquesta política permet que els certificats dels noms d'amfitrió dels URL que especifiqueu no es divulguin mitjançant Transparència de certificats. Això permet que es puguin continuar utilitzant certificats que, en cas contrari, podrien no ser de confiança perquè no s'han divulgat públicament de la manera adequada, però fa que sigui més difícil detectar l'emissió inadequada de certificats per a aquests amfitrions.
+      Aquesta política permet que els certificats dels noms d'amfitrió dels URL que especifiquis no es divulguin mitjançant Transparència de certificats. Això permet que es puguin continuar utilitzant certificats que, en cas contrari, podrien no ser de confiança perquè no s'han divulgat públicament de la manera adequada, però fa que sigui més difícil detectar l'emissió inadequada de certificats per a aquests amfitrions.
 
       Un patró d'URL ha de tenir el format que s'indica a la pàgina https://www.chromium.org/administrators/url-blacklist-filter-format. Tanmateix, atès que els certificats són vàlids per a un nom d'amfitrió determinat independent de l'esquema, el port o camí, només es té en compte la part de l'URL corresponent al nom d'amfitrió. No s'admeten amfitrions comodí.
 
@@ -496,7 +496,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
 <translation id="2692168654831544772">Desactiva les captures de pantalla.
 
-      Si està activada, no es podran fer captures de pantalla amb tecles de drecera ni APIs d'extensió.
+      Si està activada, no es podran fer captures de pantalla amb tecles de drecera ni APIs de les extensions.
       A més, les captures de pantalla també estan desactivades per a les aplicacions ARC.
 
       Si està desactivada o no s'estableix, es podran fer captures de pantalla.</translation>
@@ -666,7 +666,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       Si la política no s'estableix o s'estableix en "false", els sistemes de xifratge DHE de TLS no s'activaran. En cas contrari, es pot establir en "true" per activar els sistemes de xifratge DHE i conservar la compatibilitat amb un servidor obsolet. Es tracta d'una mesura temporal i el servidor s'ha de tornar a configurar.
 
-      Es recomana migrar els servidors a sistemes de xifratge ECDHE. Si no estan disponibles, assegureu-vos que s'activi un sistema de xifratge que utilitzi un intercanvi de clau RSA.</translation>
+      Es recomana migrar els servidors a sistemes de xifratge ECDHE. Si no estan disponibles, assegura't que s'activi un sistema de xifratge que utilitzi un intercanvi de clau RSA.</translation>
 <translation id="3153348162326497318">Us permet especificar quines extensions NO poden instal·lar els usuaris. Les extensions ja instal·lades s'eliminaran si apareixen a la llista negra. Un valor de llista negra de "*" significa que totes les extensions apareixen a la llista negra llevat que apareguin explícitament a la llista blanca. Si no s'ha definit aquesta política, l'usuari podrà instal·lar qualsevol extensió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Aquesta versió no està disponible des de la versió 29 de <ph name="PRODUCT_NAME" />. La manera recomanada de definir col·leccions d'aplicacions/extensions allotjades per una organització és incloure el lloc que allotja els paquets CRX a ExtensionInstallSources i col·locar enllaços de baixada directa als paquets en una pàgina web. Es pot crear un menú d'aplicacions per a la pàgina web mitjançant la política ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">des de la versió <ph name="SINCE_VERSION" /></translation>
@@ -748,7 +748,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
-<translation id="3337150554416948435">Us permet establir si els llocs web poden fer un seguiment de la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web sol·liciti la ubicació física.
+<translation id="3337150554416948435">Et permet establir si els llocs web poden fer un seguiment de la ubicació física dels usuaris. El seguiment de la ubicació física dels usuaris es pot autoritzar o denegar de manera predeterminada o bé es pot preguntar a l'usuari cada vegada que un lloc web sol·liciti la ubicació física.
 
           Si aquesta política s'estableix en BlockGeolocation, es denegarà la ubicació compartida per a les aplicacions ARC.
 
@@ -886,28 +886,23 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="3864818549971490907">Configuració de connectors predeterminada</translation>
 <translation id="3866249974567520381">Descripció</translation>
 <translation id="3866530186104388232">Si aquesta política es defineix a «true» (cert) o ​​es deixa sense configurar, <ph name="PRODUCT_OS_NAME" /> mostrarà els usuaris existents a la pantalla d'inici de sessió i deixarà triar-ne un. Si aquesta política es defineix a «false» (fals), <ph name="PRODUCT_OS_NAME" /> farà servir la petició de nom d'usuari i de contrasenya per iniciar la sessió.</translation>
-<translation id="3866824067696705379">La freqüència, en mil·lisegons, amb què s'envien batecs de supervisió.
-
-      Si aquesta política no s'estableix, s'envien cada 3 minuts de manera predeterminada. La freqüència
-      màxima és de 30 segons i la mínima de 24 hores. Tots els valors que no es trobin
-      dins d'aquest interval es restringiran al límit respectiu.</translation>
 <translation id="3868347814555911633">Aquesta política només està activa en mode de venda.
 
      Especifica les extensions que s'instal·len automàticament per a l'usuari de la demostració en els dispositius en mode de venda. Aquestes extensions es desen al dispositiu i es poden instal·lar fora de línia, després de la instal·lació.
 
       Cada entrada de la llista conté un diccionari que ha d'incloure l'identificador de l'extensió al camp "extension-id" i l'URL d'actualització al camp "update-url".</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
-<translation id="3898060089412156345">Permeteu o rebutgeu la captura d'àudio.
+<translation id="3898060089412156345">Permet o denega la captura d'àudio.
 
       Si la política està activada o no està configurada (opció predeterminada), es demanarà a l'usuari
       que confirmi l'accés a les captures d'àudio amb excepció dels URL configurats a la
-      llista AudioCaptureAllowedUrls, als quals es podrà accedir sense sol·licitar-ho.
+      llista AudioCaptureAllowedUrls, que hi podran accedir sense sol·licitar-ho.
 
       Quan aquesta política estigui desactivada, no es demanarà mai a l'usuari que confirmi l'accés, i la captura
       d'àudio només estarà disponible als URL configurats a AudioCaptureAllowedUrls.
       Per a les aplicacions ARC, el micròfon se silenciarà permanentment.
 
-      Aquesta política afecta tots els tipus d'entrada d'àudio i no només els del micròfon integrat.</translation>
+      Aquesta política afecta tots els tipus d'entrada d'àudio, no només el micròfon integrat.</translation>
 <translation id="3907986150060929099">Estableix les configuracions regionals recomanades per a una sessió pública</translation>
 <translation id="391531815696899618">Quan aquesta política s'estableix en True, desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" />. En aquest cas, no es pengen dades a Google Drive.
 
@@ -1092,7 +1087,6 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Si deixeu aquesta política sense definir, <ph name="PRODUCT_NAME" /> no delegarà les credencials de l'usuari, encara que es detecti una intranet com a servidor.</translation>
 <translation id="4752880493649142945">Certificat de client per connectar-se a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Freqüència dels batecs de supervisió</translation>
 <translation id="4791031774429044540">Activa la funció d'accessibilitat del cursor gran.
 
           Si el valor d'aquesta política s'estableix com a vertader, el cursor gran sempre estarà activat.
@@ -1822,7 +1816,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7511361072385293666">Si aquesta política s'estableix en "true" o no es configura, es permet utilitzar el protocol QUIC a <ph name="PRODUCT_NAME" />.
       Si aquesta política s'estableix en "false", no es permet utilitzar el protocol QUIC.</translation>
 <translation id="7519251620064708155">Permet que aquests llocs utilitzin la generació de claus</translation>
-<translation id="7523476810162382273">Envia batecs de supervisió al servidor de gestió</translation>
 <translation id="7529100000224450960">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès obrir finestres emergents. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPopupsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7529144158022474049">Actualitza automàticament el factor de dispersió</translation>
 <translation id="7553535237300701827">Quan aquesta política està establerta, el flux d'autenticació d'inici de sessió seguirà un d'aquests mètodes en funció del valor establert:
@@ -1884,6 +1877,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si desactiveu aquest paràmetre o si no el definiu, no s'establirà l'autenticació de dos factors i s'utilitzarà el comportament predeterminat en què cal un PIN definit per l'usuari.</translation>
 <translation id="7750991880413385988">Obre la pàgina Pestanya nova</translation>
+<translation id="7761446981238915769">Configura la llista d'aplicacions instal·lades a la pantalla d'inici de sessió</translation>
 <translation id="7761526206824804472">Estableix una o més configuracions regionals recomanades per a sessions públiques, de manera que els usuaris en poden triar una fàcilment.
 
       L'usuari pot triar una configuració regional i un disseny de teclat abans d'iniciar una sessió pública. De manera predeterminada, totes les configuracions regionals admeses a <ph name="PRODUCT_OS_NAME" /> s'enumeren en ordre alfabètic. Podeu fer servir aquesta política per moure un conjunt de configuracions regionals recomanades a la part superior de la llista.
@@ -1952,11 +1946,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
 <translation id="7882890448959833986">Suprimeix l'advertiment de sistema operatiu no compatible</translation>
 <translation id="7912255076272890813">Configuració dels tipus d'aplicacions i d'extensions permeses</translation>
-<translation id="7914271217607102111">Permet o rebutja la captura de vídeo.
+<translation id="7914271217607102111">Permet o denega la captura de vídeo.
 
       Si aquesta política està activada o no està configurada (opció predeterminada), es demanarà a l'usuari
       que confirmi l'accés a la captura de vídeo, amb excepció dels URL configurats a la
-      llista VideoCaptureAllowedUrls, als quals es podrà accedir sense sol·licitar-ho.
+      llista VideoCaptureAllowedUrls, que hi podran accedir sense sol·licitar-ho.
       Si se'ls ha donat permís, les aplicacions ARC poden accedir a la
       càmera.
 
@@ -2273,6 +2267,14 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8858642179038618439">Força el mode de seguretat de YouTube</translation>
 <translation id="8864975621965365890">Suprimeix l'avís de desactivació que apareix quan un lloc <ph name="PRODUCT_FRAME_NAME" /> renderitza un lloc.</translation>
 <translation id="8870318296973696995">Pàgina d'inici</translation>
+<translation id="88890388118515381">
+      Especifica una llista d'aplicacions que no es poden desinstal·lar i que s'instal·len a la pantalla d'inici de sessió sense que us n'adoneu, sense cap interacció de l'usuari. Tots els permisos que les aplicacions sol·liciten es concedeixen de manera implícita, sense cap interacció de l'usuari, inclosos els permisos addicionals que se sol·licitin per a versions futures de l'aplicació.
+
+      Si se suprimeix de la llista una aplicació que anteriorment s'havia instal·lat a la força, <ph name="PRODUCT_NAME" /> la desinstal·la automàticament.
+
+      Cada element de la llista de la política és una cadena que conté un identificador d'extensió i un URL d'actualització separats per un punt i coma (<ph name="SEMICOLON" />). L'identificador d'extensió és la cadena de 32 lletres que, per exemple, es troba a <ph name="CHROME_EXTENSIONS_LINK" /> quan el mode desenvolupador està activat. L'URL d'actualització ha de dirigir a un document XML de manifest d'actualització segons es descriu a <ph name="LINK_TO_EXTENSION_DOC1" />. Tingueu en compte que l'URL d'actualització definit en aquesta política només s'utilitza per a la instal·lació inicial; les properes actualitzacions de l'extensió faran servir l'URL d'actualització indicat al manifest de l'extensió.
+
+      Per exemple, <ph name="EXTENSION_POLICY_EXAMPLE" /> instal·la l'aplicació <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> des de l'URL d'actualització estàndard de Chrome Web Store. Per obtenir més informació sobre com allotjar extensions, consulteu: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server proporciona fitxers de configuració específics de cada maquinari, com ara perfils de visualització ICC per ajustar el calibratge del monitor.
 
       Si aquesta política s'estableix en "false", el dispositiu no prova de contactar amb Quirks Server per baixar els fitxers de configuració.
@@ -2320,11 +2322,6 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="9088444059179765143">Configura el mètode de detecció automàtica de la zona horària</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
-<translation id="9104138886225968319">Envia batecs de supervisió al servidor de gestió, de manera que
-      el servidor pugui detectar si el dispositiu no té connexió.
-
-      Si aquesta política s'estableix en "true", s'envien batecs de supervisió. Si s'estableix
-      en "false" o no s'estableix, no s'envien batecs.</translation>
 <translation id="9112897538922695510">Us permet registrar una llista de gestors de protocol. Això només pot ser una política recomanada. El |protocol| de la propietat s'ha de definir a l'esquema, com ara "mailto" i l'|url| de la propietat s'ha de definir al patró d'URL de l'aplicació que gestiona l'esquema. El patró pot incloure "%s" i, en cas que s'hi inclogui, se substituirà per l'URL gestionat.
 
           Els gestors de protocol registrats amb la política es combinen amb els que ha registrat l'usuari i tots dos es poden fer servir. L'usuari pot substituir els gestors de protocol que s'han instal·lat amb la política si instal·la un nou gestor de protocol predeterminat, però no pot suprimir un gestor de protocol que s'hagi registrat amb la política.</translation>

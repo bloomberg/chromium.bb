@@ -172,7 +172,6 @@
 <translation id="2913331724188855103">السماح للمواقع بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2932150158123903946">‏سعة تخزين <ph name="APP_NAME" /> Google</translation>
 <translation id="2956410042958133412">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME_1" /> و <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2959609938957585241">‏للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل "المزامنة التلقائية للبيانات" في إعدادات حساب Android.</translation>
 <translation id="2960796085439532066">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="2968755619301702150">عارض الشهادات</translation>
 <translation id="2979025552038692506">علامة تبويب محددة للتصفح المتخفي</translation>
@@ -415,7 +414,6 @@
 <translation id="5765780083710877561">الوصف:</translation>
 <translation id="5771382037724542929">هل تريد استبدال <ph name="FILE_NAME" /> الموجود في <ph name="DIRECTORY_NAME" />؟</translation>
 <translation id="5777170031995031090">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى.</translation>
-<translation id="579919059055796498">محو سعة تخزين الموقع...</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{قبل ساعة واحدة (#)}zero{قبل # ساعة}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # ساعة}}</translation>
 <translation id="5817918615728894473">إقران</translation>
@@ -553,7 +551,6 @@
 <translation id="7301833672208172928">تشغيل مزامنة السجل</translation>
 <translation id="7327835590071894791">توجد الآن علامة التبويب في الخلفية.</translation>
 <translation id="7347770551817603360">محتوى بلا اتصال</translation>
-<translation id="7358452246665489050">جارٍ الحوسبة...</translation>
 <translation id="7363354739009474003">يتم الآن تحميل "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">النوع:</translation>

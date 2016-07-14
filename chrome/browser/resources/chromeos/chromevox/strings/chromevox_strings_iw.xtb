@@ -6,7 +6,7 @@
 <translation id="1023866615269196768">מורחב.</translation>
 <translation id="1025074108959230262">מצב אתר דביק מושבת</translation>
 <translation id="1031961866430398710">לאחר מכן</translation>
-<translation id="1038795173450935438">כדי לעבור קדימה בין פריטים בדף, הקש על מקש החיפוש ועל מקש החץ ימינה. כדי לחזור אחורה, לחץ על מקש החיפוש ועל מקש החץ שמאלה. כדי לעבור אל השורה הבאה, הקש על מקש החיפוש ועל מקש החץ למטה. כדי לעבור אל השורה הקודמת, הקש על מקש החיפוש ועל מקש החץ למעלה. אם הגעת לפריט שאתה רוצה ללחוץ עליו, הקש על מקש החיפוש ועל מקש הרווח.</translation>
+<translation id="1038795173450935438">כדי לעבור קדימה בין פריטים בדף, הקש על מקש החיפוש ועל מקש החץ ימינה. כדי לחזור אחורה, הקש על מקש החיפוש ועל מקש החץ שמאלה. כדי לעבור אל השורה הבאה, הקש על מקש החיפוש ועל מקש החץ למטה. כדי לעבור אל השורה הקודמת, הקש על מקש החיפוש ועל מקש החץ למעלה. אם הגעת לפריט שאתה רוצה ללחוץ עליו, הקש על מקש החיפוש ועל מקש הרווח.</translation>
 <translation id="1044777062731150180">ללא כותרות</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">קלט לא חוקי</translation>
@@ -44,7 +44,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, תיבת טקסט של סיסמה</translation>
 <translation id="1467432559032391204">שמאלה</translation>
 <translation id="1474557363159888097">אין עוגן קודם.</translation>
-<translation id="1487494366197411587">‏ב-Chromebook, מקש החיפוש נמצא בצמוד לחלק העליון של מקש Shift השמאלי.</translation>
+<translation id="1487494366197411587">‏ב-Chromebook, מקש החיפוש נמצא בדיוק מעל מקש Shift השמאלי.</translation>
 <translation id="1499041187027566160">הגברת עוצמת הקול</translation>
 <translation id="1502086903961450562">הגרפיקה הקודמת</translation>
 <translation id="1506187449813838456">הגבר את גובה הצליל</translation>
@@ -151,7 +151,7 @@
 <translation id="2777845298774924149">יצאת</translation>
 <translation id="2800204403141299078">אין עוד אלמנטים שונים.</translation>
 <translation id="2800780099804980316">אין כותרת קודמת של רמה 1.</translation>
-<translation id="2811019999044652585">‏כדי לעבור אל חלקים אחרים במסך, כמו סרגלי כלים או מגש המערכת, הקש על Control ועל מקש החץ קדימה. ב-Chromebook, מקש החץ קדימה נמצא בצמוד לחלק העליון של מקש 2.</translation>
+<translation id="2811019999044652585">‏כדי לעבור אל חלקים אחרים במסך, כמו סרגלי כלים או מגש המערכת, הקש על Control ועל מקש 'הבא'. ב-Chromebook, מקש 'הבא' נמצא בדיוק מעל המקש של הספרה 2.</translation>
 <translation id="2811204574343810641">שורה</translation>
 <translation id="2816654101880605877">אין מחוון הבא.</translation>
 <translation id="2841013758207633010">שעה</translation>
@@ -199,7 +199,7 @@
 <translation id="3163593631834463955">כותרת עמודה ריקה</translation>
 <translation id="316542773973815724">ניווט</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{רווח}two{# רווחים}many{# רווחים}other{# רווחים}}</translation>
-<translation id="3183233191569362040">‏מעולה! למדת את יסודות השימוש ב-ChromeVox Next (ביטא). זכור שתוכל לפתוח את תפריט הפקודות של ChromeVox בכל עת על-ידי הקשה על מקש החיפוש ומקש הנקודה. כדי ללמוד עוד על ChromeVox ועל מערכת ההפעלה של Chrome, עיין במאמרים הבאים.
+<translation id="3183233191569362040">‏מעולה! למדת את יסודות השימוש ב-ChromeVox Next (ביטא). זכור שתמיד תוכל לפתוח את תפריט הפקודות של ChromeVox על-ידי הקשה על מקש החיפוש ומקש הנקודה. כדי ללמוד עוד על ChromeVox ועל מערכת ההפעלה של Chrome, עיין במאמרים הבאים.
 אם סיימת את מערך השיעור, השתמש ב-ChromeVox כדי לנווט אל כפתור הסגירה וללחוץ עליו.</translation>
 <translation id="320961988183078793">הוזן <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, כרטיסייה</translation>
@@ -518,7 +518,6 @@
 <translation id="5876817486144482042">החלש עוצמת דיבור</translation>
 <translation id="5887397643266327462">כיתובי ברייל הופעלו.</translation>
 <translation id="5891934789323004067">טבלה</translation>
-<translation id="5919442531159595654">העתק.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{סימן שווה}two{# סימני שווה}many{# סימני שווה}other{# סימני שווה}}</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5948123859135882163">עבור בין פירוש מבני וסמנטי של ביטויים מתמטיים</translation>
@@ -653,7 +652,6 @@
 <translation id="7532613204005497612">יוני</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, מחוון</translation>
 <translation id="7552432549459840808">‏מקשי קיצור מועילים ב-Chrome</translation>
-<translation id="7586163296341959563">הדבק.</translation>
 <translation id="7596919493010894443">הבחירה נוקתה</translation>
 <translation id="7604026522577407655">עבור לתחילת העמודה הנוכחית</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{קו תחתון}two{# סימני קו תחתון}many{# סימני קו תחתון}other{# סימני קו תחתון}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">החלפה של מצב מסך מלא</translation>
-<translation id="81960742267269908">גזור.</translation>
 <translation id="8199231515320852133">הכרזה על הכותרות של התא הנוכחי</translation>
 <translation id="820417203470636242">תא ריק.</translation>
 <translation id="8215202828671303819">בחירה מרובה</translation>

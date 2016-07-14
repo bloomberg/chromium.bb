@@ -518,7 +518,6 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="5876817486144482042">Pienennä puheen äänenvoimakkuutta</translation>
 <translation id="5887397643266327462">Pistekirjoituskuvatekstit ovat käytössä.</translation>
 <translation id="5891934789323004067">Taulukko</translation>
-<translation id="5919442531159595654">kopioi.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{yhtäläisyys}other{# yhtäläisyysmerkkiä}}</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="5948123859135882163">Vaihda matemaattisten lausekkeiden tulkintatapaa rakenteellisen ja semanttisen välillä</translation>
@@ -653,7 +652,6 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7532613204005497612">kesäkuu</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, liukusäädin</translation>
 <translation id="7552432549459840808">Hyödyllisiä Chrome-pikanäppäimiä</translation>
-<translation id="7586163296341959563">liitä.</translation>
 <translation id="7596919493010894443">valinta poistettu</translation>
 <translation id="7604026522577407655">Siirry nykyisen sarakkeen alkuun</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{alaviiva}other{# alaviivaa}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">Ota koko näytön tila käyttöön tai poista se käytöstä.</translation>
-<translation id="81960742267269908">leikkaa.</translation>
 <translation id="8199231515320852133">Ilmoita nykyisen solun otsikot</translation>
 <translation id="820417203470636242">Tyhjä solu.</translation>
 <translation id="8215202828671303819">Monivalinta</translation>

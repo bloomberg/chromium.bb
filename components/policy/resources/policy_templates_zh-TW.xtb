@@ -443,7 +443,7 @@
 
       網址格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 的規定。不過，由於單憑指定的主機名稱即可判定憑證有效 (忽略網址配置、通訊埠或路徑)，因此系統只會檢視網址的主機名稱部分 (不支援含萬用字元的主機名稱)。
 
-      如果未設定這項政策，凡是應依憑證透明化政策公開而未公開的憑證都會被視為不信任的憑證。</translation>
+      如果未設定這項政策，凡是應依憑證透明化政策公開而未公開的憑證皆視同不信任的憑證。</translation>
 <translation id="2488010520405124654">離線時啟用網路設定提示。
 
       如果這項政策未設定或設為 True，且裝置本機帳戶設為自動登入 (零延遲)，那麼在裝置無法連上網際網路時，<ph name="PRODUCT_OS_NAME" /> 會顯示網路設定提示。
@@ -487,7 +487,7 @@
 <translation id="2650049181907741121">使用者蓋上螢幕時所採取的動作</translation>
 <translation id="2655233147335439767">指定執行預設搜尋時使用的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者搜尋時輸入的文字會取代這條字串。
 
-          您可以使用以下形式指定 Google 的搜尋網址：<ph name="GOOGLE_SEARCH_URL" />。
+          您可以使用以下格式指定 Google 的搜尋網址：<ph name="GOOGLE_SEARCH_URL" />。
 
           啟用「DefaultSearchProviderEnabled」政策時必須設定這個選項，系統也只會在這種情況下遵循這項政策。</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
@@ -885,11 +885,6 @@
 <translation id="3864818549971490907">預設外掛程式設定</translation>
 <translation id="3866249974567520381">說明</translation>
 <translation id="3866530186104388232">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會在登入畫面上顯示現有使用者，並且開放使用者自行挑選。如果這項政策設為 False，<ph name="PRODUCT_OS_NAME" /> 會使用使用者名稱/密碼登入提示。</translation>
-<translation id="3866824067696705379">監控流量訊號的傳送頻率 (以毫秒為單位)。
-
-      如果未設定這項政策，預設頻率為 3 分鐘。
-      最低頻率為 30 秒，最高頻率為 24 小時。
-      超過範圍的頻率值會被限制在範圍內。</translation>
 <translation id="3868347814555911633">這項政策僅在零售模式下有效。
 
       列出系統自動為零售模式裝置中的示範模式使用者所安裝的擴充功能。這些擴充功能會儲存在裝置上，並且可以在安裝後進行離線安裝。
@@ -1087,7 +1082,6 @@
 
           如果您未設定這項政策，則即使 <ph name="PRODUCT_NAME" /> 已偵測到位於內部網路的伺服器，也不會委派使用者憑證。</translation>
 <translation id="4752880493649142945">用於連線至 RemoteAccessHostTokenValidationUrl 的用戶端憑證</translation>
-<translation id="4768493164188395498">監控流量訊號傳送頻率</translation>
 <translation id="4791031774429044540">啟用大型游標協助功能。
 
           如果您將這項政策設為 True，系統將一律啟用大型游標。
@@ -1807,7 +1801,6 @@
 <translation id="7511361072385293666">如果這項政策設為 True 或未設定，可在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 通訊協定。
       如果這項政策設為 False，則不可使用 QUIC 通訊協定。</translation>
 <translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
-<translation id="7523476810162382273">將監控流量訊號傳送到管理伺服器</translation>
 <translation id="7529100000224450960">允許您設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
 <translation id="7553535237300701827">設定這項政策後，系統會根據設定值採用下列其中一種登入驗證流程：
@@ -1869,6 +1862,7 @@
 
           如果您停用這項設定或並未進行設置，系統就不會啟用雙重驗證機制，而預設行為則會改採用輸入使用者定義的 PIN。</translation>
 <translation id="7750991880413385988">開啟新分頁</translation>
+<translation id="7761446981238915769">設定登入畫面中的已安裝應用程式清單</translation>
 <translation id="7761526206824804472">為公開工作階段設定一個或多個建議的語言代碼，方便讓使用者從中選擇自己偏好的設定。
 
       使用者可以在啟動公開工作階段前選擇語言代碼和鍵盤配置。在預設狀態下，系統會依英文字母順序列出 <ph name="PRODUCT_OS_NAME" /> 支援的所有語言代碼。這項政策可讓您將一些建議的語言代碼移至清單頂端。
@@ -2221,6 +2215,15 @@
 <translation id="8858642179038618439">強制採用 YouTube 安全模式</translation>
 <translation id="8864975621965365890">瀏覽使用 <ph name="PRODUCT_FRAME_NAME" />轉譯的網站時，隱藏停止支援提示。</translation>
 <translation id="8870318296973696995">首頁</translation>
+<translation id="88890388118515381">
+      指定在登入畫面以無訊息方式安裝 (使用者無需操作) 的應用程式清單 (這些應用程式無法解除安裝)。
+      系統會直接授予這些應用程式要求的所有權限 (使用者無需操作)，包括日後新版應用程式要求的任何其他權限。
+
+      如果將先前強制安裝的應用程式從這份清單中移除，<ph name="PRODUCT_NAME" /> 會自動解除安裝該應用程式。
+
+      這項政策的每個清單項目都是一條字串，而字串中包含以分號 (<ph name="SEMICOLON" />) 分隔的一個擴充功能 ID 和一個「更新」網址。擴充功能 ID 為 32 個字母的字串，如需查看範例，請在開發人員模式下前往 <ph name="CHROME_EXTENSIONS_LINK" />。「更新」網址應指向更新資訊清單 XML 文件 (如 <ph name="LINK_TO_EXTENSION_DOC1" /> 所述)。請注意，這項政策中設定的「更新」網址只可用於初次安裝，後續的擴充功能更新將會使用擴充功能資訊清單中指定的更新網址。
+
+      舉例來說，<ph name="EXTENSION_POLICY_EXAMPLE" /> 會透過標準 Chrome 線上應用程式商店「更新」網址安裝「<ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />」應用程式。如需進一步瞭解如何代管擴充功能，請參閱 <ph name="LINK_TO_EXTENSION_DOC2" />。</translation>
 <translation id="8889588091638298603">Quirks Server 可提供特定硬體的設定檔，例如
       可供調整螢幕校正的 ICC 顯示設定檔。
 
@@ -2274,11 +2277,6 @@
 <translation id="9088444059179765143">設定自動偵測時區方式</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
 <translation id="9098553063150791878">HTTP 驗證政策</translation>
-<translation id="9104138886225968319">將監控流量訊號傳送到管理伺服器，
-      伺服器即可偵測裝置是否處於離線狀態。
-
-      如果將這項政策設為 True，系統會傳送監控流量訊號。
-      如果設為 False 或未設定，系統就不會傳送任何流量訊號。</translation>
 <translation id="9112897538922695510">允許您註冊通訊協定處理常式清單 (這是一律建議使用的政策)。屬性 |protocol| 應設定為配置 (例如「mailto」)，而屬性 |url| 則應設定為處理該配置的應用程式的網址模式。模式可包含「%s」(如果有的話，會由受處理的網址取代)。
 
           由政策註冊的通訊協定處理常式會與由使用者註冊的通訊協定處理常式合併，兩者皆可供使用。使用者可以安裝新的預設處理常式來覆寫由政策安裝的通訊協定處理常式，但無法移除由政策註冊的通訊協定處理常式。</translation>

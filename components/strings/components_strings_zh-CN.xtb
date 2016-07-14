@@ -10,14 +10,12 @@
     为了避免产生过多流量，进而防止情况变得更糟，系统已暂时禁止向该网址发送请求。</translation>
 <translation id="106701514854093668">桌面书签</translation>
 <translation id="1080116354587839789">适合窗口宽度</translation>
-<translation id="1091911885099639251">正在验证信用卡</translation>
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">选中后，Chrome 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
-<translation id="113770840981343808">请输入信用卡正面显示的 4 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1152921474424827756">访问<ph name="URL" />的<ph name="BEGIN_LINK" />缓存副本<ph name="END_LINK" /></translation>
 <translation id="1158211211994409885"><ph name="HOST_NAME" /> 意外终止了连接。</translation>
@@ -47,7 +45,6 @@
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">打印</translation>
 <translation id="1442912890475371290">尝试<ph name="BEGIN_LINK" />访问 <ph name="DOMAIN" /> 中的网页<ph name="END_LINK" />的行为已遭阻止。</translation>
-<translation id="1455235771979731432">验证您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
 <translation id="1519264250979466059">构建日期</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
@@ -121,7 +118,6 @@
 <translation id="2317259163369394535"><ph name="DOMAIN" /> 要求提供用户名和密码。</translation>
 <translation id="2328300916057834155">已忽略索引<ph name="ENTRY_INDEX" />中的无效书签</translation>
 <translation id="2354001756790975382">其他书签</translation>
-<translation id="2357783041215512127">使用 <ph name="CREDIT_CARD" /> 付款</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2365563543831475020">于 <ph name="CRASH_TIME" /> 获取的崩溃报告未上传</translation>
 <translation id="2367567093518048410">级别</translation>
@@ -170,7 +166,6 @@
 <translation id="2835170189407361413">清除表单</translation>
 <translation id="2837049386027881519">此连接必须使用较旧版本的 TLS 或 SSL 协议重试，这通常意味着该服务器使用的软件版本过低或者可能存在其他安全问题。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 上的服务器证书似乎是伪造的。</translation>
-<translation id="2855922900409897335">验证您的 <ph name="CREDIT_CARD" /></translation>
 <translation id="2889159643044928134">不重新加载</translation>
 <translation id="2896499918916051536">不支持该插件。</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
@@ -183,7 +178,6 @@
 <translation id="2969319727213777354">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Google Chrome 无法验证这些证书。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
 <translation id="2985306909656435243">启用后，Chromium 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
-<translation id="2989984781570875765">请输入 <ph name="CREDIT_CARD" /> 背面显示的到期日期和 3 位数银行卡验证码 (CVC)</translation>
 <translation id="2991174974383378012">与网站分享</translation>
 <translation id="3005723025932146533">显示已保存的版本</translation>
 <translation id="3010559122411665027">列表条目“<ph name="ENTRY_INDEX" />”：<ph name="ERROR" /></translation>
@@ -205,7 +199,6 @@
       <ph name="PLATFORM_TEXT" /></translation>
 <translation id="3202578601642193415">最后</translation>
 <translation id="3207960819495026254">已加书签</translation>
-<translation id="3219579145727097045">输入信用卡正面显示的到期日期和 4 位数银行卡验证码 (CVC)</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
 <translation id="3226128629678568754">按“重新加载”按钮，重新提交加载该网页所需的数据。</translation>
 <translation id="3228969707346345236">此网页已经是<ph name="LANGUAGE" />网页，因此无法翻译。</translation>
@@ -218,7 +211,6 @@
 <translation id="3345135638360864351">无法将您访问此网站的请求发送给<ph name="NAME" />，请重试。</translation>
 <translation id="3355823806454867987">更改代理服务器设置...</translation>
 <translation id="3369192424181595722">时钟错误</translation>
-<translation id="3369366829301677151">更新并验证您的 <ph name="CREDIT_CARD" /></translation>
 <translation id="337363190475750230">已取消配置</translation>
 <translation id="3377188786107721145">策略解析错误</translation>
 <translation id="3380365263193509176">未知错误</translation>
@@ -264,7 +256,6 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />检查代理服务器、防火墙和 DNS 配置<ph name="END_LINK" /></translation>
 <translation id="3739623965217189342">您复制的链接</translation>
 <translation id="3744899669254331632">您目前无法访问 <ph name="SITE" />，因为此网站发送了 Chromium 无法处理的杂乱凭据。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
-<translation id="3748071062818261683">验证信用卡</translation>
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
 <translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
 <translation id="3788090790273268753">此网站的证书将于 2016 年过期，并且此网站的证书链包含使用 SHA-1 签署的证书。</translation>
@@ -301,7 +292,6 @@
 <translation id="4250680216510889253">否</translation>
 <translation id="425582637250725228">系统可能不会保存您所做的更改。</translation>
 <translation id="4258748452823770588">签名无效</translation>
-<translation id="4268298190799576220">Chromium 目前无法验证您的信用卡，请稍后重试。</translation>
 <translation id="4269787794583293679">（无用户名）</translation>
 <translation id="4300246636397505754">家长建议</translation>
 <translation id="4304224509867189079">登录</translation>
@@ -322,7 +312,6 @@
 <translation id="4506599922270137252">联系系统管理员</translation>
 <translation id="450710068430902550">与管理员分享</translation>
 <translation id="4522570452068850558">详细信息</translation>
-<translation id="4553532082208702698">请输入 <ph name="CREDIT_CARD" /> 正面显示的 4 位数银行卡验证码 (CVC)</translation>
 <translation id="4558551763791394412">尝试停用扩展程序。</translation>
 <translation id="4587425331216688090">从 Chrome 中移除地址？</translation>
 <translation id="4592951414987517459">您与 <ph name="DOMAIN" /> 之间的连接采用新型加密套件进行了加密。</translation>
@@ -330,7 +319,6 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">您正在查看的是扩展程序页面。</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
-<translation id="4683417246209150705">请输入 <ph name="CREDIT_CARD" /> 背面显示的 3 位数银行卡验证码 (CVC)</translation>
 <translation id="4697214168136963651">已阻止 <ph name="URL" /></translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /><ph name="SENTENCE2" /></translation>
 <translation id="4708268264240856090">您的连接已中断</translation>
@@ -411,10 +399,7 @@
 <translation id="5629630648637658800">无法加载策略设置</translation>
 <translation id="5631439013527180824">设备管理令牌无效</translation>
 <translation id="5650551054760837876">未找到搜索结果。</translation>
-<translation id="5663999524854166235">请输入信用卡背面显示的 3 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
-<translation id="5696590819423335174">请输入 <ph name="CREDIT_CARD" /> 正面显示的到期日期和 4 位数银行卡验证码 (CVC)</translation>
-<translation id="5699278517904102888">请输入 <ph name="CREDIT_CARD" /> 背面显示的 3 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5785756445106461925">而且，此页中包含其他不安全的资源。他人能在这些资源传输过程中进行查看，攻击者也可以修改这些资源，从而改变此页的外观。</translation>
@@ -438,7 +423,6 @@
 <translation id="604124094241169006">自动</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
-<translation id="6093795393556121384">您的信用卡已成功验证</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6150607114729249911">糟糕！您必须先征得家长同意，然后才能访问此网页。</translation>
@@ -467,7 +451,6 @@
 <translation id="6458467102616083041">由于默认搜索被政策停用，政策值已被忽略。</translation>
 <translation id="647261751007945333">设备政策</translation>
 <translation id="6489534406876378309">开始上传崩溃数据</translation>
-<translation id="6518133107902771759">验证</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6550675742724504774">选项</translation>
 <translation id="6596325263575161958">加密选项</translation>
@@ -475,7 +458,6 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜索</translation>
 <translation id="6634865548447745291">您目前无法访问<ph name="SITE" />，因为<ph name="BEGIN_LINK" />此证书已被撤消<ph name="END_LINK" />。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
-<translation id="6646897916597483132">输入信用卡正面显示的 4 位数银行卡验证码 (CVC)</translation>
 <translation id="6656103420185847513">修改文件夹</translation>
 <translation id="6660210980321319655">自动报告时间：<ph name="CRASH_TIME" /></translation>
 <translation id="6671697161687535275">要从 Chromium 中移除表单填写建议吗？</translation>
@@ -560,7 +542,6 @@
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐户密码加密了数据。请在下方输入。</translation>
-<translation id="7633887239437305289">请输入 <ph name="CREDIT_CARD" /> 正面显示的 4 位数银行卡验证码 (CVC) 以进行验证</translation>
 <translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="765676359832457558">隐藏高级设置...</translation>
@@ -600,6 +581,7 @@
 <translation id="8034955203865359138">未找到任何历史记录条目。</translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
+<translation id="8131740175452115882">确认</translation>
 <translation id="8134994873729925007">找不到 <ph name="HOST_NAME" /> 的服务器 <ph name="BEGIN_ABBR" />DNS 地址<ph name="END_ABBR" />。</translation>
 <translation id="8149426793427495338">您的计算机已进入休眠模式。</translation>
 <translation id="8150722005171944719">无法读取 <ph name="URL" /> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
@@ -648,7 +630,6 @@
 <translation id="8798099450830957504">默认</translation>
 <translation id="8804164990146287819">隐私权政策</translation>
 <translation id="8820817407110198400">书签</translation>
-<translation id="8824019021993735287">Chrome 目前无法验证您的信用卡，请稍后重试。</translation>
 <translation id="8834246243508017242">允许利用通讯录中的信息自动填充…</translation>
 <translation id="883848425547221593">其他书签</translation>
 <translation id="884923133447025588">未找到任何吊销机制。</translation>
@@ -665,7 +646,6 @@
 <translation id="8954894007019320973">（续）</translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8987927404178983737">月</translation>
-<translation id="8988760548304185580">输入信用卡背面显示的到期日期和 3 位数银行卡验证码 (CVC)</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8997023839087525404">该服务器提供了一个未通过证书透明度政策公开披露的证书。某些证书必须通过证书透明度政策进行公开披露，以确保它们值得信任且能保护用户免遭攻击。</translation>
 <translation id="9001074447101275817">代理 (<ph name="DOMAIN" />) 要求提供用户名和密码。</translation>
@@ -678,7 +658,6 @@
 <translation id="9065203028668620118">修改</translation>
 <translation id="9092364396508701805"><ph name="HOST_NAME" /> 网页无法正常运作</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
-<translation id="9125941078353557812">输入信用卡背面显示的 3 位数银行卡验证码 (CVC)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9148507642005240123">撤消修改(&amp;U)</translation>
 <translation id="9157595877708044936">正在设置...</translation>

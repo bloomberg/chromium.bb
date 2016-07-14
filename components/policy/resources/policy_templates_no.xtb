@@ -910,11 +910,6 @@
 <translation id="3864818549971490907">Standardinnstilling for programtillegg</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3866530186104388232">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, viser <ph name="PRODUCT_OS_NAME" /> eksisterende brukere på påloggingssiden og tillate valg av én. Hvis denne retningslinjen er angitt som Usann, ber <ph name="PRODUCT_OS_NAME" /> om brukernavn og passord ved pålogging.</translation>
-<translation id="3866824067696705379">Hvor ofte overvåkningsimpulser sendes, i millisekunder.
-
-      Hvis denne regelen ikke angis, er standardfrekvensen 3 minutter. 
-      Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer. 
-      Verdier utenfor dette området, blir begrenset til dette området.</translation>
 <translation id="3868347814555911633">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Oppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
@@ -1130,7 +1125,6 @@
 
           Hvis du ikke spesifiserer denne regelen, delegerer ikke <ph name="PRODUCT_NAME" /> brukerlegitimasjon selv om en tjener registreres som intranett.</translation>
 <translation id="4752880493649142945">Klientsertifikatet for tilkobling til RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Frekvensen av overvåkningsimpulser</translation>
 <translation id="4791031774429044540">Aktiver tilgjengelighetsfunksjonen for den store musepekeren.
 
           Hvis denne innstillingen angis til «true», er den store musepekeren alltid aktivert.
@@ -1915,7 +1909,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7511361072385293666">Hvis denne regelen settes til «sann» eller ikke spesifiseres, er bruk av QUIC-protokollen tillatt i <ph name="PRODUCT_NAME" />.
       Hvis denne regelen settes til «usann», er ikke bruk av QUIC-protokollen tillatt.</translation>
 <translation id="7519251620064708155">Tillat nøkkelgenerering på disse nettstedene</translation>
-<translation id="7523476810162382273">Send overvåkingspulser til administrasjonstjeneren</translation>
 <translation id="7529100000224450960">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får åpne forgrunnsvinduer.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
@@ -1983,6 +1976,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, er ikke to-delt autentisering i bruk. I stedet må brukere oppgi en egendefinert PIN-kode (standard atferd).</translation>
 <translation id="7750991880413385988">Åpne Ny fane-siden</translation>
+<translation id="7761446981238915769">Konfigurer listen over installerte apper på påloggingsskjermen</translation>
 <translation id="7761526206824804472">Angir én eller flere anbefalte lokaliteter for en offentlig økt, slik at brukerne enkelt kan velge en av disse lokalitetene.
 
       Brukeren kan velge en lokalitet og et tastaturoppsett før vedkommende starter en offentlig økt. Alle lokaliteter som støttes av <ph name="PRODUCT_OS_NAME" />, listes som standard opp i alfabetisk rekkefølge. Du kan bruke denne regelen til å flytte et sett med anbefalte lokaliteter til toppen av listen.
@@ -2388,6 +2382,34 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="8858642179038618439">Bruk tvungen sikkerhetsmodus i YouTube</translation>
 <translation id="8864975621965365890">Ignorerer avslagsforespørselen som vises når et nettsted gjengis av <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
+<translation id="88890388118515381">
+      Spesifiserer en liste over apper som installeres stille på påloggingsskjermen
+      uten brukerinteraksjon og ikke kan avinstalleres.
+      Det er underforstått at alle tillatelser apper ber om, gis
+      uten brukerinteraksjon. Dette gjelder også eventuelle
+      tillatelser fremtidige versjoner av appen ber om.
+
+      Hvis en app som tidligere er tvangsinstallert, fjernes fra
+      denne listen, avinstallerer <ph name="PRODUCT_NAME" /> den automatisk.
+
+      Hvert av elementene i listen er en streng som
+      inneholder en utvidelses-ID og en
+      «oppdatering»-nettadresse, atskilt med semikolon (<ph name="SEMICOLON" />).
+      Utvidelses-ID-en er den 32-tegn lange strengen du for
+      eksempel finner i <ph name="CHROME_EXTENSIONS_LINK" /> når du er i utviklermodus.
+      «Oppdatering»-nettadressen peker til et
+      oppdateringsmanifest i XML-format, som beskrevet her:
+      <ph name="LINK_TO_EXTENSION_DOC1" />. Vær oppmerksom på at
+      «oppdatering»-nettadressen som angis i denne regelen,
+      bare brukes for den første installasjonen. Påfølgende
+      oppdateringer av utvidelsen bruker
+      oppdateringsnettadressen som er beskrevet i
+      utvidelsens manifest.
+
+      <ph name="EXTENSION_POLICY_EXAMPLE" /> installerer for eksempel <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />-appen fra
+      «oppdatering»-nettadressen som er standard for
+      Chrome Nettmarked. Gå til <ph name="LINK_TO_EXTENSION_DOC2" /> for å finne ut mer om
+      å være vert for utvidelser.</translation>
 <translation id="8889588091638298603">Med Quirks Server får du konfigurasjonsfiler som er spesifikke for ulike typer
       maskinvare, for eksempel ICC-visningsprofiler du kan bruke for å justere
       skjermkalibrering.
@@ -2442,11 +2464,6 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="9088444059179765143">Konfigurer metoden for automatisk påvisning av tidssoner</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
-<translation id="9104138886225968319">Send overvåkningsimpulser til administrasjonstjeneren for å tillate at
-      tjeneren registrerer om enheten er uten nett.
-
-      Hvis denne regelen settes til true (sann), blir overvåkningsimpulser sendt. 
-      Hvis den settes til false (usann) eller ikke spesifiseres, sendes ingen overvåkningsimpulser.</translation>
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.
 
           Protokollbehandlere som registreres via denne innstillingen, slås sammen med de som er registrert av brukeren, og begge er tilgjengelige for bruk. Brukeren kan overstyre protokollbehandlerne som innstillingen har installert, ved å installere en ny standardbehandler, men kan ikke fjerne en protokollbehandler som er registrert via en innstilling.</translation>

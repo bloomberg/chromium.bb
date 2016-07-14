@@ -161,7 +161,7 @@
 <translation id="2858017024918511904">सभी ChromeVox आदेश और शॉर्टकट एक्सप्लोर करने के लिए, Search + Period दबाएं, फिर मेनू पर नेविगेट करने के लिए तीर कुंजियों का उपयोग करें और किसी आदेश को सक्रिय करने के लिए Enter का उपयोग करें.</translation>
 <translation id="2864481629947106776">पिछला लिंक</translation>
 <translation id="2873259058405069099">तालिका के प्रारंभ पर जाएं</translation>
-<translation id="288178314850623291">सीधे तत्वों के विशिष्ट प्रकारों पर जाने के लिए सीधे जाने वाले आदेश का उपयोग करें. शीर्षकों के बीच सीधे आगे की ओर जाने के लिए, Search + H दबाएं या पीछे जाने के लिए Search + Shift + H दबाएं.</translation>
+<translation id="288178314850623291">तत्वों के विशिष्ट प्रकारों पर सीधे पहुंचने के लिए, सीधे जाने वाले आदेश का उपयोग करें. शीर्षकों के बीच सीधे आगे की ओर जाने के लिए, Search + H दबाएं या पीछे जाने के लिए Search + Shift + H दबाएं.</translation>
 <translation id="2894654529758326923">जानकारी</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{बायां कोष्ठक}one{# बाएं कोष्ठक}other{# बाएं कोष्ठक}}</translation>
 <translation id="2911433807131383493">ChromeVox निर्देश खोलें</translation>
@@ -305,7 +305,7 @@
 <translation id="3897092660631435901">मेनू</translation>
 <translation id="3909320334364316587">पिछले स्‍तर 6 का शीर्षक</translation>
 <translation id="3914173277599553213">आवश्यक</translation>
-<translation id="3951424903203718058">क्या आप ChromeVox Next बोले गए फ़ीडबैक का पहली बार उपयोग कर रहे हैं? ChromeVox Next के साथ प्रारंभ करने के लिए यह त्वरित ट्यूटोरियल महत्वपूर्ण बातों को समझाता है.</translation>
+<translation id="3951424903203718058">क्या आप ChromeVox Next मौखिक फ़ीडबैक का पहली बार उपयोग कर रहे हैं? ChromeVox Next के साथ प्रारंभ करने के लिए यह त्वरित ट्यूटोरियल महत्वपूर्ण बातों को समझाता है.</translation>
 <translation id="3962990492275676168">वर्तमान स्‍थान से पढ़ना प्रारंभ करें</translation>
 <translation id="4004802134384979325">चेक किया गया</translation>
 <translation id="4006140876663370126">img</translation>
@@ -518,7 +518,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="5876817486144482042">बोली वॉल्‍यूम घटाएं</translation>
 <translation id="5887397643266327462">ब्रेल कैप्शन सक्षम किए गए.</translation>
 <translation id="5891934789323004067">तालिका</translation>
-<translation id="5919442531159595654">प्रतिलिपि बनाएं.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{बराबर}one{# बराबर चिह्न}other{# बराबर चिह्न}}</translation>
 <translation id="5939518447894949180">रीसेट करें</translation>
 <translation id="5948123859135882163">गणितीय व्यंजकों की व्याख्या को संरचनात्मक और शब्दार्थ विज्ञान के बीच टॉगल करें</translation>
@@ -653,7 +652,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="7532613204005497612">जून</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, स्‍लाइडर</translation>
 <translation id="7552432549459840808">उपयोगी Chrome शॉर्टकट</translation>
-<translation id="7586163296341959563">चिपकाएं.</translation>
 <translation id="7596919493010894443">साफ़ किया गया अनुभाग</translation>
 <translation id="7604026522577407655">वर्तमान स्‍तंभ के प्रारंभ पर जाएं</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Chrome ब्राउज़र मेनू खोलने के लिए, A
 <translation id="817440585505441544">{COUNT,plural, =1{अंडरस्कोर}one{# अंडरस्कोर}other{# अंडरस्कोर}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">पूर्ण स्‍क्रीन टॉगल करें</translation>
-<translation id="81960742267269908">काटें.</translation>
 <translation id="8199231515320852133">वर्तमान सेल के शीर्षलेखों को प्रदर्शित करें</translation>
 <translation id="820417203470636242">खाली सेल.</translation>
 <translation id="8215202828671303819">एकाधिक चयन</translation>

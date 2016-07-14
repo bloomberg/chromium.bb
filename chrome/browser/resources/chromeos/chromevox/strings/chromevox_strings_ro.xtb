@@ -151,7 +151,7 @@
 <translation id="2777845298774924149">S-a ieșit</translation>
 <translation id="2800204403141299078">Nu mai există elemente diferite.</translation>
 <translation id="2800780099804980316">Nu există un titlu de nivel 1 anterior.</translation>
-<translation id="2811019999044652585">Pentru a trece la alte părți ale ecranului, cum ar fi bare de instrumente sau bara de sistem, apasă pe Ctrl + tasta Înainte .Pe Chromebook, tasta Înainte se află imediat deasupra tastei 2.</translation>
+<translation id="2811019999044652585">Pentru a trece la alte părți ale ecranului, cum ar fi bare de instrumente sau bara de sistem, apasă pe Ctrl + tasta Înainte. Pe Chromebook, tasta Înainte se află imediat deasupra tastei 2.</translation>
 <translation id="2811204574343810641">Rând</translation>
 <translation id="2816654101880605877">Nu există un glisor următor.</translation>
 <translation id="2841013758207633010">Oră</translation>
@@ -492,7 +492,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5695831708991916435">Următoarele câteva comenzi rapide nu sunt comenzi ChromeVox, dar sunt foarte utile pentru a folosi Chrome la potențial maxim.
 Pentru a naviga înainte de la un element acționabil la altul, cum ar fi butoane și linkuri, apasă pe tasta Tab. Pentru a naviga înapoi, apasă pe Shift + Tab.
 Pentru a accesa caseta de adrese a browserului Chrome, numită și casetă polivalentă, apasă pe Ctrl + L.
-Pentru a deschide și a accesa automat o filă nouă, apasă pe Ctrl + L. Cursorul se va afla în caseta polivalentă.
+Pentru a deschide și a accesa automat o filă nouă, apasă pe Ctrl + T. Cursorul se va afla în caseta polivalentă.
 Pentru a închide o filă, apasă pe Ctrl + W.
 Pentru a trece înainte de la o filă deschisă la alta, folosește Ctrl + Tab.
 Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
@@ -518,7 +518,6 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="5876817486144482042">Scădeți volumul vocii</translation>
 <translation id="5887397643266327462">Subtitrările Braille sunt activate.</translation>
 <translation id="5891934789323004067">Tabel</translation>
-<translation id="5919442531159595654">copiați.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{egal}few{# semne egal}other{# de semne egal}}</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="5948123859135882163">Comutați interpretarea expresiilor matematice între structurală și semantică</translation>
@@ -594,7 +593,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="6897341342232909480">Deplasează spre stânga</translation>
 <translation id="6901540140423170855">dată</translation>
 <translation id="6910211073230771657">Șters</translation>
-<translation id="6910969481785184048">Activează, Dezactivează și Oprește</translation>
+<translation id="6910969481785184048">Activează, dezactivează și oprește</translation>
 <translation id="6911965441508464308">Nu există celule mai sus.</translation>
 <translation id="6919104639734799681">Afișați lista de tabele</translation>
 <translation id="6964088412282673743">Nu există o comandă anterioară.</translation>
@@ -653,7 +652,6 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="7532613204005497612">Iunie</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, glisor</translation>
 <translation id="7552432549459840808">Comenzi rapide utile pentru Chrome</translation>
-<translation id="7586163296341959563">inserați.</translation>
 <translation id="7596919493010894443">secțiune eliminată</translation>
 <translation id="7604026522577407655">Accesați începutul coloanei curente</translation>
 <translation id="7604451927827590395">titlu</translation>
@@ -705,7 +703,6 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{caracter de subliniere}few{# caractere de subliniere}other{# de caractere de subliniere}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">activează/dezactivează ecranul complet</translation>
-<translation id="81960742267269908">decupați.</translation>
 <translation id="8199231515320852133">Anunță anteturile celulei curente</translation>
 <translation id="820417203470636242">Celulă goală.</translation>
 <translation id="8215202828671303819">Selectare multiplă</translation>

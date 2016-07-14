@@ -518,7 +518,6 @@
 <translation id="5876817486144482042">Zmanjšanje glasnosti govora</translation>
 <translation id="5887397643266327462">Braillovi napisi so omogočeni.</translation>
 <translation id="5891934789323004067">Tabela</translation>
-<translation id="5919442531159595654">kopiraj.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{enačaj}one{# enačaj}two{# enačaja}few{# enačaji}other{# enačajev}}</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="5948123859135882163">Preklop načina obravnavanja matematičnih obrazcev med strukturnim in semantičnim načinom</translation>
@@ -653,7 +652,6 @@
 <translation id="7532613204005497612">junij</translation>
 <translation id="7540083713905917247">drsnik z vrednostjo <ph name="VALUE" /> in imenom <ph name="NAME" /></translation>
 <translation id="7552432549459840808">Uporabne bližnjice za Chrome</translation>
-<translation id="7586163296341959563">prilepi.</translation>
 <translation id="7596919493010894443">izbor počiščen</translation>
 <translation id="7604026522577407655">Pomik na začetek trenutnega stolpca</translation>
 <translation id="7604451927827590395">glav</translation>
@@ -705,7 +703,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{podčrtaj}one{# podčrtaj}two{# podčrtaja}few{# podčrtaji}other{# podčrtajev}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">preklop celozaslonskega načina</translation>
-<translation id="81960742267269908">izreži.</translation>
 <translation id="8199231515320852133">Obvestilo o glavah trenutne celice</translation>
 <translation id="820417203470636242">Prazna celica.</translation>
 <translation id="8215202828671303819">Sočasna izbira več elementov</translation>

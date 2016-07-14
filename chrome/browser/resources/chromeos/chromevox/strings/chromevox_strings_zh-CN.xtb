@@ -518,7 +518,6 @@
 <translation id="5876817486144482042">调小朗读音量</translation>
 <translation id="5887397643266327462">已启用盲文字幕功能。</translation>
 <translation id="5891934789323004067">表格</translation>
-<translation id="5919442531159595654">复制。</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{1个等号}other{#个等号}}</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="5948123859135882163">在数学表达式的结构化解释和语义解释之间来回切换</translation>
@@ -653,7 +652,6 @@
 <translation id="7532613204005497612">6月</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />，<ph name="NAME" />，滑块</translation>
 <translation id="7552432549459840808">实用的 Chrome 快捷键</translation>
-<translation id="7586163296341959563">粘贴。</translation>
 <translation id="7596919493010894443">已清除所选内容</translation>
 <translation id="7604026522577407655">转到当前列的开头</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@
 <translation id="817440585505441544">{COUNT,plural, =1{1个下划线}other{#个下划线}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">切换全屏模式</translation>
-<translation id="81960742267269908">剪切。</translation>
 <translation id="8199231515320852133">读出当前单元格的标题</translation>
 <translation id="820417203470636242">空白单元格。</translation>
 <translation id="8215202828671303819">多选</translation>

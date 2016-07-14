@@ -468,7 +468,7 @@
 <translation id="2483146640187052324">Ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
 <translation id="2486371469462493753">Melumpuhkan penguatkuasaan keperluan Ketelusan Sijil kepada URL yang disenaraikan.
 
-      Dasar ini membenarkan sijil bagi nama hos dalam URL yang dinyatakan, tidak didedahkan melalui Ketelusan Sijil. Pada umumnya, sijil yang tidak didedahkan kepada umum dengan betul, dikendalikan sebagai sijil yang tidak dipercayai. Namun, dasar ini membenarkan sijil yang tidak dipercayai itu untuk terus digunakan, tetapi hal ini akan menyukarkan lagi kami mengesan sijil yang disalah keluarkan oleh hos tersebut.
+      Dasar ini membenarkan sijil bagi nama hos dalam URL yang dinyatakan, tidak didedahkan melalui Ketelusan Sijil. Pada umumnya, sijil yang tidak didedahkan kepada umum dengan betul, dikendalikan sebagai sijil yang tidak dipercayai. Namun, dasar ini membenarkan sijil yang tidak dipercayai itu untuk terus digunakan, tetapi hal ini akan menyukarkan lagi kami mengesan sijil yang tersilap dikeluarkan oleh hos tersebut.
 
       Pola URL diformatkan mengikut https://www.chromium.org/administrators/url-blacklist-filter-format. Walau bagaimanapun, oleh sebab sijil sah untuk nama hos yang tertentu tanpa mengira skim, port atau laluannya, hanya bahagian nama hos URL yang dipertimbangkan. Kad bebas hos tidak disokong.
 
@@ -702,9 +702,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3072847235228302527">Tetapkan Syarat Perkhidmatan untuk akaun setempat peranti</translation>
 <translation id="3096595567015595053">Senarai pemalam yang didayakan</translation>
 <translation id="3101501961102569744">Pilih cara untuk menentukan tetapan pelayan proksi</translation>
-<translation id="3117676313396757089">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 57 (sekitar Mac 2017) dan dasar ini akan berhenti berfungsi selepas itu.
+<translation id="3117676313396757089">Amaran: DHE akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 57 (sekitar Mac 2017) dan dasar ini akan berhenti berfungsi selepas itu.
 
-      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer RC4 dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini merupakan langkah sementara dan pelayan harus dikonfigurasikan semula.
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer DHE dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mendayakan suit sifer DHE dan mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini merupakan langkah sementara dan pelayan harus dikonfigurasikan semula.
 
       Pelayan digalakkan supaya berhijrah kepada suit sifer ECDHE. Jika tidak boleh, pastikan suit sifer yang menggunakan pertukaran kunci RSA didayakan.</translation>
 <translation id="3153348162326497318">Membolehkan anda menentukan sambungan yang TIDAK boleh dipasang oleh pengguna. Sambungan yang telah dipasang akan dialih keluar jika telah disenaraihitamkan.
@@ -799,7 +799,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini ditetapkan kepada 'BlockGeolocation', perkongsian lokasi tidak dibenarkan untuk apl ARC.
 
-          Jika dasar ini dibiarkan dan tidak ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
+          Jika dasar ini dibiarkan tanpa ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
 
@@ -937,15 +937,10 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           URL cadangan Google boleh ditentukan sebagai: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
-          Dasar ini hanya akan dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
+          Dasar ini hanya akan diambil kira jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="3864818549971490907">Tetapan pemalam lalai</translation>
 <translation id="3866249974567520381">Huraian</translation>
 <translation id="3866530186104388232">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan memaparkan pengguna sedia ada pada skrin log masuk dan membenarkan untuk memiilih satu. Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_OS_NAME" /> akan menggunakan gesaan nama pengguna/kata laluan untuk log masuk.</translation>
-<translation id="3866824067696705379">Berapa kerap pemantauan degupan jantung dihantar, dalam milisaat.
-
-      Jika dasar ini dinyahtetapkan, kekerapan lalai ialah 3 minit. Kekerapan minimum
-      ialah 30 saat dan kekerapan maksimum ialah 24 jam - nilai di luar 
-      julat ini akan diapit menurut julat ini.</translation>
 <translation id="3868347814555911633">Dasar ini aktif dalam mod runcit sahaja.
 
       Senarai sambungan yang dipasang secara automatik untuk pengguna Tunjuk Cara, bagi peranti dalam mod runcit. Sambungan ini disimpan dalam peranti dan boleh dipasang semasa di luar talian selepas pemasangan.
@@ -1173,7 +1168,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika anda membiarkan dasar ini tanpa ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan mewakilkan bukti kelayakan pengguna walaupun pelayan dikesan sebagai Intranet.</translation>
 <translation id="4752880493649142945">Sijil pelanggan untuk menyambung kepada RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Kekerapan pemantauan degupan jantung</translation>
 <translation id="4791031774429044540">Dayakan ciri kebolehcapaian kursor besar.
 
           Jika dasar ini ditetapkan kepada benar, kursor besar akan sentiasa didayakan.
@@ -1965,7 +1959,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7511361072385293666">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, penggunaan protokol QUIC dalam <ph name="PRODUCT_NAME" /> dibenarkan.
       Jika dasar ini ditetapkan kepada palsu, penggunaan protokol QUIC tidak dibenarkan.</translation>
 <translation id="7519251620064708155">Benarkan penghasilan kunci pada tapak ini</translation>
-<translation id="7523476810162382273">Hantar pemantauan degupan jantung ke pelayan pengurusan</translation>
 <translation id="7529100000224450960">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk membuka pop timbul.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPopupsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
@@ -2033,6 +2026,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka dua faktor tidak akan didayakan dan gelagat lalai menggunakan PIN yang ditentukan pengguna akan digunakan.</translation>
 <translation id="7750991880413385988">Buka Halaman Tab Baharu</translation>
+<translation id="7761446981238915769">Konfigurasikan senarai apl yang dipasang pada skrin log masuk</translation>
 <translation id="7761526206824804472">Menetapkan satu atau beberapa penempatan yang disyorkan untuk sesi awam, membolehkan para pengguna memilih satu daripada penempatan ini dengan mudah.
 
       Pengguna boleh memilih satu penempatan dan reka letak papan kekunci sebelum memulakan sesi awam. Secara lalai, semua penempatan yang disokong oleh <ph name="PRODUCT_OS_NAME" /> disenaraikan dalam urutan abjad. Anda boleh menggunakan dasar ini untuk mengalihkan satu set penempatan yang disyorkan ke bahagian atas senarai.
@@ -2456,6 +2450,28 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="8858642179038618439">Paksa Mod Keselamatan YouTube</translation>
 <translation id="8864975621965365890">Menyekat gesaan penolakan yang dipaparkan apabila tapak dipaparkan oleh <ph name="PRODUCT_FRAME_NAME" /> .</translation>
 <translation id="8870318296973696995">Halaman utama</translation>
+<translation id="88890388118515381">
+      Menentukan senarai apl yang dipasang secara senyap pada skrin log masuk,
+      tanpa interaksi pengguna dan tidak boleh dinyahpasang.
+      Semua kebenaran yang diminta oleh apl diberikan
+      secara tersirat, tanpa interaksi pengguna, termasuk sebarang
+      kebenaran tambahan yang diminta oleh apl versi akan datang.
+
+      Jika apl yang telah dipasang secara paksa sebelum ini dialih keluar daripada
+      senarai ini, apl ini akan dinyahpasang secara automatik oleh <ph name="PRODUCT_NAME" />.
+
+      Setiap item senarai dasar ialah rentetan yang mengandungi ID sambungan
+      dan URL "kemas kini" yang dipisahkan oleh koma bertitik (<ph name="SEMICOLON" />). ID sambungan ialah rentetan 32 huruf
+      yang boleh ditmui misalnya pada <ph name="CHROME_EXTENSIONS_LINK" /> semasa berada dalam
+      mod pembangun. URL "kemas kini" hendaklah menunjukkan ke arah
+      dokumen XML Manifes Kemas Kini seperti yang diterangkan di <ph name="LINK_TO_EXTENSION_DOC1" />. Ambil
+      perhatian bahawa URL "kemas kini" yang ditetapkan dalam dasar ni hanya digunakan untuk
+      pemasangan awal; kemas kini sambungan yang berikutnya menggunakan
+      URL yang dinyatakan dalam manifes sambungan.
+
+      Sebagai contoh, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      memasang apl <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> daripada URL "kemas kini" standard Gedung Web
+      Chrome. Untuk mendapatkan maklumat lanjut tentang sambungan pengehosan, lihat: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Pelayan Quirks menyediakan fail konfigurasi khusus perkakasan seperti
       profil paparan ICC untuk melaras penentukuran monitor.
 
@@ -2509,12 +2525,6 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="9088444059179765143">Konfigurasi kaedah pengesanan zon waktu automatik</translation>
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>
 <translation id="9098553063150791878">Dasar untuk pengesahan HTTP</translation>
-<translation id="9104138886225968319">Hantar degupan jantung pemantauan ke pelayan pengurusan, untuk membenarkan
-      pelayan mengesan jika peranti itu di luar talian.
-
-      Jika dasar ini ditetapkan kepada benar, degupan jantung pemantauan akan 
-      dihantar. Jika ditetapkan kepada palsu atau tidak ditetapkan, maka tiada
-      degupan jantung akan dihantar.</translation>
 <translation id="9112897538922695510">Membolehkan anda mendaftar senarai pengendali protokol. Langkah ini hanya boleh menjadi dasar yang disyorkan. Sifat |protocol| hendaklah ditetapkan kepada skema seperti 'mailto' dan sifat |url| hendaklah ditetapkan kepada corak URL aplikasi yang mengendalikan skema. Corak boleh mengandungi '%s', di mana apabila disertakan akan digantikan oleh URL yang dikendalikan.
 
           Pengendali protokol yang didaftarkan oleh dasar digabungkan dengan protokol yang didaftarkan oleh pengguna dan kedua-duanya tersedia untuk digunakan. Pengguna boleh mengatasi pengendali protokol yang dipasang oleh dasar dengan memasang pengendali lalai baharu tetapi tidak boleh mengalih keluar pengendali protokol yang didaftarkan oleh dasar.</translation>

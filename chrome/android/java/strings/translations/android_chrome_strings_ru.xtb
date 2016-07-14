@@ -172,7 +172,6 @@
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="2932150158123903946">Хранилище Google <ph name="APP_NAME" /></translation>
 <translation id="2956410042958133412">Этим аккаунтом управляют <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2959609938957585241">Чтобы получить доступ к вкладкам на всех ваших устройствах, включите автосинхронизацию данных в настройках аккаунта на устройстве Android.</translation>
 <translation id="2960796085439532066">© Google Inc., <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
 <translation id="2979025552038692506">Выбранная вкладка инкогнито</translation>
@@ -416,7 +415,6 @@
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771382037724542929">Вы хотите заменить существующий файл "<ph name="FILE_NAME" />" в папке "<ph name="DIRECTORY_NAME" />"?</translation>
 <translation id="5777170031995031090">Укажите, как Google может использовать историю просмотров для персонализации Поиска, Рекламы и других сервисов.</translation>
-<translation id="579919059055796498">Удалить данные сайтов</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="5817918615728894473">Подключить</translation>
@@ -554,7 +552,6 @@
 <translation id="7301833672208172928">Включить</translation>
 <translation id="7327835590071894791">Вкладка переведена в фоновый режим.</translation>
 <translation id="7347770551817603360">Офлайн-контент</translation>
-<translation id="7358452246665489050">Подсчет...</translation>
 <translation id="7363354739009474003">Загрузка видео "<ph name="VIDEO_TITLE" />"…</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
 <translation id="7375125077091615385">Тип:</translation>

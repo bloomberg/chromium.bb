@@ -884,11 +884,6 @@
 <translation id="3864818549971490907">Zadana postavka dodataka</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> prikazat će postojeće korisnike na zaslonu prijave i dopustiti biranje jednog korisnika. Ako je to pravilo postavljeno na "lažno", sustav <ph name="PRODUCT_OS_NAME" /> upotrebljavat će korisničko ime i zaporku za prijavu.</translation>
-<translation id="3866824067696705379">Učestalost slanja praćenja otkucaja srca u milisekundama.
-
-      Ako se to pravilo ne postavi, zadana učestalost iznosi 3 minute. Minimalna
-      je učestalost 30 sekundi, a maksimalna 24 sata, a vrijednosti izvan tih
-      svest će se na taj raspon.</translation>
 <translation id="3868347814555911633">To je pravilo aktivno samo u prodajnom načinu.
 
       Navodi proširenja koja se automatski instaliraju za korisnike demo verzije, za uređaje u prodajnom načinu. Ta se proširenja spremaju na uređaj i mogu se instalirati izvanmrežno, nakon instalacije.
@@ -1089,7 +1084,6 @@
 
           Ako ne postavite ovo pravilo, <ph name="PRODUCT_NAME" /> neće dodijeliti vjerodajnice korisnika čak ni ako otkrije da je poslužitelj na intranetu.</translation>
 <translation id="4752880493649142945">Klijentski certifikat za povezivanje s pravilom RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Učestalost praćenja otkucaja srca</translation>
 <translation id="4791031774429044540">Omogući značajku pristupačnosti velikog pokazivača.
 
           Ako se to pravilo postavi na točno, veliki će pokazivač uvijek biti omogućen.
@@ -1812,7 +1806,6 @@
 <translation id="7511361072385293666">Ako se to pravilo postavi na "istinito" ili ako se ne postavi, dopuštena je upotreba QUIC protokola na proizvodu <ph name="PRODUCT_NAME" />.
       Ako se postavi na "neistinito", upotreba QUIC protokola nije dopuštena.</translation>
 <translation id="7519251620064708155">Dopusti generiranje ključeva na ovim web-lokacijama</translation>
-<translation id="7523476810162382273">Šalji praćenje mrežnog prometa poslužitelju za upravljanje</translation>
 <translation id="7529100000224450960">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima je dopušteno otvaranje skočnih prozora. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPopupsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="7529144158022474049">Čimbenik raspršivanja automatskog ažuriranja</translation>
 <translation id="7553535237300701827">Kada je to pravilo postavljeno, tijek autentifikacije prilikom prijave odvijat će se na jedan od sljedećih načina ovisno o vrijednosti te postavke:
@@ -2320,11 +2313,6 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
 <translation id="9088444059179765143">Konfiguriraj način automatskog otkrivanja vremenske zone</translation>
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
-<translation id="9104138886225968319">Šalje praćenje mrežnog prometa poslužitelju za upravljanje kako bi
-      poslužitelj mogao otkriti je li uređaj izvan mreže.
-
-      Ako se to pravilo postavi na "True", slat će se praćenje mrežnog prometa. Ako
-      se postavi na "False" ili se ne postavi, mrežni promet neće se slati.</translation>
 <translation id="9112897538922695510">Omogućuje vam registriranje popisa rukovatelja protokola. To pravilo može biti samo preporučeno. Entitet |protocol| treba se postaviti u shemu kao "mailto", a entitet |url| treba se postaviti u uzorak URL-a aplikacije koja rukuje shemom. Uzorak može uključivati "%s" koji će se, ako postoji, zamijeniti rukovanim URL-om.
 
           Rukovatelji protokola koji su registrirani pravilom spojeni su s onima koje je registrirao korisnik i za upotrebu su dostupne obje vrste rukovatelja. Korisnik može nadjačati rukovatelje protokola instalirane pravilom tako što će instalirati novog zadanog rukovatelja, ali ne može ukloniti onoga koji je pravilom registriran.</translation>

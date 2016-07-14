@@ -518,7 +518,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="5876817486144482042">Decrease speech volume</translation>
 <translation id="5887397643266327462">Braille captions enabled.</translation>
 <translation id="5891934789323004067">Table</translation>
-<translation id="5919442531159595654">copy.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{equal}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="5948123859135882163">Toggle interpretation of math expressions between structural and semantic</translation>
@@ -653,7 +652,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7532613204005497612">June</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, slider</translation>
 <translation id="7552432549459840808">Helpful Chrome Shortcuts</translation>
-<translation id="7586163296341959563">paste.</translation>
 <translation id="7596919493010894443">cleared selection</translation>
 <translation id="7604026522577407655">Go to beginning of the current column</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">toggle full screen</translation>
-<translation id="81960742267269908">cut.</translation>
 <translation id="8199231515320852133">Announce the headers of the current cell</translation>
 <translation id="820417203470636242">Empty cell.</translation>
 <translation id="8215202828671303819">Multi select</translation>

@@ -939,9 +939,6 @@
 <translation id="3864818549971490907">Noklusējuma spraudņu iestatījums</translation>
 <translation id="3866249974567520381">Apraksts</translation>
 <translation id="3866530186104388232">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> rāda esošos lietotājus pieteikšanās ekrānā un ļauj kādu izvēlēties. Ja politika ir iestatīta uz Aplama, produkts <ph name="PRODUCT_OS_NAME" /> pieteikšanās sesijai izmanto lietotājvārda/paroles uzvedni.</translation>
-<translation id="3866824067696705379">Periodisko pārraudzības kontrolziņojumu sūtīšanas biežums (milisekundēs).
-
-      Ja šī politika netiek iestatīta, noklusējuma biežums ir 3 minūtes. Minimālais biežums ir 30 sekundes, maksimālais — 24 stundas. Vērtības ārpus šī diapazona tiks palielinātas vai samazinātas, lai atbilstu diapazonam.</translation>
 <translation id="3868347814555911633">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Norāda paplašinājumus, kas tiek automātiski instalēti demonstrācijas lietotājam ierīcēs, kurās atvērts mazumtirdzniecības režīms. Šie paplašinājumi tiek saglabāti ierīcē, un pēc instalēšanas tos var instalēt bezsaistē.
@@ -1159,7 +1156,6 @@
 
           Ja šī politika netiks iestatīta, pārlūks <ph name="PRODUCT_NAME" /> neuzticēs lietotāja akreditācijas datus, pat ja serveris tiks atzīts par iekštīklu.</translation>
 <translation id="4752880493649142945">Klienta sertifikāts savienojuma izveidei ar “RemoteAccessHostTokenValidationUrl”</translation>
-<translation id="4768493164188395498">Periodisko pārraudzības kontrolziņojumu biežums</translation>
 <translation id="4791031774429044540">Iespējojiet liela kursora pieejamības funkciju.
 
           Ja šī politika ir iestatīta uz “true”, lielais kursors vienmēr būs iespējots.
@@ -1956,7 +1952,6 @@
 <translation id="7511361072385293666">Ja politikai ir iestatīta vērtība Patiesa vai tā nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauts lietot protokolu QUIC.
       Ja politikai ir iestatīta vērtība Nepatiesa, protokolu QUIC nav atļauts lietot.</translation>
 <translation id="7519251620064708155">Atļaut atslēgu ģenerēšanu šajās vietnēs</translation>
-<translation id="7523476810162382273">Periodisku kontrolziņojumu sūtīšana uz pārvaldības serveri</translation>
 <translation id="7529100000224450960">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts atvērt uznirstošos logus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -2024,6 +2019,7 @@
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, divu faktoru kods netiks iespējots un tiks izmantota noklusējuma kārtība — lietotāja definēts PIN.</translation>
 <translation id="7750991880413385988">Atvērt jaunas cilnes lapu</translation>
+<translation id="7761446981238915769">Konfigurēt instalēto lietotņu sarakstu pieteikšanās ekrānā</translation>
 <translation id="7761526206824804472">Iestata vienu vai vairākas ieteiktās lokalizācijas publiskai sesijai, ļaujot lietotājiem ērti izvēlēties kādu no attiecīgajām lokalizācijām.
 
       Pirms publiskas sesijas sākšanas lietotājs var izvēlēties lokalizāciju un tastatūras izkārtojumu. Pēc noklusējuma visas operētājsistēmā <ph name="PRODUCT_OS_NAME" /> atbalstītās lokalizācijas ir norādītas alfabēta secībā. Varat izmantot šo politiku, lai pārvietotu ieteikto lokalizāciju kopu uz saraksta augšdaļu.
@@ -2446,6 +2442,29 @@
 <translation id="8858642179038618439">YouTube piespiedu drošības režīms</translation>
 <translation id="8864975621965365890">Aizliedz noraidīšanas uzvedni, kas tiek parādīta, ja vietni renderē spraudnis <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Sākumlapa</translation>
+<translation id="88890388118515381">
+      Nosaka sarakstu ar lietotnēm, kas tiek instalētas pieteikšanās ekrānā
+      bez lietotāja iejaukšanās un kuras nevar atinstalēt.
+      Visas lietotņu pieprasītās atļaujas, tostarp visas šīs lietotnes
+      turpmāko versiju pieprasītās atļaujas
+      tiks piešķirtas, nejautājot par to lietotājam.
+
+      Ja no šī saraksta tiek noņemta lietotne, kas iepriekš ir instalēta piespiedu
+      kārtā, <ph name="PRODUCT_NAME" /> to automātiski atinstalē.
+
+      Katrs politikas saraksta vienums ir virkne, kas ietver paplašinājuma ID
+      un atjauninājuma URL, kas atdalīti ar semikolu (<ph name="SEMICOLON" />). Paplašinājuma ID ir
+      32 burtu virkne, kas ir redzama, piemēram, lapā <ph name="CHROME_EXTENSIONS_LINK" />
+      izstrādātāja režīmā. Atjauninājuma vietrādim URL ir jānovirza uz
+      atjauninājuma manifesta XML dokumentu, kā norādīts šeit: <ph name="LINK_TO_EXTENSION_DOC1" />.
+      Ņemiet vērā, ka šajā politikā iestatītais atjauninājuma URL tiek izmantots tikai
+      sākotnējai instalācijai; nākamajiem paplašinājuma atjauninājumiem
+      tiek izmantots paplašinājuma manifestā norādītais atjauninājuma URL.
+
+      Piemēram, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      instalē lietotni <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" />, izmantojot Chrome interneta veikala standarta 
+      atjauninājuma URL. Plašāku informāciju par paplašinājumu mitināšanu
+      skatiet šeit: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks serveris nodrošina aparatūras konfigurācijas failus, piemēram,
       lai pielāgotu ICC attēlojuma profilus monitora kalibrācijai.
 
@@ -2500,11 +2519,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 <translation id="9088444059179765143">Automātiskās laika joslas noteikšanas metodes konfigurēšana</translation>
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
 <translation id="9098553063150791878">HTTP autentifikācijas politikas</translation>
-<translation id="9104138886225968319">Pārvaldības serverim tiek nosūtīti periodiski pārraudzības kontrolziņojumi, lai
-      serverī varētu noteikt, vai ierīce ir bezsaistē.
-
-      Ja politikai ir iestatīta vērtība Patiesa, periodiski pārraudzības kontrolziņojumi tiek sūtīti.
-      Ja ir iestatīta vērtība Nepatiesa vai nav iestatīta nekāda vērtība, tie netiek sūtīti.</translation>
 <translation id="9112897538922695510">Ļauj reģistrēt protokolu apdarinātāju sarakstu. Šī var būt tikai ieteicama politika. Rekvizītā |protocol| ir jāiestata shēma, piemēram “mailto”, un rekvizītā |url| ir jāiestata tās lietojumprogrammas URL raksts, kura apstrādā shēmu. Parametrā var iekļaut “%s”, kas tiks aizstāts ar apstrādāto URL.
 
           Politikas reģistrētie protokolu apdarinātāji tiek apvienoti ar lietotāja reģistrētajiem, un tie visi ir pieejami lietošanai. Lietotājs var ignorēt politikas instalētos protokolu apdarinātājus, instalējot jaunu noklusējuma apdarinātāju, bet nevar noņemt politikas reģistrētu protokola apdarinātāju.</translation>

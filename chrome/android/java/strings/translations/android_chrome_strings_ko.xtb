@@ -50,6 +50,7 @@
 <translation id="1549000191223877751">다른 창으로 이동</translation>
 <translation id="1553358976309200471">Chrome 업데이트</translation>
 <translation id="1557201757634521564">인코딩 자동 감지</translation>
+<translation id="1612196535745283361">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. 위치 정보 액세스 권한이 <ph name="BEGIN_LINK" />이 기기에서 사용 중지<ph name="END_LINK" />되어 있습니다.</translation>
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
 <translation id="1639239467298939599">로드 중</translation>
@@ -171,7 +172,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="2913331724188855103">사이트에서 쿠키 데이터를 저장하고 읽도록 허용(권장)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 저장공간</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />님과 <ph name="PARENT_NAME_2" />님이 관리하는 계정입니다.</translation>
-<translation id="2959609938957585241">다른 기기에서 탭을 가져오려면 Android 계정 설정에서 '데이터 자동 동기화'를 사용 설정하세요.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
 <translation id="2979025552038692506">선택된 시크릿 탭</translation>
@@ -249,6 +249,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3931947361983910192">지난 4주</translation>
 <translation id="393697183122708255">사용 가능한 음성 검색이 없습니다.</translation>
+<translation id="3946611741043634542">계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />개인정보 보호정책<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
 <translation id="3988213473815854515">위치 허용됨</translation>
 <translation id="3992315671621218278">링크 저장</translation>
@@ -387,6 +388,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5487729733663684359">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
 <translation id="5511351932351731210">항상 보내기</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" />님이 관리하는 계정입니다.</translation>
+<translation id="5527082711130173040">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK1" />권한을 업데이트<ph name="END_LINK1" />하세요. 또한 <ph name="BEGIN_LINK2" />이 기기에서도 위치 정보 액세스 권한이 사용 중지<ph name="END_LINK2" />되어 있습니다.</translation>
 <translation id="5530766185686772672">시크릿 탭 닫기</translation>
 <translation id="554327794654007401">피지컬 웹</translation>
 <translation id="5556459405103347317">새로고침</translation>
@@ -413,7 +415,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" />에 있는 기존 <ph name="FILE_NAME" /> 파일을 바꾸시겠습니까?</translation>
 <translation id="5777170031995031090">Google이 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
-<translation id="579919059055796498">사이트 저장공간 삭제 중...</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{#시간 전}other{#시간 전}}</translation>
 <translation id="5817918615728894473">페어링</translation>
@@ -551,7 +552,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7301833672208172928">기록 동기화 사용</translation>
 <translation id="7327835590071894791">이제 탭이 백그라운드에 표시됩니다.</translation>
 <translation id="7347770551817603360">오프라인 콘텐츠</translation>
-<translation id="7358452246665489050">계산 중...</translation>
 <translation id="7363354739009474003">'<ph name="VIDEO_TITLE" />' 로드 중</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />(으)로 전송 중</translation>
 <translation id="7375125077091615385">유형:</translation>
@@ -711,6 +711,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="9099292894781394535">데이터 절약</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9133515669113036225">기기 사용자 인증 정보 재설정</translation>
+<translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9139068048179869749">사이트에서 알림을 보내도록 허용하기 전에 확인(권장)</translation>
 <translation id="9141510419986760385">동기화 계정을 <ph name="FROM_ACCOUNT" />에서 <ph name="TO_ACCOUNT" />(으)로 전환합니다. 기존 북마크, 방문 기록, 비밀번호, 기타 설정은 어떻게 할까요?</translation>

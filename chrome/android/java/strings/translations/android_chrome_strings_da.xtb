@@ -50,6 +50,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1549000191223877751">Flyt til et andet vindue</translation>
 <translation id="1553358976309200471">Opdater Chrome</translation>
 <translation id="1557201757634521564">Registrer kodning automatisk</translation>
+<translation id="1612196535745283361">Chrome skal have placeringsadgang for at kunne scanne efter enheder. Placeringsadgang er <ph name="BEGIN_LINK" />slået fra på denne enhed<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
 <translation id="1639239467298939599">Indlæser...</translation>
@@ -171,7 +172,6 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="2913331724188855103">Tillad, at websites gemmer og læser cookiedata (anbefales)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" />-lagerplads</translation>
 <translation id="2956410042958133412">Denne konto administreres af <ph name="PARENT_NAME_1" /> og <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2959609938957585241">Aktivér "Automatisk synkronisering af data" i kontoindstillingerne for Android for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
 <translation id="2979025552038692506">Valgt inkognitofane</translation>
@@ -249,6 +249,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="3927692899758076493">Sans serif</translation>
 <translation id="3931947361983910192">de seneste fire uger</translation>
 <translation id="393697183122708255">Aktiveret talesøgning ikke tilgængelig</translation>
+<translation id="3946611741043634542">Ved at fortsætte accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Log ind</translation>
 <translation id="3988213473815854515">Placeringen er tilladt</translation>
 <translation id="3992315671621218278">Gem link</translation>
@@ -387,6 +388,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5487729733663684359">Chrome understøtter ikke længere denne version af Android.</translation>
 <translation id="5511351932351731210">Send altid</translation>
 <translation id="5512137114520586844">Denne konto administreres af <ph name="PARENT_NAME" />.</translation>
+<translation id="5527082711130173040">Chrome skal have placeringsadgang for at kunne scanne efter enheder. <ph name="BEGIN_LINK1" />Opdater tilladelser<ph name="END_LINK1" />. Placeringsadgang er også <ph name="BEGIN_LINK2" />slået fra på denne enhed<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Luk inkognitofaner</translation>
 <translation id="554327794654007401">Fysisk web</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
@@ -413,7 +415,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5771382037724542929">Vil du erstatte den eksisterende <ph name="FILE_NAME" /> i <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5777170031995031090">Kontrollér, hvordan Google bruger din browserhistorik til at personliggøre Søgning, annoncer og andre Google-tjenester.</translation>
-<translation id="579919059055796498">Ryd websitelagerplads...</translation>
 <translation id="5804241973901381774">Tilladelser</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{For 1 time siden}one{For # time siden}other{For # timer siden}}</translation>
 <translation id="5817918615728894473">Start parring</translation>
@@ -551,7 +552,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7301833672208172928">Aktivér synkronisering af historik</translation>
 <translation id="7327835590071894791">Fanen er nu i baggrunden.</translation>
 <translation id="7347770551817603360">Offlineindhold</translation>
-<translation id="7358452246665489050">Beregner...</translation>
 <translation id="7363354739009474003">Indlæser "<ph name="VIDEO_TITLE" />"</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>
@@ -711,6 +711,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9099292894781394535">Sparet data</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9133515669113036225">Nulstil loginoplysningerne for enheden</translation>
+<translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9139068048179869749">Spørg om tilladelse, før websites sender underretninger (anbefales)</translation>
 <translation id="9141510419986760385">Du er ved at skifte synkroniseringskonto fra <ph name="FROM_ACCOUNT" /> til <ph name="TO_ACCOUNT" />. Hvad vil du gøre med dine eksisterende bogmærker, din historik, dine adgangskoder og andre indstillinger?</translation>

@@ -50,6 +50,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1549000191223877751">Diğer pencereye git</translation>
 <translation id="1553358976309200471">Chrome'u güncelle</translation>
 <translation id="1557201757634521564">Kodlamayı otomatik olarak algıla</translation>
+<translation id="1612196535745283361">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. Konum bilgilerine erişim <ph name="BEGIN_LINK" />bu cihaz için kapalı<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Bu sayfanın daha fazla iletişim kutusu oluşturmasını önle</translation>
 <translation id="1639239467298939599">Yükleniyor</translation>
@@ -171,7 +172,6 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="2913331724188855103">Sitelerin, çerez verilerini kaydetmelerine ve okumalarına izin ver (önerilir)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> depolama alanı</translation>
 <translation id="2956410042958133412">Bu hesap <ph name="PARENT_NAME_1" /> ve <ph name="PARENT_NAME_2" /> tarafından yönetiliyor.</translation>
-<translation id="2959609938957585241">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Android hesap ayarlarından "Verileri otomatik olarak senkronize et" seçeneğini etkinleştirin.</translation>
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
 <translation id="2979025552038692506">Seçili Gizli Sekme</translation>
@@ -249,6 +249,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3931947361983910192">son 4 hafta</translation>
 <translation id="393697183122708255">Kullanılabilir etkin sesli arama yok</translation>
+<translation id="3946611741043634542">Devam ederek Chrome'un <ph name="BEGIN_LINK1" />Hizmet Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="3988213473815854515">Konuma izin veriliyor</translation>
 <translation id="3992315671621218278">Bağlantıyı kaydet</translation>
@@ -387,6 +388,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5487729733663684359">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor.</translation>
 <translation id="5511351932351731210">Her zaman gönder</translation>
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
+<translation id="5527082711130173040">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. <ph name="BEGIN_LINK1" />İzinleri güncelleyin<ph name="END_LINK1" />. Ayrıca, konum erişimi <ph name="BEGIN_LINK2" />bu cihaz için kapalı<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Gizli sekmeleri kapat</translation>
 <translation id="554327794654007401">Fiziksel Web</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
@@ -413,7 +415,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="5765780083710877561">Açıklama:</translation>
 <translation id="5771382037724542929"><ph name="DIRECTORY_NAME" /> dizinindeki varolan <ph name="FILE_NAME" /> adını değiştirmek istiyor musunuz?</translation>
 <translation id="5777170031995031090">Google'ın Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için tarama geçmişinizi nasıl kullanacağını kontrol edin.</translation>
-<translation id="579919059055796498">Site Depolama Alanını Sil...</translation>
 <translation id="5804241973901381774">İzinler</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# saat önce}other{# saat önce}}</translation>
 <translation id="5817918615728894473">Eşle</translation>
@@ -551,7 +552,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7301833672208172928">Geçmiş senkronizasyonunu aç</translation>
 <translation id="7327835590071894791">Sekmeniz şimdi arka planda.</translation>
 <translation id="7347770551817603360">Çevrimdışı içerik</translation>
-<translation id="7358452246665489050">Hesaplanıyor...</translation>
 <translation id="7363354739009474003">“<ph name="VIDEO_TITLE" />” yükleniyor</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" /> ekranına yayınlanıyor</translation>
 <translation id="7375125077091615385">Tür:</translation>
@@ -711,6 +711,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9099292894781394535">Veri tasarrufu</translation>
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9133515669113036225">Cihazın kimlik bilgilerini sıfırla</translation>
+<translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9139068048179869749">Sitelerin bildirim göndermesine izin vermeden önce size sorulsun (önerilir)</translation>
 <translation id="9141510419986760385">Senkronizasyon hesapları arasında (<ph name="FROM_ACCOUNT" /> hesabından <ph name="TO_ACCOUNT" /> hesabına) geçiş yapıyorsunuz. Mevcut yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızla ne yapmak istiyorsunuz?</translation>

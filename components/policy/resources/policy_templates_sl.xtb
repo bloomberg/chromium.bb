@@ -938,11 +938,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3864818549971490907">Privzete nastavitve vtičnikov</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Če je pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_OS_NAME" /> prikaže obstoječe uporabnike na zaslonu za prijavo, ki jih je mogoče izbrati. Če je pravilnik onemogočen, <ph name="PRODUCT_OS_NAME" /> za prijavo uporabi polje za vnos uporabniškega imena/gesla.</translation>
-<translation id="3866824067696705379">Kako pogosto se pošljejo signali obveščanja (v milisekundah).
-
-      Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 minute. Najmanjša vrednost
-      pogostosti je 30 sekund, največja pa 24 ur – vrednosti
-      zunaj tega obsega bodo zaokrožene na ta obseg.</translation>
 <translation id="3868347814555911633">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Navaja razširitve, samodejno nameščene za uporabnika predstavitvenega načina, za naprave v maloprodajnem načinu. Te razširitve so shranjene v napravi in jih je mogoče namestiti brez povezave.
@@ -1169,7 +1164,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če tega pravilnika ne nastavite, <ph name="PRODUCT_NAME" /> ne bo delegiral uporabniških poverilnic, tudi če je strežnik zaznan kot intranet.</translation>
 <translation id="4752880493649142945">Potrdilo odjemalca za vzpostavljanje povezave s tem: RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Pogostost signalov obveščanja</translation>
 <translation id="4791031774429044540">Omogočanje funkcije velikega kazalca za ljudi s posebnimi potrebami.
 
           Če ta pravilnik vklopite, bo prikaz velikega kazalca vedno omogočen.
@@ -1968,7 +1962,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7511361072385293666">Če je ta pravilnik omogočen ali ni nastavljen, je uporaba protokola QUIC v brskalniku <ph name="PRODUCT_NAME" /> dovoljena.
       Če je ta pravilnik onemogočen, uporaba protokola QUIC ni dovoljena.</translation>
 <translation id="7519251620064708155">Dovoli ustvarjanje ključev na teh spletnih mestih</translation>
-<translation id="7523476810162382273">Pošiljanje signalov obveščanja v strežnik za upravljanje</translation>
 <translation id="7529100000224450960">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko odpirajo pojavna okna.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -2036,6 +2029,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če je ta nastavitev onemogočena ali ni nastavljena, koda v dveh korakih ne bo omogočena in uporabljeno bo privzeto vedenje z uporabo uporabniško določenega PIN-a.</translation>
 <translation id="7750991880413385988">Odpri stran »Nov zavihek«</translation>
+<translation id="7761446981238915769">Konfiguriranje seznama nameščenih aplikacij na zaslonu za prijavo</translation>
 <translation id="7761526206824804472">Nastavi enega ali več priporočenih jezikov za javne seje, kar uporabnikom omogoča preprosto izbiro enega od teh jezikov.
 
       Uporabnik lahko izbere jezik in postavitev tipkovnice, preden začne javno sejo. Privzeto so vsi jeziki, ki jih podpira <ph name="PRODUCT_OS_NAME" />, navedeni v abecednem vrstnem redu. Ta pravilnik lahko uporabite za premik skupine priporočenih jezikov na vrh seznama.
@@ -2455,6 +2449,29 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8858642179038618439">Vsiljenje varnega načina v YouTubu</translation>
 <translation id="8864975621965365890">Ne prikaže poziva za preklop, ki se prikaže, ko se spletno mesto upodablja z <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domača stran</translation>
+<translation id="88890388118515381">
+      Določa seznam aplikacij, ki se namestijo v ozadju na zaslonu za prijavo
+      brez poseganja uporabnika in jih ni mogoče odstraniti.
+      Vsa dovoljenja, ki jih zahtevajo aplikacije, se odobrijo implicitno
+      in brez poseganja uporabnika, vključno z dodatnimi dovoljenji,
+      ki jih bodo zahtevale prihodnje različice aplikacije.
+
+      Če je aplikacija, ki je bila prisilno nameščena, odstranjena s tega
+      seznama, jo <ph name="PRODUCT_NAME" /> samodejno odstrani.
+
+      Vsak element na seznamu pravilnika je niz, ki vsebuje ID razširitve
+      in URL za posodobitev, ločen s podpičjem (<ph name="SEMICOLON" />). ID razširitve je 
+      32-mestni črkovni niz, ki ga je mogoče
+      v načinu za razvijalce najti na primer na <ph name="CHROME_EXTENSIONS_LINK" />.
+      URL za posodobitev mora kazati na dokument XML
+      manifesta za posodobitev, kot je opisano na <ph name="LINK_TO_EXTENSION_DOC1" />.
+      URL za posodobitev, nastavljen v tem pravilniku, se uporabi samo pri začetni
+      namestitvi; pri vseh nadaljnjih posodobitvah razširitve je uporabljen
+      URL za posodobitev, naveden v manifestu razširitve.
+
+      <ph name="EXTENSION_POLICY_EXAMPLE" /> namesti na primer aplikacijo
+      <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> s standardnega URL-ja za posodobitev v Spletni Trgovini Chrome.
+      Več informacij o gostovanju razširitev najdete na <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Strežnik Quirks Server ponuja konfiguracijske datoteke za posamezne komponente strojne opreme, kot so
       prikazovalni profili ICC za prilagajanje umerjanja monitorja.
 
@@ -2508,11 +2525,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="9088444059179765143">Konfiguriranje načina samodejnega zaznavanja časovnega pasu</translation>
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="9098553063150791878">Pravilniki za preverjanje pristnosti HTTP</translation>
-<translation id="9104138886225968319">Pošiljanje signalov obveščanja v strežnik za upravljanje, kar omogoča
-      strežniku, da zazna, ali v napravi ni povezave.
-
-      Če je ta pravilnik omogočen, se pošljejo signali obveščanja. Če je
-      onemogočen ali ni nastavljen, se signali ne pošljejo.</translation>
 <translation id="9112897538922695510">Omogoča registracijo seznama rutin za obravnavo protokolov. Ta pravilnik je lahko samo priporočen. Lastnost |protocol| mora biti nastavljena na shemo, kot je »mailto«, in lastnost |url| mora biti nastavljena na vzorec URL aplikacije, ki obravnava shemo. Vzorec lahko vsebuje »%s«. Če ga, ta nadomesti obravnavani URL.
 
           Rutine za obravnavo protokola, registrirane s pravilnikom, so združene z rutinami, ki jih registrira uporabnik, oboje pa je na voljo za uporabo. Uporabnik lahko preglasi rutine za obravnavo protokola, nameščene s pravilnikom, tako da namesti novo privzeto rutino za obravnavo protokola, vendar ne more odstraniti rutine za obravnavo protokola, registrirane s pravilnikom.</translation>

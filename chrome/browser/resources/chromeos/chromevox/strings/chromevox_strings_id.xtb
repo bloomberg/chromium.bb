@@ -6,7 +6,7 @@
 <translation id="1023866615269196768">Diregangkan.</translation>
 <translation id="1025074108959230262">Mode lekat dinonaktifkan</translation>
 <translation id="1031961866430398710">kemudian</translation>
-<translation id="1038795173450935438">Untuk maju antar-item di laman, tekan Search + Panah Kanan, atau Search + Panah Kiri untuk melompat ke belakang. Untuk menuju baris berikutnya, tekan Search + Panah Bawah. Untuk kembali ke baris sebelumnya, gunakan Search + Panah Atas. Jika Anda mencapai item yang ingin diklik, tekan Search + Space.</translation>
+<translation id="1038795173450935438">Untuk maju antar-item di laman, tekan Search + Panah Kanan, atau Search + Panah Kiri untuk melompat ke belakang. Untuk menuju baris berikutnya, tekan Search + Panah Bawah. Untuk kembali ke baris sebelumnya, gunakan Search + Panah Atas. Jika Anda mencapai item yang ingin diklik, tekan Search + Spasi.</translation>
 <translation id="1044777062731150180">Tanpa judul</translation>
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Input tidak valid</translation>
@@ -199,8 +199,8 @@
 <translation id="3163593631834463955">Judul kolom kosong</translation>
 <translation id="316542773973815724">Navigasi</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{spasi}other{# spasi}}</translation>
-<translation id="3183233191569362040">Selamat! Anda telah berhasil mempelajari dasar-dasar untuk menggunakan ChromeVox Next (beta). Perlu diingat bahwa Anda dapat membuka menu perintah ChromeVox kapan saja dengan menekan Search+Titik. Untuk mempelajari lebih lanjut tentang ChromeVox dan Chrome OS, baca artikel berikut.
-Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk menavigasi ke tombol Tutup dan klik.</translation>
+<translation id="3183233191569362040">Selamat! Anda berhasil mempelajari dasar-dasar penggunaan ChromeVox Next (beta). Perlu diingat bahwa Anda dapat membuka menu perintah ChromeVox kapan saja dengan menekan Search+Titik. Untuk mempelajari lebih lanjut tentang ChromeVox dan Chrome OS, baca artikel berikut.
+Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk menavigasi ke tombol Tutup, kemudian klik tombolnya.</translation>
 <translation id="320961988183078793">memasukkan <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, tab</translation>
 <translation id="3226035351387556942">chk</translation>
@@ -305,7 +305,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk menavigasi ke tombol 
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909320334364316587">Judul tingkat 6 sebelumnya</translation>
 <translation id="3914173277599553213">Diperlukan</translation>
-<translation id="3951424903203718058">Ini pertama kalinya menggunakan masukan lisan ChromeVox Next? Tutorial singkat ini menjelaskan dasar-dasar untuk memulai ChromeVox Next.</translation>
+<translation id="3951424903203718058">Baru pertama kali menggunakan masukan lisan ChromeVox Next? Tutorial singkat ini akan menjelaskan dasar-dasar memulai ChromeVox Next.</translation>
 <translation id="3962990492275676168">Mulai membaca dari lokasi saat ini</translation>
 <translation id="4004802134384979325">dicentang</translation>
 <translation id="4006140876663370126">img</translation>
@@ -316,7 +316,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk menavigasi ke tombol 
 <translation id="4047216625641135770">Tanda</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4054936709456751127">sts</translation>
-<translation id="4065205963140826639">Coba gunakan Search + Panah Kanan sekarang untuk menemukan tombol Berikutnya, lalu tekan Search + Spasi untuk mengekliknya.</translation>
+<translation id="4065205963140826639">Sekarang, coba gunakan Search + Panah Kanan untuk menemukan tombol Berikutnya, lalu tekan Search + Spasi untuk mengekliknya.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{TILDE}other{# tanda tilde}}</translation>
 <translation id="409334809956508737">Objek Sebelumnya</translation>
 <translation id="4099274309791143834">dengan submenu</translation>
@@ -518,7 +518,6 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="5876817486144482042">Mengurangi volume ucapan</translation>
 <translation id="5887397643266327462">Teks braille diaktifkan.</translation>
 <translation id="5891934789323004067">Tabel</translation>
-<translation id="5919442531159595654">salin.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{sama dengan}other{# tanda sama dengan}}</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
 <translation id="5948123859135882163">Beralih interpretasi persamaan matematika antara struktur dan semantik</translation>
@@ -653,7 +652,6 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="7532613204005497612">Juni</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, penggeser</translation>
 <translation id="7552432549459840808">Pintasan Chrome Yang Berguna</translation>
-<translation id="7586163296341959563">tempel.</translation>
 <translation id="7596919493010894443">pilihan yang dihapus</translation>
 <translation id="7604026522577407655">Berpindah ke awal kolom saat ini</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{garis bawah}other{# garis bawah}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">beralih ke layar penuh</translation>
-<translation id="81960742267269908">potong.</translation>
 <translation id="8199231515320852133">Mengumumkan judul sel saat ini</translation>
 <translation id="820417203470636242">Sel kosong.</translation>
 <translation id="8215202828671303819">Multi-pilihan</translation>

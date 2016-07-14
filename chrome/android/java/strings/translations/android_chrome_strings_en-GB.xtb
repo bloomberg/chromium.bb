@@ -172,7 +172,6 @@ You can control the Physical Web in Chrome Settings.
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> storage</translation>
 <translation id="2956410042958133412">This account is managed by <ph name="PARENT_NAME_1" /> and <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2959609938957585241">To get your tabs from your other devices, turn on "Auto-sync data" in Android account settings.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
 <translation id="2979025552038692506">Selected Incognito Tab</translation>
@@ -416,7 +415,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5771382037724542929">Do you want to replace the existing <ph name="FILE_NAME" /> in <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5777170031995031090">Control how Google uses your browsing history to personalise Search, ads and other Google services.</translation>
-<translation id="579919059055796498">Clear Site Storage...</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
 <translation id="5817918615728894473">Pair</translation>
@@ -554,7 +552,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7301833672208172928">Turn on history sync</translation>
 <translation id="7327835590071894791">Your tab is now in the background.</translation>
 <translation id="7347770551817603360">Offline content</translation>
-<translation id="7358452246665489050">Computing...</translation>
 <translation id="7363354739009474003">Loading “<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">Type:</translation>

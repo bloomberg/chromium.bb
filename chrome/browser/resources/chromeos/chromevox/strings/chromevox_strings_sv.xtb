@@ -518,7 +518,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="5876817486144482042">Sänk talvolymen</translation>
 <translation id="5887397643266327462">Textning med punktskrift har aktiverats.</translation>
 <translation id="5891934789323004067">Tabell</translation>
-<translation id="5919442531159595654">kopiera.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{likhetstecken}other{# likhetstecken}}</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5948123859135882163">Växla mellan strukturell och semantisk tolkning av matematiska uttryck</translation>
@@ -653,7 +652,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="7532613204005497612">juni</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, skjutreglage</translation>
 <translation id="7552432549459840808">Användbara kortkommandon i Chrome</translation>
-<translation id="7586163296341959563">klistra in.</translation>
 <translation id="7596919493010894443">markering borttagen</translation>
 <translation id="7604026522577407655">Flytta till början av den aktuella kolumnen</translation>
 <translation id="7604451927827590395">rubrik</translation>
@@ -705,7 +703,6 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="817440585505441544">{COUNT,plural, =1{understreck}other{# understreck}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">helskärmsläge av/på</translation>
-<translation id="81960742267269908">klipp ut.</translation>
 <translation id="8199231515320852133">Läs upp rubriker för den aktuella cellen</translation>
 <translation id="820417203470636242">Tom cell.</translation>
 <translation id="8215202828671303819">Flerval</translation>

@@ -923,11 +923,6 @@
 <translation id="3864818549971490907">Pistikprogrammide vaikeseade</translation>
 <translation id="3866249974567520381">Kirjeldus</translation>
 <translation id="3866530186104388232">Kui lubate selle reegli või jätate määramata, siis kuvab <ph name="PRODUCT_OS_NAME" /> olemasolevad kasutajad sisselogimiskuval ja võimaldab neid valida. Selle reegli keelamisel kasutab <ph name="PRODUCT_OS_NAME" /> sisselogimiseks kasutajanime ja parooli viipa.</translation>
-<translation id="3866824067696705379">Jälgitavate südamelöökide saatmise sagedus (millisekundites).
-
-      Kui see reegel on määramata, on vaikesageduseks 3 minutit. Minimaalne
-      sagedus on 30 sekundit ja maksimaalne sagedus on 24 tundi – väärtused,
-      mis jäävad sellest vahemikust väljapoole, surutakse sellesse vahemikku.</translation>
 <translation id="3868347814555911633">Reegel on aktiivne ainult jaerežiimis.
 
       Loetleb laiendused, mis laaditakse automaatselt demo kasutajale jaerežiimis seadmete jaoks. Laiendused salvestatakse seadmesse ja need saab hiljem installida võrguühenduseta.
@@ -1155,7 +1150,6 @@
 
           Kui jätate selle reegli määramata, ei delegeeri <ph name="PRODUCT_NAME" /> kasutaja mandaate isegi siis, kui server tuvastatakse intranetis olevana.</translation>
 <translation id="4752880493649142945">Kliendi sertifikaat ühendamiseks reegliga RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Südamelöökide jälgimise sagedus</translation>
 <translation id="4791031774429044540">Suure kursori hõlbustusfunktsiooni lubamine.
 
           Kui reegel on seatud väärtusele Tõene, on suur kursor alati lubatud.
@@ -1948,7 +1942,6 @@
 <translation id="7511361072385293666">Kui reegli väärtuseks määratakse Tõene või seda ei määrata, on QUIC-protokolli kasutamine teenuses <ph name="PRODUCT_NAME" /> lubatud.
       Kui reegli väärtuseks määratakse Väär, on QUIC-protokolli kasutamine keelatud.</translation>
 <translation id="7519251620064708155">Luba võtmete loomine nendel saitidel</translation>
-<translation id="7523476810162382273">Jälgimise elumärkide saatmine haldusserverisse</translation>
 <translation id="7529100000224450960">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud avada hüpikaknaid.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPopupsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
@@ -2016,6 +2009,7 @@
 
           Kui seade on keelatud või pole määratud, siis pole kahetasandiline autentimine lubatud ja vaikimisi kasutatakse kasutaja määratud PIN-koodi.</translation>
 <translation id="7750991880413385988">Ava uus vaheleht</translation>
+<translation id="7761446981238915769">Sisselogimisekraanil olevate installitud rakenduste loendi seadistamine</translation>
 <translation id="7761526206824804472">Avalikule seansile määratakse üks või mitu soovitatud lokaati, et kasutajad saaksid hõlpsalt valida ühe lokaatidest.
 
 
@@ -2428,6 +2422,28 @@
 <translation id="8858642179038618439">YouTube’i ohutu režiimi jõustamine</translation>
 <translation id="8864975621965365890">Keelab tagasilükkamisviiba, mis kuvatakse, kui saiti renderdab <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Avaleht</translation>
+<translation id="88890388118515381">
+      Määrab loendi rakendustest, mis installitakse sisselogimisekraanil vaikimisi
+      ning kasutajaga suhtlemata ja mida ei saa desinstallida.
+      Kõik rakenduste taotletud load antakse vaikimisi
+      ning kasutajaga suhtlemata (sh kõik lisaload,
+      mida rakenduse tulevased versioonid taotlevad).
+
+      Kui mõni sundinstallitud rakendus eemaldatakse sellest
+      loendist, desinstallib teenus <ph name="PRODUCT_NAME" /> selle automaatselt.
+
+      Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja
+      värskenduse URL-i, mis on eraldatud semikooloniga (<ph name="SEMICOLON" />). Laienduse ID on 32-täheline string,
+      mille leiab näiteks saidilt <ph name="CHROME_EXTENSIONS_LINK" />, kui olete
+      arendaja režiimis. Värskenduse URL peaks osutama värskenduse manifesti
+      XML-dokumendile, nagu on kirjeldatud saidil <ph name="LINK_TO_EXTENSION_DOC1" />. Pange tähele,
+      et selles reeglis määratud värskenduse URL-i kasutatakse ainult esialgseks
+      installimiseks; laienduse järgmised värskendused kasutavad
+      laienduse manifestis märgitud värskenduse URL-i.
+
+      Näiteks installib <ph name="EXTENSION_POLICY_EXAMPLE" />
+      laienduse <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> rakenduse standardselt Chrome'i veebipoe värskenduse
+      URL-ilt. Lisateavet laienduste hostimise kohta leiate siit: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server pakub riistvarapõhiseid konfiguratsioonifaile, nagu
       ICC ekraaniprofiilid, et saaksite monitori kalibreerimist kohandada.
 
@@ -2481,11 +2497,6 @@
 <translation id="9088444059179765143">Ajavööndi automaatse tuvastamise viisi seadistamine</translation>
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>
 <translation id="9098553063150791878">HTTP autentimise reeglid</translation>
-<translation id="9104138886225968319">Saadab südamelöökide jälgimisandmed haldusserverisse, et lubada
-      serveril tuvastada, kui seade pole võrgus.
-
-      Kui selle reegli väärtuseks on määratud Tõene, saadetakse südamelöökide jälgimisandmed. Kui väärtuseks on
-      määratud Väär või reeglit ei määrata, siis südamelööke ei saadeta.</translation>
 <translation id="9112897538922695510">Lubab teil registreerida protokollitöötlejate loendi. See saab olla ainult soovitatud reegel. Atribuut |protocol| tuleb määrata skeemile (nagu „mailto”) ja atribuut |url| tuleb määrata skeemi käsitleva rakenduse URL-i mustrile. Muster võib sisaldada märgendit „%s”, mis asendatakse sellisel juhul käsitletava URL-iga.
 
           Reegliga registreeritud protokollitöötlejad liidetakse kasutaja registreeritud töötlejatega ja mõlemad on kasutamiseks saadaval. Kasutajad saavad alistada reegliga installitud protokollitöötlejad, kui installivad uue vaiketöötleja, kuid nad ei saa eemaldada reegliga registreeritud protokollitöötlejat.</translation>

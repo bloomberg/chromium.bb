@@ -898,9 +898,6 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 <translation id="3864818549971490907">Standardindstillinger for plugins</translation>
 <translation id="3866249974567520381">Beskrivelse</translation>
 <translation id="3866530186104388232">Hvis denne politik er angivet til sand eller ikke er konfigureret, vil <ph name="PRODUCT_OS_NAME" /> vise eksisterende brugere på loginskærmen og gøre det muligt at vælge en af dem. Hvis denne politik er angivet til falsk, vil <ph name="PRODUCT_OS_NAME" /> bruge meddelelsen brugernavn/adgangskode til login.</translation>
-<translation id="3866824067696705379">Hvor ofte sendes registreringen af hjerteslag (angivet i millisekunder).
-
-Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimumsfrekvensen er 30 sekunder, og maksimumsfrekvensen er 24 timer. Alle værdier uden for dette interval justeres automatisk, så de ligger inden for dette interval.</translation>
 <translation id="3868347814555911633">Denne politik er aktiv i detailtilstand.
 
       Listeudvidelser, der automatisk er installeret for demobrugeren til enheder i detailtilstand. Disse udvidelser gemmes i enheden og kan installeres i offlinetilstand efter installationen.
@@ -1104,7 +1101,6 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
           Hvis du ikke indstiller denne politik, vil <ph name="PRODUCT_NAME" /> ikke overdrage brugeroplysninger, heller ikke selvom en server registreres som intranet.</translation>
 <translation id="4752880493649142945">Klientcertifikat for etablering af forbindelse til RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Hyppighed for registrering af hjerteslag</translation>
 <translation id="4791031774429044540">Aktivér hjælpefunktionen Stor markør.
 
           Hvis denne politik angives som sand, vil den store markør altid være aktiveret.
@@ -1829,7 +1825,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7511361072385293666">Hvis denne politik er angivet som Sand eller ikke er indstillet, er brug i QUIC-protokollen i <ph name="PRODUCT_NAME" /> tilladt.
       Hvis denne politik er angivet som Falsk, er brug i QUIC-protokollen ikke tilladt.</translation>
 <translation id="7519251620064708155">Tillad nøglegenerering på disse websites</translation>
-<translation id="7523476810162382273">Send overvågningsimpulser til administrationsserveren</translation>
 <translation id="7529100000224450960">Giver dig mulighed for at oprette en liste over webadressemønstre med websites, der må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPopupsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
 <translation id="7553535237300701827">Når denne politik er indstillet, sker godkendelsesprocessen for login på én af følgende måder afhængigt af værdien for indstillingen:
@@ -1891,6 +1886,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis indstillingen er deaktiveret eller ikke angivet, aktiveres de to faktorer ikke, og standardadfærden for brugerdefinerede pinkoder anvendes.</translation>
 <translation id="7750991880413385988">Åbn siden Ny fane</translation>
+<translation id="7761446981238915769">Konfigurer listen over installerede apps på loginskærmen</translation>
 <translation id="7761526206824804472">Angiver én eller flere anbefalede landestandarder til en offentlig session, så brugerne nemt kan vælge en af disse landestandarder.
 
       Brugeren kan vælge en landestandard og et tastaturlayout, inden en offentlig session startes. Alle de landestandarder, som understøttes af <ph name="PRODUCT_OS_NAME" />, vises som standard i alfabetisk rækkefølge. Du kan bruge denne politik til at flytte en række anbefalede landestandarder op øverst på listen.
@@ -2276,6 +2272,28 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8858642179038618439">Gennemtving Beskyttet tilstand på YouTube</translation>
 <translation id="8864975621965365890">Undertrykker opfordringen til afvisning, som vises, når et website gengives af <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
+<translation id="88890388118515381">
+      Angiver en liste over apps, der installeres ubemærket
+      uden brugerinteraktion, og som ikke kan afinstalleres.
+      Alle tilladelser, der anmodes om fra applikationerne, gives
+      implicit uden brugerinteraktion. Det samme gælder eventuelle nye
+      tilladelser, der anmodes om fra fremtidige versioner af appen.
+
+      Hvis en app, som tidligere har været installeret som følge af tvungen installation, fjernes fra
+      denne liste, afinstalleres den automatisk af <ph name="PRODUCT_NAME" />.
+
+      Hvert element på listen i politikken er en streng med et udvidelses-id
+      og en opdateringswebadresse, som er separeret af semikolon (<ph name="SEMICOLON" />). Udvidelses-id'et er en streng på 32 bogstaver,
+      som f.eks. kan findes på <ph name="CHROME_EXTENSIONS_LINK" /> i
+      udviklertilstanden. Opdateringswebadressen skal henvise til et Update Manifest
+      XML-dokument som beskrevet i <ph name="LINK_TO_EXTENSION_DOC1" />. Bemærk,
+      at den opdateringswebadresse, der er angivet i denne politik, kun anvendes ved
+      installationen. Efterfølgende opdateringer af udvidelsen anvender den
+      opdateringswebadresse, der er angivet i udvidelsens manifest.
+
+      <ph name="EXTENSION_POLICY_EXAMPLE" />
+      installerer f.eks. appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> fra Chrome Webshops standardopdateringswebadresse
+      Du kan få flere oplysninger om hostingudvidelser på <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server leverer hardwarespecifikke konfigurationsfiler, som f.eks. ICC-profiler til visning, til justering af skærmkalibrering.
 
       Når denne politik er angivet som falsk, forsøger enheden ikke at kontakte Quirks Server for at downloade konfigurationsfiler.
@@ -2327,11 +2345,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="9088444059179765143">Konfigurer metoden for automatisk registrering af tidszone.</translation>
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>
 <translation id="9098553063150791878">Politikker for HTTP-godkendelse</translation>
-<translation id="9104138886225968319">Send overvågningsimpulser til administrationsserveren, så
-      serveren kan registrere, om enheden er offline.
-
-      Hvis denne politik er angivet til sand, sendes der overvågningsimpulser. Hvis den er angivet
-      til falsk eller ikke angives, sendes der ingen impulser.</translation>
 <translation id="9112897538922695510">Giver dig mulighed for at registrere en liste over protokolhandlere. Dette kan kun være en anbefalet politik. Egenskaben |protocol| skal indstilles til ordningen, f.eks. "mailto", og egenskaben |url| bør indstilles til webadressemønsteret for den applikation, der handler ordningen. Dette mønster kan omfatte et "%s", som, hvis det findes, erstattes med den handlede webadresse.
 
           De protokolhandlere, der er registreret via politikker, flettes med dem, der er registreret af brugeren, og begge er tilgængelige og kan anvendes. Brugeren kan tilsidesætte protokolhandlere, der er installeret via en politik, ved at installere en ny standardhandler, men kan ikke fjerne en protokolhandler, der er registreret via en politik.</translation>

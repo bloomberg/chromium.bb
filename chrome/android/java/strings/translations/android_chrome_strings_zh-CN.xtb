@@ -50,6 +50,7 @@
 <translation id="1549000191223877751">移至其他窗口</translation>
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自动检测编码</translation>
+<translation id="1612196535745283361">Chrome 需要拥有位置信息使用权才能扫描设备。<ph name="BEGIN_LINK" />此设备的位置信息使用权已被停用<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="1639239467298939599">正在加载</translation>
@@ -171,7 +172,6 @@
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2932150158123903946">Google <ph name="APP_NAME" /> 存储数据</translation>
 <translation id="2956410042958133412">该帐户由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
-<translation id="2959609938957585241">要获取您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2968755619301702150">证书查看器</translation>
 <translation id="2979025552038692506">所选的隐身标签页</translation>
@@ -249,6 +249,7 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3931947361983910192">过去 4 周</translation>
 <translation id="393697183122708255">无法启用语音搜索功能</translation>
+<translation id="3946611741043634542">继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="3950820424414687140">登录</translation>
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="3992315671621218278">保存链接</translation>
@@ -387,6 +388,7 @@
 <translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
 <translation id="5511351932351731210">一律发送</translation>
 <translation id="5512137114520586844">该帐户由 <ph name="PARENT_NAME" /> 管理。</translation>
+<translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
 <translation id="554327794654007401">实物网</translation>
 <translation id="5556459405103347317">重新加载</translation>
@@ -413,7 +415,6 @@
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5771382037724542929">要替换“<ph name="DIRECTORY_NAME" />”目录中现有的 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="5777170031995031090">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务。</translation>
-<translation id="579919059055796498">清除网站存储数据…</translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
 <translation id="5817918615728894473">配对</translation>
@@ -551,7 +552,6 @@
 <translation id="7301833672208172928">开启历史记录同步功能</translation>
 <translation id="7327835590071894791">您的标签页现已在后台。</translation>
 <translation id="7347770551817603360">离线内容</translation>
-<translation id="7358452246665489050">正在计算…</translation>
 <translation id="7363354739009474003">正在加载“<ph name="VIDEO_TITLE" />”</translation>
 <translation id="7366340029385295517">正在投射至<ph name="SCREEN_NAME" /></translation>
 <translation id="7375125077091615385">类型：</translation>
@@ -711,6 +711,7 @@
 <translation id="9099292894781394535">数据流量节省情况</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9133515669113036225">重置设备凭据</translation>
+<translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9139068048179869749">在允许网站发送通知前先询问（推荐）</translation>
 <translation id="9141510419986760385">您正要将同步帐户从 <ph name="FROM_ACCOUNT" /> 切换到 <ph name="TO_ACCOUNT" />。您希望如何处理现有书签、历史记录、密码及其他设置？</translation>

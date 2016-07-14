@@ -388,7 +388,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="4842108708071771135">Nessuna citazione lunga successiva.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Elemento simile precedente.</translation>
-<translation id="485011152882364255">In ChromeVox Next il tasto per la ricerca è il tasto di modifica. La maggior parte delle scorciatoie di ChromeVox iniziano con il tasto per la ricerca. I tasti freccia vengono utilizzati per gli spostamenti.</translation>
+<translation id="485011152882364255">In ChromeVox Next il tasto per la ricerca è il tasto di modifica. La maggior parte delle scorciatoie di ChromeVox inizia con il tasto per la ricerca. I tasti freccia vengono utilizzati per gli spostamenti.</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Attiva la registrazione TTS</translation>
 <translation id="4877261390094455813">Inserisci una query di ricerca.</translation>
@@ -490,9 +490,9 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5684277895745049190">Elenco</translation>
 <translation id="5684905390246898631">Benvenuto in ChromeVox Next</translation>
 <translation id="5695831708991916435">Le scorciatoie riportate di seguito non sono comandi di ChromeVox, ma sono comunque molto utili per utilizzare al meglio Chrome.
-Per avanzare tra gli elementi utilizzabili, come pulsanti e link, premi il tasto TAB. Per tornare indietro premi MAIUSC + TAB. 
+Per avanzare tra gli elementi su cui è possibile eseguire azioni, come pulsanti e link, premi il tasto TAB. Per tornare indietro premi MAIUSC + TAB. 
 Per andare alla casella dell'indirizzo del browser Chrome, chiamata anche omnibox, premi CTRL+ L.
-Per aprire e posizionari automaticamente su una nuova scheda premi CTRL + T. Il puntatore verrà posizionato nella ominibox. 
+Per aprire e andare automaticamente a una nuova scheda premi CTRL + T. Il puntatore verrà posizionato nella ominibox. 
 Per chiudere una scheda, premi CTRL + W. 
 Per passare alla scheda successiva in una serie di schede aperte, utilizza CTRL + TAB. 
 Per aprire il menu del browser Chrome premi ALT + F.</translation>
@@ -513,12 +513,11 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="5851548754964597211">Elenco schede</translation>
 <translation id="5859752971144398932">Uscito da Trova nella pagina.</translation>
 <translation id="5866042630553435010">Parzialmente selezionato</translation>
-<translation id="5867591286054666064">Durante questo tutorial, se premi un tasto verrà pronunciato il suo nome.</translation>
+<translation id="5867591286054666064">Durante questo tutorial, puoi premere un tasto per ascoltarne il nome.</translation>
 <translation id="5869546221129391014">Griglia</translation>
 <translation id="5876817486144482042">Abbassa volume comandi vocali</translation>
 <translation id="5887397643266327462">Sottotitoli braille attivati.</translation>
 <translation id="5891934789323004067">Tabella</translation>
-<translation id="5919442531159595654">copia.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{uguale}other{# segni di uguale}}</translation>
 <translation id="5939518447894949180">Ripristina</translation>
 <translation id="5948123859135882163">Passa dall'interpretazione strutturale a quella semantica delle espressioni matematiche</translation>
@@ -653,7 +652,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="7532613204005497612">Giugno</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, dispositivo di scorrimento</translation>
 <translation id="7552432549459840808">Utili scorciatoie di Chrome</translation>
-<translation id="7586163296341959563">incolla.</translation>
 <translation id="7596919493010894443">selezione cancellata</translation>
 <translation id="7604026522577407655">Vai all'inizio della colonna corrente</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{carattere di sottolineatura}other{# caratteri di sottolineatura}}</translation>
 <translation id="8179976553408161302">Invio</translation>
 <translation id="8186185314313222077">attiva/disattiva schermo intero</translation>
-<translation id="81960742267269908">taglia.</translation>
 <translation id="8199231515320852133">Pronuncia le intestazioni della cella corrente</translation>
 <translation id="820417203470636242">Cella vuota.</translation>
 <translation id="8215202828671303819">Selezione multipla</translation>

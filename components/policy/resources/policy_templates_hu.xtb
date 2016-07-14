@@ -887,11 +887,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="3864818549971490907">Alapértelmezett bővítménybeállítások</translation>
 <translation id="3866249974567520381">Leírás</translation>
 <translation id="3866530186104388232">Ha ez igazra van állítva vagy nincs beállítva, akkor a(z) <ph name="PRODUCT_OS_NAME" /> megjeleníti a meglévő felhasználókat a bejelentkezési képernyőn, és lehetővé teszi, hogy a felhasználó kiválassza a saját nevét. Ha beállítása hamis, akkor a(z) <ph name="PRODUCT_OS_NAME" /> felhasználónevet/jelszót kérő ablakot jelenít meg a bejelentkezésnél.</translation>
-<translation id="3866824067696705379">Milyen gyakran küld ellenőrző szívveréseket a böngésző (ezredmásodpercben).
-
-      Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három perc.
-      A legkisebb gyakoriság harminc másodperc, a legnagyobb 24 óra. Az e
-      tartományon kívüli értékek ebbe a tartományba lesznek beszorítva.</translation>
 <translation id="3868347814555911633">Ez a házirend csak kiállító módban aktív.
 
       Felsorolja azokat a bővítményeket, amelyeket a kiállító módban lévő eszközök esetében automatikusan telepít a rendszer a bemutatófelhasználó részére. A bővítményeket a rendszer az eszközre menti, így azok offline módban, a telepítés után is telepíthetők.
@@ -1091,7 +1086,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
           Ha nem állítja be ezt a házirendet, a <ph name="PRODUCT_NAME" /> még akkor sem delegál felhasználói hitelesítési adatokat, ha a szervert az intraneten lévőnek érzékeli.</translation>
 <translation id="4752880493649142945">Klienstanúsítvány a RemoteAccessHostTokenValidationUrl címhez történő csatlakozáshoz</translation>
-<translation id="4768493164188395498">Az ellenőrző szívverések gyakorisága</translation>
 <translation id="4791031774429044540">A nagy egérmutató kisegítő lehetőség engedélyezése.
 
           Ha a házirend értéke igaz, a nagy egérmutató mindig engedélyezve lesz.
@@ -1815,7 +1809,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="7511361072385293666">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> termékben használható a QUIC protokoll.
       Ha a házirend értéke hamis, akkor a QUIC protokoll nem használható.</translation>
 <translation id="7519251620064708155">Kulcslétrehozás engedélyezése ezeken a webhelyeken</translation>
-<translation id="7523476810162382273">Ellenőrző szívverések küldése a kezelőszervernek</translation>
 <translation id="7529100000224450960">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nyithatnak meg felugró ablakokat. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultPopupsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="7529144158022474049">Szórási tényező automatikus frissítése</translation>
 <translation id="7553535237300701827">Amikor az irányelv be van állítva, a bejelentkezési hitelesítés folyamata a beállítás értékétől függően a következők egyike szerint alakul:
@@ -1877,6 +1870,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
           Ha a beállítás le van tiltva vagy nincs megadva, akkor a kétlépcsős azonosítás nincs engedélyezve, és alapértelmezés szerint a felhasználó által megadott PIN-kód szükséges.</translation>
 <translation id="7750991880413385988">Új lap oldal megnyitása</translation>
+<translation id="7761446981238915769">A telepített alkalmazások listájának konfigurálása a bejelentkezési képernyőn</translation>
 <translation id="7761526206824804472">Beállít egy vagy több javasolt nyelv- és országkódot egy nyilvános munkamenet számára, ami lehetővé teszi, hogy a felhasználók egyszerűen válasszanak közülük.
 
       A felhasználó a nyilvános munkamenet megkezdése előtt kiválaszthat egy nyelv- és országkódot, valamint egy billentyűzetkiosztást. Alapértelmezés szerint a <ph name="PRODUCT_OS_NAME" /> által támogatott összes nyelv- és országkód megjelenik ábécésorrendben. A házirend beállításával a javasolt nyelv- és országkódok egy készletét a lista tetejére helyezheti.
@@ -2258,6 +2252,29 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="8858642179038618439">A YouTube Biztonságos módjának kényszerítése</translation>
 <translation id="8864975621965365890">Elrejti a kikapcsolási figyelmeztetést, amely akkor jelenik meg, ha egy webhelyet a(z) <ph name="PRODUCT_FRAME_NAME" /> jeleníti meg.</translation>
 <translation id="8870318296973696995">Kezdőoldal</translation>
+<translation id="88890388118515381">
+      Meghatározza azoknak az alkalmazásoknak a listáját, amelyeket a rendszer
+      a háttérben, felhasználói beavatkozás nélkül telepít a bejelentkezési
+      képernyőre, és amelyeket nem lehet eltávolítani.
+      A rendszer az alkalmazások által kért valamennyi engedélyt
+      implicit módon, felhasználói beavatkozás nélkül adja meg, ideértve
+      az alkalmazás jövőbeni verziói által kért engedélyeket is.
+
+      Ha egy korábban kényszerítetten telepített alkalmazás lekerül a listáról,
+      akkor azt a <ph name="PRODUCT_NAME" /> automatikusan eltávolítja.
+
+      A házirend mindegyik listaeleme egy karakterlánc, amely pontosvesszővel
+      (<ph name="SEMICOLON" />) elválasztva tartalmazza a bővítményazonosítót és a frissítési URL-t.
+      A bővítményazonosító az a 32 betűs karakterlánc, amely pl. a <ph name="CHROME_EXTENSIONS_LINK" /> linken
+      található fejlesztői módban. A frissítési URL-nek az itt ismertetett
+      frissítési jegyzék XML-dokumentumra kell mutatnia: <ph name="LINK_TO_EXTENSION_DOC1" />. Fontos: Az ebben
+      a házirendben megadott frissítési URL csak a kezdeti telepítés céljára szolgál;
+      a bővítmény azt követő frissítései a bővítmény jegyzékfájljában megadott
+      frissítési URL-t használják.
+
+      Például a(z) <ph name="EXTENSION_POLICY_EXAMPLE" />
+      a Chrome Internetes áruház normál frissítési URL-jéről telepíti a(z) <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> 
+      bővítményt. A bővítmények tárolásával kapcsolatos további információkért lásd a következőt: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">A Quirks Server hardverspecifikus konfigurációs fájlokat, például
       ICC megjelenítési profilokat biztosít a monitor kalibrálásához.
 
@@ -2311,11 +2328,6 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="9088444059179765143">Az automatikus időzóna-érzékelés módszerének konfigurálása</translation>
 <translation id="9096086085182305205">Azonosítási szerverek engedélyezési listája</translation>
 <translation id="9098553063150791878">HTTP-hitelesítési szabályok</translation>
-<translation id="9104138886225968319">Ellenőrző szívverések küldése a kezelőszervernek,
-      hogy az észlelhesse, ha az eszköz offline van.
-
-      Ha a házirend beállítása igaz, a rendszer küld ellenőrző szívveréseket.
-      Ha hamis, vagy ha nincs beállítva, akkor nem küld.</translation>
 <translation id="9112897538922695510">Lehetővé teszi a protokollkezelők listájának regisztrálását. Csak ajánlott házirend lehet. A |protocol| tulajdonságot a sémához – például „mailto” – kell beállítani, az |url| tulajdonságot pedig a sémát kezelő alkalmazás URL-mintájához. A minta tartalmazhat „%s” karakterláncot, amelynek – ha van – helyére majd a kezelt URL kerül.
 
           A rendszer egyesíti a házirend által regisztrált protokollkezelőket a felhasználó által regisztráltakkal, és mindkétféle protokollkezelő használatra készen rendelkezésre áll. A felhasználó új alapértelmezett kezelő telepítésével felülírhatja a házirend által telepített protokollkezelőket, a házirend által regisztrált protokollkezelőt azonban nem tudja eltávolítani.</translation>

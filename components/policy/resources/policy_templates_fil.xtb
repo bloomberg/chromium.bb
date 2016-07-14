@@ -929,11 +929,6 @@
 <translation id="3864818549971490907">Default na setting ng mga plugin</translation>
 <translation id="3866249974567520381">Paglalarawan</translation>
 <translation id="3866530186104388232">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, ipapakita ng <ph name="PRODUCT_OS_NAME" /> ang mga umiiral nang user sa screen ng pag-login at papayag na pumili ng isa. Kung nakatakda sa false ang patakarang ito, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang prompt ng username/password para sa pag-login.</translation>
-<translation id="3866824067696705379">Gaano kadalas ipinapadala ang pagsubaybay ng tibok ng puso, ayon sa mga millisecond.
-
-      Kung hindi itatakda ang patakaran na ito, ang default na dalas ay 3 minuto. Ang
-      minimum na dalas ay 30 segundo at ang maximum na dalas ay 24 na oras -
-      ang mga value na nasa labas ng saklaw na ito ay maka-clamp sa saklaw na ito.</translation>
 <translation id="3868347814555911633">Sa retail mode lang aktibo ang patakarang ito.
 
       Nililista ang mga extension na awtomatikong naka-install para sa user ng Demo, para sa mga device na nasa retail mode. Naka-save ang mga extension na ito sa device at maaaring i-install habang naka-offline, pagkatapos ng pag-install.
@@ -1160,7 +1155,6 @@
 
           Kung iiwanan mong hindi nakatakda ang patakarang ito, hindi maglalaan ang <ph name="PRODUCT_NAME" /> ng mga kredensyal ng user kahit na na-detect ang isang server bilang Intranet.</translation>
 <translation id="4752880493649142945">Certificate ng client para sa pagkonekta sa RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Dalas ng pagsubaybay sa mga tibok ng puso</translation>
 <translation id="4791031774429044540">I-enable ang tampok sa pagiging naa-access ng malaking cursor.
 
           Kung nakatakda sa true ang patakarang ito, palaging naka-enable ang malaking cursor.
@@ -1952,7 +1946,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7511361072385293666">Kung nakatakda ang patakaran na ito sa true o hindi ito nakatakda, ang paggamit ng QUIC protocol sa <ph name="PRODUCT_NAME" /> ay pinapayagan.
       Kung ang patakaran na ito ay nakatakda sa false, ang paggamit ng QUIC protocol ay hindi pinapayagan.</translation>
 <translation id="7519251620064708155">Payagan ang pagbuo ng key sa mga site na ito</translation>
-<translation id="7523476810162382273">Magpadala ng mga pangsubaybay ng heartbeat sa server sa pamamahala</translation>
 <translation id="7529100000224450960">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magbukas ng mga popup.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultPopupsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -2021,6 +2014,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hindi pinapagana o hindi nakatakda ang setting na ito, hindi papaganahin ang dalawang salik at gagamitin ang default na paggana ng pagkakaroon ng PIN na tinukoy ng user.</translation>
 <translation id="7750991880413385988">Buksan ang Pahina ng Bagong Tab</translation>
+<translation id="7761446981238915769">I-configure ang listahan ng mga naka-install na app sa screen ng pag-login</translation>
 <translation id="7761526206824804472">Nagtatakda ng isa o higit pang mga inirerekomendang lokal para sa isang pampublikong session, na nagbibigay-daan sa mga user na madaling pumili ng isa sa mga lokal na ito.
 
       Makakapili ang user ng lokal at layout ng keyboard bago magsimula ng pampublikong session. Bilang default, nakalista ang lahat ng lokal na sinusuportahan ng <ph name="PRODUCT_OS_NAME" /> ayon sa pagkakasunud-sunod ng alpabeto. Magagamit mo ang patakarang ito upang maglipat ng hanay ng mga inirerekomendang lokal sa itaas ng listahan.
@@ -2438,6 +2432,28 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8858642179038618439">Puwersahin ang YouTube Safety Mode</translation>
 <translation id="8864975621965365890">Pinipigilan ang turndown na prompt na lumilitaw kapag na-render ang isang site ng <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Home page</translation>
+<translation id="88890388118515381">
+      Tumutukoy ng isang listahan ng mga app na palihim na ini-install sa screen ng pag-login,
+      nang walang pakikipag-ugnayan ng user, at hindi maaaring i-uninstall.
+      Ang lahat ng pahintulot na hiniling ng mga app ay ibinibigay
+      nang walang pagpapahayag, nang walang pakikipag-ugnayan ng user, na kinabibilangan ng anumang mga karagdagang
+      pahintulot na hiniling ng mga bersyon ng app sa hinaharap.
+
+      Kung inalis sa listahang ito ang isang app na dati nang pilit na na-install,
+      awtomatiko itong ina-uninstall ng <ph name="PRODUCT_NAME" />.
+
+      Ang bawat item ng listahan ng patakaran ay isang string na naglalaman ng extension ID
+      at isang URL ng "update" na pinaghihiwalay ng semicolon (<ph name="SEMICOLON" />). Ang extension ID ay ang string na may 32 titik
+      na makikita halimbawa sa <ph name="CHROME_EXTENSIONS_LINK" /> kapag nasa
+      developer mode. Ang URL ng "update" ay dapat mapunta sa Manifest ng Update
+      na dokumentong XML gaya ng inilarawan sa <ph name="LINK_TO_EXTENSION_DOC1" />. Tandaan
+      na ang URL ng "update" na itinakda sa patakarang ito ay ginagamit lang sa paunang
+      pag-install; gagamitin ng mga kasunod na update ng extension ang URL ng
+      update na nakasaad sa manifest ng extension.
+
+      Halimbawa, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      ini-install ang <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> app mula sa karaniwang URL ng "update" ng Chrome Web Store.
+      Para sa higit pang impormasyon tungkol sa pagho-host ng mga extension, tingnan ang: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Nagbibigay ang Quirks Server ng mga configuration file na partikular sa hardware, tulad ng
       mga ICC display profile upang isaayos ang calibration ng monitor.
 
@@ -2490,11 +2506,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="9088444059179765143">I-configure ang awtomatikong paraan ng pag-detect ng timezone</translation>
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>
 <translation id="9098553063150791878">Mga patakaran para sa pagpapatotoo ng HTTP</translation>
-<translation id="9104138886225968319">Nagpapadala ng mga heartbeat sa pagsubaybay sa server sa pamamahala upang magbigay-daan
-      sa server na matukoy kung offline ang device.
-
-      Kung itatakda ang patakarang ito sa true, magpapadala ng mga heartbeat sa pagsubaybay. Kung itatakda ito
-      sa false o kung hindi ito itatakda, hindi magpapadala ng mga heartbeat.</translation>
 <translation id="9112897538922695510">Nagbibigay-daan sa iyong magrehistro ng isang listahan ng mga tagapangasiwa ng protocol. Dapat ay isa itong inirerekomendang patakaran. Dapat itakda ang property na |protocol| sa scheme gaya ng 'mailto' at dapat itakda ang property na |url| sa pattern ng URL ng application na nangangasiwa sa scheme. Maaaring maglaman ng '%s' ang pattern, at kung mayroon nito, papalitan ito ng pinapangasiwaang URL.
 
           Ang mga tagapangasiwa ng protocol na irerehistro ng patakaran ay isasama sa mga inirehistro ng user, at available gamitin ang dalawang ito. Maaaring i-override ng user ang mga tagapangasiwa ng protocol na na-install ng patakaran sa pamamagitan ng pag-i-install ng bagong default na tagapangasiwa, ngunit hindi nila maaalis ang isang tagapangasiwa ng protocol na inirehistro ng patakaran.</translation>

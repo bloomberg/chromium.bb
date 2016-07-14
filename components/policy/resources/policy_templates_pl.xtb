@@ -440,11 +440,11 @@
 <translation id="2483146640187052324">Przewiduj działania w sieci dla każdego połączenia sieciowego</translation>
 <translation id="2486371469462493753">Wyłącza egzekwowanie wymogów protokołu Certificate Transparency dla wymienionych adresów URL.
 
-      Ta zasada umożliwia pominięcie ujawniania przez protokół Certificate Transparency certyfikatów nazw hosta w określonych adresach URL. Dzięki temu certyfikaty, które zostałyby uznane za niezaufane z powodu nieujawnienia publicznego, mogą być nadal używane. Trudniej jest jednak wykryć certyfikaty, które zostały wydane nieprawidłowo.
+      Ta zasada umożliwia pominięcie ujawniania przez protokół Certificate Transparency certyfikatów nazw hosta w określonych adresach URL. Dzięki temu certyfikaty, które zostałyby uznane za niezaufane z powodu nieujawnienia publicznego, mogą być nadal używane. Trudniej jest jednak wykryć certyfikaty, które zostały wydane nieprawidłowo.
 
       Wzorzec adresu URL jest sformatowany zgodnie ze schematem na stronie: https://www.chromium.org/administrators/url-blacklist-filter-format. Ponieważ jednak certyfikaty są ważne dla określonej nazwy hosta niezależnej od schematu, portu czy ścieżki, pod uwagę brany jest tylko fragment adresu URL zawierający nazwę hosta. Hosty zawierające symbole wieloznaczne nie są obsługiwane.
 
-      Jeśli ta zasada nie jest skonfigurowana, każdy certyfikat, który musi zostać ujawniony przez protokół Certificate Transparency, będzie traktowany jako niezaufany, jeśli nie zostanie ujawniony zgodnie z zasadami tego protokołu.</translation>
+      Jeśli ta zasada nie jest skonfigurowana, każdy certyfikat, który musi zostać ujawniony przez protokół Certificate Transparency, będzie traktowany jako niezaufany, jeśli nie zostanie ujawniony zgodnie z zasadami tego protokołu.</translation>
 <translation id="2488010520405124654">Włącza pytanie o konfigurację sieci wyświetlane w trybie offline.
 
       Jeśli ta zasada nie jest ustawiona lub ma wartość Prawda, lokalne konto na urządzeniu jest skonfigurowane do automatycznego logowania się z zerowym opóźnieniem, a urządzenie nie ma dostępu do internetu, <ph name="PRODUCT_OS_NAME" /> pokazuje pytanie o konfigurację sieci.
@@ -468,7 +468,7 @@
 <translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2552966063069741410">Strefa czasowa</translation>
-<translation id="2562339630163277285">Określa URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wpisanym przez użytkownika
+<translation id="2562339630163277285">Określa URL wyszukiwarki, z której pobierane są wyniki wyszukiwania dynamicznego. URL musi zawierać ciąg <ph name="SEARCH_TERM_MARKER" />, który podczas wyszukiwania jest zastępowany tekstem wpisanym przez użytkownika
 
           Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, wyniki wyszukiwania dynamicznego nie będą dostarczane.
 
@@ -490,7 +490,7 @@
 
           URL wyszukiwania Google to: <ph name="GOOGLE_SEARCH_URL" />.
 
-          Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie egzekwowana.</translation>
+          Ta opcja musi być ustawiona w przypadku włączenia zasady „DefaultSearchProviderEnabled” i tylko wtedy będzie egzekwowana.</translation>
 <translation id="2660846099862559570">Nigdy nie używaj serwera proxy</translation>
 <translation id="267596348720209223">Pozwala określić kodowania znaków obsługiwane przez dostawcę wyszukiwania. Kodowania są określane za pomocą nazw stron kodowych, np. UTF-8, GB2312 czy ISO-8859-1. Są stosowane w podanej kolejności. Ta zasada jest opcjonalna. Jeśli nie zostanie skonfigurowana, będzie używana wartość domyślna, czyli UTF-8. Zasada ta jest stosowana tylko przy włączonej zasadzie „DefaultSearchProviderEnabled”.</translation>
 <translation id="2682225790874070339">Wyłącz Dysk w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" /></translation>
@@ -498,7 +498,7 @@
 <translation id="2692168654831544772">Wyłącza wykonywanie zrzutów ekranu.
 
       W przypadku włączenia tej zasady nie będzie można tworzyć zrzutów ekranu, używając skrótów klawiszowych ani interfejsów API rozszerzeń.
-      Niemożliwe jest też wykonywanie zrzutów ekranu w aplikacjach ARC.
+      Niemożliwe jest też wykonywanie zrzutów ekranu w aplikacjach ARC.
 
       W przypadku wyłączenia lub nieskonfigurowania tej zasady wykonywanie zrzutów ekranu będzie dozwolone.</translation>
 <translation id="2731627323327011390">Wyłącz korzystanie z certyfikatów <ph name="PRODUCT_OS_NAME" /> w aplikacjach ARC</translation>
@@ -663,9 +663,9 @@
 <translation id="3072847235228302527">Określ Warunki korzystania z usługi dla lokalnego konta na urządzeniu</translation>
 <translation id="3096595567015595053">Lista włączonych wtyczek</translation>
 <translation id="3101501961102569744">Wybierz sposób określenia ustawień serwera proxy</translation>
-<translation id="3117676313396757089">Ostrzeżenie: DHE zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 57 (około marca 2017 r.) i wtedy ta zasada przestanie działać.
+<translation id="3117676313396757089">Ostrzeżenie: DHE zostanie całkowicie usunięty z <ph name="PRODUCT_NAME" /> po wersji 57 (około marca 2017 r.) i wtedy ta zasada przestanie działać.
 
-      Jeśli ta zasada nie jest ustawiona lub jest wyłączona, mechanizmy szyfrowania DHE w TLS będą wyłączone. Można ją włączyć, by mechanizmy szyfrowania pozostały aktywne oraz w celu zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.
+      Jeśli ta zasada nie jest ustawiona lub jest wyłączona, mechanizmy szyfrowania DHE w TLS będą wyłączone. Można ją włączyć, by mechanizmy szyfrowania pozostały aktywne oraz w celu zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.
 
       Zalecamy wdrożenie na serwerach mechanizmów szyfrowania ECDHE. Jeśli nie ma takiej możliwości, upewnij się, że włączony jest mechanizm szyfrowania obsługujący wymianę kluczy RSA.</translation>
 <translation id="3153348162326497318">Pozwala określić rozszerzenia, których użytkownicy NIE mogą instalować. Zainstalowane rozszerzenia zostaną usunięte w przypadku umieszczenia ich na tej liście. Wartość „*” na liście blokad oznacza, że zablokowane są wszystkie rozszerzenia, które nie znajdują się na liście dozwolonych rozszerzeń. Jeśli zasada ta nie zostanie skonfigurowana, użytkownicy mogą instalować dowolne rozszerzenia w <ph name="PRODUCT_NAME" />.</translation>
@@ -748,9 +748,9 @@
 <translation id="3322771899429619102">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenBlockedForUrls”, zastępuje to te wyjątki.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
-<translation id="3337150554416948435">Umożliwia określenie, czy witryny mogą śledzić fizyczną lokalizację użytkownika. Działanie to może być domyślnie dozwolone lub zabronione albo użytkownik może być o to pytany za każdym razem, gdy witryna zażąda informacji o lokalizacji.
+<translation id="3337150554416948435">Umożliwia określenie, czy witryny mogą śledzić lokalizację użytkownika. Działanie to może być domyślnie dozwolone lub zabronione albo użytkownik może być o to pytany za każdym razem, gdy witryna zażąda informacji o lokalizacji.
 
-          Jeśli ta zasada jest ustawiona na „BlockGeolocation”, udostępnianie lokalizacji będzie zabronione w aplikacjach ARC.
+          Jeśli ta zasada jest ustawiona na „BlockGeolocation”, udostępnianie lokalizacji będzie zabronione w aplikacjach ARC.
 
           W przypadku nieskonfigurowania tej zasady używane będzie ustawienie „AskGeolocation”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
@@ -876,7 +876,7 @@
 
       Jeśli zasada nie jest określona, adres URL nie zostanie zmieniony.</translation>
 <translation id="3863409707075047163">Najniższa włączona wersja protokołu SSL</translation>
-<translation id="3864020628639910082">Określa URL wyszukiwarki dostarczającej sugestie wyszukiwania. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który w trakcie przesyłania zapytania zostanie zastąpiony tekstem dotychczas wpisanym przez użytkownika.
+<translation id="3864020628639910082">Określa URL wyszukiwarki dostarczającej sugestie wyszukiwania. URL powinien zawierać ciąg „<ph name="SEARCH_TERM_MARKER" />”, który w trakcie przesyłania zapytania zostanie zastąpiony tekstem dotychczas wpisanym przez użytkownika.
 
           Ta zasada jest opcjonalna. Jeśli nie zostanie ustawiona, URL sugestii nie będzie używany.
 
@@ -886,11 +886,6 @@
 <translation id="3864818549971490907">Domyślne ustawienie wtyczek</translation>
 <translation id="3866249974567520381">Opis</translation>
 <translation id="3866530186104388232">Jeśli ta zasada jest włączona lub nieskonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał wybranie nazwy użytkownika spośród zarejestrowanych nazw wyświetlanych na ekranie logowania. W przypadku wyłączenia tej zasady <ph name="PRODUCT_OS_NAME" /> będzie prosił o podanie nazwy użytkownika i hasła.</translation>
-<translation id="3866824067696705379">Częstotliwość monitorowania pakietów podtrzymujących (w milisekundach).
-
-      Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy minuty.
-      Minimalna częstotliwość to 30 sekund, a maksymalna 24 godziny.
-      Wartości spoza tego zakresu zostaną zmienione na wartości graniczne.</translation>
 <translation id="3868347814555911633">Ta zasada jest aktywna tylko w trybie sklepu.
 
       Zawiera listę rozszerzeń, które są automatycznie instalowane dla użytkownika demonstracyjnego w przypadku urządzeń działających w trybie sklepu. Rozszerzenia są zapisane na urządzeniu i można je zainstalować w trybie offline, po instalacji aplikacji.
@@ -900,7 +895,7 @@
 <translation id="3898060089412156345">Zezwala (lub nie) na rejestrowanie dźwięku.
 
       Jeśli ta zasada jest włączona lub nie jest skonfigurowana (ustawienie domyślne),
-      użytkownik jest pytany o pozwolenie na rejestrowanie dźwięku, chyba że dany URL
+      użytkownik jest pytany o pozwolenie na rejestrowanie dźwięku, chyba że dany URL
       jest na liście AudioCaptureAllowedUrls – wtedy pozwolenie jest udzielane bez pytania.
 
       Gdy zasada jest wyłączona, użytkownik nigdy nie jest pytany, a rejestrowanie dźwięku
@@ -966,7 +961,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
-<translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
+<translation id="4105989332710272578">Wyłącz egzekwowanie protokołu Certificate Transparency dla adresów URL z listy</translation>
 <translation id="4115096483386877940">Uprawnienie do blokowania ekranu.
 
       Jeśli ta zasada jest ustawiona na wartość fałsz, użytkownicy nie mogą blokować ekranu (mogą się tylko wylogować z sesji użytkownika). Jeśli ustawiona jest wartość prawda lub zasada nie została skonfigurowana, użytkownicy, którzy przeprowadzili uwierzytelnianie hasłem, mogą blokować ekran.</translation>
@@ -1004,7 +999,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest opcjonalna. Jeśli nie jest ustawiona, żądania wyszukiwania obrazem są wysyłane przy użyciu metody GET.
 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
-<translation id="4309640770189628899">Czy włączone są mechanizmy szyfrowania DHE w TLS</translation>
+<translation id="4309640770189628899">Czy włączone są mechanizmy szyfrowania DHE w TLS</translation>
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
 <translation id="4322842393287974810">Zezwalaj aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
@@ -1093,7 +1088,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli nie ustawisz tej zasady, <ph name="PRODUCT_NAME" /> nie przekazuje danych logowania użytkowników, nawet gdy serwer działa w intranecie.</translation>
 <translation id="4752880493649142945">Certyfikat klienta umożliwiający nawiązanie połączenia z RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Częstotliwość monitorowania pakietów podtrzymujących</translation>
 <translation id="4791031774429044540">Włącza funkcję ułatwień dostępu w postaci dużego kursora.
 
           Jeśli ta zasada ma wartość „prawda”, duży kursor jest zawsze włączony.
@@ -1807,7 +1801,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7511361072385293666">Jeśli ta zasada jest włączona lub nieustawiona, użycie protokołu QUIC w <ph name="PRODUCT_NAME" /> jest dozwolone.
       Jeśli zasada jest wyłączona, użycie protokołu QUIC jest niedozwolone.</translation>
 <translation id="7519251620064708155">Zezwalaj na generowanie kluczy w tych witrynach</translation>
-<translation id="7523476810162382273">Wysyłaj pakiety podtrzymujące do serwera zarządzania</translation>
 <translation id="7529100000224450960">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7529144158022474049">Współczynnik rozkładania automatycznych aktualizacji w czasie</translation>
 <translation id="7553535237300701827">Gdy ta zasada jest ustawiona, proces uwierzytelniania logowania przebiega na jeden z tych sposobów, zależnie od ustawionej wartości:
@@ -1869,6 +1862,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, uwierzytelnianie dwuskładnikowe nie będzie włączone i stosowane będzie działanie domyślne – korzystanie z PIN-u zdefiniowanego przez użytkownika.</translation>
 <translation id="7750991880413385988">Otwórz stronę nowej karty</translation>
+<translation id="7761446981238915769">Skonfiguruj listę zainstalowanych aplikacji na ekranie logowania</translation>
 <translation id="7761526206824804472">Ustawia co najmniej jeden zalecany język na potrzeby sesji publicznych, ułatwiając użytkownikom wybieranie spośród ustawionych języków.
 
       Użytkownik może wybrać język i układ klawiatury przed rozpoczęciem sesji publicznej. Domyślnie wszystkie języki obsługiwane w <ph name="PRODUCT_OS_NAME" /> są wymienione w kolejności alfabetycznej. Za pomocą tej zasady możesz przenieść zalecane języki na początek listy.
@@ -1940,7 +1934,7 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="7914271217607102111">Zezwala (lub nie) na rejestrowanie wideo.
 
       Jeśli ta zasada jest włączona lub nie jest skonfigurowana
-      (ustawienie domyślne), użytkownik jest pytany o pozwolenie
+      (ustawienie domyślne), użytkownik jest pytany o pozwolenie
       na rejestrowanie wideo, chyba że dany URL jest na liście
       VideoCaptureAllowedUrls – wtedy pozwolenie jest udzielane bez pytania.
       Aplikacje ARC mogą uzyskiwać dostęp do kamery, jeśli otrzymały
@@ -2252,6 +2246,28 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="8858642179038618439">Wymuś tryb bezpieczny w YouTube</translation>
 <translation id="8864975621965365890">Pomija monit o odinstalowanie wyświetlany wtedy, gdy witryna jest renderowana przez <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Strona startowa</translation>
+<translation id="88890388118515381">
+      Określa listę aplikacji, które są instalowane dyskretnie (bez interakcji z użytkownikiem)
+      na ekranie logowania i których nie można odinstalować.
+      Wszystkie uprawnienia aplikacja otrzymuje
+      domyślnie, bez interakcji z użytkownikiem. Dotyczy to też wszelkich
+      dodatkowych uprawnień, o które mogą poprosić przyszłe wersje aplikacji.
+
+      Jeśli z tej listy zostanie usunięta aplikacja, której instalacja została
+      wymuszona wcześniej, <ph name="PRODUCT_NAME" /> automatycznie ją odinstaluje.
+
+      Każdy element na liście tej zasady jest ciągiem zawierającym identyfikator
+      rozszerzenia i URL „aktualizacji” oddzielony średnikiem (<ph name="SEMICOLON" />). Identyfikator
+      rozszerzenia to 32-znakowy ciąg, który znajdziesz np. na <ph name="CHROME_EXTENSIONS_LINK" /> w trybie
+      programisty. URL „aktualizacji” powinien wskazywać plik manifestu aktualizacji w postaci
+      dokumentu XML, zgodnie z opisem w dokumencie <ph name="LINK_TO_EXTENSION_DOC1" />.
+      Uwaga: URL „aktualizacji” ustawiony przez tę zasadę jest używany
+      tylko podczas pierwszej instalacji. Późniejsze aktualizacje rozszerzenia korzystają
+      z adresu URL aktualizacji wskazanego w pliku manifestu.
+
+      Na przykład <ph name="EXTENSION_POLICY_EXAMPLE" /> instaluje aplikację <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> ze standardowego adresu URL
+      „aktualizacji” w Chrome Web Store. Więcej informacji o hostowaniu rozszerzeń
+      znajdziesz na: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server dostarcza pliki konfiguracyjne dla określonych urządzeń, takie jak
       profile ICC do kalibracji monitorów.
 
@@ -2305,11 +2321,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
-<translation id="9104138886225968319">Wysyłaj pakiety podtrzymujące do serwera zarządzania,
-      by mógł on sprawdzić, czy urządzenie jest offline.
-
-      Jeśli ta zasada jest włączona, pakiety podtrzymujące będą wysyłane.
-      Jeśli jest wyłączona lub nieskonfigurowana, pakiety podtrzymujące nie będą wysyłane.</translation>
 <translation id="9112897538922695510">Umożliwia zarejestrowanie listy modułów obsługi protokołów. Ta zasada może być tylko zalecana. We właściwości |protocol| należy wskazać schemat taki jak „mailto”, a we właściwości |url| należy wskazać wzorzec adresu URL aplikacji obsługującej ten schemat. Wzorzec może obejmować „%s”, który – jeśli występuje – zostanie zastąpiony przez obsługiwany adres URL.
 
           Moduły obsługi protokołów zarejestrowane przez zasadę są łączone z modułami zarejestrowanymi przez użytkownika i oba te typy są dostępne do użycia. Użytkownik może zastąpić moduły obsługi protokołów zainstalowane przez zasadę, instalując nowy moduł domyślny, ale nie może usunąć modułów zarejestrowanych przez zasadę.</translation>

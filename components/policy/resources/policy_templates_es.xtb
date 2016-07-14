@@ -938,9 +938,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="3864818549971490907">Configuración de complementos predeterminada</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="3866530186104388232">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> mostrará usuarios existentes en la pantalla de inicio de sesión y permitirá seleccionar uno de ellos. Si el valor correspondiente a esta política se establece en "false", <ph name="PRODUCT_OS_NAME" /> solicitará el nombre de usuario y la contraseña para iniciar sesión.</translation>
-<translation id="3866824067696705379">Frecuencia con la que se envían latidos de supervisión (en milisegundos).
-
-      Si esta política no se configura, la frecuencia predeterminada es de tres minutos. La frecuencia mínima es de 30 segundos y la máxima de 24 horas (los valores que no se encuentren en este intervalo se redondearán a este).</translation>
 <translation id="3868347814555911633">Esta política solo se encuentra activa en el modo comercial.
 
       Permite mostrar las extensiones que están instaladas de forma automática en una sesión de demostración para dispositivos que se encuentren en modo comercial. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión una vez que se ha completado el proceso de instalación.
@@ -1163,7 +1160,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
           Si no se establece esta política, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuarios, aunque se detecte una intranet como servidor.</translation>
 <translation id="4752880493649142945">Certificado del cliente para establecer conexión con RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Frecuencia de los latidos de supervisión</translation>
 <translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
 
           Si el valor de esta política se establece en True, siempre se habilitará el cursor grande.
@@ -1955,7 +1951,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7511361072385293666">Si se asigna el valor true a esta política o si esta no se configura, se permitirá el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
       Si se asigna el valor false, no se permitirá el uso de este protocolo.</translation>
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios web</translation>
-<translation id="7523476810162382273">Enviar latidos de supervisión al servidor de administración</translation>
 <translation id="7529100000224450960">Permite establecer una lista de patrones de URL para especificar sitios que puedan abrir pop-ups.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -2023,6 +2018,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
           Si se inhabilita o no se configura esta opción, no se habilitará la autenticación de dos factores y se utilizará la autenticación predeterminada a través de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir página Nueva pestaña</translation>
+<translation id="7761446981238915769">Configurar la lista de aplicaciones instaladas en la pantalla de inicio de sesión</translation>
 <translation id="7761526206824804472">Establece una o varias configuraciones regionales recomendadas para sesiones públicas, lo que permite a los usuarios seleccionar fácilmente una de estas configuraciones.
 
       El usuario puede elegir una configuración regional y un diseño de teclado antes de iniciar una sesión pública. Todas las configuraciones regionales admitidas por <ph name="PRODUCT_OS_NAME" /> se muestran en orden alfabético de forma predeterminada. Puedes utilizar esta política para mover un conjunto de configuraciones regionales recomendadas al principio de la lista.
@@ -2436,6 +2432,28 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
 <translation id="8858642179038618439">Forzar el modo de seguridad de YouTube</translation>
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME" /> muestra un sitio.</translation>
 <translation id="8870318296973696995">Página de inicio</translation>
+<translation id="88890388118515381">
+      Especifica una lista de aplicaciones que se instalan de forma automática en la pantalla de inicio de sesión
+      sin la interacción del usuario y que no se pueden desinstalar.
+      Los permisos solicitados por las aplicaciones se aceptan
+      de forma implícita sin la interacción del usuario, incluidos otros
+      permisos solicitados por próximas versiones de la aplicación.
+
+      Si una aplicación que se ha instalado previamente de forma forzada
+      se quita de esta lista, <ph name="PRODUCT_NAME" /> la desinstalará automáticamente.
+
+      Cada elemento de la lista de la política es una cadena que contiene un
+      ID de extensión y una URL de actualización separados por punto y coma (<ph name="SEMICOLON" />). El ID de extensión es la cadena de 32 letras
+      que aparece, por ejemplo, en <ph name="CHROME_EXTENSIONS_LINK" /> cuando está habilitado el
+      modo desarrollador. La URL de actualización debe dirigir a un documento XML de
+      un archivo de manifiesto de actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. Ten en
+      cuenta que la URL de actualización definida en esta política solo se usa
+      en la instalación inicial. Las actualizaciones posteriores de la extensión
+      usarán la URL de actualización indicada en el archivo de manifiesto de la extensión.
+
+      Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      instala la aplicación <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> desde la URL de actualización estándar de Chrome
+      Web Store. Para obtener más información sobre cómo alojar extensiones, consulta la página <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server proporciona archivos de configuración específicos del hardware, como
       los perfiles de pantalla ICC para ajustar la calibración del monitor.
 
@@ -2487,9 +2505,6 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
 <translation id="9088444059179765143">Configura el método de detección automática de la zona horaria</translation>
 <translation id="9096086085182305205">Lista de admisión de servidores de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
-<translation id="9104138886225968319">Envía latidos de supervisión al servidor de administración para permitir al servidor detectar si el dispositivo está sin conexión.
-
-     Si se asigna el valor true a esta política, se enviarán latidos de supervisión. Si se asigna el valor false o si esta política no se configura, no se enviarán latidos de supervisión.</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolos. Solo puede tratarse de una política recomendada. La propiedad |protocol| se debe establecer según el esquema (por ejemplo, mailto), y la propiedad |url| se debe establecer según el patrón de URL de la aplicación que procesa el esquema. El patrón puede incluir un %s, que si está presente se sustituirá por la URL procesada.
 
 Los controladores de protocolos registrados por la política se combinan con los registrados por el usuario, y ambos pueden utilizarse. El usuario puede anular los controladores de protocolos instalados por la política. Para ello, debe instalar un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>

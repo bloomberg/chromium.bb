@@ -488,7 +488,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5682113568322255809">Markierung</translation>
 <translation id="5683155931978483559">Vorheriges Kästchen</translation>
 <translation id="5684277895745049190">Liste</translation>
-<translation id="5684905390246898631">Herzlich willkommen bei ChromeVox Next!</translation>
+<translation id="5684905390246898631">Willkommen bei ChromeVox Next!</translation>
 <translation id="5695831708991916435">Bei den nächsten Tastenkombinationen handelt es sich zwar nicht um ChromeVox-Befehle, aber sie sind dennoch sehr nützlich, um Chrome optimal zu nutzen.
 Wenn Sie durch ausführbare Elemente, z. B. Schaltflächen und Links, vorwärts navigieren möchten, drücken Sie die Tabulatortaste. Rückwärts gelangen Sie mit Shift + Tab. 
 Wenn Sie auf die Adressleiste des Chrome-Browsers, auch als Omnibox bezeichnet, zugreifen möchten, drücken Sie Strg + L. 
@@ -505,7 +505,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="5728409797179002635">Keine Tabelle gefunden</translation>
 <translation id="5748623122140342504">Vorherige Überschrift der Ebene 5</translation>
 <translation id="5750633686117194034">Sie haben keinen Modifikator gedrückt. Drücken und halten Sie mindestens einen Modifikator, heben Sie anschließend die Finger an und hören Sie, welche Tasten gewählt wurden. Beenden Sie mit der Tabulatortaste.</translation>
-<translation id="5788275253279308023">Inkognito-Fenster, Tab "<ph name="TITLE" />"</translation>
+<translation id="5788275253279308023">Inkognitofenster, Tab "<ph name="TITLE" />"</translation>
 <translation id="5806206155699461681">Bestimmte Websites optimieren, zum Beispiel die Google-Suche</translation>
 <translation id="5819072574982403430">Baumelement</translation>
 <translation id="5826479389509458994"><ph name="ROW" />. Zeile, <ph name="COL" />. Spalte</translation>
@@ -518,7 +518,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="5876817486144482042">Sprachlautstärke verringern</translation>
 <translation id="5887397643266327462">Braille-Untertitel aktiviert</translation>
 <translation id="5891934789323004067">Tabelle</translation>
-<translation id="5919442531159595654">kopieren</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{Gleichheitszeichen}other{# Gleichheitszeichen}}</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5948123859135882163">Interpretation mathematischer Ausdrücke zwischen strukturell und semantisch umschalten</translation>
@@ -649,11 +648,10 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Dialogfeldtext eingegeben</translation>
-<translation id="7518543783849163354">Um ChromeVox vorübergehend stumm zu schalten, drücken Sie die Strg-Taste.</translation>
+<translation id="7518543783849163354">Um ChromeVox vorübergehend stummzuschalten, drücken Sie die Strg-Taste.</translation>
 <translation id="7532613204005497612">Juni</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, Schieberegler "<ph name="NAME" />"</translation>
 <translation id="7552432549459840808">Nützliche Tastenkombinationen in Chrome</translation>
-<translation id="7586163296341959563">einfügen</translation>
 <translation id="7596919493010894443">Auswahl gelöscht</translation>
 <translation id="7604026522577407655">Zum Anfang der aktuellen Spalte gehen</translation>
 <translation id="7604451927827590395">hdng</translation>
@@ -705,7 +703,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{Unterstrich}other{# Unterstriche}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">Vollbildmodus an oder aus</translation>
-<translation id="81960742267269908">ausschneiden</translation>
 <translation id="8199231515320852133">Überschriften der aktuellen Zelle ansagen</translation>
 <translation id="820417203470636242">Leere Zelle</translation>
 <translation id="8215202828671303819">Mehrfachauswahl</translation>

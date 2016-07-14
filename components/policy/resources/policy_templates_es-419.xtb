@@ -429,13 +429,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2466131534462628618">La autenticación de portal cautivo ignora el proxy</translation>
 <translation id="2482676533225429905">Mensajería nativa</translation>
 <translation id="2483146640187052324">Predecir acciones de la red en cualquier conexión de red</translation>
-<translation id="2486371469462493753">Inhabilita la aplicación de los requisitos del Certificado de transparencia para las URL enumeradas.
+<translation id="2486371469462493753">Inhabilita la aplicación de los requisitos del Certificado de transparencia para las URL de la lista.
 
       Esta política permite que los certificados para los nombres de host en las URL especificadas no se divulgen mediante el Certificado de transparencia. Esta acción permite seguir usando certificados que, de lo contrario, no serían de confianza porque no se divulgaron de forma pública correctamente. Sin embargo, esta acción dificulta la detección de los certificados que se usan de forma incorrecta para esos hosts.
 
       El formato del patrón de URL se especifica en https://www.chromium.org/administrators/url-blacklist-filter-format. Sin embargo, dado que los certificados son válidos para un nombre de host específico, más allá del esquema, puerto o ruta, solo se tiene en cuenta la porción de la URL con el nombre de host. Los hosts con comodines no son compatibles.
 
-      Si esta política no se establece, todos los certificados que deben divulgarse mediante el Certificado de transparencia (y no cumplen con este requisito) se considerarán no confiables.</translation>
+      Si esta política no se establece, todos los certificados que deben divulgarse mediante el Certificado de transparencia (y que no cumplen con este requisito) se considerarán no confiables.</translation>
 <translation id="2488010520405124654">Habilita el mensaje de configuración de red si no hay conexión.
 
       Si se establece esta política en True o no se establece, se configuró una cuenta local de dispositivo para el acceso automático sin tiempo de espera y el dispositivo no tiene conexión a Internet, <ph name="PRODUCT_OS_NAME" /> mostrará un mensaje de configuración de red.
@@ -655,7 +655,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3072847235228302527">Establecer las Condiciones del servicio para la cuenta local del dispositivo</translation>
 <translation id="3096595567015595053">Lista de complementos habilitados</translation>
 <translation id="3101501961102569744">Elegir cómo especificar la configuración del servidor proxy</translation>
-<translation id="3117676313396757089">Advertencia: la encriptación DHE se quitará por completo de <ph name="PRODUCT_NAME" /> después de la versión 57 (alrededor de marzo de 2017), por lo que esta política dejará de funcionar en ese momento.
+<translation id="3117676313396757089">Advertencia: La encriptación DHE se quitará por completo de <ph name="PRODUCT_NAME" /> después de la versión 57 (alrededor de marzo de 2017), por lo que esta política dejará de funcionar en ese momento.
 
       Si no se establece esta política o se establece como falsa, los paquetes de encriptación DHE en TLS no se habilitarán. De lo contrario, se puede establecer como verdadera para habilitar los paquetes de encriptación DHE y mantener la compatibilidad con un servidor desactualizado. Esta medida es un recurso temporal, y el servidor debe reconfigurarse.
 
@@ -738,11 +738,11 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3322771899429619102">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a utilizar la generación de claves. Si un patrón de URL tiene configurada la política "KeygenBlockedForUrls", se anulan estas excepciones.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios, ya sea de la política "DefaultKeygenSetting" si está configurada o de otro tipo de configuración personal del usuario.</translation>
-<translation id="3337150554416948435">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. Este rastreo puede autorizarse de forma predeterminada, denegarse de forma predeterminada o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física.
+<translation id="3337150554416948435">Te permite establecer si los sitios web pueden rastrear la ubicación física de los usuarios. Este rastreo puede autorizarse o denegarse de forma predeterminada, o se le puede preguntar al usuario cada vez que un sitio web solicita la ubicación física.
 
           Si esta política se establece como "BlockGeolocation", el uso compartido de la ubicación se inhabilita para las apps de ARC.
 
-          Si esta política no se establece, se usará "AskGeolocation" y el usuario podrá cambiarla.</translation>
+          Si esta política no se establece, se usará "AskGeolocation", y el usuario podrá cambiarla.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no requieren contraseña.
 
@@ -876,11 +876,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3864818549971490907">Configuración de complementos predeterminada</translation>
 <translation id="3866249974567520381">Descripción</translation>
 <translation id="3866530186104388232">Si esta política no se configura o se establece en "true", <ph name="PRODUCT_OS_NAME" /> mostrará usuarios existentes en la pantalla de inicio de sesión y permitirá seleccionar uno de ellos. Si esta política se establece en "false", <ph name="PRODUCT_OS_NAME" /> solicitará el nombre de usuario y la contraseña para iniciar sesión.</translation>
-<translation id="3866824067696705379">Frecuencia de envío de señales de monitoreo, en milisegundos.
-
-      Si esta política no se configura, la frecuencia predeterminada es 3 minutos. La frecuencia
-      mínima es 30 segundos y la máxima es 24 horas; los valores
-      fuera de estos límites se establecerán dentro del rango.</translation>
 <translation id="3868347814555911633">Esta política solo se encuentra activa en el modo de venta.
 
       Elabora una lista de las extensiones que se instalan automáticamente para el usuario de demostración, para los dispositivos en modo de venta. Estas extensiones se guardan en el dispositivo y se pueden instalar sin conexión, después de la instalación.
@@ -1085,7 +1080,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           Si esta política no se establece, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuario aunque un servidor se detecte como intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conectarse a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Frecuencia de señales de monitoreo</translation>
 <translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
 
           Si esta política se establece como verdadera, el cursor grande estará siempre habilitado.
@@ -1799,7 +1793,6 @@ desactivarlo).</translation>
 <translation id="7511361072385293666">Si esta política no se configura o se establece en true, se permite el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
       Si esta política se establece en false, no se permite el uso del protocolo QUIC.</translation>
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios</translation>
-<translation id="7523476810162382273">Enviar señales de monitoreo al servidor de administración</translation>
 <translation id="7529100000224450960">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a abrir ventanas emergentes. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultPopupsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="7529144158022474049">Actualizar de forma automática el factor de dispersión</translation>
 <translation id="7553535237300701827">Según el valor que se establezca para esta política, el flujo de autenticación de acceso será una de las siguientes opciones:
@@ -1861,6 +1854,7 @@ desactivarlo).</translation>
 
           Si esta configuración está inhabilitada o no está establecida, no se habilitarán los dos factores y se utilizará el comportamiento predeterminado de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
+<translation id="7761446981238915769">Configura la lista de apps instaladas en la pantalla de acceso</translation>
 <translation id="7761526206824804472">Establece una o más configuraciones regionales para una sesión pública y permite que los usuarios elijan fácilmente una de estas configuraciones regionales.
 
       El usuario puede elegir una configuración regional y un diseño de teclado antes de empezar una sesión pública. De forma predeterminada, todas las configuraciones regionales admitidas por <ph name="PRODUCT_OS_NAME" /> figuran en una lista ordenada alfabéticamente. Puedes utilizar esta política para colocar un conjunto de configuraciones regionales recomendadas en la parte superior de la lista.
@@ -1939,7 +1933,7 @@ desactivarlo).</translation>
       configuradas en VideoCaptureAllowedUrls.
       Las apps de ARC no podrán acceder a la cámara.
 
-      Fuera de las apps de ARC, esta política afecta todas las entradas de
+      Fuera de las apps de ARC, esta política afecta a todas las entradas de
       video, no solo a la cámara incorporada.</translation>
 <translation id="7915236031252389808">Puedes especificar una URL para un archivo .pac de proxy aquí.
 
@@ -2230,6 +2224,30 @@ desactivarlo).</translation>
 <translation id="8858642179038618439">Forzar el modo de seguridad de YouTube</translation>
 <translation id="8864975621965365890">Elimina el mensaje de desactivación que aparece cuando <ph name="PRODUCT_FRAME_NAME" /> muestra un sitio.</translation>
 <translation id="8870318296973696995">Página principal</translation>
+<translation id="88890388118515381">
+      Especifica una lista de apps que se instalan en segundo plano en la pantalla de
+      acceso, sin la interacción del usuario, y que no se pueden desinstalar.
+      Todos los permisos que solicitan las apps se otorgan
+      de forma implícita, sin la interacción del usuario; esto incluye
+      los permisos adicionales que soliciten las futuras versiones de la app.
+
+      Si se quita de esta lista una app que se instaló a la fuerza,
+      <ph name="PRODUCT_NAME" /> la desinstalará de forma automática.
+
+      Cada elemento de la lista en la política es un string que contiene una ID
+      de extensión y una URL de "actualización" separada por un punto y coma
+      (<ph name="SEMICOLON" />). El ID de extensión es un string de 32 letras que se encuentra en
+      <ph name="CHROME_EXTENSIONS_LINK" />, p. ej., cuando estás en el modo de programador. La URL de
+      "actualización" debe especificar un documento XML de manifiesto de
+      actualización, como se describe en <ph name="LINK_TO_EXTENSION_DOC1" />. Ten en cuenta que la URL de
+      "actualización" establecida en esta política solo se usa en la primera
+      instalación; las actualizaciones posteriores de la extensión emplean la URL
+      de actualización que se indica en el manifiesto de la extensión.
+
+      Por ejemplo, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      instala la app <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> desde la URL de "actualización" estándar de Chrome Web
+      Store. Para obtener más información sobre las extensiones de host,
+      consulta <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server proporciona archivos de configuración específicos de hardware, como
       perfiles de visualización de ICC, para ajustar la calibración del monitor.
 
@@ -2283,9 +2301,6 @@ desactivarlo).</translation>
 <translation id="9088444059179765143">Configurar el método de detección automática de la zona horaria</translation>
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>
 <translation id="9098553063150791878">Políticas para la autenticación HTTP</translation>
-<translation id="9104138886225968319">Envía señales de monitoreo al servidor de administración para permitir que el servidor detecte si el dispositivo está sin conexión.
-
-      Si esta política se establece en true, se enviarán señales de monitoreo. Si se establece en false o no se configura, no se enviarán señales.</translation>
 <translation id="9112897538922695510">Te permite registrar una lista de controladores de protocolo. Esto solo puede ser una política recomendada. La propiedad |protocol| se debe establecer para el esquema (por ejemplo, "mailto") de la URL, y la propiedad |url| se debe establecer para el patrón de la URL de la aplicación que controla el esquema. El patrón puede incluir una especificación "%s" que, si está presente, se reemplazará por la URL controlada.
 
           Los controladores de protocolo registrados por la política se fusionan con los registrados por el usuario, y todos están disponibles para utilizarse. El usuario puede anular los controladores de protocolos instalados por la política si instala un nuevo controlador predeterminado, pero no puede eliminar un controlador de protocolo registrado por la política.</translation>

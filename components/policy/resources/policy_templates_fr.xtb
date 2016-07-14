@@ -707,7 +707,7 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement DHE dans TLS ne seront pas activées. Sinon, elle peut être définie sur "True" pour activer ces mêmes suites de chiffrement et assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.
 
-      Les serveurs sont encouragés à effectuer une migration vers des suites de chiffrement ECDHE. Si celles-ci ne sont pas disponibles, veillez à ce qu'une suite de chiffrement utilisant l'échange de clés RSA soit activée.</translation>
+      Nous recommandons la migration des serveurs vers des suites de chiffrement ECDHE. Si celles-ci ne sont pas disponibles, veillez à ce qu'une suite de chiffrement utilisant l'échange de clés RSA soit activée.</translation>
 <translation id="3153348162326497318">Vous permet de spécifier les extensions que les utilisateurs ne peuvent PAS installer. Les extensions déjà installées seront supprimées si elles sont ajoutées à la liste noire. 
 
 La valeur "*" en liste noire signifie que toutes les extensions sont sur la liste noire, sauf si elles sont explicitement répertoriées dans la liste blanche. 
@@ -942,11 +942,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="3864818549971490907">Paramètre de plug-ins par défaut</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="3866530186104388232">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> affiche les utilisateurs existants sur l'écran de connexion et permet d'en choisir un. Si cette règle est définie sur "false", <ph name="PRODUCT_OS_NAME" /> affiche une boîte de dialogue demandant le nom d'utilisateur et le mot de passe pour se connecter.</translation>
-<translation id="3866824067696705379">Indiquer la fréquence d'envoi de pulsations de contrôle, en millisecondes.
-
-      Si cette règle n'est pas configurée, le délai par défaut entre deux pulsations est de 3 minutes.
-      Le délai minimal entre deux pulsations est de 30 secondes, et le délai maximal est de 24 h. Les valeurs
-      situées en dehors de cette plage seront remplacées par la valeur limite la plus proche.</translation>
 <translation id="3868347814555911633">Cette règle n'est active qu'en mode "point de vente".
 
        Elle répertorie les extensions qui sont automatiquement installées pour l'utilisateur de la démonstration sur les appareils en mode "point de vente". Celles-ci sont enregistrées dans l'appareil. Elles peuvent être installées hors connexion, une fois l'installation terminée.
@@ -1106,15 +1101,15 @@ Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur 
 <translation id="4474167089968829729">Activer l'enregistrement des mots de passe dans le gestionnaire de mots de passe</translation>
 <translation id="447686899376429408">Si vous définissez cette règle sur "true" ou si vous ne la définissez pas, les utilisateurs pourront caster des onglets, des sites ou leur bureau depuis le navigateur. Si vous la définissez sur "false", cette option sera désactivée.</translation>
 <translation id="4480694116501920047">Forcer SafeSearch</translation>
-<translation id="4482640907922304445">Affiche le bouton d'accueil sur la barre d'outils <ph name="PRODUCT_NAME" />. 
+<translation id="4482640907922304445">Affiche le bouton Accueil sur la barre d'outils <ph name="PRODUCT_NAME" />. 
 
-Si vous activez ce paramètre, le bouton d'accueil est toujours affiché. 
+Si vous activez ce paramètre, le bouton Accueil est toujours affiché. 
 
-Si vous le désactivez, le bouton d'accueil ne s'affiche jamais. 
+Si vous le désactivez, le bouton Accueil ne s'affiche jamais. 
 
 Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer dans <ph name="PRODUCT_NAME" />. 
 
-Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou non le bouton d'accueil.</translation>
+Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou non le bouton Accueil.</translation>
 <translation id="4492287494009043413">Désactiver les captures d'écran</translation>
 <translation id="450537894712826981">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers multimédias en cache sur le disque.
 
@@ -1176,7 +1171,6 @@ Si vous désactivez ce paramètre, il est impossible d'ajouter, de supprimer ou 
 
           Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> ne transmet pas les identifiants de l'utilisateur, même si le serveur est identifié comme faisant partie de l'Intranet.</translation>
 <translation id="4752880493649142945">Certificat client pour se connecter à RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Fréquence des pulsations de contrôle</translation>
 <translation id="4791031774429044540">Active la fonctionnalité d'accessibilité de grand curseur.
 
           Si vous définissez cette règle sur "True", le grand curseur est activé en permanence.
@@ -1304,7 +1298,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
-<translation id="5365946944967967336">Afficher le bouton d'accueil sur la barre d'outils</translation>
+<translation id="5365946944967967336">Afficher le bouton Accueil sur la barre d'outils</translation>
 <translation id="5366977351895725771">Si cette règle est associée à la valeur "false", la création de comptes utilisateur supervisés par cet utilisateur est désactivée. Les utilisateurs supervisés existants restent disponibles.
 
           Si elle est associée à la valeur "true" ou si elle n'est pas configurée, cet utilisateur peut créer et gérer des comptes utilisateur supervisés.</translation>
@@ -1817,7 +1811,7 @@ Si elle est désactivée, les favoris ne sont pas importés.
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="7055358889740598917">Configurer l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de la modifier
 
-          La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton d'accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
+          La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton Accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
 
           La page d'accueil peut être une URL que vous définissez ici, ou une page Nouvel onglet. Dans ce dernier cas, cette règle ne s'applique pas.
 
@@ -1971,7 +1965,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7511361072385293666">Si cette règle est définie sur "True" ou n'est pas paramétrée, l'utilisation du protocole QUIC est autorisée dans <ph name="PRODUCT_NAME" />.
       Si cette règle est définie sur "False", l'utilisation du protocole QUIC n'est pas autorisée.</translation>
 <translation id="7519251620064708155">Autoriser la génération de clé sur ces sites</translation>
-<translation id="7523476810162382273">Envoyer des pulsations de contrôle au serveur de gestion</translation>
 <translation id="7529100000224450960">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à ouvrir des pop-ups. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPopupsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -2040,6 +2033,7 @@ au maximum si un utilisateur se sert de l'appareil.
 
           En cas de désactivation ou de non-configuration de ce paramètre, l'authentification forte n'est pas activée. Un code d'accès défini par l'utilisateur est alors demandé.</translation>
 <translation id="7750991880413385988">Ouvrir la page Nouvel onglet</translation>
+<translation id="7761446981238915769">Configurez la liste des applications installées sur l'écran de connexion.</translation>
 <translation id="7761526206824804472">Définit une ou plusieurs langues recommandées pour une session publique, permettant ainsi aux utilisateurs de choisir facilement l'une de ces langues.
 
       Les utilisateurs peuvent choisir une langue et une disposition de clavier avant de démarrer une session publique. Par défaut, toutes les langues compatibles avec <ph name="PRODUCT_OS_NAME" /> sont répertoriées dans l'ordre alphabétique. Vous pouvez utiliser cette règle pour placer un ensemble de langues recommandées en haut de la liste.
@@ -2119,15 +2113,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Si cette règle est activée ou n'est pas configurée (par défaut), l'utilisateur
       est invité à accepter l'accès à la capture vidéo, excepté pour les URL
       configurées dans la liste VideoCaptureAllowedUrls qui bénéficient d'un accès
-      instantané. Les applications ARC ont accès à l'appareil photo si elles y ont
+      instantané. Les applications ARC ont accès à la caméra si elles y ont
       été autorisées.
 
       Si cette règle est désactivée, aucune invite ne s'affiche et la capture vidéo
       n'est disponible qu'avec les URL de la liste VideoCaptureAllowedUrls.
-      Les applications ARC n'ont pas accès à l'appareil photo.
+      Les applications ARC n'ont pas accès à la caméra.
 
       En dehors des applications ARC, cette règle concerne tous les types
-      d'entrées vidéo et pas seulement l'appareil photo intégré.</translation>
+      d'entrées vidéo et pas seulement la caméra intégrée.</translation>
 <translation id="7915236031252389808">Vous pouvez indiquer ici une URL pointant vers un fichier .pac de proxy.
 
           Cette règle n'est applicable que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy".
@@ -2462,6 +2456,28 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="8858642179038618439">Forcer le mode sécurisé de YouTube</translation>
 <translation id="8864975621965365890">Supprime l'invite de fermeture qui s'affiche lors du rendu d'un site par <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Page d'accueil</translation>
+<translation id="88890388118515381">
+      Spécifie la liste des applications qui sont installées en arrière-plan sur l'écran de connexion,
+      sans aucune intervention de l'utilisateur, et qui ne peuvent pas être désinstallées.
+      Toutes les autorisations demandées par les applications sont accordées
+      implicitement, sans intervention de l'utilisateur, y compris n'importe quelle
+      autre autorisation demandée par les futures versions de l'application.
+
+      Si une application dont l'installation a été forcée est supprimée de
+      cette liste, elles est automatiquement désinstallée dans <ph name="PRODUCT_NAME" />.
+
+      Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension
+      et d'une URL de mise à jour "update" séparés par un point-virgule (<ph name="SEMICOLON" />). L'ID d'extension est la chaîne de 32 lettres
+      qui se trouve, par exemple, dans <ph name="CHROME_EXTENSIONS_LINK" /> en
+      mode développeur. L'URL de mise à jour doit renvoyer à un fichier manifeste de mise à jour
+       au format XML, comme décrit sur la page <ph name="LINK_TO_EXTENSION_DOC1" />. Notez
+      que l'URL de mise à jour spécifiée dans ces règles n'est utilisée que pour l'installation
+      initiale. Toute mise à jour ultérieure de l'extension est effectuée avec
+      l'URL indiquée dans le fichier manifeste de l'extension.
+
+      Par exemple, <ph name="EXTENSION_POLICY_EXAMPLE" />
+      installe l'application <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> à partir de l'URL de mise à jour du Chrome Web Store
+       standard. Pour en savoir plus sur l'hébergement des extensions, consultez la page <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks Server fournit les fichiers de configuration propres au matériel tels que
       les profils d'affichage ICC pour régler la calibration du moniteur.
 
@@ -2515,11 +2531,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="9088444059179765143">Configurer la méthode de détection automatique du fuseau horaire</translation>
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9098553063150791878">Règles pour l'authentification HTTP</translation>
-<translation id="9104138886225968319">Transmettre des pulsations de contrôle au serveur de gestion, afin de
-      lui permettre de détecter si l'appareil est hors connexion.
-
-      Si cette règle est définie sur "True", les pulsations de contrôle seront transmises.
-      Si elle est définie sur "False" ou si elle n'est pas configurée, les pulsations ne seront pas transmises.</translation>
 <translation id="9112897538922695510">Permettre d'inscrire une liste de gestionnaires de protocoles. Cette règle ne peut être qu'une recommandation. La propriété |protocol| doit être définie sur un schéma tel que "mailto", et la propriété |url| doit être définie sur le format d'URL de l'application qui gère le schéma. Le modèle peut inclure une variable "%s", qui sera remplacée par l'URL traitée le cas échéant.
 
           Les gestionnaires de protocoles inscrits via la règle sont fusionnés avec ceux inscrits par l'utilisateur, et tous sont disponibles. L'utilisateur peut remplacer les gestionnaires de protocoles installés via la règle en installant un nouveau gestionnaire par défaut, mais il ne peut pas supprimer un gestionnaire de protocoles inscrit via la règle.</translation>

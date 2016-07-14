@@ -6,7 +6,7 @@
 <translation id="1023866615269196768">拡張されました。</translation>
 <translation id="1025074108959230262">スティッキー モードは無効</translation>
 <translation id="1031961866430398710">この場合</translation>
-<translation id="1038795173450935438">ページ上の項目間を移動するには、順方向の場合は検索+右矢印キー、逆方向の場合は検索+左矢印キーを押します。次の行に移動するには検索+下矢印キー、前の行に移動するには検索+上矢印キーを押します。目的の項目まで移動した後、クリックするには検索+スペースキーを押します。</translation>
+<translation id="1038795173450935438">ページ上の項目間を移動するには、順方向の場合は検索+右矢印キー、逆方向の場合は検索+左矢印キーを押します。次の行に移動するには検索+下矢印キー、前の行に移動するには検索+上矢印キーを押します。クリックする項目まで移動したら、検索+スペースキーを押します。</translation>
 <translation id="1044777062731150180">見出しなし</translation>
 <translation id="106222400312645156">行見出し</translation>
 <translation id="1065552602950927991">無効な入力値</translation>
@@ -305,7 +305,7 @@
 <translation id="3897092660631435901">メニュー</translation>
 <translation id="3909320334364316587">前のレベル 6 見出し</translation>
 <translation id="3914173277599553213">必須</translation>
-<translation id="3951424903203718058">ChromeVox Next の音声フィードバックを初めてご利用の場合は、このクイック チュートリアルで、ChromeVox Next の利用開始にあたっての基本事項を学んでいただけます。</translation>
+<translation id="3951424903203718058">このクイック チュートリアルでは、ChromeVox Next の音声フィードバックを初めてご利用になる方を対象に、利用開始にあたっての基本事項を説明しています。</translation>
 <translation id="3962990492275676168">現在の場所から読み上げを開始</translation>
 <translation id="4004802134384979325">オン</translation>
 <translation id="4006140876663370126">画像</translation>
@@ -518,7 +518,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="5876817486144482042">読み上げの音量を下げる</translation>
 <translation id="5887397643266327462">ブライユ点字の表示が有効になっています。</translation>
 <translation id="5891934789323004067">表</translation>
-<translation id="5919442531159595654">コピーします。</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{等号}other{# 個の等号}}</translation>
 <translation id="5939518447894949180">リセット</translation>
 <translation id="5948123859135882163">数式の解釈を、構文と意味の間で切り替えます</translation>
@@ -653,7 +652,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7532613204005497612">6 月</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />、<ph name="NAME" />、スライダ</translation>
 <translation id="7552432549459840808">Chrome の便利なショートカット</translation>
-<translation id="7586163296341959563">貼り付けます。</translation>
 <translation id="7596919493010894443">選択をクリアしました</translation>
 <translation id="7604026522577407655">現在の列の先頭に移動</translation>
 <translation id="7604451927827590395">見出し</translation>
@@ -705,7 +703,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="817440585505441544">{COUNT,plural, =1{アンダースコア}other{# 個のアンダースコア}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8186185314313222077">全画面表示の切り替え</translation>
-<translation id="81960742267269908">切り取ります。</translation>
 <translation id="8199231515320852133">現在のセルの見出しを読み上げる</translation>
 <translation id="820417203470636242">セルは空欄です。</translation>
 <translation id="8215202828671303819">複数選択可</translation>

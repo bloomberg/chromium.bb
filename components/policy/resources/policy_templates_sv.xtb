@@ -470,7 +470,7 @@
 <translation id="2483146640187052324">Förutsäg nätverksåtgärder för alla nätverksanslutningar</translation>
 <translation id="2486371469462493753">Inaktiverar kraven för certifikattransparens på webbadresserna i listan.
 
-      Principen gör så att certifikaten för värdnamnen i de angivna webbadresser inte lämnas ut via Certifikattransparens. Detta gör det möjligt att fortsätta använda certifikat som annars skulle vara opålitliga eftersom de inte lämnades ut ordentligt. Men det blir svårare att upptäcka felaktigt utfärdade certifikat för dessa värdar.
+      Principen gör så att certifikaten för värdnamnen i de angivna webbadresserna inte lämnas ut via Certifikattransparens. Detta gör det möjligt att fortsätta använda certifikat som annars skulle vara opålitliga eftersom de inte lämnades ut ordentligt. Men det blir svårare att upptäcka felaktigt utfärdade certifikat för dessa värdar.
 
       Ett webbadressmönster formateras så här: https://www.chromium.org/administrators/url-blacklist-filter-format. Men eftersom certifikat gäller för ett visst värdnamn, oberoende av systemet, porten eller sökvägen, tas endast hänsyn till den delen av webbadressen som utgörs av värdnamnet. Jokervärdar stöds inte.
 
@@ -942,11 +942,6 @@
 <translation id="3864818549971490907">Standardinställning för plugin-program</translation>
 <translation id="3866249974567520381">Beskrivning</translation>
 <translation id="3866530186104388232">Om den här policyn är inställd på sant eller inte är konfigurerad visas befintliga användare på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" /> och det går att välja en. Om policyn är inställd på falskt används inloggningsfönstret för användarnamn och lösenord i <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="3866824067696705379">Hur ofta övervakningspulser skickas, i millisekunder.
-
-      Om policyn inte har angetts är standardfrekvensen 3 minuter. Den lägsta
-      frekvensen är 30 sekunder och den högsta 24 timmar. Värden
-      utanför detta intervall ändras till närmaste värde inom intervallet.</translation>
 <translation id="3868347814555911633">Den här policyn är bara aktiv i återförsäljarläge.
 
       Anger tillägg som installeras automatiskt för demoanvändaren för enheter i återförsäljarläge. Dessa tillägg sparas i enheten och kan installeras offline efter installationen.
@@ -1173,7 +1168,6 @@
 
           Om du inte anger principen kommer <ph name="PRODUCT_NAME" /> inte att delegera användaruppgifter även om en server identifieras som ett intranät.</translation>
 <translation id="4752880493649142945">Klientcertifikat för att ansluta till RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Frekvens för övervakningspulser</translation>
 <translation id="4791031774429044540">Aktivera hjälpmedelsfunktionen stor markör.
 
           Om den här principen är sann är den stora markören alltid aktiverad.
@@ -1973,7 +1967,6 @@
 <translation id="7511361072385293666">Om den här policyn är inställd på sant eller inte har angetts är användning av QUIC-protokoll i <ph name="PRODUCT_NAME" /> tillåten.
       Om policyn är inställd på falskt är inte användning av QUIC-protokoll tillåten.</translation>
 <translation id="7519251620064708155">Tillåt nyckelgenerering på dessa webbplatser</translation>
-<translation id="7523476810162382273">Skicka övervakningspulser till hanteringsservern</translation>
 <translation id="7529100000224450960">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får öppna popupfönster.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
@@ -2041,6 +2034,7 @@
 
           Om inställningen inaktiveras eller inte anges så kommer tvåstegsverifiering inte att aktiveras och standardfunktionen med en användardefinierad PIN-kod kommer att användas.</translation>
 <translation id="7750991880413385988">Öppna sidan Ny flik</translation>
+<translation id="7761446981238915769">Konfigurera listan över installerade appar på inloggningsskärmen</translation>
 <translation id="7761526206824804472">Anger en eller flera rekommenderade språkkoder för en offentlig session så att användare enkelt kan använda någon av dessa språkkoder.
 
       Användaren kan välja en språkkod och en tangentbordslayout innan en offentlig session startas. Som standard anges alla språkkoder som stöds av <ph name="PRODUCT_OS_NAME" /> i alfabetisk ordning. Du kan använda den här principen för att flytta flera rekommenderade språkkoder högst upp i listan.
@@ -2464,6 +2458,28 @@
 <translation id="8858642179038618439">Tvinga fram Säkert läge på YouTube</translation>
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME" /> inte visas.</translation>
 <translation id="8870318296973696995">Startsida</translation>
+<translation id="88890388118515381">
+      Anger en lista med appar som installeras obemärkt på inloggningsskärmen,
+      utan att användaren gör något, och som inte kan avinstalleras.
+      Alla behörigheter som begärs beviljas automatiskt, utan att användaren
+      behöver göra något. Det gäller även ytterligare behörigheter som begärs i
+      framtida versioner av appen.
+
+      Om en app som tidigare har tvångsinstallerats tas bort från listan
+      avinstalleras den automatiskt av <ph name="PRODUCT_NAME" />.
+
+      Varje post i policyn är en sträng som innehåller ett tilläggs-id
+      och en uppdateringsadress avgränsade med semikolon (<ph name="SEMICOLON" />). 
+      Ett tilläggs-id är sträng med 32 bokstäver, till exempel den som
+      finns på <ph name="CHROME_EXTENSIONS_LINK" /> i utvecklarläge. Uppdateringsadressen ska peka på ett
+      XML-manifestdokument för uppdatering enligt beskrivningen på <ph name="LINK_TO_EXTENSION_DOC1" />.
+      Observera att uppdateringsadressen som anges i den här policyn bara
+      används för den ursprungliga installationen. För senare uppdateringar av
+      tillägget används den uppdateringsadress som anges i tilläggets manifest.
+
+      Exempel: <ph name="EXTENSION_POLICY_EXAMPLE" /> installerar appen <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> från standarduppdateringsadressen
+      för Chrome Web Store. Mer information om värdservrar för tillägg finns
+      på: <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Quirks-servern tillhandahåller maskinvaruspecifika konfigurationsfiler, t.ex.
       ICC-bildskärmsprofiler som används för färgkalibrering av skärmen.
 
@@ -2517,10 +2533,6 @@
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
-<translation id="9104138886225968319">Skicka övervakningspulser till hanteringsservern så att denna kan identifiera om enheten är offline.
-
-      Om principen är inställd på sant kommer övervakningspulser att skickas. Om
-      principen är inställd på falskt eller inte har angetts kommer inga pulser att skickas.</translation>
 <translation id="9112897538922695510">Gör att du kan registrera en lista över protokollhanterare. Detta kan bara vara en rekommenderad policy. Egendomen |protokoll| ska anges till systemet som "mailto" och egendomen |webbadress| ska anges till webbadressmönstret i appen som hanterar systemet. Mönstret kan innehålla "%s", som ersätts av den hanterade webbadressen vid förekomst.
 
           Protokollhanterare som registreras av policyn slås ihop med de som registreras av användaren och båda går att använda. Användare kan åsidosätta protokollhanterarna som har installerats av policyn genom att installera en ny standardhanterare, men användare kan inte ta bort en protokollhanterare som har registrerats av policyn.</translation>

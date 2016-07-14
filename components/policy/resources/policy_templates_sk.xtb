@@ -459,7 +459,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2483146640187052324">Predvídať akcie siete pri sieťovom pripojení</translation>
 <translation id="2486371469462493753">Zakáže vynucovanie požiadaviek pravidla transparentnosti certifikátov pre uvedené webové adresy.
 
-      Toto pravidlo umožňuje, aby certifikáty názvov hostiteľov v uvedených webových adresách neboli zverejňované prostredníctvom pravidla transparentnosti certifikátov. Umožňuje to ďalšie používanie certifikátov, ktoré by boli inak nedôveryhodné, pretože neboli správne zverejnené. Sťažuje to však zistenie zneužitých certifikátov takýchto hostiteľov.
+      Toto pravidlo umožňuje, aby certifikáty názvov hostiteľov na uvedených webových adresách neboli zverejňované prostredníctvom pravidla transparentnosti certifikátov. Umožňuje to ďalšie používanie certifikátov, ktoré by boli inak nedôveryhodné, pretože neboli správne zverejnené. Sťažuje to však zistenie zneužitých certifikátov takýchto hostiteľov.
 
       Vzor webovej adresy je formátovaný v súlade s pokynmi na adrese https://www.chromium.org/administrators/url-blacklist-filter-format. Pretože sú však certifikáty platné pre daný názov hostiteľa nezávisle od schémy, portu alebo cesty, používa sa iba časť webovej adresy s názvom hostiteľa. Hostitelia so zástupnými znakmi nie sú podporovaní.
 
@@ -513,7 +513,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Webovú adresu vyhľadávania Google je možné špecifikovať ako: <ph name="GOOGLE_SEARCH_URL" />.
 
-          Táto možnosť musí byť nastavená v prípade, že je povolené pravidlo DefaultSearchProviderEnabled a bude dodržané len v takom prípade.</translation>
+          Táto možnosť musí byť nastavená v prípade, že je povolené pravidlo DefaultSearchProviderEnabled, a bude uplatnená len v takom prípade.</translation>
 <translation id="2660846099862559570">Nikdy nepoužívať server proxy</translation>
 <translation id="267596348720209223">Určuje kódovanie znakov podporovaných poskytovateľom vyhľadávania. Kódovania sú kódové stránky, napríklad UTF-8, GB2312 alebo ISO-8859-1. Budú vyskúšané v uvedenom poradí.
 
@@ -921,13 +921,10 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Webovú adresu návrhu Google je možné špecifikovať ako: <ph name="GOOGLE_SUGGEST_SEARCH_URL" />.
 
-          Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
+          Toto pravidlo bude uplatnené len v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="3864818549971490907">Predvolené nastavenie doplnkov</translation>
 <translation id="3866249974567520381">Popis</translation>
 <translation id="3866530186104388232">Ak je toto pravidlo nastavené na hodnotu pravda alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> na prihlasovacej obrazovke zobrazí existujúcich používateľov a umožní vybrať jedného z nich. Ak je pravidlo nastavené na hodnotu false, systém <ph name="PRODUCT_OS_NAME" /> použije pri prihlásení výzvu na zadanie používateľského mena a hesla.</translation>
-<translation id="3866824067696705379">Ako často sa odosiela sledovanie signálov heartbeat (v milisekundách).
-
-      Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia tri minúty. Minimálna frekvencia je 30 sekúnd a maximálna 24 hodín – hodnoty mimo tohto rozsahu budú prispôsobené na príslušnú hranicu.</translation>
 <translation id="3868347814555911633">Toto pravidlo je aktívne iba v režime predaja.
 
       Zoznam rozšírení, ktoré sa automaticky nainštalujú pre používateľa ukážky v zariadeniach v režime predaja. Tieto rozšírenia sa uložia v zariadení a po inštalácii môžu byť nainštalované v režime offline.
@@ -944,7 +941,7 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
       zvuku bude k dispozícii iba pre webové adresy, ktoré sú nakonfigurované v zozname AudioCaptureAllowedUrls.
       Pre aplikácie ARC je mikrofón natrvalo stlmený.
 
-      Toto pravidlo má vplyv na všetky typy zvukových vstupov, a nie len na vstavaný mikrofón.</translation>
+      Toto pravidlo má vplyv na všetky typy zvukových vstupov, a nielen na vstavaný mikrofón.</translation>
 <translation id="3907986150060929099">Nastavenie odporúčaných miestnych nastavení pre verejnú reláciu</translation>
 <translation id="391531815696899618">Ak je toto pravidlo nastavené na hodnotu True, zakazuje synchronizáciu aplikácie Súbory systému <ph name="PRODUCT_OS_NAME" /> s Diskom Google. V takom prípade sa na Disk Google nenahrajú žiadne údaje.
 
@@ -1153,7 +1150,6 @@ Ak toto nastavenie zakážete, v okne správcu hesiel nebude možné zobraziť 
 
           Ak pravidlo nenastavíte, prehliadač <ph name="PRODUCT_NAME" /> nebude delegovať poverenia používateľov ani v prípade, ak je server v sieti intranet.</translation>
 <translation id="4752880493649142945">Certifikát klienta na pripojenie k adrese RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4768493164188395498">Frekvencia sledovania signálov heartbeat</translation>
 <translation id="4791031774429044540">Povolí veľký kurzor (funkcia na uľahčenie prístupu).
 
       Ak toto pravidlo povolíte, bude veľký kurzor vždy zapnutý.
@@ -1945,7 +1941,6 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7511361072385293666">Ak je toto pravidlo nastavené na možnosť True alebo nie je nastavené vôbec, použitie protokolu QUIC je v prehliadači <ph name="PRODUCT_NAME" /> povolené.
       Ak je toto pravidlo nastavené na možnosť False, použitie protokolu QUIC je zakázané.</translation>
 <translation id="7519251620064708155">Povoliť generovanie kľúčov na týchto webových stránkach</translation>
-<translation id="7523476810162382273">Odosielanie sledovania signálov heartbeat na správcovský server</translation>
 <translation id="7529100000224450960">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu otvárať kontextové okná.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPopupsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
@@ -2013,6 +2008,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
           Ak je toto nastavenie zakázané alebo nie je nastavené, dvojfázové overenie totožnosti nebude povolené a namiesto neho bude použitá predvolená možnosť – používateľom zadaný kód PIN.</translation>
 <translation id="7750991880413385988">Otvoriť stránku Nová karta</translation>
+<translation id="7761446981238915769">Konfigurácia zoznamu nainštalovaných aplikácií na prihlasovacej obrazovke</translation>
 <translation id="7761526206824804472">Nastaví jedno alebo viac odporúčaných miestnych nastavení pre verejnú reláciu a umožní používateľom poľahky z nich niektoré vybrať.
 
       Používateľ si môže vybrať miestne nastavenie a rozloženie klávesnice ešte pred spustením verejnej relácie. Predvolene sú všetky miestne nastavenia, ktoré <ph name="PRODUCT_OS_NAME" /> podporuje, uvedené v abecednom poradí. Pomocou tohto pravidla môžete presunúť skupinu odporúčaných miestnych nastavení na začiatok zoznamu.
@@ -2100,7 +2096,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Aplikácie ARC nebudú mať prístup ku kamere.
 
       Mimo aplikácií ARC má toto pravidlo vplyv na všetky typy vstupov videa,
-      nie len na vstavanú kameru.</translation>
+      nielen na vstavanú kameru.</translation>
 <translation id="7915236031252389808">Tu môžete zadať webovú adresu súboru .pac proxy servera.
 
           Toto pravidlo sa prejaví len v prípade, ak ste v časti „Zvoľte spôsob konfigurácie nastavení proxy servera“ zvolili ručné nastavenia proxy servera.
@@ -2419,6 +2415,14 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8858642179038618439">Vynútenie Bezpečnostného režimu v službe YouTube</translation>
 <translation id="8864975621965365890">Potlačí výzvu o zamietnutie, ktorá sa zobrazí pri vykreslení stránky rámcom <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
+<translation id="88890388118515381">
+      Určuje zoznam aplikácií, ktoré sú nainštalované na pozadí na prihlasovacej obrazovke bez pričinenia používateľa a ktoré sa nedajú odinštalovať. Všetky povolenia požadované aplikáciou sú udeľované implicitne bez pričinenia používateľa, a to vrátane všetkých dodatočných povolení požadovaných budúcimi verziami aplikácie.
+
+Ak bude zo zoznamu odstránená aplikácia, ktorá bola predtým nainštalovaná vynútene, <ph name="PRODUCT_NAME" /> ju automaticky odinštaluje.
+
+Každá položka zoznamu v pravidlách predstavuje reťazec, ktorý obsahuje ID rozšírenia a webovú adresu na aktualizáciu oddelené bodkočiarkou (<ph name="SEMICOLON" />). ID rozšírenia je 32-znakový reťazec a nájdete ho napríklad na adrese <ph name="CHROME_EXTENSIONS_LINK" /> (v režime pre vývojárov). Webová adresa na aktualizáciu by mala odkazovať na dokument XML manifestu aktualizácie (tak, ako je opísané na adrese <ph name="LINK_TO_EXTENSION_DOC1" />). Webová adresa na aktualizáciu nastavená v tomto pravidle slúži iba na počiatočnú inštaláciu. Ďalšie aktualizácie rozšírenia budú používať webovú adresu na aktualizáciu uvedenú v manifeste rozšírenia.
+
+<ph name="EXTENSION_POLICY_EXAMPLE" /> napríklad nainštaluje aplikáciu <ph name="EXTENSION_POLICY_EXAMPLE_EXTENSION_NAME" /> zo štandardnej webovej adresy na aktualizáciu z Internetového obchodu Chrome. Ďalšie informácie o hostení rozšírení nájdete na adrese <ph name="LINK_TO_EXTENSION_DOC2" />.</translation>
 <translation id="8889588091638298603">Server Quirks poskytuje konfiguračné súbory pre konkrétny hardvér, ako
       napríklad profily obrazoviek ICC na úpravu kalibrácie monitorov.
 
@@ -2471,11 +2475,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="9088444059179765143">Konfigurovať spôsob automatického zisťovania časového pásma</translation>
 <translation id="9096086085182305205">Zoznam povolených overovacích serverov</translation>
 <translation id="9098553063150791878">Pravidlá pre overenie HTTP</translation>
-<translation id="9104138886225968319">Odosielanie sledovania signálov heartbeat na správcovský server,
-      čo umožní serveru zistiť, že je zariadenie v režime offline.
-
-      Ak je toto pravidlo nastavené na možnosť True, sledovanie signálov heartbeat sa bude odosielať. Ak je nastavené
-      na možnosť False alebo nie je nastavené vôbec, nebudú sa odosielať žiadne signály heartbeat.</translation>
 <translation id="9112897538922695510">Umožňuje zaregistrovať zoznam obslužných nástrojov protokolu. Môže to byť iba odporúčané pravidlo. Vlastnosť |protocol| by mala byť nastavená na schému, ako napríklad „mailto“, a vlasnosť |url| by mala byť nastavená na vzor webovej adresy aplikácie, ktorá danú schému obsluhuje. Vzor môže zahrnovať reťazec „%s“, ktorý bude nahradený obsluhovanou webovou adresou (ak bude použitý).
 
           Obslužné nástroje protokolu, ktoré sú registrované týmto pravidlom, budú zlúčené s nástrojmi registrovanými používateľom a budú všetky k dispozícii na použitie. Používateľ môže prepísať obslužné nástroje protokolu nainštalované pravidlom inštaláciou nového predvoleného obslužného nástroja. Obslužný protokol registrovaný pravidlom však nie je možné odstrániť.</translation>
