@@ -20,6 +20,8 @@ import android.view.ViewConfiguration;
  * are passed to the InputStrategyInterface implementation set by the DesktopView.
  */
 public class TouchInputHandler {
+    private static final float EPSILON = 0.001f;
+
     private final AbstractDesktopView mViewer;
     private final Context mContext;
     private final RenderData mRenderData;
@@ -361,8 +363,12 @@ public class TouchInputHandler {
         synchronized (mRenderData) {
             screenCenterX = (float) mRenderData.screenWidth / 2;
             screenCenterY = (float) mRenderData.screenHeight / 2;
+
+            float[] imagePoint = mapScreenPointToImagePoint(screenCenterX, screenCenterY);
+            mDesktopCanvas.setViewportPosition(imagePoint[0], imagePoint[1]);
         }
         moveCursorToScreenPoint(screenCenterX, screenCenterY);
+        mDesktopCanvas.repositionImage(true);
     }
 
     private void setInputStrategy(InputStrategyInterface inputStrategy) {
@@ -399,13 +405,8 @@ public class TouchInputHandler {
 
     /** Moves the cursor to the specified position on the screen. */
     private void moveCursorToScreenPoint(float screenX, float screenY) {
-        float[] mappedValues = {screenX, screenY};
-        synchronized (mRenderData) {
-            Matrix canvasToImage = new Matrix();
-            mRenderData.transform.invert(canvasToImage);
-            canvasToImage.mapPoints(mappedValues);
-        }
-        moveCursor((int) mappedValues[0], (int) mappedValues[1]);
+        float[] imagePoint = mapScreenPointToImagePoint(screenX, screenY);
+        moveCursor((int) imagePoint[0], (int) imagePoint[1]);
     }
 
     /** Moves the cursor to the specified position on the remote host. */
@@ -435,6 +436,18 @@ public class TouchInputHandler {
         mSuppressFling = true;
         mSwipeCompleted = true;
         return true;
+    }
+
+    /** Translates a point in screen coordinates to a location on the desktop image. */
+    private float[] mapScreenPointToImagePoint(float screenX, float screenY) {
+        float[] mappedPoints = {screenX, screenY};
+        Matrix screenToImage = new Matrix();
+        synchronized (mRenderData) {
+            mRenderData.transform.invert(screenToImage);
+        }
+        screenToImage.mapPoints(mappedPoints);
+
+        return mappedPoints;
     }
 
     /** Responds to touch events filtered by the gesture detectors. */
@@ -570,7 +583,7 @@ public class TouchInputHandler {
             }
 
             if (!mInputStrategy.isIndirectInputMode()) {
-                if (!mapScreenPointToImage(x, y)) {
+                if (screenPointLiesOutsideImageBoundary(x, y)) {
                     return false;
                 }
                 moveCursorToScreenPoint(x, y);
@@ -595,7 +608,7 @@ public class TouchInputHandler {
             }
 
             if (!mInputStrategy.isIndirectInputMode()) {
-                if (!mapScreenPointToImage(x, y)) {
+                if (screenPointLiesOutsideImageBoundary(x, y)) {
                     return;
                 }
                 moveCursorToScreenPoint(x, y);
@@ -626,21 +639,18 @@ public class TouchInputHandler {
             }
         }
 
-        /** Verifies the given point maps to a valid location within the desktop image. */
-        private boolean mapScreenPointToImage(float screenX, float screenY) {
-            float[] mappedPoints = {screenX, screenY};
-            int imageWidth;
-            int imageHeight;
-            Matrix screenToImage = new Matrix();
+        /** Determines whether the given screen point lies outside the desktop image. */
+        private boolean screenPointLiesOutsideImageBoundary(float screenX, float screenY) {
+            float[] mappedPoints = mapScreenPointToImagePoint(screenX, screenY);
+            float imageWidth;
+            float imageHeight;
             synchronized (mRenderData) {
-                mRenderData.transform.invert(screenToImage);
-                imageWidth = mRenderData.imageWidth;
-                imageHeight = mRenderData.imageHeight;
+                imageWidth = (float) mRenderData.imageWidth + EPSILON;
+                imageHeight = (float) mRenderData.imageHeight + EPSILON;
             }
-            screenToImage.mapPoints(mappedPoints);
 
-            return (mappedPoints[0] >= 0 && mappedPoints[0] <= imageWidth)
-                    && (mappedPoints[1] >= 0 && mappedPoints[1] <= imageHeight);
+            return mappedPoints[0] < -EPSILON || mappedPoints[0] > imageWidth
+                    || mappedPoints[1] < -EPSILON || mappedPoints[1] > imageHeight;
         }
     }
 }

@@ -78,6 +78,18 @@ public class DesktopCanvas {
     }
 
     /**
+     * Sets the desired center position of the viewport.
+     *
+     * @param newX The new x coordinate value for the desired center position.
+     * @param newY The new y coordinate value for the desired center position.
+     */
+    public void setViewportPosition(float newX, float newY) {
+        synchronized (mRenderData) {
+            mViewportPosition.set(newX, newY);
+        }
+    }
+
+    /**
      * Returns the current size of the viewport.  This size includes the offset calculations for
      * any visible system UI.
      *
