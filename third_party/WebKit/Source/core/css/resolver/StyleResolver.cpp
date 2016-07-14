@@ -85,7 +85,7 @@
 #include "core/html/HTMLSlotElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/GeneratedChildren.h"
-#include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/style/StyleVariableData.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
@@ -273,8 +273,8 @@ void StyleResolver::finishAppendAuthorStyleSheets()
 {
     collectFeatures();
 
-    if (document().layoutView() && document().layoutView()->style())
-        document().layoutView()->style()->font().update(document().styleEngine().fontSelector());
+    if (!document().layoutViewItem().isNull() && document().layoutViewItem().style())
+        document().layoutViewItem().style()->font().update(document().styleEngine().fontSelector());
 
     m_viewportStyleResolver->collectViewportRules();
 
