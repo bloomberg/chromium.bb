@@ -7,6 +7,5 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "child_memory_coordinator.mojom",
-    "memory_coordinator.mojom",
   ]
 }

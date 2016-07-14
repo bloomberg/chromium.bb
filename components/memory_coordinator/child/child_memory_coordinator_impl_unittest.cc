@@ -13,20 +13,21 @@
 
 namespace memory_coordinator {
 
+namespace {
+
 class ChildMemoryCoordinatorImplTest : public testing::Test {
  public:
   ChildMemoryCoordinatorImplTest()
-      : message_loop_(new base::MessageLoop),
-        coordinator_impl_(nullptr) {
-    coordinator_ = coordinator_impl_.binding_.CreateInterfacePtrAndBind();
-  }
+      : clients_(new ChildMemoryCoordinatorImpl::ClientList),
+        message_loop_(new base::MessageLoop),
+        coordinator_impl_(mojo::GetProxy(&coordinator_), clients_) {}
 
   void RegisterClient(MemoryCoordinatorClient* client) {
-    coordinator_impl_.RegisterClient(client);
+    clients_->AddObserver(client);
   }
 
   void UnregisterClient(MemoryCoordinatorClient* client) {
-    coordinator_impl_.UnregisterClient(client);
+    clients_->RemoveObserver(client);
   }
 
   mojom::ChildMemoryCoordinatorPtr& coordinator() { return coordinator_; }
@@ -38,15 +39,16 @@ class ChildMemoryCoordinatorImplTest : public testing::Test {
     loop.RunUntilIdle();
   }
 
+ protected:
+  scoped_refptr<ChildMemoryCoordinatorImpl::ClientList> clients_;
+
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
-  ChildMemoryCoordinatorImpl coordinator_impl_;
   mojom::ChildMemoryCoordinatorPtr coordinator_ = nullptr;
+  ChildMemoryCoordinatorImpl coordinator_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildMemoryCoordinatorImplTest);
 };
-
-namespace {
 
 class MockMemoryCoordinatorClient final : public MemoryCoordinatorClient {
 public:
@@ -65,12 +67,12 @@ class MemoryCoordinatorTestThread : public base::Thread,
  public:
   MemoryCoordinatorTestThread(
       const std::string& name,
-      ChildMemoryCoordinatorImpl& coordinator)
-      : Thread(name), coordinator_(coordinator) {}
+      scoped_refptr<ChildMemoryCoordinatorImpl::ClientList> clients)
+      : Thread(name), clients_(clients) {}
   ~MemoryCoordinatorTestThread() override { Stop(); }
 
   void Init() override {
-    coordinator_.RegisterClient(this);
+    clients_->AddObserver(this);
   }
 
   void OnMemoryStateChange(mojom::MemoryState state) override {
@@ -92,7 +94,7 @@ class MemoryCoordinatorTestThread : public base::Thread,
     EXPECT_EQ(state, last_state_);
   }
 
-  ChildMemoryCoordinatorImpl& coordinator_;
+  scoped_refptr<ChildMemoryCoordinatorImpl::ClientList> clients_;
   mojom::MemoryState last_state_ = mojom::MemoryState::UNKNOWN;
 };
 
@@ -112,8 +114,8 @@ TEST_F(ChildMemoryCoordinatorImplTest, SingleClient) {
 }
 
 TEST_F(ChildMemoryCoordinatorImplTest, MultipleClients) {
-  MemoryCoordinatorTestThread t1("thread 1", coordinator_impl());
-  MemoryCoordinatorTestThread t2("thread 2", coordinator_impl());
+  MemoryCoordinatorTestThread t1("thread 1", clients_);
+  MemoryCoordinatorTestThread t2("thread 2", clients_);
 
   t1.StartAndWaitForTesting();
   t2.StartAndWaitForTesting();

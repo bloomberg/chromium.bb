@@ -7,26 +7,12 @@
 namespace memory_coordinator {
 
 ChildMemoryCoordinatorImpl::ChildMemoryCoordinatorImpl(
-    shell::InterfaceProvider* remote_interfaces)
-    : binding_(this), clients_(new ClientList) {
-  if (remote_interfaces) {
-    remote_interfaces->GetInterface(mojo::GetProxy(&parent_));
-    parent_->AddChild(binding_.CreateInterfacePtrAndBind());
-  }
-}
+      mojo::InterfaceRequest<mojom::ChildMemoryCoordinator> request,
+      scoped_refptr<ClientList> clients)
+    : binding_(this, std::move(request)),
+      clients_(clients) {}
 
-ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
-}
-
-void ChildMemoryCoordinatorImpl::RegisterClient(
-    MemoryCoordinatorClient* client) {
-  clients_->AddObserver(client);
-}
-
-void ChildMemoryCoordinatorImpl::UnregisterClient(
-    MemoryCoordinatorClient* client) {
-  clients_->RemoveObserver(client);
-}
+ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {}
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
   clients_->Notify(FROM_HERE, &MemoryCoordinatorClient::OnMemoryStateChange,
