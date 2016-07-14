@@ -1,7 +1,7 @@
-liblouis 3.0.0.alpha1 has been released
+liblouis 3.0.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-3.0.0.alpha1 The release is available for download at:
+3.0.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -12,36 +12,49 @@ Liblouis is an open-source braille translator and back-translator. It
 features support for computer, literary and math braille, supports
 contracted and uncontracted translation for many, many languages[1].
 It plays an important role in an open source accessibility stack and
-is used by screenreaders such as NVDA and Orca. A companion project
-liblouisutdml[2] deals with formatting of braille.
+is used by screenreaders such as NVDA, Orca and JAWS. A companion
+project liblouisutdml[2] deals with formatting of braille.
 
 Changes in this release
 =======================
 
-This is the biggest release of liblouis in years. In order to support
-UEB the internals of liblouis have seen a major rewrite. New Opcodes
-have been added to support the requirements for proper UEB for example
-for emphasis handling or to handle proper translation of numbers.
-Changes to the opcodes are described in the documentation.
+This is the biggest release of liblouis in years. The major news are
+that we now have proper support for UEB and secondly that liblouis is
+now licensed under LGPLv2.1+.
 
-Some of these changes are not backwards compatible. All tables that
-come with liblouis have been migrated. If you have private tables look
-at the section on upgrading from previous versions in the wiki[3].
+In order to support UEB the internals of liblouis have seen a major
+rewrite. New Opcodes have been added to support the requirements for
+proper UEB for example for emphasis handling or to handle proper
+translation of numbers. Changes to the opcodes are described in the
+documentation. Some of these changes are not backwards compatible. All
+tables that come with liblouis have been migrated. If you have private
+tables look at the section on upgrading from previous versions in the
+wiki[3].
 
 This release also changes the C API. External applications will have
 to adapt the way they call liblouis. In particular the typeform
 parameter has changed.
 
+The license of the library and most of the tables has been changed to
+LGPLv2.1. For a detailed list which tables are still in the process of
+migrating the license refer to the wiki page about the license
+change[4].
+
 New features
 ~~~~~~~~~~~~
 
-- Numerous features to support UEB properly. Thanks to Mike Gray.
+- Numerous features to support UEB properly. Thanks to Mike Gray,
+  William Freeman, Davy Kager, Keith Creasy and the American Printing
+  House for the Blind for sponsoring this work.
   - support the many emphasis classes needed for UEB.
   - support translation of numbers according to the rules of UEB.
   - Capitalization is now handled just like emphasis.
-- UTF-8 support for lou_trace thanks to Christian Egli.
+  - support for numeric mode
+- UTF-8 support for all tools thanks to Christian Egli.
 - The YAML tests now allow for an optional test description. See the
   documentation for more details.
+- Add `lou_checkTable' and `lou_getTypeformForEmphClass' to the C API
+  and to the Python bindings
 
 Bug fixes
 ~~~~~~~~~
@@ -52,6 +65,8 @@ Bug fixes
 Other changes
 ~~~~~~~~~~~~~
 
+- The license of the library and most of the tables has been changed
+  to LGPLv2.1+.
 - Improvements to the test suite:
   - Output is printed to stderr. This helps with locating errors when
     testing with the YAML test suite.
@@ -71,6 +86,19 @@ Braille table improvements
   - no-no-8dot.utb: Norwegian 8-dot braille table
   - no-no-8dot-fallback-6dot-g0.utb: Norwegian 8-dot braille table
     with uncontracted 6-dot fallback
+- Changes to the Dutch tables
+  - Conforms better to the standard.
+  - nl-BE-g1.ctb renamed to nl-BE-g0.utb
+  - nl-NL-g1.ctb renamed to nl-NL-g0.utb
+- Improvements to Danish tables: Added grade 2 with limited
+  contractions to 6 and 8 dots. Corrected contraction of many words.
+  - Renamed:
+    - da-ansi8.dis -> da-dk-octobraille.dis
+    - da-dk-g16.utb -> da-dk-g16.ctb
+    - da-dk-g18.utb -> da-dk-g18.ctb
+    - hyph_da_DK.dic -> hyph_brl_da_dk.dic
+  - Removed: da-dk-g28caps.cti, da-dk-g28-patches.cti and
+    da-chardefs8.cti
 
 Backwards incompatible changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,11 +112,8 @@ Backwards incompatible changes
 Next release
 ============
 
-This is the first in a series of alpha releases leading up to the 3.0
-release which will hopefully happen before the summer holidays. There
-are still a number of known outstanding issues[4] and possibly some that
-we haven't discovered yet. Please help to find bugs by testing this
-alpha release.
+The next release will be published on September 5, 2016 so please keep
+up the excellent work and keep those improvements coming.
 
 Share and Enjoy!
 
@@ -100,5 +125,4 @@ Footnotes
 [1]  See https://github.com/liblouis/liblouis/tree/master/tables
 [2]  See https://github.com/liblouis/liblouisutdml
 [3]  See https://github.com/liblouis/liblouis/wiki/Emphasis-Opcodes#upgrade-from-previous-versions
-[4]  See https://github.com/liblouis/liblouis/milestones/3.0
-
+[4]  See https://github.com/liblouis/liblouis/wiki/Licensing-of-liblouis-tables
