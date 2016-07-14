@@ -501,10 +501,6 @@ void Shell::NotifyFullscreenStateChange(bool is_fullscreen,
 }
 
 void Shell::CreateModalBackground(aura::Window* window) {
-  if (!modality_filter_) {
-    modality_filter_.reset(new SystemModalContainerEventFilter(this));
-    AddPreTargetHandler(modality_filter_.get());
-  }
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
@@ -521,8 +517,6 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
                     ->ActivateNextModalWindow();
   }
   if (!activated) {
-    RemovePreTargetHandler(modality_filter_.get());
-    modality_filter_.reset();
     for (RootWindowControllerList::iterator iter = controllers.begin();
          iter != controllers.end(); ++iter)
       (*iter)->GetSystemModalLayoutManager(removed)->DestroyModalBackground();
@@ -658,6 +652,7 @@ Shell::~Shell() {
   RemovePreTargetHandler(system_gesture_filter_.get());
   RemovePreTargetHandler(keyboard_metrics_filter_.get());
   RemovePreTargetHandler(mouse_cursor_filter_.get());
+  RemovePreTargetHandler(modality_filter_.get());
 
   // TooltipController is deleted with the Shell so removing its references.
   RemovePreTargetHandler(tooltip_controller_.get());
@@ -752,6 +747,7 @@ Shell::~Shell() {
   desktop_background_controller_.reset();
   screenshot_controller_.reset();
   mouse_cursor_filter_.reset();
+  modality_filter_.reset();
 
 #if defined(OS_CHROMEOS)
   touch_transformer_controller_.reset();
@@ -1003,6 +999,9 @@ void Shell::Init(const ShellInitParams& init_params) {
   tooltip_controller_.reset(new views::corewm::TooltipController(
       std::unique_ptr<views::corewm::Tooltip>(new views::corewm::TooltipAura)));
   AddPreTargetHandler(tooltip_controller_.get());
+
+  modality_filter_.reset(new SystemModalContainerEventFilter(this));
+  AddPreTargetHandler(modality_filter_.get());
 
   event_client_.reset(new EventClientImpl);
 

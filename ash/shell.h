@@ -553,7 +553,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Prepares the shelf to be deleted.
   void ShutdownShelf();
 
-  // ash::SystemModalContainerEventFilterDelegate overrides:
+  // SystemModalContainerEventFilterDelegate:
   bool CanWindowReceiveEvents(aura::Window* window) override;
 
   // Overridden from ui::EventTarget:

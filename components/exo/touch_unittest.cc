@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "components/exo/buffer.h"
@@ -183,6 +185,86 @@ TEST_F(TouchTest, OnTouchCancel) {
   ui::TouchEvent cancel_event(ui::ET_TOUCH_CANCELLED, gfx::Point(), 1,
                               ui::EventTimeForNow());
   generator.Dispatch(&cancel_event);
+
+  EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
+  touch.reset();
+}
+
+TEST_F(TouchTest, IgnoreTouchEventDuringModal) {
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(10, 10))));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  gfx::Point location = surface->window()->GetBoundsInScreen().origin();
+
+  MockTouchDelegate delegate;
+  std::unique_ptr<Touch> touch(new Touch(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  // Create surface for modal window.
+  std::unique_ptr<Surface> surface2(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface2(
+      new ShellSurface(surface2.get(), nullptr, gfx::Rect(0, 0, 5, 5), true,
+                       ash::kShellWindowId_SystemModalContainer));
+  std::unique_ptr<Buffer> buffer2(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(gfx::Size(5, 5))));
+  surface2->Attach(buffer2.get());
+  surface2->Commit();
+  ash::wm::CenterWindow(surface2->window());
+  gfx::Point location2 = surface2->window()->GetBoundsInScreen().origin();
+
+  // Make the window modal.
+  shell_surface2->SetSystemModal(true);
+  EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, CanAcceptTouchEventsForSurface(surface2.get()))
+      .WillRepeatedly(testing::Return(true));
+
+  // Check if touch events on modal window are registered.
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(delegate, OnTouchDown(surface2.get(), testing::_, testing::_,
+                                      gfx::Point()));
+    EXPECT_CALL(delegate,
+                OnTouchMotion(testing::_, testing::_, gfx::Point(1, 1)));
+    EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
+  }
+  generator.set_current_location(location2);
+  generator.PressMoveAndReleaseTouchBy(1, 1);
+
+  // Check if touch events on non-modal window are ignored.
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(delegate, OnTouchDown(surface.get(), testing::_, testing::_,
+                                      gfx::Point()))
+        .Times(0);
+    EXPECT_CALL(delegate,
+                OnTouchMotion(testing::_, testing::_, gfx::Point(1, 1)))
+        .Times(0);
+    EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_)).Times(0);
+  }
+  generator.set_current_location(location);
+  generator.PressMoveAndReleaseTouchBy(1, 1);
+
+  // Make the window non-modal.
+  shell_surface2->SetSystemModal(false);
+  EXPECT_FALSE(ash::WmShell::Get()->IsSystemModalWindowOpen());
+
+  // Check if touch events on non-modal window are registered.
+  {
+    testing::InSequence sequence;
+    EXPECT_CALL(delegate, OnTouchDown(surface.get(), testing::_, testing::_,
+                                      gfx::Point()));
+    EXPECT_CALL(delegate,
+                OnTouchMotion(testing::_, testing::_, gfx::Point(1, 1)));
+    EXPECT_CALL(delegate, OnTouchUp(testing::_, testing::_));
+  }
+  generator.set_current_location(location);
+  generator.PressMoveAndReleaseTouchBy(1, 1);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));
   touch.reset();
