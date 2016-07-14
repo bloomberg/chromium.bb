@@ -276,7 +276,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
                                   ui::ColorCalibrationProfile new_profile);
 
   // Enables/disables virtual display.
-  int64_t AddVirtualDisplay(gfx::Size display_size);
+  int64_t AddVirtualDisplay(const gfx::Size& display_size);
   bool RemoveVirtualDisplay(int64_t display_id);
 
   // Returns true if there is at least one display on.
