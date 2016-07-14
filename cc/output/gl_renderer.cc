@@ -2317,13 +2317,6 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
   DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
   gl_->BindTexture(GL_TEXTURE_EXTERNAL_OES, lock.texture_id());
 
-  // TODO(liberato): stream_texture_android should stop sending |gl_matrix| to
-  // the video frame provider with this change (and to us), but it should
-  // start reporting the current matrix via
-  // GLStreamTextureImage::GetTextureMatrix.  Until then, though, this will use
-  // the matrix that we provide to it, unless the GLStreamTextureImage
-  // overrides it.  This lets it also work with AVDACodecImage, which provides
-  // the correct custom matrix and supplies a default one to us.
   gl_->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
       program->vertex_shader().tex_matrix_location(), false, gl_matrix);
 

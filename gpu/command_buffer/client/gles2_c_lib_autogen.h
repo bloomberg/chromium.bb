@@ -1691,9 +1691,9 @@ GLint GL_APIENTRY GLES2GetFragDataIndexEXT(GLuint program, const char* name) {
 void GL_APIENTRY
 GLES2UniformMatrix4fvStreamTextureMatrixCHROMIUM(GLint location,
                                                  GLboolean transpose,
-                                                 const GLfloat* default_value) {
+                                                 const GLfloat* transform) {
   gles2::GetGLContext()->UniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      location, transpose, default_value);
+      location, transpose, transform);
 }
 
 namespace gles2 {

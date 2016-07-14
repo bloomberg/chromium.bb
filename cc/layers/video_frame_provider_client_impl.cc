@@ -35,14 +35,6 @@ VideoFrameProviderClientImpl::VideoFrameProviderClientImpl(
     // the call to Stop().
     provider_->SetVideoFrameProviderClient(this);
   }
-
-  // This matrix is the default transformation for stream textures, and flips
-  // on the Y axis.
-  stream_texture_matrix_ = gfx::Transform(
-      1.0, 0.0, 0.0, 0.0,
-      0.0, -1.0, 0.0, 1.0,
-      0.0, 0.0, 1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0);
 }
 
 VideoFrameProviderClientImpl::~VideoFrameProviderClientImpl() {
@@ -106,12 +98,6 @@ void VideoFrameProviderClientImpl::ReleaseLock() {
 bool VideoFrameProviderClientImpl::HasCurrentFrame() {
   base::AutoLock locker(provider_lock_);
   return provider_ && provider_->HasCurrentFrame();
-}
-
-const gfx::Transform& VideoFrameProviderClientImpl::StreamTextureMatrix()
-    const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return stream_texture_matrix_;
 }
 
 void VideoFrameProviderClientImpl::StopUsingProvider() {

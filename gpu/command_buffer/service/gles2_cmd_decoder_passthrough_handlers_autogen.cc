@@ -4473,10 +4473,10 @@ error::Error GLES2DecoderPassthroughImpl::
   if (data_size > immediate_data_size) {
     return error::kOutOfBounds;
   }
-  const GLfloat* default_value =
+  const GLfloat* transform =
       GetImmediateDataAs<const GLfloat*>(c, data_size, immediate_data_size);
   error::Error error = DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
-      location, transpose, default_value);
+      location, transpose, transform);
   if (error != error::kNoError) {
     return error;
   }
