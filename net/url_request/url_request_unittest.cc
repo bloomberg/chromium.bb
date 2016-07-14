@@ -3514,7 +3514,7 @@ TEST_F(TokenBindingURLRequestTest, DontForwardHeaderFromHttp) {
 }
 
 // Test that if a server supporting Token Binding redirects (with
-// Include-Referer-Token-Binding-ID) to an https url on a server that does not
+// Include-Referred-Token-Binding-ID) to an https url on a server that does not
 // support Token Binding, then we do not send a Sec-Token-Binding when following
 // the redirect.
 TEST_F(TokenBindingURLRequestTest, ForwardWithoutTokenBinding) {

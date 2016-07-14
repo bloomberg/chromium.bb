@@ -1534,7 +1534,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
     return True
 
   def ForwardTokenBindingHeader(self):
-    """Send a redirect that sets the Include-Referer-Token-Binding-ID
+    """Send a redirect that sets the Include-Referred-Token-Binding-ID
     header."""
 
     test_name = '/forward-tokbind'
@@ -1549,7 +1549,7 @@ class TestPageHandler(testserver_base.BasePageHandler):
 
     self.send_response(302)
     self.send_header('Location', dest)
-    self.send_header('Include-Referer-Token-Binding-ID', 'true')
+    self.send_header('Include-Referred-Token-Binding-ID', 'true')
     self.end_headers()
     return True
 
