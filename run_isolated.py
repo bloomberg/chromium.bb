@@ -122,27 +122,9 @@ def get_as_zip_package(executable=True):
   return package
 
 
-def make_temp_dir(prefix, root_dir=None):
-  """Returns a temporary directory.
-
-  If root_dir is given and /tmp is on same file system as root_dir, uses /tmp.
-  Otherwise makes a new temp directory under root_dir.
-
-  Except on OSX, because it's dangerous to create hardlinks in $TMPDIR on OSX!
-  /System/Library/LaunchDaemons/com.apple.bsd.dirhelper.plist runs every day at
-  3:35am and deletes all files older than 3 days in $TMPDIR, but hardlinks do
-  not have the inode modification time updated, so they tend to be old, thus
-  they get deleted.
-  """
-  base_temp_dir = None
-  real_temp_dir = unicode(tempfile.gettempdir())
-  if sys.platform == 'darwin':
-    # Nope! Nope! Nope!
-    assert root_dir, 'It is unsafe to create hardlinks in $TMPDIR'
-    base_temp_dir = root_dir
-  elif root_dir and not file_path.is_same_filesystem(root_dir, real_temp_dir):
-    base_temp_dir = root_dir
-  return unicode(tempfile.mkdtemp(prefix=prefix, dir=base_temp_dir))
+def make_temp_dir(prefix, root_dir):
+  """Returns a new unique temporary directory."""
+  return unicode(tempfile.mkdtemp(prefix=prefix, dir=root_dir))
 
 
 def change_tree_read_only(rootdir, read_only):
@@ -405,9 +387,12 @@ def map_and_run(
   if root_dir:
     file_path.ensure_tree(root_dir, 0700)
   else:
-    root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
+    root_dir = (
+        os.path.dirname(cache.cache_dir) if cache.cache_dir else os.getcwd())
   # See comment for these constants.
   run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
+  # storage should be normally set but don't crash if it is not. This can happen
+  # as Swarming task can run without an isolate server.
   out_dir = make_temp_dir(ISOLATED_OUT_DIR, root_dir) if storage else None
   tmp_dir = make_temp_dir(ISOLATED_TMP_DIR, root_dir)
   cwd = run_dir
