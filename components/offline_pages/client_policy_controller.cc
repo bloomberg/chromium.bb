@@ -24,6 +24,10 @@ ClientPolicyController::ClientPolicyController() {
       kLastNNamespace, MakePolicy(kLastNNamespace, LifetimeType::TEMPORARY,
                                   base::TimeDelta::FromDays(2), kUnlimitedPages,
                                   kUnlimitedPages)));
+  policies_.insert(std::make_pair(
+      kAsyncNamespace, MakePolicy(kAsyncNamespace, LifetimeType::PERSISTENT,
+                                  base::TimeDelta::FromDays(2), kUnlimitedPages,
+                                  kUnlimitedPages)));
   // Fallback policy.
   policies_.insert(std::make_pair(
       kDefaultNamespace, MakePolicy(kDefaultNamespace, LifetimeType::TEMPORARY,

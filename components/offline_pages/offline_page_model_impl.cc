@@ -654,17 +654,18 @@ void OfflinePageModelImpl::OnExpirePageDone(int64_t offline_id,
   if (iter != offline_pages_.end()) {
     iter->second.expiration_time = expiration_time;
     ClientId client_id = iter->second.client_id;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        AddHistogramSuffix(client_id, "OfflinePages.ExpirePage.PageLifetime")
-            .c_str(),
-        (expiration_time - iter->second.creation_time).InMinutes(), 1,
-        base::TimeDelta::FromDays(30).InMinutes(), 50);
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
+    base::HistogramBase* histogram = base::Histogram::FactoryGet(
+        AddHistogramSuffix(client_id, "OfflinePages.ExpirePage.PageLifetime"),
+        1, base::TimeDelta::FromDays(30).InMinutes(), 50,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram->Add((expiration_time - iter->second.creation_time).InMinutes());
+    histogram = base::Histogram::FactoryGet(
         AddHistogramSuffix(client_id,
-                           "OfflinePages.ExpirePage.TimeSinceLastAccess")
-            .c_str(),
-        (expiration_time - iter->second.last_access_time).InMinutes(), 1,
-        base::TimeDelta::FromDays(30).InMinutes(), 50);
+                           "OfflinePages.ExpirePage.TimeSinceLastAccess"),
+        1, base::TimeDelta::FromDays(30).InMinutes(), 50,
+        base::HistogramBase::kUmaTargetedHistogramFlag);
+    histogram->Add(
+        (expiration_time - iter->second.last_access_time).InMinutes());
   }
 }
 

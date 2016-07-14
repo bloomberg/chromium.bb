@@ -8,6 +8,7 @@ namespace offline_pages {
 
 const char kBookmarkNamespace[] = "bookmark";
 const char kLastNNamespace[] = "last_n";
+const char kAsyncNamespace[] = "async_loading";
 
 const char kDefaultNamespace[] = "default";
 

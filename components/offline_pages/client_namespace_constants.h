@@ -13,6 +13,7 @@ namespace offline_pages {
 // OfflinePagesNamespace (histograms.xml) for consistency.
 extern const char kBookmarkNamespace[];
 extern const char kLastNNamespace[];
+extern const char kAsyncNamespace[];
 
 // Currently used for fallbacks like tests.
 extern const char kDefaultNamespace[];

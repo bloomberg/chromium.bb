@@ -300,6 +300,16 @@ TEST_F(OfflinePageStorageManagerTest, TestClearPagesMoreFreshPages) {
   EXPECT_EQ(0, static_cast<int>(model()->GetRemovedPages().size()));
 }
 
+TEST_F(OfflinePageStorageManagerTest, TestDeleteAsyncPages) {
+  Initialize(std::vector<PageSettings>({{kAsyncNamespace, 20, 0}}));
+  clock()->Advance(base::TimeDelta::FromDays(367));
+  TryClearPages();
+  EXPECT_EQ(0, last_cleared_page_count());
+  EXPECT_EQ(1, total_cleared_times());
+  EXPECT_EQ(ClearStorageResult::SUCCESS, last_clear_storage_result());
+  EXPECT_EQ(0, static_cast<int>(model()->GetRemovedPages().size()));
+}
+
 TEST_F(OfflinePageStorageManagerTest, TestDeletionFailed) {
   Initialize(std::vector<PageSettings>(
                  {{kBookmarkNamespace, 10, 10}, {kLastNNamespace, 10, 10}}),
@@ -376,8 +386,9 @@ TEST_F(OfflinePageStorageManagerTest, TestTwoStepExpiration) {
 }
 
 TEST_F(OfflinePageStorageManagerTest, TestClearMultipleTimes) {
-  Initialize(std::vector<PageSettings>(
-                 {{kBookmarkNamespace, 30, 0}, {kLastNNamespace, 100, 1}}),
+  Initialize(std::vector<PageSettings>({{kBookmarkNamespace, 30, 0},
+                                        {kLastNNamespace, 100, 1},
+                                        {kAsyncNamespace, 40, 0}}),
              {1000 * (1 << 20), 0});
   clock()->Advance(base::TimeDelta::FromMinutes(30));
   LifetimePolicy policy =

@@ -17,12 +17,8 @@ namespace {
 const char kUndefinedNamespace[] = "undefined";
 
 bool isTemporary(const OfflinePageClientPolicy& policy) {
-  // Check if policy has a expire period > 0 or a limited number
-  // of pages allowed.
-  return (policy.lifetime_policy.page_limit > kUnlimitedPages ||
-          !policy.lifetime_policy.expiration_period.is_zero());
+  return policy.lifetime_policy.lifetime_type == LifetimeType::TEMPORARY;
 }
-
 }  // namespace
 
 class ClientPolicyControllerTest : public testing::Test {
@@ -61,6 +57,12 @@ TEST_F(ClientPolicyControllerTest, CheckLastNDefined) {
   OfflinePageClientPolicy policy = controller()->GetPolicy(kLastNNamespace);
   EXPECT_EQ(policy.name_space, kLastNNamespace);
   EXPECT_TRUE(isTemporary(policy));
+}
+
+TEST_F(ClientPolicyControllerTest, CheckAsyncDefined) {
+  OfflinePageClientPolicy policy = controller()->GetPolicy(kAsyncNamespace);
+  EXPECT_EQ(policy.name_space, kAsyncNamespace);
+  EXPECT_FALSE(isTemporary(policy));
 }
 
 }  // namespace offline_pages

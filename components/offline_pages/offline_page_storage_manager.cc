@@ -14,6 +14,8 @@
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 
+using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
+
 namespace offline_pages {
 
 OfflinePageStorageManager::OfflinePageStorageManager(
@@ -108,6 +110,7 @@ void OfflinePageStorageManager::GetPageIdsToClear(
     const ArchiveManager::StorageStats& stats,
     std::vector<int64_t>* page_ids_to_expire,
     std::vector<int64_t>* page_ids_to_remove) {
+  // TODO(romax): See how persistent should be considered here.
   // Creating a map from namespace to a vector of page items.
   // Sort each vector based on last accessed time and all pages after index
   // min{size(), page_limit} should be expired. And then start iterating
@@ -200,7 +203,8 @@ bool OfflinePageStorageManager::ShouldBeExpired(
     const OfflinePageItem& page) const {
   const LifetimePolicy& policy =
       policy_controller_->GetPolicy(page.client_id.name_space).lifetime_policy;
-  return clear_time_ - page.last_access_time >= policy.expiration_period;
+  return policy.lifetime_type == LifetimeType::TEMPORARY &&
+         clear_time_ - page.last_access_time >= policy.expiration_period;
 }
 
 bool OfflinePageStorageManager::IsInProgress() const {
