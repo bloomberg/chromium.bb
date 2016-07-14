@@ -37,6 +37,10 @@ extern const char kDefaultToolchain[];
 extern const char kDefaultToolchain_HelpShort[];
 extern const char kDefaultToolchain_Help[];
 
+extern const char kInvoker[];
+extern const char kInvoker_HelpShort[];
+extern const char kInvoker_Help[];
+
 extern const char kPythonPath[];
 extern const char kPythonPath_HelpShort[];
 extern const char kPythonPath_Help[];
@@ -56,6 +60,10 @@ extern const char kRootOutDir_Help[];
 extern const char kTargetCpu[];
 extern const char kTargetCpu_HelpShort[];
 extern const char kTargetCpu_Help[];
+
+extern const char kTargetName[];
+extern const char kTargetName_HelpShort[];
+extern const char kTargetName_Help[];
 
 extern const char kTargetOs[];
 extern const char kTargetOs_HelpShort[];

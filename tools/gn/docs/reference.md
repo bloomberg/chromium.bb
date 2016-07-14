@@ -539,6 +539,15 @@
 
 ```
 
+### **Printing outputs**
+
+```
+  The "outputs" section will list all outputs that apply, including
+  the outputs computed from the tool definition (eg for "executable",
+  "static_library", ... targets).
+
+```
+
 ### **Printing deps**
 
 ```
@@ -2493,11 +2502,16 @@
 
   set_defaults can be used for built-in target types ("executable",
   "shared_library", etc.) and custom ones defined via the "template"
-  command.
+  command. It can be called more than once and the most recent call in
+  any scope will apply, but there is no way to refer to the previous
+  defaults and modify them (each call to set_defaults must supply a
+  complete list of all defaults it wants). If you want to share
+  defaults, store them in a separate variable.
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   set_defaults("static_library") {
     configs = [ "//tools/mything:settings" ]
@@ -2642,6 +2656,33 @@
   Dependent configs: all_dependent_configs, public_configs
   General: check_includes, configs, data, inputs, output_name,
            output_extension, public, sources, testonly, visibility
+
+
+```
+## **split_list**: Splits a list into N different sub-lists.
+
+```
+  result = split_list(input, n)
+
+  Given a list and a number N, splits the list into N sub-lists of
+  approximately equal size. The return value is a list of the sub-lists.
+  The result will always be a list of size N. If N is greater than the
+  number of elements in the input, it will be padded with empty lists.
+
+  The expected use is to divide source files into smaller uniform
+  chunks.
+
+```
+
+### **Example**
+
+```
+  The code:
+    mylist = [1, 2, 3, 4, 5, 6]
+    print(split_list(mylist, 3))
+
+  Will print:
+    [[1, 2], [3, 4], [5, 6]
 
 
 ```
@@ -3591,6 +3632,40 @@
 
 
 ```
+## **invoker**: [string] The invoking scope inside a template.
+
+```
+  Inside a template invocation, this variable refers to the scope of
+  the invoker of the template. Outside of template invocations, this
+  variable is undefined.
+
+  All of the variables defined inside the template invocation are
+  accessible as members of the "invoker" scope. This is the way that
+  templates read values set by the callers.
+
+  This is often used with "defined" to see if a value is set on the
+  invoking scope.
+
+  See "gn help template" for more examples.
+
+```
+
+### **Example**
+
+```
+  template("my_template") {
+    print(invoker.sources)       # Prints [ "a.cc", "b.cc" ]
+    print(defined(invoker.foo))  # Prints false.
+    print(defined(invoker.bar))  # Prints true.
+  }
+
+  my_template("doom_melon") {
+    sources = [ "a.cc", "b.cc" ]
+    bar = 123
+  }
+
+
+```
 ## **python_path**: Absolute path of Python.
 
 ```
@@ -3717,6 +3792,49 @@
   action("myscript") {
     # Pass the generated output dir to the script.
     args = [ "-o", rebase_path(target_gen_dir, root_build_dir) ]
+  }
+
+
+```
+## **target_name**: [string] The name of the current target.
+
+```
+  Inside a target or template invocation, this variable refers to the
+  name given to the target or template invocation. Outside of these,
+  this variable is undefined.
+
+  This is most often used in template definitions to name targets
+  defined in the template based on the name of the invocation. This
+  is necessary both to ensure generated targets have unique names and
+  to generate a target with the exact name of the invocation that
+  other targets can depend on.
+
+  Be aware that this value will always reflect the innermost scope. So
+  when defining a target inside a template, target_name will refer to
+  the target rather than the template invocation. To get the name of the
+  template invocation in this case, you should save target_name to a
+  temporary variable outside of any target definitions.
+
+  See "gn help template" for more examples.
+
+```
+
+### **Example**
+
+```
+  executable("doom_melon") {
+    print(target_name)    # Prints "doom_melon".
+  }
+
+  template("my_template") {
+    print(target_name)    # Prints "space_ray" when invoked below.
+
+    executable(target_name + "_impl") {
+      print(target_name)  # Prints "space_ray_impl".
+    }
+  }
+
+  my_template("space_ray") {
   }
 
 

@@ -101,7 +101,7 @@ bool FillTargetBlockScope(const Scope* scope,
 
   // Set the target name variable to the current target, and mark it used
   // because we don't want to issue an error if the script ignores it.
-  const base::StringPiece target_name("target_name");
+  const base::StringPiece target_name(variables::kTargetName);
   block_scope->SetValue(target_name, Value(function, args[0].string_value()),
                         function);
   block_scope->MarkUsed(target_name);
