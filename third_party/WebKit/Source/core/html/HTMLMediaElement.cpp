@@ -62,8 +62,8 @@
 #include "core/html/track/VideoTrackList.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutVideo.h"
-#include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutMediaItem.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -3302,7 +3302,7 @@ void HTMLMediaElement::didBecomeFullscreenElement()
     // Cache this in case the player is destroyed before leaving fullscreen.
     m_inOverlayFullscreenVideo = usesOverlayFullscreenVideo();
     if (m_inOverlayFullscreenVideo)
-        document().layoutView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+        document().layoutViewItem().compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 }
 
 void HTMLMediaElement::willStopBeingFullscreenElement()
@@ -3312,7 +3312,7 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
     if (webMediaPlayer())
         webMediaPlayer()->exitedFullscreen();
     if (m_inOverlayFullscreenVideo)
-        document().layoutView()->compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+        document().layoutViewItem().compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
     m_inOverlayFullscreenVideo = false;
 }
 
