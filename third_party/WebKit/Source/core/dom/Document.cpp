@@ -498,7 +498,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
 
 Document::~Document()
 {
-    DCHECK(!layoutView());
+    DCHECK(layoutViewItem().isNull());
     DCHECK(!parentTreeScope());
     // If a top document with a cache, verify that it was comprehensively
     // cleared during detach.
@@ -3152,7 +3152,7 @@ String Document::outgoingReferrer() const
 
 MouseEventWithHitTestResults Document::prepareMouseEvent(const HitTestRequest& request, const LayoutPoint& documentPoint, const PlatformMouseEvent& event)
 {
-    DCHECK(!layoutView() || layoutView()->isLayoutView());
+    DCHECK(layoutViewItem().isNull() || layoutViewItem().isLayoutView());
 
     // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
     // layout because until then, there is nothing shown on the screen - the user can't
