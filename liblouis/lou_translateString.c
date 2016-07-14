@@ -38,9 +38,7 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 
 /*additional bits in typebuf*/
 #define CAPSEMPH 0x8000
-#define EMPHASIS 0x1fff
-#define SYLLABLEMARKS 0x6000
-#define INTERNALMARKS 0xe000
+#define EMPHASIS 0x3fff // all typeform bits that can be used
 
 /*   bits for wordBuffer   */
 #define WORD_CHAR         0x00000001
@@ -1722,7 +1720,7 @@ validMatch ()
       if ((currentInputChar->lowercase != ruleChar->lowercase))
 	return 0;
       if (typebuf != NULL && (typebuf[src] & CAPSEMPH) == 0 &&
-	  (typebuf[k] | typebuf[src]) != (typebuf[src]))
+	  (typebuf[k] | typebuf[src]) != typebuf[src])
 	return 0;
       if (currentInputChar->attributes != CTC_Letter)
 	{
@@ -2758,12 +2756,11 @@ markSyllables ()
 	case CTO_Always:
 	  if (src >= srcmax)
 	    return 0;
-	  if (typebuf != NULL)
-	    typebuf[src++] |= currentMark;
+   typebuf[src++] |= currentMark;
 	  break;
 	case CTO_Syllable:
 	  syllableMarker++;
-	  if (syllableMarker > 3)
+	  if (syllableMarker > 2)
 	    syllableMarker = 1;
 	  currentMark = syllableMarker << 14;
 	  /*The syllable marker is bits 14 and 15 of typebuf. */

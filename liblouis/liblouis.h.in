@@ -61,8 +61,9 @@ typedef enum {
   computer_braille = 0x0400,
   no_translate = 0x0800,
   no_contract = 0x1000,
-  //  used by syllable   0x4000,
-  //  used by syllable   0x8000,
+  // unused  0x2000,
+  // used by syllable  0x4000,
+  // used by syllable  0x8000
 } typeforms;
 #define comp_emph_1 italic
 #define comp_emph_2 underline
