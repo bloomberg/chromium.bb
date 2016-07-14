@@ -50,6 +50,9 @@ template("chrome_public_apk_tmpl") {
       proguard_configs = []
       proguard_configs =
           [ "//chrome/android/java/proguard.flags" ] + _prev_proguard_configs
+      if (!enable_all_proguard_optimizations) {
+        proguard_configs += [ "//testing/android/proguard_for_test.flags" ]
+      }
     }
 
     if (!defined(use_chromium_linker)) {

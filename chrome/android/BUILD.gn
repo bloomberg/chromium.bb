@@ -552,25 +552,27 @@ jinja_template("chrome_sync_shell_test_apk_manifest") {
   variables = chrome_sync_shell_jinja_variables
 }
 
-# GYP: //chrome/android/chrome_apk.gyp:chrome_public_test_apk
-instrumentation_test_apk("chrome_public_test_apk") {
-  apk_name = "ChromePublicTest"
-  apk_under_test = ":chrome_public_apk"
-  android_manifest = chrome_public_test_apk_manifest
-  android_manifest_dep = ":chrome_public_test_apk_manifest"
+if (!enable_all_proguard_optimizations) {
+  # GYP: //chrome/android/chrome_apk.gyp:chrome_public_test_apk
+  instrumentation_test_apk("chrome_public_test_apk") {
+    apk_name = "ChromePublicTest"
+    apk_under_test = ":chrome_public_apk"
+    android_manifest = chrome_public_test_apk_manifest
+    android_manifest_dep = ":chrome_public_test_apk_manifest"
 
-  deps = [
-    ":chrome_test_java",
-    "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
-    "//chrome/android/webapk/shell_apk:shell_apk_javatests",
-  ]
-  additional_apks = [
-    "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
-    "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
-    "//net/android:net_test_support_apk",
-  ]
-  isolate_file = "../chrome_public_test_apk.isolate"
-  proguard_enabled = !is_java_debug
+    deps = [
+      ":chrome_test_java",
+      "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
+      "//chrome/android/webapk/shell_apk:shell_apk_javatests",
+    ]
+    additional_apks = [
+      "//chrome/android/webapk/shell_apk/javatests/dex_optimizer:dex_optimizer_apk",
+      "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
+      "//net/android:net_test_support_apk",
+    ]
+    isolate_file = "../chrome_public_test_apk.isolate"
+    proguard_enabled = !is_java_debug
+  }
 }
 
 android_library("chrome_sync_shell_test_apk_java") {
@@ -598,14 +600,16 @@ android_library("chrome_sync_shell_test_apk_java") {
   ]
 }
 
-# GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_test_apk
-instrumentation_test_apk("chrome_sync_shell_test_apk") {
-  apk_name = "ChromeSyncShellTest"
-  apk_under_test = ":chrome_sync_shell_apk"
-  android_manifest = chrome_sync_shell_test_apk_manifest
-  android_manifest_dep = ":chrome_sync_shell_test_apk_manifest"
-  deps = [
-    ":chrome_sync_shell_test_apk_java",
-  ]
-  proguard_enabled = !is_java_debug
+if (!enable_all_proguard_optimizations) {
+  # GYP: //chrome/android/chrome_apk.gyp:chrome_sync_shell_test_apk
+  instrumentation_test_apk("chrome_sync_shell_test_apk") {
+    apk_name = "ChromeSyncShellTest"
+    apk_under_test = ":chrome_sync_shell_apk"
+    android_manifest = chrome_sync_shell_test_apk_manifest
+    android_manifest_dep = ":chrome_sync_shell_test_apk_manifest"
+    deps = [
+      ":chrome_sync_shell_test_apk_java",
+    ]
+    proguard_enabled = !is_java_debug
+  }
 }

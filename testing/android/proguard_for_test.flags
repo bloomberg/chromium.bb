@@ -1,0 +1,18 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This file is for proguard flags which will be applied to apks that are being
+# built to be instrumentation tested. The flags in this file should only affect
+# how the instrumentation tests interact with the .apk. Do not put any flags in
+# this file which might affect the correctness of the .apk.
+
+# This line prevents optmization from being applied to either packages. We rely
+# on optimizations being off to prevent inlining functions our instrumentation
+# tests use.
+# TODO(smaier): when buildbot scripts have been updated to not include this
+# config as part of its release build, switch these lines to:
+# -dontoptimize
+-keepnames,allowobfuscation class com.google.android.apps.chrome.**,org.chromium.** {
+  *;
+}

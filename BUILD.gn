@@ -406,12 +406,16 @@ group("both_gn_and_gyp") {
         "//android_webview/tools/system_webview_shell",
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
-        "//chrome/android:chrome_public_test_apk",
-        "//chrome/android:chrome_sync_shell_test_apk",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
         "//content/shell/android:content_shell_test_apk",
         "//third_party/custom_tabs_client:custom_tabs_client_example_apk",
       ]
+      if (!enable_all_proguard_optimizations) {
+        deps += [
+          "//chrome/android:chrome_public_test_apk",
+          "//chrome/android:chrome_sync_shell_test_apk",
+        ]
+      }
     }
 
     if (target_cpu != "x64") {

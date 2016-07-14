@@ -1829,6 +1829,7 @@ if (enable_java_templates) {
       if (defined(invoker.proguard_configs)) {
         _proguard_configs += invoker.proguard_configs
       }
+      assert(_proguard_configs != [])  # Mark as used.
       _proguard_target = "${_template_name}__proguard"
       proguard(_proguard_target) {
         forward_variables_from(invoker,
