@@ -79,7 +79,7 @@ static widechar *passbuf2 = NULL;
 static widechar *currentOutput;
 static int *prevSrcMapping = NULL;
 static int *srcMapping = NULL;
-static unsigned short *typebuf = NULL;
+static formtype *typebuf = NULL;
 static unsigned int *wordBuffer = NULL;
 static unsigned int *emphasisBuffer = NULL;
 static unsigned int *transNoteBuffer = NULL;
@@ -299,12 +299,12 @@ makeCorrections ()
 
   {				// We have to transform typebuf accordingly
     int pos;
-    unsigned short *typebuf_temp;
-    if ((typebuf_temp = malloc (dest * sizeof (unsigned short))) == NULL)
+    formtype *typebuf_temp;
+    if ((typebuf_temp = malloc (dest * sizeof (formtype))) == NULL)
       outOfMemory ();
     for (pos = 0; pos < dest; pos++)
       typebuf_temp[pos] = typebuf[srcMapping[pos]];
-    memcpy (typebuf, typebuf_temp, dest * sizeof (unsigned short));
+    memcpy (typebuf, typebuf_temp, dest * sizeof (formtype));
     free (typebuf_temp);
   }
 
@@ -1211,7 +1211,7 @@ translateWithTracing (const char *tableList, const widechar * inbufx,
 		}
     }
   else
-    memset (typebuf, 0, srcmax * sizeof (unsigned short));
+    memset (typebuf, 0, srcmax * sizeof (formtype));
 	
 	if(wordBuffer = liblouis_allocMem(alloc_wordBuffer, srcmax, destmax))
 		memset(wordBuffer, 0, (srcmax + 4) * sizeof(unsigned int));
