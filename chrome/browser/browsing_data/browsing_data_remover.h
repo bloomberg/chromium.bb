@@ -173,11 +173,19 @@ class BrowsingDataRemover : public KeyedService
     base::Time end;
   };
 
-  // Observer is notified when the removal is done. Done means keywords have
-  // been deleted, cache cleared and all other tasks scheduled.
+  // Observer is notified when the removal is active and when it's done.
   class Observer {
    public:
-    virtual void OnBrowsingDataRemoverDone() = 0;
+    // NOTE: DEPRECATED; talk to dbeam/msramek before using this.
+    //
+    // Whether removal is active. Note that not having an active removal is not
+    // same as completing a removal. That is why the removing status is separate
+    // from the done message.
+    virtual void OnBrowsingDataRemoving(bool is_removing) {}
+
+    // Done means keywords have been deleted, cache cleared and all other
+    // removal tasks are scheduled.
+    virtual void OnBrowsingDataRemoverDone() {}
 
    protected:
     virtual ~Observer() {}

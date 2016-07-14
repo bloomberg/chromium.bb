@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_CLEAR_BROWSING_DATA_HANDLER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -45,8 +46,7 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   void HandleClearBrowsingData(const base::ListValue* value);
 
   // BrowsingDataRemover::Observer implementation.
-  // Re-enables clear button once all requested data has been removed.
-  void OnBrowsingDataRemoverDone() override;
+  void OnBrowsingDataRemoving(bool is_removing) override;
 
   // Updates UI when the pref to allow clearing history changes.
   virtual void OnBrowsingHistoryPrefChanged();
@@ -89,8 +89,10 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   ScopedObserver<ProfileSyncService, sync_driver::SyncServiceObserver>
       sync_service_observer_;
 
-  // If non-null it means removal is in progress.
+  // Observe the remover progress.
   BrowsingDataRemover* remover_;
+  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer>
+      remover_observer_;
 
   // The WebUI callback ID of the last performClearBrowserData request. There
   // can only be one such request in-flight.

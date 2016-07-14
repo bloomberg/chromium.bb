@@ -47,13 +47,12 @@ ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
       sync_service_(ProfileSyncServiceFactory::GetForProfile(profile_)),
       sync_service_observer_(this),
       remover_(nullptr),
+      remover_observer_(this),
       show_history_footer_(false),
       show_history_deletion_dialog_(false),
       weak_ptr_factory_(this) {}
 
 ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
-  if (remover_)
-    remover_->RemoveObserver(this);
 }
 
 void ClearBrowsingDataHandler::RegisterMessages() {
@@ -78,9 +77,15 @@ void ClearBrowsingDataHandler::OnJavascriptAllowed() {
 
   if (sync_service_)
     sync_service_observer_.Add(sync_service_);
+
+  if (!remover_)
+    remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
+
+  remover_observer_.Add(remover_);
 }
 
 void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
+  remover_observer_.RemoveAll();
   profile_pref_registrar_.RemoveAll();
   sync_service_observer_.RemoveAll();
 }
@@ -88,7 +93,7 @@ void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
     const base::ListValue* args) {
   // We should never be called when the previous clearing has not yet finished.
-  CHECK(!remover_);
+  CHECK(!remover_->is_removing());
   CHECK_EQ(1U, args->GetSize());
   CHECK(webui_callback_id_.empty());
   CHECK(args->GetString(0, &webui_callback_id_));
@@ -168,16 +173,18 @@ void ClearBrowsingDataHandler::HandleClearBrowsingData(
 
   int period_selected =
       prefs->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
-  remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
-  remover_->AddObserver(this);
   remover_->Remove(BrowsingDataRemover::Period(
                        static_cast<browsing_data::TimePeriod>(period_selected)),
                    remove_mask, origin_mask);
 }
 
-void ClearBrowsingDataHandler::OnBrowsingDataRemoverDone() {
-  remover_->RemoveObserver(this);
-  remover_ = nullptr;
+void ClearBrowsingDataHandler::OnBrowsingDataRemoving(bool is_removing) {
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue("browsing-data-removing"),
+                         base::FundamentalValue(is_removing));
+
+  if (is_removing || webui_callback_id_.empty())
+    return;
 
   PrefService* prefs = profile_->GetPrefs();
   int notice_shown_times =
@@ -219,6 +226,10 @@ void ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged() {
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   AllowJavascript();
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  counters_.clear();
 
   for (const std::string& pref : kCounterPrefs) {
     AddCounter(
@@ -227,6 +238,9 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
 
   OnStateChanged();
   RefreshHistoryNotice();
+
+  ResolveJavascriptCallback(*callback_id,
+                            base::FundamentalValue(remover_->is_removing()));
 }
 
 void ClearBrowsingDataHandler::OnStateChanged() {
@@ -270,7 +284,7 @@ void ClearBrowsingDataHandler::UpdateHistoryNotice(bool show) {
 }
 
 void ClearBrowsingDataHandler::UpdateHistoryDeletionDialog(bool show) {
-  // This is used by OnBrowsingDataRemoverDone (when the deletion finishes).
+  // This is used by OnBrowsingDataRemoving (when the deletion finishes).
   show_history_deletion_dialog_ = show;
 }
 

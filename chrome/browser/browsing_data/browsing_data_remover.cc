@@ -346,6 +346,8 @@ void BrowsingDataRemover::Shutdown() {
 void BrowsingDataRemover::SetRemoving(bool is_removing) {
   DCHECK_NE(is_removing_, is_removing);
   is_removing_ = is_removing;
+  FOR_EACH_OBSERVER(Observer, observer_list_,
+                    OnBrowsingDataRemoving(is_removing));
 }
 
 void BrowsingDataRemover::Remove(const TimeRange& time_range,

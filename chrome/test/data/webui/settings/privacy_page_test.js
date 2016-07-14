@@ -52,6 +52,7 @@ cr.define('settings_privacy_page', function() {
     /** @override */
     clearBrowsingData: function() {
       this.methodCalled('clearBrowsingData');
+      cr.webUIListenerCallback('browsing-data-removing', true);
       return this.clearBrowsingDataPromise_ !== null ?
           this.clearBrowsingDataPromise_ : Promise.resolve();
     },
@@ -59,6 +60,7 @@ cr.define('settings_privacy_page', function() {
     /** @override */
     initialize: function() {
       this.methodCalled('initialize');
+      return Promise.resolve(false);
     },
   };
 
@@ -105,6 +107,7 @@ cr.define('settings_privacy_page', function() {
         PolymerTest.clearBody();
         element = document.createElement('settings-clear-browsing-data-dialog');
         document.body.appendChild(element);
+        return testBrowserProxy.whenCalled('initialize');
       });
 
       teardown(function() { element.remove(); });
@@ -136,6 +139,7 @@ cr.define('settings_privacy_page', function() {
 
               // Simulate signal from browser indicating that clearing has
               // completed.
+              cr.webUIListenerCallback('browsing-data-removing', false);
               promiseResolver.resolve();
               // Yields to the message loop to allow the callback chain of the
               // Promise that was just resolved to execute before the
