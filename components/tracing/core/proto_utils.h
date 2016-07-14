@@ -26,6 +26,10 @@ enum : uint32_t {
   kFieldTypeFixed32 = 5,
 };
 
+// Maximum message size supported: 256 MiB (4 x 7-bit due to varint encoding).
+constexpr size_t kMessageLengthFieldSize = 4;
+constexpr size_t kMaxMessageLength = (1u << (kMessageLengthFieldSize * 7)) - 1;
+
 // Returns the number of bytes sufficient to encode the largest
 // |int_size_in_bits|-bits integer using a non-redundant varint encoding.
 template <typename T>

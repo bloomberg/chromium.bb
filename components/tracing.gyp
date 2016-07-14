@@ -43,6 +43,8 @@
         'tracing/common/tracing_switches.cc',
         'tracing/common/tracing_switches.h',
         'tracing/core/proto_utils.h',
+        'tracing/core/proto_zero_message.cc',
+        'tracing/core/proto_zero_message.h',
         'tracing/core/scattered_stream_writer.cc',
         'tracing/core/scattered_stream_writer.h',
         'tracing/core/trace_ring_buffer.cc',
