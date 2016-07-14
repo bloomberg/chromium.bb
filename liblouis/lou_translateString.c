@@ -3656,8 +3656,9 @@ translateString ()
 {
 /*Main translation routine */
   int k;
+  translation_direction = 1;
   markSyllables ();
-	numericMode = 0;
+  numericMode = 0;
   srcword = 0;
   destword = 0;        		/* last word translated */
   dontContract = 0;

@@ -611,10 +611,10 @@ back_selectRule ()
 	  if (length < 2 || (itsANumber && (dots->attributes & CTC_LitDigit)))
 	    break;
 	  /*Hash function optimized for backward translation */
-	  makeHash = (unsigned long int) dots->lowercase << 8;
+	  makeHash = (unsigned long int) dots->realchar << 8;
 	  makeHash += (unsigned long int) (back_findCharOrDots
 					   (currentInput[src + 1],
-					    1))->lowercase;
+					    1))->realchar;
 	  makeHash %= HASHNUM;
 	  ruleOffset = table->backRules[makeHash];
 	  break;
@@ -792,6 +792,30 @@ back_selectRule ()
 		    currentRule->charslen > 1)
 		    break;
 		    return;
+
+				case CTO_BackMatch:
+				{
+					widechar *patterns, *pattern;
+
+					//if(dontContract || (mode & noContractions))
+					//	break;
+					//if(checkEmphasisChange(0))
+					//	break;
+
+					patterns = (widechar*)&table->ruleArea[currentRule->patterns];
+
+					/*   check before pattern   */
+					pattern = &patterns[1];
+					if(!pattern_check(currentInput, src - 1, -1, -1, pattern, table))
+						break;
+
+					/*   check after pattern   */
+					pattern = &patterns[patterns[0]];
+					if(!pattern_check(currentInput, src + currentRule->dotslen, srcmax, 1, pattern, table))
+						break;
+
+					return;
+				}
 		    default:
 		      break;
 		    }
@@ -1061,7 +1085,8 @@ failure:
 static int
 backTranslateString ()
 {
-/*Back translation */
+  /*Back translation */
+  translation_direction = 0;
   int srcword = 0;
   int destword = 0;		/* last word translated */
   nextUpper = allUpper = allUpperPhrase = itsANumber = itsALetter = itsCompbrl = 0;

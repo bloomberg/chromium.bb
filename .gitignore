@@ -221,3 +221,7 @@ output.txt
 /windows/liblouis.dll
 /windows/liblouis.lib
 /windows/liblouis.exp
+
+# stuff for local development
+local/
+local

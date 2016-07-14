@@ -318,6 +318,7 @@ typedef enum { /*Op codes */
                // CTO_Initial,
                CTO_NoBreak,
                CTO_Match,
+               CTO_BackMatch,
                CTO_Attribute,
                CTO_None,
 
@@ -720,6 +721,8 @@ void logMessage(logLevels level, const char *format, ...);
  * Close the log file
  */
 void closeLogFile();
+
+extern int translation_direction;
 
 #ifdef __cplusplus
 }

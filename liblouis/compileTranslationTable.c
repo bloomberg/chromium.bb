@@ -336,6 +336,7 @@ static const char *opcodeNames[CTO_None] = {
 //  "initial",
   "nobreak",
   "match",
+  "backmatch",
   "attribute",
 };
 static short opcodeLengths[CTO_None] = { 0 };
@@ -3686,7 +3687,7 @@ compileHyphenation (FileInfo * nested, CharsString * encoding)
 			&holdOffset, dict.numStates *
 			sizeof (HyphenationState));
   table->hyphenStatesArray = holdOffset;
-  /* Prevents segmentajion fault if table is reallocated */
+  /* Prevents segmentation fault if table is reallocated */
   memcpy (&table->ruleArea[table->hyphenStatesArray], &dict.states[0],
 	  dict.numStates * sizeof (HyphenationState));
   free (dict.states);
@@ -3731,9 +3732,9 @@ compileCharDef (FileInfo * nested,
 	    {
 	      attr = attributes;
 	      otherCell = addCharOrDots (nested, ruleDots.chars[k], 1);
-	      if (ruleDots.length != 1)
-		attr = CTC_Space;
-	      otherCell->attributes |= attr;
+	      // if (ruleDots.length != 1)
+	      // 	attr = CTC_Space;
+	      // otherCell->attributes |= attr;
 	      otherCell->uppercase = otherCell->lowercase =
 		otherCell->realchar;
 	    }
@@ -3825,6 +3826,63 @@ doOpcode:
 
 				memset(patterns, 0xffff, sizeof(patterns));
 			noback = 1;
+			getCharacters(nested, &ptn_before);
+			getRuleCharsText(nested, &ruleChars);
+			getCharacters(nested, &ptn_after);
+			getRuleDotsPattern(nested, &ruleDots);
+
+			if(!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0))
+				ok = 0;
+
+			if(ptn_before.chars[0] == '-' && ptn_before.length == 1)
+				len = pattern_compile(&ptn_before.chars[0], 0, &patterns[1], 13841, table);
+			else
+				len = pattern_compile(&ptn_before.chars[0], ptn_before.length, &patterns[1], 13841, table);
+			if(!len)
+			{
+				ok = 0;
+				break;
+			}
+			mrk = patterns[0] = len + 1;
+			pattern_reverse(&patterns[1]);
+
+
+			if(ptn_after.chars[0] == '-' && ptn_after.length == 1)
+				len = pattern_compile(&ptn_after.chars[0], 0, &patterns[mrk], 13841, table);
+			else
+				len = pattern_compile(&ptn_after.chars[0], ptn_after.length, &patterns[mrk], 13841, table);
+			if(!len)
+			{
+				ok = 0;
+				break;
+			}
+			len += mrk;
+
+
+			if(!allocateSpaceInTable(nested, &offset, len * sizeof(widechar)))
+			{
+				ok = 0;
+				break;
+			}
+
+			/*   realloc may have moved table, so make sure newRule is still valid   */
+			newRule = (TranslationTableRule*)&table->ruleArea[newRuleOffset];
+
+			memcpy(&table->ruleArea[offset], patterns, len * sizeof(widechar));
+			newRule->patterns = offset;
+
+			break;
+		}
+
+		case CTO_BackMatch:
+		{
+			CharsString ptn_before, ptn_after, ptn_regex;
+			widechar patterns[27720];
+			TranslationTableOffset offset;
+			int len, mrk;
+
+			memset(patterns, 0xffff, sizeof(patterns));
+			nofor = 1;
 			getCharacters(nested, &ptn_before);
 			getRuleCharsText(nested, &ruleChars);
 			getCharacters(nested, &ptn_after);

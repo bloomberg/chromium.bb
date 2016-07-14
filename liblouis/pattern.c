@@ -32,6 +32,44 @@ License along with liblouis. If not, see <http://www.gnu.org/licenses/>.
 
 static const TranslationTableHeader *table;
 
+//TODO:  these functions are static and copied serveral times
+
+int translation_direction = 1;
+
+static TranslationTableCharacter *
+back_findCharOrDots (widechar c, int m)
+{
+/*Look up character or dot pattern in the appropriate  
+* table. */
+  static TranslationTableCharacter noChar =
+    { 0, 0, 0, CTC_Space, 32, 32, 32 };
+  static TranslationTableCharacter noDots =
+    { 0, 0, 0, CTC_Space, B16, B16, B16 };
+  TranslationTableCharacter *notFound;
+  TranslationTableCharacter *character;
+  TranslationTableOffset bucket;
+  unsigned long int makeHash = (unsigned long int) c % HASHNUM;
+  if (m == 0)
+    {
+      bucket = table->characters[makeHash];
+      notFound = &noChar;
+    }
+  else
+    {
+      bucket = table->dots[makeHash];
+      notFound = &noDots;
+    }
+  while (bucket)
+    {
+      character = (TranslationTableCharacter *) & table->ruleArea[bucket];
+      if (character->realchar == c)
+	return character;
+      bucket = character->next;
+    }
+  notFound->realchar = notFound->uppercase = notFound->lowercase = c;
+  return notFound;
+}
+
 static TranslationTableCharacter *
 findCharOrDots (widechar c, int m)
 {
@@ -74,7 +112,10 @@ checkAttr (const widechar c, const TranslationTableCharacterAttributes
   static TranslationTableCharacterAttributes preva = 0;
   if (c != prevc)
     {
-      preva = (findCharOrDots (c, m))->attributes;
+		if(translation_direction)
+			preva = (findCharOrDots (c, 0))->attributes;
+		else
+			preva = (back_findCharOrDots (c, 1))->attributes;
       prevc = c;
     }
   return ((preva & a) ? 1 : 0);
