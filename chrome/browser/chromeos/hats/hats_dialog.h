@@ -18,12 +18,15 @@ namespace chromeos {
 class HatsDialog : public ui::WebDialogDelegate {
  public:
   HatsDialog();
+  ~HatsDialog() override;
 
-  virtual void Show();
+  // Creates an instance of HatsDialog and posts a task to load all the relevant
+  // device info before displaying the dialog.
+  static void CreateAndShow();
 
  private:
-  // Object is self deleting on close.
-  ~HatsDialog() override;
+  static void Show(std::unique_ptr<HatsDialog> hats_dialog,
+                   std::string site_context);
 
   // ui::WebDialogDelegate implementation.
   ui::ModalType GetDialogModalType() const override;
@@ -41,7 +44,7 @@ class HatsDialog : public ui::WebDialogDelegate {
   bool ShouldShowDialogTitle() const override;
   bool HandleContextMenu(const content::ContextMenuParams& params) override;
 
-  const std::string html_data_;
+  std::string html_data_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsDialog);
 };

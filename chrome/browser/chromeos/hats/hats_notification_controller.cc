@@ -135,8 +135,7 @@ void HatsNotificationController::ButtonClick(int button_index) {
   UpdateLastInteractionTime();
 
   // The dialog deletes itslef on close.
-  HatsDialog* hats_dialog = new HatsDialog();
-  hats_dialog->Show();
+  HatsDialog::CreateAndShow();
 
   // Remove the notification.
   g_browser_process->notification_ui_manager()->CancelById(
