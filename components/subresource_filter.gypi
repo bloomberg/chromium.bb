@@ -53,6 +53,9 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../third_party/flatbuffers/flatbuffers.gyp:flatbuffers',
+        '../url/url.gyp:url_lib',
         'subresource_filter_core_common_ruleset_flatbuffer',
         'subresource_filter_core_common_ruleset_proto',
       ],
@@ -66,6 +69,8 @@
         'subresource_filter/core/common/closed_hash_map.h',
         'subresource_filter/core/common/fuzzy_pattern_matching.cc',
         'subresource_filter/core/common/fuzzy_pattern_matching.h',
+        'subresource_filter/core/common/indexed_ruleset.cc',
+        'subresource_filter/core/common/indexed_ruleset.h',
         'subresource_filter/core/common/knuth_morris_pratt.h',
         'subresource_filter/core/common/memory_mapped_ruleset.cc',
         'subresource_filter/core/common/memory_mapped_ruleset.h',

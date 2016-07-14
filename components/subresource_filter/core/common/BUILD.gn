@@ -9,6 +9,8 @@ source_set("common") {
     "closed_hash_map.h",
     "fuzzy_pattern_matching.cc",
     "fuzzy_pattern_matching.h",
+    "indexed_ruleset.cc",
+    "indexed_ruleset.h",
     "knuth_morris_pratt.h",
     "memory_mapped_ruleset.cc",
     "memory_mapped_ruleset.h",
@@ -28,7 +30,9 @@ source_set("common") {
 
   deps = [
     "//base",
-    "//url:url",
+    "//net",
+    "//third_party/flatbuffers:flatbuffers",
+    "//url",
   ]
 }
 
@@ -37,6 +41,7 @@ source_set("unit_tests") {
   sources = [
     "closed_hash_map_unittest.cc",
     "fuzzy_pattern_matching_unittest.cc",
+    "indexed_ruleset_unittest.cc",
     "knuth_morris_pratt_unittest.cc",
     "ngram_extractor_unittest.cc",
     "string_splitter_unittest.cc",
@@ -46,6 +51,6 @@ source_set("unit_tests") {
     ":common",
     "//base",
     "//testing/gtest",
-    "//url:url",
+    "//url",
   ]
 }

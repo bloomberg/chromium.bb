@@ -4,4 +4,6 @@ include_rules = [
   # subresource_filter is a layered component; subdirectories must explicitly
   # introduce the ability to use non-core layers as appropriate.
   "-components/subresource_filter/content",
+  "+net/base",
+  "+third_party/flatbuffers",
 ]
