@@ -1007,10 +1007,6 @@ jboolean ContentViewCoreImpl::OnTouchEvent(
                                : rwhv->OnTouchEvent(event);
 }
 
-float ContentViewCoreImpl::GetDpiScale() const {
-  return dpi_scale_;
-}
-
 jboolean ContentViewCoreImpl::SendMouseMoveEvent(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

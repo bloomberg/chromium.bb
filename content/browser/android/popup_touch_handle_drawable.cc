@@ -11,7 +11,8 @@ namespace content {
 
 // static
 std::unique_ptr<PopupTouchHandleDrawable> PopupTouchHandleDrawable::Create(
-    ContentViewCore* content_view_core) {
+    ContentViewCore* content_view_core,
+    float dpi_scale) {
   DCHECK(content_view_core);
   base::android::ScopedJavaLocalRef<jobject> content_view_core_obj =
       content_view_core->GetJavaObject();
@@ -20,8 +21,8 @@ std::unique_ptr<PopupTouchHandleDrawable> PopupTouchHandleDrawable::Create(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> drawable_obj(
       Java_PopupTouchHandleDrawable_create(env, content_view_core_obj.obj()));
-  return std::unique_ptr<PopupTouchHandleDrawable>(new PopupTouchHandleDrawable(
-      env, drawable_obj.obj(), content_view_core->GetDpiScale()));
+  return std::unique_ptr<PopupTouchHandleDrawable>(
+      new PopupTouchHandleDrawable(env, drawable_obj.obj(), dpi_scale));
 }
 
 PopupTouchHandleDrawable::PopupTouchHandleDrawable(JNIEnv* env,

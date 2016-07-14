@@ -46,7 +46,6 @@ class CONTENT_EXPORT ContentViewCore {
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
   virtual bool ShowPastePopup(int x, int y) = 0;
 
-  virtual float GetDpiScale() const = 0;
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 
   // Text surrounding selection.

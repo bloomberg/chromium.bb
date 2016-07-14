@@ -97,9 +97,10 @@ std::unique_ptr<OverscrollRefresh> CreateRefreshEffect(
 }  // namespace
 
 OverscrollControllerAndroid::OverscrollControllerAndroid(
-    ContentViewCoreImpl* content_view_core)
+    ContentViewCoreImpl* content_view_core,
+    float dpi_scale)
     : compositor_(content_view_core->GetWindowAndroid()->GetCompositor()),
-      dpi_scale_(content_view_core->GetDpiScale()),
+      dpi_scale_(dpi_scale),
       enabled_(true),
       glow_effect_(CreateGlowEffect(this, dpi_scale_)),
       refresh_effect_(CreateRefreshEffect(content_view_core)) {

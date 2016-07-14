@@ -37,7 +37,8 @@ struct DidOverscrollParams;
 // Note that all input coordinates (both for events and overscroll) are in DIPs.
 class OverscrollControllerAndroid : public ui::OverscrollGlowClient {
  public:
-  explicit OverscrollControllerAndroid(ContentViewCoreImpl* content_view_core);
+  explicit OverscrollControllerAndroid(ContentViewCoreImpl* content_view_core,
+                                       float dpi_scale);
   ~OverscrollControllerAndroid() override;
 
   // Returns true if |event| is consumed by an overscroll effect, in which

@@ -79,6 +79,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
+#include "ui/base/layout.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -270,8 +271,10 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
 }
 
 std::unique_ptr<OverscrollControllerAndroid> CreateOverscrollController(
-    ContentViewCoreImpl* content_view_core) {
-  return base::WrapUnique(new OverscrollControllerAndroid(content_view_core));
+    ContentViewCoreImpl* content_view_core,
+    float dpi_scale) {
+  return base::WrapUnique(
+      new OverscrollControllerAndroid(content_view_core, dpi_scale));
 }
 
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
@@ -1184,11 +1187,13 @@ std::unique_ptr<ui::TouchHandleDrawable>
 RenderWidgetHostViewAndroid::CreateDrawable() {
   DCHECK(content_view_core_);
   if (!using_browser_compositor_)
-    return PopupTouchHandleDrawable::Create(content_view_core_);
+    return PopupTouchHandleDrawable::Create(
+        content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
 
   return std::unique_ptr<
       ui::TouchHandleDrawable>(new CompositedTouchHandleDrawable(
-      content_view_core_->GetLayer(), content_view_core_->GetDpiScale(),
+      content_view_core_->GetLayer(),
+      ui::GetScaleFactorForNativeView(GetNativeView()),
       // Use the activity context (instead of the application context) to ensure
       // proper handle theming.
       content_view_core_->GetContext().obj()));
@@ -1735,7 +1740,8 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
 
   if (!overscroll_controller_ &&
       content_view_core_->GetWindowAndroid()->GetCompositor()) {
-    overscroll_controller_ = CreateOverscrollController(content_view_core_);
+    overscroll_controller_ = CreateOverscrollController(
+        content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
   }
 
   if (!sync_compositor_) {
@@ -1807,7 +1813,8 @@ void RenderWidgetHostViewAndroid::OnDetachedFromWindow() {
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(content_view_core_);
   if (!overscroll_controller_)
-    overscroll_controller_ = CreateOverscrollController(content_view_core_);
+    overscroll_controller_ = CreateOverscrollController(
+        content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
 }
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {

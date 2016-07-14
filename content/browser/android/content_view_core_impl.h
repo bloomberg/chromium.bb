@@ -65,7 +65,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       const override;
   cc::Layer* GetLayer() const override;
   bool ShowPastePopup(int x, int y) override;
-  float GetDpiScale() const override;
   void PauseOrResumeGeolocation(bool should_pause) override;
   void RequestTextSurroundingSelection(
       int max_length,
