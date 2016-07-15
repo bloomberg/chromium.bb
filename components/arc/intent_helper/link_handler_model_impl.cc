@@ -5,6 +5,7 @@
 #include "components/arc/intent_helper/link_handler_model_impl.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"

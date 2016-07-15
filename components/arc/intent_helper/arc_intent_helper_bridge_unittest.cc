@@ -4,6 +4,8 @@
 
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 
+#include <utility>
+
 #include "components/arc/common/intent_helper.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

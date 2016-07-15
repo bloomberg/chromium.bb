@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_ARC_STANDALONE_BRIDGE_RUNNER_H_
-#define COMPONENTS_ARC_ARC_STANDALONE_BRIDGE_RUNNER_H_
+#ifndef COMPONENTS_ARC_STANDALONE_ARC_STANDALONE_BRIDGE_RUNNER_H_
+#define COMPONENTS_ARC_STANDALONE_ARC_STANDALONE_BRIDGE_RUNNER_H_
 
 #include <memory>
 
@@ -39,4 +39,4 @@ class ArcStandaloneBridgeRunner {
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_ARC_STANDALONE_BRIDGE_RUNNER_H_
+#endif  // COMPONENTS_ARC_STANDALONE_ARC_STANDALONE_BRIDGE_RUNNER_H_

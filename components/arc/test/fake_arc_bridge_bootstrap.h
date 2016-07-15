@@ -32,6 +32,6 @@ class FakeArcBridgeBootstrap : public ArcBridgeBootstrap,
   DISALLOW_COPY_AND_ASSIGN(FakeArcBridgeBootstrap);
 };
 
-} // namespace arc
+}  // namespace arc
 
 #endif  // COMPONENTS_ARC_TEST_FAKE_ARC_BRIDGE_BOOTSTRAP_H_

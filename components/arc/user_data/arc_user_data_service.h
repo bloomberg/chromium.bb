@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_USER_DATA_ARC_USER_DATA_SERVICE
-#define COMPONENTS_ARC_USER_DATA_ARC_USER_DATA_SERVICE
+#ifndef COMPONENTS_ARC_USER_DATA_ARC_USER_DATA_SERVICE_H_
+#define COMPONENTS_ARC_USER_DATA_ARC_USER_DATA_SERVICE_H_
+
+#include <memory>
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
@@ -49,4 +51,4 @@ class ArcUserDataService : public ArcService,
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_USER_DATA_ARC_USER_DATA_SERVICE
+#endif  // COMPONENTS_ARC_USER_DATA_ARC_USER_DATA_SERVICE_H_

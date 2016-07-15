@@ -4,6 +4,8 @@
 
 #include "components/arc/intent_helper/link_handler_model_impl.h"
 
+#include <string>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

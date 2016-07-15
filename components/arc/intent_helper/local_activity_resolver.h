@@ -36,4 +36,4 @@ class LocalActivityResolver : public base::RefCounted<LocalActivityResolver> {
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_INTENT_HELPER_LOCAL_ACTIVITY_HELPER_H_
+#endif  // COMPONENTS_ARC_INTENT_HELPER_LOCAL_ACTIVITY_RESOLVER_H_

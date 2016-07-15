@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_ARC_TEST_FAKE_NOTIFICATIONS_INSTANCE_H_
 #define COMPONENTS_ARC_TEST_FAKE_NOTIFICATIONS_INSTANCE_H_
 
+#include <utility>
+#include <vector>
+
 #include "components/arc/common/notifications.mojom.h"
 #include "components/arc/test/fake_arc_bridge_instance.h"
 

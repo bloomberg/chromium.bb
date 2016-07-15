@@ -4,6 +4,8 @@
 
 #include "components/arc/arc_service_manager.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -123,7 +125,7 @@ void ArcServiceManager::Shutdown() {
   services_.clear();
 }
 
-//static
+// static
 void ArcServiceManager::SetArcBridgeServiceForTesting(
     std::unique_ptr<ArcBridgeService> arc_bridge_service) {
   if (g_arc_bridge_service_for_testing) {

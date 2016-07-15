@@ -145,7 +145,7 @@ void LogLowMemoryKill(const StringPiece& line) {
 
     UMA_HISTOGRAM_MEMORY_KB("Arc.LowMemoryKiller.FreedSize", freed_size);
 
-    if(GetTimeDelta(line, &last_timestamp, &time_delta)) {
+    if (GetTimeDelta(line, &last_timestamp, &time_delta)) {
       UMA_HISTOGRAM_OOM_KILL_TIME_INTERVAL(
           "Arc.LowMemoryKiller.TimeDelta", time_delta);
     }

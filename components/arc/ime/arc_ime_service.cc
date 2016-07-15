@@ -4,6 +4,8 @@
 
 #include "components/arc/ime/arc_ime_service.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/ime/arc_ime_bridge_impl.h"

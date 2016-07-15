@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_STANDALONE_SERVICE_HELPER_
-#define COMPONENTS_ARC_STANDALONE_SERVICE_HELPER_
+#ifndef COMPONENTS_ARC_STANDALONE_SERVICE_HELPER_H_
+#define COMPONENTS_ARC_STANDALONE_SERVICE_HELPER_H_
 
 #include <signal.h>
 
@@ -43,4 +43,4 @@ class ServiceHelper : public base::MessageLoopForIO::Watcher {
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_STANDALONE_SERVICE_HELPER_
+#endif  // COMPONENTS_ARC_STANDALONE_SERVICE_HELPER_H_

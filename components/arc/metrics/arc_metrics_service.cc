@@ -5,6 +5,7 @@
 #include "components/arc/metrics/arc_metrics_service.h"
 
 #include <string>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"

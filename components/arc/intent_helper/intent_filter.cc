@@ -97,7 +97,8 @@ IntentFilter::AuthorityEntry::AuthorityEntry(
     host_ = host_.substr(1);
   }
 
-  // TODO: Not i18n-friendly.  Figure out how to correctly deal with IDNs.
+  // TODO(kenobi): Not i18n-friendly.  Figure out how to correctly deal with
+  // IDNs.
   host_ = base::ToLowerASCII(host_);
 }
 
@@ -114,7 +115,8 @@ bool IntentFilter::AuthorityEntry::match(const GURL& url) const {
     return base::EndsWith(url.host_piece(), host_,
                           base::CompareCase::INSENSITIVE_ASCII);
   } else {
-    // TODO: Not i18n-friendly.  Figure out how to correctly deal with IDNs.
+    // TODO(kenobi): Not i18n-friendly.  Figure out how to correctly deal with
+    // IDNs.
     return host_ == base::ToLowerASCII(url.host_piece());
   }
 }

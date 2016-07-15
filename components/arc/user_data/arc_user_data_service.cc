@@ -4,6 +4,8 @@
 
 #include "components/arc/user_data/arc_user_data_service.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"

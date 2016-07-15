@@ -5,6 +5,7 @@
 #include "components/arc/intent_helper/activity_icon_loader.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"

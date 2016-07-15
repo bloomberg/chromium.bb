@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_TYPE_TRAITS_H_
-#define COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_TYPE_TRAITS_H_
+#ifndef COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
+#define COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
 
 #include "components/arc/common/bluetooth.mojom.h"
 #include "device/bluetooth/bluetooth_common.h"
@@ -51,4 +51,4 @@ struct EnumTraits<arc::mojom::BluetoothDeviceType,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_TYPE_CONVERTERS_H_
+#endif  // COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
