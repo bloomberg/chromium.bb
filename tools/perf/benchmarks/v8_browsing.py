@@ -5,6 +5,7 @@
 import re
 
 from core import perf_benchmark
+from telemetry import benchmark
 from telemetry.timeline import chrome_trace_config
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
@@ -88,6 +89,7 @@ class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
     return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
 
 
+@benchmark.Disabled('reference')  # http://crbug.com/628631
 class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
   PLATFORM = 'mobile'
 
