@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -69,7 +70,7 @@ TEST_F(PolicyMapTest, SetAndGet) {
   SetPolicy(&map, kTestPolicyName1, CreateExternalDataFetcher("dummy"));
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   const PolicyMap::Entry* entry = map.Get(kTestPolicyName1);
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_TRUE(entry != nullptr);
   EXPECT_EQ(POLICY_LEVEL_MANDATORY, entry->level);
   EXPECT_EQ(POLICY_SCOPE_USER, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_CLOUD, entry->source);
@@ -80,7 +81,7 @@ TEST_F(PolicyMapTest, SetAndGet) {
           POLICY_SOURCE_ENTERPRISE_DEFAULT, nullptr, nullptr);
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   entry = map.Get(kTestPolicyName1);
-  ASSERT_TRUE(entry != NULL);
+  ASSERT_TRUE(entry != nullptr);
   EXPECT_EQ(POLICY_LEVEL_RECOMMENDED, entry->level);
   EXPECT_EQ(POLICY_SCOPE_MACHINE, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_ENTERPRISE_DEFAULT, entry->source);
@@ -333,6 +334,37 @@ TEST_F(PolicyMapTest, LoadFromSetsLevelScopeAndSource) {
                POLICY_SOURCE_PLATFORM,
                base::WrapUnique(new base::FundamentalValue(-12321)), nullptr);
   EXPECT_TRUE(loaded.Equals(expected));
+}
+
+bool IsMandatory(const PolicyMap::PolicyMapType::const_iterator iter) {
+  return iter->second.level == POLICY_LEVEL_MANDATORY;
+}
+
+TEST_F(PolicyMapTest, EraseNonmatching) {
+  PolicyMap a;
+  a.Set(kTestPolicyName1,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
+        base::WrapUnique(new base::StringValue("google.com")),
+        nullptr);
+  a.Set(kTestPolicyName2,
+        POLICY_LEVEL_RECOMMENDED,
+        POLICY_SCOPE_MACHINE,
+        POLICY_SOURCE_CLOUD,
+        base::WrapUnique(new base::FundamentalValue(true)),
+        nullptr);
+
+  a.EraseNonmatching(base::Bind(&IsMandatory));
+
+  PolicyMap b;
+  b.Set(kTestPolicyName1,
+        POLICY_LEVEL_MANDATORY,
+        POLICY_SCOPE_USER,
+        POLICY_SOURCE_CLOUD,
+        base::WrapUnique(new base::StringValue("google.com")),
+        nullptr);
+  EXPECT_TRUE(a.Equals(b));
 }
 
 }  // namespace policy

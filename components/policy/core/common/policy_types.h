@@ -8,7 +8,9 @@
 namespace policy {
 
 // The scope of a policy flags whether it is meant to be applied to the current
-// user or to the machine.
+// user or to the machine.  Note that this property pertains to the source of
+// the policy and has no direct correspondence to the distinction between User
+// Policy and Device Policy.
 enum PolicyScope {
   // USER policies apply to sessions of the current user.
   POLICY_SCOPE_USER,

@@ -93,6 +93,18 @@ void PolicyMap::Erase(const std::string& policy) {
   map_.erase(policy);
 }
 
+void PolicyMap::EraseNonmatching(
+    const base::Callback<bool(const const_iterator)>& filter) {
+  PolicyMapType::iterator iter(map_.begin());
+  while (iter != map_.end()) {
+    if (!filter.Run(iter)) {
+      map_.erase(iter++);
+    } else {
+      ++iter;
+    }
+  }
+}
+
 void PolicyMap::Swap(PolicyMap* other) {
   map_.swap(other->map_);
 }
@@ -154,17 +166,6 @@ void PolicyMap::GetDifferingKeys(const PolicyMap& other,
       differing_keys->insert(iter_this->first);
   for ( ; iter_other != other.end(); ++iter_other)
       differing_keys->insert(iter_other->first);
-}
-
-void PolicyMap::FilterLevel(PolicyLevel level) {
-  PolicyMapType::iterator iter(map_.begin());
-  while (iter != map_.end()) {
-    if (iter->second.level != level) {
-      map_.erase(iter++);
-    } else {
-      ++iter;
-    }
-  }
 }
 
 bool PolicyMap::Equals(const PolicyMap& other) const {

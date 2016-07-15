@@ -12,6 +12,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
@@ -77,6 +78,10 @@ class POLICY_EXPORT PolicyMap {
   // Erase the given |policy|, if it exists in this map.
   void Erase(const std::string& policy);
 
+  // Erase all entries for which |filter| returns false.
+  void EraseNonmatching(
+      const base::Callback<bool(const const_iterator)>& filter);
+
   // Swaps the internal representation of |this| with |other|.
   void Swap(PolicyMap* other);
 
@@ -106,12 +111,6 @@ class POLICY_EXPORT PolicyMap {
   // |differing_keys| is not cleared before the keys are added.
   void GetDifferingKeys(const PolicyMap& other,
                         std::set<std::string>* differing_keys) const;
-
-  // Removes all policies that don't have the specified |level|. This is a
-  // temporary helper method, until mandatory and recommended levels are served
-  // by a single provider.
-  // TODO(joaodasilva): Remove this. http://crbug.com/108999
-  void FilterLevel(PolicyLevel level);
 
   bool Equals(const PolicyMap& other) const;
   bool empty() const;
