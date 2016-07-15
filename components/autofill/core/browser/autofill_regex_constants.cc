@@ -263,7 +263,7 @@ const char kLastNameRe[] =
     "|姓"  // ja-JP
     "|morada|apelidos|surename|sobrenome"  // pt-BR, pt-PT
     "|Фамилия"  // ru
-    "|성[^명]?";  // ko-KR
+    "|\\b성(?:[^명]|\\b)";  // ko-KR
 
 /////////////////////////////////////////////////////////////////////////////
 // phone_field.cc

@@ -24,5 +24,15 @@
       <label for="ph">전화 번호:</label> <input type="text" id="ph"><br>
       <label for="ph2">휴대폰번호:</label> <input type="text" id="ph2"><br>
     </form>
+    <form method="post">
+      <!-- check that "성명" (full name) does not accidentally match "성" (last
+           name) -->
+      <label for="not_ln2">성명</label> <input type="text" id="not_ln2"><br>
+      <label for="fn2">이름</label> <input type="text" id="fn2"><br>
+      <!-- the next fields are just there to fulfill the "minimium 3 fields"
+           requirement for field detection -->
+      <label for="ct3">city</label> <input type="text" id="ct3"><br>
+      <label for="zc3">zip code</label> <input type="text" id="zc3"><br>
+    </form>
   </body>
 </html>
