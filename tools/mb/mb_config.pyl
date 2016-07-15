@@ -306,7 +306,7 @@
       'Android Builder (dbg)': 'swarming_android_gn_debug_static_bot',
       'Android Builder': 'swarming_android_gn_release_bot_minimal_symbols',
       'Android Clang Builder (dbg)':
-        'android_clang_asan_findbugs_gn_debug_bot_minimal_symbols',
+        'android_clang_asan_errorprone_findbugs_gn_debug_bot_minimal_symbols',
       'Android Tests (dbg)': 'swarming_android_gn_debug_static_bot',
       'Android Tests': 'swarming_android_gn_release_bot_minimal_symbols',
       'Blimp Linux (dbg)':
@@ -671,7 +671,8 @@
       'android_chromium_variable_clang': 'findit',
       'android_chromium_variable_gn': 'findit',
       'android_chromium_variable_nexus4': 'findit',
-      'android_clang_dbg_recipe': 'android_clang_asan_findbugs_gn_debug_trybot',
+      'android_clang_dbg_recipe':
+        'android_clang_asan_errorprone_findbugs_gn_debug_trybot',
       'android_compile_dbg': 'swarming_android_gn_debug_trybot',
       'android_compile_mips_dbg': 'android_gn_debug_trybot_mipsel',
       'android_compile_rel': 'swarming_android_gn_release_trybot',
@@ -914,13 +915,14 @@
       'android', 'cast', 'gn', 'clang', 'debug_static_bot',
     ],
 
-    'android_clang_asan_findbugs_gn_debug_bot_minimal_symbols': [
-      'android', 'clang', 'asan', 'findbugs', 'gn',
+    'android_clang_asan_errorprone_findbugs_gn_debug_bot_minimal_symbols': [
+      'android', 'clang', 'asan', 'errorprone', 'findbugs', 'gn',
       'debug_bot_minimal_symbols',
     ],
 
-    'android_clang_asan_findbugs_gn_debug_trybot': [
-      'android', 'clang', 'asan', 'findbugs', 'gn', 'debug_trybot',
+    'android_clang_asan_errorprone_findbugs_gn_debug_trybot': [
+      'android', 'clang', 'asan', 'errorprone', 'findbugs', 'gn',
+      'debug_trybot',
     ],
 
     'android_clang_tot_asan': [
@@ -2044,6 +2046,10 @@
     'error': {
       'gn_args': 'error',
       'gyp_defines': 'target_arch=unknown',
+    },
+
+    'errorprone': {
+      'gn_args': 'use_errorprone_java_compiler=true',
     },
 
     'ffmpeg_branding_chromeos': {
