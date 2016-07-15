@@ -51,10 +51,9 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void ResourceMessageFilter::GetContexts(
     ResourceType resource_type,
-    int origin_pid,
     ResourceContext** resource_context,
     net::URLRequestContext** request_context) {
-  return get_contexts_callback_.Run(resource_type, origin_pid, resource_context,
+  return get_contexts_callback_.Run(resource_type, resource_context,
                                     request_context);
 }
 

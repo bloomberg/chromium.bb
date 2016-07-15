@@ -230,7 +230,6 @@ class BlackholeFilter : public ResourceMessageFilter {
   }
 
   void GetContexts(ResourceType resource_type,
-                   int origin_pid,
                    ResourceContext** resource_context,
                    net::URLRequestContext** request_context) {
     *resource_context = resource_context_;

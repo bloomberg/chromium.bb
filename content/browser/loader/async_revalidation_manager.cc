@@ -89,8 +89,8 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
 
   // The embedder of //content needs to ensure that the URLRequestContext object
   // remains valid until after the ResourceContext object is destroyed.
-  info->filter()->GetContexts(info->GetResourceType(), info->GetOriginPID(),
-                              &resource_context, &request_context);
+  info->filter()->GetContexts(info->GetResourceType(), &resource_context,
+                              &request_context);
 
   AsyncRevalidationKey async_revalidation_key(
       resource_context, request_context->http_transaction_factory()->GetCache(),
