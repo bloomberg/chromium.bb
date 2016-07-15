@@ -852,7 +852,8 @@ void ServiceWorkerDispatcherHost::OnProviderDestroyed(int provider_id) {
 }
 
 void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
-                                                       int64_t version_id) {
+                                                       int64_t version_id,
+                                                       int embedded_worker_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnSetHostedVersionId");
   if (!GetContext())
@@ -881,6 +882,11 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
   // ended up being detached (STOPPED).
   ServiceWorkerVersion* version = GetContext()->GetLiveVersion(version_id);
   if (!version || version->running_status() != EmbeddedWorkerStatus::STARTING)
+    return;
+
+  // If the version has a different embedded worker, assume the message is about
+  // a detached worker and ignore.
+  if (version->embedded_worker()->embedded_worker_id() != embedded_worker_id)
     return;
 
   // A process for the worker must be equal to a process for the provider host.

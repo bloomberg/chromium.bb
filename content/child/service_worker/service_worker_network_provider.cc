@@ -116,12 +116,13 @@ ServiceWorkerNetworkProvider::~ServiceWorkerNetworkProvider() {
 }
 
 void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
-    int64_t version_id) {
+    int64_t version_id,
+    int embedded_worker_id) {
   DCHECK_NE(kInvalidServiceWorkerProviderId, provider_id_);
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
-  ChildThreadImpl::current()->Send(
-      new ServiceWorkerHostMsg_SetVersionId(provider_id_, version_id));
+  ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_SetVersionId(
+      provider_id_, version_id, embedded_worker_id));
 }
 
 bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {

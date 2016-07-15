@@ -594,7 +594,8 @@ ServiceWorkerContextClient::createServiceWorkerNetworkProvider(
   provider_context_ = provider->context();
 
   // Tell the network provider about which version to load.
-  provider->SetServiceWorkerVersionId(service_worker_version_id_);
+  provider->SetServiceWorkerVersionId(service_worker_version_id_,
+                                      embedded_worker_id_);
 
   // The provider is kept around for the lifetime of the DataSource
   // and ownership is transferred to the DataSource.

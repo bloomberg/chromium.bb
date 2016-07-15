@@ -63,7 +63,7 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
   // This method is called for a provider that's associated with a
   // running service worker script. The version_id indicates which
   // ServiceWorkerVersion should be used.
-  void SetServiceWorkerVersionId(int64_t version_id);
+  void SetServiceWorkerVersionId(int64_t version_id, int embedded_worker_id);
 
   bool IsControlledByServiceWorker() const;
 

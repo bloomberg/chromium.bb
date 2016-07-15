@@ -244,12 +244,14 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_DecrementRegistrationRefCount,
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_TerminateWorker,
                      int /* handle_id */)
 
-// Informs the browser that |provider_id| is associated
-// with a service worker script running context and
-// |version_id| identifies which ServiceWorkerVersion.
-IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_SetVersionId,
+// Informs the browser that a service worker is starting up in a provider.
+// |provider_id| identifies the ServiceWorkerProviderHost hosting the service
+// worker. |version_id| identifies the ServiceWorkerVersion and
+// |embedded_worker_id| identifies the EmbeddedWorkerInstance.
+IPC_MESSAGE_CONTROL3(ServiceWorkerHostMsg_SetVersionId,
                      int /* provider_id */,
-                     int64_t /* version_id */)
+                     int64_t /* version_id */,
+                     int /* embedded_worker_id */)
 
 // Informs the browser that event handling has finished.
 // Routed to the target ServiceWorkerVersion.

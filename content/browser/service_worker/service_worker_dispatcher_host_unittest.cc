@@ -143,9 +143,11 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     EXPECT_EQ(SERVICE_WORKER_OK, status);
   }
 
-  void SendSetHostedVersionId(int provider_id, int64_t version_id) {
-    dispatcher_host_->OnMessageReceived(
-        ServiceWorkerHostMsg_SetVersionId(provider_id, version_id));
+  void SendSetHostedVersionId(int provider_id,
+                              int64_t version_id,
+                              int embedded_worker_id) {
+    dispatcher_host_->OnMessageReceived(ServiceWorkerHostMsg_SetVersionId(
+        provider_id, version_id, embedded_worker_id));
   }
 
   void SendProviderCreated(ServiceWorkerProviderType type,
@@ -763,11 +765,42 @@ TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId) {
   EXPECT_NE(version_->embedded_worker()->process_id(),
             provider_host_->process_id());
   // SendSetHostedVersionId should reject because the provider host process id
-  // is different.
-  SendSetHostedVersionId(kProviderId, version_->version_id());
+  // is different. It should call BadMessageReceived because it's not an
+  // expected error state.
+  SendSetHostedVersionId(kProviderId, version_->version_id(),
+                         version_->embedded_worker()->embedded_worker_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
       ServiceWorkerMsg_AssociateRegistration::ID));
+  EXPECT_EQ(1, dispatcher_host_->bad_messages_received_count_);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, OnSetHostedVersionId_DetachedWorker) {
+  GURL pattern = GURL("http://www.example.com/");
+  GURL script_url = GURL("http://www.example.com/service_worker.js");
+
+  Initialize(base::WrapUnique(new FailToStartWorkerTestHelper));
+  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
+  SetUpRegistration(pattern, script_url);
+
+  const int64_t kProviderId = 99;  // Dummy value
+  bool called;
+  ServiceWorkerStatusCode status;
+  // StartWorker puts the worker in STARTING state.
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        base::Bind(&SaveStatusCallback, &called, &status));
+
+  // SendSetHostedVersionId should bail because the embedded worker is
+  // different. It shouldn't call BadMessageReceived because receiving a message
+  // for a detached worker is a legitimite possibility.
+  int bad_embedded_worker_id =
+      version_->embedded_worker()->embedded_worker_id() + 1;
+  SendSetHostedVersionId(kProviderId, version_->version_id(),
+                         bad_embedded_worker_id);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
+      ServiceWorkerMsg_AssociateRegistration::ID));
+  EXPECT_EQ(0, dispatcher_host_->bad_messages_received_count_);
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, ReceivedTimedOutRequestResponse) {
