@@ -20,7 +20,7 @@ function testFunction()
 function test()
 {
     InspectorTest.sendCommandOrDie("Debugger.enable", {} );
-    InspectorTest.sendCommandOrDie("Console.enable", {} );
+    InspectorTest.sendCommandOrDie("Runtime.enable", {} );
     step1();
 
     function step1()
@@ -40,9 +40,9 @@ function test()
                 InspectorTest.sendCommandOrDie("Debugger." + command, {});
         }
 
-        InspectorTest.eventHandler["Console.messageAdded"] = function(messageObject)
+        InspectorTest.eventHandler["Runtime.consoleAPICalled"] = function(messageObject)
         {
-            if (messageObject.params.message.text === "completed") {
+            if (messageObject.params.args[0].value === "completed") {
                 if (commands.length)
                     InspectorTest.log("[FAIL]: execution was resumed too earlier.")
                 step2();
@@ -67,9 +67,9 @@ function test()
                 InspectorTest.sendCommandOrDie("Debugger." + command, {});
         }
 
-        InspectorTest.eventHandler["Console.messageAdded"] = function(messageObject)
+        InspectorTest.eventHandler["Runtime.consoleAPICalled"] = function(messageObject)
         {
-            if (messageObject.params.message.text === "completed") {
+            if (messageObject.params.args[0].value === "completed") {
                 if (commands.length)
                     InspectorTest.log("[FAIL]: execution was resumed too earlier.")
                 InspectorTest.completeTest();

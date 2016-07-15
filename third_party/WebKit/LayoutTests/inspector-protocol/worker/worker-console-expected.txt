@@ -15,11 +15,11 @@ Logging in worker: message1
 Got console message from page: message1
 Sending Worker.enable
 Worker.created
-Sending Console.enable to worker
-Got console message from worker: message1
+Sending Runtime.enable to worker
+Got console API call from worker: message1
 Logging in worker: message2
 Got console message from page: message2
-Got console message from worker: message2
+Got console API call from worker: message2
 Logging in worker: throw1
 Got console message from page: Uncaught (in promise) throw1
 Sending Worker.disable
@@ -31,11 +31,11 @@ Starting worker
 Worker.created
 Logging in worker: message4
 Got console message from page: message4
-Sending Console.enable to worker
-Got console message from worker: message4
+Sending Runtime.enable to worker
+Got console API call from worker: message4
 Logging in worker: message5
 Got console message from page: message5
-Got console message from worker: message5
+Got console API call from worker: message5
 Stopping worker
 Starting worker
 Worker.created

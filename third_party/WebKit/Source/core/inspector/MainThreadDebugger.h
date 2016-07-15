@@ -67,6 +67,8 @@ public:
     bool isWorker() override { return false; }
     bool isPaused() const { return m_paused; }
     void setClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
+    void reportConsoleMessage(ExecutionContext*, ConsoleMessage*) override;
+
     // TODO(dgozman): by making this method virtual, we can move many methods to ThreadDebugger and avoid some duplication. Should be careful about performance.
     int contextGroupId(LocalFrame*);
     void didClearContextsForFrame(LocalFrame*);
@@ -78,7 +80,6 @@ public:
     void installAdditionalCommandLineAPI(v8::Local<v8::Context>, v8::Local<v8::Object>) override;
 
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override;
-    void messageAddedToConsole(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override;
 
 private:
     // V8DebuggerClient implementation.
@@ -88,6 +89,7 @@ private:
     void unmuteWarningsAndDeprecations() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
     v8::Local<v8::Context> ensureDefaultContextInGroup(int contextGroupId) override;
+    void consoleAPIMessage(int contextGroupId, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override;
 
     std::unique_ptr<ClientMessageLoop> m_clientMessageLoop;
     std::unique_ptr<InspectorTaskRunner> m_taskRunner;

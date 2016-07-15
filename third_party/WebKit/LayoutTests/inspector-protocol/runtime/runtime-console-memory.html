@@ -18,14 +18,14 @@ function dumpInnerHtml()
 
 function test()
 {
-    InspectorTest.sendCommandOrDie("Console.enable", {});
-    InspectorTest.eventHandler["Console.messageAdded"] = dumpMessageAndCompleTest;
+    InspectorTest.sendCommandOrDie("Runtime.enable", {});
+    InspectorTest.eventHandler["Runtime.consoleAPICalled"] = dumpMessageAndCompleTest;
     InspectorTest.sendCommand("Runtime.evaluate", { "expression": "dumpInnerHtml()" });
 
     function dumpMessageAndCompleTest(result)
     {
         InspectorTest.log("=== Dump console message ===");
-        InspectorTest.log(result.params.message.text);
+        InspectorTest.log(result.params.args[0].value);
         InspectorTest.completeTest();
     }
 }

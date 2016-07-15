@@ -76,7 +76,7 @@ public:
         if (m_shouldLogToConsole) {
             V8PerIsolateData* data = V8PerIsolateData::from(m_scriptState->isolate());
             if (data->threadDebugger())
-                m_promiseRejectionId = data->threadDebugger()->debugger()->promiseRejected(m_scriptState->context(), m_errorMessage, reason, m_location->url(), m_location->lineNumber(), m_location->columnNumber(), m_location->cloneStackTrace(), m_location->scriptId());
+                m_promiseRejectionId = data->threadDebugger()->promiseRejected(m_scriptState->context(), m_errorMessage, reason, std::move(m_location));
         }
 
         m_location.reset();

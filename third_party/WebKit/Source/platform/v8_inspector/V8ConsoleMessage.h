@@ -21,9 +21,9 @@ class V8DebuggerImpl;
 class V8InspectorSessionImpl;
 class V8StackTrace;
 
-enum class V8MessageOrigin { kConsole, kException, kRevokedException };
+enum class V8MessageOrigin { kExternalConsole, kConsole, kException, kRevokedException };
 
-enum class ConsoleAPIType { kLog, kDir, kDirXML, kTable, kTrace, kStartGroup, kStartGroupCollapsed, kEndGroup, kClear, kAssert, kTimeEnd, kCount };
+enum class ConsoleAPIType { kLog, kDebug, kInfo, kError, kWarning, kDir, kDirXML, kTable, kTrace, kStartGroup, kStartGroupCollapsed, kEndGroup, kClear, kAssert, kTimeEnd, kCount };
 
 class V8ConsoleMessage {
 public:
@@ -32,9 +32,7 @@ public:
     static std::unique_ptr<V8ConsoleMessage> createForConsoleAPI(
         double timestamp,
         ConsoleAPIType,
-        MessageLevel,
-        const String16& message,
-        std::vector<v8::Local<v8::Value>>* arguments,
+        const std::vector<v8::Local<v8::Value>>& arguments,
         std::unique_ptr<V8StackTrace>,
         InspectedContext*);
 

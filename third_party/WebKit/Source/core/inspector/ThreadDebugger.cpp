@@ -4,7 +4,7 @@
 
 #include "core/inspector/ThreadDebugger.h"
 
-#include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8DOMTokenList.h"
@@ -98,6 +98,21 @@ void ThreadDebugger::asyncTaskFinished(void* task)
 {
     if (m_asyncInstrumentationEnabled)
         m_debugger->asyncTaskFinished(task);
+}
+
+unsigned ThreadDebugger::promiseRejected(v8::Local<v8::Context> context, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation> location)
+{
+    const String16 defaultMessage = "Uncaught (in promise)";
+    String16 message = errorMessage;
+    if (message.isEmpty())
+        message = defaultMessage;
+    else if (message.startWith("Uncaught "))
+        message = message.substring(0, 8) + " (in promise)" + message.substring(8);
+
+    unsigned result = debugger()->promiseRejected(context, message, exception, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+    // TODO(dgozman): maybe not wrap in ConsoleMessage.
+    reportConsoleMessage(toExecutionContext(context), ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message, std::move(location)));
+    return result;
 }
 
 void ThreadDebugger::beginUserGesture()
@@ -235,7 +250,7 @@ void ThreadDebugger::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info
     Event* event = V8Event::toImplWithTypeCheck(info.GetIsolate(), info[0]);
     if (!event)
         return;
-    debugger->debugger()->logToConsole(info.GetIsolate()->GetCurrentContext(), event->type(), v8String(info.GetIsolate(), event->type()), info[0]);
+    debugger->debugger()->logToConsole(info.GetIsolate()->GetCurrentContext(), v8String(info.GetIsolate(), event->type()), info[0]);
 }
 
 v8::Local<v8::Function> ThreadDebugger::eventLogFunction()

@@ -41,7 +41,7 @@ function test()
     var workerEventHandler = {};
     InspectorTest.eventHandler["Worker.workerCreated"] = onWorkerCreated;
     InspectorTest.eventHandler["Worker.dispatchMessageFromWorker"] = onWorkerMessage;
-    workerEventHandler["Console.messageAdded"] = onConsoleMessageFromWorker;
+    workerEventHandler["Runtime.consoleAPICalled"] = onConsoleAPICalledFromWorker;
 
     var workerId;
 
@@ -105,10 +105,10 @@ function test()
     var waitingForMessage;
     var waitingForMessageCallback;
 
-    function onConsoleMessageFromWorker(payload)
+    function onConsoleAPICalledFromWorker(payload)
     {
-        var message = payload.params.message.text;
-        InspectorTest.log("Got console message from worker: " + message);
+        var message = payload.params.args[0].value;
+        InspectorTest.log("Got console API call from worker: " + message);
         gotMessages.push(message);
         if (message === waitingForMessage)
             waitingForMessageCallback();
@@ -166,9 +166,9 @@ function test()
 
         function consoleEnable1(next)
         {
-            InspectorTest.log("Sending Console.enable to worker");
+            InspectorTest.log("Sending Runtime.enable to worker");
             waitForMessage("message1", next);
-            sendCommandToWorker("Console.enable", {});
+            sendCommandToWorker("Runtime.enable", {});
         },
 
         function log2(next)
@@ -223,9 +223,9 @@ function test()
 
         function consoleEnable2(next)
         {
-            InspectorTest.log("Sending Console.enable to worker");
+            InspectorTest.log("Sending Runtime.enable to worker");
             waitForMessage("message4", next);
-            sendCommandToWorker("Console.enable", {});
+            sendCommandToWorker("Runtime.enable", {});
         },
 
         function log5(next)

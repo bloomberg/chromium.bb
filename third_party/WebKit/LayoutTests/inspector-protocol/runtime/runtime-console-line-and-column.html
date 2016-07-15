@@ -5,7 +5,7 @@
 
 function test()
 {
-    InspectorTest.sendCommand("Console.enable", {});
+    InspectorTest.sendCommand("Runtime.enable", {});
 
     addConsoleMessagePromise("console.log(239)")
         .then(dumpMessage)
@@ -17,18 +17,18 @@ function test()
     {
         var cb;
         var p = new Promise((resolver) => cb = resolver);
-        InspectorTest.eventHandler["Console.messageAdded"] = (messageObject) => cb(messageObject);
+        InspectorTest.eventHandler["Runtime.consoleAPICalled"] = (messageObject) => cb(messageObject);
         InspectorTest.sendCommand("Runtime.evaluate", { expression: expression });
         return p;
     }
 
     function dumpMessage(messageObject)
     {
-        var msg = messageObject.params.message;
+        var msg = messageObject.params;
         delete msg.executionContextId;
-        delete msg.parameters;
+        delete msg.args;
         delete msg.timestamp;
-        for (var frame of msg.stack.callFrames)
+        for (var frame of msg.stackTrace.callFrames)
             frame.scriptId = 0;
         InspectorTest.logObject(msg);
     }
@@ -39,3 +39,4 @@ function test()
 <body onload="runTest()">
 </body>
 </html>
+

@@ -76,42 +76,48 @@ public:
         return m_debuggerClient;
     }
 
-    void reportMessageToConsole(v8::Local<v8::Context> context, ConsoleAPIType type, MessageLevel level, const String16& message, const v8::FunctionCallbackInfo<v8::Value>* arguments, unsigned skipArgumentCount)
+    void reportCall(ConsoleAPIType type)
+    {
+        if (!m_info.Length())
+            return;
+        std::vector<v8::Local<v8::Value>> arguments;
+        for (int i = 0; i < m_info.Length(); ++i)
+            arguments.push_back(m_info[i]);
+        reportCall(type, arguments);
+    }
+
+    void reportCallWithDefaultArgument(ConsoleAPIType type, const String16& message)
+    {
+        std::vector<v8::Local<v8::Value>> arguments;
+        for (int i = 0; i < m_info.Length(); ++i)
+            arguments.push_back(m_info[i]);
+        if (!m_info.Length())
+            arguments.push_back(toV8String(m_isolate, message));
+        reportCall(type, arguments);
+    }
+
+    void reportCallWithArgument(ConsoleAPIType type, const String16& message)
+    {
+        std::vector<v8::Local<v8::Value>> arguments = { toV8String(m_isolate, message) };
+        reportCall(type, arguments);
+    }
+
+    void reportCall(ConsoleAPIType type, const std::vector<v8::Local<v8::Value>>& arguments)
     {
         InspectedContext* inspectedContext = ensureInspectedContext();
         if (!inspectedContext)
             return;
         V8DebuggerImpl* debugger = inspectedContext->debugger();
-
-        std::unique_ptr<V8ConsoleMessage> consoleMessage = nullptr;
-        if (arguments) {
-            std::vector<v8::Local<v8::Value>> messageArguments;
-            for (int i = skipArgumentCount; i < arguments->Length(); ++i)
-                messageArguments.push_back((*arguments)[i]);
-            consoleMessage = V8ConsoleMessage::createForConsoleAPI(debugger->client()->currentTimeMS(), type, level, message, &messageArguments, debugger->captureStackTrace(false), inspectedContext);
-        } else {
-            consoleMessage = V8ConsoleMessage::createForConsoleAPI(debugger->client()->currentTimeMS(), type, level, message, nullptr, debugger->captureStackTrace(false), inspectedContext);
-        }
-        debugger->ensureConsoleMessageStorage(inspectedContext->contextGroupId())->addMessage(std::move(consoleMessage));
+        std::unique_ptr<V8ConsoleMessage> message = V8ConsoleMessage::createForConsoleAPI(debugger->client()->currentTimeMS(), type, arguments, debugger->captureStackTrace(false), inspectedContext);
+        debugger->ensureConsoleMessageStorage(inspectedContext->contextGroupId())->addMessage(std::move(message));
     }
 
-    void addMessage(ConsoleAPIType type, MessageLevel level, String16 emptyText, int skipArgumentCount)
-    {
-        if (emptyText.isEmpty() && !m_info.Length())
-            return;
-        reportMessageToConsole(m_context, type, level, m_info.Length() <= skipArgumentCount ? emptyText : String16(), &m_info, skipArgumentCount);
-    }
-
-    void addMessage(ConsoleAPIType type, MessageLevel level, const String16& message)
-    {
-        reportMessageToConsole(m_context, type, level, message, nullptr, 0 /* skipArgumentsCount */);
-    }
-
-    void addDeprecationMessage(const char* id, const String16& message)
+    void reportDeprecatedCall(const char* id, const String16& message)
     {
         if (checkAndSetPrivateFlagOnConsole(id, false))
             return;
-        reportMessageToConsole(m_context, ConsoleAPIType::kLog, WarningMessageLevel, message, nullptr, 0 /* skipArgumentsCount */);
+        std::vector<v8::Local<v8::Value>> arguments = { toV8String(m_isolate, message) };
+        reportCall(ConsoleAPIType::kWarning, arguments);
     }
 
     bool firstArgToBoolean(bool defaultValue)
@@ -282,67 +288,67 @@ void createBoundFunctionProperty(v8::Local<v8::Context> context, v8::Local<v8::O
 
 void V8Console::debugCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kLog, DebugMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kDebug);
 }
 
 void V8Console::errorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kLog, ErrorMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kError);
 }
 
 void V8Console::infoCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kLog, InfoMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kInfo);
 }
 
 void V8Console::logCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kLog, LogMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kLog);
 }
 
 void V8Console::warnCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kLog, WarningMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kWarning);
 }
 
 void V8Console::dirCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kDir, LogMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kDir);
 }
 
 void V8Console::dirxmlCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kDirXML, LogMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kDirXML);
 }
 
 void V8Console::tableCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kTable, LogMessageLevel, String16(), 0);
+    ConsoleHelper(info).reportCall(ConsoleAPIType::kTable);
 }
 
 void V8Console::traceCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kTrace, LogMessageLevel, String16("console.trace"), 0);
+    ConsoleHelper(info).reportCallWithDefaultArgument(ConsoleAPIType::kTrace, String16("console.trace"));
 }
 
 void V8Console::groupCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kStartGroup, LogMessageLevel, String16("console.group"), 0);
+    ConsoleHelper(info).reportCallWithDefaultArgument(ConsoleAPIType::kStartGroup, String16("console.group"));
 }
 
 void V8Console::groupCollapsedCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kStartGroupCollapsed, LogMessageLevel, String16("console.groupCollapsed"), 0);
+    ConsoleHelper(info).reportCallWithDefaultArgument(ConsoleAPIType::kStartGroupCollapsed, String16("console.groupCollapsed"));
 }
 
 void V8Console::groupEndCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kEndGroup, LogMessageLevel, String16("console.groupEnd"), 0);
+    ConsoleHelper(info).reportCallWithDefaultArgument(ConsoleAPIType::kEndGroup, String16("console.groupEnd"));
 }
 
 void V8Console::clearCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addMessage(ConsoleAPIType::kClear, LogMessageLevel, String16("console.clear"), 0);
+    ConsoleHelper(info).reportCallWithDefaultArgument(ConsoleAPIType::kClear, String16("console.clear"));
 }
 
 void V8Console::countCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -364,7 +370,7 @@ void V8Console::countCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     int64_t count = helper.getIntFromMap(countMap, identifier, 0) + 1;
     helper.setIntOnMap(countMap, identifier, count);
-    helper.addMessage(ConsoleAPIType::kCount, DebugMessageLevel, title + ": " + String16::fromInteger(count));
+    helper.reportCallWithArgument(ConsoleAPIType::kCount, title + ": " + String16::fromInteger(count));
 }
 
 void V8Console::assertCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -372,14 +378,21 @@ void V8Console::assertCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     ConsoleHelper helper(info);
     if (helper.firstArgToBoolean(false))
         return;
-    helper.addMessage(ConsoleAPIType::kAssert, ErrorMessageLevel, String16("console.assert"), 1);
+
+    std::vector<v8::Local<v8::Value>> arguments;
+    for (int i = 1; i < info.Length(); ++i)
+        arguments.push_back(info[i]);
+    if (info.Length() < 2)
+        arguments.push_back(toV8String(info.GetIsolate(), String16("console.assert")));
+    helper.reportCall(ConsoleAPIType::kAssert, arguments);
+
     if (V8DebuggerAgentImpl* debuggerAgent = helper.debuggerAgent())
         debuggerAgent->breakProgramOnException(protocol::Debugger::Paused::ReasonEnum::Assert, nullptr);
 }
 
 void V8Console::markTimelineCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addDeprecationMessage("V8Console#markTimelineDeprecated", "'console.markTimeline' is deprecated. Please use 'console.timeStamp' instead.");
+    ConsoleHelper(info).reportDeprecatedCall("V8Console#markTimelineDeprecated", "'console.markTimeline' is deprecated. Please use 'console.timeStamp' instead.");
     timeStampCallback(info);
 }
 
@@ -427,19 +440,19 @@ static void timeEndFunction(const v8::FunctionCallbackInfo<v8::Value>& info, boo
             return;
         double elapsed = client->currentTimeMS() - helper.getDoubleFromMap(timeMap, protocolTitle, 0.0);
         String16 message = protocolTitle + ": " + String16::fromDoubleFixedPrecision(elapsed, 3) + "ms";
-        helper.addMessage(ConsoleAPIType::kTimeEnd, DebugMessageLevel, message);
+        helper.reportCallWithArgument(ConsoleAPIType::kTimeEnd, message);
     }
 }
 
 void V8Console::timelineCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addDeprecationMessage("V8Console#timeline", "'console.timeline' is deprecated. Please use 'console.time' instead.");
+    ConsoleHelper(info).reportDeprecatedCall("V8Console#timeline", "'console.timeline' is deprecated. Please use 'console.time' instead.");
     timeFunction(info, true);
 }
 
 void V8Console::timelineEndCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ConsoleHelper(info).addDeprecationMessage("V8Console#timelineEnd", "'console.timelineEnd' is deprecated. Please use 'console.timeEnd' instead.");
+    ConsoleHelper(info).reportDeprecatedCall("V8Console#timelineEnd", "'console.timelineEnd' is deprecated. Please use 'console.timeEnd' instead.");
     timeEndFunction(info, true);
 }
 

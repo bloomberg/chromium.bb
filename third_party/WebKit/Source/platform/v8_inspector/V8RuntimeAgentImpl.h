@@ -116,7 +116,7 @@ public:
     void reportExecutionContextCreated(InspectedContext*);
     void reportExecutionContextDestroyed(InspectedContext*);
     void inspect(std::unique_ptr<protocol::Runtime::RemoteObject> objectToInspect, std::unique_ptr<protocol::DictionaryValue> hints);
-    void exceptionMessageAdded(V8ConsoleMessage*);
+    void messageAdded(V8ConsoleMessage*);
 
 private:
     void reportMessage(V8ConsoleMessage*, bool generatePreview);

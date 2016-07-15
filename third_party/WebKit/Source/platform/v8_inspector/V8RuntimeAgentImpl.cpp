@@ -370,7 +370,7 @@ void V8RuntimeAgentImpl::enable(ErrorString* errorString)
     m_session->reportAllContexts(this);
     V8ConsoleMessageStorage* storage = m_session->debugger()->ensureConsoleMessageStorage(m_session->contextGroupId());
     for (const auto& message : storage->messages()) {
-        if (message->origin() == V8MessageOrigin::kException || message->origin() == V8MessageOrigin::kRevokedException)
+        if (message->origin() != V8MessageOrigin::kExternalConsole)
             reportMessage(message.get(), false);
     }
 }
@@ -427,7 +427,7 @@ void V8RuntimeAgentImpl::inspect(std::unique_ptr<protocol::Runtime::RemoteObject
         m_frontend.inspectRequested(std::move(objectToInspect), std::move(hints));
 }
 
-void V8RuntimeAgentImpl::exceptionMessageAdded(V8ConsoleMessage* message)
+void V8RuntimeAgentImpl::messageAdded(V8ConsoleMessage* message)
 {
     if (m_enabled)
         reportMessage(message, true);
@@ -435,7 +435,7 @@ void V8RuntimeAgentImpl::exceptionMessageAdded(V8ConsoleMessage* message)
 
 void V8RuntimeAgentImpl::reportMessage(V8ConsoleMessage* message, bool generatePreview)
 {
-    DCHECK(message->origin() == V8MessageOrigin::kException || message->origin() == V8MessageOrigin::kRevokedException);
+    DCHECK(message->origin() != V8MessageOrigin::kExternalConsole);
     message->reportToFrontend(&m_frontend, m_session, generatePreview);
     m_frontend.flush();
 }

@@ -7,8 +7,8 @@ testRunner.setDumpConsoleMessages(false);
 
 function test()
 {
-    InspectorTest.eventHandler["Console.messageAdded"] = messageAdded;
-    InspectorTest.sendCommand("Console.enable", {});
+    InspectorTest.eventHandler["Runtime.consoleAPICalled"] = messageAdded;
+    InspectorTest.sendCommand("Runtime.enable", {});
 
     var deprecatedMethods = [
         "console.timeline(\"42\")",
@@ -22,7 +22,7 @@ function test()
     var messagesLeft = 3;
     function messageAdded(data)
     {
-        var text = data.params.message.text;
+        var text = data.params.args[0].value;
         if (text.indexOf("deprecated") === -1)
             return;
         InspectorTest.log(text);
@@ -34,3 +34,4 @@ function test()
 </head>
 <body onload="runTest()">Tests checks that deprecation messages for console.</body>
 </html>
+

@@ -97,6 +97,19 @@ MainThreadDebugger::~MainThreadDebugger()
     s_instance = nullptr;
 }
 
+void MainThreadDebugger::reportConsoleMessage(ExecutionContext* context, ConsoleMessage* message)
+{
+    if (!context)
+        return;
+    LocalFrame* frame = nullptr;
+    if (context->isDocument())
+        frame = toDocument(context)->frame();
+    if (context->isMainThreadWorkletGlobalScope())
+        frame = toMainThreadWorkletGlobalScope(context)->frame();
+    if (frame)
+        frame->console().reportMessageToClient(message);
+}
+
 void MainThreadDebugger::setClientMessageLoop(std::unique_ptr<ClientMessageLoop> clientMessageLoop)
 {
     ASSERT(!m_clientMessageLoop);
@@ -130,6 +143,7 @@ void MainThreadDebugger::exceptionThrown(LocalFrame* frame, const String& errorM
     if (m_muteConsoleCount)
         return;
     debugger()->exceptionThrown(contextGroupId(frame), errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+    frame->console().reportMessageToClient(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location)));
 }
 
 bool MainThreadDebugger::addConsoleMessage(LocalFrame* frame, ConsoleMessage* consoleMessage)
@@ -221,12 +235,13 @@ v8::Local<v8::Context> MainThreadDebugger::ensureDefaultContextInGroup(int conte
     return scriptState ? scriptState->context() : v8::Local<v8::Context>();
 }
 
-void MainThreadDebugger::messageAddedToConsole(int contextGroupId, MessageSource source, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
+void MainThreadDebugger::consoleAPIMessage(int contextGroupId, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
 {
     LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
     if (!frame)
         return;
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
+    // TODO(dgozman): maybe not wrap with ConsoleMessage.
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
     frame->console().reportMessageToClient(consoleMessage);
 }
 

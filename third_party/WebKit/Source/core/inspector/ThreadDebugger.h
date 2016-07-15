@@ -18,7 +18,8 @@
 namespace blink {
 
 class ConsoleMessage;
-class WorkerThread;
+class ExecutionContext;
+class SourceLocation;
 
 class CORE_EXPORT ThreadDebugger : public V8DebuggerClient {
     WTF_MAKE_NONCOPYABLE(ThreadDebugger);
@@ -37,6 +38,7 @@ public:
     void allAsyncTasksCanceled();
     void asyncTaskStarted(void* task);
     void asyncTaskFinished(void* task);
+    unsigned promiseRejected(v8::Local<v8::Context>, const String16& errorMessage, v8::Local<v8::Value> exception, std::unique_ptr<SourceLocation>);
 
     // V8DebuggerClient implementation.
     void beginUserGesture() override;
@@ -57,6 +59,7 @@ public:
 
     V8Debugger* debugger() const { return m_debugger.get(); }
     virtual bool isWorker() { return true; }
+    virtual void reportConsoleMessage(ExecutionContext*, ConsoleMessage*) = 0;
 
 protected:
     void createFunctionProperty(v8::Local<v8::Context>, v8::Local<v8::Object>, const char* name, v8::FunctionCallback, const char* description);

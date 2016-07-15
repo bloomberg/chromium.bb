@@ -39,8 +39,7 @@ public:
     virtual void consoleTime(const String16& title) = 0;
     virtual void consoleTimeEnd(const String16& title) = 0;
     virtual void consoleTimeStamp(const String16& title) = 0;
-    // TODO(dgozman: route all messages through here, remove FrameConsole.
-    virtual void messageAddedToConsole(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) = 0;
+    virtual void consoleAPIMessage(int contextGroupId, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) = 0;
 
     virtual v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) = 0;
 

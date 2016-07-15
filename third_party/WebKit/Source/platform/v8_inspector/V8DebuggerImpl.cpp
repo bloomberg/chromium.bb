@@ -1060,7 +1060,7 @@ void V8DebuggerImpl::addConsoleMessage(int contextGroupId, MessageSource source,
     ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createExternal(m_client->currentTimeMS(), source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, requestIdentifier, workerId));
 }
 
-void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, const String16& message, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2)
+void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, v8::Local<v8::Value> arg1, v8::Local<v8::Value> arg2)
 {
     int contextGroupId = getGroupId(context);
     InspectedContext* inspectedContext = getContext(contextGroupId, contextId(context));
@@ -1071,12 +1071,11 @@ void V8DebuggerImpl::logToConsole(v8::Local<v8::Context> context, const String16
         arguments.push_back(arg1);
     if (!arg2.IsEmpty())
         arguments.push_back(arg2);
-    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createForConsoleAPI(m_client->currentTimeMS(), ConsoleAPIType::kLog, LogMessageLevel, message, arguments.size() ? &arguments : nullptr, captureStackTrace(false), inspectedContext));
+    ensureConsoleMessageStorage(contextGroupId)->addMessage(V8ConsoleMessage::createForConsoleAPI(m_client->currentTimeMS(), ConsoleAPIType::kLog, arguments, captureStackTrace(false), inspectedContext));
 }
 
 void V8DebuggerImpl::exceptionThrown(int contextGroupId, const String16& errorMessage, const String16& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
 {
-    m_client->messageAddedToConsole(contextGroupId, JSMessageSource, ErrorMessageLevel, errorMessage, url, lineNumber, columnNumber, stackTrace.get());
     unsigned exceptionId = ++m_lastExceptionId;
     std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), errorMessage, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, m_isolate, 0, v8::Local<v8::Value>(), exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
@@ -1087,17 +1086,8 @@ unsigned V8DebuggerImpl::promiseRejected(v8::Local<v8::Context> context, const S
     int contextGroupId = getGroupId(context);
     if (!contextGroupId)
         return 0;
-
-    const String16 defaultMessage = "Uncaught (in promise)";
-    String16 message = errorMessage;
-    if (message.isEmpty())
-        message = defaultMessage;
-    else if (message.startWith("Uncaught "))
-        message = message.substring(0, 8) + " (in promise)" + message.substring(8);
-
-    m_client->messageAddedToConsole(contextGroupId, JSMessageSource, ErrorMessageLevel, message, url, lineNumber, columnNumber, stackTrace.get());
     unsigned exceptionId = ++m_lastExceptionId;
-    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, m_isolate, contextId(context), exception, exceptionId);
+    std::unique_ptr<V8ConsoleMessage> consoleMessage = V8ConsoleMessage::createForException(m_client->currentTimeMS(), errorMessage, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, m_isolate, contextId(context), exception, exceptionId);
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
     return exceptionId;
 }

@@ -50,7 +50,7 @@ private:
     void consoleTime(const String16& title) override { }
     void consoleTimeEnd(const String16& title) override { }
     void consoleTimeStamp(const String16& title) override { }
-    void messageAddedToConsole(int contextGroupId, MessageSource, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override { }
+    void consoleAPIMessage(int contextGroupId, MessageLevel, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace*) override { }
     v8::MaybeLocal<v8::Value> memoryInfo(v8::Isolate*, v8::Local<v8::Context>) override
     {
         return v8::MaybeLocal<v8::Value>();

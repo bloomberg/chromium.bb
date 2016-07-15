@@ -12,15 +12,15 @@ function testFunction()
 
 function test()
 {
-    InspectorTest.sendCommandOrDie("Console.enable", {});
-    InspectorTest.eventHandler["Console.messageAdded"] = messageAdded;
+    InspectorTest.sendCommandOrDie("Runtime.enable", {});
+    InspectorTest.eventHandler["Runtime.consoleAPICalled"] = messageAdded;
     InspectorTest.sendCommandOrDie("Runtime.evaluate", { "expression": "testFunction()" });
     InspectorTest.sendCommandOrDie("Runtime.evaluate", { "expression": "setTimeout(() => console.log(\"finished\"), 0)" });
 
     function messageAdded(result)
     {
-        InspectorTest.logObject(result.params.message.parameters[0]);
-        if (result.params.message.parameters[0].value === "finished")
+        InspectorTest.logObject(result.params.args[0]);
+        if (result.params.args[0].value === "finished")
             InspectorTest.completeTest();
     }
 }

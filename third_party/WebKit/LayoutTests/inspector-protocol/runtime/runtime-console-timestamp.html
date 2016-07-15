@@ -10,7 +10,7 @@ function test()
 
     function messageAdded(data)
     {
-        var payload = data.params.message;
+        var payload = data.params;
 
         if (messages.length > 0)
             InspectorTest.log("Message " + messages.length + " has non-decreasing timestamp: " + (payload.timestamp >= messages[messages.length - 1].timestamp));
@@ -18,13 +18,13 @@ function test()
         messages.push(payload);
         InspectorTest.log("Message has timestamp: " + !!payload.timestamp);
 
-        InspectorTest.log("Message timestamp doesn't differ too much from current time (one minute interval): " + (Math.abs(new Date().getTime() / 1000 - payload.timestamp) < 60));
+        InspectorTest.log("Message timestamp doesn't differ too much from current time (one minute interval): " + (Math.abs(new Date().getTime() - payload.timestamp) < 60000));
         if (messages.length === 3)
             InspectorTest.completeTest();
     }
 
-    InspectorTest.eventHandler["Console.messageAdded"] = messageAdded;
-    InspectorTest.sendCommand("Console.enable", {});
+    InspectorTest.eventHandler["Runtime.consoleAPICalled"] = messageAdded;
+    InspectorTest.sendCommand("Runtime.enable", {});
 
     InspectorTest.sendCommand("Runtime.evaluate", { expression: "console.log('testUnique'); for (var i = 0; i < 2; ++i) console.log('testDouble');" });
 }
@@ -34,3 +34,4 @@ function test()
 <body onload="runTest()">
 </body>
 </html>
+

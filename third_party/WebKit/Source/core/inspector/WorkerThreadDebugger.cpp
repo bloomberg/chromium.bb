@@ -63,6 +63,14 @@ WorkerThreadDebugger::~WorkerThreadDebugger()
 {
 }
 
+void WorkerThreadDebugger::reportConsoleMessage(ExecutionContext* context, ConsoleMessage* message)
+{
+    if (!context)
+        return;
+    DCHECK(context == m_workerThread->workerGlobalScope());
+    m_workerThread->workerReportingProxy().reportConsoleMessage(message);
+}
+
 void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
     debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->workerGlobalScope()->url().getString(), "", "", false));
@@ -78,6 +86,7 @@ void WorkerThreadDebugger::exceptionThrown(const String& errorMessage, std::uniq
     if (m_muteConsoleCount)
         return;
     debugger()->exceptionThrown(workerContextGroupId, errorMessage, location->url(), location->lineNumber(), location->columnNumber(), location->cloneStackTrace(), location->scriptId());
+    m_workerThread->workerReportingProxy().reportConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location)));
 }
 
 void WorkerThreadDebugger::addConsoleMessage(ConsoleMessage* consoleMessage)
@@ -136,10 +145,11 @@ v8::Local<v8::Context> WorkerThreadDebugger::ensureDefaultContextInGroup(int con
     return scriptState ? scriptState->context() : v8::Local<v8::Context>();
 }
 
-void WorkerThreadDebugger::messageAddedToConsole(int contextGroupId, MessageSource source, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
+void WorkerThreadDebugger::consoleAPIMessage(int contextGroupId, MessageLevel level, const String16& message, const String16& url, unsigned lineNumber, unsigned columnNumber, V8StackTrace* stackTrace)
 {
     DCHECK(contextGroupId == workerContextGroupId);
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
+    // TODO(dgozman): maybe not wrap with ConsoleMessage.
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, SourceLocation::create(url, lineNumber, columnNumber, stackTrace ? stackTrace->clone() : nullptr, 0));
     m_workerThread->workerReportingProxy().reportConsoleMessage(consoleMessage);
 }
 

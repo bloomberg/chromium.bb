@@ -2435,8 +2435,8 @@ TEST_F(DevToolsAgentTest, RuntimeEnableForcesContextsAfterNavigation) {
 TEST_F(DevToolsAgentTest, RuntimeEvaluateRunMicrotasks) {
   LoadHTML("<body>page</body>");
   Attach();
-  DispatchDevToolsMessage("Console.enable",
-                          "{\"id\":1,\"method\":\"Console.enable\"}");
+  DispatchDevToolsMessage("Runtime.enable",
+                          "{\"id\":1,\"method\":\"Runtime.enable\"}");
   DispatchDevToolsMessage("Runtime.evaluate",
                           "{\"id\":2,"
                           "\"method\":\"Runtime.evaluate\","
@@ -2445,14 +2445,14 @@ TEST_F(DevToolsAgentTest, RuntimeEvaluateRunMicrotasks) {
                           "() => console.log(42));\""
                           "}"
                           "}");
-  EXPECT_EQ(1, CountNotifications("Console.messageAdded"));
+  EXPECT_EQ(1, CountNotifications("Runtime.consoleAPICalled"));
 }
 
 TEST_F(DevToolsAgentTest, RuntimeCallFunctionOnRunMicrotasks) {
   LoadHTML("<body>page</body>");
   Attach();
-  DispatchDevToolsMessage("Console.enable",
-                          "{\"id\":1,\"method\":\"Console.enable\"}");
+  DispatchDevToolsMessage("Runtime.enable",
+                          "{\"id\":1,\"method\":\"Runtime.enable\"}");
   DispatchDevToolsMessage("Runtime.evaluate",
                           "{\"id\":2,"
                           "\"method\":\"Runtime.evaluate\","
@@ -2479,7 +2479,7 @@ TEST_F(DevToolsAgentTest, RuntimeCallFunctionOnRunMicrotasks) {
                               "console.log(239))}\""
                               "}"
                               "}");
-  EXPECT_EQ(1, CountNotifications("Console.messageAdded"));
+  EXPECT_EQ(1, CountNotifications("Runtime.consoleAPICalled"));
 }
 
 TEST_F(DevToolsAgentTest, CallFramesInIsolatedWorld) {

@@ -88,14 +88,14 @@ void V8ConsoleAgentImpl::reportAllMessages()
         m_frontend.flush();
     }
     for (const auto& message : storage->messages()) {
-        if (message->origin() == V8MessageOrigin::kConsole)
+        if (message->origin() == V8MessageOrigin::kExternalConsole || message->origin() == V8MessageOrigin::kConsole)
             reportMessage(message.get(), false);
     }
 }
 
 void V8ConsoleAgentImpl::reportMessage(V8ConsoleMessage* message, bool generatePreview)
 {
-    DCHECK_EQ(V8MessageOrigin::kConsole, message->origin());
+    DCHECK(message->origin() == V8MessageOrigin::kExternalConsole || message->origin() == V8MessageOrigin::kConsole);
     message->reportToFrontend(&m_frontend, m_session, generatePreview);
     m_frontend.flush();
 }
