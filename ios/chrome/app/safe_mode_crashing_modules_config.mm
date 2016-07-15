@@ -5,6 +5,8 @@
 #import "ios/chrome/app/safe_mode_crashing_modules_config.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsobject.h"
 
 namespace {
 
@@ -12,6 +14,11 @@ NSString* const kStartupCrashModulesKey = @"StartupCrashModules";
 NSString* const kModuleFriendlyNameKey = @"ModuleFriendlyName";
 
 }  // namespace
+
+@interface SafeModeCrashingModulesConfig () {
+  base::scoped_nsobject<NSDictionary> _configuration;
+}
+@end
 
 @implementation SafeModeCrashingModulesConfig
 
@@ -22,25 +29,23 @@ NSString* const kModuleFriendlyNameKey = @"ModuleFriendlyName";
 }
 
 - (instancetype)init {
-  self = [super initWithAppId:nil version:nil plist:@"CrashingModules.plist"];
+  self = [super init];
   if (self) {
-    self.stopsUpdateChecksOnAppTermination = YES;
+    NSString* configPath =
+        [[NSBundle mainBundle] pathForResource:@"CrashingModules"
+                                        ofType:@"plist"];
+    _configuration.reset(
+        [[NSDictionary alloc] initWithContentsOfFile:configPath]);
   }
   return self;
 }
 
 - (NSString*)startupCrashModuleFriendlyName:(NSString*)modulePath {
-  NSDictionary* configData = [self dictionaryFromConfig];
-  NSDictionary* modules = [configData objectForKey:kStartupCrashModulesKey];
-  if (modules) {
-    DCHECK([modules isKindOfClass:[NSDictionary class]]);
-    NSDictionary* module = modules[modulePath];
-    if (module) {
-      DCHECK([module isKindOfClass:[NSDictionary class]]);
-      return module[kModuleFriendlyNameKey];
-    }
-  }
-  return nil;
+  NSDictionary* modules = base::mac::ObjCCastStrict<NSDictionary>(
+      [_configuration objectForKey:kStartupCrashModulesKey]);
+  NSDictionary* module =
+      base::mac::ObjCCastStrict<NSDictionary>(modules[modulePath]);
+  return base::mac::ObjCCast<NSString>(module[kModuleFriendlyNameKey]);
 }
 
 @end

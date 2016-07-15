@@ -7,12 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/updatable_config/updatable_dictionary.h"
-
-// Class for updatable configuration file singleton. This singleton object
-// is created when +sharedInstance is called for the first time and the default
+// Class for configuration file singleton. This singleton object is created
+// when +sharedInstance is called for the first time and the default
 // configuration is loaded from a plist bundled into the application.
-@interface SafeModeCrashingModulesConfig : UpdatableDictionary
+@interface SafeModeCrashingModulesConfig : NSObject
 
 // Returns singleton object for this class.
 + (SafeModeCrashingModulesConfig*)sharedInstance;
