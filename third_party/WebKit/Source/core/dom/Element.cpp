@@ -689,7 +689,8 @@ int Element::clientWidth()
     bool inQuirksMode = document().inQuirksMode();
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
-        if (LayoutViewItem layoutView = LayoutViewItem(document().layoutView())) {
+        LayoutViewItem layoutView = document().layoutViewItem();
+        if (!layoutView.isNull()) {
             if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() || !document().frame()->isLocalRoot())
                 document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
             if (document().page()->settings().forceZeroLayoutHeight())
@@ -713,7 +714,8 @@ int Element::clientHeight()
 
     if ((!inQuirksMode && document().documentElement() == this)
         || (inQuirksMode && isHTMLElement() && document().body() == this)) {
-        if (LayoutViewItem layoutView = LayoutViewItem(document().layoutView())) {
+        LayoutViewItem layoutView = document().layoutViewItem();
+        if (!layoutView.isNull()) {
             if (!RuntimeEnabledFeatures::overlayScrollbarsEnabled() || !document().frame()->isLocalRoot())
                 document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
             if (document().page()->settings().forceZeroLayoutHeight())
