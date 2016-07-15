@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/message_loop/message_loop.h"
@@ -114,9 +115,7 @@ class ArcNotificationManagerTest : public testing::Test {
   std::unique_ptr<MockMessageCenter> message_center_;
 
   void SetUp() override {
-    mojom::NotificationsInstancePtr arc_notifications_instance;
-    arc_notifications_instance_.reset(
-        new FakeNotificationsInstance(GetProxy(&arc_notifications_instance)));
+    arc_notifications_instance_.reset(new FakeNotificationsInstance());
     service_.reset(new FakeArcBridgeService());
     message_center_.reset(new MockMessageCenter());
 
@@ -125,8 +124,7 @@ class ArcNotificationManagerTest : public testing::Test {
 
     NotificationsObserver observer;
     service_->notifications()->AddObserver(&observer);
-    service_->OnNotificationsInstanceReady(
-        std::move(arc_notifications_instance));
+    service_->notifications()->SetInstance(arc_notifications_instance_.get());
 
     while (!observer.IsReady())
       loop_.RunUntilIdle();
@@ -166,8 +164,6 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByChrome) {
     notification->delegate()->Close(true /* by_user */);
     // |notification| gets stale here.
   }
-
-  arc_notifications_instance()->WaitForIncomingMethodCall();
 
   ASSERT_EQ(1u, arc_notifications_instance()->events().size());
   EXPECT_EQ(key, arc_notifications_instance()->events().at(0).first);

@@ -15,8 +15,7 @@ namespace arc {
 
 class FakeNotificationsInstance : public mojom::NotificationsInstance {
  public:
-  FakeNotificationsInstance(
-      mojo::InterfaceRequest<mojom::NotificationsInstance> request);
+  FakeNotificationsInstance();
   ~FakeNotificationsInstance() override;
 
   void Init(mojom::NotificationsHostPtr host_ptr) override;
@@ -28,12 +27,8 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
   const std::vector<std::pair<mojo::String, mojom::ArcNotificationEvent>>&
   events() const;
 
-  void WaitForIncomingMethodCall();
-
  private:
   std::vector<std::pair<mojo::String, mojom::ArcNotificationEvent>> events_;
-
-  mojo::Binding<mojom::NotificationsInstance> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeNotificationsInstance);
 };

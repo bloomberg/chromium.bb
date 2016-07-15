@@ -27,7 +27,7 @@ class ArcBridgeTest;
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
 // This service handles the lifetime of ARC instances and sets up the
 // communication channel (the ARC bridge) used to send and receive messages.
-class ArcBridgeService : public mojom::ArcBridgeHost {
+class ArcBridgeService {
  public:
   // Describes the reason the bridge is stopped.
   enum class StopReason {
@@ -57,7 +57,7 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     virtual ~Observer() {}
   };
 
-  ~ArcBridgeService() override;
+  virtual ~ArcBridgeService();
 
   // Gets the global instance of the ARC Bridge Service. This can only be
   // called on the thread that this class was created on.
@@ -121,36 +121,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
     return &window_manager_;
   }
 
-  // ArcHost:
-  void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
-  void OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) override;
-  void OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) override;
-  void OnBluetoothInstanceReady(
-      mojom::BluetoothInstancePtr bluetooth_ptr) override;
-  void OnClipboardInstanceReady(
-      mojom::ClipboardInstancePtr clipboard_ptr) override;
-  void OnCrashCollectorInstanceReady(
-      mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
-  void OnFileSystemInstanceReady(
-      mojom::FileSystemInstancePtr file_system_ptr) override;
-  void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
-  void OnIntentHelperInstanceReady(
-      mojom::IntentHelperInstancePtr intent_helper_ptr) override;
-  void OnMetricsInstanceReady(mojom::MetricsInstancePtr metrics_ptr) override;
-  void OnNetInstanceReady(mojom::NetInstancePtr net_ptr) override;
-  void OnNotificationsInstanceReady(
-      mojom::NotificationsInstancePtr notifications_ptr) override;
-  void OnObbMounterInstanceReady(
-      mojom::ObbMounterInstancePtr obb_mounter_ptr) override;
-  void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
-  void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
-  void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
-  void OnStorageManagerInstanceReady(
-      mojom::StorageManagerInstancePtr storage_manager_ptr) override;
-  void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
-  void OnWindowManagerInstanceReady(
-      mojom::WindowManagerInstancePtr window_manager_ptr) override;
-
   // Gets if ARC is available in this system.
   bool available() const { return available_; }
 
@@ -199,35 +169,6 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
 
   ArcBridgeService();
 
-  // Gets the current state of the bridge service.
-  State state() const { return state_; }
-
-  // Changes the current state and notifies all observers.
-  void SetState(State state);
-
-  // Changes the current availability and notifies all observers.
-  void SetAvailable(bool availability);
-
-  // Sets the reason the bridge is stopped. This function must be always called
-  // before SetState(State::STOPPED) to report a correct reason with
-  // Observer::OnBridgeStopped().
-  void SetStopReason(StopReason stop_reason);
-
-  base::ObserverList<Observer>& observer_list() { return observer_list_; }
-
-  bool CalledOnValidThread();
-
-  // Closes all Mojo channels.
-  void CloseAllChannels();
-
- private:
-  friend class ArcBridgeTest;
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
-
   // Instance holders.
   InstanceHolder<mojom::AppInstance> app_;
   InstanceHolder<mojom::AudioInstance> audio_;
@@ -248,6 +189,32 @@ class ArcBridgeService : public mojom::ArcBridgeHost {
   InstanceHolder<mojom::StorageManagerInstance> storage_manager_;
   InstanceHolder<mojom::VideoInstance> video_;
   InstanceHolder<mojom::WindowManagerInstance> window_manager_;
+
+  // Gets the current state of the bridge service.
+  State state() const { return state_; }
+
+  // Changes the current state and notifies all observers.
+  void SetState(State state);
+
+  // Changes the current availability and notifies all observers.
+  void SetAvailable(bool availability);
+
+  // Sets the reason the bridge is stopped. This function must be always called
+  // before SetState(State::STOPPED) to report a correct reason with
+  // Observer::OnBridgeStopped().
+  void SetStopReason(StopReason stop_reason);
+
+  base::ObserverList<Observer>& observer_list() { return observer_list_; }
+
+  bool CalledOnValidThread();
+
+ private:
+  friend class ArcBridgeTest;
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, ShutdownMidStartup);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
+  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
 
   base::ObserverList<Observer> observer_list_;
 

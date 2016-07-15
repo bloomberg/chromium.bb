@@ -25,7 +25,8 @@ namespace arc {
 
 // Real IPC based ArcBridgeService that is used in production.
 class ArcBridgeServiceImpl : public ArcBridgeService,
-                             public ArcBridgeBootstrap::Delegate {
+                             public ArcBridgeBootstrap::Delegate,
+                             public mojom::ArcBridgeHost {
  public:
   explicit ArcBridgeServiceImpl(std::unique_ptr<ArcBridgeBootstrap> bootstrap);
   ~ArcBridgeServiceImpl() override;
@@ -40,6 +41,36 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // delay. When testing, however, we'd like it to happen immediately to avoid
   // adding unnecessary delays.
   void DisableReconnectDelayForTesting();
+
+  // ArcHost:
+  void OnAppInstanceReady(mojom::AppInstancePtr app_ptr) override;
+  void OnAudioInstanceReady(mojom::AudioInstancePtr audio_ptr) override;
+  void OnAuthInstanceReady(mojom::AuthInstancePtr auth_ptr) override;
+  void OnBluetoothInstanceReady(
+      mojom::BluetoothInstancePtr bluetooth_ptr) override;
+  void OnClipboardInstanceReady(
+      mojom::ClipboardInstancePtr clipboard_ptr) override;
+  void OnCrashCollectorInstanceReady(
+      mojom::CrashCollectorInstancePtr crash_collector_ptr) override;
+  void OnFileSystemInstanceReady(
+      mojom::FileSystemInstancePtr file_system_ptr) override;
+  void OnImeInstanceReady(mojom::ImeInstancePtr ime_ptr) override;
+  void OnIntentHelperInstanceReady(
+      mojom::IntentHelperInstancePtr intent_helper_ptr) override;
+  void OnMetricsInstanceReady(mojom::MetricsInstancePtr metrics_ptr) override;
+  void OnNetInstanceReady(mojom::NetInstancePtr net_ptr) override;
+  void OnNotificationsInstanceReady(
+      mojom::NotificationsInstancePtr notifications_ptr) override;
+  void OnObbMounterInstanceReady(
+      mojom::ObbMounterInstancePtr obb_mounter_ptr) override;
+  void OnPolicyInstanceReady(mojom::PolicyInstancePtr policy_ptr) override;
+  void OnPowerInstanceReady(mojom::PowerInstancePtr power_ptr) override;
+  void OnProcessInstanceReady(mojom::ProcessInstancePtr process_ptr) override;
+  void OnStorageManagerInstanceReady(
+      mojom::StorageManagerInstancePtr storage_manager_ptr) override;
+  void OnVideoInstanceReady(mojom::VideoInstancePtr video_ptr) override;
+  void OnWindowManagerInstanceReady(
+      mojom::WindowManagerInstancePtr window_manager_ptr) override;
 
  private:
   friend class ArcBridgeTest;

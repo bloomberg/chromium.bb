@@ -38,7 +38,7 @@ struct TypeConverter<arc::mojom::ArcPackageInfoPtr,
 namespace arc {
 
 FakeAppInstance::FakeAppInstance(mojom::AppHost* app_host)
-    : binding_(this), app_host_(app_host) {}
+    : app_host_(app_host) {}
 FakeAppInstance::~FakeAppInstance() {}
 
 void FakeAppInstance::RefreshAppList() {
@@ -164,25 +164,6 @@ void FakeAppInstance::SendPackageAdded(const mojom::ArcPackageInfo& package) {
 
 void FakeAppInstance::SendPackageUninstalled(const mojo::String& package_name) {
   app_host_->OnPackageRemoved(package_name);
-}
-
-void FakeAppInstance::WaitForIncomingMethodCall() {
-  binding_.WaitForIncomingMethodCall();
-}
-
-void FakeAppInstance::WaitForOnAppInstanceReady() {
-  // Several messages are sent back and forth when OnAppInstanceReady() is
-  // called. Normally, it would be preferred to use a single
-  // WaitForIncomingMethodCall() to wait for each method individually, but
-  // QueryVersion() does require processing on the I/O thread, so
-  // RunUntilIdle() is required to correctly dispatch it. On slower machines
-  // (and when running under Valgrind), the two thread hops needed to send and
-  // dispatch each Mojo message might not be picked up by a single
-  // RunUntilIdle(), so keep pumping the message loop until all expected
-  // messages are.
-  while (refresh_app_list_count_ != 1) {
-    base::RunLoop().RunUntilIdle();
-  }
 }
 
 void FakeAppInstance::CanHandleResolution(
