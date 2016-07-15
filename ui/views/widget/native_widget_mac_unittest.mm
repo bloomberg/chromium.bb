@@ -260,6 +260,29 @@ class SimpleBubbleView : public BubbleDialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(SimpleBubbleView);
 };
 
+class CustomTooltipView : public View {
+ public:
+  CustomTooltipView(const base::string16& tooltip, View* tooltip_handler)
+      : tooltip_(tooltip), tooltip_handler_(tooltip_handler) {}
+
+  // View:
+  bool GetTooltipText(const gfx::Point& p,
+                      base::string16* tooltip) const override {
+    *tooltip = tooltip_;
+    return true;
+  }
+
+  View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
+    return tooltip_handler_ ? tooltip_handler_ : this;
+  }
+
+ private:
+  base::string16 tooltip_;
+  View* tooltip_handler_;  // Weak
+
+  DISALLOW_COPY_AND_ASSIGN(CustomTooltipView);
+};
+
 // Test visibility states triggered externally.
 TEST_F(NativeWidgetMacTest, HideAndShowExternally) {
   Widget* widget = CreateTopLevelPlatformWidget();
@@ -807,6 +830,43 @@ TEST_F(NativeWidgetMacTest, Tooltips) {
   EXPECT_TRUE(TooltipTextForWidget(widget).empty());
 
   widget->CloseNow();
+}
+
+// Tests case when mouse events are handled in one Widget,
+// but tooltip belongs to another.
+// It happens in menus when a submenu is shown and the parent gets the
+// MouseExit event.
+TEST_F(NativeWidgetMacTest, TwoWidgetTooltips) {
+  // Init two widgets, one above another.
+  Widget* widget_below = CreateTopLevelPlatformWidget();
+  widget_below->SetBounds(gfx::Rect(50, 50, 200, 200));
+
+  Widget* widget_above =
+      CreateChildPlatformWidget(widget_below->GetNativeView());
+  widget_above->SetBounds(gfx::Rect(100, 0, 100, 200));
+
+  const base::string16 tooltip_above = base::ASCIIToUTF16("Front");
+  CustomTooltipView* view_above = new CustomTooltipView(tooltip_above, nullptr);
+  view_above->SetBoundsRect(widget_above->GetContentsView()->bounds());
+  widget_above->GetContentsView()->AddChildView(view_above);
+
+  CustomTooltipView* view_below =
+      new CustomTooltipView(base::ASCIIToUTF16("Back"), view_above);
+  view_below->SetBoundsRect(widget_below->GetContentsView()->bounds());
+  widget_below->GetContentsView()->AddChildView(view_below);
+
+  widget_below->Show();
+  widget_above->Show();
+
+  // Move mouse above second widget and check that it returns tooltip
+  // for second. Despite that event was handled in the first one.
+  ui::test::EventGenerator event_generator(GetContext(),
+                                           widget_below->GetNativeWindow());
+  event_generator.MoveMouseTo(gfx::Point(120, 60));
+  EXPECT_EQ(tooltip_above, TooltipTextForWidget(widget_below));
+
+  widget_above->CloseNow();
+  widget_below->CloseNow();
 }
 
 namespace {

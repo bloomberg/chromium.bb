@@ -332,7 +332,8 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   views::View* view = hostedView_->GetTooltipHandlerForPoint(locationInContent);
   if (view) {
     gfx::Point viewPoint = locationInContent;
-    views::View::ConvertPointToTarget(hostedView_, view, &viewPoint);
+    views::View::ConvertPointToScreen(hostedView_, &viewPoint);
+    views::View::ConvertPointFromScreen(view, &viewPoint);
     if (!view->GetTooltipText(viewPoint, &newTooltipText))
       DCHECK(newTooltipText.empty());
   }
