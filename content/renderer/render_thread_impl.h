@@ -636,7 +636,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
 
   std::unique_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
-  std::unique_ptr<media::AudioHardwareConfig> audio_hardware_config_;
 
   HistogramCustomizer histogram_customizer_;
 

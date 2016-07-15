@@ -18,7 +18,6 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-class AudioHardwareConfig;
 class AudioRendererSink;
 class MediaLog;
 class RendererFactory;

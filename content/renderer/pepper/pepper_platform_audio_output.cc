@@ -15,7 +15,6 @@
 #include "content/renderer/media/audio_message_filter.h"
 #include "content/renderer/pepper/audio_helper.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/base/audio_hardware_config.h"
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 
 namespace content {

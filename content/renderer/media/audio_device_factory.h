@@ -85,6 +85,7 @@ class CONTENT_EXPORT AudioDeviceFactory {
                                  const url::Origin& security_origin);
 
   // A helper to get device info in the absence of AudioOutputDevice.
+  // Must be called on renderer thread only.
   static media::OutputDeviceInfo GetOutputDeviceInfo(
       int render_frame_id,
       int session_id,

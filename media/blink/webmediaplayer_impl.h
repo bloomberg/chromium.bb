@@ -67,7 +67,6 @@ class GLES2Interface;
 }
 
 namespace media {
-class AudioHardwareConfig;
 class ChunkDemuxer;
 class GpuVideoAcceleratorFactories;
 class MediaLog;

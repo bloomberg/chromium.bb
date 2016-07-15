@@ -16,7 +16,6 @@
 namespace media {
 
 class AudioDecoder;
-class AudioHardwareConfig;
 class AudioRendererSink;
 class DecoderFactory;
 class GpuVideoAcceleratorFactories;

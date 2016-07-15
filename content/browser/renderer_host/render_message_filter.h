@@ -115,8 +115,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnDestruct() const override;
   void OverrideThreadForMessage(const IPC::Message& message,
                                 BrowserThread::ID* thread) override;
-  base::TaskRunner* OverrideTaskRunnerForMessage(
-      const IPC::Message& message) override;
 
   int render_process_id() const { return render_process_id_; }
 
@@ -145,9 +143,6 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
 #endif
 
   void OnGenerateRoutingID(int* route_id);
-
-  void OnGetAudioHardwareConfig(media::AudioParameters* input_params,
-                                media::AudioParameters* output_params);
 
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(CauseForGpuLaunch, IPC::Message* reply);

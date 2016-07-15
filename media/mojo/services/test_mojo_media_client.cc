@@ -11,7 +11,6 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_output_stream_sink.h"
-#include "media/base/audio_hardware_config.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media.h"
 #include "media/base/media_log.h"

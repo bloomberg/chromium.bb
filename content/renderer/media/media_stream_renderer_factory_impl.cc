@@ -14,7 +14,6 @@
 #include "content/renderer/media/webrtc/peer_connection_remote_audio_source.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/base/audio_hardware_config.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 

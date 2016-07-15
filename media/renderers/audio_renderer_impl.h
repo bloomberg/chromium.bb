@@ -47,7 +47,6 @@ namespace media {
 class AudioBufferConverter;
 class AudioBus;
 class AudioClock;
-class AudioHardwareConfig;
 class AudioSplicer;
 class DecryptingDemuxerStream;
 

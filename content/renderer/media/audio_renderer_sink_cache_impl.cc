@@ -154,7 +154,7 @@ scoped_refptr<media::AudioRendererSink> AudioRendererSinkCacheImpl::GetSink(
 
   auto cache_iter =
       FindCacheEntry_Locked(source_render_frame_id, device_id, security_origin,
-                            true /* unused_only */);
+                            true /* unused sink only */);
 
   if (cache_iter != cache_.end()) {
     // Found unused sink; mark it as used and return.

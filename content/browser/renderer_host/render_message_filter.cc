@@ -212,8 +212,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(
         RenderProcessHostMsg_DidGenerateCacheableMetadataInCacheStorage,
         OnCacheableMetadataAvailableForCacheStorage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GetAudioHardwareConfig,
-                        OnGetAudioHardwareConfig)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(RenderProcessHostMsg_LoadFont, OnLoadFont)
 #elif defined(OS_WIN)
@@ -236,14 +234,6 @@ void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
                                                    BrowserThread::ID* thread) {
   if (message.type() == ViewHostMsg_MediaLogEvents::ID)
     *thread = BrowserThread::UI;
-}
-
-base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
-    const IPC::Message& message) {
-  // Always query audio device parameters on the audio thread.
-  if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
-    return audio_manager_->GetTaskRunner();
-  return NULL;
 }
 
 void RenderMessageFilter::OnCreateWindow(
@@ -302,18 +292,6 @@ void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
 
 void RenderMessageFilter::OnGenerateRoutingID(int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
-}
-
-void RenderMessageFilter::OnGetAudioHardwareConfig(
-    media::AudioParameters* input_params,
-    media::AudioParameters* output_params) {
-  DCHECK(input_params);
-  DCHECK(output_params);
-  *output_params = audio_manager_->GetDefaultOutputStreamParameters();
-
-  // TODO(henrika): add support for all available input devices.
-  *input_params = audio_manager_->GetInputStreamParameters(
-      media::AudioDeviceDescription::kDefaultDeviceId);
 }
 
 #if defined(OS_MACOSX)
