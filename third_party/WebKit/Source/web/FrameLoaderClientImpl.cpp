@@ -597,14 +597,6 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
     return static_cast<NavigationPolicy>(webPolicy);
 }
 
-bool FrameLoaderClientImpl::hasPendingNavigation()
-{
-    if (!m_webFrame->client())
-        return false;
-
-    return m_webFrame->client()->hasPendingNavigation();
-}
-
 void FrameLoaderClientImpl::dispatchWillSendSubmitEvent(HTMLFormElement* form)
 {
     if (m_webFrame->client())

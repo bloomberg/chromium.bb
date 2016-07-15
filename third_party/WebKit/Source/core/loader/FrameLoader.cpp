@@ -608,7 +608,7 @@ static bool shouldSendCompleteNotification(LocalFrame* frame)
         return false;
     // Only send didStopLoading() if there are no navigations in progress at all,
     // whether committed, provisional, or pending.
-    return frame->loader().documentLoader()->sentDidFinishLoad() && !frame->loader().provisionalDocumentLoader() && !frame->loader().client()->hasPendingNavigation();
+    return frame->loader().documentLoader()->sentDidFinishLoad() && !frame->loader().provisionalDocumentLoader();
 }
 
 void FrameLoader::checkCompleted()

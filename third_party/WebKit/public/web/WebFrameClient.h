@@ -272,9 +272,6 @@ public:
     // This returns such a history item if appropriate.
     virtual WebHistoryItem historyItemForNewChildFrame() { return WebHistoryItem(); }
 
-    // Whether the client is handling a navigation request.
-    virtual bool hasPendingNavigation() { return false; }
-
     // Navigational notifications ------------------------------------------
 
     // These notifications bracket any loading that occurs in the WebFrame.
