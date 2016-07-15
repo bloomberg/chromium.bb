@@ -142,8 +142,8 @@ void OutputSurface::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   client_->SetNeedsRedrawRect(damage_rect);
 }
 
-void OutputSurface::ReclaimResources(const CompositorFrameAck* ack) {
-  client_->ReclaimResources(ack);
+void OutputSurface::ReclaimResources(const ReturnedResourceArray& resources) {
+  client_->ReclaimResources(resources);
 }
 
 void OutputSurface::DidLoseOutputSurface() {

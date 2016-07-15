@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/test/begin_frame_args_test.h"
@@ -131,11 +130,11 @@ void FakeOutputSurface::ReturnResourcesHeldByParent() {
   // for the Display which does not swap delegated frames.
   if (last_sent_frame_ && last_sent_frame_->delegated_frame_data) {
     // Return the last frame's resources immediately.
-    CompositorFrameAck ack;
+    ReturnedResourceArray resources;
     for (const auto& resource : resources_held_by_parent_)
-      ack.resources.push_back(resource.ToReturnedResource());
+      resources.push_back(resource.ToReturnedResource());
     resources_held_by_parent_.clear();
-    client_->ReclaimResources(&ack);
+    client_->ReclaimResources(resources);
   }
 }
 

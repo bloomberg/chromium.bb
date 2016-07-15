@@ -264,8 +264,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DestroyDelegatedContent();
   void CheckOutputSurfaceChanged(uint32_t output_surface_id);
   void SubmitCompositorFrame(cc::CompositorFrame frame_data);
-  void SendDelegatedFrameAck(uint32_t output_surface_id);
-  void SendReturnedDelegatedResources(uint32_t output_surface_id);
+  void SendReclaimCompositorResources(uint32_t output_surface_id,
+                                      bool is_swap_ack);
 
   void OnFrameMetadataUpdated(
       const cc::CompositorFrameMetadata& frame_metadata);

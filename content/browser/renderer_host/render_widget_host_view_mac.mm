@@ -420,19 +420,14 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor(
   return color;
 }
 
-void RenderWidgetHostViewMac::BrowserCompositorMacSendCompositorSwapAck(
-    int output_surface_id,
-    const cc::CompositorFrameAck& ack) {
-  render_widget_host_->Send(new ViewMsg_SwapCompositorFrameAck(
-      render_widget_host_->GetRoutingID(), output_surface_id, ack));
-}
-
 void RenderWidgetHostViewMac::
     BrowserCompositorMacSendReclaimCompositorResources(
         int output_surface_id,
-        const cc::CompositorFrameAck& ack) {
+        bool is_swap_ack,
+        const cc::ReturnedResourceArray& resources) {
   render_widget_host_->Send(new ViewMsg_ReclaimCompositorResources(
-      render_widget_host_->GetRoutingID(), output_surface_id, ack));
+      render_widget_host_->GetRoutingID(), output_surface_id, is_swap_ack,
+      resources));
 }
 
 void RenderWidgetHostViewMac::BrowserCompositorMacOnLostCompositorResources() {

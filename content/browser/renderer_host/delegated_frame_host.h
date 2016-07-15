@@ -69,12 +69,10 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
       bool defer_compositor_lock) = 0;
   virtual void DelegatedFrameHostResizeLockWasReleased() = 0;
 
-  virtual void DelegatedFrameHostSendCompositorSwapAck(
-      int output_surface_id,
-      const cc::CompositorFrameAck& ack) = 0;
   virtual void DelegatedFrameHostSendReclaimCompositorResources(
       int output_surface_id,
-      const cc::CompositorFrameAck& ack) = 0;
+      bool is_swap_ack,
+      const cc::ReturnedResourceArray& resources) = 0;
   virtual void DelegatedFrameHostOnLostCompositorResources() = 0;
 
   virtual void DelegatedFrameHostUpdateVSyncParameters(
@@ -239,9 +237,9 @@ class CONTENT_EXPORT DelegatedFrameHost
       scoped_refptr<OwnedMailbox> subscriber_texture,
       const gpu::SyncToken& sync_token);
 
-  void SendDelegatedFrameAck(uint32_t output_surface_id);
+  void SendReclaimCompositorResources(uint32_t output_surface_id,
+                                      bool is_swap_ack);
   void SurfaceDrawn(uint32_t output_surface_id, cc::SurfaceDrawStatus drawn);
-  void SendReturnedDelegatedResources(uint32_t output_surface_id);
 
   // Called to consult the current |frame_subscriber_|, to determine and maybe
   // initiate a copy-into-video-frame request.

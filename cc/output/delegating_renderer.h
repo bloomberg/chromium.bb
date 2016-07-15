@@ -37,7 +37,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   void Finish() override {}
 
   void SwapBuffers(CompositorFrameMetadata metadata) override;
-  void ReceiveSwapBuffersAck(const CompositorFrameAck&) override;
+  void ReclaimResources(const ReturnedResourceArray&) override;
 
  private:
   DelegatingRenderer(RendererClient* client,

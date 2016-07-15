@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -285,10 +284,10 @@ void SynchronousCompositorHost::SendZeroMemory() {
 
 void SynchronousCompositorHost::ReturnResources(
     uint32_t output_surface_id,
-    const cc::CompositorFrameAck& frame_ack) {
-  DCHECK(!frame_ack.resources.empty());
+    const cc::ReturnedResourceArray& resources) {
+  DCHECK(!resources.empty());
   sender_->Send(new SyncCompositorMsg_ReclaimResources(
-      routing_id_, output_surface_id, frame_ack));
+      routing_id_, output_surface_id, resources));
 }
 
 void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {

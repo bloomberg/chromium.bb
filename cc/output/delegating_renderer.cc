@@ -10,7 +10,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/context_provider.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -106,9 +105,9 @@ void DelegatingRenderer::SwapBuffers(CompositorFrameMetadata metadata) {
   output_surface_->SwapBuffers(std::move(compositor_frame));
 }
 
-void DelegatingRenderer::ReceiveSwapBuffersAck(
-    const CompositorFrameAck& ack) {
-  resource_provider_->ReceiveReturnsFromParent(ack.resources);
+void DelegatingRenderer::ReclaimResources(
+    const ReturnedResourceArray& resources) {
+  resource_provider_->ReceiveReturnsFromParent(resources);
 }
 
 void DelegatingRenderer::DidChangeVisibility() {

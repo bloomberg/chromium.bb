@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "cc/resources/returned_resource.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -71,7 +72,7 @@ class CONTENT_EXPORT SynchronousCompositor {
   // For delegated rendering, return resources from parent compositor to this.
   // Note that all resources must be returned before ReleaseHwDraw.
   virtual void ReturnResources(uint32_t output_surface_id,
-                               const cc::CompositorFrameAck& frame_ack) = 0;
+                               const cc::ReturnedResourceArray& resources) = 0;
 
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).

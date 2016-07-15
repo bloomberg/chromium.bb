@@ -7,7 +7,6 @@
 #include "base/memory/shared_memory_handle.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/input/did_overscroll_params.h"
@@ -155,7 +154,7 @@ IPC_MESSAGE_ROUTED1(SyncCompositorMsg_SetMemoryPolicy,
 
 IPC_MESSAGE_ROUTED2(SyncCompositorMsg_ReclaimResources,
                     uint32_t /* output_surface_id */,
-                    cc::CompositorFrameAck);
+                    cc::ReturnedResourceArray /* resources */);
 
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_SetScroll, gfx::ScrollOffset);
 

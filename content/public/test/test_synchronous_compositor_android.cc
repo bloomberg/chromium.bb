@@ -38,10 +38,10 @@ SynchronousCompositor::Frame TestSynchronousCompositor::DemandDrawHw(
 
 void TestSynchronousCompositor::ReturnResources(
     uint32_t output_surface_id,
-    const cc::CompositorFrameAck& frame_ack) {
+    const cc::ReturnedResourceArray& resources) {
   ReturnedResources returned_resources;
   returned_resources.output_surface_id = output_surface_id;
-  returned_resources.resources = frame_ack.resources;
+  returned_resources.resources = resources;
   frame_ack_array_.push_back(returned_resources);
 }
 

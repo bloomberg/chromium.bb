@@ -345,14 +345,12 @@ void RenderWidgetHostViewChildFrame::GestureEventAck(
 
 void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32_t output_surface_id,
                                                   cc::SurfaceDrawStatus drawn) {
-  cc::CompositorFrameAck ack;
   DCHECK_GT(ack_pending_count_, 0U);
-
-  if (!surface_returned_resources_.empty())
-    ack.resources.swap(surface_returned_resources_);
   if (host_) {
-    host_->Send(new ViewMsg_SwapCompositorFrameAck(host_->GetRoutingID(),
-                                                   output_surface_id, ack));
+    host_->Send(new ViewMsg_ReclaimCompositorResources(
+        host_->GetRoutingID(), output_surface_id, true /* is_swap_ack */,
+        surface_returned_resources_));
+    surface_returned_resources_.clear();
   }
   ack_pending_count_--;
 }
@@ -615,11 +613,9 @@ void RenderWidgetHostViewChildFrame::ReturnResources(
     return;
 
   if (!ack_pending_count_ && host_) {
-    cc::CompositorFrameAck ack;
-    std::copy(resources.begin(), resources.end(),
-              std::back_inserter(ack.resources));
     host_->Send(new ViewMsg_ReclaimCompositorResources(
-        host_->GetRoutingID(), last_output_surface_id_, ack));
+        host_->GetRoutingID(), last_output_surface_id_, false /* is_swap_ack */,
+        resources));
     return;
   }
 

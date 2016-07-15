@@ -703,13 +703,6 @@ struct FuzzTraits<cc::CompositorFrame> {
 };
 
 template <>
-struct FuzzTraits<cc::CompositorFrameAck> {
-  static bool Fuzz(cc::CompositorFrameAck* p, Fuzzer* fuzzer) {
-    return FuzzParam(&p->resources, fuzzer);
-  }
-};
-
-template <>
 struct FuzzTraits<cc::DelegatedFrameData> {
   static bool Fuzz(cc::DelegatedFrameData* p, Fuzzer* fuzzer) {
     if (!FuzzParam(&p->resource_list, fuzzer))

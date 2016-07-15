@@ -11,7 +11,6 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer.h"
 #include "cc/output/renderer_settings.h"
@@ -381,7 +380,7 @@ void Display::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
     scheduler_->SurfaceDamaged(current_surface_id_);
 }
 
-void Display::ReclaimResources(const CompositorFrameAck* ack) {
+void Display::ReclaimResources(const ReturnedResourceArray& resources) {
   NOTREACHED();
 }
 

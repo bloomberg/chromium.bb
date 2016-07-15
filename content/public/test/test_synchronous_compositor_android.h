@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 
@@ -33,7 +32,7 @@ class CONTENT_EXPORT TestSynchronousCompositor : public SynchronousCompositor {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
   void ReturnResources(uint32_t output_surface_id,
-                       const cc::CompositorFrameAck& frame_ack) override;
+                       const cc::ReturnedResourceArray& resources) override;
   bool DemandDrawSw(SkCanvas* canvas) override;
   void SetMemoryPolicy(size_t bytes_limit) override {}
   void DidChangeRootLayerScrollOffset(

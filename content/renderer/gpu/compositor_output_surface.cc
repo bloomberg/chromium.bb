@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/output_surface_client.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -138,8 +137,8 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CompositorOutputSurface, message)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateVSyncParameters,
                         OnUpdateVSyncParametersFromBrowser);
-    IPC_MESSAGE_HANDLER(ViewMsg_SwapCompositorFrameAck, OnSwapAck);
-    IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources, OnReclaimResources);
+    IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources,
+                        OnReclaimCompositorResources);
   IPC_END_MESSAGE_MAP()
 }
 
@@ -154,24 +153,17 @@ void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
   client_->CommitVSyncParameters(timebase, interval);
 }
 
-void CompositorOutputSurface::OnSwapAck(uint32_t output_surface_id,
-                                        const cc::CompositorFrameAck& ack) {
-  // Ignore message if it's a stale one coming from a different output surface
-  // (e.g. after a lost context).
-  if (output_surface_id != output_surface_id_)
-    return;
-  ReclaimResources(&ack);
-  client_->DidSwapBuffersComplete();
-}
-
-void CompositorOutputSurface::OnReclaimResources(
+void CompositorOutputSurface::OnReclaimCompositorResources(
     uint32_t output_surface_id,
-    const cc::CompositorFrameAck& ack) {
+    bool is_swap_ack,
+    const cc::ReturnedResourceArray& resources) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).
   if (output_surface_id != output_surface_id_)
     return;
-  ReclaimResources(&ack);
+  ReclaimResources(resources);
+  if (is_swap_ack)
+    client_->DidSwapBuffersComplete();
 }
 
 bool CompositorOutputSurface::Send(IPC::Message* message) {

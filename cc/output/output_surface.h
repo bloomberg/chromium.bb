@@ -17,6 +17,7 @@
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/vulkan_context_provider.h"
+#include "cc/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 
 namespace base { class SingleThreadTaskRunner; }
@@ -35,7 +36,6 @@ class Transform;
 namespace cc {
 
 class CompositorFrame;
-class CompositorFrameAck;
 struct ManagedMemoryPolicy;
 class OutputSurfaceClient;
 
@@ -200,7 +200,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   base::ThreadChecker client_thread_checker_;
 
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect);
-  void ReclaimResources(const CompositorFrameAck* ack);
+  void ReclaimResources(const ReturnedResourceArray& resources);
   void SetExternalStencilTest(bool enabled);
   void DetachFromClientInternal();
 

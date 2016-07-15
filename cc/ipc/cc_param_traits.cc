@@ -674,24 +674,6 @@ void ParamTraits<cc::CompositorFrame>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<cc::CompositorFrameAck>::Write(base::Pickle* m,
-                                                const param_type& p) {
-  WriteParam(m, p.resources);
-}
-
-bool ParamTraits<cc::CompositorFrameAck>::Read(const base::Pickle* m,
-                                               base::PickleIterator* iter,
-                                               param_type* p) {
-  return ReadParam(m, iter, &p->resources);
-}
-
-void ParamTraits<cc::CompositorFrameAck>::Log(const param_type& p,
-                                              std::string* l) {
-  l->append("CompositorFrameAck(");
-  LogParam(p.resources, l);
-  l->append(")");
-}
-
 void ParamTraits<cc::DelegatedFrameData>::Write(base::Pickle* m,
                                                 const param_type& p) {
   DCHECK_NE(0u, p.render_pass_list.size());

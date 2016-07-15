@@ -452,12 +452,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
       bool defer_compositor_lock) override;
   void DelegatedFrameHostResizeLockWasReleased() override;
-  void DelegatedFrameHostSendCompositorSwapAck(
-      int output_surface_id,
-      const cc::CompositorFrameAck& ack) override;
   void DelegatedFrameHostSendReclaimCompositorResources(
       int output_surface_id,
-      const cc::CompositorFrameAck& ack) override;
+      bool is_swap_ack,
+      const cc::ReturnedResourceArray& resources) override;
   void DelegatedFrameHostOnLostCompositorResources() override;
   void DelegatedFrameHostUpdateVSyncParameters(
       const base::TimeTicks& timebase,

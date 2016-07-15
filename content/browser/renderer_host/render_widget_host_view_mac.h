@@ -446,12 +446,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // BrowserCompositorMacClient implementation.
   NSView* BrowserCompositorMacGetNSView() const override;
   SkColor BrowserCompositorMacGetGutterColor(SkColor color) const override;
-  void BrowserCompositorMacSendCompositorSwapAck(
-      int output_surface_id,
-      const cc::CompositorFrameAck& ack) override;
   void BrowserCompositorMacSendReclaimCompositorResources(
       int output_surface_id,
-      const cc::CompositorFrameAck& ack) override;
+      bool is_swap_ack,
+      const cc::ReturnedResourceArray& resources) override;
   void BrowserCompositorMacOnLostCompositorResources() override;
   void BrowserCompositorMacUpdateVSyncParameters(
       const base::TimeTicks& timebase,

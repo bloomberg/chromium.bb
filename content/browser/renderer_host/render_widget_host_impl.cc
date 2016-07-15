@@ -29,7 +29,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
@@ -1567,13 +1566,14 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
     view_->OnSwapCompositorFrame(output_surface_id, std::move(frame));
     view_->DidReceiveRendererFrame();
   } else {
-    cc::CompositorFrameAck ack;
+    cc::ReturnedResourceArray resources;
     if (frame.delegated_frame_data) {
       cc::TransferableResource::ReturnResources(
-          frame.delegated_frame_data->resource_list, &ack.resources);
+          frame.delegated_frame_data->resource_list, &resources);
     }
-    SendSwapCompositorFrameAck(routing_id_, output_surface_id,
-                               process_->GetID(), ack);
+    SendReclaimCompositorResources(routing_id_, output_surface_id,
+                                   process_->GetID(), true /* is_swap_ack */,
+                                   resources);
   }
 
   RenderProcessHost* rph = GetProcess();
@@ -2001,29 +2001,17 @@ bool RenderWidgetHostImpl::GotResponseToLockMouseRequest(bool allowed) {
 }
 
 // static
-void RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-    int32_t route_id,
-    uint32_t output_surface_id,
-    int renderer_host_id,
-    const cc::CompositorFrameAck& ack) {
-  RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
-  if (!host)
-    return;
-  host->Send(new ViewMsg_SwapCompositorFrameAck(
-      route_id, output_surface_id, ack));
-}
-
-// static
 void RenderWidgetHostImpl::SendReclaimCompositorResources(
     int32_t route_id,
     uint32_t output_surface_id,
     int renderer_host_id,
-    const cc::CompositorFrameAck& ack) {
+    bool is_swap_ack,
+    const cc::ReturnedResourceArray& resources) {
   RenderProcessHost* host = RenderProcessHost::FromID(renderer_host_id);
   if (!host)
     return;
-  host->Send(
-      new ViewMsg_ReclaimCompositorResources(route_id, output_surface_id, ack));
+  host->Send(new ViewMsg_ReclaimCompositorResources(route_id, output_surface_id,
+                                                    is_swap_ack, resources));
 }
 
 void RenderWidgetHostImpl::DelayedAutoResized() {

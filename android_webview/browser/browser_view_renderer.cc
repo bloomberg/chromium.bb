@@ -18,7 +18,6 @@
 #include "base/supports_user_data.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -296,14 +295,13 @@ void BrowserViewRenderer::ReturnUnusedResource(
   if (!child_frame.get() || !child_frame->frame.get())
     return;
 
-  cc::CompositorFrameAck frame_ack;
+  cc::ReturnedResourceArray resources;
   cc::TransferableResource::ReturnResources(
-      child_frame->frame->delegated_frame_data->resource_list,
-      &frame_ack.resources);
+      child_frame->frame->delegated_frame_data->resource_list, &resources);
   content::SynchronousCompositor* compositor =
       FindCompositor(child_frame->compositor_id);
-  if (compositor && !frame_ack.resources.empty())
-    compositor->ReturnResources(child_frame->output_surface_id, frame_ack);
+  if (compositor && !resources.empty())
+    compositor->ReturnResources(child_frame->output_surface_id, resources);
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent(
@@ -313,11 +311,11 @@ void BrowserViewRenderer::ReturnResourceFromParent(
   for (auto& pair : returned_resource_map) {
     CompositorID compositor_id = pair.first;
     content::SynchronousCompositor* compositor = FindCompositor(compositor_id);
-    cc::CompositorFrameAck frame_ack;
-    frame_ack.resources.swap(pair.second.resources);
+    cc::ReturnedResourceArray resources;
+    resources.swap(pair.second.resources);
 
-    if (compositor && !frame_ack.resources.empty()) {
-      compositor->ReturnResources(pair.second.output_surface_id, frame_ack);
+    if (compositor && !resources.empty()) {
+      compositor->ReturnResources(pair.second.output_surface_id, resources);
     }
   }
 }

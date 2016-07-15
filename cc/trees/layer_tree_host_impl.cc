@@ -1485,11 +1485,12 @@ void LayerTreeHostImpl::DidReceiveTextureInUseResponses(
   NOTREACHED();
 }
 
-void LayerTreeHostImpl::ReclaimResources(const CompositorFrameAck* ack) {
+void LayerTreeHostImpl::ReclaimResources(
+    const ReturnedResourceArray& resources) {
   // TODO(piman): We may need to do some validation on this ack before
   // processing it.
   if (renderer_)
-    renderer_->ReceiveSwapBuffersAck(*ack);
+    renderer_->ReclaimResources(resources);
 
   // In OOM, we now might be able to release more resources that were held
   // because they were exported.

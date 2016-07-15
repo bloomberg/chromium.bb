@@ -26,7 +26,7 @@ class FakeOutputSurfaceClient : public OutputSurfaceClient {
   void DidSwapBuffersComplete() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override {}
-  void ReclaimResources(const CompositorFrameAck* ack) override {}
+  void ReclaimResources(const ReturnedResourceArray& resources) override {}
   void DidLoseOutputSurface() override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect_for_tile_priority,

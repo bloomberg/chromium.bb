@@ -412,17 +412,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
                              base::TimeDelta interval);
 
   // Called by the view in response to OnSwapCompositorFrame.
-  static void SendSwapCompositorFrameAck(
+  static void SendReclaimCompositorResources(
       int32_t route_id,
       uint32_t output_surface_id,
       int renderer_host_id,
-      const cc::CompositorFrameAck& ack);
-
-  // Called by the view to return resources to the compositor.
-  static void SendReclaimCompositorResources(int32_t route_id,
-                                             uint32_t output_surface_id,
-                                             int renderer_host_id,
-                                             const cc::CompositorFrameAck& ack);
+      bool is_swap_ack,
+      const cc::ReturnedResourceArray& resources);
 
   void set_allow_privileged_mouse_lock(bool allow) {
     allow_privileged_mouse_lock_ = allow;

@@ -247,8 +247,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->SwapBuffersCompleteOnThread();
   }
 
-  void ReclaimResources(const CompositorFrameAck* ack) override {
-    LayerTreeHostImpl::ReclaimResources(ack);
+  void ReclaimResources(const ReturnedResourceArray& resources) override {
+    LayerTreeHostImpl::ReclaimResources(resources);
   }
 
   void NotifyReadyToActivate() override {

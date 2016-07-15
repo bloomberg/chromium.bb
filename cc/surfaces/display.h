@@ -91,7 +91,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void DidSwapBuffersComplete() override;
   void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) override;
-  void ReclaimResources(const CompositorFrameAck* ack) override;
+  void ReclaimResources(const ReturnedResourceArray& resources) override;
   void DidLoseOutputSurface() override;
   void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,

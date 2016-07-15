@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/resource_provider.h"

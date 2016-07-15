@@ -118,7 +118,7 @@ class SynchronousCompositorOutputSurface
   // IPC handlers.
   void SetMemoryPolicy(size_t bytes_limit);
   void OnReclaimResources(uint32_t output_surface_id,
-                          const cc::CompositorFrameAck& ack);
+                          const cc::ReturnedResourceArray& resources);
 
   const int routing_id_;
   const uint32_t output_surface_id_;

@@ -264,8 +264,6 @@
         'output/ca_layer_overlay.h',
         'output/compositor_frame.cc',
         'output/compositor_frame.h',
-        'output/compositor_frame_ack.cc',
-        'output/compositor_frame_ack.h',
         'output/compositor_frame_metadata.cc',
         'output/compositor_frame_metadata.h',
         'output/context_provider.h',

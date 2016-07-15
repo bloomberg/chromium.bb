@@ -341,12 +341,12 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
 
 void SynchronousCompositorOutputSurface::OnReclaimResources(
     uint32_t output_surface_id,
-    const cc::CompositorFrameAck& ack) {
+    const cc::ReturnedResourceArray& resources) {
   // Ignore message if it's a stale one coming from a different output surface
   // (e.g. after a lost context).
   if (output_surface_id != output_surface_id_)
     return;
-  ReclaimResources(&ack);
+  ReclaimResources(resources);
 }
 
 void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {
@@ -400,8 +400,7 @@ bool SynchronousCompositorOutputSurface::CalledOnValidThread() const {
 void SynchronousCompositorOutputSurface::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   DCHECK(resources.empty());
-  cc::CompositorFrameAck ack;
-  client_->ReclaimResources(&ack);
+  client_->ReclaimResources(resources);
 }
 
 void SynchronousCompositorOutputSurface::SetBeginFrameSource(

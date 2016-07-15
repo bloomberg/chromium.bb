@@ -88,9 +88,9 @@ class CompositorOutputSurface
   void OnMessageReceived(const IPC::Message& message);
   void OnUpdateVSyncParametersFromBrowser(base::TimeTicks timebase,
                                           base::TimeDelta interval);
-  void OnSwapAck(uint32_t output_surface_id, const cc::CompositorFrameAck& ack);
-  void OnReclaimResources(uint32_t output_surface_id,
-                          const cc::CompositorFrameAck& ack);
+  void OnReclaimCompositorResources(uint32_t output_surface_id,
+                                    bool is_swap_ack,
+                                    const cc::ReturnedResourceArray& resources);
   bool Send(IPC::Message* message);
 
   scoped_refptr<CompositorForwardingMessageFilter> output_surface_filter_;

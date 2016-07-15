@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
 #include "services/ui/public/cpp/window_surface.h"
 
@@ -56,9 +55,7 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame frame) {
 void OutputSurface::OnResourcesReturned(
     ui::WindowSurface* surface,
     mojo::Array<cc::ReturnedResource> resources) {
-  cc::CompositorFrameAck cfa;
-  cfa.resources = resources.To<cc::ReturnedResourceArray>();
-  ReclaimResources(&cfa);
+  ReclaimResources(resources.To<cc::ReturnedResourceArray>());
 }
 
 void OutputSurface::SwapBuffersComplete() {

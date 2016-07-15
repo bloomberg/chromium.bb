@@ -420,17 +420,12 @@ void BrowserCompositorMac::DelegatedFrameHostResizeLockWasReleased() {
   NOTREACHED();
 }
 
-void BrowserCompositorMac::DelegatedFrameHostSendCompositorSwapAck(
-    int output_surface_id,
-    const cc::CompositorFrameAck& ack) {
-  client_->BrowserCompositorMacSendCompositorSwapAck(output_surface_id, ack);
-}
-
 void BrowserCompositorMac::DelegatedFrameHostSendReclaimCompositorResources(
     int output_surface_id,
-    const cc::CompositorFrameAck& ack) {
-  client_->BrowserCompositorMacSendReclaimCompositorResources(output_surface_id,
-                                                              ack);
+    bool is_swap_ack,
+    const cc::ReturnedResourceArray& resources) {
+  client_->BrowserCompositorMacSendReclaimCompositorResources(
+      output_surface_id, is_swap_ack, resources);
 }
 
 void BrowserCompositorMac::DelegatedFrameHostOnLostCompositorResources() {

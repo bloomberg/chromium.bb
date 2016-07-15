@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "cc/output/begin_frame_args.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/test/begin_frame_args_test.h"
 
 static constexpr uint32_t kCompositorClientId = 1;
@@ -119,9 +118,7 @@ uint32_t TestDelegatingOutputSurface::GetFramebufferCopyTextureFormat() {
 
 void TestDelegatingOutputSurface::ReturnResources(
     const ReturnedResourceArray& resources) {
-  CompositorFrameAck ack;
-  ack.resources = resources;
-  client_->ReclaimResources(&ack);
+  client_->ReclaimResources(resources);
 }
 
 void TestDelegatingOutputSurface::SetBeginFrameSource(

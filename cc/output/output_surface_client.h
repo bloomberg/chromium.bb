@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
+#include "cc/resources/returned_resource.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -20,7 +21,6 @@ class Transform;
 namespace cc {
 
 class BeginFrameSource;
-class CompositorFrameAck;
 struct ManagedMemoryPolicy;
 
 class CC_EXPORT OutputSurfaceClient {
@@ -42,7 +42,7 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void DidSwapBuffersComplete() = 0;
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) = 0;
-  virtual void ReclaimResources(const CompositorFrameAck* ack) = 0;
+  virtual void ReclaimResources(const ReturnedResourceArray& resources) = 0;
   virtual void DidLoseOutputSurface() = 0;
   virtual void SetExternalTilePriorityConstraints(
       const gfx::Rect& viewport_rect,

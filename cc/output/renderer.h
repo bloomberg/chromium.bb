@@ -12,12 +12,12 @@
 #include "cc/output/compositor_frame_metadata.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/output/renderer_settings.h"
+#include "cc/resources/returned_resource.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
-class CompositorFrameAck;
 class RenderPass;
 class RenderPassId;
 class ScopedResource;
@@ -80,7 +80,7 @@ class CC_EXPORT Renderer {
 
   // Puts backbuffer onscreen.
   virtual void SwapBuffers(CompositorFrameMetadata metadata) = 0;
-  virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}
+  virtual void ReclaimResources(const ReturnedResourceArray& resources) {}
 
   bool visible() const { return visible_; }
   void SetVisible(bool visible);

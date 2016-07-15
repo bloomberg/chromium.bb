@@ -25,7 +25,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_ack.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/output/latency_info_swap_promise.h"
@@ -937,25 +936,14 @@ RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
           host_, content_view_core_->CreateMotionEventSynthesizer()));
 }
 
-void RenderWidgetHostViewAndroid::SendDelegatedFrameAck(
-    uint32_t output_surface_id) {
+void RenderWidgetHostViewAndroid::SendReclaimCompositorResources(
+    uint32_t output_surface_id,
+    bool is_swap_ack) {
   DCHECK(host_);
-  cc::CompositorFrameAck ack;
-  if (!surface_returned_resources_.empty())
-    ack.resources.swap(surface_returned_resources_);
-  host_->Send(new ViewMsg_SwapCompositorFrameAck(host_->GetRoutingID(),
-                                                 output_surface_id, ack));
-}
-
-void RenderWidgetHostViewAndroid::SendReturnedDelegatedResources(
-    uint32_t output_surface_id) {
-  DCHECK(host_);
-  cc::CompositorFrameAck ack;
-  DCHECK(!surface_returned_resources_.empty());
-  ack.resources.swap(surface_returned_resources_);
-
-  host_->Send(new ViewMsg_ReclaimCompositorResources(host_->GetRoutingID(),
-                                                     output_surface_id, ack));
+  host_->Send(new ViewMsg_ReclaimCompositorResources(
+      host_->GetRoutingID(), output_surface_id, is_swap_ack,
+      surface_returned_resources_));
+  surface_returned_resources_.clear();
 }
 
 void RenderWidgetHostViewAndroid::ReturnResources(
@@ -965,7 +953,8 @@ void RenderWidgetHostViewAndroid::ReturnResources(
   std::copy(resources.begin(), resources.end(),
             std::back_inserter(surface_returned_resources_));
   if (ack_callbacks_.empty())
-    SendReturnedDelegatedResources(last_output_surface_id_);
+    SendReclaimCompositorResources(last_output_surface_id_,
+                                   false /* is_swap_ack */);
 }
 
 void RenderWidgetHostViewAndroid::SetBeginFrameSource(
@@ -990,7 +979,8 @@ void RenderWidgetHostViewAndroid::CheckOutputSurfaceChanged(
   DestroyDelegatedContent();
   surface_factory_.reset();
   if (!surface_returned_resources_.empty())
-    SendReturnedDelegatedResources(last_output_surface_id_);
+    SendReclaimCompositorResources(last_output_surface_id_,
+                                   false /* is_swap_ack */);
 
   last_output_surface_id_ = output_surface_id;
 }
@@ -1054,9 +1044,9 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   bool has_content = !texture_size_in_layer_.IsEmpty();
 
   base::Closure ack_callback =
-      base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 output_surface_id);
+      base::Bind(&RenderWidgetHostViewAndroid::SendReclaimCompositorResources,
+                 weak_ptr_factory_.GetWeakPtr(), output_surface_id,
+                 true /* is_swap_ack */);
 
   ack_callbacks_.push(ack_callback);
 
@@ -1098,9 +1088,9 @@ void RenderWidgetHostViewAndroid::RetainFrame(uint32_t output_surface_id,
   // the ACK also blocks the renderer when its max_frames_pending is reached.
   if (last_frame_info_) {
     base::Closure ack_callback =
-        base::Bind(&RenderWidgetHostViewAndroid::SendDelegatedFrameAck,
+        base::Bind(&RenderWidgetHostViewAndroid::SendReclaimCompositorResources,
                    weak_ptr_factory_.GetWeakPtr(),
-                   last_frame_info_->output_surface_id);
+                   last_frame_info_->output_surface_id, true /* is_swap_ack */);
 
     ack_callbacks_.push(ack_callback);
   }
