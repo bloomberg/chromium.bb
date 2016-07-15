@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.5",
+  "version": "11.6",
   "entries": [
     {
       "id": 1,
@@ -1199,6 +1199,24 @@ LONG_STRING_CONST(
       "gl_renderer": ".*Vivante.*",
       "features": [
         "accelerated_video_decode"
+      ]
+    },
+    {
+      "id": 118,
+      "description": "webgl/canvas crashy on imporperly parsed vivante driver",
+      "cr_bugs": [628059],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "4.4.4"
+        }
+      },
+      "gl_vendor": "Vivante.*",
+      "gl_renderer": ".*PXA.*",
+      "features": [
+        "webgl",
+        "accelerated_2d_canvas"
       ]
     }
   ]
