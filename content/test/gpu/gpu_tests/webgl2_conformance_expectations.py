@@ -174,6 +174,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
+    self.Fail('conformance2/textures/video/tex-2d-rgb9_e5-rgb-half_float.html',
+        ['win', 'intel'], bug=628395)
     self.Fail('deqp/functional/gles3/shaderderivate_*',
         ['win', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/shaderstruct.html',
@@ -553,6 +555,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fboinvalidate/whole.html',
         ['linux'], bug=624506)
 
+    # Multi-vendor failures.
+
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['linux', 'amd', 'intel'], bug=483282)
     self.Fail('deqp/data/gles3/shaders/functions.html',
         ['linux', 'amd', 'intel'], bug=483282)
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
@@ -563,25 +569,27 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
 
+    # Linux with ANGLE only
+    self.Fail('conformance/misc/uninitialized-test.html',
+              ['linux', 'opengl'], bug=483282)
+    self.Fail('conformance/state/state-uneffected-after-compositing.html',
+              ['linux', 'opengl'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
+              ['linux', 'opengl'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['linux', 'opengl'], bug=483282)
+    self.Fail('conformance/textures/webgl_canvas/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
+              ['linux', 'opengl'], bug=483282)
+
     # Linux NVIDIA only.
     self.Fail('deqp/functional/gles3/uniformapi/random.html',
         ['linux', 'nvidia'], bug=621178)
 
     # Linux NVIDIA with ANGLE only
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
-              ['linux', 'nvidia', 'opengl'], bug=483282)
-    self.Fail('conformance/misc/uninitialized-test.html',
-              ['linux', 'nvidia', 'opengl'], bug=483282)
-    self.Fail('conformance/state/state-uneffected-after-compositing.html',
-              ['linux', 'nvidia', 'opengl'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
-              ['linux', 'nvidia', 'opengl'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
-              ['linux', 'nvidia', 'opengl'], bug=483282)
-    self.Fail('conformance/textures/webgl_canvas/' +
-              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
               ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('deqp/functional/gles3/buffercopy.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
@@ -617,6 +625,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     # It has been fixed in Mesa 12.0
+    self.Fail('deqp/data/gles2/shaders/scoping.html',
+        ['linux', 'intel'], bug=610800)
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
 
