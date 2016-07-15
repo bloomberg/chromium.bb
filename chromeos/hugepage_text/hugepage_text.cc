@@ -44,7 +44,7 @@ const int kNumHugePages = 15;
 static void* GetTransparentHugepageMapping(const size_t hsize) {
   // setup explicit transparent hugepage segment
   char* addr = static_cast<char*>(mmap(NULL, hsize + kHpageSize, kProtection,
-                                       MAP_ANONYMOUS | MAP_PRIVATE, 0, 0));
+                                       MAP_ANONYMOUS | MAP_PRIVATE, -1, 0));
   if (addr == MAP_FAILED) {
     PLOG(INFO) << "unable to mmap anon pages, fall back to small page";
     return NULL;
