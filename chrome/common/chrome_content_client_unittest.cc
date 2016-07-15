@@ -4,12 +4,11 @@
 
 #include "chrome/common/chrome_content_client.h"
 
-#include <string.h>
+#include <string>
 
-#include <memory>
-
-#include "base/command_line.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/test/scoped_command_line.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
@@ -49,19 +48,19 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
 
   // Not sure what can be done to better check the OS string, since it's highly
   // platform-dependent.
-  EXPECT_TRUE(os_str.size() > 0);
+  EXPECT_FALSE(os_str.empty());
 
   // Check that the version numbers match.
-  EXPECT_TRUE(webkit_version_str.size() > 0);
-  EXPECT_TRUE(safari_version_str.size() > 0);
+  EXPECT_FALSE(webkit_version_str.empty());
+  EXPECT_FALSE(safari_version_str.empty());
   EXPECT_EQ(webkit_version_str, safari_version_str);
 
-  EXPECT_EQ(0u, product_str.find("Chrome/"));
+  EXPECT_TRUE(
+      base::StartsWith(product_str, "Chrome/", base::CompareCase::SENSITIVE));
   if (mobile_device) {
     // "Mobile" gets tacked on to the end for mobile devices, like phones.
-    const std::string kMobileStr = " Mobile";
-    EXPECT_EQ(kMobileStr,
-              product_str.substr(product_str.size() - kMobileStr.size()));
+    EXPECT_TRUE(
+        base::EndsWith(product_str, " Mobile", base::CompareCase::SENSITIVE));
   }
 }
 
@@ -71,13 +70,11 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
 namespace chrome_common {
 
 TEST(ChromeContentClientTest, Basic) {
-#if !defined(OS_ANDROID)
-  CheckUserAgentStringOrdering(false);
-#else
+#if defined(OS_ANDROID)
   const char* const kArguments[] = {"chrome"};
-  base::CommandLine::Reset();
-  base::CommandLine::Init(1, kArguments);
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::test::ScopedCommandLine scoped_command_line;
+  base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
+  command_line->InitFromArgv(1, kArguments);
 
   // Do it for regular devices.
   ASSERT_FALSE(command_line->HasSwitch(switches::kUseMobileUserAgent));
@@ -87,6 +84,8 @@ TEST(ChromeContentClientTest, Basic) {
   command_line->AppendSwitch(switches::kUseMobileUserAgent);
   ASSERT_TRUE(command_line->HasSwitch(switches::kUseMobileUserAgent));
   CheckUserAgentStringOrdering(true);
+#else
+  CheckUserAgentStringOrdering(false);
 #endif
 }
 
@@ -94,7 +93,7 @@ TEST(ChromeContentClientTest, Basic) {
 TEST(ChromeContentClientTest, FindMostRecent) {
   std::vector<content::PepperPluginInfo*> version_vector;
   // Test an empty vector.
-  EXPECT_EQ(nullptr, ChromeContentClient::FindMostRecentPlugin(version_vector));
+  EXPECT_FALSE(ChromeContentClient::FindMostRecentPlugin(version_vector));
 
   // Now test the vector with one element.
   content::PepperPluginInfo info1;
