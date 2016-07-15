@@ -17,11 +17,8 @@
           'common/process_control.mojom',
           'common/service_worker/embedded_worker_setup.mojom',
           'common/storage_partition_service.mojom',
-          '../third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom',
         ],
         'mojom_typemaps': [
-          'common/bluetooth/web_bluetooth_device_id.typemap',
-          '../device/bluetooth/public/interfaces/bluetooth_uuid.typemap',
           '../skia/public/interfaces/skbitmap.typemap',
           '../ui/gfx/geometry/mojo/geometry.typemap',
           '../url/mojo/gurl.typemap',

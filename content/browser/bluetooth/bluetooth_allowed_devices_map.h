@@ -2,17 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_ALLOWED_DEVICES_MAP_H_
-#define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_ALLOWED_DEVICES_MAP_H_
+#ifndef CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_ALLOWED_DEVICES_MAP_
+#define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_ALLOWED_DEVICES_MAP_
 
+#include <map>
 #include <memory>
-#include <string>
-#include <unordered_map>
+#include <set>
 #include <unordered_set>
 #include <vector>
 
-#include "base/optional.h"
-#include "content/common/bluetooth/web_bluetooth_device_id.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "url/origin.h"
@@ -39,7 +37,7 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   // devices for that origin. Generates and returns a device id. Because
   // unique origins generate the same hash, unique origins are not supported.
   // Calling this function with a unique origin will CHECK-fail.
-  const WebBluetoothDeviceId& AddDevice(
+  const std::string& AddDevice(
       const url::Origin& origin,
       const std::string& device_address,
       const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options);
@@ -49,39 +47,34 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   void RemoveDevice(const url::Origin& origin,
                     const std::string& device_address);
 
-  // Returns the Bluetooth Device's id for |origin| if |origin| is allowed to
-  // access the device.
-  const WebBluetoothDeviceId* GetDeviceId(const url::Origin& origin,
-                                          const std::string& device_address);
+  // Returns the Bluetooth Device's id for |origin|. Returns an empty string
+  // if |origin| is not allowed to access the device.
+  const std::string& GetDeviceId(const url::Origin& origin,
+                                 const std::string& device_address);
 
   // For |device_id| in |origin|, returns the Bluetooth device's address. If
   // there is no such |device_id| in |origin|, returns an empty string.
   const std::string& GetDeviceAddress(const url::Origin& origin,
-                                      const WebBluetoothDeviceId& device_id);
+                                      const std::string& device_id);
 
   // Returns true if the origin has previously been granted access to
   // the service.
   bool IsOriginAllowedToAccessService(
       const url::Origin& origin,
-      const WebBluetoothDeviceId& device_id,
+      const std::string& device_id,
       const device::BluetoothUUID& service_uuid) const;
 
  private:
-  typedef std::unordered_map<std::string, WebBluetoothDeviceId>
-      DeviceAddressToIdMap;
-  typedef std::unordered_map<WebBluetoothDeviceId,
-                             std::string,
-                             WebBluetoothDeviceIdHash>
-      DeviceIdToAddressMap;
-  typedef std::unordered_map<
-      WebBluetoothDeviceId,
-      std::unordered_set<device::BluetoothUUID, device::BluetoothUUIDHash>,
-      WebBluetoothDeviceIdHash>
+  typedef std::map<std::string, std::string> DeviceAddressToIdMap;
+  typedef std::map<std::string, std::string> DeviceIdToAddressMap;
+  typedef std::map<
+      std::string,
+      std::unordered_set<device::BluetoothUUID, device::BluetoothUUIDHash>>
       DeviceIdToServicesMap;
 
   // Returns an id guaranteed to be unique for the map. The id is randomly
   // generated so that an origin can't guess the id used in another origin.
-  WebBluetoothDeviceId GenerateUniqueDeviceId();
+  std::string GenerateDeviceId();
   void AddUnionOfServicesTo(
       const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options,
       std::unordered_set<device::BluetoothUUID, device::BluetoothUUIDHash>*
@@ -99,10 +92,9 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
       origin_to_device_id_to_services_map_;
 
   // Keep track of all device_ids in the map.
-  std::unordered_set<WebBluetoothDeviceId, WebBluetoothDeviceIdHash>
-      device_id_set_;
+  std::set<std::string> device_id_set_;
 };
 
 }  //  namespace content
 
-#endif  // CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_ALLOWED_DEVICES_MAP_H_
+#endif  // CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_ALLOWED_DEVICES_MAP_

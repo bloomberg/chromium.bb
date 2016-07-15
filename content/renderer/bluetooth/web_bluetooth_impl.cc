@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "content/child/mojo/type_converters.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/bluetooth/web_bluetooth_device_id.h"
 #include "content/renderer/bluetooth/bluetooth_type_converters.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/array.h"
@@ -58,20 +57,19 @@ void WebBluetoothImpl::connect(
     blink::WebBluetoothRemoteGATTServerConnectCallbacks* callbacks) {
   // TODO(crbug.com/495270): After the Bluetooth Tree is implemented, there will
   // only be one object per device. But for now we replace the previous object.
-  WebBluetoothDeviceId device_id_obj = WebBluetoothDeviceId(device_id.utf8());
-  connected_devices_[device_id_obj] = device;
+  connected_devices_[device_id.utf8()] = device;
 
   GetWebBluetoothService().RemoteServerConnect(
-      std::move(device_id_obj),
+      mojo::String::From(device_id),
       base::Bind(&WebBluetoothImpl::OnConnectComplete, base::Unretained(this),
                  base::Passed(base::WrapUnique(callbacks))));
 }
 
 void WebBluetoothImpl::disconnect(const blink::WebString& device_id) {
-  WebBluetoothDeviceId device_id_obj = WebBluetoothDeviceId(device_id.utf8());
-  connected_devices_.erase(device_id_obj);
+  connected_devices_.erase(device_id.utf8());
 
-  GetWebBluetoothService().RemoteServerDisconnect(std::move(device_id_obj));
+  GetWebBluetoothService().RemoteServerDisconnect(
+      mojo::String::From(device_id));
 }
 
 void WebBluetoothImpl::getPrimaryServices(
@@ -82,7 +80,7 @@ void WebBluetoothImpl::getPrimaryServices(
   DCHECK(blink::mojom::IsKnownEnumValue(
       static_cast<blink::mojom::WebBluetoothGATTQueryQuantity>(quantity)));
   GetWebBluetoothService().RemoteServerGetPrimaryServices(
-      WebBluetoothDeviceId(device_id.utf8()),
+      mojo::String::From(device_id),
       static_cast<blink::mojom::WebBluetoothGATTQueryQuantity>(quantity),
       services_uuid.isEmpty()
           ? base::nullopt
@@ -190,15 +188,14 @@ void WebBluetoothImpl::OnRequestDeviceComplete(
       uuids[i] = blink::WebString::fromUTF8(device->uuids[i]);
 
     callbacks->onSuccess(base::WrapUnique(new blink::WebBluetoothDeviceInit(
-        blink::WebString::fromUTF8(device->id.str()),
+        blink::WebString::fromUTF8(device->id),
         blink::WebString::fromUTF8(device->name), uuids)));
   } else {
     callbacks->onError(ToInt32(error));
   }
 }
 
-void WebBluetoothImpl::GattServerDisconnected(
-    const WebBluetoothDeviceId& device_id) {
+void WebBluetoothImpl::GattServerDisconnected(const mojo::String& device_id) {
   auto device_iter = connected_devices_.find(device_id);
   if (device_iter != connected_devices_.end()) {
     // Remove device from the map before calling dispatchGattServerDisconnected

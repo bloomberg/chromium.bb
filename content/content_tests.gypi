@@ -673,7 +673,6 @@
       'child/worker_thread_registry_unittest.cc',
       'common/android/address_parser_unittest.cc',
       'common/android/gin_java_bridge_value_unittest.cc',
-      'common/bluetooth/web_bluetooth_device_id_unittest.cc',
       'common/common_param_traits_unittest.cc',
       'common/cross_site_document_classifier_unittest.cc',
       'common/cursors/webcursor_unittest.cc',

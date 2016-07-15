@@ -4,7 +4,6 @@
 
 #include "content/browser/bluetooth/frame_connected_bluetooth_devices.h"
 
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
@@ -24,7 +23,7 @@ FrameConnectedBluetoothDevices::~FrameConnectedBluetoothDevices() {
 }
 
 bool FrameConnectedBluetoothDevices::IsConnectedToDeviceWithId(
-    const WebBluetoothDeviceId& device_id) {
+    const std::string& device_id) {
   auto connection_iter = device_id_to_connection_map_.find(device_id);
   if (connection_iter == device_id_to_connection_map_.end()) {
     return false;
@@ -40,7 +39,7 @@ bool FrameConnectedBluetoothDevices::IsConnectedToDeviceWithId(
 }
 
 void FrameConnectedBluetoothDevices::Insert(
-    const WebBluetoothDeviceId& device_id,
+    const std::string& device_id,
     std::unique_ptr<device::BluetoothGattConnection> connection) {
   auto connection_iter = device_id_to_connection_map_.find(device_id);
   if (connection_iter != device_id_to_connection_map_.end()) {
@@ -75,7 +74,7 @@ void FrameConnectedBluetoothDevices::Insert(
 }
 
 void FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithId(
-    const WebBluetoothDeviceId& device_id) {
+    const std::string& device_id) {
   auto connection_iter = device_id_to_connection_map_.find(device_id);
   if (connection_iter == device_id_to_connection_map_.end()) {
     return;
@@ -86,18 +85,17 @@ void FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithId(
   DecrementDevicesConnectedCount();
 }
 
-base::Optional<WebBluetoothDeviceId>
-FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithAddress(
+std::string FrameConnectedBluetoothDevices::CloseConnectionToDeviceWithAddress(
     const std::string& device_address) {
   auto device_address_iter = device_address_to_id_map_.find(device_address);
   if (device_address_iter == device_address_to_id_map_.end()) {
-    return base::nullopt;
+    return std::string();
   }
-  WebBluetoothDeviceId device_id = device_address_iter->second;
+  std::string device_id = device_address_iter->second;
   CHECK(device_address_to_id_map_.erase(device_address));
   CHECK(device_id_to_connection_map_.erase(device_id));
   DecrementDevicesConnectedCount();
-  return base::make_optional(device_id);
+  return device_id;
 }
 
 void FrameConnectedBluetoothDevices::IncrementDevicesConnectedCount() {

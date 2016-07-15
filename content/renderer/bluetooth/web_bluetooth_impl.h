@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/common/bluetooth/web_bluetooth_device_id.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetooth.h"
@@ -89,7 +88,7 @@ class CONTENT_EXPORT WebBluetoothImpl
   void RemoteCharacteristicValueChanged(
       const mojo::String& characteristic_instance_id,
       mojo::Array<uint8_t> value) override;
-  void GattServerDisconnected(const WebBluetoothDeviceId& device_id) override;
+  void GattServerDisconnected(const mojo::String& device_id) override;
 
   // Callbacks for WebBluetoothService calls:
   void OnRequestDeviceComplete(
@@ -143,9 +142,7 @@ class CONTENT_EXPORT WebBluetoothImpl
   // Map of device_ids to WebBluetoothDevices. Added in connect() and removed in
   // disconnect(). This means a device may not actually be connected while in
   // this map, but that it will definitely be removed when the page navigates.
-  std::unordered_map<WebBluetoothDeviceId,
-                     blink::WebBluetoothDevice*,
-                     WebBluetoothDeviceIdHash>
+  std::unordered_map<std::string, blink::WebBluetoothDevice*>
       connected_devices_;
 
   // Binding associated with |web_bluetooth_service_|.

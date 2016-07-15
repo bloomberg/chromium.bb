@@ -5,7 +5,6 @@
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 
 #include "base/strings/string_util.h"
-#include "content/common/bluetooth/web_bluetooth_device_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -54,46 +53,46 @@ TEST_F(BluetoothAllowedDevicesMapTest, UniqueOriginNotSupported) {
 TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
 
-  const WebBluetoothDeviceId& device_id = allowed_devices_map.AddDevice(
+  const std::string& device_id = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
 
   // Test that we can retrieve the device address/id.
   EXPECT_EQ(device_id,
-            *allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
+            allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
   EXPECT_EQ(kDeviceAddress1,
             allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id));
 }
 
 TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceToMapTwice) {
   BluetoothAllowedDevicesMap allowed_devices_map;
-  const WebBluetoothDeviceId& device_id1 = allowed_devices_map.AddDevice(
+  const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
-  const WebBluetoothDeviceId& device_id2 = allowed_devices_map.AddDevice(
+  const std::string& device_id2 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
 
   EXPECT_EQ(device_id1, device_id2);
 
   // Test that we can retrieve the device address/id.
   EXPECT_EQ(device_id1,
-            *allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
+            allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
   EXPECT_EQ(kDeviceAddress1,
             allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id1));
 }
 
 TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromSameOriginToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
-  const WebBluetoothDeviceId& device_id1 = allowed_devices_map.AddDevice(
+  const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
-  const WebBluetoothDeviceId& device_id2 = allowed_devices_map.AddDevice(
+  const std::string& device_id2 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress2, empty_options_);
 
   EXPECT_NE(device_id1, device_id2);
 
   // Test that we can retrieve the device address/id.
   EXPECT_EQ(device_id1,
-            *allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
+            allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
   EXPECT_EQ(device_id2,
-            *allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress2));
+            allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress2));
 
   EXPECT_EQ(kDeviceAddress1,
             allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id1));
@@ -103,18 +102,18 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromSameOriginToMap) {
 
 TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromTwoOriginsToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
-  const WebBluetoothDeviceId& device_id1 = allowed_devices_map.AddDevice(
+  const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
-  const WebBluetoothDeviceId& device_id2 = allowed_devices_map.AddDevice(
+  const std::string& device_id2 = allowed_devices_map.AddDevice(
       kTestOrigin2, kDeviceAddress2, empty_options_);
 
   EXPECT_NE(device_id1, device_id2);
 
   // Test that the wrong origin doesn't have access to the device.
 
-  EXPECT_EQ(nullptr,
+  EXPECT_EQ(base::EmptyString(),
             allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress2));
-  EXPECT_EQ(nullptr,
+  EXPECT_EQ(base::EmptyString(),
             allowed_devices_map.GetDeviceId(kTestOrigin2, kDeviceAddress1));
 
   EXPECT_EQ(base::EmptyString(),
@@ -124,9 +123,9 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromTwoOriginsToMap) {
 
   // Test that we can retrieve the device address/id.
   EXPECT_EQ(device_id1,
-            *allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
+            allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
   EXPECT_EQ(device_id2,
-            *allowed_devices_map.GetDeviceId(kTestOrigin2, kDeviceAddress2));
+            allowed_devices_map.GetDeviceId(kTestOrigin2, kDeviceAddress2));
 
   EXPECT_EQ(kDeviceAddress1,
             allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id1));
@@ -136,9 +135,9 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromTwoOriginsToMap) {
 
 TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceFromTwoOriginsToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
-  const WebBluetoothDeviceId& device_id1 = allowed_devices_map.AddDevice(
+  const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
-  const WebBluetoothDeviceId& device_id2 = allowed_devices_map.AddDevice(
+  const std::string& device_id2 = allowed_devices_map.AddDevice(
       kTestOrigin2, kDeviceAddress1, empty_options_);
 
   EXPECT_NE(device_id1, device_id2);
@@ -152,15 +151,13 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceFromTwoOriginsToMap) {
 
 TEST_F(BluetoothAllowedDevicesMapTest, AddRemoveAddDeviceToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
-  const WebBluetoothDeviceId device_id_first_time =
-      allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1,
-                                    empty_options_);
+  const std::string device_id_first_time = allowed_devices_map.AddDevice(
+      kTestOrigin1, kDeviceAddress1, empty_options_);
 
   allowed_devices_map.RemoveDevice(kTestOrigin1, kDeviceAddress1);
 
-  const WebBluetoothDeviceId device_id_second_time =
-      allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1,
-                                    empty_options_);
+  const std::string device_id_second_time = allowed_devices_map.AddDevice(
+      kTestOrigin1, kDeviceAddress1, empty_options_);
 
   EXPECT_NE(device_id_first_time, device_id_second_time);
 }
@@ -168,15 +165,15 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddRemoveAddDeviceToMap) {
 TEST_F(BluetoothAllowedDevicesMapTest, RemoveDeviceFromMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
 
-  const WebBluetoothDeviceId device_id = allowed_devices_map.AddDevice(
+  const std::string& device_id = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
 
   allowed_devices_map.RemoveDevice(kTestOrigin1, kDeviceAddress1);
 
-  EXPECT_EQ(nullptr,
-            allowed_devices_map.GetDeviceId(kTestOrigin1, kDeviceAddress1));
   EXPECT_EQ(base::EmptyString(),
-            allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id));
+            allowed_devices_map.GetDeviceId(kTestOrigin1, device_id));
+  EXPECT_EQ(base::EmptyString(), allowed_devices_map.GetDeviceAddress(
+                                     kTestOrigin1, kDeviceAddress1));
 }
 
 TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginOneDevice) {
@@ -200,7 +197,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginOneDevice) {
   options->optional_services.push_back(kHeartRateUUID);
 
   // Add to map.
-  const WebBluetoothDeviceId device_id1 =
+  const std::string device_id1 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1, options);
 
   // Access allowed services.
@@ -232,7 +229,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginOneDevice) {
   options2->filters.push_back(scanFilter1.Clone());
   options2->filters.push_back(scanFilter2.Clone());
 
-  const WebBluetoothDeviceId device_id2 =
+  const std::string device_id2 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1, options2);
 
   // Access allowed services.
@@ -280,9 +277,9 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginTwoDevices) {
   options2->optional_services.push_back(kBloodPressureUUID);
 
   // Add devices to map.
-  const WebBluetoothDeviceId& device_id1 =
+  const std::string& device_id1 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1, options1);
-  const WebBluetoothDeviceId& device_id2 =
+  const std::string& device_id2 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress2, options2);
 
   // Access allowed services.
@@ -337,9 +334,9 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_TwoOriginsOneDevice) {
   options2->optional_services.push_back(kBloodPressureUUID);
 
   // Add devices to map.
-  const WebBluetoothDeviceId& device_id1 =
+  const std::string& device_id1 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1, options1);
-  const WebBluetoothDeviceId& device_id2 =
+  const std::string& device_id2 =
       allowed_devices_map.AddDevice(kTestOrigin2, kDeviceAddress1, options2);
 
   // Access allowed services.
@@ -398,7 +395,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, MergeServices) {
   options1->optional_services.push_back(kBatteryServiceUUID);
 
   // Add to map.
-  const WebBluetoothDeviceId device_id1 =
+  const std::string device_id1 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1, options1);
 
   // Setup second request.
@@ -413,7 +410,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, MergeServices) {
   options2->optional_services.push_back(kBloodPressureUUID);
 
   // Add to map again.
-  const WebBluetoothDeviceId device_id2 =
+  const std::string device_id2 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1, options2);
 
   EXPECT_EQ(device_id1, device_id2);
@@ -431,10 +428,13 @@ TEST_F(BluetoothAllowedDevicesMapTest, MergeServices) {
 TEST_F(BluetoothAllowedDevicesMapTest, CorrectIdFormat) {
   BluetoothAllowedDevicesMap allowed_devices_map;
 
-  const WebBluetoothDeviceId& device_id = allowed_devices_map.AddDevice(
+  const std::string& device_id = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, empty_options_);
 
-  EXPECT_TRUE(WebBluetoothDeviceId::IsValid(device_id.str()));
+  EXPECT_TRUE(device_id.size() == 24)
+      << "Expected Lenghth of a 128bit string encoded to Base64.";
+  EXPECT_TRUE((device_id[22] == '=') && (device_id[23] == '='))
+      << "Expected padding characters for a 128bit string encoded to Base64.";
 }
 
 }  // namespace content

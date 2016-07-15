@@ -7,7 +7,6 @@ _typemap_imports = [
   "//device/bluetooth/public/interfaces/typemaps.gni",
   "//components/arc/common/typemaps.gni",
   "//components/typemaps.gni",
-  "//content/common/bluetooth/typemaps.gni",
   "//gpu/ipc/common/typemaps.gni",
   "//media/mojo/interfaces/typemaps.gni",
   "//mojo/common/typemaps.gni",

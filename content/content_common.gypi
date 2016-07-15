@@ -254,8 +254,6 @@
       'common/appcache_messages.h',
       'common/ax_content_node_data.cc',
       'common/ax_content_node_data.h',
-      'common/bluetooth/web_bluetooth_device_id.cc',
-      'common/bluetooth/web_bluetooth_device_id.h',
       'common/browser_plugin/browser_plugin_constants.cc',
       'common/browser_plugin/browser_plugin_constants.h',
       'common/browser_plugin/browser_plugin_messages.h',
