@@ -10,6 +10,7 @@ unstable_protocols =								\
 	unstable/tablet/tablet-unstable-v1.xml			                \
 	unstable/tablet/tablet-unstable-v2.xml			                \
 	unstable/xdg-foreign/xdg-foreign-unstable-v1.xml			\
+	unstable/idle-inhibit/idle-inhibit-unstable-v1.xml			\
 	$(NULL)
 
 stable_protocols =								\
