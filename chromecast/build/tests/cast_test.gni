@@ -254,6 +254,11 @@ template("cast_test_group_list") {
     _shared_dir = _junit_gen_dir
   }
 
+  # Add the run list to runtime data dependencies
+  data = [
+    invoker.run_list_path,
+  ]
+
   # Generate a list of the "create_list" actions for each group. These will be
   # depended upon to ensure they're run before the "pack_build" step.
   _build_actions = []
