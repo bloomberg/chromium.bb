@@ -36,13 +36,13 @@ migrating the license refer to the [[https://github.com/liblouis/liblouis/wiki/L
 - Add ~lou_checkTable~ and ~lou_getTypeformForEmphClass~ to the C API
   and to the Python bindings
 ** Bug fixes
-- Stop buffer overrun in lou_getProgramPath, and also free memory
+- Stop buffer overrun in ~lou_getProgramPath~, and also free memory
   after usage. Thanks to Michael Curran.
 ** Other changes
 - The license of the library and most of the tables has been changed
   to [[https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html][LGPLv2.1+]].
 - Improvements to the test suite:
-  - Output is printed to stderr. This helps with locating errors when
+  - Output is printed to ~stderr~. This helps with locating errors when
     testing with the YAML test suite.
   - typeform is included in output.
 ** Braille table improvements
@@ -53,23 +53,23 @@ migrating the license refer to the [[https://github.com/liblouis/liblouis/wiki/L
   standard thanks to Peter Vagner
 - Changes to the Norwegian tables. There are now three Norwegian 8-dot
   tables
-  - no-no-comp8.ctb: Norwegian 8-dot computer braille table
-  - no-no-8dot.utb: Norwegian 8-dot braille table
-  - no-no-8dot-fallback-6dot-g0.utb: Norwegian 8-dot braille table
+  - ~no-no-comp8.ctb~: Norwegian 8-dot computer braille table
+  - ~no-no-8dot.utb~: Norwegian 8-dot braille table
+  - ~no-no-8dot-fallback-6dot-g0.utb~: Norwegian 8-dot braille table
     with uncontracted 6-dot fallback
 - Changes to the Dutch tables
   - Conforms better to the standard.
-  - nl-BE-g1.ctb renamed to nl-BE-g0.utb
-  - nl-NL-g1.ctb renamed to nl-NL-g0.utb
+  - ~nl-BE-g1.ctb~ renamed to ~nl-BE-g0.utb~
+  - ~nl-NL-g1.ctb~ renamed to ~nl-NL-g0.utb~
 - Improvements to Danish tables: Added grade 2 with limited
   contractions to 6 and 8 dots. Corrected contraction of many words.
   - Renamed:
-    - da-ansi8.dis -> da-dk-octobraille.dis
-    - da-dk-g16.utb -> da-dk-g16.ctb
-    - da-dk-g18.utb -> da-dk-g18.ctb
-    - hyph_da_DK.dic -> hyph_brl_da_dk.dic
-  - Removed: da-dk-g28caps.cti, da-dk-g28-patches.cti and
-    da-chardefs8.cti
+    - ~da-ansi8.dis~ -> ~da-dk-octobraille.dis~
+    - ~da-dk-g16.utb~ -> ~da-dk-g16.ctb~
+    - ~da-dk-g18.utb~ -> ~da-dk-g18.ctb~
+    - ~hyph_da_DK.dic~ -> ~hyph_brl_da_dk.dic~
+  - Removed: ~da-dk-g28caps.cti~, ~da-dk-g28-patches.cti~ and
+    ~da-chardefs8.cti~
 ** Backwards incompatible changes
 - The json based harness test suite has been removed as its
   functionality has been superceded by the YAML tests. Please use
