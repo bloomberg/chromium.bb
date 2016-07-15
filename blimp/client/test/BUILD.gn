@@ -1,0 +1,17 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("test") {
+  testonly = true
+
+  sources = [
+    "test_blimp_client_context_delegate.cc",
+    "test_blimp_client_context_delegate.h",
+  ]
+
+  deps = [
+    "//base",
+    "//blimp/client/public:public_headers",
+  ]
+}

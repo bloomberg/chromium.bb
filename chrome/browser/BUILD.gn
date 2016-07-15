@@ -769,6 +769,7 @@ split_static_library("browser") {
       ":client_discourse_context_proto",
       ":delta_file_proto",
       ":jni_headers",
+      "//blimp/client/public",
       "//components/data_usage/android",
       "//components/precache/content",
       "//components/precache/core",

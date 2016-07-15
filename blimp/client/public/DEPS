@@ -1,6 +1,8 @@
 include_rules = [
   "+base",
   "-blimp",
+  "+blimp/client/public",
+  "+components/keyed_service/core",
   "-content",
   "+url",
 ]

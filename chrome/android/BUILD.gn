@@ -14,11 +14,6 @@ import("//third_party/protobuf/proto_library.gni")
 import("channel.gni")
 import("java_sources.gni")
 
-declare_args() {
-  # Enables blimp for android.
-  enable_blimp = false
-}
-
 manifest_package = "org.chromium.chrome"
 
 chrome_public_jinja_variables = default_chrome_public_jinja_variables +
@@ -227,6 +222,7 @@ android_library("chrome_java") {
     deps += [
       ":chrome_java_resources",
       ":document_tab_model_info_proto_java",
+      "//blimp/client/public:public_java",
       "//components/bookmarks/common/android:bookmarks_java",
       "//components/dom_distiller/android:dom_distiller_content_java",
       "//components/dom_distiller/android:dom_distiller_core_java",

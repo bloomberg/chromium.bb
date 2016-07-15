@@ -423,7 +423,7 @@ if (is_android) {
       ":blimp_java_resources",
       "//base:base_java",
       "//blimp/client/core:core_java",
-      "//blimp/client/public:public_java",
+      "//blimp/client/public:public_headers_java",
 
       # TODO(dtrainor): Remove the ui_java target once no more Android Toast
       # notifications are used.
@@ -462,7 +462,7 @@ if (is_android) {
       "//base:base_java",
       "//base:base_java_test_support",
       "//blimp/client/core:core_java",
-      "//blimp/client/public:public_java",
+      "//blimp/client/public:public_headers_java",
       google_play_services_library,
     ]
 
@@ -481,6 +481,7 @@ if (is_android) {
       "//base",
       "//blimp/client:compositor",
       "//blimp/client/core",
+      "//blimp/client/public:public_headers",
       "//blimp/common",
       "//blimp/common/proto",
       "//blimp/net",
@@ -496,12 +497,12 @@ if (is_android) {
     ]
 
     sources = [
+      "app/android/blimp_app_jni_registrar.cc",
+      "app/android/blimp_app_jni_registrar.h",
       "app/android/blimp_client_session_android.cc",
       "app/android/blimp_client_session_android.h",
       "app/android/blimp_compositor_manager_android.cc",
       "app/android/blimp_compositor_manager_android.h",
-      "app/android/blimp_jni_registrar.cc",
-      "app/android/blimp_jni_registrar.h",
       "app/android/blimp_library_loader.cc",
       "app/android/blimp_library_loader.h",
       "app/android/blimp_view.cc",

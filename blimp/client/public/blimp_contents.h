@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_PUBLIC_BLIMP_CONTENTS_H_
 
 #include "base/macros.h"
+#include "base/supports_user_data.h"
 #include "url/gurl.h"
 
 namespace blimp {
@@ -18,10 +19,8 @@ class BlimpNavigationController;
 // from an engine in a rectangular area.
 // It enables callers to control the blimp engine through the use of the
 // navigation controller.
-class BlimpContents {
+class BlimpContents : public base::SupportsUserData {
  public:
-  virtual ~BlimpContents() = default;
-
   // Retrives the navigation controller that controls all navigation related
   // to this BlimpContents.
   virtual BlimpNavigationController& GetNavigationController() = 0;

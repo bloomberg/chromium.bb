@@ -7,8 +7,28 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-source_set("public") {
+# Only //chrome should ever depend on this. Code in //blimp/client/* should
+# instead use //blimp/client/public:public_headers directly. This target
+# differs from :public_headers by pulling in the appropriate implementation
+# as well as the headers.
+group("public") {
+  visibility = [ "//chrome/*" ]
+
+  deps = [
+    ":public_headers",
+    "//blimp/client/core:core_shim",
+  ]
+}
+
+# All code in //blimp/client/* should depend on this target instead of
+# //blimp/client/public to ensure there are no circular dependencies or
+# duplicate symbols regardless of whether enable_blimp is set or not.
+source_set("public_headers") {
+  visibility = [ "//blimp/client/*" ]
+
   sources = [
+    "blimp_client_context.h",
+    "blimp_client_context_delegate.h",
     "blimp_contents.h",
     "blimp_contents_observer.h",
     "blimp_navigation_controller.h",
@@ -16,13 +36,38 @@ source_set("public") {
 
   deps = [
     "//base",
+    "//components/keyed_service/core",
     "//url",
   ]
+
+  if (is_android) {
+    sources += [ "android/blimp_jni_registrar.h" ]
+  }
 }
 
 if (is_android) {
-  android_library("public_java") {
+  # Only //chrome should ever depend on this. Code in //blimp/client/* should
+  # instead use //blimp/client/public:public_headers_java directly. This target
+  # differs from :public_headers_java by pulling in the appropriate
+  # implementation as well as the headers.
+  java_group("public_java") {
+    visibility = [ "//chrome/*" ]
+
+    deps = [
+      ":public_headers_java",
+      "//blimp/client/core:core_shim_java",
+    ]
+  }
+
+  # All code in //blimp/client/* should depend on this target instead of
+  # //blimp/client/public:public_java to ensure there are no circular
+  # dependencies or duplicate files regardless of whether enable_blimp is set or
+  # not.
+  android_library("public_headers_java") {
+    visibility = [ "//blimp/client/*" ]
+
     java_files = [
+      "android/java/src/org/chromium/blimp_public/BlimpClientContext.java",
       "android/java/src/org/chromium/blimp_public/BlimpContents.java",
       "android/java/src/org/chromium/blimp_public/BlimpContentsObserver.java",
       "android/java/src/org/chromium/blimp_public/BlimpNavigationController.java",

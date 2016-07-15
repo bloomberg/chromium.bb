@@ -7,14 +7,13 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/supports_user_data.h"
 #include "blimp/client/core/blimp_navigation_controller_delegate.h"
 #include "blimp/client/core/blimp_navigation_controller_impl.h"
 #include "blimp/client/public/blimp_contents.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
+#include "base/android/scoped_java_ref.h"
 #endif  // defined(OS_ANDROID)
 
 namespace blimp {
@@ -30,8 +29,7 @@ class BlimpNavigationController;
 // BlimpContentsImpl is the implementation of the core class in
 // //blimp/client/core, the BlimpContents.
 class BlimpContentsImpl : public BlimpContents,
-                          public BlimpNavigationControllerDelegate,
-                          base::SupportsUserData {
+                          public BlimpNavigationControllerDelegate {
  public:
   BlimpContentsImpl();
   ~BlimpContentsImpl() override;
