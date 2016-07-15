@@ -84,13 +84,6 @@ void Init() {
   internal::g_core = new Core();
 }
 
-MojoResult AsyncWait(MojoHandle handle,
-                     MojoHandleSignals signals,
-                     const base::Callback<void(MojoResult)>& callback) {
-  CHECK(internal::g_core);
-  return internal::g_core->AsyncWait(handle, signals, callback);
-}
-
 MojoResult CreatePlatformHandleWrapper(
     ScopedPlatformHandle platform_handle,
     MojoHandle* platform_handle_wrapper_handle) {

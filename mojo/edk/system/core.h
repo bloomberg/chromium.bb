@@ -116,14 +116,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // may be called from any thread. Beware!
   void RequestShutdown(const base::Closure& callback);
 
-  // Watches on the given handle for the given signals, calling |callback| when
-  // a signal is satisfied or when all signals become unsatisfiable. |callback|
-  // must satisfy stringent requirements -- see |Awakable::Awake()| in
-  // awakable.h. In particular, it must not call any Mojo system functions.
-  MojoResult AsyncWait(MojoHandle handle,
-                       MojoHandleSignals signals,
-                       const base::Callback<void(MojoResult)>& callback);
-
   MojoResult SetProperty(MojoPropertyType type, const void* value);
 
   // ---------------------------------------------------------------------------

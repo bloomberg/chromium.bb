@@ -78,15 +78,6 @@ MOJO_SYSTEM_IMPL_EXPORT void Init();
 
 // The functions in this section are available once |Init()| has been called.
 
-// Start waiting on the handle asynchronously. On success, |callback| will be
-// called exactly once, when |handle| satisfies a signal in |signals| or it
-// becomes known that it will never do so. |callback| will be executed on an
-// arbitrary thread, so it must not call any Mojo system or embedder functions.
-MOJO_SYSTEM_IMPL_EXPORT MojoResult
-AsyncWait(MojoHandle handle,
-          MojoHandleSignals signals,
-          const base::Callback<void(MojoResult)>& callback);
-
 // Creates a |MojoHandle| that wraps the given |PlatformHandle| (taking
 // ownership of it). This |MojoHandle| can then, e.g., be passed through message
 // pipes. Note: This takes ownership (and thus closes) |platform_handle| even on

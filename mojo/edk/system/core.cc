@@ -21,7 +21,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/system/async_waiter.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
@@ -361,20 +360,6 @@ ScopedMessagePipeHandle Core::CreateChildMessagePipe(const std::string& token) {
                                 kUnknownPipeIdForDebug, 1));
   GetNodeController()->MergePortIntoParent(token, port1);
   return ScopedMessagePipeHandle(MessagePipeHandle(handle));
-}
-
-MojoResult Core::AsyncWait(MojoHandle handle,
-                           MojoHandleSignals signals,
-                           const base::Callback<void(MojoResult)>& callback) {
-  scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handle);
-  DCHECK(dispatcher);
-
-  std::unique_ptr<AsyncWaiter> waiter =
-      base::WrapUnique(new AsyncWaiter(callback));
-  MojoResult rv = dispatcher->AddAwakable(waiter.get(), signals, 0, nullptr);
-  if (rv == MOJO_RESULT_OK)
-    ignore_result(waiter.release());
-  return rv;
 }
 
 MojoResult Core::SetProperty(MojoPropertyType type, const void* value) {

@@ -1243,30 +1243,6 @@ struct TestAsyncWaiter {
   MojoResult result;
 };
 
-TEST_F(CoreTest, AsyncWait) {
-  TestAsyncWaiter waiter;
-  MockHandleInfo info;
-  MojoHandle h = CreateMockHandle(&info);
-
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->AsyncWait(h, MOJO_HANDLE_SIGNAL_READABLE,
-                              base::Bind(&TestAsyncWaiter::Awake,
-                                         base::Unretained(&waiter))));
-  ASSERT_EQ(0u, info.GetAddedAwakableSize());
-
-  info.AllowAddAwakable(true);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->AsyncWait(h, MOJO_HANDLE_SIGNAL_READABLE,
-                              base::Bind(&TestAsyncWaiter::Awake,
-                                         base::Unretained(&waiter))));
-  ASSERT_EQ(1u, info.GetAddedAwakableSize());
-
-  ASSERT_FALSE(info.GetAddedAwakableAt(0)->Awake(MOJO_RESULT_BUSY, 0));
-  ASSERT_EQ(MOJO_RESULT_BUSY, waiter.result);
-
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
-}
-
 // TODO(vtl): Test |DuplicateBufferHandle()| and |MapBuffer()|.
 
 }  // namespace
