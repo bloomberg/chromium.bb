@@ -580,13 +580,6 @@ void NotificationView::CreateOrUpdateIconView(
 
   gfx::ImageSkia icon = notification.icon().AsImageSkia();
   icon_view_->SetImage(icon, icon.size());
-
-  if (notification.draw_icon_background()) {
-    icon_view_->set_background(
-        views::Background::CreateSolidBackground(kIconBackgroundColor));
-  } else {
-    icon_view_->set_background(nullptr);
-  }
 }
 
 void NotificationView::CreateOrUpdateImageView(

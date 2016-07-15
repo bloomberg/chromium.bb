@@ -736,8 +736,6 @@
   base::scoped_nsobject<NSBox> imageBox(
       [[AccessibilityIgnoredBox alloc] initWithFrame:imageFrame]);
   [self configureCustomBox:imageBox];
-  [imageBox setFillColor:skia::SkColorToCalibratedNSColor(
-      message_center::kIconBackgroundColor)];
   [imageBox setAutoresizingMask:NSViewMinYMargin];
 
   // Inside the image box put the actual icon view.

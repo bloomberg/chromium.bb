@@ -78,11 +78,9 @@ const int kMessageLineHeight = 18;         // In DIPs.
 
 // Colors.
 // Background of the card.
-const SkColor kNotificationBackgroundColor = SkColorSetRGB(255, 255, 255);
+const SkColor kNotificationBackgroundColor = SK_ColorWHITE;
 // Background of the image.
 const SkColor kImageBackgroundColor = SkColorSetRGB(0x22, 0x22, 0x22);
-// Used behind icons smaller than the icon view.
-const SkColor kIconBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 // Title, message, ...
 const SkColor kRegularTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kDimTextColor = SkColorSetRGB(0x7f, 0x7f, 0x7f);

@@ -192,7 +192,6 @@ DownloadItemNotification::DownloadItemNotification(
 
   notification_->set_progress(0);
   notification_->set_never_timeout(false);
-  notification_->set_draw_icon_background(false);
 
   Update();
 }
