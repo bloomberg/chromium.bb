@@ -234,6 +234,11 @@ public:
         m_layoutObject->computeLayerHitTestRects(layerRects);
     }
 
+    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0) const
+    {
+        return m_layoutObject->localToAbsoluteQuad(quad, mode);
+    }
+
     FloatPoint absoluteToLocal(const FloatPoint& point, MapCoordinatesFlags mode = 0) const
     {
         return m_layoutObject->absoluteToLocal(point, mode);

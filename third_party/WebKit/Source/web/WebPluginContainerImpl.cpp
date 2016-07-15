@@ -912,7 +912,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     windowRect = frameRect();
     // Map up to the root frame.
     LayoutRect layoutWindowRect =
-        LayoutRect(m_element->document().view()->layoutView()->localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox());
+        LayoutRect(m_element->document().view()->layoutViewItem().localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox());
     // Finally, adjust for scrolling of the root frame, which the above does not take into account.
     layoutWindowRect.moveBy(-rootView->viewRect().location());
     windowRect = pixelSnappedIntRect(layoutWindowRect);
@@ -934,7 +934,7 @@ void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& cli
     // document().layoutView() can be null when we receive messages from the
     // plugins while we are destroying a frame.
     // FIXME: Can we just check m_element->document().isActive() ?
-    if (m_element->layoutObject()->document().layoutView()) {
+    if (!m_element->layoutObject()->document().layoutViewItem().isNull()) {
         // Take our element and get the clip rect from the enclosing layer and
         // frame view.
         computeClipRectsForPlugin(m_element, windowRect, clipRect, unobscuredRect);
