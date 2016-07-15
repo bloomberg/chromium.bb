@@ -61,8 +61,8 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   // Gets the labels for the profiles to suggest to the user. These labels are
   // useful for distinguishing the profiles from one another.
   //
-  // The labels never contain the full name or email address. All other fields
-  // are included in the label.
+  // The labels never contain the full name, email address, or phone numbers.
+  // All other fields are included in the label.
   base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabelsToSuggest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj);
@@ -221,8 +221,8 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
   //
   // The labels never contain the full name and include at least 2 fields.
   //
-  // If |address_only| is true, then such fields as phone number and email
-  // address are also omitted, but all fields are included in the label.
+  // If |address_only| is true, then such fields as phone number, and email
+  // address are also omitted, but all other fields are included in the label.
   base::android::ScopedJavaLocalRef<jobjectArray> GetProfileLabels(
       JNIEnv* env,
       bool address_only,
