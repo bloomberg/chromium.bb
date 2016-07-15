@@ -23,9 +23,9 @@
                 selected="[[getSelectedSearchEngineIndex_(searchEngines_)]]"
                 on-iron-select="onIronSelect_">
               <template is="dom-repeat" items="[[searchEngines_]]">
-                <!--TODO(dpapad): Use <button class="paper-item">..</button>
-                    once it lands in paper-item-shared-styles.html-->
-                <div class="dropdown-item" role="option">[[item.name]]</div>
+                <button class="dropdown-item" role="option">
+                  [[item.name]]
+                </button>
               </template>
             </paper-listbox>
           </paper-dropdown-menu>
