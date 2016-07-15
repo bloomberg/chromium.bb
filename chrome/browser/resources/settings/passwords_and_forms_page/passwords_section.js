@@ -50,7 +50,6 @@ Polymer({
 
   listeners: {
     'passwordList.scroll': 'closeMenu_',
-    'tap': 'closeMenu_',
   },
 
   /**

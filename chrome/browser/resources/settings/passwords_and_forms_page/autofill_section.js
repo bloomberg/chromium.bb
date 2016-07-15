@@ -31,7 +31,6 @@
     listeners: {
       'addressList.scroll': 'closeMenu_',
       'creditCardList.scroll': 'closeMenu_',
-      'tap': 'closeMenu_',
     },
 
     /**

@@ -113,14 +113,6 @@ Polymer({
   /** @override */
   attached: function() {
     window.addEventListener('resize', this.closeMenu.bind(this));
-
-    var focusableChildren = Polymer.dom(this).querySelectorAll(
-        '[tabindex],button');
-    if (focusableChildren.length > 0) {
-      this.$.dropdown.focusTarget = focusableChildren[0];
-      this.firstFocus_ = focusableChildren[0];
-      this.lastFocus_ = focusableChildren[focusableChildren.length - 1];
-    }
   },
 
   /** Closes the menu. */
@@ -142,6 +134,14 @@ Polymer({
   openMenu: function(anchor, itemData) {
     this.itemData = itemData;
     this.lastAnchor_ = anchor;
+
+    var focusableChildren = Polymer.dom(this).querySelectorAll(
+        '[tabindex]:not([hidden]),button:not([hidden])');
+    if (focusableChildren.length > 0) {
+      this.$.dropdown.focusTarget = focusableChildren[0];
+      this.firstFocus_ = focusableChildren[0];
+      this.lastFocus_ = focusableChildren[focusableChildren.length - 1];
+    }
 
     // Move the menu to the anchor.
     this.$.dropdown.positionTarget = anchor;
