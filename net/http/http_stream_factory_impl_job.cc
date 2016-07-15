@@ -1590,8 +1590,11 @@ int HttpStreamFactoryImpl::Job::HandleCertificateError(int error) {
 }
 
 void HttpStreamFactoryImpl::Job::SwitchToSpdyMode() {
-  if (HttpStreamFactory::spdy_enabled())
-    using_spdy_ = true;
+  if (protocol_negotiated_ == kProtoSPDY31 &&
+      !HttpStreamFactory::spdy_enabled())
+    return;
+
+  using_spdy_ = true;
 }
 
 void HttpStreamFactoryImpl::Job::ReportJobSucceededForRequest() {

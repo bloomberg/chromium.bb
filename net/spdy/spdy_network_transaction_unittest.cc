@@ -4560,7 +4560,7 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
 }
 
 // Test that turning SPDY on and off works properly.
-TEST_P(SpdyNetworkTransactionTest, SpdyOnOffToggle) {
+TEST_P(SpdyNetworkTransactionTest, DISABLED_SpdyOnOffToggle) {
   HttpStreamFactory::set_spdy_enabled(true);
   std::unique_ptr<SpdySerializedFrame> req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));

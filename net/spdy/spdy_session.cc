@@ -685,7 +685,6 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       time_func_(time_func),
       priority_dependencies_enabled_(enable_priority_dependencies),
       weak_factory_(this) {
-  DCHECK(HttpStreamFactory::spdy_enabled());
   net_log_.BeginEvent(
       NetLog::TYPE_HTTP2_SESSION,
       base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair()));

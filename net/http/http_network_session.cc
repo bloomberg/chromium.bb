@@ -369,7 +369,13 @@ void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
   if (HttpStreamFactory::spdy_enabled()) {
     *alpn_protos = next_protos_;
   } else {
+    // HttpStreamFactory::spdy_enabled() only affects SPDY/3.1,
+    // but not other ALPN protocols.
     alpn_protos->clear();
+    for (auto proto : next_protos_) {
+      if (proto != kProtoSPDY31)
+        alpn_protos->push_back(proto);
+    }
   }
 }
 
