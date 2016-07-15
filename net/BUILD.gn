@@ -1749,7 +1749,9 @@ if (!is_ios) {
 
 # Fuzzers
 
-static_library("net_fuzzer_test_support") {
+# This has a global (InitGlobals) that must always be linked in, so
+# must be a source set instead of a static library.
+source_set("net_fuzzer_test_support") {
   testonly = true
 
   sources = [
