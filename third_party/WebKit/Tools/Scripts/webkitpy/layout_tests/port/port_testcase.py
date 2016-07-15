@@ -30,7 +30,6 @@
 
 import collections
 import errno
-import os
 import socket
 import unittest
 
@@ -403,27 +402,20 @@ class PortTestCase(unittest.TestCase):
     def test_path_to_apache_config_file(self):
         port = TestWebKitPort()
 
-        saved_environ = os.environ.copy()
-        try:
-            os.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/path/to/httpd.conf'
-            self.assertRaises(IOError, port.path_to_apache_config_file)
-            port._filesystem.write_text_file('/existing/httpd.conf', 'Hello, world!')
-            os.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
-            self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
-        finally:
-            os.environ = saved_environ.copy()
+        port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/path/to/httpd.conf'
+        self.assertRaises(IOError, port.path_to_apache_config_file)
+        port._filesystem.write_text_file('/existing/httpd.conf', 'Hello, world!')
+        port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
+        self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
 
         # Mock out _apache_config_file_name_for_platform to avoid mocking platform info
         port._apache_config_file_name_for_platform = lambda: 'httpd.conf'
+        del port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH']
         self.assertEqual(port.path_to_apache_config_file(), '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/httpd.conf')
 
         # Check that even if we mock out _apache_config_file_name, the environment variable takes precedence.
-        saved_environ = os.environ.copy()
-        try:
-            os.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
-            self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
-        finally:
-            os.environ = saved_environ.copy()
+        port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
+        self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
 
     def test_additional_platform_directory(self):
         port = self.make_port(options=MockOptions(additional_platform_directory=['/tmp/foo']))

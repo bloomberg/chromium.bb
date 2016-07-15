@@ -1050,18 +1050,8 @@ class Port(object):
             self._image_differ.stop()
             self._image_differ = None
 
-    # FIXME: os.environ access should be moved to onto a common/system class to be more easily mockable.
-    def _value_or_default_from_environ(self, name, default=None):
-        if name in os.environ:
-            return os.environ[name]
-        return default
-
-    def _copy_value_from_environ_if_set(self, clean_env, name):
-        if name in os.environ:
-            clean_env[name] = os.environ[name]
-
     def setup_environ_for_server(self):
-        # We intentionally copy only a subset of os.environ when
+        # We intentionally copy only a subset of the environment when
         # launching subprocesses to ensure consistent test results.
         clean_env = {
             'LOCAL_RESOURCE_ROOT': self.layout_tests_dir(),  # FIXME: Is this used?
@@ -1088,7 +1078,7 @@ class Port(object):
                 'DBUS_SESSION_BUS_ADDRESS',
                 'XDG_DATA_DIRS',
             ]
-            clean_env['DISPLAY'] = self._value_or_default_from_environ('DISPLAY', ':1')
+            clean_env['DISPLAY'] = self.host.environ.get('DISPLAY', ':1')
         if self.host.platform.is_mac():
             clean_env['DYLD_LIBRARY_PATH'] = self._build_path()
             variables_to_copy += [
@@ -1107,7 +1097,8 @@ class Port(object):
             ]
 
         for variable in variables_to_copy:
-            self._copy_value_from_environ_if_set(clean_env, variable)
+            if variable in self.host.environ:
+                clean_env[variable] = self.host.environ[variable]
 
         for string_variable in self.get_option('additional_env_var', []):
             [name, value] = string_variable.split('=', 1)
@@ -1446,7 +1437,7 @@ class Port(object):
         contents will be used instead.
 
         This is needed only by ports that use the apache_http_server module."""
-        config_file_from_env = os.environ.get('WEBKIT_HTTP_SERVER_CONF_PATH')
+        config_file_from_env = self.host.environ.get('WEBKIT_HTTP_SERVER_CONF_PATH')
         if config_file_from_env:
             if not self._filesystem.exists(config_file_from_env):
                 raise IOError('%s was not found on the system' % config_file_from_env)
@@ -1536,7 +1527,7 @@ class Port(object):
             llvm_symbolizer_path = self.path_from_chromium_base(
                 'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer')
             if self._filesystem.exists(llvm_symbolizer_path):
-                env = os.environ.copy()
+                env = self.host.environ.copy()
                 env['LLVM_SYMBOLIZER_PATH'] = llvm_symbolizer_path
             else:
                 env = None

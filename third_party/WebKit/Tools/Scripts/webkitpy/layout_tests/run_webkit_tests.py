@@ -473,11 +473,11 @@ def _set_up_derived_options(port, options, args):
         options.batch_size = port.default_batch_size()
 
     if not options.child_processes:
-        options.child_processes = os.environ.get("WEBKIT_TEST_CHILD_PROCESSES",
-                                                 str(port.default_child_processes()))
+        options.child_processes = port.host.environ.get("WEBKIT_TEST_CHILD_PROCESSES",
+                                                        str(port.default_child_processes()))
     if not options.max_locked_shards:
-        options.max_locked_shards = int(os.environ.get("WEBKIT_TEST_MAX_LOCKED_SHARDS",
-                                                       str(port.default_max_locked_shards())))
+        options.max_locked_shards = int(port.host.environ.get("WEBKIT_TEST_MAX_LOCKED_SHARDS",
+                                                              str(port.default_max_locked_shards())))
 
     if not options.configuration:
         options.configuration = port.default_configuration()

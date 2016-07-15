@@ -861,8 +861,7 @@ class ChromiumAndroidDriver(driver.Driver):
         return kallsyms_cache_path
 
     def _find_or_create_symfs(self):
-        environment = self._port.host.copy_current_environment()
-        env = environment.to_dictionary()
+        env = self._port.host.environ.copy()
         fs = self._port.host.filesystem
 
         if 'ANDROID_SYMFS' in env:

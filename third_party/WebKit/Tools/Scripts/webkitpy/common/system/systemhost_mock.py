@@ -28,7 +28,6 @@
 
 from StringIO import StringIO
 
-from webkitpy.common.system.environment import Environment
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.platforminfo_mock import MockPlatformInfo
@@ -56,9 +55,10 @@ class MockSystemHost(object):
         self.stdin = StringIO()
         self.stdout = StringIO()
         self.stderr = StringIO()
-
-    def copy_current_environment(self):
-        return Environment({"MOCK_ENVIRON_COPY": '1'})
+        self.environ = {
+            'MOCK_ENVIRON_COPY': '1',
+            'PATH': '/bin:/mock/bin'
+        }
 
     def print_(self, *args, **kwargs):
         sep = kwargs.get('sep', ' ')

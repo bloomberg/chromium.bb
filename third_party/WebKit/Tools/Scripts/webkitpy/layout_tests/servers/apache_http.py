@@ -29,7 +29,6 @@
 """Start and stop the Apache HTTP server as it is used by the layout tests."""
 
 import logging
-import os
 import socket
 
 from webkitpy.layout_tests.servers import server_base
@@ -96,7 +95,7 @@ class ApacheHTTP(server_base.ServerBase):
             start_cmd += ['-c', "StartServers %d" % self._number_of_servers,
                           '-c', "MinSpareServers %d" % self._number_of_servers,
                           '-c', "MaxSpareServers %d" % self._number_of_servers,
-                          '-C', 'User "%s"' % os.environ.get('USERNAME', os.environ.get('USER', '')),
+                          '-C', 'User "%s"' % self._port_obj.host.environ.get('USERNAME', self._port_obj.host.environ.get('USER', '')),
                           '-k', 'start']
 
         enable_ipv6 = self._port_obj.http_server_supports_ipv6()

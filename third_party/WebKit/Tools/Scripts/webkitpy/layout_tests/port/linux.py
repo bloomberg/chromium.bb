@@ -27,7 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import logging
-import os
 
 from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderLinux
 from webkitpy.layout_tests.port import base
@@ -66,9 +65,7 @@ class LinuxPort(base.Port):
 
         if not self.get_option('disable_breakpad'):
             self._dump_reader = DumpReaderLinux(host, self._build_path())
-
-        self._original_home = os.environ['HOME']
-        self._dummy_home = None
+        self._original_home = None
 
     def additional_driver_flag(self):
         flags = super(LinuxPort, self).additional_driver_flag()
@@ -125,8 +122,9 @@ class LinuxPort(base.Port):
         If crbug.com/612730 is resolved in another way, then this may be
         unnecessary.
         """
+        self._original_home = self.host.environ.get('HOME')
         dummy_home = str(self._filesystem.mkdtemp())
-        os.environ['HOME'] = dummy_home
+        self.host.environ['HOME'] = dummy_home
         self._copy_files_to_dummy_home_dir(dummy_home)
 
     def _copy_files_to_dummy_home_dir(self, dummy_home):
@@ -140,10 +138,10 @@ class LinuxPort(base.Port):
 
     def _clean_up_dummy_home_dir(self):
         """Cleans up the dummy dir and resets the HOME environment variable."""
-        dummy_home = os.environ['HOME']
+        dummy_home = self.host.environ['HOME']
         assert dummy_home != self._original_home
         self._filesystem.rmtree(dummy_home)
-        os.environ['HOME'] = self._original_home
+        self.host.environ['HOME'] = self._original_home
 
     def _check_apache_install(self):
         result = self._check_file_exists(self.path_to_apache(), "apache2")

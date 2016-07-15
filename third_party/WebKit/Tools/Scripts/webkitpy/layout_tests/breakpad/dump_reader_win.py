@@ -70,7 +70,7 @@ class DumpReaderWin(DumpReader):
 
     def _find_depot_tools_path(self):
         """Attempt to find depot_tools location in PATH."""
-        for i in os.environ['PATH'].split(os.pathsep):
+        for i in self._host.environ.get('PATH').split(os.pathsep):
             if os.path.isfile(os.path.join(i, 'gclient')):
                 return i
 
@@ -92,10 +92,10 @@ class DumpReaderWin(DumpReader):
         ]
 
         program_files_directories = ['C:\\Program Files']
-        program_files = os.environ.get('ProgramFiles')
+        program_files = self._host.environ.get('ProgramFiles')
         if program_files:
             program_files_directories.append(program_files)
-        program_files = os.environ.get('ProgramFiles(x86)')
+        program_files = self._host.environ.get('ProgramFiles(x86)')
         if program_files:
             program_files_directories.append(program_files)
 
@@ -104,7 +104,7 @@ class DumpReaderWin(DumpReader):
             for program_files in program_files_directories:
                 possible_cdb_locations.append(template % program_files)
 
-        gyp_defines = os.environ.get('GYP_DEFINES', [])
+        gyp_defines = self._host.environ.get('GYP_DEFINES', [])
         if gyp_defines:
             gyp_defines = shlex.split(gyp_defines)
         if 'windows_sdk_path' in gyp_defines:

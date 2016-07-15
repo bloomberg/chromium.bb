@@ -26,8 +26,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-
 from webkitpy.common.system import outputcapture
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.filesystem_mock import MockFileSystem
@@ -47,11 +45,10 @@ class WinPortTest(port_testcase.PortTestCase):
         port = self.make_port()
         port._executive = MockExecutive(should_log=True)
         output = outputcapture.OutputCapture()
-        # FIXME: This test should not use the real os.environ
-        orig_environ = os.environ.copy()
+        orig_environ = port.host.environ.copy()
         env = output.assert_outputs(self, port.setup_environ_for_server)
-        self.assertEqual(orig_environ["PATH"], os.environ["PATH"])
-        self.assertNotEqual(env["PATH"], os.environ["PATH"])
+        self.assertEqual(orig_environ["PATH"], port.host.environ.get("PATH"))
+        self.assertNotEqual(env["PATH"], port.host.environ.get("PATH"))
 
     def test_setup_environ_for_server_cygpath(self):
         port = self.make_port()

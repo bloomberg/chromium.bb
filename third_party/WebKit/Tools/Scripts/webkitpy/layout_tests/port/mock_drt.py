@@ -132,7 +132,7 @@ class MockDRTPort(object):
     def setup_environ_for_server(self):
         env = self.__delegate.setup_environ_for_server()
         # We need to propagate PATH down so the python code can find the checkout.
-        env['PATH'] = os.environ['PATH']
+        env['PATH'] = self.host.environ.get('PATH')
         return env
 
     def lookup_virtual_test_args(self, test_name):
