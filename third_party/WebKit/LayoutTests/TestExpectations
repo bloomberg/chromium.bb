@@ -145,6 +145,8 @@ crbug.com/518993 imported/wpt/user-timing/test_user_timing_measure_navigation_ti
 
 crbug.com/526594 [ Win ] plugins/webview-plugin-lifecycle.html [ Failure ]
 
+crbug.com/529938 paint/invalidation/flipped-blocks-writing-mode-scroll.html [ NeedsRebaseline ]
+
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
 crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Failure Pass ]

@@ -1,0 +1,67 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "name": "LayoutBlockFlow DIV id='scroller'",
+          "position": [8, 8],
+          "bounds": [400, 400],
+          "shouldFlattenTransform": false,
+          "drawsContent": true,
+          "children": [
+            {
+              "name": "Scrolling Layer",
+              "bounds": [400, 385],
+              "shouldFlattenTransform": false,
+              "children": [
+                {
+                  "name": "Scrolling Contents Layer",
+                  "bounds": [10000, 385],
+                  "drawsContent": true,
+                  "paintInvalidations": [
+                    {
+                      "object": "LayoutBlockFlow DIV id='target'",
+                      "rect": [0, 0, 10000, 200],
+                      "reason": "style change"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Overflow Controls Host Layer",
+              "bounds": [400, 400],
+              "children": [
+                {
+                  "name": "Horizontal Scrollbar Layer",
+                  "position": [0, 385],
+                  "bounds": [400, 15],
+                  "paintInvalidations": [
+                    {
+                      "object": "Horizontal Scrollbar Layer",
+                      "rect": [0, 0, 400, 15],
+                      "reason": "full"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "style change"
+    }
+  ]
+}
+

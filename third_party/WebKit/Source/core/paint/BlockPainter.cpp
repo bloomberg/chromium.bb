@@ -226,11 +226,19 @@ bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutP
     }
     overflowRect.unite(m_layoutBlock.visualOverflowRect());
 
-    if (m_layoutBlock.hasOverflowModel() && m_layoutBlock.usesCompositedScrolling()) {
-        overflowRect.unite(m_layoutBlock.layoutOverflowRect());
-        overflowRect.move(-m_layoutBlock.scrolledContentOffset());
+    bool usesCompositedScrolling = m_layoutBlock.hasOverflowModel() && m_layoutBlock.usesCompositedScrolling();
+
+    if (usesCompositedScrolling) {
+        LayoutRect layoutOverflowRect = m_layoutBlock.layoutOverflowRect();
+        overflowRect.unite(layoutOverflowRect);
     }
     m_layoutBlock.flipForWritingMode(overflowRect);
+
+    // Scrolling is applied in physical space, which is why it is after the flip above.
+    if (usesCompositedScrolling) {
+        overflowRect.move(-m_layoutBlock.scrolledContentOffset());
+    }
+
     overflowRect.moveBy(adjustedPaintOffset);
     return paintInfo.cullRect().intersectsCullRect(overflowRect);
 }

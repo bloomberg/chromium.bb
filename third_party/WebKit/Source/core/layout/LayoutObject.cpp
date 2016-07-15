@@ -1385,6 +1385,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
 
     // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
     // does not move on scroll.
+    // TODO(chrishtr): can we just avoid adding in the scroll in the first place in LayoutBox::mapScrollingContentsRectToBoxSpace?
     if (compositedScrollsWithRespectTo(paintInvalidationContainer)) {
         LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
         newLocation.move(inverseOffset);

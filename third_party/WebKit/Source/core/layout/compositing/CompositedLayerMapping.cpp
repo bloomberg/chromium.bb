@@ -1015,7 +1015,14 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     m_scrollingContentsOffset = scrollingContentsOffset;
 
     m_scrollingContentsLayer->setSize(FloatSize(scrollSize));
-    m_scrollingContentsLayer->setOffsetDoubleFromLayoutObject(toIntSize(overflowClipRect.location()), GraphicsLayer::DontSetNeedsDisplay);
+
+    IntPoint scrollingContentsLayerOffsetFromLayoutObject;
+    if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.getScrollableArea()) {
+        scrollingContentsLayerOffsetFromLayoutObject = -scrollableArea->scrollOrigin();
+    }
+    scrollingContentsLayerOffsetFromLayoutObject.moveBy(overflowClipRect.location());
+
+    m_scrollingContentsLayer->setOffsetDoubleFromLayoutObject(toIntSize(scrollingContentsLayerOffsetFromLayoutObject), GraphicsLayer::DontSetNeedsDisplay);
 
     if (m_foregroundLayer) {
         if (m_foregroundLayer->size() != m_scrollingContentsLayer->size())
@@ -2393,9 +2400,11 @@ bool CompositedLayerMapping::needsRepaint(const GraphicsLayer& graphicsLayer) co
 void CompositedLayerMapping::adjustForCompositedScrolling(const GraphicsLayer* graphicsLayer, IntSize& offset) const
 {
     if (graphicsLayer == m_scrollingContentsLayer.get() || graphicsLayer == m_foregroundLayer.get()) {
-        if (m_owningLayer.getScrollableArea()) {
-            DoubleSize adjustedScrollOffset = m_owningLayer.getScrollableArea()->adjustedScrollOffset();
-            offset.expand(-adjustedScrollOffset.width(), -adjustedScrollOffset.height());
+        if (PaintLayerScrollableArea* scrollableArea = m_owningLayer.getScrollableArea()) {
+            // Note: this is just the scroll offset, *not* the "adjusted scroll offset". Scroll offset
+            // does not include the origin adjustment. That is instead baked already into offsetFromLayoutObject.
+            DoubleSize scrollOffset = scrollableArea->scrollOffset();
+            offset.expand(-scrollOffset.width(), -scrollOffset.height());
         }
     }
 }
