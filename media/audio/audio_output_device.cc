@@ -178,7 +178,8 @@ void AudioOutputDevice::RequestDeviceAuthorizationOnIOThread() {
         FROM_HERE, auth_timeout_,
         base::Bind(&AudioOutputDevice::OnDeviceAuthorized, this,
                    OUTPUT_DEVICE_STATUS_ERROR_TIMED_OUT,
-                   media::AudioParameters(), std::string()));
+                   media::AudioParameters::UnavailableDeviceParams(),
+                   std::string()));
   }
 }
 
