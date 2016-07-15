@@ -145,6 +145,12 @@
                 ]
             },
             {
+                "id": "Timestamp",
+                "type": "number",
+                "description": "Number of milliseconds since epoch.",
+                "hidden": true
+            },
+            {
                 "id": "CallFrame",
                 "type": "object",
                 "description": "Stack entry for runtime errors and assertions.",
@@ -313,7 +319,7 @@
                 "description": "Issued when exception was thrown and unhandled.",
                 "parameters": [
                     { "name": "exceptionId", "type": "integer", "description": "Exception id." },
-                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of the exception." },
                     { "name": "details", "$ref": "ExceptionDetails" },
                     { "name": "exception", "$ref": "RemoteObject", "optional": true, "description": "Exception object." },
                     { "name": "executionContextId", "$ref": "ExecutionContextId", "optional": true, "description": "Identifier of the context where exception happened." }
@@ -324,7 +330,6 @@
                 "name": "exceptionRevoked",
                 "description": "Issued when unhandled exception was revoked.",
                 "parameters": [
-                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
                     { "name": "message", "type": "string", "description": "Message describing why exception was revoked." },
                     { "name": "exceptionId", "type": "integer", "description": "The id of revoked exception, as reported in <code>exceptionUnhandled</code>." }
                 ],
@@ -337,7 +342,7 @@
                     { "name": "type", "type": "string", "enum": ["log", "debug", "info", "error", "warning", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Type of the call." },
                     { "name": "args", "type": "array", "items": { "$ref": "RemoteObject" }, "description": "Call arguments." },
                     { "name": "executionContextId", "$ref": "ExecutionContextId", "description": "Identifier of the context where the call was made." },
-                    { "name": "timestamp", "type": "number", "description": "Number of milliseconds since epoch. TODO(dgozman): unify with Console.Timestamp" },
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Call timestamp." },
                     { "name": "stackTrace", "$ref": "StackTrace", "optional": true, "description": "Stack trace captured when the call was made." }
                 ],
                 "hidden": true
@@ -720,12 +725,6 @@
         "dependencies": ["Runtime"],
         "types": [
             {
-                "id": "Timestamp",
-                "type": "number",
-                "description": "Number of seconds since epoch.",
-                "hidden": true
-            },
-            {
                 "id": "ConsoleMessage",
                 "type": "object",
                 "description": "Console message.",
@@ -742,7 +741,7 @@
                     { "name": "parameters", "type": "array", "items": { "$ref": "Runtime.RemoteObject" }, "optional": true, "description": "Never present. Use Runtime.consoleAPICalled instead." },
                     { "name": "stack", "$ref": "Runtime.StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." },
                     { "name": "networkRequestId", "type": "string", "optional": true, "description": "Identifier of the network request associated with this message." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
+                    { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp, when this message was fired.", "hidden": true },
                     { "name": "executionContextId", "$ref": "Runtime.ExecutionContextId", "optional": true, "description": "Identifier of the context where this message was created", "hidden": true },
                     { "name": "workerId", "type": "string", "optional": true, "description": "Identifier of the worker this message came from.", "hidden": true }
                 ]
@@ -774,7 +773,7 @@
                 "name": "messageRepeatCountUpdated",
                 "parameters": [
                     { "name": "count", "type": "integer", "description": "New repeat count value." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
+                    { "name": "timestamp", "$ref": "Runtime.Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
                 ],
                 "description": "Is not issued. Will be gone in the future versions of the protocol.",
                 "deprecated": true

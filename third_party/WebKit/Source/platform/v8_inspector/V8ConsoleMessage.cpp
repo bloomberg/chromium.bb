@@ -241,7 +241,7 @@ void V8ConsoleMessage::reportToFrontend(protocol::Console::Frontend* frontend, V
         .setSource(messageSourceValue(m_source))
         .setLevel(messageLevelValue(m_level))
         .setText(m_message)
-        .setTimestamp(m_timestamp / 1000) // TODO(dgozman): migrate this to milliseconds.
+        .setTimestamp(m_timestamp)
         .build();
     result->setLine(static_cast<int>(m_lineNumber));
     result->setColumn(static_cast<int>(m_columnNumber));
@@ -317,7 +317,7 @@ void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V
         return;
     }
     if (m_origin == V8MessageOrigin::kRevokedException) {
-        frontend->exceptionRevoked(m_timestamp, m_message, m_revokedExceptionId);
+        frontend->exceptionRevoked(m_message, m_revokedExceptionId);
         return;
     }
     if (m_origin == V8MessageOrigin::kConsole) {
