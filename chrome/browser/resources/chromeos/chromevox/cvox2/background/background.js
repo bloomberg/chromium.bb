@@ -11,7 +11,9 @@ goog.provide('Background');
 
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
+goog.require('BackgroundKeyboardHandler');
 goog.require('ChromeVoxState');
+goog.require('CommandHandler');
 goog.require('LiveRegions');
 goog.require('NextEarcons');
 goog.require('Notifications');
@@ -24,7 +26,6 @@ goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
 goog.require('cvox.ChromeVoxBackground');
 goog.require('cvox.ChromeVoxEditableTextBase');
-goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ClassicEarcons');
 goog.require('cvox.ExtensionBridge');
 goog.require('cvox.NavBraille');
@@ -125,18 +126,11 @@ Background = function() {
 
   cvox.ExtensionBridge.addMessageListener(this.onMessage_);
 
-  document.addEventListener('keydown', this.onKeyDown.bind(this), false);
-  document.addEventListener('keyup', this.onKeyUp.bind(this), false);
-  cvox.ChromeVoxKbHandler.commandHandler = this.onGotCommand.bind(this);
+  /** @type {!BackgroundKeyboardHandler} */
+  this.keyboardHandler_ = new BackgroundKeyboardHandler();
 
-  // Classic keymap.
-  cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromDefaults();
-
-  // Live region handler.
+  /** @type {!LiveRegions} */
   this.liveRegions_ = new LiveRegions(this);
-
-  /** @type {number} @private */
-  this.passThroughKeyUpCount_ = 0;
 
   /** @type {boolean} @private */
   this.inExcursion_ = false;
@@ -238,19 +232,11 @@ Background.prototype = {
    * @private
    */
   onModeChanged_: function(newMode, oldMode) {
-    if (newMode == ChromeVoxMode.CLASSIC) {
-      if (chrome.commands &&
-          chrome.commands.onCommand.hasListener(this.onGotCommand))
-        chrome.commands.onCommand.removeListener(this.onGotCommand);
-      chrome.accessibilityPrivate.setKeyboardListener(false, false);
+    this.keyboardHandler_.onModeChanged(newMode, oldMode);
+    CommandHandler.onModeChanged(newMode, oldMode);
+
+    if (newMode == ChromeVoxMode.CLASSIC)
       chrome.accessibilityPrivate.setFocusRing([]);
-    } else {
-      if (chrome.commands &&
-          !chrome.commands.onCommand.hasListener(this.onGotCommand))
-        chrome.commands.onCommand.addListener(this.onGotCommand);
-        chrome.accessibilityPrivate.setKeyboardListener(
-            true, cvox.ChromeVox.isStickyPrefOn);
-    }
 
     // note that |this.currentRange_| can *change* because the request is
     // async. Save it to ensure we're looking at the currentRange at this moment
@@ -292,23 +278,10 @@ Background.prototype = {
       (new PanelCommand(PanelCommandType.ENABLE_MENUS)).send();
       if (cvox.TabsApiHandler)
         cvox.TabsApiHandler.shouldOutputSpeechAndBraille = false;
-
-      window['prefs'].switchToKeyMap('keymap_next');
     } else {
       // |newMode| is either classic or compat.
       if (cvox.TabsApiHandler)
         cvox.TabsApiHandler.shouldOutputSpeechAndBraille = true;
-
-      // Moving from next to classic/compat should be the only case where
-      // keymaps get reset. Note the classic <-> compat switches should preserve
-      // keymaps especially if a user selected a different one.
-      if (oldMode &&
-          oldMode != ChromeVoxMode.CLASSIC &&
-          oldMode != ChromeVoxMode.COMPAT) {
-        // The user's configured key map gets wiped here; this is consistent
-        // with previous behavior when switching keymaps.
-        window['prefs'].switchToKeyMap('keymap_next');
-      }
     }
   },
 
@@ -382,509 +355,6 @@ Background.prototype = {
       var url = root.docUrl;
       url = url.substring(0, url.indexOf('#')) || url;
       cvox.ChromeVox.position[url] = position;
-    }
-  },
-
-  /**
-   * Handles ChromeVox Next commands.
-   * @param {string} command
-   * @return {boolean} True if the command should propagate.
-   */
-  onGotCommand: function(command) {
-    // Check for loss of focus which results in us invalidating our current
-    // range. Note this call is synchronis.
-    chrome.automation.getFocus(function(focusedNode) {
-      if (this.currentRange_ && !this.currentRange_.isValid())
-        this.currentRange_ = cursors.Range.fromNode(focusedNode);
-      if (!focusedNode)
-        this.currentRange_ = null;
-    }.bind(this));
-
-    // These commands don't require a current range and work in all modes.
-    switch (command) {
-      case 'toggleChromeVoxVersion':
-        if (!this.toggleNext())
-          return false;
-        if (this.currentRange_)
-          this.navigateToRange(this.currentRange_);
-        break;
-      case 'showNextUpdatePage':
-        (new PanelCommand(PanelCommandType.TUTORIAL)).send();
-        return false;
-      default:
-        break;
-    }
-
-    // Require a current range.
-    if (!this.currentRange_)
-      return true;
-
-    // Next/compat commands hereafter.
-    if (this.mode == ChromeVoxMode.CLASSIC)
-      return true;
-
-    var current = this.currentRange_;
-    var dir = Dir.FORWARD;
-    var pred = null;
-    var predErrorMsg = undefined;
-    var speechProps = {};
-    switch (command) {
-      case 'nextCharacter':
-        speechProps['phoneticCharacters'] = true;
-        current = current.move(cursors.Unit.CHARACTER, Dir.FORWARD);
-        break;
-      case 'previousCharacter':
-        speechProps['phoneticCharacters'] = true;
-        current = current.move(cursors.Unit.CHARACTER, Dir.BACKWARD);
-        break;
-      case 'nextWord':
-        current = current.move(cursors.Unit.WORD, Dir.FORWARD);
-        break;
-      case 'previousWord':
-        current = current.move(cursors.Unit.WORD, Dir.BACKWARD);
-        break;
-      case 'forward':
-      case 'nextLine':
-        current = current.move(cursors.Unit.LINE, Dir.FORWARD);
-        break;
-      case 'backward':
-      case 'previousLine':
-        current = current.move(cursors.Unit.LINE, Dir.BACKWARD);
-        break;
-      case 'nextButton':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.button;
-        predErrorMsg = 'no_next_button';
-        break;
-      case 'previousButton':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.button;
-        predErrorMsg = 'no_previous_button';
-        break;
-      case 'nextCheckbox':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.checkBox;
-        predErrorMsg = 'no_next_checkbox';
-        break;
-      case 'previousCheckbox':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.checkBox;
-        predErrorMsg = 'no_previous_checkbox';
-        break;
-      case 'nextComboBox':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.comboBox;
-        predErrorMsg = 'no_next_combo_box';
-        break;
-      case 'previousComboBox':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.comboBox;
-        predErrorMsg = 'no_previous_combo_box';
-        break;
-      case 'nextEditText':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.editText;
-        predErrorMsg = 'no_next_edit_text';
-        break;
-      case 'previousEditText':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.editText;
-        predErrorMsg = 'no_previous_edit_text';
-        break;
-      case 'nextFormField':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.formField;
-        predErrorMsg = 'no_next_form_field';
-        break;
-      case 'previousFormField':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.formField;
-        predErrorMsg = 'no_previous_form_field';
-        break;
-      case 'nextHeading':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.heading;
-        predErrorMsg = 'no_next_heading';
-        break;
-      case 'previousHeading':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.heading;
-        predErrorMsg = 'no_previous_heading';
-        break;
-      case 'nextLink':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.link;
-        predErrorMsg = 'no_next_link';
-        break;
-      case 'previousLink':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.link;
-        predErrorMsg = 'no_previous_link';
-        break;
-      case 'nextTable':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.table;
-        predErrorMsg = 'no_next_table';
-        break;
-      case 'previousTable':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.table;
-        predErrorMsg = 'no_previous_table';
-        break;
-      case 'nextVisitedLink':
-        dir = Dir.FORWARD;
-        pred = AutomationPredicate.visitedLink;
-        predErrorMsg = 'no_next_visited_link';
-        break;
-      case 'previousVisitedLink':
-        dir = Dir.BACKWARD;
-        pred = AutomationPredicate.visitedLink;
-        predErrorMsg = 'no_previous_visited_link';
-        break;
-      case 'right':
-      case 'nextObject':
-        current = current.move(cursors.Unit.DOM_NODE, Dir.FORWARD);
-        break;
-      case 'left':
-      case 'previousObject':
-        current = current.move(cursors.Unit.DOM_NODE, Dir.BACKWARD);
-        break;
-      case 'jumpToTop':
-        var node =
-            AutomationUtil.findNodePost(current.start.node.root,
-                                        Dir.FORWARD,
-                                        AutomationPredicate.leaf);
-        if (node)
-          current = cursors.Range.fromNode(node);
-        break;
-      case 'jumpToBottom':
-        var node =
-            AutomationUtil.findNodePost(current.start.node.root,
-                                        Dir.BACKWARD,
-                                        AutomationPredicate.leaf);
-        if (node)
-          current = cursors.Range.fromNode(node);
-        break;
-      case 'forceClickOnCurrentItem':
-        if (this.currentRange_) {
-          var actionNode = this.currentRange_.start.node;
-          if (actionNode.role == RoleType.inlineTextBox)
-            actionNode = actionNode.parent;
-          actionNode.doDefault();
-        }
-        // Skip all other processing; if focus changes, we should get an event
-        // for that.
-        return false;
-      case 'readFromHere':
-        ChromeVoxState.isReadingContinuously = true;
-        var continueReading = function() {
-          if (!ChromeVoxState.isReadingContinuously || !this.currentRange_)
-            return;
-
-          var prevRange = this.currentRange_;
-          var newRange =
-              this.currentRange_.move(cursors.Unit.DOM_NODE, Dir.FORWARD);
-
-          // Stop if we've wrapped back to the document.
-          var maybeDoc = newRange.start.node;
-          if (maybeDoc.role == RoleType.rootWebArea &&
-              maybeDoc.parent.root.role == RoleType.desktop) {
-            ChromeVoxState.isReadingContinuously = false;
-            return;
-          }
-
-          this.setCurrentRange(newRange);
-
-          new Output().withRichSpeechAndBraille(
-                  this.currentRange_, prevRange, Output.EventType.NAVIGATE)
-              .onSpeechEnd(continueReading)
-              .go();
-        }.bind(this);
-
-        new Output().withRichSpeechAndBraille(
-                this.currentRange_, null, Output.EventType.NAVIGATE)
-            .onSpeechEnd(continueReading)
-            .go();
-
-        return false;
-      case 'contextMenu':
-        if (this.currentRange_) {
-          var actionNode = this.currentRange_.start.node;
-          if (actionNode.role == RoleType.inlineTextBox)
-            actionNode = actionNode.parent;
-          actionNode.showContextMenu();
-          return false;
-        }
-        break;
-      case 'showOptionsPage':
-        chrome.runtime.openOptionsPage();
-        break;
-      case 'toggleChromeVox':
-        if (cvox.ChromeVox.isChromeOS)
-          return false;
-
-        cvox.ChromeVox.isActive = !cvox.ChromeVox.isActive;
-        if (!cvox.ChromeVox.isActive) {
-          var msg = Msgs.getMsg('chromevox_inactive');
-          cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.FLUSH);
-          return false;
-        }
-        break;
-      case 'toggleStickyMode':
-        cvox.ChromeVoxBackground.setPref('sticky',
-                                         !cvox.ChromeVox.isStickyPrefOn,
-                                         true);
-
-        if (cvox.ChromeVox.isStickyPrefOn)
-          chrome.accessibilityPrivate.setKeyboardListener(true, true);
-        else
-          chrome.accessibilityPrivate.setKeyboardListener(true, false);
-        return false;
-      case 'passThroughMode':
-        cvox.ChromeVox.passThroughMode = true;
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg('pass_through_key'), cvox.QueueMode.QUEUE);
-        return true;
-      case 'toggleKeyboardHelp':
-        this.startExcursion();
-        (new PanelCommand(PanelCommandType.OPEN_MENUS)).send();
-        return false;
-      case 'showHeadingsList':
-        this.startExcursion();
-        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_heading')).send();
-        return false;
-      case 'showFormsList':
-        this.startExcursion();
-        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_form')).send();
-        return false;
-      case 'showLandmarksList':
-        this.startExcursion();
-        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_landmark')).send();
-        return false;
-      case 'showLinksList':
-        this.startExcursion();
-        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link')).send();
-        return false;
-      case 'showTablesList':
-        this.startExcursion();
-        (new PanelCommand(PanelCommandType.OPEN_MENUS, 'table_strategy'))
-            .send();
-        return false;
-      case 'toggleSearchWidget':
-        (new PanelCommand(PanelCommandType.SEARCH)).send();
-        return false;
-      case 'showKbExplorerPage':
-        var explorerPage = {url: 'chromevox/background/kbexplorer.html'};
-        chrome.tabs.create(explorerPage);
-        break;
-      case 'decreaseTtsRate':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, false);
-        return false;
-      case 'increaseTtsRate':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.RATE, true);
-        return false;
-      case 'decreaseTtsPitch':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.PITCH, false);
-        return false;
-      case 'increaseTtsPitch':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.PITCH, true);
-        return false;
-      case 'decreaseTtsVolume':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.VOLUME, false);
-        return false;
-      case 'increaseTtsVolume':
-        this.increaseOrDecreaseSpeechProperty_(cvox.AbstractTts.VOLUME, true);
-        return false;
-      case 'stopSpeech':
-        cvox.ChromeVox.tts.stop();
-        ChromeVoxState.isReadingContinuously = false;
-        return false;
-      case 'toggleEarcons':
-        cvox.AbstractEarcons.enabled = !cvox.AbstractEarcons.enabled;
-        var announce = cvox.AbstractEarcons.enabled ?
-            Msgs.getMsg('earcons_on') :
-            Msgs.getMsg('earcons_off');
-        cvox.ChromeVox.tts.speak(
-            announce, cvox.QueueMode.FLUSH,
-            cvox.AbstractTts.PERSONALITY_ANNOTATION);
-        return false;
-      case 'cycleTypingEcho':
-        cvox.ChromeVox.typingEcho =
-            cvox.TypingEcho.cycle(cvox.ChromeVox.typingEcho);
-        var announce = '';
-        switch (cvox.ChromeVox.typingEcho) {
-          case cvox.TypingEcho.CHARACTER:
-            announce = Msgs.getMsg('character_echo');
-            break;
-          case cvox.TypingEcho.WORD:
-            announce = Msgs.getMsg('word_echo');
-            break;
-          case cvox.TypingEcho.CHARACTER_AND_WORD:
-            announce = Msgs.getMsg('character_and_word_echo');
-            break;
-          case cvox.TypingEcho.NONE:
-            announce = Msgs.getMsg('none_echo');
-            break;
-        }
-        cvox.ChromeVox.tts.speak(
-            announce, cvox.QueueMode.FLUSH,
-            cvox.AbstractTts.PERSONALITY_ANNOTATION);
-        return false;
-      case 'cyclePunctuationEcho':
-        cvox.ChromeVox.tts.speak(Msgs.getMsg(
-            ChromeVoxState.backgroundTts.cyclePunctuationEcho()),
-                       cvox.QueueMode.FLUSH);
-        return false;
-      case 'speakTimeAndDate':
-        chrome.automation.getDesktop(function(d) {
-          // First, try speaking the on-screen time.
-          var allTime = d.findAll({role: RoleType.time});
-          allTime.filter(function(t) {
-            return t.root.role == RoleType.desktop;
-          });
-
-          var timeString = '';
-          allTime.forEach(function(t) {
-            if (t.name)
-              timeString = t.name;
-          });
-          if (timeString) {
-            cvox.ChromeVox.tts.speak(timeString, cvox.QueueMode.FLUSH);
-          } else {
-            // Fallback to the old way of speaking time.
-            var output = new Output();
-            var dateTime = new Date();
-            output.withString(
-                dateTime.toLocaleTimeString() +
-                    ', ' + dateTime.toLocaleDateString()).go();
-          }
-        });
-        return false;
-      case 'readCurrentTitle':
-        var target = this.currentRange_.start.node;
-        var output = new Output();
-
-        if (target.root.role == RoleType.rootWebArea) {
-          // Web.
-          target = target.root;
-          output.withString(target.name || target.docUrl);
-        } else {
-          // Views.
-          while (target.role != RoleType.window)
-            target = target.parent;
-          if (target)
-            output.withString(target.name || '');
-        }
-        output.go();
-        return false;
-      case 'readCurrentURL':
-        var output = new Output();
-        var target = this.currentRange_.start.node.root;
-        output.withString(target.docUrl || '').go();
-        return false;
-      case 'reportIssue':
-        var url = Background.ISSUE_URL;
-        var description = {};
-        description['Mode'] = this.mode;
-        description['Version'] = chrome.app.getDetails().version;
-        description['Reproduction Steps'] = '%0a1.%0a2.%0a3.';
-        for (var key in description)
-          url += key + ':%20' + description[key] + '%0a';
-        chrome.tabs.create({url: url});
-        return false;
-      case 'toggleBrailleCaptions':
-        cvox.BrailleCaptionsBackground.setActive(
-            !cvox.BrailleCaptionsBackground.isEnabled());
-        return false;
-      case 'copy':
-        var textarea = document.createElement('textarea');
-        document.body.appendChild(textarea);
-        textarea.focus();
-        document.execCommand('paste');
-        var clipboardContent = textarea.value;
-        textarea.remove();
-        cvox.ChromeVox.tts.speak(
-            Msgs.getMsg('copy', [clipboardContent]), cvox.QueueMode.FLUSH);
-        this.pageSel_ = null;
-        return true;
-      case 'toggleSelection':
-        if (!this.pageSel_) {
-          this.pageSel_ = this.currentRange;
-        } else {
-          var root = this.currentRange_.start.node.root;
-          if (root && root.anchorObject && root.focusObject) {
-            var sel = new cursors.Range(
-                new cursors.Cursor(root.anchorObject, root.anchorOffset),
-                new cursors.Cursor(root.focusObject, root.focusOffset)
-                );
-            var o = new Output()
-                .format('@end_selection')
-                .withSpeechAndBraille(sel, sel, Output.EventType.NAVIGATE)
-                .go();
-          }
-          this.pageSel_ = null;
-          return false;
-        }
-        break;
-      default:
-        return true;
-    }
-
-    if (pred) {
-      var bound = current.getBound(dir).node;
-      if (bound) {
-        var node = AutomationUtil.findNextNode(
-            bound, dir, pred, {skipInitialAncestry: true});
-
-        if (node) {
-          node = AutomationUtil.findNodePre(
-              node, Dir.FORWARD, AutomationPredicate.object) || node;
-        }
-
-        if (node) {
-          current = cursors.Range.fromNode(node);
-        } else {
-          if (predErrorMsg) {
-            cvox.ChromeVox.tts.speak(Msgs.getMsg(predErrorMsg),
-                                     cvox.QueueMode.FLUSH);
-          }
-          return false;
-        }
-      }
-    }
-
-    if (current)
-      this.navigateToRange(current, undefined, speechProps);
-
-    return false;
-  },
-
-  /**
-   * Increase or decrease a speech property and make an announcement.
-   * @param {string} propertyName The name of the property to change.
-   * @param {boolean} increase If true, increases the property value by one
-   *     step size, otherwise decreases.
-   */
-  increaseOrDecreaseSpeechProperty_: function(propertyName, increase) {
-    cvox.ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
-    var announcement;
-    var valueAsPercent = Math.round(
-        cvox.ChromeVox.tts.propertyToPercentage(propertyName) * 100);
-    switch (propertyName) {
-      case cvox.AbstractTts.RATE:
-        announcement = Msgs.getMsg('announce_rate', [valueAsPercent]);
-        break;
-      case cvox.AbstractTts.PITCH:
-        announcement = Msgs.getMsg('announce_pitch', [valueAsPercent]);
-        break;
-      case cvox.AbstractTts.VOLUME:
-        announcement = Msgs.getMsg('announce_volume', [valueAsPercent]);
-        break;
-    }
-    if (announcement) {
-      cvox.ChromeVox.tts.speak(
-          announcement, cvox.QueueMode.FLUSH,
-          cvox.AbstractTts.PERSONALITY_ANNOTATION);
     }
   },
 
@@ -979,44 +449,6 @@ Background.prototype = {
   },
 
   /**
-   * Handles key down events.
-   * @param {Event} evt The key down event to process.
-   * @return {boolean} True if the default action should be performed.
-   */
-  onKeyDown: function(evt) {
-    evt.stickyMode = cvox.ChromeVox.isStickyModeOn() && cvox.ChromeVox.isActive;
-    if (cvox.ChromeVox.passThroughMode)
-      return false;
-
-    if (this.mode != ChromeVoxMode.CLASSIC &&
-        !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
-      evt.preventDefault();
-      evt.stopPropagation();
-    }
-    Output.flushNextSpeechUtterance();
-    return false;
-  },
-
-  /**
-   * Handles key up events.
-   * @param {Event} evt The key down event to process.
-   * @return {boolean} True if the default action should be performed.
-   */
-  onKeyUp: function(evt) {
-    // Reset pass through mode once a keyup (not involving the pass through key)
-    // is seen. The pass through command involves three keys.
-    if (cvox.ChromeVox.passThroughMode) {
-      if (this.passThroughKeyUpCount_ >= 3) {
-        cvox.ChromeVox.passThroughMode = false;
-        this.passThroughKeyUpCount_ = 0;
-      } else {
-        this.passThroughKeyUpCount_++;
-      }
-    }
-    return false;
-  },
-
-  /**
    * Open the options page in a new tab.
    */
   showOptionsPage: function() {
@@ -1036,22 +468,22 @@ Background.prototype = {
 
     switch (evt.command) {
       case cvox.BrailleKeyCommand.PAN_LEFT:
-        this.onGotCommand('previousObject');
+        CommandHandler.onCommand('previousObject');
         break;
       case cvox.BrailleKeyCommand.PAN_RIGHT:
-        this.onGotCommand('nextObject');
+        CommandHandler.onCommand('nextObject');
         break;
       case cvox.BrailleKeyCommand.LINE_UP:
-        this.onGotCommand('previousLine');
+        CommandHandler.onCommand('previousLine');
         break;
       case cvox.BrailleKeyCommand.LINE_DOWN:
-        this.onGotCommand('nextLine');
+        CommandHandler.onCommand('nextLine');
         break;
       case cvox.BrailleKeyCommand.TOP:
-        this.onGotCommand('jumpToTop');
+        CommandHandler.onCommand('jumpToTop');
         break;
       case cvox.BrailleKeyCommand.BOTTOM:
-        this.onGotCommand('jumpToBottom');
+        CommandHandler.onCommand('jumpToBottom');
         break;
       case cvox.BrailleKeyCommand.ROUTING:
         this.brailleRoutingCommand_(
@@ -1186,7 +618,7 @@ Background.prototype = {
           if (this.currentRange_ && this.currentRange_.start.node)
             this.setCurrentRange(this.currentRange_);
         } else if (action == 'onCommand') {
-          this.onGotCommand(msg['command']);
+          CommandHandler.onCommand(msg['command']);
         } else if (action == 'flushNextUtterance') {
           Output.flushNextSpeechUtterance();
         }
@@ -1267,7 +699,7 @@ Background.prototype = {
 
     var command = Background.GESTURE_NEXT_COMMAND_MAP[gesture];
     if (command)
-      this.onGotCommand(command);
+      CommandHandler.onCommand(command);
   },
 
   /**

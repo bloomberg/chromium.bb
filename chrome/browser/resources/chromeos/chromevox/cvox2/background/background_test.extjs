@@ -47,7 +47,7 @@ BackgroundTest.prototype = {
    */
   doCmd: function(cmd) {
     return function() {
-      ChromeVoxState.instance.onGotCommand(cmd);
+      CommandHandler.onCommand(cmd);
     };
   },
 
@@ -437,7 +437,7 @@ TEST_F('BackgroundTest', 'EarconsForControls', function() {
 TEST_F('BackgroundTest', 'ToggleChromeVoxVersion', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
-    var gotCmd = ChromeVoxState.instance.onGotCommand;
+    var gotCmd = CommandHandler.onCommand;
 
     // The command came from the background keyboard handler.
     var togglerFromBackground = gotCmd.bind(gotCmd, 'toggleChromeVoxVersion');
@@ -582,7 +582,7 @@ TEST_F('BackgroundTest', 'FocusIframe', function() {
     };
     var b = ChromeVoxState.instance;
     b.currentRange_ = cursors.Range.fromNode(button);
-    b.onGotCommand('previousElement');
+    doCmd('previousElement');
     assertFalse(didFocus);
   }.bind(this));
 });
@@ -769,7 +769,7 @@ TEST_F('BackgroundTest', 'ToggleButton', function() {
     <div aria-pressed role="button">close</div>
   */}, function(root) {
     var b = ChromeVoxState.instance;
-    var move = b.onGotCommand.bind(b, 'nextObject');
+    var move = doCmd('nextObject');
     mockFeedback.call(move)
         .expectSpeech('ok')
         .expectSpeech('Button')
@@ -977,7 +977,7 @@ TEST_F('BackgroundTest', 'Selection', function() {
     // Fakes a toggleSelection command.
     root.addEventListener('textSelectionChanged', function() {
       if (root.focusOffset == 3)
-        ChromeVoxState.instance.onGotCommand('toggleSelection');
+        CommandHandler.onCommand('toggleSelection');
     }, true);
 
     mockFeedback.call(doCmd('toggleSelection'))

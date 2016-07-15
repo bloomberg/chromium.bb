@@ -43,7 +43,7 @@ LiveRegionsTest.prototype = {
    */
   doCmd: function(cmd) {
     return function() {
-      ChromeVoxState.instance.onGotCommand(cmd);
+      CommandHandler.onCommand(cmd);
     };
   },
 };

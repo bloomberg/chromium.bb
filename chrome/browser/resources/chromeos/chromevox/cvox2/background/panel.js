@@ -310,10 +310,9 @@ Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
           binding.title,
           binding.keySeq,
           function() {
-            var bkgnd =
-                chrome.extension.
-                getBackgroundPage()['ChromeVoxState']['instance'];
-            bkgnd['onGotCommand'](binding.command);
+            var CommandHandler =
+                chrome.extension.getBackgroundPage()['CommandHandler'];
+            CommandHandler['onCommand'](binding.command);
           });
     }
   }, this));
