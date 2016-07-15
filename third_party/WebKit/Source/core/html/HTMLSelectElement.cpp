@@ -143,11 +143,11 @@ bool HTMLSelectElement::hasPlaceholderLabelOption() const
     if (multiple() || size() > 1)
         return false;
 
-    int listIndex = optionToListIndex(0);
-    ASSERT(listIndex >= 0);
-    if (listIndex < 0)
+    // TODO(tkent): This function is called in CSS selector matching. Using
+    // listItems() might have performance impact.
+    if (listItems().size() == 0 || !isHTMLOptionElement(listItems()[0]))
         return false;
-    return !listIndex && toHTMLOptionElement(listItems()[listIndex])->value().isEmpty();
+    return toHTMLOptionElement(listItems()[0])->value().isEmpty();
 }
 
 String HTMLSelectElement::validationMessage() const
@@ -241,9 +241,8 @@ void HTMLSelectElement::add(const HTMLOptionElementOrHTMLOptGroupElement& elemen
 
 void HTMLSelectElement::remove(int optionIndex)
 {
-    int listIndex = optionToListIndex(optionIndex);
-    if (listIndex >= 0)
-        listItems()[listIndex]->remove(IGNORE_EXCEPTION);
+    if (HTMLOptionElement* option = item(optionIndex))
+        option->remove(IGNORE_EXCEPTION);
 }
 
 String HTMLSelectElement::value() const
@@ -1054,25 +1053,6 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element, SelectOptionFla
     }
 
     notifyFormStateChanged();
-}
-
-int HTMLSelectElement::optionToListIndex(int optionIndex) const
-{
-    const ListItems& items = listItems();
-    int listSize = static_cast<int>(items.size());
-    if (optionIndex < 0 || optionIndex >= listSize)
-        return -1;
-
-    int optionIndex2 = -1;
-    for (int listIndex = 0; listIndex < listSize; ++listIndex) {
-        if (isHTMLOptionElement(*items[listIndex])) {
-            ++optionIndex2;
-            if (optionIndex2 == optionIndex)
-                return listIndex;
-        }
-    }
-
-    return -1;
 }
 
 void HTMLSelectElement::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)

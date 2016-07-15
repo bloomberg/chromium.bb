@@ -117,7 +117,6 @@ public:
     bool canSelectAll() const;
     void selectAll();
     void listBoxOnChange();
-    int optionToListIndex(int optionIndex) const;
     int activeSelectionEndListIndex() const;
     HTMLOptionElement* activeSelectionEnd() const;
     void setActiveSelectionAnchor(HTMLOptionElement*);
