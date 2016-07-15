@@ -68,6 +68,9 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
                                     const gfx::Rect& bounds_rect,
                                     const gfx::RectF& crop_rect) = 0;
 
+  // Flush any preceding rendering for the image.
+  virtual void Flush() = 0;
+
   // Dumps information about the memory backing the GLImage to a dump named
   // |dump_name|.
   virtual void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,

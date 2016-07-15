@@ -117,6 +117,10 @@ typedef EGLBoolean(GL_BINDING_CALL* eglGetSyncValuesCHROMIUMProc)(
     EGLuint64CHROMIUM* ust,
     EGLuint64CHROMIUM* msc,
     EGLuint64CHROMIUM* sbc);
+typedef EGLBoolean(GL_BINDING_CALL* eglImageFlushExternalEXTProc)(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    const EGLAttrib* attrib_list);
 typedef EGLBoolean(GL_BINDING_CALL* eglInitializeProc)(EGLDisplay dpy,
                                                        EGLint* major,
                                                        EGLint* minor);
@@ -205,6 +209,7 @@ struct ExtensionsEGL {
   bool b_EGL_ANGLE_stream_producer_d3d_texture_nv12;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;
   bool b_EGL_CHROMIUM_sync_control;
+  bool b_EGL_EXT_image_flush_external;
   bool b_EGL_KHR_fence_sync;
   bool b_EGL_KHR_gl_texture_2D_image;
   bool b_EGL_KHR_image;
@@ -250,6 +255,7 @@ struct ProcsEGL {
   eglGetProcAddressProc eglGetProcAddressFn;
   eglGetSyncAttribKHRProc eglGetSyncAttribKHRFn;
   eglGetSyncValuesCHROMIUMProc eglGetSyncValuesCHROMIUMFn;
+  eglImageFlushExternalEXTProc eglImageFlushExternalEXTFn;
   eglInitializeProc eglInitializeFn;
   eglMakeCurrentProc eglMakeCurrentFn;
   eglPostSubBufferNVProc eglPostSubBufferNVFn;
@@ -371,6 +377,10 @@ class GL_EXPORT EGLApi {
                                                 EGLuint64CHROMIUM* ust,
                                                 EGLuint64CHROMIUM* msc,
                                                 EGLuint64CHROMIUM* sbc) = 0;
+  virtual EGLBoolean eglImageFlushExternalEXTFn(
+      EGLDisplay dpy,
+      EGLImageKHR image,
+      const EGLAttrib* attrib_list) = 0;
   virtual EGLBoolean eglInitializeFn(EGLDisplay dpy,
                                      EGLint* major,
                                      EGLint* minor) = 0;
@@ -484,6 +494,8 @@ class GL_EXPORT EGLApi {
 #define eglGetSyncAttribKHR ::gl::g_current_egl_context->eglGetSyncAttribKHRFn
 #define eglGetSyncValuesCHROMIUM \
   ::gl::g_current_egl_context->eglGetSyncValuesCHROMIUMFn
+#define eglImageFlushExternalEXT \
+  ::gl::g_current_egl_context->eglImageFlushExternalEXTFn
 #define eglInitialize ::gl::g_current_egl_context->eglInitializeFn
 #define eglMakeCurrent ::gl::g_current_egl_context->eglMakeCurrentFn
 #define eglPostSubBufferNV ::gl::g_current_egl_context->eglPostSubBufferNVFn

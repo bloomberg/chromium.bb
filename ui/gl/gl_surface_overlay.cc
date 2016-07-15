@@ -33,4 +33,8 @@ bool GLSurfaceOverlay::ScheduleOverlayPlane(
                                       bounds_rect_, crop_rect_);
 }
 
+void GLSurfaceOverlay::Flush() const {
+  return image_->Flush();
+}
+
 }  // namespace gl

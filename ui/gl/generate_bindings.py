@@ -1496,6 +1496,10 @@ EGL_FUNCTIONS = [
       'EGLuint64CHROMIUM* ust, EGLuint64CHROMIUM* msc, '
       'EGLuint64CHROMIUM* sbc', },
 { 'return_type': 'EGLBoolean',
+  'names': ['eglImageFlushExternalEXT'],
+  'arguments':
+      'EGLDisplay dpy, EGLImageKHR image, const EGLAttrib* attrib_list' },
+{ 'return_type': 'EGLBoolean',
   'names': ['eglInitialize'],
   'arguments': 'EGLDisplay dpy, EGLint* major, EGLint* minor', },
 { 'return_type': 'EGLBoolean',

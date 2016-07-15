@@ -31,6 +31,8 @@ class GL_EXPORT GLSurfaceOverlay {
   // |widget|.
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget) const;
 
+  void Flush() const;
+
  private:
   int z_order_;
   gfx::OverlayTransform transform_;

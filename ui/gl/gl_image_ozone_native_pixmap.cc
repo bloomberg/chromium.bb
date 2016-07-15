@@ -101,7 +101,10 @@ EGLint FourCC(gfx::BufferFormat format) {
 
 GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const gfx::Size& size,
                                                    unsigned internalformat)
-    : GLImageEGL(size), internalformat_(internalformat) {}
+    : GLImageEGL(size),
+      internalformat_(internalformat),
+      has_image_flush_external_(
+          GLSurfaceEGL::HasEGLExtension("EGL_EXT_image_flush_external")) {}
 
 GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
 }
@@ -206,6 +209,20 @@ bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(
   DCHECK(pixmap_);
   return pixmap_->ScheduleOverlayPlane(widget, z_order, transform, bounds_rect,
                                        crop_rect);
+}
+
+void GLImageOzoneNativePixmap::Flush() {
+  if (!has_image_flush_external_)
+    return;
+
+  EGLDisplay display = GLSurfaceEGL::GetHardwareDisplay();
+  const EGLAttrib attribs[] = {
+      EGL_NONE,
+  };
+  if (!eglImageFlushExternalEXT(display, egl_image_, attribs)) {
+    LOG(ERROR) << "Failed to flush rendering";
+    return;
+  }
 }
 
 void GLImageOzoneNativePixmap::OnMemoryDump(

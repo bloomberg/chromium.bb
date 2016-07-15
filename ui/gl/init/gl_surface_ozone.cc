@@ -216,6 +216,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
     PendingFrame();
 
     bool ScheduleOverlayPlanes(gfx::AcceleratedWidget widget);
+    void Flush();
 
     bool ready;
     std::vector<GLSurfaceOverlay> overlays;
@@ -226,7 +227,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
 
   void SubmitFrame();
 
-  EGLSyncKHR InsertFence();
+  EGLSyncKHR InsertFence(bool implicit);
   void FenceRetired(EGLSyncKHR fence, PendingFrame* frame);
 
   void SwapCompleted(const SwapCompletionCallback& callback,
@@ -238,6 +239,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   ScopedVector<PendingFrame> unsubmitted_frames_;
   bool has_implicit_external_sync_;
+  bool has_image_flush_external_;
   bool last_swap_buffers_result_;
   bool swap_buffers_pending_;
 
@@ -257,6 +259,11 @@ bool GLSurfaceOzoneSurfaceless::PendingFrame::ScheduleOverlayPlanes(
   return true;
 }
 
+void GLSurfaceOzoneSurfaceless::PendingFrame::Flush() {
+  for (const auto& overlay : overlays)
+    overlay.Flush();
+}
+
 GLSurfaceOzoneSurfaceless::GLSurfaceOzoneSurfaceless(
     std::unique_ptr<ui::SurfaceOzoneEGL> ozone_surface,
     gfx::AcceleratedWidget widget)
@@ -265,6 +272,8 @@ GLSurfaceOzoneSurfaceless::GLSurfaceOzoneSurfaceless(
       widget_(widget),
       has_implicit_external_sync_(
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
+      has_image_flush_external_(
+          HasEGLExtension("EGL_EXT_image_flush_external")),
       last_swap_buffers_result_(true),
       swap_buffers_pending_(false),
       weak_factory_(this) {
@@ -291,10 +300,13 @@ bool GLSurfaceOzoneSurfaceless::Resize(const gfx::Size& size,
 
 gfx::SwapResult GLSurfaceOzoneSurfaceless::SwapBuffers() {
   glFlush();
+
+  unsubmitted_frames_.back()->Flush();
+
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
-  if (has_implicit_external_sync_) {
-    EGLSyncKHR fence = InsertFence();
+  if (has_implicit_external_sync_ || has_image_flush_external_) {
+    EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
     if (!fence)
       return gfx::SwapResult::SWAP_FAILED;
 
@@ -358,6 +370,7 @@ void GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
   }
 
   glFlush();
+  unsubmitted_frames_.back()->Flush();
 
   SwapCompletionCallback surface_swap_callback =
       base::Bind(&GLSurfaceOzoneSurfaceless::SwapCompleted,
@@ -369,8 +382,8 @@ void GLSurfaceOzoneSurfaceless::SwapBuffersAsync(
 
   // TODO: the following should be replaced by a per surface flush as it gets
   // implemented in GL drivers.
-  if (has_implicit_external_sync_) {
-    EGLSyncKHR fence = InsertFence();
+  if (has_implicit_external_sync_ || has_image_flush_external_) {
+    EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
     if (!fence) {
       callback.Run(gfx::SwapResult::SWAP_FAILED);
       return;
@@ -438,11 +451,12 @@ void GLSurfaceOzoneSurfaceless::SubmitFrame() {
   }
 }
 
-EGLSyncKHR GLSurfaceOzoneSurfaceless::InsertFence() {
+EGLSyncKHR GLSurfaceOzoneSurfaceless::InsertFence(bool implicit) {
   const EGLint attrib_list[] = {EGL_SYNC_CONDITION_KHR,
                                 EGL_SYNC_PRIOR_COMMANDS_IMPLICIT_EXTERNAL_ARM,
                                 EGL_NONE};
-  return eglCreateSyncKHR(GetDisplay(), EGL_SYNC_FENCE_KHR, attrib_list);
+  return eglCreateSyncKHR(GetDisplay(), EGL_SYNC_FENCE_KHR,
+                          implicit ? attrib_list : NULL);
 }
 
 void GLSurfaceOzoneSurfaceless::FenceRetired(EGLSyncKHR fence,

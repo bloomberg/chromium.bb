@@ -78,6 +78,7 @@ void DriverEGL::InitializeStaticBindings() {
   fn.eglGetSyncAttribKHRFn = reinterpret_cast<eglGetSyncAttribKHRProc>(
       GetGLProcAddress("eglGetSyncAttribKHR"));
   fn.eglGetSyncValuesCHROMIUMFn = 0;
+  fn.eglImageFlushExternalEXTFn = 0;
   fn.eglInitializeFn =
       reinterpret_cast<eglInitializeProc>(GetGLProcAddress("eglInitialize"));
   fn.eglMakeCurrentFn =
@@ -152,6 +153,8 @@ void DriverEGL::InitializeExtensionBindings() {
       std::string::npos;
   ext.b_EGL_CHROMIUM_sync_control =
       extensions.find("EGL_CHROMIUM_sync_control ") != std::string::npos;
+  ext.b_EGL_EXT_image_flush_external =
+      extensions.find("EGL_EXT_image_flush_external ") != std::string::npos;
   ext.b_EGL_KHR_fence_sync =
       extensions.find("EGL_KHR_fence_sync ") != std::string::npos;
   ext.b_EGL_KHR_gl_texture_2D_image =
@@ -214,6 +217,13 @@ void DriverEGL::InitializeExtensionBindings() {
     fn.eglGetSyncValuesCHROMIUMFn =
         reinterpret_cast<eglGetSyncValuesCHROMIUMProc>(
             GetGLProcAddress("eglGetSyncValuesCHROMIUM"));
+  }
+
+  debug_fn.eglImageFlushExternalEXTFn = 0;
+  if (ext.b_EGL_EXT_image_flush_external) {
+    fn.eglImageFlushExternalEXTFn =
+        reinterpret_cast<eglImageFlushExternalEXTProc>(
+            GetGLProcAddress("eglImageFlushExternalEXT"));
   }
 
   debug_fn.eglPostSubBufferNVFn = 0;
@@ -681,6 +691,20 @@ Debug_eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
   return result;
 }
 
+static EGLBoolean GL_BINDING_CALL
+Debug_eglImageFlushExternalEXT(EGLDisplay dpy,
+                               EGLImageKHR image,
+                               const EGLAttrib* attrib_list) {
+  GL_SERVICE_LOG("eglImageFlushExternalEXT"
+                 << "(" << dpy << ", " << image << ", "
+                 << static_cast<const void*>(attrib_list) << ")");
+  DCHECK(g_driver_egl.debug_fn.eglImageFlushExternalEXTFn != nullptr);
+  EGLBoolean result =
+      g_driver_egl.debug_fn.eglImageFlushExternalEXTFn(dpy, image, attrib_list);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
 static EGLBoolean GL_BINDING_CALL Debug_eglInitialize(EGLDisplay dpy,
                                                       EGLint* major,
                                                       EGLint* minor) {
@@ -1128,6 +1152,10 @@ void DriverEGL::InitializeDebugBindings() {
     debug_fn.eglGetSyncValuesCHROMIUMFn = fn.eglGetSyncValuesCHROMIUMFn;
     fn.eglGetSyncValuesCHROMIUMFn = Debug_eglGetSyncValuesCHROMIUM;
   }
+  if (!debug_fn.eglImageFlushExternalEXTFn) {
+    debug_fn.eglImageFlushExternalEXTFn = fn.eglImageFlushExternalEXTFn;
+    fn.eglImageFlushExternalEXTFn = Debug_eglImageFlushExternalEXT;
+  }
   if (!debug_fn.eglInitializeFn) {
     debug_fn.eglInitializeFn = fn.eglInitializeFn;
     fn.eglInitializeFn = Debug_eglInitialize;
@@ -1422,6 +1450,13 @@ EGLBoolean EGLApiBase::eglGetSyncValuesCHROMIUMFn(EGLDisplay dpy,
                                                   EGLuint64CHROMIUM* msc,
                                                   EGLuint64CHROMIUM* sbc) {
   return driver_->fn.eglGetSyncValuesCHROMIUMFn(dpy, surface, ust, msc, sbc);
+}
+
+EGLBoolean EGLApiBase::eglImageFlushExternalEXTFn(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    const EGLAttrib* attrib_list) {
+  return driver_->fn.eglImageFlushExternalEXTFn(dpy, image, attrib_list);
 }
 
 EGLBoolean EGLApiBase::eglInitializeFn(EGLDisplay dpy,
@@ -1787,6 +1822,14 @@ EGLBoolean TraceEGLApi::eglGetSyncValuesCHROMIUMFn(EGLDisplay dpy,
                                                    EGLuint64CHROMIUM* sbc) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglGetSyncValuesCHROMIUM")
   return egl_api_->eglGetSyncValuesCHROMIUMFn(dpy, surface, ust, msc, sbc);
+}
+
+EGLBoolean TraceEGLApi::eglImageFlushExternalEXTFn(
+    EGLDisplay dpy,
+    EGLImageKHR image,
+    const EGLAttrib* attrib_list) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglImageFlushExternalEXT")
+  return egl_api_->eglImageFlushExternalEXTFn(dpy, image, attrib_list);
 }
 
 EGLBoolean TraceEGLApi::eglInitializeFn(EGLDisplay dpy,

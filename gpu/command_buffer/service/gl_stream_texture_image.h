@@ -31,6 +31,9 @@ class GPU_EXPORT GLStreamTextureImage : public gl::GLImage {
     matrix[13] += matrix[5];
     matrix[5] = -matrix[5];
   }
+
+  void Flush() override {}
+
  protected:
   ~GLStreamTextureImage() override {}
 
