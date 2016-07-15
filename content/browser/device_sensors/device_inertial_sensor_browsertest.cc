@@ -246,7 +246,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationTest) {
   fetcher_->stopped_orientation_.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, LightTest) {
+// Flaky test. See http://crbug.com/628527.
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_LightTest) {
   // The test page will register an event handler for light events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
@@ -259,7 +260,8 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, LightTest) {
   fetcher_->stopped_light_.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
+// Flaky test. See http://crbug.com/628527.
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, DISABLED_MotionTest) {
   // The test page will register an event handler for motion events,
   // expects to get an event with fake values, then removes the event
   // handler and navigates to #pass.
@@ -271,8 +273,9 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionTest) {
   fetcher_->stopped_motion_.Wait();
 }
 
+// Flaky test. See http://crbug.com/628527.
 IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
-    LightOneOffInfintyTest) {
+                       DISABLED_LightOneOffInfintyTest) {
   // The test page registers an event handler for light events and expects
   // to get an event with value equal to infinity, because no sensor data can
   // be provided.
@@ -287,7 +290,9 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
   fetcher_->stopped_light_.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationNullTest) {
+// Flaky test. See http://crbug.com/628527.
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+                       DISABLED_OrientationNullTest) {
   // The test page registers an event handler for orientation events and
   // expects to get an event with null values, because no sensor data can be
   // provided.
@@ -301,7 +306,9 @@ IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, OrientationNullTest) {
   fetcher_->stopped_orientation_.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest, MotionNullTest) {
+// Flaky test. See http://crbug.com/628527.
+IN_PROC_BROWSER_TEST_F(DeviceInertialSensorBrowserTest,
+                       DISABLED_MotionNullTest) {
   // The test page registers an event handler for motion events and
   // expects to get an event with null values, because no sensor data can be
   // provided.
