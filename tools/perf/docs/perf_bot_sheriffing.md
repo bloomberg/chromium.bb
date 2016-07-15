@@ -44,7 +44,7 @@ optionally be used to easily track the different issues and associate
 them with specific bugs.
 
 You can see a list of all previously filed bugs using the
-**[Performance-BotHealth](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth)**
+**[Performance-Sheriff-BotHealth](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-Sheriff-BotHealth)**
 label in crbug.
 
 Please also check the recent
@@ -81,7 +81,7 @@ turn the bot purple, for example.
 
 If the bot goes purple and you believe it's an infrastructure issue, file a bug
 with
-[this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Link+to+buildbot+status+page:&summary=Purple+Bot+on+chromium.perf),
+[this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-Sheriff-BotHealth,Infra-Troopers,OS-?&comment=Link+to+buildbot+status+page:&summary=Purple+Bot+on+chromium.perf),
 which will automatically add the bug to the trooper queue. Be sure to note
 which step is failing, and paste any relevant info from the logs into the bug. Also be sure to read [go/bug-a-trooper](http://go/bug-a-trooper) for contacting troopers.
 
@@ -100,12 +100,12 @@ There are two types of device failures:
     failure.
 
 For both types of failures, please file a bug with
-[this template](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ELabs&labels=Pri-1,Performance-BotHealth,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
+[this template](https://bugs.chromium.org/p/chromium/issues/entry?components=Infra%3ELabs&labels=Pri-1,Performance-Sheriff-BotHealth,OS-Android&comment=Link+to+buildbot+status+page:&summary=Device+offline+on+chromium.perf)
 which will add an issue to the infra labs queue.
 
 If you need help triaging, here are the common labels you should use:
 
-*   **Performance-BotHealth** should go on all bugs you file about the bots;
+*   **Performance-Sheriff-BotHealth** should go on all bugs you file about the bots;
     it's the label we use to track all the issues.
 *   **Infra-Troopers** adds the bug to the trooper queue. This is for high
     priority issues, like a build breakage. Please add a comment explaining what
@@ -148,7 +148,7 @@ You want to keep the waterfall green! So any bot that is red or purple needs to
 be investigated. When a test fails:
 
 1.  File a bug using
-    [this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Performance-BotHealth,Pri-1,Type-Bug-Regression,OS-?&comment=Revision+range+first+seen:%0ALink+to+failing+step+log:%0A%0A%0AIf%20the%20test%20is%20disabled,%20please%20downgrade%20to%20Pri-2.&summary=%3Ctest%3E+failure+on+chromium.perf+at+%3Crevisionrange%3E).
+    [this template](https://bugs.chromium.org/p/chromium/issues/entry?labels=Performance-Sheriff-BotHealth,Pri-1,Type-Bug-Regression,OS-?&comment=Revision+range+first+seen:%0ALink+to+failing+step+log:%0A%0A%0AIf%20the%20test%20is%20disabled,%20please%20downgrade%20to%20Pri-2.&summary=%3Ctest%3E+failure+on+chromium.perf+at+%3Crevisionrange%3E).
     You'll want to be sure to include:
     *   Link to buildbot status page of failing build.
     *   Copy and paste of relevant failure snippet from the stdio.
@@ -240,19 +240,19 @@ NOTRY=true.
 
 ## Follow up on failures
 
-**[Pri-0 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-0)**
+**[Pri-0 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-Sheriff-BotHealth+label%3APri-0)**
 should have an owner or contact on speed infra team and be worked on as top
 priority. Pri-0 generally implies an entire waterfall is down.
 
-**[Pri-1 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-1)**
+**[Pri-1 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-Sheriff-BotHealth+label%3APri-1)**
 should be pinged daily, and checked to make sure someone is following up. Pri-1
 bugs are for a red test (not yet disabled), purple bot, or failing device. Here
-is the [list of Pri-1 bugs that have not been pinged today](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-1%20modified-before:today-1&sort=modified).
+is the [list of Pri-1 bugs that have not been pinged today](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-Sheriff-BotHealth%20label:Pri-1%20modified-before:today-1&sort=modified).
 
-**[Pri-2 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-2)**
+**[Pri-2 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-Sheriff-BotHealth+label%3APri-2)**
 are for disabled tests. These should be pinged weekly, and work towards fixing
 should be ongoing when the sheriff is not working on a Pri-1 issue. Here is the
-[list of Pri-2 bugs that have not been pinged in a week](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-BotHealth%20label:Pri-2%20modified-before:today-7&sort=modified).
+[list of Pri-2 bugs that have not been pinged in a week](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label:Performance-Sheriff-BotHealth%20label:Pri-2%20modified-before:today-7&sort=modified).
 
 <!-- Unresolved issues:
 1. Do perf sheriffs watch the bisect waterfall?
