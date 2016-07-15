@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "11.6",
+  "version": "11.7",
   "entries": [
     {
       "id": 1,
@@ -1217,6 +1217,21 @@ LONG_STRING_CONST(
       "features": [
         "webgl",
         "accelerated_2d_canvas"
+      ]
+    },
+    {
+      "id": 119,
+      "description": "There are display issues with GPU Raster on OSX 10.9",
+      "cr_bugs": [611310],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<=",
+          "value": "10.9"
+        }
+      },
+      "features": [
+        "gpu_rasterization"
       ]
     }
   ]
