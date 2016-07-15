@@ -6,6 +6,7 @@
 #define WebRTCCertificate_h
 
 #include "public/platform/WebRTCKeyParams.h"
+#include "public/platform/WebString.h"
 
 #include <memory>
 
@@ -15,23 +16,18 @@ namespace blink {
 // See |WebRTCCertificate::toPEM| and |WebRTCCertificateGenerator::fromPEM|.
 class WebRTCCertificatePEM {
 public:
-    WebRTCCertificatePEM(std::string privateKey, std::string certificate)
-        : m_privateKey(privateKey), m_certificate(certificate)
+    WebRTCCertificatePEM(WebString privateKey, WebString certificate)
+        : m_privateKey(privateKey)
+        , m_certificate(certificate)
     {
     }
 
-    const std::string& privateKey() const
-    {
-        return m_privateKey;
-    }
-    const std::string& certificate() const
-    {
-        return m_certificate;
-    }
+    WebString privateKey() const { return m_privateKey; }
+    WebString certificate() const { return m_certificate; }
 
 private:
-    std::string m_privateKey;
-    std::string m_certificate;
+    WebString m_privateKey;
+    WebString m_certificate;
 };
 
 // WebRTCCertificate is an interface defining what Blink needs to know about certificates,

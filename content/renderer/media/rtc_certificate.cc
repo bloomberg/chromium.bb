@@ -28,7 +28,9 @@ uint64_t RTCCertificate::expires() const {
 
 blink::WebRTCCertificatePEM RTCCertificate::toPEM() const {
   rtc::RTCCertificatePEM pem = certificate_->ToPEM();
-  return blink::WebRTCCertificatePEM(pem.private_key(), pem.certificate());
+  return blink::WebRTCCertificatePEM(
+      blink::WebString::fromUTF8(pem.private_key()),
+          blink::WebString::fromUTF8(pem.certificate()));
 }
 
 bool RTCCertificate::equals(const blink::WebRTCCertificate& other) const {

@@ -159,8 +159,8 @@ void SerializedScriptValueWriterForModules::writeRTCCertificate(const RTCCertifi
     append(RTCCertificateTag);
 
     WebRTCCertificatePEM pem = certificate.certificateShallowCopy()->toPEM();
-    doWriteWebCoreString(String(pem.privateKey().c_str()));
-    doWriteWebCoreString(String(pem.certificate().c_str()));
+    doWriteWebCoreString(pem.privateKey());
+    doWriteWebCoreString(pem.certificate());
 }
 
 void SerializedScriptValueWriterForModules::doWriteHmacKey(const WebCryptoKey& key)
@@ -450,8 +450,8 @@ bool SerializedScriptValueReaderForModules::readRTCCertificate(v8::Local<v8::Val
 
     std::unique_ptr<WebRTCCertificate> certificate(
         certificateGenerator->fromPEM(
-            pemPrivateKey.utf8().data(),
-            pemCertificate.utf8().data()));
+            pemPrivateKey,
+            pemCertificate));
     RTCCertificate* jsCertificate = new RTCCertificate(std::move(certificate));
 
     *value = toV8(jsCertificate, getScriptState()->context()->Global(), isolate());

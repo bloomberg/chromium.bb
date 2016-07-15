@@ -34,6 +34,7 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebRTCCertificate.h"
 #include "public/platform/WebRTCKeyParams.h"
+#include "public/platform/WebString.h"
 
 #include <memory>
 
@@ -63,8 +64,8 @@ public:
 
     // Creates a certificate from the PEM strings. See also |WebRTCCertificate::toPEM|.
     virtual std::unique_ptr<WebRTCCertificate> fromPEM(
-        const std::string& pemPrivateKey,
-        const std::string& pemCertificate) = 0;
+        blink::WebString pemPrivateKey,
+        blink::WebString pemCertificate) = 0;
 };
 
 } // namespace blink

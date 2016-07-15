@@ -151,11 +151,12 @@ bool RTCCertificateGenerator::isSupportedKeyParams(
 }
 
 std::unique_ptr<blink::WebRTCCertificate> RTCCertificateGenerator::fromPEM(
-    const std::string& pem_private_key,
-    const std::string& pem_certificate) {
+    blink::WebString pem_private_key,
+    blink::WebString pem_certificate) {
   rtc::scoped_refptr<rtc::RTCCertificate> certificate =
       rtc::RTCCertificate::FromPEM(
-          rtc::RTCCertificatePEM(pem_private_key, pem_certificate));
+          rtc::RTCCertificatePEM(pem_private_key.utf8(),
+              pem_certificate.utf8()));
   return std::unique_ptr<blink::WebRTCCertificate>(
       new RTCCertificate(certificate));
 }

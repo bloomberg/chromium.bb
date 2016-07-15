@@ -31,8 +31,8 @@ class RTCCertificateGenerator : public blink::WebRTCCertificateGenerator {
       std::unique_ptr<blink::WebRTCCertificateCallback> observer) override;
   bool isSupportedKeyParams(const blink::WebRTCKeyParams& key_params) override;
   std::unique_ptr<blink::WebRTCCertificate> fromPEM(
-      const std::string& pem_private_key,
-      const std::string& pem_certificate) override;
+      blink::WebString pem_private_key,
+      blink::WebString pem_certificate) override;
 
  private:
   void generateCertificateWithOptionalExpiration(
