@@ -2802,4 +2802,38 @@ void HTMLTreeBuilder::parseError(AtomicHTMLToken*)
 {
 }
 
+#ifndef NDEBUG
+const char* HTMLTreeBuilder::toString(HTMLTreeBuilder::InsertionMode mode)
+{
+    switch (mode) {
+#define DEFINE_STRINGIFY(mode) case mode: return #mode;
+        DEFINE_STRINGIFY(InitialMode)
+        DEFINE_STRINGIFY(BeforeHTMLMode)
+        DEFINE_STRINGIFY(BeforeHeadMode)
+        DEFINE_STRINGIFY(InHeadMode)
+        DEFINE_STRINGIFY(InHeadNoscriptMode)
+        DEFINE_STRINGIFY(AfterHeadMode)
+        DEFINE_STRINGIFY(TemplateContentsMode)
+        DEFINE_STRINGIFY(InBodyMode)
+        DEFINE_STRINGIFY(TextMode)
+        DEFINE_STRINGIFY(InTableMode)
+        DEFINE_STRINGIFY(InTableTextMode)
+        DEFINE_STRINGIFY(InCaptionMode)
+        DEFINE_STRINGIFY(InColumnGroupMode)
+        DEFINE_STRINGIFY(InTableBodyMode)
+        DEFINE_STRINGIFY(InRowMode)
+        DEFINE_STRINGIFY(InCellMode)
+        DEFINE_STRINGIFY(InSelectMode)
+        DEFINE_STRINGIFY(InSelectInTableMode)
+        DEFINE_STRINGIFY(AfterBodyMode)
+        DEFINE_STRINGIFY(InFramesetMode)
+        DEFINE_STRINGIFY(AfterFramesetMode)
+        DEFINE_STRINGIFY(AfterAfterBodyMode)
+        DEFINE_STRINGIFY(AfterAfterFramesetMode)
+#undef DEFINE_STRINGIFY
+    }
+    return "<unknown>";
+}
+#endif
+
 } // namespace blink

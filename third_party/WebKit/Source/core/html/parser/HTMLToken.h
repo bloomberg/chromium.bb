@@ -500,6 +500,10 @@ private:
     std::unique_ptr<DoctypeData> m_doctypeData;
 };
 
+#ifndef NDEBUG
+const char* toString(HTMLToken::TokenType);
+#endif
+
 } // namespace blink
 
 #endif

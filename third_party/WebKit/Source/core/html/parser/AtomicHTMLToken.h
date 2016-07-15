@@ -197,6 +197,10 @@ public:
         ASSERT(usesName());
     }
 
+#ifndef NDEBUG
+    void show() const;
+#endif
+
 private:
     HTMLToken::TokenType m_type;
 

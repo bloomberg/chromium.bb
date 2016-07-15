@@ -114,6 +114,9 @@ private:
         AfterAfterBodyMode,
         AfterAfterFramesetMode,
     };
+#ifndef DEBUG
+    static const char* toString(InsertionMode);
+#endif
 
     HTMLTreeBuilder(HTMLDocumentParser*, Document&, ParserContentPolicy, const HTMLParserOptions&);
     HTMLTreeBuilder(HTMLDocumentParser*, DocumentFragment*, Element* contextElement, ParserContentPolicy, const HTMLParserOptions&);
