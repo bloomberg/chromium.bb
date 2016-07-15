@@ -429,7 +429,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
 #endif
 TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
   // Check if the accessibility item is created even with system modal dialog.
-  WmShell::Get()->GetAccessibilityDelegate()->SetVirtualKeyboardEnabled(true);
+  WmShell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(true);
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       new ModalWidgetDelegate, kShellWindowId_SystemModalContainer,
       gfx::Rect(0, 0, 100, 100)));

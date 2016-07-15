@@ -402,7 +402,7 @@ TEST_P(WindowSelectorTest, OverviewScreenRotation) {
 // Tests that an a11y alert is sent on entering overview mode.
 TEST_P(WindowSelectorTest, A11yAlertOnOverviewMode) {
   gfx::Rect bounds(0, 0, 400, 400);
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   EXPECT_NE(delegate->GetLastAccessibilityAlert(),
             A11Y_ALERT_WINDOW_OVERVIEW_MODE_ENTERED);

@@ -953,7 +953,7 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 }
 
 TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
   EXPECT_FALSE(Shell::GetInstance()->GetAppListTargetVisibility());
 
   // The press event should not open the AppList, the release should instead.
@@ -1283,7 +1283,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
 #endif
 
 TEST_F(AcceleratorControllerTest, DisallowedWithNoWindow) {
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
 
   for (size_t i = 0; i < kActionsNeedingWindowLength; ++i) {
     delegate->TriggerAccessibilityAlert(A11Y_ALERT_NONE);

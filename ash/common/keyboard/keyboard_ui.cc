@@ -35,9 +35,7 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
     // to the appropriate keyboard functions.
   }
   bool IsEnabled() override {
-    return WmShell::Get()
-        ->GetAccessibilityDelegate()
-        ->IsVirtualKeyboardEnabled();
+    return WmShell::Get()->accessibility_delegate()->IsVirtualKeyboardEnabled();
   }
 
   // AccessibilityObserver:

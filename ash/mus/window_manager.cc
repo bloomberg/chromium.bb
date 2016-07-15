@@ -95,10 +95,9 @@ void WindowManager::Init(::ui::WindowTreeClient* window_tree_client) {
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
 
-  std::unique_ptr<ShellDelegate> shell_delegate(
-      new ShellDelegateMus(base::MakeUnique<AppListPresenterStub>()));
-  shell_.reset(new WmShellMus(std::move(shell_delegate), window_tree_client_,
-                              connector_));
+  std::unique_ptr<ShellDelegate> shell_delegate(new ShellDelegateMus(
+      base::MakeUnique<AppListPresenterStub>(), connector_));
+  shell_.reset(new WmShellMus(std::move(shell_delegate), window_tree_client_));
   shell_->Initialize();
   lookup_.reset(new WmLookupMus);
 }

@@ -6,12 +6,12 @@
 
 #include <utility>
 
-#include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/gpu_support_stub.h"
 #include "ash/common/media_delegate.h"
 #include "ash/common/pointer_watcher_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/mus/accessibility_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"
@@ -98,8 +98,12 @@ class MediaDelegateStub : public MediaDelegate {
 }  // namespace
 
 ShellDelegateMus::ShellDelegateMus(
-    std::unique_ptr<app_list::AppListPresenter> app_list_presenter)
-    : app_list_presenter_(std::move(app_list_presenter)) {}
+    std::unique_ptr<app_list::AppListPresenter> app_list_presenter,
+    shell::Connector* connector)
+    : app_list_presenter_(std::move(app_list_presenter)),
+      connector_(connector) {
+  // |connector_| may be null in tests.
+}
 
 ShellDelegateMus::~ShellDelegateMus() {}
 
@@ -179,8 +183,7 @@ SessionStateDelegate* ShellDelegateMus::CreateSessionStateDelegate() {
 }
 
 AccessibilityDelegate* ShellDelegateMus::CreateAccessibilityDelegate() {
-  NOTIMPLEMENTED() << " Using the default AccessibilityDelegate implementation";
-  return new DefaultAccessibilityDelegate;
+  return new AccessibilityDelegateMus(connector_);
 }
 
 NewWindowDelegate* ShellDelegateMus::CreateNewWindowDelegate() {

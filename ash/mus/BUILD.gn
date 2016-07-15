@@ -12,6 +12,8 @@ source_set("lib") {
   sources = [
     "accelerator_registrar_impl.cc",
     "accelerator_registrar_impl.h",
+    "accessibility_delegate_mus.cc",
+    "accessibility_delegate_mus.h",
     "bridge/mus_layout_manager_adapter.cc",
     "bridge/mus_layout_manager_adapter.h",
     "bridge/wm_lookup_mus.cc",

@@ -26,10 +26,8 @@ class ASH_EXPORT WmShellAura : public WmShell,
 
   static WmShellAura* Get();
 
-  // Called early in shutdown sequence.
-  void PrepareForShutdown();
-
   // WmShell:
+  void Shutdown() override;
   WmWindow* NewContainerWindow() override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
@@ -55,7 +53,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   CreateScopedDisableInternalMouseAndKeyboard() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
-  AccessibilityDelegate* GetAccessibilityDelegate() override;
   SessionStateDelegate* GetSessionStateDelegate() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;

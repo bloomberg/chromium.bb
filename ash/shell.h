@@ -80,7 +80,6 @@ class WindowModalityController;
 namespace ash {
 
 class AcceleratorController;
-class AccessibilityDelegate;
 class AppListController;
 class AshNativeCursorManager;
 class AutoclickController;
@@ -374,10 +373,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return session_state_delegate_.get();
   }
 
-  AccessibilityDelegate* accessibility_delegate() {
-    return accessibility_delegate_.get();
-  }
-
   NewWindowDelegate* new_window_delegate() {
     return new_window_delegate_.get();
   }
@@ -594,7 +589,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<UserWallpaperDelegate> user_wallpaper_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
-  std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<NewWindowDelegate> new_window_delegate_;
   std::unique_ptr<PointerWatcherDelegate> pointer_watcher_delegate_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;

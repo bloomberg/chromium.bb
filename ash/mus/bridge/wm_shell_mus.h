@@ -33,8 +33,7 @@ class WmWindowMus;
 class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
  public:
   WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
-             ::ui::WindowTreeClient* client,
-             shell::Connector* connector);
+             ::ui::WindowTreeClient* client);
   ~WmShellMus() override;
 
   static WmShellMus* Get();
@@ -74,7 +73,6 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
   CreateScopedDisableInternalMouseAndKeyboard() override;
   void OnOverviewModeStarting() override;
   void OnOverviewModeEnded() override;
-  AccessibilityDelegate* GetAccessibilityDelegate() override;
   SessionStateDelegate* GetSessionStateDelegate() override;
   void AddActivationObserver(WmActivationObserver* observer) override;
   void RemoveActivationObserver(WmActivationObserver* observer) override;
@@ -98,13 +96,10 @@ class WmShellMus : public WmShell, public ::ui::WindowTreeClientObserver {
   void OnDidDestroyClient(::ui::WindowTreeClient* client) override;
 
   ::ui::WindowTreeClient* client_;
-  shell::Connector* connector_;
 
   std::vector<WmRootWindowControllerMus*> root_window_controllers_;
 
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
-
-  std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
 
   base::ObserverList<WmActivationObserver> activation_observers_;
 

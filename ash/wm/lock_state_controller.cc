@@ -311,7 +311,7 @@ void LockStateController::StartRealShutdownTimer(bool with_animation_time) {
 
 #if defined(OS_CHROMEOS)
   base::TimeDelta sound_duration =
-      WmShell::Get()->GetAccessibilityDelegate()->PlayShutdownSound();
+      WmShell::Get()->accessibility_delegate()->PlayShutdownSound();
   sound_duration =
       std::min(sound_duration,
                base::TimeDelta::FromMilliseconds(kMaxShutdownSoundDurationMs));

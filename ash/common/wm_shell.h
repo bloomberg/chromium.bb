@@ -60,8 +60,13 @@ class ASH_EXPORT WmShell {
   static bool HasInstance() { return instance_ != nullptr; }
 
   void Initialize();
+  virtual void Shutdown();
 
   ShellDelegate* delegate() { return delegate_.get(); }
+
+  AccessibilityDelegate* accessibility_delegate() {
+    return accessibility_delegate_.get();
+  }
 
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
@@ -194,8 +199,6 @@ class ASH_EXPORT WmShell {
   // Called when virtual keyboard has been activated/deactivated.
   void OnVirtualKeyboardActivated(bool activated);
 
-  virtual AccessibilityDelegate* GetAccessibilityDelegate() = 0;
-
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 
   virtual void AddActivationObserver(WmActivationObserver* observer) = 0;
@@ -251,6 +254,7 @@ class ASH_EXPORT WmShell {
   base::ObserverList<ShellObserver> shell_observers_;
   std::unique_ptr<ShellDelegate> delegate_;
 
+  std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>

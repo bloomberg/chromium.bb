@@ -97,7 +97,7 @@ class SystemBubbleWrapper {
 
     // If ChromeVox is enabled, focus the default item if no item is focused and
     // there isn't a delayed close.
-    if (WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled() &&
+    if (WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled() &&
         !is_persistent) {
       bubble_->FocusDefaultIfNeeded();
     }
@@ -462,7 +462,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     system_bubble_->bubble()->UpdateView(items, bubble_type);
     // If ChromeVox is enabled, focus the default item if no item is focused.
-    if (WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled())
+    if (WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
       system_bubble_->bubble()->FocusDefaultIfNeeded();
   } else {
     // Cleanup the existing bubble before showing a new one. Otherwise, it's

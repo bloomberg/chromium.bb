@@ -53,7 +53,7 @@ bool SpokenFeedbackToggler::ShouldStopEventPropagation() const {
 void SpokenFeedbackToggler::OnKeyHold(const ui::KeyEvent* event) {
   if (!toggled_) {
     toggled_ = true;
-    WmShell::Get()->GetAccessibilityDelegate()->ToggleSpokenFeedback(
+    WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
         A11Y_NOTIFICATION_SHOW);
   }
 }

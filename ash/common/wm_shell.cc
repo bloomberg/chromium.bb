@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/shell_delegate.h"
@@ -45,7 +46,13 @@ WmShell* WmShell::Get() {
 void WmShell::Initialize() {
   // Some delegates access WmShell during their construction. Create them here
   // instead of the WmShell constructor.
+  accessibility_delegate_.reset(delegate_->CreateAccessibilityDelegate());
   media_delegate_.reset(delegate_->CreateMediaDelegate());
+}
+
+void WmShell::Shutdown() {
+  // Accesses WmShell in its destructor.
+  accessibility_delegate_.reset();
 }
 
 void WmShell::OnMaximizeModeStarted() {

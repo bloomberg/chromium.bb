@@ -58,7 +58,7 @@ class TouchExplorationTest : public InProcessBrowserTest {
 
   void SwitchTouchExplorationMode(bool on) {
     ash::AccessibilityDelegate* delegate =
-        ash::WmShell::Get()->GetAccessibilityDelegate();
+        ash::WmShell::Get()->accessibility_delegate();
     if (on != delegate->IsSpokenFeedbackEnabled())
       delegate->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_NONE);
   }

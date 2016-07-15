@@ -565,7 +565,7 @@ void MagnificationControllerImpl::SetScale(float scale, bool animate) {
     return;
 
   ValidateScale(&scale);
-  WmShell::Get()->GetAccessibilityDelegate()->SaveScreenMagnifierScale(scale);
+  WmShell::Get()->accessibility_delegate()->SaveScreenMagnifierScale(scale);
   RedrawKeepingMousePosition(scale, animate);
 }
 
@@ -598,7 +598,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
 
     WmShell* wm_shell = WmShell::Get();
     float scale =
-        wm_shell->GetAccessibilityDelegate()->GetSavedScreenMagnifierScale();
+        wm_shell->accessibility_delegate()->GetSavedScreenMagnifierScale();
     if (scale <= 0.0f)
       scale = kInitialMagnifiedScale;
     ValidateScale(&scale);
@@ -609,7 +609,7 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
 
     is_enabled_ = enabled;
     RedrawKeepingMousePosition(scale, true);
-    wm_shell->GetAccessibilityDelegate()->SaveScreenMagnifierScale(scale);
+    wm_shell->accessibility_delegate()->SaveScreenMagnifierScale(scale);
   } else {
     // Do nothing, if already disabled.
     if (!is_enabled_)

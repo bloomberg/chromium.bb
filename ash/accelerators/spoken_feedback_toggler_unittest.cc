@@ -17,7 +17,7 @@ using SpokenFeedbackTogglerTest = test::AshTestBase;
 
 TEST_F(SpokenFeedbackTogglerTest, Basic) {
   SpokenFeedbackToggler::ScopedEnablerForTest scoped;
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
   ui::test::EventGenerator& generator = GetEventGenerator();
   EXPECT_FALSE(delegate->IsSpokenFeedbackEnabled());
 

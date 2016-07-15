@@ -14,7 +14,6 @@
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/aura/wm_window_aura.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/gpu_support.h"
 #include "ash/common/keyboard/keyboard_ui.h"
@@ -764,13 +763,12 @@ Shell::~Shell() {
   display_manager_->CreateScreenForShutdown();
   display_configuration_controller_.reset();
 
-  wm_shell_->PrepareForShutdown();
+  wm_shell_->Shutdown();
   // Depends on |focus_client_|, so must be destroyed before.
   window_tree_host_manager_->Shutdown();
   window_tree_host_manager_.reset();
   focus_client_.reset();
   screen_position_controller_.reset();
-  accessibility_delegate_.reset();
   new_window_delegate_.reset();
   pointer_watcher_delegate_.reset();
 
@@ -1015,8 +1013,6 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   session_state_delegate_.reset(
       wm_shell_->delegate()->CreateSessionStateDelegate());
-  accessibility_delegate_.reset(
-      wm_shell_->delegate()->CreateAccessibilityDelegate());
   new_window_delegate_.reset(wm_shell_->delegate()->CreateNewWindowDelegate());
   pointer_watcher_delegate_ =
       wm_shell_->delegate()->CreatePointerWatcherDelegate();

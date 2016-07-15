@@ -49,12 +49,14 @@ WmShellAura::~WmShellAura() {
   WmShell::Set(nullptr);
 }
 
-void WmShellAura::PrepareForShutdown() {
+void WmShellAura::Shutdown() {
   if (added_activation_observer_)
     Shell::GetInstance()->activation_client()->RemoveObserver(this);
 
   if (added_display_observer_)
     Shell::GetInstance()->window_tree_host_manager()->RemoveObserver(this);
+
+  WmShell::Shutdown();
 }
 
 WmWindow* WmShellAura::NewContainerWindow() {
@@ -161,10 +163,6 @@ void WmShellAura::OnOverviewModeStarting() {
 
 void WmShellAura::OnOverviewModeEnded() {
   FOR_EACH_OBSERVER(ShellObserver, *shell_observers(), OnOverviewModeEnded());
-}
-
-AccessibilityDelegate* WmShellAura::GetAccessibilityDelegate() {
-  return Shell::GetInstance()->accessibility_delegate();
 }
 
 SessionStateDelegate* WmShellAura::GetSessionStateDelegate() {

@@ -45,7 +45,7 @@ enum AccessibilityState {
 };
 
 uint32_t GetAccessibilityState() {
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
   uint32_t state = A11Y_NONE;
   if (delegate->IsSpokenFeedbackEnabled())
     state |= A11Y_SPOKEN_FEEDBACK;
@@ -163,7 +163,7 @@ void AccessibilityDetailedView::AppendAccessibilityList() {
   CreateScrollableList();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
 
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
   spoken_feedback_enabled_ = delegate->IsSpokenFeedbackEnabled();
   spoken_feedback_view_ =
       AddScrollListItem(bundle.GetLocalizedString(
@@ -247,7 +247,7 @@ HoverHighlightView* AccessibilityDetailedView::AddScrollListItem(
 }
 
 void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
   if (sender == footer()->content()) {
     TransitionToDefaultView();
   } else if (sender == spoken_feedback_view_) {
@@ -344,7 +344,7 @@ views::View* TrayAccessibility::CreateDefaultView(LoginStatus status) {
   // - "Enable accessibility menu" on chrome://settings is checked;
   // - or any of accessibility features is enabled
   // Otherwise, not shows it.
-  AccessibilityDelegate* delegate = WmShell::Get()->GetAccessibilityDelegate();
+  AccessibilityDelegate* delegate = WmShell::Get()->accessibility_delegate();
   if (login_ != LoginStatus::NOT_LOGGED_IN &&
       !delegate->ShouldShowAccessibilityMenu() &&
       // On login screen, keeps the initial visibility of the menu.

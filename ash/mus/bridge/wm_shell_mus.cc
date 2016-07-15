@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/common/default_accessibility_delegate.h"
 #include "ash/common/display/display_info.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -26,11 +25,9 @@
 #include "ash/mus/root_window_controller.h"
 #include "base/memory/ptr_util.h"
 #include "components/user_manager/user_info_impl.h"
-#include "services/shell/public/cpp/connector.h"
 #include "services/ui/common/util.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_tree_client.h"
-#include "services/ui/public/interfaces/accessibility_manager.mojom.h"
 
 namespace ash {
 namespace mus {
@@ -96,39 +93,12 @@ class SessionStateDelegateStub : public SessionStateDelegate {
   DISALLOW_COPY_AND_ASSIGN(SessionStateDelegateStub);
 };
 
-class AccessibilityDelegateMus : public DefaultAccessibilityDelegate {
- public:
-  explicit AccessibilityDelegateMus(shell::Connector* connector)
-      : connector_(connector) {}
-  ~AccessibilityDelegateMus() override {}
-
- private:
-  ui::mojom::AccessibilityManager* GetAccessibilityManager() {
-    if (!accessibility_manager_ptr_.is_bound())
-      connector_->ConnectToInterface("mojo:ui", &accessibility_manager_ptr_);
-    return accessibility_manager_ptr_.get();
-  }
-
-  // DefaultAccessibilityDelegate:
-  void ToggleHighContrast() override {
-    DefaultAccessibilityDelegate::ToggleHighContrast();
-    GetAccessibilityManager()->SetHighContrastMode(IsHighContrastEnabled());
-  }
-
-  ui::mojom::AccessibilityManagerPtr accessibility_manager_ptr_;
-  shell::Connector* connector_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccessibilityDelegateMus);
-};
-
 }  // namespace
 
 WmShellMus::WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
-                       ::ui::WindowTreeClient* client,
-                       shell::Connector* connector)
+                       ::ui::WindowTreeClient* client)
     : WmShell(std::move(shell_delegate)),
       client_(client),
-      connector_(connector),
       session_state_delegate_(new SessionStateDelegateStub) {
   client_->AddObserver(this);
   WmShell::Set(this);
@@ -137,7 +107,6 @@ WmShellMus::WmShellMus(std::unique_ptr<ShellDelegate> shell_delegate,
 
   CreateMruWindowTracker();
 
-  accessibility_delegate_.reset(new AccessibilityDelegateMus(connector_));
   SetSystemTrayDelegate(base::WrapUnique(new DefaultSystemTrayDelegate));
 
   // TODO(jamescook): Port ash::sysui::KeyboardUIMus and use it here.
@@ -300,10 +269,6 @@ void WmShellMus::OnOverviewModeStarting() {
 
 void WmShellMus::OnOverviewModeEnded() {
   FOR_EACH_OBSERVER(ShellObserver, *shell_observers(), OnOverviewModeEnded());
-}
-
-AccessibilityDelegate* WmShellMus::GetAccessibilityDelegate() {
-  return accessibility_delegate_.get();
 }
 
 SessionStateDelegate* WmShellMus::GetSessionStateDelegate() {

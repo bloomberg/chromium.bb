@@ -54,8 +54,8 @@ void AshTouchExplorationManager::SetOutputLevel(int volume) {
 }
 
 void AshTouchExplorationManager::SilenceSpokenFeedback() {
-  if (WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled())
-    WmShell::Get()->GetAccessibilityDelegate()->SilenceSpokenFeedback();
+  if (WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled())
+    WmShell::Get()->accessibility_delegate()->SilenceSpokenFeedback();
 }
 
 void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
@@ -63,30 +63,29 @@ void AshTouchExplorationManager::PlayVolumeAdjustEarcon() {
     return;
   if (!audio_handler_->IsOutputMuted() &&
       audio_handler_->GetOutputVolumePercent() != 100) {
-    WmShell::Get()->GetAccessibilityDelegate()->PlayEarcon(
+    WmShell::Get()->accessibility_delegate()->PlayEarcon(
         chromeos::SOUND_VOLUME_ADJUST);
   }
 }
 
 void AshTouchExplorationManager::PlayPassthroughEarcon() {
-  WmShell::Get()->GetAccessibilityDelegate()->PlayEarcon(
+  WmShell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_PASSTHROUGH);
 }
 
 void AshTouchExplorationManager::PlayExitScreenEarcon() {
-  WmShell::Get()->GetAccessibilityDelegate()->PlayEarcon(
+  WmShell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_EXIT_SCREEN);
 }
 
 void AshTouchExplorationManager::PlayEnterScreenEarcon() {
-  WmShell::Get()->GetAccessibilityDelegate()->PlayEarcon(
+  WmShell::Get()->accessibility_delegate()->PlayEarcon(
       chromeos::SOUND_ENTER_SCREEN);
 }
 
 void AshTouchExplorationManager::HandleAccessibilityGesture(
     ui::AXGesture gesture) {
-  WmShell::Get()->GetAccessibilityDelegate()->HandleAccessibilityGesture(
-      gesture);
+  WmShell::Get()->accessibility_delegate()->HandleAccessibilityGesture(gesture);
 }
 
 void AshTouchExplorationManager::OnWindowActivated(
@@ -114,7 +113,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
       wm::GetActiveWindow()->name() == kExoShellSurfaceWindowName;
 
   const bool spoken_feedback_enabled =
-      WmShell::Get()->GetAccessibilityDelegate()->IsSpokenFeedbackEnabled();
+      WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 
   if (!pass_through_surface && spoken_feedback_enabled &&
       !touch_exploration_controller_.get()) {

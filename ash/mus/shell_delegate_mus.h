@@ -14,12 +14,17 @@ namespace app_list {
 class AppListPresenter;
 }
 
+namespace shell {
+class Connector;
+}
+
 namespace ash {
 
 class ShellDelegateMus : public ShellDelegate {
  public:
-  explicit ShellDelegateMus(
-      std::unique_ptr<app_list::AppListPresenter> app_list_presenter);
+  ShellDelegateMus(
+      std::unique_ptr<app_list::AppListPresenter> app_list_presenter,
+      shell::Connector* connector);
   ~ShellDelegateMus() override;
 
   bool IsFirstRunAfterBoot() const override;
@@ -51,6 +56,7 @@ class ShellDelegateMus : public ShellDelegate {
 
  private:
   std::unique_ptr<app_list::AppListPresenter> app_list_presenter_;
+  shell::Connector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateMus);
 };
