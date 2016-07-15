@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/views/background.h"
@@ -36,6 +37,7 @@
 #include "ui/views/examples/text_example.h"
 #include "ui/views/examples/textfield_example.h"
 #include "ui/views/examples/throbber_example.h"
+#include "ui/views/examples/toggle_button_example.h"
 #include "ui/views/examples/tree_view_example.h"
 #include "ui/views/examples/vector_example.h"
 #include "ui/views/examples/widget_example.h"
@@ -73,6 +75,7 @@ ScopedExamples CreateExamples() {
   examples->push_back(new TableExample);
   examples->push_back(new TextExample);
   examples->push_back(new TextfieldExample);
+  examples->push_back(new ToggleButtonExample);
   examples->push_back(new ThrobberExample);
   examples->push_back(new TreeViewExample);
   examples->push_back(new VectorExample);

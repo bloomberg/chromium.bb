@@ -80,6 +80,8 @@
         'textfield_example.h',
         'throbber_example.cc',
         'throbber_example.h',
+        'toggle_button_example.cc',
+        'toggle_button_example.h',
         'tree_view_example.cc',
         'tree_view_example.h',
         'views_examples_export.h',

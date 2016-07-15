@@ -408,6 +408,9 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
   } else {
     locale_resources_data_.reset(new DataPack(ui::SCALE_FACTOR_NONE));
   }
+  // This is necessary to initialize ICU since we won't be calling
+  // LoadLocaleResources in this case.
+  l10n_util::GetApplicationLocale(std::string());
 }
 
 void ResourceBundle::UnloadLocaleResources() {
