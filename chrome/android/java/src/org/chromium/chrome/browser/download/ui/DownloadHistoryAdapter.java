@@ -88,7 +88,7 @@ public class DownloadHistoryAdapter
                 iconResource = R.drawable.ic_drive_site_white_24dp;
                 break;
             case FILETYPE_VIDEO:
-                iconResource = R.drawable.ic_music_video_white_24dp;
+                iconResource = R.drawable.ic_play_arrow_white_24dp;
                 break;
             case FILETYPE_AUDIO:
                 iconResource = R.drawable.ic_music_note_white_24dp;
@@ -97,7 +97,7 @@ public class DownloadHistoryAdapter
                 iconResource = R.drawable.ic_image_white_24dp;
                 break;
             case FILETYPE_DOCUMENT:
-                iconResource = R.drawable.ic_drive_file_white_24dp;
+                iconResource = R.drawable.ic_drive_text_white_24dp;
                 break;
             default:
         }
