@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("browser_watcher") {
+static_library("browser_watcher") {
   # This is a separate lib to minimize the dependencies for its
   # hosting binary "chrome_watcher.dll".
   sources = [
@@ -20,7 +20,7 @@ source_set("browser_watcher") {
   ]
 }
 
-source_set("browser_watcher_client") {
+static_library("browser_watcher_client") {
   sources = [
     "watcher_client_win.cc",
     "watcher_client_win.h",

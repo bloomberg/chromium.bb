@@ -6,7 +6,7 @@ config("client_config") {
   include_dirs = [ ".." ]
 }
 
-source_set("client") {
+static_library("client") {
   sources = [
     "crash_report_database.cc",
     "crash_report_database.h",

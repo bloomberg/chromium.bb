@@ -19,7 +19,7 @@ config("compat_config") {
   }
 }
 
-source_set("compat") {
+static_library("compat") {
   sources = []
   if (is_mac) {
     sources += [

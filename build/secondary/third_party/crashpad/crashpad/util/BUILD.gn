@@ -35,7 +35,7 @@ if (is_mac) {
   }
 }
 
-source_set("util") {
+static_library("util") {
   sources = [
     "file/file_io.cc",
     "file/file_io.h",

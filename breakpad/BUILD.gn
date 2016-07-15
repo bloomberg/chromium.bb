@@ -856,7 +856,7 @@ if (is_win) {
     }
   }
 
-  source_set("breakpad_handler") {
+  static_library("breakpad_handler") {
     configs += [ ":handler_config" ]
     if (is_win) {
       public_configs = [ ":handler_config" ]

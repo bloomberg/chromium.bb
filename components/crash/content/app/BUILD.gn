@@ -27,7 +27,7 @@ static_library("lib") {
 }
 
 # GYP version: components/crash.gypi:crash_component
-source_set("app") {
+static_library("app") {
   sources = [
     "crash_switches.cc",
     "crash_switches.h",

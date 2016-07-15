@@ -33,6 +33,7 @@ config("clang_warnings") {
   }
 }
 
+# Cannot be a static_library in component builds
 source_set("libpng_sources") {
   sources = [
     "png.c",

@@ -465,6 +465,7 @@ group("selection_bound") {
 }
 
 # Depend on this to use selection_bound.h without pulling in all of gfx.
+# Cannot be a static_library in component builds due to exported functions
 source_set("selection_bound_sources") {
   visibility = [ ":*" ]
 
@@ -499,6 +500,7 @@ group("memory_buffer") {
     ]
   }
 }
+# Cannot be a static_library in component builds due to exported functions
 source_set("memory_buffer_sources") {
   visibility = [ ":*" ]  # Depend on through ":memory_buffer".
 

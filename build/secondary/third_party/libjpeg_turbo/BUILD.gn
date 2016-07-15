@@ -100,7 +100,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   }
 }
 
-source_set("simd") {
+static_library("simd") {
   if (current_cpu == "x86") {
     deps = [
       ":simd_asm",
@@ -141,7 +141,7 @@ config("libjpeg_config") {
   include_dirs = [ "." ]
 }
 
-source_set("libjpeg") {
+static_library("libjpeg") {
   sources = [
     "jcapimin.c",
     "jcapistd.c",
