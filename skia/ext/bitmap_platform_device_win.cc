@@ -19,41 +19,6 @@
 
 namespace {
 
-HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
-                             HANDLE shared_section, void** data) {
-  // CreateDIBSection appears to get unhappy if we create an empty bitmap, so
-  // just create a minimal bitmap
-  if ((width == 0) || (height == 0)) {
-    width = 1;
-    height = 1;
-  }
-
-  BITMAPINFOHEADER hdr = {0};
-  hdr.biSize = sizeof(BITMAPINFOHEADER);
-  hdr.biWidth = width;
-  hdr.biHeight = -height;  // minus means top-down bitmap
-  hdr.biPlanes = 1;
-  hdr.biBitCount = 32;
-  hdr.biCompression = BI_RGB;  // no compression
-  hdr.biSizeImage = 0;
-  hdr.biXPelsPerMeter = 1;
-  hdr.biYPelsPerMeter = 1;
-  hdr.biClrUsed = 0;
-  hdr.biClrImportant = 0;
-
-  HBITMAP hbitmap = CreateDIBSection(NULL, reinterpret_cast<BITMAPINFO*>(&hdr),
-                                     0, data, shared_section, 0);
-
-#if !defined(_WIN64)
-  // If this call fails, we're gonna crash hard. Try to get some useful
-  // information out before we crash for post-mortem analysis.
-  if (!hbitmap)
-    base::debug::GDIBitmapAllocFailure(&hdr, shared_section);
-#endif
-
-  return hbitmap;
-}
-
 void LoadClippingRegionToDC(HDC context,
                             const SkIRect& clip_bounds,
                             const SkMatrix& transformation) {
@@ -159,7 +124,8 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
   // possible to detect when GDI is unavailable and instead directly map the
   // shared memory as the bitmap.
   if (base::win::IsUser32AndGdi32Available()) {
-    hbitmap = CreateHBitmap(width, height, is_opaque, shared_section, &data);
+    hbitmap = skia::CreateHBitmap(width, height, is_opaque, shared_section,
+                                  &data);
     if (!hbitmap) {
       LOG(ERROR) << "CreateHBitmap failed";
       return NULL;

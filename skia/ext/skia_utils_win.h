@@ -60,6 +60,10 @@ SK_API void LoadTransformToDC(HDC dc, const SkMatrix& matrix);
 SK_API void CopyHDC(HDC source, HDC destination, int x, int y, bool is_opaque,
                     const RECT& src_rect, const SkMatrix& transform);
 
+SK_API HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
+                             HANDLE shared_section = nullptr,
+                             void** data = nullptr);
+
 }  // namespace skia
 
 #endif  // SKIA_EXT_SKIA_UTILS_WIN_H_
