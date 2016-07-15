@@ -167,6 +167,10 @@ Class AVFoundationGlue::AVCaptureVideoDataOutputClass() {
   return [AVFoundationBundle() classNamed:@"AVCaptureVideoDataOutput"];
 }
 
+Class AVFoundationGlue::AVCaptureStillImageOutputClass() {
+  return [AVFoundationBundle() classNamed:@"AVCaptureStillImageOutput"];
+}
+
 @implementation AVCaptureDeviceGlue
 
 + (NSArray*)devices {

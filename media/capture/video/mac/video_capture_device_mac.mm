@@ -389,6 +389,17 @@ void VideoCaptureDeviceMac::StopAndDeAllocate() {
   state_ = kIdle;
 }
 
+void VideoCaptureDeviceMac::TakePhoto(TakePhotoCallback callback) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(state_ == kCapturing) << state_;
+
+  if (photo_callback_)  // Only one picture can be in flight at a time.
+    return;
+
+  photo_callback_.reset(new TakePhotoCallback(std::move(callback)));
+  [capture_device_ takePhoto];
+}
+
 bool VideoCaptureDeviceMac::Init(
     VideoCaptureDevice::Name::CaptureApiType capture_api_type) {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -413,8 +424,6 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
                                          int aspect_numerator,
                                          int aspect_denominator,
                                          base::TimeDelta timestamp) {
-  // This method is safe to call from a device capture thread, i.e. any thread
-  // controlled by AVFoundation.
   if (capture_format_.frame_size != frame_format.frame_size) {
     ReceiveError(FROM_HERE,
                  "Captured resolution " + frame_format.frame_size.ToString() +
@@ -424,6 +433,26 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
 
   client_->OnIncomingCapturedData(video_frame, video_frame_length, frame_format,
                                   0, base::TimeTicks::Now(), timestamp);
+}
+
+void VideoCaptureDeviceMac::OnPhotoTaken(const uint8_t* image_data,
+                                         size_t image_length,
+                                         const std::string& mime_type) {
+  DCHECK(photo_callback_);
+  if (!image_data || !image_length) {
+    OnPhotoError();
+    return;
+  }
+
+  photo_callback_->Run(mojo::String::From(mime_type),
+                       mojo::Array<uint8_t>(std::vector<uint8_t>(
+                           image_data, image_data + image_length)));
+  photo_callback_.reset();
+}
+
+void VideoCaptureDeviceMac::OnPhotoError() {
+  DLOG(ERROR) << __FUNCTION__ << " error taking picture";
+  photo_callback_.reset();
 }
 
 void VideoCaptureDeviceMac::ReceiveError(
