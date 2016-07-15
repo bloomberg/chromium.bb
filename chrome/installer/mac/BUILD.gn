@@ -64,6 +64,7 @@ copy("copies") {
     "$root_out_dir/xzdec",
     "dirdiffer.sh",
     "dirpatcher.sh",
+    "dmgdiffer.sh",
     "pkg-dmg",
     "sign_installer_tools.sh",
   ]
