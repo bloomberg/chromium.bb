@@ -12,17 +12,22 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.telephony.PhoneNumberFormattingTextWatcher;
+import android.text.InputFilter;
+import android.text.Spanned;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.EditorInfo;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -30,6 +35,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
+import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormattingTextWatcher;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.widget.DualControlLayout;
 import org.chromium.chrome.browser.widget.FadingShadow;
@@ -37,10 +43,7 @@ import org.chromium.chrome.browser.widget.FadingShadowView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -50,6 +53,8 @@ import javax.annotation.Nullable;
  */
 public class EditorView extends AlwaysDismissedDialog
         implements OnClickListener, DialogInterface.OnDismissListener {
+    /** The indicator for input fields that are required. */
+    public static final String REQUIRED_FIELD_INDICATOR = "*";
 
     /** Help page that the user is directed to when asking for help. */
     private static final String HELP_URL = "https://support.google.com/chrome/answer/142893?hl=en";
@@ -57,17 +62,22 @@ public class EditorView extends AlwaysDismissedDialog
     private final Context mContext;
     private final PaymentRequestObserverForTest mObserverForTest;
     private final Handler mHandler;
-    private final AsyncTask<Void, Void, PhoneNumberFormattingTextWatcher> mPhoneFormatterTask;
     private final TextView.OnEditorActionListener mEditorActionListener;
     private final int mHalfRowMargin;
-    private final List<EditorTextField> mEditorTextFields;
+    private final List<Validatable> mCheckableFields;
+    private final List<EditText> mEditableTextFields;
+    private final List<Spinner> mDropdownFields;
+    private final InputFilter mCardNumberInputFilter;
+    private final TextWatcher mCardNumberFormatter;
 
+    @Nullable private TextWatcher mPhoneFormatter;
     private View mLayout;
     private EditorModel mEditorModel;
     private Button mDoneButton;
     private ViewGroup mDataView;
     private View mFooter;
-    @Nullable private AutoCompleteTextView mPhoneInput;
+    @Nullable private TextView mCardInput;
+    @Nullable private TextView mPhoneInput;
 
     /**
      * Builds the editor view.
@@ -80,13 +90,6 @@ public class EditorView extends AlwaysDismissedDialog
         mContext = activity;
         mObserverForTest = observerForTest;
         mHandler = new Handler();
-        mPhoneFormatterTask = new AsyncTask<Void, Void, PhoneNumberFormattingTextWatcher>() {
-            @Override
-            protected PhoneNumberFormattingTextWatcher doInBackground(Void... unused) {
-                return new PhoneNumberFormattingTextWatcher();
-            }
-        }.execute();
-
         mEditorActionListener = new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -95,8 +98,8 @@ public class EditorView extends AlwaysDismissedDialog
                     return true;
                 } else if (actionId == EditorInfo.IME_ACTION_NEXT) {
                     View next = v.focusSearch(View.FOCUS_FORWARD);
-                    if (next != null && next instanceof AutoCompleteTextView) {
-                        focusInputField(next);
+                    if (next != null) {
+                        next.requestFocus();
                         return true;
                     }
                 }
@@ -106,7 +109,43 @@ public class EditorView extends AlwaysDismissedDialog
 
         mHalfRowMargin = activity.getResources().getDimensionPixelSize(
                 R.dimen.payments_section_large_spacing);
-        mEditorTextFields = new ArrayList<>();
+        mCheckableFields = new ArrayList<>();
+        mEditableTextFields = new ArrayList<>();
+        mDropdownFields = new ArrayList<>();
+
+        final Pattern cardNumberPattern = Pattern.compile("^[\\d- ]*$");
+        mCardNumberInputFilter = new InputFilter() {
+            @Override
+            public CharSequence filter(
+                    CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
+                // Accept deletions.
+                if (start == end) return null;
+
+                // Accept digits, "-", and spaces.
+                if (cardNumberPattern.matcher(source.subSequence(start, end)).matches()) {
+                    return null;
+                }
+
+                // Reject everything else.
+                return "";
+            }
+        };
+
+        mCardNumberFormatter = new CreditCardNumberFormattingTextWatcher();
+        new AsyncTask<Void, Void, PhoneNumberFormattingTextWatcher>() {
+            @Override
+            protected PhoneNumberFormattingTextWatcher doInBackground(Void... unused) {
+                return new PhoneNumberFormattingTextWatcher();
+            }
+
+            @Override
+            protected void onPostExecute(PhoneNumberFormattingTextWatcher result) {
+                mPhoneFormatter = result;
+                if (mPhoneInput != null) {
+                    mPhoneInput.addTextChangedListener(mPhoneFormatter);
+                }
+            }
+        }.execute();
     }
 
     /** Launches the Autofill help page on top of the current Context. */
@@ -158,25 +197,47 @@ public class EditorView extends AlwaysDismissedDialog
     }
 
     /**
-     * Checks if all of the fields in the form are valid and updates the displayed errors.
+     * Checks if all of the fields in the form are valid and updates the displayed errors. If there
+     * are any invalid fields, makes sure that one of them is focused. Called when user taps [SAVE].
      *
      * @return Whether all fields contain valid information.
      */
     private boolean validateForm() {
-        final List<EditorTextField> invalidViews = getViewsWithInvalidInformation();
-
-        // Focus the first field that's invalid.
-        if (!invalidViews.isEmpty() && !invalidViews.contains(getCurrentFocus())) {
-            focusInputField(invalidViews.get(0));
-        }
+        final List<Validatable> invalidViews = getViewsWithInvalidInformation(true);
 
         // Iterate over all the fields to update what errors are displayed, which is necessary to
         // to clear existing errors on any newly valid fields.
-        for (int i = 0; i < mEditorTextFields.size(); i++) {
-            EditorTextField fieldView = mEditorTextFields.get(i);
+        for (int i = 0; i < mCheckableFields.size(); i++) {
+            Validatable fieldView = mCheckableFields.get(i);
             fieldView.updateDisplayedError(invalidViews.contains(fieldView));
         }
+
+        if (!invalidViews.isEmpty()) {
+            // Make sure that focus is on an invalid field.
+            Validatable focusedField = getValidatable(getCurrentFocus());
+            if (invalidViews.contains(focusedField)) {
+                // The focused field is invalid, but it may be scrolled off screen. Scroll to it.
+                focusedField.scrollToAndFocus();
+            } else {
+                // Some fields are invalid, but none of the are focused. Scroll to the first invalid
+                // field and focus it.
+                invalidViews.get(0).scrollToAndFocus();
+            }
+        }
+
         return invalidViews.isEmpty();
+    }
+
+    /** @return The validatable item for the given view. */
+    private Validatable getValidatable(View v) {
+        if (v instanceof TextView && v.getParent() != null
+                && v.getParent() instanceof EditorTextField) {
+            return (EditorTextField) v.getParent();
+        } else if (v instanceof Spinner && v.getTag() != null) {
+            return (Validatable) v.getTag();
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -219,12 +280,13 @@ public class EditorView extends AlwaysDismissedDialog
      * much more human-parsable with inefficient LinearLayouts for half-width controls sharing rows.
      */
     private void prepareEditor() {
-        removeTextChangedListenerFromPhoneInputField();
-
         // Ensure the layout is empty.
+        removeTextChangedListenersAndInputFilters();
         mDataView = (ViewGroup) mLayout.findViewById(R.id.contents);
         mDataView.removeAllViews();
-        mEditorTextFields.clear();
+        mCheckableFields.clear();
+        mEditableTextFields.clear();
+        mDropdownFields.clear();
 
         // Add Views for each of the {@link EditorFields}.
         for (int i = 0; i < mEditorModel.getFields().size(); i++) {
@@ -267,10 +329,14 @@ public class EditorView extends AlwaysDismissedDialog
         mDataView.addView(mFooter);
     }
 
-    private View addFieldViewToEditor(ViewGroup parent, EditorFieldModel fieldModel) {
+    private View addFieldViewToEditor(ViewGroup parent, final EditorFieldModel fieldModel) {
         View childView = null;
 
-        if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN) {
+        if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_ICONS) {
+            childView = new EditorIconsField(mContext, parent, fieldModel).getLayout();
+        } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_LABEL) {
+            childView = new EditorLabelField(mContext, parent, fieldModel).getLayout();
+        } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN) {
             Runnable prepareEditorRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -280,16 +346,46 @@ public class EditorView extends AlwaysDismissedDialog
                 }
             };
             EditorDropdownField dropdownView =
-                    new EditorDropdownField(mContext, fieldModel, prepareEditorRunnable);
+                    new EditorDropdownField(mContext, parent, fieldModel, prepareEditorRunnable);
+            mCheckableFields.add(dropdownView);
+            mDropdownFields.add(dropdownView.getDropdown());
 
             childView = dropdownView.getLayout();
-        } else {
-            EditorTextField inputLayout = new EditorTextField(mLayout.getContext(), fieldModel,
-                    mEditorActionListener, getPhoneFormatter(), mObserverForTest);
-            mEditorTextFields.add(inputLayout);
+        } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_CHECKBOX) {
+            final CheckBox checkbox = new CheckBox(mLayout.getContext());
+            checkbox.setId(R.id.payments_edit_checkbox);
+            checkbox.setText(fieldModel.getLabel());
+            checkbox.setChecked(fieldModel.isChecked());
+            checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    fieldModel.setIsChecked(isChecked);
+                    if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
+                }
+            });
 
-            final AutoCompleteTextView input = inputLayout.getEditText();
-            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
+            childView = checkbox;
+        } else {
+            InputFilter filter = null;
+            TextWatcher formatter = null;
+            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_CREDIT_CARD) {
+                filter = mCardNumberInputFilter;
+                formatter = mCardNumberFormatter;
+            } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
+                formatter = mPhoneFormatter;
+            }
+
+            EditorTextField inputLayout = new EditorTextField(mContext, fieldModel,
+                    mEditorActionListener, filter, formatter, mObserverForTest);
+            mCheckableFields.add(inputLayout);
+
+            EditText input = inputLayout.getEditText();
+            mEditableTextFields.add(input);
+
+            if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_CREDIT_CARD) {
+                assert mCardInput == null;
+                mCardInput = input;
+            } else if (fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_PHONE) {
                 assert mPhoneInput == null;
                 mPhoneInput = input;
             }
@@ -322,12 +418,13 @@ public class EditorView extends AlwaysDismissedDialog
         show();
 
         // Immediately focus the first invalid field to make it faster to edit.
-        final List<EditorTextField> invalidViews = getViewsWithInvalidInformation();
+        final List<Validatable> invalidViews = getViewsWithInvalidInformation(false);
         if (!invalidViews.isEmpty()) {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    focusInputField(invalidViews.get(0));
+                    invalidViews.get(0).scrollToAndFocus();
+                    if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
                 }
             });
         }
@@ -335,44 +432,45 @@ public class EditorView extends AlwaysDismissedDialog
 
     @Override
     public void onDismiss(DialogInterface dialog) {
-        removeTextChangedListenerFromPhoneInputField();
+        removeTextChangedListenersAndInputFilters();
         mEditorModel.cancel();
         if (mObserverForTest != null) mObserverForTest.onPaymentRequestEditorDismissed();
     }
 
-    /** @return All the EditorTextFields that exist in the EditorView. */
-    @VisibleForTesting
-    public List<EditorTextField> getEditorTextFields() {
-        return mEditorTextFields;
-    }
+    private void removeTextChangedListenersAndInputFilters() {
+        if (mCardInput != null) {
+            mCardInput.removeTextChangedListener(mCardNumberFormatter);
+            mCardInput.setFilters(new InputFilter[0]);  // Null is not allowed.
+            mCardInput = null;
+        }
 
-    private void removeTextChangedListenerFromPhoneInputField() {
-        if (mPhoneInput != null) mPhoneInput.removeTextChangedListener(getPhoneFormatter());
-        mPhoneInput = null;
-    }
-
-    /** Immediately returns the phone formatter or null if it has not initialized yet. */
-    private PhoneNumberFormattingTextWatcher getPhoneFormatter() {
-        try {
-            return mPhoneFormatterTask.get(0, TimeUnit.MILLISECONDS);
-        } catch (CancellationException | ExecutionException | InterruptedException
-                | TimeoutException e) {
-            return null;
+        if (mPhoneInput != null) {
+            mPhoneInput.removeTextChangedListener(mPhoneFormatter);
+            mPhoneInput = null;
         }
     }
 
-    private List<EditorTextField> getViewsWithInvalidInformation() {
-        List<EditorTextField> invalidViews = new ArrayList<>();
-        for (int i = 0; i < mEditorTextFields.size(); i++) {
-            EditorTextField fieldView = mEditorTextFields.get(i);
-            if (!fieldView.getFieldModel().isValid()) invalidViews.add(fieldView);
+    private List<Validatable> getViewsWithInvalidInformation(boolean findAll) {
+        List<Validatable> invalidViews = new ArrayList<>();
+        for (int i = 0; i < mCheckableFields.size(); i++) {
+            Validatable fieldView = mCheckableFields.get(i);
+            if (!fieldView.isValid()) {
+                invalidViews.add(fieldView);
+                if (!findAll) break;
+            }
         }
         return invalidViews;
     }
 
-    private void focusInputField(View view) {
-        view.requestFocus();
-        view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
-        if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
+    /** @return All editable text fields in the editor. Used only for tests. */
+    @VisibleForTesting
+    public List<EditText> getEditableTextFieldsForTest() {
+        return mEditableTextFields;
+    }
+
+    /** @return All dropdown fields in the editor. Used only for tests. */
+    @VisibleForTesting
+    public List<Spinner> getDropdownFieldsForTest() {
+        return mDropdownFields;
     }
 }

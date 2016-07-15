@@ -52,15 +52,14 @@ public class AutofillAddress extends PaymentOption {
 
     /**
      * Updates the address and marks it "complete." Called after the user has edited this address.
-     * Updates the label and sublabel.
+     * Updates the identifier, label, and sublabel.
      *
-     * @param profile The new profile to use. The GUID should not change.
+     * @param profile The new profile to use.
      */
     public void completeAddress(AutofillProfile profile) {
-        assert profile.getGUID().equals(mProfile.getGUID());
         mProfile = profile;
         mIsComplete = true;
-        updateLabels(mProfile.getFullName(), mProfile.getLabel());
+        updateIdentifierAndLabels(mProfile.getGUID(), mProfile.getFullName(), mProfile.getLabel());
     }
 
     /** @return The country code to use, e.g., when constructing an editor for this address. */

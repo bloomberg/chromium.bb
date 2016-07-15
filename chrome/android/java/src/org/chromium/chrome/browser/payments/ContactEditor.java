@@ -84,19 +84,19 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                 ? new AutofillContact(new AutofillProfile(), null, null, false) : toEdit;
 
         final EditorFieldModel phoneField = mRequestPayerPhone
-                ? new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
+                ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
                           mContext.getString(R.string.autofill_profile_editor_phone_number),
                           mPhoneNumbers, getPhoneValidator(),
-                          mContext.getString(R.string.payments_phone_required_validation_message),
+                          mContext.getString(R.string.payments_field_required_validation_message),
                           mContext.getString(R.string.payments_phone_invalid_validation_message),
                           contact.getPayerPhone())
                 : null;
 
         final EditorFieldModel emailField = mRequestPayerEmail
-                ? new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
+                ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
                           mContext.getString(R.string.autofill_profile_editor_email_address),
                           mEmailAddresses, getEmailValidator(),
-                          mContext.getString(R.string.payments_email_required_validation_message),
+                          mContext.getString(R.string.payments_field_required_validation_message),
                           mContext.getString(R.string.payments_email_invalid_validation_message),
                           contact.getPayerEmail())
                 : null;
@@ -130,8 +130,8 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                     contact.getProfile().setEmailAddress(email);
                 }
 
-                PersonalDataManager.getInstance().setProfile(contact.getProfile());
-                contact.completeContact(phone, email);
+                String guid = PersonalDataManager.getInstance().setProfile(contact.getProfile());
+                contact.completeContact(guid, phone, email);
                 callback.onResult(contact);
             }
         });

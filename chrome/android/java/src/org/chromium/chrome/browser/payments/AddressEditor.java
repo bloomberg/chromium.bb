@@ -93,22 +93,25 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
 
         if (mAutofillProfileBridge == null) mAutofillProfileBridge = new AutofillProfileBridge();
 
-        // Ensure that |address| and |profile| are always not null. If |toEdit| is null, we're
-        // creating a new autofill profile with the country code of the default locale on this
-        // device.
-        final AutofillAddress address = toEdit == null
-                ? new AutofillAddress(new AutofillProfile(), false) : toEdit;
+        // If |toEdit| is null, we're creating a new autofill profile with the country code of the
+        // default locale on this device.
+        boolean isNewAddress = toEdit == null;
+
+        // Ensure that |address| and |profile| are always not null.
+        final AutofillAddress address = isNewAddress
+                ? new AutofillAddress(new AutofillProfile(), false)
+                : toEdit;
         final AutofillProfile profile = address.getProfile();
 
-        // The title of the editor depends on whether we're adding a new address (toEdit is null) or
-        // editing an existing address (toEdit is not null).
-        final EditorModel editor = new EditorModel(
-                mContext.getString(toEdit == null ? R.string.payments_add_address_label
-                        : R.string.payments_edit_address_label));
+        // The title of the editor depends on whether we're adding a new address or editing an
+        // existing address.
+        final EditorModel editor = new EditorModel(mContext.getString(isNewAddress
+                ? R.string.autofill_create_profile
+                : R.string.autofill_edit_profile));
 
         // The country dropdown is always present on the editor.
         if (mCountryField == null) {
-            mCountryField = new EditorFieldModel(
+            mCountryField = EditorFieldModel.createDropdown(
                     mContext.getString(R.string.autofill_profile_editor_country),
                     AutofillProfileBridge.getSupportedCountries());
         }
@@ -139,28 +142,28 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
         // and relabel the fields. The meaning of each field remains the same.
         if (mAddressFields.isEmpty()) {
             // City, dependent locality, and organization don't have any special formatting hints.
-            mAddressFields.put(AddressField.LOCALITY, new EditorFieldModel(0));
-            mAddressFields.put(AddressField.DEPENDENT_LOCALITY, new EditorFieldModel(0));
-            mAddressFields.put(AddressField.ORGANIZATION, new EditorFieldModel(0));
+            mAddressFields.put(AddressField.LOCALITY, EditorFieldModel.createTextInput());
+            mAddressFields.put(AddressField.DEPENDENT_LOCALITY, EditorFieldModel.createTextInput());
+            mAddressFields.put(AddressField.ORGANIZATION, EditorFieldModel.createTextInput());
 
             // State should be formatted in all capitals.
-            mAddressFields.put(AddressField.ADMIN_AREA,
-                    new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_REGION));
+            mAddressFields.put(AddressField.ADMIN_AREA, EditorFieldModel.createTextInput(
+                        EditorFieldModel.INPUT_TYPE_HINT_REGION));
 
             // Sorting code and postal code (a.k.a. ZIP code) should show both letters and digits on
             // the keyboard, if possible.
-            mAddressFields.put(AddressField.SORTING_CODE,
-                    new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC));
-            mAddressFields.put(AddressField.POSTAL_CODE,
-                    new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC));
+            mAddressFields.put(AddressField.SORTING_CODE, EditorFieldModel.createTextInput(
+                    EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC));
+            mAddressFields.put(AddressField.POSTAL_CODE, EditorFieldModel.createTextInput(
+                    EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC));
 
             // Street line field can contain \n to indicate line breaks.
-            mAddressFields.put(AddressField.STREET_ADDRESS,
-                    new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_STREET_LINES));
+            mAddressFields.put(AddressField.STREET_ADDRESS, EditorFieldModel.createTextInput(
+                    EditorFieldModel.INPUT_TYPE_HINT_STREET_LINES));
 
             // Android has special formatting rules for names.
-            mAddressFields.put(AddressField.RECIPIENT,
-                    new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME));
+            mAddressFields.put(AddressField.RECIPIENT, EditorFieldModel.createTextInput(
+                    EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME));
         }
 
         // Address fields are cached, so their values need to be updated for every new profile
@@ -177,10 +180,10 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
 
         // Phone number is present and required for all countries.
         if (mPhoneField == null) {
-            mPhoneField = new EditorFieldModel(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
+            mPhoneField = EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
                     mContext.getString(R.string.autofill_profile_editor_phone_number),
                     mPhoneNumbers, getPhoneValidator(),
-                    mContext.getString(R.string.payments_address_field_required_validation_message),
+                    mContext.getString(R.string.payments_field_required_validation_message),
                     mContext.getString(R.string.payments_phone_invalid_validation_message), null);
         }
 
@@ -241,11 +244,11 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
 
         // Calculate the label for this profile. The label's format depends on the country and
         // language code for the profile.
-        PersonalDataManager pmd = PersonalDataManager.getInstance();
-        profile.setLabel(pmd.getGetAddressLabelForPaymentRequest(profile));
+        PersonalDataManager pdm = PersonalDataManager.getInstance();
+        profile.setLabel(pdm.getAddressLabelForPaymentRequest(profile));
 
         // Save the edited autofill profile.
-        pmd.setProfile(profile);
+        profile.setGUID(pdm.setProfile(profile));
     }
 
     /** @return The given autofill profile field. */
@@ -342,7 +345,7 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
             // PaymentRequest does.
             if (component.isRequired || component.id == AddressField.RECIPIENT) {
                 field.setRequiredErrorMessage(mContext.getString(
-                        R.string.payments_address_field_required_validation_message));
+                        R.string.payments_field_required_validation_message));
             } else {
                 field.setRequiredErrorMessage(null);
             }

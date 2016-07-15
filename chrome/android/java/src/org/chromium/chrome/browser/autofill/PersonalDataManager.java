@@ -115,26 +115,15 @@ public class PersonalDataManager {
 
         /**
          * Builds an empty local profile with "settings" origin and country code from the default
-         * locale. All other fields are empty strings, because JNI does not handle nulls.
+         * locale. All other fields are empty strings, because JNI does not handle null strings.
          */
         public AutofillProfile() {
-            mOrigin = AutofillPreferences.SETTINGS_ORIGIN;
-            mIsLocal = true;
-            mCountryCode = Locale.getDefault().getCountry();
-
-            mGUID = "";
-            mFullName = "";
-            mCompanyName = "";
-            mStreetAddress = "";
-            mRegion = "";
-            mLocality = "";
-            mDependentLocality = "";
-            mPostalCode = "";
-            mSortingCode = "";
-            mPhoneNumber = "";
-            mEmailAddress = "";
-            mLabel = "";
-            mLanguageCode = "";
+            this("" /* guid */, AutofillPreferences.SETTINGS_ORIGIN /* origin */,
+                    true /* isLocal */, "" /* fullName */, "" /* companyName */,
+                    "" /* streetAddress */, "" /* region */, "" /* locality */,
+                    "" /* dependentLocality */, "" /* postalCode */, "" /* sortingCode */,
+                    Locale.getDefault().getCountry() /* country */, "" /* phoneNumber */,
+                    "" /* emailAddress */, "" /* languageCode */);
         }
 
         /** TODO(estade): remove this constructor. */
@@ -143,21 +132,9 @@ public class PersonalDataManager {
                 String streetAddress, String region, String locality, String dependentLocality,
                 String postalCode, String sortingCode, String countryCode, String phoneNumber,
                 String emailAddress, String languageCode) {
-            mGUID = guid;
-            mOrigin = origin;
-            mIsLocal = true;
-            mFullName = fullName;
-            mCompanyName = companyName;
-            mStreetAddress = streetAddress;
-            mRegion = region;
-            mLocality = locality;
-            mDependentLocality = dependentLocality;
-            mPostalCode = postalCode;
-            mSortingCode = sortingCode;
-            mCountryCode = countryCode;
-            mPhoneNumber = phoneNumber;
-            mEmailAddress = emailAddress;
-            mLanguageCode = languageCode;
+            this(guid, origin, true /* isLocal */, fullName, companyName, streetAddress, region,
+                    locality, dependentLocality, postalCode, sortingCode, countryCode, phoneNumber,
+                    emailAddress, languageCode);
         }
 
         @CalledByNative("AutofillProfile")
@@ -355,20 +332,20 @@ public class PersonalDataManager {
             mBillingAddressId = billingAddressId;
         }
 
+        public CreditCard() {
+            this("" /* guid */, AutofillPreferences.SETTINGS_ORIGIN /*origin */, true /* isLocal */,
+                    false /* isCached */, "" /* name */, "" /* number */, "" /* obfuscatedNumber */,
+                    "" /* month */, "" /* year */, "" /* basicCardPaymentType */,
+                    0 /* issuerIconDrawableId */, "" /* billingAddressId */);
+        }
+
         /** TODO(estade): remove this constructor. */
         @VisibleForTesting
         public CreditCard(String guid, String origin, String name, String number,
                 String obfuscatedNumber, String month, String year) {
-            mGUID = guid;
-            mOrigin = origin;
-            mIsLocal = true;
-            mIsCached = false;
-            mName = name;
-            mNumber = number;
-            mObfuscatedNumber = obfuscatedNumber;
-            mMonth = month;
-            mYear = year;
-            mBillingAddressId = "";
+            this(guid, origin, true /* isLocal */, false /* isCached */, name, number,
+                    obfuscatedNumber, month, year, "" /* basicCardPaymentType */,
+                    0 /* issuerIconDrawableId */, "" /* billingAddressId */);
         }
 
         @CalledByNative("CreditCard")
@@ -461,6 +438,14 @@ public class PersonalDataManager {
 
         public void setYear(String year) {
             mYear = year;
+        }
+
+        public void setBasicCardPaymentType(String type) {
+            mBasicCardPaymentType = type;
+        }
+
+        public void setIssuerIconDrawableId(int id) {
+            mIssuerIconDrawableId = id;
         }
 
         public void setBillingAddressId(String id) {
@@ -599,6 +584,11 @@ public class PersonalDataManager {
         return nativeGetCreditCardByGUID(mPersonalDataManagerAndroid, guid);
     }
 
+    public CreditCard getCreditCardForNumber(String cardNumber) {
+        ThreadUtils.assertOnUiThread();
+        return nativeGetCreditCardForNumber(mPersonalDataManagerAndroid, cardNumber);
+    }
+
     public String setCreditCard(CreditCard card) {
         ThreadUtils.assertOnUiThread();
         assert card.getIsLocal();
@@ -608,6 +598,11 @@ public class PersonalDataManager {
     public void updateServerCardBillingAddress(String guid, String billingAddressId) {
         ThreadUtils.assertOnUiThread();
         nativeUpdateServerCardBillingAddress(mPersonalDataManagerAndroid, guid, billingAddressId);
+    }
+
+    public String getBasicCardPaymentTypeIfValid(String cardNumber) {
+        ThreadUtils.assertOnUiThread();
+        return nativeGetBasicCardPaymentTypeIfValid(mPersonalDataManagerAndroid, cardNumber);
     }
 
     @VisibleForTesting
@@ -626,7 +621,7 @@ public class PersonalDataManager {
         nativeClearUnmaskedCache(mPersonalDataManagerAndroid, guid);
     }
 
-    public String getGetAddressLabelForPaymentRequest(AutofillProfile profile) {
+    public String getAddressLabelForPaymentRequest(AutofillProfile profile) {
         return nativeGetAddressLabelForPaymentRequest(mPersonalDataManagerAndroid, profile);
     }
 
@@ -634,6 +629,12 @@ public class PersonalDataManager {
             FullCardRequestDelegate delegate) {
         nativeGetFullCardForPaymentRequest(
                 mPersonalDataManagerAndroid, webContents, guid, delegate);
+    }
+
+    public void getFullTemporaryCard(WebContents webContents, String cardNumber, String nameOnCard,
+            String expirationMonth, String expirationYear, FullCardRequestDelegate delegate) {
+        nativeGetFullTemporaryCardForPaymentRequest(mPersonalDataManagerAndroid, webContents,
+                cardNumber, nameOnCard, expirationMonth, expirationYear, delegate);
     }
 
     @VisibleForTesting
@@ -703,10 +704,14 @@ public class PersonalDataManager {
             long nativePersonalDataManagerAndroid);
     private native CreditCard nativeGetCreditCardByGUID(long nativePersonalDataManagerAndroid,
             String guid);
+    private native CreditCard nativeGetCreditCardForNumber(long nativePersonalDataManagerAndroid,
+            String cardNumber);
     private native String nativeSetCreditCard(long nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeUpdateServerCardBillingAddress(long nativePersonalDataManagerAndroid,
             String guid, String billingAddressId);
+    private native String nativeGetBasicCardPaymentTypeIfValid(
+            long nativePersonalDataManagerAndroid, String cardNumber);
     private native void nativeAddServerCreditCardForTest(long nativePersonalDataManagerAndroid,
             CreditCard card);
     private native void nativeRemoveByGUID(long nativePersonalDataManagerAndroid, String guid);
@@ -718,6 +723,10 @@ public class PersonalDataManager {
             long nativePersonalDataManagerAndroid, String guid);
     private native void nativeGetFullCardForPaymentRequest(long nativePersonalDataManagerAndroid,
             WebContents webContents, String guid, FullCardRequestDelegate delegate);
+    private native void nativeGetFullTemporaryCardForPaymentRequest(
+            long nativePersonalDataManagerAndroid, WebContents webContents, String cardNumber,
+            String nameOnCard, String expirationMonth, String expirationYear,
+            FullCardRequestDelegate delegate);
     private static native boolean nativeIsAutofillEnabled();
     private static native void nativeSetAutofillEnabled(boolean enable);
     private static native boolean nativeIsAutofillManaged();

@@ -13,17 +13,14 @@
         android:orientation="vertical">
 
     <TextView
-            android:id="@+id/spinner_label"
+            android:id="@+id/label"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="@style/PreferenceFloatLabelTextAppearance" />
 
-    <android.support.v7.widget.AppCompatSpinner
-            android:id="@+id/spinner"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/pref_autofill_field_top_margin" />
-
-    <View style="@style/PreferenceSpinnerUnderlineView" />
+    <LinearLayout
+            android:id="@+id/icons_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
 </LinearLayout>

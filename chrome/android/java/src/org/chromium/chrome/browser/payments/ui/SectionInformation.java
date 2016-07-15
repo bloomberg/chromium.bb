@@ -165,11 +165,11 @@ public class SectionInformation {
      */
     public int getAddStringId() {
         if (mDataType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
-            return R.string.payments_add_address;
+            return R.string.autofill_create_profile;
         } else if (mDataType == PaymentRequestUI.TYPE_CONTACT_DETAILS) {
             return R.string.payments_add_contact;
         } else if (mDataType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
-            return R.string.payments_add_payment_instrument;
+            return R.string.autofill_create_credit_card;
         }
         return 0;
     }

@@ -5,12 +5,14 @@
 package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
-import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView.OnEditorActionListener;
@@ -20,21 +22,19 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.widget.CompatibilityTextInputLayout;
 
+import javax.annotation.Nullable;
+
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
 @VisibleForTesting
-public class EditorTextField extends CompatibilityTextInputLayout {
-
-    /** The indicator for input fields that are required. */
-    private static final String REQUIRED_FIELD_INDICATOR = "*";
-
+public class EditorTextField extends CompatibilityTextInputLayout implements Validatable {
     private EditorFieldModel mEditorFieldModel;
     private AutoCompleteTextView mInput;
     private boolean mHasFocusedAtLeastOnce;
-    private PaymentRequestObserverForTest mObserverForTest;
+    @Nullable private PaymentRequestObserverForTest mObserverForTest;
 
     public EditorTextField(Context context, final EditorFieldModel fieldModel,
-            OnEditorActionListener actionlistener, PhoneNumberFormattingTextWatcher formatter,
-            PaymentRequestObserverForTest observer) {
+            OnEditorActionListener actionlistener, @Nullable InputFilter filter,
+            @Nullable TextWatcher formatter, @Nullable PaymentRequestObserverForTest observer) {
         super(context);
         assert fieldModel.getInputTypeHint() != EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mEditorFieldModel = fieldModel;
@@ -42,7 +42,7 @@ public class EditorTextField extends CompatibilityTextInputLayout {
 
         // Build up the label.  Required fields are indicated by appending a '*'.
         CharSequence label = fieldModel.getLabel();
-        if (fieldModel.isRequired()) label = label + REQUIRED_FIELD_INDICATOR;
+        if (fieldModel.isRequired()) label = label + EditorView.REQUIRED_FIELD_INDICATOR;
         setHint(label);
 
         // The EditText becomes a child of this class.  The TextInputLayout manages how it looks.
@@ -91,8 +91,22 @@ public class EditorTextField extends CompatibilityTextInputLayout {
             mInput.setThreshold(0);
         }
 
+        if (filter != null) mInput.setFilters(new InputFilter[] {filter});
+        if (formatter != null) mInput.addTextChangedListener(formatter);
+
         switch (fieldModel.getInputTypeHint()) {
+            case EditorFieldModel.INPUT_TYPE_HINT_CREDIT_CARD:
+                // Intentionally fall through.
+                //
+                // There's no keyboard that allows numbers, spaces, and "-" only, so use the phone
+                // keyboard instead. The phone keyboard has more symbols than necessary. A filter
+                // should be used to prevent input of phone number symbols that are not relevant for
+                // credit card numbers, e.g., "+", "*", and "#".
+                //
+                // The number keyboard is not suitable, because it filters out everything except
+                // digits.
             case EditorFieldModel.INPUT_TYPE_HINT_PHONE:
+                // Show the keyboard with numbers and phone-related symbols.
                 mInput.setInputType(InputType.TYPE_CLASS_PHONE);
                 break;
             case EditorFieldModel.INPUT_TYPE_HINT_EMAIL:
@@ -112,15 +126,15 @@ public class EditorTextField extends CompatibilityTextInputLayout {
                         | InputType.TYPE_TEXT_FLAG_CAP_WORDS
                         | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
                 break;
+            case EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC:
+                // Intentionally fall through.
+                // TODO(rouslan): Provide a hint to the keyboard that postal code and sorting
+                // code are likely to have numbers.
             case EditorFieldModel.INPUT_TYPE_HINT_REGION:
                 mInput.setInputType(InputType.TYPE_CLASS_TEXT
                         | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
                         | InputType.TYPE_TEXT_VARIATION_POSTAL_ADDRESS);
                 break;
-            case EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC:
-                // Intentionally fall through.
-                // TODO(rouslan): Provide a hint to the keyboard that postal code and sorting
-                // code are likely to have numbers.
             default:
                 mInput.setInputType(InputType.TYPE_CLASS_TEXT
                         | InputType.TYPE_TEXT_FLAG_CAP_WORDS
@@ -139,12 +153,21 @@ public class EditorTextField extends CompatibilityTextInputLayout {
         return mInput;
     }
 
-    /**
-     * Updates the error display.
-     *
-     * @param showError If true, displays the error message.  If false, clears it.
-     */
+    @Override
+    public boolean isValid() {
+        return mEditorFieldModel.isValid();
+    }
+
+    @Override
     public void updateDisplayedError(boolean showError) {
         setError(showError ? mEditorFieldModel.getErrorMessage() : null);
+    }
+
+    @Override
+    public void scrollToAndFocus() {
+        ViewGroup parent = (ViewGroup) getParent();
+        if (parent != null) parent.requestChildFocus(this, this);
+        requestFocus();
+        sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED);
     }
 }

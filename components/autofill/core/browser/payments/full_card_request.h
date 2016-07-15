@@ -43,6 +43,10 @@ class FullCardRequest : public CardUnmaskDelegate {
   // Retrieves the pan and cvc for |card| and invokes
   // Delegate::OnFullCardDetails() or Delegate::OnFullCardError(). Only one
   // request should be active at a time.
+  //
+  // If the card is local, has a non-empty GUID, and the user has updated its
+  // expiration date, then this function will write the new information to
+  // autofill table on disk.
   void GetFullCard(const CreditCard& card,
                    AutofillClient::UnmaskCardReason reason,
                    base::WeakPtr<Delegate> delegate);
