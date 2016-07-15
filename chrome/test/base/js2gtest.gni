@@ -39,7 +39,7 @@ template("js2gtest") {
 
     v8_shell_path = get_label_info("//v8:v8_shell($v8_snapshot_toolchain)",
                                    "root_out_dir") + "/v8_shell"
-    if (is_win) {
+    if (host_os == "win") {
       v8_shell_path += ".exe"
     }
 
