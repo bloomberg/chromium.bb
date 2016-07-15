@@ -31,7 +31,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # All platforms.
 
-    self.Fail('conformance/misc/invalid-passed-params.html', bug=483282)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
               'tex-2d-rgba-rgba-unsigned_byte.html', bug=483282)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
@@ -630,6 +629,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
 
+    # The Intel Mesa driver only supports sRGB encoding in ES 3.x, see
+    # https://patchwork.freedesktop.org/patch/76903
+    # So these tests fail on core profile.
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_04.html',
         ['linux', 'intel'], bug=598902)
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
