@@ -995,7 +995,7 @@ void GLES2Implementation::GetFramebufferAttachmentParameteriv(GLenum target,
   GPU_CLIENT_LOG("[" << GetLogPrefix()
                      << "] glGetFramebufferAttachmentParameteriv("
                      << GLES2Util::GetStringFrameBufferTarget(target) << ", "
-                     << GLES2Util::GetStringAttachment(attachment) << ", "
+                     << GLES2Util::GetStringAttachmentQuery(attachment) << ", "
                      << GLES2Util::GetStringFrameBufferParameter(pname) << ", "
                      << static_cast<const void*>(params) << ")");
   TRACE_EVENT0("gpu",

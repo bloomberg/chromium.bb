@@ -16,6 +16,14 @@ static const GLenum valid_attachment_table[] = {
 };
 
 static const GLenum valid_attachment_table_es3[] = {
+    GL_DEPTH_STENCIL_ATTACHMENT,
+};
+
+static const GLenum valid_attachment_query_table[] = {
+    GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT,
+};
+
+static const GLenum valid_attachment_query_table_es3[] = {
     GL_DEPTH_STENCIL_ATTACHMENT, GL_COLOR_EXT, GL_DEPTH_EXT, GL_STENCIL_EXT,
 };
 
@@ -1369,6 +1377,8 @@ static const GLenum valid_vertex_pointer_table[] = {
 
 Validators::Validators()
     : attachment(valid_attachment_table, arraysize(valid_attachment_table)),
+      attachment_query(valid_attachment_query_table,
+                       arraysize(valid_attachment_query_table)),
       bufferfi(valid_bufferfi_table, arraysize(valid_bufferfi_table)),
       bufferuiv(valid_bufferuiv_table, arraysize(valid_bufferuiv_table)),
       capability(valid_capability_table, arraysize(valid_capability_table)),
@@ -1450,6 +1460,8 @@ Validators::Validators()
 void Validators::UpdateValuesES3() {
   attachment.AddValues(valid_attachment_table_es3,
                        arraysize(valid_attachment_table_es3));
+  attachment_query.AddValues(valid_attachment_query_table_es3,
+                             arraysize(valid_attachment_query_table_es3));
   buffer_parameter.SetIsES3(true);
   buffer_target.SetIsES3(true);
   buffer_usage.SetIsES3(true);

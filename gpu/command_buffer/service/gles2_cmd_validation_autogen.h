@@ -12,6 +12,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_AUTOGEN_H_
 
 ValueValidator<GLenum> attachment;
+ValueValidator<GLenum> attachment_query;
 class BackbufferAttachmentValidator {
  public:
   bool IsValid(const GLenum value) const;

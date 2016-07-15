@@ -516,6 +516,7 @@ void FeatureInfo::InitializeFeatures() {
       // is ES2 where GL_DEPTH_STENCIL_ATTACHMENT isn't accepted, it is still
       // OK.
       validators_.attachment.AddValue(GL_DEPTH_STENCIL_ATTACHMENT);
+      validators_.attachment_query.AddValue(GL_DEPTH_STENCIL_ATTACHMENT);
     }
   }
 
@@ -1113,6 +1114,7 @@ void FeatureInfo::InitializeFeatures() {
          i < static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + max_color_attachments);
          ++i) {
       validators_.attachment.AddValue(i);
+      validators_.attachment_query.AddValue(i);
     }
     static_assert(GL_COLOR_ATTACHMENT0_EXT == GL_COLOR_ATTACHMENT0,
                   "GL_COLOR_ATTACHMENT0_EXT should equal GL_COLOR_ATTACHMENT0");
@@ -1360,6 +1362,9 @@ void FeatureInfo::EnableES3Validators() {
   };
   if (max_color_attachments < kTotalColorAttachmentEnums) {
     validators_.attachment.RemoveValues(
+        kColorAttachments + max_color_attachments,
+        kTotalColorAttachmentEnums - max_color_attachments);
+    validators_.attachment_query.RemoveValues(
         kColorAttachments + max_color_attachments,
         kTotalColorAttachmentEnums - max_color_attachments);
     validators_.read_buffer.RemoveValues(

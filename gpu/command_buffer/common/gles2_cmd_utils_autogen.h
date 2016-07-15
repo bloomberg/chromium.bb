@@ -12,6 +12,7 @@
 #define GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_AUTOGEN_H_
 
 static std::string GetStringAttachment(uint32_t value);
+static std::string GetStringAttachmentQuery(uint32_t value);
 static std::string GetStringBackbufferAttachment(uint32_t value);
 static std::string GetStringBlitFilter(uint32_t value);
 static std::string GetStringBufferMode(uint32_t value);

@@ -3472,6 +3472,17 @@ std::string GLES2Util::GetStringAttachment(uint32_t value) {
       {GL_DEPTH_ATTACHMENT, "GL_DEPTH_ATTACHMENT"},
       {GL_STENCIL_ATTACHMENT, "GL_STENCIL_ATTACHMENT"},
       {GL_DEPTH_STENCIL_ATTACHMENT, "GL_DEPTH_STENCIL_ATTACHMENT"},
+  };
+  return GLES2Util::GetQualifiedEnumString(string_table,
+                                           arraysize(string_table), value);
+}
+
+std::string GLES2Util::GetStringAttachmentQuery(uint32_t value) {
+  static const EnumToString string_table[] = {
+      {GL_COLOR_ATTACHMENT0, "GL_COLOR_ATTACHMENT0"},
+      {GL_DEPTH_ATTACHMENT, "GL_DEPTH_ATTACHMENT"},
+      {GL_STENCIL_ATTACHMENT, "GL_STENCIL_ATTACHMENT"},
+      {GL_DEPTH_STENCIL_ATTACHMENT, "GL_DEPTH_STENCIL_ATTACHMENT"},
       {GL_COLOR_EXT, "GL_COLOR_EXT"},
       {GL_DEPTH_EXT, "GL_DEPTH_EXT"},
       {GL_STENCIL_EXT, "GL_STENCIL_EXT"},

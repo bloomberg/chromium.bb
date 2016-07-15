@@ -1243,6 +1243,17 @@ _NAMED_TYPE_INFO = {
     ],
     'valid_es3': [
       'GL_DEPTH_STENCIL_ATTACHMENT',
+    ],
+  },
+  'AttachmentQuery': {
+    'type': 'GLenum',
+    'valid': [
+      'GL_COLOR_ATTACHMENT0',
+      'GL_DEPTH_ATTACHMENT',
+      'GL_STENCIL_ATTACHMENT',
+    ],
+    'valid_es3': [
+      'GL_DEPTH_STENCIL_ATTACHMENT',
       # For backbuffer.
       'GL_COLOR_EXT',
       'GL_DEPTH_EXT',
