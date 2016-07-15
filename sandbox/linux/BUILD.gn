@@ -306,7 +306,7 @@ if (is_linux) {
 
     import("//build/config/compiler/compiler.gni")
     import("//build/config/sanitizers/sanitizers.gni")
-    if (is_component_build && !using_sanitizer) {
+    if (is_component_build || using_sanitizer) {
       # WARNING! We remove this config so that we don't accidentally
       # pick up the //build/config:rpath_for_built_shared_libraries
       # sub-config. However, this means that we need to duplicate any
@@ -317,9 +317,11 @@ if (is_linux) {
       }
     }
 
-    deps = [
-      "//build/config/sanitizers:deps",
-    ]
+    # We also do not want to pick up any of the other sanitizer
+    # flags (i.e. we do not want to build w/ the sanitizers at all).
+    # This is safe to delete unconditionally, because it is part of the
+    # default configs and empty when not using the sanitizers.
+    configs -= [ "//build/config/sanitizers:default_sanitizer_flags" ]
   }
 }
 
