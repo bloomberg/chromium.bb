@@ -336,10 +336,6 @@ public:
     // the page is shutting down, but will be valid at all other times.
     WebLocalFrameImpl* mainFrameImpl() const;
 
-    // FIXME: Temporary method to accommodate out-of-process frame ancestors;
-    // will be removed when there can be multiple WebWidgets for a single page.
-    WebLocalFrameImpl* localFrameRootTemporary() const;
-
     // Event related methods:
     void mouseContextMenu(const WebMouseEvent&);
     void mouseDoubleClick(const WebMouseEvent&);
