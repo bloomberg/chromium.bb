@@ -121,8 +121,6 @@ YUVToRGBConverter::~YUVToRGBConverter() {
 void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
                                         const gfx::Size& size,
                                         unsigned rgb_texture) {
-  // Only support for rectangle targets exists so far.
-  DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_RECTANGLE_ARB), target);
   ScopedSetGLToRealGLApi scoped_set_gl_api;
 
   // Note that state restoration is done explicitly instead of scoped binders to
@@ -137,8 +135,8 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   glGetIntegerv(GL_TEXTURE_BINDING_RECTANGLE_ARB, &old_texture1_binding);
 
   // Allocate the rgb texture.
-  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, rgb_texture);
-  glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, size.width(), size.height(),
+  glBindTexture(target, rgb_texture);
+  glTexImage2D(target, 0, GL_RGB, size.width(), size.height(),
                0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
 
   // Set up and issue the draw call.
@@ -149,7 +147,7 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
   ScopedFrameBufferBinder framebuffer_binder(framebuffer_);
   ScopedViewport viewport(0, 0, size.width(), size.height());
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                            GL_TEXTURE_RECTANGLE_ARB, rgb_texture, 0);
+                            target, rgb_texture, 0);
   DCHECK_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
   ScopedUseProgram use_program(program_);
@@ -158,7 +156,7 @@ void YUVToRGBConverter::CopyYUV420ToRGB(unsigned target,
 
   // Restore previous state.
   glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                            GL_TEXTURE_RECTANGLE_ARB, 0, 0);
+                            target, 0, 0);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_RECTANGLE_ARB, old_texture0_binding);
   glActiveTexture(GL_TEXTURE1);
