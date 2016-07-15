@@ -4990,7 +4990,6 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
       GURL source_url(old_url);
       if (is_initial_navigation && source_url.is_empty() && frame_->opener())
         source_url = frame_->opener()->top()->document().url();
-      DCHECK(!source_url.is_empty());
       should_fork = !source_url.SchemeIs(url::kFileScheme);
     }
 
