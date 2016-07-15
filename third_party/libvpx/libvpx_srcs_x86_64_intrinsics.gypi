@@ -41,6 +41,7 @@
         '<(libvpx_source)/vpx_dsp/x86/inv_txfm_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/loopfilter_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/quantize_sse2.c',
+        '<(libvpx_source)/vpx_dsp/x86/sum_squares_sse2.c',
         '<(libvpx_source)/vpx_dsp/x86/variance_sse2.c',
       ],
       'cflags': [ '-msse2', ],
