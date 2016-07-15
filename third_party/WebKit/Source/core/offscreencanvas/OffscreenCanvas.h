@@ -47,6 +47,16 @@ public:
     bool originClean() const;
     void setOriginTainted() { m_originClean = false; }
 
+    void setSurfaceId(uint32_t clientId, uint32_t localId, uint64_t nonce)
+    {
+        m_clientId = clientId;
+        m_localId = localId;
+        m_nonce = nonce;
+    }
+    uint32_t clientId() const { return m_clientId; }
+    uint32_t localId() const { return m_localId; }
+    uint64_t nonce() const { return m_nonce; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -62,6 +72,14 @@ private:
     bool m_isNeutered = false;
 
     bool m_originClean;
+
+    // cc::SurfaceId is broken into three integer components as this can be used
+    // in transfer of OffscreenCanvas across threads
+    // If this object is not created via HTMLCanvasElement.transferControlToOffscreen(),
+    // then the following members would remain as initialized zero values.
+    uint32_t m_clientId = 0;
+    uint32_t m_localId = 0;
+    uint64_t m_nonce = 0;
 };
 
 } // namespace blink

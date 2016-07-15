@@ -37,6 +37,13 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreenInternal(HTM
     }
     OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(canvas.width(), canvas.height());
     offscreenCanvas->setAssociatedCanvasId(DOMNodeIds::idForNode(&canvas));
+
+    CanvasSurfaceLayerBridge* bridge = canvas.surfaceLayerBridge();
+    if (bridge) {
+        // If a bridge exists, it means canvas.createSurfaceLayer() has been called
+        // and its SurfaceId has been populated as well.
+        offscreenCanvas->setSurfaceId(bridge->getSurfaceId().client_id(), bridge->getSurfaceId().local_id(), bridge->getSurfaceId().nonce());
+    }
     return offscreenCanvas;
 }
 
