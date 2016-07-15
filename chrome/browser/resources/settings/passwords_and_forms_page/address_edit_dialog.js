@@ -209,7 +209,7 @@ Polymer({
    */
   onUpdatePhoneNumber_: function(phoneNumber) {
     if (this.address_)
-      this.address_.phoneNumbers = [phoneNumber];
+      this.address_.phoneNumbers = phoneNumber ? [phoneNumber] : [];
   },
 
   /**
@@ -219,7 +219,7 @@ Polymer({
    */
   onUpdateEmail_: function(email) {
     if (this.address_)
-      this.address_.emailAddresses = [email];
+      this.address_.emailAddresses = email ? [email] : [];
   },
 });
 })();

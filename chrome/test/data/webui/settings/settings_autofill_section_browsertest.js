@@ -428,6 +428,29 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       });
     });
 
+    test('verifyPhoneAndEmailAreRemoved', function() {
+      var address = FakeDataMaker.emptyAddressEntry();
+
+      var phoneNumber = '(555) 555-5555';
+      var emailAddress = 'no-reply@chromium.org';
+
+      address.phoneNumbers = [phoneNumber];
+      address.emailAddresses = [emailAddress];
+
+      return self.createAddressDialog_(address).then(function(dialog) {
+        assertEquals(phoneNumber, dialog.$.phoneInput.value);
+        assertEquals(emailAddress, dialog.$.emailInput.value);
+
+        dialog.$.phoneInput.value = '';
+        dialog.$.emailInput.value = '';
+
+        Polymer.dom.flush();
+
+        assertEquals(0, address.phoneNumbers.length);
+        assertEquals(0, address.emailAddresses.length);
+      });
+    });
+
     // Test will set a value of 'foo' in each text field and verify that the
     // save button is enabled, then it will clear the field and verify that the
     // save button is disabled. Test passes after all elements have been tested.

@@ -116,6 +116,12 @@ AutofillManager.prototype = {
    */
   getAddressList: assertNotReached,
 
+  /**
+   * Saves the given address.
+   * @param {!AutofillManager.AddressEntry} address
+   */
+  saveAddress: assertNotReached,
+
   /** @param {string} guid The guid of the address to remove.  */
   removeAddress: assertNotReached,
 
@@ -247,6 +253,11 @@ AutofillManagerImpl.prototype = {
   },
 
   /** @override */
+  saveAddress: function(address) {
+    chrome.autofillPrivate.saveAddress(address);
+  },
+
+  /** @override */
   removeAddress: function(guid) {
     assert(guid);
     chrome.autofillPrivate.removeEntry(guid);
@@ -339,6 +350,7 @@ Polymer({
     'remove-credit-card': 'removeCreditCard_',
     'remove-password-exception': 'removePasswordException_',
     'remove-saved-password': 'removeSavedPassword_',
+    'save-address': 'saveAddress_',
     'save-credit-card': 'saveCreditCard_',
     'show-password': 'showPassword_',
   },
@@ -477,6 +489,15 @@ Polymer({
         this.getPref('profile.password_manager_enabled').value) {
       this.$.pages.setSubpageChain(['manage-passwords']);
     }
+  },
+
+  /**
+   * Listens for the save-address event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  saveAddress_: function(event) {
+    this.autofillManager_.saveAddress(event.detail);
   },
 
   /**
