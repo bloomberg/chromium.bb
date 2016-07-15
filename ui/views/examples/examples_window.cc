@@ -21,7 +21,6 @@
 #include "ui/views/examples/button_example.h"
 #include "ui/views/examples/checkbox_example.h"
 #include "ui/views/examples/combobox_example.h"
-#include "ui/views/examples/double_split_view_example.h"
 #include "ui/views/examples/label_example.h"
 #include "ui/views/examples/link_example.h"
 #include "ui/views/examples/menu_example.h"
@@ -30,7 +29,6 @@
 #include "ui/views/examples/progress_bar_example.h"
 #include "ui/views/examples/radio_button_example.h"
 #include "ui/views/examples/scroll_view_example.h"
-#include "ui/views/examples/single_split_view_example.h"
 #include "ui/views/examples/slider_example.h"
 #include "ui/views/examples/tabbed_pane_example.h"
 #include "ui/views/examples/table_example.h"
@@ -60,7 +58,6 @@ ScopedExamples CreateExamples() {
   examples->push_back(new ButtonExample);
   examples->push_back(new CheckboxExample);
   examples->push_back(new ComboboxExample);
-  examples->push_back(new DoubleSplitViewExample);
   examples->push_back(new LabelExample);
   examples->push_back(new LinkExample);
   examples->push_back(new MenuExample);
@@ -69,7 +66,6 @@ ScopedExamples CreateExamples() {
   examples->push_back(new ProgressBarExample);
   examples->push_back(new RadioButtonExample);
   examples->push_back(new ScrollViewExample);
-  examples->push_back(new SingleSplitViewExample);
   examples->push_back(new SliderExample);
   examples->push_back(new TabbedPaneExample);
   examples->push_back(new TableExample);

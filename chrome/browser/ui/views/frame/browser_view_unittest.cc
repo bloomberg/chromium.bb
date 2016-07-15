@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/url_constants.h"
-#include "ui/views/controls/single_split_view.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace {

@@ -29,7 +29,6 @@ class Size;
 
 namespace views {
 class ClientView;
-class SingleSplitView;
 }
 
 namespace web_modal {
