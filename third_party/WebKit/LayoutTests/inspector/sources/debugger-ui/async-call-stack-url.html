@@ -1,0 +1,45 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    setTimeout(functionFoo, 0);
+}
+
+function functionFoo()
+{
+    debugger;
+}
+
+var test = function()
+{
+    InspectorTest.DebuggerAgent.setAsyncCallStackDepth(200, step1);
+
+    function step1()
+    {
+        InspectorTest.startDebuggerTest(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step3);
+    }
+
+    function step3()
+    {
+        var callFrameList = WebInspector.panels.sources.sidebarPanes.callstack.callFrameList;
+        for (var item of callFrameList._items)
+            InspectorTest.addResult(item.element.textContent.replace(/VM\d+/g, "VM"));
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that call stack sidebar contains correct urls for call frames.</p>
+</body>
+</html>
