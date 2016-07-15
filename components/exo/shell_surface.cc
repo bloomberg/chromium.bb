@@ -875,6 +875,12 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   window->AddObserver(this);
   ash::wm::WindowState* window_state = ash::wm::GetWindowState(window);
   window_state->AddObserver(this);
+  // Notify client of initial state if different than normal.
+  if (window_state->GetStateType() != ash::wm::WINDOW_STATE_TYPE_NORMAL &&
+      !state_changed_callback_.is_null()) {
+    state_changed_callback_.Run(ash::wm::WINDOW_STATE_TYPE_NORMAL,
+                                window_state->GetStateType());
+  }
 
   // Disable movement if initial bounds were specified.
   widget_->set_movement_disabled(!initial_bounds_.IsEmpty());
