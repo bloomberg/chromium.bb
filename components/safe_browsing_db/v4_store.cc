@@ -191,44 +191,36 @@ ApplyUpdateResult V4Store::AddUnlumpedHashes(PrefixSize prefix_size,
 }
 
 // static
-bool V4Store::GetNextSmallestPrefixSize(const HashPrefixMap& hash_prefix_map,
-                                        const CounterMap& counter_map,
-                                        PrefixSize* smallest_prefix_size) {
-  HashPrefix smallest_prefix, current_prefix;
-  for (const auto& counter_pair : counter_map) {
-    PrefixSize prefix_size = counter_pair.first;
-    size_t index = counter_pair.second;
-    size_t sized_index = prefix_size * index;
+bool V4Store::GetNextSmallestUnmergedPrefix(
+    const HashPrefixMap& hash_prefix_map,
+    const IteratorMap& iterator_map,
+    HashPrefix* smallest_hash_prefix) {
+  HashPrefix current_hash_prefix;
+  bool has_unmerged = false;
+
+  for (const auto& iterator_pair : iterator_map) {
+    PrefixSize prefix_size = iterator_pair.first;
+    HashPrefixes::const_iterator start = iterator_pair.second;
+    HashPrefixes::const_iterator end = start + prefix_size;
 
     const HashPrefixes& hash_prefixes = hash_prefix_map.at(prefix_size);
-    if (sized_index < hash_prefixes.size()) {
-      current_prefix = hash_prefixes.substr(sized_index, prefix_size);
-      if (smallest_prefix.empty() || smallest_prefix > current_prefix) {
-        smallest_prefix = current_prefix;
-        *smallest_prefix_size = prefix_size;
+    if (end <= hash_prefixes.end()) {
+      current_hash_prefix = std::string(start, end);
+      if (!has_unmerged || *smallest_hash_prefix > current_hash_prefix) {
+        has_unmerged = true;
+        smallest_hash_prefix->swap(current_hash_prefix);
       }
     }
   }
-  return !smallest_prefix.empty();
+  return has_unmerged;
 }
 
 // static
-void V4Store::InitializeCounterMap(const HashPrefixMap& hash_prefix_map,
-                                   CounterMap* counter_map) {
+void V4Store::InitializeIteratorMap(const HashPrefixMap& hash_prefix_map,
+                                    IteratorMap* iterator_map) {
   for (const auto& map_pair : hash_prefix_map) {
-    (*counter_map)[map_pair.first] = 0;
+    (*iterator_map)[map_pair.first] = map_pair.second.begin();
   }
-}
-
-// static
-HashPrefix V4Store::GetNextUnmergedPrefixForSize(
-    PrefixSize prefix_size,
-    const HashPrefixMap& hash_prefix_map,
-    const CounterMap& counter_map) {
-  const HashPrefixes& hash_prefixes = hash_prefix_map.at(prefix_size);
-  size_t index_within_list = counter_map.at(prefix_size);
-  size_t sized_index = prefix_size * index_within_list;
-  return hash_prefixes.substr(sized_index, prefix_size);
 }
 
 // static
@@ -254,40 +246,23 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
   ReserveSpaceInPrefixMap(old_prefixes_map, &hash_prefix_map_);
   ReserveSpaceInPrefixMap(additions_map, &hash_prefix_map_);
 
-  PrefixSize next_size_for_old;
-  CounterMap old_counter_map;
-  InitializeCounterMap(old_prefixes_map, &old_counter_map);
-  bool old_has_unmerged = GetNextSmallestPrefixSize(
-      old_prefixes_map, old_counter_map, &next_size_for_old);
+  IteratorMap old_iterator_map;
+  HashPrefix next_smallest_prefix_old;
+  InitializeIteratorMap(old_prefixes_map, &old_iterator_map);
+  bool old_has_unmerged = GetNextSmallestUnmergedPrefix(
+      old_prefixes_map, old_iterator_map, &next_smallest_prefix_old);
 
-  PrefixSize next_size_for_additions;
-  CounterMap additions_counter_map;
-  InitializeCounterMap(additions_map, &additions_counter_map);
-  bool additions_has_unmerged = GetNextSmallestPrefixSize(
-      additions_map, additions_counter_map, &next_size_for_additions);
+  IteratorMap additions_iterator_map;
+  HashPrefix next_smallest_prefix_additions;
+  InitializeIteratorMap(additions_map, &additions_iterator_map);
+  bool additions_has_unmerged = GetNextSmallestUnmergedPrefix(
+      additions_map, additions_iterator_map, &next_smallest_prefix_additions);
 
   // Classical merge sort.
   // The two constructs to merge are maps: old_prefixes_map, additions_map.
-
-  HashPrefix next_smallest_prefix_old, next_smallest_prefix_additions;
   // At least one of the maps still has elements that need to be merged into the
   // new store.
   while (old_has_unmerged || additions_has_unmerged) {
-    // Old map still has elements that need to be merged.
-    if (old_has_unmerged) {
-      // Get the lexographically smallest hash prefix from the old store.
-      next_smallest_prefix_old = GetNextUnmergedPrefixForSize(
-          next_size_for_old, old_prefixes_map, old_counter_map);
-    }
-
-    // Additions map still has elements that need to be merged.
-    if (additions_has_unmerged) {
-      // Get the lexographically smallest hash prefix from the additions in the
-      // latest update from the server.
-      next_smallest_prefix_additions = GetNextUnmergedPrefixForSize(
-          next_size_for_additions, additions_map, additions_counter_map);
-    }
-
     // If the same hash prefix appears in the existing store and the additions
     // list, something is clearly wrong. Discard the update.
     if (old_has_unmerged && additions_has_unmerged &&
@@ -302,27 +277,36 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
         (!additions_has_unmerged ||
          (next_smallest_prefix_old < next_smallest_prefix_additions));
 
+    PrefixSize next_smallest_prefix_size;
     if (pick_from_old) {
-      hash_prefix_map_[next_size_for_old] += next_smallest_prefix_old;
+      next_smallest_prefix_size = next_smallest_prefix_old.size();
 
-      // Update the counter map, which means that we have merged one hash
+      // Append the smallest hash to the appropriate list.
+      hash_prefix_map_[next_smallest_prefix_size] += next_smallest_prefix_old;
+
+      // Update the iterator map, which means that we have merged one hash
       // prefix of size |next_size_for_old| from the old store.
-      old_counter_map[next_size_for_old]++;
+      old_iterator_map[next_smallest_prefix_size] += next_smallest_prefix_size;
 
       // Find the next smallest unmerged element in the old store's map.
-      old_has_unmerged = GetNextSmallestPrefixSize(
-          old_prefixes_map, old_counter_map, &next_size_for_old);
+      old_has_unmerged = GetNextSmallestUnmergedPrefix(
+          old_prefixes_map, old_iterator_map, &next_smallest_prefix_old);
     } else {
-      hash_prefix_map_[next_size_for_additions] +=
+      next_smallest_prefix_size = next_smallest_prefix_additions.size();
+
+      // Append the smallest hash to the appropriate list.
+      hash_prefix_map_[next_smallest_prefix_size] +=
           next_smallest_prefix_additions;
 
-      // Update the counter map, which means that we have merged one hash
-      // prefix of size |next_size_for_additions| from the update.
-      additions_counter_map[next_size_for_additions]++;
+      // Update the iterator map, which means that we have merged one hash
+      // prefix of size |next_smallest_prefix_size| from the update.
+      additions_iterator_map[next_smallest_prefix_size] +=
+          next_smallest_prefix_size;
 
       // Find the next smallest unmerged element in the additions map.
-      additions_has_unmerged = GetNextSmallestPrefixSize(
-          additions_map, additions_counter_map, &next_size_for_additions);
+      additions_has_unmerged =
+          GetNextSmallestUnmergedPrefix(additions_map, additions_iterator_map,
+                                        &next_smallest_prefix_additions);
     }
   }
 
