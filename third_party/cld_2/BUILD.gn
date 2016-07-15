@@ -25,7 +25,7 @@ config("cld2_data_warnings") {
   }
 }
 
-source_set("cld2_data") {
+static_library("cld2_data") {
   sources = gypi_values.cld2_data_sources
   if (cld2_table_size == 0) {
     sources += gypi_values.cld2_data_smallest_sources

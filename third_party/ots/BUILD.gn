@@ -8,7 +8,7 @@ config("ots_config") {
   include_dirs = [ "include" ]
 }
 
-source_set("ots") {
+static_library("ots") {
   sources = [
     "include/opentype-sanitiser.h",
     "include/ots-memory-stream.h",

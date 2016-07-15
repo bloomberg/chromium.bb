@@ -16,7 +16,7 @@ use_dsp_neon =
     current_cpu == "arm64" || (current_cpu == "arm" && arm_version >= 7 &&
                                (arm_use_neon || arm_optionally_use_neon))
 
-source_set("libwebp_dec") {
+static_library("libwebp_dec") {
   sources = [
     "dec/alpha.c",
     "dec/buffer.c",
@@ -47,7 +47,7 @@ source_set("libwebp_dec") {
   }
 }
 
-source_set("libwebp_demux") {
+static_library("libwebp_demux") {
   sources = [
     "demux/demux.c",
   ]
@@ -59,7 +59,7 @@ source_set("libwebp_demux") {
   ]
 }
 
-source_set("libwebp_dsp") {
+static_library("libwebp_dsp") {
   sources = [
     "dsp/alpha_processing.c",
     "dsp/alpha_processing_mips_dsp_r2.c",
@@ -121,7 +121,7 @@ source_set("libwebp_dsp") {
   }
 }
 
-source_set("libwebp_dsp_sse41") {
+static_library("libwebp_dsp_sse41") {
   sources = [
     "dsp/alpha_processing_sse41.c",
     "dsp/dec_sse41.c",
@@ -144,7 +144,7 @@ source_set("libwebp_dsp_sse41") {
   }
 }
 
-source_set("libwebp_dsp_sse2") {
+static_library("libwebp_dsp_sse2") {
   sources = [
     "dsp/alpha_processing_sse2.c",
     "dsp/argb_sse2.c",
@@ -175,7 +175,7 @@ source_set("libwebp_dsp_sse2") {
 }
 
 if (use_dsp_neon) {
-  source_set("libwebp_dsp_neon") {
+  static_library("libwebp_dsp_neon") {
     sources = [
       "dsp/dec_neon.c",
       "dsp/enc_neon.c",
@@ -208,7 +208,7 @@ if (use_dsp_neon) {
   }
 }  # use_dsp_neon
 
-source_set("libwebp_enc") {
+static_library("libwebp_enc") {
   sources = [
     "enc/alpha.c",
     "enc/analysis.c",
@@ -254,7 +254,7 @@ config("libwebp_utils_warnings") {
   }
 }
 
-source_set("libwebp_utils") {
+static_library("libwebp_utils") {
   sources = [
     "utils/bit_reader.c",
     "utils/bit_writer.c",

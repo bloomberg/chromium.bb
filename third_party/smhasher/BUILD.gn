@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("murmurhash3") {
+static_library("murmurhash3") {
   sources = [
     "src/MurmurHash3.cpp",
     "src/MurmurHash3.h",
@@ -11,7 +11,7 @@ source_set("murmurhash3") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
-source_set("pmurhash") {
+static_library("pmurhash") {
   sources = [
     "src/PMurHash.c",
     "src/PMurHash.h",
@@ -20,7 +20,7 @@ source_set("pmurhash") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 }
 
-source_set("cityhash") {
+static_library("cityhash") {
   sources = [
     "src/City.cpp",
     "src/City.h",

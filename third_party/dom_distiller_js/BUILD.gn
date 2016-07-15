@@ -8,7 +8,7 @@ config("dependent_config") {
   include_dirs = [ "//third_party/dom_distiller_js/dist/proto_gen" ]
 }
 
-source_set("proto") {
+group("proto") {
   public_deps = [
     ":dom_distiller_proto",
   ]

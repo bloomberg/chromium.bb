@@ -6,7 +6,7 @@ config("libwebm_config") {
   include_dirs = [ "./source" ]
 }
 
-source_set("libwebm") {
+static_library("libwebm") {
   configs += [ ":libwebm_config" ]
   public_configs = [ ":libwebm_config" ]
 

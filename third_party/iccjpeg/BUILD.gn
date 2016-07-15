@@ -6,7 +6,7 @@ config("iccjpeg_config") {
   include_dirs = [ "." ]
 }
 
-source_set("iccjpeg") {
+static_library("iccjpeg") {
   sources = [
     "iccjpeg.c",
     "iccjpeg.h",

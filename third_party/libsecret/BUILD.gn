@@ -6,7 +6,7 @@ config("libsecret_config") {
   include_dirs = [ rebase_path("./") ]
 }
 
-source_set("libsecret") {
+static_library("libsecret") {
   sources = [
     "libsecret/secret-attributes.h",
     "libsecret/secret-collection.h",

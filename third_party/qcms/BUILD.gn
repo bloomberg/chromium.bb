@@ -9,7 +9,7 @@ config("qcms_config") {
 # Do not build QCMS on Android or iOS. (See http://crbug.com/577155)
 disable_qcms = is_android || is_ios
 
-source_set("qcms") {
+static_library("qcms") {
   if (disable_qcms) {
     sources = [
       "src/empty.c",

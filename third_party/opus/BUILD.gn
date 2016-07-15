@@ -63,7 +63,7 @@ config("opus_warnings") {
   }
 }
 
-source_set("opus") {
+static_library("opus") {
   gypi_values = exec_script("//build/gypi_to_gn.py",
                             [ rebase_path("opus_srcs.gypi") ],
                             "scope",

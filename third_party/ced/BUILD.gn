@@ -11,7 +11,7 @@ config("ced_config") {
   }
 }
 
-source_set("ced") {
+static_library("ced") {
   sources = [
     "src/compact_enc_det/compact_enc_det.cc",
     "src/compact_enc_det/compact_enc_det.h",
