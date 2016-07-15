@@ -388,16 +388,14 @@ Element* TreeScope::adjustedFocusedElement() const
     return nullptr;
 }
 
-Element* TreeScope::adjustedPointerLockElement(const Element& target) const
+Element* TreeScope::adjustedElement(const Element& target) const
 {
     const Element* adjustedTarget = &target;
-    // Unless the target is in the same TreeScope as |scope|, traverse up shadow trees to
-    // find a shadow host that is in the same TreeScope as |scope|.
     for (const Element* ancestor = &target; ancestor; ancestor = ancestor->shadowHost()) {
-        // Exception is that if the host has V0 or UA shadow, skip the adjustment because
-        // .pointerLockElement is not available for non-V1 shadows.
-        // TODO(kochi): Once V0 code is removed, use the same logic as .activeElement for
-        // Shadow DOM V1.
+        // This adjustment is done only for V1 shadows, and is skipped for V0 or UA shadows,
+        // because .pointerLockElement and .(webkit)fullscreenElement is not available for
+        // non-V1 shadow roots.
+        // TODO(kochi): Once V0 code is removed, use the same logic as .activeElement for V1.
         if (ancestor->shadowRootIfV1())
             adjustedTarget = ancestor;
         if (this == ancestor->treeScope())
@@ -405,6 +403,7 @@ Element* TreeScope::adjustedPointerLockElement(const Element& target) const
     }
     return nullptr;
 }
+
 unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const
 {
     if (otherScope == this)

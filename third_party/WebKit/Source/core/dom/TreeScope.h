@@ -57,7 +57,10 @@ public:
     bool isInclusiveOlderSiblingShadowRootOrAncestorTreeScopeOf(const TreeScope&) const;
 
     Element* adjustedFocusedElement() const;
-    Element* adjustedPointerLockElement(const Element&) const;
+    // Finds a retargeted element to the given argument, when the retargetd element is in this
+    // TreeScope. Returns null otherwise.
+    // TODO(kochi): once this algorithm is named in the spec, rename the method name.
+    Element* adjustedElement(const Element&) const;
     Element* getElementById(const AtomicString&) const;
     const HeapVector<Member<Element>>& getAllElementsById(const AtomicString&) const;
     bool hasElementWithId(const AtomicString& id) const;

@@ -61,7 +61,7 @@ public:
             UseCounter::count(document, UseCounter::DocumentPointerLockElementInV0Shadow);
             return const_cast<Element*>(target);
         }
-        return document.adjustedPointerLockElement(*target);
+        return document.adjustedElement(*target);
     }
 
     static Element* pointerLockElement(ShadowRoot& shadowRoot)
@@ -74,7 +74,7 @@ public:
         const Element* target = shadowRoot.document().pointerLockElement();
         if (!target)
             return nullptr;
-        return shadowRoot.adjustedPointerLockElement(*target);
+        return shadowRoot.adjustedElement(*target);
     }
 };
 
