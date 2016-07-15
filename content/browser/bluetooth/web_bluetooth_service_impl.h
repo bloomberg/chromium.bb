@@ -96,13 +96,13 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   void RequestDevice(blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
                      const RequestDeviceCallback& callback) override;
   void RemoteServerConnect(
-      const mojo::String& device_id,
+      const WebBluetoothDeviceId& device_id,
       const RemoteServerConnectCallback& callback) override;
-  void RemoteServerDisconnect(const mojo::String& device_id) override;
+  void RemoteServerDisconnect(const WebBluetoothDeviceId& device_id) override;
   void RemoteServerGetPrimaryServices(
-      const mojo::String& device_id,
+      const WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
-      const base::Optional<device::BluetoothUUID>& services_uuid,
+      const base::Optional<device::BluetoothUUID>& service_uuid,
       const RemoteServerGetPrimaryServicesCallback& callback) override;
   void RemoteServiceGetCharacteristics(
       const mojo::String& service_instance_id,
@@ -131,7 +131,7 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
   // Should only be run after the services have been discovered for
   // |device_address|.
   void RemoteServerGetPrimaryServicesImpl(
-      const mojo::String& device_id,
+      const WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& services_uuid,
       const RemoteServerGetPrimaryServicesCallback& callback,
@@ -147,12 +147,11 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
 
   // Callbacks for BluetoothDevice::CreateGattConnection.
   void OnCreateGATTConnectionSuccess(
-      const std::string& device_id,
+      const WebBluetoothDeviceId& device_id,
       base::TimeTicks start_time,
       const RemoteServerConnectCallback& callback,
       std::unique_ptr<device::BluetoothGattConnection> connection);
   void OnCreateGATTConnectionFailed(
-      const std::string& device_id,
       base::TimeTicks start_time,
       const RemoteServerConnectCallback& callback,
       device::BluetoothDevice::ConnectErrorCode error_code);
@@ -194,7 +193,7 @@ class WebBluetoothServiceImpl : public blink::mojom::WebBluetoothService,
 
   // Queries the platform cache for a Device with |device_id| for |origin|.
   // Fills in the |outcome| field and the |device| field if successful.
-  CacheQueryResult QueryCacheForDevice(const std::string& device_id);
+  CacheQueryResult QueryCacheForDevice(const WebBluetoothDeviceId& device_id);
 
   // Queries the platform cache for a Service with |service_instance_id|. Fills
   // in the |outcome| field, and |device| and |service| fields if successful.

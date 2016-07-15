@@ -4,41 +4,24 @@
 
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 
+#include <string>
 #include <vector>
 
-#include "base/base64.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "content/browser/bluetooth/bluetooth_blacklist.h"
-#include "crypto/random.h"
+#include "content/common/bluetooth/web_bluetooth_device_id.h"
 
 using device::BluetoothUUID;
 
 namespace content {
 
-namespace {
-const size_t kIdLength = 16 /* 128bits */;
-
-std::string GetBase64Id() {
-  std::string bytes(
-      kIdLength + 1 /* to avoid bytes being reallocated by WriteInto */, '\0');
-
-  crypto::RandBytes(
-      base::WriteInto(&bytes /* str */, kIdLength + 1 /* length_with_null */),
-      kIdLength);
-
-  base::Base64Encode(bytes, &bytes);
-
-  return bytes;
-}
-}  // namespace
-
 BluetoothAllowedDevicesMap::BluetoothAllowedDevicesMap() {}
 BluetoothAllowedDevicesMap::~BluetoothAllowedDevicesMap() {}
 
-const std::string& BluetoothAllowedDevicesMap::AddDevice(
+const WebBluetoothDeviceId& BluetoothAllowedDevicesMap::AddDevice(
     const url::Origin& origin,
     const std::string& device_address,
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
@@ -59,7 +42,7 @@ const std::string& BluetoothAllowedDevicesMap::AddDevice(
 
     return origin_to_device_address_to_id_map_[origin][device_address];
   }
-  const std::string device_id = GenerateDeviceId();
+  const WebBluetoothDeviceId device_id = GenerateUniqueDeviceId();
   VLOG(1) << "Id generated for device: " << device_id;
 
   origin_to_device_address_to_id_map_[origin][device_address] = device_id;
@@ -75,8 +58,13 @@ const std::string& BluetoothAllowedDevicesMap::AddDevice(
 void BluetoothAllowedDevicesMap::RemoveDevice(
     const url::Origin& origin,
     const std::string& device_address) {
-  const std::string device_id = GetDeviceId(origin, device_address);
-  DCHECK(!device_id.empty());
+  const WebBluetoothDeviceId* device_id_ptr =
+      GetDeviceId(origin, device_address);
+  DCHECK(device_id_ptr != nullptr);
+
+  // We make a copy because we are going to remove the original value from its
+  // map.
+  WebBluetoothDeviceId device_id = *device_id_ptr;
 
   // 1. Remove from all three maps.
   CHECK(origin_to_device_address_to_id_map_[origin].erase(device_address));
@@ -94,26 +82,26 @@ void BluetoothAllowedDevicesMap::RemoveDevice(
   CHECK(device_id_set_.erase(device_id));
 }
 
-const std::string& BluetoothAllowedDevicesMap::GetDeviceId(
+const WebBluetoothDeviceId* BluetoothAllowedDevicesMap::GetDeviceId(
     const url::Origin& origin,
     const std::string& device_address) {
   auto address_map_iter = origin_to_device_address_to_id_map_.find(origin);
   if (address_map_iter == origin_to_device_address_to_id_map_.end()) {
-    return base::EmptyString();
+    return nullptr;
   }
 
   const auto& device_address_to_id_map = address_map_iter->second;
 
   auto id_iter = device_address_to_id_map.find(device_address);
   if (id_iter == device_address_to_id_map.end()) {
-    return base::EmptyString();
+    return nullptr;
   }
-  return id_iter->second;
+  return &(id_iter->second);
 }
 
 const std::string& BluetoothAllowedDevicesMap::GetDeviceAddress(
     const url::Origin& origin,
-    const std::string& device_id) {
+    const WebBluetoothDeviceId& device_id) {
   auto id_map_iter = origin_to_device_id_to_address_map_.find(origin);
   if (id_map_iter == origin_to_device_id_to_address_map_.end()) {
     return base::EmptyString();
@@ -129,7 +117,7 @@ const std::string& BluetoothAllowedDevicesMap::GetDeviceAddress(
 
 bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
     const url::Origin& origin,
-    const std::string& device_id,
+    const WebBluetoothDeviceId& device_id,
     const BluetoothUUID& service_uuid) const {
   if (BluetoothBlacklist::Get().IsExcluded(service_uuid)) {
     return false;
@@ -149,11 +137,11 @@ bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
              : ContainsKey(id_iter->second, service_uuid);
 }
 
-std::string BluetoothAllowedDevicesMap::GenerateDeviceId() {
-  std::string device_id = GetBase64Id();
+WebBluetoothDeviceId BluetoothAllowedDevicesMap::GenerateUniqueDeviceId() {
+  WebBluetoothDeviceId device_id = WebBluetoothDeviceId::Create();
   while (ContainsKey(device_id_set_, device_id)) {
     LOG(WARNING) << "Generated repeated id.";
-    device_id = GetBase64Id();
+    device_id = WebBluetoothDeviceId::Create();
   }
   return device_id;
 }
