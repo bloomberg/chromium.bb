@@ -45,9 +45,10 @@ public:
 
     DisplayItem& appendByMoving(DisplayItem&);
 
+    bool hasVisualRect(unsigned index) const { return index < m_visualRects.size(); }
     IntRect visualRect(unsigned index) const
     {
-        ASSERT(index < m_visualRects.size());
+        DCHECK(hasVisualRect(index));
         return m_visualRects[index];
     }
 

@@ -21,14 +21,8 @@
 //       ... // some code which modifies style/layout
 //     }, true);
 
-if (window.internals) {
-    // TODO(wangxianzhu): Some spv2 tests crash with under-invalidation-checking
-    // because the extra display items between Subsequence/EndSubsequence for
-    // under-invalidation checking breaks paint chunks. Should fix this when fixing
-    // crbug.com/596983.
-    if (!internals.runtimeFlags.slimmingPaintV2Enabled)
-        internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = true;
-}
+if (window.internals)
+    internals.runtimeFlags.slimmingPaintUnderInvalidationCheckingEnabled = true;
 
 function runAfterLayoutAndPaint(callback, autoNotifyDone) {
     if (!window.testRunner) {
