@@ -26,6 +26,7 @@ static_library("test_config") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "../trace_event/trace_config_memory_test_util.h",
     "gtest_util.cc",
     "gtest_util.h",
     "gtest_xml_unittest_result_printer.cc",

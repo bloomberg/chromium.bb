@@ -672,7 +672,6 @@ source_set("browser_tests") {
     "//blimp/engine:test_support",
     "//blimp/net",
     "//content/public/app:both",
-    "//content/test:browsertest_base",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

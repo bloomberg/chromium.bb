@@ -232,6 +232,7 @@ static_library("content_shell_lib") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/gpu",
+    "//content/test:content_test_mojo_bindings",
     "//content/test:layouttest_support",
     "//content/test:test_support",
     "//device/bluetooth",
@@ -242,6 +243,8 @@ static_library("content_shell_lib") {
     "//media",
     "//net",
     "//net:net_resources",
+    "//sandbox",
+    "//services/shell/public/cpp",
     "//skia",
     "//storage/browser",
     "//testing/gmock",
@@ -253,6 +256,7 @@ static_library("content_shell_lib") {
     "//third_party/icu",
     "//ui/base",
     "//ui/base/ime",
+    "//ui/display",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
@@ -263,6 +267,10 @@ static_library("content_shell_lib") {
     "//url",
     "//v8",
   ]
+
+  # Annoyingly, this target and layouttest_support have circular includes.
+  allow_circular_includes_from = [ "//content/test:layouttest_support" ]
+
   if (enable_plugins) {
     deps += [
       "//content/ppapi_plugin",
@@ -634,10 +642,12 @@ if (is_mac) {
     #   - crash_inspector
     #   - crash_report_sender.app
 
+    public_deps = [
+      ":content_shell_lib",
+    ]
     deps = [
       ":content_shell_framework_resources",
       ":content_shell_framework_xibs",
-      ":content_shell_lib",
       "//third_party/icu:icudata",
     ]
 

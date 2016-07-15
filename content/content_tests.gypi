@@ -1324,7 +1324,7 @@
       ],
     },
     {
-      # GN version: //content/test:browsertest_base
+      # GN this is merged with //content/test:test_support
       # content_browser_test_base can be used by any browser test target.
       'target_name': 'content_browser_test_base',
       'type': 'static_library',

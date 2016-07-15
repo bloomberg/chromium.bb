@@ -34,6 +34,17 @@ static_library("test_support") {
     check_includes = false
   }
 
+  sources = [
+    "../public/test/browser_test.h",
+    "../public/test/browser_test_base.cc",
+    "../public/test/browser_test_base.h",
+    "../public/test/browser_test_utils.cc",
+    "../public/test/browser_test_utils.h",
+  ]
+  sources += rebase_path(content_tests_gypi_values.test_support_content_sources,
+                         ".",
+                         "//content")
+
   configs += [
     "//build/config:precompiled_headers",
     "//v8:external_startup_data",
@@ -47,7 +58,6 @@ static_library("test_support") {
     "//third_party/WebKit/public:test_support",
   ]
   deps = [
-    ":browsertest_base",
     ":content_test_mojo_bindings",
     "//base/third_party/dynamic_annotations",
     "//cc:test_support",
@@ -102,10 +112,6 @@ static_library("test_support") {
     "//url",
     "//v8",
   ]
-
-  sources = rebase_path(content_tests_gypi_values.test_support_content_sources,
-                        ".",
-                        "//content")
 
   if (is_android) {
     sources -= [
@@ -227,7 +233,7 @@ static_library("browsertest_support") {
   ]
 
   deps = [
-    ":browsertest_base",
+    ":layouttest_support",
     ":test_support",
     "//base",
     "//base:i18n",
@@ -254,40 +260,6 @@ static_library("browsertest_support") {
   }
 
   configs += [ "//v8:external_startup_data" ]
-}
-
-# browsertest_base can be used by any browser test target.
-static_library("browsertest_base") {
-  testonly = true
-
-  sources = [
-    "../public/test/browser_test.h",
-    "../public/test/browser_test_base.cc",
-    "../public/test/browser_test_base.h",
-    "../public/test/browser_test_utils.cc",
-    "../public/test/browser_test_utils.h",
-  ]
-
-  public_deps = [
-    "//content/browser:for_content_tests",
-    "//content/public/browser",
-    "//content/public/common",
-    "//third_party/WebKit/public:blink",
-  ]
-  deps = [
-    "//base:base",
-    "//content/public/app:both",
-    "//net:test_support",
-    "//testing/gtest",
-    "//ui/accessibility",
-    "//ui/base",
-    "//ui/base:test_support",
-    "//ui/base/ime",
-    "//ui/events:dom_keycode_converter",
-    "//ui/events:events_base",
-    "//ui/events:gesture_detection",
-    "//ui/resources",
-  ]
 }
 
 mojom("content_test_mojo_bindings") {
@@ -324,10 +296,10 @@ static_library("layouttest_support") {
     "//components/scheduler:test_support",
     "//components/test_runner:test_runner",
     "//content/browser:for_content_tests",
+    "//content/child:for_content_tests",
     "//content/public/common",
-
-    #"//content/shell:content_shell_lib",
     "//content/renderer:for_content_tests",
+    "//device/bluetooth",
     "//skia",
     "//ui/accessibility:ax_gen",
     "//v8",
@@ -443,16 +415,19 @@ test("content_browsertests") {
   ]
 
   deps = [
-    ":browsertest_base",
     ":browsertest_support",
     ":content_test_mojo_bindings",
+    ":layouttest_support",
+    ":test_support",
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",
+    "//components/network_session_configurator",
     "//components/scheduler",
     "//content:resources",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",
+    "//content/child:for_content_tests",
     "//content/common:mojo_bindings",
     "//content/gpu",
     "//content/public/browser",
@@ -490,6 +465,8 @@ test("content_browsertests") {
     "//ui/base:test_support",
     "//ui/base/ime",
     "//ui/compositor",
+    "//ui/display",
+    "//ui/events:test_support",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -559,6 +536,10 @@ test("content_browsertests") {
   if (is_mac) {
     sources += [ "../renderer/external_popup_menu_browsertest.cc" ]
     deps += [ "//content/shell:content_shell" ]
+  }
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
   }
 
   if (use_aura && !is_win) {
@@ -706,6 +687,8 @@ test("content_unittests") {
     "//ui/compositor:test_support",
     "//ui/display",
     "//ui/display:test_support",
+    "//ui/events:gesture_detection",
+    "//ui/events:test_support",
     "//ui/events/blink",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
@@ -920,12 +903,20 @@ test("content_perftests") {
 }
 
 fuzzer_test("renderer_fuzzer") {
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources = [
     "renderer_fuzzer.cc",
   ]
   deps = [
     ":test_support",
+    "//content/renderer:for_content_tests",
     "//content/shell:content_shell_lib",
+    "//gin",
   ]
   dict = "data/fuzzer_dictionaries/renderer_fuzzer.dict"
 }

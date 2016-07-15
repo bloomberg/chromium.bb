@@ -343,7 +343,6 @@ test("headless_browsertests") {
 
   deps = [
     "//base",
-    "//content/test:browsertest_base",
     "//content/test:test_support",
     "//headless:headless_lib",
     "//testing/gmock",

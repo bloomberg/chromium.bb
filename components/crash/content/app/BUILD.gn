@@ -161,8 +161,10 @@ source_set("app_breakpad_mac_win_to_be_deleted") {
 
     defines = [ "CRASH_IMPLEMENTATION" ]
 
-    deps += [
+    public_deps = [
       ":lib",
+    ]
+    deps += [
       "//base",
       "//base:base_static",
       "//breakpad:client",

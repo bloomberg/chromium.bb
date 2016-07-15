@@ -159,7 +159,7 @@ source_set("test_support") {
   public_deps = [
     ":browser",
     "//chromecast:cast_shell_common",
-    "//content/test:browsertest_base",
+    "//content/test:test_support",
   ]
 
   deps = [
@@ -168,7 +168,6 @@ source_set("test_support") {
     "//chromecast/base",
     "//content/public/browser",
     "//content/public/common",
-    "//content/test:test_support",
     "//testing/gtest",
   ]
 }
@@ -188,7 +187,6 @@ test("cast_shell_browser_test") {
     ":test_support",
     "//base",
     "//chromecast:chromecast_features",
-    "//content/test:browsertest_base",
     "//content/test:test_support",
     "//media/base:test_support",
     "//testing/gtest",

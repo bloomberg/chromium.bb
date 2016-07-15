@@ -52,9 +52,9 @@
 
 #if defined(USE_AURA)
 #include "content/browser/compositor/image_transport_factory.h"
-#include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/aura/test/event_generator_delegate_aura.h"  // nogncheck
 #if defined(USE_X11)
-#include "ui/aura/window_tree_host_x11.h"
+#include "ui/aura/window_tree_host_x11.h"  // nogncheck
 #endif
 #endif
 
