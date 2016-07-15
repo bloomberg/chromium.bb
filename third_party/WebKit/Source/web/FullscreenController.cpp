@@ -55,6 +55,7 @@ FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
     , m_haveEnteredFullscreen(false)
     , m_exitFullscreenPageScaleFactor(0)
+    , m_needsScrollAndScaleRestore(false)
     , m_isCancelingFullScreen(false)
 {
 }
@@ -112,12 +113,11 @@ void FullscreenController::didExitFullscreen()
                 if (isHTMLVideoElement(element) && m_webViewImpl->layerTreeView())
                     m_webViewImpl->layerTreeView()->setHasTransparentBackground(m_webViewImpl->isTransparent());
 
-                if (m_haveEnteredFullscreen) {
-                    m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
-                    if (m_webViewImpl->mainFrame()->isWebLocalFrame())
-                        m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_exitFullscreenScrollOffset));
-                    m_webViewImpl->setVisualViewportOffset(m_exitFullscreenVisualViewportOffset);
-                }
+                // We need to wait until style and layout are updated in order
+                // to propertly restore scroll offsets since content may not be
+                // overflowing in the same way until they do.
+                if (m_haveEnteredFullscreen)
+                    m_needsScrollAndScaleRestore = true;
 
                 fullscreen->didExitFullscreen();
             }
@@ -152,8 +152,10 @@ void FullscreenController::enterFullScreenForElement(Element* element)
 
     // We need to store these values here rather than didEnterFullscreen since
     // by the time the latter is called, a Resize has already occured, clamping
-    // the scroll offset.
-    if (!m_haveEnteredFullscreen) {
+    // the scroll offset. Don't save values if we're still waiting to restore
+    // a previous set. This can happen if we exit and quickly reenter fullscreen
+    // without performing a layout.
+    if (!m_haveEnteredFullscreen && !m_needsScrollAndScaleRestore) {
         m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
         m_exitFullscreenScrollOffset = m_webViewImpl->mainFrame()->isWebLocalFrame() ? m_webViewImpl->mainFrame()->scrollOffset() : WebSize();
         m_exitFullscreenVisualViewportOffset = m_webViewImpl->visualViewportOffset();
@@ -198,6 +200,23 @@ void FullscreenController::updateSize()
     Document* document = m_fullScreenFrame->document();
     if (Element* fullscreenElement = Fullscreen::currentFullScreenElementFrom(*document))
         Fullscreen::from(fullscreenElement->document()).didUpdateSize(*fullscreenElement);
+}
+
+void FullscreenController::didUpdateLayout()
+{
+    if (!m_needsScrollAndScaleRestore)
+        return;
+
+    // If we re-entered fullscreen before we could restore the scroll and scale
+    // don't try restoring them yet.
+    if (isFullscreen())
+        return;
+
+    m_webViewImpl->setPageScaleFactor(m_exitFullscreenPageScaleFactor);
+    if (m_webViewImpl->mainFrame()->isWebLocalFrame())
+        m_webViewImpl->mainFrame()->setScrollOffset(WebSize(m_exitFullscreenScrollOffset));
+    m_webViewImpl->setVisualViewportOffset(m_exitFullscreenVisualViewportOffset);
+    m_needsScrollAndScaleRestore = false;
 }
 
 void FullscreenController::updatePageScaleConstraints(bool removeConstraints)

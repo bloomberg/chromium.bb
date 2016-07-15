@@ -4060,6 +4060,8 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
     if (view->needsLayout())
         view->layout();
 
+    m_fullscreenController->didUpdateLayout();
+
     m_client->didUpdateLayout();
 }
 

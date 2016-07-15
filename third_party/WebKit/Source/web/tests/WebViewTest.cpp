@@ -1164,11 +1164,94 @@ TEST_F(WebViewTest, BackForwardRestoreScroll)
     EXPECT_GT(webViewImpl->mainFrame()->scrollOffset().height, 2000);
 }
 
+// Tests that we restore scroll and scale *after* the fullscreen styles are
+// removed and the page is laid out. http://crbug.com/625683.
+TEST_F(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(
+        WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("fullscreen_style.html"));
+    WebViewImpl* webViewImpl =
+        m_webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_style.html");
+    webViewImpl->resize(WebSize(800, 600));
+    webViewImpl->updateAllLifecyclePhases();
+
+    // Scroll the page down.
+    webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 2000));
+    ASSERT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+
+    // Enter fullscreen.
+    Element* element = static_cast<Element*>(
+        webViewImpl->mainFrame()->document().getElementById("fullscreenElement"));
+    webViewImpl->enterFullScreenForElement(element);
+    webViewImpl->didEnterFullscreen();
+    webViewImpl->updateAllLifecyclePhases();
+
+    // Sanity-check. There should be no scrolling possible.
+    ASSERT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+    ASSERT_EQ(0, webViewImpl->mainFrameImpl()->frameView()->maximumScrollPosition().y());
+
+    // Confirm that after exiting and doing a layout, the scroll and scale
+    // parameters are reset. The page sets display: none on overflowing elements
+    // while in fullscreen so if we try to restore before the style and layout
+    // is applied the offsets will be clamped.
+    webViewImpl->didExitFullscreen();
+    EXPECT_TRUE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
+    webViewImpl->updateAllLifecyclePhases();
+
+    EXPECT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+}
+
+// Tests that exiting and immediately reentering fullscreen doesn't cause the
+// scroll and scale restoration to occur when we enter fullscreen again.
+TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(
+        WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("fullscreen_style.html"));
+    WebViewImpl* webViewImpl =
+        m_webViewHelper.initializeAndLoad(m_baseURL + "fullscreen_style.html");
+    webViewImpl->resize(WebSize(800, 600));
+    webViewImpl->updateAllLifecyclePhases();
+
+    // Scroll the page down.
+    webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 2000));
+    ASSERT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+
+    // Enter fullscreen.
+    Element* element = static_cast<Element*>(
+        webViewImpl->mainFrame()->document().getElementById("fullscreenElement"));
+    webViewImpl->enterFullScreenForElement(element);
+    webViewImpl->didEnterFullscreen();
+    webViewImpl->updateAllLifecyclePhases();
+
+    // Sanity-check. There should be no scrolling possible.
+    ASSERT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+    ASSERT_EQ(0, webViewImpl->mainFrameImpl()->frameView()->maximumScrollPosition().y());
+
+    // Exit and, without performing a layout, reenter fullscreen again. We
+    // shouldn't try to restore the scroll and scale values when we layout to
+    // enter fullscreen.
+    webViewImpl->exitFullScreenForElement(element);
+    webViewImpl->didExitFullscreen();
+    webViewImpl->enterFullScreenForElement(element);
+    webViewImpl->didEnterFullscreen();
+    webViewImpl->updateAllLifecyclePhases();
+
+    // Sanity-check. There should be no scrolling possible.
+    ASSERT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+    ASSERT_EQ(0, webViewImpl->mainFrameImpl()->frameView()->maximumScrollPosition().y());
+
+    // When we exit now, we should restore the original scroll value.
+    webViewImpl->exitFullScreenForElement(element);
+    webViewImpl->didExitFullscreen();
+    webViewImpl->updateAllLifecyclePhases();
+
+    EXPECT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+}
+
 TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
 {
-    FrameTestHelpers::TestWebViewClient client;
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("200-by-300.html"));
-    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html", true, 0, &client);
+    WebViewImpl* webViewImpl = m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
     webViewImpl->resize(WebSize(100, 150));
     webViewImpl->updateAllLifecyclePhases();
     EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
@@ -1197,14 +1280,15 @@ TEST_F(WebViewTest, EnterFullscreenResetScrollAndScaleState)
     webViewImpl->enterFullScreenForElement(otherElement);
 
     // Confirm that exiting fullscreen restores the parameters.
+    webViewImpl->exitFullScreenForElement(element);
     webViewImpl->didExitFullscreen();
+    webViewImpl->updateAllLifecyclePhases();
+
     EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
     EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
     EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
     EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
     EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
-
-    m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }
 
 class PrintWebViewClient : public FrameTestHelpers::TestWebViewClient {

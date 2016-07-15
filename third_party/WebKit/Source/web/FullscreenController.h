@@ -56,6 +56,8 @@ public:
 
     void updateSize();
 
+    void didUpdateLayout();
+
     DECLARE_TRACE();
 
 protected:
@@ -70,6 +72,7 @@ private:
     float m_exitFullscreenPageScaleFactor;
     IntSize m_exitFullscreenScrollOffset;
     FloatPoint m_exitFullscreenVisualViewportOffset;
+    bool m_needsScrollAndScaleRestore;
 
     // If set, the WebView is transitioning to fullscreen for this element.
     Member<Element> m_provisionalFullScreenElement;
