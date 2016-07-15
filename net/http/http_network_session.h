@@ -13,6 +13,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/bind.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
@@ -274,6 +276,10 @@ class NET_EXPORT HttpNetworkSession
 
   ClientSocketPoolManager* GetSocketPoolManager(SocketPoolType pool_type);
 
+  // Flush sockets on low memory notifications callback.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
   NetLog* const net_log_;
   HttpServerProperties* const http_server_properties_;
   CertVerifier* const cert_verifier_;
@@ -297,6 +303,8 @@ class NET_EXPORT HttpNetworkSession
   bool enabled_protocols_[NUM_VALID_ALTERNATE_PROTOCOLS];
 
   Params params_;
+
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 };
 
 }  // namespace net
