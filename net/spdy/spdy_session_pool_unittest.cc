@@ -524,9 +524,9 @@ TEST_F(SpdySessionPoolTest, IPAddressChanged) {
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
   };
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util.ConstructSpdyGet("http://www.a.com", 1, MEDIUM));
-  MockWrite writes[] = {CreateMockWrite(*req, 1)};
+  MockWrite writes[] = {CreateMockWrite(req, 1)};
 
   StaticSocketDataProvider dataA(reads, arraysize(reads), writes,
                                  arraysize(writes));

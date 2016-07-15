@@ -92,13 +92,13 @@ class SpdyProxyClientSocketTest : public PlatformTest,
                   size_t writes_count);
   void PopulateConnectRequestIR(SpdyHeaderBlock* syn_ir);
   void PopulateConnectReplyIR(SpdyHeaderBlock* block, const char* status);
-  SpdySerializedFrame* ConstructConnectRequestFrame();
-  SpdySerializedFrame* ConstructConnectAuthRequestFrame();
-  SpdySerializedFrame* ConstructConnectReplyFrame();
-  SpdySerializedFrame* ConstructConnectAuthReplyFrame();
-  SpdySerializedFrame* ConstructConnectRedirectReplyFrame();
-  SpdySerializedFrame* ConstructConnectErrorReplyFrame();
-  SpdySerializedFrame* ConstructBodyFrame(const char* data, int length);
+  SpdySerializedFrame ConstructConnectRequestFrame();
+  SpdySerializedFrame ConstructConnectAuthRequestFrame();
+  SpdySerializedFrame ConstructConnectReplyFrame();
+  SpdySerializedFrame ConstructConnectAuthReplyFrame();
+  SpdySerializedFrame ConstructConnectRedirectReplyFrame();
+  SpdySerializedFrame ConstructConnectErrorReplyFrame();
+  SpdySerializedFrame ConstructBodyFrame(const char* data, int length);
   scoped_refptr<IOBufferWithSize> CreateBuffer(const char* data, int size);
   void AssertConnectSucceeds();
   void AssertConnectFails(int result);
@@ -146,8 +146,6 @@ class SpdyProxyClientSocketTest : public PlatformTest,
   SpdySessionDependencies session_deps_;
   MockConnect connect_data_;
   base::WeakPtr<SpdySession> spdy_session_;
-  BufferedSpdyFramer framer_;
-
   std::string user_agent_;
   GURL url_;
   HostPortPair proxy_host_port_;
@@ -167,7 +165,6 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
     : spdy_util_(GetDependenciesFromPriority()),
       read_buf_(NULL),
       connect_data_(SYNCHRONOUS, OK),
-      framer_(),
       user_agent_(kUserAgent),
       url_(kRequestUrl),
       proxy_host_port_(kProxyHost, kProxyPort),
@@ -324,7 +321,7 @@ void SpdyProxyClientSocketTest::PopulateConnectReplyIR(SpdyHeaderBlock* block,
 }
 
 // Constructs a standard SPDY SYN_STREAM frame for a CONNECT request.
-SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
+SpdySerializedFrame SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
   return spdy_util_.ConstructSpdySyn(kStreamId, std::move(block), LOWEST,
@@ -333,7 +330,7 @@ SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructConnectRequestFrame() {
 
 // Constructs a SPDY SYN_STREAM frame for a CONNECT request which includes
 // Proxy-Authorization headers.
-SpdySerializedFrame*
+SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
   SpdyHeaderBlock block;
   PopulateConnectRequestIR(&block);
@@ -343,7 +340,7 @@ SpdyProxyClientSocketTest::ConstructConnectAuthRequestFrame() {
 }
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT.
-SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructConnectReplyFrame() {
+SpdySerializedFrame SpdyProxyClientSocketTest::ConstructConnectReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "200");
   return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
@@ -351,7 +348,7 @@ SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructConnectReplyFrame() {
 
 // Constructs a standard SPDY SYN_REPLY frame to match the SPDY CONNECT,
 // including Proxy-Authenticate headers.
-SpdySerializedFrame*
+SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "407");
@@ -360,7 +357,7 @@ SpdyProxyClientSocketTest::ConstructConnectAuthReplyFrame() {
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 302 redirect.
-SpdySerializedFrame*
+SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "302");
@@ -370,30 +367,31 @@ SpdyProxyClientSocketTest::ConstructConnectRedirectReplyFrame() {
 }
 
 // Constructs a SPDY SYN_REPLY frame with an HTTP 500 error.
-SpdySerializedFrame*
+SpdySerializedFrame
 SpdyProxyClientSocketTest::ConstructConnectErrorReplyFrame() {
   SpdyHeaderBlock block;
   PopulateConnectReplyIR(&block, "500");
   return spdy_util_.ConstructSpdyReply(kStreamId, std::move(block));
 }
 
-SpdySerializedFrame* SpdyProxyClientSocketTest::ConstructBodyFrame(
+SpdySerializedFrame SpdyProxyClientSocketTest::ConstructBodyFrame(
     const char* data,
     int length) {
-  return framer_.CreateDataFrame(kStreamId, data, length, DATA_FLAG_NONE);
+  return spdy_util_.ConstructSpdyDataFrame(kStreamId, data, length,
+                                           /*fin=*/false);
 }
 
 // ----------- Connect
 
 TEST_P(SpdyProxyClientSocketTest, ConnectSendsCorrectRequest) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -406,14 +404,14 @@ TEST_P(SpdyProxyClientSocketTest, ConnectSendsCorrectRequest) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthRequested) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectAuthReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectAuthReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -426,14 +424,14 @@ TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthRequested) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthCredentials) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectAuthRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectAuthRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -445,17 +443,16 @@ TEST_P(SpdyProxyClientSocketTest, ConnectWithAuthCredentials) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 3),
+      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      ConstructConnectRedirectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectRedirectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -479,12 +476,12 @@ TEST_P(SpdyProxyClientSocketTest, ConnectRedirects) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
     MockRead(ASYNC, 0, 1),  // EOF
   };
@@ -501,16 +498,16 @@ TEST_P(SpdyProxyClientSocketTest, ConnectFails) {
 // ----------- WasEverUsed
 
 TEST_P(SpdyProxyClientSocketTest, WasEverUsedReturnsCorrectValues) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 3),
+      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -528,14 +525,14 @@ TEST_P(SpdyProxyClientSocketTest, WasEverUsedReturnsCorrectValues) {
 // ----------- GetPeerAddress
 
 TEST_P(SpdyProxyClientSocketTest, GetPeerAddressReturnsCorrectValues) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
       MockRead(ASYNC, 0, 3),  // EOF
   };
 
@@ -561,18 +558,18 @@ TEST_P(SpdyProxyClientSocketTest, GetPeerAddressReturnsCorrectValues) {
 // ----------- Write
 
 TEST_P(SpdyProxyClientSocketTest, WriteSendsDataInDataFrame) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS),
-      CreateMockWrite(*msg1, 3, SYNCHRONOUS),
-      CreateMockWrite(*msg2, 4, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
+      CreateMockWrite(msg1, 3, SYNCHRONOUS),
+      CreateMockWrite(msg2, 4, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -585,17 +582,17 @@ TEST_P(SpdyProxyClientSocketTest, WriteSendsDataInDataFrame) {
 
 TEST_P(SpdyProxyClientSocketTest, WriteSplitsLargeDataIntoMultipleFrames) {
   std::string chunk_data(kMaxSpdyFrameChunkSize, 'x');
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> chunk(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame chunk(
       ConstructBodyFrame(chunk_data.data(), chunk_data.length()));
-  MockWrite writes[] = {CreateMockWrite(*conn, 0, SYNCHRONOUS),
-                        CreateMockWrite(*chunk, 3, SYNCHRONOUS),
-                        CreateMockWrite(*chunk, 4, SYNCHRONOUS),
-                        CreateMockWrite(*chunk, 5, SYNCHRONOUS)};
+  MockWrite writes[] = {CreateMockWrite(conn, 0, SYNCHRONOUS),
+                        CreateMockWrite(chunk, 3, SYNCHRONOUS),
+                        CreateMockWrite(chunk, 4, SYNCHRONOUS),
+                        CreateMockWrite(chunk, 5, SYNCHRONOUS)};
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -614,16 +611,16 @@ TEST_P(SpdyProxyClientSocketTest, WriteSplitsLargeDataIntoMultipleFrames) {
 // ----------- Read
 
 TEST_P(SpdyProxyClientSocketTest, ReadReadsDataInDataFrame) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(msg1, 3, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -636,18 +633,18 @@ TEST_P(SpdyProxyClientSocketTest, ReadReadsDataInDataFrame) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ReadDataFromBufferedFrames) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 4),
-      CreateMockRead(*msg2, 5, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(msg1, 3, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 4),
+      CreateMockRead(msg2, 5, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -663,19 +660,19 @@ TEST_P(SpdyProxyClientSocketTest, ReadDataFromBufferedFrames) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ReadDataMultipleBufferedFrames) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC),
+      CreateMockRead(resp, 1, ASYNC),
       MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC),
-      CreateMockRead(*msg2, 4, ASYNC),
+      CreateMockRead(msg1, 3, ASYNC),
+      CreateMockRead(msg2, 4, ASYNC),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
@@ -692,19 +689,19 @@ TEST_P(SpdyProxyClientSocketTest, ReadDataMultipleBufferedFrames) {
 
 TEST_P(SpdyProxyClientSocketTest,
        LargeReadWillMergeDataFromDifferentFrames) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg3(ConstructBodyFrame(kMsg3, kLen3));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg3(ConstructBodyFrame(kMsg3, kLen3));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC),
+      CreateMockRead(resp, 1, ASYNC),
       MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg3, 3, ASYNC),
-      CreateMockRead(*msg3, 4, ASYNC),
+      CreateMockRead(msg3, 3, ASYNC),
+      CreateMockRead(msg3, 4, ASYNC),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
@@ -721,22 +718,22 @@ TEST_P(SpdyProxyClientSocketTest,
 }
 
 TEST_P(SpdyProxyClientSocketTest, MultipleShortReadsThenMoreRead) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg3(ConstructBodyFrame(kMsg3, kLen3));
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg3(ConstructBodyFrame(kMsg3, kLen3));
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC),
+      CreateMockRead(resp, 1, ASYNC),
       MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC),
-      CreateMockRead(*msg3, 4, ASYNC),
-      CreateMockRead(*msg3, 5, ASYNC),
-      CreateMockRead(*msg2, 6, ASYNC),
+      CreateMockRead(msg1, 3, ASYNC),
+      CreateMockRead(msg3, 4, ASYNC),
+      CreateMockRead(msg3, 5, ASYNC),
+      CreateMockRead(msg2, 6, ASYNC),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 7),
   };
 
@@ -755,21 +752,20 @@ TEST_P(SpdyProxyClientSocketTest, MultipleShortReadsThenMoreRead) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ReadWillSplitDataFromLargeFrame) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg33(
-      ConstructBodyFrame(kMsg33, kLen33));
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg33(ConstructBodyFrame(kMsg33, kLen33));
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC),
+      CreateMockRead(resp, 1, ASYNC),
       MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC),
-      CreateMockRead(*msg33, 4, ASYNC),
+      CreateMockRead(msg1, 3, ASYNC),
+      CreateMockRead(msg33, 4, ASYNC),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
@@ -788,17 +784,16 @@ TEST_P(SpdyProxyClientSocketTest, ReadWillSplitDataFromLargeFrame) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg333(
-      ConstructBodyFrame(kMsg333, kLen333));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg333(ConstructBodyFrame(kMsg333, kLen333));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg333, 3, ASYNC),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(msg333, 3, ASYNC),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
   };
 
@@ -820,19 +815,19 @@ TEST_P(SpdyProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ReadAuthResponseBody) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectAuthReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame resp(ConstructConnectAuthReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC),
+      CreateMockRead(resp, 1, ASYNC),
       MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC),
-      CreateMockRead(*msg2, 4, ASYNC),
+      CreateMockRead(msg1, 3, ASYNC),
+      CreateMockRead(msg2, 4, ASYNC),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
@@ -848,19 +843,17 @@ TEST_P(SpdyProxyClientSocketTest, ReadAuthResponseBody) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, ReadErrorResponseBody) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectErrorReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame resp(ConstructConnectErrorReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockRead reads[] = {
-    CreateMockRead(*resp, 1, ASYNC),
-    CreateMockRead(*msg1, 2, ASYNC),
-    CreateMockRead(*msg2, 3, ASYNC),
-    MockRead(ASYNC, 0, 4),  // EOF
+      CreateMockRead(resp, 1, ASYNC), CreateMockRead(msg1, 2, ASYNC),
+      CreateMockRead(msg2, 3, ASYNC), MockRead(ASYNC, 0, 4),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -871,22 +864,22 @@ TEST_P(SpdyProxyClientSocketTest, ReadErrorResponseBody) {
 // ----------- Reads and Writes
 
 TEST_P(SpdyProxyClientSocketTest, AsyncReadAroundWrite) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS),
-      CreateMockWrite(*msg2, 4, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
+      CreateMockWrite(msg2, 4, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg3(ConstructBodyFrame(kMsg3, kLen3));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg3(ConstructBodyFrame(kMsg3, kLen3));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC),
+      CreateMockRead(resp, 1, ASYNC),
       MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC),  // sync read
+      CreateMockRead(msg1, 3, ASYNC),  // sync read
       MockRead(ASYNC, ERR_IO_PENDING, 5),
-      CreateMockRead(*msg3, 6, ASYNC),  // async read
+      CreateMockRead(msg3, 6, ASYNC),  // async read
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 7),
   };
 
@@ -909,20 +902,20 @@ TEST_P(SpdyProxyClientSocketTest, AsyncReadAroundWrite) {
 }
 
 TEST_P(SpdyProxyClientSocketTest, AsyncWriteAroundReads) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> msg2(ConstructBodyFrame(kMsg2, kLen2));
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame msg2(ConstructBodyFrame(kMsg2, kLen2));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS),
-      MockWrite(ASYNC, ERR_IO_PENDING, 7), CreateMockWrite(*msg2, 8, ASYNC),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
+      MockWrite(ASYNC, ERR_IO_PENDING, 7), CreateMockWrite(msg2, 8, ASYNC),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
-  std::unique_ptr<SpdySerializedFrame> msg3(ConstructBodyFrame(kMsg3, kLen3));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame msg3(ConstructBodyFrame(kMsg3, kLen3));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 4),
-      CreateMockRead(*msg3, 5, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(msg1, 3, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 4),
+      CreateMockRead(msg3, 5, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -947,14 +940,14 @@ TEST_P(SpdyProxyClientSocketTest, AsyncWriteAroundReads) {
 
 // Reading from an already closed socket should return 0
 TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsZero) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
       MockRead(ASYNC, 0, 3),  // EOF
   };
 
@@ -973,14 +966,14 @@ TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsZero) {
 
 // Read pending when socket is closed should return 0
 TEST_P(SpdyProxyClientSocketTest, PendingReadOnCloseReturnsZero) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
       MockRead(ASYNC, 0, 3),  // EOF
   };
 
@@ -998,16 +991,16 @@ TEST_P(SpdyProxyClientSocketTest, PendingReadOnCloseReturnsZero) {
 // Reading from a disconnected socket is an error
 TEST_P(SpdyProxyClientSocketTest,
        ReadOnDisconnectSocketReturnsNotConnected) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 3),
+      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1026,16 +1019,16 @@ TEST_P(SpdyProxyClientSocketTest,
 // Reading buffered data from an already closed socket should return
 // buffered data, then 0.
 TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsBufferedData) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC), MockRead(ASYNC, 0, 4),  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(msg1, 3, ASYNC), MockRead(ASYNC, 0, 4),  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1058,15 +1051,15 @@ TEST_P(SpdyProxyClientSocketTest, ReadOnClosedSocketReturnsBufferedData) {
 
 // Calling Write() on a closed socket is an error
 TEST_P(SpdyProxyClientSocketTest, WriteOnClosedStream) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
       MockRead(ASYNC, 0, 3),  // EOF
   };
 
@@ -1083,17 +1076,17 @@ TEST_P(SpdyProxyClientSocketTest, WriteOnClosedStream) {
 
 // Calling Write() on a disconnected socket is an error.
 TEST_P(SpdyProxyClientSocketTest, WriteOnDisconnectedSocket) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 3),
+      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1113,15 +1106,15 @@ TEST_P(SpdyProxyClientSocketTest, WriteOnDisconnectedSocket) {
 // If the socket is closed with a pending Write(), the callback
 // should be called with ERR_CONNECTION_CLOSED.
 TEST_P(SpdyProxyClientSocketTest, WritePendingOnClose) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
       MockWrite(SYNCHRONOUS, ERR_IO_PENDING, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1144,16 +1137,16 @@ TEST_P(SpdyProxyClientSocketTest, WritePendingOnClose) {
 // If the socket is Disconnected with a pending Write(), the callback
 // should not be called.
 TEST_P(SpdyProxyClientSocketTest, DisconnectWithWritePending) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 3),
+      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1178,16 +1171,16 @@ TEST_P(SpdyProxyClientSocketTest, DisconnectWithWritePending) {
 // If the socket is Disconnected with a pending Read(), the callback
 // should not be called.
 TEST_P(SpdyProxyClientSocketTest, DisconnectWithReadPending) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 3),
+      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1212,17 +1205,17 @@ TEST_P(SpdyProxyClientSocketTest, DisconnectWithReadPending) {
 // If the socket is Reset when both a read and write are pending,
 // both should be called back.
 TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePending) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*rst, 3, ASYNC), MockRead(ASYNC, 0, 4)  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(rst, 3, ASYNC), MockRead(ASYNC, 0, 4)  // EOF
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1254,18 +1247,18 @@ TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePending) {
 // Makes sure the proxy client socket's source gets the expected NetLog events
 // and only the expected NetLog events (No SpdySession events).
 TEST_P(SpdyProxyClientSocketTest, NetLog) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-      CreateMockWrite(*conn, 0, SYNCHRONOUS), CreateMockWrite(*rst, 5),
+      CreateMockWrite(conn, 0, SYNCHRONOUS), CreateMockWrite(rst, 5),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> msg1(ConstructBodyFrame(kMsg1, kLen1));
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame msg1(ConstructBodyFrame(kMsg1, kLen1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*msg1, 3, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(msg1, 3, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));
@@ -1339,17 +1332,17 @@ class DeleteSockCallback : public TestCompletionCallbackBase {
 // read callback causes the socket to be deleted, the write callback should
 // not be called.
 TEST_P(SpdyProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
-  std::unique_ptr<SpdySerializedFrame> conn(ConstructConnectRequestFrame());
+  SpdySerializedFrame conn(ConstructConnectRequestFrame());
   MockWrite writes[] = {
-    CreateMockWrite(*conn, 0, SYNCHRONOUS),
+      CreateMockWrite(conn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(ConstructConnectReplyFrame());
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame resp(ConstructConnectReplyFrame());
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
-      CreateMockRead(*rst, 3, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, ERR_IO_PENDING, 2),
+      CreateMockRead(rst, 3, ASYNC), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes));

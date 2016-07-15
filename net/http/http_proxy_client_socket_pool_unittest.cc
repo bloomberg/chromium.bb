@@ -280,24 +280,21 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
     MockRead(ASYNC, 3, "Content-Length: 10\r\n\r\n"),
     MockRead(ASYNC, 4, "0123456789"),
   };
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyConnect(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
       NULL, 0, 1, LOW, HostPortPair("www.google.com", 443)));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
-    CreateMockWrite(*req, 0, ASYNC),
-    CreateMockWrite(*rst, 2, ASYNC),
+      CreateMockWrite(req, 0, ASYNC), CreateMockWrite(rst, 2, ASYNC),
   };
   SpdyHeaderBlock resp_block;
   resp_block[spdy_util_.GetStatusKey()] = "407";
   resp_block["proxy-authenticate"] = "Basic realm=\"MyRealm1\"";
 
-  std::unique_ptr<SpdySerializedFrame> resp(
+  SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyReply(1, std::move(resp_block)));
-  MockRead spdy_reads[] = {
-    CreateMockRead(*resp, 1, ASYNC),
-    MockRead(ASYNC, 0, 3)
-  };
+  MockRead spdy_reads[] = {CreateMockRead(resp, 1, ASYNC),
+                           MockRead(ASYNC, 0, 3)};
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes),
              spdy_reads, arraysize(spdy_reads), spdy_writes,
@@ -388,16 +385,13 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
     MockRead(ASYNC, 1, "HTTP/1.1 200 Connection Established\r\n\r\n"),
   };
 
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1, LOW,
                                       HostPortPair("www.google.com", 443)));
-  MockWrite spdy_writes[] = {
-    CreateMockWrite(*req, 0, ASYNC)
-  };
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0, ASYNC)};
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead spdy_reads[] = {
-      CreateMockRead(*resp, 1, ASYNC),
+      CreateMockRead(resp, 1, ASYNC),
       // Connection stays open.
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2),
   };
@@ -431,18 +425,13 @@ TEST_P(HttpProxyClientSocketPoolTest,
   if (GetParam().proxy_type != SPDY)
     return;
 
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1, MEDIUM,
                                       HostPortPair("www.google.com", 443)));
-  MockWrite spdy_writes[] = {
-    CreateMockWrite(*req, 0, ASYNC)
-  };
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  MockRead spdy_reads[] = {
-    CreateMockRead(*resp, 1, ASYNC),
-    MockRead(ASYNC, 0, 2)
-  };
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0, ASYNC)};
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  MockRead spdy_reads[] = {CreateMockRead(resp, 1, ASYNC),
+                           MockRead(ASYNC, 0, 2)};
 
   Initialize(NULL, 0, NULL, 0,
              spdy_reads, arraysize(spdy_reads),
@@ -544,12 +533,10 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
     MockRead(ASYNC, 1, "HTTP/1.1 200 Conn"),
     MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2),
   };
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1, LOW,
                                       HostPortPair("www.google.com", 443)));
-  MockWrite spdy_writes[] = {
-    CreateMockWrite(*req, 0, ASYNC)
-  };
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0, ASYNC)};
   MockRead spdy_reads[] = {
     MockRead(ASYNC, ERR_CONNECTION_CLOSED, 1),
   };
@@ -620,20 +607,17 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
   MockRead reads[] = {
     MockRead(ASYNC, 1, "HTTP/1.1 304 Not Modified\r\n\r\n"),
   };
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1, LOW,
                                       HostPortPair("www.google.com", 443)));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
-    CreateMockWrite(*req, 0, ASYNC),
-    CreateMockWrite(*rst, 2, ASYNC),
+      CreateMockWrite(req, 0, ASYNC), CreateMockWrite(rst, 2, ASYNC),
   };
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdySynReplyError(1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdySynReplyError(1));
   MockRead spdy_reads[] = {
-    CreateMockRead(*resp, 1, ASYNC),
-    MockRead(ASYNC, 0, 3),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 3),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes),
@@ -672,15 +656,14 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
   MockRead reads[] = {
     MockRead(ASYNC, 1, responseText.c_str()),
   };
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1, LOW,
                                       HostPortPair("www.google.com", 443)));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
   MockWrite spdy_writes[] = {
-    CreateMockWrite(*req, 0, ASYNC),
-    CreateMockWrite(*rst, 3, ASYNC),
+      CreateMockWrite(req, 0, ASYNC), CreateMockWrite(rst, 3, ASYNC),
   };
 
   const char* const responseHeaders[] = {
@@ -688,12 +671,10 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
     "set-cookie", "foo=bar",
   };
   const int responseHeadersSize = arraysize(responseHeaders) / 2;
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdySynReplyError("302 Found", responseHeaders,
-                                            responseHeadersSize, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdySynReplyError(
+      "302 Found", responseHeaders, responseHeadersSize, 1));
   MockRead spdy_reads[] = {
-    CreateMockRead(*resp, 1, ASYNC),
-    MockRead(ASYNC, 0, 2),
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 2),
   };
 
   Initialize(reads, arraysize(reads), writes, arraysize(writes),

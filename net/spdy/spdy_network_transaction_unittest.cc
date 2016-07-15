@@ -615,17 +615,14 @@ TEST_P(SpdyNetworkTransactionTest, Constructor) {
 
 TEST_P(SpdyNetworkTransactionTest, Get) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -645,12 +642,12 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
     SpdyTestUtil spdy_test_util(GetParam());
 
     // Construct the request.
-    std::unique_ptr<SpdySerializedFrame> req(
+    SpdySerializedFrame req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, p, true));
-    MockWrite writes[] = {CreateMockWrite(*req, 0)};
+    MockWrite writes[] = {CreateMockWrite(req, 0)};
 
     SpdyPriority spdy_prio = 0;
-    EXPECT_TRUE(GetSpdyPriority(*req, &spdy_prio));
+    EXPECT_TRUE(GetSpdyPriority(req, &spdy_prio));
     // this repeats the RequestPriority-->SpdyPriority mapping from
     // SpdyFramer::ConvertRequestPriorityToSpdyPriority to make
     // sure it's being done right.
@@ -674,13 +671,11 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
         FAIL();
     }
 
-    std::unique_ptr<SpdySerializedFrame> resp(
+    SpdySerializedFrame resp(
         spdy_test_util.ConstructSpdyGetSynReply(nullptr, 0, 1));
-    std::unique_ptr<SpdySerializedFrame> body(
-        spdy_test_util.ConstructSpdyBodyFrame(1, true));
+    SpdySerializedFrame body(spdy_test_util.ConstructSpdyDataFrame(1, true));
     MockRead reads[] = {
-        CreateMockRead(*resp, 1),
-        CreateMockRead(*body, 2),
+        CreateMockRead(resp, 1), CreateMockRead(body, 2),
         MockRead(ASYNC, 0, 3)  // EOF
     };
 
@@ -709,49 +704,35 @@ TEST_P(SpdyNetworkTransactionTest, GetAtEachPriority) {
 // can allow multiple streams in flight.
 
 TEST_P(SpdyNetworkTransactionTest, ThreeGets) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> fbody(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame fbody(spdy_util_.ConstructSpdyDataFrame(1, true));
 
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(3, false));
-  std::unique_ptr<SpdySerializedFrame> fbody2(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, false));
+  SpdySerializedFrame fbody2(spdy_util_.ConstructSpdyDataFrame(3, true));
 
-  std::unique_ptr<SpdySerializedFrame> req3(
+  SpdySerializedFrame req3(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 5, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp3(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
-  std::unique_ptr<SpdySerializedFrame> body3(
-      spdy_util_.ConstructSpdyBodyFrame(5, false));
-  std::unique_ptr<SpdySerializedFrame> fbody3(
-      spdy_util_.ConstructSpdyBodyFrame(5, true));
+  SpdySerializedFrame resp3(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
+  SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(5, false));
+  SpdySerializedFrame fbody3(spdy_util_.ConstructSpdyDataFrame(5, true));
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
-      CreateMockWrite(*req2, 3),
-      CreateMockWrite(*req3, 6),
+      CreateMockWrite(req, 0), CreateMockWrite(req2, 3),
+      CreateMockWrite(req3, 6),
   };
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
-      CreateMockRead(*resp2, 4),
-      CreateMockRead(*body2, 5),
-      CreateMockRead(*resp3, 7),
-      CreateMockRead(*body3, 8),
+      CreateMockRead(resp, 1),    CreateMockRead(body, 2),
+      CreateMockRead(resp2, 4),   CreateMockRead(body2, 5),
+      CreateMockRead(resp3, 7),   CreateMockRead(body3, 8),
 
-      CreateMockRead(*fbody, 9),
-      CreateMockRead(*fbody2, 10),
-      CreateMockRead(*fbody3, 11),
+      CreateMockRead(fbody, 9),   CreateMockRead(fbody2, 10),
+      CreateMockRead(fbody3, 11),
 
       MockRead(ASYNC, 0, 12),  // EOF
   };
@@ -815,34 +796,25 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGets) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> fbody(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame fbody(spdy_util_.ConstructSpdyDataFrame(1, true));
 
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(3, false));
-  std::unique_ptr<SpdySerializedFrame> fbody2(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, false));
+  SpdySerializedFrame fbody2(spdy_util_.ConstructSpdyDataFrame(3, true));
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*req2, 3),
+      CreateMockWrite(req, 0), CreateMockWrite(req2, 3),
   };
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
-      CreateMockRead(*resp2, 4),
-      CreateMockRead(*body2, 5),
-      CreateMockRead(*fbody, 6),
-      CreateMockRead(*fbody2, 7),
+      CreateMockRead(resp, 1),  CreateMockRead(body, 2),
+      CreateMockRead(resp2, 4), CreateMockRead(body2, 5),
+      CreateMockRead(fbody, 6), CreateMockRead(fbody2, 7),
       MockRead(ASYNC, 0, 8),  // EOF
   };
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -906,34 +878,25 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBinding) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> fbody(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame fbody(spdy_util_.ConstructSpdyDataFrame(1, true));
 
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(3, false));
-  std::unique_ptr<SpdySerializedFrame> fbody2(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, false));
+  SpdySerializedFrame fbody2(spdy_util_.ConstructSpdyDataFrame(3, true));
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*req2, 3),
+      CreateMockWrite(req, 0), CreateMockWrite(req2, 3),
   };
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
-      CreateMockRead(*resp2, 4),
-      CreateMockRead(*body2, 5),
-      CreateMockRead(*fbody, 6),
-      CreateMockRead(*fbody2, 7),
+      CreateMockRead(resp, 1),  CreateMockRead(body, 2),
+      CreateMockRead(resp2, 4), CreateMockRead(body2, 5),
+      CreateMockRead(fbody, 6), CreateMockRead(fbody2, 7),
       MockRead(ASYNC, 0, 8),  // EOF
   };
   SequencedSocketData preconnect_data(reads, arraysize(reads), writes,
@@ -1012,62 +975,50 @@ TEST_P(SpdyNetworkTransactionTest, TwoGetsLateBindingFromPreconnect) {
 TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
   // Construct the request.
   // Each request fully completes before the next starts.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> fbody(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame fbody(spdy_util_.ConstructSpdyDataFrame(1, true));
   spdy_util_.UpdateWithStreamDestruction(1);
 
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(3, false));
-  std::unique_ptr<SpdySerializedFrame> fbody2(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, false));
+  SpdySerializedFrame fbody2(spdy_util_.ConstructSpdyDataFrame(3, true));
   spdy_util_.UpdateWithStreamDestruction(3);
 
-  std::unique_ptr<SpdySerializedFrame> req3(
+  SpdySerializedFrame req3(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 5, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp3(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
-  std::unique_ptr<SpdySerializedFrame> body3(
-      spdy_util_.ConstructSpdyBodyFrame(5, false));
-  std::unique_ptr<SpdySerializedFrame> fbody3(
-      spdy_util_.ConstructSpdyBodyFrame(5, true));
+  SpdySerializedFrame resp3(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
+  SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(5, false));
+  SpdySerializedFrame fbody3(spdy_util_.ConstructSpdyDataFrame(5, true));
 
   SettingsMap settings;
   const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  std::unique_ptr<SpdySerializedFrame> settings_frame(
+  SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
-  std::unique_ptr<SpdySerializedFrame> settings_ack(
-      spdy_util_.ConstructSpdySettingsAck());
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
-      CreateMockWrite(*settings_ack, 5),
-      CreateMockWrite(*req2, 6),
-      CreateMockWrite(*req3, 10),
+      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 5),
+      CreateMockWrite(req2, 6), CreateMockWrite(req3, 10),
   };
 
   MockRead reads[] = {
-      CreateMockRead(*settings_frame, 1),
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
-      CreateMockRead(*fbody, 4),
-      CreateMockRead(*resp2, 7),
-      CreateMockRead(*body2, 8),
-      CreateMockRead(*fbody2, 9),
-      CreateMockRead(*resp3, 11),
-      CreateMockRead(*body3, 12),
-      CreateMockRead(*fbody3, 13),
+      CreateMockRead(settings_frame, 1),
+      CreateMockRead(resp, 2),
+      CreateMockRead(body, 3),
+      CreateMockRead(fbody, 4),
+      CreateMockRead(resp2, 7),
+      CreateMockRead(body2, 8),
+      CreateMockRead(fbody2, 9),
+      CreateMockRead(resp3, 11),
+      CreateMockRead(body3, 12),
+      CreateMockRead(fbody3, 13),
 
       MockRead(ASYNC, 0, 14),  // EOF
   };
@@ -1152,74 +1103,61 @@ TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrent) {
 // the response from the server.
 TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> fbody(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame fbody(spdy_util_.ConstructSpdyDataFrame(1, true));
   spdy_util_.UpdateWithStreamDestruction(1);
 
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(3, false));
-  std::unique_ptr<SpdySerializedFrame> fbody2(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, false));
+  SpdySerializedFrame fbody2(spdy_util_.ConstructSpdyDataFrame(3, true));
   spdy_util_.UpdateWithStreamDestruction(3);
 
-  std::unique_ptr<SpdySerializedFrame> req4(
+  SpdySerializedFrame req4(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 5, HIGHEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp4(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
-  std::unique_ptr<SpdySerializedFrame> fbody4(
-      spdy_util_.ConstructSpdyBodyFrame(5, true));
+  SpdySerializedFrame resp4(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
+  SpdySerializedFrame fbody4(spdy_util_.ConstructSpdyDataFrame(5, true));
   spdy_util_.UpdateWithStreamDestruction(5);
 
-  std::unique_ptr<SpdySerializedFrame> req3(
+  SpdySerializedFrame req3(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 7, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp3(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 7));
-  std::unique_ptr<SpdySerializedFrame> body3(
-      spdy_util_.ConstructSpdyBodyFrame(7, false));
-  std::unique_ptr<SpdySerializedFrame> fbody3(
-      spdy_util_.ConstructSpdyBodyFrame(7, true));
+  SpdySerializedFrame resp3(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 7));
+  SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(7, false));
+  SpdySerializedFrame fbody3(spdy_util_.ConstructSpdyDataFrame(7, true));
 
   SettingsMap settings;
   const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  std::unique_ptr<SpdySerializedFrame> settings_frame(
+  SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
-  std::unique_ptr<SpdySerializedFrame> settings_ack(
-      spdy_util_.ConstructSpdySettingsAck());
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
-      CreateMockWrite(*settings_ack, 5),
+      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 5),
       // By making these synchronous, it guarantees that they are not *started*
       // before their sequence number, which in turn verifies that only a single
       // request is in-flight at a time.
-      CreateMockWrite(*req2, 6, SYNCHRONOUS),
-      CreateMockWrite(*req4, 10, SYNCHRONOUS),
-      CreateMockWrite(*req3, 13, SYNCHRONOUS),
+      CreateMockWrite(req2, 6, SYNCHRONOUS),
+      CreateMockWrite(req4, 10, SYNCHRONOUS),
+      CreateMockWrite(req3, 13, SYNCHRONOUS),
   };
   MockRead reads[] = {
-      CreateMockRead(*settings_frame, 1),
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
-      CreateMockRead(*fbody, 4),
-      CreateMockRead(*resp2, 7),
-      CreateMockRead(*body2, 8),
-      CreateMockRead(*fbody2, 9),
-      CreateMockRead(*resp4, 11),
-      CreateMockRead(*fbody4, 12),
-      CreateMockRead(*resp3, 14),
-      CreateMockRead(*body3, 15),
-      CreateMockRead(*fbody3, 16),
+      CreateMockRead(settings_frame, 1),
+      CreateMockRead(resp, 2),
+      CreateMockRead(body, 3),
+      CreateMockRead(fbody, 4),
+      CreateMockRead(resp2, 7),
+      CreateMockRead(body2, 8),
+      CreateMockRead(fbody2, 9),
+      CreateMockRead(resp4, 11),
+      CreateMockRead(fbody4, 12),
+      CreateMockRead(resp3, 14),
+      CreateMockRead(body3, 15),
+      CreateMockRead(fbody3, 16),
 
       MockRead(ASYNC, 0, 17),  // EOF
   };
@@ -1316,48 +1254,36 @@ TEST_P(SpdyNetworkTransactionTest, FourGetsWithMaxConcurrentPriority) {
 // the spdy_session
 TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentDelete) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> fbody(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame fbody(spdy_util_.ConstructSpdyDataFrame(1, true));
   spdy_util_.UpdateWithStreamDestruction(1);
 
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(3, false));
-  std::unique_ptr<SpdySerializedFrame> fbody2(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, false));
+  SpdySerializedFrame fbody2(spdy_util_.ConstructSpdyDataFrame(3, true));
 
   SettingsMap settings;
   const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  std::unique_ptr<SpdySerializedFrame> settings_frame(
+  SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
-  std::unique_ptr<SpdySerializedFrame> settings_ack(
-      spdy_util_.ConstructSpdySettingsAck());
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
-      CreateMockWrite(*settings_ack, 5),
-      CreateMockWrite(*req2, 6),
+      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 5),
+      CreateMockWrite(req2, 6),
   };
   MockRead reads[] = {
-      CreateMockRead(*settings_frame, 1),
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
-      CreateMockRead(*fbody, 4),
-      CreateMockRead(*resp2, 7),
-      CreateMockRead(*body2, 8),
-      CreateMockRead(*fbody2, 9),
-      MockRead(ASYNC, 0, 10),  // EOF
+      CreateMockRead(settings_frame, 1), CreateMockRead(resp, 2),
+      CreateMockRead(body, 3),           CreateMockRead(fbody, 4),
+      CreateMockRead(resp2, 7),          CreateMockRead(body2, 8),
+      CreateMockRead(fbody2, 9),         MockRead(ASYNC, 0, 10),  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -1455,41 +1381,35 @@ class KillerCallback : public TestCompletionCallbackBase {
 // a pending stream creation.  http://crbug.com/52901
 TEST_P(SpdyNetworkTransactionTest, ThreeGetsWithMaxConcurrentSocketClose) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> fin_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame fin_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   spdy_util_.UpdateWithStreamDestruction(1);
 
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
 
   SettingsMap settings;
   const uint32_t max_concurrent_streams = 1;
   settings[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, max_concurrent_streams);
-  std::unique_ptr<SpdySerializedFrame> settings_frame(
+  SpdySerializedFrame settings_frame(
       spdy_util_.ConstructSpdySettings(settings));
-  std::unique_ptr<SpdySerializedFrame> settings_ack(
-      spdy_util_.ConstructSpdySettingsAck());
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
-      CreateMockWrite(*settings_ack, 5),
-      CreateMockWrite(*req2, 6),
+      CreateMockWrite(req, 0), CreateMockWrite(settings_ack, 5),
+      CreateMockWrite(req2, 6),
   };
   MockRead reads[] = {
-      CreateMockRead(*settings_frame, 1),
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
-      CreateMockRead(*fin_body, 4),
-      CreateMockRead(*resp2, 7),
+      CreateMockRead(settings_frame, 1),
+      CreateMockRead(resp, 2),
+      CreateMockRead(body, 3),
+      CreateMockRead(fin_body, 4),
+      CreateMockRead(resp2, 7),
       MockRead(ASYNC, ERR_CONNECTION_RESET, 8),  // Abort!
   };
 
@@ -1560,19 +1480,16 @@ TEST_P(SpdyNetworkTransactionTest, Put) {
 
   SpdyHeaderBlock put_headers(
       spdy_util_.ConstructPutHeaderBlock(kDefaultUrl, 0));
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(put_headers), LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
+      CreateMockWrite(req, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -1595,19 +1512,16 @@ TEST_P(SpdyNetworkTransactionTest, Head) {
 
   SpdyHeaderBlock head_headers(
       spdy_util_.ConstructHeadHeaderBlock(kDefaultUrl, 0));
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(head_headers), LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
+      CreateMockWrite(req, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -1623,19 +1537,16 @@ TEST_P(SpdyNetworkTransactionTest, Head) {
 
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionTest, Post) {
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*body, 1),  // POST upload frame
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),  // POST upload frame
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
       MockRead(ASYNC, 0, 4)  // EOF
   };
 
@@ -1651,19 +1562,16 @@ TEST_P(SpdyNetworkTransactionTest, Post) {
 
 // Test that a POST with a file works.
 TEST_P(SpdyNetworkTransactionTest, FilePost) {
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*body, 1),  // POST upload frame
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),  // POST upload frame
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
       MockRead(ASYNC, 0, 4)  // EOF
   };
 
@@ -1701,19 +1609,16 @@ TEST_P(SpdyNetworkTransactionTest, UnreadableFilePost) {
 
 // Test that a complex POST works.
 TEST_P(SpdyNetworkTransactionTest, ComplexPost) {
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kUploadDataSize, LOWEST, NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*body, 1),  // POST upload frame
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),  // POST upload frame
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
       MockRead(ASYNC, 0, 4)  // EOF
   };
 
@@ -1730,19 +1635,15 @@ TEST_P(SpdyNetworkTransactionTest, ComplexPost) {
 
 // Test that a chunked POST works.
 TEST_P(SpdyNetworkTransactionTest, ChunkedPost) {
-  std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*body, 1),
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-      CreateMockRead(*resp, 2),
-      CreateMockRead(*body, 3),
+      CreateMockRead(resp, 2), CreateMockRead(body, 3),
       MockRead(ASYNC, 0, 4)  // EOF
   };
 
@@ -1766,28 +1667,19 @@ TEST_P(SpdyNetworkTransactionTest, ChunkedPost) {
 
 // Test that a chunked POST works with chunks appended after transaction starts.
 TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
-  std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> chunk1(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> chunk2(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
-  std::unique_ptr<SpdySerializedFrame> chunk3(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  SpdySerializedFrame chunk1(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame chunk2(spdy_util_.ConstructSpdyDataFrame(1, false));
+  SpdySerializedFrame chunk3(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
-      CreateMockWrite(*chunk1, 1),
-      CreateMockWrite(*chunk2, 2),
-      CreateMockWrite(*chunk3, 3),
+      CreateMockWrite(req, 0), CreateMockWrite(chunk1, 1),
+      CreateMockWrite(chunk2, 2), CreateMockWrite(chunk3, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-      CreateMockRead(*resp, 4),
-      CreateMockRead(*chunk1, 5),
-      CreateMockRead(*chunk2, 6),
-      CreateMockRead(*chunk3, 7),
+      CreateMockRead(resp, 4), CreateMockRead(chunk1, 5),
+      CreateMockRead(chunk2, 6), CreateMockRead(chunk3, 7),
       MockRead(ASYNC, 0, 8)  // EOF
   };
 
@@ -1823,7 +1715,6 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
 
 // Test that a POST without any post data works.
 TEST_P(SpdyNetworkTransactionTest, NullPost) {
-  BufferedSpdyFramer framer;
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
@@ -1835,20 +1726,17 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
   // expected to be 0.
   SpdyHeaderBlock req_block(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, 0));
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(req_block), LOWEST, true));
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
+      CreateMockWrite(req, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -1865,7 +1753,6 @@ TEST_P(SpdyNetworkTransactionTest, NullPost) {
 
 // Test that a simple POST works.
 TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
-  BufferedSpdyFramer framer;
   // Create an empty UploadDataStream.
   std::vector<std::unique_ptr<UploadElementReader>> element_readers;
   ElementsUploadDataStream stream(std::move(element_readers), 0);
@@ -1880,20 +1767,17 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
 
   SpdyHeaderBlock req_block(
       spdy_util_.ConstructPostHeaderBlock(kDefaultUrl, kContentLength));
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(req_block), LOWEST, true));
 
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
+      CreateMockWrite(req, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -1910,20 +1794,15 @@ TEST_P(SpdyNetworkTransactionTest, EmptyPost) {
 
 // While we're doing a post, the server sends the reply before upload completes.
 TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
-  std::unique_ptr<SpdySerializedFrame> req(
-      spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame req(spdy_util_.ConstructChunkedSpdyPost(NULL, 0));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-    CreateMockWrite(*req, 0),
-    CreateMockWrite(*body, 3),
+      CreateMockWrite(req, 0), CreateMockWrite(body, 3),
   };
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-    CreateMockRead(*resp, 1),
-    CreateMockRead(*body, 2),
-    MockRead(ASYNC, 0, 4)  // EOF
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
+      MockRead(ASYNC, 0, 4)  // EOF
   };
 
   // Write the request headers, and read the complete response
@@ -1959,21 +1838,18 @@ TEST_P(SpdyNetworkTransactionTest, ResponseBeforePostCompletes) {
 // socket causes the TCP write to return zero. This test checks that the client
 // tries to queue up the RST_STREAM frame again.
 TEST_P(SpdyNetworkTransactionTest, SocketWriteReturnsZero) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-    CreateMockWrite(*req.get(), 0, SYNCHRONOUS),
-    MockWrite(SYNCHRONOUS, 0, 0, 2),
-    CreateMockWrite(*rst.get(), 3, SYNCHRONOUS),
+      CreateMockWrite(req, 0, SYNCHRONOUS), MockWrite(SYNCHRONOUS, 0, 0, 2),
+      CreateMockWrite(rst, 3, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp.get(), 1, ASYNC),
-    MockRead(ASYNC, 0, 0, 4)  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 0, 4)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -1996,18 +1872,17 @@ TEST_P(SpdyNetworkTransactionTest, SocketWriteReturnsZero) {
 
 // Test that the transaction doesn't crash when we don't have a reply.
 TEST_P(SpdyNetworkTransactionTest, ResponseWithoutSynReply) {
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*body, 1), MockRead(ASYNC, 0, 3)  // EOF
+      CreateMockRead(body, 1), MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 2),
+      CreateMockWrite(req, 0), CreateMockWrite(rst, 2),
   };
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
@@ -2020,23 +1895,20 @@ TEST_P(SpdyNetworkTransactionTest, ResponseWithoutSynReply) {
 // Test that the transaction doesn't crash when we get two replies on the same
 // stream ID. See http://crbug.com/45639.
 TEST_P(SpdyNetworkTransactionTest, ResponseWithTwoSynReplies) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4),
+      CreateMockWrite(req, 0), CreateMockWrite(rst, 4),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp0(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> resp1(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp0(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp0, 1), CreateMockRead(*resp1, 2),
-      CreateMockRead(*body, 3), MockRead(ASYNC, 0, 5)  // EOF
+      CreateMockRead(resp0, 1), CreateMockRead(resp1, 2),
+      CreateMockRead(body, 3), MockRead(ASYNC, 0, 5)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -2067,24 +1939,21 @@ TEST_P(SpdyNetworkTransactionTest, ResponseWithTwoSynReplies) {
 
 TEST_P(SpdyNetworkTransactionTest, ResetReplyWithTransferEncoding) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 2),
+      CreateMockWrite(req, 0), CreateMockWrite(rst, 2),
   };
 
   const char* const headers[] = {
     "transfer-encoding", "chunked"
   };
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(headers, 1, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(headers, 1, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 3),
+      CreateMockRead(resp, 1), CreateMockRead(body, 3),
       MockRead(ASYNC, 0, 4)  // EOF
   };
 
@@ -2101,28 +1970,24 @@ TEST_P(SpdyNetworkTransactionTest, ResetReplyWithTransferEncoding) {
 
 TEST_P(SpdyNetworkTransactionTest, ResetPushWithTransferEncoding) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4),
+      CreateMockWrite(req, 0), CreateMockWrite(rst, 4),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   const char* const headers[] = {
     "transfer-encoding", "chunked"
   };
-  std::unique_ptr<SpdySerializedFrame> push(
+  SpdySerializedFrame push(
       spdy_util_.ConstructSpdyPush(headers, arraysize(headers) / 2, 2, 1,
                                    GetDefaultUrlWithPath("/1").c_str()));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*push, 2),
-      CreateMockRead(*body, 3),
+      CreateMockRead(resp, 1), CreateMockRead(push, 2), CreateMockRead(body, 3),
       MockRead(ASYNC, 0, 5)  // EOF
   };
 
@@ -2141,21 +2006,20 @@ TEST_P(SpdyNetworkTransactionTest, ResetPushWithTransferEncoding) {
 
 TEST_P(SpdyNetworkTransactionTest, CancelledTransaction) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-    CreateMockWrite(*req),
+      CreateMockWrite(req),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp),
-    // This following read isn't used by the test, except during the
-    // RunUntilIdle() call at the end since the SpdySession survives the
-    // HttpNetworkTransaction and still tries to continue Read()'ing.  Any
-    // MockRead will do here.
-    MockRead(ASYNC, 0, 0)  // EOF
+      CreateMockRead(resp),
+      // This following read isn't used by the test, except during the
+      // RunUntilIdle() call at the end since the SpdySession survives the
+      // HttpNetworkTransaction and still tries to continue Read()'ing.  Any
+      // MockRead will do here.
+      MockRead(ASYNC, 0, 0)  // EOF
   };
 
   StaticSocketDataProvider data(reads, arraysize(reads),
@@ -2181,20 +2045,18 @@ TEST_P(SpdyNetworkTransactionTest, CancelledTransaction) {
 
 // Verify that the client sends a Rst Frame upon cancelling the stream.
 TEST_P(SpdyNetworkTransactionTest, CancelledTransactionSendRst) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-    CreateMockWrite(*req, 0, SYNCHRONOUS),
-    CreateMockWrite(*rst, 2, SYNCHRONOUS),
+      CreateMockWrite(req, 0, SYNCHRONOUS),
+      CreateMockWrite(rst, 2, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-    CreateMockRead(*resp, 1, ASYNC),
-    MockRead(ASYNC, 0, 0, 3)  // EOF
+      CreateMockRead(resp, 1, ASYNC), MockRead(ASYNC, 0, 0, 3)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -2222,10 +2084,10 @@ TEST_P(SpdyNetworkTransactionTest, CancelledTransactionSendRst) {
 // to start another transaction on a session that is closing down. See
 // http://crbug.com/47455
 TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req)};
-  MockWrite writes2[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req)};
+  MockWrite writes2[] = {CreateMockWrite(req, 0)};
 
   // The indicated length of this frame is longer than its actual length. When
   // the session receives an empty frame after this one, it shuts down the
@@ -2235,10 +2097,9 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
       0x07, 'h',  'e',  'l',  'l',  'o',  '!',
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
+      CreateMockRead(resp, 1),
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
       MockRead(ASYNC, reinterpret_cast<const char*>(kGetBodyFrame2),
                arraysize(kGetBodyFrame2), 3),
@@ -2246,7 +2107,7 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
       MockRead(ASYNC, 0, 0, 5),            // EOF
   };
   MockRead reads2[] = {
-      CreateMockRead(*resp, 1), MockRead(ASYNC, 0, 0, 2),  // EOF
+      CreateMockRead(resp, 1), MockRead(ASYNC, 0, 0, 2),  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -2287,19 +2148,16 @@ TEST_P(SpdyNetworkTransactionTest, StartTransactionOnReadCallback) {
 // transaction. Failures will usually be valgrind errors. See
 // http://crbug.com/46925
 TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp.get(), 1),
-      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
-      CreateMockRead(*body.get(), 3),
-      MockRead(ASYNC, 0, 0, 4),  // EOF
+      CreateMockRead(resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),                 // Force a pause
+      CreateMockRead(body, 3), MockRead(ASYNC, 0, 0, 4),  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -2340,16 +2198,14 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
   headers["accept-encoding"] = "gzip, deflate";
 
   // Setup writes/reads to www.example.org
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReplyRedirect(1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReplyRedirect(1));
   MockWrite writes[] = {
-    CreateMockWrite(*req, 1),
+      CreateMockWrite(req, 1),
   };
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    MockRead(ASYNC, 0, 0, 3)  // EOF
+      CreateMockRead(resp, 2), MockRead(ASYNC, 0, 0, 3)  // EOF
   };
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
@@ -2358,20 +2214,17 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectGetRequest) {
       spdy_util_.ConstructGetHeaderBlock("http://www.foo.com/index.php"));
   headers2["user-agent"] = "";
   headers2["accept-encoding"] = "gzip, deflate";
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdySyn(1, std::move(headers2), LOWEST, true));
   MockWrite writes2[] = {
-      CreateMockWrite(*req2, 1),
+      CreateMockWrite(req2, 1),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads2[] = {
-    CreateMockRead(*resp2, 2),
-    CreateMockRead(*body2, 3),
-    MockRead(ASYNC, 0, 0, 4)  // EOF
+      CreateMockRead(resp2, 2), CreateMockRead(body2, 3),
+      MockRead(ASYNC, 0, 0, 4)  // EOF
   };
 
   SequencedSocketData data2(reads2, arraysize(reads2), writes2,
@@ -2416,27 +2269,22 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
   headers["accept-encoding"] = "gzip, deflate";
 
   // Setup writes/reads to www.example.org
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> rep(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame rep(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str(),
       "301 Moved Permanently", "http://www.foo.com/index.php"));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
   MockWrite writes[] = {
-    CreateMockWrite(*req, 1),
-    CreateMockWrite(*rst, 6),
+      CreateMockWrite(req, 1), CreateMockWrite(rst, 6),
   };
   MockRead reads[] = {
-    CreateMockRead(*resp, 2),
-    CreateMockRead(*rep, 3),
-    CreateMockRead(*body, 4),
-    MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause
-    MockRead(ASYNC, 0, 0, 7)  // EOF
+      CreateMockRead(resp, 2), CreateMockRead(rep, 3), CreateMockRead(body, 4),
+      MockRead(ASYNC, ERR_IO_PENDING, 5),  // Force a pause
+      MockRead(ASYNC, 0, 0, 7)             // EOF
   };
 
   // Setup writes/reads to www.foo.com
@@ -2444,19 +2292,16 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
       spdy_util_.ConstructGetHeaderBlock("http://www.foo.com/index.php"));
   headers2["user-agent"] = "";
   headers2["accept-encoding"] = "gzip, deflate";
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdySyn(1, std::move(headers2), LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes2[] = {
-    CreateMockWrite(*req2, 1),
+      CreateMockWrite(req2, 1),
   };
   MockRead reads2[] = {
-    CreateMockRead(*resp2, 2),
-    CreateMockRead(*body2, 3),
-    MockRead(ASYNC, 0, 0, 5)  // EOF
+      CreateMockRead(resp2, 2), CreateMockRead(body2, 3),
+      MockRead(ASYNC, 0, 0, 5)  // EOF
   };
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   SequencedSocketData data2(reads2, arraysize(reads2), writes2,
@@ -2503,27 +2348,25 @@ TEST_P(SpdyNetworkTransactionTest, DISABLED_RedirectServerPush) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0),
+      CreateMockWrite(stream1_syn, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 3, SYNCHRONOUS),
-      CreateMockRead(*stream2_body, 4),
+      CreateMockRead(stream1_reply, 1),
+      CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream1_body, 3, SYNCHRONOUS),
+      CreateMockRead(stream2_body, 4),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a pause
   };
 
@@ -2546,27 +2389,25 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushBeforeSynReply) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0),
+      CreateMockWrite(stream1_syn, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
   MockRead reads[] = {
-      CreateMockRead(*stream2_syn, 1),
-      CreateMockRead(*stream1_reply, 2),
-      CreateMockRead(*stream1_body, 3, SYNCHRONOUS),
-      CreateMockRead(*stream2_body, 4),
+      CreateMockRead(stream2_syn, 1),
+      CreateMockRead(stream1_reply, 2),
+      CreateMockRead(stream1_body, 3, SYNCHRONOUS),
+      CreateMockRead(stream2_body, 4),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a pause
   };
 
@@ -2589,27 +2430,25 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushBeforeSynReply) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0),
+      CreateMockWrite(stream1_syn, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream2_body, 3),
-      CreateMockRead(*stream1_body, 4, SYNCHRONOUS),
+      CreateMockRead(stream1_reply, 1),
+      CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream2_body, 3),
+      CreateMockRead(stream1_body, 4, SYNCHRONOUS),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a pause
   };
 
@@ -2632,25 +2471,24 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushSingleDataFrame2) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushServerAborted) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0),
+      CreateMockWrite(stream1_syn, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
-  std::unique_ptr<SpdySerializedFrame> stream2_rst(
+  SpdySerializedFrame stream2_rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream2_rst, 3),
-      CreateMockRead(*stream1_body, 4, SYNCHRONOUS),
+      CreateMockRead(stream1_reply, 1),
+      CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream2_rst, 3),
+      CreateMockRead(stream1_body, 4, SYNCHRONOUS),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a pause
   };
 
@@ -2684,32 +2522,30 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushServerAborted) {
 // Verify that we don't leak streams and that we properly send a reset
 // if the server pushes the same stream twice.
 TEST_P(SpdyNetworkTransactionTest, ServerPushDuplicate) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  std::unique_ptr<SpdySerializedFrame> stream3_rst(
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame stream3_rst(
       spdy_util_.ConstructSpdyRstStream(4, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*stream3_rst, 4),
+      CreateMockWrite(stream1_syn, 0), CreateMockWrite(stream3_rst, 4),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
-  std::unique_ptr<SpdySerializedFrame> stream3_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream3_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 4, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream3_syn, 3),
-      CreateMockRead(*stream1_body, 5),
-      CreateMockRead(*stream2_body, 6),
+      CreateMockRead(stream1_reply, 1),
+      CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream3_syn, 3),
+      CreateMockRead(stream1_body, 5),
+      CreateMockRead(stream2_body, 6),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 7),  // Force a pause
   };
 
@@ -2732,40 +2568,38 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushDuplicate) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0),
+      CreateMockWrite(stream1_syn, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
   static const char kPushedData[] = "pushed my darling hello my baby";
-  std::unique_ptr<SpdySerializedFrame> stream2_body_base(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body_base(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
   const size_t kChunkSize = strlen(kPushedData) / 4;
-  std::unique_ptr<SpdySerializedFrame> stream2_body1(
-      new SpdySerializedFrame(stream2_body_base->data(), kChunkSize, false));
-  std::unique_ptr<SpdySerializedFrame> stream2_body2(new SpdySerializedFrame(
-      stream2_body_base->data() + kChunkSize, kChunkSize, false));
-  std::unique_ptr<SpdySerializedFrame> stream2_body3(new SpdySerializedFrame(
-      stream2_body_base->data() + 2 * kChunkSize, kChunkSize, false));
-  std::unique_ptr<SpdySerializedFrame> stream2_body4(new SpdySerializedFrame(
-      stream2_body_base->data() + 3 * kChunkSize,
-      stream2_body_base->size() - 3 * kChunkSize, false));
+  SpdySerializedFrame stream2_body1(stream2_body_base.data(), kChunkSize,
+                                    false);
+  SpdySerializedFrame stream2_body2(stream2_body_base.data() + kChunkSize,
+                                    kChunkSize, false);
+  SpdySerializedFrame stream2_body3(stream2_body_base.data() + 2 * kChunkSize,
+                                    kChunkSize, false);
+  SpdySerializedFrame stream2_body4(stream2_body_base.data() + 3 * kChunkSize,
+                                    stream2_body_base.size() - 3 * kChunkSize,
+                                    false);
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream2_body1, 3),
-      CreateMockRead(*stream2_body2, 4),
-      CreateMockRead(*stream2_body3, 5),
-      CreateMockRead(*stream2_body4, 6),
-      CreateMockRead(*stream1_body, 7, SYNCHRONOUS),
+      CreateMockRead(stream1_reply, 1),
+      CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream2_body1, 3),
+      CreateMockRead(stream2_body2, 4),
+      CreateMockRead(stream2_body3, 5),
+      CreateMockRead(stream2_body4, 6),
+      CreateMockRead(stream1_body, 7, SYNCHRONOUS),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 8),  // Force a pause
   };
 
@@ -2785,40 +2619,38 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0),
+      CreateMockWrite(stream1_syn, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
   static const char kPushedData[] = "pushed my darling hello my baby";
-  std::unique_ptr<SpdySerializedFrame> stream2_body_base(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body_base(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
   const size_t kChunkSize = strlen(kPushedData) / 4;
-  std::unique_ptr<SpdySerializedFrame> stream2_body1(
-      new SpdySerializedFrame(stream2_body_base->data(), kChunkSize, false));
-  std::unique_ptr<SpdySerializedFrame> stream2_body2(new SpdySerializedFrame(
-      stream2_body_base->data() + kChunkSize, kChunkSize, false));
-  std::unique_ptr<SpdySerializedFrame> stream2_body3(new SpdySerializedFrame(
-      stream2_body_base->data() + 2 * kChunkSize, kChunkSize, false));
-  std::unique_ptr<SpdySerializedFrame> stream2_body4(new SpdySerializedFrame(
-      stream2_body_base->data() + 3 * kChunkSize,
-      stream2_body_base->size() - 3 * kChunkSize, false));
+  SpdySerializedFrame stream2_body1(stream2_body_base.data(), kChunkSize,
+                                    false);
+  SpdySerializedFrame stream2_body2(stream2_body_base.data() + kChunkSize,
+                                    kChunkSize, false);
+  SpdySerializedFrame stream2_body3(stream2_body_base.data() + 2 * kChunkSize,
+                                    kChunkSize, false);
+  SpdySerializedFrame stream2_body4(stream2_body_base.data() + 3 * kChunkSize,
+                                    stream2_body_base.size() - 3 * kChunkSize,
+                                    false);
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream2_body1, 3),
-      CreateMockRead(*stream2_body2, 4),
-      CreateMockRead(*stream2_body3, 5),
-      CreateMockRead(*stream2_body4, 6),
-      CreateMockRead(*stream1_body.get(), 7, SYNCHRONOUS),
+      CreateMockRead(stream1_reply, 1),
+      CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream2_body1, 3),
+      CreateMockRead(stream2_body2, 4),
+      CreateMockRead(stream2_body3, 5),
+      CreateMockRead(stream2_body4, 6),
+      CreateMockRead(stream1_body, 7, SYNCHRONOUS),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 8)  // Force a pause.
   };
 
@@ -2837,22 +2669,20 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway;
-    goaway.reset(spdy_util_.ConstructSpdyGoAway(
-        0, GOAWAY_PROTOCOL_ERROR, "Framer error: 1 (INVALID_STREAM_ID)."));
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
+      0, GOAWAY_PROTOCOL_ERROR, "Framer error: 1 (INVALID_STREAM_ID)."));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*goaway, 3),
+      CreateMockWrite(stream1_syn, 0), CreateMockWrite(goaway, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 0, GetDefaultUrlWithPath("/foo.dat").c_str()));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -2883,24 +2713,22 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  std::unique_ptr<SpdySerializedFrame> stream2_rst(
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame stream2_rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*stream2_rst, 3),
+      CreateMockWrite(stream1_syn, 0), CreateMockWrite(stream2_rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       NULL, 0, 2, 9, GetDefaultUrlWithPath("/foo.dat").c_str()));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 4),
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream1_body, 4),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a pause
   };
 
@@ -2932,28 +2760,25 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  std::unique_ptr<SpdySerializedFrame> stream2_rst(
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame stream2_rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*stream2_rst, 3),
+      CreateMockWrite(stream1_syn, 0), CreateMockWrite(stream2_rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   SpdyHeaderBlock incomplete_headers;
   incomplete_headers[spdy_util_.GetStatusKey()] = "200 OK";
   incomplete_headers["hello"] = "bye";
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(incomplete_headers), 2,
-                                               1));
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(incomplete_headers), 2, 1));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 4),
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream1_body, 4),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5)  // Force a pause
   };
 
@@ -2986,23 +2811,23 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
 
 // PUSH_PROMISE on a server-initiated stream should trigger GOAWAY.
 TEST_P(SpdyNetworkTransactionTest, ServerPushOnPushedStream) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       2, GOAWAY_PROTOCOL_ERROR, "Push on even stream id."));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*goaway, 4),
+      CreateMockWrite(stream1_syn, 0), CreateMockWrite(goaway, 4),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
-  std::unique_ptr<SpdySerializedFrame> stream3_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream3_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 4, 2, GetDefaultUrlWithPath("/bar.dat").c_str()));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1), CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream3_syn, 3),
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream3_syn, 3),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -3013,23 +2838,22 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushOnPushedStream) {
 
 // PUSH_PROMISE on a closed client-initiated stream should trigger RST_STREAM.
 TEST_P(SpdyNetworkTransactionTest, ServerPushOnClosedStream) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_INVALID_STREAM));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*rst, 5),
+      CreateMockWrite(stream1_syn, 0), CreateMockWrite(rst, 5),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1), CreateMockRead(*stream1_body, 2),
-      CreateMockRead(*stream2_syn, 3), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream1_body, 2),
+      CreateMockRead(stream2_syn, 3), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 4),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -3057,31 +2881,29 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushOnClosedStream) {
 // PUSH_PROMISE on a server-initiated stream should trigger GOAWAY even if
 // stream is closed.
 TEST_P(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       2, GOAWAY_PROTOCOL_ERROR, "Push on even stream id."));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*goaway, 7),
+      CreateMockWrite(stream1_syn, 0), CreateMockWrite(goaway, 7),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 2, 1, GetDefaultUrlWithPath("/foo.dat").c_str()));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
-  std::unique_ptr<SpdySerializedFrame> stream3_syn(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
+  SpdySerializedFrame stream3_syn(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 4, 2, GetDefaultUrlWithPath("/bar.dat").c_str()));
 
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),  CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 3),   CreateMockRead(*stream2_body, 4),
-      MockRead(ASYNC, ERR_IO_PENDING, 5), CreateMockRead(*stream3_syn, 6),
+      CreateMockRead(stream1_reply, 1),   CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream1_body, 3),    CreateMockRead(stream2_body, 4),
+      MockRead(ASYNC, ERR_IO_PENDING, 5), CreateMockRead(stream3_syn, 6),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -3161,18 +2983,15 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SpdyTestUtil spdy_test_util(GetParam());
-    std::unique_ptr<SpdySerializedFrame> req(
+    SpdySerializedFrame req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-    MockWrite writes[] = {CreateMockWrite(*req, 0)};
+    MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-    std::unique_ptr<SpdySerializedFrame> resp(
-        spdy_test_util.ConstructSpdyGetSynReply(test_cases[i].extra_headers,
-                                                test_cases[i].num_headers, 1));
-    std::unique_ptr<SpdySerializedFrame> body(
-        spdy_test_util.ConstructSpdyBodyFrame(1, true));
+    SpdySerializedFrame resp(spdy_test_util.ConstructSpdyGetSynReply(
+        test_cases[i].extra_headers, test_cases[i].num_headers, 1));
+    SpdySerializedFrame body(spdy_test_util.ConstructSpdyDataFrame(1, true));
     MockRead reads[] = {
-        CreateMockRead(*resp, 1),
-        CreateMockRead(*body, 2),
+        CreateMockRead(resp, 1), CreateMockRead(body, 2),
         MockRead(ASYNC, 0, 3)  // EOF
     };
 
@@ -3247,13 +3066,12 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     SpdyTestUtil spdy_test_util(GetParam());
 
     // Construct the request.
-    std::unique_ptr<SpdySerializedFrame> frame_req(
-        spdy_test_util.ConstructSpdyGet(test_cases[i].extra_headers[0],
-                                        test_cases[i].num_headers[0], 1, LOWEST,
-                                        true));
+    SpdySerializedFrame frame_req(spdy_test_util.ConstructSpdyGet(
+        test_cases[i].extra_headers[0], test_cases[i].num_headers[0], 1, LOWEST,
+        true));
 
     MockWrite writes[] = {
-        CreateMockWrite(*frame_req, 0),
+        CreateMockWrite(frame_req, 0),
     };
 
     // Construct the reply.
@@ -3265,14 +3083,12 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     std::string expected_reply =
         spdy_test_util.ConstructSpdyReplyString(reply_headers);
 
-    std::unique_ptr<SpdySerializedFrame> frame_reply(
+    SpdySerializedFrame frame_reply(
         spdy_test_util.ConstructSpdyReply(1, std::move(reply_headers)));
 
-    std::unique_ptr<SpdySerializedFrame> body(
-        spdy_test_util.ConstructSpdyBodyFrame(1, true));
+    SpdySerializedFrame body(spdy_test_util.ConstructSpdyDataFrame(1, true));
     MockRead reads[] = {
-        CreateMockRead(*frame_reply, 1),
-        CreateMockRead(*body, 2),
+        CreateMockRead(frame_reply, 1), CreateMockRead(body, 2),
         MockRead(ASYNC, 0, 3)  // EOF
     };
 
@@ -3342,22 +3158,22 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     SpdyTestUtil spdy_test_util(GetParam());
 
-    std::unique_ptr<SpdySerializedFrame> req(
+    SpdySerializedFrame req(
         spdy_test_util.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-    std::unique_ptr<SpdySerializedFrame> rst(
+    SpdySerializedFrame rst(
         spdy_test_util.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
     MockWrite writes[] = {
-        CreateMockWrite(*req, 0), CreateMockWrite(*rst, 2),
+        CreateMockWrite(req, 0), CreateMockWrite(rst, 2),
     };
 
     // Construct the reply.
     SpdyHeaderBlock reply_headers;
     AppendToHeaderBlock(
         test_cases[i].headers, test_cases[i].num_headers, &reply_headers);
-    std::unique_ptr<SpdySerializedFrame> resp(
+    SpdySerializedFrame resp(
         spdy_test_util.ConstructSpdyReply(1, std::move(reply_headers)));
     MockRead reads[] = {
-        CreateMockRead(*resp, 1), MockRead(ASYNC, 0, 3)  // EOF
+        CreateMockRead(resp, 1), MockRead(ASYNC, 0, 3)  // EOF
     };
 
     SequencedSocketData data(reads, arraysize(reads), writes,
@@ -3371,23 +3187,23 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_COMPRESSION_ERROR, "Framer error: 6 (DECOMPRESS_FAILURE)."));
-  MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 2)};
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(goaway, 2)};
 
   // This is the length field that's too short.
-  std::unique_ptr<SpdySerializedFrame> syn_reply_wrong_length(
+  SpdySerializedFrame syn_reply_wrong_length(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  size_t right_size = syn_reply_wrong_length->size() -
+  size_t right_size = syn_reply_wrong_length.size() -
                       SpdyConstants::GetControlFrameHeaderSize(HTTP2);
   size_t wrong_size = right_size - 4;
-  test::SetFrameLength(syn_reply_wrong_length.get(), wrong_size, HTTP2);
+  test::SetFrameLength(&syn_reply_wrong_length, wrong_size, HTTP2);
 
   MockRead reads[] = {
-      MockRead(ASYNC, syn_reply_wrong_length->data(),
-               syn_reply_wrong_length->size() - 4, 1),
+      MockRead(ASYNC, syn_reply_wrong_length.data(),
+               syn_reply_wrong_length.size() - 4, 1),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -3399,17 +3215,16 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_COMPRESSION_ERROR, "Framer error: 6 (DECOMPRESS_FAILURE)."));
-  MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 2)};
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(goaway, 2)};
 
   // Read HEADERS with corrupted payload.
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  memset(resp->data() + 12, 0xcf, resp->size() - 12);
-  MockRead reads[] = {CreateMockRead(*resp, 1)};
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  memset(resp.data() + 12, 0xcf, resp.size() - 12);
+  MockRead reads[] = {CreateMockRead(resp, 1)};
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   NormalSpdyTransactionHelper helper(
@@ -3420,19 +3235,18 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_FRAME_SIZE_ERROR,
       "Framer error: 15 (INVALID_CONTROL_FRAME_SIZE)."));
-  MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 2)};
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(goaway, 2)};
 
   // Read WINDOW_UPDATE with incorrectly-sized payload.
-  std::unique_ptr<SpdySerializedFrame> bad_window_update(
+  SpdySerializedFrame bad_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, 1));
-  test::SetFrameLength(bad_window_update.get(), bad_window_update->size() - 1,
-                       HTTP2);
-  MockRead reads[] = {CreateMockRead(*bad_window_update, 1)};
+  test::SetFrameLength(&bad_window_update, bad_window_update.size() - 1, HTTP2);
+  MockRead reads[] = {CreateMockRead(bad_window_update, 1)};
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   NormalSpdyTransactionHelper helper(
@@ -3444,11 +3258,11 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
 
 // Test that we shutdown correctly on write errors.
 TEST_P(SpdyNetworkTransactionTest, WriteError) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
       // We'll write 10 bytes successfully
-      MockWrite(ASYNC, req->data(), 10, 1),
+      MockWrite(ASYNC, req.data(), 10, 1),
       // Followed by ERROR!
       MockWrite(ASYNC, ERR_FAILED, 2),
       // Session drains and attempts to write a GOAWAY: Another ERROR!
@@ -3474,21 +3288,18 @@ TEST_P(SpdyNetworkTransactionTest, WriteError) {
 // Test that partial writes work.
 TEST_P(SpdyNetworkTransactionTest, PartialWrite) {
   // Chop the SYN_STREAM frame into 5 chunks.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   const int kChunks = 5;
-  std::unique_ptr<MockWrite[]> writes(ChopWriteFrame(*req.get(), kChunks));
+  std::unique_ptr<MockWrite[]> writes(ChopWriteFrame(req, kChunks));
   for (int i = 0; i < kChunks; ++i) {
     writes[i].sequence_number = i;
   }
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, kChunks),
-      CreateMockRead(*body, kChunks + 1),
+      CreateMockRead(resp, kChunks), CreateMockRead(body, kChunks + 1),
       MockRead(ASYNC, 0, kChunks + 2)  // EOF
   };
 
@@ -3507,17 +3318,14 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
   static const char* const kExtraHeaders[] = {
     "user-agent",   "Chrome",
   };
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(kExtraHeaders, 1, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -3592,35 +3400,32 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
 // on the network, but issued a Read for only 5 of those bytes) that the data
 // flow still works correctly.
 TEST_P(SpdyNetworkTransactionTest, BufferFull) {
-  BufferedSpdyFramer framer;
-
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
   // 2 data frames in a single read.
-  std::unique_ptr<SpdySerializedFrame> data_frame_1(
-      framer.CreateDataFrame(1, "goodby", 6, DATA_FLAG_NONE));
-  std::unique_ptr<SpdySerializedFrame> data_frame_2(
-      framer.CreateDataFrame(1, "e worl", 6, DATA_FLAG_NONE));
+  SpdySerializedFrame data_frame_1(
+      spdy_util_.ConstructSpdyDataFrame(1, "goodby", 6, /*fin=*/false));
+  SpdySerializedFrame data_frame_2(
+      spdy_util_.ConstructSpdyDataFrame(1, "e worl", 6, /*fin=*/false));
   const SpdySerializedFrame* data_frames[2] = {
-      data_frame_1.get(), data_frame_2.get(),
+      &data_frame_1, &data_frame_2,
   };
   char combined_data_frames[100];
   int combined_data_frames_len =
       CombineFrames(data_frames, arraysize(data_frames),
                     combined_data_frames, arraysize(combined_data_frames));
-  std::unique_ptr<SpdySerializedFrame> last_frame(
-      framer.CreateDataFrame(1, "d", 1, DATA_FLAG_FIN));
+  SpdySerializedFrame last_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, "d", 1, /*fin=*/true));
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
+      CreateMockRead(resp, 1),
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
       MockRead(ASYNC, combined_data_frames, combined_data_frames_len, 3),
       MockRead(ASYNC, ERR_IO_PENDING, 4),  // Force a pause
-      CreateMockRead(*last_frame, 5),
+      CreateMockRead(last_frame, 5),
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
@@ -3685,29 +3490,25 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
 // at the same time, ensure that we don't notify a read completion for
 // each data frame individually.
 TEST_P(SpdyNetworkTransactionTest, Buffering) {
-  BufferedSpdyFramer framer;
-
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
   // 4 data frames in a single read.
-  std::unique_ptr<SpdySerializedFrame> data_frame(
-      framer.CreateDataFrame(1, "message", 7, DATA_FLAG_NONE));
-  std::unique_ptr<SpdySerializedFrame> data_frame_fin(
-      framer.CreateDataFrame(1, "message", 7, DATA_FLAG_FIN));
-  const SpdySerializedFrame* data_frames[4] = {
-      data_frame.get(), data_frame.get(), data_frame.get(),
-      data_frame_fin.get()};
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
+  SpdySerializedFrame data_frame_fin(
+      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/true));
+  const SpdySerializedFrame* data_frames[4] = {&data_frame, &data_frame,
+                                               &data_frame, &data_frame_fin};
   char combined_data_frames[100];
   int combined_data_frames_len =
       CombineFrames(data_frames, arraysize(data_frames),
                     combined_data_frames, arraysize(combined_data_frames));
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
+      CreateMockRead(resp, 1),
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a pause
       MockRead(ASYNC, combined_data_frames, combined_data_frames_len, 3),
       MockRead(ASYNC, 0, 4)  // EOF
@@ -3777,22 +3578,18 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
 
 // Verify the case where we buffer data but read it after it has been buffered.
 TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
-  BufferedSpdyFramer framer;
-
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
   // 5 data frames in a single read.
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> data_frame(
-      framer.CreateDataFrame(1, "message", 7, DATA_FLAG_NONE));
-  std::unique_ptr<SpdySerializedFrame> data_frame_fin(
-      framer.CreateDataFrame(1, "message", 7, DATA_FLAG_FIN));
-  const SpdySerializedFrame* frames[5] = {reply.get(), data_frame.get(),
-                                          data_frame.get(), data_frame.get(),
-                                          data_frame_fin.get()};
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
+  SpdySerializedFrame data_frame_fin(
+      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/true));
+  const SpdySerializedFrame* frames[5] = {&reply, &data_frame, &data_frame,
+                                          &data_frame, &data_frame_fin};
   char combined_frames[200];
   int combined_frames_len =
       CombineFrames(frames, arraysize(frames),
@@ -3863,26 +3660,23 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
 
 // Verify the case where we buffer data and close the connection.
 TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
-  BufferedSpdyFramer framer;
-
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
   // All data frames in a single read.
   // NOTE: We don't FIN the stream.
-  std::unique_ptr<SpdySerializedFrame> data_frame(
-      framer.CreateDataFrame(1, "message", 7, DATA_FLAG_NONE));
-  const SpdySerializedFrame* data_frames[4] = {
-      data_frame.get(), data_frame.get(), data_frame.get(), data_frame.get()};
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
+  const SpdySerializedFrame* data_frames[4] = {&data_frame, &data_frame,
+                                               &data_frame, &data_frame};
   char combined_data_frames[100];
   int combined_data_frames_len =
       CombineFrames(data_frames, arraysize(data_frames),
                     combined_data_frames, arraysize(combined_data_frames));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
+      CreateMockRead(resp, 1),
       MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a wait
       MockRead(ASYNC, combined_data_frames, combined_data_frames_len, 3),
       MockRead(ASYNC, 0, 4)  // EOF
@@ -3950,25 +3744,21 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
 
 // Verify the case where we buffer data and cancel the transaction.
 TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
-  BufferedSpdyFramer framer;
-
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
-  MockWrite writes[] = {CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4)};
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(rst, 4)};
 
   // NOTE: We don't FIN the stream.
-  std::unique_ptr<SpdySerializedFrame> data_frame(
-      framer.CreateDataFrame(1, "message", 7, DATA_FLAG_NONE));
+  SpdySerializedFrame data_frame(
+      spdy_util_.ConstructSpdyDataFrame(1, "message", 7, /*fin=*/false));
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      MockRead(ASYNC, ERR_IO_PENDING, 2),  // Force a wait
-      CreateMockRead(*data_frame, 3),
-      MockRead(ASYNC, 0, 5)  // EOF
+      CreateMockRead(resp, 1),
+      MockRead(ASYNC, ERR_IO_PENDING, 2),                   // Force a wait
+      CreateMockRead(data_frame, 3), MockRead(ASYNC, 0, 5)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -4018,14 +3808,13 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayWithActiveStream) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  std::unique_ptr<SpdySerializedFrame> go_away(
-      spdy_util_.ConstructSpdyGoAway());
+  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway());
   MockRead reads[] = {
-      CreateMockRead(*go_away, 1),
+      CreateMockRead(go_away, 1),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -4038,14 +3827,13 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayWithActiveStream) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, CloseWithActiveStream) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes[] = {CreateMockWrite(req, 0)};
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
+      CreateMockRead(resp, 1), MockRead(SYNCHRONOUS, 0, 2)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -4079,10 +3867,10 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredError) {
   NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
                                      BoundNetLog(), GetParam(), nullptr);
 
-  std::unique_ptr<SpdySerializedFrame> go_away(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
   MockRead reads[] = {
-      CreateMockRead(*go_away, 0),
+      CreateMockRead(go_away, 0),
   };
   SequencedSocketData data(reads, arraysize(reads), nullptr, 0);
 
@@ -4106,12 +3894,12 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
 
   // First socket: HTTP/2 request rejected with HTTP_1_1_REQUIRED.
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
-  MockWrite writes0[] = {CreateMockWrite(*req, 0)};
-  std::unique_ptr<SpdySerializedFrame> go_away(spdy_util_.ConstructSpdyGoAway(
+  MockWrite writes0[] = {CreateMockWrite(req, 0)};
+  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
-  MockRead reads0[] = {CreateMockRead(*go_away, 1)};
+  MockRead reads0[] = {CreateMockRead(go_away, 1)};
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));
 
@@ -4186,12 +3974,12 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
                                      GetParam(), std::move(session_deps));
 
   // First socket: HTTP/2 CONNECT rejected with HTTP_1_1_REQUIRED.
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyConnect(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyConnect(
       nullptr, 0, 1, LOWEST, HostPortPair("www.example.org", 443)));
-  MockWrite writes0[] = {CreateMockWrite(*req, 0)};
-  std::unique_ptr<SpdySerializedFrame> go_away(spdy_util_.ConstructSpdyGoAway(
+  MockWrite writes0[] = {CreateMockWrite(req, 0)};
+  SpdySerializedFrame go_away(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_HTTP_1_1_REQUIRED, "Try again using HTTP/1.1 please."));
-  MockRead reads0[] = {CreateMockRead(*go_away, 1)};
+  MockRead reads0[] = {CreateMockRead(go_away, 1)};
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));
 
@@ -4283,21 +4071,18 @@ TEST_P(SpdyNetworkTransactionTest, ProxyConnect) {
       "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, kConnect443, arraysize(kConnect443) - 1, 0),
-      CreateMockWrite(*req, 2),
+      CreateMockWrite(req, 2),
   };
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, kHTTP200, arraysize(kHTTP200) - 1, 1),
-      CreateMockRead(*resp, 3),
-      CreateMockRead(*body.get(), 4),
+      CreateMockRead(resp, 3), CreateMockRead(body, 4),
       MockRead(ASYNC, 0, 0, 5),
   };
   std::unique_ptr<SequencedSocketData> data(new SequencedSocketData(
@@ -4347,19 +4132,16 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
   helper.RunPreTestSetup();
 
   // Construct and send a simple GET request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
+      CreateMockWrite(req, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),  // Force a pause
   };
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -4404,21 +4186,18 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
       "Host: www.example.org:443\r\n"
       "Proxy-Connection: keep-alive\r\n\r\n"};
   const char kHTTP200[] = {"HTTP/1.1 200 OK\r\n\r\n"};
-  std::unique_ptr<SpdySerializedFrame> req2(spdy_util_2.ConstructSpdyGet(
+  SpdySerializedFrame req2(spdy_util_2.ConstructSpdyGet(
       GetDefaultUrlWithPath("/foo.dat").c_str(), 1, LOWEST));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_2.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_2.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp2(spdy_util_2.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body2(spdy_util_2.ConstructSpdyDataFrame(1, true));
 
   MockWrite writes2[] = {
       MockWrite(SYNCHRONOUS, kConnect443, arraysize(kConnect443) - 1, 0),
-      CreateMockWrite(*req2, 2),
+      CreateMockWrite(req2, 2),
   };
   MockRead reads2[] = {
       MockRead(SYNCHRONOUS, kHTTP200, arraysize(kHTTP200) - 1, 1),
-      CreateMockRead(*resp2, 3),
-      CreateMockRead(*body2, 4),
+      CreateMockRead(resp2, 3), CreateMockRead(body2, 4),
       MockRead(ASYNC, 0, 5)  // EOF
   };
 
@@ -4470,32 +4249,28 @@ TEST_P(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
 // This can happen when a server reboots without saying goodbye, or when
 // we're behind a NAT that masked the RST.
 TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, ERR_IO_PENDING, 3),
       MockRead(ASYNC, ERR_CONNECTION_RESET, 4),
   };
 
   MockRead reads2[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   // In all cases the connection will be reset before req3 can be
   // dispatched, destroying both streams.
   spdy_util_.UpdateWithStreamDestruction(1);
-  std::unique_ptr<SpdySerializedFrame> req3(
+  SpdySerializedFrame req3(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
-  MockWrite writes1[] = {CreateMockWrite(*req, 0), CreateMockWrite(*req3, 5)};
-  MockWrite writes2[] = {CreateMockWrite(*req, 0)};
+  MockWrite writes1[] = {CreateMockWrite(req, 0), CreateMockWrite(req3, 5)};
+  MockWrite writes2[] = {CreateMockWrite(req, 0)};
 
   // This test has a couple of variants.
   enum {
@@ -4562,17 +4337,14 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
 // Test that turning SPDY on and off works properly.
 TEST_P(SpdyNetworkTransactionTest, DISABLED_SpdyOnOffToggle) {
   HttpStreamFactory::set_spdy_enabled(true);
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  MockWrite spdy_writes[] = {CreateMockWrite(*req, 0)};
+  MockWrite spdy_writes[] = {CreateMockWrite(req, 0)};
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead spdy_reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -4619,19 +4391,18 @@ TEST_P(SpdyNetworkTransactionTest, SpdyBasicAuth) {
 
   // The first request will be a bare GET, the second request will be a
   // GET with an Authorization header.
-  std::unique_ptr<SpdySerializedFrame> req_get(
+  SpdySerializedFrame req_get(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   // Will be refused for lack of auth.
   spdy_util_.UpdateWithStreamDestruction(1);
   const char* const kExtraAuthorizationHeaders[] = {
     "authorization", "Basic Zm9vOmJhcg=="
   };
-  std::unique_ptr<SpdySerializedFrame> req_get_authorization(
-      spdy_util_.ConstructSpdyGet(kExtraAuthorizationHeaders,
-                                  arraysize(kExtraAuthorizationHeaders) / 2, 3,
-                                  LOWEST, true));
+  SpdySerializedFrame req_get_authorization(spdy_util_.ConstructSpdyGet(
+      kExtraAuthorizationHeaders, arraysize(kExtraAuthorizationHeaders) / 2, 3,
+      LOWEST, true));
   MockWrite spdy_writes[] = {
-      CreateMockWrite(*req_get, 0), CreateMockWrite(*req_get_authorization, 3),
+      CreateMockWrite(req_get, 0), CreateMockWrite(req_get_authorization, 3),
   };
 
   // The first response is a 401 authentication challenge, and the second
@@ -4641,21 +4412,19 @@ TEST_P(SpdyNetworkTransactionTest, SpdyBasicAuth) {
     "www-authenticate",
     "Basic realm=\"MyRealm\""
   };
-  std::unique_ptr<SpdySerializedFrame> resp_authentication(
-      spdy_util_.ConstructSpdySynReplyError(
-          "401 Authentication Required", kExtraAuthenticationHeaders,
-          arraysize(kExtraAuthenticationHeaders) / 2, 1));
-  std::unique_ptr<SpdySerializedFrame> body_authentication(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  std::unique_ptr<SpdySerializedFrame> resp_data(
+  SpdySerializedFrame resp_authentication(spdy_util_.ConstructSpdySynReplyError(
+      "401 Authentication Required", kExtraAuthenticationHeaders,
+      arraysize(kExtraAuthenticationHeaders) / 2, 1));
+  SpdySerializedFrame body_authentication(
+      spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame resp_data(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body_data(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame body_data(spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead spdy_reads[] = {
-      CreateMockRead(*resp_authentication, 1),
-      CreateMockRead(*body_authentication, 2),
-      CreateMockRead(*resp_data, 4),
-      CreateMockRead(*body_data, 5),
+      CreateMockRead(resp_authentication, 1),
+      CreateMockRead(body_authentication, 2),
+      CreateMockRead(resp_data, 4),
+      CreateMockRead(body_data, 5),
       MockRead(ASYNC, 0, 6),
   };
 
@@ -4706,43 +4475,39 @@ TEST_P(SpdyNetworkTransactionTest, SpdyBasicAuth) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*stream1_syn, 0),
+      CreateMockWrite(stream1_syn, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
   SpdyHeaderBlock initial_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  &initial_headers);
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
-                                               1));
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
 
   SpdyHeaderBlock late_headers;
   late_headers[spdy_util_.GetStatusKey()] = "200";
   late_headers["hello"] = "bye";
-  std::unique_ptr<SpdySerializedFrame> stream2_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
-                                              false));
+  SpdySerializedFrame stream2_headers(spdy_util_.ConstructSpdyResponseHeaders(
+      2, std::move(late_headers), false));
 
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
 
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream2_headers, 3),
-      CreateMockRead(*stream1_body, 4, SYNCHRONOUS),
-      CreateMockRead(*stream2_body, 5),
+      CreateMockRead(stream1_reply, 1),
+      CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream2_headers, 3),
+      CreateMockRead(stream1_body, 4, SYNCHRONOUS),
+      CreateMockRead(stream2_body, 5),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),  // Force a pause
   };
 
@@ -4766,37 +4531,33 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   // We push a stream and attempt to claim it before the headers come down.
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-    CreateMockWrite(*stream1_syn, 0, SYNCHRONOUS),
+      CreateMockWrite(stream1_syn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
   SpdyHeaderBlock initial_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  &initial_headers);
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
-                                               1));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   SpdyHeaderBlock late_headers;
   late_headers[spdy_util_.GetStatusKey()] = "200";
   late_headers["hello"] = "bye";
-  std::unique_ptr<SpdySerializedFrame> stream2_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
-                                              false));
+  SpdySerializedFrame stream2_headers(spdy_util_.ConstructSpdyResponseHeaders(
+      2, std::move(late_headers), false));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),   CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 3),    MockRead(ASYNC, ERR_IO_PENDING, 4),
-      CreateMockRead(*stream2_headers, 5), CreateMockRead(*stream2_body, 6),
-      MockRead(ASYNC, ERR_IO_PENDING, 7),  MockRead(ASYNC, 0, 8),  // EOF
+      CreateMockRead(stream1_reply, 1),   CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream1_body, 3),    MockRead(ASYNC, ERR_IO_PENDING, 4),
+      CreateMockRead(stream2_headers, 5), CreateMockRead(stream2_body, 6),
+      MockRead(ASYNC, ERR_IO_PENDING, 7), MockRead(ASYNC, 0, 8),  // EOF
   };
 
   HttpResponseInfo response;
@@ -4874,49 +4635,44 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
 // TODO(baranovich): HTTP 2 does not allow multiple HEADERS frames
 TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
   // We push a stream and attempt to claim it before the headers come down.
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-    CreateMockWrite(*stream1_syn, 0, SYNCHRONOUS),
+      CreateMockWrite(stream1_syn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
   SpdyHeaderBlock initial_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  &initial_headers);
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
-                                               1));
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
 
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   SpdyHeaderBlock middle_headers;
   middle_headers["hello"] = "bye";
-  std::unique_ptr<SpdySerializedFrame> stream2_headers1(
-      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(middle_headers),
-                                              false));
+  SpdySerializedFrame stream2_headers1(spdy_util_.ConstructSpdyResponseHeaders(
+      2, std::move(middle_headers), false));
 
   SpdyHeaderBlock late_headers;
   late_headers[spdy_util_.GetStatusKey()] = "200";
-  std::unique_ptr<SpdySerializedFrame> stream2_headers2(
-      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(late_headers),
-                                              false));
+  SpdySerializedFrame stream2_headers2(spdy_util_.ConstructSpdyResponseHeaders(
+      2, std::move(late_headers), false));
 
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
 
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1), CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 3), MockRead(ASYNC, ERR_IO_PENDING, 4),
-      CreateMockRead(*stream2_headers1, 5),
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream1_body, 3), MockRead(ASYNC, ERR_IO_PENDING, 4),
+      CreateMockRead(stream2_headers1, 5),
       // This is needed to work around https://crbug.com/571102.
-      MockRead(ASYNC, ERR_IO_PENDING, 6), CreateMockRead(*stream2_headers2, 7),
-      CreateMockRead(*stream2_body, 8), MockRead(ASYNC, ERR_IO_PENDING, 9),
+      MockRead(ASYNC, ERR_IO_PENDING, 6), CreateMockRead(stream2_headers2, 7),
+      CreateMockRead(stream2_body, 8), MockRead(ASYNC, ERR_IO_PENDING, 9),
       MockRead(ASYNC, 0, 10),  // EOF
   };
 
@@ -4998,41 +4754,37 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
 
 TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
   // We push a stream and attempt to claim it before the headers come down.
-  std::unique_ptr<SpdySerializedFrame> stream1_syn(
+  SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   MockWrite writes[] = {
-    CreateMockWrite(*stream1_syn, 0, SYNCHRONOUS),
+      CreateMockWrite(stream1_syn, 0, SYNCHRONOUS),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
 
   SpdyHeaderBlock initial_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  &initial_headers);
-  std::unique_ptr<SpdySerializedFrame> stream2_syn(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(initial_headers), 2,
-                                               1));
+  SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(initial_headers), 2, 1));
 
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   SpdyHeaderBlock middle_headers;
   middle_headers["hello"] = "bye";
-  std::unique_ptr<SpdySerializedFrame> stream2_headers1(
-      spdy_util_.ConstructSpdyResponseHeaders(2, std::move(middle_headers),
-                                              false));
+  SpdySerializedFrame stream2_headers1(spdy_util_.ConstructSpdyResponseHeaders(
+      2, std::move(middle_headers), false));
 
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> stream2_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame stream2_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
 
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),    CreateMockRead(*stream2_syn, 2),
-      CreateMockRead(*stream1_body, 3),     MockRead(ASYNC, ERR_IO_PENDING, 4),
-      CreateMockRead(*stream2_headers1, 5), CreateMockRead(*stream2_body, 6),
-      MockRead(ASYNC, ERR_IO_PENDING, 7),   MockRead(ASYNC, 0, 8),  // EOF
+      CreateMockRead(stream1_reply, 1),    CreateMockRead(stream2_syn, 2),
+      CreateMockRead(stream1_body, 3),     MockRead(ASYNC, ERR_IO_PENDING, 4),
+      CreateMockRead(stream2_headers1, 5), CreateMockRead(stream2_body, 6),
+      MockRead(ASYNC, ERR_IO_PENDING, 7),  MockRead(ASYNC, 0, 8),  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -5097,29 +4849,25 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, SynReplyWithHeaders) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 4),
+      CreateMockWrite(req, 0), CreateMockWrite(rst, 4),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
 
   SpdyHeaderBlock late_headers;
   late_headers["hello"] = "bye";
-  std::unique_ptr<SpdySerializedFrame> stream1_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, std::move(late_headers),
-                                              false));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_headers(spdy_util_.ConstructSpdyResponseHeaders(
+      1, std::move(late_headers), false));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1),
-      CreateMockRead(*stream1_headers, 2),
-      CreateMockRead(*stream1_body, 3),
-      MockRead(ASYNC, 0, 5)  // EOF
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream1_headers, 2),
+      CreateMockRead(stream1_body, 3), MockRead(ASYNC, 0, 5)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -5134,29 +4882,26 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyWithHeaders) {
 // trigger a ERR_SPDY_PROTOCOL_ERROR because trailing HEADERS must not be
 // followed by any DATA frames.
 TEST_P(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_PROTOCOL_ERROR));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 5),
+      CreateMockWrite(req, 0), CreateMockWrite(rst, 5),
   };
 
-  std::unique_ptr<SpdySerializedFrame> stream1_reply(
+  SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> stream1_body(
-      spdy_util_.ConstructSpdyBodyFrame(1, false));
+  SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, false));
 
   SpdyHeaderBlock late_headers;
   late_headers["hello"] = "bye";
-  std::unique_ptr<SpdySerializedFrame> stream1_headers(
-      spdy_util_.ConstructSpdyResponseHeaders(1, std::move(late_headers),
-                                              false));
-  std::unique_ptr<SpdySerializedFrame> stream1_body2(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame stream1_headers(spdy_util_.ConstructSpdyResponseHeaders(
+      1, std::move(late_headers), false));
+  SpdySerializedFrame stream1_body2(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*stream1_reply, 1), CreateMockRead(*stream1_body, 2),
-      CreateMockRead(*stream1_headers, 3), CreateMockRead(*stream1_body2, 4),
+      CreateMockRead(stream1_reply, 1), CreateMockRead(stream1_body, 2),
+      CreateMockRead(stream1_headers, 3), CreateMockRead(stream1_body2, 4),
       MockRead(ASYNC, 0, 6)  // EOF
   };
 
@@ -5195,32 +4940,31 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     const char* url_to_push = kTestCases[index + 1];
 
     SpdyTestUtil spdy_test_util(GetParam());
-    std::unique_ptr<SpdySerializedFrame> stream1_syn(
+    SpdySerializedFrame stream1_syn(
         spdy_test_util.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
-    std::unique_ptr<SpdySerializedFrame> stream1_body(
-        spdy_test_util.ConstructSpdyBodyFrame(1, true));
-    std::unique_ptr<SpdySerializedFrame> push_rst(
+    SpdySerializedFrame stream1_body(
+        spdy_test_util.ConstructSpdyDataFrame(1, true));
+    SpdySerializedFrame push_rst(
         spdy_test_util.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
     MockWrite writes[] = {
-        CreateMockWrite(*stream1_syn, 0), CreateMockWrite(*push_rst, 3),
+        CreateMockWrite(stream1_syn, 0), CreateMockWrite(push_rst, 3),
     };
 
-    std::unique_ptr<SpdySerializedFrame> stream1_reply(
+    SpdySerializedFrame stream1_reply(
         spdy_test_util.ConstructSpdyGetSynReply(nullptr, 0, 1));
-    std::unique_ptr<SpdySerializedFrame> stream2_syn(
+    SpdySerializedFrame stream2_syn(
         spdy_test_util.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
     const char kPushedData[] = "pushed";
-    std::unique_ptr<SpdySerializedFrame> stream2_body(
-        spdy_test_util.ConstructSpdyBodyFrame(2, kPushedData,
-                                              strlen(kPushedData), true));
-    std::unique_ptr<SpdySerializedFrame> rst(
+    SpdySerializedFrame stream2_body(spdy_test_util.ConstructSpdyDataFrame(
+        2, kPushedData, strlen(kPushedData), true));
+    SpdySerializedFrame rst(
         spdy_test_util.ConstructSpdyRstStream(2, RST_STREAM_CANCEL));
 
     MockRead reads[] = {
-        CreateMockRead(*stream1_reply, 1),
-        CreateMockRead(*stream2_syn, 2),
-        CreateMockRead(*stream1_body, 4),
-        CreateMockRead(*stream2_body, 5),
+        CreateMockRead(stream1_reply, 1),
+        CreateMockRead(stream2_syn, 2),
+        CreateMockRead(stream1_body, 4),
+        CreateMockRead(stream2_body, 5),
         MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),  // Force a pause
     };
 
@@ -5282,27 +5026,24 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOrigin) {
   const char* url_to_fetch = "https://www.example.org";
   const char* url_to_push = "https://mail.example.org";
 
-  std::unique_ptr<SpdySerializedFrame> headers(
+  SpdySerializedFrame headers(
       spdy_util_.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
   MockWrite writes[] = {
-      CreateMockWrite(*headers, 0),
+      CreateMockWrite(headers, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> push(
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame push(
       spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> pushed_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame pushed_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
   MockRead reads[] = {
-      CreateMockRead(*reply, 1),
-      CreateMockRead(*push, 2),
-      CreateMockRead(*body, 3),
-      CreateMockRead(*pushed_body, 4),
+      CreateMockRead(reply, 1),
+      CreateMockRead(push, 2),
+      CreateMockRead(body, 3),
+      CreateMockRead(pushed_body, 4),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
@@ -5379,51 +5120,47 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushValidCrossOriginWithOpenSession) {
 
   SpdyTestUtil spdy_util_0(GetParam());
 
-  std::unique_ptr<SpdySerializedFrame> headers0(
+  SpdySerializedFrame headers0(
       spdy_util_0.ConstructSpdyGet(url_to_fetch0, 1, LOWEST));
   MockWrite writes0[] = {
-      CreateMockWrite(*headers0, 0),
+      CreateMockWrite(headers0, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> reply0(
+  SpdySerializedFrame reply0(
       spdy_util_0.ConstructSpdyGetSynReply(nullptr, 0, 1));
   const char kData0[] = "first";
-  std::unique_ptr<SpdySerializedFrame> body0(
-      spdy_util_0.ConstructSpdyBodyFrame(1, kData0, strlen(kData0), true));
-  MockRead reads0[] = {
-      CreateMockRead(*reply0, 1),
-      CreateMockRead(*body0, 2),
-      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)
-  };
+  SpdySerializedFrame body0(
+      spdy_util_0.ConstructSpdyDataFrame(1, kData0, strlen(kData0), true));
+  MockRead reads0[] = {CreateMockRead(reply0, 1), CreateMockRead(body0, 2),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3)};
 
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));
 
   SpdyTestUtil spdy_util_1(GetParam());
 
-  std::unique_ptr<SpdySerializedFrame> headers1(
+  SpdySerializedFrame headers1(
       spdy_util_1.ConstructSpdyGet(url_to_fetch1, 1, LOWEST));
   MockWrite writes1[] = {
-      CreateMockWrite(*headers1, 0),
+      CreateMockWrite(headers1, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> reply1(
+  SpdySerializedFrame reply1(
       spdy_util_1.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> push(
+  SpdySerializedFrame push(
       spdy_util_1.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
   const char kData1[] = "second";
-  std::unique_ptr<SpdySerializedFrame> body1(
-      spdy_util_1.ConstructSpdyBodyFrame(1, kData1, strlen(kData1), true));
+  SpdySerializedFrame body1(
+      spdy_util_1.ConstructSpdyDataFrame(1, kData1, strlen(kData1), true));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> pushed_body(
-      spdy_util_1.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                         true));
+  SpdySerializedFrame pushed_body(spdy_util_1.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
 
   MockRead reads1[] = {
-      CreateMockRead(*reply1, 1),
-      CreateMockRead(*push, 2),
-      CreateMockRead(*body1, 3),
-      CreateMockRead(*pushed_body, 4),
+      CreateMockRead(reply1, 1),
+      CreateMockRead(push, 2),
+      CreateMockRead(body1, 3),
+      CreateMockRead(pushed_body, 4),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),
   };
 
@@ -5549,30 +5286,26 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidCrossOrigin) {
   const char* url_to_fetch = "https://www.example.org";
   const char* url_to_push = "https://invalid.example.org";
 
-  std::unique_ptr<SpdySerializedFrame> headers(
+  SpdySerializedFrame headers(
       spdy_util_.ConstructSpdyGet(url_to_fetch, 1, LOWEST));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
   MockWrite writes[] = {
-      CreateMockWrite(*headers, 0),
-      CreateMockWrite(*rst, 3),
+      CreateMockWrite(headers, 0), CreateMockWrite(rst, 3),
   };
 
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> push(
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame push(
       spdy_util_.ConstructSpdyPush(nullptr, 0, 2, 1, url_to_push));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   const char kPushedData[] = "pushed";
-  std::unique_ptr<SpdySerializedFrame> pushed_body(
-      spdy_util_.ConstructSpdyBodyFrame(2, kPushedData, strlen(kPushedData),
-                                        true));
+  SpdySerializedFrame pushed_body(spdy_util_.ConstructSpdyDataFrame(
+      2, kPushedData, strlen(kPushedData), true));
   MockRead reads[] = {
-      CreateMockRead(*reply, 1),
-      CreateMockRead(*push, 2),
-      CreateMockRead(*body, 4),
-      CreateMockRead(*pushed_body, 5),
+      CreateMockRead(reply, 1),
+      CreateMockRead(push, 2),
+      CreateMockRead(body, 4),
+      CreateMockRead(pushed_body, 5),
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 6),
   };
 
@@ -5593,27 +5326,23 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushInvalidCrossOrigin) {
 
 TEST_P(SpdyNetworkTransactionTest, RetryAfterRefused) {
   // Construct the request.
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
   // Will be destroyed by the RST before stream 3 starts.
   spdy_util_.UpdateWithStreamDestruction(1);
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*req2, 2),
+      CreateMockWrite(req, 0), CreateMockWrite(req2, 2),
   };
 
-  std::unique_ptr<SpdySerializedFrame> refused(
+  SpdySerializedFrame refused(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_REFUSED_STREAM));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(3, true));
   MockRead reads[] = {
-      CreateMockRead(*refused, 1),
-      CreateMockRead(*resp, 3),
-      CreateMockRead(*body, 4),
-      MockRead(ASYNC, 0, 5)  // EOF
+      CreateMockRead(refused, 1), CreateMockRead(resp, 3),
+      CreateMockRead(body, 4), MockRead(ASYNC, 0, 5)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -5660,35 +5389,29 @@ TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
   // req1 is alive when req2 is attempted (during but not after the
   // |data.RunFor(2);| statement below) but not when req3 is attempted.
   // The call to spdy_util_.UpdateWithStreamDestruction() reflects this.
-  std::unique_ptr<SpdySerializedFrame> req1(
+  SpdySerializedFrame req1(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> req2(
+  SpdySerializedFrame req2(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 3, HIGHEST, true));
   spdy_util_.UpdateWithStreamDestruction(1);
-  std::unique_ptr<SpdySerializedFrame> req3(
+  SpdySerializedFrame req3(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 5, MEDIUM, true));
   MockWrite writes[] = {
-      MockWrite(ASYNC, ERR_IO_PENDING, 0), CreateMockWrite(*req1, 1),
-      CreateMockWrite(*req2, 5), CreateMockWrite(*req3, 6),
+      MockWrite(ASYNC, ERR_IO_PENDING, 0), CreateMockWrite(req1, 1),
+      CreateMockWrite(req2, 5), CreateMockWrite(req3, 6),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp1(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body1(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
-  std::unique_ptr<SpdySerializedFrame> resp2(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
-  std::unique_ptr<SpdySerializedFrame> body2(
-      spdy_util_.ConstructSpdyBodyFrame(3, true));
-  std::unique_ptr<SpdySerializedFrame> resp3(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
-  std::unique_ptr<SpdySerializedFrame> body3(
-      spdy_util_.ConstructSpdyBodyFrame(5, true));
+  SpdySerializedFrame resp1(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(1, true));
+  SpdySerializedFrame resp2(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 3));
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(3, true));
+  SpdySerializedFrame resp3(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 5));
+  SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(5, true));
   MockRead reads[] = {
-      CreateMockRead(*resp1, 2), MockRead(ASYNC, ERR_IO_PENDING, 3),
-      CreateMockRead(*body1, 4), CreateMockRead(*resp2, 7),
-      CreateMockRead(*body2, 8), CreateMockRead(*resp3, 9),
-      CreateMockRead(*body3, 10), MockRead(ASYNC, 0, 11)  // EOF
+      CreateMockRead(resp1, 2),  MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(body1, 4),  CreateMockRead(resp2, 7),
+      CreateMockRead(body2, 8),  CreateMockRead(resp3, 9),
+      CreateMockRead(body3, 10), MockRead(ASYNC, 0, 11)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -5769,37 +5492,36 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateReceived) {
   static int kFrameCount = 2;
   std::unique_ptr<std::string> content(
       new std::string(kMaxSpdyFrameChunkSize, 'a'));
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(
       1, content->c_str(), content->size(), false));
-  std::unique_ptr<SpdySerializedFrame> body_end(
-      spdy_util_.ConstructSpdyBodyFrame(1, content->c_str(), content->size(),
-                                        true));
+  SpdySerializedFrame body_end(spdy_util_.ConstructSpdyDataFrame(
+      1, content->c_str(), content->size(), true));
 
   MockWrite writes[] = {
-    CreateMockWrite(*req, 0),
-    CreateMockWrite(*body, 1),
-    CreateMockWrite(*body_end, 2),
+      CreateMockWrite(req, 0), CreateMockWrite(body, 1),
+      CreateMockWrite(body_end, 2),
   };
 
   static const int32_t kDeltaWindowSize = 0xff;
   static const int kDeltaCount = 4;
-  std::unique_ptr<SpdySerializedFrame> window_update(
+  SpdySerializedFrame window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
-  std::unique_ptr<SpdySerializedFrame> window_update_dummy(
+  SpdySerializedFrame window_update_dummy(
       spdy_util_.ConstructSpdyWindowUpdate(2, kDeltaWindowSize));
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
   MockRead reads[] = {
-      CreateMockRead(*window_update_dummy, 3),
-      CreateMockRead(*window_update_dummy, 4),
-      CreateMockRead(*window_update_dummy, 5),
-      CreateMockRead(*window_update, 6),  // Four updates, therefore window
-      CreateMockRead(*window_update, 7),  // size should increase by
-      CreateMockRead(*window_update, 8),  // kDeltaWindowSize * 4
-      CreateMockRead(*window_update, 9), CreateMockRead(*resp, 10),
-      MockRead(ASYNC, ERR_IO_PENDING, 11), CreateMockRead(*body_end, 12),
+      CreateMockRead(window_update_dummy, 3),
+      CreateMockRead(window_update_dummy, 4),
+      CreateMockRead(window_update_dummy, 5),
+      CreateMockRead(window_update, 6),  // Four updates, therefore window
+      CreateMockRead(window_update, 7),  // size should increase by
+      CreateMockRead(window_update, 8),  // kDeltaWindowSize * 4
+      CreateMockRead(window_update, 9),
+      CreateMockRead(resp, 10),
+      MockRead(ASYNC, ERR_IO_PENDING, 11),
+      CreateMockRead(body_end, 12),
       MockRead(ASYNC, 0, 13)  // EOF
   };
 
@@ -5885,39 +5607,38 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
   initial_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, stream_max_recv_window_size);
-  std::unique_ptr<SpdySerializedFrame> initial_settings_frame(
+  SpdySerializedFrame initial_settings_frame(
       spdy_util_.ConstructSpdySettings(initial_settings));
-  std::unique_ptr<SpdySerializedFrame> initial_window_update(
+  SpdySerializedFrame initial_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(
           kSessionFlowControlStreamId,
           session_max_recv_window_size - kDefaultInitialWindowSize));
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> session_window_update(
+  SpdySerializedFrame session_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(0, session_window_update_delta));
-  std::unique_ptr<SpdySerializedFrame> stream_window_update(
+  SpdySerializedFrame stream_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, stream_window_update_delta));
 
   std::vector<MockWrite> writes;
   writes.push_back(MockWrite(ASYNC, kHttp2ConnectionHeaderPrefix,
                              kHttp2ConnectionHeaderPrefixSize, 0));
-  writes.push_back(CreateMockWrite(*initial_settings_frame, writes.size()));
-  writes.push_back(CreateMockWrite(*initial_window_update, writes.size()));
-  writes.push_back(CreateMockWrite(*req, writes.size()));
+  writes.push_back(CreateMockWrite(initial_settings_frame, writes.size()));
+  writes.push_back(CreateMockWrite(initial_window_update, writes.size()));
+  writes.push_back(CreateMockWrite(req, writes.size()));
 
   std::vector<MockRead> reads;
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
-  reads.push_back(CreateMockRead(*resp, writes.size() + reads.size()));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
+  reads.push_back(CreateMockRead(resp, writes.size() + reads.size()));
 
-  std::vector<std::unique_ptr<SpdySerializedFrame>> body_frames;
+  std::vector<SpdySerializedFrame> body_frames;
   const std::string body_data(kChunkSize, 'x');
   for (size_t remaining = kTargetSize; remaining != 0;) {
     size_t frame_size = std::min(remaining, body_data.size());
-    body_frames.push_back(base::WrapUnique(spdy_util_.ConstructSpdyBodyFrame(
-        1, body_data.data(), frame_size, false)));
+    body_frames.push_back(spdy_util_.ConstructSpdyDataFrame(1, body_data.data(),
+                                                            frame_size, false));
     reads.push_back(
-        CreateMockRead(*body_frames.back(), writes.size() + reads.size()));
+        CreateMockRead(body_frames.back(), writes.size() + reads.size()));
     remaining -= frame_size;
   }
   // Yield.
@@ -5925,9 +5646,9 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, writes.size() + reads.size()));
 
   writes.push_back(
-      CreateMockWrite(*session_window_update, writes.size() + reads.size()));
+      CreateMockWrite(session_window_update, writes.size() + reads.size()));
   writes.push_back(
-      CreateMockWrite(*stream_window_update, writes.size() + reads.size()));
+      CreateMockWrite(stream_window_update, writes.size() + reads.size()));
 
   SequencedSocketData data(reads.data(), reads.size(), writes.data(),
                            writes.size());
@@ -5988,27 +5709,25 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateOverflow) {
 
   std::unique_ptr<std::string> content(
       new std::string(kMaxSpdyFrameChunkSize, 'a'));
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1, kMaxSpdyFrameChunkSize * kFrameCount, LOWEST, NULL, 0));
-  std::unique_ptr<SpdySerializedFrame> body(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(
       1, content->c_str(), content->size(), false));
-  std::unique_ptr<SpdySerializedFrame> rst(
+  SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_FLOW_CONTROL_ERROR));
 
   // We're not going to write a data frame with FIN, we'll receive a bad
   // WINDOW_UPDATE while sending a request and will send a RST_STREAM frame.
   MockWrite writes[] = {
-    CreateMockWrite(*req, 0),
-    CreateMockWrite(*body, 2),
-    CreateMockWrite(*rst, 3),
+      CreateMockWrite(req, 0), CreateMockWrite(body, 2),
+      CreateMockWrite(rst, 3),
   };
 
   static const int32_t kDeltaWindowSize = 0x7fffffff;  // cause an overflow
-  std::unique_ptr<SpdySerializedFrame> window_update(
+  SpdySerializedFrame window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, kDeltaWindowSize));
   MockRead reads[] = {
-    CreateMockRead(*window_update, 1),
-    MockRead(ASYNC, 0, 4)  // EOF
+      CreateMockRead(window_update, 1), MockRead(ASYNC, 0, 4)  // EOF
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -6073,21 +5792,21 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1,
       /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
       LOWEST, NULL, 0));
 
   // Full frames.
-  std::unique_ptr<SpdySerializedFrame> body1(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(), content.size(), false));
 
   // Last frame in each upload data buffer.
-  std::unique_ptr<SpdySerializedFrame> body2(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
 
   // The very last frame before the stalled frames.
-  std::unique_ptr<SpdySerializedFrame> body3(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(),
       initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
 
@@ -6097,29 +5816,28 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   // we need one additional frame to send the rest of 'a'.
   std::string last_body(kBufferSize * num_upload_buffers - initial_window_size,
                         'a');
-  std::unique_ptr<SpdySerializedFrame> body4(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body4(spdy_util_.ConstructSpdyDataFrame(
       1, last_body.c_str(), last_body.size(), false));
 
   // Also send a "hello!" after WINDOW_UPDATE.
-  std::unique_ptr<SpdySerializedFrame> body5(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body5(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   // Fill in mock writes.
   size_t i = 0;
   std::vector<MockWrite> writes;
-  writes.push_back(CreateMockWrite(*req, i++));
+  writes.push_back(CreateMockWrite(req, i++));
   for (size_t j = 0; j < num_upload_buffers; j++) {
     for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
       if (k == num_frames_in_one_upload_buffer - 1 &&
           kBufferSize % kMaxSpdyFrameChunkSize != 0) {
         if (j == num_upload_buffers - 1 &&
             (initial_window_size % kBufferSize != 0)) {
-          writes.push_back(CreateMockWrite(*body3, i++));
+          writes.push_back(CreateMockWrite(body3, i++));
         } else {
-          writes.push_back(CreateMockWrite(*body2, i++));
+          writes.push_back(CreateMockWrite(body2, i++));
         }
       } else {
-        writes.push_back(CreateMockWrite(*body1, i++));
+        writes.push_back(CreateMockWrite(body1, i++));
       }
     }
   }
@@ -6130,26 +5848,24 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   reads.push_back(MockRead(ASYNC, ERR_IO_PENDING, i++));
   // Construct read frame for window updates that gives enough space to upload
   // the rest of the data.
-  std::unique_ptr<SpdySerializedFrame> session_window_update(
+  SpdySerializedFrame session_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(0,
                                            kUploadDataSize + last_body.size()));
-  std::unique_ptr<SpdySerializedFrame> window_update(
-      spdy_util_.ConstructSpdyWindowUpdate(1,
-                                           kUploadDataSize + last_body.size()));
+  SpdySerializedFrame window_update(spdy_util_.ConstructSpdyWindowUpdate(
+      1, kUploadDataSize + last_body.size()));
 
-  reads.push_back(CreateMockRead(*session_window_update, i++));
-  reads.push_back(CreateMockRead(*window_update, i++));
+  reads.push_back(CreateMockRead(session_window_update, i++));
+  reads.push_back(CreateMockRead(window_update, i++));
 
   // Stalled frames which can be sent after receiving window updates.
   if (last_body.size() > 0)
-    writes.push_back(CreateMockWrite(*body4, i++));
-  writes.push_back(CreateMockWrite(*body5, i++));
+    writes.push_back(CreateMockWrite(body4, i++));
+  writes.push_back(CreateMockWrite(body5, i++));
 
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  reads.push_back(CreateMockRead(*reply, i++));
-  reads.push_back(CreateMockRead(*body2, i++));
-  reads.push_back(CreateMockRead(*body5, i++));
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  reads.push_back(CreateMockRead(reply, i++));
+  reads.push_back(CreateMockRead(body2, i++));
+  reads.push_back(CreateMockRead(body5, i++));
   reads.push_back(MockRead(ASYNC, 0, i++));  // EOF
 
   SequencedSocketData data(reads.data(), reads.size(), writes.data(),
@@ -6221,21 +5937,21 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1,
       /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
       LOWEST, NULL, 0));
 
   // Full frames.
-  std::unique_ptr<SpdySerializedFrame> body1(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(), content.size(), false));
 
   // Last frame in each upload data buffer.
-  std::unique_ptr<SpdySerializedFrame> body2(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
 
   // The very last frame before the stalled frames.
-  std::unique_ptr<SpdySerializedFrame> body3(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(),
       initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
 
@@ -6245,29 +5961,28 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   // we need one additional frame to send the rest of 'a'.
   std::string last_body(kBufferSize * num_upload_buffers - initial_window_size,
                         'a');
-  std::unique_ptr<SpdySerializedFrame> body4(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body4(spdy_util_.ConstructSpdyDataFrame(
       1, last_body.c_str(), last_body.size(), false));
 
   // Also send a "hello!" after WINDOW_UPDATE.
-  std::unique_ptr<SpdySerializedFrame> body5(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body5(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   // Fill in mock writes.
   size_t i = 0;
   std::vector<MockWrite> writes;
-  writes.push_back(CreateMockWrite(*req, i++));
+  writes.push_back(CreateMockWrite(req, i++));
   for (size_t j = 0; j < num_upload_buffers; j++) {
     for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
       if (k == num_frames_in_one_upload_buffer - 1 &&
           kBufferSize % kMaxSpdyFrameChunkSize != 0) {
         if (j == num_upload_buffers - 1 &&
             (initial_window_size % kBufferSize != 0)) {
-          writes.push_back(CreateMockWrite(*body3, i++));
+          writes.push_back(CreateMockWrite(body3, i++));
         } else {
-          writes.push_back(CreateMockWrite(*body2, i++));
+          writes.push_back(CreateMockWrite(body2, i++));
         }
       } else {
-        writes.push_back(CreateMockWrite(*body1, i++));
+        writes.push_back(CreateMockWrite(body1, i++));
       }
     }
   }
@@ -6282,30 +5997,28 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
   SettingsMap settings;
   settings[SETTINGS_INITIAL_WINDOW_SIZE] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, initial_window_size * 2);
-  std::unique_ptr<SpdySerializedFrame> settings_frame_large(
+  SpdySerializedFrame settings_frame_large(
       spdy_util_.ConstructSpdySettings(settings));
 
-  reads.push_back(CreateMockRead(*settings_frame_large, i++));
+  reads.push_back(CreateMockRead(settings_frame_large, i++));
 
-  std::unique_ptr<SpdySerializedFrame> session_window_update(
+  SpdySerializedFrame session_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(0,
                                            last_body.size() + kUploadDataSize));
-  reads.push_back(CreateMockRead(*session_window_update, i++));
+  reads.push_back(CreateMockRead(session_window_update, i++));
 
-  std::unique_ptr<SpdySerializedFrame> settings_ack(
-      spdy_util_.ConstructSpdySettingsAck());
-  writes.push_back(CreateMockWrite(*settings_ack, i++));
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  writes.push_back(CreateMockWrite(settings_ack, i++));
 
   // Stalled frames which can be sent after |settings_ack|.
   if (last_body.size() > 0)
-    writes.push_back(CreateMockWrite(*body4, i++));
-  writes.push_back(CreateMockWrite(*body5, i++));
+    writes.push_back(CreateMockWrite(body4, i++));
+  writes.push_back(CreateMockWrite(body5, i++));
 
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  reads.push_back(CreateMockRead(*reply, i++));
-  reads.push_back(CreateMockRead(*body2, i++));
-  reads.push_back(CreateMockRead(*body5, i++));
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  reads.push_back(CreateMockRead(reply, i++));
+  reads.push_back(CreateMockRead(body2, i++));
+  reads.push_back(CreateMockRead(body5, i++));
   reads.push_back(MockRead(ASYNC, 0, i++));  // EOF
 
   // Force all writes to happen before any read, last write will not
@@ -6386,21 +6099,21 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   // Construct content for a data frame of maximum size.
   std::string content(kMaxSpdyFrameChunkSize, 'a');
 
-  std::unique_ptr<SpdySerializedFrame> req(spdy_util_.ConstructSpdyPost(
+  SpdySerializedFrame req(spdy_util_.ConstructSpdyPost(
       kDefaultUrl, 1,
       /*content_length=*/kBufferSize * num_upload_buffers + kUploadDataSize,
       LOWEST, NULL, 0));
 
   // Full frames.
-  std::unique_ptr<SpdySerializedFrame> body1(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body1(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(), content.size(), false));
 
   // Last frame in each upload data buffer.
-  std::unique_ptr<SpdySerializedFrame> body2(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body2(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(), kBufferSize % kMaxSpdyFrameChunkSize, false));
 
   // The very last frame before the stalled frames.
-  std::unique_ptr<SpdySerializedFrame> body3(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body3(spdy_util_.ConstructSpdyDataFrame(
       1, content.c_str(),
       initial_window_size % kBufferSize % kMaxSpdyFrameChunkSize, false));
 
@@ -6410,29 +6123,28 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   // we need one additional frame to send the rest of 'a'.
   std::string last_body(kBufferSize * num_upload_buffers - initial_window_size,
                         'a');
-  std::unique_ptr<SpdySerializedFrame> body4(spdy_util_.ConstructSpdyBodyFrame(
+  SpdySerializedFrame body4(spdy_util_.ConstructSpdyDataFrame(
       1, last_body.c_str(), last_body.size(), false));
 
   // Also send a "hello!" after WINDOW_UPDATE.
-  std::unique_ptr<SpdySerializedFrame> body5(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body5(spdy_util_.ConstructSpdyDataFrame(1, true));
 
   // Fill in mock writes.
   size_t i = 0;
   std::vector<MockWrite> writes;
-  writes.push_back(CreateMockWrite(*req, i++));
+  writes.push_back(CreateMockWrite(req, i++));
   for (size_t j = 0; j < num_upload_buffers; j++) {
     for (size_t k = 0; k < num_frames_in_one_upload_buffer; k++) {
       if (k == num_frames_in_one_upload_buffer - 1 &&
           kBufferSize % kMaxSpdyFrameChunkSize != 0) {
         if (j == num_upload_buffers - 1 &&
             (initial_window_size % kBufferSize != 0)) {
-          writes.push_back(CreateMockWrite(*body3, i++));
+          writes.push_back(CreateMockWrite(body3, i++));
         } else {
-          writes.push_back(CreateMockWrite(*body2, i++));
+          writes.push_back(CreateMockWrite(body2, i++));
         }
       } else {
-        writes.push_back(CreateMockWrite(*body1, i++));
+        writes.push_back(CreateMockWrite(body1, i++));
       }
     }
   }
@@ -6446,33 +6158,31 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
   SettingsMap new_settings;
   new_settings[SETTINGS_INITIAL_WINDOW_SIZE] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, initial_window_size / 2);
-  std::unique_ptr<SpdySerializedFrame> settings_frame_small(
+  SpdySerializedFrame settings_frame_small(
       spdy_util_.ConstructSpdySettings(new_settings));
   // Construct read frames for WINDOW_UPDATE that makes the send_window_size
   // positive.
-  std::unique_ptr<SpdySerializedFrame> session_window_update_init_size(
+  SpdySerializedFrame session_window_update_init_size(
       spdy_util_.ConstructSpdyWindowUpdate(0, initial_window_size));
-  std::unique_ptr<SpdySerializedFrame> window_update_init_size(
+  SpdySerializedFrame window_update_init_size(
       spdy_util_.ConstructSpdyWindowUpdate(1, initial_window_size));
 
-  reads.push_back(CreateMockRead(*settings_frame_small, i++));
-  reads.push_back(CreateMockRead(*session_window_update_init_size, i++));
-  reads.push_back(CreateMockRead(*window_update_init_size, i++));
+  reads.push_back(CreateMockRead(settings_frame_small, i++));
+  reads.push_back(CreateMockRead(session_window_update_init_size, i++));
+  reads.push_back(CreateMockRead(window_update_init_size, i++));
 
-  std::unique_ptr<SpdySerializedFrame> settings_ack(
-      spdy_util_.ConstructSpdySettingsAck());
-  writes.push_back(CreateMockWrite(*settings_ack, i++));
+  SpdySerializedFrame settings_ack(spdy_util_.ConstructSpdySettingsAck());
+  writes.push_back(CreateMockWrite(settings_ack, i++));
 
   // Stalled frames which can be sent after |settings_ack|.
   if (last_body.size() > 0)
-    writes.push_back(CreateMockWrite(*body4, i++));
-  writes.push_back(CreateMockWrite(*body5, i++));
+    writes.push_back(CreateMockWrite(body4, i++));
+  writes.push_back(CreateMockWrite(body5, i++));
 
-  std::unique_ptr<SpdySerializedFrame> reply(
-      spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
-  reads.push_back(CreateMockRead(*reply, i++));
-  reads.push_back(CreateMockRead(*body2, i++));
-  reads.push_back(CreateMockRead(*body5, i++));
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyPostSynReply(NULL, 0));
+  reads.push_back(CreateMockRead(reply, i++));
+  reads.push_back(CreateMockRead(body2, i++));
+  reads.push_back(CreateMockRead(body5, i++));
   reads.push_back(MockRead(ASYNC, 0, i++));  // EOF
 
   // Force all writes to happen before any read, last write will not
@@ -6532,16 +6242,16 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
   SpdyHeaderBlock push_headers;
   spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat", &push_headers);
-  std::unique_ptr<SpdySerializedFrame> push(
+  SpdySerializedFrame push(
       spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_headers), 3, 1));
-  MockRead reads[] = {CreateMockRead(*push, 1)};
+  MockRead reads[] = {CreateMockRead(push, 1)};
 
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       0, GOAWAY_PROTOCOL_ERROR, "Odd push stream id."));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 2),
+      CreateMockWrite(req, 0), CreateMockWrite(goaway, 2),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -6554,25 +6264,24 @@ TEST_P(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
 
 TEST_P(SpdyNetworkTransactionTest,
        GoAwayOnPushStreamIdLesserOrEqualThanLastAccepted) {
-  std::unique_ptr<SpdySerializedFrame> push_a(spdy_util_.ConstructSpdyPush(
+  SpdySerializedFrame push_a(spdy_util_.ConstructSpdyPush(
       NULL, 0, 4, 1, GetDefaultUrlWithPath("/a.dat").c_str()));
   SpdyHeaderBlock push_b_headers;
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/b.dat"),
                                  &push_b_headers);
-  std::unique_ptr<SpdySerializedFrame> push_b(
-      spdy_util_.ConstructInitialSpdyPushFrame(std::move(push_b_headers), 2,
-                                               1));
+  SpdySerializedFrame push_b(spdy_util_.ConstructInitialSpdyPushFrame(
+      std::move(push_b_headers), 2, 1));
   MockRead reads[] = {
-      CreateMockRead(*push_a, 1), CreateMockRead(*push_b, 2),
+      CreateMockRead(push_a, 1), CreateMockRead(push_b, 2),
   };
 
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
-  std::unique_ptr<SpdySerializedFrame> goaway(spdy_util_.ConstructSpdyGoAway(
+  SpdySerializedFrame goaway(spdy_util_.ConstructSpdyGoAway(
       4, GOAWAY_PROTOCOL_ERROR,
       "New push stream id must be greater than the last accepted."));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0), CreateMockWrite(*goaway, 3),
+      CreateMockWrite(req, 0), CreateMockWrite(goaway, 3),
   };
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
@@ -6596,19 +6305,16 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
 
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   headers[kKey] = kValue;
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
+      CreateMockWrite(req, 0),
   };
 
-  std::unique_ptr<SpdySerializedFrame> resp(
-      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame resp(spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1),
-      CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -6626,10 +6332,10 @@ TEST_P(SpdyNetworkTransactionTest, LargeRequest) {
 // Regression test for https://crbug.com/535629: response header exceeds 16 kB.
 TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
-  std::unique_ptr<SpdySerializedFrame> req(
+  SpdySerializedFrame req(
       spdy_util_.ConstructSpdySyn(1, std::move(headers), LOWEST, true));
   MockWrite writes[] = {
-      CreateMockWrite(*req, 0),
+      CreateMockWrite(req, 0),
   };
 
   // HPACK decoder implementation limits string literal length to 16 kB.
@@ -6639,12 +6345,11 @@ TEST_P(SpdyNetworkTransactionTest, LargeResponseHeader) {
   const std::string kValue(16 * 1024, 'b');
   response_headers[1] = kValue.data();
 
-  std::unique_ptr<SpdySerializedFrame> resp(
+  SpdySerializedFrame resp(
       spdy_util_.ConstructSpdyGetSynReply(response_headers, 1, 1));
-  std::unique_ptr<SpdySerializedFrame> body(
-      spdy_util_.ConstructSpdyBodyFrame(1, true));
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
   MockRead reads[] = {
-      CreateMockRead(*resp, 1), CreateMockRead(*body, 2),
+      CreateMockRead(resp, 1), CreateMockRead(body, 2),
       MockRead(ASYNC, 0, 3)  // EOF
   };
 
@@ -6669,9 +6374,9 @@ class SpdyNetworkTransactionTLSUsageCheckTest
  protected:
   void RunTLSUsageCheckTest(
       std::unique_ptr<SSLSocketDataProvider> ssl_provider) {
-    std::unique_ptr<SpdySerializedFrame> goaway(
+    SpdySerializedFrame goaway(
         spdy_util_.ConstructSpdyGoAway(0, GOAWAY_INADEQUATE_SECURITY, ""));
-    MockWrite writes[] = {CreateMockWrite(*goaway)};
+    MockWrite writes[] = {CreateMockWrite(goaway)};
 
     StaticSocketDataProvider data(NULL, 0, writes, arraysize(writes));
     HttpRequestInfo request;
