@@ -75,6 +75,11 @@ def PrintUsage():
   print "  --arch=arm|arm64|x64|x86|mips"
   print "       the target architecture"
   print
+  print "  --fallback-monochrome"
+  print "       fallback to monochrome instead of chrome if fail to detect"
+  print "       shared lib which is loaded from APK, this doesn't work for"
+  print "       component build."
+  print
   print "  --verbose"
   print "       enable extra logging, particularly for debugging failed symbolization"
   print
@@ -141,6 +146,7 @@ def main(argv):
                                         "symbols-dir=",
                                         "symbols-zip=",
                                         "arch=",
+                                        "fallback-monochrome",
                                         "verbose",
                                         "help"])
   except getopt.GetoptError, unused_error:
@@ -149,6 +155,8 @@ def main(argv):
   zip_arg = None
   more_info = False
   packed_relocation_adjustments = "unknown"
+  fallback_monochrome = False
+  arch_defined = False
   for option, value in options:
     if option == "--help":
       PrintUsage()
@@ -158,6 +166,7 @@ def main(argv):
       zip_arg = os.path.expanduser(value)
     elif option == "--arch":
       symbol.ARCH = value
+      arch_defined = True
     elif option == "--chrome-symbols-dir":
       symbol.CHROME_SYMBOLS_DIR = os.path.join(symbol.CHROME_SRC, value)
     elif option == "--output-directory":
@@ -170,6 +179,8 @@ def main(argv):
       more_info = True
     elif option == "--less-info":
       more_info = False
+    elif option == "--fallback-monochrome":
+      fallback_monochrome = True
     elif option == "--verbose":
       logging.basicConfig(level=logging.DEBUG)
 
@@ -221,7 +232,8 @@ def main(argv):
   chrome_search_path = symbol.GetLibrarySearchPaths()
   print ("Searching for Chrome symbols from within: "
          + ':'.join((os.path.normpath(d) for d in chrome_search_path)))
-  stack_core.ConvertTrace(lines, load_vaddrs, more_info)
+  stack_core.ConvertTrace(lines, load_vaddrs, more_info, fallback_monochrome,
+                          arch_defined)
 
   if rootdir:
     # be a good citizen and clean up...os.rmdir and os.removedirs() don't work

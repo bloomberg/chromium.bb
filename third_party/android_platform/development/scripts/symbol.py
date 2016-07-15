@@ -42,7 +42,7 @@ SYMBOLS_DIR = CHROME_SRC
 CHROME_SYMBOLS_DIR = None
 ARCH = "arm"
 TOOLCHAIN_INFO = None
-
+SECONDARY_ABI_OUTPUT_PATH = None
 
 # See:
 # http://bugs.python.org/issue14315
@@ -94,7 +94,7 @@ def ToolPath(tool, toolchain_info=None):
     toolchain_prefix = "mipsel-linux-android"
     ndk = "ndk"
   else:
-    raise Exception("Could not find tool chain")
+    raise Exception("Could not find tool chain for " + ARCH)
 
   toolchain_subdir = (
       "third_party/android_tools/%s/toolchains/%s/prebuilt/linux-x86_64/bin" %
@@ -298,6 +298,8 @@ def MapDeviceApkToLibrary(device_apk_name):
       return crazy_lib
 
 def GetLibrarySearchPaths():
+  if SECONDARY_ABI_OUTPUT_PATH:
+    return PathListJoin([SECONDARY_ABI_OUTPUT_PATH], ['lib.unstripped', 'lib', '.'])
   if CHROME_SYMBOLS_DIR:
     return [CHROME_SYMBOLS_DIR]
   dirs = _GetChromeOutputDirCandidates()
@@ -615,3 +617,11 @@ def FormatSymbolWithOffset(symbol, offset):
   if offset == 0:
     return symbol
   return "%s+%d" % (symbol, offset)
+
+def SetSecondaryAbiOutputPath(path):
+   global SECONDARY_ABI_OUTPUT_PATH
+   if SECONDARY_ABI_OUTPUT_PATH and SECONDARY_ABI_OUTPUT_PATH != path:
+     raise Exception ("Assign SECONDARY_ABI_OUTPUT_PATH to different value " +
+                      " origin: %s new: %s" % ("", path))
+   else:
+     SECONDARY_ABI_OUTPUT_PATH = path
