@@ -167,7 +167,7 @@ void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track)
         return;
 
     for (size_t i = index; i < tracks->size(); ++i)
-        tracks->at(index)->invalidateTrackIndex();
+        tracks->at(i)->invalidateTrackIndex();
 }
 
 void TextTrackList::append(TextTrack* track)
