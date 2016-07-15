@@ -5,6 +5,8 @@
 #include "components/update_client/action.h"
 
 #include <algorithm>
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -123,6 +125,8 @@ void ActionImpl::UpdateCrx() {
   CrxUpdateItem* item = FindUpdateItemById(id);
   DCHECK(item);
 
+  item->update_begin = base::TimeTicks::Now();
+
   std::unique_ptr<Action> update_action(
       CanTryDiffUpdate(item, update_context_->config)
           ? ActionUpdateDiff::Create()
@@ -136,6 +140,9 @@ void ActionImpl::UpdateCrx() {
 }
 
 void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(item);
+
   update_context_->ping_manager->SendPing(item);
 
   update_context_->queue.pop();
@@ -143,12 +150,19 @@ void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
   if (update_context_->queue.empty()) {
     UpdateComplete(0);
   } else {
-    // TODO(sorin): the value of timing interval between CRX updates might have
-    // to be injected at the call site of update_client::UpdateClient::Update.
-    const int wait_sec = update_context_->config->UpdateDelay();
+    DCHECK(!item->update_begin.is_null());
+
+    // Assume that the cost of applying the update is proportional with how
+    // long it took to apply it. Then delay the next update by the same time
+    // interval or the value provided by the configurator, whichever is less.
+    const base::TimeDelta max_update_delay =
+        base::TimeDelta::FromSeconds(update_context_->config->UpdateDelay());
+    const base::TimeDelta update_cost(base::TimeTicks::Now() -
+                                      item->update_begin);
+    DCHECK(update_cost >= base::TimeDelta());
 
     std::unique_ptr<ActionWait> action_wait(
-        new ActionWait(base::TimeDelta::FromSeconds(wait_sec)));
+        new ActionWait(std::min(update_cost, max_update_delay)));
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&Action::Run, base::Unretained(action_wait.get()),

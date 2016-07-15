@@ -79,7 +79,11 @@ struct CrxUpdateItem {
   std::string id;
   CrxComponent component;
 
+  // Time when an update check for this CRX has happened.
   base::Time last_check;
+
+  // Time when the update of this CRX has begun.
+  base::TimeTicks update_begin;
 
   // A component can be made available for download from several urls.
   std::vector<GURL> crx_urls;
