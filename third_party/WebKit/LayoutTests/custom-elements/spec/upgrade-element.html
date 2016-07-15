@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<title>Custom Elements: upgrade element</title>
+<link rel="help" href="https://html.spec.whatwg.org/multipage/scripting.html#concept-upgrade-an-element">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/custom-elements-helpers.js"></script>
+<body>
+<script>
+
+'use strict'
+// 6. "attributeChangedCallback" and "connectedCallback" should execute after C and 
+// the rest of the upgrade process finishes. 
+test_with_window((w) => {
+  let invocations = [];
+  let changedCallbackArgs;
+  let a = w.document.createElement('a-a');
+  w.document.body.appendChild(a);
+  a.setAttribute('x', '1');
+  class X extends w.HTMLElement {
+    constructor() { 
+      super(); 
+      invocations.push(['constructor', this]); 
+    }
+    connectedCallback() { invocations.push(['connected', this]); }
+    static get observedAttributes() { return ['x']; }
+    attributeChangedCallback() { 
+      invocations.push(['attributeChanged', this]);
+      changedCallbackArgs = arguments;
+    }
+  }
+  w.customElements.define('a-a', X);
+  assert_equals(invocations.length, 3);
+  assert_array_equals(invocations[0], ['constructor', a], 'constructor should execute first');
+  assert_array_equals(invocations[1], ['attributeChanged', a], 'attributeChangedCallback should execute after the constructor');
+  assert_array_equals(changedCallbackArgs,  ['x', null, '1', '']);
+  assert_array_equals(invocations[2], ['connected', a], 'connectedCallback should execute after the constructor');
+}, '"connectedCallback", "attributeChangedCallback" reactions should execute after the constructor');
+
+// 6. If C non-conformantly uses an API decorated with the [CEReactions] extended attribute, 
+// then the reactions enqueued at the beginning of upgrade will execute during this step, 
+// before C finishes and control returns to this algorithm. 
+test_with_window((w) => {
+  let invocations = [];
+  let changedCallbackArgs;
+  let a = w.document.createElement('a-a');
+  w.document.body.appendChild(a);
+  class X extends w.HTMLElement {
+    constructor() { 
+      super(); 
+      this.setAttribute('x', '1');
+      invocations.push(['constructor', this]); 
+    }
+    connectedCallback() { invocations.push(['connected', this]); }
+    static get observedAttributes() { return ['x']; }
+    attributeChangedCallback() { 
+      invocations.push(['attributeChanged', this]);
+      changedCallbackArgs = arguments;
+    }
+  }
+  w.customElements.define('a-a', X);
+  assert_equals(invocations.length, 3);
+  assert_array_equals(invocations[0], ['connected', a], 'connectedCallback executes before the constructor');
+  assert_array_equals(invocations[1], ['attributeChanged', a], 'attributeChangedCallback executes before the constructor');
+  assert_array_equals(changedCallbackArgs,  ['x', null, '1', '']);
+  assert_array_equals(invocations[2], ['constructor', a], 'constructor executes last');
+}, 'The constructor non-conformatly uses API decorated with the [CEReactions]');
+
+// 8. If constructResult is an abrupt completion, then return constructResult 
+// (i.e., rethrow the exception).
+test_with_window((w) => {
+  let error_log = [];
+  let doc = w.document;
+  doc.body.appendChild(doc.createElement('a-a'));
+  w.onerror = function (msg, url, lineNo, columnNo, error) {
+    error_log.push(error);
+    return true;
+  };
+  class X extends w.HTMLElement {
+    constructor() { 
+      super();
+      assert_false(this.matches(':defined'), 'calling super() with non-empty construction stack should not define the element');
+      throw 'constructor throws'; 
+    }
+  }
+  w.customElements.define('a-a', X);
+  assert_array_equals(error_log, ['constructor throws'], 'rethrow any exception thrown from constructor');
+}, 'Upgrading an element with a throwing constructor should rethrow that exception');
+
+// 9. If SameValue(constructResult.[[value]], element) is false, then throw an 
+// "InvalidStateError" DOMException and terminate these steps.
+test_with_window((w) => {
+  let error_log = [];
+  w.onerror = function (msg, url, lineNo, columnNo, error) {
+    error_log.push(error);
+    return true;
+  };
+  let a = w.document.createElement('a-a');
+  w.document.body.appendChild(a);
+  class X extends w.HTMLElement {
+    constructor() {
+      super();
+      return ['aaaa'];
+    }
+  }
+  w.customElements.define('a-a', X);
+  assert_array_equals(error_log, ['InvalidStateError'], 'returning object that is different from element should throw "InvalidStateError"');
+}, 'Upgrading an element with invalid constructor');
+</script>
+</body>
