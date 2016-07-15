@@ -56,7 +56,7 @@ void HTMLMarqueeElement::attributeChanged(const QualifiedName& name, const Atomi
 Node::InsertionNotificationRequest HTMLMarqueeElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    if (inShadowIncludingDocument()) {
+    if (isConnected()) {
         V8HTMLMarqueeElement::PrivateScript::attachedCallbackMethod(document().frame(), this);
     }
     return InsertionDone;
@@ -65,7 +65,7 @@ Node::InsertionNotificationRequest HTMLMarqueeElement::insertedInto(ContainerNod
 void HTMLMarqueeElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLElement::removedFrom(insertionPoint);
-    if (insertionPoint->inShadowIncludingDocument()) {
+    if (insertionPoint->isConnected()) {
         V8HTMLMarqueeElement::PrivateScript::detachedCallbackMethod(insertionPoint->document().frame(), this);
     }
 }

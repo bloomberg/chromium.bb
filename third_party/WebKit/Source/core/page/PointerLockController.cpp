@@ -47,7 +47,7 @@ PointerLockController* PointerLockController::create(Page* page)
 
 void PointerLockController::requestPointerLock(Element* target)
 {
-    if (!target || !target->inShadowIncludingDocument() || m_documentOfRemovedElementWhileWaitingForUnlock) {
+    if (!target || !target->isConnected() || m_documentOfRemovedElementWhileWaitingForUnlock) {
         enqueueEvent(EventTypeNames::pointerlockerror, target);
         return;
     }

@@ -54,7 +54,7 @@ void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoi
 ContainerNode* parent(const Node& node, ParentDetails* details)
 {
     // TODO(hayato): Uncomment this once we can be sure LayoutTreeBuilderTraversal::parent() is used only for a node in a document.
-    // DCHECK(node.inShadowIncludingDocument());
+    // DCHECK(node.isConnected());
     return FlatTreeTraversal::parent(node, details);
 }
 

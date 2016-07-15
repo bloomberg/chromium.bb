@@ -456,7 +456,7 @@ void HTMLMetaElement::didNotifySubtreeInsertionsToDocument()
 
 static bool inDocumentHead(HTMLMetaElement* element)
 {
-    if (!element->inShadowIncludingDocument())
+    if (!element->isConnected())
         return false;
 
     return Traversal<HTMLHeadElement>::firstAncestor(*element);
@@ -464,7 +464,7 @@ static bool inDocumentHead(HTMLMetaElement* element)
 
 void HTMLMetaElement::process()
 {
-    if (!inShadowIncludingDocument())
+    if (!isConnected())
         return;
 
     // All below situations require a content attribute (which can be the empty string).

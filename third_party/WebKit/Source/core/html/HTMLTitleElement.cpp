@@ -46,7 +46,7 @@ DEFINE_NODE_FACTORY(HTMLTitleElement)
 Node::InsertionNotificationRequest HTMLTitleElement::insertedInto(ContainerNode* insertionPoint)
 {
     HTMLElement::insertedInto(insertionPoint);
-    if (inShadowIncludingDocument() && !isInShadowTree())
+    if (isConnected() && !isInShadowTree())
         document().setTitleElement(this);
     return InsertionDone;
 }
@@ -54,14 +54,14 @@ Node::InsertionNotificationRequest HTMLTitleElement::insertedInto(ContainerNode*
 void HTMLTitleElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLElement::removedFrom(insertionPoint);
-    if (insertionPoint->inShadowIncludingDocument() && !insertionPoint->isInShadowTree())
+    if (insertionPoint->isConnected() && !insertionPoint->isInShadowTree())
         document().removeTitle(this);
 }
 
 void HTMLTitleElement::childrenChanged(const ChildrenChange& change)
 {
     HTMLElement::childrenChanged(change);
-    if (inShadowIncludingDocument() && !isInShadowTree() && !m_ignoreTitleUpdatesWhenChildrenChange)
+    if (isConnected() && !isInShadowTree() && !m_ignoreTitleUpdatesWhenChildrenChange)
         document().setTitleElement(this);
 }
 

@@ -147,7 +147,7 @@ void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, const StyleE
 {
     DCHECK(styleSheetCandidateNode);
     TreeScope* treeScope = isStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
-    if (styleSheetCandidateNode->inShadowIncludingDocument())
+    if (styleSheetCandidateNode->isConnected())
         markTreeScopeDirty(*treeScope);
 
     if (context.addedPendingSheetBeforeBody()) {
@@ -176,7 +176,7 @@ void StyleEngine::setNeedsActiveStyleUpdate(StyleSheet* sheet, StyleResolverUpda
 
     if (sheet && document().isActive()) {
         Node* node = sheet->ownerNode();
-        if (node && node->inShadowIncludingDocument()) {
+        if (node && node->isConnected()) {
             TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
             DCHECK(isStyleElement(*node) || node->treeScope() == m_document);
             markTreeScopeDirty(treeScope);
@@ -188,7 +188,7 @@ void StyleEngine::setNeedsActiveStyleUpdate(StyleSheet* sheet, StyleResolverUpda
 
 void StyleEngine::addStyleSheetCandidateNode(Node* node)
 {
-    if (!node->inShadowIncludingDocument() || document().isDetached())
+    if (!node->isConnected() || document().isDetached())
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
@@ -225,7 +225,7 @@ void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope
 
 void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
 {
-    if (!node->inShadowIncludingDocument())
+    if (!node->isConnected())
         return;
 
     TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;

@@ -56,7 +56,7 @@ static ColorParseResult parseColor(Color& parsedColor, const String& colorString
 
 static Color currentColor(HTMLCanvasElement* canvas)
 {
-    if (!canvas || !canvas->inShadowIncludingDocument() || !canvas->inlineStyle())
+    if (!canvas || !canvas->isConnected() || !canvas->inlineStyle())
         return Color::black;
     Color color = Color::black;
     CSSParser::parseColor(color, canvas->inlineStyle()->getPropertyValue(CSSPropertyColor));

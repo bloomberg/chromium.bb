@@ -73,7 +73,7 @@ SVGElement::SVGElement(const QualifiedName& tagName, Document& document, Constru
 
 SVGElement::~SVGElement()
 {
-    ASSERT(inShadowIncludingDocument() || !hasRelativeLengths());
+    ASSERT(isConnected() || !hasRelativeLengths());
 }
 
 void SVGElement::detach(const AttachContext& context)
@@ -110,7 +110,7 @@ void SVGElement::willRecalcStyle(StyleRecalcChange change)
 void SVGElement::buildPendingResourcesIfNeeded()
 {
     Document& document = this->document();
-    if (!needsPendingResourceHandling() || !inShadowIncludingDocument() || inUseShadowTree())
+    if (!needsPendingResourceHandling() || !isConnected() || inUseShadowTree())
         return;
 
     SVGDocumentExtensions& extensions = document.accessSVGExtensions();
@@ -286,7 +286,7 @@ Node::InsertionNotificationRequest SVGElement::insertedInto(ContainerNode* rootP
 
 void SVGElement::removedFrom(ContainerNode* rootParent)
 {
-    bool wasInDocument = rootParent->inShadowIncludingDocument();
+    bool wasInDocument = rootParent->isConnected();
 
     if (wasInDocument && hasRelativeLengths()) {
         // The root of the subtree being removed should take itself out from its parent's relative
@@ -405,7 +405,7 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
     ASSERT(clientElement);
 
     // If we're not yet in a document, this function will be called again from insertedInto(). Do nothing now.
-    if (!inShadowIncludingDocument())
+    if (!isConnected())
         return;
 
     // An element wants to notify us that its own relative lengths state changed.
@@ -443,7 +443,7 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
 
 void SVGElement::invalidateRelativeLengthClients(SubtreeLayoutScope* layoutScope)
 {
-    if (!inShadowIncludingDocument())
+    if (!isConnected())
         return;
 
     ASSERT(!m_inRelativeLengthClientsInvalidation);
@@ -846,7 +846,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
         // Notify resources about id changes, this is important as we cache resources by id in SVGDocumentExtensions
         if (object && object->isSVGResourceContainer())
             toLayoutSVGResourceContainer(object)->idChanged();
-        if (inShadowIncludingDocument())
+        if (isConnected())
             buildPendingResourcesIfNeeded();
         invalidateInstances();
         return;
@@ -973,7 +973,7 @@ void SVGElement::invalidateInstances()
         instance->setCorrespondingElement(0);
 
         if (SVGUseElement* element = instance->correspondingUseElement()) {
-            if (element->inShadowIncludingDocument())
+            if (element->isConnected())
                 element->invalidateShadowTree();
         }
     }

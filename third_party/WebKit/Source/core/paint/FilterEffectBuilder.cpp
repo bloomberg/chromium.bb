@@ -125,7 +125,7 @@ FloatRect computeReferenceBox(const Element& element, const FloatSize* zoomedRef
     FloatSize size;
     if (zoomedReferenceBoxSize) {
         size = *zoomedReferenceBoxSize;
-    } else if (element.inShadowIncludingDocument() && element.layoutObject() && element.layoutObject()->enclosingLayer()) {
+    } else if (element.isConnected() && element.layoutObject() && element.layoutObject()->enclosingLayer()) {
         size = FloatSize(element.layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
     }
     size.scale(1.0f / zoom);

@@ -621,7 +621,7 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 
 Node& Node::shadowIncludingRoot() const
 {
-    if (inShadowIncludingDocument())
+    if (isConnected())
         return document();
     Node* root = const_cast<Node*>(this);
     while (Node* host = root->shadowHost())
@@ -659,7 +659,7 @@ bool Node::needsDistributionRecalc() const
 void Node::updateDistribution()
 {
     // Extra early out to avoid spamming traces.
-    if (inShadowIncludingDocument() && !document().childNeedsDistributionRecalc())
+    if (isConnected() && !document().childNeedsDistributionRecalc())
         return;
     TRACE_EVENT0("blink", "Node::updateDistribution");
     ScriptForbiddenScope forbidScript;
@@ -767,7 +767,7 @@ void Node::clearNeedsStyleRecalc()
 
 bool Node::inActiveDocument() const
 {
-    return inShadowIncludingDocument() && document().isActive();
+    return isConnected() && document().isActive();
 }
 
 Node* Node::focusDelegate()
@@ -811,7 +811,7 @@ void Node::clearNodeLists()
 bool Node::isDescendantOf(const Node *other) const
 {
     // Return true if other is an ancestor of this, otherwise false
-    if (!other || !other->hasChildren() || inShadowIncludingDocument() != other->inShadowIncludingDocument())
+    if (!other || !other->hasChildren() || isConnected() != other->isConnected())
         return false;
     if (other->treeScope() != treeScope())
         return false;
@@ -842,7 +842,7 @@ bool Node::isShadowIncludingInclusiveAncestorOf(const Node* node) const
     if (document() != node->document())
         return false;
 
-    if (inShadowIncludingDocument() != node->inShadowIncludingDocument())
+    if (isConnected() != node->isConnected())
         return false;
 
     bool hasChildren = isContainerNode() && toContainerNode(this)->hasChildren();
@@ -1450,8 +1450,8 @@ unsigned short Node::compareDocumentPosition(const Node* otherNode, ShadowTreesT
 
     // If one node is in the document and the other is not, we must be disconnected.
     // If the nodes have different owning documents, they must be disconnected.  Note that we avoid
-    // comparing Attr nodes here, since they return false from inShadowIncludingDocument() all the time (which seems like a bug).
-    if (start1->inShadowIncludingDocument() != start2->inShadowIncludingDocument() || (treatment == TreatShadowTreesAsDisconnected && start1->treeScope() != start2->treeScope())) {
+    // comparing Attr nodes here, since they return false from isConnected() all the time (which seems like a bug).
+    if (start1->isConnected() != start2->isConnected() || (treatment == TreatShadowTreesAsDisconnected && start1->treeScope() != start2->treeScope())) {
         unsigned short direction = (this > otherNode) ? DOCUMENT_POSITION_PRECEDING : DOCUMENT_POSITION_FOLLOWING;
         return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
     }

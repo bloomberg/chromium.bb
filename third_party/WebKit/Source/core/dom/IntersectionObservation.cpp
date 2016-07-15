@@ -148,11 +148,11 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) co
     Element* targetElement = target();
     if (!targetElement)
         return false;
-    if (!targetElement->inShadowIncludingDocument())
+    if (!targetElement->isConnected())
         return true;
     DCHECK(m_observer);
     Element* rootElement = m_observer->root();
-    if (rootElement && !rootElement->inShadowIncludingDocument())
+    if (rootElement && !rootElement->isConnected())
         return true;
 
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();

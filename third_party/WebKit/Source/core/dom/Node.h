@@ -476,14 +476,12 @@ public:
 
     bool inActiveDocument() const;
 
-    // Returns true if this node is associated with a shadow-including document and is in its associated document's
-    // node tree, false otherwise.
-    bool inShadowIncludingDocument() const
-    {
-        return getFlag(InDocumentFlag);
-    }
+    // Returns true if this node is connected to a document, false otherwise.
+    // See https://dom.spec.whatwg.org/#connected for the definition.
+    bool isConnected() const { return getFlag(IsConnectedFlag); }
+
     bool isInShadowTree() const { return getFlag(IsInShadowTreeFlag); }
-    bool isInTreeScope() const { return getFlag(static_cast<NodeFlags>(InDocumentFlag | IsInShadowTreeFlag)); }
+    bool isInTreeScope() const { return getFlag(static_cast<NodeFlags>(IsConnectedFlag | IsInShadowTreeFlag)); }
 
     ElementShadow* parentElementShadow() const;
     bool isInV1ShadowTree() const;
@@ -571,7 +569,7 @@ public:
     // dispatching.
     //
     // WebKit notifies this callback regardless if the subtree of the node is a document tree or a floating subtree.
-    // Implementation can determine the type of subtree by seeing insertionPoint->inShadowIncludingDocument().
+    // Implementation can determine the type of subtree by seeing insertionPoint->isConnected().
     // For a performance reason, notifications are delivered only to ContainerNode subclasses if the insertionPoint is out of document.
     //
     // There are another callback named didNotifySubtreeInsertionsToDocument(), which is called after all the descendant is notified,
@@ -710,7 +708,7 @@ private:
 
         // Tree state flags. These change when the element is added/removed
         // from a DOM tree.
-        InDocumentFlag = 1 << 10,
+        IsConnectedFlag = 1 << 10,
         IsInShadowTreeFlag = 1 << 11,
 
         // Set by the parser when the children are done parsing.
@@ -757,7 +755,7 @@ protected:
         CreateDocumentFragment = CreateContainer | IsDocumentFragmentFlag,
         CreateHTMLElement = CreateElement | IsHTMLFlag,
         CreateSVGElement = CreateElement | IsSVGFlag,
-        CreateDocument = CreateContainer | InDocumentFlag,
+        CreateDocument = CreateContainer | IsConnectedFlag,
         CreateInsertionPoint = CreateHTMLElement | IsInsertionPointFlag,
         CreateEditingText = CreateText | HasNameOrIsEditingTextFlag,
     };

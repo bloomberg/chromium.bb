@@ -1833,7 +1833,7 @@ bool Document::needsLayoutTreeUpdateForNode(const Node& node) const
         return false;
     if (!needsLayoutTreeUpdate())
         return false;
-    if (!node.inShadowIncludingDocument())
+    if (!node.isConnected())
         return false;
 
     if (needsFullLayoutTreeUpdate() || node.needsStyleRecalc() || node.needsStyleInvalidation())
@@ -3448,7 +3448,7 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
         return;
 
     // We can't be focused if we're not in the document.
-    if (!node->inShadowIncludingDocument())
+    if (!node->isConnected())
         return;
     bool contains = node->isShadowIncludingInclusiveAncestorOf(m_focusedElement.get());
     if (contains && (m_focusedElement != node || !amongChildrenOnly))

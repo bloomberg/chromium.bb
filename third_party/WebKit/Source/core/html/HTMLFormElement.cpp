@@ -138,7 +138,7 @@ Node::InsertionNotificationRequest HTMLFormElement::insertedInto(ContainerNode* 
 {
     HTMLElement::insertedInto(insertionPoint);
     logAddElementIfIsolatedWorldAndInDocument("form", methodAttr, actionAttr);
-    if (insertionPoint->inShadowIncludingDocument())
+    if (insertionPoint->isConnected())
         this->document().didAssociateFormControl(this);
     return InsertionDone;
 }
@@ -343,7 +343,7 @@ void HTMLFormElement::submit(Event* event, bool activateSubmitButton)
     if (!view || !frame || !frame->page())
         return;
     // See crbug.com/586749.
-    if (!inShadowIncludingDocument())
+    if (!isConnected())
         UseCounter::count(document(), UseCounter::FormSubmissionNotInDocumentTree);
 
     if (m_isSubmittingOrInUserJSSubmitEvent) {
@@ -558,7 +558,7 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const
     Node* scope = mutableThis;
     if (m_hasElementsAssociatedByParser)
         scope = &NodeTraversal::highestAncestorOrSelf(*mutableThis);
-    if (inShadowIncludingDocument() && m_hasElementsAssociatedByFormAttribute)
+    if (isConnected() && m_hasElementsAssociatedByFormAttribute)
         scope = &treeScope().rootNode();
     ASSERT(scope);
     collectAssociatedElements(*scope, mutableThis->m_associatedElements);

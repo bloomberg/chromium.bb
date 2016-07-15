@@ -137,11 +137,11 @@ public:
     Node* anchorNode() const { return m_anchorNode.get(); }
 
     Document* document() const { return m_anchorNode ? &m_anchorNode->document() : 0; }
-    bool inShadowIncludingDocument() const { return m_anchorNode && m_anchorNode->inShadowIncludingDocument(); }
+    bool isConnected() const { return m_anchorNode && m_anchorNode->isConnected(); }
 
     bool isNull() const { return !m_anchorNode; }
     bool isNotNull() const { return m_anchorNode; }
-    bool isOrphan() const { return m_anchorNode && !m_anchorNode->inShadowIncludingDocument(); }
+    bool isOrphan() const { return m_anchorNode && !m_anchorNode->isConnected(); }
 
     // Note: Comparison of positions require both parameters are non-null. You
     // should check null-position before comparing them.

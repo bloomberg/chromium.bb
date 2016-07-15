@@ -52,9 +52,9 @@ SpellCheckRequest::SpellCheckRequest(
     , m_requestNumber(requestNumber)
 {
     DCHECK(m_checkingRange);
-    DCHECK(m_checkingRange->inShadowIncludingDocument());
+    DCHECK(m_checkingRange->isConnected());
     DCHECK(m_paragraphRange);
-    DCHECK(m_paragraphRange->inShadowIncludingDocument());
+    DCHECK(m_paragraphRange->isConnected());
     DCHECK(m_rootEditableElement);
 }
 
@@ -117,7 +117,7 @@ const TextCheckingRequestData& SpellCheckRequest::data() const
 
 bool SpellCheckRequest::isValid() const
 {
-    return m_checkingRange->inShadowIncludingDocument() && m_paragraphRange->inShadowIncludingDocument() && m_rootEditableElement->inShadowIncludingDocument();
+    return m_checkingRange->isConnected() && m_paragraphRange->isConnected() && m_rootEditableElement->isConnected();
 }
 
 void SpellCheckRequest::didSucceed(const Vector<TextCheckingResult>& results)

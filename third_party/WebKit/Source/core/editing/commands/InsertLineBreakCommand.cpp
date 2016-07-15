@@ -160,7 +160,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             deleteInsignificantTextDownstream(endingPosition);
             DCHECK(!textNode->layoutObject() || textNode->layoutObject()->style()->collapseWhiteSpace());
             // Deleting insignificant whitespace will remove textNode if it contains nothing but insignificant whitespace.
-            if (textNode->inShadowIncludingDocument()) {
+            if (textNode->isConnected()) {
                 insertTextIntoNode(textNode, 0, nonBreakingSpaceString());
             } else {
                 Text* nbspNode = document().createTextNode(nonBreakingSpaceString());

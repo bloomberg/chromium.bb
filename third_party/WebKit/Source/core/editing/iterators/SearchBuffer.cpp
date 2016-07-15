@@ -423,7 +423,7 @@ template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> findPlainTextAlgorithm(const EphemeralRangeTemplate<Strategy>& inputRange, const String& target, FindOptions options)
 {
     // CharacterIterator requires layoutObjects to be up to date.
-    if (!inputRange.startPosition().inShadowIncludingDocument())
+    if (!inputRange.startPosition().isConnected())
         return EphemeralRangeTemplate<Strategy>();
     DCHECK_EQ(inputRange.startPosition().document(), inputRange.endPosition().document());
 

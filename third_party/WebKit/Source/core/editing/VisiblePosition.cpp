@@ -59,7 +59,7 @@ VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(cons
 {
     if (positionWithAffinity.isNull())
         return VisiblePositionTemplate<Strategy>();
-    DCHECK(positionWithAffinity.position().inShadowIncludingDocument()) << positionWithAffinity;
+    DCHECK(positionWithAffinity.position().isConnected()) << positionWithAffinity;
     const PositionTemplate<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
     if (deepPosition.isNull())
         return VisiblePositionTemplate<Strategy>();

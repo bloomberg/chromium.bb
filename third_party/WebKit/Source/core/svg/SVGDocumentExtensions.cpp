@@ -157,7 +157,7 @@ void SVGDocumentExtensions::reportError(const String& message)
 void SVGDocumentExtensions::addPendingResource(const AtomicString& id, Element* element)
 {
     ASSERT(element);
-    ASSERT(element->inShadowIncludingDocument());
+    ASSERT(element->isConnected());
 
     if (id.isEmpty())
         return;

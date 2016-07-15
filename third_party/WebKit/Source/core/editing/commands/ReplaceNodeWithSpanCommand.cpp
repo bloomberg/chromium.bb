@@ -50,7 +50,7 @@ ReplaceNodeWithSpanCommand::ReplaceNodeWithSpanCommand(HTMLElement* element)
 
 static void swapInNodePreservingAttributesAndChildren(HTMLElement* newElement, HTMLElement& elementToReplace)
 {
-    DCHECK(elementToReplace.inShadowIncludingDocument()) << elementToReplace;
+    DCHECK(elementToReplace.isConnected()) << elementToReplace;
     ContainerNode* parentNode = elementToReplace.parentNode();
     parentNode->insertBefore(newElement, &elementToReplace);
 
@@ -67,7 +67,7 @@ static void swapInNodePreservingAttributesAndChildren(HTMLElement* newElement, H
 
 void ReplaceNodeWithSpanCommand::doApply(EditingState*)
 {
-    if (!m_elementToReplace->inShadowIncludingDocument())
+    if (!m_elementToReplace->isConnected())
         return;
     if (!m_spanElement)
         m_spanElement = HTMLSpanElement::create(m_elementToReplace->document());
@@ -76,7 +76,7 @@ void ReplaceNodeWithSpanCommand::doApply(EditingState*)
 
 void ReplaceNodeWithSpanCommand::doUnapply()
 {
-    if (!m_spanElement->inShadowIncludingDocument())
+    if (!m_spanElement->isConnected())
         return;
     swapInNodePreservingAttributesAndChildren(m_elementToReplace.get(), *m_spanElement);
 }

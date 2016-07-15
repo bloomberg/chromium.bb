@@ -677,7 +677,7 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
             continue;
         // moveElementOutOfAncestor() in a previous iteration might have failed,
         // and |node| might have been detached from the document tree.
-        if (!node->inShadowIncludingDocument())
+        if (!node->isConnected())
             continue;
 
         HTMLElement& element = toHTMLElement(*node);
@@ -1239,7 +1239,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     }
 
     // Mutation events (bug 22634) may have already removed the inserted content
-    if (!refNode->inShadowIncludingDocument())
+    if (!refNode->isConnected())
         return;
 
     bool plainTextFragment = isPlainTextMarkup(refNode);
@@ -1253,7 +1253,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         insertedNodes.respondToNodeInsertion(*node);
 
         // Mutation events (bug 22634) may have already removed the inserted content
-        if (!node->inShadowIncludingDocument())
+        if (!node->isConnected())
             return;
 
         refNode = node;
@@ -1272,12 +1272,12 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
     }
 
     // Mutation events (bug 20161) may have already removed the inserted content
-    if (!insertedNodes.firstNodeInserted() || !insertedNodes.firstNodeInserted()->inShadowIncludingDocument())
+    if (!insertedNodes.firstNodeInserted() || !insertedNodes.firstNodeInserted()->isConnected())
         return;
 
     // Scripts specified in javascript protocol may remove |enclosingBlockOfInsertionPos|
     // during insertion, e.g. <iframe src="javascript:...">
-    if (enclosingBlockOfInsertionPos && !enclosingBlockOfInsertionPos->inShadowIncludingDocument())
+    if (enclosingBlockOfInsertionPos && !enclosingBlockOfInsertionPos->isConnected())
         enclosingBlockOfInsertionPos = nullptr;
 
     VisiblePosition startOfInsertedContent = createVisiblePosition(firstPositionInOrBeforeNode(insertedNodes.firstNodeInserted()));
@@ -1352,7 +1352,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
             if (editingState->isAborted())
                 return;
             // Mutation events (bug 22634) triggered by inserting the <br> might have removed the content we're about to move
-            if (!startOfParagraphToMove.deepEquivalent().inShadowIncludingDocument())
+            if (!startOfParagraphToMove.deepEquivalent().isConnected())
                 return;
         }
 
@@ -1432,7 +1432,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
 
 bool ReplaceSelectionCommand::shouldRemoveEndBR(HTMLBRElement* endBR, const VisiblePosition& originalVisPosBeforeEndBR)
 {
-    if (!endBR || !endBR->inShadowIncludingDocument())
+    if (!endBR || !endBR->isConnected())
         return false;
 
     VisiblePosition visiblePos = VisiblePosition::beforeNode(endBR);

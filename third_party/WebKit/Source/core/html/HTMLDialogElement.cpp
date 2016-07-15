@@ -152,7 +152,7 @@ void HTMLDialogElement::showModal(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, "The element already has an 'open' attribute, and therefore cannot be opened modally.");
         return;
     }
-    if (!inShadowIncludingDocument()) {
+    if (!isConnected()) {
         exceptionState.throwDOMException(InvalidStateError, "The element is not in a Document.");
         return;
     }

@@ -46,7 +46,7 @@ TreeScopeStyleSheetCollection::TreeScopeStyleSheetCollection(TreeScope& treeScop
 
 void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node)
 {
-    if (!node->inShadowIncludingDocument())
+    if (!node->isConnected())
         return;
 
     m_styleSheetCandidateNodes.add(node);

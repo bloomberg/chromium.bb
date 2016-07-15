@@ -78,12 +78,12 @@ intptr_t RetainedDOMInfo::GetHash()
 
 const char* RetainedDOMInfo::GetGroupLabel()
 {
-    return m_root->inShadowIncludingDocument() ? "(Document DOM trees)" : "(Detached DOM trees)";
+    return m_root->isConnected() ? "(Document DOM trees)" : "(Detached DOM trees)";
 }
 
 const char* RetainedDOMInfo::GetLabel()
 {
-    return m_root->inShadowIncludingDocument() ? "Document DOM tree" : "Detached DOM tree";
+    return m_root->isConnected() ? "Document DOM tree" : "Detached DOM tree";
 }
 
 intptr_t RetainedDOMInfo::GetElementCount()

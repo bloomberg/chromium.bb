@@ -792,7 +792,7 @@ void SpellChecker::replaceMisspelledRange(const String& text)
 
 static bool shouldCheckOldSelection(const VisibleSelection& oldSelection)
 {
-    if (!oldSelection.start().inShadowIncludingDocument())
+    if (!oldSelection.start().isConnected())
         return false;
     if (isSelectionInTextField(oldSelection))
         return false;

@@ -218,7 +218,7 @@ void DataTransfer::setDragImage(Element* image, int x, int y)
         return;
 
     IntPoint location(x, y);
-    if (isHTMLImageElement(*image) && !image->inShadowIncludingDocument())
+    if (isHTMLImageElement(*image) && !image->isConnected())
         setDragImageResource(toHTMLImageElement(*image).cachedImage(), location);
     else
         setDragImageElement(image, location);

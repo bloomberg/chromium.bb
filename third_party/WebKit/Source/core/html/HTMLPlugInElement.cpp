@@ -271,7 +271,7 @@ void HTMLPlugInElement::finishParsingChildren()
         return;
 
     setNeedsWidgetUpdate(true);
-    if (inShadowIncludingDocument())
+    if (isConnected())
         lazyReattachIfNeeded();
 }
 

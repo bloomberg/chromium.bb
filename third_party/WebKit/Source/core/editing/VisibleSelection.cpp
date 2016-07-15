@@ -732,7 +732,7 @@ Element* VisibleSelectionTemplate<Strategy>::rootEditableElement() const
 template <typename Strategy>
 static bool isValidPosition(const PositionTemplate<Strategy>& position)
 {
-    if (!position.inShadowIncludingDocument())
+    if (!position.isConnected())
         return false;
 
     if (!position.isOffsetInAnchor())
@@ -763,7 +763,7 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded()
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validatePositionsIfNeeded()
 {
-    if (!m_base.inShadowIncludingDocument() || !m_extent.inShadowIncludingDocument()) {
+    if (!m_base.isConnected() || !m_extent.isConnected()) {
         *this = VisibleSelectionTemplate();
         return;
     }

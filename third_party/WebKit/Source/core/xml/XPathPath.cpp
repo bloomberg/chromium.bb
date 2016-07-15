@@ -112,7 +112,7 @@ Value LocationPath::evaluate(EvaluationContext& evaluationContext) const
     // logical treatment of where you would expect the "root" to be.
     Node* context = evaluationContext.node.get();
     if (m_absolute && context->getNodeType() != Node::DOCUMENT_NODE)  {
-        if (context->inShadowIncludingDocument())
+        if (context->isConnected())
             context = context->ownerDocument();
         else
             context = &NodeTraversal::highestAncestorOrSelf(*context);

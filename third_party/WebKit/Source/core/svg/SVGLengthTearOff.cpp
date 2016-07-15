@@ -59,7 +59,7 @@ inline bool isValidLengthUnit(unsigned short type)
 
 inline bool canResolveRelativeUnits(const SVGElement* contextElement)
 {
-    return contextElement && contextElement->inShadowIncludingDocument();
+    return contextElement && contextElement->isConnected();
 }
 
 inline CSSPrimitiveValue::UnitType toCSSUnitType(unsigned short type)

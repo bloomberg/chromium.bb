@@ -25,7 +25,7 @@ TEST_F(RelocatablePositionTest, position)
     // anchor node is moved away from the document.
     Position expectedPosition(boldface, PositionAnchorType::AfterAnchor);
     Position trackedPosition = relocatablePosition.position();
-    EXPECT_TRUE(trackedPosition.anchorNode()->inShadowIncludingDocument());
+    EXPECT_TRUE(trackedPosition.anchorNode()->isConnected());
     EXPECT_EQ(createVisiblePosition(expectedPosition).deepEquivalent(), createVisiblePosition(trackedPosition).deepEquivalent());
 }
 

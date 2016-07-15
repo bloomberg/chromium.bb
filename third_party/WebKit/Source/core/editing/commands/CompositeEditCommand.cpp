@@ -365,7 +365,7 @@ void CompositeEditCommand::insertNodeAt(Node* insertChild, const Position& editi
         splitTextNode(toText(refChild), offset);
 
         // Mutation events (bug 22634) from the text node insertion may have removed the refChild
-        if (!refChild->inShadowIncludingDocument())
+        if (!refChild->isConnected())
             return;
         insertNodeBefore(insertChild, refChild, editingState);
     } else {
@@ -466,7 +466,7 @@ HTMLSpanElement* CompositeEditCommand::replaceElementWithSpanPreservingChildrenA
     // Returning a raw pointer here is OK because the command is retained by
     // applyCommandToComposite (thus retaining the span), and the span is also
     // in the DOM tree, and thus alive whie it has a parent.
-    DCHECK(command->spanElement()->inShadowIncludingDocument()) << command->spanElement();
+    DCHECK(command->spanElement()->isConnected()) << command->spanElement();
     return command->spanElement();
 }
 
@@ -1048,7 +1048,7 @@ void CompositeEditCommand::pushAnchorElementDown(Element* anchorNode, EditingSta
     if (editingState->isAborted())
         return;
     // Clones of anchorNode have been pushed down, now remove it.
-    if (anchorNode->inShadowIncludingDocument())
+    if (anchorNode->isConnected())
         removeNodePreservingChildren(anchorNode, editingState);
 }
 
@@ -1098,7 +1098,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(const Position& start, 
 
     // Scripts specified in javascript protocol may remove |outerNode|
     // during insertion, e.g. <iframe src="javascript:...">
-    if (!outerNode->inShadowIncludingDocument())
+    if (!outerNode->isConnected())
         return;
 
     // Handle the case of paragraphs with more than one node,
@@ -1315,11 +1315,11 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     if (editingState->isAborted())
         return;
 
-    DCHECK(destination.deepEquivalent().inShadowIncludingDocument()) << destination;
+    DCHECK(destination.deepEquivalent().isConnected()) << destination;
     cleanupAfterDeletion(editingState, destination);
     if (editingState->isAborted())
         return;
-    DCHECK(destination.deepEquivalent().inShadowIncludingDocument()) << destination;
+    DCHECK(destination.deepEquivalent().isConnected()) << destination;
 
     // Add a br if pruning an empty block level element caused a collapse. For example:
     // foo^

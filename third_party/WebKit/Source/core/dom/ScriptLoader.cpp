@@ -96,7 +96,7 @@ void ScriptLoader::didNotifySubtreeInsertionsToDocument()
 
 void ScriptLoader::childrenChanged()
 {
-    if (!m_parserInserted && m_element->inShadowIncludingDocument())
+    if (!m_parserInserted && m_element->isConnected())
         prepareScript(); // FIXME: Provide a real starting line number here.
 }
 
@@ -208,7 +208,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
     if (!client->hasSourceAttribute() && !m_element->hasChildren())
         return false;
 
-    if (!m_element->inShadowIncludingDocument())
+    if (!m_element->isConnected())
         return false;
 
     if (!isScriptTypeSupported(supportLegacyTypes))
@@ -287,7 +287,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
     DCHECK(m_element);
 
     Document* elementDocument = &(m_element->document());
-    if (!m_element->inShadowIncludingDocument() || m_element->document() != elementDocument)
+    if (!m_element->isConnected() || m_element->document() != elementDocument)
         return false;
 
     DCHECK(!m_resource);
@@ -480,7 +480,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
 
 bool ScriptLoader::ignoresLoadRequest() const
 {
-    return m_alreadyStarted || m_isExternalScript || m_parserInserted || !element() || !element()->inShadowIncludingDocument();
+    return m_alreadyStarted || m_isExternalScript || m_parserInserted || !element() || !element()->isConnected();
 }
 
 bool ScriptLoader::isScriptForEventSupported() const

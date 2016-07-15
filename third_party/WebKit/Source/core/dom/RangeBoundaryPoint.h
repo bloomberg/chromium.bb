@@ -39,7 +39,7 @@ public:
 
     explicit RangeBoundaryPoint(const RangeBoundaryPoint&);
 
-    bool inShadowIncludingDocument() const;
+    bool isConnected() const;
     const Position toPosition() const;
 
     Node* container() const;
@@ -122,9 +122,9 @@ inline void RangeBoundaryPoint::ensureOffsetIsValid() const
     m_offsetInContainer = m_childBeforeBoundary->nodeIndex() + 1;
 }
 
-inline bool RangeBoundaryPoint::inShadowIncludingDocument() const
+inline bool RangeBoundaryPoint::isConnected() const
 {
-    return m_containerNode && m_containerNode->inShadowIncludingDocument();
+    return m_containerNode && m_containerNode->isConnected();
 }
 
 inline bool RangeBoundaryPoint::isOffsetValid() const

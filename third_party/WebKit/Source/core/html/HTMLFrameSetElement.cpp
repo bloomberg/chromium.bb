@@ -196,7 +196,7 @@ void HTMLFrameSetElement::defaultEventHandler(Event* evt)
 
 Node::InsertionNotificationRequest HTMLFrameSetElement::insertedInto(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inShadowIncludingDocument() && document().frame()) {
+    if (insertionPoint->isConnected() && document().frame()) {
         // A document using <frameset> likely won't literally have a body, but as far as the client is concerned, the frameset is effectively the body.
         document().willInsertBody();
     }

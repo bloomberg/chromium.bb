@@ -417,7 +417,7 @@ void DOMSelection::addRange(Range* newRange)
     if (newRange->ownerDocument() != m_frame->document())
         return;
 
-    if (!newRange->inShadowIncludingDocument()) {
+    if (!newRange->isConnected()) {
         addConsoleError("The given range isn't in document.");
         return;
     }
@@ -577,7 +577,7 @@ bool DOMSelection::isValidForPosition(Node* node) const
     DCHECK(m_frame);
     if (!node)
         return true;
-    return node->document() == m_frame->document() && node->inShadowIncludingDocument();
+    return node->document() == m_frame->document() && node->isConnected();
 }
 
 void DOMSelection::addConsoleError(const String& message)

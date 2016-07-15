@@ -106,7 +106,7 @@ void CustomElementDefinition::upgrade(Element* element)
     if (!m_observedAttributes.isEmpty())
         enqueueAttributeChangedCallbackForAllAttributes(element);
 
-    if (element->inShadowIncludingDocument() && hasConnectedCallback())
+    if (element->isConnected() && hasConnectedCallback())
         enqueueConnectedCallback(element);
 
     m_constructionStack.append(element);

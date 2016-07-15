@@ -314,7 +314,7 @@ void HTMLObjectElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLObjectElement::childrenChanged(const ChildrenChange& change)
 {
-    if (inShadowIncludingDocument() && !useFallbackContent()) {
+    if (isConnected() && !useFallbackContent()) {
         setNeedsWidgetUpdate(true);
         lazyReattachIfNeeded();
     }
@@ -359,7 +359,7 @@ void HTMLObjectElement::renderFallbackContent()
     if (useFallbackContent())
         return;
 
-    if (!inShadowIncludingDocument())
+    if (!isConnected())
         return;
 
     // Before we give up and use fallback content, check to see if this is a MIME type issue.

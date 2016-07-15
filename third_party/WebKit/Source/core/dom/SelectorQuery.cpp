@@ -228,7 +228,7 @@ inline bool SelectorDataList::canUseFastQuery(const ContainerNode& rootNode) con
         return false;
     if (rootNode.document().inQuirksMode())
         return false;
-    if (!rootNode.inShadowIncludingDocument())
+    if (!rootNode.isConnected())
         return false;
     return m_selectors.size() == 1;
 }

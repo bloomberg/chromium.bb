@@ -193,7 +193,7 @@ bool ProcessingInstruction::sheetLoaded()
 
 void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet)
 {
-    if (!inShadowIncludingDocument()) {
+    if (!isConnected()) {
         DCHECK(!m_sheet);
         return;
     }
@@ -220,7 +220,7 @@ void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& bas
 
 void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet)
 {
-    if (!inShadowIncludingDocument()) {
+    if (!isConnected()) {
         DCHECK(!m_sheet);
         return;
     }
@@ -250,7 +250,7 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
 Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(ContainerNode* insertionPoint)
 {
     CharacterData::insertedInto(insertionPoint);
-    if (!insertionPoint->inShadowIncludingDocument())
+    if (!insertionPoint->isConnected())
         return InsertionDone;
 
     String href;
@@ -266,7 +266,7 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
 void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 {
     CharacterData::removedFrom(insertionPoint);
-    if (!insertionPoint->inShadowIncludingDocument())
+    if (!insertionPoint->isConnected())
         return;
 
     // No need to remove XSLStyleSheet from StyleEngine.

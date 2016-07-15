@@ -416,7 +416,7 @@ Vector<String> DocumentState::toStateVector()
     std::unique_ptr<SavedFormStateMap> stateMap = wrapUnique(new SavedFormStateMap);
     for (const auto& formControl : m_formControls) {
         HTMLFormControlElementWithState* control = formControl.get();
-        DCHECK(control->inShadowIncludingDocument());
+        DCHECK(control->isConnected());
         if (!control->shouldSaveAndRestoreFormControlState())
             continue;
         SavedFormStateMap::AddResult result = stateMap->add(keyGenerator->formKey(*control), nullptr);

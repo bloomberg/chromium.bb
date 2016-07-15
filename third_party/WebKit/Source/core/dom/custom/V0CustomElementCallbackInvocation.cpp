@@ -106,7 +106,7 @@ private:
 
 void CreatedInvocation::dispatch(Element* element)
 {
-    if (element->inShadowIncludingDocument() && element->document().domWindow())
+    if (element->isConnected() && element->document().domWindow())
         V0CustomElementScheduler::scheduleCallback(callbacks(), element, V0CustomElementLifecycleCallbacks::AttachedCallback);
     callbacks()->created(element);
 }

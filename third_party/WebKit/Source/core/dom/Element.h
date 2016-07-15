@@ -563,7 +563,7 @@ public:
     void updateFromCompositorMutation(const CompositorMutation&);
 
     // Helpers for V8DOMActivityLogger::logEvent.  They call logEvent only if
-    // the element is inShadowIncludingDocument() and the context is an isolated world.
+    // the element is isConnected() and the context is an isolated world.
     void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1);
     void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2);
     void logAddElementIfIsolatedWorldAndInDocument(const char element[], const QualifiedName& attr1, const QualifiedName& attr2, const QualifiedName& attr3);
@@ -869,9 +869,9 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
 {
     DCHECK(!childNeedsStyleInvalidation());
     DCHECK(!needsStyleInvalidation());
-    DCHECK(insertionPoint->inShadowIncludingDocument() || insertionPoint->isInShadowTree() || isContainerNode());
-    if (insertionPoint->inShadowIncludingDocument()) {
-        setFlag(InDocumentFlag);
+    DCHECK(insertionPoint->isConnected() || insertionPoint->isInShadowTree() || isContainerNode());
+    if (insertionPoint->isConnected()) {
+        setFlag(IsConnectedFlag);
         insertionPoint->document().incrementNodeCount();
     }
     if (parentOrShadowHostNode()->isInShadowTree())
@@ -883,9 +883,9 @@ inline Node::InsertionNotificationRequest Node::insertedInto(ContainerNode* inse
 
 inline void Node::removedFrom(ContainerNode* insertionPoint)
 {
-    DCHECK(insertionPoint->inShadowIncludingDocument() || isContainerNode() || isInShadowTree());
-    if (insertionPoint->inShadowIncludingDocument()) {
-        clearFlag(InDocumentFlag);
+    DCHECK(insertionPoint->isConnected() || isContainerNode() || isInShadowTree());
+    if (insertionPoint->isConnected()) {
+        clearFlag(IsConnectedFlag);
         insertionPoint->document().decrementNodeCount();
     }
     if (isInShadowTree() && !containingTreeScope().rootNode().isShadowRoot())

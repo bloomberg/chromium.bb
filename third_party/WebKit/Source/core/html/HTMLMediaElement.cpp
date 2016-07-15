@@ -595,7 +595,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(ContainerNode*
     MEDIA_LOG << "insertedInto(" << (void*)this << ", " << insertionPoint << ")";
 
     HTMLElement::insertedInto(insertionPoint);
-    if (insertionPoint->inShadowIncludingDocument()) {
+    if (insertionPoint->isConnected()) {
         UseCounter::count(document(), UseCounter::HTMLMediaElementInDocument);
         if ((!getAttribute(srcAttr).isEmpty() || m_srcObject) && m_networkState == NETWORK_EMPTY) {
             m_ignorePreloadNone = false;
@@ -3504,13 +3504,13 @@ void HTMLMediaElement::ensureMediaControls()
 
     assertShadowRootChildren(shadowRoot);
 
-    if (!shouldShowControls() || !inShadowIncludingDocument())
+    if (!shouldShowControls() || !isConnected())
         mediaControls->hide();
 }
 
 void HTMLMediaElement::configureMediaControls()
 {
-    if (!inShadowIncludingDocument()) {
+    if (!isConnected()) {
         if (mediaControls())
             mediaControls()->hide();
         return;

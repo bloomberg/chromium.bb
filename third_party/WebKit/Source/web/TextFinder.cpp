@@ -496,7 +496,7 @@ void TextFinder::updateFindMatchRects()
 
     size_t deadMatches = 0;
     for (FindMatch& match : m_findMatchesCache) {
-        if (!match.m_range->boundaryPointsValid() || !match.m_range->startContainer()->inShadowIncludingDocument())
+        if (!match.m_range->boundaryPointsValid() || !match.m_range->startContainer()->isConnected())
             match.m_rect = FloatRect();
         else if (!m_findMatchRectsAreValid)
             match.m_rect = findInPageRectFromRange(match.m_range.get());
@@ -586,7 +586,7 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect)
     ASSERT_WITH_SECURITY_IMPLICATION(index < m_findMatchesCache.size());
 
     Range* range = m_findMatchesCache[index].m_range;
-    if (!range->boundaryPointsValid() || !range->startContainer()->inShadowIncludingDocument())
+    if (!range->boundaryPointsValid() || !range->startContainer()->isConnected())
         return -1;
 
     // Check if the match is already selected.

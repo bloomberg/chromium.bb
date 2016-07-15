@@ -115,10 +115,10 @@ void Range::dispose()
     m_ownerDocument->detachRange(this);
 }
 
-bool Range::inShadowIncludingDocument() const
+bool Range::isConnected() const
 {
-    DCHECK_EQ(m_start.inShadowIncludingDocument(), m_end.inShadowIncludingDocument());
-    return m_start.inShadowIncludingDocument();
+    DCHECK_EQ(m_start.isConnected(), m_end.isConnected());
+    return m_start.isConnected();
 }
 
 void Range::setDocument(Document& document)

@@ -187,7 +187,7 @@ void HTMLFrameElementBase::setLocation(const String& str)
 {
     m_URL = AtomicString(str);
 
-    if (inShadowIncludingDocument())
+    if (isConnected())
         openURL(false);
 }
 

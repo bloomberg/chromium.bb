@@ -79,7 +79,7 @@ bool fullscreenElementReady(const Element& element)
     // following are true, and false otherwise:
 
     // |element| is in a document.
-    if (!element.inShadowIncludingDocument())
+    if (!element.isConnected())
         return false;
 
     // |element|'s node document's fullscreen enabled flag is set.
@@ -412,7 +412,7 @@ void Fullscreen::exitFullscreen()
         //    If doc's fullscreen element stack is non-empty and the element now at the top is either
         //    not in a document or its node document is not doc, repeat this substep.
         newTop = fullscreenElementFrom(*currentDoc);
-        if (newTop && (!newTop->inShadowIncludingDocument() || newTop->document() != currentDoc))
+        if (newTop && (!newTop->isConnected() || newTop->document() != currentDoc))
             continue;
 
         // 2. Queue a task to fire an event named fullscreenchange with its bubbles attribute set to true
@@ -599,7 +599,7 @@ void Fullscreen::eventQueueTimerFired(Timer<Fullscreen>*)
         Node* target = event->target()->toNode();
 
         // If the element was removed from our tree, also message the documentElement.
-        if (!target->inShadowIncludingDocument() && document()->documentElement()) {
+        if (!target->isConnected() && document()->documentElement()) {
             DCHECK(isPrefixed(event->type()));
             eventQueue.append(createEvent(event->type(), *document()->documentElement()));
         }

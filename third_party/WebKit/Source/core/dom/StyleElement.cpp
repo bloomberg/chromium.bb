@@ -61,7 +61,7 @@ StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& documen
 {
     TRACE_EVENT0("blink", "StyleElement::processStyleSheet");
     DCHECK(element);
-    DCHECK(element->inShadowIncludingDocument());
+    DCHECK(element->isConnected());
 
     m_registeredAsCandidate = true;
     document.styleEngine().addStyleSheetCandidateNode(element);
@@ -73,7 +73,7 @@ StyleElement::ProcessingResult StyleElement::processStyleSheet(Document& documen
 
 void StyleElement::insertedInto(Element* element, ContainerNode* insertionPoint)
 {
-    if (!insertionPoint->inShadowIncludingDocument() || !element->isInShadowTree())
+    if (!insertionPoint->isConnected() || !element->isInShadowTree())
         return;
     if (ShadowRoot* scope = element->containingShadowRoot())
         scope->registerScopedHTMLStyleChild();
@@ -81,7 +81,7 @@ void StyleElement::insertedInto(Element* element, ContainerNode* insertionPoint)
 
 void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
 {
-    if (!insertionPoint->inShadowIncludingDocument())
+    if (!insertionPoint->isConnected())
         return;
 
     ShadowRoot* shadowRoot = element->containingShadowRoot();
@@ -111,7 +111,7 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
         m_sheet->clearOwnerNode();
 
     if (m_registeredAsCandidate) {
-        DCHECK(element->inShadowIncludingDocument());
+        DCHECK(element->isConnected());
         document.styleEngine().removeStyleSheetCandidateNode(element, element->treeScope());
         m_registeredAsCandidate = false;
     }
@@ -136,7 +136,7 @@ StyleElement::ProcessingResult StyleElement::finishParsingChildren(Element* elem
 
 StyleElement::ProcessingResult StyleElement::process(Element* element)
 {
-    if (!element || !element->inShadowIncludingDocument())
+    if (!element || !element->isConnected())
         return ProcessingSuccessful;
     return createSheet(element, element->textFromChildren());
 }
@@ -169,7 +169,7 @@ static bool shouldBypassMainWorldCSP(Element* element)
 StyleElement::ProcessingResult StyleElement::createSheet(Element* e, const String& text)
 {
     DCHECK(e);
-    DCHECK(e->inShadowIncludingDocument());
+    DCHECK(e->isConnected());
     Document& document = e->document();
 
     const ContentSecurityPolicy* csp = document.contentSecurityPolicy();

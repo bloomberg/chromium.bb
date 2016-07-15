@@ -161,7 +161,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
 {
     DocumentFragment::insertedInto(insertionPoint);
 
-    if (!insertionPoint->inShadowIncludingDocument() || !isOldest())
+    if (!insertionPoint->isConnected() || !isOldest())
         return InsertionDone;
 
     // FIXME: When parsing <video controls>, insertedInto() is called many times without invoking removedFrom.
@@ -180,7 +180,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
 
 void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
 {
-    if (insertionPoint->inShadowIncludingDocument()) {
+    if (insertionPoint->isConnected()) {
         document().styleEngine().shadowRootRemovedFromDocument(this);
         if (m_registeredWithParentShadowRoot) {
             ShadowRoot* root = host().containingShadowRoot();

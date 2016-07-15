@@ -2338,7 +2338,7 @@ void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event, DragOperat
 void EventHandler::updateDragStateAfterEditDragIfNeeded(Element* rootEditableElement)
 {
     // If inserting the dragged contents removed the drag source, we still want to fire dragend at the root editble element.
-    if (dragState().m_dragSrc && !dragState().m_dragSrc->inShadowIncludingDocument())
+    if (dragState().m_dragSrc && !dragState().m_dragSrc->isConnected())
         dragState().m_dragSrc = rootEditableElement;
 }
 

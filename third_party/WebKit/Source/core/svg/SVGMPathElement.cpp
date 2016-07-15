@@ -48,7 +48,7 @@ SVGMPathElement::~SVGMPathElement()
 void SVGMPathElement::buildPendingResource()
 {
     clearResourceReferences();
-    if (!inShadowIncludingDocument())
+    if (!isConnected())
         return;
 
     AtomicString id;
@@ -79,7 +79,7 @@ void SVGMPathElement::clearResourceReferences()
 Node::InsertionNotificationRequest SVGMPathElement::insertedInto(ContainerNode* rootParent)
 {
     SVGElement::insertedInto(rootParent);
-    if (rootParent->inShadowIncludingDocument())
+    if (rootParent->isConnected())
         buildPendingResource();
     return InsertionDone;
 }
@@ -88,7 +88,7 @@ void SVGMPathElement::removedFrom(ContainerNode* rootParent)
 {
     SVGElement::removedFrom(rootParent);
     notifyParentOfPathChange(rootParent);
-    if (rootParent->inShadowIncludingDocument())
+    if (rootParent->isConnected())
         clearResourceReferences();
 }
 

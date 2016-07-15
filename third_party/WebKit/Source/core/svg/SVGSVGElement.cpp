@@ -104,7 +104,7 @@ SVGViewSpec* SVGSVGElement::currentView()
 
 float SVGSVGElement::currentScale() const
 {
-    if (!inShadowIncludingDocument() || !isOutermostSVGSVGElement())
+    if (!isConnected() || !isOutermostSVGSVGElement())
         return 1;
 
     return m_currentScale;
@@ -113,7 +113,7 @@ float SVGSVGElement::currentScale() const
 void SVGSVGElement::setCurrentScale(float scale)
 {
     ASSERT(std::isfinite(scale));
-    if (!inShadowIncludingDocument() || !isOutermostSVGSVGElement())
+    if (!isConnected() || !isOutermostSVGSVGElement())
         return;
 
     m_currentScale = scale;
@@ -500,7 +500,7 @@ LayoutObject* SVGSVGElement::createLayoutObject(const ComputedStyle&)
 
 Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* rootParent)
 {
-    if (rootParent->inShadowIncludingDocument()) {
+    if (rootParent->isConnected()) {
         UseCounter::count(document(), UseCounter::SVGSVGElementInDocument);
         if (rootParent->document().isXMLDocument())
             UseCounter::count(document(), UseCounter::SVGSVGElementInXMLDocument);
@@ -520,7 +520,7 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(ContainerNode* ro
 
 void SVGSVGElement::removedFrom(ContainerNode* rootParent)
 {
-    if (rootParent->inShadowIncludingDocument()) {
+    if (rootParent->isConnected()) {
         SVGDocumentExtensions& svgExtensions = document().accessSVGExtensions();
         svgExtensions.removeTimeContainer(this);
         svgExtensions.removeSVGRootWithRelativeLengthDescendents(this);

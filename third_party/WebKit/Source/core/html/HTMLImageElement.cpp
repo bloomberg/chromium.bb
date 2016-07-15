@@ -96,7 +96,7 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     , m_referrerPolicy(ReferrerPolicyDefault)
 {
     setHasCustomStyleCallbacks();
-    if (form && form->inShadowIncludingDocument()) {
+    if (form && form->isConnected()) {
         m_form = form;
         m_formWasSetByParser = true;
         m_form->associate(*this);
@@ -389,7 +389,7 @@ Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode*
 
     // If we have been inserted from a layoutObject-less document,
     // our loader may have not fetched the image, so do it now.
-    if ((insertionPoint->inShadowIncludingDocument() && !imageLoader().image()) || imageWasModified)
+    if ((insertionPoint->isConnected() && !imageLoader().image()) || imageWasModified)
         imageLoader().updateFromElement(ImageLoader::UpdateNormal, m_referrerPolicy);
 
     return HTMLElement::insertedInto(insertionPoint);

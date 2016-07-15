@@ -134,7 +134,7 @@ void SVGImageElement::svgAttributeChanged(const QualifiedName& attrName)
 
     if (SVGURIReference::isKnownAttribute(attrName)) {
         SVGElement::InvalidationGuard invalidationGuard(this);
-        if (inShadowIncludingDocument())
+        if (isConnected())
             imageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
         else
             m_needsLoaderURIUpdate = true;
@@ -177,7 +177,7 @@ void SVGImageElement::attach(const AttachContext& context)
 Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* rootParent)
 {
     SVGGraphicsElement::insertedInto(rootParent);
-    if (!rootParent->inShadowIncludingDocument())
+    if (!rootParent->isConnected())
         return InsertionDone;
 
     // We can only resolve base URIs properly after tree insertion - hence, URI mutations while

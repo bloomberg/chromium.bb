@@ -828,7 +828,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     }
 
     // If the parent element is not in document tree, there may be no xmlns attribute; just default to the parent's namespace.
-    if (m_defaultNamespaceURI.isNull() && !parentElement->inShadowIncludingDocument())
+    if (m_defaultNamespaceURI.isNull() && !parentElement->isConnected())
         m_defaultNamespaceURI = parentElement->namespaceURI();
 }
 
@@ -1066,7 +1066,7 @@ void XMLDocumentParser::endElementNs()
 
     // The element's parent may have already been removed from document.
     // Parsing continues in this case, but scripts aren't executed.
-    if (!element->inShadowIncludingDocument()) {
+    if (!element->isConnected()) {
         popCurrentNode();
         return;
     }

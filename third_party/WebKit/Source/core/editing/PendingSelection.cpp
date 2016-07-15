@@ -44,13 +44,13 @@ const VisibleSelection& PendingSelection::visibleSelection() const
 static bool isSelectionInDocument(const VisibleSelectionInFlatTree& visibleSelection, const Document& document)
 {
     const PositionInFlatTree& start = visibleSelection.start();
-    if (start.isNotNull() && (!start.inShadowIncludingDocument() || start.document() != document))
+    if (start.isNotNull() && (!start.isConnected() || start.document() != document))
         return false;
     const PositionInFlatTree& end = visibleSelection.end();
-    if (end.isNotNull() && (!end.inShadowIncludingDocument() || end.document() != document))
+    if (end.isNotNull() && (!end.isConnected() || end.document() != document))
         return false;
     const PositionInFlatTree extent = visibleSelection.extent();
-    if (extent.isNotNull() && (!extent.inShadowIncludingDocument() || extent.document() != document))
+    if (extent.isNotNull() && (!extent.isConnected() || extent.document() != document))
         return false;
     return true;
 }

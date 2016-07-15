@@ -25,8 +25,8 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const PositionTemplate<
     }
     DCHECK(m_endPosition.isNotNull());
     DCHECK_EQ(m_startPosition.document(), m_endPosition.document());
-    DCHECK(m_startPosition.inShadowIncludingDocument());
-    DCHECK(m_endPosition.inShadowIncludingDocument());
+    DCHECK(m_startPosition.isConnected());
+    DCHECK(m_endPosition.isConnected());
     DCHECK_LE(m_startPosition, m_endPosition);
 }
 
@@ -48,7 +48,7 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(const Range* range)
 {
     if (!range)
         return;
-    DCHECK(range->inShadowIncludingDocument());
+    DCHECK(range->isConnected());
     m_startPosition = fromPositionInDOMTree<Strategy>(range->startPosition());
     m_endPosition = fromPositionInDOMTree<Strategy>(range->endPosition());
 #if DCHECK_IS_ON()

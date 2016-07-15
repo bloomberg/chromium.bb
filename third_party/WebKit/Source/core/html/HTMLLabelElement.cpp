@@ -233,7 +233,7 @@ Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode*
     InsertionNotificationRequest result = HTMLElement::insertedInto(insertionPoint);
 
     // Trigger for elements outside of forms.
-    if (!formOwner() && insertionPoint->inShadowIncludingDocument())
+    if (!formOwner() && insertionPoint->isConnected())
         document().didAssociateFormControl(this);
 
     return result;

@@ -185,7 +185,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
     DCHECK(startPosition.computeContainerNode()) << startPosition;
     Position positionBeforeStartNode(Position::inParentBeforeNode(*startPosition.computeContainerNode()));
     deleteInsignificantText(startPosition, mostForwardCaretPosition(startPosition));
-    if (!startPosition.inShadowIncludingDocument())
+    if (!startPosition.isConnected())
         startPosition = positionBeforeStartNode;
     if (!isVisuallyEquivalentCandidate(startPosition))
         startPosition = mostForwardCaretPosition(startPosition);
