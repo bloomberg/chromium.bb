@@ -4,6 +4,8 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/ios/rules.gni")
+import("//build/config/mac/symbols.gni")
+import("//build/mac/tweak_info_plist.gni")
 import("//build/util/version.gni")
 import("//chrome/version.gni")
 import("//testing/test.gni")
@@ -53,16 +55,43 @@ source_set("cronet_sources") {
   }
 }
 
+# Tweak |info_plist| with current version and revision.
+tweak_info_plist("tweak_cronet_plist") {
+  info_plist = "Info.plist"
+  args = []
+}
+
+# Compile plist into |output_name|.
+ios_info_plist("compile_cronet_plist") {
+  executable_name = "Cronet"
+  output_name = "$target_gen_dir/Info.plist"
+  info_plist_target = ":tweak_cronet_plist"
+}
+
+# Bundle plist into Cronet.Framework.
+bundle_data("cronet_info_plist") {
+  deps = [
+    ":compile_cronet_plist",
+  ]
+
+  sources = [
+    "$target_gen_dir/Info.plist",
+  ]
+  outputs = [
+    "{{bundle_root_dir}}/Info.plist",
+  ]
+}
+
 ios_framework_bundle("cronet_framework") {
   output_name = "Cronet"
 
   deps = [
+    ":compile_cronet_plist",
+    ":cronet_info_plist",
     ":cronet_sources",
     "//base",
     "//net:net",
   ]
-
-  info_plist = "Info.plist"
 
   libs = [ "UIKit.Framework" ]
 
@@ -75,6 +104,10 @@ ios_framework_bundle("cronet_framework") {
     "Cronet.h",
     "Cronet.mm",
   ]
+
+  configs -= [ "//build/config/compiler:default_symbols" ]
+  configs += [ "//build/config/compiler:symbols" ]
+  configs += [ "//build/config/mac:strip_all" ]
 }
 
 bundle_data("cronet_test_bundle_data") {
@@ -150,8 +183,6 @@ copy("cronet_package_copy") {
     "$root_out_dir/Cronet.framework",
     "//AUTHORS",
     "//chrome/VERSION",
-    "//components/cronet/ios/Cronet.h",
-    "//components/cronet/ios/cronet_c_for_grpc.h",
   ]
   outputs = [
     "$_package_dir/{{source_file_part}}",
