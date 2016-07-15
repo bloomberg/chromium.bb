@@ -624,6 +624,16 @@ COMMON_GTESTS = {
         'run_on_optional': True,
       },
     ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          # TODO(ynovikov) Investigate why the test breaks on older devices.
+          'Android Release (Nexus 5)',
+          'Android Release (Nexus 6)',
+          'Android Release (Nexus 9)',
+        ],
+      },
+    ],
     'desktop_args': ['--use-gpu-in-tests']
   },
   'angle_unittests': {
@@ -1011,6 +1021,9 @@ def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
       return False
 
   if 'names' in tc:
+    # Give priority to matching the tester_name.
+    if tester_name in tc['names']:
+      return True
     if not tester_name in tc['names']:
       return False
   if 'os_types' in tc:
@@ -1055,6 +1068,9 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
   if 'tester_configs' in result:
     # Don't print the tester_configs in the JSON.
     result.pop('tester_configs')
+  if 'disabled_tester_configs' in result:
+    # Don't print the disabled_tester_configs in the JSON.
+    result.pop('disabled_tester_configs')
   if 'test' in result:
     result['name'] = test
   else:

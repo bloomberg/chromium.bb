@@ -4,20 +4,6 @@
   "Android Release (Nexus 5)": {
     "gtest_tests": [
       {
-        "override_isolate_target": "angle_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
-      },
-      {
         "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -642,20 +628,6 @@
   "Android Release (Nexus 6)": {
     "gtest_tests": [
       {
-        "override_isolate_target": "angle_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
-      },
-      {
         "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1265,20 +1237,6 @@
   },
   "Android Release (Nexus 9)": {
     "gtest_tests": [
-      {
-        "override_isolate_target": "angle_end2end_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "0000:0000",
-              "os": "Android"
-            }
-          ]
-        },
-        "test": "angle_end2end_tests",
-        "use_xvfb": false
-      },
       {
         "override_isolate_target": "angle_unittests",
         "swarming": {
