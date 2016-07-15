@@ -51,6 +51,7 @@ enum EditAction {
     EditActionSubscript,
     EditActionSuperscript,
     EditActionUnderline,
+    EditActionStrikeThrough,
     EditActionOutline,
     EditActionUnscript,
     EditActionDrag,

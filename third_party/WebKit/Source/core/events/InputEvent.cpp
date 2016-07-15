@@ -23,6 +23,12 @@ const struct {
     { InputEvent::InputType::DeleteComposedCharacter, "deleteComposedCharacter" },
     { InputEvent::InputType::Undo, "undo" },
     { InputEvent::InputType::Redo, "redo" },
+    { InputEvent::InputType::Bold, "bold" },
+    { InputEvent::InputType::Italic, "italic" },
+    { InputEvent::InputType::Underline, "underline" },
+    { InputEvent::InputType::StrikeThrough, "strikeThrough" },
+    { InputEvent::InputType::Superscript, "superscript" },
+    { InputEvent::InputType::Subscript, "subscript" },
 };
 
 static_assert(arraysize(kInputTypeStringNameMap) == static_cast<size_t>(InputEvent::InputType::NumberOfInputTypes),

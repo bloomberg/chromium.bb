@@ -127,6 +127,21 @@ InputEvent::InputType InputTypeFromCommandType(WebEditingCommandType commandType
     case WebEditingCommandType::InsertBacktab:
     case WebEditingCommandType::InsertText:
         return InputEvent::InputType::InsertText;
+    case WebEditingCommandType::Bold:
+    case WebEditingCommandType::ToggleBold:
+        return InputEvent::InputType::Bold;
+    case WebEditingCommandType::Italic:
+    case WebEditingCommandType::ToggleItalic:
+        return InputEvent::InputType::Italic;
+    case WebEditingCommandType::Underline:
+    case WebEditingCommandType::ToggleUnderline:
+        return InputEvent::InputType::Underline;
+    case WebEditingCommandType::Strikethrough:
+        return InputEvent::InputType::StrikeThrough;
+    case WebEditingCommandType::Superscript:
+        return InputEvent::InputType::Superscript;
+    case WebEditingCommandType::Subscript:
+        return InputEvent::InputType::Subscript;
     default:
         return InputEvent::InputType::None;
     }
@@ -188,7 +203,7 @@ static bool applyCommandToFrame(LocalFrame& frame, EditorCommandSource source, E
         frame.editor().applyStyleToSelection(style, action);
         return true;
     case CommandFromDOM:
-        frame.editor().applyStyle(style);
+        frame.editor().applyStyle(style, action);
         return true;
     }
     NOTREACHED();
@@ -1179,7 +1194,7 @@ static bool executeSetMark(LocalFrame& frame, Event*, EditorCommandSource, const
 static bool executeStrikethrough(LocalFrame& frame, Event*, EditorCommandSource source, const String&)
 {
     CSSPrimitiveValue* lineThrough = CSSPrimitiveValue::createIdentifier(CSSValueLineThrough);
-    return executeToggleStyleInList(frame, source, EditActionUnderline, CSSPropertyWebkitTextDecorationsInEffect, lineThrough);
+    return executeToggleStyleInList(frame, source, EditActionStrikeThrough, CSSPropertyWebkitTextDecorationsInEffect, lineThrough);
 }
 
 static bool executeStyleWithCSS(LocalFrame& frame, Event*, EditorCommandSource, const String& value)

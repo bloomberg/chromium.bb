@@ -38,15 +38,24 @@ test(function() {
         // InsertText
         testExecCommandInputType('insertText', 'a', 'insertText');
         testExecCommandInputType('insertText', 'bc', 'insertText');
-        assert_equals('abc', txt.innerHTML);
+        assert_equals(txt.innerHTML, 'abc');
 
         // Styling
         var selection = window.getSelection();
         selection.collapse(txt, 0);
         selection.extend(txt, 1);
-        // TODO(chongz): Add |inputType| for 'bold'.
-        testExecCommandInputType('bold', 'bc', '');
-        assert_equals('<b>abc</b>', txt.innerHTML);
+        testExecCommandInputType('bold', null, 'bold');
+        assert_equals(txt.innerHTML, '<b>abc</b>');
+        testExecCommandInputType('italic', null, 'italic');
+        assert_equals(txt.innerHTML, '<b><i>abc</i></b>');
+        testExecCommandInputType('underline', null, 'underline');
+        assert_equals(txt.innerHTML, '<b><i><u>abc</u></i></b>');
+        testExecCommandInputType('strikeThrough', null, 'strikeThrough');
+        assert_equals(txt.innerHTML, '<b><i><u><strike>abc</strike></u></i></b>');
+        testExecCommandInputType('superscript', null, 'superscript');
+        assert_equals(txt.innerHTML, '<b><i><u><strike><sup>abc</sup></strike></u></i></b>');
+        testExecCommandInputType('subscript', null, 'subscript');
+        assert_equals(txt.innerHTML, '<b><i><u><strike><sub>abc</sub></strike></u></i></b>');
 
         // Copy shouldn't fire 'input'.
         testExecCommandInputType('copy', null, kNoInputEventFired);

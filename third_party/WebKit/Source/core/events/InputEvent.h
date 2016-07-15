@@ -27,12 +27,22 @@ public:
 
     enum class InputType {
         None,
+        // Insertion.
         InsertText,
         ReplaceContent,
+        // Deletion.
         DeleteContent,
         DeleteComposedCharacter,
+        // Misc.
         Undo,
         Redo,
+        // Styling.
+        Bold,
+        Italic,
+        Underline,
+        StrikeThrough,
+        Superscript,
+        Subscript,
 
         // Add new input types immediately above this line.
         NumberOfInputTypes,

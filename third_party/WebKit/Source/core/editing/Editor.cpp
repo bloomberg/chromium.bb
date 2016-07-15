@@ -138,8 +138,23 @@ InputEvent::InputType inputTypeFromCommand(const CompositeEditCommand* command)
         }
     }
 
-    // TODO(chongz): Handle other edit actions.
-    return InputEvent::InputType::None;
+    switch (command->editingAction()) {
+    // TODO(chongz): Handle remaining edit actions.
+    case EditActionBold:
+        return InputEvent::InputType::Bold;
+    case EditActionItalics:
+        return InputEvent::InputType::Italic;
+    case EditActionUnderline:
+        return InputEvent::InputType::Underline;
+    case EditActionStrikeThrough:
+        return InputEvent::InputType::StrikeThrough;
+    case EditActionSuperscript:
+        return InputEvent::InputType::Superscript;
+    case EditActionSubscript:
+        return InputEvent::InputType::Subscript;
+    default:
+        return InputEvent::InputType::None;
+    }
 }
 
 InputEvent::EventIsComposing isComposingFromCommand(const CompositeEditCommand* command)
