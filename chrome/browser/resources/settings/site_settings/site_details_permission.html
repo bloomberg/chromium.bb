@@ -60,14 +60,14 @@
             <paper-listbox id="permission" class="dropdown-content"
                 on-iron-activate="onPermissionMenuIronActivate_"
                 attr-for-selected="data-permission-value">
-              <div id="allow" class="dropdown-item" role="option"
+              <button id="allow" class="dropdown-item" role="option"
                   data-permission-value$="[[PermissionValues.ALLOW]]">
                 [[i18n_.allowAction]]
-              </div>
-              <div id="block" class="dropdown-item" role="option"
+              </button>
+              <button id="block" class="dropdown-item" role="option"
                   data-permission-value$="[[PermissionValues.BLOCK]]">
                  [[i18n_.blockAction]]
-              </div>
+              </button>
             </paper-listbox>
           </paper-dropdown-menu>
         </div>

@@ -16,10 +16,10 @@
             attr-for-selected="media-picker-value"
             on-iron-activate="onMediaPickerActivate_">
           <template is="dom-repeat" items="[[devices]]">
-            <div class="dropdown-item" role="option"
+            <button class="dropdown-item" role="option"
                 media-picker-value$="[[item.id]]">
               [[item.name]]
-            </div>
+            </button>
           </template>
         </paper-listbox>
       </paper-dropdown-menu>
