@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chrome_webusb_browser_client.h"
+#include "chrome/browser/usb/web_usb_detector.h"
 
 #include <utility>
 
@@ -17,6 +17,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/common/origin_util.h"
+#include "device/core/device_client.h"
+#include "device/usb/usb_device.h"
+#include "device/usb/usb_ids.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -107,17 +110,33 @@ class WebUsbNotificationDelegate : public message_center::NotificationDelegate {
 
 }  // namespace
 
-ChromeWebUsbBrowserClient::ChromeWebUsbBrowserClient() {}
+WebUsbDetector::WebUsbDetector() : observer_(this) {
+  Initialize();
+}
 
-ChromeWebUsbBrowserClient::~ChromeWebUsbBrowserClient() {}
+WebUsbDetector::~WebUsbDetector() {}
 
-void ChromeWebUsbBrowserClient::OnDeviceAdded(
-    const base::string16& product_name,
-    const GURL& landing_page,
-    const std::string& notification_id) {
-  if (!content::IsOriginSecure(landing_page)) {
+void WebUsbDetector::Initialize() {
+  device::UsbService* usb_service =
+      device::DeviceClient::Get()->GetUsbService();
+  if (!usb_service)
+    return;
+
+  observer_.Add(usb_service);
+}
+
+void WebUsbDetector::OnDeviceAdded(scoped_refptr<device::UsbDevice> device) {
+  const base::string16& product_name = device->product_string();
+  if (product_name.empty()) {
     return;
   }
+
+  const GURL& landing_page = device->webusb_landing_page();
+  if (!landing_page.is_valid() || !content::IsOriginSecure(landing_page)) {
+    return;
+  }
+
+  std::string notification_id = device->guid();
 
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   message_center::RichNotificationData rich_notification_data;
@@ -141,8 +160,8 @@ void ChromeWebUsbBrowserClient::OnDeviceAdded(
       std::move(notification));
 }
 
-void ChromeWebUsbBrowserClient::OnDeviceRemoved(
-    const std::string& notification_id) {
+void WebUsbDetector::OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) {
+  std::string notification_id = device->guid();
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
   if (message_center->FindVisibleNotificationById(notification_id)) {

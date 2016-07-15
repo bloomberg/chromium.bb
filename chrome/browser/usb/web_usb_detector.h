@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_WEBUSB_WEBUSB_DETECTOR_H_
-#define COMPONENTS_WEBUSB_WEBUSB_DETECTOR_H_
+#ifndef CHROME_BROWSER_USB_WEB_USB_DETECTOR_H_
+#define CHROME_BROWSER_USB_WEB_USB_DETECTOR_H_
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -13,34 +13,24 @@ namespace device {
 class UsbDevice;
 }
 
-namespace webusb {
-
 class UsbDevice;
-class WebUsbBrowserClient;
 
 class WebUsbDetector : public device::UsbService::Observer {
  public:
-  explicit WebUsbDetector(WebUsbBrowserClient* webusb_browser_client);
-
+  WebUsbDetector();
   ~WebUsbDetector() override;
 
  private:
   // Initializes the WebUsbDetector.
   void Initialize();
 
-  // UsbService::observer override:
+  // device::UsbService::observer:
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
-
-  // UsbService::observer override:
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
-
-  WebUsbBrowserClient* webusb_browser_client_ = nullptr;
 
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbDetector);
 };
 
-}  // namespace webusb
-
-#endif  // COMPONENTS_WEBUSB_WEBUSB_DETECTOR_H_
+#endif  // CHROME_BROWSER_USB_WEB_USB_DETECTOR_H_

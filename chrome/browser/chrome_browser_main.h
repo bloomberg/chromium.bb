@@ -32,6 +32,7 @@ class StartupBrowserCreator;
 class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class ThreeDAPIObserver;
+class WebUsbDetector;
 
 namespace chrome_browser {
 // For use by ShowMissingLocaleMessageBox.
@@ -46,11 +47,6 @@ extern const char kMissingLocaleDataMessage[];
 
 namespace metrics {
 class TrackingSynchronizer;
-}
-
-namespace webusb {
-class WebUsbBrowserClient;
-class WebUsbDetector;
 }
 
 class ChromeBrowserMainParts : public content::BrowserMainParts {
@@ -151,8 +147,7 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // A monitor for attributing power consumption to origins.
   std::unique_ptr<ProcessPowerCollector> process_power_collector_;
 
-  std::unique_ptr<webusb::WebUsbBrowserClient> webusb_browser_client_;
-  std::unique_ptr<webusb::WebUsbDetector> webusb_detector_;
+  std::unique_ptr<WebUsbDetector> web_usb_detector_;
 #endif
 
   // Vector of additional ChromeBrowserMainExtraParts.

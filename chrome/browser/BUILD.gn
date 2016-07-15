@@ -380,7 +380,6 @@ split_static_library("browser") {
       "//components/visitedlink/browser",
       "//components/visitedlink/common",
       "//components/web_cache/browser",
-      "//components/webusb",
       "//content/app/resources",
       "//device/core",
       "//device/usb/mojo",

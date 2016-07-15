@@ -257,8 +257,7 @@
 #endif  // defined(USE_AURA)
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/chrome_webusb_browser_client.h"
-#include "components/webusb/webusb_detector.h"
+#include "chrome/browser/usb/web_usb_detector.h"
 #endif
 
 #if defined(MOJO_SHELL_CLIENT)
@@ -1368,9 +1367,7 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures) &&
       base::FeatureList::IsEnabled(features::kWebUsb)) {
-    webusb_browser_client_.reset(new ChromeWebUsbBrowserClient());
-    webusb_detector_.reset(
-        new webusb::WebUsbDetector(webusb_browser_client_.get()));
+    web_usb_detector_.reset(new WebUsbDetector());
   }
 #endif
 
@@ -1973,8 +1970,7 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // shut down.
   process_power_collector_.reset();
 
-  webusb_detector_.reset();
-  webusb_browser_client_.reset();
+  web_usb_detector_.reset();
 
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PostMainMessageLoopRun();

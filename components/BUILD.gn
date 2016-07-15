@@ -267,7 +267,6 @@ test("components_unittests") {
       "//components/proximity_auth:unit_tests",
       "//components/storage_monitor:unit_tests",
       "//components/web_modal:unit_tests",
-      "//components/webusb:unit_tests",
     ]
   }
 

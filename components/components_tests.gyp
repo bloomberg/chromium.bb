@@ -986,9 +986,6 @@
     'webdata_unittest_sources': [
       'webdata/common/web_database_migration_unittest.cc',
     ],
-    'webusb_detector_unittest_sources': [
-      'webusb/webusb_detector_unittest.cc',
-    ],
   },
   'targets': [
     {
@@ -1524,7 +1521,6 @@
           'sources': [
             '<@(feedback_unittest_sources)',
             '<@(proximity_auth_unittest_sources)',
-            '<@(webusb_detector_unittest_sources)',
           ],
           'sources!': [
             'variations/variations_request_scheduler_mobile_unittest.cc',
@@ -1546,7 +1542,6 @@
             'components.gyp:pref_registry_test_support',
             'components.gyp:proximity_auth',
             'components.gyp:proximity_auth_test_support',
-            'components.gyp:webusb',
           ],
         }],
         ['chromeos==1', {
