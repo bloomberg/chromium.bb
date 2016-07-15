@@ -799,8 +799,8 @@ static bool followBlockElementStyle(const Node* node)
         return false;
 
     const HTMLElement& element = toHTMLElement(*node);
-    return element.computedStyle()->display() == LIST_ITEM
-        || element.computedStyle()->display() == TABLE_CELL
+    return isListItem(node)
+        || isTableCell(node)
         || element.hasTagName(preTag)
         || element.hasTagName(h1Tag)
         || element.hasTagName(h2Tag)
@@ -830,7 +830,7 @@ static bool handleStyleSpansBeforeInsertion(ReplacementFragment& fragment, const
     // |node| can be an inline element like <br> under <li>
     // e.g.) editing/execCommand/switch-list-type.html
     //       editing/deleting/backspace-merge-into-block.html
-    if (node->computedStyle()->display() == INLINE) {
+    if (isInline(node)) {
         node = enclosingBlock(insertionPos.anchorNode());
         if (!node)
             return false;

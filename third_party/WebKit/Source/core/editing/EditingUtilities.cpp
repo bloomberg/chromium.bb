@@ -765,7 +765,11 @@ bool isEnclosingBlock(const Node* node)
 
 bool isInline(const Node* node)
 {
-    return node && node->computedStyle()->display() == INLINE;
+    if (!node)
+        return false;
+
+    const ComputedStyle* style = node->computedStyle();
+    return style && style->display() == INLINE;
 }
 
 // TODO(yosin) Deploy this in all of the places where |enclosingBlockFlow()| and
