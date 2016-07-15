@@ -1143,7 +1143,7 @@ hmi_homescreen_setting_create(void)
 	weston_config_section_get_uint(
 		shellSection, "home-id", &setting->home.id, 1007);
 
-	weston_config_section_get_uint(
+	weston_config_section_get_color(
 		shellSection, "workspace-background-color",
 		&setting->workspace_background.color, 0x99000000);
 

@@ -85,6 +85,10 @@ weston_config_section_get_uint(struct weston_config_section *section,
 			       const char *key,
 			       uint32_t *value, uint32_t default_value);
 int
+weston_config_section_get_color(struct weston_config_section *section,
+				const char *key,
+				uint32_t *color, uint32_t default_color);
+int
 weston_config_section_get_double(struct weston_config_section *section,
 				 const char *key,
 				 double *value, double default_value);

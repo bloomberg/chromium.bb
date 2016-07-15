@@ -571,8 +571,8 @@ panel_create(struct desktop *desktop)
 	free (clock_format_option);
 
 	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
-	weston_config_section_get_uint(s, "panel-color",
-				       &panel->color, 0xaa000000);
+	weston_config_section_get_color(s, "panel-color",
+					&panel->color, 0xaa000000);
 
 	panel_add_launchers(panel, desktop);
 
@@ -1068,8 +1068,8 @@ background_create(struct desktop *desktop)
 	s = weston_config_get_section(desktop->config, "shell", NULL, NULL);
 	weston_config_section_get_string(s, "background-image",
 					 &background->image, NULL);
-	weston_config_section_get_uint(s, "background-color",
-				       &background->color, 0);
+	weston_config_section_get_color(s, "background-color",
+					&background->color, 0x00000000);
 
 	weston_config_section_get_string(s, "background-type",
 					 &type, "tile");
