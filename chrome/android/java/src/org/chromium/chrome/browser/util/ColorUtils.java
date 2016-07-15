@@ -20,6 +20,7 @@ public class ColorUtils {
     private static final float CONTRAST_LIGHT_ITEM_THRESHOLD = 3f;
     private static final float LIGHTNESS_OPAQUE_BOX_THRESHOLD = 0.82f;
     private static final float LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 0.2f;
+    private static final float MAX_LUMINANCE_FOR_VALID_THEME_COLOR = 0.94f;
 
     /** Percentage to darken a color by when setting the status bar color. */
     private static final float DARKEN_COLOR_FRACTION = 0.6f;
@@ -154,5 +155,14 @@ public class ColorUtils {
      */
     public static boolean isUsingDefaultToolbarColor(Resources resources, int color) {
         return color == ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
+    }
+
+    /**
+     * Determine if a theme color is valid. A theme color is invalid if its luminance is > 0.94.
+     * @param color The color to test.
+     * @return True if the theme color is valid.
+     */
+    public static boolean isValidThemeColor(int color) {
+        return ColorUtils.getLightnessForColor(color) <= MAX_LUMINANCE_FOR_VALID_THEME_COLOR;
     }
 }
