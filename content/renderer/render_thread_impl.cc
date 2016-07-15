@@ -46,7 +46,6 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/memory_coordinator/child/child_memory_coordinator_impl.h"
 #include "components/scheduler/child/compositor_worker_scheduler.h"
 #include "components/scheduler/child/webthread_base.h"
 #include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
@@ -823,15 +822,6 @@ void RenderThreadImpl::Init(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this)),
       base::Bind(&RenderThreadImpl::OnSyncMemoryPressure,
                  base::Unretained(this))));
-
-  if (memory_coordinator::IsEnabled()) {
-    // TODO(bashi): Revisit how to manage the lifetime of
-    // ChildMemoryCoordinatorImpl.
-    // https://codereview.chromium.org/2094583002/#msg52
-    memory_coordinator_.reset(
-        new memory_coordinator::ChildMemoryCoordinatorImpl(
-            GetRemoteInterfaces()));
-  }
 
   int num_raster_threads = 0;
   std::string string_value =

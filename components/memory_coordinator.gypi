@@ -10,22 +10,18 @@
       'type': 'static_library',
       'sources': [
         'memory_coordinator/public/interfaces/child_memory_coordinator.mojom',
-        'memory_coordinator/public/interfaces/memory_coordinator.mojom',
       ],
       'includes': [ '../mojo/mojom_bindings_generator.gypi' ],
     },
     {
       # GN version: //components/memory_coordinator/common
       'target_name': 'memory_coordinator_common',
-      'type': 'static_library',
+      'type': 'none',
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
         'memory_coordinator_mojo_bindings',
       ],
       'sources': [
         'memory_coordinator/common/memory_coordinator_client.h',
-        'memory_coordinator/common/memory_coordinator_features.cc',
-        'memory_coordinator/common/memory_coordinator_features.h',
       ],
     },
     {
@@ -34,28 +30,12 @@
       'type': 'static_library',
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/services/shell/shell_public.gyp:shell_interfaces',
         'memory_coordinator_common',
         'memory_coordinator_mojo_bindings',
       ],
       'sources': [
         'memory_coordinator/child/child_memory_coordinator_impl.cc',
         'memory_coordinator/child/child_memory_coordinator_impl.h',
-      ],
-    },
-    {
-      # GN version: //components/memory_coordinator/browser
-      'target_name': 'memory_coordinator_browser',
-      'type': 'static_library',
-      'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/services/shell/shell_public.gyp:shell_interfaces',
-        'memory_coordinator_common',
-        'memory_coordinator_mojo_bindings',
-      ],
-      'sources': [
-        'memory_coordinator/browser/memory_coordinator.cc',
-        'memory_coordinator/browser/memory_coordinator.h',
       ],
     },
   ],

@@ -5,12 +5,6 @@
 source_set("common") {
   sources = [
     "memory_coordinator_client.h",
-    "memory_coordinator_features.cc",
-    "memory_coordinator_features.h",
-  ]
-
-  deps = [
-    "//base",
   ]
 
   public_deps = [

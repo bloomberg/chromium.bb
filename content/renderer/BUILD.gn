@@ -37,7 +37,6 @@ source_set("renderer") {
     "//cc/proto",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//components/memory_coordinator/child",
     "//components/scheduler:scheduler",
     "//components/url_formatter",
     "//content:resources",

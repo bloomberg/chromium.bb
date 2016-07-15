@@ -36,8 +36,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/memory_coordinator/browser/memory_coordinator.h"
-#include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/tracing/browser/trace_config_file.h"
 #include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "components/tracing/common/trace_to_console.h"
@@ -723,10 +721,6 @@ int BrowserMainLoop::PreCreateThreads() {
       parsed_command_line_));
 #endif
 
-  if (memory_coordinator::IsEnabled()) {
-    memory_coordinator_.reset(new memory_coordinator::MemoryCoordinator);
-  }
-
 #if defined(ENABLE_PLUGINS)
   // Prior to any processing happening on the IO thread, we create the
   // plugin service as it is predominantly used from the IO thread,
@@ -1003,7 +997,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
   memory_pressure_monitor_.reset();
-  memory_coordinator_.reset();
 
 #if defined(OS_MACOSX)
   BrowserCompositorMac::DisableRecyclingForShutdown();
