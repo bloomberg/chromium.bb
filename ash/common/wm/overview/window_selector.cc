@@ -264,8 +264,9 @@ views::Widget* CreateTextFilter(views::TextfieldController* controller,
 // static
 bool WindowSelector::IsSelectable(WmWindow* window) {
   wm::WindowState* state = window->GetWindowState();
-  if (state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED ||
-      state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED) {
+  if (!ash::MaterialDesignController::IsOverviewMaterial() &&
+      (state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED ||
+       state->GetStateType() == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED)) {
     return false;
   }
   return state->IsUserPositionable();
@@ -379,6 +380,14 @@ void WindowSelector::Init(const WindowList& windows) {
 // may cause other, unrelated classes, (ie PanelLayoutManager) to make indirect
 // calls to restoring_minimized_windows() on a partially destructed object.
 void WindowSelector::Shutdown() {
+  size_t remaining_items = 0;
+  for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
+    for (WindowSelectorItem* window_selector_item : window_grid->window_list())
+      window_selector_item->RestoreWindow();
+    remaining_items += window_grid->size();
+  }
+
+  // Setting focus after restoring windows' state avoids unnecessary animations.
   ResetFocusRestoreWindow(true);
   RemoveAllObservers();
 
@@ -387,13 +396,6 @@ void WindowSelector::Shutdown() {
     // Un-hide the callout widgets for panels. It is safe to call this for
     // root_windows that don't contain any panel windows.
     PanelLayoutManager::Get(window)->SetShowCalloutWidgets(true);
-  }
-
-  size_t remaining_items = 0;
-  for (std::unique_ptr<WindowGrid>& window_grid : grid_list_) {
-    for (WindowSelectorItem* window_selector_item : window_grid->window_list())
-      window_selector_item->RestoreWindow();
-    remaining_items += window_grid->size();
   }
 
   DCHECK(num_items_ >= remaining_items);

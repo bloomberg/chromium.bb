@@ -249,7 +249,13 @@ base::Closure ScopedTransformOverviewWindow::OverviewContentMask::
 ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(WmWindow* window)
     : window_(window),
       determined_original_window_shape_(false),
-      minimized_(window->GetShowState() == ui::SHOW_STATE_MINIMIZED),
+      original_visibility_(
+          window->GetWindowState()->GetStateType() ==
+                  wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED
+              ? ORIGINALLY_DOCKED_MINIMIZED
+              : (window->GetShowState() == ui::SHOW_STATE_MINIMIZED
+                     ? ORIGINALLY_MINIMIZED
+                     : ORIGINALLY_VISIBLE)),
       ignored_by_shelf_(window->GetWindowState()->ignored_by_shelf()),
       overview_started_(false),
       original_transform_(window->GetTargetTransform()),
@@ -269,7 +275,11 @@ void ScopedTransformOverviewWindow::RestoreWindow() {
           OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
           window_);
   gfx::Transform transform;
-  if (minimized_ && window_->GetShowState() != ui::SHOW_STATE_MINIMIZED) {
+  if ((original_visibility_ == ORIGINALLY_MINIMIZED &&
+       window_->GetShowState() != ui::SHOW_STATE_MINIMIZED) ||
+      (original_visibility_ == ORIGINALLY_DOCKED_MINIMIZED &&
+       window_->GetWindowState()->GetStateType() !=
+           wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED)) {
     // Setting opacity 0 and visible false ensures that the property change
     // to SHOW_STATE_MINIMIZED will not animate the window from its original
     // bounds to the minimized position.
@@ -331,13 +341,18 @@ gfx::Rect ScopedTransformOverviewWindow::GetTargetBoundsInScreen() const {
 }
 
 void ScopedTransformOverviewWindow::ShowWindowIfMinimized() {
-  if (minimized_ && window_->GetShowState() == ui::SHOW_STATE_MINIMIZED)
+  if ((original_visibility_ == ORIGINALLY_MINIMIZED &&
+       window_->GetShowState() == ui::SHOW_STATE_MINIMIZED) ||
+      (original_visibility_ == ORIGINALLY_DOCKED_MINIMIZED &&
+       window_->GetWindowState()->GetStateType() ==
+           wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED)) {
     window_->Show();
+  }
 }
 
 void ScopedTransformOverviewWindow::ShowWindowOnExit() {
-  if (minimized_) {
-    minimized_ = false;
+  if (original_visibility_ != ORIGINALLY_VISIBLE) {
+    original_visibility_ = ORIGINALLY_VISIBLE;
     original_transform_ = gfx::Transform();
     original_opacity_ = kRestoreWindowOpacity;
   }

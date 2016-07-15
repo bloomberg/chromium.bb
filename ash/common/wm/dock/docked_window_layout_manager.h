@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/shell_observer.h"
 #include "ash/common/wm/dock/dock_types.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/window_state_observer.h"
@@ -47,6 +48,7 @@ class ASH_EXPORT DockedWindowLayoutManager
       public WmRootWindowControllerObserver,
       public WmWindowObserver,
       public WmActivationObserver,
+      public ShellObserver,
       public keyboard::KeyboardControllerObserver,
       public wm::WindowStateObserver {
  public:
@@ -153,6 +155,13 @@ class ASH_EXPORT DockedWindowLayoutManager
   // WmActivationObserver:
   void OnWindowActivated(WmWindow* gained_active,
                          WmWindow* lost_active) override;
+
+  // ShellObserver:
+  void OnShelfAlignmentChanged(WmWindow* root_window) override;
+  void OnFullscreenStateChanged(bool is_fullscreen,
+                                WmWindow* root_window) override;
+  void OnOverviewModeStarting() override;
+  void OnOverviewModeEnded() override;
 
  private:
   struct CompareMinimumHeight;
@@ -276,6 +285,9 @@ class ASH_EXPORT DockedWindowLayoutManager
 
   // Target bounds of a docked window being dragged.
   gfx::Rect dragged_bounds_;
+
+  // True while in overview mode.
+  bool in_overview_;
 
   // Side of the screen that the dock is positioned at.
   DockedAlignment alignment_;

@@ -9,6 +9,7 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_resizer.h"
@@ -419,6 +420,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(WmWindow* dock_container)
       in_fullscreen_(root_window_controller_->GetWorkspaceWindowState() ==
                      wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN),
       docked_width_(0),
+      in_overview_(false),
       alignment_(DOCKED_ALIGNMENT_NONE),
       preferred_alignment_(DOCKED_ALIGNMENT_NONE),
       event_source_(DOCKED_ACTION_SOURCE_UNKNOWN),
@@ -426,6 +428,7 @@ DockedWindowLayoutManager::DockedWindowLayoutManager(WmWindow* dock_container)
       last_action_time_(base::Time::Now()),
       background_widget_(nullptr) {
   DCHECK(dock_container);
+  dock_container_->GetShell()->AddShellObserver(this);
   dock_container->GetShell()->AddActivationObserver(this);
   root_window_controller_->AddObserver(this);
 }
@@ -454,6 +457,7 @@ void DockedWindowLayoutManager::Shutdown() {
     child->GetWindowState()->RemoveObserver(this);
   }
   dock_container_->GetShell()->RemoveActivationObserver(this);
+  dock_container_->GetShell()->RemoveShellObserver(this);
   root_window_controller_->RemoveObserver(this);
 }
 
@@ -899,14 +903,47 @@ void DockedWindowLayoutManager::OnWindowActivated(WmWindow* gained_active,
       break;
     }
   }
-  if (ancestor)
+  if (ancestor) {
+    // Window activation from overview mode may unminimize a window and require
+    // layout update.
+    MaybeMinimizeChildrenExcept(gained_active);
+    Relayout();
     UpdateStacking(ancestor);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// DockedWindowLayoutManager, ShellObserver implementation:
+
+void DockedWindowLayoutManager::OnShelfAlignmentChanged(WmWindow* root_window) {
+}
+
+void DockedWindowLayoutManager::OnFullscreenStateChanged(
+    bool is_fullscreen,
+    WmWindow* root_window) {}
+
+void DockedWindowLayoutManager::OnOverviewModeStarting() {
+  in_overview_ = true;
+  if (!ash::MaterialDesignController::IsOverviewMaterial())
+    return;
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
+}
+
+void DockedWindowLayoutManager::OnOverviewModeEnded() {
+  in_overview_ = false;
+  if (!ash::MaterialDesignController::IsOverviewMaterial())
+    return;
+  UpdateDockBounds(DockedWindowLayoutManagerObserver::CHILD_CHANGED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DockedWindowLayoutManager private implementation:
 
 void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(WmWindow* child) {
+  WindowSelectorController* window_selector_controller =
+      WmShell::Get()->window_selector_controller();
+  if (window_selector_controller->IsRestoringMinimizedWindows())
+    return;
   // Minimize any windows that don't fit without overlap.
   const gfx::Rect work_area =
       dock_container_->GetDisplayNearestWindow().work_area();
@@ -1046,7 +1083,11 @@ DockedAlignment DockedWindowLayoutManager::GetEdgeNearestWindow(
 }
 
 void DockedWindowLayoutManager::Relayout() {
-  if (in_layout_)
+  // Suppress layouts during overview mode while restoring minimized windows so
+  // that docked animations are not interfering with the overview mode.
+  WindowSelectorController* window_selector_controller =
+      WmShell::Get()->window_selector_controller();
+  if (in_layout_ || (window_selector_controller->IsRestoringMinimizedWindows()))
     return;
   if (alignment_ == DOCKED_ALIGNMENT_NONE && !is_dragged_window_docked_)
     return;
@@ -1241,7 +1282,8 @@ void DockedWindowLayoutManager::FanOutChildren(
 
 void DockedWindowLayoutManager::UpdateDockBounds(
     DockedWindowLayoutManagerObserver::Reason reason) {
-  int dock_inset = docked_width_ + (docked_width_ > 0 ? kMinDockGap : 0);
+  int docked_width = in_overview_ ? 0 : docked_width_;
+  int dock_inset = docked_width + (docked_width > 0 ? kMinDockGap : 0);
   const gfx::Rect work_area =
       dock_container_->GetDisplayNearestWindow().work_area();
   gfx::Rect bounds = gfx::Rect(
@@ -1257,7 +1299,7 @@ void DockedWindowLayoutManager::UpdateDockBounds(
   gfx::Rect background_bounds(docked_bounds_);
   if (shelf_observer_)
     background_bounds.Subtract(shelf_observer_->shelf_bounds_in_screen());
-  if (docked_width_ > 0) {
+  if (docked_width > 0) {
     if (!background_widget_)
       background_widget_.reset(new DockedBackgroundWidget(this));
     background_widget_->SetBackgroundBounds(background_bounds, alignment_);

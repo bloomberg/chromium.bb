@@ -122,6 +122,12 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   friend class WindowSelectorTest;
   class OverviewContentMask;
 
+  enum OriginalVisibility {
+    ORIGINALLY_VISIBLE,
+    ORIGINALLY_MINIMIZED,
+    ORIGINALLY_DOCKED_MINIMIZED,
+  };
+
   // Shows the window if it was minimized.
   void ShowWindowIfMinimized();
 
@@ -144,9 +150,9 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   // been determined that window shape was not originally set on the |window_|.
   bool determined_original_window_shape_;
 
-  // If true, the window was minimized and should be restored if the window
-  // was not selected.
-  bool minimized_;
+  // Original visibility of |window_| upon entering overview mode that needs to
+  // be restored unless the window gets selected.
+  OriginalVisibility original_visibility_;
 
   // Tracks if this window was ignored by the shelf.
   bool ignored_by_shelf_;
