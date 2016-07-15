@@ -42,6 +42,8 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
 
   // P2PSocketHost overrides.
   bool Init(const net::IPEndPoint& local_address,
+            uint16_t min_port,
+            uint16_t max_port,
             const P2PHostAndIPEndPoint& remote_address) override;
   void Send(const net::IPEndPoint& to,
             const std::vector<char>& data,

@@ -59,6 +59,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::P2PSendPacketMetrics)
   IPC_STRUCT_TRAITS_MEMBER(send_time)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::P2PPortRange)
+  IPC_STRUCT_TRAITS_MEMBER(min_port)
+  IPC_STRUCT_TRAITS_MEMBER(max_port)
+IPC_STRUCT_TRAITS_END()
+
 // P2P Socket messages sent from the browser to the renderer.
 
 IPC_MESSAGE_CONTROL3(P2PMsg_NetworkListChanged,
@@ -104,10 +109,11 @@ IPC_MESSAGE_CONTROL2(P2PHostMsg_GetHostAddress,
                      std::string /* host_name */,
                      int32_t /* request_id */)
 
-IPC_MESSAGE_CONTROL4(P2PHostMsg_CreateSocket,
+IPC_MESSAGE_CONTROL5(P2PHostMsg_CreateSocket,
                      content::P2PSocketType /* type */,
                      int /* socket_id */,
                      net::IPEndPoint /* local_address */,
+                     content::P2PPortRange /* port_range */,
                      content::P2PHostAndIPEndPoint /* remote_address */)
 
 IPC_MESSAGE_CONTROL3(P2PHostMsg_AcceptIncomingTcpConnection,

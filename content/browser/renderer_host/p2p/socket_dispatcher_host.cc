@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/p2p/socket_host.h"
 #include "content/common/p2p_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -237,9 +238,17 @@ void P2PSocketDispatcherHost::OnGetHostAddress(const std::string& host_name,
 }
 
 void P2PSocketDispatcherHost::OnCreateSocket(
-    P2PSocketType type, int socket_id,
+    P2PSocketType type,
+    int socket_id,
     const net::IPEndPoint& local_address,
+    const P2PPortRange& port_range,
     const P2PHostAndIPEndPoint& remote_address) {
+  if (port_range.min_port < port_range.max_port ||
+      (port_range.min_port == 0 && port_range.max_port != 0)) {
+    bad_message::ReceivedBadMessage(this, bad_message::SDH_INVALID_PORT_RANGE);
+    return;
+  }
+
   if (LookupSocket(socket_id)) {
     LOG(ERROR) << "Received P2PHostMsg_CreateSocket for socket "
         "that already exists.";
@@ -254,7 +263,8 @@ void P2PSocketDispatcherHost::OnCreateSocket(
     return;
   }
 
-  if (socket->Init(local_address, remote_address)) {
+  if (socket->Init(local_address, port_range.min_port, port_range.max_port,
+                   remote_address)) {
     sockets_[socket_id] = socket.release();
 
     if (dump_incoming_rtp_packet_ || dump_outgoing_rtp_packet_) {

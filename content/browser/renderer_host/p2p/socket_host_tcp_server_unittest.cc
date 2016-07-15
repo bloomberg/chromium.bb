@@ -105,8 +105,7 @@ class P2PSocketHostTcpServerTest : public testing::Test {
     P2PHostAndIPEndPoint dest;
     dest.ip_address = ParseAddress(kTestIpAddress1, kTestPort1);
 
-    socket_host_->Init(ParseAddress(kTestLocalIpAddress, 0),
-                       dest);
+    socket_host_->Init(ParseAddress(kTestLocalIpAddress, 0), 0, 0, dest);
     EXPECT_TRUE(socket_->listening());
   }
 

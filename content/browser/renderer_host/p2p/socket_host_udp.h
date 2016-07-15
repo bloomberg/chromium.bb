@@ -13,6 +13,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -31,6 +32,12 @@ class P2PMessageThrottler;
 
 class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
  public:
+  typedef base::Callback<std::unique_ptr<net::DatagramServerSocket>()>
+      DatagramServerSocketFactory;
+  P2PSocketHostUdp(IPC::Sender* message_sender,
+                   int socket_id,
+                   P2PMessageThrottler* throttler,
+                   const DatagramServerSocketFactory& socket_factory);
   P2PSocketHostUdp(IPC::Sender* message_sender,
                    int socket_id,
                    P2PMessageThrottler* throttler);
@@ -38,6 +45,8 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
 
   // P2PSocketHost overrides.
   bool Init(const net::IPEndPoint& local_address,
+            uint16_t min_port,
+            uint16_t max_port,
             const P2PHostAndIPEndPoint& remote_address) override;
   void Send(const net::IPEndPoint& to,
             const std::vector<char>& data,
@@ -84,6 +93,7 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
                         int32_t transport_sequence_number,
                         base::TimeTicks send_time,
                         int result);
+  static std::unique_ptr<net::DatagramServerSocket> DefaultSocketFactory();
 
   std::unique_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBuffer> recv_buffer_;
@@ -100,6 +110,9 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
 
   // Keep track of the send socket buffer size under experiment.
   size_t send_buffer_size_;
+
+  // Callback object that returns a new socket when invoked.
+  DatagramServerSocketFactory socket_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PSocketHostUdp);
 };

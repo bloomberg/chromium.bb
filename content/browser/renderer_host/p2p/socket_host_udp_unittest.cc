@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_byteorder.h"
 #include "content/browser/renderer_host/p2p/socket_host_test_utils.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
@@ -42,11 +43,14 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
  public:
   typedef std::pair<net::IPEndPoint, std::vector<char> > UDPPacket;
 
-  // P2PSocketHostUdp destroyes a socket on errors so sent packets
+  // P2PSocketHostUdp destroys a socket on errors so sent packets
   // need to be stored outside of this object.
-  explicit FakeDatagramServerSocket(std::deque<UDPPacket>* sent_packets)
-      : sent_packets_(sent_packets) {
-  }
+  FakeDatagramServerSocket(std::deque<UDPPacket>* sent_packets,
+                           std::vector<uint16_t>* used_ports)
+      : sent_packets_(sent_packets),
+        recv_address_(nullptr),
+        recv_size_(0),
+        used_ports_(used_ports) {}
 
   void Close() override {}
 
@@ -61,6 +65,14 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
   }
 
   int Listen(const net::IPEndPoint& address) override {
+    if (used_ports_) {
+      for (auto used_port : *used_ports_) {
+        if (used_port == address.port())
+          return -1;
+      }
+      used_ports_->push_back(address.port());
+    }
+
     address_ = address;
     return 0;
   }
@@ -163,7 +175,15 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
   net::IPEndPoint* recv_address_;
   int recv_size_;
   net::CompletionCallback recv_callback_;
+  std::vector<uint16_t>* used_ports_;
 };
+
+std::unique_ptr<net::DatagramServerSocket> CreateFakeDatagramServerSocket(
+    std::deque<FakeDatagramServerSocket::UDPPacket>* sent_packets,
+    std::vector<uint16_t>* used_ports) {
+  return base::WrapUnique(
+      new FakeDatagramServerSocket(sent_packets, used_ports));
+}
 
 }  // namespace
 
@@ -177,12 +197,13 @@ class P2PSocketHostUdpTest : public testing::Test {
         Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSocketCreated::ID))))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
 
-    socket_host_.reset(new P2PSocketHostUdp(&sender_, 0, &throttler_));
-    socket_ = new FakeDatagramServerSocket(&sent_packets_);
-    socket_host_->socket_.reset(socket_);
+    socket_host_.reset(new P2PSocketHostUdp(
+        &sender_, 0, &throttler_,
+        base::Bind(&CreateFakeDatagramServerSocket, &sent_packets_, nullptr)));
 
     local_address_ = ParseAddress(kTestLocalIpAddress, kTestPort1);
-    socket_host_->Init(local_address_, P2PHostAndIPEndPoint());
+    socket_host_->Init(local_address_, 0, 0, P2PHostAndIPEndPoint());
+    socket_ = GetSocketFromHost(socket_host_.get());
 
     dest1_ = ParseAddress(kTestIpAddress1, kTestPort1);
     dest2_ = ParseAddress(kTestIpAddress2, kTestPort2);
@@ -191,9 +212,14 @@ class P2PSocketHostUdpTest : public testing::Test {
     throttler_.SetTiming(std::move(timing));
   }
 
+  static FakeDatagramServerSocket* GetSocketFromHost(
+      P2PSocketHostUdp* socket_host) {
+    return static_cast<FakeDatagramServerSocket*>(socket_host->socket_.get());
+  }
+
   P2PMessageThrottler throttler_;
   std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets_;
-  FakeDatagramServerSocket* socket_; // Owned by |socket_host_|.
+  FakeDatagramServerSocket* socket_;  // Owned by |socket_host_|.
   std::unique_ptr<P2PSocketHostUdp> socket_host_;
   MockIPCSender sender_;
 
@@ -379,6 +405,103 @@ TEST_F(P2PSocketHostUdpTest, ThrottleAfterLimitAfterReceive) {
   // |dest1| is known, we can send as many packets to it.
   socket_host_->Send(dest1_, packet1, options, 0);
   ASSERT_EQ(sent_packets_.size(), 4U);
+}
+
+// Verify that we can open UDP sockets listening in a given port range,
+// and fail if all ports in the range are already in use.
+TEST_F(P2PSocketHostUdpTest, PortRangeImplicitPort) {
+  const uint16_t min_port = 10000;
+  const uint16_t max_port = 10001;
+  std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
+  std::vector<uint16_t> used_ports;
+  P2PSocketHostUdp::DatagramServerSocketFactory fake_socket_factory =
+      base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
+  P2PMessageThrottler throttler;
+  MockIPCSender sender;
+  EXPECT_CALL(
+      sender,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSocketCreated::ID))))
+      .Times(max_port - min_port + 1)
+      .WillRepeatedly(DoAll(DeleteArg<0>(), Return(true)));
+
+  for (unsigned port = min_port; port <= max_port; ++port) {
+    std::unique_ptr<P2PSocketHostUdp> socket_host(
+        new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+    net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, 0);
+    bool rv = socket_host->Init(local_address, min_port, max_port,
+                                P2PHostAndIPEndPoint());
+    EXPECT_TRUE(rv);
+
+    FakeDatagramServerSocket* socket = GetSocketFromHost(socket_host.get());
+    net::IPEndPoint bound_address;
+    socket->GetLocalAddress(&bound_address);
+    EXPECT_EQ(port, bound_address.port());
+  }
+
+  EXPECT_CALL(sender,
+              Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+  std::unique_ptr<P2PSocketHostUdp> socket_host(
+      new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+  net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, 0);
+  bool rv = socket_host->Init(local_address, min_port, max_port,
+                              P2PHostAndIPEndPoint());
+  EXPECT_FALSE(rv);
+}
+
+// Verify that we can open a UDP socket listening in a given port included in
+// a given valid range.
+TEST_F(P2PSocketHostUdpTest, PortRangeExplictValidPort) {
+  const uint16_t min_port = 10000;
+  const uint16_t max_port = 10001;
+  const uint16_t valid_port = min_port;
+  std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
+  std::vector<uint16_t> used_ports;
+  P2PSocketHostUdp::DatagramServerSocketFactory fake_socket_factory =
+      base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
+  P2PMessageThrottler throttler;
+  MockIPCSender sender;
+  EXPECT_CALL(
+      sender,
+      Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnSocketCreated::ID))))
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+
+  std::unique_ptr<P2PSocketHostUdp> socket_host(
+      new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+  net::IPEndPoint local_address = ParseAddress(kTestLocalIpAddress, valid_port);
+  bool rv = socket_host->Init(local_address, min_port, max_port,
+                              P2PHostAndIPEndPoint());
+  EXPECT_TRUE(rv);
+
+  FakeDatagramServerSocket* socket = GetSocketFromHost(socket_host.get());
+  net::IPEndPoint bound_address;
+  socket->GetLocalAddress(&bound_address);
+  EXPECT_EQ(local_address.port(), bound_address.port());
+}
+
+// Verify that we cannot open a UDP socket listening in a given port not
+// included in a given valid range.
+TEST_F(P2PSocketHostUdpTest, PortRangeExplictInvalidPort) {
+  const uint16_t min_port = 10000;
+  const uint16_t max_port = 10001;
+  const uint16_t invalid_port = max_port + 1;
+  std::deque<FakeDatagramServerSocket::UDPPacket> sent_packets;
+  std::vector<uint16_t> used_ports;
+  P2PSocketHostUdp::DatagramServerSocketFactory fake_socket_factory =
+      base::Bind(&CreateFakeDatagramServerSocket, &sent_packets, &used_ports);
+  P2PMessageThrottler throttler;
+  MockIPCSender sender;
+  EXPECT_CALL(sender,
+              Send(MatchMessage(static_cast<uint32_t>(P2PMsg_OnError::ID))))
+      .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
+
+  std::unique_ptr<P2PSocketHostUdp> socket_host(
+      new P2PSocketHostUdp(&sender, 0, &throttler, fake_socket_factory));
+  net::IPEndPoint local_address =
+      ParseAddress(kTestLocalIpAddress, invalid_port);
+  bool rv = socket_host->Init(local_address, min_port, max_port,
+                              P2PHostAndIPEndPoint());
+  EXPECT_FALSE(rv);
 }
 
 }  // namespace content

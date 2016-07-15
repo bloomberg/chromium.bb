@@ -33,6 +33,8 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   static scoped_refptr<P2PSocketClient> Create(
       P2PSocketType type,
       const net::IPEndPoint& local_address,
+      uint16_t min_port,
+      uint16_t max_port,
       const net::IPEndPoint& remote_address,
       P2PSocketClientDelegate* delegate);
 

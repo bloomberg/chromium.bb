@@ -44,11 +44,12 @@ P2PSocketClientImpl::~P2PSocketClientImpl() {
   CHECK(state_ == STATE_CLOSED || state_ == STATE_UNINITIALIZED);
 }
 
-void P2PSocketClientImpl::Init(
-    P2PSocketType type,
-    const net::IPEndPoint& local_address,
-    const P2PHostAndIPEndPoint& remote_address,
-    P2PSocketClientDelegate* delegate) {
+void P2PSocketClientImpl::Init(P2PSocketType type,
+                               const net::IPEndPoint& local_address,
+                               uint16_t min_port,
+                               uint16_t max_port,
+                               const P2PHostAndIPEndPoint& remote_address,
+                               P2PSocketClientDelegate* delegate) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   DCHECK(delegate);
   // |delegate_| is only accessesed on |delegate_message_loop_|.
@@ -56,17 +57,20 @@ void P2PSocketClientImpl::Init(
 
   ipc_task_runner_->PostTask(
       FROM_HERE, base::Bind(&P2PSocketClientImpl::DoInit, this, type,
-                            local_address, remote_address));
+                            local_address, min_port, max_port, remote_address));
 }
 
 void P2PSocketClientImpl::DoInit(P2PSocketType type,
                                  const net::IPEndPoint& local_address,
+                                 uint16_t min_port,
+                                 uint16_t max_port,
                                  const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
   state_ = STATE_OPENING;
   socket_id_ = dispatcher_->RegisterClient(this);
   dispatcher_->SendP2PMessage(new P2PHostMsg_CreateSocket(
-      type, socket_id_, local_address, remote_address));
+      type, socket_id_, local_address, P2PPortRange(min_port, max_port),
+      remote_address));
 }
 
 uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,

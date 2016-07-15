@@ -5,10 +5,12 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
@@ -90,21 +92,26 @@ P2PSocketHostUdp::PendingPacket::PendingPacket(const PendingPacket& other) =
 P2PSocketHostUdp::PendingPacket::~PendingPacket() {
 }
 
-P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
-                                   int socket_id,
-                                   P2PMessageThrottler* throttler)
+P2PSocketHostUdp::P2PSocketHostUdp(
+    IPC::Sender* message_sender,
+    int socket_id,
+    P2PMessageThrottler* throttler,
+    const DatagramServerSocketFactory& socket_factory)
     : P2PSocketHost(message_sender, socket_id, P2PSocketHost::UDP),
+      socket_(socket_factory.Run()),
       send_pending_(false),
       last_dscp_(net::DSCP_CS0),
       throttler_(throttler),
-      send_buffer_size_(0) {
-  net::UDPServerSocket* socket = new net::UDPServerSocket(
-      GetContentClient()->browser()->GetNetLog(), net::NetLog::Source());
-#if defined(OS_WIN)
-  socket->UseNonBlockingIO();
-#endif
-  socket_.reset(socket);
-}
+      send_buffer_size_(0),
+      socket_factory_(socket_factory) {}
+
+P2PSocketHostUdp::P2PSocketHostUdp(IPC::Sender* message_sender,
+                                   int socket_id,
+                                   P2PMessageThrottler* throttler)
+    : P2PSocketHostUdp(message_sender,
+                       socket_id,
+                       throttler,
+                       base::Bind(&P2PSocketHostUdp::DefaultSocketFactory)) {}
 
 P2PSocketHostUdp::~P2PSocketHostUdp() {
   if (state_ == STATE_OPEN) {
@@ -131,12 +138,32 @@ void P2PSocketHostUdp::SetSendBufferSize() {
 }
 
 bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
+                            uint16_t min_port,
+                            uint16_t max_port,
                             const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
+  DCHECK((min_port == 0 && max_port == 0) || min_port > 0);
+  DCHECK_LE(min_port, max_port);
 
-  int result = socket_->Listen(local_address);
+  int result = -1;
+  if (min_port == 0) {
+    result = socket_->Listen(local_address);
+  } else if (local_address.port() == 0) {
+    for (unsigned port = min_port; port <= max_port && result < 0; ++port) {
+      result = socket_->Listen(net::IPEndPoint(local_address.address(), port));
+      if (result < 0 && port != max_port)
+        socket_ = socket_factory_.Run();
+    }
+  } else if (local_address.port() >= min_port &&
+             local_address.port() <= max_port) {
+    result = socket_->Listen(local_address);
+  }
   if (result < 0) {
-    LOG(ERROR) << "bind() to " << local_address.ToString()
+    LOG(ERROR) << "bind() to " << local_address.address().ToString()
+               << (min_port == 0
+                       ? base::StringPrintf(":%d", local_address.port())
+                       : base::StringPrintf(", port range [%d-%d]", min_port,
+                                            max_port))
                << " failed: " << result;
     OnError();
     return false;
@@ -400,6 +427,18 @@ bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
       NOTREACHED();
       return false;
   }
+}
+
+// static
+std::unique_ptr<net::DatagramServerSocket>
+P2PSocketHostUdp::DefaultSocketFactory() {
+  net::UDPServerSocket* socket = new net::UDPServerSocket(
+      GetContentClient()->browser()->GetNetLog(), net::NetLog::Source());
+#if defined(OS_WIN)
+  socket->UseNonBlockingIO();
+#endif
+
+  return base::WrapUnique(socket);
 }
 
 }  // namespace content

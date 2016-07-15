@@ -39,7 +39,10 @@ P2PSocketHostTcpServer::~P2PSocketHostTcpServer() {
   }
 }
 
+// TODO(guidou): Add support for port range.
 bool P2PSocketHostTcpServer::Init(const net::IPEndPoint& local_address,
+                                  uint16_t min_port,
+                                  uint16_t max_port,
                                   const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 

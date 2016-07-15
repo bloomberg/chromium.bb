@@ -44,8 +44,18 @@ class CONTENT_EXPORT P2PSocketHost {
 
   virtual ~P2PSocketHost();
 
-  // Initalizes the socket. Returns false when initiazations fails.
+  // Initalizes the socket. Returns false when initialization fails.
+  // |min_port| and |max_port| specify the valid range of allowed ports.
+  // |min_port| must be less than or equal to |max_port|.
+  // If |min_port| is zero, |max_port| must also be zero and it means all ports
+  // are valid.
+  // If |local_address.port()| is zero, the socket will be initialized to a port
+  // in the valid range.
+  // If |local_address.port()| is nonzero and not in the valid range,
+  // initialization will fail.
   virtual bool Init(const net::IPEndPoint& local_address,
+                    uint16_t min_port,
+                    uint16_t max_port,
                     const P2PHostAndIPEndPoint& remote_address) = 0;
 
   // Sends |data| on the socket to |to|.
