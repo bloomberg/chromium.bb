@@ -86,7 +86,7 @@ public:
         Maybe<protocol::Array<protocol::Debugger::CallFrame>>* optOutCallFrames,
         Maybe<bool>* optOutStackChanged,
         Maybe<protocol::Runtime::StackTrace>* optOutAsyncStackTrace,
-        Maybe<protocol::Debugger::SetScriptSourceError>* optOutCompileError) override;
+        Maybe<protocol::Runtime::ExceptionDetails>* optOutCompileError) override;
     void restartFrame(ErrorString*,
         const String16& callFrameId,
         std::unique_ptr<protocol::Array<protocol::Debugger::CallFrame>>* newCallFrames,

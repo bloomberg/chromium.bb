@@ -88,7 +88,7 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged);
+    bool setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool preview, ErrorString*, Maybe<protocol::Runtime::ExceptionDetails>*, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged);
     JavaScriptCallFrames currentCallFrames(int limit = 0);
 
     // Each script inherits debug data from v8::Context where it has been compiled.

@@ -367,7 +367,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged)
+bool V8DebuggerImpl::setScriptSource(const String16& sourceID, v8::Local<v8::String> newSource, bool preview, ErrorString* error, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -427,10 +427,11 @@ bool V8DebuggerImpl::setScriptSource(const String16& sourceID, v8::Local<v8::Str
     // Compile error.
     case 1:
         {
-            *errorData = protocol::Debugger::SetScriptSourceError::create()
-                .setMessage(toProtocolStringWithTypeCheck(resultTuple->Get(2)))
-                .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value())
-                .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value()).build();
+            *exceptionDetails = protocol::Runtime::ExceptionDetails::create()
+                .setText(toProtocolStringWithTypeCheck(resultTuple->Get(2)))
+                .setScriptId(String16("0"))
+                .setLineNumber(resultTuple->Get(3)->ToInteger(m_isolate)->Value() - 1)
+                .setColumnNumber(resultTuple->Get(4)->ToInteger(m_isolate)->Value() - 1).build();
             return false;
         }
     }

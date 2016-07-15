@@ -4,5 +4,5 @@ Function evaluate: {"type":"number","value":8,"description":"8"}
 PASS, result value: 8
 Has error reported: PASS
 Reported error is a compile error: PASS
-PASS, result value: 2
+PASS, result value: 1
 

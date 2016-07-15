@@ -143,9 +143,8 @@ function test()
             var compileError = result.compileError;
             logCheck("Has error reported", !!compileError);
             logCheck("Reported error is a compile error", !!compileError);
-            if (compileError) {
-                logEqualsCheck(compileError.lineNumber, 2);
-            }
+            if (compileError)
+                logEqualsCheck(compileError.lineNumber, 1);
             return next;
         }
     }

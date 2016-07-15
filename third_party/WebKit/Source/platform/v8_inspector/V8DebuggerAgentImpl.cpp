@@ -530,7 +530,7 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
     Maybe<protocol::Array<protocol::Debugger::CallFrame>>* newCallFrames,
     Maybe<bool>* stackChanged,
     Maybe<StackTrace>* asyncStackTrace,
-    Maybe<protocol::Debugger::SetScriptSourceError>* optOutCompileError)
+    Maybe<protocol::Runtime::ExceptionDetails>* optOutCompileError)
 {
     if (!checkEnabled(errorString))
         return;

@@ -419,17 +419,6 @@
                 "description": "Scope description."
             },
             {
-                "id": "SetScriptSourceError",
-                "type": "object",
-                "properties": [
-                    { "name": "message", "type": "string", "description": "Compiler error message" },
-                    { "name": "lineNumber", "type": "integer", "description": "Compile error line number (1-based)" },
-                    { "name": "columnNumber", "type": "integer", "description": "Compile error column number (1-based)" }
-                ],
-                "description": "Error data for setScriptSource command. Contains uncompilable script source error.",
-                "hidden": true
-            },
-            {
                 "id": "SearchMatch",
                 "type": "object",
                 "description": "Search match for resource.",
@@ -557,7 +546,7 @@
                     { "name": "callFrames", "type": "array", "optional": true, "items": { "$ref": "CallFrame" }, "description": "New stack trace in case editing has happened while VM was stopped." },
                     { "name": "stackChanged", "type": "boolean", "optional": true, "description": "Whether current call stack  was modified after applying the changes.", "hidden": true },
                     { "name": "asyncStackTrace", "$ref": "Runtime.StackTrace", "optional": true, "description": "Async stack trace, if any.", "hidden": true },
-                    { "name": "compileError", "optional": true, "$ref": "SetScriptSourceError", "description": "Error data if any." }
+                    { "name": "compileError", "optional": true, "$ref": "Runtime.ExceptionDetails", "description": "Error data if any." }
                 ],
                 "description": "Edits JavaScript source live."
             },
