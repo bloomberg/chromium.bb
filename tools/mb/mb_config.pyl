@@ -637,7 +637,7 @@
       'win beta': 'gyp_official_six_concurrent_links',
       'win stable': 'gyp_official_six_concurrent_links',
       'win trunk': 'gyp_official_six_concurrent_links',
-      'win64 trunk': 'gyp_official_six_concurrent_links',
+      'win64 trunk': 'gyp_official_x64_six_concurrent_links',
     },
 
     'tryserver.blink': {
@@ -1349,6 +1349,10 @@
 
     'gyp_official_x64': [
       'gyp', 'official', 'x64',
+    ],
+
+    'gyp_official_x64_six_concurrent_links': [
+      'gyp', 'official', 'x64', 'six_concurrent_links',
     ],
 
     'gyp_release_bot': [
