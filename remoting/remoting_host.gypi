@@ -44,6 +44,7 @@
             '../components/components.gyp:policy',
             '../components/components.gyp:policy_component_common',
             '../crypto/crypto.gyp:crypto',
+            '../device/power_save_blocker/power_save_blocker.gyp:device_power_save_blocker',
             '../google_apis/google_apis.gyp:google_apis',
             '../ipc/ipc.gyp:ipc',
             '../ui/events/events.gyp:dom_keycode_converter',

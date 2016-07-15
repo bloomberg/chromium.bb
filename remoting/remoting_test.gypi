@@ -281,6 +281,7 @@
         'host/host_config_unittest.cc',
         'host/host_extension_session_manager_unittest.cc',
         'host/host_mock_objects.cc',
+        'host/host_power_save_blocker_unittest.cc',
         'host/host_status_logger_unittest.cc',
         'host/ipc_desktop_environment_unittest.cc',
         'host/it2me/it2me_confirmation_dialog_proxy_unittest.cc',

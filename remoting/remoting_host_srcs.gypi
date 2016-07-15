@@ -122,6 +122,8 @@
       'host/host_extension_session.h',
       'host/host_extension_session_manager.cc',
       'host/host_extension_session_manager.h',
+      'host/host_power_save_blocker.h',
+      'host/host_power_save_blocker.cc',
       'host/host_secret.cc',
       'host/host_secret.h',
       'host/host_status_logger.cc',
