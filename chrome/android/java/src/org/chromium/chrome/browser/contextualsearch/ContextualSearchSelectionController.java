@@ -79,6 +79,10 @@ public class ContextualSearchSelectionController {
     // The time of the most last scroll activity, or 0 if none.
     private long mLastScrollTimeNs;
 
+    // Tracks whether a Context Menu has just been shown and the UX has been dismissed.
+    // The selection may be unreliable until the next reset.  See crbug.com/628436.
+    private boolean mIsContextMenuShown;
+
     private class ContextualSearchGestureStateListener extends GestureStateListener {
         @Override
         public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
@@ -141,6 +145,16 @@ public class ContextualSearchSelectionController {
      */
     void onBasePageLoadStarted() {
         resetAllStates();
+    }
+
+    /**
+     * Notifies that a Context Menu has been shown.
+     * Future controller events may be unreliable until the next reset.
+     */
+    void onContextMenuShown() {
+        // Hide the UX.
+        mHandler.handleSelectionDismissal();
+        mIsContextMenuShown = true;
     }
 
     /**
@@ -265,11 +279,14 @@ public class ContextualSearchSelectionController {
         boolean shouldHandleSelection = false;
         switch (eventType) {
             case SelectionEventType.SELECTION_HANDLES_SHOWN:
-                mWasTapGestureDetected = false;
-                mSelectionType = SelectionType.LONG_PRESS;
-                shouldHandleSelection = true;
-                // Since we're showing pins, we don't care if the previous tap was invalid anymore.
-                unscheduleInvalidTapNotification();
+                if (!mIsContextMenuShown) {
+                    mWasTapGestureDetected = false;
+                    mSelectionType = SelectionType.LONG_PRESS;
+                    shouldHandleSelection = true;
+                    // Since we're showing pins, we don't care if the previous tap was invalid
+                    // anymore.
+                    unscheduleInvalidTapNotification();
+                }
                 break;
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
                 mHandler.handleSelectionDismissal();
@@ -320,6 +337,7 @@ public class ContextualSearchSelectionController {
         resetSelectionStates();
         mLastTapState = null;
         mLastScrollTimeNs = 0;
+        mIsContextMenuShown = false;
     }
 
     /**

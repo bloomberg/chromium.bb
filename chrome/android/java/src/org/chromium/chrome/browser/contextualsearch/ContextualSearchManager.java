@@ -309,6 +309,13 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     /**
+     * Notifies that a Context Menu has been shown.
+     */
+    void onContextMenuShown() {
+        mSelectionController.onContextMenuShown();
+    }
+
+    /**
      * Hides the Contextual Search UX.
      * @param reason The {@link StateChangeReason} for hiding Contextual Search.
      */

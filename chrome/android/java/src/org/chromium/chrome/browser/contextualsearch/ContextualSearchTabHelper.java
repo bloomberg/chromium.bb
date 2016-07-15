@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.app.Activity;
+import android.view.ContextMenu;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -121,6 +122,14 @@ public class ContextualSearchTabHelper extends EmptyTabObserver {
     @Override
     public void onReparentingFinished(Tab tab) {
         updateHooksForNewContentViewCore(tab);
+    }
+
+    @Override
+    public void onContextMenuShown(Tab tab, ContextMenu menu) {
+        ContextualSearchManager manager = getContextualSearchManager();
+        if (manager != null) {
+            manager.onContextMenuShown();
+        }
     }
 
     /**
