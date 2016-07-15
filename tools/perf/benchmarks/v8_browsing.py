@@ -86,8 +86,12 @@ class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
+    # http://crbug.com/628736
+    if (possible_browser.platform.GetOSName() == 'mac' and
+        possible_browser.browser_type == 'reference'):
+      return True
 
+    return possible_browser.platform.GetDeviceTypeName() != 'Desktop'
 
 @benchmark.Disabled('reference')  # http://crbug.com/628631
 class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
