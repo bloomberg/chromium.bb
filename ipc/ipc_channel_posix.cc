@@ -650,19 +650,17 @@ void ChannelPosix::OnFileCanReadWithoutBlocking(int fd) {
     }
     pipe_.reset(new_pipe);
 
-    if ((mode_ & MODE_OPEN_ACCESS_FLAG) == 0) {
-      // Verify that the IPC channel peer is running as the same user.
-      uid_t client_euid;
-      if (!GetPeerEuid(&client_euid)) {
-        DLOG(ERROR) << "Unable to query client euid";
-        ResetToAcceptingConnectionState();
-        return;
-      }
-      if (client_euid != geteuid()) {
-        DLOG(WARNING) << "Client euid is not authorised";
-        ResetToAcceptingConnectionState();
-        return;
-      }
+    // Verify that the IPC channel peer is running as the same user.
+    uid_t client_euid;
+    if (!GetPeerEuid(&client_euid)) {
+      DLOG(ERROR) << "Unable to query client euid";
+      ResetToAcceptingConnectionState();
+      return;
+    }
+    if (client_euid != geteuid()) {
+      DLOG(WARNING) << "Client euid is not authorised";
+      ResetToAcceptingConnectionState();
+      return;
     }
 
     if (!OnConnect()) {

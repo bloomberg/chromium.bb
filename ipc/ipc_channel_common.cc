@@ -35,16 +35,6 @@ std::unique_ptr<Channel> Channel::CreateNamedClient(
   return Channel::Create(channel_handle, Channel::MODE_NAMED_CLIENT, listener);
 }
 
-#if defined(OS_POSIX)
-// static
-std::unique_ptr<Channel> Channel::CreateOpenNamedServer(
-    const IPC::ChannelHandle& channel_handle,
-    Listener* listener) {
-  return Channel::Create(channel_handle, Channel::MODE_OPEN_NAMED_SERVER,
-                         listener);
-}
-#endif
-
 // static
 std::unique_ptr<Channel> Channel::CreateServer(
     const IPC::ChannelHandle& channel_handle,
