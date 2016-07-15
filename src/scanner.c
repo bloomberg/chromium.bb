@@ -819,7 +819,7 @@ find_enumeration(struct protocol *protocol,
 	struct interface *i;
 	struct enumeration *e;
 	char *enum_name;
-	uint idx = 0, j;
+	uint32_t idx = 0, j;
 
 	for (j = 0; j + 1 < strlen(enum_attribute); j++) {
 		if (enum_attribute[j] == '.') {
