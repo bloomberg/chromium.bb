@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/common/media/media_stream_messages.h"
@@ -275,7 +276,10 @@ void MediaStreamDispatcherHost::OnCancelDeviceChangeNotifications(
       [render_frame_id](const DeviceChangeSubscriberInfo& subscriber_info) {
         return subscriber_info.render_frame_id == render_frame_id;
       });
-  CHECK(it != device_change_subscribers_.end());
+  if (it == device_change_subscribers_.end()) {
+    bad_message::ReceivedBadMessage(this, bad_message::MSDH_INVALID_FRAME_ID);
+    return;
+  }
   device_change_subscribers_.erase(it);
   if (device_change_subscribers_.empty())
     media_stream_manager_->CancelDeviceChangeNotifications(this);

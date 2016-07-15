@@ -151,6 +151,7 @@ enum BadMessageReason {
   WSH_INVALID_HEADER_VALUE = 127,
   SWDH_SET_HOSTED_VERSION_INVALID_HOST = 128,
   SWDH_SET_HOSTED_VERSION_PROCESS_MISMATCH = 129,
+  MSDH_INVALID_FRAME_ID = 130,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the
