@@ -19,9 +19,8 @@ Python code should follow [PEP-8](https://www.python.org/dev/peps/pep-0008/),
 except:
 
   * Use two-space indentation instead of four-space indentation.
-  * Use `CamelCase()` method and function names instead of
-  * `unix_hacker_style()` names.
-  
+  * Use `CamelCase()` method and function names instead of `unix_hacker_style()` names.
+
 (The rationale for these is mostly legacy: the code was originally written
 following Google's internal style guideline, the cost of updating all of the
 code to PEP-8 compliance was not small, and consistency was seen to be a
