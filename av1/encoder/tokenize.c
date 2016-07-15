@@ -343,8 +343,8 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
-  av1_set_contexts(xd, pd, plane_bsize, tx_size, p->eobs[block] > 0, blk_col,
-                   blk_row);
+  (void)plane_bsize;
+  av1_set_contexts(xd, pd, tx_size, p->eobs[block] > 0, blk_col, blk_row);
 }
 
 static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
@@ -408,6 +408,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   int16_t token;
   EXTRABIT extra;
+  (void)plane_bsize;
   pt = get_entropy_context(tx_size, pd->above_context + blk_col,
                            pd->left_context + blk_row);
   scan = so->scan;
@@ -449,7 +450,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
   *tp = t;
 
-  av1_set_contexts(xd, pd, plane_bsize, tx_size, c > 0, blk_col, blk_row);
+  av1_set_contexts(xd, pd, tx_size, c > 0, blk_col, blk_row);
 }
 
 struct is_skippable_args {

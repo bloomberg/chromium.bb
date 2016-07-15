@@ -365,8 +365,7 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                    void *arg);
 
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
-                      BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int has_eob,
-                      int aoff, int loff);
+                      TX_SIZE tx_size, int has_eob, int aoff, int loff);
 
 #ifdef __cplusplus
 }  // extern "C"
