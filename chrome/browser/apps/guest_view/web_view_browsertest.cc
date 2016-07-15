@@ -76,6 +76,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/compositor.h"
@@ -246,6 +247,114 @@ views::View* FindWebView(views::View* view) {
   }
   return nullptr;
 }
+
+// Waits for select control shown/closed.
+class SelectControlWaiter : public aura::WindowObserver,
+                            public aura::EnvObserver {
+ public:
+  SelectControlWaiter() {
+    aura::Env::GetInstanceDontCreate()->AddObserver(this);
+  }
+
+  ~SelectControlWaiter() override {
+    aura::Env::GetInstanceDontCreate()->RemoveObserver(this);
+  }
+
+  void Wait(bool wait_for_widget_shown) {
+    wait_for_widget_shown_ = wait_for_widget_shown;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    if (wait_for_widget_shown_ && visible)
+      message_loop_runner_->Quit();
+  }
+
+  void OnWindowInitialized(aura::Window* window) override {
+    if (window->type() != ui::wm::WINDOW_TYPE_MENU)
+      return;
+    window->AddObserver(this);
+    observed_windows_.insert(window);
+  }
+
+  void OnWindowDestroyed(aura::Window* window) override {
+    observed_windows_.erase(window);
+    if (!wait_for_widget_shown_ && observed_windows_.empty())
+      message_loop_runner_->Quit();
+  }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  std::set<aura::Window*> observed_windows_;
+  bool wait_for_widget_shown_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(SelectControlWaiter);
+};
+
+// Simulate real click with delay between mouse down and up.
+class LeftMouseClick {
+ public:
+  explicit LeftMouseClick(content::WebContents* web_contents)
+      : web_contents_(web_contents) {}
+
+  ~LeftMouseClick() {
+    DCHECK(click_completed_);
+  }
+
+  void Click(const gfx::Point& point, int duration_ms) {
+    DCHECK(click_completed_);
+    click_completed_ = false;
+    mouse_event_.type = blink::WebInputEvent::MouseDown;
+    mouse_event_.button = blink::WebMouseEvent::ButtonLeft;
+    mouse_event_.x = point.x();
+    mouse_event_.y = point.y();
+    mouse_event_.modifiers = 0;
+    const gfx::Rect offset = web_contents_->GetContainerBounds();
+    mouse_event_.globalX = point.x() + offset.x();
+    mouse_event_.globalY = point.y() + offset.y();
+    mouse_event_.clickCount = 1;
+    web_contents_->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+        mouse_event_);
+
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&LeftMouseClick::SendMouseUp,
+                              base::Unretained(this)),
+        base::TimeDelta::FromMilliseconds(duration_ms));
+  }
+
+  // Wait for click completed.
+  void Wait() {
+    if (click_completed_)
+      return;
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    message_loop_runner_ = nullptr;
+  }
+
+ private:
+  void SendMouseUp() {
+    mouse_event_.type = blink::WebInputEvent::MouseUp;
+    web_contents_->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+        mouse_event_);
+    click_completed_ = true;
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+  // Unowned pointer.
+  content::WebContents* web_contents_;
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  blink::WebMouseEvent mouse_event_;
+
+  bool click_completed_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(LeftMouseClick);
+};
+
 #endif
 
 }  // namespace
@@ -1126,6 +1235,43 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIAddListener) {
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIErrorOccurred) {
   TestHelper("testWebRequestAPIErrorOccurred", "web_view/shim", NO_TEST_SERVER);
 }
+
+#if defined(USE_AURA)
+// Test validates that select tag can be shown and hidden in webview safely
+// using quick touch.
+IN_PROC_BROWSER_TEST_P(WebViewTest, SelectShowHide) {
+  LoadAppWithGuest("web_view/select");
+
+  content::WebContents* embedder_contents = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(embedder_contents);
+
+  std::vector<content::WebContents*> guest_contents_list;
+  GetGuestViewManager()->GetGuestWebContentsList(&guest_contents_list);
+  ASSERT_EQ(1u, guest_contents_list.size());
+  content::WebContents* guest_contents = guest_contents_list[0];
+
+  const gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
+  const gfx::Rect guest_rect = guest_contents->GetContainerBounds();
+  const gfx::Point click_point(guest_rect.x() - embedder_rect.x() + 10,
+                               guest_rect.y() - embedder_rect.y() + 10);
+
+  // Important, pass mouse click to embedder in order to transfer focus. Note
+  // that SelectControlWaiter may be waited ealier than click is completed.
+  LeftMouseClick mouse_click(embedder_contents);
+  SelectControlWaiter select_control_waiter;
+
+  for (int i = 0; i < 5; ++i) {
+    const int click_duration_ms = 10 + i * 25;
+    mouse_click.Click(click_point, click_duration_ms);
+    select_control_waiter.Wait(true);
+    mouse_click.Wait();
+
+    mouse_click.Click(click_point, click_duration_ms);
+    select_control_waiter.Wait(false);
+    mouse_click.Wait();
+  }
+}
+#endif
 
 // http://crbug.com/315920
 #if defined(GOOGLE_CHROME_BUILD) && (defined(OS_WIN) || defined(OS_LINUX))
