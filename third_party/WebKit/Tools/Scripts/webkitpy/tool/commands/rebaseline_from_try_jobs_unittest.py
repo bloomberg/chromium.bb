@@ -73,9 +73,9 @@ class RebaselineFromTryJobsTest(BaseTestCase):
         self.assertMultiLineEqual(
             logs,
             ('Tests to rebaseline:\n'
-             '  svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win\n'
-             '  fast/dom/prototype-inheritance.html: MOCK Try Win\n'
-             '  fast/dom/prototype-taco.html: MOCK Try Win\n'
+             '  svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n'
+             '  fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n'
+             '  fast/dom/prototype-taco.html: MOCK Try Win (5000)\n'
              'Rebaselining fast/dom/prototype-inheritance.html\n'
              'Rebaselining fast/dom/prototype-taco.html\n'
              'Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n'))
@@ -100,9 +100,9 @@ class RebaselineFromTryJobsTest(BaseTestCase):
         self.assertMultiLineEqual(
             logs,
             ('Tests to rebaseline:\n'
-             '  svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win\n'
-             '  fast/dom/prototype-inheritance.html: MOCK Try Win\n'
-             '  fast/dom/prototype-taco.html: MOCK Try Win\n'
+             '  svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html: MOCK Try Win (5000)\n'
+             '  fast/dom/prototype-inheritance.html: MOCK Try Win (5000)\n'
+             '  fast/dom/prototype-taco.html: MOCK Try Win (5000)\n'
              'Rebaselining fast/dom/prototype-inheritance.html\n'
              'Rebaselining fast/dom/prototype-taco.html\n'
              'Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n'))

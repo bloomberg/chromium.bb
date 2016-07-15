@@ -52,7 +52,7 @@ class BaseTestCase(unittest.TestCase):
         # we can make the default port also a "test" port.
         self.original_port_factory_get = self.tool.port_factory.get
         test_port = self.tool.port_factory.get('test')
-        self._builder_data = {}
+        self._build_data = {}
 
         def get_test_port(port_name=None, options=None, **kwargs):
             if not port_name:
@@ -82,7 +82,7 @@ class BaseTestCase(unittest.TestCase):
                 self._write(path, '')
         self.tool.filesystem.written_files = {}
 
-    def _setup_mock_builder_data(self):
+    def _setup_mock_build_data(self):
         data = LayoutTestResults({
             "tests": {
                 "userscripts": {
@@ -98,13 +98,13 @@ class BaseTestCase(unittest.TestCase):
             }
         })
 
-        def builder_data():
-            self._builder_data = {}
+        def build_data():
+            self._build_data = {}
             for builder in ['MOCK Win7', 'MOCK Win7 (dbg)', 'MOCK Mac10.11']:
-                self._builder_data[builder] = data
-            return self._builder_data
+                self._build_data[Build(builder)] = data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
 class TestCopyExistingBaselinesInternal(BaseTestCase):
     command_constructor = CopyExistingBaselinesInternal
@@ -341,10 +341,10 @@ class TestRebaselineJson(BaseTestCase):
         super(TestRebaselineJson, self).tearDown()
 
     def test_rebaseline_test_passes_on_all_builders(self):
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
-        def builder_data():
-            self._builder_data['MOCK Win7'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Win7')] = LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "first-test.html": {
@@ -354,25 +354,25 @@ class TestRebaselineJson(BaseTestCase):
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         options = MockOptions(optimize=True, verbose=True, results_directory=None)
 
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Win7": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_rebaseline_all(self):
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
         options = MockOptions(optimize=True, verbose=True, results_directory=None)
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Win7": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
         self.assertEqual(self.tool.executive.calls,
@@ -386,11 +386,11 @@ class TestRebaselineJson(BaseTestCase):
                          ])
 
     def test_rebaseline_debug(self):
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
         options = MockOptions(optimize=True, verbose=True, results_directory=None)
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Win7 (dbg)": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7 (dbg)"): ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
         self.assertEqual(self.tool.executive.calls,
@@ -404,11 +404,11 @@ class TestRebaselineJson(BaseTestCase):
                          ])
 
     def test_no_optimize(self):
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
         options = MockOptions(optimize=False, verbose=True, results_directory=None)
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Win7 (dbg)": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7 (dbg)"): ["txt", "png"]}})
 
         # Note that we have only one run_in_parallel() call
         self.assertEqual(self.tool.executive.calls,
@@ -416,11 +416,11 @@ class TestRebaselineJson(BaseTestCase):
                           [['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Win7 (dbg)', '--test', 'userscripts/first-test.html', '--verbose']]])
 
     def test_results_directory(self):
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
         options = MockOptions(optimize=False, verbose=True, results_directory='/tmp')
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Win7": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have only one run_in_parallel() call
         self.assertEqual(self.tool.executive.calls,
@@ -445,9 +445,9 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write(self.mac_expectations_path,
                     "Bug(x) [ Mac ] userscripts/first-test.html [ Failure ]\nbug(z) [ Linux ] userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Mac10.11": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -458,9 +458,9 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
 
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Mac10.11": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -475,9 +475,9 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("NeverFixTests", "Bug(y) [ Android ] userscripts [ WontFix ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Mac10.11": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -495,9 +495,9 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
                     ("Bug(x) [ Linux Mac Win ] userscripts/first-test.html [ Failure ]\n"
                      "Bug(y) [ Android ] userscripts/first-test.html [ Skip ]\n"))
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Mac10.11": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -515,9 +515,9 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("SmokeTests", "fast/html/article-element.html")
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
-        self.command._rebaseline(options, {"userscripts/first-test.html": {"MOCK Mac10.11": ["txt", "png"]}})
+        self.command._rebaseline(options, {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
         new_expectations = self._read(self.mac_expectations_path)
         self.assertMultiLineEqual(
@@ -535,7 +535,7 @@ class TestRebaseline(BaseTestCase):
         self._write("userscripts/first-test.html", "test data")
 
         self._zero_out_test_expectations()
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
         self.command.execute(MockOptions(results_directory=False, optimize=False, builders=None,
                                          suffixes="txt,png", verbose=True), ['userscripts/first-test.html'], self.tool)
@@ -550,7 +550,7 @@ class TestRebaseline(BaseTestCase):
         self._write("userscripts/first-test.html", "test data")
         self._write("userscripts/second-test.html", "test data")
 
-        self._setup_mock_builder_data()
+        self._setup_mock_build_data()
 
         self.command.execute(MockOptions(results_directory=False, optimize=False, builders=None,
                                          suffixes="txt,png", verbose=True), ['userscripts'], self.tool)
@@ -608,8 +608,8 @@ class TestRebaselineExpectations(BaseTestCase):
 
         self.tool.executive = MockExecutive2()
 
-        def builder_data():
-            self._builder_data['MOCK Mac10.11'] = self._builder_data['MOCK Mac10.10'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Mac10.11')] = self._build_data[Build('MOCK Mac10.10')] = LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "another-test.html": {
@@ -623,9 +623,9 @@ class TestRebaselineExpectations(BaseTestCase):
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self._write("userscripts/another-test.html", "Dummy test contents")
         self._write("userscripts/images.svg", "Dummy test contents")
@@ -665,8 +665,8 @@ class TestRebaselineExpectations(BaseTestCase):
 
         self.tool.executive = MockExecutive2()
 
-        def builder_data():
-            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
                 "tests": {
                     "userscripts": {
                         "reftest-text.html": {
@@ -684,9 +684,9 @@ class TestRebaselineExpectations(BaseTestCase):
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self._write("userscripts/reftest-text.html", "Dummy test contents")
         self._write("userscripts/reftest-text-expected.html", "Dummy test contents")
@@ -751,8 +751,8 @@ class TestRebaselineExpectations(BaseTestCase):
     def test_rebaseline_test_passes_everywhere(self):
         test_port = self.tool.port_factory.get('test')
 
-        def builder_data():
-            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -765,9 +765,9 @@ class TestRebaselineExpectations(BaseTestCase):
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ Rebaseline ]
@@ -791,8 +791,8 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
 """)
 
     def test_rebaseline_missing(self):
-        def builder_data():
-            self._builder_data['MOCK Mac10.10'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Mac10.10')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -819,9 +819,9 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ Rebaseline ]
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self._write('fast/dom/missing-text.html', "Dummy test contents")
         self._write('fast/dom/missing-text-and-image.html', "Dummy test contents")
@@ -1056,9 +1056,9 @@ TBR=foo@chromium.org
 
         test_port = self.tool.port_factory.get('test')
 
-        def builder_data():
+        def build_data():
             # Have prototype-chocolate only fail on "MOCK Mac10.11".
-            self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1080,9 +1080,9 @@ TBR=foo@chromium.org
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 crbug.com/24182 [ Debug ] path/to/norebaseline.html [ Rebaseline ]
@@ -1155,11 +1155,12 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        original_builder_data = self.command.builder_data
-        def builder_data():
-            original_builder_data()
+        original_build_data = self.command.build_data
+
+        def build_data():
+            original_build_data()
             # Have prototype-chocolate only fail on "MOCK Mac10.11".
-            self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+            self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1172,9 +1173,9 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -1214,8 +1215,8 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def builder_data():
-            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1228,9 +1229,9 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -1268,8 +1269,8 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def builder_data():
-            self._builder_data['MOCK Win'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Win')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1282,9 +1283,9 @@ Bug(foo) [ Linux Win ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -1324,8 +1325,8 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def builder_data():
-            self._builder_data['MOCK Win'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Win')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1338,9 +1339,9 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
@@ -1381,8 +1382,8 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
 
         test_port = self.tool.port_factory.get('test')
 
-        def builder_data():
-            self._builder_data['MOCK Mac10.10'] = self._builder_data['MOCK Mac10.11'] = LayoutTestResults({
+        def build_data():
+            self._build_data[Build('MOCK Mac10.10')] = self._build_data[Build('MOCK Mac10.11')] = LayoutTestResults({
                 "tests": {
                     "fast": {
                         "dom": {
@@ -1395,9 +1396,9 @@ Bug(foo) [ Linux Mac Win10 ] fast/dom/prototype-taco.html [ NeedsRebaseline ]
                     }
                 }
             })
-            return self._builder_data
+            return self._build_data
 
-        self.command.builder_data = builder_data
+        self.command.build_data = build_data
 
         self.tool.filesystem.write_text_file(test_port.path_to_generic_test_expectations_file(), """
 Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
