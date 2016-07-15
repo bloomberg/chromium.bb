@@ -296,12 +296,6 @@ scoped_refptr<RasterSource> RasterSource::CreateCloneWithoutLCDText() const {
   return scoped_refptr<RasterSource>(new RasterSource(this, can_use_lcd_text));
 }
 
-void RasterSource::SetImageDecodeController(
-    ImageDecodeController* image_decode_controller) {
-  DCHECK(image_decode_controller);
-  image_decode_controller_ = image_decode_controller;
-}
-
 RasterSource::PlaybackSettings::PlaybackSettings()
     : playback_to_shared_canvas(false),
       skip_images(false),

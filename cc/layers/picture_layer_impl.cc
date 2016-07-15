@@ -545,7 +545,7 @@ void PictureLayerImpl::UpdateRasterSource(
 
   // Only set the image decode controller when we're committing.
   if (!pending_set) {
-    raster_source_->SetImageDecodeController(
+    raster_source_->set_image_decode_controller(
         layer_tree_impl()->image_decode_controller());
   }
 
@@ -641,7 +641,7 @@ void PictureLayerImpl::ReleaseResources() {
 void PictureLayerImpl::RecreateResources() {
   tilings_ = CreatePictureLayerTilingSet();
   if (raster_source_) {
-    raster_source_->SetImageDecodeController(
+    raster_source_->set_image_decode_controller(
         layer_tree_impl()->image_decode_controller());
   }
 

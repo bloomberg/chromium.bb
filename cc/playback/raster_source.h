@@ -116,7 +116,22 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Image decode controller should be set once. Its lifetime has to exceed that
   // of the raster source, since the raster source will access it during raster.
-  void SetImageDecodeController(ImageDecodeController* image_decode_controller);
+  void set_image_decode_controller(
+      ImageDecodeController* image_decode_controller) {
+    DCHECK(image_decode_controller);
+    image_decode_controller_ = image_decode_controller;
+  }
+
+  // Returns the ImageDecodeController, currently only used by
+  // GpuRasterBufferProvider in order to create its own ImageHijackCanvas.
+  // Because of the MultiPictureDraw approach used by GPU raster, it does not
+  // integrate well with the use of the ImageHijackCanvas internal to this
+  // class. See gpu_raster_buffer_provider.cc for more information.
+  // TODO(crbug.com/628394): Redesign this to avoid exposing
+  // ImageDecodeController from the raster source.
+  ImageDecodeController* image_decode_controller() const {
+    return image_decode_controller_;
+  }
 
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;

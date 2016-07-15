@@ -575,7 +575,7 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
   SoftwareImageDecodeController controller(
       ResourceFormat::RGBA_8888,
       LayerTreeSettings().software_decoded_image_budget_bytes);
-  raster_source->SetImageDecodeController(&controller);
+  raster_source->set_image_decode_controller(&controller);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size.width() * 0.5f, size.height() * 0.25f);

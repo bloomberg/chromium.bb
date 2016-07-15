@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/histograms.h"
+#include "cc/playback/image_hijack_canvas.h"
 #include "cc/playback/raster_source.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource.h"
@@ -62,8 +63,18 @@ static sk_sp<SkPicture> PlaybackToPicture(
   sk_sp<SkCanvas> canvas = sk_ref_sp(
       recorder.beginRecording(resource_size.width(), resource_size.height()));
   canvas->save();
+
+  // The GPU image decode controller assumes that Skia is done with an image
+  // when playback is complete. However, in this case, where we play back to a
+  // picture, we don't actually finish with the images until the picture is
+  // rasterized later. This can cause lifetime issues in the GPU image decode
+  // controller. To avoid this, we disable the image hijack canvas (and image
+  // decode controller) for this playback step, instead enabling it for the
+  // later picture rasterization.
+  RasterSource::PlaybackSettings settings = playback_settings;
+  settings.use_image_hijack_canvas = false;
   raster_source->PlaybackToCanvas(canvas.get(), raster_full_rect, playback_rect,
-                                  scale, playback_settings);
+                                  scale, settings);
   canvas->restore();
   return recorder.finishRecordingAsPicture();
 }
@@ -74,7 +85,9 @@ static void RasterizePicture(SkPicture* picture,
                              bool async_worker_context_enabled,
                              bool use_distance_field_text,
                              bool can_use_lcd_text,
-                             int msaa_sample_count) {
+                             int msaa_sample_count,
+                             ImageDecodeController* image_decode_controller,
+                             bool use_image_hijack_canvas) {
   ScopedGpuRaster gpu_raster(context_provider);
 
   ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
@@ -86,8 +99,27 @@ static void RasterizePicture(SkPicture* picture,
   if (!sk_surface)
     return;
 
+  // As we did not use the image hijack canvas during the initial playback to
+  // |picture| (see PlaybackToPicture), we must enable it here if requested.
+  SkCanvas* canvas = sk_surface->getCanvas();
+  std::unique_ptr<ImageHijackCanvas> hijack_canvas;
+  if (use_image_hijack_canvas) {
+    DCHECK(image_decode_controller);
+    const SkImageInfo& info = canvas->imageInfo();
+    hijack_canvas.reset(new ImageHijackCanvas(info.width(), info.height(),
+                                              image_decode_controller));
+    SkIRect raster_bounds;
+    canvas->getClipDeviceBounds(&raster_bounds);
+    hijack_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
+    hijack_canvas->setMatrix(canvas->getTotalMatrix());
+    hijack_canvas->addCanvas(canvas);
+
+    // Replace canvas with our ImageHijackCanvas which is wrapping it.
+    canvas = hijack_canvas.get();
+  }
+
   SkMultiPictureDraw multi_picture_draw;
-  multi_picture_draw.add(sk_surface->getCanvas(), picture);
+  multi_picture_draw.add(canvas, picture);
   multi_picture_draw.draw(false);
 }
 
@@ -235,7 +267,9 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
 
   RasterizePicture(picture.get(), worker_context_provider_, resource_lock,
                    async_worker_context_enabled_, use_distance_field_text,
-                   raster_source->CanUseLCDText(), msaa_sample_count_);
+                   raster_source->CanUseLCDText(), msaa_sample_count_,
+                   raster_source->image_decode_controller(),
+                   playback_settings.use_image_hijack_canvas);
 
   const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
 

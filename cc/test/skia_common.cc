@@ -9,6 +9,7 @@
 #include "cc/playback/display_item_list.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
+#include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 
@@ -19,7 +20,22 @@ namespace {
 class TestImageGenerator : public SkImageGenerator {
  public:
   explicit TestImageGenerator(const SkImageInfo& info)
-      : SkImageGenerator(info) {}
+      : SkImageGenerator(info),
+        image_backing_memory_(info.getSafeSize(info.minRowBytes()), 0),
+        image_pixmap_(info, image_backing_memory_.data(), info.minRowBytes()) {}
+
+ protected:
+  bool onGetPixels(const SkImageInfo& info,
+                   void* pixels,
+                   size_t rowBytes,
+                   SkPMColor ctable[],
+                   int* ctableCount) override {
+    return image_pixmap_.readPixels(info, pixels, rowBytes, 0, 0);
+  }
+
+ private:
+  std::vector<uint8_t> image_backing_memory_;
+  SkPixmap image_pixmap_;
 };
 
 }  // anonymous namespace

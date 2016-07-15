@@ -47,6 +47,7 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_internals_for_test.h"
 #include "cc/test/layer_tree_test.h"
+#include "cc/test/skia_common.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/effect_node.h"
@@ -59,6 +60,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
@@ -6798,6 +6800,84 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
+
+// The GPU image decode controller hands images off to Skia for rasterization.
+// When used with large images, the images in question could be deleted before
+// Skia was done with them, causing a crash. This test performs an end-to-end
+// check of large image rasterization to ensure we do not hit this crash.
+// Note that this code path won't always hit the crash, even when incorrect
+// behavior occurs, so this is more of a sanity check.
+// TODO(ericrk): We should improve this so that we can reliably detect the
+// crash.
+class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
+ protected:
+  GpuRasterizationSucceedsWithLargeImage()
+      : viewport_size_(1024, 2048), large_image_size_(20000, 10) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_enabled = true;
+    settings->gpu_rasterization_forced = true;
+
+    /// Set to 0 to force at-raster GPU image decode.
+    settings->gpu_decoded_image_budget_bytes = 0;
+  }
+
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+
+    std::unique_ptr<FakeRecordingSource> recording =
+        FakeRecordingSource::CreateFilledRecordingSource(
+            gfx::Size(10000, 10000));
+
+    recording->add_draw_image(CreateDiscardableImage(large_image_size_),
+                              gfx::Point(0, 0));
+    recording->SetGenerateDiscardableImagesMetadata(true);
+    recording->Rerecord();
+
+    scoped_refptr<FakePictureLayer> root =
+        FakePictureLayer::CreateWithRecordingSource(&client_,
+                                                    std::move(recording));
+    root->SetBounds(gfx::Size(10000, 10000));
+    client_.set_bounds(root->bounds());
+    root->SetContentsOpaque(true);
+
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+    layer_tree_host()->SetViewportSize(viewport_size_);
+    client_.set_bounds(root->bounds());
+  }
+
+  void InitializedRendererOnThread(LayerTreeHostImpl* host_impl,
+                                   bool success) override {
+    // Check that our large_image_size_ is greater than max texture size. We do
+    // this here to ensure that our otuput surface exists.
+
+    // Retrieve max texture size from Skia.
+    ContextProvider* context_provider =
+        host_impl->output_surface()->context_provider();
+    ASSERT_TRUE(context_provider);
+    ContextProvider::ScopedContextLock context_lock(context_provider);
+
+    GrContext* gr_context = context_provider->GrContext();
+    ASSERT_TRUE(gr_context);
+    const uint32_t max_texture_size = gr_context->caps()->maxTextureSize();
+    ASSERT_GT(static_cast<uint32_t>(large_image_size_.width()),
+              max_texture_size);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override { EndTest(); }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  const gfx::Size viewport_size_;
+  const gfx::Size large_image_size_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(GpuRasterizationSucceedsWithLargeImage);
 
 }  // namespace
 }  // namespace cc
