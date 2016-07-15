@@ -4189,7 +4189,6 @@
             'paint/PaintLayerPainterTest.cpp',
             'paint/PaintPropertyTreeBuilderTest.cpp',
             'paint/StubChromeClientForSPv2.h',
-            'paint/SVGInlineTextBoxPainterTest.cpp',
             'paint/TableCellPainterTest.cpp',
             'paint/TextPainterTest.cpp',
             'paint/VideoPainterTest.cpp',
