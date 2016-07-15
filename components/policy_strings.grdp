@@ -80,9 +80,6 @@
   <message name="IDS_POLICY_VALIDATION_WRONG_TOKEN" desc="Message indicating the policy token is different from the one expected.">
     Returned policy token doesn't match current token
   </message>
-  <message name="IDS_POLICY_VALIDATION_WRONG_DEVICE_ID" desc="Message indicating the policy device id is different from the one expected.">
-    Returned policy device id doesn't match current device id
-  </message>
   <message name="IDS_POLICY_VALIDATION_BAD_USERNAME" desc="Message indicating policy validation failed due to bad username/domain.">
     Wrong policy subject
   </message>

@@ -49,7 +49,6 @@ class CloudPolicyValidatorTest : public testing::Test {
         ignore_missing_dm_token_(CloudPolicyValidatorBase::DM_TOKEN_REQUIRED),
         allow_key_rotation_(true),
         existing_dm_token_(PolicyBuilder::kFakeToken),
-        existing_device_id_(PolicyBuilder::kFakeDeviceId),
         owning_domain_(PolicyBuilder::kFakeDomain),
         cached_key_signature_(PolicyBuilder::GetTestSigningKeySignature()) {
     policy_.SetDefaultNewSigningKey();
@@ -98,7 +97,6 @@ class CloudPolicyValidatorTest : public testing::Test {
     if (!owning_domain_.empty())
       validator->ValidateDomain(owning_domain_);
     validator->ValidateDMToken(existing_dm_token_, ignore_missing_dm_token_);
-    validator->ValidateDeviceId(existing_device_id_);
     validator->ValidatePolicyType(dm_protocol::kChromeUserPolicyType);
     validator->ValidatePayload();
     validator->ValidateCachedKey(public_key,
@@ -132,7 +130,6 @@ class CloudPolicyValidatorTest : public testing::Test {
   std::string signing_key_;
   bool allow_key_rotation_;
   std::string existing_dm_token_;
-  std::string existing_device_id_;
   std::string owning_domain_;
   std::string cached_key_signature_;
 
@@ -243,24 +240,6 @@ TEST_F(CloudPolicyValidatorTest, ErrorNoRequestTokenNoTokenPassed) {
 TEST_F(CloudPolicyValidatorTest, ErrorInvalidRequestToken) {
   policy_.policy_data().set_request_token("invalid");
   Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_WRONG_TOKEN));
-}
-
-TEST_F(CloudPolicyValidatorTest, ErrorNoDeviceId) {
-  policy_.policy_data().clear_device_id();
-  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_WRONG_DEVICE_ID));
-}
-
-TEST_F(CloudPolicyValidatorTest, ErrorNoDeviceIdNoDeviceIdPassed) {
-  // Mimic the first fetch of policy (no existing device id) - should still
-  // complain about not having any device id.
-  existing_device_id_.clear();
-  policy_.policy_data().clear_device_id();
-  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_WRONG_DEVICE_ID));
-}
-
-TEST_F(CloudPolicyValidatorTest, ErrorInvalidDeviceId) {
-  policy_.policy_data().set_device_id("invalid");
-  Validate(CheckStatus(CloudPolicyValidatorBase::VALIDATION_WRONG_DEVICE_ID));
 }
 
 TEST_F(CloudPolicyValidatorTest, ErrorNoPolicyValue) {
