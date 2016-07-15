@@ -2145,3 +2145,12 @@ name=bug_617740
 media.dll!mkvmuxer::Segment::WriteFramesAll
 media.dll!mkvmuxer::Segment::Finalize
 media.dll!media::WebmMuxer::~WebmMuxer
+
+HANDLE LEAK
+name=bug_628485
+system call NtCreateSemaphore
+KERNELBASE.dll!CreateSemaphoreExW
+KERNEL32.dll!CreateSemaphoreW
+content.dll!vp8cx_create_encoder_threads
+content.dll!vp8_create_compressor
+content.dll!vp8e_init
