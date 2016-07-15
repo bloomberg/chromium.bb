@@ -37,6 +37,7 @@ config("internal_config") {
 config("client_config") {
   include_dirs = [ "src" ]
   if (is_android) {
+    defines = [ "ANDROID_NDK_MAJOR_VERSION=${android_ndk_major_version}" ]
     include_dirs += [ "src/common/android/include" ]
   }
 }
@@ -677,13 +678,15 @@ if (is_linux || is_android) {
 
     include_dirs = [
       "linux",  # Use our copy of breakpad_googletest_includes.h
-      "src",
       ".",
     ]
 
     # There are some warnings in this code.
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      ":client_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
 
     if (is_clang) {
       # See http://crbug.com/138571#c18
@@ -694,7 +697,6 @@ if (is_linux || is_android) {
       use_raw_android_executable = true
       sources += [ "src/common/android/breakpad_getcontext_unittest.cc" ]
       libs = [ "log" ]
-      include_dirs += [ "src/common/android/include" ]
       extra_dist_files = [ "$root_out_dir/linux_dumper_unittest_helper" ]
     }
 
@@ -718,11 +720,7 @@ if (is_linux || is_android) {
       "//build/config/sanitizers:deps",
     ]
 
-    include_dirs = [ "src" ]
-
-    if (current_cpu == "mipsel" && is_android) {
-      include_dirs += [ "src/common/android/include" ]
-    }
+    configs += [ ":client_config" ]
   }
 
   executable("generate_test_dump") {
@@ -734,18 +732,18 @@ if (is_linux || is_android) {
 
     # This file has an unused variable warning.
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      ":client_config",
+      "//build/config/compiler:no_chromium_code",
+    ]
 
     deps = [
       ":client",
       "//build/config/sanitizers:deps",
     ]
 
-    include_dirs = [ "src" ]
-
     if (is_android) {
       libs = [ "log" ]
-      include_dirs += [ "src/common/android/include" ]
     }
   }
 

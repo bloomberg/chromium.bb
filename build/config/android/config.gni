@@ -32,6 +32,7 @@ if (is_android) {
   }
 
   if (!defined(default_android_ndk_root)) {
+    default_android_ndk_major_version = "10"
     default_android_ndk_root = "//third_party/android_tools/ndk"
     default_android_ndk_version = "r10e"
   } else {
@@ -68,6 +69,7 @@ if (is_android) {
   }
 
   declare_args() {
+    android_ndk_major_version = default_android_ndk_major_version
     android_ndk_root = default_android_ndk_root
     android_ndk_version = default_android_ndk_version
 
