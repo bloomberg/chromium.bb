@@ -526,6 +526,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
         bug=570453)
+    self.Fail('deqp/data/gles2/shaders/preprocessor.html', bug=483282)
 
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         bug=625365)

@@ -41,7 +41,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
               'tex-2d-rgb-rgb-unsigned_byte.html', bug=483282)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
               'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', bug=483282)
-
+    self.Fail('deqp/data/gles2/shaders/preprocessor.html', bug=483282)
+    self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
 
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
