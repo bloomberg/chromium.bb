@@ -27,7 +27,8 @@ def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
         patchset_number: Use a specific patchset instead of the latest one.
 
     Returns:
-        A list of TryJob objects; empty list if none were found.
+        A list of TryJob objects for the latest job for each builder, on the
+        latest patchset. If none were found, an empty list is returned.
     """
     try:
         if patchset_number:
@@ -44,7 +45,7 @@ def latest_try_jobs(issue_number, builder_names, web, patchset_number=None):
         jobs.append(TryJob(
             builder_name=job['builder'],
             build_number=job['buildnumber']))
-    return jobs
+    return filter_latest_jobs(jobs)
 
 
 def _latest_patchset_url(issue_number, web):
@@ -78,6 +79,23 @@ def _issue_url(issue_number):
 
 def _patchset_url(issue_number, patchset_number):
     return '%s/%s' % (_issue_url(issue_number), patchset_number)
+
+
+def filter_latest_jobs(jobs):
+    """Filters out the list of jobs to include only the latest for each builder.
+
+    Args:
+        jobs: A list of TryJob objects.
+
+    Returns:
+        A list of TryJob objects such that only the latest job for each builder
+        is kept.
+    """
+    builder_to_highest_number = {}
+    for j in jobs:
+        if j.build_number > builder_to_highest_number.get(j.builder_name, 0):
+            builder_to_highest_number[j.builder_name] = j.build_number
+    return [j for j in jobs if builder_to_highest_number[j.builder_name] == j.build_number]
 
 
 def get_latest_try_job_results(issue_number, web):
