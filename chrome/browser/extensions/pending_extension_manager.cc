@@ -120,6 +120,7 @@ bool PendingExtensionManager::AddFromSync(
                           should_allow_install,
                           kIsFromSync,
                           kSyncLocation,
+                          Extension::NO_FLAGS,
                           kMarkAcknowledged,
                           remote_install);
 }
@@ -149,6 +150,7 @@ bool PendingExtensionManager::AddFromExtensionImport(
                           should_allow_install,
                           kIsFromSync,
                           kManifestLocation,
+                          Extension::NO_FLAGS,
                           kMarkAcknowledged,
                           kRemoteInstall);
 }
@@ -189,6 +191,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
                           &AlwaysInstall,
                           kIsFromSync,
                           location,
+                          creation_flags,
                           mark_acknowledged,
                           kRemoteInstall);
 }
@@ -215,6 +218,7 @@ bool PendingExtensionManager::AddFromExternalFile(
                           &AlwaysInstall,
                           kIsFromSync,
                           install_source,
+                          creation_flags,
                           mark_acknowledged,
                           kRemoteInstall);
 }
@@ -248,6 +252,7 @@ bool PendingExtensionManager::AddExtensionImpl(
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     Manifest::Location install_source,
+    int creation_flags,
     bool mark_acknowledged,
     bool remote_install) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -259,6 +264,7 @@ bool PendingExtensionManager::AddExtensionImpl(
                             should_allow_install,
                             is_from_sync,
                             install_source,
+                            creation_flags,
                             mark_acknowledged,
                             remote_install);
 

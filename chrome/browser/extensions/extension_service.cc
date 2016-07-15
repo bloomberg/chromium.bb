@@ -546,6 +546,7 @@ bool ExtensionService::UpdateExtension(const extensions::CRXFileInfo& file,
       installer->set_expected_version(expected_version,
                                       false /* fail_install_if_unexpected */);
     }
+    creation_flags = pending_extension_info->creation_flags();
     if (pending_extension_info->mark_acknowledged())
       external_install_manager_->AcknowledgeExternalExtension(id);
   } else if (extension) {

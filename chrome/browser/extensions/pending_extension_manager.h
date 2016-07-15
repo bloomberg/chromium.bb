@@ -126,6 +126,7 @@ class PendingExtensionManager {
       PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       Manifest::Location install_source,
+      int creation_flags,
       bool mark_acknowledged,
       bool remote_install);
 

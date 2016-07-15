@@ -34,6 +34,7 @@ class PendingExtensionInfo {
                        ShouldAllowInstallPredicate should_allow_install,
                        bool is_from_sync,
                        Manifest::Location install_source,
+                       int creation_flags,
                        bool mark_acknowledged,
                        bool remote_install);
 
@@ -63,6 +64,7 @@ class PendingExtensionInfo {
   }
   bool is_from_sync() const { return is_from_sync_; }
   Manifest::Location install_source() const { return install_source_; }
+  int creation_flags() const { return creation_flags_; }
   bool mark_acknowledged() const { return mark_acknowledged_; }
   bool remote_install() const { return remote_install_; }
 
@@ -87,6 +89,7 @@ class PendingExtensionInfo {
 
   bool is_from_sync_;  // This update check was initiated from sync.
   Manifest::Location install_source_;
+  int creation_flags_;
   bool mark_acknowledged_;
   bool remote_install_;
 

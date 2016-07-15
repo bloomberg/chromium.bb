@@ -3018,6 +3018,7 @@ TEST_F(ExtensionServiceTest, UpdatePendingExtensionAlreadyInstalled) {
       &IsExtension,
       kGoodIsFromSync,
       Manifest::INTERNAL,
+      Extension::NO_FLAGS,
       false,
       kGoodRemoteInstall);
   UpdateExtension(good->id(), path, ENABLED);
@@ -4180,6 +4181,36 @@ TEST_F(ExtensionServiceTest, DefaultAppsInstall) {
   EXPECT_TRUE(extension->was_installed_by_default());
 }
 #endif
+
+TEST_F(ExtensionServiceTest, UpdatingPendingExternalExtensionWithFlags) {
+  // Regression test for crbug.com/627522
+  const char kPrefFromBookmark[] = "from_bookmark";
+
+  InitializeEmptyExtensionService();
+
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  service()->set_extensions_enabled(true);
+
+  // Register and install an external extension.
+  std::unique_ptr<Version> version(new Version("1.0.0.0"));
+  content::WindowedNotificationObserver observer(
+      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+      content::NotificationService::AllSources());
+  std::unique_ptr<ExternalInstallInfoFile> info(new ExternalInstallInfoFile(
+      good_crx, std::move(version), path, Manifest::EXTERNAL_PREF,
+      Extension::FROM_BOOKMARK, false /* mark_acknowledged */,
+      false /* install_immediately */));
+  ASSERT_TRUE(service()->OnExternalExtensionFileFound(*info));
+  EXPECT_TRUE(service()->pending_extension_manager()->IsIdPending(good_crx));
+
+  // Upgrade to version 2.0, the flag should be preserved.
+  path = data_dir().AppendASCII("good2.crx");
+  UpdateExtension(good_crx, path, ENABLED);
+  ASSERT_TRUE(ValidateBooleanPref(good_crx, kPrefFromBookmark, true));
+  const Extension* extension = service()->GetExtensionById(good_crx, false);
+  ASSERT_TRUE(extension);
+  ASSERT_TRUE(extension->from_bookmark());
+}
 
 // Tests disabling extensions
 TEST_F(ExtensionServiceTest, DisableExtension) {
