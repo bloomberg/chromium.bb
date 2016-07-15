@@ -436,8 +436,10 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureNoManifest) {
   ASSERT_EQ("manifest removed", script_result);
 
   ASSERT_TRUE(RunScript("documentSubscribePushWithoutKey()", &script_result));
-  EXPECT_EQ("AbortError - Registration failed - manifest empty or missing",
-            script_result);
+  EXPECT_EQ(
+      "AbortError - Registration failed - missing applicationServerKey, and "
+      "manifest empty or missing",
+      script_result);
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureNoSenderId) {
@@ -453,7 +455,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeFailureNoSenderId) {
 
   ASSERT_TRUE(RunScript("documentSubscribePushWithoutKey()", &script_result));
   EXPECT_EQ(
-      "AbortError - Registration failed - gcm_sender_id not found in manifest",
+      "AbortError - Registration failed - missing applicationServerKey, and "
+      "gcm_sender_id not found in manifest",
       script_result);
 }
 
@@ -487,7 +490,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorker) {
   // Try to subscribe from a worker without a key. This should fail.
   ASSERT_TRUE(RunScript("workerSubscribePushNoKey()", &script_result));
   EXPECT_EQ(
-      "AbortError - Registration failed - gcm_sender_id not found in manifest",
+      "AbortError - Registration failed - missing applicationServerKey, and "
+      "gcm_sender_id not found in manifest",
       script_result);
   // Now run the subscribe from the service worker with a key. This
   // should succeed, and write the key to the datastore.
@@ -524,7 +528,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, SubscribeWorkerUsingManifest) {
   // Try to subscribe from a worker without a key. This should fail.
   ASSERT_TRUE(RunScript("workerSubscribePushNoKey()", &script_result));
   EXPECT_EQ(
-      "AbortError - Registration failed - gcm_sender_id not found in manifest",
+      "AbortError - Registration failed - missing applicationServerKey, and "
+      "gcm_sender_id not found in manifest",
       script_result);
   EXPECT_NE(push_service(), GetAppHandler());
 
