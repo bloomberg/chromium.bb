@@ -208,11 +208,11 @@ int gbm_gem_bo_destroy(struct gbm_bo *bo)
 	size_t plane, i;
 
 	for (plane = 0; plane < bo->num_planes; plane++) {
-		bool already_closed = false;
-		for (i = 1; i < plane && !already_closed; i++)
-			if (bo->handles[i-1].u32 == bo->handles[plane].u32)
-				already_closed = true;
-		if (already_closed)
+		for (i = 0; i < plane; i++)
+			if (bo->handles[i].u32 == bo->handles[plane].u32)
+				break;
+		/* Make sure close hasn't already been called on this handle */
+		if (i != plane)
 			continue;
 
 		memset(&gem_close, 0, sizeof(gem_close));
