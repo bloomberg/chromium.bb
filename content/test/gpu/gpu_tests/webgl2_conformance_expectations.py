@@ -162,7 +162,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/transformfeedback/*.html',
         ['win', ('amd', 0x6779)], bug=483282)
 
-    # It's unfortunate that this suppression needs to be so broad, but
+    # It's unfortunate that these suppressions need to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
     # it's infeasible to suppress individual failures one by one.
     self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
@@ -221,6 +221,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win', 'intel'], bug=483282)
     self.Flaky('deqp/functional/gles3/transformfeedback/*.html',
         ['win', 'intel'], bug=626068)
+
+    # It's unfortunate that these suppressions need to be so broad, but it
+    # looks like the D3D11 device can be lost spontaneously on this
+    # configuration while running basically any test.
+    self.Flaky('conformance/*', ['win', 'intel'], bug=628395)
+    self.Flaky('conformance2/*', ['win', 'intel'], bug=628395)
+    self.Flaky('deqp/*', ['win', 'intel'], bug=628395)
 
     # Mac only.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
