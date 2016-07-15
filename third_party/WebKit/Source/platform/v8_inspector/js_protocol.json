@@ -784,11 +784,7 @@
                 "type": "object",
                 "description": "CPU Profile node. Holds callsite information, execution statistics and child nodes.",
                 "properties": [
-                    { "name": "functionName", "type": "string", "description": "Function name." },
-                    { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Script identifier." },
-                    { "name": "url", "type": "string", "description": "URL." },
-                    { "name": "lineNumber", "type": "integer", "description": "1-based line number of the function start position." },
-                    { "name": "columnNumber", "type": "integer", "description": "1-based column number of the function start position." },
+                    { "name": "callFrame", "$ref": "Runtime.CallFrame", "description": "Function location." },
                     { "name": "hitCount", "type": "integer", "description": "Number of samples where this node was on top of the call stack." },
                     { "name": "children", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "Child nodes." },
                     { "name": "deoptReason", "type": "string", "description": "The reason of being not optimized. The function may be deoptimized or marked as don't optimize."},
@@ -878,11 +874,7 @@
                 "type": "object",
                 "description": "Sampling Heap Profile node. Holds callsite information, allocation statistics and child nodes.",
                 "properties": [
-                    { "name": "functionName", "type": "string", "description": "Function name." },
-                    { "name": "scriptId", "$ref": "Runtime.ScriptId", "description": "Script identifier." },
-                    { "name": "url", "type": "string", "description": "URL." },
-                    { "name": "lineNumber", "type": "integer", "description": "1-based line number of the function start position." },
-                    { "name": "columnNumber", "type": "integer", "description": "1-based column number of the function start position." },
+                    { "name": "callFrame", "$ref": "Runtime.CallFrame", "description": "Function location." },
                     { "name": "selfSize", "type": "number", "description": "Allocations size in bytes for the node excluding children." },
                     { "name": "children", "type": "array", "items": { "$ref": "SamplingHeapProfileNode" }, "description": "Child nodes." }
                 ]

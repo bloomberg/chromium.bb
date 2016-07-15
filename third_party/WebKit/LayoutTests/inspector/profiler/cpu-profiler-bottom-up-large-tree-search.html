@@ -15,10 +15,13 @@ function test()
         for (var i = count; i > 0; --i) {
             var child = node;
             node = {
-                "functionName": "foo" + i,
-                "scriptId": "0",
-                "url": "a.js",
-                "lineNumber": i,
+                "callFrame":
+                {
+                    "functionName": "foo" + i,
+                    "scriptId": "0",
+                    "url": "a.js",
+                    "lineNumber": i
+                },
                 "hitCount": 10,
                 "callUID": 10000 + i,
                 "children": []
@@ -35,18 +38,24 @@ function test()
         },
         "_profile": {
             "head": {
-                "functionName": "(root)",
-                "scriptId": "0",
-                "url": "a.js",
-                "lineNumber": 0,
+                "callFrame":
+                {
+                    "functionName": "(root)",
+                    "scriptId": "0",
+                    "url": "a.js",
+                    "lineNumber": 0,
+                },
                 "hitCount": 1,
                 "callUID": 1000,
                 "children": [
                 {
-                    "functionName": "(idle)",
-                    "scriptId": "0",
-                    "url": "a.js",
-                    "lineNumber": 1,
+                    "callFrame":
+                    {
+                        "functionName": "(idle)",
+                        "scriptId": "0",
+                        "url": "a.js",
+                        "lineNumber": 1
+                    },
                     "hitCount": 2,
                     "callUID": 2,
                     "children": []

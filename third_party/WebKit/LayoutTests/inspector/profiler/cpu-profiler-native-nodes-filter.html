@@ -8,64 +8,78 @@ function test()
 {
     var profile = {
         "head": {
-            "functionName": "(root)",
+            "callFrame": {
+                "functionName": "(root)",
+                "scriptId": "0",
+                "url": "",
+                "lineNumber": 0
+            },
             "id": 1,
-            "scriptId": "0",
-            "url": "",
-            "lineNumber": 0,
             "hitCount": 100000,
             "children": [
                 {
-                    "functionName": "holder",
+                    "callFrame": {
+                        "functionName": "holder",
+                        "scriptId": "0",
+                        "url": "",
+                        "lineNumber": 0
+                    },
                     "id": 10,
-                    "scriptId": "0",
-                    "url": "",
-                    "lineNumber": 0,
                     "hitCount": 10000,
                     "children": [
                         {
-                            "functionName": "nativeA",
+                            "callFrame": {
+                                "functionName": "nativeA",
+                                "scriptId": "40",
+                                "url": "native 1.js",
+                                "lineNumber": 4642
+                            },
                             "id": 2,
-                            "scriptId": "40",
-                            "url": "native 1.js",
-                            "lineNumber": 4642,
                             "hitCount": 1000,
                             "children": [
                                 {
-                                    "functionName": "nativeAaa",
+                                    "callFrame": {
+                                        "functionName": "nativeAaa",
+                                        "scriptId": "40",
+                                        "url": "native 2.js",
+                                        "lineNumber": 5025
+                                    },
                                     "id": 3,
-                                    "scriptId": "40",
-                                    "url": "native 2.js",
-                                    "lineNumber": 5025,
                                     "hitCount": 100,
                                     "children": [
                                         {
-                                            "functionName": "Aaa",
+                                            "callFrame": {
+                                                "functionName": "Aaa",
+                                                "scriptId": "40",
+                                                "url": "native 3.js",
+                                                "lineNumber": 5025
+                                            },
                                             "id": 4,
-                                            "scriptId": "40",
-                                            "url": "native 3.js",
-                                            "lineNumber": 5025,
                                             "hitCount": 10,
                                             "children": [
                                             ]
                                         },
                                         {
-                                            "functionName": "Aaaaaa",
+                                            "callFrame": {
+                                                "functionName": "Aaaaaa",
+                                                "scriptId": "40",
+                                                "url": "",
+                                                "lineNumber": 505
+                                            },
                                             "id": 5,
-                                            "scriptId": "40",
-                                            "url": "",
-                                            "lineNumber": 505,
                                             "hitCount": 20,
                                             "children": []
                                         }
                                     ]
                                 },
                                 {
-                                    "functionName": "Bbb",
-                                      "id": 6,
-                                    "scriptId": "40",
-                                    "url": "",
-                                    "lineNumber": 505,
+                                    "callFrame": {
+                                        "functionName": "Bbb",
+                                        "scriptId": "40",
+                                        "url": "",
+                                        "lineNumber": 505
+                                    },
+                                    "id": 6,
                                     "hitCount": 200,
                                     "children": []
                                 }
@@ -74,28 +88,34 @@ function test()
                     ]
                 },
                 {
-                    "functionName": "C",
-                       "id": 7,
-                    "scriptId": "40",
-                    "url": "",
-                    "lineNumber": 4642,
+                    "callFrame": {
+                        "functionName": "C",
+                        "scriptId": "40",
+                        "url": "",
+                        "lineNumber": 4642
+                    },
+                    "id": 7,
                     "hitCount": 20000,
                     "children": [
                         {
-                            "functionName": "nativeDdd",
+                            "callFrame": {
+                                "functionName": "nativeDdd",
+                                "scriptId": "41",
+                                "url": "native 3.js",
+                                "lineNumber": 55
+                            },
                             "id": 8,
-                            "scriptId": "41",
-                            "url": "native 3.js",
-                            "lineNumber": 55,
                             "hitCount": 2000,
                             "children": []
                         },
                         {
-                            "functionName": "Ccc",
+                            "callFrame": {
+                                "functionName": "Ccc",
+                                "scriptId": "40",
+                                "url": "",
+                                "lineNumber": 525
+                            },
                             "id": 9,
-                            "scriptId": "40",
-                            "url": "",
-                            "lineNumber": 525,
                             "hitCount": 1000,
                             "children": []
                         }

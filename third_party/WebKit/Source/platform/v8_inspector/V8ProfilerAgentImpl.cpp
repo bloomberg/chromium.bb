@@ -56,12 +56,15 @@ std::unique_ptr<protocol::Profiler::CPUProfileNode> buildInspectorObjectFor(v8::
 
     std::unique_ptr<protocol::Array<protocol::Profiler::PositionTickInfo>> positionTicks = buildInspectorObjectForPositionTicks(node);
 
-    std::unique_ptr<protocol::Profiler::CPUProfileNode> result = protocol::Profiler::CPUProfileNode::create()
+    std::unique_ptr<protocol::Runtime::CallFrame> callFrame = protocol::Runtime::CallFrame::create()
         .setFunctionName(toProtocolString(node->GetFunctionName()))
         .setScriptId(String16::fromInteger(node->GetScriptId()))
         .setUrl(toProtocolString(node->GetScriptResourceName()))
-        .setLineNumber(node->GetLineNumber())
-        .setColumnNumber(node->GetColumnNumber())
+        .setLineNumber(node->GetLineNumber() - 1)
+        .setColumnNumber(node->GetColumnNumber() - 1)
+        .build();
+    std::unique_ptr<protocol::Profiler::CPUProfileNode> result = protocol::Profiler::CPUProfileNode::create()
+        .setCallFrame(std::move(callFrame))
         .setHitCount(node->GetHitCount())
         .setChildren(std::move(children))
         .setPositionTicks(std::move(positionTicks))

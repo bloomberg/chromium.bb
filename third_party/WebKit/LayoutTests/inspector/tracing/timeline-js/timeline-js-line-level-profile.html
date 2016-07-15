@@ -10,34 +10,34 @@ function test()
         startTime: 10,
         endTime: 20,
         head: {
-            functionName: "(root)",
+            callFrame: { functionName: "(root)" },
             hitCount: 0,
             children: [
                 {
-                    functionName: "foo1",
+                    callFrame: { functionName: "foo1" },
                     hitCount: 100,
                     positionTicks: [{line:1, ticks:10}, {line:2, ticks:20}, {line:3, ticks:30}, {line:4, ticks:40}],
                     children: []
                 },
                 {
-                    functionName: "foo2",
+                    callFrame: { functionName: "foo2" },
                     hitCount: 200,
                     positionTicks: [{line:100, ticks:1}, {line:102, ticks:190}],
                     children: []
                 },
                 {
-                    functionName: "null",
+                    callFrame: { functionName: "null" },
                     hitCount: 0,
                     positionTicks: [],
                     children: [
                         {
-                            functionName: "bar",
+                            callFrame: { functionName: "bar" },
                             hitCount: 300,
                             positionTicks: [{line:55, ticks:22}],
                             children: []
                         },
                         {
-                            functionName: "baz",
+                            callFrame: { functionName: "baz" },
                             hitCount: 400,
                             // no positionTicks for the node.
                             children: []
@@ -58,7 +58,7 @@ function test()
 
     function setUrls(url, node)
     {
-        node.url = url;
+        node.callFrame.url = url;
         node.children.forEach(setUrls.bind(null, url));
     }
 

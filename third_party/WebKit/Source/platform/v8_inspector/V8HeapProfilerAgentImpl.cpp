@@ -361,12 +361,15 @@ std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfileNode> buildSampingHea
     size_t selfSize = 0;
     for (const auto& allocation : node->allocations)
         selfSize += allocation.size * allocation.count;
-    std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
+    std::unique_ptr<protocol::Runtime::CallFrame> callFrame = protocol::Runtime::CallFrame::create()
         .setFunctionName(toProtocolString(node->name))
         .setScriptId(String16::fromInteger(node->script_id))
         .setUrl(toProtocolString(node->script_name))
-        .setLineNumber(node->line_number)
-        .setColumnNumber(node->column_number)
+        .setLineNumber(node->line_number - 1)
+        .setColumnNumber(node->column_number - 1)
+        .build();
+    std::unique_ptr<protocol::HeapProfiler::SamplingHeapProfileNode> result = protocol::HeapProfiler::SamplingHeapProfileNode::create()
+        .setCallFrame(std::move(callFrame))
         .setSelfSize(selfSize)
         .setChildren(std::move(children)).build();
     return result;

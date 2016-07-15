@@ -55,7 +55,7 @@ function test()
 
     function findFunctionInProfile(node, functionName)
     {
-        if (node.functionName === functionName)
+        if (node.callFrame.functionName === functionName)
             return true;
         var children = node.children;
         for (var i = 0; i < children.length; ++i)
