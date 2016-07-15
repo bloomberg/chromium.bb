@@ -247,6 +247,11 @@ DesktopAutomationHandler.prototype = {
       if (!focus || !AutomationUtil.isDescendantOf(focus, evt.target))
         return;
 
+      // Create text edit handler, if needed, now in order not to miss initial
+      // value change if text field has already been focused when initializing
+      // ChromeVox.
+      this.createTextEditHandlerIfNeeded_(focus);
+
       // If initial focus was already placed on this page (e.g. if a user starts
       // tabbing before load complete), then don't move ChromeVox's position on
       // the page.
