@@ -44,7 +44,6 @@ crbug.com/508725 imported/wpt/html/webappapis/system-state-and-capabilities/the-
 # Expectation is [ Pass ] since for these there is no -expected.txt,
 # but instead there is a [ Failure ] expectation in TestExpectations.
 crbug.com/508725 imported/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_allow_script.html [ Pass ]
-crbug.com/508725 imported/wpt/mediacapture-streams/GUM-trivial-constraint.https.html [ Pass ]
 crbug.com/508725 imported/wpt/pointerevents/pointerevent_constructor.html [ Pass ]
 
 # These tests timeout with --enable-wptserve enabled.

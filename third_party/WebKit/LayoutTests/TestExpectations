@@ -469,7 +469,6 @@ crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-idl.https.html [ 
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStream-removetrack.https.html [ Skip ]
 
 crbug.com/412381 imported/wpt/mediacapture-streams/GUM-empty-option-param.https.html [ Failure ]
-crbug.com/412381 imported/wpt/mediacapture-streams/GUM-trivial-constraint.https.html [ Failure ]
 crbug.com/412381 imported/wpt/mediacapture-streams/GUM-unknownkey-option-param.https.html [ Failure ]
 crbug.com/412381 imported/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none.https.html [ Pass Timeout Failure ]
 
