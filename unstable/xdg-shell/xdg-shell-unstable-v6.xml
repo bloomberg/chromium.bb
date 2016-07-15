@@ -669,18 +669,6 @@
 
 	States set in this way are double-buffered. They will get applied on
 	the next commit.
-
-	Desktop environments may extend this enum by taking up a range of
-	values and documenting the range they chose in this description.
-	They are not required to document the values for the range that they
-	chose. Ideally, any good extensions from a desktop environment should
-	make its way into standardization into this enum.
-
-	The current reserved ranges are:
-
-	0x0000 - 0x0FFF: xdg-shell core values, documented below.
-	0x1000 - 0x1FFF: GNOME
-	0x2000 - 0x2FFF: EFL
       </description>
       <entry name="maximized" value="1" summary="the surface is maximized">
 	<description summary="the surface is maximized">
