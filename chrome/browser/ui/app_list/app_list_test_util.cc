@@ -37,6 +37,14 @@ void AppListTestBase::SetUp() {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
   service_->Init();
 
+  // ExtensionService needs a real I/O thread.
+  service_->SetFileTaskRunnerForTesting(
+      content::BrowserThread::GetBlockingPool()
+          ->GetSequencedTaskRunnerWithShutdownBehavior(
+              content::BrowserThread::GetBlockingPool()->GetNamedSequenceToken(
+                  "ext_install-"),
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
   // There should be 4 extensions in the test profile.
   ASSERT_EQ(4U, registry()->enabled_extensions().size());
 }

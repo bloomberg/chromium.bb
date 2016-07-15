@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -17,6 +18,7 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "components/user_manager/user_manager.h"
 
+class ArcAppTest;
 class Profile;
 
 namespace base {
@@ -159,6 +161,7 @@ class ProfileHelper
   friend class SessionStateDelegateChromeOSTest;
   friend class SystemTrayDelegateChromeOSTest;
   friend class ash::test::MultiUserWindowManagerChromeOSTest;
+  friend class ::ArcAppTest;
   friend class ::test::BrowserFinderChromeOSTest;
 
   // Called when signin profile is cleared.
@@ -230,6 +233,6 @@ class ProfileHelper
   DISALLOW_COPY_AND_ASSIGN(ProfileHelper);
 };
 
-} // namespace chromeos
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_

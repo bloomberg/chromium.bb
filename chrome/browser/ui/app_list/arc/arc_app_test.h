@@ -27,6 +27,10 @@ class FakeChromeUserManager;
 class ScopedUserManagerEnabler;
 }
 
+namespace user_manager {
+class User;
+}
+
 class ArcAppListPrefs;
 class Profile;
 
@@ -70,7 +74,7 @@ class ArcAppTest {
   arc::ArcAuthService* arc_auth_service() { return auth_service_.get(); }
 
  private:
-  void CreateUserAndLogin();
+  const user_manager::User* CreateUserAndLogin();
   bool FindPackage(const arc::mojom::ArcPackageInfo& package);
 
   // Unowned pointer.

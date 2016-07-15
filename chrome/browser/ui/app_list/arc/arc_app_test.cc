@@ -8,6 +8,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chromeos/chromeos_switches.h"
@@ -50,7 +51,13 @@ void ArcAppTest::SetUp(Profile* profile) {
       chromeos::switches::kEnableArc);
   DCHECK(!profile_);
   profile_ = profile;
-  CreateUserAndLogin();
+  const user_manager::User* user = CreateUserAndLogin();
+
+  // If for any reason the garbage collector kicks in while we are waiting for
+  // an icon, have the user-to-profile mapping ready to avoid using the real
+  // profile manager (which is null).
+  chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                                    profile_);
 
   // Make sure we have enough data for test.
   for (int i = 0; i < 3; ++i) {
@@ -129,11 +136,12 @@ void ArcAppTest::TearDown() {
   auth_service_.reset();
 }
 
-void ArcAppTest::CreateUserAndLogin() {
+const user_manager::User* ArcAppTest::CreateUserAndLogin() {
   const AccountId account_id(AccountId::FromUserEmailGaiaId(
       profile_->GetProfileUserName(), "1234567890"));
-  GetUserManager()->AddUser(account_id);
+  const user_manager::User* user = GetUserManager()->AddUser(account_id);
   GetUserManager()->LoginUser(account_id);
+  return user;
 }
 
 void ArcAppTest::AddPackage(const arc::mojom::ArcPackageInfo& package) {
