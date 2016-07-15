@@ -12,7 +12,7 @@ import java.util.Locale;
 /**
  * This class represents a scanned URL and information associated with that URL.
  */
-class UrlInfo implements Comparable<UrlInfo> {
+class UrlInfo {
     private static final String URL_KEY = "url";
     private static final String DISTANCE_KEY = "distance";
     private static final String SCAN_TIMESTAMP_KEY = "scan_timestamp";
@@ -121,67 +121,6 @@ class UrlInfo implements Comparable<UrlInfo> {
             urlInfo.setHasBeenDisplayed();
         }
         return urlInfo;
-    }
-
-    /**
-     * Returns a hash code for this UrlInfo.
-     * @return hash code
-     */
-    @Override
-    public int hashCode() {
-        int hash = 31 + mUrl.hashCode();
-        hash = hash * 31 + (int) mDistance;
-        hash = hash * 31 + (int) mScanTimestamp;
-        hash = hash * 31 + (mHasBeenDisplayed ? 1 : 0);
-        return hash;
-    }
-
-    /**
-     * Checks if two UrlInfos are equal.
-     * @param other the UrlInfo to compare to.
-     * @return true if the UrlInfo are equal.
-     */
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-
-        if (other instanceof UrlInfo) {
-            UrlInfo urlInfo = (UrlInfo) other;
-            return compareTo(urlInfo) == 0;
-        }
-        return false;
-    }
-
-    /**
-     * Compares two UrlInfos.
-     * @param other the UrlInfo to compare to.
-     * @return the comparison value.
-     */
-    @Override
-    public int compareTo(UrlInfo other) {
-        int compareValue = mUrl.compareTo(other.mUrl);
-        if (compareValue != 0) {
-            return compareValue;
-        }
-
-        compareValue = Double.compare(mDistance, other.mDistance);
-        if (compareValue != 0) {
-            return compareValue;
-        }
-
-        compareValue = Long.compare(mScanTimestamp, other.mScanTimestamp);
-        if (compareValue != 0) {
-            return compareValue;
-        }
-
-        compareValue = Boolean.compare(mHasBeenDisplayed, mHasBeenDisplayed);
-        if (compareValue != 0) {
-            return compareValue;
-        }
-
-        return 0;
     }
 
     /**

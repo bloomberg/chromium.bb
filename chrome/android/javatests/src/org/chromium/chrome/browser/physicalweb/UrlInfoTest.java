@@ -40,6 +40,10 @@ public class UrlInfoTest extends TestCase {
 
     @SmallTest
     public void testJsonDeserializeWorks() throws JSONException {
-        assertEquals(mReferenceUrlInfo, UrlInfo.jsonDeserialize(mReferenceJsonObject));
+        UrlInfo urlInfo = UrlInfo.jsonDeserialize(mReferenceJsonObject);
+        assertEquals(mReferenceUrlInfo.getUrl(), urlInfo.getUrl());
+        assertEquals(mReferenceUrlInfo.getDistance(), urlInfo.getDistance());
+        assertEquals(mReferenceUrlInfo.getScanTimestamp(), urlInfo.getScanTimestamp());
+        assertEquals(mReferenceUrlInfo.hasBeenDisplayed(), urlInfo.hasBeenDisplayed());
     }
 }
