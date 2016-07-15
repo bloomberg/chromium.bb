@@ -49,6 +49,10 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecif
     if (!value)
         return maybeConvertNeutral(underlying, conversionCheckers);
 
+    // TODO(alancutter): Support animation of var() in shorthand properties.
+    if (value->isPendingSubstitutionValue())
+        return nullptr;
+
     if (value->isVariableReferenceValue() && !isShorthandProperty(cssProperty())) {
         resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), cssProperty(), toCSSVariableReferenceValue(*value));
         conversionCheckers.append(ResolvedVariableChecker::create(cssProperty(), toCSSVariableReferenceValue(value), resolvedCSSValueOwner));
