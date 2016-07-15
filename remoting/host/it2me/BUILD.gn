@@ -92,6 +92,26 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
           ]
         }
       }
+
+      mac_xib_bundle_data("remote_assistance_host_xibs") {
+        sources = [
+          "//remoting/host/disconnect_window.xib",
+        ]
+      }
+
+      bundle_data("remote_assistance_host_resources") {
+        sources = [
+          "$root_out_dir/icudtl.dat",
+        ]
+
+        outputs = [
+          "{{bundle_resources_dir}}/{{source_file_part}}",
+        ]
+
+        public_deps = [
+          "//third_party/icu:icudata",
+        ]
+      }
     } else {
       app_target_type = "executable"
     }
@@ -132,6 +152,8 @@ if (!is_chromeos && !is_android && enable_remoting_host) {
           ]
         }
         deps += [
+          ":remote_assistance_host_resources",
+          ":remote_assistance_host_xibs",
           "//remoting/host:remoting_infoplist_strings",
           "//remoting/resources:copy_locales",
         ]

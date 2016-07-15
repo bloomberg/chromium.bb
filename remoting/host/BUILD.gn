@@ -964,6 +964,29 @@ if (enable_me2me_host) {
           ]
         }
       }
+
+      mac_xib_bundle_data("remoting_host_xibs") {
+        sources = [
+          "disconnect_window.xib",
+        ]
+      }
+
+      bundle_data("remoting_host_resources") {
+        sources = [
+          "$root_gen_dir/remoting/CREDITS.txt",
+          "$root_out_dir/icudtl.dat",
+          "remoting_me2me_host.icns",
+        ]
+
+        outputs = [
+          "{{bundle_resources_dir}}/{{source_file_part}}",
+        ]
+
+        public_deps = [
+          ":credits",
+          "//third_party/icu:icudata",
+        ]
+      }
     }
 
     target(app_target_type, "remoting_me2me_host") {
@@ -998,6 +1021,8 @@ if (enable_me2me_host) {
           ]
         }
         deps += [
+          ":remoting_host_resources",
+          ":remoting_host_xibs",
           ":remoting_infoplist_strings",
           "//remoting/resources:copy_locales",
         ]
@@ -1411,6 +1436,7 @@ if (enable_me2me_host) {
       ]
 
       deps = [
+        ":remoting_host_uninstaller_resources",
         ":remoting_host_uninstaller_xibs",
         ":remoting_infoplist_strings",
         "//base",
@@ -1422,9 +1448,17 @@ if (enable_me2me_host) {
 
     mac_xib_bundle_data("remoting_host_uninstaller_xibs") {
       sources = [
-        #"installer/mac/uninstaller/remoting_uninstaller.icns",
         "installer/mac/uninstaller/remoting_uninstaller.xib",
-        #_uninstaller_plist
+      ]
+    }
+
+    bundle_data("remoting_host_uninstaller_resources") {
+      sources = [
+        "installer/mac/uninstaller/remoting_uninstaller.icns",
+      ]
+
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
       ]
     }
 
@@ -1437,6 +1471,7 @@ if (enable_me2me_host) {
         ":remoting_host_prefpane",
         ":remoting_host_prefpane_bundle_data",
         ":remoting_host_prefpane_plist",
+        ":remoting_host_prefpane_resources",
         ":remoting_host_prefpane_xibs",
         ":remoting_infoplist_strings",
       ]
@@ -1454,7 +1489,17 @@ if (enable_me2me_host) {
         "$root_build_dir/gen/remoting/host/remoting_host_prefpane",
       ]
       outputs = [
-        "{{bundle_executable_dir}}/remoting_host_prefname",
+        "{{bundle_executable_dir}}/{{source_file_part}}",
+      ]
+    }
+
+    bundle_data("remoting_host_prefpane_resources") {
+      sources = [
+        "//remoting/resources/chromoting128.png",
+      ]
+
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
       ]
     }
 
@@ -1480,7 +1525,6 @@ if (enable_me2me_host) {
 
       deps = [
         ":host",
-        ":remoting_host_prefpane_xibs",
         ":remoting_infoplist_strings",
         "//remoting/base",
         "//remoting/resources:copy_locales",
@@ -1517,10 +1561,10 @@ if (enable_me2me_host) {
     mac_xib_bundle_data("remoting_host_prefpane_xibs") {
       sources = [
         "mac/me2me_preference_pane.xib",
-        #"mac/me2me_preference_pane_confirm_pin.xib",
-        #"mac/me2me_preference_pane_disable.xib",
+        "mac/me2me_preference_pane_confirm_pin.xib",
+        "mac/me2me_preference_pane_disable.xib",
+
         #"mac/me2me_preference_pane-Info.plist",
-        #"//remoting/resources/chromoting128.png",
       ]
     }
   } else {
