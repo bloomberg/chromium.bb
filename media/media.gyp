@@ -1165,6 +1165,7 @@
         'base/user_input_monitor_unittest.cc',
         'base/vector_math_testing.h',
         'base/vector_math_unittest.cc',
+        'base/video_codecs_unittest.cc',
         'base/video_decoder_config_unittest.cc',
         'base/video_frame_pool_unittest.cc',
         'base/video_frame_unittest.cc',
