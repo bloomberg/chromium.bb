@@ -3,14 +3,14 @@ if (this.importScripts) {
     importScripts('shared.js');
 }
 
-description("Test the order when there are pending setVersion, delete and open calls.");
+description("Test the order when there are pending open (with upgrade) and delete calls.");
 
 indexedDBTest(null, h1OpenSuccess);
 function h1OpenSuccess(evt)
 {
     preamble(evt);
-    evalAndLog("setVersionBlockedEventFired = false");
-    evalAndLog("versionChangeComplete = false");
+    evalAndLog("openWithUpgradeBlockedEventFired = false");
+    evalAndLog("upgradeComplete = false");
     evalAndLog("deleteDatabaseBlockedEventFired = false");
     evalAndLog("deleteDatabaseComplete = false");
 
@@ -24,18 +24,18 @@ function h1OpenSuccess(evt)
 
         h1.onversionchange = function h1SecondOnVersionChange(evt) {
             preamble(evt);
-            shouldBe("event.target.version", "1");
-            shouldBe("event.oldVersion", "1");
-            shouldBeNull("event.newVersion");
+            testFailed('Second "versionchange" event should not be seen');
         };
     };
 
+    debug('');
     debug("Open h2:");
     request = evalAndLog("indexedDB.open(dbname)");
     request.onblocked = unexpectedBlockedCallback;
     request.onerror = unexpectedErrorCallback;
     request.onsuccess = function h2OpenSuccess(evt) {
         preamble(evt);
+        evalAndLog("h2OpenSuccess = true");
         h2 = event.target.result;
 
         h2.onversionchange = function h2OnVersionChange(evt) {
@@ -46,25 +46,28 @@ function h1OpenSuccess(evt)
 
             h2.onversionchange = function h2OnSecondVersionChange(evt) {
                 preamble(evt);
-                shouldBe("event.target.version", "1");
-                shouldBe("event.oldVersion", "1");
-                shouldBe("event.newVersion", "null");
+                testFailed('Second "versionchange" event should not be seen');
             };
         };
 
-        debug("Try to open h3:");
+        debug('');
+        debug("Open h3:");
         request = evalAndLog("indexedDB.open(dbname, 2)");
         request.onerror = unexpectedErrorCallback;
         request.onsuccess = function h3OpenSuccess(evt) {
             preamble(evt);
             h3 = event.target.result;
+            shouldBeTrue("upgradeComplete");
+            shouldBeFalse("deleteDatabaseBlockedEventFired");
+            shouldBeFalse("deleteDatabaseComplete");
             evalAndLog("h3.close()");
         };
         request.onblocked = function h3Blocked(evt) {
             preamble(evt);
-            evalAndLog("setVersionBlockedEventFired = true");
+            evalAndLog("openWithUpgradeBlockedEventFired = true");
 
-            debug("Try to open h4:");
+            debug('');
+            debug("Open h4:");
             request = evalAndLog("indexedDB.open(dbname)");
             request.onblocked = unexpectedBlockedCallback;
             request.onerror = unexpectedErrorCallback;
@@ -73,14 +76,15 @@ function h1OpenSuccess(evt)
                 h4 = event.target.result;
                 h4.onversionchange = unexpectedVersionChangeCallback;
 
-                shouldBeTrue("setVersionBlockedEventFired");
-                shouldBeTrue("versionChangeComplete");
                 shouldBeTrue("deleteDatabaseBlockedEventFired");
                 shouldBeTrue("deleteDatabaseComplete");
 
                 finishJSTest();
             };
 
+            debug('');
+            debug('Close connections to unblock previous requests:');
+            evalAndLog("h1.close()");
             evalAndLog("h2.close()");
         };
         request.onupgradeneeded = function h3OnUpgradeneeded(evt) {
@@ -90,21 +94,23 @@ function h1OpenSuccess(evt)
             transaction.onabort = unexpectedAbortCallback;
             transaction.oncomplete = function transactionOnComplete(evt) {
                 preamble(evt);
-                evalAndLog("versionChangeComplete = true");
+                evalAndLog("upgradeComplete = true");
             };
         };
 
+        debug('... and deleteDatabase()');
         request = evalAndLog("indexedDB.deleteDatabase(dbname)");
         request.onerror = unexpectedErrorCallback;
         request.onblocked = function deleteDatabaseOnBlocked(evt) {
             preamble(evt);
             evalAndLog("deleteDatabaseBlockedEventFired = true");
-
-            evalAndLog("h1.close()");
         };
         request.onsuccess = function deleteDatabaseOnSuccess(evt) {
             preamble(evt);
             evalAndLog("deleteDatabaseComplete = true");
+            shouldBeTrue("openWithUpgradeBlockedEventFired");
+            shouldBeTrue("upgradeComplete");
+            evalAndLog("deleteDatabaseBlockedEventFired = true");
         };
     };
 }

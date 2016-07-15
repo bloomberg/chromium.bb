@@ -194,18 +194,30 @@ TEST(IndexedDBDatabaseTest, PendingDelete) {
       IndexedDBDatabaseMetadata::DEFAULT_VERSION);
   db->OpenConnection(connection);
 
+  EXPECT_EQ(db->ConnectionCount(), 1UL);
+  EXPECT_EQ(db->ActiveOpenDeleteCount(), 0UL);
+  EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
   scoped_refptr<MockDeleteCallbacks> request2(new MockDeleteCallbacks());
   db->DeleteDatabase(request2);
+  EXPECT_EQ(db->ConnectionCount(), 1UL);
+  EXPECT_EQ(db->ActiveOpenDeleteCount(), 1UL);
+  EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
 
   EXPECT_FALSE(request2->blocked_called());
   db->VersionChangeIgnored();
   EXPECT_TRUE(request2->blocked_called());
+  EXPECT_EQ(db->ConnectionCount(), 1UL);
+  EXPECT_EQ(db->ActiveOpenDeleteCount(), 1UL);
+  EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
 
   EXPECT_FALSE(backing_store->HasOneRef());  // local and db
 
   db->Close(request1->connection(), true /* forced */);
+  EXPECT_EQ(db->ConnectionCount(), 0UL);
+  EXPECT_EQ(db->ActiveOpenDeleteCount(), 0UL);
+  EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
 
   EXPECT_FALSE(db->backing_store());
   EXPECT_TRUE(backing_store->HasOneRef());  // local

@@ -199,13 +199,9 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
             new base::DictionaryValue());
 
         db_info->SetString("name", db->name());
-        db_info->SetDouble("pending_opens", db->PendingOpenCount());
-        db_info->SetDouble("pending_upgrades", db->PendingUpgradeCount());
-        db_info->SetDouble("running_upgrades", db->RunningUpgradeCount());
-        db_info->SetDouble("pending_deletes", db->PendingDeleteCount());
-        db_info->SetDouble("connection_count",
-                           db->ConnectionCount() - db->PendingUpgradeCount() -
-                               db->RunningUpgradeCount());
+        db_info->SetDouble("connection_count", db->ConnectionCount());
+        db_info->SetDouble("active_open_delete", db->ActiveOpenDeleteCount());
+        db_info->SetDouble("pending_open_delete", db->PendingOpenDeleteCount());
 
         std::unique_ptr<base::ListValue> transaction_list(
             new base::ListValue());

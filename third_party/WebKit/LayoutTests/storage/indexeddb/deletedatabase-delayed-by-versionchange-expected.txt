@@ -1,4 +1,4 @@
-Test the order when there are pending setVersion, delete and open calls.
+Test the order when there are pending open (with upgrade) and delete calls.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -8,17 +8,21 @@ indexedDB.deleteDatabase(dbname)
 indexedDB.open(dbname)
 
 h1OpenSuccess():
-setVersionBlockedEventFired = false
-versionChangeComplete = false
+openWithUpgradeBlockedEventFired = false
+upgradeComplete = false
 deleteDatabaseBlockedEventFired = false
 deleteDatabaseComplete = false
 h1 = event.target.result
+
 Open h2:
 indexedDB.open(dbname)
 
 h2OpenSuccess():
-Try to open h3:
+h2OpenSuccess = true
+
+Open h3:
 indexedDB.open(dbname, 2)
+... and deleteDatabase()
 indexedDB.deleteDatabase(dbname)
 
 h1OnVersionChange():
@@ -31,40 +35,34 @@ PASS event.target.version is 1
 PASS event.oldVersion is 1
 PASS event.newVersion is 2
 
-h1SecondOnVersionChange():
-PASS event.target.version is 1
-PASS event.oldVersion is 1
-PASS event.newVersion is null
-
-h2OnSecondVersionChange():
-PASS event.target.version is 1
-PASS event.oldVersion is 1
-PASS event.newVersion is null
-
 h3Blocked():
-setVersionBlockedEventFired = true
-Try to open h4:
-indexedDB.open(dbname)
-h2.close()
+openWithUpgradeBlockedEventFired = true
 
-deleteDatabaseOnBlocked():
-deleteDatabaseBlockedEventFired = true
+Open h4:
+indexedDB.open(dbname)
+
+Close connections to unblock previous requests:
 h1.close()
+h2.close()
 
 h3OnUpgradeneeded():
 
 transactionOnComplete():
-versionChangeComplete = true
+upgradeComplete = true
 
 h3OpenSuccess():
+PASS upgradeComplete is true
+PASS deleteDatabaseBlockedEventFired is false
+PASS deleteDatabaseComplete is false
 h3.close()
 
 deleteDatabaseOnSuccess():
 deleteDatabaseComplete = true
+PASS openWithUpgradeBlockedEventFired is true
+PASS upgradeComplete is true
+deleteDatabaseBlockedEventFired = true
 
 h4OpenSuccess():
-PASS setVersionBlockedEventFired is true
-PASS versionChangeComplete is true
 PASS deleteDatabaseBlockedEventFired is true
 PASS deleteDatabaseComplete is true
 PASS successfullyParsed is true
