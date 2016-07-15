@@ -69013,6 +69013,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-370" label="INVALID_HTTP_RESPONSE"/>
   <int value="-369" label="TEMPORARY_BACKOFF"/>
   <int value="-368" label="ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN"/>
   <int value="-367" label="PAC_SCRIPT_TERMINATED"/>
@@ -69068,7 +69069,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="-302" label="UNKNOWN_URL_SCHEME"/>
   <int value="-301" label="DISALLOWED_URL_SCHEME"/>
   <int value="-300" label="INVALID_URL"/>
-  <int value="-214" label="CERT_END"/>
+  <int value="-215" label="CERT_END"/>
+  <int value="-214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
   <int value="-213" label="CERT_VALIDITY_TOO_LONG"/>
   <int value="-212" label="CERT_NAME_CONSTRAINT_VIOLATION"/>
   <int value="-211" label="CERT_WEAK_KEY"/>
@@ -83914,7 +83916,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="211" label="CERT_WEAK_KEY"/>
   <int value="212" label="CERT_NAME_CONSTRAINT_VIOLATION"/>
   <int value="213" label="CERT_VALIDITY_TOO_LONG"/>
-  <int value="214" label="CERT_END"/>
+  <int value="214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
+  <int value="215" label="CERT_END"/>
   <int value="300" label="INVALID_URL"/>
   <int value="301" label="DISALLOWED_URL_SCHEME"/>
   <int value="302" label="UNKNOWN_URL_SCHEME"/>
@@ -83971,6 +83974,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="367" label="PAC_SCRIPT_TERMINATED"/>
   <int value="368" label="ALTERNATIVE_CERT_NOT_VALID_FOR_ORIGIN"/>
   <int value="369" label="TEMPORARY_BACKOFF"/>
+  <int value="370" label="INVALID_HTTP_RESPONSE"/>
   <int value="400" label="CACHE_MISS"/>
   <int value="401" label="CACHE_READ_FAILURE"/>
   <int value="402" label="CACHE_WRITE_FAILURE"/>

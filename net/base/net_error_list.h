@@ -678,6 +678,10 @@ NET_ERROR(PAC_SCRIPT_TERMINATED, -367)
 // See: crbug.com/486891.
 NET_ERROR(TEMPORARY_BACKOFF, -369)
 
+// The server was expected to return an HTTP/1.x response, but did not. Rather
+// than treat it as HTTP/0.9, this error is returned.
+NET_ERROR(INVALID_HTTP_RESPONSE, -370)
+
 // The cache does not have the requested entry.
 NET_ERROR(CACHE_MISS, -400)
 

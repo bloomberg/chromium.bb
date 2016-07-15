@@ -1127,21 +1127,36 @@ class SimpleGetRunner {
   int sequence_number_;
 };
 
-// Test that HTTP/0.9 response size is correctly calculated.
+// Test that HTTP/0.9 response correctly results in an error.
 TEST(HttpStreamParser, ReceivedBytesNoHeaders) {
-  std::string response = "hello\r\nworld\r\n";
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n"),
+  };
 
-  SimpleGetRunner get_runner;
-  get_runner.AddRead(response);
-  get_runner.SetupParserAndSendRequest();
-  get_runner.ReadHeaders();
-  EXPECT_EQ(0, get_runner.parser()->received_bytes());
-  int response_size = response.size();
-  int read_lengths[] = {response_size, 0};
-  get_runner.ReadBody(response_size, read_lengths);
-  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
-  EXPECT_EQ(HttpResponseInfo::CONNECTION_INFO_HTTP0_9,
-            get_runner.response_info()->connection_info);
+  MockRead reads[] = {
+      MockRead(SYNCHRONOUS, 1, "hello\r\nworld\r\n"),
+      MockRead(SYNCHRONOUS, OK, 2),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  std::unique_ptr<ClientSocketHandle> socket_handle =
+      CreateConnectedSocketHandle(&data);
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://localhost");
+
+  HttpStreamParser parser(socket_handle.get(), &request, new GrowableIOBuffer(),
+                          BoundNetLog());
+
+  HttpRequestHeaders headers;
+  HttpResponseInfo response;
+  TestCompletionCallback callback;
+  int result = parser.SendRequest("GET / HTTP/1.1\r\n", headers, &response,
+                                  callback.callback());
+  EXPECT_THAT(callback.GetResult(result), IsOk());
+  result = parser.ReadResponseHeaders(callback.callback());
+  EXPECT_THAT(callback.GetResult(result), IsError(ERR_INVALID_HTTP_RESPONSE));
 }
 
 // Test basic case where there is no keep-alive or extra data from the socket,

@@ -176,35 +176,6 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
             network_delegate_.total_network_bytes_received());
 }
 
-TEST_F(URLRequestHttpJobWithMockSocketsTest,
-       TestContentLengthSuccessfulHttp09Request) {
-  MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
-  MockRead reads[] = {MockRead("Test Content"),
-                      MockRead(net::SYNCHRONOUS, net::OK)};
-
-  StaticSocketDataProvider socket_data(reads, arraysize(reads), nullptr, 0);
-  socket_factory_.AddSocketDataProvider(&socket_data);
-
-  TestDelegate delegate;
-  std::unique_ptr<URLRequest> request = context_->CreateRequest(
-      GURL("http://www.example.com"), DEFAULT_PRIORITY, &delegate);
-
-  request->Start();
-  ASSERT_TRUE(request->is_pending());
-  base::RunLoop().Run();
-
-  EXPECT_TRUE(request->status().is_success());
-  EXPECT_EQ(12, request->received_response_content_length());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            request->GetTotalSentBytes());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            request->GetTotalReceivedBytes());
-  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
-            network_delegate_.total_network_bytes_sent());
-  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
-            network_delegate_.total_network_bytes_received());
-}
-
 TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
   MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
