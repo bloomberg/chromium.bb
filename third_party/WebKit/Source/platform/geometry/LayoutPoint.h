@@ -41,7 +41,7 @@
 
 namespace blink {
 
-class LayoutPoint {
+class PLATFORM_EXPORT LayoutPoint {
     DISALLOW_NEW();
 public:
     LayoutPoint() { }

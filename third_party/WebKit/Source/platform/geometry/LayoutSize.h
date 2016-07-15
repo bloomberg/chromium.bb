@@ -46,7 +46,7 @@ enum AspectRatioFit {
     AspectRatioFitGrow
 };
 
-class LayoutSize {
+class PLATFORM_EXPORT LayoutSize {
     DISALLOW_NEW();
 public:
     LayoutSize() { }
