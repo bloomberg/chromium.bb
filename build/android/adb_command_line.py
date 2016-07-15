@@ -6,6 +6,7 @@
 """Utility for reading / writing command-line flag files on device(s)."""
 
 import argparse
+import os
 import sys
 
 import devil_chromium
@@ -30,9 +31,11 @@ Otherwise: Writes command-line file.
                       help='Remote path to flags file.')
   parser.add_argument('-e', '--executable', dest='executable', default='chrome',
                       help='Name of the executable.')
+  parser.add_argument('--adb-path', type=os.path.abspath,
+                      help='Path to the adb binary.')
   args, remote_args = parser.parse_known_args()
 
-  devil_chromium.Initialize()
+  devil_chromium.Initialize(adb_path=args.adb_path)
 
   as_root = not args.device_path.startswith('/data/local/tmp/')
 
