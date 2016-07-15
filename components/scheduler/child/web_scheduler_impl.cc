@@ -5,6 +5,7 @@
 #include "components/scheduler/child/web_scheduler_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
 #include "components/scheduler/child/worker_scheduler.h"
@@ -45,39 +46,33 @@ void WebSchedulerImpl::runIdleTask(
   task->run((deadline - base::TimeTicks()).InSecondsF());
 }
 
-void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& web_location,
+void WebSchedulerImpl::postIdleTask(const blink::WebTraceLocation& location,
                                     blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  std::unique_ptr<blink::WebThread::IdleTask> scoped_task(task);
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostIdleTask(
       location,
-      base::Bind(&WebSchedulerImpl::runIdleTask, base::Passed(&scoped_task)));
+      base::Bind(&WebSchedulerImpl::runIdleTask,
+                 base::Passed(base::WrapUnique(task))));
 }
 
 void WebSchedulerImpl::postNonNestableIdleTask(
-    const blink::WebTraceLocation& web_location,
+    const blink::WebTraceLocation& location,
     blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  std::unique_ptr<blink::WebThread::IdleTask> scoped_task(task);
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostNonNestableIdleTask(
       location,
-      base::Bind(&WebSchedulerImpl::runIdleTask, base::Passed(&scoped_task)));
+      base::Bind(&WebSchedulerImpl::runIdleTask,
+                 base::Passed(base::WrapUnique(task))));
 }
 
 void WebSchedulerImpl::postIdleTaskAfterWakeup(
-    const blink::WebTraceLocation& web_location,
+    const blink::WebTraceLocation& location,
     blink::WebThread::IdleTask* task) {
   DCHECK(idle_task_runner_);
-  std::unique_ptr<blink::WebThread::IdleTask> scoped_task(task);
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
   idle_task_runner_->PostIdleTaskAfterWakeup(
       location,
-      base::Bind(&WebSchedulerImpl::runIdleTask, base::Passed(&scoped_task)));
+      base::Bind(&WebSchedulerImpl::runIdleTask,
+                 base::Passed(base::WrapUnique(task))));
 }
 
 blink::WebTaskRunner* WebSchedulerImpl::loadingTaskRunner() {

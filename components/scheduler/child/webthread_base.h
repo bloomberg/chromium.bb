@@ -11,10 +11,7 @@
 #include "base/threading/thread.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
-
-namespace blink {
-class WebTraceLocation;
-}
+#include "third_party/WebKit/public/platform/WebTraceLocation.h"
 
 namespace scheduler {
 class SingleThreadIdleTaskRunner;

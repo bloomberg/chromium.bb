@@ -80,23 +80,21 @@ void WebThreadBase::RunWebThreadIdleTask(
   idle_task->run((deadline - base::TimeTicks()).InSecondsF());
 }
 
-void WebThreadBase::postIdleTask(const blink::WebTraceLocation& web_location,
+void WebThreadBase::postIdleTask(const blink::WebTraceLocation& location,
                                  IdleTask* idle_task) {
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
   GetIdleTaskRunner()->PostIdleTask(
-      location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
-                           base::Passed(base::WrapUnique(idle_task))));
+      location,
+      base::Bind(&WebThreadBase::RunWebThreadIdleTask,
+                 base::Passed(base::WrapUnique(idle_task))));
 }
 
 void WebThreadBase::postIdleTaskAfterWakeup(
-    const blink::WebTraceLocation& web_location,
+    const blink::WebTraceLocation& location,
     IdleTask* idle_task) {
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
   GetIdleTaskRunner()->PostIdleTaskAfterWakeup(
-      location, base::Bind(&WebThreadBase::RunWebThreadIdleTask,
-                           base::Passed(base::WrapUnique(idle_task))));
+      location,
+      base::Bind(&WebThreadBase::RunWebThreadIdleTask,
+                 base::Passed(base::WrapUnique(idle_task))));
 }
 
 bool WebThreadBase::isCurrentThread() const {

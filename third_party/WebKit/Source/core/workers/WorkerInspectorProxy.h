@@ -15,7 +15,6 @@ namespace blink {
 
 class Document;
 class KURL;
-class WebTraceLocation;
 class WorkerGlobalScopeProxy;
 
 // A proxy for talking to the worker inspector on the worker thread.

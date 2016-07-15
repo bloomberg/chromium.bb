@@ -12,8 +12,7 @@ namespace blink {
 
 void BackgroundTaskRunner::postOnBackgroundThread(const WebTraceLocation& location, std::unique_ptr<CrossThreadClosure> closure, TaskSize taskSize)
 {
-    tracked_objects::Location baseLocation(location.functionName(), location.fileName(), 0, nullptr);
-    base::WorkerPool::PostTask(baseLocation, convertToBaseCallback(std::move(closure)), taskSize == TaskSizeLongRunningTask);
+    base::WorkerPool::PostTask(location, convertToBaseCallback(std::move(closure)), taskSize == TaskSizeLongRunningTask);
 }
 
 } // namespace blink

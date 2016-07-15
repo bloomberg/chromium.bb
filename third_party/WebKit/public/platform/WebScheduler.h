@@ -8,13 +8,13 @@
 #include "WebCommon.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
+#include "public/platform/WebTraceLocation.h"
 #include "public/platform/WebViewScheduler.h"
 
 #include <memory>
 
 namespace blink {
 
-class WebTraceLocation;
 class WebView;
 
 // This class is used to submit tasks and pass other information from Blink to

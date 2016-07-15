@@ -38,6 +38,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include <memory>

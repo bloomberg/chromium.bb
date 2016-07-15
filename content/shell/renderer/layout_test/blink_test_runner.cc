@@ -293,13 +293,13 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
 
 void BlinkTestRunner::PostTask(blink::WebTaskRunner::Task* task) {
   Platform::current()->currentThread()->getWebTaskRunner()->postTask(
-      WebTraceLocation(__FUNCTION__, __FILE__), task);
+      BLINK_FROM_HERE, task);
 }
 
 void BlinkTestRunner::PostDelayedTask(blink::WebTaskRunner::Task* task,
                                       long long ms) {
   Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
-      WebTraceLocation(__FUNCTION__, __FILE__), task, ms);
+      BLINK_FROM_HERE, task, ms);
 }
 
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(

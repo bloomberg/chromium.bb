@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/base/time_domain.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
@@ -17,29 +18,23 @@ WebTaskRunnerImpl::WebTaskRunnerImpl(scoped_refptr<TaskQueue> task_queue)
 
 WebTaskRunnerImpl::~WebTaskRunnerImpl() {}
 
-void WebTaskRunnerImpl::postTask(const blink::WebTraceLocation& web_location,
+void WebTaskRunnerImpl::postTask(const blink::WebTraceLocation& location,
                                  blink::WebTaskRunner::Task* task) {
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
   task_queue_->PostTask(
       location,
-      base::Bind(
-          &WebTaskRunnerImpl::runTask,
-          base::Passed(std::unique_ptr<blink::WebTaskRunner::Task>(task))));
+      base::Bind(&WebTaskRunnerImpl::runTask,
+                 base::Passed(base::WrapUnique(task))));
 }
 
 void WebTaskRunnerImpl::postDelayedTask(
-    const blink::WebTraceLocation& web_location,
+    const blink::WebTraceLocation& location,
     blink::WebTaskRunner::Task* task,
     double delayMs) {
   DCHECK_GE(delayMs, 0.0);
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
   task_queue_->PostDelayedTask(
       location,
-      base::Bind(
-          &WebTaskRunnerImpl::runTask,
-          base::Passed(std::unique_ptr<blink::WebTaskRunner::Task>(task))),
+      base::Bind(&WebTaskRunnerImpl::runTask,
+                 base::Passed(base::WrapUnique(task))),
       base::TimeDelta::FromMillisecondsD(delayMs));
 }
 

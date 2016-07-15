@@ -443,7 +443,7 @@ void WebURLLoaderImpl::Context::SetDefersLoading(bool value) {
       // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE
       // coexist.
       web_task_runner_->postTask(
-          ::blink::WebTraceLocation(__FUNCTION__, __FILE__),
+          BLINK_FROM_HERE,
           new HandleDataURLTask(this));
     }
     defers_loading_ = NOT_DEFERRING;
@@ -477,7 +477,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE
       // coexist.
       web_task_runner_->postTask(
-          ::blink::WebTraceLocation(__FUNCTION__, __FILE__),
+          BLINK_FROM_HERE,
           new HandleDataURLTask(this));
     }
     return;

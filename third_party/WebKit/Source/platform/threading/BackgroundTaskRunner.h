@@ -6,11 +6,10 @@
 #define BackgroundTaskRunner_h
 
 #include "platform/PlatformExport.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
 
 namespace blink {
-
-class WebTraceLocation;
 
 namespace BackgroundTaskRunner {
 

@@ -66,7 +66,7 @@ bool ResourceSchedulingFilter::OnMessageReceived(const IPC::Message& message) {
   if (iter != request_id_to_task_runner_map_.end()) {
     // TODO(alexclarke): Find a way to let blink and chromium FROM_HERE coexist.
     iter->second->postTask(
-        blink::WebTraceLocation(__FUNCTION__, __FILE__),
+        BLINK_FROM_HERE,
         new DispatchMessageTask(weak_ptr_factory_.GetWeakPtr(), message));
   } else {
     main_thread_task_runner_->PostTask(

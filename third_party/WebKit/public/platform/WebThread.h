@@ -31,7 +31,6 @@
 namespace blink {
 class WebScheduler;
 class WebTaskRunner;
-class WebTraceLocation;
 
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;

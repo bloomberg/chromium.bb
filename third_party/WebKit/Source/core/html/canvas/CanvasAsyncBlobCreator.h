@@ -7,6 +7,7 @@
 #include "core/fileapi/BlobCallback.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 #include <memory>

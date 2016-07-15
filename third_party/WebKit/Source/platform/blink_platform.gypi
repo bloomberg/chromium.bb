@@ -369,7 +369,6 @@
       'exported/WebStorageQuotaCallbacks.cpp',
       'exported/WebTextRun.cpp',
       'exported/WebThreadSafeData.cpp',
-      'exported/WebTraceLocation.cpp',
       'exported/WebURL.cpp',
       'exported/WebURLError.cpp',
       'exported/WebURLLoaderClient.cpp',
