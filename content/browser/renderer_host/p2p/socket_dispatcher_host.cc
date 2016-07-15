@@ -243,7 +243,7 @@ void P2PSocketDispatcherHost::OnCreateSocket(
     const net::IPEndPoint& local_address,
     const P2PPortRange& port_range,
     const P2PHostAndIPEndPoint& remote_address) {
-  if (port_range.min_port < port_range.max_port ||
+  if (port_range.min_port > port_range.max_port ||
       (port_range.min_port == 0 && port_range.max_port != 0)) {
     bad_message::ReceivedBadMessage(this, bad_message::SDH_INVALID_PORT_RANGE);
     return;
