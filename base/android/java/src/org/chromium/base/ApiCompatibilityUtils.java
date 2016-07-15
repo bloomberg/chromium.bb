@@ -118,6 +118,17 @@ public class ApiCompatibilityUtils {
     }
 
     /**
+     * See {@link android.view.View#setLabelFor(int)}.
+     */
+    public static void setLabelFor(View labelView, int id) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            labelView.setLabelFor(id);
+        } else {
+            // Do nothing. #setLabelFor() isn't supported before JB MR1.
+        }
+    }
+
+    /**
      * @see android.view.ViewGroup.MarginLayoutParams#setMarginEnd(int)
      */
     public static void setMarginEnd(MarginLayoutParams layoutParams, int end) {

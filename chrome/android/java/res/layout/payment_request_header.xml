@@ -13,7 +13,8 @@
     <FrameLayout
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:minHeight="64dp" >
+        android:minHeight="64dp"
+        android:background="@android:color/white" >
 
         <ImageView
             android:id="@+id/icon_view"

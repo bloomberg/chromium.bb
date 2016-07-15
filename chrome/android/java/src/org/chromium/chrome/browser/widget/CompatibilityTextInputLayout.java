@@ -12,6 +12,8 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.EditText;
 
+import org.chromium.base.ApiCompatibilityUtils;
+
 import javax.annotation.Nullable;
 
 /**
@@ -61,7 +63,9 @@ public class CompatibilityTextInputLayout extends TextInputLayout {
         if (getChildCount() == 1) {
             // If there is a child to this TextInputLayout, automatically set the hint.
             View child = getChildAt(0);
-            if (child instanceof EditText && child.getId() > NO_ID) setLabelFor(child.getId());
+            if (child instanceof EditText && child.getId() > NO_ID) {
+                ApiCompatibilityUtils.setLabelFor(this, child.getId());
+            }
         }
     }
 }

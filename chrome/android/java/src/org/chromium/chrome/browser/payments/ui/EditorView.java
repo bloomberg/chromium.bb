@@ -256,7 +256,7 @@ public class EditorView extends AlwaysDismissedDialog
 
                 firstParams.width = 0;
                 firstParams.weight = 1;
-                firstParams.setMarginEnd(mHalfRowMargin);
+                ApiCompatibilityUtils.setMarginEnd(firstParams, mHalfRowMargin);
                 lastParams.width = 0;
                 lastParams.weight = 1;
                 i = i + 1;
