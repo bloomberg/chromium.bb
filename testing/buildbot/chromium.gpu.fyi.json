@@ -4,6 +4,20 @@
   "Android Release (Nexus 5)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
+      {
         "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -301,6 +315,21 @@
   },
   "Android Release (Nexus 5X)": {
     "gtest_tests": [
+      {
+        "override_isolate_target": "angle_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "M",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
       {
         "override_isolate_target": "angle_unittests",
         "swarming": {
@@ -613,6 +642,20 @@
   "Android Release (Nexus 6)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
+      {
         "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -910,6 +953,20 @@
   },
   "Android Release (Nexus 6P)": {
     "gtest_tests": [
+      {
+        "override_isolate_target": "angle_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
       {
         "override_isolate_target": "angle_unittests",
         "swarming": {
@@ -1209,6 +1266,20 @@
   "Android Release (Nexus 9)": {
     "gtest_tests": [
       {
+        "override_isolate_target": "angle_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
+      {
         "override_isolate_target": "angle_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1506,6 +1577,20 @@
   },
   "Android Release (Pixel C)": {
     "gtest_tests": [
+      {
+        "override_isolate_target": "angle_end2end_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests",
+        "use_xvfb": false
+      },
       {
         "override_isolate_target": "angle_unittests",
         "swarming": {
@@ -4636,7 +4721,6 @@
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
-          "--webgl2-only=true",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -4652,7 +4736,7 @@
               "os": "Linux"
             }
           ],
-          "shards": 12
+          "shards": 15
         }
       },
       {

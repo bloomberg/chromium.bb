@@ -619,11 +619,12 @@ COMMON_GTESTS = {
   'angle_end2end_tests': {
     'tester_configs': [
       {
+        'allow_on_android': True,
         'fyi_only': True,
         'run_on_optional': True,
       },
     ],
-    'args': ['--use-gpu-in-tests']
+    'desktop_args': ['--use-gpu-in-tests']
   },
   'angle_unittests': {
     'tester_configs': [
