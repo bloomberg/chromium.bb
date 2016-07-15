@@ -231,12 +231,34 @@ public abstract class WebsitePreferenceBridge {
     }
 
     /**
+     * Returns the list of all USB device permissions.
+     *
+     * There will be one UsbInfo instance for each granted permission. That
+     * means that if two origin/embedder pairs have permission for the same
+     * device there will be two UsbInfo instances.
+     */
+    public static List<UsbInfo> getUsbInfo() {
+        ArrayList<UsbInfo> list = new ArrayList<UsbInfo>();
+        nativeGetUsbOrigins(list);
+        return list;
+    }
+
+    /**
      * Inserts fullscreen information into a list.
      */
     @CalledByNative
     private static void insertFullscreenInfoIntoList(
             ArrayList<FullscreenInfo> list, String origin, String embedder) {
         list.add(new FullscreenInfo(origin, embedder, false));
+    }
+
+    /**
+     * Inserts USB device information into a list.
+     */
+    @CalledByNative
+    private static void insertUsbInfoIntoList(
+            ArrayList<UsbInfo> list, String origin, String embedder, String name, String object) {
+        list.add(new UsbInfo(origin, embedder, name, object));
     }
 
     private static native void nativeGetGeolocationOrigins(Object list, boolean managedOnly);
@@ -287,4 +309,6 @@ public abstract class WebsitePreferenceBridge {
             String origin, String embedder, boolean isIncognito);
     static native void nativeSetFullscreenSettingForOrigin(
             String origin, String embedder, int value, boolean isIncognito);
+    static native void nativeGetUsbOrigins(Object list);
+    static native void nativeRevokeUsbPermission(String origin, String embedder, String object);
 }

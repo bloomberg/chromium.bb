@@ -821,6 +821,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Full screen
       </message>
 
+      <!-- USB preferences -->
+      <message name="IDS_WEBSITE_SETTINGS_REVOKE_DEVICE_PERMISSION" desc="Content description for revoking a website's permission to access a device.">
+        Revoke device permission
+      </message>
+
       <!-- Data Saver -->
       <message name="IDS_DATA_REDUCTION_LO_FI_SNACKBAR_MESSAGE" desc="Message shown when a page is opened in low fidelity mode when there is a slow unreliable connection.">
         Slow connection detected

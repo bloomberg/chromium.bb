@@ -83,6 +83,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new BackgroundSyncExceptionInfoFetcher());
         // Autoplay permission is per-origin.
         queue.add(new AutoplayExceptionInfoFetcher());
+        // USB device permission is per-origin and per-embedder.
+        queue.add(new UsbInfoFetcher());
 
         queue.add(new PermissionsAvailableCallbackRunner());
 
@@ -404,6 +406,18 @@ public class WebsitePermissionsFetcher {
         @Override
         public void run() {
             setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC);
+        }
+    }
+
+    private class UsbInfoFetcher extends Task {
+        @Override
+        public void run() {
+            for (UsbInfo info : WebsitePreferenceBridge.getUsbInfo()) {
+                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
+                if (address == null) continue;
+                Set<Website> sites = findOrCreateSitesByOrigin(address);
+                for (Website site : sites) site.addUsbInfo(info);
+            }
         }
     }
 

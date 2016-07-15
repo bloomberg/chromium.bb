@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.WebContents;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String EXTRA_LOCATION = "org.chromium.chrome.preferences.location";
 
     public static final String EXTRA_WEB_CONTENTS = "org.chromium.chrome.preferences.web_contents";
+    public static final String EXTRA_USB_INFO = "org.chromium.chrome.preferences.usb_info";
 
     // Preference keys, see single_website_preferences.xml
     // Headings:
@@ -104,6 +106,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     // The address of the site we want to display. Used only if EXTRA_ADDRESS is provided.
     private WebsiteAddress mSiteAddress;
+
+    // The number of USB device permissions displayed.
+    private int mUsbPermissionCount;
 
     private class SingleWebsitePermissionsPopulator
             implements WebsitePermissionsFetcher.WebsitePermissionsCallback {
@@ -258,6 +263,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     merged.addStorageInfo(storageInfo);
                 }
             }
+            for (UsbInfo usbInfo : other.getUsbInfo()) {
+                if (origin.equals(usbInfo.getOrigin())) merged.addUsbInfo(usbInfo);
+            }
 
             // TODO(mvanouwerkerk): Make the various info types share a common interface that
             // supports reading the origin or host.
@@ -282,6 +290,9 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private void displaySitePermissions() {
         addPreferencesFromResource(R.xml.single_website_preferences);
 
+        Set<String> permissionPreferenceKeys =
+                new HashSet<>(Arrays.asList(PERMISSION_PREFERENCE_KEYS));
+        int maxPermissionOrder = 0;
         ListAdapter preferences = getPreferenceScreen().getRootAdapter();
         for (int i = 0; i < preferences.getCount(); ++i) {
             Preference preference = (Preference) preferences.getItem(i);
@@ -328,6 +339,22 @@ public class SingleWebsitePreferences extends PreferenceFragment
             } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
                 setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
             }
+
+            if (permissionPreferenceKeys.contains(preference.getKey())) {
+                maxPermissionOrder = Math.max(maxPermissionOrder, preference.getOrder());
+            }
+        }
+
+        for (UsbInfo info : mSite.getUsbInfo()) {
+            Preference preference = new Preference(getActivity());
+            preference.getExtras().putSerializable(EXTRA_USB_INFO, info);
+            preference.setIcon(R.drawable.settings_usb);
+            preference.setOnPreferenceClickListener(this);
+            preference.setOrder(maxPermissionOrder++);
+            preference.setTitle(info.getName());
+            preference.setWidgetLayoutResource(R.layout.usb_permission);
+            getPreferenceScreen().addPreference(preference);
+            mUsbPermissionCount++;
         }
 
         // Remove the 'permission is off in Android' message if not needed.
@@ -412,6 +439,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     }
 
     private boolean hasPermissionsPreferences() {
+        if (mUsbPermissionCount > 0) return true;
         PreferenceScreen screen = getPreferenceScreen();
         for (String key : PERMISSION_PREFERENCE_KEYS) {
             if (screen.findPreference(key) != null) return true;
@@ -616,6 +644,23 @@ public class SingleWebsitePreferences extends PreferenceFragment
 
     @Override
     public boolean onPreferenceClick(Preference preference) {
+        Bundle extras = preference.peekExtras();
+        if (extras != null) {
+            UsbInfo usbInfo = (UsbInfo) extras.getSerializable(EXTRA_USB_INFO);
+            if (usbInfo != null) {
+                usbInfo.revoke();
+
+                PreferenceScreen preferenceScreen = getPreferenceScreen();
+                preferenceScreen.removePreference(preference);
+                mUsbPermissionCount--;
+                if (!hasPermissionsPreferences()) {
+                    Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
+                    preferenceScreen.removePreference(heading);
+                }
+                return true;
+            }
+        }
+
         // Handle the Clear & Reset preference click by showing a confirmation.
         new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
                 .setTitle(R.string.website_reset)

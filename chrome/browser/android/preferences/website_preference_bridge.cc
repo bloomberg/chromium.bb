@@ -14,6 +14,8 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/android/preferences/important_sites_util.h"
@@ -30,6 +32,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/storage/storage_info_fetcher.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_thread.h"
@@ -433,6 +437,59 @@ static jboolean UrlMatchesContentSettingsPattern(
   return pattern.Matches(GURL(ConvertJavaStringToUTF8(env, jurl)));
 }
 
+static void GetUsbOrigins(JNIEnv* env,
+                          const JavaParamRef<jclass>& clazz,
+                          const JavaParamRef<jobject>& list) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  UsbChooserContext* context = UsbChooserContextFactory::GetForProfile(profile);
+  for (const auto& object : context->GetAllGrantedObjects()) {
+    // Remove the trailing slash so that origins are matched correctly in
+    // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
+    std::string origin = object->requesting_origin.spec();
+    DCHECK_EQ('/', origin.back());
+    origin.pop_back();
+    ScopedJavaLocalRef<jstring> jorigin = ConvertUTF8ToJavaString(env, origin);
+
+    std::string embedder = object->requesting_origin.spec();
+    DCHECK_EQ('/', embedder.back());
+    embedder.pop_back();
+    ScopedJavaLocalRef<jstring> jembedder =
+        ConvertUTF8ToJavaString(env, embedder);
+
+    std::string name;
+    bool found = object->object.GetString("name", &name);
+    DCHECK(found);
+    ScopedJavaLocalRef<jstring> jname = ConvertUTF8ToJavaString(env, name);
+
+    std::string serialized;
+    bool written = base::JSONWriter::Write(object->object, &serialized);
+    DCHECK(written);
+    ScopedJavaLocalRef<jstring> jserialized =
+        ConvertUTF8ToJavaString(env, serialized);
+
+    Java_WebsitePreferenceBridge_insertUsbInfoIntoList(
+        env, list, jorigin.obj(), jembedder.obj(), jname.obj(),
+        jserialized.obj());
+  }
+}
+
+static void RevokeUsbPermission(JNIEnv* env,
+                                const JavaParamRef<jclass>& clazz,
+                                const JavaParamRef<jstring>& jorigin,
+                                const JavaParamRef<jstring>& jembedder,
+                                const JavaParamRef<jstring>& jobject) {
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  UsbChooserContext* context = UsbChooserContextFactory::GetForProfile(profile);
+  GURL origin(ConvertJavaStringToUTF8(env, jorigin));
+  DCHECK(origin.is_valid());
+  GURL embedder(ConvertJavaStringToUTF8(env, jembedder));
+  DCHECK(embedder.is_valid());
+  std::unique_ptr<base::DictionaryValue> object = base::DictionaryValue::From(
+      base::JSONReader::Read(ConvertJavaStringToUTF8(env, jobject)));
+  DCHECK(object);
+  context->RevokeObjectPermission(origin, embedder, *object);
+}
+
 namespace {
 
 class SiteDataDeleteHelper :
@@ -621,7 +678,7 @@ class LocalStorageInfoReadyCallback {
                     registerable_domain) != important_domains.end()) {
         important = true;
       }
-      // Remove the trailing backslash so the origin is matched correctly in
+      // Remove the trailing slash so the origin is matched correctly in
       // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
       DCHECK_EQ('/', origin_str.back());
       origin_str.pop_back();
