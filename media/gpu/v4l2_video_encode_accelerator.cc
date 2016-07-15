@@ -426,22 +426,12 @@ void V4L2VideoEncodeAccelerator::EncodeTask(
     std::vector<struct v4l2_ext_control> ctrls;
     struct v4l2_ext_control ctrl;
     memset(&ctrl, 0, sizeof(ctrl));
-    // Nyan still uses the old control and it reports success for unknown
-    // controls. Try the old control first.
-    // TODO(wuchengli): remove this after http://crosbug.com/p/53598 is fixed.
-    ctrl.id = V4L2_CID_MPEG_MFC51_VIDEO_FORCE_FRAME_TYPE;
-    ctrl.value = V4L2_MPEG_MFC51_VIDEO_FORCE_FRAME_TYPE_I_FRAME;
+    ctrl.id = V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME;
     ctrls.push_back(ctrl);
     if (!SetExtCtrls(ctrls)) {
-      ctrls.clear();
-      memset(&ctrl, 0, sizeof(ctrl));
-      ctrl.id = V4L2_CID_MPEG_VIDEO_FORCE_KEY_FRAME;
-      ctrls.push_back(ctrl);
-      if (!SetExtCtrls(ctrls)) {
-        LOG(ERROR) << "Failed requesting keyframe";
-        NOTIFY_ERROR(kPlatformFailureError);
-        return;
-      }
+      LOG(ERROR) << "Failed requesting keyframe";
+      NOTIFY_ERROR(kPlatformFailureError);
+      return;
     }
   }
 }
