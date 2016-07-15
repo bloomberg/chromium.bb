@@ -2551,7 +2551,7 @@ WebTextInputType WebViewImpl::textInputType()
             return WebTextInputTypeDateTimeField;
     }
 
-    if (element->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
+    if (element->isContentEditable())
         return WebTextInputTypeContentEditable;
 
     return WebTextInputTypeNone;

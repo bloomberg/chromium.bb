@@ -45,9 +45,9 @@ void RemoveNodeCommand::doApply(EditingState* editingState)
 {
     ContainerNode* parent = m_node->parentNode();
     if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable
-        && !parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) && parent->inActiveDocument()))
+        && !parent->isContentEditable() && parent->inActiveDocument()))
         return;
-    DCHECK(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable) || !parent->inActiveDocument()) << parent;
+    DCHECK(parent->isContentEditable() || !parent->inActiveDocument()) << parent;
 
     m_parent = parent;
     m_refChild = m_node->nextSibling();

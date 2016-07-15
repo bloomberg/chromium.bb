@@ -416,18 +416,14 @@ public:
     // must be recognized as inert to prevent text selection.
     bool isInert() const;
 
-    enum UserSelectAllTreatment {
-        UserSelectAllDoesNotAffectEditability,
-        UserSelectAllIsAlwaysNonEditable
-    };
-    bool isContentEditable(UserSelectAllTreatment = UserSelectAllDoesNotAffectEditability) const;
+    bool isContentEditable() const;
     bool isContentRichlyEditable() const;
 
-    bool hasEditableStyle(EditableType editableType = ContentIsEditable, UserSelectAllTreatment treatment = UserSelectAllIsAlwaysNonEditable) const
+    bool hasEditableStyle(EditableType editableType = ContentIsEditable) const
     {
         switch (editableType) {
         case ContentIsEditable:
-            return hasEditableStyle(Editable, treatment);
+            return hasEditableStyle(Editable);
         case HasEditableAXRole:
             return isEditableToAccessibility(Editable);
         }
@@ -439,7 +435,7 @@ public:
     {
         switch (editableType) {
         case ContentIsEditable:
-            return hasEditableStyle(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
+            return hasEditableStyle(RichlyEditable);
         case HasEditableAXRole:
             return isEditableToAccessibility(RichlyEditable);
         }
@@ -800,7 +796,7 @@ private:
     void checkSlotChange();
 
     enum EditableLevel { Editable, RichlyEditable };
-    bool hasEditableStyle(EditableLevel, UserSelectAllTreatment = UserSelectAllIsAlwaysNonEditable) const;
+    bool hasEditableStyle(EditableLevel) const;
     bool isEditableToAccessibility(EditableLevel) const;
 
     bool isUserActionElementActive() const;

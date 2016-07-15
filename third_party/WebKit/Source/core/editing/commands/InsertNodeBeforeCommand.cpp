@@ -47,16 +47,16 @@ InsertNodeBeforeCommand::InsertNodeBeforeCommand(Node* insertChild, Node* refChi
 void InsertNodeBeforeCommand::doApply(EditingState*)
 {
     ContainerNode* parent = m_refChild->parentNode();
-    if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable && !parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)))
+    if (!parent || (m_shouldAssumeContentIsAlwaysEditable == DoNotAssumeContentIsAlwaysEditable && !parent->isContentEditable()))
         return;
-    DCHECK(parent->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)) << parent;
+    DCHECK(parent->isContentEditable()) << parent;
 
     parent->insertBefore(m_insertChild.get(), m_refChild.get(), IGNORE_EXCEPTION);
 }
 
 void InsertNodeBeforeCommand::doUnapply()
 {
-    if (!m_insertChild->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
+    if (!m_insertChild->isContentEditable())
         return;
 
     m_insertChild->remove(IGNORE_EXCEPTION);

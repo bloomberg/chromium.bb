@@ -534,19 +534,19 @@ void Node::normalize()
     }
 }
 
-bool Node::isContentEditable(UserSelectAllTreatment treatment) const
+bool Node::isContentEditable() const
 {
     document().updateStyleAndLayoutTree();
-    return hasEditableStyle(Editable, treatment);
+    return hasEditableStyle(Editable);
 }
 
 bool Node::isContentRichlyEditable() const
 {
     document().updateStyleAndLayoutTree();
-    return hasEditableStyle(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
+    return hasEditableStyle(RichlyEditable);
 }
 
-bool Node::hasEditableStyle(EditableLevel editableLevel, UserSelectAllTreatment treatment) const
+bool Node::hasEditableStyle(EditableLevel editableLevel) const
 {
     if (isPseudoElement())
         return false;
@@ -2204,7 +2204,7 @@ bool Node::willRespondToMouseClickEvents()
 {
     if (isDisabledFormControl(this))
         return false;
-    return isContentEditable(UserSelectAllIsAlwaysNonEditable) || hasEventListeners(EventTypeNames::mouseup) || hasEventListeners(EventTypeNames::mousedown) || hasEventListeners(EventTypeNames::click) || hasEventListeners(EventTypeNames::DOMActivate);
+    return isContentEditable() || hasEventListeners(EventTypeNames::mouseup) || hasEventListeners(EventTypeNames::mousedown) || hasEventListeners(EventTypeNames::click) || hasEventListeners(EventTypeNames::DOMActivate);
 }
 
 bool Node::willRespondToTouchEvents()

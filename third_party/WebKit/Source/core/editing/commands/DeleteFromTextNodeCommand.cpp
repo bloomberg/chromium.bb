@@ -46,7 +46,7 @@ void DeleteFromTextNodeCommand::doApply(EditingState*)
 {
     DCHECK(m_node);
 
-    if (!m_node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable))
+    if (!m_node->isContentEditable())
         return;
 
     TrackExceptionState exceptionState;
