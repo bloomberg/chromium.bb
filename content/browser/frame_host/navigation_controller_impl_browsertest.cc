@@ -2671,6 +2671,21 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(0U, entry4->root_node()->children.size());
   }
 
+  // Remember the DSNs for later.
+  int64_t root_dsn =
+      entry4->root_node()->frame_entry->document_sequence_number();
+  int64_t frame_b_dsn = -1;
+  int64_t frame_c_dsn = -1;
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    frame_b_dsn = entry4->root_node()
+                      ->children[0]
+                      ->frame_entry->document_sequence_number();
+    frame_c_dsn = entry4->root_node()
+                      ->children[0]
+                      ->children[0]
+                      ->frame_entry->document_sequence_number();
+  }
+
   // 5. Navigate main frame cross-site, destroying the frames.
   GURL main_url_d(embedded_test_server()->GetURL(
       "d.com", "/navigation_controller/simple_page_2.html"));
@@ -2699,6 +2714,10 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
   EXPECT_EQ(entry4, controller.GetLastCommittedEntry());
 
+  // The main frame should not have changed its DSN.
+  EXPECT_EQ(root_dsn,
+            entry4->root_node()->frame_entry->document_sequence_number());
+
   // Verify subframe entries if they're enabled (e.g. in --site-per-process).
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     // The entry should have FrameNavigationEntries for the subframes.
@@ -2709,6 +2728,16 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     EXPECT_EQ(
         frame_url_c,
         entry4->root_node()->children[0]->children[0]->frame_entry->url());
+
+    // The subframes should not have changed their DSNs.
+    // See https://crbug.com/628286.
+    EXPECT_EQ(frame_b_dsn, entry4->root_node()
+                               ->children[0]
+                               ->frame_entry->document_sequence_number());
+    EXPECT_EQ(frame_c_dsn, entry4->root_node()
+                               ->children[0]
+                               ->children[0]
+                               ->frame_entry->document_sequence_number());
   } else {
     // There are no subframe FrameNavigationEntries by default.
     EXPECT_EQ(0U, entry4->root_node()->children.size());

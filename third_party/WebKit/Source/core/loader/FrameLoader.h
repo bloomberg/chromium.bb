@@ -214,7 +214,7 @@ private:
         Fragment,
         HistoryApi
     };
-    void setHistoryItemStateForCommit(HistoryCommitType, HistoryNavigationType);
+    void setHistoryItemStateForCommit(FrameLoadType, HistoryCommitType, HistoryNavigationType);
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType, HistoryLoadType, ClientRedirectPolicy, Document*);
 

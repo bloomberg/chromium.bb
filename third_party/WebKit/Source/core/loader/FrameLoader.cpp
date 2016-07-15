@@ -363,10 +363,10 @@ void FrameLoader::receivedMainResourceRedirect(const KURL& newURL)
         m_provisionalItem.clear();
 }
 
-void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
+void FrameLoader::setHistoryItemStateForCommit(FrameLoadType loadType, HistoryCommitType historyCommitType, HistoryNavigationType navigationType)
 {
     HistoryItem* oldItem = m_currentItem;
-    if (historyCommitType == BackForwardCommit && m_provisionalItem)
+    if (isBackForwardLoadType(loadType) && m_provisionalItem)
         m_currentItem = m_provisionalItem.release();
     else
         m_currentItem = HistoryItem::create();
@@ -379,7 +379,7 @@ void FrameLoader::setHistoryItemStateForCommit(HistoryCommitType historyCommitTy
     // Don't propagate state from the old item to the new item if there isn't an old item (obviously),
     // or if this is a back/forward navigation, since we explicitly want to restore the state we just
     // committed.
-    if (!oldItem || historyCommitType == BackForwardCommit)
+    if (!oldItem || isBackForwardLoadType(loadType))
         return;
     // Don't propagate state from the old item if this is a different-document navigation, unless the before
     // and after pages are logically related. This means they have the same url (ignoring fragment) and
@@ -428,7 +428,7 @@ void FrameLoader::receivedFirstData()
         historyCommitType = HistoryInertCommit;
     else if (historyCommitType == InitialCommitInChildFrame && MixedContentChecker::isMixedContent(m_frame->tree().top()->securityContext()->getSecurityOrigin(), m_documentLoader->url()))
         historyCommitType = HistoryInertCommit;
-    setHistoryItemStateForCommit(historyCommitType, HistoryNavigationType::DifferentDocument);
+    setHistoryItemStateForCommit(m_loadType, historyCommitType, HistoryNavigationType::DifferentDocument);
 
     if (!m_stateMachine.committedMultipleRealLoads() && m_loadType == FrameLoadTypeStandard)
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedMultipleRealLoads);
@@ -714,7 +714,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     if (!m_currentItem)
         historyCommitType = HistoryInertCommit;
 
-    setHistoryItemStateForCommit(historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi ? HistoryNavigationType::HistoryApi : HistoryNavigationType::Fragment);
+    setHistoryItemStateForCommit(type, historyCommitType, sameDocumentNavigationSource == SameDocumentNavigationHistoryApi ? HistoryNavigationType::HistoryApi : HistoryNavigationType::Fragment);
     if (sameDocumentNavigationSource == SameDocumentNavigationHistoryApi) {
         m_currentItem->setStateObject(data);
         m_currentItem->setScrollRestorationType(scrollRestorationType);
