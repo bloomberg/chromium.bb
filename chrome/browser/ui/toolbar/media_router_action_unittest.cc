@@ -14,11 +14,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/test/test_utils.h"
-#include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 using content::WebContents;
 using media_router::MediaRouterDialogControllerImpl;
@@ -98,14 +98,16 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
             -1)),
         fake_source1_("fakeSource1"),
         fake_source2_("fakeSource2"),
-        active_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_MEDIA_ROUTER_ACTIVE_ICON)),
-        error_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_MEDIA_ROUTER_ERROR_ICON)),
-        idle_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_MEDIA_ROUTER_IDLE_ICON)),
-        warning_icon_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-            IDR_MEDIA_ROUTER_WARNING_ICON)) {}
+        active_icon_(
+            gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_ACTIVE,
+                                  gfx::kPlaceholderColor)),
+        error_icon_(gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_ERROR,
+                                          gfx::kPlaceholderColor)),
+        idle_icon_(gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_IDLE,
+                                         gfx::kPlaceholderColor)),
+        warning_icon_(
+            gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_WARNING,
+                                  gfx::kPlaceholderColor)) {}
 
   ~MediaRouterActionUnitTest() override {}
 

@@ -57,7 +57,7 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(END);
 #undef RETURN_IF_IS
 
-  NOTREACHED();
+  NOTREACHED() << "Unrecognized command: " << source;
   return CLOSE;
 }
 
@@ -66,9 +66,12 @@ std::vector<PathElement> PathFromSource(const std::string& source) {
   std::vector<std::string> pieces = base::SplitString(
       source, "\n ,f", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (const auto& piece : pieces) {
-    double value;
+    double value = 0;
+    int hex_value = 0;
     if (base::StringToDouble(piece, &value))
       path.push_back(PathElement(SkDoubleToScalar(value)));
+    else if (base::HexStringToInt(piece, &hex_value))
+      path.push_back(PathElement(SkIntToScalar(hex_value)));
     else
       path.push_back(PathElement(CommandFromString(piece)));
   }

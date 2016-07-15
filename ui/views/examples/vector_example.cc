@@ -128,6 +128,12 @@ class VectorIconGallery : public View,
     base::FilePath path(file_chooser_->text());
 #endif
     base::ReadFileToString(path, &contents);
+    // Skip over comments.
+    for (size_t slashes = contents.find("//"); slashes != std::string::npos;
+         slashes = contents.find("//")) {
+      size_t eol = contents.find("\n", slashes);
+      contents.erase(slashes, eol - slashes);
+    }
     image_view_->SetImage(
         gfx::CreateVectorIconFromSource(contents, size_, color_));
   }

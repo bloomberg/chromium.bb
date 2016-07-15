@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "ui/gfx/vector_icons_public.h"
 
 class Browser;
 class MediaRouterActionPlatformDelegate;
@@ -91,22 +92,11 @@ class MediaRouterAction : public ToolbarActionViewController,
   // updates |current_icon_|.
   void MaybeUpdateIcon();
 
-  const gfx::Image* GetCurrentIcon() const;
-
-  // Cached icons.
-  // Indicates that the current Chrome profile is using at least one device.
-  const gfx::Image media_router_active_icon_;
-  // Indicates a failure, e.g. session launch failure.
-  const gfx::Image media_router_error_icon_;
-  // Indicates that the current Chrome profile is not using any devices.
-  // Devices may or may not be available.
-  const gfx::Image media_router_idle_icon_;
-  // Indicates there is a warning message.
-  const gfx::Image media_router_warning_icon_;
+  gfx::VectorIconId GetCurrentIcon() const;
 
   // The current icon to show. This is updated based on the current issues and
   // routes since |this| is an IssueObserver and MediaRoutesObserver.
-  const gfx::Image* current_icon_;
+  gfx::VectorIconId current_icon_;
 
   // The current issue shown in the Media Router WebUI. Can be null. It is set
   // in OnIssueUpdated(), which is called by the IssueManager.
