@@ -9,7 +9,9 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -120,6 +122,10 @@ class PrefModelAssociator
   void SetPrefModelAssociatorClientForTesting(
       const PrefModelAssociatorClient* client);
 
+  // Register callback method which will get called at the end of
+  // PrefModelAssociator::MergeDataAndStartSyncing().
+  void RegisterMergeDataFinishedCallback(const base::Closure& callback);
+
  protected:
   friend class PrefServiceSyncableTest;
 
@@ -192,6 +198,8 @@ class PrefModelAssociator
 
   SyncedPrefObserverMap synced_pref_observers_;
   const PrefModelAssociatorClient* client_;  // Weak.
+
+  std::vector<base::Closure> callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefModelAssociator);
 };

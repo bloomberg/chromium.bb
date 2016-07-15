@@ -153,6 +153,11 @@ void PrefServiceSyncable::RemoveSyncedPrefObserver(
   priority_pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
 }
 
+void PrefServiceSyncable::RegisterMergeDataFinishedCallback(
+    const base::Closure& callback) {
+  pref_sync_associator_.RegisterMergeDataFinishedCallback(callback);
+}
+
 // Set the PrefModelAssociatorClient to use for that object during tests.
 void PrefServiceSyncable::SetPrefModelAssociatorClientForTesting(
     const PrefModelAssociatorClient* pref_model_associator_client) {

@@ -46,6 +46,10 @@ const char kDefaultCharsetPrefName[] = "default_charset";
 const char kNonDefaultCharsetValue[] = "foo";
 const char kDefaultCharsetValue[] = "utf-8";
 
+void Increment(int* num) {
+  (*num)++;
+}
+
 class TestPrefModelAssociatorClient : public PrefModelAssociatorClient {
  public:
   TestPrefModelAssociatorClient() {}
@@ -121,7 +125,6 @@ class PrefServiceSyncableTest : public testing::Test {
     pref_sync_service_ = reinterpret_cast<PrefModelAssociator*>(
         prefs_.GetSyncableService(syncer::PREFERENCES));
     ASSERT_TRUE(pref_sync_service_);
-    next_pref_remote_sync_node_id_ = 0;
   }
 
   syncer::SyncChange MakeRemoteChange(int64_t id,
@@ -553,6 +556,17 @@ TEST_F(PrefServiceSyncableTest, DeletePreference) {
       1, kStringPrefName, *null_value, SyncChange::ACTION_DELETE));
   pref_sync_service_->ProcessSyncChanges(FROM_HERE, list);
   EXPECT_TRUE(pref->IsDefaultValue());
+}
+
+TEST_F(PrefServiceSyncableTest, RegisterMergeDataFinishedCallback) {
+  int num_callbacks = 0;
+
+  prefs_.RegisterMergeDataFinishedCallback(
+      base::Bind(&Increment, &num_callbacks));
+  EXPECT_EQ(0, num_callbacks);
+
+  InitWithNoSyncData();
+  EXPECT_EQ(1, num_callbacks);
 }
 
 }  // namespace
