@@ -43,6 +43,8 @@
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"

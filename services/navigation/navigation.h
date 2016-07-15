@@ -5,6 +5,9 @@
 #ifndef SERVICES_NAVIGATION_NAVIGATION_H_
 #define SERVICES_NAVIGATION_NAVIGATION_H_
 
+#include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "content/public/common/connection_filter.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
@@ -17,7 +20,7 @@ class BrowserContext;
 
 namespace navigation {
 
-class Navigation : public shell::Service,
+class Navigation : public content::ConnectionFilter,
                    public shell::InterfaceFactory<mojom::ViewFactory>,
                    public mojom::ViewFactory {
  public:
@@ -25,11 +28,9 @@ class Navigation : public shell::Service,
   ~Navigation() override;
 
  private:
-  // shell::Service:
-  void OnStart(shell::Connector* connector,
-               const shell::Identity& identity,
-               uint32_t instance_id) override;
-  bool OnConnect(shell::Connection* connection) override;
+  // content::ConnectionFilter:
+  bool OnConnect(shell::Connection* connection,
+                 shell::Connector* connector) override;
 
   // shell::InterfaceFactory<mojom::ViewFactory>:
   void Create(shell::Connection* connection,
@@ -40,6 +41,8 @@ class Navigation : public shell::Service,
                   mojom::ViewRequest request) override;
 
   void ViewFactoryLost();
+
+  scoped_refptr<base::SequencedTaskRunner> view_task_runner_;
 
   shell::Connector* connector_ = nullptr;
   std::string client_user_id_;

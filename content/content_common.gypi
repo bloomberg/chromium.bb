@@ -114,6 +114,7 @@
       'public/common/common_param_traits.h',
       'public/common/common_param_traits_macros.h',
       'public/common/console_message_level.h',
+      'public/common/connection_filter.h',
       'public/common/content_client.cc',
       'public/common/content_client.h',
       'public/common/content_constants.cc',

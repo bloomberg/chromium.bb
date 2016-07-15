@@ -11,16 +11,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/core.h"
+#include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/service.mojom.h"
 
 namespace shell {
-
-class Connector;
 
 // Encapsulates a connection to the Service Manager in two parts:
 // - a bound InterfacePtr to mojom::Connector, the primary mechanism
@@ -45,21 +43,19 @@ class ServiceContext : public mojom::Service {
  public:
   // Creates a new ServiceContext bound to |request|. This connection may be
   // used immediately to make outgoing connections via connector().  Does not
-  // take ownership of |client|, which must remain valid for the lifetime of
-  // ServiceContext.
-  ServiceContext(shell::Service* client,
-                 mojom::ServiceRequest request);
+  // take ownership of |service|, which must remain valid for the lifetime of
+  // ServiceContext. If either |connector| or |connector_request| is non-null
+  // both must be non-null. If both are null, the connection will create its own
+  // Connector and request to pass to the Service Manager on initialization.
+  ServiceContext(shell::Service* service,
+                 mojom::ServiceRequest request,
+                 std::unique_ptr<Connector> connector = nullptr,
+                 mojom::ConnectorRequest connector_request = nullptr);
 
   ~ServiceContext() override;
 
   Connector* connector() { return connector_.get(); }
   const Identity& identity() { return identity_; }
-
-  // TODO(rockot): Remove this. http://crbug.com/594852.
-  void set_initialize_handler(const base::Closure& callback);
-
-  // TODO(rockot): Remove this once we get rid of app tests.
-  void SetAppTestConnectorForTesting(mojom::ConnectorPtr connector);
 
   // Specify a function to be called when the connection to the shell is lost.
   // Note that if connection has already been lost, then |closure| is called
@@ -85,13 +81,13 @@ class ServiceContext : public mojom::Service {
 
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
-  ScopedVector<Connection> incoming_connections_;
+  std::vector<std::unique_ptr<Connection>> incoming_connections_;
 
   // A pending Connector request which will eventually be passed to the Service
   // Manager.
   mojom::ConnectorRequest pending_connector_request_;
 
-  shell::Service* client_;
+  shell::Service* service_;
   mojo::Binding<mojom::Service> binding_;
   std::unique_ptr<Connector> connector_;
   shell::Identity identity_;

@@ -5,6 +5,8 @@
 #ifndef SERVICES_NAVIGATION_VIEW_IMPL_H_
 #define SERVICES_NAVIGATION_VIEW_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -32,7 +34,7 @@ class ViewImpl : public mojom::View,
                  public ui::WindowTreeClientDelegate,
                  public views::WidgetDelegate {
  public:
-  ViewImpl(shell::Connector* connector,
+  ViewImpl(std::unique_ptr<shell::Connector> connector,
            const std::string& client_user_id,
            mojom::ViewClientPtr client,
            mojom::ViewRequest request,
@@ -87,7 +89,7 @@ class ViewImpl : public mojom::View,
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
 
-  shell::Connector* connector_;
+  std::unique_ptr<shell::Connector> connector_;
   mojo::StrongBinding<mojom::View> binding_;
   mojom::ViewClientPtr client_;
   std::unique_ptr<shell::ServiceContextRef> ref_;

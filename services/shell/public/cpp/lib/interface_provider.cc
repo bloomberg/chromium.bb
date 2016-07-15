@@ -4,17 +4,30 @@
 
 #include "services/shell/public/cpp/interface_provider.h"
 
+#include "base/macros.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+
 namespace shell {
 
 InterfaceProvider::InterfaceProvider() : weak_factory_(this) {
   pending_request_ = GetProxy(&interface_provider_);
 }
+
 InterfaceProvider::~InterfaceProvider() {}
 
 void InterfaceProvider::Bind(mojom::InterfaceProviderPtr interface_provider) {
   DCHECK(pending_request_.is_pending());
+  DCHECK(forward_callback_.is_null());
   mojo::FuseInterface(std::move(pending_request_),
                       interface_provider.PassInterface());
+}
+
+void InterfaceProvider::Forward(const ForwardCallback& callback) {
+  DCHECK(pending_request_.is_pending());
+  DCHECK(forward_callback_.is_null());
+  interface_provider_.reset();
+  pending_request_.PassMessagePipe().reset();
+  forward_callback_ = callback;
 }
 
 void InterfaceProvider::SetConnectionLostClosure(
@@ -35,7 +48,14 @@ void InterfaceProvider::GetInterface(
     it->second.Run(std::move(request_handle));
     return;
   }
-  interface_provider_->GetInterface(name, std::move(request_handle));
+
+  if (!forward_callback_.is_null()) {
+    DCHECK(!interface_provider_.is_bound());
+    forward_callback_.Run(name, std::move(request_handle));
+  } else {
+    DCHECK(interface_provider_.is_bound());
+    interface_provider_->GetInterface(name, std::move(request_handle));
+  }
 }
 
 void InterfaceProvider::ClearBinders() {

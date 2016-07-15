@@ -269,10 +269,6 @@ shell::InterfaceProvider* MockRenderProcessHost::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
 
-shell::Connection* MockRenderProcessHost::GetChildConnection() {
-  return nullptr;
-}
-
 std::unique_ptr<base::SharedPersistentMemoryAllocator>
 MockRenderProcessHost::TakeMetricsAllocator() {
   return nullptr;

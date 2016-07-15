@@ -27,7 +27,7 @@ class InterfaceRegistry;
 
 namespace content {
 
-  class MojoShellConnection;
+class MojoShellConnection;
 
 // An abstract base class that contains logic shared between most child
 // processes of the embedder.

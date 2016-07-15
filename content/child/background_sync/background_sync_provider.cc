@@ -16,6 +16,7 @@
 #include "content/child/background_sync/background_sync_type_converters.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/web_service_worker_registration_impl.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncError.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/WebSyncRegistration.h"
 

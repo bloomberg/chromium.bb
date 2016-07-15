@@ -141,6 +141,8 @@
 #include "net/base/port_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "services/shell/public/cpp/interface_provider.h"
+#include "services/shell/public/cpp/interface_registry.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/WebKit/public/platform/WebImageGenerator.h"
@@ -608,6 +610,7 @@ RenderThreadImpl::RenderThreadImpl(
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .UseMojoChannel(true)
+                          .AutoStartMojoShellConnection(false)
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
       categorized_worker_pool_(new CategorizedWorkerPool()) {
@@ -619,7 +622,10 @@ RenderThreadImpl::RenderThreadImpl(
 RenderThreadImpl::RenderThreadImpl(
     std::unique_ptr<base::MessageLoop> main_message_loop,
     std::unique_ptr<scheduler::RendererScheduler> scheduler)
-    : ChildThreadImpl(Options::Builder().UseMojoChannel(true).Build()),
+    : ChildThreadImpl(Options::Builder()
+                          .UseMojoChannel(true)
+                          .AutoStartMojoShellConnection(false)
+                          .Build()),
       renderer_scheduler_(std::move(scheduler)),
       main_message_loop_(std::move(main_message_loop)),
       categorized_worker_pool_(new CategorizedWorkerPool()) {
@@ -646,10 +652,8 @@ void RenderThreadImpl::Init(
   ChildProcess::current()->set_main_thread(this);
 
 #if defined(MOJO_SHELL_CLIENT)
-  if (IsRunningInMash()) {
-    auto* shell_connection = ChildThread::Get()->GetMojoShellConnection();
-    ui::GpuService::Initialize(shell_connection->GetConnector());
-  }
+  if (IsRunningInMash())
+    ui::GpuService::Initialize(GetMojoShellConnection()->GetConnector());
 #endif
 
   InitializeWebKit(resource_task_queue);
@@ -722,6 +726,16 @@ void RenderThreadImpl::Init(
   AddFilter((new CacheStorageMessageFilter(thread_safe_sender()))->GetFilter());
 
   AddFilter((new ServiceWorkerContextMessageFilter())->GetFilter());
+
+#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMusInRenderer)) {
+    CreateRenderWidgetWindowTreeClientFactory(GetMojoShellConnection());
+  }
+#endif
+
+  // Must be called before RenderThreadStarted() below.
+  StartMojoShellConnection();
 
   GetContentClient()->renderer()->RenderThreadStarted();
 
@@ -847,15 +861,6 @@ void RenderThreadImpl::Init(
 
   GetInterfaceRegistry()->AddInterface(base::Bind(CreateFrameFactory));
   GetInterfaceRegistry()->AddInterface(base::Bind(CreateEmbeddedWorkerSetup));
-
-#if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-  // We may not have a MojoShellConnection object in tests that directly
-  // instantiate a RenderThreadImpl.
-  if (ChildThread::Get()->GetMojoShellConnection() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMusInRenderer))
-    CreateRenderWidgetWindowTreeClientFactory();
-#endif
 
   GetRemoteInterfaces()->GetInterface(
       mojo::GetProxy(&storage_partition_service_));
@@ -1822,7 +1827,7 @@ RenderThreadImpl::CreateCompositorOutputSurface(
     use_software = true;
 
 #if defined(MOJO_SHELL_CLIENT) && defined(USE_AURA)
-  if (ChildThread::Get()->GetMojoShellConnection() && !use_software &&
+  if (GetMojoShellConnection() && !use_software &&
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
