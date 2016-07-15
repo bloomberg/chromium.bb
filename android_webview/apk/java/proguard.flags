@@ -56,6 +56,15 @@
   @org.chromium.base.annotations.RemovableInRelease <methods>;
 }
 
+# Allows Proguard freedom in removing these log related calls. We ask for debug
+# and verbose logs to be stripped out in base.Log, so we are just ensuring we
+# get rid of all other debug/verbose logs.
+-assumenosideeffects class android.util.Log {
+  static *** d(...);
+  static *** v(...);
+  static *** isLoggable(...);
+}
+
 # Linker dynamically casts to $TestRunner when running tests. We don't run these
 # tests in WebView.
 -dontnote org.chromium.base.library_loader.Linker$TestRunner
