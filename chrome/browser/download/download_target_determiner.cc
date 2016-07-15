@@ -40,6 +40,11 @@
 #include "content/public/common/webplugininfo.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_controller.h"
+#include "chrome/browser/android/download/download_manager_service.h"
+#endif
+
 #if defined(OS_WIN)
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
@@ -317,13 +322,24 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
             << " Verified:" << verified;
   DCHECK_EQ(STATE_PROMPT_USER_FOR_DOWNLOAD_PATH, next_state_);
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  // If we cannot reserve the path and the WebContent is already gone, there is
-  // no way to prompt user for an infobar. This could happen when user try to
-  // resume a download after another process has overwritten the same file.
-  // TODO(qinmin): show an error toast to the user. http://crbug.com/581106.
-  if (!verified && !download_->GetWebContents()) {
-    CancelOnFailureAndDeleteSelf();
-    return;
+  if (!verified) {
+    if (path.empty()) {
+      CancelOnFailureAndDeleteSelf();
+      DownloadManagerService::OnDownloadCanceled(
+          download_, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+      return;
+    }
+    if (!download_->GetWebContents()) {
+      // If we cannot reserve the path and the WebContent is already gone, there
+      // is no way to prompt user for an infobar. This could happen after chrome
+      // gets killed, and user tries to resume a download while another app has
+      // created the target file (not the temporary .crdownload file).
+      CancelOnFailureAndDeleteSelf();
+      DownloadManagerService::OnDownloadCanceled(
+          download_,
+          DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
+      return;
+    }
   }
 #endif
   should_prompt_ = (should_prompt_ || !verified);

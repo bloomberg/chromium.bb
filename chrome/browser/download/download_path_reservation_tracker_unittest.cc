@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner.h"
+#include "chrome/common/features.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -501,7 +502,11 @@ TEST_F(DownloadPathReservationTrackerTest, UnwriteableDirectory) {
         &verified);
     // Verification fails.
     EXPECT_FALSE(verified);
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    EXPECT_TRUE(reserved_path.empty());
+#else
     EXPECT_EQ(path.BaseName().value(), reserved_path.BaseName().value());
+#endif
   }
   SetDownloadItemState(item.get(), DownloadItem::COMPLETE);
 }

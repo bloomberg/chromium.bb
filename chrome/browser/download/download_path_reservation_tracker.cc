@@ -21,6 +21,7 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
 
@@ -202,9 +203,17 @@ bool CreateReservation(
   // to the user's "My Documents" directory. We'll prompt them in this case.
   if (!base::PathIsWritable(target_dir)) {
     DVLOG(1) << "Unable to write to directory \"" << target_dir.value() << "\"";
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    // On Android, DIR_USER_DOCUMENTS is in reality a subdirectory
+    // of DIR_ANDROID_APP_DATA which isn't accessible by other apps.
+    reserved_path->clear();
+    (*g_reservation_map)[key] = *reserved_path;
+    return false;
+#else
     is_path_writeable = false;
     PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);
     target_path = target_dir.Append(filename);
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
   }
 
   if (is_path_writeable) {

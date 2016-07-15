@@ -38,6 +38,21 @@ bool DownloadManagerService::RegisterDownloadManagerService(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+// static
+void DownloadManagerService::OnDownloadCanceled(
+    content::DownloadItem* download,
+    DownloadController::DownloadCancelReason reason) {
+  bool has_no_external_storage =
+      (reason == DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jname =
+      ConvertUTF8ToJavaString(env, download->GetURL().ExtractFileName());
+  Java_DownloadManagerService_onDownloadItemCanceled(
+      env, jname.obj(), has_no_external_storage);
+  DownloadController::RecordDownloadCancelReason(reason);
+}
+
+
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DownloadManagerService* service =

@@ -1014,41 +1014,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param reason Reason of failure reported by android DownloadManager
      */
     protected void onDownloadFailed(String fileName, int reason) {
-        String reasonString = mContext.getString(
-                R.string.download_failed_reason_unknown_error, fileName);
-        switch (reason) {
-            case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
-                reasonString = mContext.getString(
-                        R.string.download_failed_reason_file_already_exists, fileName);
-                break;
-            case DownloadManager.ERROR_FILE_ERROR:
-                reasonString = mContext.getString(
-                        R.string.download_failed_reason_file_system_error, fileName);
-                break;
-            case DownloadManager.ERROR_INSUFFICIENT_SPACE:
-                reasonString = mContext.getString(
-                        R.string.download_failed_reason_insufficient_space, fileName);
-                break;
-            case DownloadManager.ERROR_CANNOT_RESUME:
-            case DownloadManager.ERROR_HTTP_DATA_ERROR:
-                reasonString = mContext.getString(
-                        R.string.download_failed_reason_network_failures, fileName);
-                break;
-            case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
-            case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
-                reasonString = mContext.getString(
-                        R.string.download_failed_reason_server_issues, fileName);
-                break;
-            case DownloadManager.ERROR_DEVICE_NOT_FOUND:
-                reasonString = mContext.getString(
-                        R.string.download_failed_reason_storage_not_found, fileName);
-                break;
-            case DownloadManager.ERROR_UNKNOWN:
-            default:
-                break;
+        String failureMessage = getDownloadFailureMessage(fileName, reason);
+        if (mDownloadSnackbarController.getSnackbarManager() != null) {
+            mDownloadSnackbarController.onDownloadFailed(
+                    failureMessage,
+                    reason == DownloadManager.ERROR_FILE_ALREADY_EXISTS);
+        } else {
+            Toast.makeText(mContext, failureMessage, Toast.LENGTH_SHORT).show();
         }
-        mDownloadSnackbarController.onDownloadFailed(
-                reasonString, reason == DownloadManager.ERROR_FILE_ALREADY_EXISTS);
     }
 
     /**
@@ -1494,6 +1467,56 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @CalledByNative
     private void onAllDownloadsRetrieved(final List<DownloadItem> list) {
         mDownloadHistoryAdapter.onAllDownloadsRetrieved(list);
+    }
+
+    /**
+     * Called when a download is canceled before download target is determined.
+     *
+     * @param fileName Name of the download file.
+     * @param reason Reason of failure reported by android DownloadManager.
+     */
+    @CalledByNative
+    private static void onDownloadItemCanceled(String fileName, boolean isExternalStorageMissing) {
+        DownloadManagerService service = getDownloadManagerService(
+                ContextUtils.getApplicationContext());
+        int reason = isExternalStorageMissing ? DownloadManager.ERROR_DEVICE_NOT_FOUND
+                : DownloadManager.ERROR_FILE_ALREADY_EXISTS;
+        service.onDownloadFailed(fileName, reason);
+    }
+
+    /**
+     * Get the message to display when a download fails.
+     *
+     * @param fileName Name of the download file.
+     * @param reason Reason of failure reported by android DownloadManager.
+     */
+    private String getDownloadFailureMessage(String fileName, int reason) {
+        switch (reason) {
+            case DownloadManager.ERROR_FILE_ALREADY_EXISTS:
+                return mContext.getString(
+                        R.string.download_failed_reason_file_already_exists, fileName);
+            case DownloadManager.ERROR_FILE_ERROR:
+                return mContext.getString(
+                        R.string.download_failed_reason_file_system_error, fileName);
+            case DownloadManager.ERROR_INSUFFICIENT_SPACE:
+                return mContext.getString(
+                        R.string.download_failed_reason_insufficient_space, fileName);
+            case DownloadManager.ERROR_CANNOT_RESUME:
+            case DownloadManager.ERROR_HTTP_DATA_ERROR:
+                return mContext.getString(
+                        R.string.download_failed_reason_network_failures, fileName);
+            case DownloadManager.ERROR_TOO_MANY_REDIRECTS:
+            case DownloadManager.ERROR_UNHANDLED_HTTP_CODE:
+                return mContext.getString(
+                        R.string.download_failed_reason_server_issues, fileName);
+            case DownloadManager.ERROR_DEVICE_NOT_FOUND:
+                return mContext.getString(
+                        R.string.download_failed_reason_storage_not_found, fileName);
+            case DownloadManager.ERROR_UNKNOWN:
+            default:
+                return mContext.getString(
+                        R.string.download_failed_reason_unknown_error, fileName);
+        }
     }
 
     @Override

@@ -12,6 +12,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/download/download_history.h"
 #include "content/public/browser/download_manager.h"
 
@@ -27,6 +28,10 @@ class DownloadManagerService : public DownloadHistory::Observer {
  public:
   // JNI registration.
   static bool RegisterDownloadManagerService(JNIEnv* env);
+
+  static void OnDownloadCanceled(
+      content::DownloadItem* download,
+      DownloadController::DownloadCancelReason reason);
 
   DownloadManagerService(JNIEnv* env,
                          jobject jobj);
