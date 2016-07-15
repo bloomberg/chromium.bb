@@ -13,6 +13,7 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -410,21 +411,29 @@ class CONTENT_EXPORT ServiceWorkerVersion
                    ServiceWorkerMetrics::EventType event_type);
     ~PendingRequest();
 
-    // This is the |error_callback| passed to StartRequest.
+    // ------------------------------------------------------------------------
+    // For all requests. Set by StartRequest.
+    // ------------------------------------------------------------------------
     StatusCallback error_callback;
     base::TimeTicks start_time;
     ServiceWorkerMetrics::EventType event_type;
 
+    // -------------------------------------------------------------------------
+    // For Mojo requests.
+    // -------------------------------------------------------------------------
     // Name of the mojo service this request is associated with. Used to call
-    // the callback when a connection closes with outstanding requests.
-    // Compared as pointer, so should only contain static strings. Typically
-    // this would be Interface::Name_ for some mojo interface.
+    // the callback when a connection closes with outstanding requests. Compared
+    // as pointer, so should only contain static strings. Typically this would
+    // be Interface::Name_ for some mojo interface.
     const char* mojo_service = nullptr;
 
-    // This is set by RegisterRequestCallback. It is null for simple requests,
-    // which use only |error_callback| to communicate the service worker's
-    // response.
+    // ------------------------------------------------------------------------
+    // For IPC message requests.
+    // ------------------------------------------------------------------------
+    // Set by RegisterRequestCallback. Receives IPC responses to the request via
+    // OnMessageReceived.
     std::unique_ptr<EmbeddedWorkerInstance::Listener> listener;
+    // True if an IPC message was sent to dispatch the event for this request.
     bool is_dispatched = false;
   };
 
