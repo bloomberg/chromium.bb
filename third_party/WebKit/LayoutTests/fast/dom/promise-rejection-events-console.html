@@ -32,11 +32,6 @@ async_test(function(t) {
       assert_equals(evt.reason, e);
     });
     setTimeout(function() {
-      if (window.internals) {
-        t.step(function() {
-          assert_equals(internals.numberOfConsoleMessages(document), 0);
-        });
-      }
       t.done();
     }, 10);
   };

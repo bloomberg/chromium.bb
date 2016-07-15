@@ -246,8 +246,6 @@ public:
     unsigned numberOfLiveNodes() const;
     unsigned numberOfLiveDocuments() const;
     String dumpRefCountedInstanceCounts() const;
-    unsigned numberOfConsoleMessages(Document*) const;
-    unsigned numberOfConsoleMessagesWithArguments(Document*) const;
     LocalDOMWindow* openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();
     Vector<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);

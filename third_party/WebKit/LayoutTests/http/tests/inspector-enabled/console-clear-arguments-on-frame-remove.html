@@ -1,6 +1,7 @@
 <html>
 <head>
-<script src="resources/console-clear-arguments-test.js"></script>
+<script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/console-test.js"></script>
 <script>
 if (window.testRunner) {
     testRunner.waitUntilDone();
@@ -15,9 +16,9 @@ function removeIFrame()
         container.removeChild(child);
         child = container.firstChild;
     }
-    dumpConsoleMessageCounts();
     if (window.testRunner)
-        testRunner.notifyDone();
+        testRunner.showWebInspector();
+    runTest();
 }
 
 function createIFrame()
@@ -28,11 +29,19 @@ function createIFrame()
     document.getElementById('container').appendChild(iframe);
 }
 
+function test()
+{
+    for (var message of InspectorTest.mainTarget.consoleModel.messages()) {
+        var args = (message.parameters || []).map((arg) => arg.type);
+        InspectorTest.addResult("Message: \"" + message.messageText + "\", arguments: [" + args.join(", ") + "]");
+    }
+    InspectorTest.completeTest();
+}
 </script>
 </head>
 <body onload="createIFrame()">
 <p>
-Tests that console message arguments will be cleared when iframe where the messages were
+Tests that console message arguments will be cleared and first argument will be converted into a string when iframe where the messages were
 created is removed.
 </p>
 <div id="container"></div>

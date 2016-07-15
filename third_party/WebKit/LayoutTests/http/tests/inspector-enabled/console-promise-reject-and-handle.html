@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/console-test.js"></script>
+<script>
+if (window.testRunner) {
+    testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+}
+
+function setupPromise1()
+{
+    var p = Promise.reject(new Error('e'));
+    window.onunhandledrejection = function(evt) {
+        console.log("onunhandledrejection1");
+        evt.preventDefault();
+        setTimeout(function() {
+            p.then(function(){}, function(){});
+        }, 10);
+    };
+    window.onrejectionhandled = function(evt) {
+        console.log("onrejectionhandled1");
+        setTimeout(setupPromise2, 0);
+    };
+}
+
+function setupPromise2()
+{
+    var p = Promise.reject(new Error('e'));
+    window.onunhandledrejection = function(evt) {
+        console.log("onunhandledrejection2");
+        setTimeout(function() {
+            p.then(function(){}, function(){});
+        }, 10);
+    };
+    window.onrejectionhandled = function(evt) {
+        console.log("onrejectionhandled2");
+        setTimeout(startTest, 0);
+    };
+    function startTest()
+    {
+        if (window.testRunner)
+            testRunner.showWebInspector();
+        runTest();
+    }
+}
+
+function test()
+{
+    InspectorTest.expandConsoleMessages();
+    InspectorTest.addResult("----console messages start----");
+    InspectorTest.dumpConsoleMessages();
+    InspectorTest.addResult("----console messages end----");
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="setupPromise1()">
+<p>
+Tests that evt.preventDefault() in window.onunhandledrejection suppresses console output.
+</p>
+</body>
+</html>

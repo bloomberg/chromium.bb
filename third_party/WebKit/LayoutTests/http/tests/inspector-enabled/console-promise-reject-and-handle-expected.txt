@@ -1,0 +1,15 @@
+CONSOLE MESSAGE: line 15: onunhandledrejection1
+CONSOLE MESSAGE: line 22: onrejectionhandled1
+CONSOLE MESSAGE: line 31: onunhandledrejection2
+CONSOLE ERROR: line 29: Uncaught (in promise) Error: e
+CONSOLE MESSAGE: line 37: onrejectionhandled2
+Tests that evt.preventDefault() in window.onunhandledrejection suppresses console output.
+
+----console messages start----
+console-promise-reject-and-handle.html:15 onunhandledrejection1
+console-promise-reject-and-handle.html:22 onrejectionhandled1
+console-promise-reject-and-handle.html:31 onunhandledrejection2
+console-promise-reject-and-handle.html:29 Uncaught (in promise) Error: e(…)
+console-promise-reject-and-handle.html:37 onrejectionhandled2
+----console messages end----
+

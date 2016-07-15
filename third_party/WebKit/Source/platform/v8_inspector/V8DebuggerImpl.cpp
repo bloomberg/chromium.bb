@@ -1102,20 +1102,6 @@ void V8DebuggerImpl::promiseRejectionRevoked(v8::Local<v8::Context> context, uns
     ensureConsoleMessageStorage(contextGroupId)->addMessage(std::move(consoleMessage));
 }
 
-void V8DebuggerImpl::consoleMessagesCount(int contextGroupId, unsigned* total, unsigned* withArguments)
-{
-    *total = 0;
-    *withArguments = 0;
-    ConsoleStorageMap::iterator storageIt = m_consoleStorageMap.find(contextGroupId);
-    if (storageIt == m_consoleStorageMap.end())
-        return;
-    *total = storageIt->second->messages().size();
-    for (const auto& message : storageIt->second->messages()) {
-        if (message->argumentCount())
-            (*withArguments)++;
-    }
-}
-
 std::unique_ptr<V8StackTrace> V8DebuggerImpl::captureStackTrace(bool fullStack)
 {
     if (!m_isolate->InContext())

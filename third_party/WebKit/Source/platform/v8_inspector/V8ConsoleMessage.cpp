@@ -356,11 +356,6 @@ V8MessageOrigin V8ConsoleMessage::origin() const
     return m_origin;
 }
 
-unsigned V8ConsoleMessage::argumentCount() const
-{
-    return m_arguments.size();
-}
-
 ConsoleAPIType V8ConsoleMessage::type() const
 {
     return m_type;

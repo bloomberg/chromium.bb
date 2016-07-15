@@ -1600,30 +1600,6 @@ String Internals::dumpRefCountedInstanceCounts() const
     return WTF::dumpRefCountedInstanceCounts();
 }
 
-unsigned Internals::numberOfConsoleMessages(Document* document) const
-{
-    if (!document->frame())
-        return 0;
-
-    MainThreadDebugger* debugger = MainThreadDebugger::instance();
-    unsigned total = 0;
-    unsigned withArguments = 0;
-    debugger->debugger()->consoleMessagesCount(debugger->contextGroupId(document->frame()), &total, &withArguments);
-    return total;
-}
-
-unsigned Internals::numberOfConsoleMessagesWithArguments(Document* document) const
-{
-    if (!document->frame())
-        return 0;
-
-    MainThreadDebugger* debugger = MainThreadDebugger::instance();
-    unsigned total = 0;
-    unsigned withArguments = 0;
-    debugger->debugger()->consoleMessagesCount(debugger->contextGroupId(document->frame()), &total, &withArguments);
-    return withArguments;
-}
-
 Vector<unsigned long> Internals::setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes)
 {
     Vector<unsigned long> result;

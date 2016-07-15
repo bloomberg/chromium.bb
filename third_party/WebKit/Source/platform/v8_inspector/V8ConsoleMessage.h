@@ -70,7 +70,6 @@ public:
     V8MessageOrigin origin() const;
     void reportToFrontend(protocol::Console::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
     void reportToFrontend(protocol::Runtime::Frontend*, V8InspectorSessionImpl*, bool generatePreview) const;
-    unsigned argumentCount() const;
     ConsoleAPIType type() const;
     void contextDestroyed(int contextId);
 

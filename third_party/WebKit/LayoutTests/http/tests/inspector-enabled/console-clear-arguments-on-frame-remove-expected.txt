@@ -1,7 +1,9 @@
 CONSOLE MESSAGE: line 2: A message with first argument string
 CONSOLE MESSAGE: line 3: 2011
 CONSOLE MESSAGE: line 4: [object Window]
-Tests that console message arguments will be cleared when iframe where the messages were created is removed.
+Tests that console message arguments will be cleared and first argument will be converted into a string when iframe where the messages were created is removed.
 
-PASSED: found argument counts for 3 messages
-PASSED: no messages with arguments
+Message: "A message with first argument string", arguments: [string]
+Message: "2011", arguments: [string]
+Message: "[object Window]", arguments: [string]
+
