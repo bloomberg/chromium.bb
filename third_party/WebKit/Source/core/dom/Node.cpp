@@ -977,6 +977,9 @@ int Node::maxCharacterOffset() const
 // is obviously misplaced.
 bool Node::canStartSelection() const
 {
+    if (isDisabledFormControl(this))
+        return false;
+
     if (hasEditableStyle())
         return true;
 
