@@ -298,8 +298,8 @@ The liblouis web site at liblouis.org is maintained with the help of
 github pages (https://pages.github.com/). To edit the site just check
 out the repo at https://github.com/liblouis/liblouis.github.io. You'll
 need to know a few things about Jekyll (http://jekyllrb.com/) and
-textile (http://redcloth.org/textile/) the markup that is used to edit
-the content. In order to update the site simply edit, commit and push.
+markdown, the markup that is used to edit the content. In order to
+update the site simply edit, commit and push.
 
 For the new release update the project web site. Add a post containing
 the current NEWS to the _posts directory.
