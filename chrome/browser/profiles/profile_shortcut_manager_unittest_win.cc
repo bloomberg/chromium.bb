@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <objbase.h>  // For CoInitialize().
 #include <stddef.h>
 
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -30,24 +31,22 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::BrowserThread;
 
 class ProfileShortcutManagerTest : public testing::Test {
  protected:
   ProfileShortcutManagerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        profile_attributes_storage_(NULL),
+      : profile_attributes_storage_(nullptr),
         fake_user_desktop_(base::DIR_USER_DESKTOP),
         fake_system_desktop_(base::DIR_COMMON_DESKTOP) {
   }
 
   void SetUp() override {
-    CoInitialize(NULL);
+    scoped_com_ = base::MakeUnique<base::win::ScopedCOMInitializer>(
+        base::win::ScopedCOMInitializer::kMTA);
+    ASSERT_TRUE(scoped_com_->succeeded());
 
     TestingBrowserProcess* browser_process =
         TestingBrowserProcess::GetGlobal();
@@ -66,7 +65,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void TearDown() override {
-    message_loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // Delete all profiles and ensure their shortcuts got removed.
     const size_t num_profiles =
@@ -84,6 +83,7 @@ class ProfileShortcutManagerTest : public testing::Test {
           profiles::internal::GetProfileIconPath(profile_path);
       ASSERT_TRUE(base::PathExists(icon_path));
     }
+    scoped_com_.reset();
   }
 
   base::FilePath CreateProfileDirectory(const base::string16& profile_name) {
@@ -278,9 +278,8 @@ class ProfileShortcutManagerTest : public testing::Test {
     return system_shortcuts_directory;
   }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<base::win::ScopedCOMInitializer> scoped_com_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<ProfileShortcutManager> profile_shortcut_manager_;
   ProfileAttributesStorage* profile_attributes_storage_;
