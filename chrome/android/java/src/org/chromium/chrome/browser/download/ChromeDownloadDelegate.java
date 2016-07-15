@@ -29,6 +29,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
+import org.chromium.chrome.browser.navigation.NavigationHandler;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -583,9 +584,9 @@ public class ChromeDownloadDelegate {
             // We do not want caller to dismiss infobar.
             return true;
         }
-        WebContents contents = mTab.getWebContents();
-        boolean isInitialNavigation = contents == null
-                || contents.getNavigationController().isInitialNavigation();
+        NavigationHandler navigationHandler = mTab.getNavigationHandler();
+        boolean isInitialNavigation =
+                navigationHandler == null || navigationHandler.isInitialNavigation();
         if (isInitialNavigation) {
             // Tab is created just for download, close it.
             Activity activity = mTab.getWindowAndroid().getActivity().get();

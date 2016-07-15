@@ -66,6 +66,8 @@ import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.ui.MediaSessionTabHelper;
+import org.chromium.chrome.browser.navigation.NavigationHandler;
+import org.chromium.chrome.browser.navigation.TabWebContentsNavigationHandler;
 import org.chromium.chrome.browser.ntp.NativePageAssassin;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
@@ -384,6 +386,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
+
+    private NavigationHandler mNavigationHandler;
+
+    /**
+     * Method to access navigation handler for a tab.
+     * @return navigation handler.
+     */
+    public NavigationHandler getNavigationHandler() {
+        return mNavigationHandler;
+    }
 
     private class TabContentViewClient extends ContentViewClient {
         @Override
@@ -736,44 +748,43 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Whether or not this tab has a previous navigation entry.
      */
     public boolean canGoBack() {
-        return getWebContents() != null && getWebContents().getNavigationController().canGoBack();
+        return getNavigationHandler() != null && getNavigationHandler().canGoBack();
     }
 
     /**
      * @return Whether or not this tab has a navigation entry after the current one.
      */
     public boolean canGoForward() {
-        return getWebContents() != null && getWebContents().getNavigationController()
-                .canGoForward();
+        return getNavigationHandler() != null && getNavigationHandler().canGoForward();
     }
 
     /**
      * Goes to the navigation entry before the current one.
      */
     public void goBack() {
-        if (getWebContents() != null) getWebContents().getNavigationController().goBack();
+        if (getNavigationHandler() != null) getNavigationHandler().goBack();
     }
 
     /**
      * Goes to the navigation entry after the current one.
      */
     public void goForward() {
-        if (getWebContents() != null) getWebContents().getNavigationController().goForward();
+        if (getNavigationHandler() != null) getNavigationHandler().goForward();
     }
 
     /**
      * Loads the current navigation if there is a pending lazy load (after tab restore).
      */
     public void loadIfNecessary() {
-        if (getWebContents() != null) getWebContents().getNavigationController().loadIfNecessary();
+        if (getNavigationHandler() != null) getNavigationHandler().loadIfNecessary();
     }
 
     /**
      * Requests the current navigation to be loaded upon the next call to loadIfNecessary().
      */
     protected void requestRestoreLoad() {
-        if (getWebContents() != null) {
-            getWebContents().getNavigationController().requestRestoreLoad();
+        if (getNavigationHandler() != null) {
+            getNavigationHandler().requestRestoreLoad();
         }
     }
 
@@ -993,7 +1004,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     public void reload() {
         // TODO(dtrainor): Should we try to rebuild the ContentView if it's frozen?
-        if (getWebContents() != null) getWebContents().getNavigationController().reload(true);
+        if (getNavigationHandler() != null) getNavigationHandler().reload(true);
     }
 
     /**
@@ -1001,8 +1012,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * This version ignores the cache and reloads from the network.
      */
     public void reloadIgnoringCache() {
-        if (getWebContents() != null) {
-            getWebContents().getNavigationController().reloadBypassingCache(true);
+        if (getNavigationHandler() != null) {
+            getNavigationHandler().reloadBypassingCache(true);
         }
     }
 
@@ -1011,8 +1022,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * This version ignores the cache and reloads from the network.
      */
     public void reloadDisableLoFi() {
-        if (getWebContents() != null) {
-            getWebContents().getNavigationController().reloadDisableLoFi(true);
+        if (getNavigationHandler() != null) {
+            getNavigationHandler().reloadDisableLoFi(true);
         }
     }
 
@@ -1189,9 +1200,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @param reloadOnChange Reload the page if the user agent has changed.
      */
     public void setUseDesktopUserAgent(boolean useDesktop, boolean reloadOnChange) {
-        if (getWebContents() != null) {
-            getWebContents().getNavigationController()
-                    .setUseDesktopUserAgent(useDesktop, reloadOnChange);
+        if (getNavigationHandler() != null) {
+            getNavigationHandler().setUseDesktopUserAgent(useDesktop, reloadOnChange);
         }
     }
 
@@ -1199,8 +1209,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Whether or not the {@link ContentViewCore} is using a desktop user agent.
      */
     public boolean getUseDesktopUserAgent() {
-        return getWebContents() != null && getWebContents().getNavigationController()
-                .getUseDesktopUserAgent();
+        return getNavigationHandler() != null
+                && getNavigationHandler().getUseDesktopUserAgent();
     }
 
     /**
@@ -1853,6 +1863,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     new TabContextMenuPopulator(mDelegateFactory.createContextMenuPopulator(this),
                             this));
 
+            // TODO(shaktisahu): Add logic for blimp version of navigation handler.
+            mNavigationHandler = new TabWebContentsNavigationHandler(getWebContents());
+
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
             if (mInfoBarContainer == null) {
@@ -1866,7 +1879,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mInfoBarContainer.setContentViewCore(mContentViewCore);
 
             mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext);
-            mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
+            mSwipeRefreshHandler.setContentViewCore(mContentViewCore, getNavigationHandler());
 
             updateThemeColorIfNeeded(false);
             notifyContentChanged();
@@ -2367,9 +2380,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mInfoBarContainer.setContentViewCore(null);
         }
         if (mSwipeRefreshHandler != null) {
-            mSwipeRefreshHandler.setContentViewCore(null);
+            mSwipeRefreshHandler.setContentViewCore(null, null);
             mSwipeRefreshHandler = null;
         }
+
+        mNavigationHandler = null;
+
         mContentViewParent = null;
         mContentViewCore.destroy();
         mContentViewCore = null;

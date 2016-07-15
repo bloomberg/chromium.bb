@@ -12,11 +12,10 @@ import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationParams;
+import org.chromium.chrome.browser.navigation.NavigationHandler;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
-import org.chromium.content_public.browser.NavigationController;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ConsoleMessageLevel;
 
 /**
@@ -171,27 +170,22 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * entries from the navigation history. See crbug.com/426679
      */
     public void maybeUpdateNavigationHistory() {
-        WebContents webContents = mTab.getWebContents();
-        if (mClearAllForwardHistoryRequired && webContents != null) {
-            NavigationController navigationController =
-                    webContents.getNavigationController();
+        NavigationHandler navigationHandler = mTab.getNavigationHandler();
+        if (mClearAllForwardHistoryRequired && navigationHandler != null) {
             int lastCommittedEntryIndex = getLastCommittedEntryIndex();
-            while (navigationController.canGoForward()) {
-                boolean ret = navigationController.removeEntryAtIndex(
+            while (navigationHandler.canGoForward()) {
+                boolean ret = navigationHandler.removeEntryAtIndex(
                         lastCommittedEntryIndex + 1);
                 assert ret;
             }
-        } else if (mShouldClearRedirectHistoryForTabClobbering
-                && webContents != null) {
+        } else if (mShouldClearRedirectHistoryForTabClobbering && navigationHandler != null) {
             // http://crbug/479056: Even if we clobber the current tab, we want to remove
             // redirect history to be consistent.
-            NavigationController navigationController =
-                    webContents.getNavigationController();
             int indexBeforeRedirection = mTab.getTabRedirectHandler()
                     .getLastCommittedEntryIndexBeforeStartingNavigation();
             int lastCommittedEntryIndex = getLastCommittedEntryIndex();
             for (int i = lastCommittedEntryIndex - 1; i > indexBeforeRedirection; --i) {
-                boolean ret = navigationController.removeEntryAtIndex(i);
+                boolean ret = navigationHandler.removeEntryAtIndex(i);
                 assert ret;
             }
         }
@@ -204,13 +198,13 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     }
 
     private int getLastCommittedEntryIndex() {
-        if (mTab.getWebContents() == null) return -1;
-        return mTab.getWebContents().getNavigationController().getLastCommittedEntryIndex();
+        if (mTab.getNavigationHandler() == null) return -1;
+        return mTab.getNavigationHandler().getLastCommittedEntryIndex();
     }
 
     private boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent() {
-        if (mTab.getWebContents() == null) return false;
-        if (!mTab.getWebContents().getNavigationController().canGoToOffset(0)) return true;
+        if (mTab.getNavigationHandler() == null) return false;
+        if (!mTab.getNavigationHandler().canGoToOffset(0)) return true;
 
         // http://crbug/415948 : if the last committed entry index which was saved before this
         // navigation is invalid, it means that this navigation is the first one since this tab was
@@ -227,7 +221,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
      * Called when Chrome decides to override URL loading and show an intent picker.
      */
     private void onOverrideUrlLoadingAndLaunchIntent() {
-        if (mTab.getWebContents() == null) return;
+        if (mTab.getNavigationHandler() == null) return;
 
         // Before leaving Chrome, close the empty child tab.
         // If a new tab is created through JavaScript open to load this
@@ -249,7 +243,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 // was saved before this navigation, and remove the empty entries from the
                 // navigation history.
                 mClearAllForwardHistoryRequired = true;
-                mTab.getWebContents().getNavigationController().goToNavigationIndex(
+                mTab.getNavigationHandler().goToNavigationIndex(
                         lastCommittedEntryIndexBeforeNavigation);
             }
         }

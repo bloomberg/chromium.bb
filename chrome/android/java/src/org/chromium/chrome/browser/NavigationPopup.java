@@ -26,8 +26,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.navigation.NavigationHandler;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.ui.base.LocalizationUtils;
@@ -44,7 +44,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
 
     private final Profile mProfile;
     private final Context mContext;
-    private final NavigationController mNavigationController;
+    private final NavigationHandler mNavigationHandler;
     private final NavigationHistory mHistory;
     private final NavigationAdapter mAdapter;
     private final ListItemFactory mListItemFactory;
@@ -69,12 +69,12 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
      * @param isForward Whether to request forward navigation entries.
      */
     public NavigationPopup(Profile profile, Context context,
-            NavigationController navigationController, boolean isForward) {
+            NavigationHandler navigationController, boolean isForward) {
         super(context, null, android.R.attr.popupMenuStyle);
         mProfile = profile;
         mContext = context;
-        mNavigationController = navigationController;
-        mHistory = mNavigationController.getDirectedNavigationHistory(
+        mNavigationHandler = navigationController;
+        mHistory = mNavigationHandler.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
         mAdapter = new NavigationAdapter();
 
@@ -166,7 +166,7 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         NavigationEntry entry = (NavigationEntry) parent.getItemAtPosition(position);
-        mNavigationController.goToNavigationIndex(entry.getIndex());
+        mNavigationHandler.goToNavigationIndex(entry.getIndex());
         dismiss();
     }
 

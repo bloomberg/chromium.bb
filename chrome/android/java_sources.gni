@@ -472,6 +472,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/mojo/ChromeServiceRegistrar.java",
   "java/src/org/chromium/chrome/browser/multiwindow/MultiInstanceChromeTabbedActivity.java",
   "java/src/org/chromium/chrome/browser/multiwindow/MultiWindowUtils.java",
+  "java/src/org/chromium/chrome/browser/navigation/NavigationHandler.java",
+  "java/src/org/chromium/chrome/browser/navigation/TabWebContentsNavigationHandler.java",
   "java/src/org/chromium/chrome/browser/net/qualityprovider/ExternalEstimateProviderAndroid.java",
   "java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java",
   "java/src/org/chromium/chrome/browser/nfc/BeamCallback.java",

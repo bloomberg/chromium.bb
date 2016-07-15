@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.Overv
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.navigation.NavigationHandler;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -68,8 +69,6 @@ import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegat
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarObserver;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.NavigationController;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
@@ -394,11 +393,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 // But we want to update only when it's a new tab. So we check whether the current
                 // navigation entry is initial, meaning whether it has the same target URL as the
                 // initial URL of the tab.
-                WebContents webContents = tab.getWebContents();
-                if (webContents == null) return;
-                NavigationController navigationController = webContents.getNavigationController();
-                if (navigationController == null) return;
-                if (navigationController.isInitialNavigation()) {
+                NavigationHandler navigationHandler = tab.getNavigationHandler();
+                if (navigationHandler == null) return;
+                if (navigationHandler.isInitialNavigation()) {
                     mLocationBar.setUrlToPageUrl();
                 }
             }
