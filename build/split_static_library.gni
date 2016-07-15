@@ -36,6 +36,11 @@ template("split_static_library") {
                                ])
         sources = current_sources
         visibility = [ ":$group_name" ]
+
+        # Uniquify the output name if one is specified.
+        if (defined(invoker.output_name)) {
+          output_name = "${invoker.output_name}_$current_library_index"
+        }
       }
 
       current_library_index = current_library_index + 1
