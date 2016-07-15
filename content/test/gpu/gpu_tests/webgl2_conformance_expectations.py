@@ -300,6 +300,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac Retina NVIDIA
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Flaky(
+      'conformance/extensions/webgl-compressed-texture-size-limit.html',
+      ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
