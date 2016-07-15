@@ -50,21 +50,23 @@ void LayoutTableCol::styleDidChange(StyleDifference diff, const ComputedStyle* o
     if (LayoutTable* table = this->table()) {
         if (!oldStyle)
             return;
+
+        // TODO(dgrogan): Is the "else" necessary for correctness or just a brittle optimization? The optimization would be:
+        // if the first branch is taken then the next one can't be, so don't even check its condition.
         if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle->border() != style()->border()) {
             // If border was changed, notify table.
             table->invalidateCollapsedBorders();
-        } else if (oldStyle->logicalWidth() != style()->logicalWidth()) {
-            // FIXME : setPreferredLogicalWidthsDirty is done for all cells as of now.
-            // Need to find a better way so that only the cells which are changed by
-            // the col width should have preferred logical widths recomputed.
+        } else if ((oldStyle->logicalWidth() != style()->logicalWidth()) || (diff.needsFullLayout() && needsLayout() && table->collapseBorders() && oldStyle->border().sizeEquals(style()->border()))) {
+            // TODO(dgrogan): Move second clause above to LayoutTableBoxComponent for re-use.
+            // TODO(dgrogan): Optimization opportunities:
+            // (1) Only mark cells which are affected by this col, not every cell in the table.
+            // (2) If only the col width changes and its border width doesn't, do the cells need to be marked as
+            //     needing layout or just given dirty widths?
             for (LayoutObject* child = table->children()->firstChild(); child; child = child->nextSibling()) {
                 if (!child->isTableSection())
                     continue;
                 LayoutTableSection* section = toLayoutTableSection(child);
-                for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
-                    for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell())
-                        cell->setPreferredLogicalWidthsDirty();
-                }
+                section->markAllCellsWidthsDirtyAndOrNeedsLayout(LayoutTableSection::MarkDirtyAndNeedsLayout);
             }
         }
     }

@@ -1,71 +1,137 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
       "paintInvalidations": [
         {
           "object": "LayoutTableCol COLGROUP id='colgroup'",
-          "rect": [8, 8, 162, 102],
+          "rect": [8, 8, 166, 102],
           "reason": "style change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [61, 7, 57, 53],
+          "rect": [63, 7, 58, 53],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [7, 58, 56, 53],
+          "rect": [7, 58, 58, 53],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [7, 7, 56, 53],
+          "rect": [7, 7, 58, 53],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [62, 59, 56, 52],
+          "rect": [117, 59, 57, 52],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 58, 56, 52],
+          "rect": [117, 7, 57, 52],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "rect": [8, 8, 56, 52],
+          "rect": [64, 59, 57, 52],
           "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "reason": "full"
+          "rect": [62, 8, 55, 52],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "reason": "full"
+          "rect": [116, 59, 54, 51],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "reason": "full"
+          "rect": [63, 59, 54, 51],
+          "reason": "bounds change"
         },
         {
           "object": "LayoutTableCell TD",
-          "reason": "full"
+          "rect": [116, 9, 54, 50],
+          "reason": "bounds change"
         },
         {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
+          "object": "LayoutTable TABLE",
+          "rect": [169, 8, 5, 102],
+          "reason": "incremental"
         },
         {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
+          "object": "LayoutTable TABLE",
+          "rect": [170, 8, 4, 102],
+          "reason": "incremental"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableCol COLGROUP id='colgroup'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "bounds change"
     }
   ]
 }
