@@ -439,7 +439,11 @@ component("platform") {
   }
 
   if (use_minikin_hyphenation) {
-    sources += [ "text/hyphenation/HyphenationMinikin.cpp" ]
+    sources += [
+      "text/hyphenation/HyphenationMinikin.cpp",
+      "text/hyphenation/HyphenatorAOSP.cpp",
+      "text/hyphenation/HyphenatorAOSP.h",
+    ]
   }
 
   if (!use_default_render_theme) {
