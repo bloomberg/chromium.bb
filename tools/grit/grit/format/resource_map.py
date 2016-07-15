@@ -120,9 +120,9 @@ def _FormatSource(get_key, root, lang, output_dir):
     tid = item.attrs['name']
     if tid not in tids or key in seen:
       continue
-    seen.add(key)
     if item.GeneratesResourceMapEntry(output_all_resource_defines,
                                       item in active_descendants):
+      seen.add(key)
       yield '  {"%s", %s},\n' % (key, tid)
   yield _FormatSourceFooter(root)
 
