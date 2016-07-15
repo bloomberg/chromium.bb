@@ -71,13 +71,9 @@ class TracingControllerTestEndpoint : public TraceDataEndpoint {
   }
 
   void ReceiveTraceFinalContents(
-      std::unique_ptr<const base::DictionaryValue> metadata,
-      const std::string& contents) override {
-    EXPECT_EQ(trace_, contents);
-
-    std::string tmp = contents;
+      std::unique_ptr<const base::DictionaryValue> metadata) override {
     scoped_refptr<base::RefCountedString> chunk_ptr =
-        base::RefCountedString::TakeString(&tmp);
+        base::RefCountedString::TakeString(&trace_);
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
