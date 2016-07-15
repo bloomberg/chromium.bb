@@ -143,6 +143,8 @@ Background = function() {
 
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       this.onAccessibilityGesture_);
+
+  Notifications.onStartup();
 };
 
 /**
