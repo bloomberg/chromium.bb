@@ -7,6 +7,7 @@
   <template>
     <style>
       :host {
+        --cr-toolbar-field-width: 580px;
         color: #fff;
         display: flex;
         height: 56px;
@@ -16,11 +17,16 @@
         @apply(--layout-flex);
         font-size: 123%;
         font-weight: 400;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
       }
 
       #leftContent {
         align-items: center;
         display: flex;
+        position: absolute;
+        transition: opacity 100ms;
       }
 
       #leftContent paper-icon-button {
@@ -41,12 +47,16 @@
         justify-content: center;
       }
 
+      :host(:not([narrow_])) #leftContent {
+        max-width: calc((100% - var(--cr-toolbar-field-width) - 18px) / 2);
+      }
+
       :host([narrow_]) #centeredContent {
         justify-content: flex-end;
       }
 
       :host([narrow_][showing-search_]) #leftContent {
-        display: none;
+        opacity: 0;
       }
     </style>
     <div id="leftContent">

@@ -25,21 +25,18 @@
       paper-icon-button {
         height: 32px;
         margin: 6px;
+        min-width: 32px;
         padding: 6px;
         width: 32px;
       }
 
       #icon {
         --paper-icon-button-ink-color: white;
-      }
-
-      #icon,
-      paper-spinner-lite {
-        transition: opacity 200ms;
+        transition: margin 150ms, opacity 200ms;
       }
 
       #prompt {
-        visibility: hidden;
+        opacity: 0;
       }
 
       paper-spinner-lite {
@@ -54,6 +51,11 @@
 
       paper-spinner-lite[active] {
         opacity: 1;
+      }
+
+      #prompt,
+      paper-spinner-lite {
+        transition: opacity 200ms;
       }
 
       paper-input-container {
@@ -78,13 +80,13 @@
         -webkit-appearance: none;
       }
 
-      /** Wide layout, no search open. */
-      :host(:not([narrow]):not([showing-search])) {
+      /** Wide layout. */
+      :host(:not([narrow])) {
         -webkit-padding-end: 0;
         background: rgba(0, 0, 0, 0.22);
         border-radius: 2px;
         cursor: text;
-        width: 580px;
+        width: var(--cr-toolbar-field-width);
       }
 
       :host(:not([narrow]):not([showing-search])) #icon,
@@ -92,21 +94,30 @@
         opacity: 0.6;
       }
 
-      :host(:not([narrow]):not([showing-search])) #prompt {
-        visibility: visible;
+      :host([narrow]:not([showing-search])) paper-input-container {
+        display: none;
       }
 
-      /* Any layout, search open. */
-      :host([showing-search]) {
-        width: 100%;
-      }
-
+      /* Search open. */
       :host([showing-search][spinner-active]) #icon {
         opacity: 0;
       }
 
-      :host([narrow][showing-search]) #icon {
-        -webkit-margin-start: 18px;
+      :host([narrow][showing-search]) {
+        width: 100%;
+      }
+
+      /*
+       * Margin needs to be animated to prevent jumping around during
+       * opening/closing. -webkit-margin-start is not animatable, so we have to
+       * use regular margin-left/right instead.
+       */
+      :host-context([dir=ltr]):host([narrow][showing-search]) #icon {
+        margin-left: 18px;
+      }
+
+      :host-context([dir=rtl]):host([narrow][showing-search]) #icon {
+        margin-right: 18px;
       }
     </style>
     <paper-spinner-lite
