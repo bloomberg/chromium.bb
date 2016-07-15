@@ -1500,27 +1500,30 @@ IntPoint AXLayoutObject::clickPoint()
 AXObject* AXLayoutObject::accessibilityHitTest(const IntPoint& point) const
 {
     if (!m_layoutObject || !m_layoutObject->hasLayer())
-        return 0;
+        return nullptr;
 
     PaintLayer* layer = toLayoutBox(m_layoutObject)->layer();
 
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::Active);
     HitTestResult hitTestResult = HitTestResult(request, point);
     layer->hitTest(hitTestResult);
-    if (!hitTestResult.innerNode())
-        return 0;
 
     Node* node = hitTestResult.innerNode();
+    if (!node)
+        return nullptr;
 
     if (isHTMLAreaElement(node))
         return accessibilityImageMapHitTest(toHTMLAreaElement(node), point);
 
-    if (isHTMLOptionElement(node))
+    if (isHTMLOptionElement(node)) {
         node = toHTMLOptionElement(*node).ownerSelectElement();
+        if (!node)
+            return nullptr;
+    }
 
     LayoutObject* obj = node->layoutObject();
     if (!obj)
-        return 0;
+        return nullptr;
 
     AXObject* result = axObjectCache().getOrCreate(obj);
     result->updateChildrenIfNecessary();
