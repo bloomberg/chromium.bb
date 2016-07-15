@@ -52,7 +52,6 @@ class MEDIA_EXPORT CoreMediaGlue {
     kCMPixelFormat_422YpCbCr8_yuvs = 'yuvs',
   };
   enum {
-    kCMVideoCodecType_JPEG = 'jpeg',
     kCMVideoCodecType_JPEG_OpenDML = 'dmb1',
     kCMVideoCodecType_H264 = 'avc1',
   };
