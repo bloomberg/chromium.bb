@@ -21,6 +21,25 @@
 
 namespace content {
 
+namespace {
+
+media::VideoRotation WebRTCToMediaVideoRotation(
+    webrtc::VideoRotation rotation) {
+  switch (rotation) {
+    case webrtc::kVideoRotation_0:
+      return media::VIDEO_ROTATION_0;
+    case webrtc::kVideoRotation_90:
+      return media::VIDEO_ROTATION_90;
+    case webrtc::kVideoRotation_180:
+      return media::VIDEO_ROTATION_180;
+    case webrtc::kVideoRotation_270:
+      return media::VIDEO_ROTATION_270;
+  }
+  return media::VIDEO_ROTATION_0;
+}
+
+}  // anonymous namespace
+
 // Internal class used for receiving frames from the webrtc track on a
 // libjingle thread and forward it to the IO-thread.
 class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
@@ -97,9 +116,13 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
       incoming_frame.video_frame_buffer());
 
   if (buffer->native_handle() != NULL) {
-    video_frame =
-        static_cast<media::VideoFrame*>(buffer->native_handle());
+    video_frame = static_cast<media::VideoFrame*>(buffer->native_handle());
     video_frame->set_timestamp(elapsed_timestamp);
+    if (incoming_frame.rotation() != webrtc::kVideoRotation_0) {
+      video_frame->metadata()->SetRotation(
+          media::VideoFrameMetadata::ROTATION,
+          WebRTCToMediaVideoRotation(incoming_frame.rotation()));
+    }
   } else {
     // Note that the GetCopyWithRotationApplied returns a pointer to a
     // frame owned by incoming_frame.

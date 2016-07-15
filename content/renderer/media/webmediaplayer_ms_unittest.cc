@@ -138,7 +138,8 @@ class MockMediaStreamVideoRenderer : public MediaStreamVideoRenderer {
   void QueueFrames(const std::vector<int>& timestamps_or_frame_type,
                    bool opaque_frame = true,
                    bool odd_size_frame = false,
-                   int double_size_index = -1);
+                   int double_size_index = -1,
+                   media::VideoRotation rotation = media::VIDEO_ROTATION_0);
   bool Started() { return started_; }
   bool Paused() { return paused_; }
 
@@ -198,7 +199,8 @@ void MockMediaStreamVideoRenderer::QueueFrames(
     const std::vector<int>& timestamp_or_frame_type,
     bool opaque_frame,
     bool odd_size_frame,
-    int double_size_index) {
+    int double_size_index,
+    media::VideoRotation rotation) {
   gfx::Size standard_size = gfx::Size(kStandardWidth, kStandardHeight);
   for (size_t i = 0; i < timestamp_or_frame_type.size(); i++) {
     const int token = timestamp_or_frame_type[i];
@@ -223,11 +225,14 @@ void MockMediaStreamVideoRenderer::QueueFrames(
       } else {
         frame_size.SetSize(standard_size.width(), standard_size.height());
       }
+
       auto frame = media::VideoFrame::CreateZeroInitializedFrame(
           opaque_frame ? media::PIXEL_FORMAT_YV12 : media::PIXEL_FORMAT_YV12A,
           frame_size, gfx::Rect(frame_size), frame_size,
           base::TimeDelta::FromMilliseconds(token));
 
+      frame->metadata()->SetRotation(media::VideoFrameMetadata::ROTATION,
+                                     rotation);
       frame->metadata()->SetTimeTicks(
           media::VideoFrameMetadata::Key::REFERENCE_TIME,
           base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(token));
@@ -576,6 +581,9 @@ TEST_F(WebMediaPlayerMSTest, Playing_Normal) {
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
+  const blink::WebSize& natural_size = player_->naturalSize();
+  EXPECT_EQ(kStandardWidth, natural_size.width);
+  EXPECT_EQ(kStandardHeight, natural_size.height);
   testing::Mock::VerifyAndClearExpectations(this);
 
   EXPECT_CALL(*this, DoSetWebLayer(false));
@@ -709,6 +717,35 @@ INSTANTIATE_TEST_CASE_P(,
                         WebMediaPlayerMSTest,
                         ::testing::Combine(::testing::Bool(),
                                            ::testing::Bool()));
+
+// During this test, we check that when we send rotated video frames, it applies
+// to player's natural size.
+TEST_F(WebMediaPlayerMSTest, RotatedVideoFrame) {
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
+
+  static int tokens[] = {0, 33, 66};
+  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
+  provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_90);
+
+  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoStartRendering());
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::ReadyStateHaveMetadata));
+  EXPECT_CALL(*this, DoReadyStateChanged(
+                         blink::WebMediaPlayer::ReadyStateHaveEnoughData));
+  EXPECT_CALL(*this,
+              CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  const blink::WebSize& natural_size = player_->naturalSize();
+  // Check that height and width are flipped.
+  EXPECT_EQ(kStandardHeight, natural_size.width);
+  EXPECT_EQ(kStandardWidth, natural_size.height);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, DoSetWebLayer(false));
+  EXPECT_CALL(*this, DoStopRendering());
+}
 
 TEST_F(WebMediaPlayerMSTest, BackgroundRendering) {
   // During this test, we will switch to background rendering mode, in which

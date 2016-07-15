@@ -30,6 +30,7 @@ class WebString;
 namespace media {
 class MediaLog;
 class VideoFrame;
+enum VideoRotation;
 }
 
 namespace cc_blink {
@@ -204,6 +205,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   bool paused_;
   bool render_frame_suspended_;
   bool received_first_frame_;
+  media::VideoRotation video_rotation_;
 
   scoped_refptr<media::MediaLog> media_log_;
 
