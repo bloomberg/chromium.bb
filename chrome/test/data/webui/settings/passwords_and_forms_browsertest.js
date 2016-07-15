@@ -223,7 +223,10 @@ PasswordsAndFormsBrowserTest.prototype = {
       'passwords_and_forms_page.html',
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    '../fake_chrome_event.js',
+    'fake_settings_private.js',
+  ]),
 
   /** @override */
   setUp: function() {
@@ -241,6 +244,11 @@ PasswordsAndFormsBrowserTest.prototype = {
     AutofillManagerImpl.instance_ = this.autofillManager;
   },
 
+  /** @override */
+  tearDown: function() {
+    PolymerTest.clearBody();
+  },
+
   /**
    * Creates a new passwords and forms element.
    * @return {!Object}
@@ -250,6 +258,45 @@ PasswordsAndFormsBrowserTest.prototype = {
     document.body.appendChild(element);
     Polymer.dom.flush();
     return element;
+  },
+
+  /**
+   * @pram {boolean} autofill Whether autofill is enabled or not.
+   * @param {boolean} passwords Whether passwords are enabled or not.
+   * @return {!Promise<!Element>} The |prefs| object.
+   */
+  createPrefs: function(autofill, passwords) {
+    return new Promise(function(resolve) {
+      CrSettingsPrefs.deferInitialization = true;
+      var prefs = document.createElement('settings-prefs');
+      document.body.appendChild(prefs);
+      prefs.initializeForTesting(new settings.FakeSettingsPrivate([
+        {
+          key: 'autofill.enabled',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: autofill,
+        },
+        {
+          key: 'profile.password_manager_enabled',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: passwords,
+        },
+      ]));
+
+      CrSettingsPrefs.initialized.then(function() {
+        resolve(prefs);
+      });
+    });
+  },
+
+  /**
+   * Cleans up prefs so tests can continue to run.
+   * @param {!Element} prefs The prefs element.
+   */
+  destroyPrefs: function(prefs) {
+    CrSettingsPrefs.resetForTesting();
+    CrSettingsPrefs.deferInitialization = false;
+    prefs.resetForTesting();
   },
 
   /**
@@ -371,6 +418,32 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
       // additional calls to the manager after the base expectations.
       self.passwordManager.assertExpectations(self.basePasswordExpectations());
       self.autofillManager.assertExpectations(self.baseAutofillExpectations());
+    });
+
+    test('testActionabilityNope', function() {
+      return self.createPrefs(false, false).then(function(prefs) {
+        var element = self.createPasswordsAndFormsElement();
+        element.prefs = prefs.prefs;
+        Polymer.dom.flush();
+
+        assertFalse(element.$.autofillManagerButton.hasAttribute('actionable'));
+        assertFalse(element.$.passwordManagerButton.hasAttribute('actionable'));
+
+        self.destroyPrefs(prefs);
+      });
+    });
+
+    test('testActionabilityYes', function() {
+      return self.createPrefs(true, true).then(function(prefs) {
+        var element = self.createPasswordsAndFormsElement();
+        element.prefs = prefs.prefs;
+        Polymer.dom.flush();
+
+        assertTrue(element.$.autofillManagerButton.hasAttribute('actionable'));
+        assertTrue(element.$.passwordManagerButton.hasAttribute('actionable'));
+
+        self.destroyPrefs(prefs);
+      });
     });
   });
 
