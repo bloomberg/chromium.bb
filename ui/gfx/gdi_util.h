@@ -24,16 +24,6 @@ GFX_EXPORT void CreateBitmapHeader(int width, int height,
 GFX_EXPORT void CreateBitmapV4Header(int width, int height,
                                      BITMAPV4HEADER* hdr);
 
-// Creates a monochrome bitmap header.
-void CreateMonochromeBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
-
-// Modify the given hrgn by subtracting the given rectangles.
-GFX_EXPORT void SubtractRectanglesFromRegion(
-    HRGN hrgn,
-    const std::vector<gfx::Rect>& cutouts);
-
-GFX_EXPORT HRGN ConvertPathToHRGN(const gfx::Path& path);
-
 // Calculate scale to fit an entire page on DC.
 GFX_EXPORT float CalculatePageScale(HDC dc, int page_width, int page_height);
 
