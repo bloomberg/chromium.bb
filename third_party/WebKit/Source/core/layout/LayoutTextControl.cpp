@@ -239,8 +239,10 @@ void LayoutTextControl::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
     // Use average character width. Matches IE.
     AtomicString family = style()->font().getFontDescription().family().family();
     maxLogicalWidth = preferredContentLogicalWidth(const_cast<LayoutTextControl*>(this)->getAvgCharWidth(family));
-    if (LayoutBox* innerEditorLayoutBox = innerEditorElement()->layoutBox())
-        maxLogicalWidth += innerEditorLayoutBox->paddingStart() + innerEditorLayoutBox->paddingEnd();
+    if (innerEditorElement()) {
+        if (LayoutBox* innerEditorLayoutBox = innerEditorElement()->layoutBox())
+            maxLogicalWidth += innerEditorLayoutBox->paddingStart() + innerEditorLayoutBox->paddingEnd();
+    }
     if (!style()->logicalWidth().hasPercent())
         minLogicalWidth = maxLogicalWidth;
 }
