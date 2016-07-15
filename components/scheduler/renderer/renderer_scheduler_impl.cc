@@ -1392,6 +1392,12 @@ void RendererSchedulerImpl::ReportTaskTime(base::TimeTicks start_time,
                                            base::TimeTicks end_time) {
   MainThreadOnly().queueing_time_estimator.OnToplevelTaskCompleted(start_time,
                                                                    end_time);
+  MainThreadOnly().long_task_tracker.RecordLongTask(
+      start_time, end_time - start_time);
+}
+
+LongTaskTracker::LongTaskTiming RendererSchedulerImpl::GetLongTaskTiming() {
+  return MainThreadOnly().long_task_tracker.GetLongTaskTiming();
 }
 
 void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(

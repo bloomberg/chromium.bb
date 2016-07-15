@@ -15,6 +15,8 @@
       'base/cancelable_closure_holder.h',
       'base/lazy_now.cc',
       'base/lazy_now.h',
+      'base/long_task_tracker.cc',
+      'base/long_task_tracker.h',
       'base/queueing_time_estimator.cc',
       'base/queueing_time_estimator.h',
       'base/real_time_domain.cc',

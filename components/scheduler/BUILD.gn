@@ -11,6 +11,8 @@ component("scheduler") {
     "base/enqueue_order.h",
     "base/lazy_now.cc",
     "base/lazy_now.h",
+    "base/long_task_tracker.cc",
+    "base/long_task_tracker.h",
     "base/pollable_thread_safe_flag.cc",
     "base/pollable_thread_safe_flag.h",
     "base/queueing_time_estimator.cc",
@@ -122,6 +124,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "base/long_task_tracker_unittest.cc",
     "base/queueing_time_estimator_unittest.cc",
     "base/task_queue_manager_delegate_for_test.cc",
     "base/task_queue_manager_delegate_for_test.h",

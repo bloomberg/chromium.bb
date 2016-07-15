@@ -702,6 +702,7 @@
       'safe_json/testing_json_parser_unittest.cc',
     ],
     'scheduler_unittest_sources': [
+      'scheduler/base/long_task_tracker_unittest.cc',
       'scheduler/base/queueing_time_estimator_unittest.cc',
       'scheduler/base/task_queue_manager_delegate_for_test.cc',
       'scheduler/base/task_queue_manager_delegate_for_test.h',

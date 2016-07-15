@@ -8,6 +8,7 @@
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
+#include "components/scheduler/base/long_task_tracker.h"
 #include "components/scheduler/base/pollable_thread_safe_flag.h"
 #include "components/scheduler/base/queueing_time_estimator.h"
 #include "components/scheduler/base/task_time_tracker.h"
@@ -147,6 +148,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
 
   void AddWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
   void RemoveWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
+
+  LongTaskTracker::LongTaskTiming GetLongTaskTiming();
 
   // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();
@@ -371,6 +374,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
     QueueingTimeEstimator queueing_time_estimator;
+    LongTaskTracker long_task_tracker;
     IdleTimeEstimator idle_time_estimator;
     UseCase current_use_case;
     Policy current_policy;
