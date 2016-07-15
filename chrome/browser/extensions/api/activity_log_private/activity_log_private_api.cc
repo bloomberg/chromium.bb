@@ -209,12 +209,9 @@ ExtensionFunction::ResponseAction ActivityLogPrivateDeleteUrlsFunction::Run() {
 
   // Put the arguments in the right format.
   std::vector<GURL> gurls;
-  std::vector<std::string> urls = *params->urls.get();
-  for (std::vector<std::string>::iterator it = urls.begin();
-       it != urls.end();
-       ++it) {
-    gurls.push_back(GURL(*it));
-  }
+  const std::vector<std::string>& urls = *params->urls;
+  for (const std::string& url : urls)
+    gurls.push_back(GURL(url));
 
   ActivityLog* activity_log = ActivityLog::GetInstance(browser_context());
   DCHECK(activity_log);
