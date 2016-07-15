@@ -15,12 +15,18 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "third_party/libyuv/include/libyuv/convert.h"
+#include "media/filters/context_3d.h"
+#include "media/renderers/skcanvas_video_renderer.h"
+#include "skia/ext/platform_canvas.h"
+#include "third_party/libyuv/include/libyuv.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
 
 #if BUILDFLAG(RTC_USE_H264)
@@ -105,8 +111,8 @@ media::VideoCodecProfile CodecIdToVEAProfile(
 // ref-counted to allow the MediaStreamVideoTrack to hold a reference to it (via
 // the callback that MediaStreamVideoSink passes along) and to jump back and
 // forth to an internal encoder thread. Moreover, this class:
-// - is created and destroyed on its parent's thread (usually the main Render
-// thread), |main_task_runner_|.
+// - is created on its parent's thread (usually the main Render thread),
+// that is, |main_task_runner_|.
 // - receives VideoFrames on |origin_task_runner_| and runs OnEncodedVideoCB on
 // that thread as well. This task runner is cached on first frame arrival, and
 // is supposed to be the render IO thread (but this is not enforced);
@@ -136,15 +142,21 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
   // Start encoding |frame|, returning via |on_encoded_video_callback_|. This
   // call will also trigger a ConfigureEncoderOnEncodingTaskRunner() upon first
   // frame arrival or parameter change, and an EncodeOnEncodingTaskRunner() to
-  // actually encode the frame.
+  // actually encode the frame. If the |frame|'s data is not directly available
+  // (e.g. it's a texture) then RetrieveFrameOnMainThread() is called, and if
+  // even that fails, black frames are sent instead.
   void StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
                         base::TimeTicks capture_timestamp);
+  void RetrieveFrameOnMainThread(const scoped_refptr<VideoFrame>& video_frame,
+                                 base::TimeTicks capture_timestamp);
 
   void SetPaused(bool paused);
 
  protected:
   friend class base::RefCountedThreadSafe<Encoder>;
-  virtual ~Encoder() {}
+  virtual ~Encoder() {
+    main_task_runner_->DeleteSoon(FROM_HERE, video_renderer_.release());
+  }
 
   virtual void EncodeOnEncodingTaskRunner(
       const scoped_refptr<VideoFrame>& frame,
@@ -172,6 +184,11 @@ class VideoTrackRecorder::Encoder : public base::RefCountedThreadSafe<Encoder> {
   // Target bitrate for video encoding. If 0, a standard bitrate is used.
   const int32_t bits_per_second_;
 
+  // Used to retrieve incoming opaque VideoFrames (i.e. VideoFrames backed by
+  // textures). Created on-demand on |main_task_runner_|.
+  std::unique_ptr<media::SkCanvasVideoRenderer> video_renderer_;
+  sk_sp<SkSurface> surface_;
+
   DISALLOW_COPY_AND_ASSIGN(Encoder);
 };
 
@@ -187,14 +204,101 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
 
   if (!(video_frame->format() == media::PIXEL_FORMAT_I420 ||
         video_frame->format() == media::PIXEL_FORMAT_YV12 ||
+        video_frame->format() == media::PIXEL_FORMAT_ARGB ||
         video_frame->format() == media::PIXEL_FORMAT_YV12A)) {
-    NOTREACHED();
+    NOTREACHED() << media::VideoPixelFormatToString(video_frame->format());
     return;
   }
+
+  if (video_frame->HasTextures()) {
+    main_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&Encoder::RetrieveFrameOnMainThread, this,
+                              video_frame, capture_timestamp));
+    return;
+  }
+
   scoped_refptr<media::VideoFrame> frame = video_frame;
   // Drop alpha channel since we do not support it yet.
   if (frame->format() == media::PIXEL_FORMAT_YV12A)
     frame = media::WrapAsI420VideoFrame(video_frame);
+
+  encoding_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&Encoder::EncodeOnEncodingTaskRunner, this, frame,
+                            capture_timestamp));
+}
+
+void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
+    const scoped_refptr<VideoFrame>& video_frame,
+    base::TimeTicks capture_timestamp) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  scoped_refptr<media::VideoFrame> frame;
+
+  // |context_provider| is null if the GPU process has crashed or isn't there.
+  ContextProviderCommandBuffer* const context_provider =
+      RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
+  if (!context_provider) {
+    // Send black frames (yuv = {0, 127, 127}).
+    frame = media::VideoFrame::CreateColorFrame(
+        video_frame->visible_rect().size(), 0u, 0x80, 0x80,
+        video_frame->timestamp());
+  } else {
+    // Accelerated decoders produce ARGB/ABGR texture-backed frames (see
+    // https://crbug.com/585242), fetch them using a SkCanvasVideoRenderer.
+    DCHECK(video_frame->HasTextures());
+    DCHECK_EQ(media::PIXEL_FORMAT_ARGB, video_frame->format());
+
+    frame = media::VideoFrame::CreateFrame(
+        media::PIXEL_FORMAT_I420, video_frame->coded_size(),
+        video_frame->visible_rect(), video_frame->natural_size(),
+        video_frame->timestamp());
+
+    const SkImageInfo info = SkImageInfo::MakeN32(
+        frame->visible_rect().width(), frame->visible_rect().height(),
+        kOpaque_SkAlphaType);
+
+    // Create |surface_| if it doesn't exist or incoming resolution has changed.
+    if (!surface_ || surface_->width() != info.width() ||
+        surface_->height() != info.height()) {
+      surface_ = SkSurface::MakeRaster(info);
+    }
+    if (!video_renderer_)
+      video_renderer_.reset(new media::SkCanvasVideoRenderer);
+
+    DCHECK(context_provider->ContextGL());
+    video_renderer_->Copy(video_frame.get(), surface_->getCanvas(),
+                          media::Context3D(context_provider->ContextGL(),
+                                           context_provider->GrContext()));
+
+    SkPixmap pixmap;
+    if (!skia::GetWritablePixels(surface_->getCanvas(), &pixmap)) {
+      DLOG(ERROR) << "Error trying to map SkSurface's pixels";
+      return;
+    }
+    // TODO(mcasas): Use the incoming frame's rotation when
+    // https://bugs.chromium.org/p/webrtc/issues/detail?id=6069 is closed.
+    const libyuv::RotationMode source_rotation = libyuv::kRotate0;
+    const uint32 source_pixel_format =
+        (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR
+                                                     : libyuv::FOURCC_ARGB;
+    if (libyuv::ConvertToI420(static_cast<uint8*>(pixmap.writable_addr()),
+                              pixmap.getSafeSize(),
+                              frame->visible_data(media::VideoFrame::kYPlane),
+                              frame->stride(media::VideoFrame::kYPlane),
+                              frame->visible_data(media::VideoFrame::kUPlane),
+                              frame->stride(media::VideoFrame::kUPlane),
+                              frame->visible_data(media::VideoFrame::kVPlane),
+                              frame->stride(media::VideoFrame::kVPlane),
+                              0 /* crop_x */, 0 /* crop_y */,
+                              pixmap.width(), pixmap.height(),
+                              frame->visible_rect().width(),
+                              frame->visible_rect().height(),
+                              source_rotation,
+                              source_pixel_format) != 0) {
+      DLOG(ERROR) << "Error converting frame to I420";
+      return;
+    }
+  }
 
   encoding_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Encoder::EncodeOnEncodingTaskRunner, this, frame,

@@ -148,16 +148,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
-#if defined(OS_ANDROID)
-// TODO(cpaulin): when http://crbug.com/585242 is fixed, enable peer connection
-// recording test on android platform.
-#define MAYBE_MediaRecorderPeerConnection DISABLED_MediaRecorderPeerConnection
-#else
-#define MAYBE_MediaRecorderPeerConnection MediaRecorderPeerConnection
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
-                       MAYBE_MediaRecorderPeerConnection) {
+IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, MediaRecorderPeerConnection) {
   MakeTypicalCall("testRecordRemotePeerConnection();", kMediaRecorderHtmlFile);
 }
 
