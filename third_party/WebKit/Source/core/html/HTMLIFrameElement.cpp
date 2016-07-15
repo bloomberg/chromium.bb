@@ -96,7 +96,7 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(const QualifiedName
 void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == nameAttr) {
-        if (isConnected() && document().isHTMLDocument() && !isInShadowTree()) {
+        if (isInDocumentTree() && document().isHTMLDocument()) {
             HTMLDocument& document = toHTMLDocument(this->document());
             document.removeExtraNamedItem(m_name);
             document.addExtraNamedItem(value);
@@ -137,7 +137,7 @@ LayoutObject* HTMLIFrameElement::createLayoutObject(const ComputedStyle&)
 Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode* insertionPoint)
 {
     InsertionNotificationRequest result = HTMLFrameElementBase::insertedInto(insertionPoint);
-    if (insertionPoint->isConnected() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
+    if (insertionPoint->isInDocumentTree() && document().isHTMLDocument())
         toHTMLDocument(document()).addExtraNamedItem(m_name);
     logAddElementIfIsolatedWorldAndInDocument("iframe", srcAttr);
     return result;
@@ -146,7 +146,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::insertedInto(ContainerNode
 void HTMLIFrameElement::removedFrom(ContainerNode* insertionPoint)
 {
     HTMLFrameElementBase::removedFrom(insertionPoint);
-    if (insertionPoint->isConnected() && document().isHTMLDocument() && !insertionPoint->isInShadowTree())
+    if (insertionPoint->isInDocumentTree() && document().isHTMLDocument())
         toHTMLDocument(document()).removeExtraNamedItem(m_name);
 }
 

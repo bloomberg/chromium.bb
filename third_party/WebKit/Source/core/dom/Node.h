@@ -480,6 +480,7 @@ public:
     // See https://dom.spec.whatwg.org/#connected for the definition.
     bool isConnected() const { return getFlag(IsConnectedFlag); }
 
+    bool isInDocumentTree() const { return isConnected() && !isInShadowTree(); }
     bool isInShadowTree() const { return getFlag(IsInShadowTreeFlag); }
     bool isInTreeScope() const { return getFlag(static_cast<NodeFlags>(IsConnectedFlag | IsInShadowTreeFlag)); }
 

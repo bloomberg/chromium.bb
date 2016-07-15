@@ -3172,7 +3172,7 @@ bool Element::hasNamedNodeMap() const
 
 inline void Element::updateName(const AtomicString& oldName, const AtomicString& newName)
 {
-    if (!isConnected() || isInShadowTree())
+    if (!isInDocumentTree())
         return;
 
     if (oldName == newName)
