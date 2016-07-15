@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <utility>
 
 #include "base/bind_helpers.h"
@@ -108,6 +109,8 @@ static int* kAlsaDirDontCare = nullptr;
 // some devices do not support 32 bit samples.
 const snd_pcm_format_t kPreferredSampleFormats[] = {SND_PCM_FORMAT_S32,
                                                     SND_PCM_FORMAT_S16};
+
+const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
 int64_t TimespecToMicroseconds(struct timespec time) {
   return static_cast<int64_t>(time.tv_sec) *
@@ -534,9 +537,7 @@ void StreamMixerAlsa::Start() {
   RETURN_REPORT_ERROR(PcmPrepare, pcm_);
   RETURN_REPORT_ERROR(PcmStatusMalloc, &pcm_status_);
 
-  struct timespec now = {0, 0};
-  clock_gettime(CLOCK_MONOTONIC_RAW, &now);
-  rendering_delay_.timestamp_microseconds = TimespecToMicroseconds(now);
+  rendering_delay_.timestamp_microseconds = kNoTimestamp;
   rendering_delay_.delay_microseconds = 0;
 
   state_ = kStateNormalPlayback;
@@ -829,8 +830,14 @@ void StreamMixerAlsa::WriteMixedPcm(const ::media::AudioBus& mixed,
     interleaved_.resize(interleaved_size);
   }
 
-  int64_t expected_playback_time = rendering_delay_.timestamp_microseconds +
-                                   rendering_delay_.delay_microseconds;
+  int64_t expected_playback_time;
+  if (rendering_delay_.timestamp_microseconds == kNoTimestamp) {
+    expected_playback_time = kNoTimestamp;
+  } else {
+    expected_playback_time = rendering_delay_.timestamp_microseconds +
+                             rendering_delay_.delay_microseconds;
+  }
+
   mixed.ToInterleaved(frames, BytesPerOutputFormatSample(),
                       interleaved_.data());
   // Filter, send to observers, and post filter
@@ -878,11 +885,10 @@ void StreamMixerAlsa::UpdateRenderingDelay(int newly_pushed_frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   CHECK_PCM_INITIALIZED();
 
-  if (alsa_->PcmStatus(pcm_, pcm_status_) != 0) {
-    // Estimate updated delay based on the number of frames we just pushed.
-    rendering_delay_.delay_microseconds +=
-        static_cast<int64_t>(newly_pushed_frames) *
-        base::Time::kMicrosecondsPerSecond / output_samples_per_second_;
+  if (alsa_->PcmStatus(pcm_, pcm_status_) != 0 ||
+      alsa_->PcmStatusGetState(pcm_status_) != SND_PCM_STATE_RUNNING) {
+    rendering_delay_.timestamp_microseconds = kNoTimestamp;
+    rendering_delay_.delay_microseconds = 0;
     return;
   }
 

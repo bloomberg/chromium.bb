@@ -72,6 +72,7 @@ class MockAlsaWrapper : public AlsaWrapper {
                snd_pcm_sframes_t(const snd_pcm_status_t* obj));
   MOCK_METHOD2(PcmStatusGetHtstamp,
                void(const snd_pcm_status_t* obj, snd_htimestamp_t* ptr));
+  MOCK_METHOD1(PcmStatusGetState, snd_pcm_state_t(const snd_pcm_status_t* obj));
 
   MOCK_METHOD1(PcmHwParamsMalloc, int(snd_pcm_hw_params_t** ptr));
   MOCK_METHOD1(PcmHwParamsFree, void(snd_pcm_hw_params_t* obj));

@@ -51,6 +51,10 @@ void AlsaWrapper::PcmStatusGetHtstamp(const snd_pcm_status_t* obj,
   snd_pcm_status_get_htstamp(obj, ptr);
 }
 
+snd_pcm_state_t AlsaWrapper::PcmStatusGetState(const snd_pcm_status_t* obj) {
+  return snd_pcm_status_get_state(obj);
+}
+
 int AlsaWrapper::PcmHwParamsMalloc(snd_pcm_hw_params_t** ptr) {
   return snd_pcm_hw_params_malloc(ptr);
 }

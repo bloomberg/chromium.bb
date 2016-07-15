@@ -77,15 +77,7 @@ bool AudioDecoderAlsa::Initialize() {
   is_eos_ = false;
   last_buffer_pts_ = std::numeric_limits<int64_t>::min();
 
-  struct timespec now;
-  if (clock_gettime(CLOCK_MONOTONIC, &now) == 0) {
-    last_known_delay_.timestamp_microseconds =
-        static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
-  } else {
-    LOG(ERROR) << "Failed to get current timestamp";
-    last_known_delay_.timestamp_microseconds = kInvalidDelayTimestamp;
-    return false;
-  }
+  last_known_delay_.timestamp_microseconds = kInvalidDelayTimestamp;
   last_known_delay_.delay_microseconds = 0;
   return true;
 }

@@ -41,9 +41,9 @@ const int64_t kMicrosecondsPerSecond = 1000 * 1000;
 // Total length of test, in microseconds.
 const int64_t kPushTimeUs = 2 * kMicrosecondsPerSecond;
 const int64_t kStartPts = 0;
-const int64_t kRenderingDelayGracePeriodUs = 250 * 1000;
 const int64_t kMaxRenderingDelayErrorUs = 200;
 const int kNumEffectsStreams = 1;
+const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
 void IgnoreEos() {}
 
@@ -171,7 +171,7 @@ BufferFeeder::BufferFeeder(const AudioConfig& config,
       push_limit_us_(effects_only_ ? 0 : kPushTimeUs),
       last_push_length_us_(0),
       pushed_us_(0),
-      next_push_playback_timestamp_(0) {
+      next_push_playback_timestamp_(kNoTimestamp) {
   CHECK(!eos_cb_.is_null());
 }
 
@@ -246,26 +246,30 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
   if (!effects_only_) {
     MediaPipelineBackend::AudioDecoder::RenderingDelay delay =
         decoder_->GetRenderingDelay();
-    int64_t expected_next_push_playback_timestamp =
-        next_push_playback_timestamp_ + last_push_length_us_;
-    next_push_playback_timestamp_ =
-        delay.timestamp_microseconds + delay.delay_microseconds;
-    // Check rendering delay accuracy only if we have pushed more than
-    // kRenderingDelayGracePeriodUs of data.
-    if (pushed_us_ > kRenderingDelayGracePeriodUs) {
-      int64_t error =
-          next_push_playback_timestamp_ - expected_next_push_playback_timestamp;
-      max_rendering_delay_error_us_ =
-          std::max(max_rendering_delay_error_us_, std::abs(error));
-      total_rendering_delay_error_us_ += std::abs(error);
-      if (error >= 0) {
-        max_positive_rendering_delay_error_us_ =
-            std::max(max_positive_rendering_delay_error_us_, error);
+
+    if (delay.timestamp_microseconds != kNoTimestamp) {
+      if (next_push_playback_timestamp_ == kNoTimestamp) {
+        next_push_playback_timestamp_ =
+            delay.timestamp_microseconds + delay.delay_microseconds;
       } else {
-        max_negative_rendering_delay_error_us_ =
-            std::min(max_negative_rendering_delay_error_us_, error);
+        int64_t expected_next_push_playback_timestamp =
+            next_push_playback_timestamp_ + last_push_length_us_;
+        next_push_playback_timestamp_ =
+            delay.timestamp_microseconds + delay.delay_microseconds;
+        int64_t error = next_push_playback_timestamp_ -
+                        expected_next_push_playback_timestamp;
+        max_rendering_delay_error_us_ =
+            std::max(max_rendering_delay_error_us_, std::abs(error));
+        total_rendering_delay_error_us_ += std::abs(error);
+        if (error >= 0) {
+          max_positive_rendering_delay_error_us_ =
+              std::max(max_positive_rendering_delay_error_us_, error);
+        } else {
+          max_negative_rendering_delay_error_us_ =
+              std::min(max_negative_rendering_delay_error_us_, error);
+        }
+        sample_count_++;
       }
-      sample_count_++;
     }
   }
   pushed_us_ += last_push_length_us_;

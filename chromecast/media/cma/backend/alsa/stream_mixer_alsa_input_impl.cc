@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -53,6 +54,7 @@ const int64_t kFadeMs = 15;
 // fill the frames with silence.
 const int kPausedReadSamples = 512;
 const int kDefaultReadSize = ::media::SincResampler::kDefaultRequestSize;
+const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
 }  // namespace
 
@@ -200,9 +202,11 @@ MediaPipelineBackendAlsa::RenderingDelay StreamMixerAlsaInputImpl::QueueData(
   }
 
   MediaPipelineBackendAlsa::RenderingDelay delay = mixer_rendering_delay_;
-  delay.delay_microseconds += static_cast<int64_t>(
-      queued_frames_including_resampler_ * base::Time::kMicrosecondsPerSecond /
-      input_samples_per_second_);
+  if (delay.timestamp_microseconds != kNoTimestamp) {
+    delay.delay_microseconds += static_cast<int64_t>(
+        queued_frames_including_resampler_ *
+        base::Time::kMicrosecondsPerSecond / input_samples_per_second_);
+  }
   return delay;
 }
 

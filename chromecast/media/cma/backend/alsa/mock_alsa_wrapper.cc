@@ -8,6 +8,7 @@
 
 // Define dummy structs here to avoid linking in the ALSA lib.
 struct _snd_pcm_hw_params {};
+struct _snd_pcm_status {};
 struct _snd_pcm {};
 
 namespace chromecast {
@@ -25,11 +26,13 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
   FakeAlsaWrapper()
       : state_(SND_PCM_STATE_RUNNING),
         fake_handle_(nullptr),
-        fake_pcm_hw_params_(nullptr) {}
+        fake_pcm_hw_params_(nullptr),
+        fake_pcm_status_(nullptr) {}
 
   ~FakeAlsaWrapper() override {
     delete fake_handle_;
     delete fake_pcm_hw_params_;
+    delete fake_pcm_status_;
   }
 
   // AlsaWrapper implementation:
@@ -72,6 +75,17 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
     return 0;
   }
 
+  int PcmStatusMalloc(snd_pcm_status_t** ptr) override {
+    fake_pcm_status_ = new snd_pcm_status_t();
+    CHECK(fake_pcm_status_);
+    *ptr = fake_pcm_status_;
+    return 0;
+  }
+
+  snd_pcm_state_t PcmStatusGetState(const snd_pcm_status_t* obj) override {
+    return state_;
+  }
+
   ssize_t PcmFormatSize(snd_pcm_format_t format, size_t samples) override {
     return kBytesPerSample * samples;
   };
@@ -83,6 +97,7 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
   snd_pcm_state_t state_;
   snd_pcm_t* fake_handle_;
   snd_pcm_hw_params_t* fake_pcm_hw_params_;
+  snd_pcm_status_t* fake_pcm_status_;
   std::vector<uint8_t> data_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAlsaWrapper);
@@ -106,6 +121,12 @@ MockAlsaWrapper::MockAlsaWrapper() : fake_(new FakeAlsaWrapper()) {
   ON_CALL(*this, PcmHwParamsCanPause(_)).WillByDefault(testing::Return(true));
   ON_CALL(*this, PcmHwParamsMalloc(_)).WillByDefault(
       testing::Invoke(fake_.get(), &FakeAlsaWrapper::PcmHwParamsMalloc));
+  ON_CALL(*this, PcmStatusMalloc(_))
+      .WillByDefault(
+          testing::Invoke(fake_.get(), &FakeAlsaWrapper::PcmStatusMalloc));
+  ON_CALL(*this, PcmStatusGetState(_))
+      .WillByDefault(
+          testing::Invoke(fake_.get(), &FakeAlsaWrapper::PcmStatusGetState));
 }
 
 MockAlsaWrapper::~MockAlsaWrapper() {
