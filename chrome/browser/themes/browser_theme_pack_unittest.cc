@@ -248,8 +248,6 @@ class BrowserThemePackTest : public ::testing::Test {
 #endif
 
     // Make sure we don't have phantom data.
-    EXPECT_FALSE(pack->GetColor(ThemeProperties::COLOR_CONTROL_BACKGROUND,
-                                &color));
     EXPECT_FALSE(pack->GetTint(ThemeProperties::TINT_FRAME, &actual));
   }
 
@@ -435,23 +433,25 @@ TEST_F(BrowserThemePackTest, ProvideNtpHeaderColor) {
 
 TEST_F(BrowserThemePackTest, SupportsAlpha) {
   std::string color_json =
-      "{ \"toolbar\": [0, 20, 40, 1], "
+      "{ \"toolbar\": [0, 20, 40, 0.7], "
       "  \"tab_text\": [60, 80, 100, 1], "
       "  \"tab_background_text\": [120, 140, 160, 0.0], "
       "  \"bookmark_text\": [180, 200, 220, 1.0], "
+      "  \"ntp_background\": [20, 50, 140, 0.2], "
       "  \"ntp_text\": [240, 255, 0, 0.5] }";
   LoadColorJSON(color_json);
 
   std::map<int, SkColor> colors = GetDefaultColorMap();
   // Verify that valid alpha values are parsed correctly.
-  // The toolbar color's alpha value is intentionally ignored by theme provider.
-  colors[ThemeProperties::COLOR_TOOLBAR] = SkColorSetARGB(255, 0, 20, 40);
   colors[ThemeProperties::COLOR_TAB_TEXT] = SkColorSetARGB(255, 60, 80, 100);
   colors[ThemeProperties::COLOR_BACKGROUND_TAB_TEXT] =
       SkColorSetARGB(0, 120, 140, 160);
   colors[ThemeProperties::COLOR_BOOKMARK_TEXT] =
       SkColorSetARGB(255, 180, 200, 220);
   colors[ThemeProperties::COLOR_NTP_TEXT] = SkColorSetARGB(128, 240, 255, 0);
+  // The theme machinery forces these colors to be opaque.
+  colors[ThemeProperties::COLOR_NTP_BACKGROUND] = SkColorSetRGB(20, 50, 140);
+  colors[ThemeProperties::COLOR_TOOLBAR] = SkColorSetRGB(0, 20, 40);
   VerifyColorMap(colors);
 }
 

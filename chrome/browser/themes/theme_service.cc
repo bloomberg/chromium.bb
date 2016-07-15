@@ -468,10 +468,6 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       if (UsingDefaultTheme())
         break;
       return GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito);
-    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
-      if (UsingDefaultTheme())
-        break;
-      return GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       if (UsingDefaultTheme())
         break;

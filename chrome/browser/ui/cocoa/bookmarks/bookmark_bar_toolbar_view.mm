@@ -57,8 +57,7 @@
   // Overlay with a lighter background color.
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile);
-  NSColor* toolbarColor =
-      tp.GetNSColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND);
+  NSColor* toolbarColor = tp.GetNSColor(ThemeProperties::COLOR_NTP_BACKGROUND);
   CGFloat alpha = morph * [toolbarColor alphaComponent];
   [[toolbarColor colorWithAlphaComponent:alpha] set];
   NSRectFillUsingOperation(dirtyRect, NSCompositeSourceOver);

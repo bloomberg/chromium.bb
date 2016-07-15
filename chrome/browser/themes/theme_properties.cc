@@ -67,11 +67,6 @@ const SkColor kDefaultColorToolbar[] = {SkColorSetRGB(0xDF, 0xDF, 0xDF),
 const SkColor kDefaultColorToolbarIncognito[] = {
     SkColorSetRGB(0xDF, 0xDF, 0xDF), SkColorSetRGB(0x50, 0x50, 0x50)};
 #endif  // OS_MACOSX
-const SkColor kDefaultDetachedBookmarkBarBackground[] = {
-    SkColorSetRGB(0xF1, 0xF1, 0xF1), SK_ColorWHITE};
-const SkColor kDefaultDetachedBookmarkBarBackgroundIncognito[] = {
-    SkColorSetRGB(0xF1, 0xF1, 0xF1), SkColorSetRGB(0x32, 0x32, 0x32)};
-
 constexpr SkColor kDefaultColorTabText = SK_ColorBLACK;
 constexpr SkColor kDefaultColorTabTextIncognito[] = {kDefaultColorTabText,
                                                      SK_ColorWHITE};
@@ -129,7 +124,6 @@ constexpr color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
 
-constexpr SkColor kDefaultColorControlBackground = SK_ColorWHITE;
 const SkColor kDefaultDetachedBookmarkBarSeparator[] = {
     SkColorSetRGB(0xAA, 0xAA, 0xAB), SkColorSetRGB(0xB6, 0xB4, 0xB6)};
 const SkColor kDefaultDetachedBookmarkBarSeparatorIncognito[] = {
@@ -361,8 +355,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
       return kDefaultColorButtonBackground;
 
     // Properties not stored in theme pack.
-    case COLOR_CONTROL_BACKGROUND:
-      return kDefaultColorControlBackground;
     case COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
       return otr ? kDefaultColorBookmarkInstructionsTextIncognito[mode]
                  : kDefaultColorBookmarkInstructionsText[mode];
@@ -370,9 +362,6 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
     case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       return otr ? kDefaultDetachedBookmarkBarSeparatorIncognito[mode]
                  : kDefaultDetachedBookmarkBarSeparator[mode];
-    case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
-      return otr ? kDefaultDetachedBookmarkBarBackgroundIncognito[mode]
-                 : kDefaultDetachedBookmarkBarBackground[mode];
     case COLOR_TOOLBAR_TOP_SEPARATOR:
     case COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return kDefaultToolbarTopSeparator;
