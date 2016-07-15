@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
@@ -323,17 +324,7 @@ void NavigationHandleImpl::WillStartRequest(
   state_ = WILL_SEND_REQUEST;
   complete_callback_ = callback;
 
-  // Register the navigation throttles. The ScopedVector returned by
-  // GetNavigationThrottles is not assigned to throttles_ directly because it
-  // would overwrite any throttle previously added with
-  // RegisterThrottleForTesting.
-  ScopedVector<NavigationThrottle> throttles_to_register =
-      GetContentClient()->browser()->CreateThrottlesForNavigation(this);
-  if (throttles_to_register.size() > 0) {
-    throttles_.insert(throttles_.end(), throttles_to_register.begin(),
-                      throttles_to_register.end());
-    throttles_to_register.weak_clear();
-  }
+  RegisterNavigationThrottles();
 
   // Notify each throttle of the request.
   NavigationThrottle::ThrottleCheckResult result = CheckWillStartRequest();
@@ -531,6 +522,24 @@ void NavigationHandleImpl::RunCompleteCallback(
 
   // No code after running the callback, as it might have resulted in our
   // destruction.
+}
+
+void NavigationHandleImpl::RegisterNavigationThrottles() {
+  // Register the navigation throttles. The ScopedVector returned by
+  // GetNavigationThrottles is not assigned to throttles_ directly because it
+  // would overwrite any throttle previously added with
+  // RegisterThrottleForTesting.
+  ScopedVector<NavigationThrottle> throttles_to_register =
+      GetContentClient()->browser()->CreateThrottlesForNavigation(this);
+  if (throttles_to_register.size() > 0) {
+    throttles_.insert(throttles_.end(), throttles_to_register.begin(),
+                      throttles_to_register.end());
+    throttles_to_register.weak_clear();
+  }
+  std::unique_ptr<NavigationThrottle> devtools_throttle =
+      RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(this);
+  if (devtools_throttle)
+    throttles_.push_back(devtools_throttle.release());
 }
 
 }  // namespace content

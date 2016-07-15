@@ -36,6 +36,7 @@ class DevToolsFrameTraceRecorder;
 class DevToolsProtocolHandler;
 class FrameTreeNode;
 class NavigationHandle;
+class NavigationThrottle;
 class RenderFrameHostImpl;
 
 namespace devtools {
@@ -64,6 +65,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void OnBeforeNavigation(RenderFrameHost* current,
                                  RenderFrameHost* pending);
   static void OnBeforeNavigation(NavigationHandle* navigation_handle);
+  static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
+      NavigationHandle* navigation_handle);
 
   void SynchronousSwapCompositorFrame(
       cc::CompositorFrameMetadata frame_metadata);

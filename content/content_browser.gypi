@@ -600,6 +600,8 @@
       'browser/devtools/devtools_protocol_handler.h',
       'browser/devtools/forwarding_agent_host.cc',
       'browser/devtools/forwarding_agent_host.h',
+      'browser/devtools/page_navigation_throttle.cc',
+      'browser/devtools/page_navigation_throttle.h',
       'browser/devtools/protocol/browser_handler.cc',
       'browser/devtools/protocol/browser_handler.h',
       'browser/devtools/protocol/color_picker.cc',

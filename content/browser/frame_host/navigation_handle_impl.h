@@ -261,6 +261,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Used in tests.
   State state() const { return state_; }
 
+  // Populates |throttles_| with the throttles for this navigation.
+  void RegisterNavigationThrottles();
+
   // See NavigationHandle for a description of those member variables.
   GURL url_;
   Referrer sanitized_referrer_;

@@ -21,10 +21,13 @@ class SkBitmap;
 
 namespace content {
 
+class NavigationHandle;
 class RenderFrameHostImpl;
 class WebContentsImpl;
 
 namespace devtools {
+class PageNavigationThrottle;
+
 namespace page {
 
 class ColorPicker;
@@ -79,6 +82,15 @@ class PageHandler : public NotificationObserver {
   Response SetColorPickerEnabled(bool enabled);
   Response RequestAppBanner();
 
+  Response SetControlNavigations(bool enabled);
+  Response ProcessNavigation(const std::string& response, int navigation_id);
+
+  std::unique_ptr<PageNavigationThrottle> CreateThrottleForNavigation(
+      NavigationHandle* navigation_handle);
+
+  void OnPageNavigationThrottleDisposed(int navigation_id);
+  void NavigationRequested(const PageNavigationThrottle* throttle);
+
  private:
   WebContentsImpl* GetWebContents();
   void NotifyScreencastVisibility(bool visible);
@@ -119,6 +131,10 @@ class PageHandler : public NotificationObserver {
   int frames_in_flight_;
 
   std::unique_ptr<ColorPicker> color_picker_;
+
+  bool navigation_throttle_enabled_;
+  int next_navigation_id_;
+  std::map<int, PageNavigationThrottle*> navigation_throttles_;
 
   RenderFrameHostImpl* host_;
   std::unique_ptr<Client> client_;

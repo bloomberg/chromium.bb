@@ -9,11 +9,14 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
@@ -24,9 +27,12 @@
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/gfx/codec/png_codec.h"
+
+using testing::ElementsAre;
 
 namespace content {
 
@@ -175,11 +181,83 @@ class DevToolsProtocolTest : public ContentBrowserTest,
     RunMessageLoop();
   }
 
+  struct ExpectedNavigation {
+    std::string url;
+    bool is_in_main_frame;
+    bool is_redirect;
+    std::string navigation_response;
+  };
+
+  std::string RemovePort(const GURL& url) {
+    GURL::Replacements remove_port;
+    remove_port.ClearPort();
+    return url.ReplaceComponents(remove_port).spec();
+  }
+
+  // Waits for the expected navigations to occur in any order. If an expected
+  // navigation occurs, Page.processNavigation is called with the specified
+  // navigation_response to either allow it to proceed or to cancel it.
+  void ProcessNavigationsAnyOrder(
+      std::vector<ExpectedNavigation> expected_navigations) {
+    while (!expected_navigations.empty()) {
+      WaitForNotification("Page.navigationRequested");
+      ASSERT_TRUE(requested_notification_params_.get());
+
+      std::string url;
+      ASSERT_TRUE(requested_notification_params_->GetString("url", &url));
+
+      // The url will typically have a random port which we want to remove.
+      url = RemovePort(GURL(url));
+
+      int navigation_id;
+      ASSERT_TRUE(requested_notification_params_->GetInteger("navigationId",
+                                                             &navigation_id));
+      bool is_in_main_frame;
+      ASSERT_TRUE(requested_notification_params_->GetBoolean(
+          "isInMainFrame", &is_in_main_frame));
+      bool is_redirect;
+      ASSERT_TRUE(requested_notification_params_->GetBoolean("isRedirect",
+                                                             &is_redirect));
+
+      bool navigation_was_expected;
+      for (auto it = expected_navigations.begin();
+           it != expected_navigations.end(); it++) {
+        if (url != it->url || is_in_main_frame != it->is_in_main_frame ||
+            is_redirect != it->is_redirect) {
+          continue;
+        }
+
+        std::unique_ptr<base::DictionaryValue> params(
+            new base::DictionaryValue());
+        params->SetString("response", it->navigation_response);
+        params->SetInteger("navigationId", navigation_id);
+        SendCommand("Page.processNavigation", std::move(params), false);
+
+        navigation_was_expected = true;
+        expected_navigations.erase(it);
+        break;
+      }
+      EXPECT_TRUE(navigation_was_expected)
+          << "url = " << url << "is_in_main_frame = " << is_in_main_frame
+          << "is_redirect = " << is_redirect;
+    }
+  }
+
+  std::vector<std::string> GetAllFrameUrls() {
+    std::vector<std::string> urls;
+    for (RenderFrameHost* render_frame_host :
+         shell()->web_contents()->GetAllFrames()) {
+      urls.push_back(RemovePort(render_frame_host->GetLastCommittedURL()));
+    }
+    return urls;
+  }
+
   std::unique_ptr<base::DictionaryValue> result_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
   int last_sent_id_;
   std::vector<int> result_ids_;
   std::vector<std::string> notifications_;
+  std::unique_ptr<base::DictionaryValue> requested_notification_params_;
 
  private:
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
@@ -203,6 +281,12 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       EXPECT_TRUE(root->GetString("method", &notification));
       notifications_.push_back(notification);
       if (waiting_for_notification_ == notification) {
+        base::DictionaryValue* params;
+        if (root->GetDictionary("params", &params)) {
+          requested_notification_params_ = params->CreateDeepCopy();
+        } else {
+          requested_notification_params_.reset();
+        }
         waiting_for_notification_ = std::string();
         base::MessageLoop::current()->QuitNow();
       }
@@ -595,6 +679,157 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, BrowserCreateTarget) {
   params->SetString("url", "about:blank");
   SendCommand("Browser.createTarget", std::move(params), true);
   EXPECT_EQ(2u, shell()->windows().size());
+}
+
+namespace {
+class NavigationFinishedObserver : public content::WebContentsObserver {
+ public:
+  explicit NavigationFinishedObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        num_finished_(0),
+        num_to_wait_for_(0) {}
+
+  ~NavigationFinishedObserver() override {}
+
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->WasServerRedirect())
+      return;
+
+    num_finished_++;
+    if (num_finished_ >= num_to_wait_for_ && num_to_wait_for_ != 0) {
+      base::MessageLoop::current()->QuitNow();
+    }
+  }
+
+  void WaitForNavigationsToFinish(int num_to_wait_for) {
+    if (num_finished_ < num_to_wait_for) {
+      num_to_wait_for_ = num_to_wait_for;
+      RunMessageLoop();
+    }
+    num_to_wait_for_ = 0;
+  }
+
+ private:
+  int num_finished_;
+  int num_to_wait_for_;
+};
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ControlNavigationsMainFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate to about:blank first so we can make sure there is a target page we
+  // can attach to, and have Page.setControlNavigations complete before we start
+  // the navigations we're interested in.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetBoolean("enabled", true);
+  SendCommand("Page.setControlNavigations", std::move(params), true);
+
+  NavigationFinishedObserver navigation_finished_observer(
+      shell()->web_contents());
+
+  GURL test_url = embedded_test_server()->GetURL(
+      "/devtools/control_navigations/meta_tag.html");
+  shell()->LoadURL(test_url);
+
+  std::vector<ExpectedNavigation> expected_navigations = {
+      {"http://127.0.0.1/devtools/control_navigations/meta_tag.html",
+       true /* expected_is_in_main_frame */, false /* expected_is_redirect */,
+       "Proceed"},
+      {"http://127.0.0.1/devtools/navigation.html",
+       true /* expected_is_in_main_frame */, false /* expected_is_redirect */,
+       "Cancel"}};
+
+  ProcessNavigationsAnyOrder(std::move(expected_navigations));
+
+  // Wait for the initial navigation and the cancelled meta refresh navigation
+  // to finish.
+  navigation_finished_observer.WaitForNavigationsToFinish(2);
+
+  // Check main frame has the expected url.
+  EXPECT_EQ(
+      "http://127.0.0.1/devtools/control_navigations/meta_tag.html",
+      RemovePort(
+          shell()->web_contents()->GetMainFrame()->GetLastCommittedURL()));
+}
+
+class IsolatedDevToolsProtocolTest : public DevToolsProtocolTest {
+ public:
+  ~IsolatedDevToolsProtocolTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    IsolateAllSitesForTesting(command_line);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(IsolatedDevToolsProtocolTest,
+                       ControlNavigationsChildFrames) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  content::SetupCrossSiteRedirector(embedded_test_server());
+
+  // Navigate to about:blank first so we can make sure there is a target page we
+  // can attach to, and have Page.setControlNavigations complete before we start
+  // the navigations we're interested in.
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+
+  std::unique_ptr<base::DictionaryValue> params(new base::DictionaryValue());
+  params->SetBoolean("enabled", true);
+  SendCommand("Page.setControlNavigations", std::move(params), true);
+
+  NavigationFinishedObserver navigation_finished_observer(
+      shell()->web_contents());
+
+  GURL test_url = embedded_test_server()->GetURL(
+      "/devtools/control_navigations/iframe_navigation.html");
+  shell()->LoadURL(test_url);
+
+  // Allow main frame navigation, and all iframe navigations to http://a.com
+  // Allow initial iframe navigation to http://b.com but dissallow it to
+  // navigate to /devtools/navigation.html.
+  std::vector<ExpectedNavigation> expected_navigations = {
+      {"http://127.0.0.1/devtools/control_navigations/"
+       "iframe_navigation.html",
+       /* expected_is_in_main_frame */ true,
+       /* expected_is_redirect */ false, "Proceed"},
+      {"http://127.0.0.1/cross-site/a.com/devtools/control_navigations/"
+       "meta_tag.html",
+       /* expected_is_in_main_frame */ false,
+       /* expected_is_redirect */ false, "Proceed"},
+      {"http://127.0.0.1/cross-site/b.com/devtools/control_navigations/"
+       "meta_tag.html",
+       /* expected_is_in_main_frame */ false,
+       /* expected_is_redirect */ false, "Proceed"},
+      {"http://a.com/devtools/control_navigations/meta_tag.html",
+       /* expected_is_in_main_frame */ false,
+       /* expected_is_redirect */ true, "Proceed"},
+      {"http://b.com/devtools/control_navigations/meta_tag.html",
+       /* expected_is_in_main_frame */ false,
+       /* expected_is_redirect */ true, "Proceed"},
+      {"http://a.com/devtools/navigation.html",
+       /* expected_is_in_main_frame */ false,
+       /* expected_is_redirect */ false, "Proceed"},
+      {"http://b.com/devtools/navigation.html",
+       /* expected_is_in_main_frame */ false,
+       /* expected_is_redirect */ false, "Cancel"}};
+
+  ProcessNavigationsAnyOrder(std::move(expected_navigations));
+
+  // Wait for each frame's navigation to finish, ignoring redirects.
+  navigation_finished_observer.WaitForNavigationsToFinish(3);
+
+  // Make sure each frame has the expected url.
+  EXPECT_THAT(
+      GetAllFrameUrls(),
+      ElementsAre("http://127.0.0.1/devtools/control_navigations/"
+                  "iframe_navigation.html",
+                  "http://a.com/devtools/navigation.html",
+                  "http://b.com/devtools/control_navigations/meta_tag.html"));
 }
 
 }  // namespace content
