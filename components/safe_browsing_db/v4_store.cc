@@ -40,6 +40,12 @@ void RecordApplyUpdateResult(ApplyUpdateResult result) {
                             APPLY_UPDATE_RESULT_MAX);
 }
 
+void RecordApplyUpdateResultWhenReadingFromDisk(ApplyUpdateResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.V4ApplyUpdateResultWhenReadingFromDisk", result,
+      APPLY_UPDATE_RESULT_MAX);
+}
+
 // Returns the name of the temporary file used to buffer data for
 // |filename|.  Exported for unit tests.
 const base::FilePath TemporaryFileForFilename(const base::FilePath& filename) {
@@ -359,10 +365,16 @@ StoreReadResult V4Store::ReadFromDisk() {
     return HASH_PREFIX_INFO_MISSING_FAILURE;
   }
 
-  ListUpdateResponse list_update_response = file_format.list_update_response();
-  state_ = list_update_response.new_client_state();
-  // TODO(vakh): Do more with what's read from the disk.
+  const ListUpdateResponse& response = file_format.list_update_response();
+  ApplyUpdateResult apply_update_result = UpdateHashPrefixMapFromAdditions(
+      response.additions(), &hash_prefix_map_);
+  RecordApplyUpdateResultWhenReadingFromDisk(apply_update_result);
+  if (apply_update_result != APPLY_UPDATE_SUCCESS) {
+    hash_prefix_map_.clear();
+    return HASH_PREFIX_MAP_GENERATION_FAILURE;
+  }
 
+  state_ = response.new_client_state();
   return READ_SUCCESS;
 }
 

@@ -139,6 +139,7 @@ TEST_F(V4StoreTest, TestWriteFullResponseType) {
   std::unique_ptr<V4Store> read_store(new V4Store(task_runner_, store_path_));
   EXPECT_EQ(READ_SUCCESS, read_store->ReadFromDisk());
   EXPECT_EQ("test_client_state", read_store->state_);
+  EXPECT_TRUE(read_store->hash_prefix_map_.empty());
 }
 
 TEST_F(V4StoreTest, TestAddUnlumpedHashesWithInvalidAddition) {
@@ -324,7 +325,7 @@ TEST_F(V4StoreTest, TestMergeUpdatesAdditionsMapRunsOutFirst) {
   EXPECT_EQ("2222", hash_prefixes.substr(2 * prefix_size, prefix_size));
 }
 
-TEST_F(V4StoreTest, TestMergeUpdatesFailsForRepeatedhashPrefix) {
+TEST_F(V4StoreTest, TestMergeUpdatesFailsForRepeatedHashPrefix) {
   HashPrefixMap prefix_map_old;
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
             V4Store::AddUnlumpedHashes(4, "2222", &prefix_map_old));
@@ -335,6 +336,56 @@ TEST_F(V4StoreTest, TestMergeUpdatesFailsForRepeatedhashPrefix) {
   std::unique_ptr<V4Store> store(new V4Store(task_runner_, store_path_));
   EXPECT_EQ(ADDITIONS_HAS_EXISTING_PREFIX_FAILURE,
             store->MergeUpdate(prefix_map_old, prefix_map_additions));
+}
+
+TEST_F(V4StoreTest, TestReadFullResponseWithValidHashPrefixMap) {
+  std::unique_ptr<ListUpdateResponse> lur(new ListUpdateResponse);
+  lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
+  lur->set_new_client_state("test_client_state");
+  lur->set_platform_type(WINDOWS_PLATFORM);
+  lur->set_threat_entry_type(URL);
+  lur->set_threat_type(MALWARE_THREAT);
+  ThreatEntrySet* additions = lur->add_additions();
+  additions->set_compression_type(RAW);
+  additions->mutable_raw_hashes()->set_prefix_size(5);
+  additions->mutable_raw_hashes()->set_raw_hashes("00000abcde");
+  additions = lur->add_additions();
+  additions->set_compression_type(RAW);
+  additions->mutable_raw_hashes()->set_prefix_size(4);
+  additions->mutable_raw_hashes()->set_raw_hashes("00000abc");
+  EXPECT_EQ(WRITE_SUCCESS,
+            V4Store(task_runner_, store_path_).WriteToDisk(std::move(lur)));
+
+  V4Store read_store (task_runner_, store_path_);
+  EXPECT_EQ(READ_SUCCESS, read_store.ReadFromDisk());
+  EXPECT_EQ("test_client_state", read_store.state_);
+  ASSERT_EQ(2u, read_store.hash_prefix_map_.size());
+  EXPECT_EQ("00000abc", read_store.hash_prefix_map_[4]);
+  EXPECT_EQ("00000abcde", read_store.hash_prefix_map_[5]);
+}
+
+// This tests fails to read the prefix map from the disk because the file on
+// disk is invalid. The hash prefixes string is 6 bytes long, but the prefix
+// size is 5 so the parser isn't able to split the hash prefixes list
+// completely.
+TEST_F(V4StoreTest, TestReadFullResponseWithInvalidHashPrefixMap) {
+  std::unique_ptr<ListUpdateResponse> lur(new ListUpdateResponse);
+  lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
+  lur->set_new_client_state("test_client_state");
+  lur->set_platform_type(WINDOWS_PLATFORM);
+  lur->set_threat_entry_type(URL);
+  lur->set_threat_type(MALWARE_THREAT);
+  ThreatEntrySet* additions = lur->add_additions();
+  additions->set_compression_type(RAW);
+  additions->mutable_raw_hashes()->set_prefix_size(5);
+  additions->mutable_raw_hashes()->set_raw_hashes("abcdef");
+  EXPECT_EQ(WRITE_SUCCESS,
+            V4Store(task_runner_, store_path_).WriteToDisk(std::move(lur)));
+
+  V4Store read_store(task_runner_, store_path_);
+  EXPECT_EQ(HASH_PREFIX_MAP_GENERATION_FAILURE, read_store.ReadFromDisk());
+  EXPECT_TRUE(read_store.state_.empty());
+  EXPECT_TRUE(read_store.hash_prefix_map_.empty());
 }
 
 }  // namespace safe_browsing

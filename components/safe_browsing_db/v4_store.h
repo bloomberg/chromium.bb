@@ -69,6 +69,9 @@ enum StoreReadResult {
   // disk or if there was disk corruption.
   HASH_PREFIX_INFO_MISSING_FAILURE = 7,
 
+  // Unable to generate the hash prefix map from the updates on disk.
+  HASH_PREFIX_MAP_GENERATION_FAILURE = 8,
+
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
   STORE_READ_RESULT_MAX
@@ -192,7 +195,11 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestMergeUpdatesAdditionsMapRunsOutFirst);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
-                           TestMergeUpdatesFailsForRepeatedhashPrefix);
+                           TestMergeUpdatesFailsForRepeatedHashPrefix);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestReadFullResponseWithValidHashPrefixMap);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestReadFullResponseWithInvalidHashPrefixMap);
 
   // If |prefix_size| is within expected range, and |raw_hashes| is not invalid,
   // then it sets |raw_hashes| as the value at key |prefix_size| in
