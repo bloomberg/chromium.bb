@@ -4,18 +4,19 @@
 
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 
-#include "base/command_line.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "printing/page_size_margins.h"
 
 namespace printing {
 
+namespace {
+
 const char kSettingAppState[] = "appState";
+
+}  // namespace
 
 StickySettings::StickySettings() {}
 
@@ -26,26 +27,18 @@ void StickySettings::StoreAppState(const std::string& data) {
 }
 
 void StickySettings::SaveInPrefs(PrefService* prefs) {
-  DCHECK(prefs);
-  if (prefs) {
-    std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
-    if (printer_app_state_.get())
-      value->SetString(printing::kSettingAppState,
-          *printer_app_state_);
-    prefs->Set(prefs::kPrintPreviewStickySettings, *value);
-  }
+  std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+  if (printer_app_state_)
+    value->SetString(kSettingAppState, *printer_app_state_);
+  prefs->Set(prefs::kPrintPreviewStickySettings, *value);
 }
 
 void StickySettings::RestoreFromPrefs(PrefService* prefs) {
-  DCHECK(prefs);
-  if (prefs) {
-    const base::DictionaryValue* value =
-        prefs->GetDictionary(prefs::kPrintPreviewStickySettings);
-
-    std::string buffer;
-    if (value->GetString(printing::kSettingAppState, &buffer))
-      printer_app_state_.reset(new std::string(buffer));
-  }
+  const base::DictionaryValue* value =
+      prefs->GetDictionary(prefs::kPrintPreviewStickySettings);
+  std::string buffer;
+  if (value->GetString(kSettingAppState, &buffer))
+    StoreAppState(buffer);
 }
 
 void StickySettings::RegisterProfilePrefs(
@@ -57,4 +50,4 @@ std::string* StickySettings::printer_app_state() {
   return printer_app_state_.get();
 }
 
-} // namespace printing
+}  // namespace printing
