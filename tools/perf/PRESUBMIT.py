@@ -103,6 +103,9 @@ def _AreBenchmarksModified(change):
   for affected_file in change.AffectedFiles():
     affected_file_path = affected_file.LocalPath()
     file_path, _ = os.path.splitext(affected_file_path)
+    # Changes to unittest files should not count.
+    if file_path.endswith('test.py'):
+        continue
     if (os.path.join('tools', 'perf', 'benchmarks') in file_path or
         os.path.join('tools', 'perf', 'measurements') in file_path):
       return True
