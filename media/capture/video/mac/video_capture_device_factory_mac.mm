@@ -24,20 +24,15 @@ namespace media {
 
 // Blacklisted devices are identified by a characteristic trailing substring of
 // uniqueId. At the moment these are just Blackmagic devices.
-const struct NameAndVid {
-  const char* unique_id_signature;
-  const int capture_width;
-  const int capture_height;
-  const float capture_frame_rate;
-} kBlacklistedCameras[] = {{"-01FDA82C8A9C", 1280, 720, 60.0f}};
+const char* kBlacklistedCamerasIdSignature[] = {"-01FDA82C8A9C"};
 
 static bool IsDeviceBlacklisted(const VideoCaptureDevice::Name& name) {
   bool is_device_blacklisted = false;
-  for(size_t i = 0;
-    !is_device_blacklisted && i < arraysize(kBlacklistedCameras); ++i) {
+  for (size_t i = 0;
+       !is_device_blacklisted && i < arraysize(kBlacklistedCamerasIdSignature);
+       ++i) {
     is_device_blacklisted =
-        base::EndsWith(name.id(),
-                       kBlacklistedCameras[i].unique_id_signature,
+        base::EndsWith(name.id(), kBlacklistedCamerasIdSignature[i],
                        base::CompareCase::INSENSITIVE_ASCII);
   }
   DVLOG_IF(2, is_device_blacklisted) << "Blacklisted camera: " << name.name()

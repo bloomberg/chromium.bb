@@ -62,16 +62,25 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
       const VideoCaptureParams& params,
       std::unique_ptr<VideoCaptureDevice::Client> client) override;
   void StopAndDeAllocate() override;
+  void TakePhoto(TakePhotoCallback callback) override;
 
   bool Init(VideoCaptureDevice::Name::CaptureApiType capture_api_type);
 
-  // Called to deliver captured video frames.
+  // Called to deliver captured video frames.  It's safe to call this method
+  // from any thread, including those controlled by AVFoundation.
   void ReceiveFrame(const uint8_t* video_frame,
                     int video_frame_length,
                     const VideoCaptureFormat& frame_format,
                     int aspect_numerator,
                     int aspect_denominator,
                     base::TimeDelta timestamp);
+
+  // Callbacks with the result of a still image capture, or in case of error,
+  // respectively. It's safe to call these methods from any thread.
+  void OnPhotoTaken(const uint8_t* image_data,
+                    size_t image_length,
+                    const std::string& mime_type);
+  void OnPhotoError();
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
   void ReceiveError(const tracked_objects::Location& from_here,
@@ -98,6 +107,9 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   InternalState state_;
 
   base::scoped_nsobject<VideoCaptureDeviceAVFoundation> capture_device_;
+
+  // To hold on to the TakePhotoCallback while the picture is being taken.
+  std::unique_ptr<TakePhotoCallback> photo_callback_;
 
   // Used with Bind and PostTask to ensure that methods aren't called after the
   // VideoCaptureDeviceMac is destroyed.
