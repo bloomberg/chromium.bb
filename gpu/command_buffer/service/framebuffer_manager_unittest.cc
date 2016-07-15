@@ -1004,7 +1004,6 @@ TEST_F(FramebufferInfoTest, ClearIntegerOutsideRenderableRange) {
 TEST_F(FramebufferInfoTest, DrawBuffers) {
   const GLuint kTextureClientId[] = { 33, 34 };
   const GLuint kTextureServiceId[] = { 333, 334 };
-
   for (GLenum i = GL_COLOR_ATTACHMENT0;
        i < GL_COLOR_ATTACHMENT0 + kMaxColorAttachments; ++i) {
     EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(i));
@@ -1024,7 +1023,7 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
         kTextureClientId[ii], kTextureServiceId[ii]);
     scoped_refptr<TextureRef> texture(
         texture_manager_->GetTexture(kTextureClientId[ii]));
-    ASSERT_TRUE(texture.get() != NULL);
+    ASSERT_TRUE(texture.get());
 
     framebuffer_->AttachTexture(
         GL_COLOR_ATTACHMENT0 + ii, texture.get(), GL_TEXTURE_2D, 0, 0);
@@ -1033,7 +1032,7 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
 
     const Framebuffer::Attachment* attachment =
         framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0 + ii);
-    ASSERT_TRUE(attachment != NULL);
+    ASSERT_TRUE(attachment);
     EXPECT_TRUE(attachment->cleared());
   }
   EXPECT_TRUE(framebuffer_->IsCleared());
@@ -1049,7 +1048,7 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
 
   const Framebuffer::Attachment* attachment1 =
       framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT1);
-  ASSERT_TRUE(attachment1 != NULL);
+  ASSERT_TRUE(attachment1);
   EXPECT_FALSE(attachment1->cleared());
   EXPECT_FALSE(framebuffer_->IsCleared());
   EXPECT_TRUE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT1));
@@ -1071,7 +1070,8 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
   EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_TRUE(framebuffer_->PrepareDrawBuffersForClear());
+  EXPECT_TRUE(
+      framebuffer_->PrepareDrawBuffersForClearingUninitializedAttachments());
 
   // Now we disable draw buffer 1.
   buffers[1] = GL_NONE;
@@ -1081,14 +1081,153 @@ TEST_F(FramebufferInfoTest, DrawBuffers) {
   EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_TRUE(framebuffer_->PrepareDrawBuffersForClear());
+  EXPECT_TRUE(
+      framebuffer_->PrepareDrawBuffersForClearingUninitializedAttachments());
 
   // Now we disable draw buffer 0, enable draw buffer 1.
   buffers[0] = GL_NONE;
   buffers[1] = GL_COLOR_ATTACHMENT1;
   framebuffer_->SetDrawBuffers(2, buffers);
   // This is the perfect setting for clear. No need to call DrawBuffers().
-  EXPECT_FALSE(framebuffer_->PrepareDrawBuffersForClear());
+  EXPECT_FALSE(
+      framebuffer_->PrepareDrawBuffersForClearingUninitializedAttachments());
+}
+
+TEST_F(FramebufferInfoTest, DrawBufferMasks) {
+  const GLuint kTextureClientId[] = { 33, 34, 35, 36, 37 };
+  const GLuint kTextureServiceId[] = { 333, 334, 335, 336, 337 };
+  const GLenum kAttachment[] = {
+      GL_COLOR_ATTACHMENT0,
+      GL_COLOR_ATTACHMENT1,
+      GL_COLOR_ATTACHMENT2,
+      GL_COLOR_ATTACHMENT4,
+      GL_DEPTH_ATTACHMENT};
+  const GLenum kInternalFormat[] = {
+      GL_RGBA8,
+      GL_RG32UI,
+      GL_R16I,
+      GL_R16F,
+      GL_DEPTH_COMPONENT24};
+  const GLenum kFormat[] = {
+      GL_RGBA,
+      GL_RG_INTEGER,
+      GL_RED_INTEGER,
+      GL_RED,
+      GL_DEPTH_COMPONENT};
+  const GLenum kType[] = {
+      GL_UNSIGNED_BYTE,
+      GL_UNSIGNED_INT,
+      GL_SHORT,
+      GL_FLOAT,
+      GL_UNSIGNED_INT};
+
+  for (size_t ii = 0; ii < arraysize(kTextureClientId); ++ii) {
+    texture_manager_->CreateTexture(
+        kTextureClientId[ii], kTextureServiceId[ii]);
+    scoped_refptr<TextureRef> texture(
+        texture_manager_->GetTexture(kTextureClientId[ii]));
+    ASSERT_TRUE(texture.get());
+    texture_manager_->SetTarget(texture.get(), GL_TEXTURE_2D);
+    texture_manager_->SetLevelInfo(texture.get(), GL_TEXTURE_2D, 0,
+                                   kInternalFormat[ii], 4, 4, 1, 0,
+                                   kFormat[ii], kType[ii], gfx::Rect());
+    framebuffer_->AttachTexture(
+        kAttachment[ii], texture.get(), GL_TEXTURE_2D, 0, 0);
+    ASSERT_TRUE(framebuffer_->GetAttachment(kAttachment[ii]));
+  }
+
+  manager_.MarkAsComplete(framebuffer_);
+
+  {  // Default draw buffer settings
+    EXPECT_EQ(0x3u, framebuffer_->draw_buffer_type_mask());
+    EXPECT_EQ(0x3u, framebuffer_->draw_buffer_bound_mask());
+    EXPECT_FALSE(framebuffer_->ContainsActiveIntegerAttachments());
+  }
+
+  {  // Exact draw buffer settings.
+    GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                        GL_COLOR_ATTACHMENT2, GL_NONE, GL_COLOR_ATTACHMENT4};
+    framebuffer_->SetDrawBuffers(5, buffers);
+    EXPECT_EQ(0x31Bu, framebuffer_->draw_buffer_type_mask());
+    EXPECT_EQ(0x33Fu, framebuffer_->draw_buffer_bound_mask());
+    EXPECT_TRUE(framebuffer_->ContainsActiveIntegerAttachments());
+  }
+
+  {  // All disabled draw buffer settings.
+    GLenum buffers[] = {GL_NONE};
+    framebuffer_->SetDrawBuffers(1, buffers);
+    EXPECT_EQ(0u, framebuffer_->draw_buffer_type_mask());
+    EXPECT_EQ(0u, framebuffer_->draw_buffer_bound_mask());
+    EXPECT_FALSE(framebuffer_->ContainsActiveIntegerAttachments());
+  }
+
+  {  // Filter out integer buffers.
+    GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE, GL_NONE,
+                        GL_COLOR_ATTACHMENT4};
+    framebuffer_->SetDrawBuffers(5, buffers);
+    EXPECT_EQ(0x303u, framebuffer_->draw_buffer_type_mask());
+    EXPECT_EQ(0x303u, framebuffer_->draw_buffer_bound_mask());
+    EXPECT_FALSE(framebuffer_->ContainsActiveIntegerAttachments());
+  }
+
+  {  // All enabled draw buffer settings.
+    GLenum buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                        GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+                        GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5,
+                        GL_COLOR_ATTACHMENT6, GL_COLOR_ATTACHMENT7};
+    framebuffer_->SetDrawBuffers(8, buffers);
+    EXPECT_EQ(0x31Bu, framebuffer_->draw_buffer_type_mask());
+    EXPECT_EQ(0x33Fu, framebuffer_->draw_buffer_bound_mask());
+    EXPECT_TRUE(framebuffer_->ContainsActiveIntegerAttachments());
+  }
+
+  // Test ValidateAndAdjustDrawBuffers().
+
+  // gl_FragColor situation.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(framebuffer_->ValidateAndAdjustDrawBuffers(0x3u, 0x3u));
+  // gl_FragData situation.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(0);
+  EXPECT_FALSE(
+      framebuffer_->ValidateAndAdjustDrawBuffers(0xFFFFFFFFu, 0xFFFFFFFFu));
+  // User defined output variables, fully match.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(
+      framebuffer_->ValidateAndAdjustDrawBuffers(0x31Bu, 0x33Fu));
+  // Call it a second time - this test is critical, making sure we don't
+  // call DrawBuffers() every draw call if program doesn't change.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(0);
+  EXPECT_TRUE(
+      framebuffer_->ValidateAndAdjustDrawBuffers(0x31Bu, 0x33Fu));
+  // User defined output variables, fully on, one type mismatch.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(0);
+  EXPECT_FALSE(
+      framebuffer_->ValidateAndAdjustDrawBuffers(0x32Bu, 0x33Fu));
+  // Empty output.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(
+      framebuffer_->ValidateAndAdjustDrawBuffers(0u, 0u));
+  // User defined output variables, some active buffers have no corresponding
+  // output variables, but if they do, types match.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_TRUE(
+      framebuffer_->ValidateAndAdjustDrawBuffers(0x310u, 0x330u));
+  // Call it a second time - making sure DrawBuffers isn't triggered.
+  EXPECT_CALL(*gl_, DrawBuffersARB(kMaxDrawBuffers, _))
+      .Times(0);
+  EXPECT_TRUE(
+      framebuffer_->ValidateAndAdjustDrawBuffers(0x310u, 0x330u));
 }
 
 class FramebufferInfoFloatTest : public FramebufferInfoTest {

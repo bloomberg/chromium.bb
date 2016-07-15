@@ -390,6 +390,15 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
     return transform_feedback_buffer_mode_;
   }
 
+  // See member declaration for details.
+  // The data are only valid after a successful link.
+  uint32_t fragment_output_type_mask() const {
+      return fragment_output_type_mask_;
+  }
+  uint32_t fragment_output_written_mask() const {
+      return fragment_output_written_mask_;
+  }
+
  private:
   friend class base::RefCounted<Program>;
   friend class ProgramManager;
@@ -426,6 +435,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   void UpdateUniforms();
   void UpdateFragmentInputs();
   void UpdateProgramOutputs();
+  void UpdateFragmentOutputBaseTypes();
 
   // Process the program log, replacing the hashed names with original names.
   std::string ProcessLogInfo(const std::string& log);
@@ -497,8 +507,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   GLuint service_id_;
 
   // Shaders by type of shader.
-  scoped_refptr<Shader>
-      attached_shaders_[kMaxAttachedShaders];
+  scoped_refptr<Shader> attached_shaders_[kMaxAttachedShaders];
 
   // True if this program is marked as deleted.
   bool deleted_;
@@ -532,6 +541,14 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // output variable - (location,index) binding map from
   // glBindFragDataLocation() and ..IndexedEXT() calls.
   LocationIndexMap bind_program_output_location_index_map_;
+
+  // Fragment output variable base types: FLOAT, INT, or UINT.
+  // We have up to 16 outputs, each is encoded into 2 bits, total 32 bits:
+  // the lowest 2 bits for location 0, the highest 2 bits for location 15.
+  uint32_t fragment_output_type_mask_;
+  // Same layout as above, 2 bits per location, 0x03 if a location is occupied
+  // by an output variable, 0x00 if not.
+  uint32_t fragment_output_written_mask_;
 };
 
 // Tracks the Programs.
@@ -542,6 +559,7 @@ class GPU_EXPORT ProgramManager {
  public:
   ProgramManager(ProgramCache* program_cache,
                  uint32_t max_varying_vectors,
+                 uint32_t max_draw_buffers,
                  uint32_t max_dual_source_draw_buffers,
                  const GpuPreferences& gpu_preferences,
                  FeatureInfo* feature_info);
@@ -585,6 +603,8 @@ class GPU_EXPORT ProgramManager {
 
   uint32_t max_varying_vectors() const { return max_varying_vectors_; }
 
+  uint32_t max_draw_buffers() const { return max_draw_buffers_; }
+
   uint32_t max_dual_source_draw_buffers() const {
     return max_dual_source_draw_buffers_;
   }
@@ -615,6 +635,7 @@ class GPU_EXPORT ProgramManager {
   ProgramCache* program_cache_;
 
   uint32_t max_varying_vectors_;
+  uint32_t max_draw_buffers_;
   uint32_t max_dual_source_draw_buffers_;
 
   const GpuPreferences& gpu_preferences_;

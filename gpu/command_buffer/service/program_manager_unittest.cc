@@ -59,6 +59,7 @@ class ProgramManagerTestBase : public GpuServiceTest {
  protected:
   virtual void SetupProgramManager() {
     manager_.reset(new ProgramManager(nullptr, kMaxVaryingVectors,
+                                      kMaxDrawBuffers,
                                       kMaxDualSourceDrawBuffers,
                                       gpu_preferences_,
                                       feature_info_.get()));
@@ -1743,6 +1744,124 @@ TEST_F(ProgramManagerWithShaderTest, AttribUniformNameConflict) {
   EXPECT_TRUE(LinkAsExpected(program, false));
 }
 
+TEST_F(ProgramManagerWithShaderTest, FragmentOutputTypes) {
+  // Set up program
+  Shader* vshader = shader_manager_.CreateShader(
+      kVertexShaderClientId, kVertexShaderServiceId, GL_VERTEX_SHADER);
+  TestHelper::SetShaderStates(gl_.get(), vshader, true, nullptr, nullptr,
+                              nullptr, nullptr, nullptr, nullptr, nullptr,
+                              nullptr, nullptr);
+  Shader* fshader = shader_manager_.CreateShader(
+      kFragmentShaderClientId, kFragmentShaderServiceId, GL_FRAGMENT_SHADER);
+  ASSERT_TRUE(vshader && fshader);
+  Program* program =
+      manager_->CreateProgram(kClientProgramId, kServiceProgramId);
+  ASSERT_TRUE(program);
+  EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
+  EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
+
+  {  // No outputs.
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr,
+                                nullptr, nullptr);
+    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_EQ(0u, program->fragment_output_type_mask());
+    EXPECT_EQ(0u, program->fragment_output_written_mask());
+  }
+
+  {  // gl_FragColor
+    OutputVariableList fragment_outputs;
+    sh::OutputVariable var = TestHelper::ConstructOutputVariable(
+        GL_FLOAT_VEC4, 0, GL_MEDIUM_FLOAT, true, "gl_FragColor");
+    var.location = -1;
+    fragment_outputs.push_back(var);
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &fragment_outputs, nullptr);
+    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_EQ(0x3u, program->fragment_output_type_mask());
+    EXPECT_EQ(0x3u, program->fragment_output_written_mask());
+  }
+
+  {  // gl_FragData
+    OutputVariableList fragment_outputs;
+    sh::OutputVariable var = TestHelper::ConstructOutputVariable(
+        GL_FLOAT_VEC4, 8, GL_MEDIUM_FLOAT, true, "gl_FragData");
+    var.location = -1;
+    fragment_outputs.push_back(var);
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &fragment_outputs, nullptr);
+    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_EQ(0xFFFFu, program->fragment_output_type_mask());
+    EXPECT_EQ(0xFFFFu, program->fragment_output_written_mask());
+  }
+
+  {  // gl_FragColor, gl_FragDepth
+    OutputVariableList fragment_outputs;
+    sh::OutputVariable var = TestHelper::ConstructOutputVariable(
+        GL_FLOAT_VEC4, 0, GL_MEDIUM_FLOAT, true, "gl_FragColor");
+    var.location = -1;
+    fragment_outputs.push_back(var);
+    var = TestHelper::ConstructOutputVariable(
+        GL_FLOAT, 0, GL_MEDIUM_FLOAT, true, "gl_FragDepth");
+    var.location = -1;
+    fragment_outputs.push_back(var);
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &fragment_outputs, nullptr);
+    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_EQ(0x3u, program->fragment_output_type_mask());
+    EXPECT_EQ(0x3u, program->fragment_output_written_mask());
+  }
+
+  {  // Single user defined output.
+    OutputVariableList fragment_outputs;
+    sh::OutputVariable var = TestHelper::ConstructOutputVariable(
+        GL_UNSIGNED_INT_VEC4, 0, GL_MEDIUM_INT, true, "myOutput");
+    var.location = -1;
+    fragment_outputs.push_back(var);
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &fragment_outputs, nullptr);
+    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_EQ(0x2u, program->fragment_output_type_mask());
+    EXPECT_EQ(0x3u, program->fragment_output_written_mask());
+  }
+
+  {  // Single user defined output - no static use.
+    OutputVariableList fragment_outputs;
+    sh::OutputVariable var = TestHelper::ConstructOutputVariable(
+        GL_UNSIGNED_INT_VEC4, 0, GL_MEDIUM_INT, false, "myOutput");
+    var.location = -1;
+    fragment_outputs.push_back(var);
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &fragment_outputs, nullptr);
+    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_EQ(0x2u, program->fragment_output_type_mask());
+    EXPECT_EQ(0x3u, program->fragment_output_written_mask());
+  }
+
+  {  // Multiple user defined outputs.
+    OutputVariableList fragment_outputs;
+    sh::OutputVariable var = TestHelper::ConstructOutputVariable(
+        GL_INT_VEC4, 0, GL_MEDIUM_INT, true, "myOutput");
+    var.location = 0;
+    fragment_outputs.push_back(var);
+    var = TestHelper::ConstructOutputVariable(
+        GL_FLOAT_VEC4, 2, GL_MEDIUM_FLOAT, true, "myOutputArray");
+    var.location = 2;
+    fragment_outputs.push_back(var);
+    TestHelper::SetShaderStates(gl_.get(), fshader, true, nullptr, nullptr,
+                                nullptr, nullptr, nullptr, nullptr, nullptr,
+                                &fragment_outputs, nullptr);
+    EXPECT_TRUE(LinkAsExpected(program, true));
+    EXPECT_EQ(0xF1u, program->fragment_output_type_mask());
+    EXPECT_EQ(0xF3u, program->fragment_output_written_mask());
+  }
+}
+
 // Varyings go over 8 rows.
 TEST_F(ProgramManagerWithShaderTest, TooManyVaryings) {
   const VarInfo kVertexVaryings[] = {
@@ -1951,6 +2070,7 @@ class ProgramManagerWithCacheTest : public ProgramManagerTestBase {
  protected:
   void SetupProgramManager() override {
     manager_.reset(new ProgramManager(cache_.get(), kMaxVaryingVectors,
+                                      kMaxDrawBuffers,
                                       kMaxDualSourceDrawBuffers,
                                       gpu_preferences_,
                                       feature_info_.get()));

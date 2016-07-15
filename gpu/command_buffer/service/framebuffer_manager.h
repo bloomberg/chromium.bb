@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -178,11 +179,22 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   // If a color buffer is attached to GL_COLOR_ATTACHMENTi, enable that
   // draw buffer for glClear().
   // Return true if the DrawBuffers() is actually called.
-  bool PrepareDrawBuffersForClear() const;
+  bool PrepareDrawBuffersForClearingUninitializedAttachments() const;
 
-  // Restore draw buffers states that have been changed in
-  // PrepareDrawBuffersForClear().
-  void RestoreDrawBuffersAfterClear() const;
+  // Restore |adjusted_draw_buffers_|.
+  void RestoreDrawBuffers() const;
+
+  // Checks if a draw buffer's format and its corresponding fragment shader
+  // output's type are compatible, i.e., a signed integer typed variable is
+  // incompatible with a float or unsigned integer buffer.
+  // Return false if incompaticle.
+  // Otherwise, filter out the draw buffers that are not written to but are not
+  // NONE through DrawBuffers, to be on the safe side. Return true.
+  // This is applied before a draw call.
+  bool ValidateAndAdjustDrawBuffers(uint32_t fragment_output_type_mask,
+                                    uint32_t fragment_output_written_mask);
+
+  bool ContainsActiveIntegerAttachments() const;
 
   // Return true if any draw buffers has an alpha channel.
   bool HasAlphaMRT() const;
@@ -199,6 +211,15 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     return read_buffer_;
   }
 
+  // See member declaration for details.
+  // The data are only valid if fbo is complete.
+  uint32_t draw_buffer_type_mask() const {
+    return draw_buffer_type_mask_;
+  }
+  uint32_t draw_buffer_bound_mask() const {
+    return draw_buffer_bound_mask_;
+  }
+
  private:
   friend class FramebufferManager;
   friend class base::RefCounted<Framebuffer>;
@@ -213,12 +234,18 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     bool cleared);
 
   void MarkAsComplete(unsigned state_id) {
+    UpdateDrawBufferMasks();
     framebuffer_complete_state_count_id_ = state_id;
   }
 
   unsigned framebuffer_complete_state_count_id() const {
     return framebuffer_complete_state_count_id_;
   }
+
+  // Cache color attachments' base type mask (FLOAT, INT, UINT) and bound mask.
+  // If an attachment point has no image, it's set as UNDEFINED_TYPE.
+  // This call is only valid on a complete fbo.
+  void UpdateDrawBufferMasks();
 
   // The managers that owns this.
   FramebufferManager* manager_;
@@ -238,7 +265,24 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   typedef base::hash_map<GLenum, scoped_refptr<Attachment> > AttachmentMap;
   AttachmentMap attachments_;
 
+  // User's draw buffers setting through DrawBuffers() call.
   std::unique_ptr<GLenum[]> draw_buffers_;
+
+  // If a draw buffer does not have an image, or it has no corresponding
+  // fragment shader output variable, it might be filtered out as NONE.
+  // Note that the actually draw buffers setting sent to the driver is always
+  // consistent with |adjusted_draw_buffers_|, not |draw_buffers_|.
+  std::unique_ptr<GLenum[]> adjusted_draw_buffers_;
+
+  // Draw buffer base types: FLOAT, INT, or UINT.
+  // We have up to 16 draw buffers, each is encoded into 2 bits, total 32 bits:
+  // the lowest 2 bits for draw buffer 0, the highest 2 bits for draw buffer 15.
+  uint32_t draw_buffer_type_mask_;
+  // Same layout as above, 2 bits per draw buffer, 0x03 if a draw buffer has a
+  // bound image, 0x00 if not.
+  uint32_t draw_buffer_bound_mask_;
+  // This is the mask for the actual draw buffers sent to driver.
+  uint32_t adjusted_draw_buffer_bound_mask_;
 
   GLenum read_buffer_;
 

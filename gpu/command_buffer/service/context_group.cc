@@ -430,8 +430,11 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
   path_manager_.reset(new PathManager());
 
   program_manager_.reset(
-      new ProgramManager(program_cache_, max_varying_vectors_,
-                         max_dual_source_draw_buffers_, gpu_preferences_,
+      new ProgramManager(program_cache_,
+                         max_varying_vectors_,
+                         max_draw_buffers_,
+                         max_dual_source_draw_buffers_,
+                         gpu_preferences_,
                          feature_info_.get()));
 
   if (!texture_manager_->Initialize()) {

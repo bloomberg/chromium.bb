@@ -18,6 +18,13 @@
 namespace gpu {
 namespace gles2 {
 
+enum ShaderVariableBaseType {
+  SHADER_VARIABLE_INT = 0x01,
+  SHADER_VARIABLE_UINT = 0x02,
+  SHADER_VARIABLE_FLOAT = 0x03,
+  SHADER_VARIABLE_UNDEFINED_TYPE = 0x00
+};
+
 // This is used to keep the source code for a shader. This is because in order
 // to emluate GLES2 the shaders will have to be re-written before passed to
 // the underlying OpenGL. But, when the user calls glGetShaderSource they

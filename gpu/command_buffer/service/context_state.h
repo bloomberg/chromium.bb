@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
+#include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
@@ -107,18 +108,12 @@ struct GPU_EXPORT TextureUnit {
 
 class GPU_EXPORT Vec4 {
  public:
-  enum DataType {
-    kFloat,
-    kInt,
-    kUInt,
-  };
-
   Vec4() {
     v_[0].float_value = 0.0f;
     v_[1].float_value = 0.0f;
     v_[2].float_value = 0.0f;
     v_[3].float_value = 1.0f;
-    type_ = kFloat;
+    type_ = SHADER_VARIABLE_FLOAT;
   }
 
   template <typename T>
@@ -127,7 +122,7 @@ class GPU_EXPORT Vec4 {
   template <typename T>
   void SetValues(const T* values);
 
-  DataType type() const {
+  ShaderVariableBaseType type() const {
     return type_;
   }
 
@@ -141,7 +136,7 @@ class GPU_EXPORT Vec4 {
   };
 
   ValueUnion v_[4];
-  DataType type_;
+  ShaderVariableBaseType type_;
 };
 
 template <>

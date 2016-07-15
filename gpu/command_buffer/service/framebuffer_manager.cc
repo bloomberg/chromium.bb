@@ -372,13 +372,20 @@ Framebuffer::Framebuffer(
       service_id_(service_id),
       has_been_bound_(false),
       framebuffer_complete_state_count_id_(0),
+      draw_buffer_type_mask_(0u),
+      draw_buffer_bound_mask_(0u),
+      adjusted_draw_buffer_bound_mask_(0u),
       read_buffer_(GL_COLOR_ATTACHMENT0) {
   manager->StartTracking(this);
   DCHECK_GT(manager->max_draw_buffers_, 0u);
   draw_buffers_.reset(new GLenum[manager->max_draw_buffers_]);
+  adjusted_draw_buffers_.reset(new GLenum[manager->max_draw_buffers_]);
   draw_buffers_[0] = GL_COLOR_ATTACHMENT0;
-  for (uint32_t i = 1; i < manager->max_draw_buffers_; ++i)
-    draw_buffers_[i] = GL_NONE;
+  adjusted_draw_buffers_[0] = GL_COLOR_ATTACHMENT0;
+  for (uint32_t ii = 1; ii < manager->max_draw_buffers_; ++ii) {
+    draw_buffers_[ii] = GL_NONE;
+    adjusted_draw_buffers_[ii] = GL_NONE;
+  }
 }
 
 Framebuffer::~Framebuffer() {
@@ -470,27 +477,27 @@ bool Framebuffer::HasSRGBAttachments() const {
   return false;
 }
 
-bool Framebuffer::PrepareDrawBuffersForClear() const {
+bool Framebuffer::PrepareDrawBuffersForClearingUninitializedAttachments(
+    ) const {
   std::unique_ptr<GLenum[]> buffers(new GLenum[manager_->max_draw_buffers_]);
   for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i)
     buffers[i] = GL_NONE;
-  for (AttachmentMap::const_iterator it = attachments_.begin();
-       it != attachments_.end(); ++it) {
-    if (it->first >= GL_COLOR_ATTACHMENT0 &&
-        it->first < GL_COLOR_ATTACHMENT0 + manager_->max_draw_buffers_ &&
-        !it->second->cleared()) {
+  for (auto const& it : attachments_) {
+    if (it.first >= GL_COLOR_ATTACHMENT0 &&
+        it.first < GL_COLOR_ATTACHMENT0 + manager_->max_draw_buffers_ &&
+        !it.second->cleared()) {
       // There should be no partially cleared images, uncleared int/3d images.
       // This is because ClearUnclearedIntOr3DImagesOrPartiallyClearedImages()
       // is called before this.
-      DCHECK(!GLES2Util::IsIntegerFormat(it->second->internal_format()));
-      DCHECK(!it->second->IsPartiallyCleared());
-      DCHECK(!it->second->Is3D());
-      buffers[it->first - GL_COLOR_ATTACHMENT0] = it->first;
+      DCHECK(!GLES2Util::IsIntegerFormat(it.second->internal_format()));
+      DCHECK(!it.second->IsPartiallyCleared());
+      DCHECK(!it.second->Is3D());
+      buffers[it.first - GL_COLOR_ATTACHMENT0] = it.first;
     }
   }
   bool different = false;
   for (uint32_t i = 0; i < manager_->max_draw_buffers_; ++i) {
-    if (buffers[i] != draw_buffers_[i]) {
+    if (buffers[i] != adjusted_draw_buffers_[i]) {
       different = true;
       break;
     }
@@ -500,13 +507,42 @@ bool Framebuffer::PrepareDrawBuffersForClear() const {
   return different;
 }
 
-void Framebuffer::RestoreDrawBuffersAfterClear() const {
-  glDrawBuffersARB(manager_->max_draw_buffers_, draw_buffers_.get());
+void Framebuffer::RestoreDrawBuffers() const {
+  glDrawBuffersARB(manager_->max_draw_buffers_, adjusted_draw_buffers_.get());
+}
+
+bool Framebuffer::ValidateAndAdjustDrawBuffers(
+    uint32_t fragment_output_type_mask, uint32_t fragment_output_written_mask) {
+  uint32_t mask = draw_buffer_bound_mask_ & fragment_output_written_mask;
+  if ((mask & fragment_output_type_mask) != (mask & draw_buffer_type_mask_))
+    return false;
+
+  if (mask != adjusted_draw_buffer_bound_mask_) {
+    // This won't be reached in every draw/clear call - only when framebuffer
+    // or program has changed.
+    for (uint32_t ii = 0; ii < manager_->max_draw_buffers_; ++ii) {
+      adjusted_draw_buffers_[ii] = draw_buffers_[ii];
+      uint32_t shift_bits = ii * 2;
+      uint32_t buffer_mask = 0x3 << shift_bits;
+      if ((buffer_mask & mask) == 0u) {
+        adjusted_draw_buffers_[ii] = GL_NONE;
+      }
+    }
+    adjusted_draw_buffer_bound_mask_ = mask;
+    glDrawBuffersARB(manager_->max_draw_buffers_, adjusted_draw_buffers_.get());
+  }
+  return true;
+}
+
+bool Framebuffer::ContainsActiveIntegerAttachments() const {
+  // 0x55555555 broadcasts SHADER_VARIABLE_FLOAT to all slots.
+  uint32_t mask = 0x55555555u * SHADER_VARIABLE_FLOAT;
+  mask &= draw_buffer_bound_mask_;
+  return draw_buffer_type_mask_ != mask;
 }
 
 void Framebuffer::ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
-    GLES2Decoder* decoder,
-    TextureManager* texture_manager) {
+    GLES2Decoder* decoder, TextureManager* texture_manager) {
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
     if (!it->second->IsTextureAttachment() || it->second->cleared())
@@ -524,10 +560,10 @@ void Framebuffer::ClearUnclearedIntOr3DTexturesOrPartiallyClearedTextures(
 }
 
 void Framebuffer::MarkAttachmentAsCleared(
-      RenderbufferManager* renderbuffer_manager,
-      TextureManager* texture_manager,
-      GLenum attachment,
-      bool cleared) {
+    RenderbufferManager* renderbuffer_manager,
+    TextureManager* texture_manager,
+    GLenum attachment,
+    bool cleared) {
   AttachmentMap::iterator it = attachments_.find(attachment);
   if (it != attachments_.end()) {
     Attachment* a = it->second.get();
@@ -540,9 +576,9 @@ void Framebuffer::MarkAttachmentAsCleared(
 }
 
 void Framebuffer::MarkAttachmentsAsCleared(
-      RenderbufferManager* renderbuffer_manager,
-      TextureManager* texture_manager,
-      bool cleared) {
+    RenderbufferManager* renderbuffer_manager,
+    TextureManager* texture_manager,
+    bool cleared) {
   for (AttachmentMap::iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
     Attachment* attachment = it->second.get();
@@ -745,8 +781,16 @@ GLenum Framebuffer::GetDrawBuffer(GLenum draw_buffer) const {
 
 void Framebuffer::SetDrawBuffers(GLsizei n, const GLenum* bufs) {
   DCHECK(n <= static_cast<GLsizei>(manager_->max_draw_buffers_));
-  for (GLsizei i = 0; i < n; ++i)
-    draw_buffers_[i] = bufs[i];
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    draw_buffers_[ii] = bufs[ii];
+    adjusted_draw_buffers_[ii] = bufs[ii];
+  }
+  for (uint32_t ii = n; ii < manager_->max_draw_buffers_; ++ii) {
+    draw_buffers_[ii] = GL_NONE;
+    adjusted_draw_buffers_[ii] = GL_NONE;
+  }
+  UpdateDrawBufferMasks();
+  adjusted_draw_buffer_bound_mask_ = draw_buffer_bound_mask_;
 }
 
 bool Framebuffer::HasAlphaMRT() const {
@@ -816,6 +860,32 @@ void Framebuffer::UnbindTexture(
       }
     }
   } while (!done);
+}
+
+void Framebuffer::UpdateDrawBufferMasks() {
+  draw_buffer_type_mask_ = 0u;
+  draw_buffer_bound_mask_ = 0u;
+  for (uint32_t index = 0; index < manager_->max_color_attachments_; ++index) {
+    GLenum draw_buffer = draw_buffers_[index];
+    if (draw_buffer == GL_NONE)
+      continue;
+    auto iter = attachments_.find(draw_buffer);
+    if (iter == attachments_.end())
+      continue;
+    scoped_refptr<Attachment> attachment = iter->second;
+    GLenum internal_format = attachment->internal_format();
+    ShaderVariableBaseType base_type = SHADER_VARIABLE_UNDEFINED_TYPE;
+    if (GLES2Util::IsSignedIntegerFormat(internal_format)) {
+      base_type = SHADER_VARIABLE_INT;
+    } else if (GLES2Util::IsUnsignedIntegerFormat(internal_format)) {
+      base_type = SHADER_VARIABLE_UINT;
+    } else {
+      base_type = SHADER_VARIABLE_FLOAT;
+    }
+    size_t shift_bits = index * 2;
+    draw_buffer_type_mask_ |= base_type << shift_bits;
+    draw_buffer_bound_mask_ |= 0x3 << shift_bits;
+  }
 }
 
 Framebuffer* FramebufferManager::GetFramebuffer(

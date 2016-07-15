@@ -13,7 +13,7 @@ namespace gles2 {
 
 TEST(ContextStateVec4Test, DefaultValues) {
   Vec4 v;
-  EXPECT_EQ(Vec4::kFloat, v.type());
+  EXPECT_EQ(SHADER_VARIABLE_FLOAT, v.type());
   GLfloat f[4];
   v.GetValues(f);
   EXPECT_EQ(0.f, f[0]);
@@ -27,7 +27,7 @@ TEST(ContextStateVec4Test, SetGetFloatValues) {
 
   const GLfloat kFloatValues[4] = { 2.f, 3.f, 4.f, 5.f };
   v.SetValues(kFloatValues);
-  EXPECT_EQ(Vec4::kFloat, v.type());
+  EXPECT_EQ(SHADER_VARIABLE_FLOAT, v.type());
   GLfloat fv[4];
   v.GetValues(fv);
   for (size_t ii = 0; ii < 4; ++ii) {
@@ -40,7 +40,7 @@ TEST(ContextStateVec4Test, SetGetIntValues) {
 
   const GLint kIntValues[4] = { 2, 3, -4, 5 };
   v.SetValues(kIntValues);
-  EXPECT_EQ(Vec4::kInt, v.type());
+  EXPECT_EQ(SHADER_VARIABLE_INT, v.type());
   GLint iv[4];
   v.GetValues(iv);
   for (size_t ii = 0; ii < 4; ++ii) {
@@ -53,7 +53,7 @@ TEST(ContextStateVec4Test, SetGetUIntValues) {
 
   const GLuint kUIntValues[4] = { 2, 3, 4, 5 };
   v.SetValues(kUIntValues);
-  EXPECT_EQ(Vec4::kUInt, v.type());
+  EXPECT_EQ(SHADER_VARIABLE_UINT, v.type());
   GLuint uiv[4];
   v.GetValues(uiv);
   for (size_t ii = 0; ii < 4; ++ii) {

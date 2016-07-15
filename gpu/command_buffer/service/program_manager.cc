@@ -117,6 +117,29 @@ uint32_t ComputeOffset(const void* start, const void* position) {
          static_cast<const uint8_t*>(start);
 }
 
+ShaderVariableBaseType FragmentOutputTypeToBaseType(GLenum type) {
+  switch (type) {
+    case GL_INT:
+    case GL_INT_VEC2:
+    case GL_INT_VEC3:
+    case GL_INT_VEC4:
+      return SHADER_VARIABLE_INT;
+    case GL_UNSIGNED_INT:
+    case GL_UNSIGNED_INT_VEC2:
+    case GL_UNSIGNED_INT_VEC3:
+    case GL_UNSIGNED_INT_VEC4:
+      return SHADER_VARIABLE_UINT;
+    case GL_FLOAT:
+    case GL_FLOAT_VEC2:
+    case GL_FLOAT_VEC3:
+    case GL_FLOAT_VEC4:
+      return SHADER_VARIABLE_FLOAT;
+    default:
+      NOTREACHED();
+      return SHADER_VARIABLE_UNDEFINED_TYPE;
+  }
+}
+
 }  // anonymous namespace.
 
 Program::UniformInfo::UniformInfo()
@@ -271,7 +294,10 @@ Program::Program(ProgramManager* manager, GLuint service_id)
       valid_(false),
       link_status_(false),
       uniforms_cleared_(false),
-      transform_feedback_buffer_mode_(GL_NONE) {
+      transform_feedback_buffer_mode_(GL_NONE),
+      fragment_output_type_mask_(0u),
+      fragment_output_written_mask_(0u) {
+  DCHECK(manager_);
   manager_->StartTracking(this);
 }
 
@@ -288,6 +314,46 @@ void Program::Reset() {
   program_output_infos_.clear();
   sampler_indices_.clear();
   attrib_location_to_index_map_.clear();
+  fragment_output_type_mask_ = 0u;
+  fragment_output_written_mask_ = 0u;
+}
+
+void Program::UpdateFragmentOutputBaseTypes() {
+  fragment_output_type_mask_ = 0u;
+  fragment_output_written_mask_ = 0u;
+  Shader* fragment_shader =
+      attached_shaders_[ShaderTypeToIndex(GL_FRAGMENT_SHADER)].get();
+  DCHECK(fragment_shader);
+  for (auto const& output : fragment_shader->output_variable_list()) {
+    int location = output.location;
+    DCHECK(location == -1 ||
+           (location >= 0 &&
+            location < static_cast<int>(manager_->max_draw_buffers())));
+    if (location == -1)
+      location = 0;
+    if (ProgramManager::HasBuiltInPrefix(output.name)) {
+      if (output.name != "gl_FragColor" && output.name != "gl_FragData")
+        continue;
+    }
+    int count = static_cast<int>(output.arraySize == 0 ? 1 : output.arraySize);
+    // TODO(zmo): Handle the special case in ES2 where gl_FragColor could
+    // be broadcasting to all draw buffers.
+    DCHECK_LE(location + count,
+              static_cast<int>(manager_->max_draw_buffers()));
+    for (int ii = location; ii < location + count; ++ii) {
+      // TODO(zmo): This does not work with glBindFragDataLocationIndexed.
+      // crbug.com/628010
+      // For example:
+      //    glBindFragDataLocationIndexed(program, loc, 0, "FragData0");
+      //    glBindFragDataLocationIndexed(program, loc, 1, "FragData1");
+      // The program links OK, but both calling glGetFragDataLocation on both
+      // "FragData0" and "FragData1" returns 0.
+      int shift_bits = ii * 2;
+      fragment_output_written_mask_ |= 0x3 << shift_bits;
+      fragment_output_type_mask_ |=
+          FragmentOutputTypeToBaseType(output.type) << shift_bits;
+    }
+  }
 }
 
 std::string Program::ProcessLogInfo(
@@ -523,6 +589,7 @@ void Program::Update() {
 
   UpdateFragmentInputs();
   UpdateProgramOutputs();
+  UpdateFragmentOutputBaseTypes();
 
   valid_ = true;
 }
@@ -2281,6 +2348,7 @@ Program::~Program() {
 ProgramManager::ProgramManager(
     ProgramCache* program_cache,
     uint32_t max_varying_vectors,
+    uint32_t max_draw_buffers,
     uint32_t max_dual_source_draw_buffers,
     const GpuPreferences& gpu_preferences,
     FeatureInfo* feature_info)
@@ -2288,6 +2356,7 @@ ProgramManager::ProgramManager(
       have_context_(true),
       program_cache_(program_cache),
       max_varying_vectors_(max_varying_vectors),
+      max_draw_buffers_(max_draw_buffers),
       max_dual_source_draw_buffers_(max_dual_source_draw_buffers),
       gpu_preferences_(gpu_preferences),
       feature_info_(feature_info) {}

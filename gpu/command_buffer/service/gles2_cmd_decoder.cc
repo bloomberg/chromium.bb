@@ -1339,12 +1339,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool CheckFramebufferValid(
       Framebuffer* framebuffer,
       GLenum target,
-      bool clear_uncleared_images,
       GLenum gl_error,
       const char* func_name);
 
-  bool CheckBoundDrawFramebufferValid(
-      bool clear_uncleared_images, const char* func_name);
+  bool CheckBoundDrawFramebufferValid(const char* func_name);
   // Generates |gl_error| if the bound read fbo is incomplete.
   bool CheckBoundReadFramebufferValid(const char* func_name, GLenum gl_error);
   // This is only used by DoBlitFramebufferCHROMIUM which operates read/draw
@@ -1366,6 +1364,17 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // image of the current bound framebuffer, i.e., the source and destination
   // of the draw operation are the same.
   bool CheckDrawingFeedbackLoops();
+
+  bool SupportsDrawBuffers() const;
+
+  // Checks if a draw buffer's format and its corresponding fragment shader
+  // output's type are compatible, i.e., a signed integer typed variable is
+  // incompatible with a float or unsigned integer buffer.
+  // If incompaticle, generates an INVALID_OPERATION to avoid undefined buffer
+  // contents and return false.
+  // Otherwise, filter out the draw buffers that are not written to but are not
+  // NONE through DrawBuffers, to be on the safe side. Return true.
+  bool ValidateAndAdjustDrawBuffers(const char* function_name);
 
   // Checks if |api_type| is valid for the given uniform
   // If the api type is not valid generates the appropriate GL
@@ -4102,13 +4111,12 @@ void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
 bool GLES2DecoderImpl::CheckFramebufferValid(
     Framebuffer* framebuffer,
     GLenum target,
-    bool clear_uncleared_images,
     GLenum gl_error,
     const char* func_name) {
   if (!framebuffer) {
     if (surfaceless_)
       return false;
-    if (backbuffer_needs_clear_bits_ && clear_uncleared_images) {
+    if (backbuffer_needs_clear_bits_) {
       glClearColor(0, 0, 0, BackBufferAlphaClearColor());
       state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glClearStencil(0);
@@ -4154,9 +4162,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
   }
 
   // Are all the attachments cleared?
-  if (clear_uncleared_images &&
-      (renderbuffer_manager()->HaveUnclearedRenderbuffers() ||
-       texture_manager()->HaveUnclearedMips())) {
+  if (renderbuffer_manager()->HaveUnclearedRenderbuffers() ||
+      texture_manager()->HaveUnclearedMips()) {
     if (!framebuffer->IsCleared()) {
       ClearUnclearedAttachments(target, framebuffer);
     }
@@ -4164,14 +4171,12 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
   return true;
 }
 
-bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(
-    bool clear_uncleared_images, const char* func_name) {
+bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(const char* func_name) {
   GLenum target = features().chromium_framebuffer_multisample ?
       GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   bool valid = CheckFramebufferValid(
-      framebuffer, target, clear_uncleared_images,
-      GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+      framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
   if (valid && !features().chromium_framebuffer_multisample)
     OnUseFramebuffer();
   if (valid && feature_info_->feature_flags().desktop_srgb_support) {
@@ -4195,7 +4200,7 @@ bool GLES2DecoderImpl::CheckBoundReadFramebufferValid(
       GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   bool valid = CheckFramebufferValid(
-      framebuffer, target, true, gl_error, func_name);
+      framebuffer, target, gl_error, func_name);
   return valid;
 }
 
@@ -4204,15 +4209,13 @@ bool GLES2DecoderImpl::CheckBoundFramebufferValid(const char* func_name) {
       GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
   Framebuffer* draw_framebuffer = GetFramebufferInfoForTarget(target);
   bool valid = CheckFramebufferValid(
-      draw_framebuffer, target, true,
-      GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+      draw_framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
 
   target = features().chromium_framebuffer_multisample ?
       GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
   Framebuffer* read_framebuffer = GetFramebufferInfoForTarget(target);
   valid = valid && CheckFramebufferValid(
-      read_framebuffer, target, true,
-      GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+      read_framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
 
   if (valid && feature_info_->feature_flags().desktop_srgb_support) {
     bool enable_framebuffer_srgb =
@@ -6815,10 +6818,8 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(uint32_t immediate_data_size,
 
 error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   DCHECK(!ShouldDeferDraws());
-  if (CheckBoundDrawFramebufferValid(true, "glClear")) {
+  if (CheckBoundDrawFramebufferValid("glClear")) {
     ApplyDirtyState();
-    // TODO(zmo): Filter out INTEGER/SIGNED INTEGER images to avoid
-    // undefined results.
     if (workarounds().gl_clear_broken) {
       ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
                                          GetErrorState());
@@ -6839,8 +6840,7 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
 
 void GLES2DecoderImpl::DoClearBufferiv(
     GLenum buffer, GLint drawbuffer, const GLint* value) {
-  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
-  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferiv"))
+  if (!CheckBoundDrawFramebufferValid("glClearBufferiv"))
     return;
   ApplyDirtyState();
 
@@ -6874,8 +6874,7 @@ void GLES2DecoderImpl::DoClearBufferiv(
 
 void GLES2DecoderImpl::DoClearBufferuiv(
     GLenum buffer, GLint drawbuffer, const GLuint* value) {
-  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
-  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferuiv"))
+  if (!CheckBoundDrawFramebufferValid("glClearBufferuiv"))
     return;
   ApplyDirtyState();
 
@@ -6897,8 +6896,7 @@ void GLES2DecoderImpl::DoClearBufferuiv(
 
 void GLES2DecoderImpl::DoClearBufferfv(
     GLenum buffer, GLint drawbuffer, const GLfloat* value) {
-  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
-  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferfv"))
+  if (!CheckBoundDrawFramebufferValid("glClearBufferfv"))
     return;
   ApplyDirtyState();
 
@@ -6932,8 +6930,7 @@ void GLES2DecoderImpl::DoClearBufferfv(
 
 void GLES2DecoderImpl::DoClearBufferfi(
     GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil) {
-  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
-  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferfi"))
+  if (!CheckBoundDrawFramebufferValid("glClearBufferfi"))
     return;
   ApplyDirtyState();
 
@@ -7066,9 +7063,10 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     clear_bits |= GL_COLOR_BUFFER_BIT;
-    if (feature_info_->feature_flags().ext_draw_buffers ||
-        feature_info_->IsES3Enabled()) {
-      reset_draw_buffers = framebuffer->PrepareDrawBuffersForClear();
+
+    if (SupportsDrawBuffers()) {
+      reset_draw_buffers =
+          framebuffer->PrepareDrawBuffersForClearingUninitializedAttachments();
     }
   }
 
@@ -7100,7 +7098,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
 
   if (cleared_int_renderbuffers || clear_bits) {
     if (reset_draw_buffers)
-      framebuffer->RestoreDrawBuffersAfterClear();
+      framebuffer->RestoreDrawBuffers();
     RestoreClearState();
     if (target == GL_READ_FRAMEBUFFER && draw_framebuffer != framebuffer) {
       GLuint service_id = draw_framebuffer ? draw_framebuffer->service_id() :
@@ -8028,6 +8026,37 @@ bool GLES2DecoderImpl::CheckDrawingFeedbackLoops() {
     }
   }
   return false;
+}
+
+bool GLES2DecoderImpl::SupportsDrawBuffers() const {
+  switch (feature_info_->context_type()) {
+    case CONTEXT_TYPE_OPENGLES2:
+    case CONTEXT_TYPE_WEBGL1:
+      return feature_info_->feature_flags().ext_draw_buffers;
+    default:
+      return true;
+  }
+}
+
+bool GLES2DecoderImpl::ValidateAndAdjustDrawBuffers(const char* func_name) {
+  if (!SupportsDrawBuffers()) {
+    return true;
+  }
+  Framebuffer* framebuffer = framebuffer_state_.bound_draw_framebuffer.get();
+  if (!state_.current_program.get() || !framebuffer) {
+    return true;
+  }
+  uint32_t fragment_output_type_mask =
+      state_.current_program->fragment_output_type_mask();
+  uint32_t fragment_output_written_mask =
+      state_.current_program->fragment_output_written_mask();
+  if (!framebuffer->ValidateAndAdjustDrawBuffers(
+      fragment_output_type_mask, fragment_output_written_mask)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "buffer format and fragment output variable type incompatible");
+      return false;
+  }
+  return true;
 }
 
 bool GLES2DecoderImpl::CheckUniformForApiType(
@@ -9016,7 +9045,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "primcount < 0");
     return error::kNoError;
   }
-  if (!CheckBoundDrawFramebufferValid(true, function_name)) {
+  if (!CheckBoundDrawFramebufferValid(function_name)) {
     return error::kNoError;
   }
   // We have to check this here because the prototype for glDrawArrays
@@ -9057,6 +9086,9 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
         primcount)) {
       bool textures_set = !PrepareTexturesForRender();
       ApplyDirtyState();
+      if (!ValidateAndAdjustDrawBuffers(function_name)) {
+        return error::kNoError;
+      }
       if (!instanced) {
         glDrawArrays(mode, first, count);
       } else {
@@ -9144,7 +9176,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
     return error::kNoError;
   }
 
-  if (!CheckBoundDrawFramebufferValid(true, function_name)) {
+  if (!CheckBoundDrawFramebufferValid(function_name)) {
     return error::kNoError;
   }
 
@@ -9198,14 +9230,15 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         indices = element_array_buffer->GetRange(offset, 0);
       }
-
+      if (!ValidateAndAdjustDrawBuffers(function_name)) {
+        return error::kNoError;
+      }
       if (state_.enable_flags.primitive_restart_fixed_index &&
           feature_info_->feature_flags().
               emulate_primitive_restart_fixed_index) {
         glEnable(GL_PRIMITIVE_RESTART);
         buffer_manager()->SetPrimitiveRestartFixedIndexIfNecessary(type);
       }
-
       if (!instanced) {
         glDrawElements(mode, count, type, indices);
       } else {
@@ -9216,12 +9249,10 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
               emulate_primitive_restart_fixed_index) {
         glDisable(GL_PRIMITIVE_RESTART);
       }
-
       if (used_client_side_array) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,
                      element_array_buffer->service_id());
       }
-
       if (textures_set) {
         RestoreStateForTextures();
       }
@@ -16727,7 +16758,7 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathCHROMIUM(
     // This holds for other rendering functions, too.
     return error::kNoError;
   }
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilFillPathNV(service_id, fill_mode, mask);
@@ -16749,7 +16780,7 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathCHROMIUM(
   }
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilStrokePathNV(service_id, reference, mask);
@@ -16773,7 +16804,7 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathCHROMIUM(
   GLuint service_id = 0;
   if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
     return error::kNoError;
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glCoverFillPathNV(service_id, cover_mode);
@@ -16798,7 +16829,7 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathCHROMIUM(
   if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
     return error::kNoError;
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glCoverStrokePathNV(service_id, cover_mode);
@@ -16827,7 +16858,7 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathCHROMIUM(
   if (!path_manager()->GetPath(static_cast<GLuint>(c.path), &service_id))
     return error::kNoError;
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverFillPathNV(service_id, fill_mode, mask, cover_mode);
@@ -16856,7 +16887,7 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverStrokePathCHROMIUM(
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverStrokePathNV(service_id, reference, mask, cover_mode);
@@ -16895,7 +16926,7 @@ error::Error GLES2DecoderImpl::HandleStencilFillPathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
@@ -16934,7 +16965,7 @@ error::Error GLES2DecoderImpl::HandleStencilStrokePathInstancedCHROMIUM(
 
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
@@ -16973,7 +17004,7 @@ error::Error GLES2DecoderImpl::HandleCoverFillPathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
@@ -17012,7 +17043,7 @@ error::Error GLES2DecoderImpl::HandleCoverStrokePathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glCoverStrokePathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(), 0,
@@ -17056,7 +17087,7 @@ error::Error GLES2DecoderImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
   if (!v.GetTransforms(c, num_paths, transform_type, &transforms))
     return v.error();
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverFillPathInstancedNV(num_paths, GL_UNSIGNED_INT, paths.get(),
@@ -17101,7 +17132,7 @@ GLES2DecoderImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
   GLint reference = static_cast<GLint>(c.reference);
   GLuint mask = static_cast<GLuint>(c.mask);
 
-  if (!CheckBoundDrawFramebufferValid(true, kFunctionName))
+  if (!CheckBoundDrawFramebufferValid(kFunctionName))
     return error::kNoError;
   ApplyDirtyState();
   glStencilThenCoverStrokePathInstancedNV(

@@ -1908,6 +1908,13 @@ TEST_P(GLES3DecoderTest, ClearBufferivImmediateValidArgs) {
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
       client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
 
+  // TODO(zmo): Set up expectations for the path where the attachment isn't
+  // marked as cleared.
+  Framebuffer* framebuffer =
+      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  framebuffer->MarkAttachmentAsCleared(
+      group().renderbuffer_manager(), nullptr, GL_COLOR_ATTACHMENT0, true);
+
   cmds::ClearBufferivImmediate& cmd =
       *GetImmediateAs<cmds::ClearBufferivImmediate>();
   GLint temp[4] = { 0 };
@@ -1934,6 +1941,13 @@ TEST_P(GLES3DecoderTest, ClearBufferuivImmediateValidArgs) {
   DoFramebufferRenderbuffer(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
       client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  // TODO(zmo): Set up expectations for the path where the attachment isn't
+  // marked as cleared.
+  Framebuffer* framebuffer =
+      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  framebuffer->MarkAttachmentAsCleared(
+      group().renderbuffer_manager(), nullptr, GL_COLOR_ATTACHMENT0, true);
 
   cmds::ClearBufferuivImmediate& cmd =
       *GetImmediateAs<cmds::ClearBufferuivImmediate>();
@@ -1963,6 +1977,13 @@ TEST_P(GLES3DecoderTest, ClearBufferfvImmediateValidArgs) {
   DoFramebufferRenderbuffer(
       GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
       client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  // TODO(zmo): Set up expectations for the path where the attachment isn't
+  // marked as cleared.
+  Framebuffer* framebuffer =
+      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  framebuffer->MarkAttachmentAsCleared(
+      group().renderbuffer_manager(), nullptr, GL_DEPTH_ATTACHMENT, true);
 
   Enable cmd_enable;
   cmd_enable.Init(GL_DEPTH_TEST);
@@ -1997,6 +2018,13 @@ TEST_P(GLES3DecoderTest, ClearBufferfiValidArgs) {
   DoFramebufferRenderbuffer(
       GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
       client_renderbuffer_id_, kServiceRenderbufferId, GL_NO_ERROR);
+
+  // TODO(zmo): Set up expectations for the path where the attachment isn't
+  // marked as cleared.
+  Framebuffer* framebuffer =
+      group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
+  framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
+                                       GL_DEPTH_STENCIL_ATTACHMENT, true);
 
   Enable cmd_enable;
   cmd_enable.Init(GL_STENCIL_TEST);
