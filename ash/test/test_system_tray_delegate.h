@@ -6,6 +6,7 @@
 #define ASH_TEST_TEST_SYSTEM_TRAY_DELEGATE_H_
 
 #include "ash/common/system/tray/default_system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 
@@ -47,6 +48,9 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
   // Clears the session length limit.
   void ClearSessionLengthLimit();
 
+  // Sets the IME info.
+  void SetCurrentIME(const IMEInfo& info);
+
   // Overridden from SystemTrayDelegate:
   LoginStatus GetUserLoginStatus() const override;
   bool IsUserSupervised() const override;
@@ -59,12 +63,14 @@ class TestSystemTrayDelegate : public DefaultSystemTrayDelegate {
       SystemTray* tray) override;
   std::unique_ptr<SystemTrayItem> CreateRotationLockTrayItem(
       SystemTray* tray) override;
+  void GetCurrentIME(IMEInfo* info) override;
 
  private:
   bool should_show_display_notification_;
   LoginStatus login_status_;
   base::TimeDelta session_length_limit_;
   bool session_length_limit_set_;
+  IMEInfo current_ime_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSystemTrayDelegate);
 };

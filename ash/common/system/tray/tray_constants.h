@@ -28,6 +28,8 @@ extern const int kTrayImageItemHorizontalPaddingBottomAlignment;
 extern const int kTrayImageItemHorizontalPaddingVerticalAlignment;
 extern const int kTrayImageItemVerticalPaddingVerticalAlignment;
 
+extern const int kTrayImeIconSize;
+
 ASH_EXPORT extern const int kTrayItemSize;
 
 extern const int kTrayLabelItemHorizontalPaddingBottomAlignment;

@@ -63,6 +63,10 @@ void TestSystemTrayDelegate::ClearSessionLengthLimit() {
   session_length_limit_set_ = false;
 }
 
+void TestSystemTrayDelegate::SetCurrentIME(const IMEInfo& info) {
+  current_ime_ = info;
+}
+
 LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
   // Initial login status has been changed for testing.
   if (g_initial_status != LoginStatus::USER &&
@@ -132,6 +136,10 @@ TestSystemTrayDelegate::CreateRotationLockTrayItem(SystemTray* tray) {
 #else
   return nullptr;
 #endif
+}
+
+void TestSystemTrayDelegate::GetCurrentIME(IMEInfo* info) {
+  *info = current_ime_;
 }
 
 }  // namespace test

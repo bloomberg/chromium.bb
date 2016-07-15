@@ -18,6 +18,7 @@
 #include "base/i18n/time_formatting.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
 #include "ash/common/system/chromeos/session/logout_button_tray.h"
 #include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #endif
@@ -33,6 +34,7 @@ StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
 #if defined(OS_CHROMEOS)
       logout_button_tray_(NULL),
       virtual_keyboard_tray_(NULL),
+      ime_menu_tray_(nullptr),
 #endif
       login_status_(LoginStatus::NOT_LOGGED_IN),
       wm_shelf_(wm_shelf) {
@@ -58,6 +60,7 @@ void StatusAreaWidget::CreateTrayViews() {
 #if defined(OS_CHROMEOS)
   AddLogoutButtonTray();
   AddVirtualKeyboardTray();
+  AddImeMenuTray();
 #endif
 
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
@@ -68,6 +71,7 @@ void StatusAreaWidget::CreateTrayViews() {
 #if defined(OS_CHROMEOS)
   logout_button_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
+  ime_menu_tray_->Initialize();
 #endif
   overview_button_tray_->Initialize();
   SetShelfAlignment(system_tray_->shelf_alignment());
@@ -85,6 +89,8 @@ void StatusAreaWidget::Shutdown() {
   delete system_tray_;
   system_tray_ = NULL;
 #if defined(OS_CHROMEOS)
+  delete ime_menu_tray_;
+  ime_menu_tray_ = nullptr;
   delete virtual_keyboard_tray_;
   virtual_keyboard_tray_ = NULL;
   delete logout_button_tray_;
@@ -123,6 +129,7 @@ void StatusAreaWidget::SchedulePaint() {
 #if defined(OS_CHROMEOS)
   virtual_keyboard_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
+  ime_menu_tray_->SchedulePaint();
 #endif
   overview_button_tray_->SchedulePaint();
 }
@@ -165,6 +172,11 @@ void StatusAreaWidget::AddVirtualKeyboardTray() {
   virtual_keyboard_tray_ = new VirtualKeyboardTray(wm_shelf_);
   status_area_widget_delegate_->AddTray(virtual_keyboard_tray_);
 }
+
+void StatusAreaWidget::AddImeMenuTray() {
+  ime_menu_tray_ = new ImeMenuTray(wm_shelf_);
+  status_area_widget_delegate_->AddTray(ime_menu_tray_);
+}
 #endif
 
 void StatusAreaWidget::AddOverviewButtonTray() {
@@ -183,6 +195,8 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
     logout_button_tray_->SetShelfAlignment(alignment);
   if (virtual_keyboard_tray_)
     virtual_keyboard_tray_->SetShelfAlignment(alignment);
+  if (ime_menu_tray_)
+    ime_menu_tray_->SetShelfAlignment(alignment);
 #endif
   if (overview_button_tray_)
     overview_button_tray_->SetShelfAlignment(alignment);

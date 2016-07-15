@@ -498,6 +498,9 @@ Press Shift + Alt to switch.
   <message name="IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON" desc="The title of the button in the notification for Happiness Tracking Survey to take the said survey.">
     Take our survey
   </message>
+  <message name="IDS_ASH_IME_MENU_ACCESSIBLE_NAME" desc="The accessible text for opt-in IME menu icon in status tray.">
+    IME menu button
+  </message>
 
   <!-- Quick Unlock Strings -->
    <message name="IDS_ASH_QUICK_UNLOCK_NOTIFICATION_TITLE" desc="The title of the notification for Quick Unlock feature notification.">
