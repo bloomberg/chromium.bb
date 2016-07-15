@@ -753,31 +753,39 @@ void UninstallBinariesIfUnused(
     return;
   }
 
-  // TODO(grt): Fix this to properly uninstall unused binaries once we see that
-  // the repair of actively used Chromes is working; see
-  // AddExistingMultiInstalls and https://crbug.com/579627.
-
   LOG(INFO) << "Uninstalling unused binaries";
   installer_state.UpdateStage(installer::UNINSTALLING_BINARIES);
 
-  // Simulate the uninstall as coming from the installed version.
+  // Create an InstallerState that represents a force uninstall of Chrome
+  // residing with the installed version of the binaries. This will result in
+  // removing Chrome and all of its program files and associated registrations
+  // (aside from user data).
   const ProductState* binaries_state =
       original_state.GetProductState(installer_state.system_install(),
                                      BrowserDistribution::CHROME_BINARIES);
-  const base::CommandLine& uninstall_cmd(binaries_state->uninstall_command());
+  base::CommandLine uninstall_cmd(binaries_state->uninstall_command());
+  uninstall_cmd.AppendSwitch(installer::switches::kChrome);
+  uninstall_cmd.AppendSwitch(installer::switches::kForceUninstall);
   MasterPreferences uninstall_prefs(uninstall_cmd);
   InstallerState uninstall_state;
   uninstall_state.Initialize(uninstall_cmd, uninstall_prefs, original_state);
-
   *install_status = UninstallProducts(original_state, uninstall_state,
                                       uninstall_cmd.GetProgram(),
                                       uninstall_cmd);
 
   // Report that the binaries were uninstalled if they were. This translates
-  // into a successful install return code.
+  // into a successful install/update return code.
   if (IsUninstallSuccess(*install_status)) {
     *install_status = installer::UNUSED_BINARIES_UNINSTALLED;
+#if defined(GOOGLE_CHROME_BUILD)
+    // Write the result for the sake of Google Update in Google Chrome builds,
+    // but skip this for Chromium builds. The reason is a bit icky: Chromium
+    // builds lump the "ClientState" and "Clients" keys into a single key.  As a
+    // consequence, writing this value causes Software\Chromium to be re-created
+    // after it was deleted during the uninstall. Google Chrome builds don't
+    // suffer this since the two keys are distinct and have different lifetimes.
     installer_state.WriteInstallerResult(*install_status, 0, NULL);
+#endif
   }
 }
 
