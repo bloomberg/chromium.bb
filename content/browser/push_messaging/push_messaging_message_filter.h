@@ -121,19 +121,15 @@ class PushMessagingMessageFilter : public BrowserMessageFilter {
   void OnGetSubscription(int request_id,
                          int64_t service_worker_registration_id);
 
-  void DidGetSenderInfo(int request_id,
-                        int64_t service_worker_registration_id,
-                        const std::vector<std::string>& sender_info,
-                        ServiceWorkerStatusCode status);
-
-  void DidGetSubscription(int request_id,
-                          int64_t service_worker_registration_id,
-                          bool uses_standard_protocol,
-                          const std::vector<std::string>& push_subscription_id,
-                          ServiceWorkerStatusCode status);
+  void DidGetSubscription(
+      int request_id,
+      int64_t service_worker_registration_id,
+      const std::vector<std::string>& push_subscription_id_and_sender_info,
+      ServiceWorkerStatusCode service_worker_status);
 
   void DidGetSubscriptionKeys(int request_id,
                               const GURL& endpoint,
+                              const std::string& sender_info,
                               bool success,
                               const std::vector<uint8_t>& p256dh,
                               const std::vector<uint8_t>& auth);

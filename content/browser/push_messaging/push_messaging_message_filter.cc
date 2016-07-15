@@ -519,10 +519,11 @@ void PushMessagingMessageFilter::SendSubscriptionSuccess(
 
   if (data.FromDocument()) {
     Send(new PushMessagingMsg_SubscribeFromDocumentSuccess(
-        data.render_frame_id, data.request_id, endpoint, p256dh, auth));
+        data.render_frame_id, data.request_id, endpoint, data.options, p256dh,
+        auth));
   } else {
     Send(new PushMessagingMsg_SubscribeFromWorkerSuccess(
-        data.request_id, endpoint, p256dh, auth));
+        data.request_id, endpoint, data.options, p256dh, auth));
   }
   RecordRegistrationStatus(status);
 }
@@ -724,45 +725,25 @@ void PushMessagingMessageFilter::OnGetSubscription(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(johnme): Validate arguments?
   service_worker_context_->GetRegistrationUserData(
-      service_worker_registration_id, {kPushSenderIdServiceWorkerKey},
-      base::Bind(&PushMessagingMessageFilter::DidGetSenderInfo,
-                 weak_factory_io_to_io_.GetWeakPtr(), request_id,
-                 service_worker_registration_id));
-}
-
-void PushMessagingMessageFilter::DidGetSenderInfo(
-    int request_id,
-    int64_t service_worker_registration_id,
-    const std::vector<std::string>& sender_info,
-    ServiceWorkerStatusCode status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (status != SERVICE_WORKER_OK || sender_info.size() != 1) {
-    DidGetSubscription(request_id, service_worker_registration_id,
-                       false /* uses_standard_protocol */,
-                       std::vector<std::string>() /* push_subscription_id */,
-                       status);
-    return;
-  }
-
-  const bool uses_standard_protocol = IsApplicationServerKey(sender_info[0]);
-  service_worker_context_->GetRegistrationUserData(
-      service_worker_registration_id, {kPushRegistrationIdServiceWorkerKey},
+      service_worker_registration_id,
+      {kPushRegistrationIdServiceWorkerKey, kPushSenderIdServiceWorkerKey},
       base::Bind(&PushMessagingMessageFilter::DidGetSubscription,
                  weak_factory_io_to_io_.GetWeakPtr(), request_id,
-                 service_worker_registration_id, uses_standard_protocol));
+                 service_worker_registration_id));
 }
 
 void PushMessagingMessageFilter::DidGetSubscription(
     int request_id,
     int64_t service_worker_registration_id,
-    bool uses_standard_protocol,
-    const std::vector<std::string>& push_subscription_id,
+    const std::vector<std::string>& push_subscription_id_and_sender_info,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PushGetRegistrationStatus get_status =
       PUSH_GETREGISTRATION_STATUS_STORAGE_ERROR;
   switch (service_worker_status) {
     case SERVICE_WORKER_OK: {
+      DCHECK_EQ(2u, push_subscription_id_and_sender_info.size());
+
       if (!service_available_) {
         // Return not found in incognito mode, so websites can't detect it.
         get_status =
@@ -772,18 +753,20 @@ void PushMessagingMessageFilter::DidGetSubscription(
         break;
       }
 
-      ServiceWorkerRegistration* registration =
-          service_worker_context_->GetLiveRegistration(
-              service_worker_registration_id);
-
-      const GURL origin = registration->pattern().GetOrigin();
-      DCHECK_EQ(1u, push_subscription_id.size());
-      const GURL endpoint =
-          CreateEndpoint(uses_standard_protocol, push_subscription_id[0]);
+      const bool uses_standard_protocol =
+          IsApplicationServerKey(push_subscription_id_and_sender_info[1]);
+      const GURL endpoint = CreateEndpoint(
+          uses_standard_protocol, push_subscription_id_and_sender_info[0]);
 
       auto callback =
           base::Bind(&PushMessagingMessageFilter::DidGetSubscriptionKeys,
-                     weak_factory_io_to_io_.GetWeakPtr(), request_id, endpoint);
+                     weak_factory_io_to_io_.GetWeakPtr(), request_id, endpoint,
+                     push_subscription_id_and_sender_info[1]);
+
+      ServiceWorkerRegistration* registration =
+          service_worker_context_->GetLiveRegistration(
+              service_worker_registration_id);
+      const GURL origin = registration->pattern().GetOrigin();
 
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
@@ -831,6 +814,7 @@ void PushMessagingMessageFilter::DidGetSubscription(
 void PushMessagingMessageFilter::DidGetSubscriptionKeys(
     int request_id,
     const GURL& endpoint,
+    const std::string& sender_info,
     bool success,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
@@ -845,8 +829,15 @@ void PushMessagingMessageFilter::DidGetSubscriptionKeys(
     return;
   }
 
+  PushSubscriptionOptions options;
+  // Chrome rejects subscription requests with userVisibleOnly false, so it must
+  // have been true. TODO(harkness): If Chrome starts accepting silent push
+  // subscriptions with userVisibleOnly false, the bool will need to be stored.
+  options.user_visible_only = true;
+  options.sender_info = sender_info;
+
   Send(new PushMessagingMsg_GetSubscriptionSuccess(request_id, endpoint,
-                                                   p256dh, auth));
+                                                   options, p256dh, auth));
 
   RecordGetRegistrationStatus(PUSH_GETREGISTRATION_STATUS_SUCCESS);
 }

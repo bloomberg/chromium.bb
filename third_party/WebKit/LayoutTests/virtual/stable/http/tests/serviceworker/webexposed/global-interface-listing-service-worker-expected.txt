@@ -476,10 +476,15 @@ interface PushMessageData
     method text
 interface PushSubscription
     getter endpoint
+    getter options
     method constructor
     method getKey
     method toJSON
     method unsubscribe
+interface PushSubscriptionOptions
+    getter applicationServerKey
+    getter userVisibleOnly
+    method constructor
 interface ReadableStream
     getter locked
     method cancel

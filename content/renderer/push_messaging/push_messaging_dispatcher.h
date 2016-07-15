@@ -64,6 +64,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
 
   void OnSubscribeFromDocumentSuccess(int32_t request_id,
                                       const GURL& endpoint,
+                                      const PushSubscriptionOptions& options,
                                       const std::vector<uint8_t>& p256dh,
                                       const std::vector<uint8_t>& auth);
 

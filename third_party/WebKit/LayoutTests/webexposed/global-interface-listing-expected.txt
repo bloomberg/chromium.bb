@@ -4559,10 +4559,16 @@ interface PushManager
 interface PushSubscription
     attribute @@toStringTag
     getter endpoint
+    getter options
     method constructor
     method getKey
     method toJSON
     method unsubscribe
+interface PushSubscriptionOptions
+    attribute @@toStringTag
+    getter applicationServerKey
+    getter userVisibleOnly
+    method constructor
 interface RTCCertificate
     attribute @@toStringTag
     getter expires

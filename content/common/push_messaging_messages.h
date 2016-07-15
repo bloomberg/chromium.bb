@@ -37,15 +37,17 @@ IPC_STRUCT_TRAITS_END()
 
 // Messages sent from the browser to the child process.
 
-IPC_MESSAGE_ROUTED4(PushMessagingMsg_SubscribeFromDocumentSuccess,
+IPC_MESSAGE_ROUTED5(PushMessagingMsg_SubscribeFromDocumentSuccess,
                     int32_t /* request_id */,
                     GURL /* push_endpoint */,
+                    content::PushSubscriptionOptions /* options */,
                     std::vector<uint8_t> /* p256dh */,
                     std::vector<uint8_t> /* auth */)
 
-IPC_MESSAGE_CONTROL4(PushMessagingMsg_SubscribeFromWorkerSuccess,
+IPC_MESSAGE_CONTROL5(PushMessagingMsg_SubscribeFromWorkerSuccess,
                      int32_t /* request_id */,
                      GURL /* push_endpoint */,
+                     content::PushSubscriptionOptions /* options */,
                      std::vector<uint8_t> /* p256dh */,
                      std::vector<uint8_t> /* auth */)
 
@@ -66,9 +68,10 @@ IPC_MESSAGE_CONTROL3(PushMessagingMsg_UnsubscribeError,
                      blink::WebPushError::ErrorType /* error_type */,
                      std::string /* error_message */)
 
-IPC_MESSAGE_CONTROL4(PushMessagingMsg_GetSubscriptionSuccess,
+IPC_MESSAGE_CONTROL5(PushMessagingMsg_GetSubscriptionSuccess,
                      int32_t /* request_id */,
                      GURL /* push_endpoint */,
+                     content::PushSubscriptionOptions /* options */,
                      std::vector<uint8_t> /* p256dh */,
                      std::vector<uint8_t> /* auth */)
 

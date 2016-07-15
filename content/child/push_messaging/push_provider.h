@@ -27,6 +27,7 @@ struct WebPushSubscriptionOptions;
 namespace content {
 
 class ThreadSafeSender;
+struct PushSubscriptionOptions;
 
 class PushProvider : public blink::WebPushProvider,
                      public WorkerThread::Observer {
@@ -68,6 +69,7 @@ class PushProvider : public blink::WebPushProvider,
   // IPC message handlers.
   void OnSubscribeFromWorkerSuccess(int request_id,
                                     const GURL& endpoint,
+                                    const PushSubscriptionOptions& options,
                                     const std::vector<uint8_t>& p256dh,
                                     const std::vector<uint8_t>& auth);
   void OnSubscribeFromWorkerError(int request_id,
@@ -78,6 +80,7 @@ class PushProvider : public blink::WebPushProvider,
                           const std::string& error_message);
   void OnGetSubscriptionSuccess(int request_id,
                                 const GURL& endpoint,
+                                const PushSubscriptionOptions& options,
                                 const std::vector<uint8_t>& p256dh,
                                 const std::vector<uint8_t>& auth);
   void OnGetSubscriptionError(int request_id, PushGetRegistrationStatus status);

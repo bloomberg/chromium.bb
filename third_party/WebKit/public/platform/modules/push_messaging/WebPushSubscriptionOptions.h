@@ -21,6 +21,7 @@ struct WebPushSubscriptionOptions {
 
     // P-256 public key, in uncompressed form, of the app server that can send
     // push messages to this subscription.
+    // TODO(johnme): Make this a WebVector<uint8_t>.
     WebString applicationServerKey;
 };
 

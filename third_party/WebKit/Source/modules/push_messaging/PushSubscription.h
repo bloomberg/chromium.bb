@@ -17,6 +17,7 @@
 
 namespace blink {
 
+class PushSubscriptionOptions;
 class ServiceWorkerRegistration;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -30,7 +31,9 @@ public:
 
     virtual ~PushSubscription();
 
-    KURL endpoint() const;
+    KURL endpoint() const { return m_endpoint; }
+
+    PushSubscriptionOptions* options() const { return m_options.get(); }
 
     DOMArrayBuffer* getKey(const AtomicString& name) const;
     ScriptPromise unsubscribe(ScriptState*);
@@ -43,6 +46,8 @@ private:
     PushSubscription(const WebPushSubscription&, ServiceWorkerRegistration*);
 
     KURL m_endpoint;
+
+    Member<PushSubscriptionOptions> m_options;
 
     Member<DOMArrayBuffer> m_p256dh;
     Member<DOMArrayBuffer> m_auth;

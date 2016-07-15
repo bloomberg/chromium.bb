@@ -14,6 +14,7 @@ enum PushEncryptionKeyName {
     RuntimeEnabled=PushMessaging,
 ] interface PushSubscription {
     readonly attribute USVString endpoint;
+    [SameObject] readonly attribute PushSubscriptionOptions options;
 
     ArrayBuffer? getKey(PushEncryptionKeyName name);
     [CallWith=ScriptState] Promise<boolean> unsubscribe();

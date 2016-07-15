@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "modules/push_messaging/PushError.h"
+#include "modules/push_messaging/PushSubscriptionOptions.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/push_messaging/WebPushProvider.h"
@@ -33,6 +34,7 @@ void PushSubscription::dispose(WebPushSubscription* pushSubscription)
 
 PushSubscription::PushSubscription(const WebPushSubscription& subscription, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_endpoint(subscription.endpoint)
+    , m_options(PushSubscriptionOptions::create(subscription.options))
     , m_p256dh(DOMArrayBuffer::create(subscription.p256dh.data(), subscription.p256dh.size()))
     , m_auth(DOMArrayBuffer::create(subscription.auth.data(), subscription.auth.size()))
     , m_serviceWorkerRegistration(serviceWorkerRegistration)
@@ -41,11 +43,6 @@ PushSubscription::PushSubscription(const WebPushSubscription& subscription, Serv
 
 PushSubscription::~PushSubscription()
 {
-}
-
-KURL PushSubscription::endpoint() const
-{
-    return m_endpoint;
 }
 
 DOMArrayBuffer* PushSubscription::getKey(const AtomicString& name) const
@@ -87,6 +84,7 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* scriptState)
 
 DEFINE_TRACE(PushSubscription)
 {
+    visitor->trace(m_options);
     visitor->trace(m_p256dh);
     visitor->trace(m_auth);
     visitor->trace(m_serviceWorkerRegistration);

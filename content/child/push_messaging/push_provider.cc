@@ -15,6 +15,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/push_messaging_messages.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/common/push_subscription_options.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscription.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
@@ -158,6 +159,7 @@ bool PushProvider::OnMessageReceived(const IPC::Message& message) {
 void PushProvider::OnSubscribeFromWorkerSuccess(
     int request_id,
     const GURL& endpoint,
+    const PushSubscriptionOptions& options,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
   blink::WebPushSubscriptionCallbacks* callbacks =
@@ -165,8 +167,9 @@ void PushProvider::OnSubscribeFromWorkerSuccess(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(
-      base::WrapUnique(new blink::WebPushSubscription(endpoint, p256dh, auth)));
+  callbacks->onSuccess(base::WrapUnique(new blink::WebPushSubscription(
+      endpoint, options.user_visible_only,
+      blink::WebString::fromLatin1(options.sender_info), p256dh, auth)));
 
   subscription_callbacks_.Remove(request_id);
 }
@@ -218,6 +221,7 @@ void PushProvider::OnUnsubscribeError(int request_id,
 void PushProvider::OnGetSubscriptionSuccess(
     int request_id,
     const GURL& endpoint,
+    const PushSubscriptionOptions& options,
     const std::vector<uint8_t>& p256dh,
     const std::vector<uint8_t>& auth) {
   blink::WebPushSubscriptionCallbacks* callbacks =
@@ -225,8 +229,9 @@ void PushProvider::OnGetSubscriptionSuccess(
   if (!callbacks)
     return;
 
-  callbacks->onSuccess(
-      base::WrapUnique(new blink::WebPushSubscription(endpoint, p256dh, auth)));
+  callbacks->onSuccess(base::WrapUnique(new blink::WebPushSubscription(
+      endpoint, options.user_visible_only,
+      blink::WebString::fromLatin1(options.sender_info), p256dh, auth)));
 
   subscription_callbacks_.Remove(request_id);
 }

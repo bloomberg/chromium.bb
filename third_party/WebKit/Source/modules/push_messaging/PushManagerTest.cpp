@@ -6,6 +6,7 @@
 
 #include "core/dom/DOMArrayBuffer.h"
 #include "modules/push_messaging/PushSubscriptionOptions.h"
+#include "modules/push_messaging/PushSubscriptionOptionsInit.h"
 #include "public/platform/WebString.h"
 #include "public/platform/modules/push_messaging/WebPushSubscriptionOptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,13 +29,13 @@ const uint8_t kApplicationServerKey[kApplicationServerKeyLength] = {
 
 TEST(PushManagerTest, ValidSenderKey)
 {
-    PushSubscriptionOptions options;
+    PushSubscriptionOptionsInit options;
     options.setApplicationServerKey(
         ArrayBufferOrArrayBufferView::fromArrayBuffer(
             DOMArrayBuffer::create(kApplicationServerKey, kApplicationServerKeyLength)));
 
     TrackExceptionState exceptionState;
-    WebPushSubscriptionOptions output = PushManager::toWebPushSubscriptionOptions(options, exceptionState);
+    WebPushSubscriptionOptions output = PushSubscriptionOptions::toWeb(options, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     EXPECT_EQ(output.applicationServerKey.length(), kApplicationServerKeyLength);
 
@@ -52,13 +53,13 @@ TEST(PushManagerTest, InvalidSenderKeyLength)
 {
     uint8_t senderKey[kMaxKeyLength + 1];
     memset(senderKey, 0, sizeof(senderKey));
-    PushSubscriptionOptions options;
+    PushSubscriptionOptionsInit options;
     options.setApplicationServerKey(
         ArrayBufferOrArrayBufferView::fromArrayBuffer(
             DOMArrayBuffer::create(senderKey, kMaxKeyLength + 1)));
 
     TrackExceptionState exceptionState;
-    WebPushSubscriptionOptions output = PushManager::toWebPushSubscriptionOptions(options, exceptionState);
+    WebPushSubscriptionOptions output = PushSubscriptionOptions::toWeb(options, exceptionState);
     EXPECT_TRUE(exceptionState.hadException());
 }
 

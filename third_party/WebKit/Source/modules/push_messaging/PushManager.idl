@@ -8,7 +8,7 @@
     Exposed=(Window,ServiceWorker),
     RuntimeEnabled=PushMessaging,
 ] interface PushManager {
-    [CallWith=ScriptState, RaisesException] Promise<PushSubscription> subscribe(optional PushSubscriptionOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<PushSubscription> subscribe(optional PushSubscriptionOptionsInit options);
     [CallWith=ScriptState] Promise<PushSubscription?> getSubscription();
-    [CallWith=ScriptState, RaisesException] Promise permissionState(optional PushSubscriptionOptions options);
+    [CallWith=ScriptState, RaisesException] Promise permissionState(optional PushSubscriptionOptionsInit options);
 };

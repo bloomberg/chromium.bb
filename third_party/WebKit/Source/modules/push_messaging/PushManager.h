@@ -12,11 +12,10 @@
 namespace blink {
 
 class ExceptionState;
-class PushSubscriptionOptions;
+class PushSubscriptionOptionsInit;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerRegistration;
-struct WebPushSubscriptionOptions;
 
 class MODULES_EXPORT PushManager final : public GarbageCollected<PushManager>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -26,16 +25,11 @@ public:
         return new PushManager(registration);
     }
 
-    ScriptPromise subscribe(ScriptState*, const PushSubscriptionOptions&,
-        ExceptionState&);
+    ScriptPromise subscribe(ScriptState*, const PushSubscriptionOptionsInit&, ExceptionState&);
     ScriptPromise getSubscription(ScriptState*);
-    ScriptPromise permissionState(ScriptState*, const PushSubscriptionOptions&,
-        ExceptionState&);
+    ScriptPromise permissionState(ScriptState*, const PushSubscriptionOptionsInit&, ExceptionState&);
 
     DECLARE_TRACE();
-
-    static WebPushSubscriptionOptions toWebPushSubscriptionOptions(
-        const PushSubscriptionOptions&, ExceptionState&);
 
 private:
     explicit PushManager(ServiceWorkerRegistration*);

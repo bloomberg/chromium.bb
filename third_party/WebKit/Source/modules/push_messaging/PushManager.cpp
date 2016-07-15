@@ -17,6 +17,7 @@
 #include "modules/push_messaging/PushSubscription.h"
 #include "modules/push_messaging/PushSubscriptionCallbacks.h"
 #include "modules/push_messaging/PushSubscriptionOptions.h"
+#include "modules/push_messaging/PushSubscriptionOptionsInit.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/push_messaging/WebPushClient.h"
@@ -28,41 +29,11 @@
 namespace blink {
 namespace {
 
-const int kMaxApplicationServerKeyLength = 255;
-
 WebPushProvider* pushProvider()
 {
     WebPushProvider* webPushProvider = Platform::current()->pushProvider();
     DCHECK(webPushProvider);
     return webPushProvider;
-}
-
-String bufferSourceToString(const ArrayBufferOrArrayBufferView& applicationServerKey, ExceptionState& exceptionState)
-{
-    // Check the validity of the sender info. It must be a 65 byte unencrypted key,
-    // which has the byte 0x04 as the first byte as a marker.
-    unsigned char* input;
-    int length;
-    if (applicationServerKey.isArrayBuffer()) {
-        input = static_cast<unsigned char*>(
-            applicationServerKey.getAsArrayBuffer()->data());
-        length = applicationServerKey.getAsArrayBuffer()->byteLength();
-    } else if (applicationServerKey.isArrayBufferView()) {
-        input = static_cast<unsigned char*>(
-            applicationServerKey.getAsArrayBufferView()->buffer()->data());
-        length = applicationServerKey.getAsArrayBufferView()->buffer()->byteLength();
-    } else {
-        NOTREACHED();
-        return String();
-    }
-
-    // If the key is valid, just treat it as a string of bytes and pass it to
-    // the push service.
-    if (length <= kMaxApplicationServerKeyLength)
-        return WebString::fromLatin1(input, length);
-
-    exceptionState.throwDOMException(InvalidAccessError, "The provided applicationServerKey is not valid.");
-    return String();
 }
 
 } // namespace
@@ -73,23 +44,12 @@ PushManager::PushManager(ServiceWorkerRegistration* registration)
     DCHECK(registration);
 }
 
-WebPushSubscriptionOptions PushManager::toWebPushSubscriptionOptions(const PushSubscriptionOptions& options, ExceptionState& exceptionState)
-{
-    WebPushSubscriptionOptions webOptions;
-    webOptions.userVisibleOnly = options.userVisibleOnly();
-    if (options.hasApplicationServerKey()) {
-        webOptions.applicationServerKey = bufferSourceToString(options.applicationServerKey(),
-            exceptionState);
-    }
-    return webOptions;
-}
-
-ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscriptionOptions& options, ExceptionState& exceptionState)
+ScriptPromise PushManager::subscribe(ScriptState* scriptState, const PushSubscriptionOptionsInit& options, ExceptionState& exceptionState)
 {
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Subscription failed - no active Service Worker"));
 
-    const WebPushSubscriptionOptions& webOptions = toWebPushSubscriptionOptions(options, exceptionState);
+    const WebPushSubscriptionOptions& webOptions = PushSubscriptionOptions::toWeb(options, exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
 
@@ -120,7 +80,7 @@ ScriptPromise PushManager::getSubscription(ScriptState* scriptState)
     return promise;
 }
 
-ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushSubscriptionOptions& options, ExceptionState& exceptionState)
+ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushSubscriptionOptionsInit& options, ExceptionState& exceptionState)
 {
     if (scriptState->getExecutionContext()->isDocument()) {
         Document* document = toDocument(scriptState->getExecutionContext());
@@ -131,7 +91,7 @@ ScriptPromise PushManager::permissionState(ScriptState* scriptState, const PushS
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    pushProvider()->getPermissionStatus(m_registration->webRegistration(), toWebPushSubscriptionOptions(options, exceptionState), new PushPermissionStatusCallbacks(resolver));
+    pushProvider()->getPermissionStatus(m_registration->webRegistration(), PushSubscriptionOptions::toWeb(options, exceptionState), new PushPermissionStatusCallbacks(resolver));
     return promise;
 }
 
