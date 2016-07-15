@@ -16,16 +16,9 @@ class AcceleratorDelegate {
  public:
   virtual ~AcceleratorDelegate() {}
 
-  // Type of keys that triggers accelerators.
-  enum KeyType {
-    KEY_TYPE_SYSTEM,
-    KEY_TYPE_OTHER,
-  };
-
   // Return true if the |accelerator| has been processed.
   virtual bool ProcessAccelerator(const ui::KeyEvent& event,
-                                  const ui::Accelerator& accelerator,
-                                  KeyType key_type) = 0;
+                                  const ui::Accelerator& accelerator) = 0;
 };
 
 }  // namespace wm
