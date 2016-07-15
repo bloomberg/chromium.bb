@@ -97,7 +97,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     textfield_widget_->SetContentsView(container);
     container->AddChildView(textfield_);
 
-    textfield_->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
+    textfield_->SetBoundsRect(gfx::Rect(0, 0, 200, 21));
     textfield_->set_id(1);
     textfield_widget_->Show();
 
