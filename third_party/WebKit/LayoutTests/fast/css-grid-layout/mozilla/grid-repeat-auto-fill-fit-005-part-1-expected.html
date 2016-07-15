@@ -36,9 +36,7 @@ html,body {
 .r30,.r3 { grid-template-rows: [a] repeat(1, [b] 20px [c]) [d] 30px [e] 30px [f]; }
 .r03 { grid-template-rows:  [a] repeat(1, [b] 0px [c]) [d] 30px [e] 30px [f]; }
 .r003 { grid-template-rows: [a] repeat(1, [b] 0px [c]) [d] 30px [e] 30px [f]; }
-/* This is a bug in the original Mozilla tests, auto is not allowed in <auto-track-list> */
-/* .ra { grid-template-rows: [a] repeat(1, [b] 20px [c]) [d] 30px [e] auto [f]; } */
-.ra { grid-template-rows: none; }
+.ra { grid-template-rows: [a] repeat(1, [b] 20px [c]) [d] 30px [e] 10px [f]; }
 .r0a { grid-template-rows: [a] repeat(1, [b] 0 [c]) [d] 30px [e] auto [f]; grid-gap:0; padding-bottom:4px;}
 
 fit .r0 { grid-template-rows: [a] repeat(1, [b] 0 [c]) [d]; }
@@ -48,7 +46,7 @@ fit .r02 { grid-template-rows: [a] repeat(1, [b] 0 [c]) [d] 30px [e]; grid-gap:0
 fit .r3 { grid-template-rows: [a] repeat(1, [b] 20px [c]) [d] 30px [e] 30px [f]; }
 fit .r03 { grid-template-rows:  [a] repeat(1, [b] 0 [c]) [d] 30px [e] 30px [f]; grid-gap:0; }
 fit .r003 { grid-template-rows: [a] repeat(1, [b] 0 [c]) [d] 30px [e] 30px [f]; grid-gap:0; padding-bottom:4px;}
-fit .ra { grid-template-rows: [a] repeat(1, [b] 20px [c]) [d] 30px [e] auto [f]; }
+fit .ra { grid-template-rows: [a] repeat(1, [b] 20px [c]) [d] 30px [e] 10px [f]; }
 
 .w100 { height: 100px; }
 .w3 { height: 3px; }
@@ -239,146 +237,8 @@ fill,fit {
 
 </fill>
 
-<!-- <fit>
-
-     <div class="grid r1 w20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 w3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 xw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 xw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 mw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 w20 xw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 w3 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 w3 mw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 xw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 xw3 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r1 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-
-     <br clear="all">
-     <br clear="all">
-
-     <div class="grid r01 w w20"><a></a><b></b></div>
-     <div class="grid r01 w w3"><a></a><b></b></div>
-     <div class="grid r01 w xw20"><a></a><b></b></div>
-     <div class="grid r01 w xw3"><a></a><b></b></div>
-     <div class="grid r01 w mw20"><a></a><b></b></div>
-     <div class="grid r01 w mw3"><a></a><b></b></div>
-     <div class="grid r01 w w20 xw3"><a></a><b></b></div>
-     <div class="grid r01 w w3 mw20"><a></a><b></b></div>
-     <div class="grid r01 w w3 mw3"><a></a><b></b></div>
-     <div class="grid r01 w xw20"><a></a><b></b></div>
-     <div class="grid r01 w xw3 mw20"><a></a><b></b></div>
-     <div class="grid r01 w mw20"><a></a><b></b></div>
-
-     <div class="grid r10" style="min-height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r10" style="height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r10" style="min-height:0; height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r10" style="max-height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid ra"><x></x><x></x><a></a><b></b><x></x></div>
-
-     <div class="grid w r01" style="max-height:0"><a></a><b></b></div>
-     <div class="grid w r01" style="height:0"><a></a><b></b></div>
-     <div class="grid w r01" style="min-height:0; height:0"><a></a><b></b></div>
-     <div class="grid w r01" style="max-height:0"><a></a><b></b></div>
-     <div class="grid w r01" style="max-height:0"><a></a><b></b></div>
-     <div class="grid w r0a"><a></a><b></b></div>
-
-     <br clear="all">
-     <br clear="all">
-
-     <div class="grid r20 w20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 w3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 xw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 xw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 mw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 w20 xw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 w3 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 w3 mw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 xw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 xw3 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-
-     <br clear="all">
-     <br clear="all">
-
-     <div class="grid r02 w w20"><a></a><b></b></div>
-     <div class="grid r02 w w3"><a></a><b></b></div>
-     <div class="grid r02 w xw20"><a></a><b></b></div>
-     <div class="grid r02 w xw3"><a></a><b></b></div>
-     <div class="grid r02 w mw20"><a></a><b></b></div>
-     <div class="grid r02 w mw3"><a></a><b></b></div>
-     <div class="grid r02 w w20 xw3"><a></a><b></b></div>
-     <div class="grid r02 w w3 mw20"><a></a><b></b></div>
-     <div class="grid r02 w w3 mw3"><a></a><b></b></div>
-     <div class="grid r02 w xw20"><a></a><b></b></div>
-     <div class="grid r02 w xw3 mw20"><a></a><b></b></div>
-     <div class="grid r02 w mw20"><a></a><b></b></div>
-
-     <div class="grid r20" style="min-height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20" style="height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20" style="min-height:0; height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r20" style="max-height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid ra"><x></x><x></x><a></a><b></b><x></x></div>
-
-     <div class="grid w r02" style="min-height:0"><a></a><b></b></div>
-     <div class="grid w r02" style="height:0"><a></a><b></b></div>
-     <div class="grid w r02" style="min-height:0; height:0"><a></a><b></b></div>
-     <div class="grid w r02" style="max-height:0"><a></a><b></b></div>
-     <div class="grid w r02"><a></a><b></b></div>
-
-
-     <br clear="all">
-     <br clear="all">
-
-     <div class="grid r30 w w20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w w3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w xw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w xw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w mw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w w20 xw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w w3 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w w3 mw3"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w xw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w xw3 mw20"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid r30 w mw20"><x></x><x></x><a></a><b></b><x></x></div>
-
-     <br clear="all">
-     <br clear="all">
-
-     <div class="grid r03 w w20"><a></a><b></b></div>
-     <div class="grid r03 w w3"><a></a><b></b></div>
-     <div class="grid r03 w xw20"><a></a><b></b></div>
-     <div class="grid r03 w xw3"><a></a><b></b></div>
-     <div class="grid r03 w mw20"><a></a><b></b></div>
-     <div class="grid r03 w mw3"><a></a><b></b></div>
-     <div class="grid r03 w w20 xw3"><a></a><b></b></div>
-     <div class="grid r03 w w3 mw20"><a></a><b></b></div>
-     <div class="grid r03 w w3 mw3"><a></a><b></b></div>
-     <div class="grid r03 w xw20"><a></a><b></b></div>
-     <div class="grid r03 w xw3 mw20"><a></a><b></b></div>
-     <div class="grid r03 w mw20"><a></a><b></b></div>
-
-     <div class="grid w r30" style="min-height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid w r30" style="height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid w r30" style="min-height:0; height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid w r30" style="max-height:0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid  r0"><x></x><x></x><a></a><b></b><x></x></div>
-     <div class="grid  ra"><x></x><x></x><a></a><b></b><x></x></div>
-
-     <div class="grid w r003" style="min-height:0"><a></a><b></b></div>
-     <div class="grid w r03" style="height:0"><a></a><b></b></div>
-     <div class="grid w r03" style="min-height:0; height:0"><a></a><b></b></div>
-     <div class="grid w r03" style="max-height:0"><a></a><b></b></div>
-     <div class="grid w r003"><a></a><b></b></div>
-
-
-
-     </fit> -->
-
+<!-- The original 005 test from Mozilla had also tests for auto-fit. They were moved to part-2 as it
+     is not possible to fit all the contents in the viewport without scroll (required by reftests). -->
 
 </body>
 </html>

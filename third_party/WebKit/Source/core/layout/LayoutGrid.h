@@ -59,6 +59,8 @@ public:
 
     void dirtyGrid();
 
+    Vector<LayoutUnit> trackSizesForComputedStyle(GridTrackSizingDirection) const;
+
     const Vector<LayoutUnit>& columnPositions() const
     {
         ASSERT(!m_gridIsDirty);
@@ -69,13 +71,6 @@ public:
     {
         ASSERT(!m_gridIsDirty);
         return m_rowPositions;
-    }
-
-    LayoutUnit guttersSize(GridTrackSizingDirection, size_t span) const;
-
-    LayoutUnit offsetBetweenTracks(GridTrackSizingDirection direction) const
-    {
-        return direction == ForColumns ? m_offsetBetweenColumns : m_offsetBetweenRows;
     }
 
     typedef Vector<LayoutBox*, 1> GridCell;
@@ -130,6 +125,12 @@ private:
     void insertItemIntoGrid(LayoutBox&, const GridArea&);
 
     size_t computeAutoRepeatTracksCount(GridTrackSizingDirection) const;
+
+    typedef ListHashSet<size_t> OrderedTrackIndexSet;
+    std::unique_ptr<OrderedTrackIndexSet> computeEmptyTracksForAutoRepeat(GridTrackSizingDirection) const;
+
+    bool hasAutoRepeatEmptyTracks(GridTrackSizingDirection) const;
+    bool isEmptyAutoRepeatTrack(GridTrackSizingDirection, size_t lineNumber) const;
 
     void placeItemsOnGrid(SizingOperation);
     void populateExplicitGridAndOrderIterator();
@@ -200,6 +201,9 @@ private:
     bool tracksAreWiderThanMinTrackBreadth(GridTrackSizingDirection, GridSizingData&);
 #endif
 
+    LayoutUnit gridGapForDirection(GridTrackSizingDirection) const;
+    LayoutUnit guttersSize(GridTrackSizingDirection, size_t startLine, size_t span) const;
+
     size_t gridItemSpan(const LayoutBox&, GridTrackSizingDirection);
     bool spanningItemCrossesFlexibleSizedTracks(const GridSpan&, GridTrackSizingDirection, SizingOperation) const;
 
@@ -231,6 +235,9 @@ private:
     size_t m_autoRepeatRows { 0 };
 
     bool m_hasAnyOrthogonalChild;
+
+    std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyColumns { nullptr };
+    std::unique_ptr<OrderedTrackIndexSet> m_autoRepeatEmptyRows { nullptr };
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutGrid, isLayoutGrid());

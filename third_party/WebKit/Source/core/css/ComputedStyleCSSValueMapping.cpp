@@ -843,22 +843,16 @@ static CSSValue* valueForGridTrackList(GridTrackSizingDirection direction, const
     size_t insertionIndex;
     if (isLayoutGrid) {
         const auto* grid = toLayoutGrid(layoutObject);
-        const Vector<LayoutUnit>& trackPositions = direction == ForColumns ? grid->columnPositions() : grid->rowPositions();
-        // There are at least #tracks + 1 grid lines (trackPositions). Apart from that, the grid container can generate implicit grid tracks,
-        // so we'll have more trackPositions than trackSizes as the latter only contain the explicit grid.
-        ASSERT(trackPositions.size() - 1 >= trackSizes.size());
+        Vector<LayoutUnit> computedTrackSizes = grid->trackSizesForComputedStyle(direction);
+        size_t numTracks = computedTrackSizes.size();
 
-        size_t i;
-        LayoutUnit gutterSize = grid->guttersSize(direction, 2);
-        LayoutUnit offsetBetweenTracks = grid->offsetBetweenTracks(direction);
-        for (i = 0; i < trackPositions.size() - 2; ++i) {
+        for (size_t i = 0; i < numTracks; ++i) {
             addValuesForNamedGridLinesAtIndex(collector, i, *list);
-            list->append(*zoomAdjustedPixelValue(trackPositions[i + 1] - trackPositions[i] - gutterSize - offsetBetweenTracks, style));
+            list->append(*zoomAdjustedPixelValue(computedTrackSizes[i], style));
         }
-        // Last track line does not have any gutter or distribution offset.
-        addValuesForNamedGridLinesAtIndex(collector, i, *list);
-        list->append(*zoomAdjustedPixelValue(trackPositions[i + 1] - trackPositions[i], style));
-        insertionIndex = trackPositions.size() - 1;
+        addValuesForNamedGridLinesAtIndex(collector, numTracks + 1, *list);
+
+        insertionIndex = numTracks;
     } else {
         for (size_t i = 0; i < trackSizes.size(); ++i) {
             addValuesForNamedGridLinesAtIndex(collector, i, *list);
