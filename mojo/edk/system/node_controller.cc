@@ -652,29 +652,22 @@ void NodeController::SendPeerMessage(const ports::NodeName& name,
 }
 
 void NodeController::AcceptIncomingMessages() {
-  while (incoming_messages_flag_) {
-    // TODO: We may need to be more careful to avoid starving the rest of the
-    // thread here. Revisit this if it turns out to be a problem. One
-    // alternative would be to schedule a task to continue pumping messages
-    // after flushing once.
+  {
+    base::AutoLock lock(messages_lock_);
+    if (!incoming_messages_.empty()) {
+      // libstdc++'s deque creates an internal buffer on construction, even when
+      // the size is 0. So avoid creating it until it is necessary.
+      std::queue<ports::ScopedMessage> messages;
+      std::swap(messages, incoming_messages_);
+      base::AutoUnlock unlock(messages_lock_);
 
-    messages_lock_.Acquire();
-    if (incoming_messages_.empty()) {
-      messages_lock_.Release();
-      break;
-    }
-    // libstdc++'s deque creates an internal buffer on construction, even when
-    // the size is 0. So avoid creating it until it is necessary.
-    std::queue<ports::ScopedMessage> messages;
-    std::swap(messages, incoming_messages_);
-    incoming_messages_flag_.Set(false);
-    messages_lock_.Release();
-
-    while (!messages.empty()) {
-      node_->AcceptMessage(std::move(messages.front()));
-      messages.pop();
+      while (!messages.empty()) {
+        node_->AcceptMessage(std::move(messages.front()));
+        messages.pop();
+      }
     }
   }
+
   AttemptShutdownIfRequested();
 }
 
@@ -753,7 +746,6 @@ void NodeController::ForwardMessage(const ports::NodeName& node,
         !incoming_messages_task_posted_;
     incoming_messages_task_posted_ |= schedule_pump_task;
     incoming_messages_.emplace(std::move(message));
-    incoming_messages_flag_.Set(true);
   } else {
     SendPeerMessage(node, std::move(message));
   }

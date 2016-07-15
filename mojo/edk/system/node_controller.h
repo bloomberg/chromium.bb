@@ -286,8 +286,6 @@ class NodeController : public ports::NodeDelegate,
   // Ensures that there is only one incoming messages task posted to the IO
   // thread.
   bool incoming_messages_task_posted_ = false;
-  // Flag to fast-path checking |incoming_messages_|.
-  AtomicFlag incoming_messages_flag_;
 
   // Guards |shutdown_callback_|.
   base::Lock shutdown_lock_;
