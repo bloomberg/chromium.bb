@@ -66,33 +66,31 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
   base::SystemMemoryInfoKB info;
   if (!base::GetSystemMemoryInfo(&info)) {
     LOG(ERROR) << "GetSystemMemoryInfo failed";
+  } else if (system_reserved_kb_ != 0 || info.available != 0) {
+    // Preferred memory pressure heuristic:
+    // 1. Use /proc/meminfo's MemAvailable if possible, fall back to estimate
+    // of free + buffers + cached otherwise.
+    const int total_available =
+        (info.available != 0) ? info.available
+        : (info.free + info.buffers + info.cached);
+
+    // 2. Allow some memory to be 'reserved' on command line.
+    const int available = total_available - system_reserved_kb_;
+    const int total = info.total - system_reserved_kb_;
+    DCHECK_GT(total, 0);
+    const float ratio = available / static_cast<float>(total);
+
+    if (ratio < kCriticalMemoryFraction)
+      level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+    else if (ratio < kModerateMemoryFraction)
+      level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
   } else {
-    if (system_reserved_kb_ != 0 || info.available != 0) {
-      // Preferred memory pressure heuristic:
-      // 1. Use /proc/meminfo's MemAvailable if possible, fall back to estimate
-      // of free + buffers + cached otherwise.
-      const int total_available =
-          (info.available != 0) ? info.available
-                                : (info.free + info.buffers + info.cached);
-
-      // 2. Allow some memory to be 'reserved' on command line.
-      const int available = total_available - system_reserved_kb_;
-      const int total = info.total - system_reserved_kb_;
-      DCHECK_GT(total, 0);
-      const float ratio = available / static_cast<float>(total);
-
-      if (ratio < kCriticalMemoryFraction)
-        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
-      else if (ratio < kModerateMemoryFraction)
-        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
-    } else {
-      // Backup method purely using 'free' memory.  It may generate more
-      // pressure events than necessary, since more memory may actually be free.
-      if (info.free < kCriticalFreeMemoryKB)
-        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
-      else if (info.free < kModerateFreeMemoryKB)
-        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
-    }
+    // Backup method purely using 'free' memory.  It may generate more
+    // pressure events than necessary, since more memory may actually be free.
+    if (info.free < kCriticalFreeMemoryKB)
+      level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+    else if (info.free < kModerateFreeMemoryKB)
+      level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
   }
 
   UpdateMemoryPressureLevel(level);
