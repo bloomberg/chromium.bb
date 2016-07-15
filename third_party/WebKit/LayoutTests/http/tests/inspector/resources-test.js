@@ -58,7 +58,7 @@ InspectorTest.showResource = function(resourceURL, callback)
         if (sourceFrame.loaded)
             callbackWrapper(sourceFrame);
         else
-            InspectorTest.addSniffer(sourceFrame, "onTextEditorContentLoaded", callbackWrapper.bind(null, sourceFrame));
+            InspectorTest.addSniffer(sourceFrame, "onTextEditorContentSet", callbackWrapper.bind(null, sourceFrame));
     }
     InspectorTest.runAfterResourcesAreFinished([resourceURL], showResourceCallback);
 }

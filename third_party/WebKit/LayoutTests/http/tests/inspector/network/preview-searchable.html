@@ -36,7 +36,7 @@ function test()
             compontentView._ensureContentLoaded();
             if (!compontentView.loaded) {
                 // try again when content is loaded.
-                InspectorTest.addSniffer(compontentView, "onTextEditorContentLoaded", previewViewHandled.bind(this, searches, callback, view));
+                InspectorTest.addSniffer(compontentView, "onTextEditorContentSet", previewViewHandled.bind(this, searches, callback, view));
                 return;
             }
         } else if (compontentView instanceof WebInspector.XMLView) {
