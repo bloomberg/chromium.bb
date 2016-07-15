@@ -80,6 +80,8 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     // Policy key signature could not be verified using the hard-coded
     // verification key.
     VALIDATION_BAD_KEY_VERIFICATION_SIGNATURE,
+    // Device id doesn't match.
+    VALIDATION_WRONG_DEVICE_ID,
     VALIDATION_STATUS_SIZE  // MUST BE LAST
   };
 
@@ -144,6 +146,10 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   // validation if it does not have a non-empty request_token field.
   void ValidateDMToken(const std::string& dm_token,
                        ValidateDMTokenOption dm_token_option);
+
+  // Makes sure the device id on the policy is non-empty and matches
+  // |expected_device_id| unless |expected_device_id| is empty.
+  void ValidateDeviceId(const std::string& dm_token);
 
   // Validates the policy type.
   void ValidatePolicyType(const std::string& policy_type);
@@ -222,6 +228,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
     VALIDATE_SIGNATURE   = 1 << 7,
     VALIDATE_INITIAL_KEY = 1 << 8,
     VALIDATE_CACHED_KEY  = 1 << 9,
+    VALIDATE_DEVICE_ID   = 1 << 10,
   };
 
   enum SignatureType {
@@ -267,6 +274,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   Status CheckUsername();
   Status CheckDomain();
   Status CheckToken();
+  Status CheckDeviceId();
   Status CheckPolicyType();
   Status CheckEntityId();
   Status CheckPayload();
@@ -295,6 +303,7 @@ class POLICY_EXPORT CloudPolicyValidatorBase {
   bool canonicalize_user_;
   std::string domain_;
   std::string token_;
+  std::string device_id_;
   std::string policy_type_;
   std::string settings_entity_id_;
   std::string key_;

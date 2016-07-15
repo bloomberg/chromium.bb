@@ -86,6 +86,12 @@ void CloudPolicyValidatorBase::ValidateDMToken(
   dm_token_option_ = dm_token_option;
 }
 
+void CloudPolicyValidatorBase::ValidateDeviceId(
+    const std::string& device_id) {
+  validation_flags_ |= VALIDATE_DEVICE_ID;
+  device_id_ = device_id;
+}
+
 void CloudPolicyValidatorBase::ValidatePolicyType(
     const std::string& policy_type) {
   validation_flags_ |= VALIDATE_POLICY_TYPE;
@@ -138,15 +144,18 @@ void CloudPolicyValidatorBase::ValidateAgainstCurrentPolicy(
     ValidateDMTokenOption dm_token_option) {
   base::Time last_policy_timestamp;
   std::string expected_dm_token;
+  std::string expected_device_id;
   if (policy_data) {
     last_policy_timestamp =
         base::Time::UnixEpoch() +
         base::TimeDelta::FromMilliseconds(policy_data->timestamp());
     expected_dm_token = policy_data->request_token();
+    expected_device_id = policy_data->device_id();
   }
   ValidateTimestamp(last_policy_timestamp, base::Time::NowFromSystemTime(),
                     timestamp_option);
   ValidateDMToken(expected_dm_token, dm_token_option);
+  ValidateDeviceId(expected_device_id);
 }
 
 CloudPolicyValidatorBase::CloudPolicyValidatorBase(
@@ -233,6 +242,7 @@ void CloudPolicyValidatorBase::RunChecks() {
     { VALIDATE_POLICY_TYPE, &CloudPolicyValidatorBase::CheckPolicyType },
     { VALIDATE_ENTITY_ID,   &CloudPolicyValidatorBase::CheckEntityId },
     { VALIDATE_TOKEN,       &CloudPolicyValidatorBase::CheckToken },
+    { VALIDATE_DEVICE_ID,   &CloudPolicyValidatorBase::CheckDeviceId },
     { VALIDATE_USERNAME,    &CloudPolicyValidatorBase::CheckUsername },
     { VALIDATE_DOMAIN,      &CloudPolicyValidatorBase::CheckDomain },
     { VALIDATE_TIMESTAMP,   &CloudPolicyValidatorBase::CheckTimestamp },
@@ -450,6 +460,24 @@ CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckToken() {
     LOG(ERROR) << "Invalid DM token: " << policy_data_->request_token()
                << " - expected: " << token_;
     return VALIDATION_WRONG_TOKEN;
+  }
+
+  return VALIDATION_OK;
+}
+
+CloudPolicyValidatorBase::Status CloudPolicyValidatorBase::CheckDeviceId() {
+  // Make sure the device id is not empty and matches the expected device id.
+  if (!policy_data_->has_device_id() ||
+       policy_data_->device_id().empty()) {
+    LOG(ERROR) << "Empty device id encountered - expected: " << device_id_;
+    return VALIDATION_WRONG_DEVICE_ID;
+  }
+  // Prevent that the device id is wiped or changed.
+  // Only allow going from no device id to a non-empty device id.
+  if (!device_id_.empty() && policy_data_->device_id() != device_id_) {
+    LOG(ERROR) << "Invalid device id: " << policy_data_->device_id()
+               << " - expected: " << device_id_;
+    return VALIDATION_WRONG_DEVICE_ID;
   }
 
   return VALIDATION_OK;

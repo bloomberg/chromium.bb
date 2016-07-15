@@ -169,6 +169,9 @@ void DeviceLocalAccountPolicyStore::Validate(
   validator->ValidateDMToken(device_policy_data->request_token(),
                              CloudPolicyValidatorBase::DM_TOKEN_REQUIRED);
 
+  // Validate the device id to match what device policy has.
+  validator->ValidateDeviceId(device_policy_data->device_id());
+
   validator->ValidatePayload();
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
