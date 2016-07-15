@@ -25,9 +25,6 @@
 
 namespace {
 
-// Number of Most Visited elements on the NTP for logging purposes.
-const int kNumMostVisited = 8;
-
 // Name of the histogram keeping track of suggestion impressions.
 const char kMostVisitedImpressionHistogramName[] =
     "NewTabPage.SuggestionsImpression";
@@ -81,6 +78,8 @@ NTPUserDataLogger::~NTPUserDataLogger() {}
 // static
 NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
       content::WebContents* content) {
+  DCHECK(search::IsInstantNTP(content));
+
   // Calling CreateForWebContents when an instance is already attached has no
   // effect, so we can do this.
   NTPUserDataLogger::CreateForWebContents(content);
@@ -89,10 +88,19 @@ NTPUserDataLogger* NTPUserDataLogger::GetOrCreateFromWebContents(
   // We record the URL of this NTP in order to identify navigations that
   // originate from it. We use the NavigationController's URL since it might
   // differ from the WebContents URL which is usually chrome://newtab/.
+  //
+  // We update the NTP URL every time this function is called, because the NTP
+  // URL sometimes changes while it is open, and we care about the final one for
+  // detecting when the user leaves or returns to the NTP. In particular, if the
+  // Google URL changes (e.g. google.com -> google.de), then we fall back to the
+  // local NTP.
   const content::NavigationEntry* entry =
       content->GetController().GetVisibleEntry();
-  if (entry)
+  if (entry && (logger->ntp_url_ != entry->GetURL())) {
+    DVLOG(1) << "NTP URL changed from \"" << logger->ntp_url_ << "\" to \""
+             << entry->GetURL() << "\"";
     logger->ntp_url_ = entry->GetURL();
+  }
 
   return logger;
 }
@@ -123,6 +131,11 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
 
 void NTPUserDataLogger::LogMostVisitedImpression(
     int position, NTPLoggingTileSource tile_source) {
+  if ((position >= kNumMostVisited) || impression_was_logged_[position]) {
+    return;
+  }
+  impression_was_logged_[position] = true;
+
   UMA_HISTOGRAM_ENUMERATION(kMostVisitedImpressionHistogramName, position,
                             kNumMostVisited);
 
@@ -160,7 +173,8 @@ void NTPUserDataLogger::LogMostVisitedNavigation(
 }
 
 NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
-    : has_server_side_suggestions_(false),
+    : content::WebContentsObserver(contents),
+      has_server_side_suggestions_(false),
       has_client_side_suggestions_(false),
       number_of_tiles_(0),
       has_emitted_(false),
@@ -186,10 +200,32 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
   }
 }
 
+// content::WebContentsObserver override
+void NTPUserDataLogger::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  NavigatedFromURLToURL(load_details.previous_url,
+                        load_details.entry->GetURL());
+}
+
+void NTPUserDataLogger::NavigatedFromURLToURL(const GURL& from,
+                                              const GURL& to) {
+  // User is returning to NTP, probably via the back button; reset stats.
+  if (from.is_valid() && to.is_valid() && (to == ntp_url_)) {
+    DVLOG(1) << "Returning to New Tab Page";
+    impression_was_logged_.reset();
+    has_emitted_ = false;
+    number_of_tiles_ = 0;
+    has_server_side_suggestions_ = false;
+    has_client_side_suggestions_ = false;
+  }
+}
+
 void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
   // We only send statistics once per page.
   if (has_emitted_)
     return;
+  DVLOG(1) << "Emitting NTP load time: " << load_time << ", "
+           << "number of tiles: " << number_of_tiles_;
 
   logLoadTimeHistogram("NewTabPage.LoadTime", load_time);
 

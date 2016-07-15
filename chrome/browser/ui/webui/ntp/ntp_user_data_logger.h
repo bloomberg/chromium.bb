@@ -7,10 +7,13 @@
 
 #include <stddef.h>
 
+#include <bitset>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/common/search/ntp_logging_events.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
@@ -19,10 +22,14 @@ class WebContents;
 
 // Helper class for logging data from the NTP. Attached to each NTP instance.
 class NTPUserDataLogger
-    : public content::WebContentsUserData<NTPUserDataLogger> {
+    : public content::WebContentsObserver,
+      public content::WebContentsUserData<NTPUserDataLogger> {
  public:
   ~NTPUserDataLogger() override;
 
+  // Gets the associated NTPUserDataLogger, creating it if necessary.
+  //
+  // MUST be called only when the NTP is active.
   static NTPUserDataLogger* GetOrCreateFromWebContents(
       content::WebContents* content);
 
@@ -49,11 +56,33 @@ class NTPUserDataLogger
                            OnMostVisitedItemsChangedFromClient);
   FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest,
                            TestLogging);
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestLogMostVisitedImpression);
+  FRIEND_TEST_ALL_PREFIXES(NTPUserDataLoggerTest, TestNumberOfTiles);
+
+  // Number of Most Visited elements on the NTP for logging purposes.
+  static const int kNumMostVisited = 8;
+
+  // content::WebContentsObserver override
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
+
+  // Implementation of NavigationEntryCommitted; separate for test.
+  void NavigatedFromURLToURL(const GURL& from, const GURL& to);
 
   // Logs a number of statistics regarding the NTP. Called when an NTP tab is
   // about to be deactivated (be it by switching tabs, losing focus or closing
   // the tab/shutting down Chrome), or when the user navigates to a URL.
   void EmitNtpStatistics(base::TimeDelta load_time);
+
+  // Records whether we have yet logged an impression for the tile at a given
+  // index. A typical NTP will log 8 impressions, but could record fewer for new
+  // users that haven't built up a history yet.
+  //
+  // If something happens that causes the NTP to pull tiles from different
+  // sources, such as signing in (switching from client to server tiles), then
+  // only the impressions for the first source will be logged, leaving the
+  // number of impressions for a source slightly out-of-sync with navigations.
+  std::bitset<kNumMostVisited> impression_was_logged_;
 
   // True if at least one iframe came from a server-side suggestion.
   bool has_server_side_suggestions_;
