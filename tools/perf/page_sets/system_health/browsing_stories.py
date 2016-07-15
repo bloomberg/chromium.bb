@@ -2,12 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
-
 from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
-
-from telemetry import story
 
 
 class _BrowsingStory(system_health_story.SystemHealthStory):
@@ -21,10 +17,7 @@ class _BrowsingStory(system_health_story.SystemHealthStory):
   IS_SINGLE_PAGE_APP = False
   ITEM_SELECTOR = NotImplemented
   ITEMS_TO_VISIT = 4
-
-  def __init__(self, story_set):
-    super(_BrowsingStory, self).__init__(
-        story_set, take_memory_measurement=False)
+  ABSTRACT_STORY = True
 
   def _WaitForNavigation(self, action_runner):
     if not self.IS_SINGLE_PAGE_APP:
@@ -60,6 +53,7 @@ class _NewsBrowsingStory(_BrowsingStory):
   ITEM_READ_TIME_IN_SECONDS = 3
   ITEM_SCROLL_REPEAT = 2
   MAIN_PAGE_SCROLL_REPEAT = 0
+  ABSTRACT_STORY = True
 
   def _DidLoadDocument(self, action_runner):
     for i in xrange(self.ITEMS_TO_VISIT):
@@ -183,34 +177,3 @@ class WashingtonPostMobileStory(_NewsBrowsingStory):
     # Close the popup window.
     action_runner.ClickElement(selector='.close')
     super(WashingtonPostMobileStory, self)._DidLoadDocument(action_runner)
-
-
-##############################################################################
-# Browsing story sets.
-##############################################################################
-
-
-def _IterAllNewsBrowsingStoryClasses():
-  return system_health_story.IterAllStoryClasses(
-      sys.modules[__name__], _NewsBrowsingStory)
-
-
-class _BrowsingSystemHealthStorySet(story.StorySet):
-  PLATFORM = NotImplemented
-
-  def __init__(self):
-    super(_BrowsingSystemHealthStorySet, self).__init__(
-        archive_data_file=('../data/browsing_%s.json' % self.PLATFORM),
-        cloud_storage_bucket=story.PARTNER_BUCKET)
-    for story_class in _IterAllNewsBrowsingStoryClasses():
-      if self.PLATFORM not in story_class.SUPPORTED_PLATFORMS:
-        continue
-      self.AddStory(story_class(self))
-
-
-class DesktopBrowsingSystemHealthStorySet(_BrowsingSystemHealthStorySet):
-  PLATFORM = platforms.DESKTOP
-
-
-class MobileBrowsingSystemHealthStorySet(_BrowsingSystemHealthStorySet):
-  PLATFORM = platforms.MOBILE

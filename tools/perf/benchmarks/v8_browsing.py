@@ -58,9 +58,12 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     options.SetTimelineBasedMetrics(['v8AndMemoryMetrics'])
     return options
 
+  def CreateStorySet(self, options):
+    return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='browse')
+
   @classmethod
   def Name(cls):
-    return 'v8.browsing_%s' % cls.page_set.PLATFORM
+    return 'v8.browsing_%s' % cls.PLATFORM
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
@@ -78,7 +81,7 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
 
 
 class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
-  page_set = page_sets.DesktopBrowsingSystemHealthStorySet
+  PLATFORM = 'desktop'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -86,7 +89,7 @@ class V8DesktopBrowsingBenchmark(_V8BrowsingBenchmark):
 
 
 class V8MobileBrowsingBenchmark(_V8BrowsingBenchmark):
-  page_set = page_sets.MobileBrowsingSystemHealthStorySet
+  PLATFORM = 'mobile'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):

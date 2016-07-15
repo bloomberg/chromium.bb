@@ -2,35 +2,41 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+
 from page_sets.system_health import platforms
-from page_sets.system_health import loading_stories
+from page_sets.system_health import system_health_story
 
 from telemetry import story
+from telemetry.core import discover
 
 
-class _SystemHealthStorySet(story.StorySet):
+class SystemHealthStorySet(story.StorySet):
   """User stories for the System Health Plan.
 
   See https://goo.gl/Jek2NL.
   """
-  PLATFORM = NotImplemented
-
-  def __init__(self, take_memory_measurement=True):
-    super(_SystemHealthStorySet, self).__init__(
-        archive_data_file=('../data/memory_system_health_%s.json' %
-                           self.PLATFORM),
+  def __init__(self, platform, case=None, take_memory_measurement=False):
+    super(SystemHealthStorySet, self).__init__(
+        archive_data_file=('../data/memory_system_health_%s.json' % platform),
         cloud_storage_bucket=story.PARTNER_BUCKET)
-    for story_class in loading_stories.IterAllStoryClasses():
-      if self.PLATFORM not in story_class.SUPPORTED_PLATFORMS:
+
+    assert platform in platforms.ALL_PLATFORMS
+
+    for story_class in _IterAllSystemHealthStoryClasses():
+      if (story_class.ABSTRACT_STORY or
+          platform not in story_class.SUPPORTED_PLATFORMS or
+          case and not story_class.NAME.startswith(case + ':')):
         continue
       self.AddStory(story_class(self, take_memory_measurement))
 
 
-class DesktopSystemHealthStorySet(_SystemHealthStorySet):
-  """Desktop user stories for Chrome System Health Plan."""
-  PLATFORM = platforms.DESKTOP
-
-
-class MobileSystemHealthStorySet(_SystemHealthStorySet):
-  """Mobile user stories for Chrome System Health Plan."""
-  PLATFORM = platforms.MOBILE
+def _IterAllSystemHealthStoryClasses():
+  start_dir = os.path.dirname(os.path.abspath(__file__))
+  # Sort the classes by their names so that their order is stable and
+  # deterministic.
+  for unused_cls_name, cls in sorted(discover.DiscoverClasses(
+      start_dir=start_dir,
+      top_level_dir=os.path.dirname(start_dir),
+      base_class=system_health_story.SystemHealthStory).iteritems()):
+    yield cls

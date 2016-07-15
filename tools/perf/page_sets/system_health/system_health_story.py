@@ -6,20 +6,39 @@ import logging
 
 from page_sets.system_health import platforms
 
-from telemetry.core import discover
 from telemetry.page import page
 
 
 _DUMP_WAIT_TIME = 3
 
 
+class _MetaSystemHealthStory(type):
+  """Metaclass for SystemHealthStory."""
+
+  @property
+  def ABSTRACT_STORY(cls):
+    """Class field marking whether the class is abstract.
+
+    If true, the story will NOT be instantiated and added to a System Health
+    story set. This field is NOT inherited by subclasses (that's why it's
+    defined on the metaclass).
+    """
+    return cls.__dict__.get('__ABSTRACT_STORY__', False)
+
+  @ABSTRACT_STORY.setter
+  def ABSTRACT_STORY(cls, ABSTRACT_STORY):
+    cls.__dict__['__ABSTRACT_STORY__'] = ABSTRACT_STORY
+
+
 class SystemHealthStory(page.Page):
   """Abstract base class for System Health user stories."""
+  __metaclass__ = _MetaSystemHealthStory
 
   # The full name of a single page story has the form CASE:GROUP:PAGE (e.g.
   # 'load:search:google').
   NAME = NotImplemented
   URL = NotImplemented
+  ABSTRACT_STORY = True
   SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
 
   def __init__(self, story_set, take_memory_measurement):
@@ -59,13 +78,3 @@ class SystemHealthStory(page.Page):
     action_runner.tab.WaitForDocumentReadyStateToBeComplete()
     self._DidLoadDocument(action_runner)
     self._Measure(action_runner)
-
-
-def IterAllStoryClasses(module, base_class):
-  # Sort the classes by their names so that their order is stable and
-  # deterministic.
-  for unused_cls_name, cls in sorted(discover.DiscoverClassesInModule(
-      module=module,
-      base_class=base_class,
-      index_by_class_name=True).iteritems()):
-    yield cls

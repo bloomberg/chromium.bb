@@ -78,9 +78,13 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     options.SetTimelineBasedMetrics(['memoryMetric'])
     return options
 
+  def CreateStorySet(self, options):
+    return page_sets.SystemHealthStorySet(platform=self.PLATFORM, case='load',
+                                          take_memory_measurement=True)
+
   @classmethod
   def Name(cls):
-    return 'system_health.memory_%s' % cls.page_set.PLATFORM
+    return 'system_health.memory_%s' % cls.PLATFORM
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, value, is_first_result):
@@ -91,7 +95,7 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
-  page_set = page_sets.DesktopSystemHealthStorySet
+  PLATFORM = 'desktop'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -102,7 +106,7 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
 
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
-  page_set = page_sets.MobileSystemHealthStorySet
+  PLATFORM = 'mobile'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -110,6 +114,7 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     return possible_browser.platform.GetDeviceTypeName() == 'Desktop' or (
         possible_browser.browser_type == 'reference' and
         possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
 
 @benchmark.Enabled('android-webview')
 class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import sys
-
 from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
 
@@ -13,12 +11,7 @@ from page_sets.login_helpers import google_login
 
 class _LoadingStory(system_health_story.SystemHealthStory):
   """Abstract base class for single-page System Health user stories."""
-  pass
-
-
-def IterAllStoryClasses():
-  return system_health_story.IterAllStoryClasses(
-      sys.modules[__name__], _LoadingStory)
+  ABSTRACT_STORY = True
 
 
 ################################################################################

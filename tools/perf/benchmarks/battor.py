@@ -55,7 +55,7 @@ class BattOrSystemHealthLoadingDesktop(_BattOrBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
 
   def CreateStorySet(self, options):
-    return page_sets.DesktopSystemHealthStorySet(take_memory_measurement=False)
+    return page_sets.SystemHealthStorySet(platform='desktop', case='load')
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -71,7 +71,7 @@ class BattOrSystemHealthLoadingMobile(_BattOrBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
 
   def CreateStorySet(self, options):
-    return page_sets.MobileSystemHealthStorySet(take_memory_measurement=False)
+    return page_sets.SystemHealthStorySet(platform='mobile', case='load')
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
