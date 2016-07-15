@@ -365,6 +365,7 @@
       'ios-device': 'ios_gyp',
       'ios-device-gn': 'ios_gn',
       'ios-simulator': 'ios_gyp',
+      'ios-simulator-cronet': 'ios_gyp',
       'ios-simulator-gn': 'ios_gn',
     },
 
@@ -787,6 +788,7 @@
       'ios-device': 'ios_gyp',
       'ios-device-gn': 'ios_gn',
       'ios-simulator': 'ios_gyp',
+      'ios-simulator-cronet': 'ios_gyp',
       'ios-simulator-gn': 'ios_gn',
       'mac_chromium_10.10_rel_ng': 'swarming_gpu_tests_gn_release_trybot',
       'mac_chromium_10.10_macviews': 'mac_views_browser_gyp_release_trybot',
