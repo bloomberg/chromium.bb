@@ -32,11 +32,10 @@ typedef std::string HashPrefixes;
 // For instance: {4: ["abcd", "bcde", "cdef", "gggg"], 5: ["fffff"]}
 typedef base::hash_map<PrefixSize, HashPrefixes> HashPrefixMap;
 
-// Stores the iterator to the last element merged from the HashPrefixMap for a
-// given prefix size.
-// For instance: {4:iter(3), 5:iter(1)} means that we have already merged
+// Stores the index of the last element merged from the HashPrefixMap for a
+// given prefix size. For instance: {4:3, 5:1} means that we have already merged
 // 3 hash prefixes of length 4, and 1 hash prefix of length 5.
-typedef base::hash_map<PrefixSize, HashPrefixes::const_iterator> IteratorMap;
+typedef base::hash_map<PrefixSize, size_t> CounterMap;
 
 // Enumerate different failure events while parsing the file read from disk for
 // histogramming purposes.  DO NOT CHANGE THE ORDERING OF THESE VALUES.
@@ -186,8 +185,9 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestAddUnlumpedHashes);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestAddUnlumpedHashesWithEmptyString);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
-                           TestGetNextSmallestUnmergedPrefixWithEmptyPrefixMap);
-  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestGetNextSmallestUnmergedPrefix);
+                           TestGetNextSmallestPrefixSizeWithEmptyPrefixMap);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestGetNextSmallestPrefixSize);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestGetNextUnmergedPrefix);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesWithSameSizesInEachMap);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestMergeUpdatesWithDifferentSizesInEachMap);
@@ -208,19 +208,25 @@ class V4Store {
                                              const std::string& raw_hashes,
                                              HashPrefixMap* additions_map);
 
-  // Get the next unmerged hash prefix in dictionary order from
-  // |hash_prefix_map|. |iterator_map| is used to determine which hash prefixes
+  // Get the size of the next unmerged hash prefix in dictionary order from
+  // |hash_prefix_map|. |counter_map| is used to determine which hash prefixes
   // have been merged already. Returns true if there are any unmerged hash
   // prefixes in the list.
-  static bool GetNextSmallestUnmergedPrefix(
-      const HashPrefixMap& hash_prefix_map,
-      const IteratorMap& iterator_map,
-      HashPrefix* smallest_hash_prefix);
+  static bool GetNextSmallestPrefixSize(const HashPrefixMap& hash_prefix_map,
+                                        const CounterMap& counter_map,
+                                        PrefixSize* smallest_prefix_size);
 
-  // For each key in |hash_prefix_map|, sets the iterator at that key
-  // |iterator_map| to hash_prefix_map[key].begin().
-  static void InitializeIteratorMap(const HashPrefixMap& hash_prefix_map,
-                                    IteratorMap* iterator_map);
+  // Returns the next hash prefix of length |prefix_size| from |hash_prefix_map|
+  // that hasn't been merged already. |counter_map| is used to determine the
+  // index of the next prefix of size |prefix_size| to merge.
+  static HashPrefix GetNextUnmergedPrefixForSize(
+      PrefixSize prefix_size,
+      const HashPrefixMap& hash_prefix_map,
+      const CounterMap& counter_map);
+
+  // Sets a value of 0 in |counter_map| for all keys in |hash_prefix_map|.
+  static void InitializeCounterMap(const HashPrefixMap& hash_prefix_map,
+                                   CounterMap* counter_map);
 
   // Reserve the appropriate string size so that the string size of the merged
   // list is exact. This ignores the space that would otherwise be released by
