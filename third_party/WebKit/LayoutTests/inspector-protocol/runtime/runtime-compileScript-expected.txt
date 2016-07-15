@@ -4,7 +4,6 @@
         lineNumber : 1
         scriptId : 0
         text : Uncaught SyntaxError: Unexpected end of input
-        url : foo1.js
     }
 }
 {
@@ -18,7 +17,6 @@
         lineNumber : 0
         scriptId : 0
         text : Uncaught SyntaxError: Unexpected identifier
-        url : foo4.js
     }
 }
 

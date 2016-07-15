@@ -297,16 +297,16 @@ void V8ConsoleMessage::reportToFrontend(protocol::Runtime::Frontend* frontend, V
 {
     if (m_origin == V8MessageOrigin::kException) {
         // TODO(dgozman): unify with InjectedScript::createExceptionDetails.
-        std::unique_ptr<protocol::Runtime::ExceptionDetails> details = protocol::Runtime::ExceptionDetails::create().setText(m_message).build();
-        details->setUrl(m_url);
-        if (m_lineNumber)
-            details->setLineNumber(static_cast<int>(m_lineNumber) - 1);
-        if (m_columnNumber)
-            details->setColumnNumber(static_cast<int>(m_columnNumber) - 1);
-        if (m_scriptId)
-            details->setScriptId(String16::fromInteger(m_scriptId));
+        std::unique_ptr<protocol::Runtime::ExceptionDetails> details = protocol::Runtime::ExceptionDetails::create()
+            .setText(m_message)
+            .setLineNumber(m_lineNumber ? m_lineNumber - 1 : 0)
+            .setColumnNumber(m_columnNumber ? m_columnNumber - 1 : 0)
+            .setScriptId(m_scriptId ? String16::fromInteger(m_scriptId) : String16())
+            .build();
+        if (!m_url.isEmpty())
+            details->setUrl(m_url);
         if (m_stackTrace)
-            details->setStack(m_stackTrace->buildInspectorObject());
+            details->setStackTrace(m_stackTrace->buildInspectorObject());
 
         std::unique_ptr<protocol::Runtime::RemoteObject> exception = wrapException(session, generatePreview);
 

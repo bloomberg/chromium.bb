@@ -11,7 +11,7 @@ var test = function()
         InspectorTest.addResult("   " + exceptionDetails.text);
         InspectorTest.addResult("   line: " + exceptionDetails.lineNumber + ", column: " + exceptionDetails.columnNumber);
 
-        var stack = exceptionDetails.stack ? exceptionDetails.stack.callFrames : null;
+        var stack = exceptionDetails.stackTrace ? exceptionDetails.stackTrace.callFrames : null;
         if (!stack) {
             InspectorTest.addResult("   no stack trace attached to exceptionDetails");
         } else {

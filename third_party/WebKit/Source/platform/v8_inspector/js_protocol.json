@@ -134,14 +134,14 @@
                 "id": "ExceptionDetails",
                 "type": "object",
                 "hidden": true,
-                "description": "Detailed information on exception (or error) that was thrown during script compilation or execution.",
+                "description": "Detailed information about exception (or error) that was thrown during script compilation or execution.",
                 "properties": [
                     { "name": "text", "type": "string", "description": "Exception text." },
-                    { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
-                    { "name": "scriptId", "type": "string", "optional": true, "description": "Script ID of the message origin." },
-                    { "name": "lineNumber", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message. (0-based)." },
-                    { "name": "columnNumber", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message. (0-based)." },
-                    { "name": "stack", "$ref": "StackTrace", "optional": true, "description": "JavaScript stack trace for assertions and error messages." }
+                    { "name": "scriptId", "$ref": "ScriptId", "description": "Script ID of the exception location." },
+                    { "name": "lineNumber", "type": "integer", "description": "Line number of the exception location (0-based)." },
+                    { "name": "columnNumber", "type": "integer", "description": "Column number of the exception location (0-based)." },
+                    { "name": "url", "type": "string", "optional": true, "description": "URL of the exception location, to be used when the script was not reported." },
+                    { "name": "stackTrace", "$ref": "StackTrace", "optional": true, "description": "JavaScript stack trace if available." }
                 ]
             },
             {
