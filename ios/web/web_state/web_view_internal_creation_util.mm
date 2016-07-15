@@ -52,6 +52,12 @@ WKWebView* CreateWKWebView(CGRect frame,
   // reasonable value.
   result.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
 
+  // Starting in iOS10, |allowsLinkPreview| defaults to YES.  This should be
+  // disabled since the default implementation will open the link in Safari.
+  // TODO(crbug.com/622746): Remove once web// link preview implementation is
+  // created.
+  result.allowsLinkPreview = NO;
+
   return result;
 }
 
