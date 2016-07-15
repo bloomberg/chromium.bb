@@ -135,7 +135,7 @@ void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
   showing_context_menu_ = showing;
 }
 
-base::string16 RenderWidgetHostViewBase::GetSelectedText() const {
+base::string16 RenderWidgetHostViewBase::GetSelectedText() {
   if (!selection_range_.IsValid())
     return base::string16();
   return selection_text_.substr(

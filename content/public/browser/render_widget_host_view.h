@@ -124,7 +124,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
   virtual void SetShowingContextMenu(bool showing) = 0;
 
   // Returns the currently selected text.
-  virtual base::string16 GetSelectedText() const = 0;
+  virtual base::string16 GetSelectedText() = 0;
 
   // Subclasses should override this method to set the background color. |color|
   // could be transparent or opaque.

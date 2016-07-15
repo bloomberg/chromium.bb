@@ -68,7 +68,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   gfx::Rect GetViewBounds() const override;
   gfx::Rect GetBoundsInRootWindow() override;
   gfx::Size GetPhysicalBackingSize() const override;
-  base::string16 GetSelectedText() const override;
+  base::string16 GetSelectedText() override;
 
   // RenderWidgetHostViewBase implementation.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,

@@ -246,7 +246,7 @@ gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
   return RenderWidgetHostViewBase::GetPhysicalBackingSize();
 }
 
-base::string16 RenderWidgetHostViewGuest::GetSelectedText() const {
+base::string16 RenderWidgetHostViewGuest::GetSelectedText() {
   return platform_view_->GetSelectedText();
 }
 

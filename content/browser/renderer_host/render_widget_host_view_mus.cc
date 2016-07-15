@@ -136,7 +136,7 @@ gfx::Size RenderWidgetHostViewMus::GetPhysicalBackingSize() const {
   return RenderWidgetHostViewBase::GetPhysicalBackingSize();
 }
 
-base::string16 RenderWidgetHostViewMus::GetSelectedText() const {
+base::string16 RenderWidgetHostViewMus::GetSelectedText() {
   NOTIMPLEMENTED();
   return base::string16();
 }
