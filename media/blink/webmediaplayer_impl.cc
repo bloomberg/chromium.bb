@@ -1035,23 +1035,31 @@ void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
   if (!pipeline_controller_.IsStable())
     return;
 
-  // TODO(scherkus): Handle other buffering states when Pipeline starts using
-  // them and translate them ready state changes http://crbug.com/144683
-  DCHECK_EQ(state, BUFFERING_HAVE_ENOUGH);
-  SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
+  if (state == BUFFERING_HAVE_ENOUGH) {
+    // TODO(chcunningham): Monitor playback position vs buffered. Potentially
+    // transition to HAVE_FUTURE_DATA here if not enough is buffered.
+    SetReadyState(WebMediaPlayer::ReadyStateHaveEnoughData);
 
-  // Let the DataSource know we have enough data. It may use this information to
-  // release unused network connections.
-  if (data_source_)
-    data_source_->OnBufferingHaveEnough(false);
+    // Let the DataSource know we have enough data. It may use this information
+    // to release unused network connections.
+    if (data_source_)
+      data_source_->OnBufferingHaveEnough(false);
 
-  // Blink expects a timeChanged() in response to a seek().
-  if (should_notify_time_changed_)
-    client_->timeChanged();
+    // Blink expects a timeChanged() in response to a seek().
+    if (should_notify_time_changed_)
+      client_->timeChanged();
 
-  // Once we have enough, start reporting the total memory usage. We'll also
-  // report once playback starts.
-  ReportMemoryUsage();
+    // Once we have enough, start reporting the total memory usage. We'll also
+    // report once playback starts.
+    ReportMemoryUsage();
+  } else {
+    // Buffering has underflowed.
+    DCHECK_EQ(state, BUFFERING_HAVE_NOTHING);
+    // It shouldn't be possible to underflow if we've not advanced past
+    // HAVE_CURRENT_DATA.
+    DCHECK_GT(highest_ready_state_, WebMediaPlayer::ReadyStateHaveCurrentData);
+    SetReadyState(WebMediaPlayer::ReadyStateHaveCurrentData);
+  }
 
   UpdatePlayState();
 }

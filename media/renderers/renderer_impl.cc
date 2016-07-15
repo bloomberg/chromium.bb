@@ -691,9 +691,7 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
   // Renderer underflowed.
   if (!was_waiting_for_enough_data && WaitingForEnoughData()) {
     PausePlayback();
-
-    // TODO(scherkus): Fire BUFFERING_HAVE_NOTHING callback to alert clients of
-    // underflow state http://crbug.com/144683
+    client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
     return;
   }
 

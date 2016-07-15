@@ -469,6 +469,7 @@ TEST_F(RendererImplTest, FlushAfterUnderflow) {
 
   // Simulate underflow.
   EXPECT_CALL(time_source_, StopTicking());
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   audio_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
 
   // Flush while underflowed. We shouldn't call StopTicking() again.
@@ -587,6 +588,7 @@ TEST_F(RendererImplTest, AudioUnderflow) {
 
   // Underflow should occur immediately with a single audio track.
   EXPECT_CALL(time_source_, StopTicking());
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   audio_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
 }
 
@@ -597,6 +599,7 @@ TEST_F(RendererImplTest, AudioUnderflowWithVideo) {
   // Underflow should be immediate when both audio and video are present and
   // audio underflows.
   EXPECT_CALL(time_source_, StopTicking());
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   audio_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
 }
 
@@ -606,6 +609,7 @@ TEST_F(RendererImplTest, VideoUnderflow) {
 
   // Underflow should occur immediately with a single video track.
   EXPECT_CALL(time_source_, StopTicking());
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   video_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
 }
 
@@ -619,6 +623,7 @@ TEST_F(RendererImplTest, VideoUnderflowWithAudio) {
 
   // Underflow should be delayed when both audio and video are present and video
   // underflows.
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   video_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
   Mock::VerifyAndClearExpectations(&time_source_);
 
@@ -636,6 +641,8 @@ TEST_F(RendererImplTest, VideoUnderflowWithAudioVideoRecovers) {
 
   // Underflow should be delayed when both audio and video are present and video
   // underflows.
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
+      .Times(0);
   video_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
   Mock::VerifyAndClearExpectations(&time_source_);
 
@@ -654,9 +661,12 @@ TEST_F(RendererImplTest, VideoAndAudioUnderflow) {
 
   // Underflow should be delayed when both audio and video are present and video
   // underflows.
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
+      .Times(0);
   video_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
   Mock::VerifyAndClearExpectations(&time_source_);
 
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   EXPECT_CALL(time_source_, StopTicking());
   audio_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
 
@@ -674,6 +684,7 @@ TEST_F(RendererImplTest, VideoUnderflowWithAudioFlush) {
 
   // Simulate the cases where audio underflows and then video underflows.
   EXPECT_CALL(time_source_, StopTicking());
+  EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
   audio_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
   video_renderer_client_->OnBufferingStateChange(BUFFERING_HAVE_NOTHING);
   Mock::VerifyAndClearExpectations(&time_source_);

@@ -311,6 +311,33 @@ TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing) {
   EXPECT_TRUE(state.is_suspended);
 }
 
+TEST_F(WebMediaPlayerImplTest, ComputePlayState_PlayingThenUnderflow) {
+  WebMediaPlayerImpl::PlayState state;
+  SetMetadata(true, true);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveFutureData);
+  SetPaused(false);
+  SetReadyState(blink::WebMediaPlayer::ReadyStateHaveCurrentData);
+
+  // Underflow should not trigger idle suspend. The user is still playing the
+  // the video, just waiting on the network.
+  state = ComputePlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::PLAYING, state.delegate_state);
+  EXPECT_TRUE(state.is_memory_reporting_enabled);
+  EXPECT_FALSE(state.is_suspended);
+
+  // Background suspend should still be possible during underflow.
+  state = ComputeBackgroundedPlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_TRUE(state.is_suspended);
+
+  // Forced suspend should still be possible during underflow.
+  state = ComputeMustSuspendPlayState();
+  EXPECT_EQ(WebMediaPlayerImpl::DelegateState::GONE, state.delegate_state);
+  EXPECT_FALSE(state.is_memory_reporting_enabled);
+  EXPECT_TRUE(state.is_suspended);
+}
+
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Playing_AudioOnly) {
   WebMediaPlayerImpl::PlayState state;
   SetMetadata(true, false);
