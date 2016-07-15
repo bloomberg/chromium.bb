@@ -47,11 +47,22 @@ class TestDataReductionProxyPingbackClient
       net::URLRequestContextGetter* url_request_context_getter)
       : DataReductionProxyPingbackClient(url_request_context_getter),
         should_override_random_(false),
-        override_value_(0.0f) {}
+        override_value_(0.0f),
+        current_time_(base::Time::Now()) {}
 
+  // Overrides the bahvior of the random float generator in
+  // DataReductionProxyPingbackClient.
+  // If |should_override_random| is true, the typically random value that is
+  // compared with reporting fraction will deterministically be
+  // |override_value|.
   void OverrideRandom(bool should_override_random, float override_value) {
     should_override_random_ = should_override_random;
     override_value_ = override_value;
+  }
+
+  // Sets the time used for the metrics reporting time.
+  void set_current_time(base::Time current_time) {
+    current_time_ = current_time;
   }
 
  private:
@@ -61,8 +72,11 @@ class TestDataReductionProxyPingbackClient
     return DataReductionProxyPingbackClient::GenerateRandomFloat();
   }
 
+  base::Time CurrentTime() const override { return current_time_; }
+
   bool should_override_random_;
   float override_value_;
+  base::Time current_time_;
 };
 
 class DataReductionProxyPingbackClientTest : public testing::Test {
@@ -118,12 +132,16 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_FALSE(factory()->GetFetcherByID(0));
   pingback_client()->OverrideRandom(true, 0.5f);
   pingback_client()->SetPingbackReportingFraction(1.0f);
+  base::Time current_time = base::Time::UnixEpoch();
+  pingback_client()->set_current_time(current_time);
   CreateAndSendPingback();
   histogram_tester().ExpectUniqueSample(kHistogramAttempted, true, 1);
   net::TestURLFetcher* test_fetcher = factory()->GetFetcherByID(0);
   EXPECT_EQ(test_fetcher->upload_content_type(), "application/x-protobuf");
   RecordPageloadMetricsRequest batched_request;
   batched_request.ParseFromString(test_fetcher->upload_data());
+  EXPECT_EQ(current_time, protobuf_parser::TimestampToTime(
+                              batched_request.metrics_sent_time()));
   PageloadMetrics pageload_metrics = batched_request.pageloads(0);
   EXPECT_EQ(
       timing().navigation_start,

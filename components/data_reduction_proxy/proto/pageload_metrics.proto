@@ -14,6 +14,8 @@ package data_reduction_proxy;
 message RecordPageloadMetricsRequest {
   // The pageload metrics to record.
   repeated PageloadMetrics pageloads = 1;
+  // Time metrics were sent.
+  optional Timestamp metrics_sent_time = 2;
 }
 
 // Metrics for a single pageload.

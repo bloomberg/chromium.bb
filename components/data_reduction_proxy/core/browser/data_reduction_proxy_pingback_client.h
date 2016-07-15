@@ -14,6 +14,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+namespace base {
+class Time;
+}
+
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
@@ -22,6 +26,7 @@ class URLRequestContextGetter;
 namespace data_reduction_proxy {
 class DataReductionProxyData;
 struct DataReductionProxyPageLoadTiming;
+class RecordPageloadMetricsRequest;
 
 // Manages pingbacks about page load timing information to the data saver proxy
 // server. This class is not thread safe.
@@ -46,6 +51,9 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
   // Generates a float in the range [0, 1). Virtualized in testing.
   virtual float GenerateRandomFloat() const;
 
+  // Returns the current time. Virtualized in testing.
+  virtual base::Time CurrentTime() const;
+
  private:
   // URLFetcherDelegate implmentation:
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -55,8 +63,10 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
 
   // Creates an URLFetcher that will POST to |secure_proxy_url_| using
   // |url_request_context_|. The max retires is set to 5.
+  // The caller must ensure that request_data| is non-null. The caller owns
+  // |request_data|.
   std::unique_ptr<net::URLFetcher> MaybeCreateFetcherForDataAndStart(
-      const std::string& data);
+      RecordPageloadMetricsRequest* request_data);
 
   net::URLRequestContextGetter* url_request_context_;
 
@@ -67,7 +77,7 @@ class DataReductionProxyPingbackClient : public net::URLFetcherDelegate {
   std::unique_ptr<net::URLFetcher> current_fetcher_;
 
   // Serialized data to send to the data saver proxy server.
-  std::list<std::string> data_to_send_;
+  std::list<std::unique_ptr<RecordPageloadMetricsRequest>> data_to_send_;
 
   // The probability of sending a pingback to the server.
   float pingback_reporting_fraction_;
