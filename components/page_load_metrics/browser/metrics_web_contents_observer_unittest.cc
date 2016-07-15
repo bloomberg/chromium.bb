@@ -145,25 +145,13 @@ class MetricsWebContentsObserverTest
     histogram_tester_.ExpectTotalCount(internal::kErrorEvents, 0);
   }
 
-  void AssertNoNonEmptyTimingReported() {
-    ASSERT_FALSE(embedder_interface_->complete_timings().empty());
+  int CountEmptyCompleteTimingReported() {
+    int empty = 0;
     for (const auto& timing : embedder_interface_->complete_timings()) {
-      ASSERT_TRUE(timing.IsEmpty());
+      if (timing.IsEmpty())
+        ++empty;
     }
-  }
-
-  void AssertNonEmptyTimingsReported(size_t expected_non_empty_timings) {
-    ASSERT_GE(embedder_interface_->complete_timings().size(),
-              expected_non_empty_timings);
-    size_t actual_non_empty_timings = 0;
-    for (const auto& timing : embedder_interface_->complete_timings()) {
-      if (!timing.IsEmpty()) {
-        ++actual_non_empty_timings;
-      }
-    }
-    ASSERT_EQ(expected_non_empty_timings, actual_non_empty_timings);
-    ASSERT_GE(embedder_interface_->updated_timings().size(),
-              actual_non_empty_timings);
+    return empty;
   }
 
   int CountCompleteTimingReported() {
@@ -207,7 +195,8 @@ TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
   ASSERT_EQ(0, CountCompleteTimingReported());
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
-  AssertNonEmptyTimingsReported(1);
+  ASSERT_EQ(1, CountCompleteTimingReported());
+  ASSERT_EQ(0, CountEmptyCompleteTimingReported());
   ASSERT_EQ(2u, observed_committed_urls_from_on_start().size());
   ASSERT_EQ(kDefaultTestUrl,
             observed_committed_urls_from_on_start().at(1).spec());
@@ -236,11 +225,13 @@ TEST_F(MetricsWebContentsObserverTest, NotInMainFrame) {
   subframe_tester->SimulateNavigationStop();
 
   // Navigate again to see if the timing updated for a subframe message.
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
 
   ASSERT_EQ(0, CountUpdatedTimingReported());
-  AssertNoNonEmptyTimingReported();
+  ASSERT_EQ(1, CountCompleteTimingReported());
+  ASSERT_EQ(1, CountEmptyCompleteTimingReported());
   CheckErrorEvent(ERR_IPC_FROM_WRONG_FRAME, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
   CheckTotalErrorEvents();
 }
 
@@ -255,9 +246,22 @@ TEST_F(MetricsWebContentsObserverTest, SamePageNoTrigger) {
   SimulateTimingUpdate(timing);
   ASSERT_EQ(1, CountUpdatedTimingReported());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrlAnchor));
+  // Send the same timing update. The original tracker for kDefaultTestUrl
+  // should dedup the update, and the tracker for kDefaultTestUrlAnchor should
+  // have been destroyed as a result of its being a same page navigation, so
+  // CountUpdatedTimingReported() should continue to return 1.
+  SimulateTimingUpdate(timing);
+
+  ASSERT_EQ(1, CountUpdatedTimingReported());
+  ASSERT_EQ(0, CountCompleteTimingReported());
+
+  // Navigate again to force histogram logging.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
   // A same page navigation shouldn't trigger logging UMA for the original.
   ASSERT_EQ(1, CountUpdatedTimingReported());
-  AssertNoNonEmptyTimingReported();
+  ASSERT_EQ(1, CountCompleteTimingReported());
+  ASSERT_EQ(0, CountEmptyCompleteTimingReported());
   CheckNoErrorEvents();
 }
 

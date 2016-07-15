@@ -21,6 +21,9 @@ struct PageLoadTiming {
   ~PageLoadTiming();
 
   bool operator==(const PageLoadTiming& other) const;
+  bool operator!=(const PageLoadTiming& other) const {
+    return !(*this == other);
+  }
 
   bool IsEmpty() const;
 

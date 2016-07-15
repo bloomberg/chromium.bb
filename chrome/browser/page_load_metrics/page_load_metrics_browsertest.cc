@@ -45,7 +45,8 @@ IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, NewPage) {
       internal::kHistogramParseBlockedOnScriptLoad, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest, AnchorLink) {
+IN_PROC_BROWSER_TEST_F(MetricsWebContentsObserverBrowserTest,
+                       SamePageNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   ui_test_utils::NavigateToURL(browser(),

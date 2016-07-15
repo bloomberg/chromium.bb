@@ -145,8 +145,10 @@ class PageLoadTracker {
   bool UpdateTiming(const PageLoadTiming& timing,
                     const PageLoadMetadata& metadata);
 
-  void set_renderer_tracked(bool renderer_tracked);
-  bool renderer_tracked() const { return renderer_tracked_; }
+  // Signals that we should stop tracking metrics for the associated page load.
+  // We may stop tracking a page load if it doesn't meet the criteria for
+  // tracking metrics in DidFinishNavigation.
+  void StopTracking();
 
   int aborted_chain_size() const { return aborted_chain_size_; }
   int aborted_chain_size_same_url() const {
@@ -209,8 +211,10 @@ class PageLoadTracker {
   // committed load.
   void LogAbortChainHistograms(content::NavigationHandle* final_navigation);
 
-  // Whether the renderer should be sending timing IPCs to this page load.
-  bool renderer_tracked_;
+  // Whether we stopped tracking this navigation after it was initiated. We may
+  // stop tracking a navigation if it doesn't meet the criteria for tracking
+  // metrics in DidFinishNavigation.
+  bool did_stop_tracking_;
 
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
@@ -298,6 +302,14 @@ class MetricsWebContentsObserver
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
 
+  void HandleFailedNavigationForTrackedLoad(
+      content::NavigationHandle* navigation_handle,
+      std::unique_ptr<PageLoadTracker> tracker);
+
+  void HandleCommittedNavigationForTrackedLoad(
+      content::NavigationHandle* navigation_handle,
+      std::unique_ptr<PageLoadTracker> tracker);
+
   // Notify all loads, provisional and committed, that we performed an action
   // that might abort them.
   void NotifyAbortAllLoads(UserAbortType abort_type);
@@ -319,6 +331,9 @@ class MetricsWebContentsObserver
   void OnTimingUpdated(content::RenderFrameHost*,
                        const PageLoadTiming& timing,
                        const PageLoadMetadata& metadata);
+
+  bool ShouldTrackNavigation(
+      content::NavigationHandle* navigation_handle) const;
 
   // True if the web contents is currently in the foreground.
   bool in_foreground_;

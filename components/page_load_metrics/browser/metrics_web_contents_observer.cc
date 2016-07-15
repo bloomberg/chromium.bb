@@ -64,21 +64,6 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-// The url we see from the renderer side is not always the same as what
-// we see from the browser side (e.g. chrome://newtab). We want to be
-// sure here that we aren't logging UMA for internal pages.
-bool IsRelevantNavigation(content::NavigationHandle* navigation_handle,
-                          const GURL& browser_url,
-                          const std::string& mime_type) {
-  DCHECK(navigation_handle->HasCommitted());
-  return navigation_handle->IsInMainFrame() &&
-         !navigation_handle->IsSamePage() &&
-         !navigation_handle->IsErrorPage() &&
-         navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
-         browser_url.SchemeIsHTTPOrHTTPS() &&
-         (mime_type == "text/html" || mime_type == "application/xhtml+xml");
-}
-
 // If second is non-zero, first must also be non-zero and less than or equal to
 // second.
 bool EventsInOrder(const base::Optional<base::TimeDelta>& first,
@@ -223,7 +208,8 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
                                      const PageLoadTiming& new_timing,
                                      const PageLoadMetadata& last_metadata,
                                      const PageLoadExtraInfo& extra_info) {
-  observer->OnTimingUpdate(new_timing, extra_info);
+  if (last_timing != new_timing)
+    observer->OnTimingUpdate(new_timing, extra_info);
   if (new_timing.dom_content_loaded_event_start &&
       !last_timing.dom_content_loaded_event_start)
     observer->OnDomContentLoadedEventStart(new_timing, extra_info);
@@ -256,7 +242,7 @@ PageLoadTracker::PageLoadTracker(
     content::NavigationHandle* navigation_handle,
     int aborted_chain_size,
     int aborted_chain_size_same_url)
-    : renderer_tracked_(false),
+    : did_stop_tracking_(false),
       navigation_start_(navigation_handle->NavigationStart()),
       url_(navigation_handle->GetURL()),
       abort_type_(ABORT_NONE),
@@ -273,9 +259,12 @@ PageLoadTracker::PageLoadTracker(
 }
 
 PageLoadTracker::~PageLoadTracker() {
+  if (did_stop_tracking_)
+    return;
+
   const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
 
-  if (info.time_to_commit && renderer_tracked() && timing_.IsEmpty()) {
+  if (info.time_to_commit && timing_.IsEmpty()) {
     RecordInternalError(ERR_NO_IPCS_RECEIVED);
   }
   // Recall that trackers that are given ABORT_UNKNOWN_NAVIGATION have their
@@ -445,8 +434,8 @@ bool PageLoadTracker::UpdateTiming(const PageLoadTiming& new_timing,
   return false;
 }
 
-void PageLoadTracker::set_renderer_tracked(bool renderer_tracked) {
-  renderer_tracked_ = renderer_tracked;
+void PageLoadTracker::StopTracking() {
+  did_stop_tracking_ = true;
 }
 
 void PageLoadTracker::AddObserver(
@@ -466,7 +455,7 @@ void PageLoadTracker::ClampBrowserTimestampIfInterProcessTimeTickSkew(
   // navigation_start_. If it is due to a code error and it gets clamped in this
   // function, on high resolution systems it should lead to a dcheck failure.
 
-  // TODO (shivanisha) Currently IsHighResolution is the best way to check
+  // TODO(shivanisha): Currently IsHighResolution is the best way to check
   // if the clock is system-wide monotonic. However IsHighResolution
   // does a broader check to see if the clock in use is high resolution
   // which also implies it is system-wide monotonic (on Windows).
@@ -646,12 +635,6 @@ void MetricsWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame())
     return;
-  if (embedder_interface_->IsPrerendering(web_contents()))
-    return;
-  if (embedder_interface_->IsNewTabPageUrl(navigation_handle->GetURL()))
-    return;
-  if (navigation_handle->GetURL().spec().compare(url::kAboutBlankURL) == 0)
-    return;
 
   std::unique_ptr<PageLoadTracker> last_aborted =
       NotifyAbortedProvisionalLoadsNewNavigation(navigation_handle);
@@ -667,6 +650,14 @@ void MetricsWebContentsObserver::DidStartNavigation(
     }
     chain_size = last_aborted->aborted_chain_size() + 1;
   }
+
+  if (!ShouldTrackNavigation(navigation_handle))
+    return;
+
+  // TODO(bmcquade): add support for tracking prerendered pages when they become
+  // visible.
+  if (embedder_interface_->IsPrerendering(web_contents()))
+    return;
 
   // Pass in the last committed url to the PageLoadTracker. If the MWCO has
   // never observed a committed load, use the last committed url from this
@@ -712,67 +703,75 @@ void MetricsWebContentsObserver::DidFinishNavigation(
       std::move(provisional_loads_[navigation_handle]));
   provisional_loads_.erase(navigation_handle);
 
-  // There's a chance a navigation could have started before we were added to a
-  // tab. Bail out early if this is the case.
-  if (!finished_nav)
-    return;
+  const bool should_track =
+      finished_nav && ShouldTrackNavigation(navigation_handle);
 
-  // Handle a pre-commit error here. Navigations that result in an error page
-  // will be ignored. Note that downloads/204s will result in HasCommitted()
-  // returning false.
-  // TODO(csharrison): Track changes to NavigationHandle for signals when this
-  // is the case (HTTP response headers).
-  if (!navigation_handle->HasCommitted()) {
-    finished_nav->FailedProvisionalLoad(navigation_handle);
+  if (finished_nav && !should_track)
+    finished_nav->StopTracking();
 
-    net::Error error = navigation_handle->GetNetErrorCode();
+  if (navigation_handle->HasCommitted()) {
+    // Ignore same-page navigations.
+    if (navigation_handle->IsSamePage())
+      return;
 
-    // net::OK: This case occurs when the NavigationHandle finishes and reports
-    // !HasCommitted(), but reports no net::Error. This should not occur
-    // pre-PlzNavigate, but afterwards it should represent the navigation
-    // stopped by the user before it was ready to commit.
-    // net::ERR_ABORTED: An aborted provisional load has error net::ERR_ABORTED.
-    // Note that this can come from some non user-initiated errors, such as
-    // downloads, or 204 responses. See crbug.com/542369.
-    if ((error == net::OK) || (error == net::ERR_ABORTED)) {
-      finished_nav->NotifyAbort(ABORT_OTHER, base::TimeTicks::Now(), true);
-      aborted_provisional_loads_.push_back(std::move(finished_nav));
+    // Notify other loads that they may have been aborted by this committed
+    // load.  Note that by using the committed navigation start as the abort
+    // cause, we lose data on provisional loads that were aborted by other
+    // provisional loads. Those will either be listed as ABORT_OTHER or as being
+    // aborted by this load.
+    // is_certainly_browser_timestamp is set to false because NavigationStart()
+    // could be set in either the renderer or browser process.
+    NotifyAbortAllLoadsWithTimestamp(
+        AbortTypeForPageTransition(navigation_handle->GetPageTransition()),
+        navigation_handle->NavigationStart(), false);
+
+    if (should_track) {
+      HandleCommittedNavigationForTrackedLoad(navigation_handle,
+                                              std::move(finished_nav));
+    } else {
+      committed_load_.reset();
     }
-
-    return;
+  } else if (should_track) {
+    HandleFailedNavigationForTrackedLoad(navigation_handle,
+                                         std::move(finished_nav));
   }
+}
 
-  // Don't treat a same-page nav as a new page load.
-  if (navigation_handle->IsSamePage())
-    return;
+// Handle a pre-commit error. Navigations that result in an error page will be
+// ignored. Note that downloads/204s will result in HasCommitted() returning
+// false.
+// TODO(csharrison): Track changes to NavigationHandle for signals when this is
+// the case (HTTP response headers).
+void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
+    content::NavigationHandle* navigation_handle,
+    std::unique_ptr<PageLoadTracker> tracker) {
+  tracker->FailedProvisionalLoad(navigation_handle);
 
+  net::Error error = navigation_handle->GetNetErrorCode();
+
+  // net::OK: This case occurs when the NavigationHandle finishes and reports
+  // !HasCommitted(), but reports no net::Error. This should not occur
+  // pre-PlzNavigate, but afterwards it should represent the navigation stopped
+  // by the user before it was ready to commit.
+  // net::ERR_ABORTED: An aborted provisional load has error
+  // net::ERR_ABORTED. Note that this can come from some non user-initiated
+  // errors, such as downloads, or 204 responses. See crbug.com/542369.
+  if ((error == net::OK) || (error == net::ERR_ABORTED)) {
+    tracker->NotifyAbort(ABORT_OTHER, base::TimeTicks::Now(), true);
+    aborted_provisional_loads_.push_back(std::move(tracker));
+  }
+}
+
+void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
+    content::NavigationHandle* navigation_handle,
+    std::unique_ptr<PageLoadTracker> tracker) {
   if (!navigation_handle->HasUserGesture() &&
       (navigation_handle->GetPageTransition() &
        ui::PAGE_TRANSITION_CLIENT_REDIRECT) != 0 &&
       committed_load_)
-    committed_load_->NotifyClientRedirectTo(*finished_nav);
+    committed_load_->NotifyClientRedirectTo(*tracker);
 
-  // Notify other loads that they may have been aborted by this committed load.
-  // Note that by using the committed navigation start as the abort cause, we
-  // lose data on provisional loads that were aborted by other provisional
-  // loads. Those will either be listed as ABORT_OTHER or as being aborted by
-  // this load.
-  // is_certainly_browser_timestamp is set to false because NavigationStart()
-  // could be set in either the renderer or browser process.
-  NotifyAbortAllLoadsWithTimestamp(
-      AbortTypeForPageTransition(navigation_handle->GetPageTransition()),
-      navigation_handle->NavigationStart(), false);
-
-  committed_load_ = std::move(finished_nav);
-  aborted_provisional_loads_.clear();
-
-  const GURL& browser_url = web_contents()->GetLastCommittedURL();
-  const std::string& mime_type = web_contents()->GetContentsMimeType();
-  DCHECK(!browser_url.is_empty());
-  DCHECK(!mime_type.empty());
-  committed_load_->set_renderer_tracked(
-      IsRelevantNavigation(navigation_handle, browser_url, mime_type));
-
+  committed_load_ = std::move(tracker);
   committed_load_->Commit(navigation_handle);
 }
 
@@ -894,7 +893,7 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     const PageLoadTiming& timing,
     const PageLoadMetadata& metadata) {
   bool error = false;
-  if (!committed_load_ || !committed_load_->renderer_tracked()) {
+  if (!committed_load_) {
     RecordInternalError(ERR_IPC_WITH_NO_RELEVANT_LOAD);
     error = true;
   }
@@ -923,6 +922,23 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     // We expect this to be a rare occurrence.
     RecordInternalError(ERR_BAD_TIMING_IPC);
   }
+}
+
+bool MetricsWebContentsObserver::ShouldTrackNavigation(
+    content::NavigationHandle* navigation_handle) const {
+  DCHECK(navigation_handle->IsInMainFrame());
+  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS())
+    return false;
+  if (embedder_interface_->IsNewTabPageUrl(navigation_handle->GetURL()))
+    return false;
+  if (navigation_handle->HasCommitted()) {
+    if (navigation_handle->IsSamePage() || navigation_handle->IsErrorPage())
+      return false;
+    const std::string& mime_type = web_contents()->GetContentsMimeType();
+    if (mime_type != "text/html" && mime_type != "application/xhtml+xml")
+      return false;
+  }
+  return true;
 }
 
 }  // namespace page_load_metrics

@@ -345,24 +345,14 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
   NavigateTwiceInTabAndClose(http_test_server_->GetURL("/circle.svg"),
                              https_test_server_->GetURL("/circle.svg"));
 
-  // TODO(bmcquade): for the time being, the page load metrics infrastructure
-  // also tracks non-HTML resources. We should update these to expect 0
-  // histogram events once that gets fixed. See crbug.com/627536.
-
   // Test the page load metrics.
-  histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 1);
-  histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 1);
+  histogram_tester_.ExpectTotalCount(internal::kHttpEngagementHistogram, 0);
+  histogram_tester_.ExpectTotalCount(internal::kHttpsEngagementHistogram, 0);
 
   // Test the ratio metric.
   FakeUserMetricsUpload();
   histogram_tester_.ExpectTotalCount(
-      internal::kHttpsEngagementSessionPercentage, 1);
-  int32_t ratio_bucket =
-      histogram_tester_
-          .GetAllSamples(internal::kHttpsEngagementSessionPercentage)[0]
-          .min;
-  EXPECT_GT(100, ratio_bucket);
-  EXPECT_LT(0, ratio_bucket);
+      internal::kHttpsEngagementSessionPercentage, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
@@ -494,7 +484,8 @@ IN_PROC_BROWSER_TEST_F(HttpsEngagementPageLoadMetricsBrowserTest,
                        MultipleUploads) {
   StartHttpsServer(false);
 
-  NavigateInForegroundAndCloseWithTiming(https_test_server_->GetURL("/"));
+  NavigateInForegroundAndCloseWithTiming(
+      https_test_server_->GetURL("/simple.html"));
   histogram_tester_.ExpectTotalCount(
       internal::kHttpsEngagementSessionPercentage, 0);
   FakeUserMetricsUpload();

@@ -29,6 +29,25 @@ TEST_F(AbortsPageLoadMetricsObserverTest, UnknownNavigationBeforeCommit) {
       internal::kHistogramAbortUnknownNavigationBeforeCommit, 1);
 }
 
+TEST_F(AbortsPageLoadMetricsObserverTest,
+       UnknownProvisionalNavigationBeforeCommit) {
+  StartNavigation(GURL("https://www.google.com"));
+  StartNavigation(GURL("https://www.example.com"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortUnknownNavigationBeforeCommit, 1);
+}
+
+TEST_F(AbortsPageLoadMetricsObserverTest,
+       UnknownNavigationBeforeCommitNonTrackedPageLoad) {
+  StartNavigation(GURL("https://www.google.com"));
+  // Simulate the user performing another navigation before commit. Navigate to
+  // an untracked URL, to verify that we still log abort metrics even if the new
+  // navigation isn't tracked.
+  NavigateAndCommit(GURL("about:blank"));
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramAbortUnknownNavigationBeforeCommit, 1);
+}
+
 TEST_F(AbortsPageLoadMetricsObserverTest, NewNavigationBeforePaint) {
   NavigateAndCommit(GURL("https://www.google.com"));
   SimulateTimingWithoutPaint();
