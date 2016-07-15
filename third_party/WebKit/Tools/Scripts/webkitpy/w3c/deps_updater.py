@@ -197,7 +197,7 @@ class DepsUpdater(object):
         Tests with "-manual" in the name are not considered manual tests
         if there is a corresponding JS automation file.
         """
-        basename_without_extension, _ = basename.rsplit('.', 1)
+        basename_without_extension, _ = self.fs.splitext(basename)
         if not basename_without_extension.endswith('-manual'):
             return False
         dir_from_wpt = fs.relpath(dirname, self.path_from_webkit_base('LayoutTests', 'imported', 'wpt'))

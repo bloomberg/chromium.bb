@@ -50,6 +50,7 @@ Total: 8 tryjobs
         self.assertFalse(updater.is_manual_test(fs, dirname, 'test.html'))
         self.assertFalse(updater.is_manual_test(fs, dirname, 'manual-foo.htm'))
         self.assertFalse(updater.is_manual_test(fs, dirname, 'script.js'))
+        self.assertFalse(updater.is_manual_test(fs, dirname, 'foo'))
 
     def test_is_manual_test_no_automation_file(self):
         updater = DepsUpdater(MockHost())
