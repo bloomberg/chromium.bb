@@ -350,4 +350,36 @@ TEST_F(OfflinePageTabHelperTest, SelectBestPageForCurrentTab) {
   EXPECT_EQ(kLastNNamespace, item->client_id.name_space);
   EXPECT_EQ(kTabId, item->client_id.id);
 }
+
+// This test saves another copy of page from Async Loading namespace
+// and verifies it is redirected to it (as it is more recent).
+TEST_F(OfflinePageTabHelperTest, SwitchToOfflineAsyncLoadedPageOnNoNetwork) {
+  // Saves an offline page.
+  OfflinePageModel* model =
+      OfflinePageModelFactory::GetForBrowserContext(browser_context());
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+      kTestPageUrl,
+      base::FilePath(FILE_PATH_LITERAL("AsyncLoadedPage.mhtml"))));
+
+  // We expect this Async Loading Namespace copy to be used.
+  ClientId client_id(kAsyncNamespace, kTabId);
+  model->SavePage(
+      kTestPageUrl, client_id, std::move(archiver),
+      base::Bind(&OfflinePageTabHelperTest::OnSavePageDone, AsWeakPtr()));
+  RunUntilIdle();
+  const int64_t expected_offline_id = offline_id();
+  const GURL expected_offline_url = offline_url();
+
+  SimulateHasNetworkConnectivity(false);
+  StartLoad(kTestPageUrl);
+  // Gives a chance to run delayed task to do redirection.
+  RunUntilIdle();
+
+  const OfflinePageItem* item =
+      OfflinePageUtils::GetOfflinePageFromWebContents(web_contents());
+  EXPECT_EQ(expected_offline_id, item->offline_id);
+  EXPECT_EQ(expected_offline_url, item->GetOfflineURL());
+  EXPECT_EQ(kAsyncNamespace, item->client_id.name_space);
+}
+
 }  // namespace offline_pages

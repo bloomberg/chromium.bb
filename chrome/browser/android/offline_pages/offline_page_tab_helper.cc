@@ -212,6 +212,7 @@ void OfflinePageTabHelper::SelectBestPageForRedirectToOffline(
   const OfflinePageItem* selected_page = nullptr;
   for (const auto& offline_page : pages) {
     if ((offline_page.client_id.name_space == kBookmarkNamespace) ||
+        (offline_page.client_id.name_space == kAsyncNamespace) ||
         (offline_page.client_id.name_space == kLastNNamespace &&
          offline_page.client_id.id == tab_id)) {
       if (!selected_page ||
