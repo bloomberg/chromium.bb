@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
@@ -250,6 +251,11 @@ void CredentialManagerImpl::SendPasswordForm(
         store->UpdateLogin(update_form);
       }
     }
+    base::RecordAction(
+        base::UserMetricsAction("CredentialManager_AccountChooser_Accepted"));
+  } else {
+    base::RecordAction(
+        base::UserMetricsAction("CredentialManager_AccountChooser_Dismissed"));
   }
   SendCredential(send_callback, info);
 }

@@ -272,14 +272,13 @@ class PasswordFormManager : public PasswordStoreConsumer {
  private:
   // ManagerAction - What does the manager do with this form? Either it
   // fills it, or it doesn't. If it doesn't fill it, that's either
-  // because it has no match, or it is blacklisted, or it is disabled
-  // via the AUTOCOMPLETE=off attribute. Note that if we don't have
-  // an exact match, we still provide candidates that the user may
-  // end up choosing.
+  // because it has no match or it is disabled via the AUTOCOMPLETE=off
+  // attribute. Note that if we don't have an exact match, we still provide
+  // candidates that the user may end up choosing.
   enum ManagerAction {
     kManagerActionNone = 0,
     kManagerActionAutofilled,
-    kManagerActionBlacklisted,
+    kManagerActionBlacklisted_Obsolete,
     kManagerActionMax
   };
 
@@ -458,6 +457,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Send appropriate votes based on what is currently being saved.
   void SendVotesOnSave();
+
+  // Sets |user_action_| and records some metrics.
+  void SetUserAction(UserAction user_action);
 
   // Edits some fields in |pending_credentials_| before it can be used to
   // update the password store. It also goes through |not_best_matches|,

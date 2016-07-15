@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/metrics/user_metrics.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -145,6 +146,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
                             : CredentialType::CREDENTIAL_TYPE_FEDERATED);
     delegate_->client()->NotifyUserAutoSignin(std::move(local_results),
                                               origin_);
+    base::RecordAction(base::UserMetricsAction("CredentialManager_Autosignin"));
     delegate_->SendCredential(send_callback_, info);
     return;
   }

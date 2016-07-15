@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -341,7 +342,7 @@ void PasswordFormManager::Save() {
 
   if ((user_action_ == kUserActionNone) &&
       DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
-    user_action_ = kUserActionChoose;
+    SetUserAction(kUserActionChoose);
   }
   base::Optional<PasswordForm> old_primary_key;
   if (is_new_login_) {
@@ -559,10 +560,9 @@ void PasswordFormManager::ProcessFrame(
 void PasswordFormManager::ProcessFrameInternal(
     const base::WeakPtr<PasswordManagerDriver>& driver) {
   DCHECK_EQ(PasswordForm::SCHEME_HTML, observed_form_.scheme);
-  if (!driver || manager_action_ == kManagerActionBlacklisted)
+  if (!driver)
     return;
 
-  // Allow generation for any non-blacklisted form.
   driver->AllowPasswordGenerationForForm(observed_form_);
 
   if (best_matches_.empty())
@@ -583,10 +583,12 @@ void PasswordFormManager::ProcessFrameInternal(
             preferred_match_->action.GetWithEmptyPath() ||
         preferred_match_->is_public_suffix_match ||
         observed_form_.IsPossibleChangePasswordForm()));
-  if (wait_for_username)
+  if (wait_for_username) {
     manager_action_ = kManagerActionNone;
-  else
+  } else {
     manager_action_ = kManagerActionAutofilled;
+    base::RecordAction(base::UserMetricsAction("PasswordManager_Autofilled"));
+  }
   if (ShouldShowInitialPasswordAccountSuggestions()) {
     // This is for the fill-on-account-select experiment. Instead of autofilling
     // found usernames and passwords on load, this instructs the renderer to
@@ -643,12 +645,10 @@ void PasswordFormManager::OnGetPasswordStoreResults(
   if (provisionally_saved_form_)
     CreatePendingCredentials();
 
-  if (manager_action_ != kManagerActionBlacklisted) {
-    for (auto const& driver : drivers_)
-      ProcessFrameInternal(driver);
-    if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
-      ProcessLoginPrompt();
-  }
+  for (auto const& driver : drivers_)
+    ProcessFrameInternal(driver);
+  if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
+    ProcessLoginPrompt();
 }
 
 void PasswordFormManager::OnGetSiteStatistics(
@@ -958,8 +958,8 @@ void PasswordFormManager::CreatePendingCredentials() {
       // from Android apps store a copy with the current origin and signon
       // realm. This ensures that on the next visit, a precise match is found.
       is_new_login_ = true;
-      user_action_ = password_overridden_ ? kUserActionOverridePassword
-                                          : kUserActionChoosePslMatch;
+      SetUserAction(password_overridden_ ? kUserActionOverridePassword
+                                         : kUserActionChoosePslMatch);
 
       // Since this credential will not overwrite a previously saved credential,
       // username_value can be updated now.
@@ -1010,7 +1010,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     } else {  // Not a PSL match.
       is_new_login_ = false;
       if (password_overridden_)
-        user_action_ = kUserActionOverridePassword;
+        SetUserAction(kUserActionOverridePassword);
     }
   } else if (other_possible_username_action_ ==
                  ALLOW_OTHER_POSSIBLE_USERNAMES &&
@@ -1221,7 +1221,7 @@ PasswordForm* PasswordFormManager::FindBestSavedMatch(
 
 void PasswordFormManager::CreatePendingCredentialsForNewCredentials() {
   // User typed in a new, unknown username.
-  user_action_ = kUserActionOverrideUsernameAndPassword;
+  SetUserAction(kUserActionOverrideUsernameAndPassword);
   pending_credentials_ = observed_form_;
   if (provisionally_saved_form_->was_parsed_using_autofill_predictions)
     pending_credentials_.username_element =
@@ -1262,6 +1262,7 @@ void PasswordFormManager::LogSubmitPassed() {
           metrics_util::PASSWORD_SUBMITTED);
     }
   }
+  base::RecordAction(base::UserMetricsAction("PasswordManager_LoginPassed"));
   submit_result_ = kSubmitResultPassed;
 }
 
@@ -1273,6 +1274,7 @@ void PasswordFormManager::LogSubmitFailed() {
     metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
         metrics_util::PASSWORD_SUBMISSION_FAILED);
   }
+  base::RecordAction(base::UserMetricsAction("PasswordManager_LoginFailed"));
   submit_result_ = kSubmitResultFailed;
 }
 
@@ -1313,6 +1315,25 @@ void PasswordFormManager::SendVotesOnSave() {
     if (!observed_form_.IsPossibleChangePasswordFormWithoutUsername())
       SendAutofillVotes(observed_form_, &pending_credentials_);
   }
+}
+
+void PasswordFormManager::SetUserAction(UserAction user_action) {
+  if (user_action == kUserActionChoose) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_UsedNonDefaultUsername"));
+  } else if (user_action == kUserActionChoosePslMatch) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_ChoseSubdomainPassword"));
+  } else if (user_action == kUserActionOverridePassword) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_LoggedInWithNewPassword"));
+  } else if (user_action == kUserActionOverrideUsernameAndPassword) {
+    base::RecordAction(
+        base::UserMetricsAction("PasswordManager_LoggedInWithNewUsername"));
+  } else {
+    NOTREACHED();
+  }
+  user_action_ = user_action;
 }
 
 base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
