@@ -850,3 +850,10 @@ webcore_shared.dll!blink::CSSSelectorParser::consumeSimpleSelector
 webcore_shared.dll!blink::CSSSelectorParser::consumeCompoundSelector
 ...
 webcore_shared.dll!blink::CSSParser::parseSheet
+
+UNINITIALIZED READ
+name=https://crbug.com/628177
+ntdll.dll!RtlTimeFieldsToTime
+KERNELBASE.dll!SystemTimeToFileTime
+base.dll!base::Time::FromExploded
+*!net::der::test::EncodeValuesTest*

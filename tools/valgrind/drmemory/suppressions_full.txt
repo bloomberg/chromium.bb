@@ -1603,8 +1603,8 @@ gl_in_process_context.dll!gpu::GLInProcessContext::CreateContext
 
 UNINITIALIZED READ
 name=bug_371844
-*!content::GamepadProvider::PadState::Match
-*!content::GamepadProvider::DoPoll
+*!device::GamepadProvider::PadState::Match
+*!device::GamepadProvider::DoPoll
 
 UNINITIALIZED READ
 name=bug_371950
