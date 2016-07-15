@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/split_static_library.gni")
 import("//third_party/WebKit/Source/bindings/bindings.gni")
 import("//third_party/WebKit/Source/bindings/modules/v8/generated.gni")
 import("//third_party/WebKit/Source/bindings/modules/v8/v8.gni")
@@ -11,20 +10,16 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 visibility = [ "//third_party/WebKit/Source/*" ]
 
-if (!is_component_build && is_win && is_official_build) {
-  # This target as a static library (for non-component builds) is >2GB for
-  # official builds on Windows. This causes linking fail. As a workaround,
-  # force using a split static library for this configuration.
-  modules_target_type = "split_static_library"
-} else {
-  modules_target_type = "component"
-}
-
-target(modules_target_type, "modules") {
+# GYP version: WebKit/Source/modules/modules.gyp:modules
+component("modules") {
   output_name = "blink_modules"
 
-  if (modules_target_type == "split_static_library") {
-    split_count = 5
+  if (is_win && is_official_build) {
+    # This target is >2GB for official builds on Windows which causes linking
+    # with the library to fail. As a workaround, force using a source set in
+    # this configuration whcih avoids generating the .lib file (although will
+    # cause slower links).
+    static_component_type = "source_set"
   }
 
   visibility = []  # Allow re-assignment of list.
