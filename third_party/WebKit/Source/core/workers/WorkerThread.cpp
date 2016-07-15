@@ -237,17 +237,13 @@ v8::Isolate* WorkerThread::isolate()
 
 bool WorkerThread::isCurrentThread()
 {
-    return m_started && workerBackingThread().backingThread().isCurrentThread();
+    return workerBackingThread().backingThread().isCurrentThread();
 }
 
 void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
 {
-    {
-        MutexLocker lock(m_threadStateMutex);
-        if (m_terminated || m_readyToShutdown)
-            return;
-    }
-
+    if (isInShutdown())
+        return;
     if (isInstrumented) {
         DCHECK(isCurrentThread());
         InspectorInstrumentation::asyncTaskScheduled(workerGlobalScope(), "Worker task", task.get());
@@ -258,11 +254,8 @@ void WorkerThread::postTask(const WebTraceLocation& location, std::unique_ptr<Ex
 void WorkerThread::appendDebuggerTask(std::unique_ptr<CrossThreadClosure> task)
 {
     DCHECK(isMainThread());
-    {
-        MutexLocker lock(m_threadStateMutex);
-        if (m_terminated)
-            return;
-    }
+    if (isInShutdown())
+        return;
     m_inspectorTaskRunner->appendTask(crossThreadBind(&WorkerThread::performDebuggerTaskOnWorkerThread, crossThreadUnretained(this), passed(std::move(task))));
     {
         MutexLocker lock(m_threadStateMutex);
@@ -341,6 +334,7 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, Work
 
 void WorkerThread::terminateInternal(TerminationMode mode)
 {
+    DCHECK(isMainThread());
     DCHECK(m_started);
 
     // Prevent the deadlock between GC and an attempt to terminate a thread.
@@ -429,8 +423,22 @@ void WorkerThread::forciblyTerminateExecution()
     isolate()->TerminateExecution();
 }
 
+bool WorkerThread::isInShutdown()
+{
+    // Check if we've started termination or shutdown sequence. Avoid acquiring
+    // a lock here to avoid introducing a risk of deadlock. Note that accessing
+    // |m_terminated| on the main thread or |m_readyToShutdown| on the worker
+    // thread is safe as the flag is set only on the thread.
+    if (isMainThread() && m_terminated)
+        return true;
+    if (isCurrentThread() && m_readyToShutdown)
+        return true;
+    return false;
+}
+
 void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData> startupData)
 {
+    DCHECK(isCurrentThread());
     KURL scriptURL = startupData->m_scriptURL;
     String sourceCode = startupData->m_sourceCode;
     WorkerThreadStartMode startMode = startupData->m_startMode;
@@ -565,11 +573,8 @@ void WorkerThread::performShutdownOnWorkerThread()
 void WorkerThread::performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask> task, bool isInstrumented)
 {
     DCHECK(isCurrentThread());
-    {
-        MutexLocker lock(m_threadStateMutex);
-        if (m_readyToShutdown)
-            return;
-    }
+    if (isInShutdown())
+        return;
 
     WorkerGlobalScope* globalScope = workerGlobalScope();
     // If the thread is terminated before it had a chance initialize (see

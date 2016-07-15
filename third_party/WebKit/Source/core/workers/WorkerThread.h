@@ -194,6 +194,12 @@ private:
     void terminateInternal(TerminationMode);
     void forciblyTerminateExecution();
 
+    // Returns true if termination or shutdown sequence has started. This is
+    // thread safe.
+    // Note that this returns false when the sequence has already started but it
+    // hasn't been notified to the calling thread.
+    bool isInShutdown();
+
     void initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupData>);
     void prepareForShutdownOnWorkerThread();
     void performShutdownOnWorkerThread();
@@ -201,11 +207,21 @@ private:
     void performDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
     void performDebuggerTaskDontWaitOnWorkerThread();
 
+    // Accessed only on the main thread.
     bool m_started = false;
+
+    // Set on the main thread and checked on both the main and worker threads.
     bool m_terminated = false;
+
+    // Set on the worker thread and checked on both the main and worker threads.
     bool m_readyToShutdown = false;
+
+    // Accessed only on the worker thread.
     bool m_pausedInDebugger = false;
+
+    // Set on the worker thread and checked on both the main and worker threads.
     bool m_runningDebuggerTask = false;
+
     ExitCode m_exitCode = ExitCode::NotTerminated;
 
     long long m_forceTerminationDelayInMs;
