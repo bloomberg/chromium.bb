@@ -370,6 +370,8 @@ class Serializer {
    * @param {number} childIndex
    */
   handleSelection(parentNode, childIndex) {
+    if (this.selection_.isNone)
+      return;
     if (parentNode === this.selection_.focusNode &&
         childIndex === this.selection_.focusOffset) {
       this.emit('|');
@@ -388,6 +390,8 @@ class Serializer {
   handleCharacterData(node) {
     /** @type {string} */
     const text = node.nodeValue;
+    if (this.selection_.isNone)
+      return this.emit(text);
     /** @type {number} */
     const anchorOffset = this.selection_.anchorOffset;
     /** @type {number} */
