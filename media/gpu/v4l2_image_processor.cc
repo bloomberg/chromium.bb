@@ -451,7 +451,7 @@ void V4L2ImageProcessor::ServiceDeviceTask() {
     return;
 
   bool poll_device =
-      (input_buffer_queued_count_ > 0 && output_buffer_queued_count_ > 0);
+      (input_buffer_queued_count_ > 0 || output_buffer_queued_count_ > 0);
 
   device_poll_thread_.message_loop()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::DevicePollTask,
