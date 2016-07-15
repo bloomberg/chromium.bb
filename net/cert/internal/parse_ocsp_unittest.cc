@@ -305,7 +305,7 @@ TEST(OCSPDateTest, VerifyTimeMinusAgeFromBeforeWindowsEpoch) {
   ASSERT_TRUE(
       der::EncodeTimeAsGeneralizedTime(this_update, &response.this_update));
   response.has_next_update = false;
-#ifdef OS_WIN
+#if defined(OS_WIN)
   EXPECT_FALSE(CheckOCSPDateValid(response, verify_time, kOCSPAgeOneWeek));
 #else
   EXPECT_TRUE(CheckOCSPDateValid(response, verify_time, kOCSPAgeOneWeek));

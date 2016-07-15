@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,6 +44,7 @@ TEST(EncodeValuesTest, EncodeTimeFromBeforeWindowsEpoch) {
   exploded.year = 1570;
   exploded.month = 1;
   exploded.day_of_week = 5;
+  exploded.day_of_month = 1;
   exploded.hour = 0;
   exploded.minute = 0;
   exploded.second = 0;
@@ -70,6 +71,7 @@ TEST(EncodeValuesTest, EncodeTimeAfterTimeTMax) {
   exploded.year = 2039;
   exploded.month = 1;
   exploded.day_of_week = 7;
+  exploded.day_of_month = 1;
   exploded.hour = 0;
   exploded.minute = 0;
   exploded.second = 0;

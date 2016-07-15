@@ -19,6 +19,7 @@
 
 namespace base {
 class Time;
+class TimeDelta;
 }
 
 namespace net {

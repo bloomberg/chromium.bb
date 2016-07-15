@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,9 +18,8 @@ namespace der {
 
 // Encodes |time|, a UTC-based time, to DER |generalized_time|, for comparing
 // against other GeneralizedTime objects.
-NET_EXPORT bool EncodeTimeAsGeneralizedTime(
-    const base::Time& time,
-    der::GeneralizedTime* generalized_time);
+NET_EXPORT bool EncodeTimeAsGeneralizedTime(const base::Time& time,
+                                            GeneralizedTime* generalized_time);
 
 }  // namespace der
 
