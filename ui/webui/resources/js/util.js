@@ -373,7 +373,7 @@ function quoteString(str) {
   return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
 }
 
-<if expr="is_ios">
+// <if expr="is_ios">
 // Polyfill 'key' in KeyboardEvent for iOS.
 // This function is not intended to be complete but should
 // be sufficient enough to have iOS work correctly while
@@ -438,4 +438,4 @@ if (!('key' in KeyboardEvent.prototype)) {
 } else {
   window.console.log("KeyboardEvent.Key polyfill not required");
 }
-</if>  /* is_ios */
+// </if>  /* is_ios */

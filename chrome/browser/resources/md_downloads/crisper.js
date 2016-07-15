@@ -596,6 +596,11 @@ var cr = cr || function() {
     /** Whether this is on Android. */
     get isAndroid() {
       return /Android/.test(navigator.userAgent);
+    },
+
+    /** Whether this is on iOS. */
+    get isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.platform);
     }
   };
 }();
@@ -935,9 +940,9 @@ cr.define('cr.ui', function() {
      *
      * For example:
      *   "F1"
-     *   "Backspace-Meta" for Apple command backspace.
-     *   "a-Ctrl" for Control A
-     *   "Delete Backspace-Meta" for Delete and Command Backspace
+     *   "Backspace|Meta" for Apple command backspace.
+     *   "a|Ctrl" for Control A
+     *   "Delete Backspace|Meta" for Delete and Command Backspace
      *
      * @type {string}
      */
@@ -1514,7 +1519,74 @@ function elide(original, maxLength) {
  */
 function quoteString(str) {
   return str.replace(/([\\\.\+\*\?\[\^\]\$\(\)\{\}\=\!\<\>\|\:])/g, '\\$1');
-};
+}
+
+// <if expr="is_ios">
+// Polyfill 'key' in KeyboardEvent for iOS.
+// This function is not intended to be complete but should
+// be sufficient enough to have iOS work correctly while
+// it does not support key yet.
+if (!('key' in KeyboardEvent.prototype)) {
+  Object.defineProperty(KeyboardEvent.prototype, 'key', {
+    /** @this {KeyboardEvent} */
+    get: function () {
+      // 0-9
+      if (this.keyCode >= 0x30 && this.keyCode <= 0x39)
+        return String.fromCharCode(this.keyCode);
+
+      // A-Z
+      if (this.keyCode >= 0x41 && this.keyCode <= 0x5a) {
+        var result = String.fromCharCode(this.keyCode).toLowerCase();
+        if (this.shiftKey)
+          result = result.toUpperCase();
+        return result;
+      }
+
+      // Special characters
+      switch(this.keyCode) {
+        case 0x08: return 'Backspace';
+        case 0x09: return 'Tab';
+        case 0x0d: return 'Enter';
+        case 0x10: return 'Shift';
+        case 0x11: return 'Control';
+        case 0x12: return 'Alt';
+        case 0x1b: return 'Escape';
+        case 0x20: return ' ';
+        case 0x21: return 'PageUp';
+        case 0x22: return 'PageDown';
+        case 0x23: return 'End';
+        case 0x24: return 'Home';
+        case 0x25: return 'ArrowLeft';
+        case 0x26: return 'ArrowUp';
+        case 0x27: return 'ArrowRight';
+        case 0x28: return 'ArrowDown';
+        case 0x2d: return 'Insert';
+        case 0x2e: return 'Delete';
+        case 0x5b: return 'Meta';
+        case 0x70: return 'F1';
+        case 0x71: return 'F2';
+        case 0x72: return 'F3';
+        case 0x73: return 'F4';
+        case 0x74: return 'F5';
+        case 0x75: return 'F6';
+        case 0x76: return 'F7';
+        case 0x77: return 'F8';
+        case 0x78: return 'F9';
+        case 0x79: return 'F10';
+        case 0x7a: return 'F11';
+        case 0x7b: return 'F12';
+        case 0xbb: return '=';
+        case 0xbd: return '-';
+        case 0xdb: return '[';
+        case 0xdd: return ']';
+      }
+      return 'Unidentified';
+    }
+  });
+} else {
+  window.console.log("KeyboardEvent.Key polyfill not required");
+}
+// </if>  /* is_ios */
 /**
    * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
    * coordinate the flow of resize events between "resizers" (elements that control the
@@ -1714,7 +1786,8 @@ function quoteString(str) {
 
     /**
      * Special table for KeyboardEvent.keyCode.
-     * KeyBoardEvent.key is even better than that.
+     * KeyboardEvent.keyIdentifier is better, and KeyBoardEvent.key is even better
+     * than that.
      *
      * Values from: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode
      */
@@ -1756,6 +1829,11 @@ function quoteString(str) {
      * Apple-specific mapping. In this case, we fall back to .keyCode.
      */
     var KEY_CHAR = /[a-z0-9*]/;
+
+    /**
+     * Matches a keyIdentifier string.
+     */
+    var IDENT_CHAR = /U\+/;
 
     /**
      * Matches arrow keys in Gecko 27.0+
@@ -1805,6 +1883,21 @@ function quoteString(str) {
       return validKey;
     }
 
+    function transformKeyIdentifier(keyIdent) {
+      var validKey = '';
+      if (keyIdent) {
+        if (keyIdent in KEY_IDENTIFIER) {
+          validKey = KEY_IDENTIFIER[keyIdent];
+        } else if (IDENT_CHAR.test(keyIdent)) {
+          keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);
+          validKey = String.fromCharCode(keyIdent).toLowerCase();
+        } else {
+          validKey = keyIdent.toLowerCase();
+        }
+      }
+      return validKey;
+    }
+
     function transformKeyCode(keyCode) {
       var validKey = '';
       if (Number(keyCode)) {
@@ -1839,9 +1932,10 @@ function quoteString(str) {
       * To get @ returned, set noSpecialChars = false
      */
     function normalizedKeyForEvent(keyEvent, noSpecialChars) {
-      // Fall back from .key, to .keyCode, and then to
+      // Fall back from .key, to .keyIdentifier, to .keyCode, and then to
       // .detail.key to support artificial keyboard events.
       return transformKey(keyEvent.key, noSpecialChars) ||
+        transformKeyIdentifier(keyEvent.keyIdentifier) ||
         transformKeyCode(keyEvent.keyCode) ||
         transformKey(keyEvent.detail ? keyEvent.detail.key : keyEvent.detail, noSpecialChars) || '';
     }
