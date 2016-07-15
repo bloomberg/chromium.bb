@@ -125,11 +125,6 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-protected:
-    bool isSafeToUnlock() const override;
-    void destroyDecodedDataIfPossible() override;
-    void destroyDecodedDataForFailedRevalidation() override;
-
 private:
     explicit ImageResource(blink::Image*, const ResourceLoaderOptions&);
 
@@ -166,6 +161,10 @@ private:
     void markClientsAndObserversFinished() override;
 
     void doResetAnimation();
+
+    bool isSafeToUnlock() const override;
+    void destroyDecodedDataIfPossible() override;
+    void destroyDecodedDataForFailedRevalidation() override;
 
     float m_devicePixelRatioHeaderValue;
 

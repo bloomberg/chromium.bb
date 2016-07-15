@@ -41,7 +41,7 @@ namespace blink {
 
 class MemoryCacheTest : public ::testing::Test {
 public:
-    class FakeDecodedResource : public Resource {
+    class FakeDecodedResource final : public Resource {
     public:
         static FakeDecodedResource* create(const ResourceRequest& request, Type type)
         {
@@ -54,7 +54,7 @@ public:
             setDecodedSize(this->size());
         }
 
-    protected:
+    private:
         FakeDecodedResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
             : Resource(request, type, options)
         {
@@ -66,7 +66,7 @@ public:
         }
     };
 
-    class FakeResource : public Resource {
+    class FakeResource final : public Resource {
     public:
         static FakeResource* create(const ResourceRequest& request, Type type)
         {

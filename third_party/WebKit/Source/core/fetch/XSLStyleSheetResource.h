@@ -42,7 +42,7 @@ public:
 
     void didAddClient(ResourceClient*) override;
 
-protected:
+private:
     class XSLStyleSheetResourceFactory : public ResourceFactory {
     public:
         XSLStyleSheetResourceFactory()

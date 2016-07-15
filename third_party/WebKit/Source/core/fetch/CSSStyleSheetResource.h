@@ -55,11 +55,6 @@ public:
     StyleSheetContents* restoreParsedStyleSheet(const CSSParserContext&);
     void saveParsedStyleSheet(StyleSheetContents*);
 
-protected:
-    bool isSafeToUnlock() const override;
-    void destroyDecodedDataIfPossible() override;
-    void destroyDecodedDataForFailedRevalidation() override { destroyDecodedDataIfPossible(); }
-
 private:
     class CSSStyleSheetResourceFactory : public ResourceFactory {
     public:
@@ -77,6 +72,10 @@ private:
     void checkNotify() override;
 
     void setParsedStyleSheetCache(StyleSheetContents*);
+
+    bool isSafeToUnlock() const override;
+    void destroyDecodedDataIfPossible() override;
+    void destroyDecodedDataForFailedRevalidation() override { destroyDecodedDataIfPossible(); }
 
     String m_decodedSheetText;
 
