@@ -2830,9 +2830,9 @@ const ComputedStyle* Element::ensureComputedStyle(PseudoId pseudoElementSpecifie
     ComputedStyle* elementStyle = mutableComputedStyle();
     if (!elementStyle) {
         ElementRareData& rareData = ensureElementRareData();
-        if (!rareData.ensureComputedStyle())
+        if (!rareData.computedStyle())
             rareData.setComputedStyle(document().styleForElementIgnoringPendingStylesheets(this));
-        elementStyle = rareData.ensureComputedStyle();
+        elementStyle = rareData.computedStyle();
     }
 
     if (!pseudoElementSpecifier)

@@ -88,7 +88,7 @@ public:
     NamedNodeMap* attributeMap() const { return m_attributeMap.get(); }
     void setAttributeMap(NamedNodeMap* attributeMap) { m_attributeMap = attributeMap; }
 
-    ComputedStyle* ensureComputedStyle() const { return m_computedStyle.get(); }
+    ComputedStyle* computedStyle() const { return m_computedStyle.get(); }
     void setComputedStyle(PassRefPtr<ComputedStyle> computedStyle) { m_computedStyle = computedStyle; }
     void clearComputedStyle() { m_computedStyle = nullptr; }
 
