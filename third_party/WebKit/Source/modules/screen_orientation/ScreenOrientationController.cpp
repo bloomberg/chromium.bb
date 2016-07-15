@@ -200,6 +200,7 @@ bool ScreenOrientationController::hasLastData()
 void ScreenOrientationController::contextDestroyed()
 {
     m_client = nullptr;
+    LocalFrameLifecycleObserver::contextDestroyed();
 }
 
 void ScreenOrientationController::notifyDispatcher()
