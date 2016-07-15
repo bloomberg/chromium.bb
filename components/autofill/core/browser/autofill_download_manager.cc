@@ -101,8 +101,6 @@ std::ostream& operator<<(std::ostream& out,
         out << "\n  name: " << field.name();
       if (!field.type().empty())
         out << "\n  type: " << field.type();
-      if (!field.label().empty())
-        out << "\n  label: " << field.label();
     }
   }
   return out;
@@ -131,8 +129,6 @@ std::ostream& operator<<(std::ostream& out,
       out << "\n autocomplete: " << field.autocomplete();
     if (!field.type().empty())
       out << "\n type: " << field.type();
-    if (!field.label().empty())
-      out << "\n label: " << field.label();
     if (field.generation_type())
       out << "\n generation_type: " << field.generation_type();
   }

@@ -18,8 +18,7 @@ message AutofillQueryContents {
     repeated group Field = 4 {
       required fixed32 signature = 5;
       optional string name = 8;
-      optional string type = 9;    // Control type.
-      optional string label = 10;  // Truncated at 200 characters.
+      optional string type = 9;  // Control type.
     }
   }
 }
@@ -68,10 +67,6 @@ message AutofillUploadContents {
 
     // The type of input control for this field (e.g. text, textarea, email).
     optional string type = 10;
-
-    // The label that is used alongside the field. Its value is truncated at
-    // 200 characters.
-    optional string label = 11;
 
     enum PasswordGenerationType {
       NO_GENERATION = 0;

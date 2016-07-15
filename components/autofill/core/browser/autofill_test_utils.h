@@ -131,7 +131,6 @@ void FillUploadField(AutofillUploadContents::Field* field,
                      unsigned signature,
                      const char* name,
                      const char* control_type,
-                     const char* label,
                      const char* autocomplete,
                      unsigned autofill_type,
                      const char* css_classes);
@@ -142,8 +141,7 @@ void FillUploadField(AutofillUploadContents::Field* field,
 void FillQueryField(AutofillQueryContents::Form::Field* field,
                     unsigned signature,
                     const char* name,
-                    const char* control_type,
-                    const char* label);
+                    const char* control_type);
 
 }  // namespace test
 }  // namespace autofill

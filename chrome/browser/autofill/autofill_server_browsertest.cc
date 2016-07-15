@@ -132,14 +132,10 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   AutofillQueryContents::Form* query_form = query.add_form();
   query_form->set_signature(15916856893790176210U);
 
-  test::FillQueryField(query_form->add_field(), 2594484045U, "one", "text",
-                       nullptr);
-  test::FillQueryField(query_form->add_field(), 2750915947U, "two", "text",
-                       nullptr);
-  test::FillQueryField(query_form->add_field(), 3494787134U, "three", "text",
-                       nullptr);
-  test::FillQueryField(query_form->add_field(), 1236501728U, "four", "text",
-                       nullptr);
+  test::FillQueryField(query_form->add_field(), 2594484045U, "one", "text");
+  test::FillQueryField(query_form->add_field(), 2750915947U, "two", "text");
+  test::FillQueryField(query_form->add_field(), 3494787134U, "three", "text");
+  test::FillQueryField(query_form->add_field(), 1236501728U, "four", "text");
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
@@ -163,13 +159,13 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   upload.set_form_name("test_form");
 
   test::FillUploadField(upload.add_field(), 2594484045U, "one", "text", nullptr,
-                        nullptr, 2U, nullptr);
-  test::FillUploadField(upload.add_field(), 2750915947U, "two", "text", nullptr,
-                        "off", 2U, nullptr);
+                        2U, nullptr);
+  test::FillUploadField(upload.add_field(), 2750915947U, "two", "text", "off",
+                        2U, nullptr);
   test::FillUploadField(upload.add_field(), 3494787134U, "three", "text",
-                        nullptr, nullptr, 2U, nullptr);
-  test::FillUploadField(upload.add_field(), 1236501728U, "four", "text",
-                        nullptr, "off", 2U, nullptr);
+                        nullptr, 2U, nullptr);
+  test::FillUploadField(upload.add_field(), 1236501728U, "four", "text", "off",
+                        2U, nullptr);
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
@@ -201,12 +197,10 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   AutofillQueryContents::Form* query_form = query.add_form();
   query_form->set_signature(8900697631820480876U);
 
-  test::FillQueryField(query_form->add_field(), 2594484045U, "one", "text",
-                       nullptr);
-  test::FillQueryField(query_form->add_field(), 2750915947U, "two", "text",
-                       nullptr);
-  test::FillQueryField(query_form->add_field(), 116843943U, "three", "password",
-                       nullptr);
+  test::FillQueryField(query_form->add_field(), 2594484045U, "one", "text");
+  test::FillQueryField(query_form->add_field(), 2750915947U, "two", "text");
+  test::FillQueryField(query_form->add_field(), 116843943U, "three",
+                       "password");
 
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
