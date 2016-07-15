@@ -95,6 +95,12 @@ void StabilityMetricsHelper::ProvideStabilityMetrics(
     local_state_->SetInteger(prefs::kStabilityRendererFailedLaunchCount, 0);
   }
 
+  count = local_state_->GetInteger(prefs::kStabilityRendererLaunchCount);
+  if (count) {
+    stability_proto->set_renderer_launch_count(count);
+    local_state_->SetInteger(prefs::kStabilityRendererLaunchCount, 0);
+  }
+
   count =
       local_state_->GetInteger(prefs::kStabilityExtensionRendererCrashCount);
   if (count) {
@@ -115,6 +121,12 @@ void StabilityMetricsHelper::ProvideStabilityMetrics(
     stability_proto->set_renderer_hang_count(count);
     local_state_->SetInteger(prefs::kStabilityRendererHangCount, 0);
   }
+
+  count = local_state_->GetInteger(prefs::kStabilityRendererLaunchCount);
+  if (count) {
+    stability_proto->set_renderer_launch_count(count);
+    local_state_->SetInteger(prefs::kStabilityRendererLaunchCount, 0);
+  }
 }
 
 void StabilityMetricsHelper::ClearSavedStabilityMetrics() {
@@ -124,10 +136,12 @@ void StabilityMetricsHelper::ClearSavedStabilityMetrics() {
   local_state_->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityExtensionRendererFailedLaunchCount,
                            0);
+  local_state_->SetInteger(prefs::kStabilityExtensionRendererLaunchCount, 0);
   local_state_->SetInteger(prefs::kStabilityPageLoadCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererFailedLaunchCount, 0);
   local_state_->SetInteger(prefs::kStabilityRendererHangCount, 0);
+  local_state_->SetInteger(prefs::kStabilityRendererLaunchCount, 0);
 }
 
 // static
@@ -137,10 +151,13 @@ void StabilityMetricsHelper::RegisterPrefs(PrefRegistrySimple* registry) {
                                 0);
   registry->RegisterIntegerPref(
       prefs::kStabilityExtensionRendererFailedLaunchCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityExtensionRendererLaunchCount,
+                                0);
   registry->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererFailedLaunchCount, 0);
   registry->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
+  registry->RegisterIntegerPref(prefs::kStabilityRendererLaunchCount, 0);
 
   registry->RegisterInt64Pref(prefs::kUninstallMetricsPageLoadCount, 0);
 }
@@ -204,6 +221,13 @@ void StabilityMetricsHelper::LogRendererCrash(bool was_extension_process,
     else
       IncrementPrefValue(prefs::kStabilityRendererFailedLaunchCount);
   }
+}
+
+void StabilityMetricsHelper::LogRendererLaunched(bool was_extension_process) {
+  if (was_extension_process)
+    IncrementPrefValue(prefs::kStabilityExtensionRendererLaunchCount);
+  else
+    IncrementPrefValue(prefs::kStabilityRendererLaunchCount);
 }
 
 void StabilityMetricsHelper::IncrementPrefValue(const char* path) {

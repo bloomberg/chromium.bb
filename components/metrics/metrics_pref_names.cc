@@ -111,6 +111,11 @@ const char kStabilityExtensionRendererCrashCount[] =
 const char kStabilityExtensionRendererFailedLaunchCount[] =
     "user_experience_metrics.stability.extension_renderer_failed_launch_count";
 
+// Number of times an extension renderer process successfully launched since the
+// last report.
+const char kStabilityExtensionRendererLaunchCount[] =
+    "user_experience_metrics.stability.extension_renderer_launch_count";
+
 // Number of times the session end did not complete.
 const char kStabilityIncompleteSessionEndCount[] =
     "user_experience_metrics.stability.incomplete_session_end_count";
@@ -144,6 +149,11 @@ const char kStabilityRendererFailedLaunchCount[] =
 // report.
 const char kStabilityRendererHangCount[] =
     "user_experience_metrics.stability.renderer_hang_count";
+
+// Number of times a renderer process successfully launched since the last
+// report.
+const char kStabilityRendererLaunchCount[] =
+    "user_experience_metrics.stability.renderer_launch_count";
 
 // Base64 encoded serialized UMA system profile proto from the previous session.
 const char kStabilitySavedSystemProfile[] =

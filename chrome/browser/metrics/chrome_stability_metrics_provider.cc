@@ -48,6 +48,9 @@ void ChromeStabilityMetricsProvider::OnRecordingEnabled() {
   registrar_.Add(this,
                  content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
                  content::NotificationService::AllSources());
+  registrar_.Add(this,
+                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+                 content::NotificationService::AllSources());
 }
 
 void ChromeStabilityMetricsProvider::OnRecordingDisabled() {
@@ -94,6 +97,20 @@ void ChromeStabilityMetricsProvider::Observe(
     case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
       helper_.LogRendererHang();
       break;
+
+    case content::NOTIFICATION_RENDERER_PROCESS_CREATED: {
+      bool was_extension_process = false;
+#if defined(ENABLE_EXTENSIONS)
+      content::RenderProcessHost* host =
+          content::Source<content::RenderProcessHost>(source).ptr();
+      if (extensions::ProcessMap::Get(host->GetBrowserContext())
+              ->Contains(host->GetID())) {
+        was_extension_process = true;
+      }
+#endif
+      helper_.LogRendererLaunched(was_extension_process);
+      break;
+    }
 
     default:
       NOTREACHED();

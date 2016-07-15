@@ -36,9 +36,12 @@ class StabilityMetricsHelper {
   void LogLoadStarted();
 
   // Records a renderer process crash.
-  void LogRendererCrash(bool was_exception_process,
+  void LogRendererCrash(bool was_extension_process,
                         base::TerminationStatus status,
                         int exit_code);
+
+  // Records that a new renderer process was successfully launched.
+  void LogRendererLaunched(bool was_extension_process);
 
   // Records a renderer process hang.
   void LogRendererHang();
