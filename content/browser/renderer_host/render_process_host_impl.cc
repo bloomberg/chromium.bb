@@ -44,6 +44,8 @@
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/memory_coordinator/browser/memory_coordinator.h"
+#include "components/memory_coordinator/common/memory_coordinator_features.h"
 #include "components/scheduler/common/scheduler_switches.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/webmessaging/broadcast_channel_provider.h"
@@ -448,6 +450,13 @@ std::string UintVectorToString(const std::vector<unsigned>& vector) {
     str += base::UintToString(it);
   }
   return str;
+}
+
+void CreateMemoryCoordinatorHandle(
+    int render_process_id,
+    memory_coordinator::mojom::MemoryCoordinatorHandleRequest request) {
+  BrowserMainLoop::GetInstance()->memory_coordinator()->CreateHandle(
+      render_process_id, std::move(request));
 }
 
 }  // namespace
@@ -1098,6 +1107,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&DeviceOrientationHost::Create), io_task_runner);
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&DeviceOrientationAbsoluteHost::Create), io_task_runner);
+
+  if (memory_coordinator::IsEnabled()) {
+    GetInterfaceRegistry()->AddInterface(
+        base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
+  }
 
 #if defined(OS_ANDROID)
   ServiceRegistrarAndroid::RegisterProcessHostServices(

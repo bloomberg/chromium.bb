@@ -50,6 +50,10 @@ class MidiManager;
 }  // namespace midi
 }  // namespace media
 
+namespace memory_coordinator {
+class MemoryCoordinator;
+}  // namespace memory_coordinator
+
 namespace mojo {
 namespace edk {
 class ScopedIPCSupport;
@@ -142,6 +146,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
 
   void StopStartupTracingTimer();
+
+  memory_coordinator::MemoryCoordinator* memory_coordinator() const {
+    return memory_coordinator_.get();
+  }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   media::DeviceMonitorMac* device_monitor_mac() const {
@@ -249,6 +257,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |PreCreateThreads()| -------------------------------
   // Torn down in ShutdownThreadsAndCleanUp.
   std::unique_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
+  std::unique_ptr<memory_coordinator::MemoryCoordinator> memory_coordinator_;
 
   // Members initialized in |CreateThreads()| ----------------------------------
   std::unique_ptr<BrowserProcessSubThread> db_thread_;
