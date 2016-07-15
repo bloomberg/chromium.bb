@@ -30,6 +30,7 @@
 
 #include "wtf/HashSet.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
 #include "wtf/text/StringHash.h"
 
 namespace blink {
@@ -65,7 +66,7 @@ using FunctionNameList = HashSet<String, CaseFoldingHash>;
 
 const FunctionNameList& whitelistedFunctions()
 {
-    DEFINE_STATIC_LOCAL(FunctionNameList, list, ({
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(FunctionNameList, list, new FunctionNameList({
         // SQLite functions used to help implement some operations
         // ALTER TABLE helpers
         "sqlite_rename_table",
