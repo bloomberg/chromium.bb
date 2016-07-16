@@ -29,6 +29,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Conformance expectations
     # ========================
 
+    # 2.0.1 OR LATER
+
+    # Too slow (take about one hour to run)
+    self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
+
+    self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
+    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
+
     # All platforms.
 
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
@@ -41,15 +49,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
               'tex-2d-rgb-rgb-unsigned_byte.html', bug=483282)
     self.Fail('conformance/textures/image_bitmap_from_canvas/' +
               'tex-2d-rgb-rgb-unsigned_short_5_6_5.html', bug=483282)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html', bug=483282)
-    self.Fail('deqp/data/gles3/shaders/preprocessor.html', bug=483282)
-
-    # Too slow (take about one hour to run)
-    self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
     self.Fail('deqp/data/gles3/shaders/linkage.html', bug=601821)
-
-    self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
     # Mark this test Flaky on all platforms but Intel Linux that is failing
     # reliably.
@@ -62,9 +63,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/transform_feedback/' +
         'unwritten-output-defaults-to-zero.html', bug=1441) # ANGLE bug
-
-    # Likely move this to WebGL 2.0.1.
-    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
     # Avoid a conflict with a Mac expectation by setting
     self.Fail('conformance2/textures/misc/tex-input-validation.html',
@@ -232,8 +230,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac only.
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
               ['mac'], bug=483282)
-    self.Fail('deqp/data/gles2/shaders/scoping.html',
-              ['mac'], bug=483282)
     self.Flaky('deqp/functional/gles3/shaderindexing/varying.html',
         ['mac'], bug=619264)
     self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
@@ -245,12 +241,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac'], bug=618464)
 
-    self.Fail('deqp/functional/gles3/textureformat/compressed_cube.html',
-        ['mac'], bug=612205)
-
     self.Fail('deqp/data/gles3/shaders/qualification_order.html',
-        ['mac'], bug=483282)
-    self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac'], bug=483282)
@@ -556,9 +547,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/fbodepthbuffer.html',
         ['linux'], bug=483282)
 
-    # Behavior difference between GL compatibility profile and ES3.
-    self.Fail('conformance2/rendering/draw-buffers.html',
-        ['linux'], bug=617410)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_cube.html',
         ['linux'], bug=483282)
@@ -635,8 +623,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # The Mesa Intel driver has a scoping bug, see
     # https://bugs.freedesktop.org/show_bug.cgi?id=95184
     # It has been fixed in Mesa 12.0
-    self.Fail('deqp/data/gles2/shaders/scoping.html',
-        ['linux', 'intel'], bug=610800)
     self.Fail('deqp/data/gles3/shaders/scoping.html',
         ['linux', 'intel'], bug=610800)
 
