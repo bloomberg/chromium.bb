@@ -40,6 +40,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -723,6 +724,7 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
       if (selection_widget_ && SelectedWindow() == *iter) {
         SelectedWindow()->SetSelected(false);
         selection_widget_.reset();
+        selector_shadow_.reset();
       }
     }
   }
@@ -823,7 +825,6 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   selection_widget_.reset(CreateBackgroundWidget(root_window_, selection_color,
                                                  border_thickness,
                                                  border_radius, border_color));
-
   WmWindow* widget_window =
       WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
   const gfx::Rect target_bounds =
@@ -831,6 +832,15 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   gfx::Vector2d fade_out_direction =
       GetSlideVectorForFadeIn(direction, target_bounds);
   widget_window->SetBounds(target_bounds - fade_out_direction);
+
+  if (material) {
+    selector_shadow_.reset(new ::wm::Shadow());
+    selector_shadow_->Init(::wm::Shadow::STYLE_ACTIVE);
+    selector_shadow_->layer()->SetVisible(true);
+    selection_widget_->GetLayer()->SetMasksToBounds(false);
+    selection_widget_->GetLayer()->Add(selector_shadow_->layer());
+    selector_shadow_->SetContentBounds(gfx::Rect(target_bounds.size()));
+  }
 }
 
 void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
@@ -894,10 +904,32 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     selection_widget_->SetBounds(bounds);
     selection_widget_->SetOpacity(1.f);
+
+    if (selector_shadow_) {
+      ui::ScopedLayerAnimationSettings animation_settings_shadow(
+          selector_shadow_->shadow_layer()->GetAnimator());
+      animation_settings_shadow.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(
+              kOverviewSelectorTransitionMilliseconds));
+      animation_settings_shadow.SetTweenType(
+          ash::MaterialDesignController::IsOverviewMaterial()
+              ? gfx::Tween::EASE_IN_OUT
+              : gfx::Tween::LINEAR_OUT_SLOW_IN);
+      animation_settings_shadow.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      bounds.Inset(1, 1);
+      selector_shadow_->SetContentBounds(
+          gfx::Rect(gfx::Point(1, 1), bounds.size()));
+    }
     return;
   }
   selection_widget_->SetBounds(bounds);
   selection_widget_->SetOpacity(1.f);
+  if (selector_shadow_) {
+    bounds.Inset(1, 1);
+    selector_shadow_->SetContentBounds(
+        gfx::Rect(gfx::Point(1, 1), bounds.size()));
+  }
 }
 
 bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,

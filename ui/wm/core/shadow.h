@@ -45,6 +45,10 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // transformations to this layer).
   ui::Layer* layer() const { return layer_.get(); }
 
+  // Exposed to allow setting animation parameters for bounds and opacity
+  // animations.
+  ui::Layer* shadow_layer() const { return shadow_layer_.get(); }
+
   const gfx::Rect& content_bounds() const { return content_bounds_; }
   Style style() const { return style_; }
 

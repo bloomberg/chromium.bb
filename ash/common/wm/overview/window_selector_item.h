@@ -21,6 +21,10 @@ namespace views {
 class ImageButton;
 }
 
+namespace wm {
+class Shadow;
+}
+
 namespace ash {
 
 class WindowSelector;
@@ -173,6 +177,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // shown above the |transform_window_|.
   // Otherwise it is shown under the window.
   std::unique_ptr<views::Widget> window_label_;
+
+  // Shadow around the item in overview.
+  std::unique_ptr<::wm::Shadow> shadow_;
 
   // Label background widget used to fade in opacity when moving selection.
   std::unique_ptr<views::Widget> window_label_selector_;

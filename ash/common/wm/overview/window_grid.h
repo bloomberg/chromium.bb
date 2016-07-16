@@ -20,6 +20,10 @@ namespace views {
 class Widget;
 }
 
+namespace wm {
+class Shadow;
+}
+
 namespace ash {
 
 class WindowSelectorItem;
@@ -173,6 +177,9 @@ class ASH_EXPORT WindowGrid : public WmWindowObserver {
 
   // Widget that indicates to the user which is the selected window.
   std::unique_ptr<views::Widget> selection_widget_;
+
+  // Shadow around the selector.
+  std::unique_ptr<::wm::Shadow> selector_shadow_;
 
   // Current selected window position.
   size_t selected_index_;

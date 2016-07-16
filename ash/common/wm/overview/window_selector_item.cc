@@ -42,6 +42,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/window/non_client_view.h"
+#include "ui/wm/core/shadow.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -372,6 +373,17 @@ void WindowSelectorItem::SetSelected(bool selected) {
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
   window->SetOpacity(selected ? 0.0f : 1.0f);
+
+  ui::ScopedLayerAnimationSettings animation_settings_shadow(
+      shadow_->shadow_layer()->GetAnimator());
+  animation_settings_shadow.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kSelectorFadeInMilliseconds));
+  animation_settings_shadow.SetTweenType(selected
+                                             ? gfx::Tween::FAST_OUT_LINEAR_IN
+                                             : gfx::Tween::LINEAR_OUT_SLOW_IN);
+  animation_settings_shadow.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  shadow_->shadow_layer()->SetOpacity(selected ? 0.0f : 1.0f);
 }
 
 void WindowSelectorItem::RecomputeWindowTransforms() {
@@ -546,6 +558,12 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
     window_label_button_view_->SetVisible(false);
     window_label_->Show();
 
+    shadow_.reset(new ::wm::Shadow());
+    shadow_->Init(::wm::Shadow::STYLE_INACTIVE);
+    shadow_->layer()->SetVisible(true);
+    window_label_->GetLayer()->Add(shadow_->layer());
+    window_label_->GetLayer()->SetMasksToBounds(false);
+
     views::View* background_view =
         new RoundedContainerView(kLabelBackgroundRadius, kLabelBackgroundColor);
     window_label_selector_.reset(new views::Widget);
@@ -594,6 +612,7 @@ void WindowSelectorItem::UpdateHeaderLayout(
     // the window including its sizing borders.
     label_rect.set_height(label_rect.height() +
                           transformed_window_bounds.height());
+    gfx::Rect shadow_bounds(label_rect.size());
     label_rect.Inset(-kWindowSelectorMargin, -kWindowSelectorMargin);
     window_label_window->SetBounds(label_rect);
     gfx::Transform label_transform;
@@ -601,6 +620,9 @@ void WindowSelectorItem::UpdateHeaderLayout(
                               transformed_window_bounds.y());
     window_label_window->SetTransform(label_transform);
     window_label_selector_window->SetTransform(label_transform);
+
+    shadow_bounds.Offset(kWindowSelectorMargin, kWindowSelectorMargin);
+    shadow_->SetContentBounds(shadow_bounds);
   } else {
     if (!close_button_->visible()) {
       close_button_->SetVisible(true);
