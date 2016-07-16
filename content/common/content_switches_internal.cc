@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
@@ -19,9 +20,17 @@ namespace content {
 
 namespace {
 
+#if defined(OS_WIN)
+const base::Feature kUseZoomForDsfEnabledByDefault {
+  "use-zoom-for-dsf enabled by default", base::FEATURE_ENABLED_BY_DEFAULT
+};
+#endif
+
 bool IsUseZoomForDSFEnabledByDefault() {
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
   return true;
+#elif defined(OS_WIN)
+  return base::FeatureList::IsEnabled(kUseZoomForDsfEnabledByDefault);
 #else
   return false;
 #endif
