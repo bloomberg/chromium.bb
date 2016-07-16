@@ -10,7 +10,9 @@ namespace cc {
 
 UIResourceRequest::UIResourceRequest(UIResourceRequestType type,
                                      UIResourceId id)
-    : type_(type), id_(id) {}
+    : type_(type), id_(id) {
+  DCHECK(type == UI_RESOURCE_DELETE);
+}
 
 UIResourceRequest::UIResourceRequest(UIResourceRequestType type,
                                      UIResourceId id,
