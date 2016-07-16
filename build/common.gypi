@@ -848,7 +848,7 @@
 	# This requires LLVM Gold plugin to be downloaded.
         # See src/tools/clang/scripts/update.py
 	['OS=="linux" and target_arch=="x64" and buildtype=="Official" and branding=="Chrome" and chromeos==0', {
-           'cfi_vptr%': 1,
+           'use_lto%': 1,
         }],
 
         # Enable hotwording on Chrome-branded ChromeOS builds.
