@@ -52,6 +52,7 @@
             </cr-expand-button>
             <paper-toggle-button id="enableBluetooth"
                 checked="{{bluetoothEnabled}}"
+                disabled="[[!adapterState.available]]"
                 on-change="onBluetoothEnabledChange_">
             </paper-toggle-button>
           </div>
@@ -82,7 +83,7 @@
     <bluetooth-device-dialog id="deviceDialog"
         adapter-state="[[adapterState]]"
         device-list="[[deviceList]]"
-        dialog-type="[[dialog]]"
+        dialog-id="[[dialogId]]"
         on-close-dialog="onCloseDialog_"
         on-device-event="onDeviceEvent_"
         on-iron-overlay-closed="onDialogClosed_"

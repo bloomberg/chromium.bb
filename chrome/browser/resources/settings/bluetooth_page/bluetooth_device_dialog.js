@@ -46,9 +46,7 @@ settings.BluetoothAddDeviceBehavior = {
    * @return {boolean}
    * @private
    */
-  deviceNotPaired_: function(device) {
-    return !device.paired;
-  },
+  deviceNotPaired_: function(device) { return !device.paired; },
 
   /**
    * @param {!Array<!chrome.bluetooth.Device>} deviceList
@@ -65,7 +63,7 @@ settings.BluetoothAddDeviceBehavior = {
    */
   onDeviceEvent_: function(e) {
     this.fire('device-event', e.detail);
-    /** @type {Event} */(e).stopPropagation();
+    /** @type {Event} */ (e).stopPropagation();
   },
 };
 
@@ -83,6 +81,9 @@ settings.BluetoothPairDeviceBehavior = {
      * @type {?chrome.bluetoothPrivate.PairingEvent|undefined}
      */
     pairingEvent: Object,
+
+    /** Pincode or passkey value, used to trigger connect enabled changes. */
+    pinOrPass: String,
 
     /**
      * @const
@@ -110,6 +111,7 @@ settings.BluetoothPairDeviceBehavior = {
       this.fire('close-dialog', '');
       return;
     }
+    this.pinOrPass = '';
   },
 
   /**
@@ -184,14 +186,27 @@ settings.BluetoothPairDeviceBehavior = {
     if (!pairingEvent)
       return false;
     var pairing = pairingEvent.pairing;
-    if (pairing == PairingEventType.REQUEST_PINCODE) {
-      var pincode = /** @type {{invalid: boolean}} */(this.$.pincode);
-      return !pincode.invalid;
-    } else if (pairing == PairingEventType.REQUEST_PASSKEY) {
-      var passkey = /** @type {{invalid: boolean}} */(this.$.passkey);
-      return !passkey.invalid;
-    }
-    return false;
+    return pairing == PairingEventType.REQUEST_PINCODE ||
+        pairing == PairingEventType.REQUEST_PASSKEY;
+  },
+
+  /**
+   * @param {?chrome.bluetoothPrivate.PairingEvent} pairingEvent
+   * @param {string} pinOrPass Unused; call is triggered when this changes.
+   * @return {boolean}
+   * @private
+   */
+  enableConnect_: function(pairingEvent, pinOrPass) {
+    if (!this.showConnect_(this.pairingEvent))
+      return false;
+    var inputId =
+        (this.pairingEvent.pairing == PairingEventType.REQUEST_PINCODE) ?
+        '#pincode' :
+        '#passkey';
+    var paperInput = /** @type {!PaperInputElement} */ (this.$$(inputId));
+    assert(paperInput);
+    /** @type {string} */ var value = paperInput.value;
+    return !!value && paperInput.validate();
   },
 
   /**
@@ -235,9 +250,9 @@ settings.BluetoothPairDeviceBehavior = {
     if (response == chrome.bluetoothPrivate.PairingResponse.CONFIRM) {
       var pairing = this.pairingEvent.pairing;
       if (pairing == PairingEventType.REQUEST_PINCODE)
-        options.pincode = this.$.pincode.value;
+        options.pincode = this.$$('#pincode').value;
       else if (pairing == PairingEventType.REQUEST_PASSKEY)
-        options.passkey = parseInt(this.$.passkey.value, 10);
+        options.passkey = parseInt(this.$$('#passkey').value, 10);
     }
     this.fire('response', options);
   },
@@ -254,7 +269,7 @@ settings.BluetoothPairDeviceBehavior = {
         eventType == PairingEventType.REQUEST_AUTHORIZATION) {
       return 'bluetoothStartConnecting';
     }
-    return 'bluetooth_' + /** @type {string} */(eventType);
+    return 'bluetooth_' + /** @type {string} */ (eventType);
   },
 
   /**
@@ -271,10 +286,10 @@ settings.BluetoothPairDeviceBehavior = {
     if (pairing == PairingEventType.DISPLAY_PINCODE && pairingEvent.pincode &&
         index < pairingEvent.pincode.length) {
       digit = pairingEvent.pincode[index];
-    } else if (pairingEvent.passkey &&
-               (pairing == PairingEventType.DISPLAY_PASSKEY ||
-                pairing == PairingEventType.KEYS_ENTERED ||
-                pairing == PairingEventType.CONFIRM_PASSKEY)) {
+    } else if (
+        pairingEvent.passkey && (pairing == PairingEventType.DISPLAY_PASSKEY ||
+                                 pairing == PairingEventType.KEYS_ENTERED ||
+                                 pairing == PairingEventType.CONFIRM_PASSKEY)) {
       var passkeyString = String(pairingEvent.passkey);
       if (index < passkeyString.length)
         digit = passkeyString[index];
@@ -303,7 +318,7 @@ settings.BluetoothPairDeviceBehavior = {
         pairingEvent.pairing == PairingEventType.KEYS_ENTERED &&
         pairingEvent.enteredKey) {
       var enteredKey = pairingEvent.enteredKey;  // 1-7
-      var lastKey = this.digits.length;  // 6
+      var lastKey = this.digits.length;          // 6
       if ((index == -1 && enteredKey > lastKey) || (index + 1 == enteredKey))
         cssClass += ' next';
       else if (index > enteredKey)
@@ -324,21 +339,27 @@ Polymer({
 
   properties: {
     /** Which version of this dialog to show (adding or pairing). */
-    dialogType: String,
+    dialogId: String,
   },
+
+  open: function() {
+    this.pinOrPass = '';
+    this.$.dialog.open();
+  },
+
+  close: function() { this.$.dialog.close(); },
 
   /** @private */
-  deviceListChanged_: function(e) {
-    this.$.dialog.notifyResize();
-  },
+  deviceListChanged_: function(e) { this.$.dialog.notifyResize(); },
 
   /**
-   * @param {string} dialogType
-   * @return {string} The title of for that |dialogType|.
+   * @param {string} dialogId
+   * @return {string} The title of for that |dialogId|.
    */
-  getTitle_: function(dialogType) {
-    return this.i18n(dialogType == 'addDevice' ?
-        'bluetoothAddDevicePageTitle' : 'bluetoothPairDevicePageTitle');
+  getTitle_: function(dialogId) {
+    return this.i18n(
+        dialogId == 'addDevice' ? 'bluetoothAddDevicePageTitle' :
+                                  'bluetoothPairDevicePageTitle');
   },
 
   /**
@@ -361,22 +382,12 @@ Polymer({
 
   /** @private */
   onIronOverlayCanceled_: function() {
-    if (this.dialogType == 'pairDevice')
+    if (this.dialogId == 'pairDevice')
       this.sendResponse_(chrome.bluetoothPrivate.PairingResponse.CANCEL);
   },
 
   /** @private */
-  onIronOverlayClosed_: function() {
-    this.fire('close-dialog', '');
-  },
-
-  open: function() {
-    this.$.dialog.open();
-  },
-
-  close: function() {
-    this.$.dialog.close();
-  },
+  onIronOverlayClosed_: function() { this.fire('close-dialog', ''); },
 });
 
 })();
