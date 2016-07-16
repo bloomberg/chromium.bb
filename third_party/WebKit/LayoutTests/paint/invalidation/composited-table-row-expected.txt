@@ -1,0 +1,39 @@
+{
+  "name": "Content Root Layer",
+  "bounds": [800, 600],
+  "children": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "name": "LayoutTableRow TR",
+          "position": [8, 8],
+          "bounds": [69, 23],
+          "drawsContent": true,
+          "backgroundColor": "#FF0000",
+          "paintInvalidations": [
+            {
+              "object": "LayoutTableCell TD id='target'",
+              "rect": [0, 0, 35, 24],
+              "reason": "style change"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    }
+  ]
+}
+

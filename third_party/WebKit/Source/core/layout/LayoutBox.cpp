@@ -2044,8 +2044,8 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     bool filterOrReflectionSkipped;
     LayoutObject* container = this->container(ancestor, &ancestorSkipped, &filterOrReflectionSkipped);
     LayoutBox* localContainingBlock = containingBlock();
-    // Skip table row because cells and rows are in the same coordinate space.
-    if (container->isTableRow()) {
+    // Skip table row because cells and rows are in the same coordinate space, except when we're already at the ancestor.
+    if (container->isTableRow() && container != ancestor) {
         DCHECK(isTableCell());
         localContainingBlock = toLayoutBox(container->parent());
         container = container->parent();
