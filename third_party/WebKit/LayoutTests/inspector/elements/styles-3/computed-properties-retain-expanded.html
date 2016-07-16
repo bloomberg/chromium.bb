@@ -1,0 +1,57 @@
+<html>
+<head>
+<style>
+
+#inspected {
+    display: flex;
+    color: blue;
+}
+
+#other {
+    display: inline;
+}
+
+div {
+    display: block;
+    color: black;
+}
+
+</style>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStylesWithComputed("inspected", step1);
+
+    function step1()
+    {
+        var treeElement = InspectorTest.findComputedPropertyWithName("display");
+        treeElement.expand();
+        InspectorTest.addResult("\n#inspected computed styles: ");
+        InspectorTest.dumpComputedStyle(true);
+        InspectorTest.selectNodeAndWaitForStylesWithComputed("other", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("\n#other computed styles: ");
+        InspectorTest.dumpComputedStyle(true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies that Computed Style preserves property expansion on re-rendering.
+</p>
+
+<div id="inspected">Inspected</div>
+<div id="other">Other</div>
+
+</body>
+</html>

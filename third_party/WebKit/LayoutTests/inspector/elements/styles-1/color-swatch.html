@@ -40,7 +40,7 @@ function test() {
 
         function testColorSwatchInComputedRules(next)
         {
-            var computedProperty = InspectorTest.findComputedPropertyWithName("color");
+            var computedProperty = InspectorTest.findComputedPropertyWithName("color").title;
             var computedPropertyValue = computedProperty.querySelector(".value");
             InspectorTest.addResult("Initial color value: " + computedPropertyValue.textContent);
             var swatch = computedPropertyValue.querySelector("span[is=color-swatch]").shadowRoot.querySelector(".color-swatch-inner");
