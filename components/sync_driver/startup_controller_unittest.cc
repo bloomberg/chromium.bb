@@ -86,14 +86,14 @@ class StartupControllerTest : public testing::Test {
   std::unique_ptr<StartupController> controller_;
 };
 
-// Test that sync doesn't start until all conditions are met.
-TEST_F(StartupControllerTest, Basic) {
+// Test that sync doesn't start if setup is not in progress or complete.
+TEST_F(StartupControllerTest, NoSetupComplete) {
   controller()->TryStart();
   ExpectNotStarted();
 
   SetCanStart(true);
   controller()->TryStart();
-  ExpectStarted();
+  ExpectNotStarted();
 }
 
 // Test that sync defers if first setup is complete.
@@ -189,17 +189,11 @@ TEST_F(StartupControllerTest, SetupInProgressTriggerInterruptsDeferral) {
   ExpectStarted();
 }
 
-// Test that start isn't deferred on the first start but is on restarts.
-TEST_F(StartupControllerTest, DeferralOnRestart) {
+// Test that immediate startup can be forced.
+TEST_F(StartupControllerTest, ForceImmediateStartup) {
   SetCanStart(true);
-  controller()->TryStart();
+  controller()->TryStartImmediately();
   ExpectStarted();
-
-  clear_started();
-  controller()->Reset(syncer::UserTypes());
-  ExpectNotStarted();
-  controller()->TryStart();
-  ExpectStartDeferred();
 }
 
 // Test that setup-in-progress tracking is persistent across a Reset.

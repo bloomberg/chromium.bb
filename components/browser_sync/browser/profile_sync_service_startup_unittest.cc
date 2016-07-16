@@ -429,14 +429,14 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_FALSE(sync_service_->IsBackendInitialized());
   // Note that PSS no longer references |data_type_manager| after stopping.
 
-  // When switching back to unmanaged, the state should change and sync should
-  // start but not become active because IsFirstSetupComplete() will be false.
-  SetUpSyncBackendHost();
+  // When switching back to unmanaged, the state should change but sync should
+  // not start automatically because IsFirstSetupComplete() will be false.
   // A new DataTypeManager should not be created.
+  Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
   pref_service()->ClearPref(sync_driver::prefs::kSyncManaged);
-  EXPECT_TRUE(sync_service_->IsBackendInitialized());
+  EXPECT_FALSE(sync_service_->IsBackendInitialized());
   EXPECT_FALSE(sync_service_->IsSyncActive());
 }
 

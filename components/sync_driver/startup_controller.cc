@@ -39,7 +39,8 @@ enum DeferredInitTrigger {
 StartupController::StartupController(const sync_driver::SyncPrefs* sync_prefs,
                                      base::Callback<bool()> can_start,
                                      base::Closure start_backend)
-    : received_start_request_(false),
+    : bypass_setup_complete_(false),
+      received_start_request_(false),
       setup_in_progress_(false),
       sync_prefs_(sync_prefs),
       can_start_(can_start),
@@ -66,6 +67,7 @@ StartupController::~StartupController() {}
 
 void StartupController::Reset(const syncer::ModelTypeSet registered_types) {
   received_start_request_ = false;
+  bypass_setup_complete_ = false;
   start_up_time_ = base::Time();
   start_backend_time_ = base::Time();
   // Don't let previous timers affect us post-reset.
@@ -121,14 +123,23 @@ bool StartupController::TryStart() {
   //
   // - a datatype has requested an immediate start of sync, or
   // - sync needs to start up the backend immediately to provide control state
-  //   and encryption information to the UI, or
-  // - this is the first time sync is ever starting up.
-  if (received_start_request_ || setup_in_progress_ ||
-      !sync_prefs_->IsFirstSetupComplete()) {
+  //   and encryption information to the UI.
+  // Do not start up the sync backend if setup has not completed and isn't
+  // in progress, unless told to otherwise.
+  if (setup_in_progress_) {
     return StartUp(STARTUP_IMMEDIATE);
+  } else if (sync_prefs_->IsFirstSetupComplete() || bypass_setup_complete_) {
+    return StartUp(received_start_request_ ? STARTUP_IMMEDIATE
+                                           : STARTUP_BACKEND_DEFERRED);
   } else {
-    return StartUp(STARTUP_BACKEND_DEFERRED);
+    return false;
   }
+}
+
+bool StartupController::TryStartImmediately() {
+  received_start_request_ = true;
+  bypass_setup_complete_ = true;
+  return TryStart();
 }
 
 void StartupController::RecordTimeDeferred() {

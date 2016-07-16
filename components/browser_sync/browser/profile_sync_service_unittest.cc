@@ -416,13 +416,12 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
 }
 
 // Verify that an initialization where first setup is not complete does not
-// purge preferences and/or the directory.
+// start up the backend.
 TEST_F(ProfileSyncServiceTest, NeedsConfirmation) {
   prefs()->SetManagedPref(sync_driver::prefs::kSyncManaged,
                           new base::FundamentalValue(false));
   IssueTestTokens();
   CreateService(ProfileSyncService::MANUAL_START);
-  ExpectSyncBackendHostCreation(1);
   sync_driver::SyncPrefs sync_prefs(prefs());
   base::Time now = base::Time::Now();
   sync_prefs.SetLastSyncedTime(now);

@@ -31,6 +31,10 @@ class StartupController {
   // the backend was started.
   bool TryStart();
 
+  // Same as TryStart() above, but bypasses deferred startup and the first setup
+  // complete check.
+  bool TryStartImmediately();
+
   // Called when a datatype (SyncableService) has a need for sync to start
   // ASAP, presumably because a local change event has occurred but we're
   // still in deferred start mode, meaning the SyncableService hasn't been
@@ -66,6 +70,10 @@ class StartupController {
 
   // Records time spent in deferred state with UMA histograms.
   void RecordTimeDeferred();
+
+  // If true, will bypass the FirstSetupComplete check when triggering sync
+  // startup.
+  bool bypass_setup_complete_;
 
   // True if we should start sync ASAP because either a SyncableService has
   // requested it, or we're done waiting for a sign and decided to go ahead.

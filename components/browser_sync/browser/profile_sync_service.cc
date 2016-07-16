@@ -381,7 +381,15 @@ void ProfileSyncService::Initialize() {
       base::Bind(&ProfileSyncService::OnMemoryPressure,
                  sync_enabled_weak_factory_.GetWeakPtr())));
   startup_controller_->Reset(GetRegisteredDataTypes());
-  startup_controller_->TryStart();
+
+  // Auto-start means means the first time the profile starts up, sync should
+  // start up immediately.
+  if (start_behavior_ == AUTO_START && IsSyncRequested() &&
+      !IsFirstSetupComplete()) {
+    startup_controller_->TryStartImmediately();
+  } else {
+    startup_controller_->TryStart();
+  }
 }
 
 void ProfileSyncService::StartSyncingWithServer() {
@@ -2335,7 +2343,7 @@ void ProfileSyncService::RequestStart() {
     sync_prefs_.SetSyncRequested(true);
     NotifyObservers();
   }
-  startup_controller_->TryStart();
+  startup_controller_->TryStartImmediately();
 }
 
 void ProfileSyncService::ReconfigureDatatypeManager() {
