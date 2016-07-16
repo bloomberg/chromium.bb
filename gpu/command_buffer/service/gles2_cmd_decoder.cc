@@ -6817,8 +6817,9 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(uint32_t immediate_data_size,
 }
 
 error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
+  const char* func_name = "glClear";
   DCHECK(!ShouldDeferDraws());
-  if (CheckBoundDrawFramebufferValid("glClear")) {
+  if (CheckBoundDrawFramebufferValid(func_name)) {
     ApplyDirtyState();
     if (workarounds().gl_clear_broken) {
       ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
@@ -6833,6 +6834,15 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
           state_.color_clear_alpha, state_.depth_clear, state_.stencil_clear);
       return error::kNoError;
     }
+    if (mask & GL_COLOR_BUFFER_BIT) {
+      Framebuffer* framebuffer =
+          framebuffer_state_.bound_draw_framebuffer.get();
+      if (framebuffer && framebuffer->ContainsActiveIntegerAttachments()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+            "can't be called on integer buffers");
+        return error::kNoError;
+      }
+    }
     glClear(mask);
   }
   return error::kNoError;
@@ -6840,28 +6850,28 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
 
 void GLES2DecoderImpl::DoClearBufferiv(
     GLenum buffer, GLint drawbuffer, const GLint* value) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferiv"))
+  const char* func_name = "glClearBufferiv";
+  if (!CheckBoundDrawFramebufferValid(func_name))
     return;
   ApplyDirtyState();
 
   if (buffer == GL_COLOR) {
     if (drawbuffer < 0 ||
         drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE, "glClearBufferiv", "invalid drawBuffer");
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid drawBuffer");
       return;
     }
     GLenum internal_format =
         GetBoundColorDrawBufferInternalFormat(drawbuffer);
     if (!GLES2Util::IsSignedIntegerFormat(internal_format)) {
-      // To avoid undefined results, return without calling the gl function.
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "can only be called on signed integer buffers");
       return;
     }
   } else {
     DCHECK(buffer == GL_STENCIL);
     if (drawbuffer != 0) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE, "glClearBufferiv", "invalid drawBuffer");
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid drawBuffer");
       return;
     }
     if (!BoundFramebufferHasStencilAttachment()) {
@@ -6874,20 +6884,21 @@ void GLES2DecoderImpl::DoClearBufferiv(
 
 void GLES2DecoderImpl::DoClearBufferuiv(
     GLenum buffer, GLint drawbuffer, const GLuint* value) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferuiv"))
+  const char* func_name = "glClearBufferuiv";
+  if (!CheckBoundDrawFramebufferValid(func_name))
     return;
   ApplyDirtyState();
 
   if (drawbuffer < 0 ||
       drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glClearBufferuiv", "invalid drawBuffer");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid drawBuffer");
     return;
   }
   GLenum internal_format =
       GetBoundColorDrawBufferInternalFormat(drawbuffer);
   if (!GLES2Util::IsUnsignedIntegerFormat(internal_format)) {
-    // To avoid undefined results, return without calling the gl function.
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+        "can only be called on unsigned integer buffers");
     return;
   }
   MarkDrawBufferAsCleared(buffer, drawbuffer);
@@ -6896,28 +6907,28 @@ void GLES2DecoderImpl::DoClearBufferuiv(
 
 void GLES2DecoderImpl::DoClearBufferfv(
     GLenum buffer, GLint drawbuffer, const GLfloat* value) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferfv"))
+  const char* func_name = "glClearBufferfv";
+  if (!CheckBoundDrawFramebufferValid(func_name))
     return;
   ApplyDirtyState();
 
   if (buffer == GL_COLOR) {
     if (drawbuffer < 0 ||
         drawbuffer >= static_cast<GLint>(group_->max_draw_buffers())) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE, "glClearBufferfv", "invalid drawBuffer");
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid drawBuffer");
       return;
     }
     GLenum internal_format =
         GetBoundColorDrawBufferInternalFormat(drawbuffer);
     if (GLES2Util::IsIntegerFormat(internal_format)) {
-      // To avoid undefined results, return without calling the gl function.
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "can only be called on float buffers");
       return;
     }
   } else {
     DCHECK(buffer == GL_DEPTH);
     if (drawbuffer != 0) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE, "glClearBufferfv", "invalid drawBuffer");
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid drawBuffer");
       return;
     }
     if (!BoundFramebufferHasDepthAttachment()) {
@@ -6930,13 +6941,14 @@ void GLES2DecoderImpl::DoClearBufferfv(
 
 void GLES2DecoderImpl::DoClearBufferfi(
     GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferfi"))
+  const char* func_name = "glClearBufferfi";
+  if (!CheckBoundDrawFramebufferValid(func_name))
     return;
   ApplyDirtyState();
 
   if (drawbuffer != 0) {
     LOCAL_SET_GL_ERROR(
-        GL_INVALID_VALUE, "glClearBufferfi", "invalid drawBuffer");
+        GL_INVALID_VALUE, func_name, "invalid drawBuffer");
     return;
   }
   if (!BoundFramebufferHasDepthAttachment() &&
