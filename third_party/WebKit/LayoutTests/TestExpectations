@@ -117,8 +117,6 @@ crbug.com/518967 [ Win7 ] http/tests/htmlimports/csp-import-block-but-nonce-nest
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Failure Pass ]
 
-crbug.com/616600 paint/invalidation/composited-table-row.html [ NeedsRebaseline ]
-
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
