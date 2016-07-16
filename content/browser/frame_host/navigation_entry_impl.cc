@@ -714,6 +714,12 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
   const std::string& unique_name = frame_tree_node->unique_name();
   for (TreeNode* child : parent_node->children) {
     if (child->frame_entry->frame_unique_name() == unique_name) {
+      // If the document of the FrameNavigationEntry is changing, we must clear
+      // any child FrameNavigationEntries.
+      if (child->frame_entry->document_sequence_number() !=
+          document_sequence_number)
+        child->children.clear();
+
       // Update the existing FrameNavigationEntry (e.g., for replaceState).
       child->frame_entry->UpdateEntry(unique_name, item_sequence_number,
                                       document_sequence_number, site_instance,
@@ -739,6 +745,12 @@ FrameNavigationEntry* NavigationEntryImpl::GetFrameEntry(
     FrameTreeNode* frame_tree_node) const {
   NavigationEntryImpl::TreeNode* tree_node = FindFrameEntry(frame_tree_node);
   return tree_node ? tree_node->frame_entry.get() : nullptr;
+}
+
+void NavigationEntryImpl::ClearChildren(FrameTreeNode* frame_tree_node) {
+  NavigationEntryImpl::TreeNode* tree_node = FindFrameEntry(frame_tree_node);
+  if (tree_node)
+    tree_node->children.clear();
 }
 
 void NavigationEntryImpl::SetScreenshotPNGData(

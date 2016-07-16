@@ -217,6 +217,11 @@ class CONTENT_EXPORT NavigationEntryImpl
   // there is one in this NavigationEntry.
   FrameNavigationEntry* GetFrameEntry(FrameTreeNode* frame_tree_node) const;
 
+  // Removes subframe FrameNavigationEntries below the item corresponding to
+  // |frame_tree_node| (if any).  This is necessary after server redirects
+  // during session history navigations, when the child items no longer apply.
+  void ClearChildren(FrameTreeNode* frame_tree_node);
+
   void set_unique_id(int unique_id) {
     unique_id_ = unique_id;
   }

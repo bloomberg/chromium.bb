@@ -1181,6 +1181,13 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   frame_entry->set_method(params.method);
   frame_entry->set_post_id(params.post_id);
 
+  // If the document sequence number has changed due to redirects or a
+  // location.replace, then the child FrameNavigationEntries that were there
+  // before no longer apply.  We can leave them around for in-page navigations.
+  if (frame_entry->document_sequence_number() !=
+      params.document_sequence_number)
+    entry->ClearChildren(rfh->frame_tree_node());
+
   // Update the ISN and DSN in case this was a location.replace, which can cause
   // them to change.
   // TODO(creis): Classify location.replace as NEW_PAGE instead of EXISTING_PAGE
@@ -1296,13 +1303,16 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
   // handle navigation inside of a subframe in it without creating a new entry.
   DCHECK(GetLastCommittedEntry());
 
+  // For newly created subframes, we don't need to send a commit notification.
+  // This is only necessary for history navigations in subframes.
+  bool send_commit_notification = false;
+
+  // If the |nav_entry_id| is non-zero and matches an existing entry, this is
+  // a history navigation.  Update the last committed index accordingly.
+  // If we don't recognize the |nav_entry_id|, it might be a recently pruned
+  // entry.  We'll handle it below.
   if (params.nav_entry_id) {
     int entry_index = GetEntryIndexWithUniqueID(params.nav_entry_id);
-
-    // If the |nav_entry_id| is non-zero and matches an existing entry, this is
-    // a history auto" navigation.  Update the last committed index accordingly.
-    // If we don't recognize the |nav_entry_id|, it might be either a pending
-    // entry for a transfer or a recently pruned entry.  We'll handle it below.
     if (entry_index != -1 && entry_index != last_committed_entry_index_) {
       // Make sure that a subframe commit isn't changing the main frame's
       // origin. Otherwise the renderer process may be confused, leading to a
@@ -1321,10 +1331,13 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
                                         bad_message::NC_AUTO_SUBFRAME);
       }
 
-      // TODO(creis): Update the FrameNavigationEntry in --site-per-process.
+      // We only need to discard the pending entry in this history navigation
+      // case.  For newly created subframes, there was no pending entry.
       last_committed_entry_index_ = entry_index;
       DiscardNonCommittedEntriesInternal();
-      return true;
+
+      // History navigations should send a commit notification.
+      send_commit_notification = true;
     }
   }
 
@@ -1337,21 +1350,9 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
         params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
         params.url, params.referrer, params.page_state, params.method,
         params.post_id);
-
-    // Cross-process subframe navigations may leave a pending entry around.
-    // Clear it if it's actually for the subframe.
-    // TODO(creis): Don't use pending entries for subframe navigations.
-    // See https://crbug.com/495161.
-    if (pending_entry_ &&
-        pending_entry_->frame_tree_node_id() ==
-            rfh->frame_tree_node()->frame_tree_node_id()) {
-      DiscardPendingEntry(false);
-    }
   }
 
-  // We do not need to discard the pending entry in this case, since we will
-  // not generate commit notifications for this auto-subframe navigation.
-  return false;
+  return send_commit_notification;
 }
 
 int NavigationControllerImpl::GetIndexOfEntry(
