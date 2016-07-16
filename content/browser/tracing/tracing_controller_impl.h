@@ -37,7 +37,7 @@ class TracingUI;
 class CONTENT_EXPORT TraceDataEndpoint
     : public base::RefCountedThreadSafe<TraceDataEndpoint> {
  public:
-  virtual void ReceiveTraceChunk(const std::string& chunk) {}
+  virtual void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) {}
   virtual void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue> metadata) {}
 

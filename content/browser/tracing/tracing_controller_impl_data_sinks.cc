@@ -43,7 +43,9 @@ class StringTraceDataEndpoint : public TraceDataEndpoint {
                    base::RetainedRef(str)));
   }
 
-  void ReceiveTraceChunk(const std::string& chunk) override { trace_ << chunk; }
+  void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
+    trace_ << *chunk;
+  }
 
  private:
   ~StringTraceDataEndpoint() override {}
@@ -62,14 +64,11 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
         completion_callback_(callback),
         file_(NULL) {}
 
-  void ReceiveTraceChunk(const std::string& chunk) override {
-    std::string tmp = chunk;
-    scoped_refptr<base::RefCountedString> chunk_ptr =
-        base::RefCountedString::TakeString(&tmp);
+  void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&FileTraceDataEndpoint::ReceiveTraceChunkOnFileThread, this,
-                   chunk_ptr));
+                   base::Passed(std::move(chunk))));
   }
 
   void ReceiveTraceFinalContents(
@@ -82,12 +81,10 @@ class FileTraceDataEndpoint : public TraceDataEndpoint {
  private:
   ~FileTraceDataEndpoint() override { DCHECK(file_ == NULL); }
 
-  void ReceiveTraceChunkOnFileThread(
-      const scoped_refptr<base::RefCountedString> chunk) {
+  void ReceiveTraceChunkOnFileThread(std::unique_ptr<std::string> chunk) {
     if (!OpenFileIfNeededOnFileThread())
       return;
-    ignore_result(
-        fwrite(chunk->data().c_str(), chunk->data().size(), 1, file_));
+    ignore_result(fwrite(chunk->c_str(), chunk->size(), 1, file_));
   }
 
   bool OpenFileIfNeededOnFileThread() {
@@ -157,25 +154,26 @@ class JSONTraceDataSink : public TraceDataSinkImplBase {
     trace_string += chunk;
     had_received_first_chunk_ = true;
 
-    endpoint_->ReceiveTraceChunk(trace_string);
+    endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>(trace_string));
   }
 
   void Close() override {
-    endpoint_->ReceiveTraceChunk("]");
+    endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>("]"));
 
     for (auto const &it : GetAgentTrace())
-      endpoint_->ReceiveTraceChunk(",\"" + it.first + "\": " + it.second);
+      endpoint_->ReceiveTraceChunk(
+          base::MakeUnique<std::string>(",\"" + it.first + "\": " + it.second));
 
     std::unique_ptr<base::DictionaryValue> metadata(TakeMetadata());
     std::string metadataJSON;
 
     if (base::JSONWriter::Write(*metadata, &metadataJSON) &&
         !metadataJSON.empty()) {
-      endpoint_->ReceiveTraceChunk(",\"" + std::string(kMetadataTraceLabel) +
-                                   "\": " + metadataJSON);
+      endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>(
+          ",\"" + std::string(kMetadataTraceLabel) + "\": " + metadataJSON));
     }
 
-    endpoint_->ReceiveTraceChunk("}");
+    endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>("}"));
     endpoint_->ReceiveTraceFinalContents(std::move(metadata));
   }
 
@@ -193,11 +191,11 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
       scoped_refptr<TraceDataEndpoint> endpoint)
       : endpoint_(endpoint), already_tried_open_(false) {}
 
-  void ReceiveTraceChunk(const std::string& chunk) override {
+  void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&CompressedTraceDataEndpoint::CompressOnFileThread, this,
-                   base::Passed(base::MakeUnique<std::string>(chunk))));
+                   base::Passed(std::move(chunk))));
   }
 
   void ReceiveTraceFinalContents(
@@ -240,7 +238,7 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
       return;
 
     stream_->avail_in = chunk->size();
-    stream_->next_in = (unsigned char*)chunk->data();
+    stream_->next_in = reinterpret_cast<unsigned char*>(&*chunk->begin());
     DrainStreamOnFileThread(false);
   }
 
@@ -261,8 +259,8 @@ class CompressedTraceDataEndpoint : public TraceDataEndpoint {
 
       int bytes = kChunkSize - stream_->avail_out;
       if (bytes) {
-        std::string compressed_chunk = std::string(buffer, bytes);
-        endpoint_->ReceiveTraceChunk(compressed_chunk);
+        std::string compressed(buffer, bytes);
+        endpoint_->ReceiveTraceChunk(base::MakeUnique<std::string>(compressed));
       }
     } while (stream_->avail_out == 0);
   }

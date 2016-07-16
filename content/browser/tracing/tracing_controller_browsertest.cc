@@ -65,9 +65,9 @@ class TracingControllerTestEndpoint : public TraceDataEndpoint {
                           base::RefCountedString*)> done_callback)
       : done_callback_(done_callback) {}
 
-  void ReceiveTraceChunk(const std::string& chunk) override {
-    EXPECT_FALSE(chunk.empty());
-    trace_ += chunk;
+  void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
+    EXPECT_FALSE(chunk->empty());
+    trace_ += *chunk;
   }
 
   void ReceiveTraceFinalContents(
