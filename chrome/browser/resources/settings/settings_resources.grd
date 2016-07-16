@@ -633,7 +633,7 @@
       <structure name="IDR_SETTINGS_PRINTING_PAGE_HTML"
                  file="printing_page/printing_page.html"
                  flattenhtml="true"
-                 allowexternalscript="true" 
+                 allowexternalscript="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_PRINTING_PAGE_JS"
                  file="printing_page/printing_page.js"
@@ -681,7 +681,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_ROUTE_JS"
                  file="route.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_ROUTER_HTML"
                  file="settings_page/settings_router.html"
                  type="chrome_html" />

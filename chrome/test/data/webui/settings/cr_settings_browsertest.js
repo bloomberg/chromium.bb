@@ -655,24 +655,3 @@ CrSettingsRouteTest.prototype = {
 TEST_F('CrSettingsRouteTest', 'All', function() {
   mocha.run();
 });
-
-/**
- * @constructor
- * @extends {CrSettingsBrowserTest}
- */
-function CrSettingsRouterElementTest() {}
-
-CrSettingsRouterElementTest.prototype = {
-  __proto__: CrSettingsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://md-settings/settings_page/settings_router.html',
-
-  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'router_tests.js',
-  ]),
-};
-
-TEST_F('CrSettingsRouterElementTest', 'All', function() {
-  mocha.run();
-});

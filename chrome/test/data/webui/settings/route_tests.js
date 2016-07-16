@@ -23,7 +23,8 @@ suite('route', function() {
 
     // Test a subpage route.
     var SITE_SETTINGS = PRIVACY.createChild('/siteSettings', 'site-settings');
-    assertFalse(SITE_SETTINGS.dialog);
+    assertEquals('/siteSettings', SITE_SETTINGS.url);
+    assertFalse(!!SITE_SETTINGS.dialog);
     assertDeepEquals(['site-settings'], SITE_SETTINGS.subpage);
     assertEquals('advanced', SITE_SETTINGS.page);
     assertEquals('privacy', SITE_SETTINGS.section);
@@ -33,17 +34,27 @@ suite('route', function() {
 
     // Test a sub-subpage route.
     var SITE_SETTINGS_ALL =
-        SITE_SETTINGS.createChild('/siteSettings/all', 'all-sites');
+        SITE_SETTINGS.createChild('all', 'all-sites');
+    assertEquals('/siteSettings/all', SITE_SETTINGS_ALL.url);
     assertDeepEquals(['site-settings', 'all-sites'], SITE_SETTINGS_ALL.subpage);
 
     // Test a dialog route.
-    var CLEAR_BROWSING_DATA = PRIVACY.createDialog('/clearBrowsingData');
-    assertTrue(CLEAR_BROWSING_DATA.dialog);
+    var CLEAR_BROWSING_DATA =
+        PRIVACY.createDialog('/clearBrowsingData', 'clear-browsing-data');
+    assertEquals('clear-browsing-data', CLEAR_BROWSING_DATA.dialog);
     assertEquals('privacy', CLEAR_BROWSING_DATA.section);
     assertEquals('advanced', CLEAR_BROWSING_DATA.page);
     assertEquals('privacy', CLEAR_BROWSING_DATA.section);
     assertFalse(CLEAR_BROWSING_DATA.isDescendantOf(BASIC));
     assertTrue(CLEAR_BROWSING_DATA.isDescendantOf(ADVANCED));
     assertTrue(CLEAR_BROWSING_DATA.isDescendantOf(PRIVACY));
+  });
+
+  test('no duplicate routes', function() {
+    var urls = new Set();
+    Object.values(settings.Route).forEach(function(route) {
+      assertFalse(urls.has(route.url), route.url);
+      urls.add(route.url);
+    });
   });
 });
