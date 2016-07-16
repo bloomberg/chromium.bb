@@ -28,8 +28,19 @@ Polymer({
     title_: String,
 
     /**
+     * The list of months to show in the dropdown.
+     * @private {!Array<string>}
+     */
+    monthList_: {
+      type: Array,
+      value: [
+        '01', '02', '03', '04', '05', '06', '07', '09', '10', '11', '12',
+      ],
+    },
+
+    /**
      * The list of years to show in the dropdown.
-     * @type {!Array<string>}
+     * @private {!Array<string>}
      */
     yearList_: Array,
   },

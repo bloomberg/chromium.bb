@@ -5,7 +5,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-textarea.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/settings_shared_css.html">
 
@@ -58,10 +57,10 @@
             <paper-listbox id="countryList" class="dropdown-content"
                 selected="{{countryCode_}}" attr-for-selected="code">
               <template is="dom-repeat" items="[[countries_]]">
-                <paper-item code="[[getCode_(item)]]"
-                    disabled="[[isDivision_(item)]]">
+                <button class="dropdown-item" role="option"
+                    code="[[getCode_(item)]]" disabled="[[isDivision_(item)]]">
                   [[getName_(item)]]
-                </paper-item>
+                </button>
               </template>
             </paper-listbox>
           </paper-dropdown-menu>

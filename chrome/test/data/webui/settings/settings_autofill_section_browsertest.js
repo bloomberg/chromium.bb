@@ -256,8 +256,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var now = new Date();
       var maxYear = now.getFullYear() + 9;
 
-      assertEquals('2015', firstSelectableYear.textContent);
-      assertEquals(maxYear.toString(), lastSelectableYear.textContent);
+      assertEquals('2015', firstSelectableYear.textContent.trim());
+      assertEquals(maxYear.toString(), lastSelectableYear.textContent.trim());
     });
 
     test('verifyVeryFutureCreditCardYear', function() {
@@ -274,8 +274,9 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var lastSelectableYear = selectableYears[selectableYears.length - 1];
 
       assertEquals(now.getFullYear().toString(),
-          firstSelectableYear.textContent);
-      assertEquals(farFutureYear.toString(), lastSelectableYear.textContent);
+          firstSelectableYear.textContent.trim());
+      assertEquals(farFutureYear.toString(),
+          lastSelectableYear.textContent.trim());
     });
 
     test('verifyVeryNormalCreditCardYear', function() {
@@ -293,8 +294,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       var lastSelectableYear = selectableYears[selectableYears.length - 1];
 
       assertEquals(now.getFullYear().toString(),
-          firstSelectableYear.textContent);
-      assertEquals(maxYear.toString(), lastSelectableYear.textContent);
+          firstSelectableYear.textContent.trim());
+      assertEquals(maxYear.toString(), lastSelectableYear.textContent.trim());
     });
 
     // Test will timeout if event is not received.

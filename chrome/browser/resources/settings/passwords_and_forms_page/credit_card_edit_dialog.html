@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/settings_shared_css.html">
 
@@ -47,18 +46,11 @@
             label="$i18n{creditCardExpirationMonth}">
           <paper-listbox class="dropdown-content months"
               selected="{{item.expirationMonth}}" attr-for-selected="name">
-            <paper-item name="01">01</paper-item>
-            <paper-item name="02">02</paper-item>
-            <paper-item name="03">03</paper-item>
-            <paper-item name="04">04</paper-item>
-            <paper-item name="05">05</paper-item>
-            <paper-item name="06">06</paper-item>
-            <paper-item name="07">07</paper-item>
-            <paper-item name="08">08</paper-item>
-            <paper-item name="09">09</paper-item>
-            <paper-item name="10">10</paper-item>
-            <paper-item name="11">11</paper-item>
-            <paper-item name="12">12</paper-item>
+            <template is="dom-repeat" items="[[monthList_]]">
+              <button class="dropdown-item" role="option" name="[[item]]">
+                [[item]]
+              </button>
+            </template>
           </paper-listbox>
         </paper-dropdown-menu>
         <paper-dropdown-menu class="year-dropdown" no-label-float
@@ -66,7 +58,9 @@
           <paper-listbox id="yearList" class="dropdown-content years"
               selected="{{item.expirationYear}}" attr-for-selected="name">
             <template is="dom-repeat" items="[[yearList_]]">
-              <paper-item name="[[item]]">[[item]]</paper-item>
+              <button class="dropdown-item" role="option" name="[[item]]">
+                [[item]]
+              </button>
             </template>
           </paper-listbox>
         </paper-dropdown-menu>
