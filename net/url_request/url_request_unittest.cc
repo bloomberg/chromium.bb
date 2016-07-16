@@ -5933,23 +5933,6 @@ TEST_F(URLRequestTestHTTP, STSNotProcessedOnIP) {
       security_state->GetDynamicSTSState(test_server_hostname, &sts_state));
 }
 
-// Android's CertVerifyProc does not (yet) handle pins. Therefore, it will
-// reject HPKP headers, and a test setting only HPKP headers will fail (no
-// PKPState present because header rejected).
-#if defined(OS_ANDROID)
-#define MAYBE_ProcessPKP DISABLED_ProcessPKP
-#define MAYBE_ProcessPKPAndSendReport DISABLED_ProcessPKPAndSendReport
-#define MAYBE_ProcessPKPReportOnly DISABLED_ProcessPKPReportOnly
-#define MAYBE_ProcessPKPReportOnlyWithNoViolation \
-  DISABLED_ProcessPKPReportOnlyWithNoViolation
-#else
-#define MAYBE_ProcessPKP ProcessPKP
-#define MAYBE_ProcessPKPAndSendReport ProcessPKPAndSendReport
-#define MAYBE_ProcessPKPReportOnly ProcessPKPReportOnly
-#define MAYBE_ProcessPKPReportOnlyWithNoViolation \
-  ProcessPKPReportOnlyWithNoViolation
-#endif
-
 namespace {
 const char kExpectCTStaticHostname[] = "preloaded-expect-ct.badssl.com";
 const char kHPKPReportUri[] = "https://hpkp-report.test";
@@ -5957,7 +5940,7 @@ const char kHPKPReportUri[] = "https://hpkp-report.test";
 
 // Tests that enabling HPKP on a domain does not affect the HSTS
 // validity/expiration.
-TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
+TEST_F(URLRequestTestHTTP, ProcessPKP) {
   GURL report_uri(kHPKPReportUri);
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -5991,7 +5974,7 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKP) {
 }
 
 // Tests that reports get sent on HPKP violations when a report-uri is set.
-TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPAndSendReport) {
+TEST_F(URLRequestTestHTTP, ProcessPKPAndSendReport) {
   GURL report_uri(kHPKPReportUri);
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -6069,7 +6052,7 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPAndSendReport) {
 
 // Tests that reports get sent on requests with
 // Public-Key-Pins-Report-Only headers.
-TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPReportOnly) {
+TEST_F(URLRequestTestHTTP, ProcessPKPReportOnly) {
   GURL report_uri(kHPKPReportUri);
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -6132,7 +6115,7 @@ TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPReportOnly) {
 
 // Tests that reports do not get sent on requests with
 // Public-Key-Pins-Report-Only headers that don't have pin violations.
-TEST_F(URLRequestTestHTTP, MAYBE_ProcessPKPReportOnlyWithNoViolation) {
+TEST_F(URLRequestTestHTTP, ProcessPKPReportOnlyWithNoViolation) {
   GURL report_uri(kHPKPReportUri);
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
