@@ -52,7 +52,7 @@
             ],
             "MagicNumber": 119734787,
             "Version": 65536,
-            "Revision": 5,
+            "Revision": 6,
             "OpCodeMask": 65535,
             "WordCountShift": 16
         },

@@ -27,7 +27,7 @@
   "magic_number" : "0x07230203",
   "major_version" : 1,
   "minor_version" : 0,
-  "revision" : 5,
+  "revision" : 6,
   "instructions" : [
     {
       "opname" : "OpNop",
@@ -3570,8 +3570,7 @@
         },
         {
           "enumerant" : "Input",
-          "value" : 1,
-          "capabilities" : [ "Shader" ]
+          "value" : 1
         },
         {
           "enumerant" : "Uniform",
@@ -4965,8 +4964,7 @@
         },
         {
           "enumerant" : "Sampled1D",
-          "value" : 43,
-          "capabilities" : [ "Shader" ]
+          "value" : 43
         },
         {
           "enumerant" : "Image1D",
@@ -4980,8 +4978,7 @@
         },
         {
           "enumerant" : "SampledBuffer",
-          "value" : 46,
-          "capabilities" : [ "Shader" ]
+          "value" : 46
         },
         {
           "enumerant" : "ImageBuffer",
