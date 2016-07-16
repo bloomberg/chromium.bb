@@ -1065,11 +1065,12 @@ void GLRenderer::DrawRenderPassQuadInternal(DrawingFrame* frame,
         // pixels' coordinate space.
         background_image = ApplyBackgroundFilters(
             frame, quad, background_texture.get(), gfx::RectF(background_rect));
-        if (background_image)
+        if (background_image) {
           background_image_id = skia::GrBackendObjectToGrGLTextureInfo(
                                     background_image->getTextureHandle(true))
                                     ->fID;
-        DCHECK(background_image_id);
+          DCHECK(background_image_id);
+        }
       }
     }
 
