@@ -8,31 +8,31 @@
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
-#include "ui/ozone/platform/wayland/wayland_display.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
 
 namespace ui {
 
-TEST(WaylandDisplayTest, UseUnstableVersion) {
+TEST(WaylandConnectionTest, UseUnstableVersion) {
   base::MessageLoopForUI message_loop;
   wl::FakeServer server;
   EXPECT_CALL(*server.xdg_shell(),
               UseUnstableVersion(XDG_SHELL_VERSION_CURRENT));
   ASSERT_TRUE(server.Start());
-  WaylandDisplay display;
-  ASSERT_TRUE(display.Initialize());
-  display.StartProcessingEvents();
+  WaylandConnection connection;
+  ASSERT_TRUE(connection.Initialize());
+  connection.StartProcessingEvents();
 
   base::RunLoop().RunUntilIdle();
   server.Pause();
 }
 
-TEST(WaylandDisplayTest, Ping) {
+TEST(WaylandConnectionTest, Ping) {
   base::MessageLoopForUI message_loop;
   wl::FakeServer server;
   ASSERT_TRUE(server.Start());
-  WaylandDisplay display;
-  ASSERT_TRUE(display.Initialize());
-  display.StartProcessingEvents();
+  WaylandConnection connection;
+  ASSERT_TRUE(connection.Initialize());
+  connection.StartProcessingEvents();
 
   base::RunLoop().RunUntilIdle();
   server.Pause();

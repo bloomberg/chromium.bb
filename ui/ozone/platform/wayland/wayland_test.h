@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/mock_platform_window_delegate.h"
-#include "ui/ozone/platform/wayland/wayland_display.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 namespace ui {
@@ -33,7 +33,7 @@ class WaylandTest : public testing::Test {
   wl::FakeServer server;
   wl::MockSurface* surface;
 
-  WaylandDisplay display;
+  WaylandConnection connection;
   MockPlatformWindowDelegate delegate;
   WaylandWindow window;
   gfx::AcceleratedWidget widget = gfx::kNullAcceleratedWidget;

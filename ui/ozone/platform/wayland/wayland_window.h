@@ -13,12 +13,12 @@
 
 namespace ui {
 
-class WaylandDisplay;
+class WaylandConnection;
 
 class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
  public:
   WaylandWindow(PlatformWindowDelegate* delegate,
-                WaylandDisplay* display,
+                WaylandConnection* connection,
                 const gfx::Rect& bounds);
   ~WaylandWindow() override;
 
@@ -68,7 +68,7 @@ class WaylandWindow : public PlatformWindow, public PlatformEventDispatcher {
 
  private:
   PlatformWindowDelegate* delegate_;
-  WaylandDisplay* display_;
+  WaylandConnection* connection_;
 
   wl::Object<wl_surface> surface_;
   wl::Object<xdg_surface> xdg_surface_;

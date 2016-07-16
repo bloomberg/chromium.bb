@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/platform/wayland/wayland_display.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
 
 #include <xdg-shell-unstable-v5-client-protocol.h>
 
@@ -22,13 +22,13 @@ const uint32_t kMaxShmVersion = 1;
 const uint32_t kMaxXdgShellVersion = 1;
 }  // namespace
 
-WaylandDisplay::WaylandDisplay() {}
+WaylandConnection::WaylandConnection() {}
 
-WaylandDisplay::~WaylandDisplay() {}
+WaylandConnection::~WaylandConnection() {}
 
-bool WaylandDisplay::Initialize() {
+bool WaylandConnection::Initialize() {
   static const wl_registry_listener registry_listener = {
-      &WaylandDisplay::Global, &WaylandDisplay::GlobalRemove,
+      &WaylandConnection::Global, &WaylandConnection::GlobalRemove,
   };
 
   display_.reset(wl_display_connect(nullptr));
@@ -66,7 +66,7 @@ bool WaylandDisplay::Initialize() {
   return true;
 }
 
-bool WaylandDisplay::StartProcessingEvents() {
+bool WaylandConnection::StartProcessingEvents() {
   if (watching_)
     return true;
 
@@ -83,133 +83,134 @@ bool WaylandDisplay::StartProcessingEvents() {
   return true;
 }
 
-void WaylandDisplay::ScheduleFlush() {
+void WaylandConnection::ScheduleFlush() {
   if (scheduled_flush_ || !watching_)
     return;
   base::MessageLoopForUI::current()->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&WaylandDisplay::Flush, base::Unretained(this)));
+      FROM_HERE, base::Bind(&WaylandConnection::Flush, base::Unretained(this)));
   scheduled_flush_ = true;
 }
 
-WaylandWindow* WaylandDisplay::GetWindow(gfx::AcceleratedWidget widget) {
+WaylandWindow* WaylandConnection::GetWindow(gfx::AcceleratedWidget widget) {
   auto it = window_map_.find(widget);
   return it == window_map_.end() ? nullptr : it->second;
 }
 
-void WaylandDisplay::AddWindow(gfx::AcceleratedWidget widget,
-                               WaylandWindow* window) {
+void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
+                                  WaylandWindow* window) {
   window_map_[widget] = window;
 }
 
-void WaylandDisplay::RemoveWindow(gfx::AcceleratedWidget widget) {
+void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
   window_map_.erase(widget);
 }
 
-void WaylandDisplay::OnDispatcherListChanged() {
+void WaylandConnection::OnDispatcherListChanged() {
   StartProcessingEvents();
 }
 
-void WaylandDisplay::Flush() {
+void WaylandConnection::Flush() {
   wl_display_flush(display_.get());
   scheduled_flush_ = false;
 }
 
-void WaylandDisplay::DispatchUiEvent(Event* event) {
+void WaylandConnection::DispatchUiEvent(Event* event) {
   PlatformEventSource::DispatchEvent(event);
 }
 
-void WaylandDisplay::OnFileCanReadWithoutBlocking(int fd) {
+void WaylandConnection::OnFileCanReadWithoutBlocking(int fd) {
   wl_display_dispatch(display_.get());
   for (const auto& window : window_map_)
     window.second->ApplyPendingBounds();
 }
 
-void WaylandDisplay::OnFileCanWriteWithoutBlocking(int fd) {}
+void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {}
 
 // static
-void WaylandDisplay::Global(void* data,
-                            wl_registry* registry,
-                            uint32_t name,
-                            const char* interface,
-                            uint32_t version) {
+void WaylandConnection::Global(void* data,
+                               wl_registry* registry,
+                               uint32_t name,
+                               const char* interface,
+                               uint32_t version) {
   static const wl_seat_listener seat_listener = {
-      &WaylandDisplay::Capabilities, &WaylandDisplay::Name,
+      &WaylandConnection::Capabilities, &WaylandConnection::Name,
   };
   static const xdg_shell_listener shell_listener = {
-      &WaylandDisplay::Ping,
+      &WaylandConnection::Ping,
   };
 
-  WaylandDisplay* display = static_cast<WaylandDisplay*>(data);
-  if (!display->compositor_ && strcmp(interface, "wl_compositor") == 0) {
-    display->compositor_ = wl::Bind<wl_compositor>(
+  WaylandConnection* connection = static_cast<WaylandConnection*>(data);
+  if (!connection->compositor_ && strcmp(interface, "wl_compositor") == 0) {
+    connection->compositor_ = wl::Bind<wl_compositor>(
         registry, name, std::min(version, kMaxCompositorVersion));
-    if (!display->compositor_)
+    if (!connection->compositor_)
       LOG(ERROR) << "Failed to bind to wl_compositor global";
-  } else if (!display->shm_ && strcmp(interface, "wl_shm") == 0) {
-    display->shm_ =
+  } else if (!connection->shm_ && strcmp(interface, "wl_shm") == 0) {
+    connection->shm_ =
         wl::Bind<wl_shm>(registry, name, std::min(version, kMaxShmVersion));
-    if (!display->shm_)
+    if (!connection->shm_)
       LOG(ERROR) << "Failed to bind to wl_shm global";
-  } else if (!display->seat_ && strcmp(interface, "wl_seat") == 0) {
-    display->seat_ =
+  } else if (!connection->seat_ && strcmp(interface, "wl_seat") == 0) {
+    connection->seat_ =
         wl::Bind<wl_seat>(registry, name, std::min(version, kMaxSeatVersion));
-    if (!display->seat_) {
+    if (!connection->seat_) {
       LOG(ERROR) << "Failed to bind to wl_seat global";
       return;
     }
-    wl_seat_add_listener(display->seat_.get(), &seat_listener, display);
-  } else if (!display->shell_ && strcmp(interface, "xdg_shell") == 0) {
-    display->shell_ = wl::Bind<xdg_shell>(
+    wl_seat_add_listener(connection->seat_.get(), &seat_listener, connection);
+  } else if (!connection->shell_ && strcmp(interface, "xdg_shell") == 0) {
+    connection->shell_ = wl::Bind<xdg_shell>(
         registry, name, std::min(version, kMaxXdgShellVersion));
-    if (!display->shell_) {
+    if (!connection->shell_) {
       LOG(ERROR) << "Failed to  bind to xdg_shell global";
       return;
     }
-    xdg_shell_add_listener(display->shell_.get(), &shell_listener, display);
-    xdg_shell_use_unstable_version(display->shell_.get(),
+    xdg_shell_add_listener(connection->shell_.get(), &shell_listener,
+                           connection);
+    xdg_shell_use_unstable_version(connection->shell_.get(),
                                    XDG_SHELL_VERSION_CURRENT);
   }
 
-  display->ScheduleFlush();
+  connection->ScheduleFlush();
 }
 
 // static
-void WaylandDisplay::GlobalRemove(void* data,
-                                  wl_registry* registry,
-                                  uint32_t name) {
+void WaylandConnection::GlobalRemove(void* data,
+                                     wl_registry* registry,
+                                     uint32_t name) {
   NOTIMPLEMENTED();
 }
 
 // static
-void WaylandDisplay::Capabilities(void* data,
-                                  wl_seat* seat,
-                                  uint32_t capabilities) {
-  WaylandDisplay* display = static_cast<WaylandDisplay*>(data);
+void WaylandConnection::Capabilities(void* data,
+                                     wl_seat* seat,
+                                     uint32_t capabilities) {
+  WaylandConnection* connection = static_cast<WaylandConnection*>(data);
   if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
-    if (!display->pointer_) {
-      wl_pointer* pointer = wl_seat_get_pointer(display->seat_.get());
+    if (!connection->pointer_) {
+      wl_pointer* pointer = wl_seat_get_pointer(connection->seat_.get());
       if (!pointer) {
         LOG(ERROR) << "Failed to get wl_pointer from seat";
         return;
       }
-      display->pointer_ = base::WrapUnique(new WaylandPointer(
-          pointer, base::Bind(&WaylandDisplay::DispatchUiEvent,
-                              base::Unretained(display))));
+      connection->pointer_ = base::WrapUnique(new WaylandPointer(
+          pointer, base::Bind(&WaylandConnection::DispatchUiEvent,
+                              base::Unretained(connection))));
     }
-  } else if (display->pointer_) {
-    display->pointer_.reset();
+  } else if (connection->pointer_) {
+    connection->pointer_.reset();
   }
-  display->ScheduleFlush();
+  connection->ScheduleFlush();
 }
 
 // static
-void WaylandDisplay::Name(void* data, wl_seat* seat, const char* name) {}
+void WaylandConnection::Name(void* data, wl_seat* seat, const char* name) {}
 
 // static
-void WaylandDisplay::Ping(void* data, xdg_shell* shell, uint32_t serial) {
-  WaylandDisplay* display = static_cast<WaylandDisplay*>(data);
+void WaylandConnection::Ping(void* data, xdg_shell* shell, uint32_t serial) {
+  WaylandConnection* connection = static_cast<WaylandConnection*>(data);
   xdg_shell_pong(shell, serial);
-  display->ScheduleFlush();
+  connection->ScheduleFlush();
 }
 
 }  // namespace ui

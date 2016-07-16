@@ -19,7 +19,7 @@ namespace ui {
 
 class WaylandSurfaceFactoryTest : public WaylandTest {
  public:
-  WaylandSurfaceFactoryTest() : surface_factory(&display) {}
+  WaylandSurfaceFactoryTest() : surface_factory(&connection) {}
 
   ~WaylandSurfaceFactoryTest() override {}
 

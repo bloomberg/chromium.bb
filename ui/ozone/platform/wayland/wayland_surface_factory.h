@@ -9,11 +9,11 @@
 
 namespace ui {
 
-class WaylandDisplay;
+class WaylandConnection;
 
 class WaylandSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  explicit WaylandSurfaceFactory(WaylandDisplay* display);
+  explicit WaylandSurfaceFactory(WaylandConnection* connection);
   ~WaylandSurfaceFactory() override;
 
   intptr_t GetNativeDisplay() override;
@@ -35,7 +35,7 @@ class WaylandSurfaceFactory : public SurfaceFactoryOzone {
       const gfx::NativePixmapHandle& handle) override;
 
  private:
-  WaylandDisplay* display_;
+  WaylandConnection* connection_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandSurfaceFactory);
 };

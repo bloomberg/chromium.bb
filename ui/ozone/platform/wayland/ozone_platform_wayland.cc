@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "ui/ozone/common/native_display_delegate_ozone.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
-#include "ui/ozone/platform/wayland/wayland_display.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
@@ -58,8 +58,8 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
-    auto window =
-        base::WrapUnique(new WaylandWindow(delegate, display_.get(), bounds));
+    auto window = base::WrapUnique(
+        new WaylandWindow(delegate, connection_.get(), bounds));
     if (!window->Initialize())
       return nullptr;
     return std::move(window);
@@ -71,14 +71,14 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeUI() override {
-    display_.reset(new WaylandDisplay);
-    if (!display_->Initialize())
+    connection_.reset(new WaylandConnection);
+    if (!connection_->Initialize())
       LOG(FATAL) << "Failed to initialize Wayland platform";
 
     cursor_factory_.reset(new CursorFactoryOzone);
     overlay_manager_.reset(new StubOverlayManager);
     input_controller_ = CreateStubInputController();
-    surface_factory_.reset(new WaylandSurfaceFactory(display_.get()));
+    surface_factory_.reset(new WaylandSurfaceFactory(connection_.get()));
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
@@ -91,7 +91,7 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
  private:
-  std::unique_ptr<WaylandDisplay> display_;
+  std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
   std::unique_ptr<CursorFactoryOzone> cursor_factory_;
   std::unique_ptr<StubOverlayManager> overlay_manager_;

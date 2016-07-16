@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_DISPLAY_H_
-#define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_DISPLAY_H_
+#ifndef UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CONNECTION_H_
+#define UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CONNECTION_H_
 
 #include <map>
 
@@ -17,11 +17,11 @@ namespace ui {
 
 class WaylandWindow;
 
-class WaylandDisplay : public PlatformEventSource,
-                       public base::MessagePumpLibevent::Watcher {
+class WaylandConnection : public PlatformEventSource,
+                          public base::MessagePumpLibevent::Watcher {
  public:
-  WaylandDisplay();
-  ~WaylandDisplay() override;
+  WaylandConnection();
+  ~WaylandConnection() override;
 
   bool Initialize();
   bool StartProcessingEvents();
@@ -79,9 +79,9 @@ class WaylandDisplay : public PlatformEventSource,
   bool watching_ = false;
   base::MessagePumpLibevent::FileDescriptorWatcher controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaylandDisplay);
+  DISALLOW_COPY_AND_ASSIGN(WaylandConnection);
 };
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_WAYLAND_DISPLAY_H_
+#endif  // UI_OZONE_PLATFORM_WAYLAND_WAYLAND_CONNECTION_H_

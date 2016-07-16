@@ -12,13 +12,13 @@ using ::testing::_;
 namespace ui {
 
 WaylandTest::WaylandTest()
-    : window(&delegate, &display, gfx::Rect(0, 0, 800, 600)) {}
+    : window(&delegate, &connection, gfx::Rect(0, 0, 800, 600)) {}
 
 WaylandTest::~WaylandTest() {}
 
 void WaylandTest::SetUp() {
   ASSERT_TRUE(server.Start());
-  ASSERT_TRUE(display.Initialize());
+  ASSERT_TRUE(connection.Initialize());
   EXPECT_CALL(delegate, OnAcceleratedWidgetAvailable(_, _))
       .WillOnce(SaveArg<0>(&widget));
   ASSERT_TRUE(window.Initialize());

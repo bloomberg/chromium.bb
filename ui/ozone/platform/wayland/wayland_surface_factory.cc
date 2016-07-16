@@ -13,7 +13,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/ozone/common/egl_util.h"
-#include "ui/ozone/platform/wayland/wayland_display.h"
+#include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
@@ -31,7 +31,7 @@ static void DeleteSharedMemory(void* pixels, void* context) {
 
 class WaylandCanvasSurface : public SurfaceOzoneCanvas {
  public:
-  WaylandCanvasSurface(WaylandDisplay* display, WaylandWindow* window_);
+  WaylandCanvasSurface(WaylandConnection* connection, WaylandWindow* window_);
   ~WaylandCanvasSurface() override;
 
   // SurfaceOzoneCanvas
@@ -41,7 +41,7 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 
  private:
-  WaylandDisplay* display_;
+  WaylandConnection* connection_;
   WaylandWindow* window_;
 
   gfx::Size size_;
@@ -52,9 +52,11 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas {
   DISALLOW_COPY_AND_ASSIGN(WaylandCanvasSurface);
 };
 
-WaylandCanvasSurface::WaylandCanvasSurface(WaylandDisplay* display,
+WaylandCanvasSurface::WaylandCanvasSurface(WaylandConnection* connection,
                                            WaylandWindow* window)
-    : display_(display), window_(window), size_(window->GetBounds().size()) {}
+    : connection_(connection),
+      window_(window),
+      size_(window->GetBounds().size()) {}
 
 WaylandCanvasSurface::~WaylandCanvasSurface() {}
 
@@ -67,8 +69,8 @@ sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
   if (!shared_memory->CreateAndMapAnonymous(length))
     return nullptr;
 
-  wl::Object<wl_shm_pool> pool(
-      wl_shm_create_pool(display_->shm(), shared_memory->handle().fd, length));
+  wl::Object<wl_shm_pool> pool(wl_shm_create_pool(
+      connection_->shm(), shared_memory->handle().fd, length));
   if (!pool)
     return nullptr;
   wl::Object<wl_buffer> buffer(
@@ -114,7 +116,7 @@ void WaylandCanvasSurface::PresentCanvas(const gfx::Rect& damage) {
                     damage.height());
   wl_surface_attach(surface, buffer_.get(), 0, 0);
   wl_surface_commit(surface);
-  display_->ScheduleFlush();
+  connection_->ScheduleFlush();
 }
 
 std::unique_ptr<gfx::VSyncProvider>
@@ -125,20 +127,20 @@ WaylandCanvasSurface::CreateVSyncProvider() {
   return nullptr;
 }
 
-WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandDisplay* display)
-    : display_(display) {}
+WaylandSurfaceFactory::WaylandSurfaceFactory(WaylandConnection* connection)
+    : connection_(connection) {}
 
 WaylandSurfaceFactory::~WaylandSurfaceFactory() {}
 
 intptr_t WaylandSurfaceFactory::GetNativeDisplay() {
-  return reinterpret_cast<intptr_t>(display_->display());
+  return reinterpret_cast<intptr_t>(connection_->display());
 }
 
 bool WaylandSurfaceFactory::LoadEGLGLES2Bindings(
     AddGLLibraryCallback add_gl_library,
     SetGLGetProcAddressProcCallback set_gl_get_proc_address) {
 #if defined(USE_WAYLAND_EGL)
-  if (!display_)
+  if (!connection_)
     return false;
   setenv("EGL_PLATFORM", "wayland", 0);
   return LoadDefaultEGLGLES2Bindings(add_gl_library, set_gl_get_proc_address);
@@ -149,16 +151,16 @@ bool WaylandSurfaceFactory::LoadEGLGLES2Bindings(
 
 std::unique_ptr<SurfaceOzoneCanvas>
 WaylandSurfaceFactory::CreateCanvasForWidget(gfx::AcceleratedWidget widget) {
-  WaylandWindow* window = display_->GetWindow(widget);
+  WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
-  return base::WrapUnique(new WaylandCanvasSurface(display_, window));
+  return base::WrapUnique(new WaylandCanvasSurface(connection_, window));
 }
 
 std::unique_ptr<SurfaceOzoneEGL>
 WaylandSurfaceFactory::CreateEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
 #if defined(USE_WAYLAND_EGL)
-  WaylandWindow* window = display_->GetWindow(widget);
+  WaylandWindow* window = connection_->GetWindow(widget);
   DCHECK(window);
   auto surface = base::WrapUnique(
       new WaylandEGLSurface(window, window->GetBounds().size()));
