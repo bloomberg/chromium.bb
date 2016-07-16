@@ -895,6 +895,9 @@ crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html 
 # These fail in the leak detector: http://crbug.com/612924#c4
 crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html [ Skip ]
 crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_pointerout_after_pointercancel_touch-manual.html [ Skip ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-auto-css_touch-manual.html  [ Skip ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_releasepointercapture_onpointercancel_touch-manual.html [ Skip ]
+crbug.com/619060 [ Linux ] imported/wpt/pointerevents/pointerevent_touch-action-pan-x-pan-y_touch-manual.html  [ Skip ]
 
 # The commented lines here for Mac is due to the fact that there is a more
 # generic skip rule in the next block of rules. However, when they get fixed
@@ -920,6 +923,7 @@ crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerenter_nohover-ma
 crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerleave_after_pointercancel_touch-manual.html  [ Skip ]
 crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerleave_after_pointerup_nohover-manual.html  [ Skip ]
 crbug.com/619060 imported/wpt/pointerevents/pointerevent_pointerleave_touch-manual.html  [ Skip ]
+
 crbug.com/627341 imported/wpt/pointerevents/pointerevent_suppress_compat_events_on_click.html [ Skip ]
 crbug.com/627341 imported/wpt/pointerevents/pointerevent_suppress_compat_events_on_drag_mouse.html [ Skip ]
 crbug.com/627341 imported/wpt/pointerevents/pointerevent_touch-action-inherit_child-auto-child-none_touch-manual.html  [ Skip ]
