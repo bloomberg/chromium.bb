@@ -48,25 +48,25 @@ TEST_F(VideoActivityNotifierTest, NotifyImmediatelyOnStateChange) {
   EXPECT_FALSE(power_client_->have_video_activity_report());
 
   notifier_->OnVideoStateChanged(VideoDetector::State::PLAYING_WINDOWED);
-  EXPECT_EQ(false, power_client_->PopVideoActivityReport());
+  EXPECT_FALSE(power_client_->PopVideoActivityReport());
 
   notifier_->OnVideoStateChanged(VideoDetector::State::PLAYING_FULLSCREEN);
-  EXPECT_EQ(true, power_client_->PopVideoActivityReport());
+  EXPECT_TRUE(power_client_->PopVideoActivityReport());
 
   notifier_->OnLockStateChanged(true);
   EXPECT_FALSE(power_client_->have_video_activity_report());
 
   notifier_->OnLockStateChanged(false);
-  EXPECT_EQ(true, power_client_->PopVideoActivityReport());
+  EXPECT_TRUE(power_client_->PopVideoActivityReport());
 
   notifier_->OnVideoStateChanged(VideoDetector::State::PLAYING_WINDOWED);
-  EXPECT_EQ(false, power_client_->PopVideoActivityReport());
+  EXPECT_FALSE(power_client_->PopVideoActivityReport());
 
   notifier_->OnVideoStateChanged(VideoDetector::State::NOT_PLAYING);
   EXPECT_FALSE(power_client_->have_video_activity_report());
 
   notifier_->OnVideoStateChanged(VideoDetector::State::PLAYING_WINDOWED);
-  EXPECT_EQ(false, power_client_->PopVideoActivityReport());
+  EXPECT_FALSE(power_client_->PopVideoActivityReport());
 }
 
 // Test that powerd is notified periodically while video is ongoing.
@@ -76,19 +76,19 @@ TEST_F(VideoActivityNotifierTest, NotifyPeriodically) {
 
   // The timer should start in response to windowed video.
   notifier_->OnVideoStateChanged(VideoDetector::State::PLAYING_WINDOWED);
-  EXPECT_EQ(false, power_client_->PopVideoActivityReport());
+  EXPECT_FALSE(power_client_->PopVideoActivityReport());
   EXPECT_FALSE(power_client_->have_video_activity_report());
   EXPECT_TRUE(notifier_->TriggerTimeoutForTest());
-  EXPECT_EQ(false, power_client_->PopVideoActivityReport());
+  EXPECT_FALSE(power_client_->PopVideoActivityReport());
   EXPECT_FALSE(power_client_->have_video_activity_report());
 
   // After fullscreen video starts, the timer should start reporting that
   // instead.
   notifier_->OnVideoStateChanged(VideoDetector::State::PLAYING_FULLSCREEN);
-  EXPECT_EQ(true, power_client_->PopVideoActivityReport());
+  EXPECT_TRUE(power_client_->PopVideoActivityReport());
   EXPECT_FALSE(power_client_->have_video_activity_report());
   EXPECT_TRUE(notifier_->TriggerTimeoutForTest());
-  EXPECT_EQ(true, power_client_->PopVideoActivityReport());
+  EXPECT_TRUE(power_client_->PopVideoActivityReport());
   EXPECT_FALSE(power_client_->have_video_activity_report());
 
   // Locking the screen should stop the timer.
@@ -98,10 +98,10 @@ TEST_F(VideoActivityNotifierTest, NotifyPeriodically) {
 
   // Unlocking it should restart the timer.
   notifier_->OnLockStateChanged(false);
-  EXPECT_EQ(true, power_client_->PopVideoActivityReport());
+  EXPECT_TRUE(power_client_->PopVideoActivityReport());
   EXPECT_FALSE(power_client_->have_video_activity_report());
   EXPECT_TRUE(notifier_->TriggerTimeoutForTest());
-  EXPECT_EQ(true, power_client_->PopVideoActivityReport());
+  EXPECT_TRUE(power_client_->PopVideoActivityReport());
   EXPECT_FALSE(power_client_->have_video_activity_report());
 
   // The timer should stop when video video.
