@@ -475,12 +475,6 @@ template("gcc_toolchain") {
         v8_current_cpu = current_cpu
       }
 
-      # TODO(crbug.com/625353) - Delete after v8 has been updated
-      # to only refer to v8_current_cpu. Until then, we need to make
-      # sure that v8_current_cpu always has the same value as v8_target_cpu,
-      # so that //build defines evaluate the way v8 is expecting them to.
-      v8_current_cpu = v8_target_cpu
-
       # Disable sanitizers for non-default toolchains.
       is_asan = false
       is_cfi = false
