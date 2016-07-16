@@ -28,6 +28,12 @@ class ContextLostExpectations(GpuTestExpectations):
     self.Skip('ContextLost.WebGLContextLostFromSelectElement',
               ['win8', 'nvidia'], bug=524808)
 
+    # Flaky on Win x64 Debug bot.
+    # Unfortunately we can't identify this separately from the 32-bit bots.
+    # Try marking it flaky to see if this works around the problem.
+    self.Flaky('ContextLost.WebGLContextLostFromQuantity',
+               ['win', 'debug'], bug=628697)
+
     # Flaky on Mac 10.7 and 10.8 resulting in crashes during browser
     # startup, so skip this test in those configurations.
     self.Skip('ContextLost.WebGLContextLostFromSelectElement',

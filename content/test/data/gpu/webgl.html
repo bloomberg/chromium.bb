@@ -74,6 +74,9 @@ function testQuantityLoss() {
 
     var ctx = c.getContext("experimental-webgl");
     if (!ctx) {
+      console.log("Failed to fetch WebGL context number " + count);
+      window.domAutomationController.send("LOADED");
+      window.domAutomationController.send("FAILED");
       return false;
     }
     ctx.clear(gl.COLOR_BUFFER_BIT);

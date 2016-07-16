@@ -32,9 +32,13 @@ harness_script = r"""
     if (msg == "loaded") {
       domAutomationController._loaded = true;
     } else if (msg == "success") {
-      domAutomationController._succeeded = true;
+      /* Don't squelch earlier failures! */
+      if (!domAutomationController._finished) {
+        domAutomationController._succeeded = true;
+      }
       domAutomationController._finished = true;
     } else {
+      /* Always record failures. */
       domAutomationController._succeeded = false;
       domAutomationController._finished = true;
     }
