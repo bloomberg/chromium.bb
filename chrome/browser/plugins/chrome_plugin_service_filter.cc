@@ -17,6 +17,7 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/content/common/content_settings_messages.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_constants.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -102,6 +104,12 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
         return use;
       }
     }
+  }
+
+  // Check whether PreferHtmlOverPlugins feature is enabled.
+  if (plugin->name == base::ASCIIToUTF16(content::kFlashPluginName) &&
+      base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
+    return false;
   }
 
   // Check whether the plugin is disabled.
@@ -224,4 +232,3 @@ ChromePluginServiceFilter::ProcessDetails::ProcessDetails(
 
 ChromePluginServiceFilter::ProcessDetails::~ProcessDetails() {
 }
-

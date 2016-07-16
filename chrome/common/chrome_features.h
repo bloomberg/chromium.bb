@@ -43,6 +43,8 @@ extern const base::Feature kMaterialDesignHistoryFeature;
 
 extern const base::Feature kMaterialDesignSettingsFeature;
 
+extern const base::Feature kPreferHtmlOverPlugins;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kRuntimeMemoryLeakDetector;
 #endif  // defined(OS_CHROMEOS)
