@@ -27,7 +27,7 @@ state of the host to tasks. It is written to by the swarming bot's
 on_before_task() hook in the swarming server's custom bot_config.py.
 """
 
-__version__ = '0.8.2'
+__version__ = '0.8.3'
 
 import base64
 import logging
@@ -387,8 +387,7 @@ def map_and_run(
   if root_dir:
     file_path.ensure_tree(root_dir, 0700)
   else:
-    root_dir = (
-        os.path.dirname(cache.cache_dir) if cache.cache_dir else os.getcwd())
+    root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
   # See comment for these constants.
   run_dir = make_temp_dir(ISOLATED_RUN_DIR, root_dir)
   # storage should be normally set but don't crash if it is not. This can happen
@@ -653,6 +652,11 @@ def create_option_parser():
            'and returns without executing anything; use with -v to know what '
            'was done')
   parser.add_option(
+      '--no-clean', action='store_true',
+      help='Do not clean the cache automatically on startup. This is meant for '
+           'bots where a separate execution with --clean was done earlier so '
+           'doing it again is redundant')
+  parser.add_option(
       '--json',
       help='dump output metadata to json file. When used, run_isolated returns '
            'non-zero only on internal failure')
@@ -706,6 +710,8 @@ def main(args):
       parser.error('Can\'t use --json with --clean.')
     cache.cleanup()
     return 0
+  if not options.no_clean:
+    cache.cleanup()
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')

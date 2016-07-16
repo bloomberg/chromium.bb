@@ -1035,44 +1035,72 @@ class DiskCacheTest(TestCase):
     with self.assertRaises(isolateserver.Error):
       cache.write(*self.to_hash('e'))
 
-  def test_policies_active_trimming(self):
-    # Inject two items without a state.json. They will be processed just fine.
+  def test_cleanup(self):
+    # Inject an item without a state.json. It will be deleted on cleanup.
     h_a = self.to_hash('a')[0]
     isolateserver.file_write(os.path.join(self.tempdir, h_a), 'a')
-    h_b = self.to_hash('b')[0]
-    isolateserver.file_write(os.path.join(self.tempdir, h_b), 'b')
-    # Insert corrupted files, they will be deleted.
-    # TODO(maruel): Verify cache.
-    #isolateserver.file_write(os.path.join(self.tempdir, 'a'*40), 'z')
-    isolateserver.file_write(os.path.join(self.tempdir, 'z'), 'z')
-
-    # Cache (size and # items) is not enforced while adding items but free disk
-    # is.
-    self._free_disk = 1004
     cache = self.get_cache()
-    expected = sorted(((h_a, 1), (h_b, 1)))
-    self.assertEqual(expected, sorted(cache._lru._items.iteritems()))
-    self.assertEqual(set(), cache._protected)
-    self.assertEqual(1004, cache._free_disk)
+    self.assertEqual([], sorted(cache._lru._items.iteritems()))
+    self.assertEqual(
+        sorted([h_a, u'state.json']), sorted(os.listdir(self.tempdir)))
+    cache.cleanup()
+    self.assertEqual([u'state.json'], os.listdir(self.tempdir))
 
-    h_c = cache.write(*self.to_hash('c'))
-    # h_a and h_b may be randomly ordered. Assert that h_c is last.
-    expected = sorted(((h_a, 1), (h_b, 1), (h_c, 1)))
-    self.assertEqual(expected, sorted(cache._lru._items.iteritems()))
-    # [0] is the one that gets evicted. Take the second one.
-    kept = cache._lru._items.items()[1]
-    self.assertEqual((h_c, 1), cache._lru._items.items()[-1])
-    self.assertEqual({h_c}, cache._protected)
-    self.assertEqual(1003, cache._free_disk)
+  def test_policies_active_trimming(self):
+    # Start with a larger cache, add many object.
+    # Reload the cache with smaller policies, the cache should be trimmed on
+    # load.
+    h_a = self.to_hash('a')[0]
+    h_b = self.to_hash('b')[0]
+    h_c = self.to_hash('c')[0]
+    h_large, large = self.to_hash('b' * 99)
 
-    self._free_disk = 1003
-    # Force a trim.
-    with cache:
-      pass
-    expected = collections.OrderedDict([(kept[0], kept[1]), (h_c, 1)])
-    self.assertEqual(expected, cache._lru._items)
-    self.assertEqual({h_c}, cache._protected)
-    self.assertEqual(1003, cache._free_disk)
+    # Max policies is 100 bytes, 2 items, 1000 bytes free space.
+    self._free_disk = 1101
+    with self.get_cache() as cache:
+      cache.write(h_a, 'a')
+      cache.write(h_large, large)
+      # Cache (size and # items) is not enforced while adding items. The
+      # rationale is that a task may request more data than the size of the
+      # cache policies. As long as there is free space, this is fine.
+      cache.write(h_b, 'b')
+      expected = sorted(((h_a, 1), (h_large, len(large)), (h_b, 1)))
+      self.assertEqual(expected, sorted(cache._lru._items.iteritems()))
+      self.assertEqual(h_a, cache._protected)
+      self.assertEqual(1000, cache._free_disk)
+      self.assertEqual(0, cache.initial_number_items)
+      self.assertEqual(0, cache.initial_size)
+      # Free disk is enforced, because otherwise we assume the task wouldn't
+      # be able to start. In this case, it throws an exception since all items
+      # are protected. The item is added since it's detected after the fact.
+      with self.assertRaises(isolateserver.Error):
+        cache.write(h_c, 'c')
+
+    # At this point, after the implicit trim in __exit__(), h_a and h_large were
+    # evicted.
+    self.assertEqual(
+        sorted([h_b, h_c, u'state.json']), sorted(os.listdir(self.tempdir)))
+
+    # Allow 3 items and 101 bytes so h_large is kept.
+    self._policies = isolateserver.CachePolicies(101, 1000, 3)
+    with self.get_cache() as cache:
+      cache.write(h_large, large)
+      self.assertEqual(2, cache.initial_number_items)
+      self.assertEqual(2, cache.initial_size)
+
+    self.assertEqual(
+        sorted([h_b, h_c, h_large, u'state.json']),
+        sorted(os.listdir(self.tempdir)))
+
+    # Assert that trimming is done in constructor too.
+    self._policies = isolateserver.CachePolicies(100, 1000, 2)
+    with self.get_cache() as cache:
+      expected = collections.OrderedDict([(h_c, 1), (h_large, len(large))])
+      self.assertEqual(expected, cache._lru._items)
+      self.assertEqual(None, cache._protected)
+      self.assertEqual(1101, cache._free_disk)
+      self.assertEqual(2, cache.initial_number_items)
+      self.assertEqual(100, cache.initial_size)
 
 
 def clear_env_vars():

@@ -86,11 +86,6 @@ class RunIsolatedTestBase(auto_stub.TestCase):
     self.cipd_server = cipdserver_mock.MockCipdServer()
 
   def tearDown(self):
-    for dirpath, dirnames, filenames in os.walk(self.tempdir, topdown=True):
-      for filename in filenames:
-        file_path.set_read_only(os.path.join(dirpath, filename), False)
-      for dirname in dirnames:
-        file_path.set_read_only(os.path.join(dirpath, dirname), False)
     file_path.rmtree(self.tempdir)
     self.cipd_server.close()
     super(RunIsolatedTestBase, self).tearDown()
@@ -100,7 +95,7 @@ class RunIsolatedTestBase(auto_stub.TestCase):
     """Where to map all files in run_isolated.run_tha_test."""
     return os.path.join(self.tempdir, run_isolated.ISOLATED_RUN_DIR)
 
-  def fake_make_temp_dir(self, prefix, _root_dir=None):
+  def fake_make_temp_dir(self, prefix, _root_dir):
     """Predictably returns directory for run_tha_test (one per test case)."""
     self.assertIn(
         prefix,

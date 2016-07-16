@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.4.9'
+__version__ = '0.5.0'
 
 import base64
 import functools
@@ -1399,9 +1399,11 @@ class DiskCache(LocalCache):
     self._lru = lru.LRUDict()
     # Current cached free disk space. It is updated by self._trim().
     self._free_disk = 0
-    # The items that must not be evicted during this run since they were
-    # referenced.
-    self._protected = set()
+    # The first item in the LRU cache that must not be evicted during this run
+    # since it was referenced. All items more recent that _protected in the LRU
+    # cache are also inherently protected. It could be a set() of all items
+    # referenced but this increases memory usage without a use case.
+    self._protected = None
     # Cleanup operations done by self._load(), if any.
     self._operations = []
     with tools.Profiler('Setup'):
@@ -1441,11 +1443,44 @@ class DiskCache(LocalCache):
       return self._lru.keys_set()
 
   def cleanup(self):
-    # At that point, the cache was already loaded, trimmed to respect cache
-    # policies and invalid files were deleted.
-    if self._evicted:
-      logging.info(
-          'Evicted items with the following sizes: %s', sorted(self._evicted))
+    """Cleans up the cache directory.
+
+    Ensures there is no unknown files in cache_dir.
+    Ensures the read-only bits are set correctly.
+
+    At that point, the cache was already loaded, trimmed to respect cache
+    policies.
+    """
+    fs.chmod(self.cache_dir, 0700)
+    # Ensure that all files listed in the state still exist and add new ones.
+    previous = self._lru.keys_set()
+    # It'd be faster if there were a readdir() function.
+    for filename in fs.listdir(self.cache_dir):
+      if filename == self.STATE_FILE:
+        fs.chmod(os.path.join(self.cache_dir, filename), 0600)
+        continue
+      if filename in previous:
+        fs.chmod(os.path.join(self.cache_dir, filename), 0400)
+        previous.remove(filename)
+        continue
+
+      # An untracked file. Delete it.
+      logging.warning('Removing unknown file %s from cache', filename)
+      p = self._path(filename)
+      if fs.isdir(p):
+        try:
+          file_path.rmtree(p)
+        except OSError:
+          pass
+      else:
+        file_path.try_remove(p)
+      continue
+
+    if previous:
+      # Filter out entries that were not found.
+      logging.warning('Removed %d lost files', len(previous))
+      for filename in previous:
+        self._lru.pop(filename)
 
     # What remains to be done is to hash every single item to
     # detect corruption, then save to ensure state.json is up to date.
@@ -1478,12 +1513,12 @@ class DiskCache(LocalCache):
       if digest not in self._lru:
         return False
       self._lru.touch(digest)
-      self._protected.add(digest)
+      self._protected = self._protected or digest
     return True
 
   def evict(self, digest):
     with self._lock:
-      # Do not check for 'digest in self._protected' since it could be because
+      # Do not check for 'digest == self._protected' since it could be because
       # the object is corrupted.
       self._lru.pop(digest)
       self._delete_file(digest, UNKNOWN_FILE_SIZE)
@@ -1498,7 +1533,7 @@ class DiskCache(LocalCache):
   def write(self, digest, content):
     assert content is not None
     with self._lock:
-      self._protected.add(digest)
+      self._protected = self._protected or digest
     path = self._path(digest)
     # A stale broken file may remain. It is possible for the file to have write
     # access bit removed which would cause the file_write() call to fail to open
@@ -1542,71 +1577,32 @@ class DiskCache(LocalCache):
       self._linked.append(self._lru[digest])
 
   def _load(self):
-    """Loads state of the cache from json file."""
+    """Loads state of the cache from json file.
+
+    If cache_dir does not exist on disk, it is created.
+    """
     self._lock.assert_locked()
 
-    if not os.path.isdir(self.cache_dir):
-      fs.makedirs(self.cache_dir)
+    if not fs.isfile(self.state_file):
+      if not os.path.isdir(self.cache_dir):
+        fs.makedirs(self.cache_dir)
     else:
-      # Make sure the cache is read-only.
-      # TODO(maruel): Calculate the cost and optimize the performance
-      # accordingly.
-      file_path.make_tree_read_only(self.cache_dir)
-
-    # Load state of the cache.
-    if fs.isfile(self.state_file):
+      # Load state of the cache.
       try:
         self._lru = lru.LRUDict.load(self.state_file)
       except ValueError as err:
         logging.error('Failed to load cache state: %s' % (err,))
         # Don't want to keep broken state file.
         file_path.try_remove(self.state_file)
-
-    # Ensure that all files listed in the state still exist and add new ones.
-    previous = self._lru.keys_set()
-    unknown = []
-    for filename in fs.listdir(self.cache_dir):
-      if filename == self.STATE_FILE:
-        continue
-      if filename in previous:
-        self._initial_size += self._lru[filename]
-        previous.remove(filename)
-        self._initial_number_items += 1
-        continue
-      # An untracked file.
-      if not isolated_format.is_valid_hash(filename, self.hash_algo):
-        logging.warning('Removing unknown file %s from cache', filename)
-        p = self._path(filename)
-        if fs.isdir(p):
-          try:
-            file_path.rmtree(p)
-          except OSError:
-            pass
-        else:
-          file_path.try_remove(p)
-        continue
-      # File that's not referenced in 'state.json'.
-      # TODO(vadimsh): Verify its SHA1 matches file name.
-      logging.warning('Adding unknown file %s to cache', filename)
-      unknown.append(filename)
-
-    if unknown:
-      # Add as oldest files. They will be deleted eventually if not accessed.
-      pairs = []
-      for digest in unknown:
-        size = fs.stat(self._path(digest)).st_size
-        self._initial_size += size
-        self._initial_number_items += 1
-        pairs.append((digest, size))
-      self._lru.batch_insert_oldest(pairs)
-      logging.warning('Added back %d unknown files', len(unknown))
-
-    if previous:
-      # Filter out entries that were not found.
-      logging.warning('Removed %d lost files', len(previous))
-      for filename in previous:
-        self._lru.pop(filename)
     self._trim()
+    # We want the initial cache size after trimming, i.e. what is readily
+    # avaiable.
+    self._initial_number_items = len(self._lru)
+    self._initial_size = sum(self._lru.itervalues())
+    if self._evicted:
+      logging.info(
+          'Trimming evicted items with the following sizes: %s',
+          sorted(self._evicted))
 
   def _save(self):
     """Saves the LRU ordering."""
@@ -1628,12 +1624,12 @@ class DiskCache(LocalCache):
     if self.policies.max_cache_size:
       total_size = sum(self._lru.itervalues())
       while total_size > self.policies.max_cache_size:
-        total_size -= self._remove_lru_file()
+        total_size -= self._remove_lru_file(True)
 
     # Ensure maximum number of items in the cache.
     if self.policies.max_items and len(self._lru) > self.policies.max_items:
       for _ in xrange(len(self._lru) - self.policies.max_items):
-        self._remove_lru_file()
+        self._remove_lru_file(True)
 
     # Ensure enough free space.
     self._free_disk = file_path.get_free_space(self.cache_dir)
@@ -1643,7 +1639,7 @@ class DiskCache(LocalCache):
         self._lru and
         self._free_disk < self.policies.min_free_space):
       trimmed_due_to_space += 1
-      self._remove_lru_file()
+      self._remove_lru_file(True)
 
     if trimmed_due_to_space:
       total_usage = sum(self._lru.itervalues())
@@ -1665,15 +1661,15 @@ class DiskCache(LocalCache):
     """Returns the path to one item."""
     return os.path.join(self.cache_dir, digest)
 
-  def _remove_lru_file(self):
-    """Removes the last recently used file and returns its size."""
+  def _remove_lru_file(self, allow_protected):
+    """Removes the lastest recently used file and returns its size."""
     self._lock.assert_locked()
     try:
       digest, size = self._lru.get_oldest()
+      if not allow_protected and digest == self._protected:
+        raise Error('Not enough space to map the whole isolated tree')
     except KeyError:
       raise Error('Nothing to remove')
-    if digest in self._protected:
-      raise Error('Not enough space to map the whole isolated tree')
     digest, size = self._lru.pop_oldest()
     logging.debug("Removing LRU file %s", digest)
     self._delete_file(digest, size)
@@ -1697,7 +1693,7 @@ class DiskCache(LocalCache):
         self.policies.min_free_space and
         self._lru and
         self._free_disk < self.policies.min_free_space):
-      self._remove_lru_file()
+      self._remove_lru_file(False)
 
   def _delete_file(self, digest, size=UNKNOWN_FILE_SIZE):
     """Deletes cache file from the file system."""
@@ -2158,6 +2154,7 @@ def CMDdownload(parser, args):
     parser.error('Use one of --isolated or --file, and only one.')
 
   cache = process_cache_options(options)
+  cache.cleanup()
   options.target = unicode(os.path.abspath(options.target))
   if options.isolated:
     if (fs.isfile(options.target) or

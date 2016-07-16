@@ -363,6 +363,7 @@ def get_client(
         isolateserver.CachePolicies(0, 0, 300),
         hashlib.sha1)
     with version_cache:
+      version_cache.cleanup()
       # Convert |version| to a string that may be used as a filename in disk
       # cache by hashing it.
       version_digest = hashlib.sha1(version).hexdigest()
@@ -380,6 +381,7 @@ def get_client(
       isolateserver.CachePolicies(0, 0, 5),
       hashlib.sha1)
   with instance_cache:
+    instance_cache.cleanup()
     if instance_id not in instance_cache:
       logging.info('Fetching CIPD client %s:%s', package_name, instance_id)
       fetch_url = get_client_fetch_url(

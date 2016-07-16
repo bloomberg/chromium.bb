@@ -341,8 +341,8 @@ class RunIsolatedTest(unittest.TestCase):
     _out, _err, returncode = self._run(self._cmd_args(isolated_hash))
     self.assertEqual(0, returncode)
     expected = {
-      '.': (040707, 040707, 040777),
-      'state.json': (0100606, 0100606, 0100666),
+      '.': (040700, 040700, 040777),
+      'state.json': (0100600, 0100600, 0100666),
       # The reason for 0100666 on Windows is that the file node had to be
       # modified to delete the hardlinked node. The read only bit is reset on
       # load.
