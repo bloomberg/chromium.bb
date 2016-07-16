@@ -35,6 +35,11 @@ function testI18nAdvanced() {
   I18nBehavior.i18nAdvanced('customTag', {tags: ['X-FOO']});
 }
 
+function testI18nExists() {
+  assertTrue(I18nBehavior.i18nExists('text'));
+  assertFalse(I18nBehavior.i18nExists('missingText'));
+}
+ 
 </script>
 </body>
 </html>

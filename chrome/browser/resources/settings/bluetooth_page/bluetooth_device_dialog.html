@@ -14,10 +14,6 @@
 <dom-module id="bluetooth-device-dialog">
   <template>
     <style include="settings-shared">
-      #dialogMessage {
-        margin-bottom: 10px;
-      }
-
       #pairing {
         margin-bottom: 10px;
       }
@@ -38,6 +34,10 @@
         height: 20px;
         margin: 0 10px;
         width: 20px;
+      }
+
+      .dialog-message {
+        margin-bottom: 10px;
       }
 
       /* .display indicates a displayed pin code or passkey. */
@@ -99,7 +99,7 @@
         <template is="dom-if" if="[[isDialogType_(dialogId, 'pairDevice')]]">
           <div id="pairing" class="settings-box first layout vertical center
               center-justified">
-            <div id="dialogMessage">
+            <div class="dialog-message">
               [[getMessage_(pairingDevice, pairingEvent)]]
             </div>
             <div hidden$="[[!showEnterPincode_(pairingEvent)]]">
@@ -123,6 +123,12 @@
                 $i18n{bluetoothEnterKey}
               </span>
             </div>
+          </div>
+        </template>
+        <template is="dom-if" if="[[isDialogType_(dialogId, 'connectError')]]">
+          <div class="settings-box first layout vertical center
+              center-justified">
+            <div class="dialog-message">[[errorMessage]]</div>
           </div>
         </template>
       </div>
@@ -151,6 +157,10 @@
           <paper-button hidden$="[[showDismiss_(pairingDevice, pairingEvent)]]"
               on-tap="onCancelTap_">
             $i18n{cancel}
+          </paper-button>
+        </template>
+        <template is="dom-if" if="[[isDialogType_(dialogId, 'connectError')]]">
+          <paper-button  on-tap="onDismissTap_">$i18n{bluetoothDismiss}
           </paper-button>
         </template>
       </div>

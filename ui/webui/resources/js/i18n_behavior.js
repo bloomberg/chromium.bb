@@ -57,4 +57,13 @@ var I18nBehavior = {
     return parseHtmlSubset('<b>' + rawString + '</b>', opts.tags, opts.attrs)
         .firstChild.innerHTML;
   },
+
+  /**
+   * Returns true if a translation exists for |id|.
+   * @param {string} id
+   * @return {boolean}
+   */
+  i18nExists: function(id) {
+    return loadTimeData.valueExists(id);
+  },
 };

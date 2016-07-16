@@ -393,8 +393,62 @@
     <message name="IDS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
       Please confirm this passkey is shown on "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>":
     </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECTING">
+      Connecting...
+    </message>
     <message name="IDS_SETTINGS_BLUETOOTH_START_CONNECTING">
       Connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_UNKNOWN_ERROR">
+      An unknown error occurred trying to connect to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_IN_PROGRESS">
+      Connection to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>" still in progress.
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_FAILED">
+      Failed to connect to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_FAILED">
+      Authentication failed while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_CANCELED">
+      Authentication canceled while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_REJECTED">
+      Authentication code rejected while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_AUTH_TIMEOUT">
+      Authentication timeout while connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_UNSUPPORTED_DEVICE">
+      Unsupported Bluetooth device: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_ATTRIBUTE_LENGTH_INVALID">
+      Write operation exceeds the maximum length of the attribute to: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_CONNECTION_CONGESTED">
+      Connection is congested to remote device: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_INSUFFICIENT_ENCRYPTION">
+      Insufficient encryption for a given operation on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_OFFSET_INVALID">
+      Read or write operation was requested with an invalid offset on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_READ_NOT_PERMITTED">
+      Read operation is not permitted on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_REQUEST_NOT_SUPPORTED">
+      The given request is not supported to: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_WRITE_NOT_PERMITTED">
+      Write operation is not permitted on: "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED">
+      Failed to disconnect from "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_FORGET_FAILED">
+      Failed to disconnect and unpair from "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
     </message>
   </if>
 

@@ -357,9 +357,10 @@ Polymer({
    * @return {string} The title of for that |dialogId|.
    */
   getTitle_: function(dialogId) {
-    return this.i18n(
-        dialogId == 'addDevice' ? 'bluetoothAddDevicePageTitle' :
-                                  'bluetoothPairDevicePageTitle');
+    if (dialogId == 'addDevice')
+      return this.i18n('bluetoothAddDevicePageTitle');
+    // Use the 'pair' title for the pairing dialog and error dialog.
+    return this.i18n('bluetoothPairDevicePageTitle');
   },
 
   /**

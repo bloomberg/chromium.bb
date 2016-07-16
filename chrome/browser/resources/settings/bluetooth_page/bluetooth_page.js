@@ -73,11 +73,10 @@ Polymer({
 
     /**
      * Set to the name of the dialog to show. This page uses a single
-     * paper-dialog to host one of two dialog elements, 'addDevice' or
-     * 'pairDevice'. This allows a seamless transition between adding and
-     * pairing dialogs. Note: This property should be set before opening the
-     * dialog, and setting the property will not itself cause the dialog to
-     * open.
+     * paper-dialog to host one of three dialog elements, 'addDevice',
+     * 'pairDevice', or 'connectError'. This allows a seamless transition
+     * between dialogs. Note: This property should be set before opening the
+     * dialog and setting the property will not itself cause the dialog to open.
      */
     dialogId: String,
 
@@ -92,6 +91,9 @@ Polymer({
      * @type {?chrome.bluetoothPrivate.PairingEvent|undefined}
      */
     pairingEvent: Object,
+
+    /** The translated error message to show when a connect error occurs. */
+    errorMessage: String,
 
     /**
      * Interface for bluetooth calls. May be overriden by tests.
@@ -439,13 +441,35 @@ Polymer({
     }
 
     this.bluetoothPrivate.connect(device.address, function(result) {
+      var error;
       if (chrome.runtime.lastError) {
-        console.error(
-            'Error connecting: ' + device.address +
-            chrome.runtime.lastError.message);
-        // TODO(stevenjb): Show error message insead.
-        this.closeDialog_();
+        error = chrome.runtime.lastError.message;
+      } else {
+        switch (result) {
+          case chrome.bluetoothPrivate.ConnectResultType.ALREADY_CONNECTED:
+          case chrome.bluetoothPrivate.ConnectResultType.AUTH_CANCELED:
+          case chrome.bluetoothPrivate.ConnectResultType.IN_PROGRESS:
+          case chrome.bluetoothPrivate.ConnectResultType.SUCCESS:
+            break;
+          default:
+            error = result;
+        }
       }
+
+      if (!error) {
+        this.closeDialog_();
+        return;
+      }
+
+      var name = this.getDeviceName_(device);
+      var id = 'bluetooth_connect_' + error;
+      if (this.i18nExists(id)) {
+        this.errorMessage = this.i18n(id, name);
+      } else {
+        this.errorMessage = error;
+        console.error('Unexpected error connecting to: ' + name + ': ' + error);
+      }
+      this.openDialog_('connectError');
     }.bind(this));
   },
 
