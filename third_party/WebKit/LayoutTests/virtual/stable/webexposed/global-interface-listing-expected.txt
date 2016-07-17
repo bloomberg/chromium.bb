@@ -6339,7 +6339,6 @@ interface webkitMediaStream : EventTarget
     getter id
     getter onactive
     getter onaddtrack
-    getter onended
     getter oninactive
     getter onremovetrack
     method addTrack
@@ -6352,7 +6351,6 @@ interface webkitMediaStream : EventTarget
     method removeTrack
     setter onactive
     setter onaddtrack
-    setter onended
     setter oninactive
     setter onremovetrack
 interface webkitOfflineAudioContext : AudioContext

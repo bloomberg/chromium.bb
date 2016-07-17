@@ -101,7 +101,6 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
     : m_client(nullptr)
     , m_id(id)
     , m_active(true)
-    , m_ended(false)
 {
     ASSERT(m_id.length());
     for (size_t i = 0; i < audioSources.size(); i++)
@@ -115,7 +114,6 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
     : m_client(nullptr)
     , m_id(id)
     , m_active(true)
-    , m_ended(false)
 {
     ASSERT(m_id.length());
     for (MediaStreamComponentVector::const_iterator iter = audioComponents.begin(); iter != audioComponents.end(); ++iter)

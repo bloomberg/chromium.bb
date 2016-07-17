@@ -47,8 +47,6 @@
 
     attribute EventHandler onactive;
     attribute EventHandler oninactive;
-    //  DEPRECATED
-    attribute EventHandler onended;
 
     attribute EventHandler onaddtrack;
     attribute EventHandler onremovetrack;

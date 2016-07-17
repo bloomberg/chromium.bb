@@ -1041,7 +1041,6 @@ public:
         V8ForInInitializer = 1238,
         V8Animation_Id_AttributeGetter = 1239,
         V8Animation_Id_AttributeSetter = 1240,
-        MediaStreamOnEnded = 1241,
         DocumentCreateEventInputEvent = 1242,
         WebAnimationHyphenatedProperty = 1243,
         FormControlsCollectionReturnsRadioNodeListForFieldSet = 1244,

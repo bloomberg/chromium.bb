@@ -86,9 +86,6 @@ public:
     bool active() const { return m_active; }
     void setActive(bool active) { m_active = active; }
 
-    bool ended() const { return m_ended; }
-    void setEnded() { m_ended = true; }
-
     ExtraData* getExtraData() const { return m_extraData.get(); }
     void setExtraData(std::unique_ptr<ExtraData> extraData) { m_extraData = std::move(extraData); }
 
@@ -106,7 +103,6 @@ private:
     HeapVector<Member<MediaStreamComponent>> m_audioComponents;
     HeapVector<Member<MediaStreamComponent>> m_videoComponents;
     bool m_active;
-    bool m_ended;
 
     std::unique_ptr<ExtraData> m_extraData;
 };

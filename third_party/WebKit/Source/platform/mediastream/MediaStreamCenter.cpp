@@ -137,8 +137,6 @@ void MediaStreamCenter::stopLocalMediaStream(const WebMediaStream& webStream)
     MediaStreamDescriptorClient* client = stream->client();
     if (client)
         client->streamEnded();
-    else
-        stream->setEnded();
 }
 
 } // namespace blink

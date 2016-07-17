@@ -287,26 +287,18 @@ void MediaStream::trackEnded()
 
 void MediaStream::streamEnded()
 {
-    if (m_stopped || m_descriptor->ended())
+    if (m_stopped)
         return;
 
     if (active()) {
         m_descriptor->setActive(false);
         scheduleDispatchEvent(Event::create(EventTypeNames::inactive));
     }
-
-    // TODO(guidou): remove firing of this event. See crbug.com/586924
-    if (!m_descriptor->ended()) {
-        m_descriptor->setEnded();
-        scheduleDispatchEvent(Event::create(EventTypeNames::ended));
-    }
 }
 
 bool MediaStream::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptions& options)
 {
-    if (eventType == EventTypeNames::ended)
-        Deprecation::countDeprecation(getExecutionContext(), UseCounter::MediaStreamOnEnded);
-    else if (eventType == EventTypeNames::active)
+    if (eventType == EventTypeNames::active)
         UseCounter::count(getExecutionContext(), UseCounter::MediaStreamOnActive);
     else if (eventType == EventTypeNames::inactive)
         UseCounter::count(getExecutionContext(), UseCounter::MediaStreamOnInactive);
