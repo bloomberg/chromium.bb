@@ -564,6 +564,9 @@ bool Resource::unlock()
     if (RuntimeEnabledFeatures::doNotUnlockSharedBufferEnabled())
         return false;
 
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, unlockHistogram, new EnumerationHistogram("Blink.SharedBuffer.Unlock", kLastResourceType));
+    unlockHistogram.count(getType());
+
     m_data->unlock();
     return true;
 }
@@ -986,11 +989,18 @@ bool Resource::lock()
     // If locking fails, our buffer has been purged. There's no point
     // in leaving a purged resource in MemoryCache.
     if (!m_data->lock()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, failedLockHistogram, new EnumerationHistogram("Blink.SharedBuffer.FailedLock", kLastResourceType));
+        failedLockHistogram.count(getType());
+
         m_data.clear();
         setEncodedSize(0);
         memoryCache()->remove(this);
         return false;
     }
+
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, successfulLockHistogram, new EnumerationHistogram("Blink.SharedBuffer.SuccessfulLock", kLastResourceType));
+    successfulLockHistogram.count(getType());
+
     return true;
 }
 

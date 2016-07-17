@@ -3822,6 +3822,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.SharedBuffer.FailedLock" enum="ResourceType">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    Number of failed SharedBuffer::lock() calls for each resource type.
+    https://crbug.com/603791
+  </summary>
+</histogram>
+
+<histogram name="Blink.SharedBuffer.SuccessfulLock" enum="ResourceType">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    Number of successful SharedBuffer::lock() calls for each resource type.
+    https://crbug.com/603791
+  </summary>
+</histogram>
+
+<histogram name="Blink.SharedBuffer.Unlock" enum="ResourceType">
+  <owner>hiroshige@chromium.org</owner>
+  <summary>
+    Number of SharedBuffer::unlock() calls for each resource type.
+    https://crbug.com/603791
+  </summary>
+</histogram>
+
 <histogram name="Blink.StyleAndLayout.UpdateTime" units="microseconds">
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -62952,6 +62976,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="WebCore.ResourceFetcher.ResourceTypeUponCacheHit"
     enum="ResourceType">
+  <obsolete>
+    This metric has been not recorded at least since 2016/01. The displayed enum
+    labels might be unreliable because C++ enum values of blink::Resource::Type
+    have been changed over time.
+  </obsolete>
   <owner>clamy@chromium.org</owner>
   <summary>
     The type of the resource (e.g. image, script...) upon a cache hit.
@@ -88545,8 +88574,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="Link prefetch"/>
   <int value="9" label="Link subresource"/>
   <int value="10" label="Text track"/>
-  <int value="11" label="Shader"/>
-  <int value="12" label="Import resource"/>
+  <int value="11" label="ImportResource"/>
+  <int value="12" label="Media"/>
+  <int value="13" label="Manifest"/>
 </enum>
 
 <enum name="RestoredCachedStyleSheet" type="int">

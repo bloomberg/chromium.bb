@@ -57,6 +57,9 @@ class SharedBuffer;
 class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource> {
     WTF_MAKE_NONCOPYABLE(Resource);
 public:
+    // |Type| enum values are used in UMAs, so do not change the values of
+    // existing |Type|. When adding a new |Type|, append it at the end and
+    // update |kLastResourceType|.
     enum Type {
         MainResource,
         Image,
@@ -73,6 +76,7 @@ public:
         Media, // Audio or video file requested by a HTML5 media element
         Manifest
     };
+    static const int kLastResourceType = Manifest + 1;
 
     enum Status {
         NotStarted,
