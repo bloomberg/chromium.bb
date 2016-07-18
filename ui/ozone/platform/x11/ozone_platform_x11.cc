@@ -11,6 +11,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/events/platform/x11/x11_event_source_libevent.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/x11/native_display_delegate_ozone_x11.h"
@@ -85,6 +86,7 @@ class OzonePlatformX11 : public OzonePlatform {
                                             window_manager_.get(), delegate));
     window->SetBounds(bounds);
     window->Create();
+    window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
     return std::move(window);
   }
 
