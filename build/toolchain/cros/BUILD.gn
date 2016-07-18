@@ -127,6 +127,7 @@ gcc_toolchain("v8_snapshot") {
   } else {
     toolchain_cpu = "x64"
   }
+  v8_toolchain_cpu = v8_target_cpu
   toolchain_os = "linux"
   use_sysroot = false
 }
