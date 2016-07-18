@@ -844,7 +844,13 @@ void DisplayConfigurator::SetDisplayPowerInternal(
     chromeos::DisplayPowerState power_state,
     int flags,
     const ConfigurationCallback& callback) {
+  // Only skip if the current power state is the same and the latest requested
+  // power state is the same. If |pending_power_state_ != current_power_state_|
+  // then there is a current task pending or the last configuration failed. In
+  // either case request a new configuration to make sure the state is
+  // consistent with the expectations.
   if (power_state == current_power_state_ &&
+      power_state == pending_power_state_ &&
       !(flags & kSetDisplayPowerForceProbe)) {
     callback.Run(true);
     return;
