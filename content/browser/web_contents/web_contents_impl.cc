@@ -1951,9 +1951,9 @@ void WebContentsImpl::ForwardCompositorProto(
 }
 
 void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(bool visible) {
-  if (visible)
+  if (visible && !GetOuterWebContents()->IsHidden())
     WasShown();
-  else
+  else if (!visible)
     WasHidden();
 }
 

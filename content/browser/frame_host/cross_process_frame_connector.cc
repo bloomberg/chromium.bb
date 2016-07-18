@@ -276,10 +276,14 @@ void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
     return;
   }
 
-  if (visible)
+  if (visible &&
+      !RenderWidgetHostImpl::From(view_->GetRenderWidgetHost())
+           ->delegate()
+           ->IsHidden()) {
     view_->Show();
-  else
+  } else if (!visible) {
     view_->Hide();
+  }
 }
 
 void CrossProcessFrameConnector::SetDeviceScaleFactor(float scale_factor) {

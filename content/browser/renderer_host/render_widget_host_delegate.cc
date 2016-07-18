@@ -71,4 +71,8 @@ TextInputManager* RenderWidgetHostDelegate::GetTextInputManager() {
   return nullptr;
 }
 
+bool RenderWidgetHostDelegate::IsHidden() {
+  return false;
+}
+
 }  // namespace content
