@@ -1289,16 +1289,26 @@ gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
   return delta;
 }
 
-void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info) {
+void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
+                                     int inner_viewport_layer_id) {
   for (auto map_entry : layer_id_to_scroll_offset_map_) {
     gfx::ScrollOffset scroll_delta =
         PullDeltaForMainThread(map_entry.second.get());
 
+    gfx::Vector2d scroll_delta_vector(scroll_delta.x(), scroll_delta.y());
+    int layer_id = map_entry.first;
+
     if (!scroll_delta.IsZero()) {
-      LayerTreeHostCommon::ScrollUpdateInfo scroll;
-      scroll.layer_id = map_entry.first;
-      scroll.scroll_delta = gfx::Vector2d(scroll_delta.x(), scroll_delta.y());
-      scroll_info->scrolls.push_back(scroll);
+      if (layer_id == inner_viewport_layer_id) {
+        // Inner (visual) viewport is stored separately.
+        scroll_info->inner_viewport_scroll.layer_id = layer_id;
+        scroll_info->inner_viewport_scroll.scroll_delta = scroll_delta_vector;
+      } else {
+        LayerTreeHostCommon::ScrollUpdateInfo scroll;
+        scroll.layer_id = layer_id;
+        scroll.scroll_delta = scroll_delta_vector;
+        scroll_info->scrolls.push_back(scroll);
+      }
     }
   }
 }

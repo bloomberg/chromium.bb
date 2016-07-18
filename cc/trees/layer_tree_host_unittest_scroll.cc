@@ -93,6 +93,9 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
                                              ->id();
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
+    layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(&LayerTreeHostScrollTestScrollSimple::DidScrollOuterViewport,
+                   base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -138,13 +141,7 @@ class LayerTreeHostScrollTestScrollSimple : public LayerTreeHostScrollTest {
     }
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    num_scrolls_++;
-  }
+  void DidScrollOuterViewport() { num_scrolls_++; }
 
   void AfterTest() override { EXPECT_EQ(1, num_scrolls_); }
 
@@ -167,6 +164,9 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
   void BeginTest() override {
     scroll_layer_ = layer_tree_host()->outer_viewport_scroll_layer();
     scroll_layer_->SetScrollOffset(initial_scroll_);
+    scroll_layer_->set_did_scroll_callback(base::Bind(
+        &LayerTreeHostScrollTestScrollMultipleRedraw::DidScrollOuterViewport,
+        base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -224,13 +224,7 @@ class LayerTreeHostScrollTestScrollMultipleRedraw
     }
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    num_scrolls_++;
-  }
+  void DidScrollOuterViewport() { num_scrolls_++; }
 
   void AfterTest() override { EXPECT_EQ(1, num_scrolls_); }
 
@@ -261,6 +255,10 @@ class LayerTreeHostScrollTestScrollAbortedCommit
   void BeginTest() override {
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
+    layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(
+            &LayerTreeHostScrollTestScrollAbortedCommit::DidScrollOuterViewport,
+            base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -409,13 +407,7 @@ class LayerTreeHostScrollTestScrollAbortedCommit
     }
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    num_impl_scrolls_++;
-  }
+  void DidScrollOuterViewport() { num_impl_scrolls_++; }
 
   void AfterTest() override {
     EXPECT_EQ(3, num_impl_scrolls_);
@@ -616,6 +608,11 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     layer_tree_host()->SetRootLayer(root_layer);
     LayerTreeTest::SetupTree();
     fake_content_layer_client_.set_bounds(root_layer->bounds());
+
+    layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(
+            &LayerTreeHostScrollTestCaseWithChild::DidScrollOuterViewport,
+            base::Unretained(this)));
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
@@ -632,13 +629,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
     final_scroll_offset_ = expected_scroll_layer_->scroll_offset();
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    num_scrolls_++;
-  }
+  void DidScrollOuterViewport() { num_scrolls_++; }
 
   void UpdateLayerTreeHost() override {
     EXPECT_VECTOR_EQ(gfx::Vector2d(),
@@ -882,6 +873,9 @@ class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
   void BeginTest() override {
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
+    layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(&LayerTreeHostScrollTestSimple::DidScrollOuterViewport,
+                   base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -969,13 +963,7 @@ class LayerTreeHostScrollTestSimple : public LayerTreeHostScrollTest {
     }
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    num_scrolls_++;
-  }
+  void DidScrollOuterViewport() { num_scrolls_++; }
 
   void AfterTest() override { EXPECT_EQ(1, num_scrolls_); }
 
@@ -1539,6 +1527,9 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
                                              ->id();
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
+    layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(&LayerTreeHostScrollTestScrollMFBA::DidScrollOuterViewport,
+                   base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1613,13 +1604,7 @@ class LayerTreeHostScrollTestScrollMFBA : public LayerTreeHostScrollTest {
     }
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    num_scrolls_++;
-  }
+  void DidScrollOuterViewport() { num_scrolls_++; }
 
   void AfterTest() override {
     EXPECT_EQ(3, num_commits_);
@@ -1671,6 +1656,10 @@ class LayerTreeHostScrollTestScrollAbortedCommitMFBA
   void BeginTest() override {
     layer_tree_host()->outer_viewport_scroll_layer()->SetScrollOffset(
         initial_scroll_);
+    layer_tree_host()->outer_viewport_scroll_layer()->set_did_scroll_callback(
+        base::Bind(&LayerTreeHostScrollTestScrollAbortedCommitMFBA::
+                       DidScrollOuterViewport,
+                   base::Unretained(this)));
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1834,13 +1823,7 @@ class LayerTreeHostScrollTestScrollAbortedCommitMFBA
     num_draws_++;
   }
 
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float scale,
-                           float top_controls_delta) override {
-    num_impl_scrolls_++;
-  }
+  void DidScrollOuterViewport() { num_impl_scrolls_++; }
 
   void AfterTest() override {
     EXPECT_EQ(3, num_impl_scrolls_);

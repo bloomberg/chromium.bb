@@ -136,6 +136,8 @@ class CC_EXPORT LayerTreeHostCommon {
     // franctional scroll offset.
     gfx::Vector2d scroll_delta;
 
+    ScrollUpdateInfo();
+
     bool operator==(const ScrollUpdateInfo& other) const;
 
     void ToProtobuf(proto::ScrollUpdateInfo* proto) const;
@@ -146,6 +148,12 @@ class CC_EXPORT LayerTreeHostCommon {
 struct CC_EXPORT ScrollAndScaleSet {
   ScrollAndScaleSet();
   ~ScrollAndScaleSet();
+
+  // The inner viewport scroll delta is kept separate since it's special.
+  // Because the inner (visual) viewport's maximum offset depends on the
+  // current page scale, the two must be committed at the same time to prevent
+  // clamping.
+  LayerTreeHostCommon::ScrollUpdateInfo inner_viewport_scroll;
 
   std::vector<LayerTreeHostCommon::ScrollUpdateInfo> scrolls;
   float page_scale_delta;

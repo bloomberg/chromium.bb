@@ -399,7 +399,8 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
   const gfx::ScrollOffset current_scroll_offset(int layer_id) const;
-  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
+  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
+                           int inner_viewport_layer_id);
   void UpdateScrollOffsetMap(ScrollOffsetMap* new_scroll_offset_map,
                              LayerTreeImpl* layer_tree_impl);
   ScrollOffsetMap& scroll_offset_map();

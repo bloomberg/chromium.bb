@@ -1223,16 +1223,17 @@ void GraphicsLayer::removeLinkHighlight(LinkHighlight* linkHighlight)
     updateChildList();
 }
 
-void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isViewport)
+void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isVisualViewport)
 {
     if (m_scrollableArea == scrollableArea)
         return;
 
     m_scrollableArea = scrollableArea;
 
-    // Viewport scrolling may involve pinch zoom and gets routed through
-    // WebViewImpl explicitly rather than via GraphicsLayer::didScroll.
-    if (isViewport)
+    // VisualViewport scrolling may involve pinch zoom and gets routed through
+    // WebViewImpl explicitly rather than via GraphicsLayer::didScroll since it
+    // needs to be set in tandem with the page scale delta.
+    if (isVisualViewport)
         m_layer->layer()->setScrollClient(0);
     else
         m_layer->layer()->setScrollClient(this);

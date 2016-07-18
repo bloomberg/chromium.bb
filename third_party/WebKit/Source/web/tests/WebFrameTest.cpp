@@ -5638,12 +5638,15 @@ TEST_P(ParameterizedWebFrameTest, CompositorScrollIsUserScrollLongPage)
     WebLocalFrameImpl* frameImpl = webViewHelper.webViewImpl()->mainFrameImpl();
     DocumentLoader::InitialScrollState& initialScrollState =
         frameImpl->frame()->loader().documentLoader()->initialScrollState();
+    GraphicsLayer* frameViewLayer = frameImpl->frameView()->layerForScrolling();
 
     EXPECT_FALSE(client.wasFrameScrolled());
     EXPECT_FALSE(initialScrollState.wasScrolledByUser);
 
     // Do a compositor scroll, verify that this is counted as a user scroll.
-    webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(0, 1), WebFloatSize(), 1.7f, 0);
+    frameViewLayer->platformLayer()->setScrollPositionDouble(WebDoublePoint(0, 1));
+    frameViewLayer->didScroll();
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.7f, 0);
     EXPECT_TRUE(client.wasFrameScrolled());
     EXPECT_TRUE(initialScrollState.wasScrolledByUser);
 
@@ -5651,20 +5654,25 @@ TEST_P(ParameterizedWebFrameTest, CompositorScrollIsUserScrollLongPage)
     initialScrollState.wasScrolledByUser = false;
 
     // The page scale 1.0f and scroll.
-    webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(0, 1), WebFloatSize(), 1.0f, 0);
+    frameViewLayer->platformLayer()->setScrollPositionDouble(WebDoublePoint(0, 2));
+    frameViewLayer->didScroll();
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 0);
     EXPECT_TRUE(client.wasFrameScrolled());
     EXPECT_TRUE(initialScrollState.wasScrolledByUser);
     client.reset();
     initialScrollState.wasScrolledByUser = false;
 
     // No scroll event if there is no scroll delta.
+    frameViewLayer->didScroll();
     webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 0);
     EXPECT_FALSE(client.wasFrameScrolled());
     EXPECT_FALSE(initialScrollState.wasScrolledByUser);
     client.reset();
 
     // Non zero page scale and scroll.
-    webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(9, 13), WebFloatSize(), 0.6f, 0);
+    frameViewLayer->platformLayer()->setScrollPositionDouble(WebDoublePoint(9, 15));
+    frameViewLayer->didScroll();
+    webViewHelper.webViewImpl()->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(), 0.6f, 0);
     EXPECT_TRUE(client.wasFrameScrolled());
     EXPECT_TRUE(initialScrollState.wasScrolledByUser);
     client.reset();

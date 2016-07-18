@@ -126,7 +126,6 @@ protected:
 
     bool isForRootLayer(ScrollableArea*) const;
     bool isForMainFrame(ScrollableArea*) const;
-    bool isForViewport(ScrollableArea*) const;
 
     Member<Page> m_page;
 

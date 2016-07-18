@@ -260,6 +260,15 @@ class LayerTreeHostImplTest : public testing::Test,
       times_encountered++;
     }
 
+    if (id == scroll_info.inner_viewport_scroll.layer_id) {
+      if (scroll_delta != scroll_info.inner_viewport_scroll.scroll_delta) {
+        return ::testing::AssertionFailure()
+               << "Expected " << scroll_delta.ToString() << ", not "
+               << scroll_info.inner_viewport_scroll.scroll_delta.ToString();
+      }
+      times_encountered++;
+    }
+
     if (times_encountered != 1)
       return ::testing::AssertionFailure() << "No layer found with id " << id;
     return ::testing::AssertionSuccess();

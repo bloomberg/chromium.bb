@@ -478,6 +478,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // suitable for GPU rasterization before re-enabling it.
   enum { kNumFramesToConsiderBeforeGpuRasterization = 60 };
 
+  void ApplyViewportDeltas(ScrollAndScaleSet* info);
   void InitializeProxy(
       std::unique_ptr<Proxy> proxy,
       std::unique_ptr<BeginFrameSource> external_begin_frame_source);

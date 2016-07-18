@@ -71,6 +71,7 @@
 #include "core/layout/compositing/CompositedSelection.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"
@@ -3408,6 +3409,11 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
 
     frame().loader().saveScrollState();
     frame().loader().client()->didChangeScrollOffset();
+
+    if (scrollType == CompositorScroll && m_frame->isMainFrame()) {
+        if (DocumentLoader* documentLoader = m_frame->loader().documentLoader())
+            documentLoader->initialScrollState().wasScrolledByUser = true;
+    }
 
     if (scrollType != AnchoringScroll)
         clearScrollAnchor();

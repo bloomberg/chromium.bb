@@ -140,6 +140,9 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                                         gfx::Transform(),
                                         render_surface_layer_list) {}
 
+LayerTreeHostCommon::ScrollUpdateInfo::ScrollUpdateInfo()
+    : layer_id(Layer::INVALID_ID) {}
+
 bool LayerTreeHostCommon::ScrollUpdateInfo::operator==(
     const LayerTreeHostCommon::ScrollUpdateInfo& other) const {
   return layer_id == other.layer_id && scroll_delta == other.scroll_delta;

@@ -71,7 +71,6 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -4340,34 +4339,30 @@ void WebViewImpl::initializeLayerTreeView()
 
 void WebViewImpl::applyViewportDeltas(
     const WebFloatSize& visualViewportDelta,
-    const WebFloatSize& layoutViewportDelta,
+    // TODO(bokan): This parameter is to be removed but requires adjusting many
+    // callsites.
+    const WebFloatSize&,
     const WebFloatSize& elasticOverscrollDelta,
     float pageScaleDelta,
     float topControlsShownRatioDelta)
 {
-    if (!mainFrameImpl())
-        return;
-    FrameView* frameView = mainFrameImpl()->frameView();
-    if (!frameView)
-        return;
-
-    ScrollableArea* layoutViewport = frameView->layoutViewportScrollableArea();
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
-    // Store the desired offsets for visual and layout viewports before setting
-    // the top controls ratio since doing so will change the bounds and move the
-    // viewports to keep the offsets valid. The compositor may have already done
-    // that so we don't want to double apply the deltas here.
+    // Store the desired offsets the visual viewport before setting the top
+    // controls ratio since doing so will change the bounds and move the
+    // viewports to keep the offsets valid. The compositor may have already
+    // done that so we don't want to double apply the deltas here.
     FloatPoint visualViewportOffset = visualViewport.visibleRect().location();
     visualViewportOffset.move(
         visualViewportDelta.width,
         visualViewportDelta.height);
-    DoublePoint layoutViewportPosition = layoutViewport->scrollPositionDouble()
-        + DoubleSize(layoutViewportDelta.width, layoutViewportDelta.height);
 
-    topControls().setShownRatio(topControls().shownRatio() + topControlsShownRatioDelta);
+    topControls().setShownRatio(
+        topControls().shownRatio() + topControlsShownRatioDelta);
 
-    setPageScaleFactorAndLocation(pageScaleFactor() * pageScaleDelta, visualViewportOffset);
+    setPageScaleFactorAndLocation(
+        pageScaleFactor() * pageScaleDelta,
+        visualViewportOffset);
 
     if (pageScaleDelta != 1) {
         m_doubleTapZoomPending = false;
@@ -4375,13 +4370,9 @@ void WebViewImpl::applyViewportDeltas(
     }
 
     m_elasticOverscroll += elasticOverscrollDelta;
-    frameView->didUpdateElasticOverscroll();
 
-    if (layoutViewport->scrollPositionDouble() != layoutViewportPosition) {
-        layoutViewport->setScrollPosition(layoutViewportPosition, CompositorScroll);
-        if (DocumentLoader* documentLoader = mainFrameImpl()->frame()->loader().documentLoader())
-            documentLoader->initialScrollState().wasScrolledByUser = true;
-    }
+    if (mainFrameImpl() && mainFrameImpl()->frameView())
+        mainFrameImpl()->frameView()->didUpdateElasticOverscroll();
 }
 
 void WebViewImpl::updateLayerTreeViewport()
