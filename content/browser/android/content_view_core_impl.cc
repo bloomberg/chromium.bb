@@ -1537,7 +1537,11 @@ void ContentViewCoreImpl::OnDragEvent(
     case JNI_DragEvent::ACTION_DRAG_EXITED:
       wcva->OnDragExited();
       break;
-    default:  // STARTED and ENDED. Nothing meaningful to do.
+    case JNI_DragEvent::ACTION_DRAG_ENDED:
+      wcva->OnDragEnded();
+      break;
+    case JNI_DragEvent::ACTION_DRAG_STARTED:
+      // Nothing meaningful to do.
       break;
   }
 }
@@ -1567,6 +1571,15 @@ void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
   Java_ContentViewCore_onShowUnhandledTapUIIfNeeded(
       env, obj.obj(), static_cast<jint>(x_dip * dpi_scale()),
       static_cast<jint>(y_dip * dpi_scale()));
+}
+
+void ContentViewCoreImpl::HidePopupsAndPreserveSelection() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_ContentViewCore_hidePopupsAndPreserveSelection(env, obj.obj());
 }
 
 void ContentViewCoreImpl::OnSmartClipDataExtracted(

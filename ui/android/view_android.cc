@@ -8,12 +8,12 @@
 
 #include "base/android/jni_android.h"
 #include "cc/layers/layer.h"
+#include "ui/android/window_android.h"
+
 
 namespace ui {
 
-using base::android::AttachCurrentThread;
 using base::android::JavaRef;
-using base::android::ScopedJavaLocalRef;
 
 ViewAndroid::ViewAndroid(const JavaRef<jobject>& delegate,
                          WindowAndroid* root_window)
@@ -81,6 +81,15 @@ cc::Layer* ViewAndroid::GetLayer() const {
 
 void ViewAndroid::SetLayer(scoped_refptr<cc::Layer> layer) {
   layer_ = layer;
+}
+
+void ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
+                                   const JavaRef<jobject>& jimage) {
+  WindowAndroid* window_android = GetWindowAndroid();
+  if (!window_android)
+    return;
+
+  window_android->StartDragAndDrop(GetViewAndroidDelegate(), jtext, jimage);
 }
 
 }  // namespace ui

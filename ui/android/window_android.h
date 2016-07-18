@@ -75,6 +75,10 @@ class UI_ANDROID_EXPORT WindowAndroid {
   bool CanRequestPermission(const std::string& permission);
 
   static WindowAndroid* createForTesting();
+  void StartDragAndDrop(
+      const base::android::JavaRef<jobject>& jview_android_delegate,
+      const base::android::JavaRef<jstring>& jtext,
+      const base::android::JavaRef<jobject>& jimage);
 
  private:
   ~WindowAndroid();

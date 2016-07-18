@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
@@ -649,6 +650,15 @@ public class WindowAndroid {
         if (mAnimationPlaceholderView.willNotDraw() != willNotDraw) {
             mAnimationPlaceholderView.setWillNotDraw(willNotDraw);
         }
+    }
+
+    /**
+     * Starts drag and drop operation on a ViewAndroid whose delegate is viewAndroidDelegate.
+     */
+    @CalledByNative
+    private void startDragAndDrop(
+            ViewAndroidDelegate viewAndroidDelegate, String text, Bitmap shadowImage) {
+        viewAndroidDelegate.startDragAndDrop(text, shadowImage);
     }
 
     private native long nativeInit();

@@ -53,6 +53,9 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void AddChild(ViewAndroid* child);
   void RemoveChild(ViewAndroid* child);
 
+  void StartDragAndDrop(const base::android::JavaRef<jstring>& jtext,
+                        const base::android::JavaRef<jobject>& jimage);
+
  private:
   ViewAndroid* parent_;
   std::list<ViewAndroid*> children_;

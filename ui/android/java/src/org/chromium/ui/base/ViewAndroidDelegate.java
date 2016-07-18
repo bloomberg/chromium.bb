@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import android.graphics.Bitmap;
 import android.view.View;
 
 /**
@@ -31,4 +32,11 @@ public interface ViewAndroidDelegate {
      * @param anchorView The anchor view that needs to be released.
      */
     void releaseAnchorView(View anchorView);
+
+    /**
+     * Drag the text out of current view.
+     * @param text The dragged text.
+     * @param shadowImage The shadow image for the dragged text.
+     */
+    void startDragAndDrop(String text, Bitmap shadowImage);
 }

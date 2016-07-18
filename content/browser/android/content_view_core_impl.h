@@ -302,6 +302,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
 
+  void HidePopupsAndPreserveSelection();
+
   void OnSmartClipDataExtracted(const base::string16& text,
                                 const base::string16& html,
                                 const gfx::Rect& clip_rect);

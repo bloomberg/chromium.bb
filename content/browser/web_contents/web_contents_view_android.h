@@ -86,6 +86,7 @@ class WebContentsViewAndroid : public WebContentsView,
   void OnPerformDrop(DropData* drop_data,
                      const gfx::Point& location,
                      const gfx::Point& screen_location);
+  void OnDragEnded();
 
  private:
   // The WebContents whose contents we display.

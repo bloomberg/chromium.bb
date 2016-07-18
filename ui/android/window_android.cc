@@ -17,6 +17,7 @@
 namespace ui {
 
 using base::android::AttachCurrentThread;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
 WindowAndroid::WindowAndroid(JNIEnv* env, jobject obj) : compositor_(NULL) {
@@ -140,6 +141,16 @@ bool WindowAndroid::CanRequestPermission(const std::string& permission) {
       env,
       GetJavaObject().obj(),
       base::android::ConvertUTF8ToJavaString(env, permission).obj());
+}
+
+void WindowAndroid::StartDragAndDrop(
+    const JavaRef<jobject>& jview_android_delegate,
+    const JavaRef<jstring>& jtext,
+    const JavaRef<jobject>& jimage) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_WindowAndroid_startDragAndDrop(env, GetJavaObject().obj(),
+                                      jview_android_delegate.obj(), jtext.obj(),
+                                      jimage.obj());
 }
 
 // ----------------------------------------------------------------------------

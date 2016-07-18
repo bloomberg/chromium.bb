@@ -4,6 +4,8 @@
 
 #include "content/browser/web_contents/web_contents_view_android.h"
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
@@ -14,6 +16,13 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/drop_data.h"
+#include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image_skia.h"
+
+using base::android::AttachCurrentThread;
+using base::android::ConvertUTF16ToJavaString;
+using base::android::JavaRef;
+using base::android::ScopedJavaLocalRef;
 
 namespace content {
 
@@ -199,7 +208,22 @@ void WebContentsViewAndroid::StartDragging(
     const gfx::ImageSkia& image,
     const gfx::Vector2d& image_offset,
     const DragEventSourceInfo& event_info) {
-  NOTIMPLEMENTED();
+  if (drop_data.text.is_null())
+    return;
+
+  gfx::NativeView native_view = GetNativeView();
+  if (!native_view)
+    return;
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jtext =
+      ConvertUTF16ToJavaString(env, drop_data.text.string());
+
+  native_view->StartDragAndDrop(jtext,
+                                gfx::ConvertToJavaBitmap(image.bitmap()));
+
+  if (content_view_core_)
+    content_view_core_->HidePopupsAndPreserveSelection();
 }
 
 void WebContentsViewAndroid::UpdateDragCursor(blink::WebDragOperation op) {
@@ -210,14 +234,20 @@ void WebContentsViewAndroid::OnDragEntered(
     const std::vector<DropData::Metadata>& metadata,
     const gfx::Point& location,
     const gfx::Point& screen_location) {
+  blink::WebDragOperationsMask allowed_ops =
+      static_cast<blink::WebDragOperationsMask>(blink::WebDragOperationCopy |
+                                                blink::WebDragOperationMove);
   web_contents_->GetRenderViewHost()->DragTargetDragEnterWithMetaData(
-      metadata, location, screen_location, blink::WebDragOperationCopy, 0);
+      metadata, location, screen_location, allowed_ops, 0);
 }
 
 void WebContentsViewAndroid::OnDragUpdated(const gfx::Point& location,
                                            const gfx::Point& screen_location) {
+  blink::WebDragOperationsMask allowed_ops =
+      static_cast<blink::WebDragOperationsMask>(blink::WebDragOperationCopy |
+                                                blink::WebDragOperationMove);
   web_contents_->GetRenderViewHost()->DragTargetDragOver(
-      location, screen_location, blink::WebDragOperationCopy, 0);
+      location, screen_location, allowed_ops, 0);
 }
 
 void WebContentsViewAndroid::OnDragExited() {
@@ -230,6 +260,10 @@ void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
   web_contents_->GetRenderViewHost()->FilterDropData(drop_data);
   web_contents_->GetRenderViewHost()->DragTargetDrop(*drop_data, location,
                                                      screen_location, 0);
+}
+
+void WebContentsViewAndroid::OnDragEnded() {
+  web_contents_->GetRenderViewHost()->DragSourceSystemDragEnded();
 }
 
 void WebContentsViewAndroid::GotFocus() {

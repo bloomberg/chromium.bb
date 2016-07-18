@@ -47,6 +47,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
@@ -155,6 +156,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      * that clients can safely hold to instances of this class.
      */
     private static class ContentViewAndroidDelegate implements ViewAndroidDelegate {
+        // TODO(hush): use View#DRAG_FLAG_GLOBAL when Chromium starts to build with API 24.
+        private static final int DRAG_FLAG_GLOBAL = 1 << 8;
         /**
          * Represents the position of an anchor view.
          */
@@ -296,6 +299,23 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                             position.mX, position.mY, position.mWidth, position.mHeight);
                 }
             }
+        }
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public void startDragAndDrop(String text, Bitmap shadowImage) {
+            ClipData data = ClipData.newPlainText(null, text);
+
+            ViewGroup containerView = mCurrentContainerView.get();
+            if (containerView == null) return;
+
+            ImageView imageView = new ImageView(containerView.getContext());
+            imageView.setImageBitmap(shadowImage);
+            imageView.layout(0, 0, shadowImage.getWidth(), shadowImage.getHeight());
+
+            // TODO(hush): use View#startDragAndDrop when Chromium starts to build with API 24.
+            containerView.startDrag(
+                    data, new View.DragShadowBuilder(imageView), null, DRAG_FLAG_GLOBAL);
         }
     }
 
@@ -1466,6 +1486,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         hidePopups();
     }
 
+    @CalledByNative
     private void hidePopupsAndPreserveSelection() {
         mUnselectAllOnActionModeDismiss = false;
         hidePopups();
@@ -3285,12 +3306,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     public boolean onDragEvent(DragEvent event) {
         if (mNativeContentViewCore == 0) return false;
 
-
         ClipDescription clipDescription = event.getClipDescription();
-        if (clipDescription == null && event.getAction() != DragEvent.ACTION_DRAG_ENDED) {
-            Log.e(TAG, "Null clipDescription when the drag is not ended.");
-            return false;
-        }
 
         // text/* will match text/uri-list, text/html, text/plain.
         String[] mimeTypes =
