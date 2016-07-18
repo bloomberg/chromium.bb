@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string_piece.h"
+#include "base/values.h"
 #include "tools/gn/target.h"
 #include "tools/gn/unique_vector.h"
 
@@ -179,8 +180,13 @@ bool FilterPatternsFromString(const BuildSettings* build_settings,
 //
 // The vector will be modified so that only the printed targets will remain.
 void FilterAndPrintTargets(bool indent, std::vector<const Target*>* targets);
+void FilterAndPrintTargets(std::vector<const Target*>* targets,
+                           base::ListValue* out);
+
 void FilterAndPrintTargetSet(bool indent,
                              const std::set<const Target*>& targets);
+void FilterAndPrintTargetSet(const std::set<const Target*>& targets,
+                             base::ListValue* out);
 
 // Extra help from command_check.cc
 extern const char kNoGnCheck_Help[];
