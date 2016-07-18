@@ -54,6 +54,10 @@ const base::FilePath TemporaryFileForFilename(const base::FilePath& filename) {
 
 }  // namespace
 
+using ::google::protobuf::RepeatedField;
+using ::google::protobuf::RepeatedPtrField;
+using ::google::protobuf::int32;
+
 std::ostream& operator<<(std::ostream& os, const V4Store& store) {
   os << store.DebugString();
   return os;
@@ -103,24 +107,29 @@ void V4Store::ApplyUpdate(
       new V4Store(this->task_runner_, this->store_path_));
   new_store->state_ = response->new_client_state();
   // TODO(vakh):
-  // 1. Merge the old store and the new update in new_store.
+  // 1. Done: Merge the old store and the new update in new_store.
   // 2. Create a ListUpdateResponse containing RICE encoded hash-prefixes and
   // response_type as FULL_UPDATE, and write that to disk.
   // 3. Remove this if condition after completing 1. and 2.
   HashPrefixMap hash_prefix_map;
   ApplyUpdateResult apply_update_result;
   if (response->response_type() == ListUpdateResponse::PARTIAL_UPDATE) {
-    for (const auto& removal : response->removals()) {
+    const RepeatedField<int32>* raw_removals = nullptr;
+    size_t removals_size = response->removals_size();
+    DCHECK_LE(removals_size, 1u);
+    if (removals_size == 1) {
+      const ThreatEntrySet& removal = response->removals().Get(0);
       // TODO(vakh): Allow other compression types.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=624567
       DCHECK_EQ(RAW, removal.compression_type());
+      raw_removals = &removal.raw_indices().indices();
     }
 
     apply_update_result = UpdateHashPrefixMapFromAdditions(
         response->additions(), &hash_prefix_map);
     if (apply_update_result == APPLY_UPDATE_SUCCESS) {
-      apply_update_result =
-          new_store->MergeUpdate(hash_prefix_map_, hash_prefix_map);
+      apply_update_result = new_store->MergeUpdate(
+          hash_prefix_map_, hash_prefix_map, raw_removals);
     }
     // TODO(vakh): Generate the updated ListUpdateResponse to write to disk.
   } else if (response->response_type() == ListUpdateResponse::FULL_UPDATE) {
@@ -149,7 +158,7 @@ void V4Store::ApplyUpdate(
 
 // static
 ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
-    const ::google::protobuf::RepeatedPtrField<ThreatEntrySet>& additions,
+    const RepeatedPtrField<ThreatEntrySet>& additions,
     HashPrefixMap* additions_map) {
   for (const auto& addition : additions) {
     // TODO(vakh): Allow other compression types.
@@ -238,8 +247,10 @@ void V4Store::ReserveSpaceInPrefixMap(const HashPrefixMap& other_prefixes_map,
   }
 }
 
-ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
-                                       const HashPrefixMap& additions_map) {
+ApplyUpdateResult V4Store::MergeUpdate(
+    const HashPrefixMap& old_prefixes_map,
+    const HashPrefixMap& additions_map,
+    const RepeatedField<int32>* raw_removals) {
   DCHECK(hash_prefix_map_.empty());
   hash_prefix_map_.clear();
   ReserveSpaceInPrefixMap(old_prefixes_map, &hash_prefix_map_);
@@ -261,6 +272,13 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
   // The two constructs to merge are maps: old_prefixes_map, additions_map.
   // At least one of the maps still has elements that need to be merged into the
   // new store.
+
+  // Keep track of the number of elements picked from the old map. This is used
+  // to determine which elements to drop based on the raw_removals. Note that
+  // picked is not the same as merged. A picked element isn't merged if its
+  // index is on the raw_removals list.
+  int total_picked_from_old = 0;
+  const int* removals_iter = raw_removals ? raw_removals->begin() : nullptr;
   while (old_has_unmerged || additions_has_unmerged) {
     // If the same hash prefix appears in the existing store and the additions
     // list, something is clearly wrong. Discard the update.
@@ -280,12 +298,20 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
     if (pick_from_old) {
       next_smallest_prefix_size = next_smallest_prefix_old.size();
 
-      // Append the smallest hash to the appropriate list.
-      hash_prefix_map_[next_smallest_prefix_size] += next_smallest_prefix_old;
-
       // Update the iterator map, which means that we have merged one hash
       // prefix of size |next_size_for_old| from the old store.
       old_iterator_map[next_smallest_prefix_size] += next_smallest_prefix_size;
+
+      if (!raw_removals || removals_iter == raw_removals->end() ||
+          *removals_iter != total_picked_from_old) {
+        // Append the smallest hash to the appropriate list.
+        hash_prefix_map_[next_smallest_prefix_size] += next_smallest_prefix_old;
+      } else {
+        // Element not added to new map. Move the removals iterator forward.
+        removals_iter++;
+      }
+
+      total_picked_from_old++;
 
       // Find the next smallest unmerged element in the old store's map.
       old_has_unmerged = GetNextSmallestUnmergedPrefix(
@@ -309,7 +335,9 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
     }
   }
 
-  return APPLY_UPDATE_SUCCESS;
+  return (!raw_removals || removals_iter == raw_removals->end())
+             ? APPLY_UPDATE_SUCCESS
+             : REMOVALS_INDEX_TOO_LARGE;
 }
 
 StoreReadResult V4Store::ReadFromDisk() {

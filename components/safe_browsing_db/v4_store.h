@@ -128,6 +128,10 @@ enum ApplyUpdateResult {
   // The server sent a response_type that the client did not expect.
   UNEXPECTED_RESPONSE_TYPE_FAILURE = 6,
 
+  // One of more index(es) in removals field of the response is greater than
+  // the number of hash prefixes currently in the (old) store.
+  REMOVALS_INDEX_TOO_LARGE = 7,
+
   // Memory space for histograms is determined by the max.  ALWAYS
   // ADD NEW VALUES BEFORE THIS ONE.
   APPLY_UPDATE_RESULT_MAX
@@ -197,6 +201,16 @@ class V4Store {
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestMergeUpdatesFailsForRepeatedHashPrefix);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestMergeUpdatesFailsWhenRemovalsIndexTooLarge);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesRemovesOnlyElement);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesRemovesFirstElement);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesRemovesMiddleElement);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest, TestMergeUpdatesRemovesLastElement);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestMergeUpdatesRemovesWhenOldHasDifferentSizes);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
+                           TestMergeUpdatesRemovesMultipleAcrossDifferentSizes);
+  FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestReadFullResponseWithValidHashPrefixMap);
   FRIEND_TEST_ALL_PREFIXES(V4StoreTest,
                            TestReadFullResponseWithInvalidHashPrefixMap);
@@ -238,9 +252,11 @@ class V4Store {
 
   // Merges the prefix map from the old store (|old_hash_prefix_map|) and the
   // update (additions_map) to populate the prefix map for the current store.
-  // TODO(vakh): Process removals also.
+  // The indices in the |raw_removals| list, which may be NULL, are not merged.
   ApplyUpdateResult MergeUpdate(const HashPrefixMap& old_hash_prefix_map,
-                                const HashPrefixMap& additions_map);
+                                const HashPrefixMap& additions_map,
+                                const ::google::protobuf::RepeatedField<
+                                    ::google::protobuf::int32>* raw_removals);
 
   // Reads the state of the store from the file on disk and returns the reason
   // for the failure or reports success.
