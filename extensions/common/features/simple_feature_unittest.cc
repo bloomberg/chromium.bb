@@ -36,9 +36,7 @@ struct IsAvailableTestData {
 
 template <class FeatureClass>
 SimpleFeature* CreateFeature() {
-  SimpleFeature* feature = new FeatureClass();
-  feature->set_check_channel(true);
-  return feature;
+  return new FeatureClass();
 }
 
 Feature::AvailabilityResult IsAvailableInChannel(
@@ -50,7 +48,6 @@ Feature::AvailabilityResult IsAvailableInChannel(
 
   base::DictionaryValue feature_value;
   feature_value.SetString("channel", channel);
-  feature.set_check_channel(true);
   feature.Parse(&feature_value);
 
   return feature

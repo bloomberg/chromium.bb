@@ -12,6 +12,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/values.h"
+#include "components/version_info/version_info.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/socket_permission_request.h"
 #include "extensions/common/api/messaging/message.h"
@@ -44,6 +45,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::RunLocation,
                           extensions::UserScript::RUN_LOCATION_LAST - 1)
 
 IPC_ENUM_TRAITS_MAX_VALUE(HostID::HostType, HostID::HOST_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(version_info::Channel, version_info::Channel::STABLE)
 
 // Parameters structure for ExtensionHostMsg_AddAPIActionToActivityLog and
 // ExtensionHostMsg_AddEventToActivityLog.
@@ -590,7 +592,7 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_DispatchOnDisconnect,
 
 // Informs the renderer what channel (dev, beta, stable, etc) is running.
 IPC_MESSAGE_CONTROL1(ExtensionMsg_SetChannel,
-                     int /* channel */)
+                     version_info::Channel /* channel */)
 
 // Notify the renderer that its window has closed.
 IPC_MESSAGE_ROUTED0(ExtensionMsg_AppWindowClosed)

@@ -65,9 +65,7 @@ const char kThumbsWhiteListedExtension[] = "khopmbdjffemhegeeobelklnbglcdgfh";
 
 template <class FeatureClass>
 SimpleFeature* CreateFeature() {
-  SimpleFeature* feature = new FeatureClass();
-  feature->set_check_channel(true);
-  return feature;
+  return new FeatureClass();
 }
 
 // Mirrors version_info::Channel for histograms.

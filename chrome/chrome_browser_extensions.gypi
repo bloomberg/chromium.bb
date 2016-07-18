@@ -566,8 +566,6 @@
       'browser/extensions/chrome_extensions_browser_client.h',
       'browser/extensions/chrome_mojo_service_registration.cc',
       'browser/extensions/chrome_mojo_service_registration.h',
-      'browser/extensions/chrome_notification_observer.cc',
-      'browser/extensions/chrome_notification_observer.h',
       'browser/extensions/chrome_process_manager_delegate.cc',
       'browser/extensions/chrome_process_manager_delegate.h',
       'browser/extensions/chrome_requirements_checker.cc',

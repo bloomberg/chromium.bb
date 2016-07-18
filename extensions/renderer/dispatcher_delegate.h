@@ -8,17 +8,12 @@
 #include <set>
 #include <string>
 
-namespace blink {
-class WebFrame;
-}
-
 namespace extensions {
 class Dispatcher;
 class Extension;
 class ModuleSystem;
 class ResourceBundleSourceMap;
 class ScriptContext;
-class URLPatternSet;
 
 // Base class and default implementation for an extensions::Dispacher delegate.
 // DispatcherDelegate can be used to override and extend the behavior of the
@@ -47,11 +42,6 @@ class DispatcherDelegate {
   // the Dispatcher.
   virtual void OnActiveExtensionsUpdated(
       const std::set<std::string>& extension_ids) {}
-
-  // Sets the current Chrome channel.
-  // TODO(rockot): This doesn't belong in a generic extensions system interface.
-  // See http://crbug.com/368431.
-  virtual void SetChannel(int channel) {}
 };
 
 }  // namespace extensions

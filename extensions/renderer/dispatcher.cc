@@ -41,6 +41,7 @@
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/behavior_feature.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/feature_util.h"
 #include "extensions/common/manifest.h"
@@ -1110,8 +1111,13 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
       NULL, extension_id, module_name, function_name, args, user_gesture);
 }
 
-void Dispatcher::OnSetChannel(int channel) {
-  delegate_->SetChannel(channel);
+void Dispatcher::OnSetChannel(version_info::Channel channel) {
+  SetCurrentChannel(channel);
+  if (feature_util::ExtensionServiceWorkersEnabled()) {
+    // chrome-extension: resources should be allowed to register ServiceWorkers.
+    blink::WebSecurityPolicy::registerURLSchemeAsAllowingServiceWorkers(
+        blink::WebString::fromUTF8(extensions::kExtensionScheme));
+  }
 }
 
 void Dispatcher::OnSetScriptingWhitelist(

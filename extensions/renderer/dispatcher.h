@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
+#include "components/version_info/version_info.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension.h"
@@ -179,7 +180,7 @@ class Dispatcher : public content::RenderThreadObserver,
                        const std::string& function_name,
                        const base::ListValue& args,
                        bool user_gesture);
-  void OnSetChannel(int channel);
+  void OnSetChannel(version_info::Channel channel);
   void OnSetScriptingWhitelist(
       const ExtensionsClient::ScriptingWhitelist& extension_ids);
   void OnSetSystemFont(const std::string& font_family,

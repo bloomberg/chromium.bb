@@ -28,4 +28,15 @@
     LOG(FATAL) << message_copy;                                                \
   }
 
+namespace extensions {
+namespace feature_util {
+
+// Returns true if service workers are enabled for extension schemes.
+// TODO(lazyboy): Remove this function once extension Service Workers
+// are enabled by default for a while.
+bool ExtensionServiceWorkersEnabled();
+
+}  // namespace feature_util
+}  // namespace extensions
+
 #endif  // EXTENSIONS_COMMON_FEATURES_FEATURE_UTIL_H_

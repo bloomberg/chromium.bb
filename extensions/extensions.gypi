@@ -94,6 +94,7 @@
       'common/features/feature_provider.h',
       'common/features/feature_channel.cc',
       'common/features/feature_channel.h',
+      'common/features/feature_util.cc',
       'common/features/feature_util.h',
       'common/features/json_feature_provider_source.cc',
       'common/features/json_feature_provider_source.h',

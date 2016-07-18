@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/chrome_notification_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
 
 namespace base {
@@ -125,9 +124,6 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
 
  private:
   friend struct base::DefaultLazyInstanceTraits<ChromeExtensionsBrowserClient>;
-
-  // Observer for Chrome-specific notifications.
-  ChromeNotificationObserver notification_observer_;
 
   // Support for ProcessManager.
   std::unique_ptr<ChromeProcessManagerDelegate> process_manager_delegate_;

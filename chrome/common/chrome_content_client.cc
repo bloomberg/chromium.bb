@@ -66,7 +66,7 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/common/extensions/extension_process_policy.h"
-#include "chrome/common/extensions/features/feature_util.h"
+#include "extensions/common/features/feature_util.h"
 #endif
 
 #if defined(ENABLE_PLUGINS)

@@ -16,6 +16,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/extensions_client.h"
+#include "extensions/common/features/feature_channel.h"
 #include "ui/base/webui/web_ui_util.h"
 
 using content::BrowserContext;
@@ -50,6 +51,10 @@ void RendererStartupHelper::Observe(
     process->Send(
         new ExtensionMsg_SetActivityLoggingEnabled(activity_logging_enabled));
   }
+
+  // Extensions need to know the channel for API restrictions. Send the channel
+  // to all renderers, as the non-extension renderers may have content scripts.
+  process->Send(new ExtensionMsg_SetChannel(GetCurrentChannel()));
 
   // Platform apps need to know the system font.
   // TODO(dbeam): this is not the system font in all cases.

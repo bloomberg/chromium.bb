@@ -427,7 +427,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
     return CreateAvailability(MISSING_COMMAND_LINE_SWITCH, type);
   }
 
-  if (channel_ && check_channel_ && *channel_ < GetCurrentChannel())
+  if (channel_ && *channel_ < GetCurrentChannel())
     return CreateAvailability(UNSUPPORTED_CHANNEL, *channel_);
 
   return CheckDependencies(base::Bind(&IsAvailableToManifestForBind,
