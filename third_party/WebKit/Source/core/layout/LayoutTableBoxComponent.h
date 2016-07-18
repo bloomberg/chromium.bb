@@ -10,12 +10,14 @@
 
 namespace blink {
 
+class LayoutTable;
+
 // Common super class for LayoutTableCol, LayoutTableSection and LayoutTableRow.
 class CORE_EXPORT LayoutTableBoxComponent : public LayoutBox {
 public:
     bool backgroundChangedSinceLastPaintInvalidation() const { return m_backgroundChangedSinceLastPaintInvalidation; }
     void clearBackgroundChangedSinceLastPaintInvalidation() { m_backgroundChangedSinceLastPaintInvalidation = false; }
-
+    static bool doCellsHaveDirtyWidth(const LayoutObject& tablePart, const LayoutTable&, const StyleDifference&, const ComputedStyle& oldStyle);
 protected:
     explicit LayoutTableBoxComponent(Element* element)
         : LayoutBox(element)

@@ -119,17 +119,23 @@ LayoutTableSection::~LayoutTableSection()
 
 void LayoutTableSection::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
+    DCHECK(style()->display() == TABLE_FOOTER_GROUP || style()->display() == TABLE_ROW_GROUP || style()->display() == TABLE_HEADER_GROUP);
+
     LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
-    // If border was changed, notify table.
+    if (!oldStyle)
+        return;
+
     LayoutTable* table = this->table();
-    if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border())
+    if (!table)
+        return;
+
+    if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle->border() != style()->border())
         table->invalidateCollapsedBorders();
 
-    if (table && oldStyle && diff.needsFullLayout() && needsLayout() && table->collapseBorders() && oldStyle->border() != style()->border()) {
+    if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff, *oldStyle))
         markAllCellsWidthsDirtyAndOrNeedsLayout(MarkDirtyAndNeedsLayout);
-    }
 }
 
 void LayoutTableSection::willBeRemovedFromTree()

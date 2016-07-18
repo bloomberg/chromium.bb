@@ -60,34 +60,39 @@ void LayoutTableRow::styleDidChange(StyleDifference diff, const ComputedStyle* o
     LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
 
-    if (section() && oldStyle && style()->logicalHeight() != oldStyle->logicalHeight())
+    if (!oldStyle)
+        return;
+
+    if (section() && style()->logicalHeight() != oldStyle->logicalHeight())
         section()->rowLogicalHeightChanged(this);
 
-    // If border was changed, notify table.
-    if (parent()) {
-        LayoutTable* table = this->table();
-        if (table && !table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle && oldStyle->border() != style()->border())
-            table->invalidateCollapsedBorders();
+    if (!parent())
+        return;
+    LayoutTable* table = this->table();
+    if (!table)
+        return;
 
-        if (table && oldStyle && diff.needsFullLayout() && needsLayout() && table->collapseBorders() && oldStyle->border().sizeEquals(style()->border())) {
-            // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
-            // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
-            // itself.
-            for (LayoutBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
-                if (!childBox->isTableCell())
-                    continue;
-                // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
-                childBox->setChildNeedsLayout();
-                childBox->setPreferredLogicalWidthsDirty(MarkOnlyThis);
-            }
-            // Most table componenents can rely on LayoutObject::styleDidChange
-            // to mark the container chain dirty. But LayoutTableSection seems
-            // to never clear its dirty bit, which stops the propagation. So
-            // anything under LayoutTableSection has to restart the propagation
-            // at the table.
-            // TODO(dgrogan): Make LayoutTableSection clear its dirty bit.
-            table->setPreferredLogicalWidthsDirty();
+    if (!table->selfNeedsLayout() && !table->normalChildNeedsLayout() && oldStyle->border() != style()->border())
+        table->invalidateCollapsedBorders();
+
+    if (LayoutTableBoxComponent::doCellsHaveDirtyWidth(*this, *table, diff, *oldStyle)) {
+        // If the border width changes on a row, we need to make sure the cells in the row know to lay out again.
+        // This only happens when borders are collapsed, since they end up affecting the border sides of the cell
+        // itself.
+        for (LayoutBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
+            if (!childBox->isTableCell())
+                continue;
+            // TODO(dgrogan) Add a layout test showing that setChildNeedsLayout is needed instead of setNeedsLayout.
+            childBox->setChildNeedsLayout();
+            childBox->setPreferredLogicalWidthsDirty(MarkOnlyThis);
         }
+        // Most table componenents can rely on LayoutObject::styleDidChange
+        // to mark the container chain dirty. But LayoutTableSection seems
+        // to never clear its dirty bit, which stops the propagation. So
+        // anything under LayoutTableSection has to restart the propagation
+        // at the table.
+        // TODO(dgrogan): Make LayoutTableSection clear its dirty bit.
+        table->setPreferredLogicalWidthsDirty();
     }
 }
 

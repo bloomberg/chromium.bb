@@ -126,10 +126,10 @@ public:
 
     bool sizeEquals(const BorderData& o) const
     {
-        return borderLeftWidth() != o.borderLeftWidth()
-            || borderTopWidth() != o.borderTopWidth()
-            || borderRightWidth() != o.borderRightWidth()
-            || borderBottomWidth() != o.borderBottomWidth();
+        return borderLeftWidth() == o.borderLeftWidth()
+            && borderTopWidth() == o.borderTopWidth()
+            && borderRightWidth() == o.borderRightWidth()
+            && borderBottomWidth() == o.borderBottomWidth();
     }
 
     const BorderValue& left() const { return m_left; }
