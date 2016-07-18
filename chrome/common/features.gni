@@ -6,7 +6,6 @@
 # Please keep in sync!
 
 import("//build/config/chromecast_build.gni")
-import("//build/config/compiler/compiler.gni")
 
 declare_args() {
   enable_google_now = !is_ios && !is_android && !is_chromecast
@@ -30,9 +29,6 @@ declare_args() {
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
-
-  # Indicates if the build is using PGO.
-  pgo_build = chrome_pgo_phase > 0
 }
 
 chrome_grit_defines = [

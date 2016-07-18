@@ -21,11 +21,6 @@
         }, {
           'enable_background%': 1,
           'enable_google_now%': 1,
-        }],
-        ['chrome_pgo_phase!=0', {
-          'pgo_build%': 1,
-        }, {
-          'pgo_build%': 0,
         }]
       ],
 
@@ -40,7 +35,6 @@
     'enable_google_now%': '<(enable_google_now)',
     'android_java_ui%': '<(android_java_ui)',
     'use_vulcanize%': '<(use_vulcanize)',
-    'pgo_build%': '<(pgo_build)',
 
     # GN only, but defined here so BUILDFLAG works without ifdef.
     'enable_package_mash_services%': 0,

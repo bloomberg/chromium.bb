@@ -47,7 +47,6 @@ buildflag_header("features") {
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
     "ENABLE_PACKAGE_MASH_SERVICES=$enable_package_mash_services",
     "USE_VULCANIZE=$use_vulcanize",
-    "PGO_BUILD=$pgo_build",
   ]
 }
 

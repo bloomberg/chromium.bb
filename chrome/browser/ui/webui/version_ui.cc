@@ -136,11 +136,9 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #if defined(__clang__)
   html_source->AddString("compiler", "clang");
 #elif defined(_MSC_VER) && _MSC_VER == 1900
-#if BUILDFLAG(PGO_BUILD)
-  html_source->AddString("compiler", "MSVC 2015 (PGO)");
-#else
   html_source->AddString("compiler", "MSVC 2015");
-#endif
+#elif defined(_MSC_VER) && _MSC_VER == 1800
+  html_source->AddString("compiler", "MSVC 2013");
 #elif defined(_MSC_VER)
 #error "Unsupported version of MSVC."
 #else
