@@ -56,6 +56,9 @@ base::LazyInstance<base::Time>::Leaky g_browser_main_entry_point_time =
 
 StartupTemperature g_startup_temperature = UNDETERMINED_STARTUP_TEMPERATURE;
 
+constexpr int kUndeterminedStartupsWithCurrentVersion = 0;
+int g_startups_with_current_version = kUndeterminedStartupsWithCurrentVersion;
+
 #if defined(OS_WIN)
 
 // These values are taken from the Startup.BrowserMessageLoopStartHardFaultCount
@@ -108,35 +111,35 @@ typedef NTSTATUS (WINAPI *NtQuerySystemInformationPtr)(
   UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, 1,                  \
                               base::TimeDelta::FromDays(30).InMinutes(), 50)
 
-// Helper macro for splitting out an UMA histogram based on cold or warm start.
+// Helper macro for splitting out an UMA histogram based on startup temperature.
 // |type| is the histogram type, and corresponds to an UMA macro like
 // UMA_HISTOGRAM_LONG_TIMES. It must itself be a macro that only takes two
 // parameters.
 // |basename| is the basename of the histogram. A histogram of this name will
-// always be recorded to. If the startup is either cold or warm then a value
-// will also be recorded to the histogram with name |basename| and suffix
-// ".ColdStart" or ".WarmStart", as appropriate.
+// always be recorded to. If the startup temperature is known then a value will
+// also be recorded to the histogram with name |basename| and suffix
+// ".ColdStart", ".WarmStart" or ".LukewarmStartup" as appropriate.
 // |value_expr| is an expression evaluating to the value to be recorded. This
 // will be evaluated exactly once and cached, so side effects are not an issue.
 // A metric logged using this macro must have an affected-histogram entry in the
 // definition of the StartupTemperature suffix in histograms.xml.
 // This macro must only be used in code that runs after |g_startup_temperature|
 // has been initialized.
-#define UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(type, basename, value_expr)    \
-  {                                                                           \
-    const auto kValue = value_expr;                                           \
+#define UMA_HISTOGRAM_WITH_TEMPERATURE(type, basename, value_expr)            \
+  do {                                                                        \
+    const auto value = value_expr;                                            \
     /* Always record to the base histogram. */                                \
-    type(basename, kValue);                                                   \
+    type(basename, value);                                                    \
     /* Record to the cold/warm/lukewarm suffixed histogram as appropriate. */ \
     switch (g_startup_temperature) {                                          \
       case COLD_STARTUP_TEMPERATURE:                                          \
-        type(basename ".ColdStartup", kValue);                                \
+        type(basename ".ColdStartup", value);                                 \
         break;                                                                \
       case WARM_STARTUP_TEMPERATURE:                                          \
-        type(basename ".WarmStartup", kValue);                                \
+        type(basename ".WarmStartup", value);                                 \
         break;                                                                \
       case LUKEWARM_STARTUP_TEMPERATURE:                                      \
-        type(basename ".LukewarmStartup", kValue);                            \
+        type(basename ".LukewarmStartup", value);                             \
         break;                                                                \
       case UNDETERMINED_STARTUP_TEMPERATURE:                                  \
         break;                                                                \
@@ -144,20 +147,79 @@ typedef NTSTATUS (WINAPI *NtQuerySystemInformationPtr)(
         NOTREACHED();                                                         \
         break;                                                                \
     }                                                                         \
-  }
+  } while (0)
 
-#define UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(                     \
-    type, basename, begin_ticks, end_ticks)                                   \
-  {                                                                           \
-    UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(type, basename,                    \
-                                           end_ticks - begin_ticks)           \
+// Records |value_expr| to the histogram with name |basename| suffixed with the
+// number of startups with the current version in addition to all histograms
+// recorded by UMA_HISTOGRAM_WITH_TEMPERATURE.
+// A metric logged using this macro must have affected-histogram entries in the
+// definition of the StartupTemperature and SameVersionStartupCounts suffixes in
+// histograms.xml.
+// This macro must only be used in code that runs after |g_startup_temperature|
+// and |g_startups_with_current_version| have been initialized.
+#define UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(type, basename, \
+                                                              value_expr)     \
+  do {                                                                        \
+    const auto value_same_version_count = value_expr;                         \
+    /* Record to the base histogram and to a histogram suffixed with the      \
+       startup temperature. */                                                \
+    UMA_HISTOGRAM_WITH_TEMPERATURE(type, basename, value_same_version_count); \
+    /* Record to a histogram suffixed with the number of startups for the     \
+       current version. Since the number of startups for the current version  \
+       is set once per process, using a histogram macro which expects a       \
+       constant histogram name across invocations is fine. */                 \
+    const auto same_version_startup_count_suffix =                            \
+        GetSameVersionStartupCountSuffix();                                   \
+    if (!same_version_startup_count_suffix.empty()) {                         \
+      type(basename + same_version_startup_count_suffix,                      \
+           value_same_version_count);                                         \
+    }                                                                         \
+  } while (0)
+
+#define UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(type, basename, begin_ticks, \
+                                                 end_ticks)                   \
+  do {                                                                        \
+    UMA_HISTOGRAM_WITH_TEMPERATURE(type, basename, end_ticks - begin_ticks);  \
     TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP1(                                  \
         "startup", basename, 0, begin_ticks.ToInternalValue(), "Temperature", \
         g_startup_temperature);                                               \
     TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP1(                                    \
         "startup", basename, 0, end_ticks.ToInternalValue(), "Temperature",   \
         g_startup_temperature);                                               \
+  } while (0)
+
+#define UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(      \
+    type, basename, begin_ticks, end_ticks)                                   \
+  do {                                                                        \
+    UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(                    \
+        type, basename, end_ticks - begin_ticks);                             \
+    TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP2(                                  \
+        "startup", basename, 0, begin_ticks.ToInternalValue(), "Temperature", \
+        g_startup_temperature, "Startups with current version",               \
+        g_startups_with_current_version);                                     \
+    TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP2(                                    \
+        "startup", basename, 0, end_ticks.ToInternalValue(), "Temperature",   \
+        g_startup_temperature, "Startups with current version",               \
+        g_startups_with_current_version);                                     \
+  } while (0)
+
+std::string GetSameVersionStartupCountSuffix() {
+  // TODO(fdoray): Remove this once crbug.com/580207 is fixed.
+  if (g_startups_with_current_version ==
+      kUndeterminedStartupsWithCurrentVersion) {
+    return std::string();
   }
+
+  // The suffix is |g_startups_with_current_version| up to
+  // |kMaxSameVersionCountRecorded|. Higher counts are grouped in the ".Over"
+  // suffix. Make sure to reflect changes to |kMaxSameVersionCountRecorded| in
+  // the "SameVersionStartupCounts" histogram suffix.
+  constexpr int kMaxSameVersionCountRecorded = 9;
+  DCHECK_GE(g_startups_with_current_version, 1);
+  if (g_startups_with_current_version > kMaxSameVersionCountRecorded)
+    return ".Over";
+  return std::string(".") + base::IntToString(g_startups_with_current_version);
+}
 
 // Returns the system uptime on process launch.
 base::TimeDelta GetSystemUptimeOnProcessLaunch() {
@@ -178,16 +240,15 @@ void RecordSystemUptimeHistogram() {
   if (system_uptime_on_process_launch.is_zero())
     return;
 
-  UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
-                                         "Startup.SystemUptime",
-                                         GetSystemUptimeOnProcessLaunch());
+  UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.SystemUptime",
+      GetSystemUptimeOnProcessLaunch());
 }
 
 // On Windows, records the number of hard-faults that have occurred in the
-// current chrome.exe process since it was started. A version of the histograms
-// recorded in this method suffixed by |same_version_startup_count| will also be
-// recorded. This is a nop on other platforms.
-void RecordHardFaultHistogram(int same_version_startup_count) {
+// current chrome.exe process since it was started. This is a nop on other
+// platforms.
+void RecordHardFaultHistogram() {
 #if defined(OS_WIN)
   uint32_t hard_fault_count = 0;
 
@@ -195,20 +256,8 @@ void RecordHardFaultHistogram(int same_version_startup_count) {
   if (!GetHardFaultCountForCurrentProcess(&hard_fault_count))
     return;
 
-  // Histograms below will be suffixed by |same_version_startup_count| up to
-  // |kMaxSameVersionCountRecorded|, higher counts will be grouped in the
-  // ".Over" suffix. Make sure to reflect changes to
-  // kMaxSameVersionCountRecorded in the "SameVersionStartupCounts" histogram
-  // suffix.
-  std::string same_version_startup_count_suffix(".");
-  constexpr int kMaxSameVersionCountRecorded = 9;
-  DCHECK_GE(same_version_startup_count, 1);
-  if (same_version_startup_count <= kMaxSameVersionCountRecorded) {
-    same_version_startup_count_suffix.append(
-        base::IntToString(same_version_startup_count));
-  } else {
-    same_version_startup_count_suffix.append("Over");
-  }
+  const std::string same_version_startup_count_suffix(
+      GetSameVersionStartupCountSuffix());
 
   // Hard fault counts are expected to be in the thousands range,
   // corresponding to faulting in ~10s of MBs of code ~10s of KBs at a time.
@@ -334,7 +383,7 @@ void RecordRendererMainEntryHistogram() {
 
   if (!browser_main_entry_point_ticks.is_null() &&
       !renderer_main_entry_point_ticks.is_null()) {
-    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMainToRendererMain",
         browser_main_entry_point_ticks, renderer_main_entry_point_ticks);
   }
@@ -377,7 +426,7 @@ void AddStartupEventsForTelemetry()
 // last startup from |pref_service| and overwrites it with the timestamp of the
 // current startup. If the startup temperature has been set by
 // RecordBrowserMainMessageLoopStart, the time since last startup is also logged
-// to an histogram suffixed with the startup temperature.
+// to a histogram suffixed with the startup temperature.
 void RecordTimeSinceLastStartup(PrefService* pref_service) {
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(OS_LINUX)
   DCHECK(pref_service);
@@ -399,7 +448,7 @@ void RecordTimeSinceLastStartup(PrefService* pref_service) {
 
     // Ignore negative values, which can be caused by system clock changes.
     if (minutes_since_last_startup >= 0) {
-      UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
           UMA_HISTOGRAM_TIME_IN_MINUTES_MONTH_RANGE,
           "Startup.TimeSinceLastStartup", minutes_since_last_startup);
     }
@@ -413,29 +462,28 @@ void RecordTimeSinceLastStartup(PrefService* pref_service) {
 
 // Logs the Startup.SameVersionStartupCount histogram. Relies on |pref_service|
 // to know information about the previous startups and store information for
-// future ones. Returns the number of startups with the same version count that
-// was logged.
-int RecordSameVersionStartupCount(PrefService* pref_service) {
+// future ones. Stores the logged value in |g_startups_with_current_version|.
+void RecordSameVersionStartupCount(PrefService* pref_service) {
   DCHECK(pref_service);
+  DCHECK_EQ(kUndeterminedStartupsWithCurrentVersion,
+            g_startups_with_current_version);
 
   const std::string current_version = version_info::GetVersionNumber();
 
-  int startups_with_current_version = 0;
   if (current_version == pref_service->GetString(prefs::kLastStartupVersion)) {
-    startups_with_current_version =
+    g_startups_with_current_version =
         pref_service->GetInteger(prefs::kSameVersionStartupCount);
-    ++startups_with_current_version;
+    ++g_startups_with_current_version;
     pref_service->SetInteger(prefs::kSameVersionStartupCount,
-                             startups_with_current_version);
+                             g_startups_with_current_version);
   } else {
-    startups_with_current_version = 1;
+    g_startups_with_current_version = 1;
     pref_service->SetString(prefs::kLastStartupVersion, current_version);
     pref_service->SetInteger(prefs::kSameVersionStartupCount, 1);
   }
 
   UMA_HISTOGRAM_COUNTS_100("Startup.SameVersionStartupCount",
-                           startups_with_current_version);
-  return startups_with_current_version;
+                           g_startups_with_current_version);
 }
 
 }  // namespace
@@ -543,11 +591,10 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
                                        PrefService* pref_service) {
   DCHECK(pref_service);
 
-  const int same_version_startup_count =
-      RecordSameVersionStartupCount(pref_service);
+  RecordSameVersionStartupCount(pref_service);
   // Keep RecordHardFaultHistogram() first as much as possible as many other
   // histograms depend on it setting |g_startup_temperature|.
-  RecordHardFaultHistogram(same_version_startup_count);
+  RecordHardFaultHistogram();
   AddStartupEventsForTelemetry();
   RecordTimeSinceLastStartup(pref_service);
   RecordSystemUptimeHistogram();
@@ -556,7 +603,7 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
   const base::TimeTicks& process_creation_ticks =
       g_process_creation_ticks.Get();
   if (!is_first_run && !process_creation_ticks.is_null()) {
-    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserMessageLoopStartTime",
         process_creation_ticks, ticks);
   }
@@ -573,12 +620,12 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
   // * Only measure launches that occur 7 minutes after boot to try to avoid
   //   cases where Chrome is auto-started and IO is heavily loaded.
   if (is_first_run) {
-    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
         g_browser_main_entry_point_ticks.Get(), ticks);
   } else {
-    UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+    UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry",
         g_browser_main_entry_point_ticks.Get(), ticks);
@@ -590,18 +637,18 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
     const base::TimeTicks exe_main_ticks = ExeMainEntryPointTicks();
     if (!exe_main_ticks.is_null()) {
       // Process create to chrome.exe:main().
-      UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain",
           process_creation_ticks, exe_main_ticks);
 
       // chrome.exe:main() to chrome.dll:main().
-      UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
           exe_main_ticks, g_browser_main_entry_point_ticks.Get());
 
       // Process create to chrome.dll:main(). Reported as a histogram only as
       // the other two events above are sufficient for tracing purposes.
-      UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(
+      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
           UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
           g_browser_main_entry_point_ticks.Get() - process_creation_ticks);
     }
@@ -616,7 +663,7 @@ void RecordBrowserWindowDisplay(const base::TimeTicks& ticks) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES, "Startup.BrowserWindowDisplay",
       g_process_creation_ticks.Get(), ticks);
 }
@@ -627,8 +674,8 @@ void RecordBrowserOpenTabsDelta(const base::TimeDelta& delta) {
     return;
   is_first_call = false;
 
-  UMA_HISTOGRAM_WITH_STARTUP_TEMPERATURE(UMA_HISTOGRAM_LONG_TIMES_100,
-                                         "Startup.BrowserOpenTabs", delta);
+  UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
+      UMA_HISTOGRAM_LONG_TIMES_100, "Startup.BrowserOpenTabs", delta);
 }
 
 void RecordRendererMainEntryTime(const base::TimeTicks& ticks) {
@@ -646,7 +693,7 @@ void RecordFirstWebContentsMainFrameLoad(const base::TimeTicks& ticks) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.MainFrameLoad2",
       g_process_creation_ticks.Get(), ticks);
 }
@@ -664,7 +711,7 @@ void RecordFirstWebContentsNonEmptyPaint(const base::TimeTicks& ticks) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100, "Startup.FirstWebContents.NonEmptyPaint2",
       g_process_creation_ticks.Get(), ticks);
 }
@@ -677,7 +724,7 @@ void RecordFirstWebContentsMainNavigationStart(const base::TimeTicks& ticks) {
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationStart",
       g_process_creation_ticks.Get(), ticks);
@@ -692,7 +739,7 @@ void RecordFirstWebContentsMainNavigationFinished(
   if (WasNonBrowserUIDisplayed() || g_process_creation_ticks.Get().is_null())
     return;
 
-  UMA_HISTOGRAM_AND_TRACE_WITH_STARTUP_TEMPERATURE(
+  UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
       UMA_HISTOGRAM_LONG_TIMES_100,
       "Startup.FirstWebContents.MainNavigationFinished",
       g_process_creation_ticks.Get(), ticks);
