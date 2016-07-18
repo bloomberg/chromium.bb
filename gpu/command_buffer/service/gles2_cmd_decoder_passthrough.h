@@ -206,6 +206,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   Logger* GetLogger() override;
 
   const ContextState* GetContextState() override;
+  scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
 
  private:
   int commands_to_process_;

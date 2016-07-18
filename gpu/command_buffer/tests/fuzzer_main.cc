@@ -114,6 +114,13 @@ class CommandBufferSetup {
     CHECK(result);
     decoder_->set_max_bucket_size(8 << 20);
     context_group->buffer_manager()->set_max_buffer_size(8 << 20);
+    if (!vertex_translator_) {
+      // Keep a reference to the translators, which keeps them in the cache even
+      // after the decoder is reset. They are expensive to initialize, but they
+      // don't keep state.
+      vertex_translator_ = decoder_->GetTranslator(GL_VERTEX_SHADER);
+      fragment_translator_ = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
+    }
   }
 
   void ResetDecoder() {
@@ -223,6 +230,9 @@ class CommandBufferSetup {
 
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
   std::unique_ptr<CommandExecutor> executor_;
+
+  scoped_refptr<gles2::ShaderTranslatorInterface> vertex_translator_;
+  scoped_refptr<gles2::ShaderTranslatorInterface> fragment_translator_;
 
   scoped_refptr<Buffer> buffer_;
   int32_t buffer_id_ = 0;

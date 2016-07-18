@@ -16,6 +16,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -65,6 +66,8 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(GetGLContext, gl::GLContext*());
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
   MOCK_METHOD0(GetContextState, const ContextState*());
+  MOCK_METHOD1(GetTranslator,
+               scoped_refptr<ShaderTranslatorInterface>(unsigned int type));
   MOCK_METHOD0(GetCapabilities, Capabilities());
   MOCK_CONST_METHOD0(HasPendingQueries, bool());
   MOCK_METHOD1(ProcessPendingQueries, void(bool));

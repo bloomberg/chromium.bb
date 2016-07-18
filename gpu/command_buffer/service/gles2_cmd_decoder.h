@@ -45,6 +45,7 @@ class GLES2Util;
 class ImageManager;
 class Logger;
 class QueryManager;
+class ShaderTranslatorInterface;
 class Texture;
 class TransformFeedbackManager;
 class VertexArrayManager;
@@ -327,6 +328,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void EndDecoding();
 
   virtual const ContextState* GetContextState() = 0;
+  virtual scoped_refptr<ShaderTranslatorInterface> GetTranslator(
+      unsigned int type) = 0;
 
  protected:
   GLES2Decoder();

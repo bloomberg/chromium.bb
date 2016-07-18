@@ -365,6 +365,11 @@ const gpu::gles2::ContextState* GLES2DecoderPassthroughImpl::GetContextState() {
   return nullptr;
 }
 
+scoped_refptr<ShaderTranslatorInterface>
+GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
+  return nullptr;
+}
+
 #define GLES2_CMD_OP(name)                                               \
   {                                                                      \
       &GLES2DecoderPassthroughImpl::Handle##name, cmds::name::kArgFlags, \

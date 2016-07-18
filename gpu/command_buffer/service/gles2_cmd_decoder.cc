@@ -655,6 +655,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   ErrorState* GetErrorState() override;
   const ContextState* GetContextState() override { return &state_; }
+  scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
 
   void SetShaderCacheCallback(const ShaderCacheCallback& callback) override;
   void SetFenceSyncReleaseCallback(
@@ -9366,6 +9367,11 @@ void GLES2DecoderImpl::DoTransformFeedbackVaryings(
   program->TransformFeedbackVaryings(count, varyings, buffer_mode);
 }
 
+scoped_refptr<ShaderTranslatorInterface> GLES2DecoderImpl::GetTranslator(
+    GLenum type) {
+  return type == GL_VERTEX_SHADER ? vertex_translator_ : fragment_translator_;
+}
+
 void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::DoCompileShader");
   Shader* shader = GetShaderInfoNotProgram(client_id, "glCompileShader");
@@ -9374,10 +9380,8 @@ void GLES2DecoderImpl::DoCompileShader(GLuint client_id) {
   }
 
   scoped_refptr<ShaderTranslatorInterface> translator;
-  if (!feature_info_->disable_shader_translator()) {
-      translator = shader->shader_type() == GL_VERTEX_SHADER ?
-                   vertex_translator_ : fragment_translator_;
-  }
+  if (!feature_info_->disable_shader_translator())
+      translator = GetTranslator(shader->shader_type());
 
   const Shader::TranslatedShaderSourceType source_type =
       feature_info_->feature_flags().angle_translated_shader_source ?
