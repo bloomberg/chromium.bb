@@ -17,6 +17,15 @@ class CheckTemplateStageTest(
     generic_stages_unittest.AbstractStageTestCase):
   """Tests for CheckTemplateStage."""
 
+  TOT_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
+              'build_config.ToT.json')
+  R52_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
+              'build_config.release-R52-7978.B.json')
+  R53_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
+              'build_config.release-R53-7978.B.json')
+  R54_PATH = (config_stages.GS_GE_TEMPLATE_BUCKET +
+              'build_config.release-R54-7978.B.json')
+
   def setUp(self):
     self._Prepare()
     self.PatchObject(repository, 'CloneWorkingRepo')
@@ -27,14 +36,20 @@ class CheckTemplateStageTest(
 
   def testBasic(self):
     stage = self.ConstructStage()
-    tot_path = (config_stages.GS_GE_TEMPLATE_BUCKET +
-                'build_config.ToT.json')
-    r50_path = (config_stages.GS_GE_TEMPLATE_BUCKET +
-                'build_config.release-R50-7978.B.json')
+
     self.PatchObject(config_stages.CheckTemplateStage, '_ListTemplates',
-                     return_value=[tot_path, r50_path])
+                     return_value=[self.TOT_PATH, self.R54_PATH])
     stage.PerformStage()
     self.assertTrue(self.update_mock.call_count == 2)
+
+  def testSortAndGetReleasePaths(self):
+    stage = self.ConstructStage()
+
+    release_list = [self.R54_PATH, self.R53_PATH, self.R52_PATH]
+    paths = stage.SortAndGetReleasePaths(release_list)
+
+    # Only self.R54_PATH is qualified.
+    self.assertTrue(len(paths) == 1)
 
 class UpdateConfigStageTest(
     generic_stages_unittest.AbstractStageTestCase):

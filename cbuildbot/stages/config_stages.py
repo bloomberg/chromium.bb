@@ -88,27 +88,29 @@ class CheckTemplateStage(generic_stages.BuilderStage):
     super(CheckTemplateStage, self).__init__(builder_run, **kwargs)
     self.ctx = gs.GSContext(init_boto=True)
 
-  def _SortAndGetReleasePaths(self, release_list):
-    def _GetVersion(file_name):
+  def SortAndGetReleasePaths(self, release_list):
+    def _GetMilestone(file_name):
       # Given 'build_config.release-R51-8172.B.json',
-      # search for reversion number '51'.
+      # search for milestone number '51'.
       match = re.search(r'build_config\.release-R(.+?)-.+?\.json',
                         os.path.basename(file_name))
       if match:
         return int(match.group(1))
       return None
 
-    version_path_pairs = []
+    milestone_path_pairs = []
     for release_template in release_list:
-      version = _GetVersion(release_template)
-      if version:
-        version_path_pairs.append((version, release_template))
-    version_path_pairs.sort(key=lambda x: x[0], reverse=True)
+      milestone_num = _GetMilestone(release_template)
+      # Enable config-updater builder for master branch
+      # and release branches with milestone_num > 53
+      if milestone_num and milestone_num > 53:
+        milestone_path_pairs.append((milestone_num, release_template))
+    milestone_path_pairs.sort(reverse=True)
 
     if len(release_list) <= 3:
-      return [i[1] for i in version_path_pairs]
+      return [i[1] for i in milestone_path_pairs]
     else:
-      return [i[1] for i in version_path_pairs[0: 3]]
+      return [i[1] for i in milestone_path_pairs[0: 3]]
 
   def _ListTemplates(self):
     template_gs_paths = []
@@ -116,7 +118,7 @@ class CheckTemplateStage(generic_stages.BuilderStage):
     if tot_gs_path:
       template_gs_paths.extend(tot_gs_path)
 
-    release_gs_paths = self._SortAndGetReleasePaths(
+    release_gs_paths = self.SortAndGetReleasePaths(
         self.ctx.LS(GS_GE_TEMPLATE_RELEASE))
     if release_gs_paths:
       template_gs_paths.extend(release_gs_paths)
@@ -256,9 +258,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
                print_cmd=True)
 
     git.RunGit(self.chromite_dir, ['config', 'push.default', 'tracking'])
-    # TODO: currently dryrun is default to True.
-    # Need to change it to self.dryrun after the project id done.
-    git.PushWithRetry(self.branch, self.chromite_dir, dryrun=True)
+    git.PushWithRetry(self.branch, self.chromite_dir, dryrun=self.dryrun)
 
   def PerformStage(self):
     logging.info('Update configs for branch %s, template gs path %s',
