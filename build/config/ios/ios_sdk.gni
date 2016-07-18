@@ -13,7 +13,7 @@ declare_args() {
   xcode_build = ""
   machine_os_build = ""
 
-  use_ios_simulator = target_cpu == "x86" || target_cpu == "x64"
+  use_ios_simulator = current_cpu == "x86" || current_cpu == "x64"
 
   # Version of iOS that we're targeting.
   ios_deployment_target = "9.0"
