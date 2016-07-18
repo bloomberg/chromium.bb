@@ -112,6 +112,18 @@ source_set("unit_tests") {
   ]
 }
 
+source_set("switches") {
+  visibility = [
+    "//blimp/client/*",
+    "//blimp/engine:browser_tests",
+  ]
+
+  sources = [
+    "blimp_client_switches.cc",
+    "blimp_client_switches.h",
+  ]
+}
+
 if (is_android) {
   # This target is here to let //chrome depend on
   # //blimp/client/public:public_java and automatically get the correct
@@ -136,6 +148,7 @@ if (is_android) {
 
     java_files = [
       "android/java/src/org/chromium/blimp/core/BlimpClientContextImpl.java",
+      "android/java/src/org/chromium/blimp/core/BlimpClientSwitches.java",
       "android/java/src/org/chromium/blimp/core/BlimpContentsFactory.java",
       "android/java/src/org/chromium/blimp/core/BlimpContentsImpl.java",
       "android/java/src/org/chromium/blimp/core/BlimpContentsObserverProxy.java",

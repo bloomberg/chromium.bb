@@ -13,7 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "blimp/client/app/blimp_client_switches.h"
+#include "blimp/client/core/blimp_client_switches.h"
 #include "blimp/client/feature/ime_feature.h"
 #include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/feature/render_widget_feature.h"

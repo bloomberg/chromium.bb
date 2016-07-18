@@ -17,7 +17,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "blimp/client/app/blimp_client_switches.h"
+#include "blimp/client/core/blimp_client_switches.h"
 #include "blimp/common/get_client_token.h"
 #include "blimp/common/protocol_version.h"
 #include "components/safe_json/safe_json_parser.h"

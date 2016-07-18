@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "blimp/client/app/blimp_client_switches.h"
+#include "blimp/client/core/blimp_client_switches.h"
 #include "blimp/client/session/assignment_source.h"
 #include "blimp/common/switches.h"
 #include "blimp/engine/app/blimp_browser_main_parts.h"

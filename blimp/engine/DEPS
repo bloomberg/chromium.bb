@@ -1,5 +1,6 @@
 include_rules = [
   "+base",
+  "-blimp/client",
   "+cc",
   "-chrome",
   "+components/crash",

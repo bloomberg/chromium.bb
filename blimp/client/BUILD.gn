@@ -19,7 +19,7 @@ source_set("session") {
 
   public_deps = [
     ":feature",
-    ":switches",
+    "//blimp/client/core:switches",
     "//components/safe_json",
     "//ui/events",
   ]
@@ -46,7 +46,7 @@ source_set("client") {
 
   public_deps = [
     ":session",
-    ":switches",
+    "//blimp/client/core:switches",
     "//components/safe_json",
     "//components/url_formatter",
     "//skia",
@@ -72,13 +72,6 @@ source_set("client") {
   ]
 }
 
-source_set("switches") {
-  sources = [
-    "app/blimp_client_switches.cc",
-    "app/blimp_client_switches.h",
-  ]
-}
-
 source_set("blimp_client_unit_tests") {
   testonly = true
 
@@ -87,9 +80,9 @@ source_set("blimp_client_unit_tests") {
   deps = [
     ":client",
     ":session",
-    ":switches",
     "//base",
     "//base/test:test_support",
+    "//blimp/client/core:switches",
     "//blimp/common",
     "//testing/gmock",
     "//testing/gtest",
@@ -433,7 +426,6 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/auth/TokenSource.java",
       "app/android/java/src/org/chromium/blimp/auth/TokenSourceImpl.java",
       "app/android/java/src/org/chromium/blimp/BlimpApplication.java",
-      "app/android/java/src/org/chromium/blimp/BlimpClientSwitches.java",
       "app/android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "app/android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "app/android/java/src/org/chromium/blimp/BlimpView.java",
