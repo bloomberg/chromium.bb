@@ -75,6 +75,9 @@ const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
 // flag is removed.
 const char kAshEnableTouchViewTesting[] = "ash-enable-touch-view-testing";
 
+// Enables the window cycling UI (more visual feedback for alt-tab).
+const char kAshEnableWindowCycleUi[] = "ash-enable-window-cycle-ui";
+
 // Hides notifications that are irrelevant to Chrome OS device factory testing,
 // such as battery level updates.
 const char kAshHideNotificationsForFactory[] =

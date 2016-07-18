@@ -13,9 +13,15 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "base/macros.h"
 
+namespace views {
+class Label;
+class Widget;
+}
+
 namespace ash {
 
 class ScopedShowWindow;
+class WindowCycleView;
 
 // Tracks a set of Windows that can be stepped through. This class is used by
 // the WindowCycleController.
@@ -37,11 +43,14 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
   friend class WindowCycleControllerTest;
   const WindowList& windows() const { return windows_; }
 
-  // aura::WindowObserver overrides:
+  // WmWindowObserver overrides:
   // There is a chance a window is destroyed, for example by JS code. We need to
   // take care of that even if it is not intended for the user to close a window
   // while window cycling.
   void OnWindowDestroying(WmWindow* window) override;
+
+  // Returns true if the window list overlay should be shown.
+  bool ShouldShowUi();
 
   // List of weak pointers to windows to use while cycling with the keyboard.
   // List is built when the user initiates the gesture (i.e. hits alt-tab the
@@ -55,6 +64,13 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver {
 
   // Wrapper for the window brought to the front.
   std::unique_ptr<ScopedShowWindow> showing_window_;
+
+  // The top level View for the window cycle UI. May be null if the UI is not
+  // showing.
+  WindowCycleView* cycle_view_;
+
+  // The widget that hosts the window cycle UI.
+  std::unique_ptr<views::Widget> cycle_ui_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleList);
 };

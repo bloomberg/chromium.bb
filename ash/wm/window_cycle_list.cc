@@ -4,15 +4,42 @@
 
 #include "ash/wm/window_cycle_list.h"
 
+#include <list>
+#include <map>
+
+#include "ash/common/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/forwarding_layer_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shell.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
+#include "ui/compositor/layer_tree_owner.h"
+#include "ui/views/background.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/painter.h"
+#include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/visibility_controller.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
+
+void EnsureAllChildrenAreVisible(ui::Layer* layer) {
+  std::list<ui::Layer*> layers;
+  layers.push_back(layer);
+  while (!layers.empty()) {
+    for (auto child : layers.front()->children())
+      layers.push_back(child);
+    layers.front()->SetVisible(true);
+    layers.pop_front();
+  }
+}
 
 // Returns the window immediately below |window| in the current container.
 WmWindow* GetWindowBelow(WmWindow* window) {
@@ -53,6 +80,176 @@ class ScopedShowWindow : public WmWindowObserver {
   bool minimized_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedShowWindow);
+};
+
+// A view that mirrors a single window. Layers are lifted from the underlying
+// window (which gets new ones in their place). New paint calls, if any, are
+// forwarded to the underlying window.
+class WindowMirrorView : public views::View, public ::wm::LayerDelegateFactory {
+ public:
+  explicit WindowMirrorView(WmWindow* window) : target_(window) {
+    DCHECK(window);
+  }
+  ~WindowMirrorView() override {}
+
+  void Init() {
+    SetPaintToLayer(true);
+
+    layer_owner_ = ::wm::RecreateLayers(
+        target_->GetInternalWidget()->GetNativeView(), this);
+
+    GetMirrorLayer()->parent()->Remove(GetMirrorLayer());
+    layer()->Add(GetMirrorLayer());
+
+    // Some extra work is needed when the target window is minimized.
+    if (target_->GetWindowState()->IsMinimized()) {
+      GetMirrorLayer()->SetVisible(true);
+      GetMirrorLayer()->SetOpacity(1);
+      EnsureAllChildrenAreVisible(GetMirrorLayer());
+    }
+  }
+
+  // views::View:
+  gfx::Size GetPreferredSize() const override {
+    const int kMaxWidth = 800;
+    const int kMaxHeight = 600;
+
+    gfx::Size target_size = target_->GetBounds().size();
+    if (target_size.width() <= kMaxWidth &&
+        target_size.height() <= kMaxHeight) {
+      return target_size;
+    }
+
+    float scale =
+        std::min(kMaxWidth / static_cast<float>(target_size.width()),
+                 kMaxHeight / static_cast<float>(target_size.height()));
+    return gfx::ScaleToCeiledSize(target_size, scale, scale);
+  }
+
+  void Layout() override {
+    // Position at 0, 0.
+    GetMirrorLayer()->SetBounds(gfx::Rect(GetMirrorLayer()->bounds().size()));
+
+    // Scale down if necessary.
+    gfx::Transform mirror_transform;
+    if (size() != target_->GetBounds().size()) {
+      const float scale =
+          width() / static_cast<float>(target_->GetBounds().width());
+      mirror_transform.Scale(scale, scale);
+    }
+    GetMirrorLayer()->SetTransform(mirror_transform);
+  }
+
+  // ::wm::LayerDelegateFactory:
+  ui::LayerDelegate* CreateDelegate(ui::LayerDelegate* delegate) override {
+    if (!delegate)
+      return nullptr;
+    delegates_.push_back(
+        base::WrapUnique(new wm::ForwardingLayerDelegate(target_, delegate)));
+
+    return delegates_.back().get();
+  }
+
+ private:
+  // Gets the root of the layer tree that was lifted from |target_| (and is now
+  // a child of |this->layer()|).
+  ui::Layer* GetMirrorLayer() { return layer_owner_->root(); }
+
+  // The original window that is being represented by |this|.
+  WmWindow* target_;
+
+  // Retains ownership of the mirror layer tree.
+  std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
+
+  std::vector<std::unique_ptr<wm::ForwardingLayerDelegate>> delegates_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowMirrorView);
+};
+
+// A view that shows a collection of windows the user can tab through.
+class WindowCycleView : public views::View {
+ public:
+  explicit WindowCycleView(const WindowCycleList::WindowList& windows)
+      : mirror_container_(new views::View()),
+        selector_view_(new views::View()),
+        target_window_(nullptr) {
+    DCHECK(!windows.empty());
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+
+    // TODO(estade): adjust constants in this function (colors, spacing, corner
+    // radius) as per mocks.
+    const float kCornerRadius = 5;
+    set_background(views::Background::CreateBackgroundPainter(
+        true, views::Painter::CreateSolidRoundRectPainter(
+                  SkColorSetA(SK_ColorBLACK, 0xA5), kCornerRadius)));
+
+    views::BoxLayout* layout =
+        new views::BoxLayout(views::BoxLayout::kHorizontal, 25, 25, 20);
+    layout->set_cross_axis_alignment(
+        views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+    mirror_container_->SetLayoutManager(layout);
+
+    for (WmWindow* window : windows) {
+      WindowMirrorView* view = new WindowMirrorView(window);
+      view->Init();
+      window_view_map_[window] = view;
+      mirror_container_->AddChildView(view);
+    }
+
+    selector_view_->set_background(views::Background::CreateBackgroundPainter(
+        true, views::Painter::CreateSolidRoundRectPainter(SK_ColorBLUE,
+                                                          kCornerRadius)));
+
+    AddChildView(selector_view_);
+    AddChildView(mirror_container_);
+    SetTargetWindow(windows.front());
+  }
+
+  ~WindowCycleView() override {}
+
+  void SetTargetWindow(WmWindow* target) {
+    target_window_ = target;
+    if (GetWidget())
+      Layout();
+  }
+
+  void HandleWindowDestruction(WmWindow* destroying_window,
+                               WmWindow* new_target) {
+    auto view_iter = window_view_map_.find(destroying_window);
+    view_iter->second->parent()->RemoveChildView(view_iter->second);
+    window_view_map_.erase(view_iter);
+    SetTargetWindow(new_target);
+  }
+
+  // views::View overrides:
+  gfx::Size GetPreferredSize() const override {
+    return mirror_container_->GetPreferredSize();
+  }
+
+  void Layout() override {
+    // Possible if the last window is deleted.
+    if (!target_window_)
+      return;
+
+    views::View* target_view = window_view_map_[target_window_];
+    gfx::RectF target_bounds(target_view->GetLocalBounds());
+    views::View::ConvertRectToTarget(target_view, this, &target_bounds);
+    target_bounds.Inset(gfx::InsetsF(-15));
+    selector_view_->SetBoundsRect(gfx::ToEnclosingRect(target_bounds));
+
+    mirror_container_->SetBoundsRect(GetLocalBounds());
+  }
+
+  WmWindow* target_window() { return target_window_; }
+
+ private:
+  std::map<WmWindow*, WindowMirrorView*> window_view_map_;
+  views::View* mirror_container_;
+  views::View* selector_view_;
+  WmWindow* target_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowCycleView);
 };
 
 ScopedShowWindow::ScopedShowWindow()
@@ -107,22 +304,55 @@ void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
 }
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
-    : windows_(windows), current_index_(0) {
+    : windows_(windows), current_index_(0), cycle_view_(nullptr) {
   WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 
   for (WmWindow* window : windows_)
     window->AddObserver(this);
+
+  if (ShouldShowUi()) {
+    WmWindow* root_window = WmShell::Get()->GetRootWindowForNewWindows();
+    views::Widget* widget = new views::Widget;
+    views::Widget::InitParams params;
+    params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    params.accept_events = true;
+    // TODO(estade): make sure nothing untoward happens when the lock screen
+    // or a system modal dialog is shown.
+    root_window->GetRootWindowController()
+        ->ConfigureWidgetInitParamsForContainer(
+            widget, kShellWindowId_OverlayContainer, &params);
+    widget->Init(params);
+
+    cycle_view_ = new WindowCycleView(windows_);
+
+    widget->SetContentsView(cycle_view_);
+    // TODO(estade): right now this just extends past the edge of the screen if
+    // there are too many windows. Handle this more gracefully. Also, if
+    // the display metrics change, cancel the UI.
+    gfx::Rect widget_rect = widget->GetWorkAreaBoundsInScreen();
+    gfx::Size widget_size = cycle_view_->GetPreferredSize();
+    widget_rect.ClampToCenteredSize(widget_size);
+    widget_rect.set_width(widget_size.width());
+    widget->SetBounds(widget_rect);
+    widget->Show();
+    cycle_ui_widget_.reset(widget);
+  }
 }
 
 WindowCycleList::~WindowCycleList() {
   WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
-  for (WmWindow* window : windows_) {
-    // TODO(oshima): Remove this once crbug.com/483491 is fixed.
-    CHECK(window);
+  for (WmWindow* window : windows_)
     window->RemoveObserver(this);
-  }
+
   if (showing_window_)
     showing_window_->CancelRestore();
+
+  if (cycle_view_ && cycle_view_->target_window()) {
+    cycle_view_->target_window()->Show();
+    cycle_view_->target_window()->GetWindowState()->Activate();
+  }
 }
 
 void WindowCycleList::Step(WindowCycleController::Direction direction) {
@@ -147,6 +377,11 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   current_index_ = (current_index_ + windows_.size()) % windows_.size();
   DCHECK(windows_[current_index_]);
 
+  if (cycle_view_) {
+    cycle_view_->SetTargetWindow(windows_[current_index_]);
+    return;
+  }
+
   // Make sure the next window is visible.
   showing_window_.reset(new ScopedShowWindow);
   showing_window_->Show(windows_[current_index_]);
@@ -164,6 +399,23 @@ void WindowCycleList::OnWindowDestroying(WmWindow* window) {
       current_index_ == static_cast<int>(windows_.size())) {
     current_index_--;
   }
+
+  if (cycle_view_) {
+    WmWindow* new_target_window =
+        windows_.empty() ? nullptr : windows_[current_index_];
+    cycle_view_->HandleWindowDestruction(window, new_target_window);
+    if (windows_.empty()) {
+      // This deletes us.
+      Shell::GetInstance()->window_cycle_controller()->StopCycling();
+      return;
+    }
+  }
+}
+
+bool WindowCycleList::ShouldShowUi() {
+  return windows_.size() > 1 &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kAshEnableWindowCycleUi);
 }
 
 }  // namespace ash

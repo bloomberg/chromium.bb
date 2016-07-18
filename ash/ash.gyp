@@ -340,6 +340,8 @@
       'common/wm/drag_details.h',
       'common/wm/focus_rules.cc',
       'common/wm/focus_rules.h',
+      'common/wm/forwarding_layer_delegate.cc',
+      'common/wm/forwarding_layer_delegate.h',
       'common/wm/fullscreen_window_finder.cc',
       'common/wm/fullscreen_window_finder.h',
       'common/wm/maximize_mode/maximize_mode_controller.cc',
