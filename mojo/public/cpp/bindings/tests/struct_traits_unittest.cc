@@ -134,9 +134,15 @@ class StructTraitsTest : public testing::Test,
     callback.Run(s);
   }
 
-  void EchoPassByValueStructWithTraits(
-      PassByValueStructWithTraitsImpl s,
-      const EchoPassByValueStructWithTraitsCallback& callback) override {
+  void EchoTrivialStructWithTraits(
+      TrivialStructWithTraitsImpl s,
+      const EchoTrivialStructWithTraitsCallback& callback) override {
+    callback.Run(s);
+  }
+
+  void EchoMoveOnlyStructWithTraits(
+      MoveOnlyStructWithTraitsImpl s,
+      const EchoMoveOnlyStructWithTraitsCallback& callback) override {
     callback.Run(std::move(s));
   }
 
@@ -274,24 +280,44 @@ TEST_F(StructTraitsTest, CloneStructWithTraitsContainer) {
   EXPECT_EQ(42u, cloned_container->f_struct.get_uint64());
 }
 
+void ExpectTrivialStructWithTraits(TrivialStructWithTraitsImpl expected,
+                                   const base::Closure& closure,
+                                   TrivialStructWithTraitsImpl passed) {
+  EXPECT_EQ(expected.value, passed.value);
+  closure.Run();
+}
+
+TEST_F(StructTraitsTest, EchoTrivialStructWithTraits) {
+  TrivialStructWithTraitsImpl input;
+  input.value = 42;
+
+  base::RunLoop loop;
+  TraitsTestServicePtr proxy = GetTraitsTestProxy();
+
+  proxy->EchoTrivialStructWithTraits(
+      input,
+      base::Bind(&ExpectTrivialStructWithTraits, input, loop.QuitClosure()));
+  loop.Run();
+}
+
 void CaptureMessagePipe(ScopedMessagePipeHandle* storage,
                         const base::Closure& closure,
-                        PassByValueStructWithTraitsImpl passed) {
+                        MoveOnlyStructWithTraitsImpl passed) {
   storage->reset(MessagePipeHandle(
       passed.get_mutable_handle().release().value()));
   closure.Run();
 }
 
-TEST_F(StructTraitsTest, EchoPassByValueStructWithTraits) {
+TEST_F(StructTraitsTest, EchoMoveOnlyStructWithTraits) {
   MessagePipe mp;
-  PassByValueStructWithTraitsImpl input;
+  MoveOnlyStructWithTraitsImpl input;
   input.get_mutable_handle().reset(mp.handle0.release());
 
   base::RunLoop loop;
   TraitsTestServicePtr proxy = GetTraitsTestProxy();
 
   ScopedMessagePipeHandle received;
-  proxy->EchoPassByValueStructWithTraits(
+  proxy->EchoMoveOnlyStructWithTraits(
       std::move(input),
       base::Bind(&CaptureMessagePipe, &received, loop.QuitClosure()));
   loop.Run();

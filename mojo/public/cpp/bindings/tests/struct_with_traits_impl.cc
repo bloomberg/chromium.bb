@@ -18,12 +18,12 @@ StructWithTraitsImpl::~StructWithTraitsImpl() {}
 StructWithTraitsImpl::StructWithTraitsImpl(const StructWithTraitsImpl& other) =
     default;
 
-PassByValueStructWithTraitsImpl::PassByValueStructWithTraitsImpl() {}
+MoveOnlyStructWithTraitsImpl::MoveOnlyStructWithTraitsImpl() {}
 
-PassByValueStructWithTraitsImpl::PassByValueStructWithTraitsImpl(
-    PassByValueStructWithTraitsImpl&& other) = default;
+MoveOnlyStructWithTraitsImpl::MoveOnlyStructWithTraitsImpl(
+    MoveOnlyStructWithTraitsImpl&& other) = default;
 
-PassByValueStructWithTraitsImpl::~PassByValueStructWithTraitsImpl() {}
+MoveOnlyStructWithTraitsImpl::~MoveOnlyStructWithTraitsImpl() {}
 
 }  // namespace test
 }  // namespace mojo

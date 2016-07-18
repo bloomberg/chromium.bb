@@ -91,19 +91,25 @@ class StructWithTraitsImpl {
   std::map<std::string, NestedStructWithTraitsImpl> struct_map_;
 };
 
-// A type which knows how to look like a mojo::test::PassByValueStructWithTraits
+// A type which knows how to look like a mojo::test::TrivialStructWithTraits
 // mojom type by way of mojo::StructTraits.
-class PassByValueStructWithTraitsImpl {
+struct TrivialStructWithTraitsImpl {
+  int32_t value;
+};
+
+// A type which knows how to look like a mojo::test::MoveOnlyStructWithTraits
+// mojom type by way of mojo::StructTraits.
+class MoveOnlyStructWithTraitsImpl {
  public:
-  PassByValueStructWithTraitsImpl();
-  PassByValueStructWithTraitsImpl(PassByValueStructWithTraitsImpl&& other);
-  ~PassByValueStructWithTraitsImpl();
+  MoveOnlyStructWithTraitsImpl();
+  MoveOnlyStructWithTraitsImpl(MoveOnlyStructWithTraitsImpl&& other);
+  ~MoveOnlyStructWithTraitsImpl();
 
   ScopedHandle& get_mutable_handle() { return handle_; }
 
  private:
   ScopedHandle handle_;
-  DISALLOW_COPY_AND_ASSIGN(PassByValueStructWithTraitsImpl);
+  DISALLOW_COPY_AND_ASSIGN(MoveOnlyStructWithTraitsImpl);
 };
 
 }  // namespace test

@@ -116,10 +116,10 @@ bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
 }
 
 // static
-bool StructTraits<test::PassByValueStructWithTraits,
-                  test::PassByValueStructWithTraitsImpl>::
-    Read(test::PassByValueStructWithTraits::DataView data,
-         test::PassByValueStructWithTraitsImpl* out) {
+bool StructTraits<test::MoveOnlyStructWithTraits,
+                  test::MoveOnlyStructWithTraitsImpl>::
+    Read(test::MoveOnlyStructWithTraits::DataView data,
+         test::MoveOnlyStructWithTraitsImpl* out) {
   out->get_mutable_handle() = data.TakeFHandle();
   return true;
 }

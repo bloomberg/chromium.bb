@@ -33,14 +33,20 @@ struct StructWithTraitsContainer {
   StructWithTraits f_struct;
 };
 
-struct PassByValueStructWithTraits {
+// Maps to a pass-by-value trivial struct.
+struct TrivialStructWithTraits {
+  int32 value;
+};
+
+// Maps to a move-only struct.
+struct MoveOnlyStructWithTraits {
   handle f_handle;
 };
 
-// The custom type for PassByValueStructWithTraits is not clonable. Test that
+// The custom type for MoveOnlyStructWithTraits is not clonable. Test that
 // this container can compile as long as Clone() is not used.
-struct PassByValueStructWithTraitsContainer {
-  PassByValueStructWithTraits f_struct;
+struct MoveOnlyStructWithTraitsContainer {
+  MoveOnlyStructWithTraits f_struct;
 };
 
 struct StructWithTraitsForUniquePtrTest {
@@ -50,8 +56,11 @@ struct StructWithTraitsForUniquePtrTest {
 interface TraitsTestService {
   EchoStructWithTraits(StructWithTraits s) => (StructWithTraits passed);
 
-  EchoPassByValueStructWithTraits(PassByValueStructWithTraits s) =>
-      (PassByValueStructWithTraits passed);
+  EchoTrivialStructWithTraits(TrivialStructWithTraits s) =>
+      (TrivialStructWithTraits passed);
+
+  EchoMoveOnlyStructWithTraits(MoveOnlyStructWithTraits s) =>
+      (MoveOnlyStructWithTraits passed);
 
   EchoEnumWithTraits(EnumWithTraits e) => (EnumWithTraits passed);
 

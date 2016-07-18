@@ -93,15 +93,32 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
 };
 
 template <>
-struct StructTraits<test::PassByValueStructWithTraits,
-                    test::PassByValueStructWithTraitsImpl> {
-  // Deserialization to test::PassByValueStructTraitsImpl.
-  static bool Read(test::PassByValueStructWithTraits::DataView data,
-                   test::PassByValueStructWithTraitsImpl* out);
+struct StructTraits<test::TrivialStructWithTraits,
+                    test::TrivialStructWithTraitsImpl> {
+  // Deserialization to test::TrivialStructTraitsImpl.
+  static bool Read(test::TrivialStructWithTraits::DataView data,
+                   test::TrivialStructWithTraitsImpl* out) {
+    out->value = data.value();
+    return true;
+  }
 
-  // Fields in test::PassByValueStructWithTraits.
+  // Fields in test::TrivialStructWithTraits.
   // See src/mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.
-  static ScopedHandle f_handle(test::PassByValueStructWithTraitsImpl& value) {
+  static int32_t value(test::TrivialStructWithTraitsImpl& input) {
+    return input.value;
+  }
+};
+
+template <>
+struct StructTraits<test::MoveOnlyStructWithTraits,
+                    test::MoveOnlyStructWithTraitsImpl> {
+  // Deserialization to test::MoveOnlyStructTraitsImpl.
+  static bool Read(test::MoveOnlyStructWithTraits::DataView data,
+                   test::MoveOnlyStructWithTraitsImpl* out);
+
+  // Fields in test::MoveOnlyStructWithTraits.
+  // See src/mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.
+  static ScopedHandle f_handle(test::MoveOnlyStructWithTraitsImpl& value) {
     return std::move(value.get_mutable_handle());
   }
 };

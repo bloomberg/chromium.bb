@@ -227,8 +227,15 @@ def IsMoveOnlyKind(kind):
     return True
   return False
 
+def IsCopyablePassByValue(kind):
+  if not IsTypemappedKind(kind):
+    return False
+  return _current_typemap[GetFullMojomNameForKind(kind)][
+      "copyable_pass_by_value"]
+
 def ShouldPassParamByValue(kind):
-  return (not mojom.IsReferenceKind(kind)) or IsMoveOnlyKind(kind)
+  return ((not mojom.IsReferenceKind(kind)) or IsMoveOnlyKind(kind) or
+      IsCopyablePassByValue(kind))
 
 def GetCppWrapperParamType(kind):
   cpp_wrapper_type = GetCppWrapperType(kind)
