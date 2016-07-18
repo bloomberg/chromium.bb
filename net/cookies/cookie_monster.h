@@ -142,6 +142,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
   ~CookieMonster() override;
 
   // Replaces all the cookies by |list|. This method does not flush the backend.
+  // This method does not support setting secure cookies, which need source
+  // URLs.
+  // TODO(mmenke): This method is only used on iOS. Consider removing it.
   void SetAllCookiesAsync(const CookieList& list,
                           const SetCookiesCallback& callback);
 
@@ -487,6 +490,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                          std::vector<CanonicalCookie*>* cookies);
 
   // Delete any cookies that are equivalent to |ecc| (same path, domain, etc).
+  // |source_url| is the URL that is attempting to set the cookie.
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The
   // return value will be true if |skip_httponly| skipped an httponly cookie or
   // |enforce_strict_secure| is true and the cookie to
@@ -496,6 +500,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // NOTE: There should never be more than a single matching equivalent cookie.
   bool DeleteAnyEquivalentCookie(const std::string& key,
                                  const CanonicalCookie& ecc,
+                                 const GURL& source_url,
                                  bool skip_httponly,
                                  bool already_expired,
                                  bool enforce_strict_secure);
@@ -504,6 +509,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // cookie in cookies_. Guarantee: all iterators to cookies_ remain valid.
   CookieMap::iterator InternalInsertCookie(const std::string& key,
                                            CanonicalCookie* cc,
+                                           const GURL& source_url,
                                            bool sync_to_store);
 
   // Helper function that sets cookies with more control.
@@ -516,7 +522,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Helper function that sets a canonical cookie, deleting equivalents and
   // performing garbage collection.
+  // |source_url| is the URL that's attempting to set the cookie.
   bool SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
+                          const GURL& source_url,
                           const CookieOptions& options);
 
   // Helper function calling SetCanonicalCookie() for all cookies in |list|.

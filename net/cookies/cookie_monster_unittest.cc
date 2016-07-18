@@ -787,9 +787,8 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
 
   bool IsCookieInList(const CanonicalCookie& cookie, const CookieList& list) {
     for (CookieList::const_iterator it = list.begin(); it != list.end(); ++it) {
-      if (it->Source() == cookie.Source() && it->Name() == cookie.Name() &&
-          it->Value() == cookie.Value() && it->Domain() == cookie.Domain() &&
-          it->Path() == cookie.Path() &&
+      if (it->Name() == cookie.Name() && it->Value() == cookie.Value() &&
+          it->Domain() == cookie.Domain() && it->Path() == cookie.Path() &&
           it->CreationDate() == cookie.CreationDate() &&
           it->ExpiryDate() == cookie.ExpiryDate() &&
           it->LastAccessDate() == cookie.LastAccessDate() &&

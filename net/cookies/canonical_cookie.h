@@ -86,7 +86,6 @@ class NET_EXPORT CanonicalCookie {
                                                  CookieSameSite same_site,
                                                  CookiePriority priority);
 
-  const GURL& Source() const { return source_; }
   const std::string& Name() const { return name_; }
   const std::string& Value() const { return value_; }
   const std::string& Domain() const { return domain_; }
@@ -197,6 +196,8 @@ class NET_EXPORT CanonicalCookie {
   static bool IsCookiePrefixValid(CookiePrefix prefix,
                                   const GURL& url,
                                   const ParsedCookie& parsed_cookie);
+
+  const GURL& Source() const { return source_; }
 
   // The source member of a canonical cookie is the origin of the URL that tried
   // to set this cookie.  This field is not persistent though; its only used in

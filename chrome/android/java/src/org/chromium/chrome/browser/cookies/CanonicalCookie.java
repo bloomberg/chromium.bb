@@ -16,7 +16,6 @@ import java.util.List;
  * Also has static methods serialize Cookies.
  */
 class CanonicalCookie {
-    private final String mUrl;
     private final String mName;
     private final String mValue;
     private final String mDomain;
@@ -30,10 +29,9 @@ class CanonicalCookie {
     private final int mPriority;
 
     /** Constructs a CanonicalCookie */
-    CanonicalCookie(String url, String name, String value, String domain, String path,
-            long creation, long expiration, long lastAccess, boolean secure, boolean httpOnly,
-            int sameSite, int priority) {
-        mUrl = url;
+    CanonicalCookie(String name, String value, String domain, String path, long creation,
+            long expiration, long lastAccess, boolean secure, boolean httpOnly, int sameSite,
+            int priority) {
         mName = name;
         mValue = value;
         mDomain = domain;
@@ -90,11 +88,6 @@ class CanonicalCookie {
     /** @return Cookie path. */
     String getPath() {
         return mPath;
-    }
-
-    /** @return Cookie URL. */
-    String getUrl() {
-        return mUrl;
     }
 
     /** @return Cookie domain. */
@@ -164,7 +157,8 @@ class CanonicalCookie {
     }
 
     private void saveToStream(DataOutputStream out) throws IOException {
-        out.writeUTF(mUrl);
+        // URL is no longer included. Keep for backward compatability.
+        out.writeUTF("");
         out.writeUTF(mName);
         out.writeUTF(mValue);
         out.writeUTF(mDomain);
@@ -179,8 +173,10 @@ class CanonicalCookie {
     }
 
     private static CanonicalCookie createFromStream(DataInputStream in) throws IOException {
+        // URL is no longer included. Keep for backward compatability.
+        in.readUTF();
         return new CanonicalCookie(in.readUTF(), in.readUTF(), in.readUTF(), in.readUTF(),
-                in.readUTF(), in.readLong(), in.readLong(), in.readLong(), in.readBoolean(),
-                in.readBoolean(), in.readInt(), in.readInt());
+                in.readLong(), in.readLong(), in.readLong(), in.readBoolean(), in.readBoolean(),
+                in.readInt(), in.readInt());
     }
 }

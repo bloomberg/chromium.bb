@@ -21,7 +21,6 @@ TEST(CanonicalCookieTest, Constructor) {
   CanonicalCookie cookie(url, "A", "2", "www.example.com", "/test",
                          current_time, base::Time(), current_time, false, false,
                          CookieSameSite::DEFAULT_MODE, COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ(url.GetOrigin(), cookie.Source());
   EXPECT_EQ("A", cookie.Name());
   EXPECT_EQ("2", cookie.Value());
   EXPECT_EQ("www.example.com", cookie.Domain());
@@ -34,7 +33,6 @@ TEST(CanonicalCookieTest, Constructor) {
                           current_time, base::Time(), current_time, false,
                           false, CookieSameSite::DEFAULT_MODE,
                           COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ(url.GetOrigin(), cookie.Source());
   EXPECT_EQ("A", cookie2.Name());
   EXPECT_EQ("2", cookie2.Value());
   EXPECT_EQ("", cookie2.Domain());
@@ -52,7 +50,6 @@ TEST(CanonicalCookieTest, Create) {
 
   std::unique_ptr<CanonicalCookie> cookie(
       CanonicalCookie::Create(url, "A=2", creation_time, options));
-  EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
   EXPECT_EQ("www.example.com", cookie->Domain());
@@ -61,7 +58,6 @@ TEST(CanonicalCookieTest, Create) {
 
   GURL url2("http://www.foo.com");
   cookie = CanonicalCookie::Create(url2, "B=1", creation_time, options);
-  EXPECT_EQ(url2.GetOrigin(), cookie->Source());
   EXPECT_EQ("B", cookie->Name());
   EXPECT_EQ("1", cookie->Value());
   EXPECT_EQ("www.foo.com", cookie->Domain());
@@ -101,7 +97,6 @@ TEST(CanonicalCookieTest, Create) {
                                    creation_time, base::Time(), false, false,
                                    CookieSameSite::DEFAULT_MODE, false,
                                    COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
   EXPECT_EQ(".www.example.com", cookie->Domain());
@@ -114,7 +109,6 @@ TEST(CanonicalCookieTest, Create) {
                                    creation_time, base::Time(), false, false,
                                    CookieSameSite::DEFAULT_MODE, false,
                                    COOKIE_PRIORITY_DEFAULT);
-  EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
   EXPECT_EQ(".www.example.com", cookie->Domain());

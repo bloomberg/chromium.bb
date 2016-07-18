@@ -219,7 +219,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   // Per 3.2.1 of "Deprecate modification of 'secure' cookies from non-secure
   // origins", if the cookie's "secure-only-flag" is "true" and the requesting
   // URL does not have a secure scheme, the cookie should be thrown away.
-  // https://tools.ietf.org/html/draft-west-leave-secure-cookies-alone
+  // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone
   if (options.enforce_strict_secure() && parsed_cookie.IsSecure() &&
       !url.SchemeIsCryptographic()) {
     VLOG(kVlogSetCookies)

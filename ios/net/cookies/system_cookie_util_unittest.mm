@@ -74,7 +74,6 @@ TEST(CookieUtil, CanonicalCookieFromSystemCookie) {
   ASSERT_TRUE(system_cookie);
   net::CanonicalCookie chrome_cookie =
       CanonicalCookieFromSystemCookie(system_cookie, creation_time);
-  EXPECT_TRUE(chrome_cookie.Source().is_empty());
   EXPECT_EQ("a", chrome_cookie.Name());
   EXPECT_EQ("b", chrome_cookie.Value());
   EXPECT_EQ("foo", chrome_cookie.Domain());

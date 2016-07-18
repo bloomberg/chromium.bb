@@ -52,6 +52,7 @@ const char kCookieValue1[] = "value 1";
 const char kCookieValue2[] = "value 2";
 const char kGAIACookieDomain[] = "google.com";
 const char kSAMLIdPCookieDomain[] = "example.com";
+const char kSAMLIdPCookieDomainWithWildcard[] = ".example.com";
 
 const char kChannelIDServerIdentifier[] = "server";
 
@@ -174,16 +175,20 @@ void ProfileAuthDataTest::VerifyUserCookies(
     const std::string& expected_gaia_cookie_value,
     const std::string& expected_saml_idp_cookie_value) {
   net::CookieList user_cookies = GetUserCookies();
-  ASSERT_EQ(2u, user_cookies.size());
+  ASSERT_EQ(3u, user_cookies.size());
+
+  // Cookies are returned chronoligically, in the order they were set.
   net::CanonicalCookie* cookie = &user_cookies[0];
-  // kSAMLIdPCookieURL is returned first because it was created first, so has
-  // the earliest creation date.
-  EXPECT_EQ(GURL(kSAMLIdPCookieURL), cookie->Source());
+  EXPECT_EQ(kCookieName, cookie->Name());
+  EXPECT_EQ(expected_saml_idp_cookie_value, cookie->Value());
+  EXPECT_EQ(kSAMLIdPCookieDomainWithWildcard, cookie->Domain());
+
+  cookie = &user_cookies[1];
   EXPECT_EQ(kCookieName, cookie->Name());
   EXPECT_EQ(expected_saml_idp_cookie_value, cookie->Value());
   EXPECT_EQ(kSAMLIdPCookieDomain, cookie->Domain());
-  cookie = &user_cookies[1];
-  EXPECT_EQ(GURL(kGAIACookieURL), cookie->Source());
+
+  cookie = &user_cookies[2];
   EXPECT_EQ(kCookieName, cookie->Name());
   EXPECT_EQ(expected_gaia_cookie_value, cookie->Value());
   EXPECT_EQ(kGAIACookieDomain, cookie->Domain());
@@ -219,6 +224,12 @@ void ProfileAuthDataTest::PopulateBrowserContext(
                                          base::Unretained(this)));
   run_loop_->Run();
 
+  cookies->SetCookieWithDetailsAsync(
+      GURL(kSAMLIdPCookieURL), kCookieName, cookie_value,
+      kSAMLIdPCookieDomainWithWildcard, std::string(), base::Time(),
+      base::Time(), base::Time(), true, false,
+      net::CookieSameSite::DEFAULT_MODE, false, net::COOKIE_PRIORITY_DEFAULT,
+      net::CookieStore::SetCookiesCallback());
   cookies->SetCookieWithDetailsAsync(
       GURL(kSAMLIdPCookieURL), kCookieName, cookie_value, std::string(),
       std::string(), base::Time(), base::Time(), base::Time(), true, false,

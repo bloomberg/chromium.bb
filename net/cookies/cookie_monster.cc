@@ -1077,7 +1077,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
       CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   if (enforce_strict_secure)
     options.set_enforce_strict_secure();
-  return SetCanonicalCookie(std::move(cc), options);
+  return SetCanonicalCookie(std::move(cc), url, options);
 }
 
 CookieList CookieMonster::GetAllCookies() {
@@ -1395,7 +1395,7 @@ void CookieMonster::StoreLoadedCookies(
 
     if (creation_times_.insert(cookie_creation_time).second) {
       CookieMap::iterator inserted =
-          InternalInsertCookie(GetKey((*it)->Domain()), *it, false);
+          InternalInsertCookie(GetKey((*it)->Domain()), *it, GURL(), false);
       const Time cookie_access_time((*it)->LastAccessDate());
       if (earliest_access_time_.is_null() ||
           cookie_access_time < earliest_access_time_)
@@ -1612,6 +1612,7 @@ void CookieMonster::FindCookiesForKey(const std::string& key,
 
 bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
                                               const CanonicalCookie& ecc,
+                                              const GURL& source_url,
                                               bool skip_httponly,
                                               bool already_expired,
                                               bool enforce_strict_secure) {
@@ -1636,7 +1637,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
     // ignoring the path attribute.
     //
     // See: https://tools.ietf.org/html/draft-west-leave-secure-cookies-alone
-    if (enforce_strict_secure && !ecc.Source().SchemeIsCryptographic() &&
+    if (enforce_strict_secure && !source_url.SchemeIsCryptographic() &&
         ecc.IsEquivalentForSecureCookieMatching(*cc) && cc->IsSecure()) {
       skipped_secure_cookie = true;
       histogram_cookie_delete_equivalent_->Add(
@@ -1677,6 +1678,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
 CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
     const std::string& key,
     CanonicalCookie* cc,
+    const GURL& source_url,
     bool sync_to_store) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1708,9 +1710,9 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
   // http:// URLs, but not cookies that are cleared by http:// URLs, to
   // understand if the former behavior can be deprecated for Secure
   // cookies.
-  if (!cc->Source().is_empty()) {
+  if (!source_url.is_empty()) {
     CookieSource cookie_source_sample;
-    if (cc->Source().SchemeIsCryptographic()) {
+    if (source_url.SchemeIsCryptographic()) {
       cookie_source_sample =
           cc->IsSecure() ? COOKIE_SOURCE_SECURE_COOKIE_CRYPTOGRAPHIC_SCHEME
                          : COOKIE_SOURCE_NONSECURE_COOKIE_CRYPTOGRAPHIC_SCHEME;
@@ -1750,10 +1752,11 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
     return false;
   }
-  return SetCanonicalCookie(std::move(cc), options);
+  return SetCanonicalCookie(std::move(cc), url, options);
 }
 
 bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
+                                       const GURL& source_url,
                                        const CookieOptions& options) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -1761,8 +1764,8 @@ bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
   const std::string key(GetKey(cc->Domain()));
   bool already_expired = cc->IsExpired(creation_time);
 
-  if (DeleteAnyEquivalentCookie(key, *cc, options.exclude_httponly(),
-                                already_expired,
+  if (DeleteAnyEquivalentCookie(key, *cc, source_url,
+                                options.exclude_httponly(), already_expired,
                                 options.enforce_strict_secure())) {
     std::string error;
     if (options.enforce_strict_secure()) {
@@ -1789,7 +1792,7 @@ bool CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
           (cc->ExpiryDate() - creation_time).InMinutes());
     }
 
-    InternalInsertCookie(key, cc.release(), true);
+    InternalInsertCookie(key, cc.release(), source_url, true);
   } else {
     VLOG(kVlogSetCookies) << "SetCookie() not storing already expired cookie.";
   }
@@ -1811,8 +1814,9 @@ bool CookieMonster::SetCanonicalCookies(const CookieList& list) {
   options.set_include_httponly();
 
   for (const auto& cookie : list) {
+    // Use an empty GURL.  This method does not support setting secure cookies.
     if (!SetCanonicalCookie(base::WrapUnique(new CanonicalCookie(cookie)),
-                            options)) {
+                            GURL(), options)) {
       return false;
     }
   }

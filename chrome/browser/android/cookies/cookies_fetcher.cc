@@ -77,9 +77,11 @@ void CookiesFetcher::OnCookiesFetchFinished(const net::CookieList& cookies) {
   int index = 0;
   for (net::CookieList::const_iterator i = cookies.begin();
       i != cookies.end(); ++i) {
+    std::string domain = i->Domain();
+    if (domain.length() > 1 && domain[0] == '.')
+      domain = domain.substr(1);
     ScopedJavaLocalRef<jobject> java_cookie = Java_CookiesFetcher_createCookie(
         env, jobject_.obj(),
-        base::android::ConvertUTF8ToJavaString(env, i->Source().spec()).obj(),
         base::android::ConvertUTF8ToJavaString(env, i->Name()).obj(),
         base::android::ConvertUTF8ToJavaString(env, i->Value()).obj(),
         base::android::ConvertUTF8ToJavaString(env, i->Domain()).obj(),
@@ -109,22 +111,32 @@ static void RestoreToCookieJarInternal(net::URLRequestContextGetter* getter,
 
   base::Callback<void(bool success)> cb;
 
-  // TODO(estark): Remove kEnableExperimentalWebPlatformFeatures check
-  // when we decide whether to ship cookie
-  // prefixes. https://crbug.com/541511
-  bool experimental_features_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures);
+  // To re-create the original cookie, a domain should only be passed in to
+  // SetCookieWithDetailsAsync if cookie.Domain() has a leading period, to
+  // re-create the original cookie.
+  std::string effective_domain = cookie.Domain();
+  std::string host;
+  if (effective_domain.length() > 1 && effective_domain[0] == '.') {
+    host = effective_domain.substr(1);
+  } else {
+    host = effective_domain;
+    effective_domain = "";
+  }
+
+  // Assume HTTPS - since the cookies are being restored from another store,
+  // they have already gone through the strict secure check.
+  GURL url(std::string(url::kHttpsScheme) + url::kStandardSchemeSeparator +
+           host + "/");
+
   store->SetCookieWithDetailsAsync(
-      cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
-      cookie.Path(), base::Time(), cookie.ExpiryDate(), cookie.LastAccessDate(),
-      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(),
-      experimental_features_enabled, cookie.Priority(), cb);
+      url, cookie.Name(), cookie.Value(), effective_domain, cookie.Path(),
+      base::Time(), cookie.ExpiryDate(), cookie.LastAccessDate(),
+      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.SameSite(), false,
+      cookie.Priority(), cb);
 }
 
 static void RestoreCookies(JNIEnv* env,
                            const JavaParamRef<jclass>& jcaller,
-                           const JavaParamRef<jstring>& url,
                            const JavaParamRef<jstring>& name,
                            const JavaParamRef<jstring>& value,
                            const JavaParamRef<jstring>& domain,
@@ -146,8 +158,7 @@ static void RestoreCookies(JNIEnv* env,
       profile->GetRequestContext());
 
   net::CanonicalCookie cookie(
-      GURL(base::android::ConvertJavaStringToUTF8(env, url)),
-      base::android::ConvertJavaStringToUTF8(env, name),
+      GURL(), base::android::ConvertJavaStringToUTF8(env, name),
       base::android::ConvertJavaStringToUTF8(env, value),
       base::android::ConvertJavaStringToUTF8(env, domain),
       base::android::ConvertJavaStringToUTF8(env, path),

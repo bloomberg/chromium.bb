@@ -51,7 +51,6 @@ public class CanonicalCookieTest {
     }
 
     private static void assertCookiesEqual(CanonicalCookie lhs, CanonicalCookie rhs) {
-        Assert.assertEquals(lhs.getUrl(), rhs.getUrl());
         Assert.assertEquals(lhs.getName(), rhs.getName());
         Assert.assertEquals(lhs.getValue(), rhs.getValue());
         Assert.assertEquals(lhs.getDomain(), rhs.getDomain());
@@ -84,15 +83,15 @@ public class CanonicalCookieTest {
     @Test
     public void testSaveRestore() throws Exception {
         ArrayList<CanonicalCookie> cookies = new ArrayList<>();
-        cookies.add(new CanonicalCookie("http://url", "name", "value", "domain", "path",
-                0 /* creation */, 1 /* expiration */, 0 /* lastAccess */, false /* secure */,
-                true /* httpOnly */, 0 /* sameSite */, 0 /* priority */));
-        cookies.add(new CanonicalCookie("http://url2", "name2", "value2", "domain2", "path2",
-                10 /* creation */, 20 /* expiration */, 15 /* lastAccess */, true /* secure */,
-                false /* httpOnly */, 1 /* sameSite */, 1 /* priority */));
-        cookies.add(new CanonicalCookie("http://url3", "name3", "value3", "domain3", "path3",
-                10 /* creation */, 20 /* expiration */, 15 /* lastAccess */, true /* secure */,
-                false /* httpOnly */, 2 /* sameSite */, 2 /* priority */));
+        cookies.add(new CanonicalCookie("name", "value", "domain", "path", 0 /* creation */,
+                1 /* expiration */, 0 /* lastAccess */, false /* secure */, true /* httpOnly */,
+                0 /* sameSite */, 0 /* priority */));
+        cookies.add(new CanonicalCookie("name2", "value2", ".domain2", "path2", 10 /* creation */,
+                20 /* expiration */, 15 /* lastAccess */, true /* secure */, false /* httpOnly */,
+                1 /* sameSite */, 1 /* priority */));
+        cookies.add(new CanonicalCookie("name3", "value3", "domain3", "path3", 10 /* creation */,
+                20 /* expiration */, 15 /* lastAccess */, true /* secure */, false /* httpOnly */,
+                2 /* sameSite */, 2 /* priority */));
 
         doSaveRestoreCookiesListTest(cookies);
     }
