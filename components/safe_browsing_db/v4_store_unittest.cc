@@ -177,46 +177,29 @@ TEST_F(V4StoreTest, TestAddUnlumpedHashes) {
   EXPECT_EQ("abcde5432100000-----", hash_prefixes);
 }
 
-TEST_F(V4StoreTest, TestGetNextSmallestPrefixSizeWithEmptyPrefixMap) {
+TEST_F(V4StoreTest, TestGetNextSmallestUnmergedPrefixWithEmptyPrefixMap) {
   HashPrefixMap prefix_map;
-  CounterMap counter_map;
-  V4Store::InitializeCounterMap(prefix_map, &counter_map);
+  IteratorMap iterator_map;
+  V4Store::InitializeIteratorMap(prefix_map, &iterator_map);
 
-  PrefixSize prefix_size;
-  EXPECT_FALSE(V4Store::GetNextSmallestPrefixSize(prefix_map, counter_map,
-                                                  &prefix_size));
+  HashPrefix prefix;
+  EXPECT_FALSE(V4Store::GetNextSmallestUnmergedPrefix(prefix_map, iterator_map,
+                                                      &prefix));
 }
 
-TEST_F(V4StoreTest, TestGetNextSmallestPrefixSize) {
+TEST_F(V4StoreTest, TestGetNextSmallestUnmergedPrefix) {
   HashPrefixMap prefix_map;
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
             V4Store::AddUnlumpedHashes(5, "-----0000054321abcde", &prefix_map));
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            V4Store::AddUnlumpedHashes(4, "-----0000054321abcde", &prefix_map));
-  CounterMap counter_map;
-  V4Store::InitializeCounterMap(prefix_map, &counter_map);
+            V4Store::AddUnlumpedHashes(4, "*****0000054321abcde", &prefix_map));
+  IteratorMap iterator_map;
+  V4Store::InitializeIteratorMap(prefix_map, &iterator_map);
 
-  PrefixSize prefix_size;
-  EXPECT_TRUE(V4Store::GetNextSmallestPrefixSize(prefix_map, counter_map,
-                                                 &prefix_size));
-  EXPECT_EQ(4u, prefix_size);
-}
-
-TEST_F(V4StoreTest, TestGetNextUnmergedPrefix) {
-  HashPrefixMap prefix_map;
-  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            V4Store::AddUnlumpedHashes(5, "-----0000054321abcde", &prefix_map));
-  EXPECT_EQ(APPLY_UPDATE_SUCCESS,
-            V4Store::AddUnlumpedHashes(4, "-----0000054321abcde", &prefix_map));
-  CounterMap counter_map;
-  V4Store::InitializeCounterMap(prefix_map, &counter_map);
-
-  PrefixSize prefix_size;
-  EXPECT_TRUE(V4Store::GetNextSmallestPrefixSize(prefix_map, counter_map,
-                                                 &prefix_size));
-  const HashPrefix& prefix = V4Store::GetNextUnmergedPrefixForSize(
-      prefix_size, prefix_map, counter_map);
-  EXPECT_EQ("----", prefix);
+  HashPrefix prefix;
+  EXPECT_TRUE(V4Store::GetNextSmallestUnmergedPrefix(prefix_map, iterator_map,
+                                                     &prefix));
+  EXPECT_EQ("****", prefix);
 }
 
 TEST_F(V4StoreTest, TestMergeUpdatesWithSameSizesInEachMap) {
