@@ -5204,8 +5204,10 @@ void RenderFrameImpl::OnFind(int request_id,
   // increment the current match ordinal; we need to re-generate it.
   WebRange current_selection = frame_->selectionRange();
 
-  if (frame_->find(request_id, search_text, options,
-                   false /* wrapWithinFrame */, &selection_rect, &active_now)) {
+  bool result = frame_->find(request_id, search_text, options,
+                             false /* wrapWithinFrame */, &selection_rect,
+                             &active_now);
+  if (result && !options.findNext) {
     // Indicate that at least one match has been found. 1 here means possibly
     // more matches could be coming. -1 here means that the exact active match
     // ordinal is not yet known.
