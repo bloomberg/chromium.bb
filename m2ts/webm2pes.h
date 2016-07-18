@@ -189,6 +189,16 @@ class PacketReceiverInterface {
   virtual bool ReceivePacket(const PacketDataBuffer& packet) = 0;
 };
 
+struct VpxFrame {
+  VpxFrame() = default;
+  ~VpxFrame() = default;
+  explicit VpxFrame(std::int64_t pts_in_nanoseconds)
+      : nanosecond_pts(pts_in_nanoseconds) {}
+  std::unique_ptr<std::uint8_t[]> data;
+  std::size_t length = 0;
+  std::int64_t nanosecond_pts = 0;
+};
+
 // Converts the VP9 track of a WebM file to a Packetized Elementary Stream
 // suitable for use in a MPEG2TS.
 // https://en.wikipedia.org/wiki/Packetized_elementary_stream
@@ -221,8 +231,9 @@ class Webm2Pes {
 
  private:
   bool InitWebmParser();
-  bool WritePesPacket(const mkvparser::Block::Frame& vpx_frame,
-                      double nanosecond_pts);
+  bool ReadVpxFrame(const mkvparser::Block::Frame& mkvparser_frame,
+                    VpxFrame* vpx_frame);
+  bool WritePesPacket(const VpxFrame& vpx_frame);
 
   const std::string input_file_name_;
   const std::string output_file_name_;
