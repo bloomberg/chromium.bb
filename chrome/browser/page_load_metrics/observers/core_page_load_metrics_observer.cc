@@ -198,11 +198,6 @@ const char kHistogramLoadTypeParseStartForwardBack[] =
 const char kHistogramLoadTypeParseStartNewNavigation[] =
     "PageLoad.ParseTiming.NavigationToParseStart.LoadType.NewNavigation";
 
-const char kHistogramFirstContentfulPaintHigh[] =
-    "PageLoad.Timing2.NavigationToFirstContentfulPaint.HighResolutionClock";
-const char kHistogramFirstContentfulPaintLow[] =
-    "PageLoad.Timing2.NavigationToFirstContentfulPaint.LowResolutionClock";
-
 const char kHistogramFirstBackground[] =
     "PageLoad.Timing2.NavigationToFirstBackground";
 const char kHistogramFirstForeground[] =
@@ -582,15 +577,6 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
             timing.first_contentful_paint, info)) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaint,
                           timing.first_contentful_paint.value());
-      // Bucket these histograms into high/low resolution clock systems. This
-      // might point us to directions that will de-noise some UMA.
-      if (base::TimeTicks::IsHighResolution()) {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintHigh,
-                            timing.first_contentful_paint.value());
-      } else {
-        PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstContentfulPaintLow,
-                            timing.first_contentful_paint.value());
-      }
       PAGE_LOAD_HISTOGRAM(
           internal::kHistogramParseStartToFirstContentfulPaint,
           timing.first_contentful_paint.value() - timing.parse_start.value());
