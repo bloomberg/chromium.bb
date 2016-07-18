@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
+#include "base/system_monitor/system_monitor.h"
 #include "chromeos/audio/audio_devices_pref_handler_stub.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
@@ -1254,6 +1255,18 @@ void CrasAudioHandler::HandleAudioDeviceChange(
   } else {
     // Typical user hotplug case.
     HandleHotPlugDevice(hotplug_nodes.top(), devices_pq);
+  }
+
+  // content::MediaStreamManager listens to
+  // base::SystemMonitor::DevicesChangedObserver for audio capture devices,
+  // and updates EnumerateDevices when OnDevicesChanged is called.
+  if (is_input) {
+    base::SystemMonitor* monitor = base::SystemMonitor::Get();
+    // In some unittest, |monitor| might be nullptr.
+    if (!monitor)
+      return;
+    monitor->ProcessDevicesChanged(
+        base::SystemMonitor::DeviceType::DEVTYPE_AUDIO_CAPTURE);
   }
 }
 
