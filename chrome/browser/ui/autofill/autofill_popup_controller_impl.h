@@ -101,6 +101,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   const gfx::FontList& GetValueFontListForRow(size_t index) const override;
   const gfx::FontList& GetLabelFontList() const override;
 #endif
+  SkColor GetBackgroundColorForRow(int index) const override;
   int selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;
 

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
@@ -408,8 +409,9 @@ const gfx::FontList& AutofillPopupControllerImpl::GetValueFontListForRow(
     case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
     case POPUP_ITEM_ID_SEPARATOR:
-    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
       return normal_font_list_;
+    case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
+      return smaller_font_list_;
     case POPUP_ITEM_ID_TITLE:
     case POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY:
     case POPUP_ITEM_ID_DATALIST_ENTRY:
@@ -424,6 +426,17 @@ const gfx::FontList& AutofillPopupControllerImpl::GetLabelFontList() const {
   return smaller_font_list_;
 }
 #endif
+
+SkColor AutofillPopupControllerImpl::GetBackgroundColorForRow(int index) const {
+  if (index == selected_line_)
+    return kHoveredBackgroundColor;
+  if (suggestions_[index].frontend_id ==
+      POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
+    return kPromoPopupBackground;
+  }
+
+  return SK_ColorTRANSPARENT;
+}
 
 int AutofillPopupControllerImpl::selected_line() const {
   return selected_line_;
