@@ -158,18 +158,7 @@ int DefaultBrowserInfoBarDelegate::GetButtons() const {
 base::string16 DefaultBrowserInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   DCHECK_EQ(BUTTON_OK, button);
-#if defined(OS_WIN)
-  // On Windows 10, the "OK" button opens the Windows Settings application,
-  // through which the user must make their default browser choice.
-  const int kSetAsDefaultButtonMessageId =
-      base::win::GetVersion() >= base::win::VERSION_WIN10
-          ? IDS_DEFAULT_BROWSER_INFOBAR_OK_BUTTON_LABEL_WIN_10
-          : IDS_DEFAULT_BROWSER_INFOBAR_OK_BUTTON_LABEL;
-#else
-  const int kSetAsDefaultButtonMessageId =
-      IDS_DEFAULT_BROWSER_INFOBAR_OK_BUTTON_LABEL;
-#endif
-  return l10n_util::GetStringUTF16(kSetAsDefaultButtonMessageId);
+  return l10n_util::GetStringUTF16(IDS_DEFAULT_BROWSER_INFOBAR_OK_BUTTON_LABEL);
 }
 
 // Setting an app as the default browser doesn't require elevation directly, but
