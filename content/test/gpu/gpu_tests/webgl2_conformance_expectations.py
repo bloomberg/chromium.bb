@@ -34,7 +34,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
-    self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
 
     # All platforms.
