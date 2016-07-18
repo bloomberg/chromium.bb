@@ -41,11 +41,12 @@ bool PaintController::useCachedDrawingIfPossible(const DisplayItemClient& client
     if (!clientCacheIsValid(client))
         return false;
 
-#if ENABLE(ASSERT)
-    // When under-invalidation checking is enabled, we output CachedDrawing display item
-    // followed by the display item containing forced painting.
-    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+#if DCHECK_IS_ON()
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() && isCheckingUnderInvalidation()) {
+        // We are checking under-invalidation of a subsequence enclosing this display item.
+        // Let the client continue to actually paint the display item.
         return false;
+    }
 #endif
 
     DisplayItemList::iterator cachedItem = findCachedItem(DisplayItem::Id(client, type));
@@ -56,12 +57,26 @@ bool PaintController::useCachedDrawingIfPossible(const DisplayItemClient& client
 
     ++m_numCachedNewItems;
     ensureNewDisplayItemListInitialCapacity();
-    processNewItem(m_newDisplayItemList.appendByMoving(*cachedItem));
+    if (!DCHECK_IS_ON() || !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        processNewItem(m_newDisplayItemList.appendByMoving(*cachedItem));
 
     m_nextItemToMatch = cachedItem + 1;
     // Items before m_nextItemToMatch have been copied so we don't need to index them.
     if (m_nextItemToMatch - m_nextItemToIndex > 0)
         m_nextItemToIndex = m_nextItemToMatch;
+
+#if DCHECK_IS_ON()
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+        if (!isCheckingUnderInvalidation()) {
+            m_underInvalidationCheckingBegin = cachedItem;
+            m_underInvalidationCheckingEnd = cachedItem + 1;
+            m_underInvalidationMessagePrefix = "";
+        }
+        // Return false to let the painter actually paint, and we will check if the new painting
+        // is the same as the cached.
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -81,11 +96,13 @@ bool PaintController::useCachedSubsequenceIfPossible(const DisplayItemClient& cl
     if (!clientCacheIsValid(client))
         return false;
 
-#if ENABLE(ASSERT)
-    // When under-invalidation checking is enabled, we output CachedDrawing display item
-    // followed by the display item containing forced painting.
-    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+#if DCHECK_IS_ON()
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled() && isCheckingUnderInvalidation()) {
+        // We are checking under-invalidation of an ancestor subsequence enclosing this one.
+        // The ancestor subsequence is supposed to have already "copied", so we should let the
+        // client continue to actually paint the descendant subsequences without "copying".
         return false;
+    }
 #endif
 
     DisplayItemList::iterator cachedItem = findCachedItem(DisplayItem::Id(client, DisplayItem::Subsequence));
@@ -102,6 +119,14 @@ bool PaintController::useCachedSubsequenceIfPossible(const DisplayItemClient& cl
     // Items before |cachedItem| have been copied so we don't need to index them.
     if (cachedItem - m_nextItemToIndex > 0)
         m_nextItemToIndex = cachedItem;
+
+#if DCHECK_IS_ON()
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+        // Return false to let the painter actually paint, and we will check if the new painting
+        // is the same as the cached.
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -185,6 +210,9 @@ void PaintController::processNewItem(DisplayItem& displayItem)
         NOTREACHED();
     }
     addItemToIndexIfNeeded(displayItem, m_newDisplayItemList.size() - 1, m_newDisplayItemIndicesByClient);
+
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+        checkUnderInvalidation();
 #endif // DCHECK_IS_ON()
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
@@ -313,11 +341,27 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const
     return end;
 }
 
+// Copies a cached subsequence from current list to the new list.
 // On return, |it| points to the item after the EndSubsequence item of the subsequence.
+// When paintUnderInvaldiationCheckingEnabled() we'll not actually copy the subsequence,
+// but mark the begin and end of the subsequence for under-invalidation checking.
 void PaintController::copyCachedSubsequence(DisplayItemList::iterator& it)
 {
+#if DCHECK_IS_ON()
     DCHECK(it->getType() == DisplayItem::Subsequence);
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+        DCHECK(!isCheckingUnderInvalidation());
+        m_underInvalidationCheckingBegin = it;
+#ifndef NDEBUG
+        m_underInvalidationMessagePrefix = "(In CachedSubsequence of " + it->clientDebugString() + ")";
+#else
+        m_underInvalidationMessagePrefix = "(In CachedSubsequence)";
+#endif
+    }
+#endif
+
     DisplayItem::Id endSubsequenceId(it->client(), DisplayItem::EndSubsequence);
+    bool metEndSubsequence = false;
     do {
         // We should always find the EndSubsequence display item.
         DCHECK(it != m_currentPaintArtifact.getDisplayItemList().end());
@@ -326,9 +370,19 @@ void PaintController::copyCachedSubsequence(DisplayItemList::iterator& it)
         CHECK(it->client().isAlive());
 #endif
         ++m_numCachedNewItems;
-        processNewItem(m_newDisplayItemList.appendByMoving(*it));
+        if (it->getId() == endSubsequenceId)
+            metEndSubsequence = true;
+        if (!DCHECK_IS_ON() || !RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled())
+            processNewItem(m_newDisplayItemList.appendByMoving(*it));
         ++it;
-    } while (endSubsequenceId != m_newDisplayItemList.last().getId());
+    } while (!metEndSubsequence);
+
+#if DCHECK_IS_ON()
+    if (RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()) {
+        m_underInvalidationCheckingEnd = it;
+        DCHECK(isCheckingUnderInvalidation());
+    }
+#endif
 }
 
 static IntRect visualRectForDisplayItem(const DisplayItem& displayItem, const LayoutSize& offsetFromLayoutObject)
@@ -342,6 +396,10 @@ void PaintController::resetCurrentListIterators()
 {
     m_nextItemToMatch = m_currentPaintArtifact.getDisplayItemList().begin();
     m_nextItemToIndex = m_nextItemToMatch;
+#if DCHECK_IS_ON()
+    m_underInvalidationCheckingBegin = m_currentPaintArtifact.getDisplayItemList().end();
+    m_underInvalidationCheckingEnd = m_currentPaintArtifact.getDisplayItemList().begin();
+#endif
 }
 
 void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutObject)
@@ -428,91 +486,47 @@ void PaintController::appendDebugDrawingAfterCommit(const DisplayItemClient& dis
     resetCurrentListIterators();
 }
 
-#if 0 // DCHECK_IS_ON()
-// TODO(wangxianzhu): Fix under-invalidation checking for the new caching method.
+#if DCHECK_IS_ON()
 
-void PaintController::checkUnderInvalidation(DisplayItemList::iterator& newIt, DisplayItemList::iterator& currentIt)
+void PaintController::showUnderInvalidationError(const char* reason, const DisplayItem& newItem, const DisplayItem& oldItem) const
 {
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
-
-    // When under-invalidation-checking is enabled, the forced painting is following the cached display item.
-    DisplayItem::Type nextItemType = DisplayItem::nonCachedType(newIt->getType());
-    ++newIt;
-    DCHECK(newIt->getType() == nextItemType);
-
-    if (newIt->isDrawing()) {
-        checkCachedDisplayItemIsUnchanged("", *newIt, *currentIt);
-        return;
-    }
-
-    DCHECK(newIt->getType() == DisplayItem::Subsequence);
-
+    LOG(ERROR) << m_underInvalidationMessagePrefix << " " << reason;
 #ifndef NDEBUG
-    CString messagePrefix = String::format("(In CachedSubsequence of %s)", newIt->clientDebugString().utf8().data()).utf8();
+    LOG(ERROR) << "New display item: " << newItem.asDebugString();
+    LOG(ERROR) << "Old display item: " << oldItem.asDebugString();
 #else
-    CString messagePrefix = "(In CachedSubsequence)";
+    LOG(ERROR) << "Run debug build to get more details.";
 #endif
-
-    DisplayItem::Id endSubsequenceId(newIt->client(), DisplayItem::EndSubsequence);
-    while (true) {
-        DCHECK(newIt != m_newDisplayItemList.end());
-        if (newIt->isCached())
-            checkUnderInvalidation(newIt, currentIt);
-        else
-            checkCachedDisplayItemIsUnchanged(messagePrefix.data(), *newIt, *currentIt);
-
-        if (endSubsequenceId.matches(*newIt))
-            break;
-
-        ++newIt;
-        ++currentIt;
-    }
-}
-
-static void showUnderInvalidationError(const char* messagePrefix, const char* reason, const DisplayItem* newItem, const DisplayItem* oldItem)
-{
-#ifndef NDEBUG
-    WTFLogAlways("%s %s:\nNew display item: %s\nOld display item: %s\nSee http://crbug.com/450725.", messagePrefix, reason,
-        newItem ? newItem->asDebugString().utf8().data() : "None",
-        oldItem ? oldItem->asDebugString().utf8().data() : "None");
-#else
-    WTFLogAlways("%s %s. Run debug build to get more details\nSee http://crbug.com/450725.", messagePrefix, reason);
-#endif // NDEBUG
-}
-
-void PaintController::checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem)
-{
-    DCHECK(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
-    DCHECK(!newItem.isCached());
-    DCHECK(!oldItem.isCached());
-
-    if (newItem.skippedCache()) {
-        showUnderInvalidationError(messagePrefix, "ERROR: under-invalidation: skipped-cache in cached subsequence", &newItem, &oldItem);
-        NOTREACHED();
-    }
-
-    if (newItem.isCacheable() && !clientCacheIsValid(newItem.client())) {
-        showUnderInvalidationError(messagePrefix, "ERROR: under-invalidation: invalidated in cached subsequence", &newItem, &oldItem);
-        NOTREACHED();
-    }
-
-    if (newItem.equals(oldItem))
-        return;
-
-    showUnderInvalidationError(messagePrefix, "ERROR: under-invalidation: display item changed", &newItem, &oldItem);
+    LOG(ERROR) << "See http://crbug.com/619103.";
 
 #ifndef NDEBUG
     if (newItem.isDrawing()) {
         RefPtr<const SkPicture> newPicture = static_cast<const DrawingDisplayItem&>(newItem).picture();
         RefPtr<const SkPicture> oldPicture = static_cast<const DrawingDisplayItem&>(oldItem).picture();
-        String oldPictureDebugString = oldPicture ? pictureAsDebugString(oldPicture.get()) : "None";
-        String newPictureDebugString = newPicture ? pictureAsDebugString(newPicture.get()) : "None";
-        WTFLogAlways("old picture:\n%s\n", oldPictureDebugString.utf8().data());
-        WTFLogAlways("new picture:\n%s\n", newPictureDebugString.utf8().data());
+        LOG(INFO) << "new picture:\n" << (newPicture ? pictureAsDebugString(newPicture.get()) : "None");
+        LOG(INFO) << "old picture:\n" << (oldPicture ? pictureAsDebugString(oldPicture.get()) : "None");
     }
 #endif // NDEBUG
+}
 
-    NOTREACHED();
+void PaintController::checkUnderInvalidation()
+{
+    DCHECK(RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled());
+
+    if (!isCheckingUnderInvalidation())
+        return;
+
+    const DisplayItem& newItem = m_newDisplayItemList.last();
+    const DisplayItem& oldItem = *m_underInvalidationCheckingBegin++;
+
+    if (newItem.isCacheable() && !clientCacheIsValid(newItem.client())) {
+        showUnderInvalidationError("under-invalidation of PaintLayer: invalidated in cached subsequence", newItem, oldItem);
+        NOTREACHED();
+    }
+    if (!newItem.equals(oldItem)) {
+        showUnderInvalidationError("under-invalidation: display item changed", newItem, oldItem);
+        NOTREACHED();
+    }
 }
 
 #endif // DCHECK_IS_ON()
@@ -533,10 +547,12 @@ String PaintController::displayItemListAsDebugString(const DisplayItemList& list
             stringBuilder.append(", cacheIsValid: ");
             stringBuilder.append(clientCacheIsValid(displayItem.client()) ? "true" : "false");
         }
-        IntRect visualRect = list.visualRect(i);
-        stringBuilder.append(String::format(", visualRect: [%d,%d %dx%d]",
-            visualRect.x(), visualRect.y(),
-            visualRect.width(), visualRect.height()));
+        if (list.hasVisualRect(i)) {
+            IntRect visualRect = list.visualRect(i);
+            stringBuilder.append(String::format(", visualRect: [%d,%d %dx%d]",
+                visualRect.x(), visualRect.y(),
+                visualRect.width(), visualRect.height()));
+        }
         stringBuilder.append('}');
     }
     return stringBuilder.toString();
