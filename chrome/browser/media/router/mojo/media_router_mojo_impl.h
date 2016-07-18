@@ -136,6 +136,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       RegisterAndUnregisterMediaSinksObserverWithAvailabilityChange);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            RegisterAndUnregisterMediaRoutesObserver);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           PresentationSessionMessagesSingleObserver);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
+                           PresentationSessionMessagesMultipleObservers);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoExtensionTest,
                            DeferredBindingAndSuspension);
@@ -261,7 +265,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void DoSendSessionBinaryMessage(const MediaRoute::Id& route_id,
                                   std::unique_ptr<std::vector<uint8_t>> data,
                                   const SendRouteMessageCallback& callback);
-  void DoListenForRouteMessages(const MediaRoute::Id& route_id);
+  void DoStartListeningForRouteMessages(const MediaRoute::Id& route_id);
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
@@ -273,15 +277,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const std::string& search_input,
       const std::string& domain,
       const MediaSinkSearchResponseCallback& sink_callback);
-
-  // Invoked when the next batch of messages arrives.
-  // |route_id|: ID of route of the messages.
-  // |messages|: A list of messages received.
-  // |error|: true if an error occurred.
-  void OnRouteMessagesReceived(
-      const MediaRoute::Id& route_id,
-      mojo::Array<interfaces::RouteMessagePtr> messages,
-      bool error);
 
   // Error handler callback for |binding_| and |media_route_provider_|.
   void OnConnectionError();
@@ -307,6 +302,9 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const mojo::String& route_id,
       interfaces::MediaRouter::PresentationConnectionCloseReason reason,
       const mojo::String& message) override;
+  void OnRouteMessagesReceived(
+      const mojo::String& route_id,
+      mojo::Array<interfaces::RouteMessagePtr> messages) override;
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
@@ -377,12 +375,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       MediaRoute::Id,
       std::unique_ptr<PresentationSessionMessagesObserverList>>
       messages_observers_;
-
-  // IDs of MediaRoutes being listened for messages. Note that this is
-  // different from |message_observers_| because we might be waiting for
-  // |OnRouteMessagesReceived()| to be invoked after all observers for that
-  // route have been removed.
-  std::set<MediaRoute::Id> route_ids_listening_for_messages_;
 
   IssueManager issue_manager_;
 

@@ -206,8 +206,8 @@ interface MediaRouteProvider {
   // CreateRoute for additional documentation.
   //
   // If |timeout_millis| is positive, it will be used in place of the default
-  // timeout defined by Media Route Provider Manager; see CreateRoute for additional
-  // documentation.
+  // timeout defined by Media Route Provider Manager; see CreateRoute for
+  // additional documentation.
   //
   // If the route request was created by an off the record (incognito) profile,
   // |off_the_record| must be true.
@@ -272,18 +272,15 @@ interface MediaRouteProvider {
   // that being with StartObservingMediaRoutes()).
   StopObservingMediaRoutes(string media_source);
 
-  // Called when the MediaRouter is ready to get the next batch of messages
-  // associated with |route_id|.
-  // |messages| returned will contain the batch of messages.
-  // |messages| will be empty if |StopListeningForRouteMessages| was invoked.
-  // |error| indicates if a permanent error occurred. If true, then subsequent
-  // calls will also return with |error| being true.
-  ListenForRouteMessages(string route_id) =>
-      (array<RouteMessage> messages, bool error);
+  // Starts listening for messages from the media sink for the route given by
+  // |route_id|.
+  // |MediaRouter::OnRouteMessagesReceived| will be invoked when a batch of
+  // messages arrives, or when there is an error.
+  // |StopListeningForRouteMessages| will stop the Media Router from receiving
+  // further messages for |route_id|.
+  StartListeningForRouteMessages(string route_id);
 
   // Called when there are no more listeners for messages for |route_id|.
-  // Calling this will resolve the pending |ListenForRouteMessages| callback
-  // with an empty list.
   StopListeningForRouteMessages(string route_id);
 
   // Indicates that a PresentationConnection that was connected to route
@@ -374,5 +371,14 @@ interface MediaRouter {
   OnPresentationConnectionClosed(
       string route_id, PresentationConnectionCloseReason reason,
       string message);
+
+  // Called when the a batch of messages arrives from the media sink for the
+  // route given by |route_id|.
+  // |StartListeningForRouteMessages| must be called first in order to receive
+  // messages.
+  // |route_id|: ID of route of the messages.
+  // |messages|: A non-empty list of messages received.
+  OnRouteMessagesReceived(string route_id,
+                          array<RouteMessage> messages);
 };
 

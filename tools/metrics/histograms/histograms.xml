@@ -83140,7 +83140,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="StopObservingMediaSinks"/>
   <int value="8" label="StartObservingMediaRoutes"/>
   <int value="9" label="StopObservingMediaRoutes"/>
-  <int value="10" label="ListenForRouteMessages"/>
+  <int value="10" label="StartListeningForRouteMessages"/>
   <int value="11" label="StopListeningForRouteMessages"/>
   <int value="12" label="ConnectionError"/>
   <int value="13" label="RegisterMediaRouteProvider"/>

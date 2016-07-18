@@ -74,9 +74,8 @@ class MockMediaRouteProvider : public interfaces::MediaRouteProvider {
                void(const mojo::String& media_route_id,
                     const std::vector<uint8_t>& data,
                     const SendRouteMessageCallback& callback));
-  MOCK_METHOD2(ListenForRouteMessages,
-               void(const mojo::String& route_id,
-                    const ListenForRouteMessagesCallback& callback));
+  MOCK_METHOD1(StartListeningForRouteMessages,
+               void(const mojo::String& route_id));
   MOCK_METHOD1(StopListeningForRouteMessages,
                void(const mojo::String& route_id));
   MOCK_METHOD1(OnPresentationSessionDetached,

@@ -412,6 +412,15 @@ define('media_router_bindings', [
   };
 
   /**
+   * @param {string} routeId
+   * @param {!Array<!RouteMessage>} mesages
+   */
+  MediaRouter.prototype.onRouteMessagesReceived = function(routeId, messages) {
+    this.service_.onRouteMessagesReceived(
+        routeId, messages.map(messageToMojo_));
+  };
+
+  /**
    * Object containing callbacks set by the provider manager.
    *
    * @constructor
@@ -454,10 +463,16 @@ define('media_router_bindings', [
     this.sendRouteBinaryMessage = null;
 
     /**
+     * TODO(imcheng): Remove in M55 (crbug.com/626395).
      * @type {function(string):
      *     Promise.<{messages: Array.<RouteMessage>, error: boolean}>}
      */
     this.listenForRouteMessages = null;
+
+    /**
+     * @type {function(string)}
+     */
+    this.startlisteningForRouteMessages = null;
 
     /**
      * @type {function(string)}
@@ -537,7 +552,7 @@ define('media_router_bindings', [
       'startObservingMediaRoutes',
       'sendRouteMessage',
       'sendRouteBinaryMessage',
-      'listenForRouteMessages',
+      'startListeningForRouteMessages',
       'stopListeningForRouteMessages',
       'detachRoute',
       'terminateRoute',
@@ -715,29 +730,47 @@ define('media_router_bindings', [
   };
 
   /**
-   * Listen for next batch of messages from one of the routeIds.
+   * Listen for messages from a route.
    * @param {!string} routeId
-   * @return {!Promise.<{messages: Array.<RouteMessage>, error: boolean}>}
-   *     Resolved with a list of messages, and a boolean indicating if an error
-   *     occurred.
    */
-  MediaRouteProvider.prototype.listenForRouteMessages = function(routeId) {
-    return this.handlers_.listenForRouteMessages(routeId)
+  MediaRouteProvider.prototype.startListeningForRouteMessages = function(
+      routeId) {
+    if (this.handlers_.startListeningForRouteMessages) {
+      this.handlers_.startListeningForRouteMessages(routeId);
+    } else {
+      // Old API.
+      this.listenForRouteMessagesOld(routeId);
+    }
+  };
+
+
+  /**
+   * A hack to adapt new MR messaging API to old extension messaging API.
+   * TODO(imcheng): Remove in M55 (crbug.com/626395).
+   * @param {!string} routeId
+   */
+  MediaRouteProvider.prototype.listenForRouteMessagesOld = function(routeId) {
+    this.handlers_.listenForRouteMessages(routeId)
         .then(function(messages) {
-          return {'messages': messages.map(messageToMojo_), 'error': false};
-        }, function() {
-          return {'messages': [], 'error': true};
-        });
+          // If messages is empty, then stopListeningForRouteMessages has been
+          // called. We don't need to send it back to MR.
+          if (messages.length > 0) {
+            // Send the messages back to MR, and listen for next batch of
+            // messages.
+            this.mediaRouter_.onRouteMessagesReceived(routeId, messages);
+            this.listenForRouteMessagesOld(routeId);
+          }
+        }.bind(this), function() {
+          // Ignore rejections.
+        }.bind(this));
   };
 
   /**
-   * If there is an outstanding |listenForRouteMessages| promise for
-   * |routeId|, resolve that promise with an empty array.
    * @param {!string} routeId
    */
   MediaRouteProvider.prototype.stopListeningForRouteMessages = function(
       routeId) {
-    return this.handlers_.stopListeningForRouteMessages(routeId);
+    this.handlers_.stopListeningForRouteMessages(routeId);
   };
 
   /**
