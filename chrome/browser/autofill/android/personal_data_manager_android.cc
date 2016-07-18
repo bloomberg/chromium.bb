@@ -31,7 +31,6 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -138,21 +137,19 @@ void PopulateNativeProfileFromJava(
 
 // Mapping from Chrome card types to PaymentRequest basic card payment spec and
 // icons. Note that "generic" is not in the spec.
-// https://w3c.github.io/webpayments-methods-card/#method-id
+// https://w3c.github.io/browser-payment-api/specs/basic-card-payment.html#method-id
 const struct PaymentRequestData {
   const char* card_type;
   const char* basic_card_payment_type;
   const int icon_resource_id;
 } kPaymentRequestData[] {
   {"genericCC", "generic", IDR_AUTOFILL_PR_GENERIC},
-
   {"americanExpressCC", "amex", IDR_AUTOFILL_PR_AMEX},
-  {"dinersCC", "diners", IDR_AUTOFILL_PR_DINERS},
+  {"dinersCC", "diners", IDR_AUTOFILL_PR_GENERIC},
   {"discoverCC", "discover", IDR_AUTOFILL_PR_DISCOVER},
-  {"jcbCC", "jcb", IDR_AUTOFILL_PR_JCB},
+  {"jcbCC", "jcb", IDR_AUTOFILL_PR_GENERIC},
   {"masterCardCC", "mastercard", IDR_AUTOFILL_PR_MASTERCARD},
-  {"unionPayCC", "unionpay", IDR_AUTOFILL_PR_UNIONPAY},
-  {"visaCC", "visa", IDR_AUTOFILL_PR_VISA},
+  {"visaCC", "visa", IDR_AUTOFILL_PR_VISA}
 };
 
 // Converts the card type into PaymentRequest type according to the basic card
@@ -220,20 +217,10 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
  public:
   FullCardRequester() {}
 
-  // Takes ownership of |card|.
   void GetFullCard(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& jweb_contents,
                    const base::android::JavaParamRef<jobject>& jdelegate,
-                   std::unique_ptr<CreditCard> card) {
-    card_ = std::move(card);
-    GetFullCard(env, jweb_contents, jdelegate, card_.get());
-  }
-
-  // Does not take ownership of |card|.
-  void GetFullCard(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& jweb_contents,
-                   const base::android::JavaParamRef<jobject>& jdelegate,
-                   const CreditCard* card) {
+                   CreditCard* card) {
     jdelegate_.Reset(env, jdelegate);
 
     if (!card) {
@@ -286,7 +273,6 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
     delete this;
   }
 
-  std::unique_ptr<CreditCard> card_;
   ScopedJavaGlobalRef<jobject> jdelegate_;
 
   DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
@@ -421,16 +407,6 @@ ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByGUID(
   return CreateJavaCreditCardFromNative(env, *card);
 }
 
-ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardForNumber(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jstring>& jcard_number) {
-  // A local card with empty GUID.
-  CreditCard card("", "");
-  card.SetNumber(ConvertJavaStringToUTF16(env, jcard_number));
-  return CreateJavaCreditCardFromNative(env, card);
-}
-
 ScopedJavaLocalRef<jstring> PersonalDataManagerAndroid::SetCreditCard(
     JNIEnv* env,
     const JavaParamRef<jobject>& unused_obj,
@@ -464,20 +440,6 @@ void PersonalDataManagerAndroid::UpdateServerCardBillingAddress(
   personal_data_manager_->UpdateServerCardBillingAddress(card);
 }
 
-ScopedJavaLocalRef<jstring>
-PersonalDataManagerAndroid::GetBasicCardPaymentTypeIfValid(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jstring>& jcard_number) {
-  base::string16 card_number = ConvertJavaStringToUTF16(env, jcard_number);
-  return ConvertUTF8ToJavaString(
-      env,
-      IsValidCreditCardNumber(card_number)
-          ? GetPaymentRequestData(CreditCard::GetCreditCardType(card_number))
-                .basic_card_payment_type
-          : "");
-}
-
 void PersonalDataManagerAndroid::AddServerCreditCardForTest(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& unused_obj,
@@ -509,39 +471,11 @@ void PersonalDataManagerAndroid::GetFullCardForPaymentRequest(
     const JavaParamRef<jobject>& jweb_contents,
     const JavaParamRef<jstring>& jguid,
     const JavaParamRef<jobject>& jdelegate) {
-  // Self-deleting object that does not take ownership of the CreditCard from
-  // the PersonalDataManager. The PersonalDataManager owns that CreditCard.
+  // Self-deleting object.
   (new FullCardRequester())
       ->GetFullCard(env, jweb_contents, jdelegate,
                     personal_data_manager_->GetCreditCardByGUID(
                         ConvertJavaStringToUTF8(env, jguid)));
-}
-
-void PersonalDataManagerAndroid::GetFullTemporaryCardForPaymentRequest(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jobject>& jweb_contents,
-    const JavaParamRef<jstring>& jcard_number,
-    const JavaParamRef<jstring>& jname_on_card,
-    const JavaParamRef<jstring>& jexpiration_month,
-    const JavaParamRef<jstring>& jexpiration_year,
-    const JavaParamRef<jobject>& jdelegate) {
-  // FullCardRequest will not attempt to save a card with an empty GUID.
-  std::unique_ptr<CreditCard> card(new CreditCard("", ""));
-  card->SetNumber(ConvertJavaStringToUTF16(env, jcard_number));
-  card->SetRawInfo(
-      CREDIT_CARD_NAME_FULL,
-      ConvertJavaStringToUTF16(env, jname_on_card));
-  card->SetRawInfo(
-      CREDIT_CARD_EXP_MONTH,
-      ConvertJavaStringToUTF16(env, jexpiration_month));
-  card->SetRawInfo(
-      CREDIT_CARD_EXP_4_DIGIT_YEAR,
-      ConvertJavaStringToUTF16(env, jexpiration_year));
-
-  // Self-deleting object that takes ownership of the CreditCard.
-  (new FullCardRequester())
-      ->GetFullCard(env, jweb_contents, jdelegate, std::move(card));
 }
 
 void PersonalDataManagerAndroid::OnPersonalDataChanged() {

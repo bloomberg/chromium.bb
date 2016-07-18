@@ -46,7 +46,7 @@ public class AutofillProfileBridge {
      * A convenience class for displaying keyed values in a dropdown.
      */
     public static class DropdownKeyValue extends Pair<String, String> {
-        public DropdownKeyValue(String key, String value) {
+        DropdownKeyValue(String key, String value) {
             super(key, value);
         }
 

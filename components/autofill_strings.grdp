@@ -45,28 +45,28 @@
       Remove address from Chromium?
     </message>
   </if>
-  <message name="IDS_AUTOFILL_CC_AMEX" desc="Full American Express credit card name." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CC_AMEX" desc="Full American Express credit card name.">
     American Express
   </message>
   <message name="IDS_AUTOFILL_CC_AMEX_SHORT" desc="Shorter name for American Express credit card.">
     Amex
   </message>
-  <message name="IDS_AUTOFILL_CC_DINERS" desc="Diners Club credit card name." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CC_DINERS" desc="Diners Club credit card name.">
     Diners Club
   </message>
-  <message name="IDS_AUTOFILL_CC_DISCOVER" desc="Discover credit card name." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CC_DISCOVER" desc="Discover credit card name.">
     Discover
   </message>
-  <message name="IDS_AUTOFILL_CC_JCB" desc="JCB credit card name." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CC_JCB" desc="JCB credit card name.">
     JCB
   </message>
-  <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name.">
     MasterCard
   </message>
-  <message name="IDS_AUTOFILL_CC_UNION_PAY" desc="China UnionPay credit card name." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CC_UNION_PAY" desc="China UnionPay credit card name.">
     China UnionPay
   </message>
-  <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name." formatter_data="android_java">
+  <message name="IDS_AUTOFILL_CC_VISA" desc="Visa credit card name.">
     Visa
   </message>
   <message name="IDS_AUTOFILL_CC_GENERIC" desc="Generic credit card name.">

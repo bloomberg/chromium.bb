@@ -33,7 +33,7 @@ public class AutofillContact extends PaymentOption {
         super(profile.getGUID(), null, null, PaymentOption.NO_ICON);
         mProfile = profile;
         mIsComplete = isComplete;
-        setGuidPhoneEmail(profile.getGUID(), phone, email);
+        setPhoneEmail(phone, email);
     }
 
     /** @return Email address. Null if the merchant did not request it or data is incomplete. */
@@ -52,23 +52,21 @@ public class AutofillContact extends PaymentOption {
     }
 
     /**
-     * Updates the profile guid, email address, and phone number and marks this information
-     * "complete." Called after the user has edited this contact information. Updates the
-     * identifier, label, and sublabel.
+     * Updates the email address and phone number and marks this information "complete." Called
+     * after the user has edited this contact information. Updates the label and sublabel.
      *
-     * @param guid  The new identifier to use. Should not be null or empty.
      * @param phone The new phone number to use. If not empty, this will be the primary label.
      * @param email The new email address to use. If phone is empty, this will be the primary label.
      */
-    public void completeContact(String guid, @Nullable String phone, @Nullable String email) {
+    public void completeContact(@Nullable String phone, @Nullable String email) {
         mIsComplete = true;
-        setGuidPhoneEmail(guid, phone, email);
+        setPhoneEmail(phone, email);
     }
 
-    private void setGuidPhoneEmail(String guid, @Nullable String phone, @Nullable String email) {
+    private void setPhoneEmail(@Nullable String phone, @Nullable String email) {
         mPayerPhone = TextUtils.isEmpty(phone) ? null : phone;
         mPayerEmail = TextUtils.isEmpty(email) ? null : email;
-        updateIdentifierAndLabels(guid, mPayerPhone == null ? mPayerEmail : mPayerPhone,
+        updateLabels(mPayerPhone == null ? mPayerEmail : mPayerPhone,
                 mPayerPhone == null ? null : mPayerEmail);
     }
 }

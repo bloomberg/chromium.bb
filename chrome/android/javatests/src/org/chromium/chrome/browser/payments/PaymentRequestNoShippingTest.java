@@ -19,10 +19,6 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for a merchant that does not require shipping address.
  */
 public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
-    private static final int DECEMBER = 11;
-    private static final int NEXT_YEAR = 1;
-    private static final int FIRST_BILLING_ADDRESS = 1;
-
     public PaymentRequestNoShippingTest() {
         super("payment_request_no_shipping_test.html");
     }
@@ -39,7 +35,6 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
                 billingAddressId));
     }
 
-    /** Click [X] to cancel payment. */
     @MediumTest
     public void testCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
@@ -48,7 +43,6 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"Request cancelled"});
     }
 
-    /** Click [EDIT] to expand the dialog, then click [X] to cancel payment. */
     @MediumTest
     public void testEditAndCloseDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
@@ -58,7 +52,6 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"Request cancelled"});
     }
 
-    /** Click [EDIT] to expand the dialog, then click [CANCEL] to cancel payment. */
     @MediumTest
     public void testEditAndCancelDialog() throws InterruptedException, ExecutionException,
             TimeoutException {
@@ -68,7 +61,6 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"Request cancelled"});
     }
 
-    /** Click [PAY] and dismiss the card unmask dialog. */
     @MediumTest
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
@@ -79,7 +71,6 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
                 "123"});
     }
 
-    /** Click [PAY], type in "123" into the CVC dialog, then submit the payment. */
     @MediumTest
     public void testCancelUnmaskAndRetry()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -91,94 +82,5 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
                 "123"});
-    }
-
-    /** Attempt to add an invalid credit card number and cancel payment. */
-    @MediumTest
-    public void testAddInvalidCardNumberAndCancel()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
-        clickAndWait(R.id.close_button, mDismissed);
-        expectResultContains(new String[] {"Request cancelled"});
-    }
-
-    private void fillNewCardForm(String cardNumber, String nameOnCard, int month, int year,
-            int billingAddress) throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {cardNumber, nameOnCard}, mEditorTextUpdate);
-        setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {month, year, billingAddress}, mBillingAddressChangeProcessed);
-    }
-
-    /** Attempt to add a credit card with an empty name on card and cancel payment. */
-    @MediumTest
-    public void testAddEmptyNameOnCardAndCancel()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mEditorDismissed);
-        clickAndWait(R.id.close_button, mDismissed);
-        expectResultContains(new String[] {"Request cancelled"});
-    }
-
-    /** Save a new card on disk and pay. */
-    @MediumTest
-    public void testSaveNewCardAndPay()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"5454545454545454", "12", "Bob"});
-    }
-
-    /** Use a temporary credit card to complete payment. */
-    @MediumTest
-    public void testAddTemporaryCardAndPay()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        fillNewCardForm("5454-5454-5454-5454", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
-
-        // Uncheck the "Save this card on this device" checkbox, so the card is temporary.
-        selectCheckboxAndWait(R.id.payments_edit_checkbox, false, mReadyToEdit);
-
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"5454545454545454", "12", "Bob"});
-    }
-
-    /** Add a new card together with a new billing address and pay. */
-    @MediumTest
-    public void testSaveNewCardAndNewBillingAddressAndPay()
-            throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {"5454 5454 5454 5454", "Bob"}, mEditorTextUpdate);
-
-        // Select December of next year for expiration and [Add address] in the billing address
-        // dropdown.
-        int december = 11;
-        int nextYear = 1;
-        int addBillingAddress = 2;
-        setSpinnerSelectionsInCardEditorAndWait(new int[] {december, nextYear, addBillingAddress},
-                mReadyToEdit);
-
-        setTextInEditorAndWait(new String[] {"Bob", "Google", "1600 Amphitheatre Pkwy",
-                "Mountain View", "CA", "94043", "999-999-9999"}, mEditorTextUpdate);
-        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToEdit);
-
-        clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
-        expectResultContains(new String[] {"5454545454545454", "12", "Bob", "Google",
-                "1600 Amphitheatre Pkwy", "Mountain View", "CA", "94043", "999-999-9999"});
     }
 }

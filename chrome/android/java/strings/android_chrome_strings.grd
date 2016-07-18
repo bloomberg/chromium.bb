@@ -2607,29 +2607,14 @@ You can control the Physical Web in Chrome Settings.
       </message>
 
       <!-- Payments -->
-      <message name="IDS_PAYMENTS_SAVE_CARD_TO_DEVICE_CHECKBOX" desc="The label for the checkbox that enables the user to save a credit card to their device, for example, on their phone.">
-        Save this card to this device
-      </message>
-      <message name="IDS_PAYMENTS_ACCEPTED_CARDS_LABEL" desc="The title for the section that displays the credit card types that the merchant accepts.">
-        Cards accepted
-      </message>
       <message name="IDS_PAYMENTS_METHOD_OF_PAYMENT_LABEL" desc="The title for the section that lets the user select the method of payment.">
         Payment
-      </message>
-      <message name="IDS_PAYMENTS_SELECT_METHOD_OF_PAYMENT_PROMPT" desc="The label for the button that presents the user with the list of possible methods of payments, for example a list of their credit cards..">
-        Select payment method
       </message>
       <message name="IDS_PAYMENTS_CONTACT_DETAILS_LABEL" desc="The title for the section that lets the user select how they can be contacted.">
         Contact info
       </message>
       <message name="IDS_PAYMENTS_SELECT_CONTACT_DETAILS_PROMPT" desc="The label for the button that presents the user with the list of possible phone numbers and email addresses where the user can be reached.">
         Select contact details
-      </message>
-      <message name="IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to add new contact information, such as email address or phone number.">
-        Add contact info
-      </message>
-      <message name="IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to edit their contact information, such as email address or phone number.">
-        Edit contact info
       </message>
       <message name="IDS_PAYMENTS_SHIPPING_SUMMARY_LABEL" desc="The title for the section of shipping information.">
         Shipping
@@ -2652,8 +2637,23 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_ORDER_SUMMARY_LABEL" desc="The title of the section that shows the summary of the order, including names and prices of individual line items, i.e. the bill.">
         Order summary
       </message>
+      <message name="IDS_PAYMENTS_ADD_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to add new contact information, such as email address or phone number.">
+        Add contact info
+      </message>
+      <message name="IDS_PAYMENTS_EDIT_CONTACT_DETAILS_LABEL" desc="The title of the dialog for user to edit their contact information, such as email address or phone number.">
+        Edit contact info
+      </message>
+      <message name="IDS_PAYMENTS_ADD_ADDRESS_LABEL" desc="The title of the dialog for user to add a new address, such as shipping address or billing address.">
+        Add address
+      </message>
+      <message name="IDS_PAYMENTS_EDIT_ADDRESS_LABEL" desc="The title of the dialog for user to edit their address, such as shipping address or billing address.">
+        Edit address
+      </message>
       <message name="IDS_PAYMENTS_EDIT_BUTTON" desc="The label for the button that lets the user edit their payment options.">
         Edit
+      </message>
+      <message name="IDS_PAYMENTS_CANCEL_BUTTON" desc="The label for the button that cancels the pending payment operation.">
+        Cancel
       </message>
       <message name="IDS_PAYMENTS_PAY_BUTTON" desc="The label for the button that finishes the payment process.">
         Pay
@@ -2673,20 +2673,29 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_PAYMENTS_REQUIRED_FIELD_MESSAGE" desc="The text that informs the user that '*' character indicates an input field that is required. The '*' character should not be changed.">
         * indicates required field
       </message>
-      <message name="IDS_PAYMENTS_FIELD_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that an input field is required.">
+      <message name="IDS_PAYMENTS_ADDRESS_FIELD_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that an address field is required.">
         Required field
+      </message>
+      <message name="IDS_PAYMENTS_PHONE_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that phone number is required.">
+        Phone number required
       </message>
       <message name="IDS_PAYMENTS_PHONE_INVALID_VALIDATION_MESSAGE" desc="The text that informs the user that the phone number they have entered is not valid.">
         Invalid phone number
       </message>
+      <message name="IDS_PAYMENTS_EMAIL_REQUIRED_VALIDATION_MESSAGE" desc="The text that informs the user that email address is required.">
+        Email address required
+      </message>
       <message name="IDS_PAYMENTS_EMAIL_INVALID_VALIDATION_MESSAGE" desc="The text that informs the user that the email address they have entered is not valid.">
         Invalid email address
       </message>
-      <message name="IDS_PAYMENTS_CARD_NUMBER_INVALID_VALIDATION_MESSAGE" desc="The text that informs the user that the credit card number they have entered is not valid.">
-        Invalid card number
-      </message>
       <message name="IDS_PAYMENTS_ADD_CONTACT" desc="Text on a button that lets a user add new contact details, like phone number or email address.">
         Add contact info
+      </message>
+      <message name="IDS_PAYMENTS_ADD_ADDRESS" desc="Text on a button that lets a user add a new shipping address.">
+        Add address
+      </message>
+      <message name="IDS_PAYMENTS_ADD_PAYMENT_INSTRUMENT" desc="Text on a button that lets a user add a new payment method, like a credit card.">
+        Add card
       </message>
       <message name="IDS_PAYMENTS_SELECT_SHIPPING_ADDRESS_FOR_SHIPPING_METHODS" desc="Text implying that a user needs to pick a shipping address to see the shipping methods.">
         Select a shipping address to check shipping methods.

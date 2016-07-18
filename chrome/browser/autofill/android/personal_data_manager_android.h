@@ -96,15 +96,6 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jguid);
 
-  // Returns a credit card with the specified |jcard_number|. This is used for
-  // determining the card's obfuscated number, issuer icon, and type in one go.
-  // This function does not interact with the autofill table on disk, so can be
-  // used for cards that are not saved.
-  base::android::ScopedJavaLocalRef<jobject> GetCreditCardForNumber(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jcard_number);
-
   // Adds or modifies a local credit card.  If |jguid| is an empty string, we
   // are creating a new card.  Else we are updating an existing profile.  Always
   // returns the GUID for this profile; the GUID it may have just been created.
@@ -114,18 +105,10 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& jcard);
 
   // Updates the billing address of a server credit card with GUID |jguid|.
-  void UpdateServerCardBillingAddress(
-      JNIEnv* env,
+  void UpdateServerCardBillingAddress(JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jguid,
       const base::android::JavaParamRef<jstring>& jbilling_address_id);
-
-  // Returns the card type according to PaymentRequest spec, or an empty string
-  // if the given card number is not valid.
-  base::android::ScopedJavaLocalRef<jstring> GetBasicCardPaymentTypeIfValid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jstring>& jcard_number);
 
   // Adds a server credit card. Used only in tests.
   void AddServerCreditCardForTest(
@@ -144,33 +127,12 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jguid);
 
-  // Gets the card CVC and expiration date (if it's expired). If the card is
-  // masked, unmasks it. If the user has entered new expiration date, the new
-  // date is saved on disk.
-  //
-  // The full card details are sent to the delegate.
+  // Gets the card CVC and unmasks the card (if it's masked).
   void GetFullCardForPaymentRequest(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jobject>& jweb_contents,
       const base::android::JavaParamRef<jstring>& jguid,
-      const base::android::JavaParamRef<jobject>& jdelegate);
-
-  // Gets the card CVC and expiration date (if it's expired) for a card that's
-  // temporary and not stored on disk. No unmasking is performed. If the user
-  // has entered new expiration date, the new date is not saved on disk, because
-  // this card is temporary.
-  //
-  // The card number, name on card, and expiration date are used for UI display
-  // and are sent to the delegate after user confirms their CVC.
-  void GetFullTemporaryCardForPaymentRequest(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jobject>& jweb_contents,
-      const base::android::JavaParamRef<jstring>& jcard_number,
-      const base::android::JavaParamRef<jstring>& jname_on_card,
-      const base::android::JavaParamRef<jstring>& jexpiration_month,
-      const base::android::JavaParamRef<jstring>& jexpiration_year,
       const base::android::JavaParamRef<jobject>& jdelegate);
 
   // PersonalDataManagerObserver:
