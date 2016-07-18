@@ -88,15 +88,15 @@ void PrintTo(const Size& size, ::std::ostream* os);
 GFX_EXPORT Size ScaleToCeiledSize(const Size& size,
                                   float x_scale,
                                   float y_scale);
-GFX_EXPORT Size ScaleToCeiledSize(const Size& size, float x_scale);
+GFX_EXPORT Size ScaleToCeiledSize(const Size& size, float scale);
 GFX_EXPORT Size ScaleToFlooredSize(const Size& size,
                                    float x_scale,
                                    float y_scale);
-GFX_EXPORT Size ScaleToFlooredSize(const Size& size, float x_scale);
+GFX_EXPORT Size ScaleToFlooredSize(const Size& size, float scale);
 GFX_EXPORT Size ScaleToRoundedSize(const Size& size,
                                    float x_scale,
                                    float y_scale);
-GFX_EXPORT Size ScaleToRoundedSize(const Size& size, float x_scale);
+GFX_EXPORT Size ScaleToRoundedSize(const Size& size, float scale);
 
 }  // namespace gfx
 
