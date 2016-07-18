@@ -498,6 +498,11 @@ LayoutUnit LayoutFlexibleBox::mainAxisExtentForChild(const LayoutBox& child) con
     return isHorizontalFlow() ? child.size().width() : child.size().height();
 }
 
+LayoutUnit LayoutFlexibleBox::mainAxisContentExtentForChild(const LayoutBox& child) const
+{
+    return isHorizontalFlow() ? child.contentWidth() : child.contentHeight();
+}
+
 LayoutUnit LayoutFlexibleBox::crossAxisExtent() const
 {
     return isHorizontalFlow() ? size().height() : size().width();
@@ -1409,12 +1414,12 @@ static LayoutUnit alignmentOffset(LayoutUnit availableFreeSpace, ItemPosition po
     return LayoutUnit();
 }
 
-void LayoutFlexibleBox::setOverrideMainAxisSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize)
+void LayoutFlexibleBox::setOverrideMainAxisContentSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize)
 {
     if (hasOrthogonalFlow(child))
-        child.setOverrideLogicalContentHeight(childPreferredSize - child.borderAndPaddingLogicalHeight());
+        child.setOverrideLogicalContentHeight(childPreferredSize);
     else
-        child.setOverrideLogicalContentWidth(childPreferredSize - child.borderAndPaddingLogicalWidth());
+        child.setOverrideLogicalContentWidth(childPreferredSize);
 }
 
 LayoutUnit LayoutFlexibleBox::staticMainAxisPositionForPositionedChild(const LayoutBox& child)
@@ -1611,9 +1616,8 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
 
         child->setMayNeedPaintInvalidation();
 
-        LayoutUnit childPreferredSize = flexItem.flexedContentSize + mainAxisBorderAndPaddingExtentForChild(*child);
-        setOverrideMainAxisSizeForChild(*child, childPreferredSize);
-        if (childPreferredSize != mainAxisExtentForChild(*child)) {
+        setOverrideMainAxisContentSizeForChild(*child, flexItem.flexedContentSize);
+        if (flexItem.flexedContentSize != mainAxisContentExtentForChild(*child)) {
             child->setChildNeedsLayout(MarkOnlyThis);
         } else {
             // To avoid double applying margin changes in updateAutoMarginsInCrossAxis, we reset the margins here.

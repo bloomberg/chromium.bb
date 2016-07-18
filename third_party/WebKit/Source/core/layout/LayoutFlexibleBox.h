@@ -120,6 +120,7 @@ private:
     LayoutUnit childIntrinsicHeight(const LayoutBox& child) const;
     LayoutUnit childIntrinsicWidth(const LayoutBox& child) const;
     LayoutUnit mainAxisExtentForChild(const LayoutBox& child) const;
+    LayoutUnit mainAxisContentExtentForChild(const LayoutBox& child) const;
     LayoutUnit crossAxisExtent() const;
     LayoutUnit mainAxisExtent() const;
     LayoutUnit crossAxisContentExtent() const;
@@ -181,7 +182,7 @@ private:
     void freezeViolations(Vector<FlexItem*>&, LayoutUnit& availableFreeSpace, double& totalFlexGrow, double& totalFlexShrink, double& totalWeightedFlexShrink);
 
     void resetAutoMarginsAndLogicalTopInCrossAxis(LayoutBox& child);
-    void setOverrideMainAxisSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize);
+    void setOverrideMainAxisContentSizeForChild(LayoutBox& child, LayoutUnit childPreferredSize);
     void prepareChildForPositionedLayout(LayoutBox& child);
     size_t numberOfInFlowPositionedChildren(const OrderedFlexItemList&) const;
     void layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, const OrderedFlexItemList&, LayoutUnit availableFreeSpace, bool relayoutChildren, SubtreeLayoutScope&, Vector<LineContext>&);
