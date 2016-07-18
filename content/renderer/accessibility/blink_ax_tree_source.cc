@@ -525,14 +525,12 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
           browser_plugin->browser_plugin_instance_id());
     }
 
-    // Iframe.
-    if (is_iframe) {
-      WebFrame* frame = WebFrame::fromFrameOwnerElement(element);
-      if (frame) {
-        dst->AddContentIntAttribute(
-            AX_CONTENT_ATTR_CHILD_ROUTING_ID,
-            GetRoutingIdForFrameOrProxy(frame));
-      }
+    // Frames and iframes.
+    WebFrame* frame = WebFrame::fromFrameOwnerElement(element);
+    if (frame) {
+      dst->AddContentIntAttribute(
+          AX_CONTENT_ATTR_CHILD_ROUTING_ID,
+          GetRoutingIdForFrameOrProxy(frame));
     }
   }
 

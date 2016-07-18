@@ -1,4 +1,3 @@
-#<skip -- Flaky failure crbug.com/414157>
 AXWebArea
 ++AXUnknown
 ++++AXWebArea
@@ -11,5 +10,6 @@ AXWebArea
 ++++AXWebArea
 ++++++AXGroup
 ++++++++AXStaticText AXValue='This test is to check '
-++++++++AXStaticText AXValue='mark tag'
+++++++++AXGroup
+++++++++++AXStaticText AXValue='mark tag'
 ++++++++AXStaticText AXValue='.'
