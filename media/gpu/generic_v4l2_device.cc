@@ -48,8 +48,11 @@ const char kImageProcessorDevice[] = "/dev/image-proc0";
 const char kJpegDecoderDevice[] = "/dev/jpeg-dec";
 }
 
-GenericV4L2Device::GenericV4L2Device(Type type)
-    : V4L2Device(type), use_libv4l2_(false) {}
+GenericV4L2Device::GenericV4L2Device(Type type) : V4L2Device(type) {
+#if defined(USE_LIBV4L2)
+  use_libv4l2_ = false;
+#endif
+}
 
 GenericV4L2Device::~GenericV4L2Device() {
 #if defined(USE_LIBV4L2)

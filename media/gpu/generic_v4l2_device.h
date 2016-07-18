@@ -64,8 +64,10 @@ class GenericV4L2Device : public V4L2Device {
   // interrupted.
   base::ScopedFD device_poll_interrupt_fd_;
 
+#if USE_LIBV4L2
   // Use libv4l2 when operating |device_fd_|.
   bool use_libv4l2_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(GenericV4L2Device);
 
