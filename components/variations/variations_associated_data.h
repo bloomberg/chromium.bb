@@ -164,6 +164,31 @@ std::string GetVariationParamValueByFeature(const base::Feature& feature,
 // Expose some functions for testing.
 namespace testing {
 
+// Use this class as a member in your test class to set variation params for
+// your tests. You can directly set the parameters in the constructor (if they
+// are used by other members upon construction). You can change them later
+// arbitrarily many times using the SetVariationParams function. Internally, it
+// creates a FieldTrialList as a member. It works well for multiple tests of a
+// given test class, as it clears the parameters when this class is destructed.
+// Note that it clears all parameters (not just those registered here).
+class VariationParamsManager {
+ public:
+  VariationParamsManager(const std::string& trial_name,
+                         const std::map<std::string, std::string>& params);
+  ~VariationParamsManager();
+
+  // Associates |params| with the given |trial_name|. It creates a new group,
+  // used only for testing. Between two calls of this function,
+  // ClearAllVariationParams() has to be called.
+  void SetVariationParams(const std::string& trial_name,
+                          const std::map<std::string, std::string>& params);
+
+ private:
+  std::unique_ptr<base::FieldTrialList> field_trial_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(VariationParamsManager);
+};
+
 // Clears all of the mapped associations.
 void ClearAllVariationIDs();
 
