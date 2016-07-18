@@ -344,18 +344,19 @@ gfx::Rect MapRectInternal(const FilterOperation& op,
       SkVector spread = MapStdDeviation(op.amount(), matrix);
       float spread_x = std::abs(spread.x());
       float spread_y = std::abs(spread.y());
-      gfx::Rect result = rect;
+      gfx::RectF result(rect);
       result.Inset(-spread_x, -spread_y, -spread_x, -spread_y);
 
-      gfx::Vector2d drop_shadow_offset =
-          op.drop_shadow_offset().OffsetFromOrigin();
-      if (direction == SkImageFilter::kForward_MapDirection)
-        result += drop_shadow_offset;
-      else
-        result -= drop_shadow_offset;
-
-      result.Union(rect);
-      return result;
+      gfx::Point drop_shadow_offset = op.drop_shadow_offset();
+      SkVector mapped_drop_shadow_offset;
+      matrix.mapVector(drop_shadow_offset.x(), drop_shadow_offset.y(),
+                       &mapped_drop_shadow_offset);
+      if (direction == SkImageFilter::kReverse_MapDirection)
+        mapped_drop_shadow_offset = -mapped_drop_shadow_offset;
+      result += gfx::Vector2dF(mapped_drop_shadow_offset.x(),
+                               mapped_drop_shadow_offset.y());
+      result.Union(gfx::RectF(rect));
+      return gfx::ToEnclosingRect(result);
     }
     case FilterOperation::REFERENCE: {
       if (!op.image_filter())
