@@ -10,7 +10,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-import org.chromium.webapk.lib.common.WebApkUtils;
+import org.chromium.webapk.lib.common.WebApkVersionUtils;
 
 import java.io.File;
 import java.util.Scanner;
@@ -90,7 +90,7 @@ public class HostBrowserClassLoader {
             DexLoader.deleteCachedDexes(localDexDir);
         }
 
-        String dexAssetName = WebApkUtils.getRuntimeDexName(newRuntimeDexVersion);
+        String dexAssetName = WebApkVersionUtils.getRuntimeDexName(newRuntimeDexVersion);
         File remoteDexFile =
                 new File(remoteContext.getDir("dex", Context.MODE_PRIVATE), dexAssetName);
         return DexLoader.load(remoteContext, dexAssetName, canaryClassName,

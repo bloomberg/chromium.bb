@@ -78,6 +78,7 @@ android_apk("webapk") {
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService1.java",
     "src/org/chromium/webapk/shell_apk/WebApkSandboxedProcessService2.java",
     "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
+    "src/org/chromium/webapk/shell_apk/WebApkUtils.java",
   ]
   deps = [
     ":dex_loader_java",

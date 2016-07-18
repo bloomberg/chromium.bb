@@ -10,8 +10,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
-import org.chromium.webapk.lib.common.WebApkUtils;
-
 import java.lang.reflect.Method;
 
 /**

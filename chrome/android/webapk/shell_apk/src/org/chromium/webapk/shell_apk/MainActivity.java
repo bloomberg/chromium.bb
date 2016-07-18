@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
-import org.chromium.webapk.lib.common.WebApkUtils;
 
 import java.lang.reflect.Method;
 

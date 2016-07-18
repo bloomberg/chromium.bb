@@ -11,8 +11,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
-import org.chromium.webapk.lib.common.WebApkUtils;
-
 import java.lang.reflect.Constructor;
 
 /**

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.webapk.lib.common;
+package org.chromium.webapk.shell_apk;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -78,14 +78,5 @@ public class WebApkUtils {
             e.printStackTrace();
         }
         return -1;
-    }
-
-    /**
-     * Returns name of "Runtime Dex" asset in Chrome APK based on version.
-     * @param version
-     * @return Dex asset name.
-     */
-    public static String getRuntimeDexName(int version) {
-        return "webapk" + version + ".dex";
     }
 }
