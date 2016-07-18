@@ -12,7 +12,7 @@ cr.define('settings', function() {
    * @implements {Bluetooth}
    */
   function FakeBluetooth() {
-    /** @type {!chrome.bluettoth.AdapterState} */ this.adapterState = {
+    /** @type {!chrome.bluetooth.AdapterState} */ this.adapterState = {
       address: '00:11:22:33:44:55:66',
       name: 'Fake Adapter',
       powered: false,
