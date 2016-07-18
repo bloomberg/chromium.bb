@@ -6,11 +6,11 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/visual_studio_version.gni")
-import("//build_overrides/v8.gni")
 import("//chrome/test/mini_installer/mini_installer_test.gni")
 import("//chrome/version.gni")
 import("//third_party/icu/config.gni")
 import("//ui/base/ui_features.gni")
+import("//v8/gni/v8.gni")
 
 config("mini_installer_compiler_flags") {
   # Disable buffer security checking.

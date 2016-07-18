@@ -15,8 +15,8 @@ if (is_android) {
   import("//build/config/android/config.gni")
 } else if (is_mac) {
   import("//build/config/mac/rules.gni")
-  import("//build_overrides/v8.gni")
   import("//build/mac/tweak_info_plist.gni")
+  import("//v8/gni/v8.gni")
 } else if (is_win) {
   import("//build/win/syzygy/syzygy.gni")
 }
