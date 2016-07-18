@@ -72,7 +72,11 @@ TEST_F(Webm2PesTests, CanParseFirstPacket) {
   ASSERT_TRUE(parser()->ParseNextPacket(&header, &frame));
   EXPECT_TRUE(VerifyPacketStartCode(header));
 
-  const std::size_t kPesPayloadLength = 0;
+  //   9 bytes: PES optional header
+  //  10 bytes: BCMV Header
+  //  83 bytes: frame
+  // 102 bytes total in packet length field:
+  const std::size_t kPesPayloadLength = 102;
   EXPECT_EQ(kPesPayloadLength, header.packet_length);
 
   EXPECT_GE(header.stream_id, kMinVideoStreamId);
