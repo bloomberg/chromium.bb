@@ -32,7 +32,37 @@ TEST(AutofillDataUtilTest, SplitName) {
       // Exception to the name suffix removal.
       {"John Ma", "John", "", "Ma"},
       // Common family name prefixes not considered a middle name.
-      {"Milhouse Van Houten", "Milhouse", "", "Van Houten"}};
+      {"Milhouse Van Houten", "Milhouse", "", "Van Houten"},
+
+      // CJK names have reverse order (surname goes first, given name goes
+      // second).
+      {"홍 길동", "길동", "", "홍"}, // Korean name, Hangul
+      {"孫 德明", "德明", "", "孫"}, // Chinese name, Unihan
+      {"山田 貴洋", "貴洋", "", "山田"}, // Japanese name, Unihan
+
+      // CJK names don't usually have a space in the middle, but most of the
+      // time, the surname is only one character (in Chinese & Korean).
+      {"최성훈", "성훈", "", "최"}, // Korean name, Hangul
+      {"刘翔", "翔", "", "刘"}, // (Simplified) Chinese name, Unihan
+      {"劉翔", "翔", "", "劉"}, // (Traditional) Chinese name, Unihan
+
+      // There are a few exceptions. Occasionally, the surname has two
+      // characters.
+      {"남궁도", "도", "", "남궁"}, // Korean name, Hangul
+      {"황보혜정", "혜정", "", "황보"}, // Korean name, Hangul
+      {"歐陽靖", "靖", "", "歐陽"}, // (Traditional) Chinese name, Unihan
+
+      // In Korean, some 2-character surnames are rare/ambiguous, like "강전":
+      // "강" is a common surname, and "전" can be part of a given name. In
+      // those cases, we assume it's 1/2 for 3-character names, or 2/2 for
+      // 4-character names.
+      {"강전희", "전희", "", "강"}, // Korean name, Hangul
+      {"황목치승", "치승", "", "황목"}, // Korean name, Hangul
+
+      // It occasionally happens that a full name is 2 characters, 1/1.
+      {"이도", "도", "", "이"}, // Korean name, Hangul
+      {"孫文", "文", "", "孫"} // Chinese name, Unihan
+  };
 
   for (TestCase test_case : test_cases) {
     NameParts name_parts = SplitName(base::UTF8ToUTF16(test_case.full_name));
