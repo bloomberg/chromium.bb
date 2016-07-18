@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
 #include "components/scheduler/base/task_queue_impl.h"
@@ -37,6 +38,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
+    run_loop_.reset(new base::RunLoop());
     manager_ = base::WrapUnique(new TaskQueueManager(
         TaskQueueManagerDelegateForTest::Create(
             message_loop_->task_runner(),
@@ -49,7 +51,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
 
   void TestDelayedTask() {
     if (--num_tasks_to_run_ == 0) {
-      message_loop_->QuitWhenIdle();
+      run_loop_->QuitWhenIdle();
     }
 
     num_tasks_in_flight_--;
@@ -95,7 +97,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
     unsigned long long num_iterations = 0;
     do {
       test_task.Run();
-      message_loop_->Run();
+      run_loop_->Run();
       now = base::ThreadTicks::Now();
       num_iterations++;
     } while (now - start < base::TimeDelta::FromSeconds(5));
@@ -112,6 +114,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
   unsigned int num_tasks_to_run_;
   std::unique_ptr<TaskQueueManager> manager_;
   std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   std::vector<scoped_refptr<base::SingleThreadTaskRunner>> queues_;
   // TODO(alexclarke): parameterize so we can measure with and without a
   // TaskTimeTracker.

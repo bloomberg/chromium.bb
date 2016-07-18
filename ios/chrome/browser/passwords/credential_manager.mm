@@ -10,8 +10,8 @@
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/memory/scoped_vector.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -125,7 +125,7 @@ void CredentialManager::CredentialsRequested(
   // the request should fail outright and the JS Promise should be rejected
   // with an appropriate error.
   if (pending_request_ || !store) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&CredentialManager::RejectPromise,
                    weak_factory_.GetWeakPtr(), request_id,
@@ -138,7 +138,7 @@ void CredentialManager::CredentialsRequested(
   // without first asking the user -- and if zero-click isn't currently
   // available, send back an empty credential.
   if (zero_click_only && !IsZeroClickAllowed()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&CredentialManager::SendCredentialByID,
                               weak_factory_.GetWeakPtr(), request_id,
                               password_manager::CredentialInfo()));

@@ -22,6 +22,7 @@ typedef void* GLeglImageOES;
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
@@ -380,7 +381,7 @@ void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
   // Post a task holding a reference to the new GL context. The reason for
   // this is to avoid creating-then-destroying the context for every image
   // transport surface that is observing the GPU switch.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&IOSurfaceContextNoOp, context_on_new_gpu));
 }
 

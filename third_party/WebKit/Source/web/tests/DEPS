@@ -2,10 +2,10 @@ include_rules = [
     "+web/tests",
     # For RunAllTests.cpp only.
     "+base/bind.h",
-    "+base/message_loop/message_loop.h",
     "+base/run_loop.h",
     "+base/test/launcher/unit_test_launcher.h",
     "+base/test/test_suite.h",
+    "+base/threading/thread_task_runner_handle.h",
     "+content/test/blink_test_environment.h",
     "+mojo/edk/embedder/embedder.h",
     "+mojo/public/cpp/bindings",

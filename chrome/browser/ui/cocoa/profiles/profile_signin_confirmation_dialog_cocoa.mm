@@ -4,7 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_dialog_cocoa.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -83,5 +83,5 @@ void ProfileSigninConfirmationDialogCocoa::Close() {
 
 void ProfileSigninConfirmationDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

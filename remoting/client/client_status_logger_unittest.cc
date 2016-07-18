@@ -25,8 +25,8 @@ namespace remoting {
 
 namespace {
 
-ACTION_P(QuitMainMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+ACTION_P(QuitRunLoop, run_loop) {
+  run_loop->QuitWhenIdle();
 }
 
 const char kTestBotJid[] = "remotingunittest@bot.talk.google.com";
@@ -81,6 +81,7 @@ class ClientStatusLoggerTest : public testing::Test {
 };
 
 TEST_F(ClientStatusLoggerTest, LogStateChange) {
+  base::RunLoop run_loop;
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -91,7 +92,7 @@ TEST_F(ClientStatusLoggerTest, LogStateChange) {
         IsStateChange("connected", std::string())))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
-        .WillOnce(QuitMainMessageLoop(&message_loop_))
+        .WillOnce(QuitRunLoop(&run_loop))
         .RetiresOnSaturation();
   }
   client_status_logger_->LogSessionStateChange(ConnectionToHost::CONNECTED,
@@ -102,10 +103,11 @@ TEST_F(ClientStatusLoggerTest, LogStateChange) {
   // which removes the listener and terminates the test.
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 TEST_F(ClientStatusLoggerTest, LogStateChangeError) {
+  base::RunLoop run_loop;
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -116,7 +118,7 @@ TEST_F(ClientStatusLoggerTest, LogStateChangeError) {
         IsStateChange("connection-failed", "host-is-offline")))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
-        .WillOnce(QuitMainMessageLoop(&message_loop_))
+        .WillOnce(QuitRunLoop(&run_loop))
         .RetiresOnSaturation();
   }
   client_status_logger_->LogSessionStateChange(ConnectionToHost::FAILED,
@@ -124,10 +126,11 @@ TEST_F(ClientStatusLoggerTest, LogStateChangeError) {
 
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 TEST_F(ClientStatusLoggerTest, LogStatistics) {
+  base::RunLoop run_loop;
   {
     InSequence s;
     EXPECT_CALL(signal_strategy_, GetLocalJid())
@@ -138,7 +141,7 @@ TEST_F(ClientStatusLoggerTest, LogStatistics) {
         IsStatisticsLog()))
         .WillOnce(DoAll(DeleteArg<0>(), Return(true)));
     EXPECT_CALL(signal_strategy_, RemoveListener(_))
-        .WillOnce(QuitMainMessageLoop(&message_loop_))
+        .WillOnce(QuitRunLoop(&run_loop))
         .RetiresOnSaturation();
   }
 
@@ -147,7 +150,7 @@ TEST_F(ClientStatusLoggerTest, LogStatistics) {
 
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::CONNECTED);
   client_status_logger_->SetSignalingStateForTest(SignalStrategy::DISCONNECTED);
-  base::RunLoop().Run();
+  run_loop.Run();
 }
 
 }  // namespace remoting

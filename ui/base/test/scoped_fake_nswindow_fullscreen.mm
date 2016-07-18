@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 
 // This method exists on NSWindowDelegate on 10.7+.
 // To build on 10.6, we just need to declare it somewhere. We'll test
@@ -116,7 +117,8 @@ class ScopedFakeNSWindowFullscreen::Impl {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:NSWindowWillStartLiveResizeNotification
                       object:window];
-    base::MessageLoopForUI::current()->PostTask(
+    DCHECK(base::MessageLoopForUI::IsCurrent());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&Impl::FinishEnterFullscreen,
                               base::Unretained(this), fullscreen_content_size));
   }
@@ -154,7 +156,8 @@ class ScopedFakeNSWindowFullscreen::Impl {
         postNotificationName:NSWindowWillExitFullScreenNotification
                       object:window_];
 
-    base::MessageLoopForUI::current()->PostTask(
+    DCHECK(base::MessageLoopForUI::IsCurrent());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&Impl::FinishExitFullscreen, base::Unretained(this)));
   }

@@ -10,11 +10,11 @@
 #include "base/mac/bundle_locations.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/profiles/profile.h"
@@ -142,10 +142,9 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
     // Edge case: If the resize is caused by an action being added while the
     // menu is open, we need to wait for both toolbars to be updated. This can
     // happen if a user's data is synced with the menu open.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&ToolbarActionsBarObserverHelper::UpdateSubmenu,
-                   weak_ptr_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ToolbarActionsBarObserverHelper::UpdateSubmenu,
+                              weak_ptr_factory_.GetWeakPtr()));
   }
 
   void UpdateSubmenu() {

@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/signin/browser_state_data_remover.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
@@ -69,5 +69,5 @@ void BrowserStateDataRemover::NotifyWithDetails(
   if (callback_)
     callback_.get()();
 
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }

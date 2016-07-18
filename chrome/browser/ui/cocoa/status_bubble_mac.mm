@@ -11,10 +11,10 @@
 #include "base/debug/stack_trace.h"
 #include "base/mac/scoped_block.h"
 #include "base/mac/sdk_forward_declarations.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/ui/cocoa/bubble_view.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
@@ -253,9 +253,9 @@ void StatusBubbleMac::SetURL(const GURL& url) {
   if (is_expanded_ && !url.is_empty()) {
     ExpandBubble();
   } else if (original_url_text.length() > status.length()) {
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        base::Bind(&StatusBubbleMac::ExpandBubble,
-                   expand_timer_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&StatusBubbleMac::ExpandBubble,
+                              expand_timer_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kExpandHoverDelayMS));
   }
 }
@@ -607,7 +607,8 @@ void StatusBubbleMac::StartTimer(int64_t delay_ms) {
   // There can only be one running timer.
   CancelTimer();
 
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
       base::Bind(&StatusBubbleMac::TimerFired, timer_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }

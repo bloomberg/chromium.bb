@@ -340,7 +340,7 @@ class PersonalDataManagerTest : public testing::Test {
     // Verify that the web database has been updated and the notification sent.
     EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
         .WillOnce(QuitMainMessageLoop());
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     CreditCard expected(base::GenerateGUID(), "https://www.example.com");
     test::SetCreditCardInfo(&expected, exp_name, exp_cc_num, exp_cc_month,

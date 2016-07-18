@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_pop_up_button.h"
@@ -106,7 +106,7 @@ void CardUnmaskPromptViewBridge::GotVerificationResult(
                               IDS_AUTOFILL_CARD_UNMASK_VERIFICATION_SUCCESS)
                                  showSpinner:NO];
 
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&CardUnmaskPromptViewBridge::PerformClose,
                               weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(1));
@@ -127,7 +127,7 @@ void CardUnmaskPromptViewBridge::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   if (controller_)
     controller_->OnUnmaskDialogClosed();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 CardUnmaskPromptController* CardUnmaskPromptViewBridge::GetController() {

@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/test/ordered_simple_task_runner.h"
@@ -273,7 +274,7 @@ class RendererSchedulerImplTest : public testing::Test {
       while (mock_task_runner_->RunUntilIdle()) {
       }
     } else {
-      message_loop_->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
     scheduler_.reset();
   }
@@ -284,7 +285,7 @@ class RendererSchedulerImplTest : public testing::Test {
     if (mock_task_runner_.get())
       mock_task_runner_->RunUntilIdle();
     else
-      message_loop_->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   }
 
   void DoMainFrame() {
@@ -1843,7 +1844,7 @@ class RendererSchedulerImplWithMessageLoopTest
       }
     }
     EnableIdleTasks();
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:

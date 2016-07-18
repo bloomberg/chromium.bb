@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
@@ -23,7 +22,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
-#include "base/single_thread_task_runner.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -969,13 +968,14 @@ void RenderThreadImpl::Shutdown() {
 
   ChildThreadImpl::Shutdown();
 
-  // Shut down the message loop and the renderer scheduler before shutting down
-  // Blink. This prevents a scenario where a pending task in the message loop
-  // accesses Blink objects after Blink shuts down.
+  // Shut down the message loop (if provided when the RenderThreadImpl was
+  // constructed) and the renderer scheduler before shutting down Blink. This
+  // prevents a scenario where a pending task in the message loop accesses Blink
+  // objects after Blink shuts down.
   renderer_scheduler_->SetRAILModeObserver(nullptr);
   renderer_scheduler_->Shutdown();
   if (main_message_loop_)
-    main_message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
   if (blink_platform_impl_) {
     blink_platform_impl_->Shutdown();

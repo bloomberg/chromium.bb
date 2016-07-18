@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser/zoom_bubble_controller.h"
@@ -65,7 +66,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
 
   void OnZoomChanged(const content::HostZoomMap::ZoomLevelChange& host) {
     if (should_quit_on_zoom_) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&base::MessageLoop::QuitWhenIdle,
                      base::Unretained(base::MessageLoop::current())));

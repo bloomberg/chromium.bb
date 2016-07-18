@@ -5,10 +5,9 @@
 #include "components/translate/ios/browser/ios_translate_driver.h"
 
 #include "base/bind.h"
-#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -236,7 +235,7 @@ void IOSTranslateDriver::OnTranslateScriptReady(bool success,
                            : kAutoDetectionLanguage;
   translate_controller_->StartTranslation(source_language_, target_language_);
   // Check the status of the translation -- after a delay.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&IOSTranslateDriver::CheckTranslateStatus,
                             weak_method_factory_.GetWeakPtr(), source_language_,
                             target_language_, pending_page_seq_no_),

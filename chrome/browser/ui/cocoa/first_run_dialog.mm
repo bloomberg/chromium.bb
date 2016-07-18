@@ -8,7 +8,9 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -144,9 +146,9 @@ bool ShowFirstRunDialog(Profile* profile) {
   // Therefore the main MessageLoop is run so things work.
 
   scoped_refptr<FirstRunShowBridge> bridge(new FirstRunShowBridge(self));
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&FirstRunShowBridge::ShowDialog, bridge.get()));
-  base::MessageLoop::current()->Run();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&FirstRunShowBridge::ShowDialog, bridge.get()));
+  base::RunLoop().Run();
 }
 
 - (void)show {

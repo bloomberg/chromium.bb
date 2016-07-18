@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/importer/importer_lock_dialog.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,7 +30,7 @@ void ShowImportLockDialog(gfx::NativeWindow parent,
   [lock_alert setMessageText:l10n_util::GetNSStringWithFixup(
       IDS_IMPORTER_LOCK_TITLE)];
 
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, [lock_alert runModal] == NSAlertFirstButtonReturn));
   content::RecordAction(UserMetricsAction("ImportLockDialogCocoa_Shown"));

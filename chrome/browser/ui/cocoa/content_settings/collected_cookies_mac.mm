@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "base/mac/bundle_locations.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -85,7 +85,7 @@ void CollectedCookiesMac::PerformClose() {
 
 void CollectedCookiesMac::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 #pragma mark Window Controller

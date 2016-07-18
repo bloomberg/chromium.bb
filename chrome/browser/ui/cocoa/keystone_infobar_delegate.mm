@@ -12,7 +12,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/mac/keystone_glue.h"
@@ -98,9 +98,9 @@ KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
       weak_ptr_factory_(this) {
   const base::TimeDelta kCanExpireOnNavigationAfterDelay =
       base::TimeDelta::FromSeconds(8);
-  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      base::Bind(&KeystonePromotionInfoBarDelegate::SetCanExpire,
-                 weak_ptr_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&KeystonePromotionInfoBarDelegate::SetCanExpire,
+                            weak_ptr_factory_.GetWeakPtr()),
       kCanExpireOnNavigationAfterDelay);
 }
 

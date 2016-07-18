@@ -11,6 +11,7 @@
 
 #import "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/run_loop.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
@@ -391,11 +392,14 @@ TEST_F(DownloadShelfControllerTest, ViewVisibility) {
   [shelf_ showDownloadShelf:YES isUserAction:NO];
   EXPECT_FALSE([[shelf_ view] isHidden]);
 
+  base::RunLoop run_loop;
+  base::RunLoop* const run_loop_ptr = &run_loop;
+
   [shelf_ setCloseAnimationHandler:^{
-      base::MessageLoop::current()->QuitNow();
+    run_loop_ptr->Quit();
   }];
   [shelf_ showDownloadShelf:NO isUserAction:NO];
-  base::MessageLoop::current()->Run();
+  run_loop.Run();
   EXPECT_TRUE([[shelf_ view] isHidden]);
 
   [shelf_ showDownloadShelf:YES isUserAction:NO];

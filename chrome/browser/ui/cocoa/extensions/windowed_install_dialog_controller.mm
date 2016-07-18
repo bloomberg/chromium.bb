@@ -8,8 +8,8 @@
 
 #import "base/callback_helpers.h"
 #import "base/mac/sdk_forward_declarations.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
@@ -56,7 +56,7 @@ void WindowedInstallDialogController::OnWindowClosing() {
     base::ResetAndReturn(&done_callback_).Run(
         ExtensionInstallPrompt::Result::ABORTED);
   }
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 ExtensionInstallViewController*

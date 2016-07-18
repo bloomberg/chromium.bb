@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/fullscreen.h"
@@ -132,11 +133,10 @@ void DisplaySettingsProviderCocoa::Observe(
 void DisplaySettingsProviderCocoa::ActiveWorkSpaceChanged() {
   // The active workspace notification might be received earlier than the
   // browser window knows that it is not in active space.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&DisplaySettingsProviderCocoa::CheckFullScreenMode,
-                 weak_factory_.GetWeakPtr(),
-                 PERFORM_FULLSCREEN_CHECK),
+                 weak_factory_.GetWeakPtr(), PERFORM_FULLSCREEN_CHECK),
       base::TimeDelta::FromMilliseconds(kCheckFullScreenDelayTimeMs));
 }
 

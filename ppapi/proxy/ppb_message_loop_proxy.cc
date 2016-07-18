@@ -9,8 +9,9 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_message_loop.h"
@@ -109,10 +110,16 @@ int32_t MessageLoopResource::Run() {
   if (is_main_thread_loop_)
     return PP_ERROR_INPROGRESS;
 
+  base::RunLoop* previous_run_loop = run_loop_;
+  base::RunLoop run_loop;
+  run_loop_ = &run_loop;
+
   nested_invocations_++;
   CallWhileUnlocked(
-      base::Bind(&base::MessageLoop::Run, base::Unretained(loop_.get())));
+      base::Bind(&base::RunLoop::Run, base::Unretained(run_loop_)));
   nested_invocations_--;
+
+  run_loop_ = previous_run_loop;
 
   if (should_destroy_ && nested_invocations_ == 0) {
     task_runner_ = NULL;
@@ -142,10 +149,13 @@ int32_t MessageLoopResource::PostQuit(PP_Bool should_destroy) {
   if (PP_ToBool(should_destroy))
     should_destroy_ = true;
 
-  if (IsCurrent() && nested_invocations_ > 0)
-    loop_->QuitWhenIdle();
-  else
-    PostClosure(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), 0);
+  if (IsCurrent() && nested_invocations_ > 0) {
+    run_loop_->QuitWhenIdle();
+  } else {
+    PostClosure(FROM_HERE, base::Bind(&MessageLoopResource::QuitRunLoopWhenIdle,
+                                      Unretained(this)),
+                0);
+  }
   return PP_OK;
 }
 
@@ -199,6 +209,12 @@ base::SingleThreadTaskRunner* MessageLoopResource::GetTaskRunner() {
 
 bool MessageLoopResource::CurrentlyHandlingBlockingMessage() {
   return currently_handling_blocking_message_;
+}
+
+void MessageLoopResource::QuitRunLoopWhenIdle() {
+  DCHECK(IsCurrent());
+  DCHECK(run_loop_);
+  run_loop_->QuitWhenIdle();
 }
 
 // static

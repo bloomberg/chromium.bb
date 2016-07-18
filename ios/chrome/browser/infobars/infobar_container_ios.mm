@@ -8,7 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ios/chrome/browser/infobars/infobar.h"
 #include "ios/chrome/browser/infobars/infobar_container_view.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -52,7 +52,7 @@ void InfoBarContainerIOS::PlatformSpecificRemoveInfoBar(
   // TODO(rohitrao, jif): [Merge 239355] Upstream InfoBarContainer deletes the
   // infobar. Avoid deleting it here.
   // crbug.com/327290
-  // base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar_ios);
+  // base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, infobar_ios);
 }
 
 void InfoBarContainerIOS::PlatformSpecificInfoBarStateChanged(

@@ -16,8 +16,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
@@ -271,8 +271,8 @@ void TaskQueue<T>::Dispatch() {
   const T& task = queue_.front();
   ++num_in_progress_;
   DCHECK_LE(num_in_progress_, kMaxConcurrentTasks);
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(process_callback_, task));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(process_callback_, task));
   queue_.pop_front();
 }
 

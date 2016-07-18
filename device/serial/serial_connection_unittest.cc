@@ -145,7 +145,7 @@ class SerialConnectionTest : public testing::Test {
     expected_event_ = EVENT_NONE;
     ASSERT_TRUE(message_loop_);
     ASSERT_TRUE(!stop_run_loop_.is_null());
-    message_loop_->PostTask(FROM_HERE, stop_run_loop_);
+    message_loop_->task_runner()->PostTask(FROM_HERE, stop_run_loop_);
   }
 
   scoped_refptr<SerialIoHandler> CreateIoHandler() {

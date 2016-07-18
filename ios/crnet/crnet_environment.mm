@@ -139,13 +139,13 @@ class CrNetHttpProtocolHandlerDelegate
 void CrNetEnvironment::PostToNetworkThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  network_io_thread_->message_loop()->PostTask(from_here, task);
+  network_io_thread_->task_runner()->PostTask(from_here, task);
 }
 
 void CrNetEnvironment::PostToFileUserBlockingThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  file_user_blocking_thread_->message_loop()->PostTask(from_here, task);
+  file_user_blocking_thread_->task_runner()->PostTask(from_here, task);
 }
 
 // static

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
@@ -177,10 +177,13 @@ IN_PROC_BROWSER_TEST_F(PortForwardingDisconnectTest, DisconnectOnRelease) {
   std::unique_ptr<Listener> wait_for_port_forwarding(new Listener(profile));
   content::RunMessageLoop();
 
+  base::RunLoop run_loop;
+
   self_provider->set_release_callback_for_test(
-      base::Bind(&base::MessageLoop::PostTask,
-                 base::Unretained(base::MessageLoop::current()), FROM_HERE,
-                 base::MessageLoop::QuitWhenIdleClosure()));
+      base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+                 base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                 run_loop.QuitWhenIdleClosure()));
   wait_for_port_forwarding.reset();
-  content::RunMessageLoop();
+
+  content::RunThisRunLoop(&run_loop);
 }

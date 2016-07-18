@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -184,14 +184,14 @@ void MoveMouseToCenter(NSView* view) {
 
 - (void)menuDidClose:(NSNotification*)notification {
   if (!closeClosure_.is_null()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::ResetAndReturn(&closeClosure_));
   }
 }
 
 - (void)menuDidOpen:(NSNotification*)notification {
   if (!openClosure_.is_null()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::ResetAndReturn(&openClosure_));
   }
 }
@@ -271,7 +271,7 @@ void ClickOnOverflowedAction(ToolbarController* toolbarController,
 
   // This should close the app menu.
   EXPECT_FALSE([appMenuController isMenuOpen]);
-  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
 }
 
 // Verifies that the action is "popped out" of overflow; that is, it is visible
@@ -435,7 +435,7 @@ void CheckAppMenuLayout(ToolbarController* toolbarController,
   // Close the app menu.
   [appMenuController cancel];
   EXPECT_FALSE([appMenuController isMenuOpen]) << error_message;
-  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
 }
 
 // Tests the layout of the overflow container in the app menu.

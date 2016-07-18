@@ -18,7 +18,6 @@
 #include "base/pending_task.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/platform_thread.h"
@@ -260,7 +259,7 @@ void RecursiveFunc(TaskList* order, int cookie, int depth,
   if (depth > 0) {
     if (is_reentrant)
       MessageLoop::current()->SetNestableTasksAllowed(true);
-    MessageLoop::current()->PostTask(
+    ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         Bind(&RecursiveFunc, order, cookie, depth - 1, is_reentrant));
   }
@@ -861,8 +860,10 @@ TEST(MessageLoopTest, IsType) {
 void EmptyFunction() {}
 
 void PostMultipleTasks() {
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&EmptyFunction));
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&EmptyFunction));
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                          base::Bind(&EmptyFunction));
+  ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                          base::Bind(&EmptyFunction));
 }
 
 static const int kSignalMsg = WM_USER + 2;
@@ -890,19 +891,20 @@ LRESULT CALLBACK TestWndProcThunk(HWND hwnd, UINT message,
     // First, we post a task that will post multiple no-op tasks to make sure
     // that the pump's incoming task queue does not become empty during the
     // test.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&PostMultipleTasks));
+    ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                            base::Bind(&PostMultipleTasks));
     // Next, we post a task that posts a windows message to trigger the second
     // stage of the test.
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&PostWindowsMessage, hwnd));
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&PostWindowsMessage, hwnd));
     break;
   case 2:
     // Since we're about to enter a modal loop, tell the message loop that we
     // intend to nest tasks.
     MessageLoop::current()->SetNestableTasksAllowed(true);
     bool did_run = false;
-    MessageLoop::current()->PostTask(FROM_HERE,
-                                     base::Bind(&EndTest, &did_run, hwnd));
+    ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&EndTest, &did_run, hwnd));
     // Run a nested windows-style message loop and verify that our task runs. If
     // it doesn't, then we'll loop here until the test times out.
     MSG msg;

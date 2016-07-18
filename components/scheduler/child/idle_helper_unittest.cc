@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
 #include "components/scheduler/base/real_time_domain.h"
@@ -215,7 +216,7 @@ class BaseIdleHelperTest : public testing::Test {
       while (mock_task_runner_->RunUntilIdle()) {
       }
     } else {
-      message_loop_->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
     }
   }
 
@@ -225,7 +226,7 @@ class BaseIdleHelperTest : public testing::Test {
     if (mock_task_runner_.get())
       mock_task_runner_->RunUntilIdle();
     else
-      message_loop_->RunUntilIdle();
+      base::RunLoop().RunUntilIdle();
   }
 
   template <typename E>
@@ -545,7 +546,7 @@ class IdleHelperWithMessageLoopTest : public BaseIdleHelperTest {
     idle_helper_->StartIdlePeriod(
         IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
         clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() override {

@@ -559,7 +559,7 @@ class EmbeddedTestServerThreadingTestDelegate
     fetcher->SetRequestContext(
         new TestURLRequestContextGetter(loop->task_runner()));
     fetcher->Start();
-    loop->Run();
+    base::RunLoop().Run();
     fetcher.reset();
 
     // Shut down.

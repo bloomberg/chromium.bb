@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
@@ -31,7 +32,7 @@ class MemoryPressureListenerTest : public testing::Test {
       MemoryPressureLevel level) {
     EXPECT_CALL(*this, OnMemoryPressure(level)).Times(1);
     notification_function(level);
-    message_loop_->RunUntilIdle();
+    RunLoop().RunUntilIdle();
   }
 
   void ExpectNoNotification(
@@ -39,7 +40,7 @@ class MemoryPressureListenerTest : public testing::Test {
       MemoryPressureLevel level) {
     EXPECT_CALL(*this, OnMemoryPressure(testing::_)).Times(0);
     notification_function(level);
-    message_loop_->RunUntilIdle();
+    RunLoop().RunUntilIdle();
   }
 
  private:

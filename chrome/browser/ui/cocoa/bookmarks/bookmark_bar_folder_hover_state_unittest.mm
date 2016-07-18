@@ -5,6 +5,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_hover_state.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
@@ -45,14 +47,16 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   ASSERT_EQ(kHoverStateOpening, [bbfhs hoverState]);
 
   // Test transition from opening to opened.
-  message_loop.PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(
-          bookmarks::kDragHoverOpenDelay * 1000.0 * 1.5));
-  message_loop.Run();
-  ASSERT_EQ(kHoverStateOpen, [bbfhs hoverState]);
-  ASSERT_EQ(button, [bbfhs hoverButton]);
+  {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+        base::TimeDelta::FromMilliseconds(bookmarks::kDragHoverOpenDelay *
+                                          1000.0 * 1.5));
+    run_loop.Run();
+    ASSERT_EQ(kHoverStateOpen, [bbfhs hoverState]);
+    ASSERT_EQ(button, [bbfhs hoverButton]);
+  }
 
   // Test transition from opening to opened.
   [bbfhs scheduleCloseBookmarkFolderOnHoverButton];
@@ -64,16 +68,18 @@ TEST_F(BookmarkBarFolderHoverStateTest, HoverState) {
   ASSERT_EQ(button, [bbfhs hoverButton]);
 
   // Test transition from closing to closed.
-  [bbfhs scheduleCloseBookmarkFolderOnHoverButton];
-  ASSERT_EQ(kHoverStateClosing, [bbfhs hoverState]);
-  message_loop.PostDelayedTask(
-      FROM_HERE,
-      base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(
-          bookmarks::kDragHoverCloseDelay * 1000.0 * 1.5));
-  message_loop.Run();
-  ASSERT_EQ(kHoverStateClosed, [bbfhs hoverState]);
-  ASSERT_EQ(nil, [bbfhs hoverButton]);
+  {
+    base::RunLoop run_loop;
+    [bbfhs scheduleCloseBookmarkFolderOnHoverButton];
+    ASSERT_EQ(kHoverStateClosing, [bbfhs hoverState]);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+        base::TimeDelta::FromMilliseconds(bookmarks::kDragHoverCloseDelay *
+                                          1000.0 * 1.5));
+    run_loop.Run();
+    ASSERT_EQ(kHoverStateClosed, [bbfhs hoverState]);
+    ASSERT_EQ(nil, [bbfhs hoverButton]);
+  }
 }
 
 }  // namespace

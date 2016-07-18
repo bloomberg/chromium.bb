@@ -29,10 +29,10 @@
  */
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "content/test/blink_test_environment.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -51,7 +51,7 @@ int runHelper(base::TestSuite* testSuite)
 
     // Tickle EndOfTaskRunner which among other things will flush the queue
     // of error messages via V8Initializer::reportRejectedPromisesOnMainThread.
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
 
     // Collect garbage (including threadspecific persistent handles) in order

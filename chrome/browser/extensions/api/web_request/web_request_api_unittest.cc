@@ -11,16 +11,15 @@
 #include <tuple>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
-#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -464,16 +463,18 @@ TEST_F(ExtensionWebRequestTest, SimulateChancelWhileBlocked) {
           &profile_, extension_id, kEventName, kEventName + "/1",
           request->identifier(), response));
 
+  base::RunLoop run_loop;
+
   // Extension response for OnErrorOccurred: Terminate the message loop.
   ipc_sender_.PushTask(
-      base::Bind(&base::MessageLoop::PostTask,
-                 base::Unretained(base::MessageLoop::current()), FROM_HERE,
-                 base::MessageLoop::QuitWhenIdleClosure()));
+      base::Bind(base::IgnoreResult(&base::SingleThreadTaskRunner::PostTask),
+                 base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                 run_loop.QuitWhenIdleClosure()));
 
   request->Start();
   // request->Start() will have submitted OnBeforeRequest by the time we cancel.
   request->Cancel();
-  base::RunLoop().Run();
+  run_loop.Run();
 
   EXPECT_TRUE(!request->is_pending());
   EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());

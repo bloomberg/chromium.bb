@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -69,7 +70,7 @@ class TextInputClientMacTest : public testing::Test {
   void PostTask(const tracked_objects::Location& from_here,
                 const base::Closure& task,
                 const base::TimeDelta delay) {
-    thread_.message_loop()->PostDelayedTask(from_here, task, delay);
+    thread_.task_runner()->PostDelayedTask(from_here, task, delay);
   }
 
   RenderWidgetHostImpl* widget() { return widget_.get(); }

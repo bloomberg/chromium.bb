@@ -153,7 +153,7 @@ TEST_F(TaskQueueManagerTest,
   runners_[2]->PostTask(FROM_HERE, base::Bind(&NopTask));
   runners_[2]->PostTask(FROM_HERE, base::Bind(&NopTask));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // We need to call Now for the beginning of the first task, and then the end
   // of every task after. We reuse the end time of one task for the start time
   // of the next task. In this case, there were 6 tasks, so we expect 7 calls to
@@ -188,7 +188,7 @@ TEST_F(TaskQueueManagerTest,
                             base::RetainedRef(runners_[0]),
                             base::Unretained(&tasks_to_post_from_nested_loop)));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // We need to call Now twice, to measure the start and end of the outermost
   // task. We shouldn't call it for any of the nested tasks.
   EXPECT_EQ(2, test_count_uses_time_source->now_calls_count());
@@ -234,7 +234,7 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskPosting) {
   runners_[0]->PostNonNestableTask(FROM_HERE,
                                    base::Bind(&TestTask, 1, &run_order));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
@@ -249,7 +249,7 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskExecutesInExpectedOrder) {
   runners_[0]->PostNonNestableTask(FROM_HERE,
                                    base::Bind(&TestTask, 5, &run_order));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5));
 }
 
@@ -273,7 +273,7 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskDoesntExecuteInNestedLoop) {
                             base::RetainedRef(runners_[0]),
                             base::Unretained(&tasks_to_post_from_nested_loop)));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // Note we expect task 3 to run last because it's non-nestable.
   EXPECT_THAT(run_order, ElementsAre(1, 2, 4, 5, 3));
 }
@@ -647,7 +647,7 @@ TEST_F(TaskQueueManagerTest, PostFromThread) {
       FROM_HERE, base::Bind(&PostTaskToRunner, runners_[0], &run_order));
   thread.Stop();
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
@@ -687,7 +687,7 @@ TEST_F(TaskQueueManagerTest, PostFromNestedRunloop) {
                             base::Unretained(&tasks_to_post_from_nested_loop)));
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(run_order, ElementsAre(0, 2, 1));
 }
@@ -878,7 +878,7 @@ TEST_F(TaskQueueManagerTest, TaskObserverAdding) {
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(2);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(2);
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(TaskQueueManagerTest, TaskObserverRemoving) {
@@ -894,7 +894,7 @@ TEST_F(TaskQueueManagerTest, TaskObserverRemoving) {
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void RemoveObserverTask(TaskQueueManager* manager,
@@ -913,7 +913,7 @@ TEST_F(TaskQueueManagerTest, TaskObserverRemovingInsideTask) {
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(TaskQueueManagerTest, QueueTaskObserverAdding) {
@@ -929,7 +929,7 @@ TEST_F(TaskQueueManagerTest, QueueTaskObserverAdding) {
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(1);
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(TaskQueueManagerTest, QueueTaskObserverRemoving) {
@@ -945,7 +945,7 @@ TEST_F(TaskQueueManagerTest, QueueTaskObserverRemoving) {
   EXPECT_CALL(observer, WillProcessTask(_)).Times(0);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 void RemoveQueueObserverTask(scoped_refptr<TaskQueue> queue,
@@ -963,7 +963,7 @@ TEST_F(TaskQueueManagerTest, QueueTaskObserverRemovingInsideTask) {
 
   EXPECT_CALL(observer, WillProcessTask(_)).Times(1);
   EXPECT_CALL(observer, DidProcessTask(_)).Times(0);
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
@@ -1269,7 +1269,7 @@ TEST_F(TaskQueueManagerTest, QuitWhileNested) {
                                               base::RetainedRef(runners_[0]),
                                               base::Unretained(&was_nested)));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(was_nested);
 }
 
@@ -1429,7 +1429,7 @@ TEST_F(TaskQueueManagerTest, DeferredNonNestableTaskDoesNotTriggerWakeUp) {
       base::Bind(&PostTestTasksFromNestedMessageLoop, message_loop_.get(),
                  runners_[0], runners_[1], base::Unretained(&run_order)));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   ASSERT_THAT(run_order, ElementsAre(1));
 }
 
@@ -1527,14 +1527,14 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
       FROM_HERE, base::Bind(&PostFromNestedRunloop, message_loop_.get(),
                             base::RetainedRef(runners_[0]),
                             base::Unretained(&tasks_to_post_from_nested_loop)));
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Add a final call to HasOneRefTask.  This gives the manager a chance to
   // release its reference, and checks that it has.
   runners_[0]->PostTask(FROM_HERE,
                         base::Bind(&HasOneRefTask, base::Unretained(&log),
                                    base::Unretained(task_queue.get())));
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(log, ElementsAre(false, false, true));
 }
@@ -1905,7 +1905,7 @@ TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
                             message_loop_.get(), manager_.get(), &task_sources,
                             &tasks_to_post_from_nested_loop));
 
-  message_loop_->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_THAT(task_sources, ElementsAre(queue0, queue1, queue2, queue0));
   EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
 }
@@ -1966,7 +1966,7 @@ TEST_F(TaskQueueManagerTestWithTracing, BlameContextAttribution) {
     blame_context.Initialize();
     queue->SetBlameContext(&blame_context);
     queue->PostTask(FROM_HERE, base::Bind(&NopTask));
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
   StopTracing();
   std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =

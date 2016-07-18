@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_default.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/simple_thread.h"
@@ -110,7 +111,7 @@ class BackgroundShell::MojoThread : public base::SimpleThread {
     context_ = context.get();
     context_->Init(std::move(context_init_params));
 
-    message_loop_->Run();
+    base::RunLoop().Run();
 
     // Has to happen after run, but while messageloop still valid.
     context_->Shutdown();

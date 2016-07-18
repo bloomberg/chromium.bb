@@ -8,6 +8,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
@@ -535,7 +536,7 @@ void SetChromeCyclesWindows(int sequence_number) {
   appId_ = app->id();
   [self addMenuItems:app];
   if (IsAppWindowCyclingEnabled()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&SetAppCyclesWindows, appId_,
                               ++g_window_cycle_sequence_number));
   }
@@ -548,7 +549,7 @@ void SetChromeCyclesWindows(int sequence_number) {
   appId_.clear();
   [self removeMenuItems];
   if (IsAppWindowCyclingEnabled()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&SetChromeCyclesWindows, ++g_window_cycle_sequence_number));
   }

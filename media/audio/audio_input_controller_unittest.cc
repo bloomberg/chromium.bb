@@ -26,9 +26,8 @@ static const int kBitsPerSample = 16;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const int kSamplesPerPacket = kSampleRate / 10;
 
-// Posts base::MessageLoop::QuitWhenIdleClosure() on specified message loop.
-ACTION_P(QuitMessageLoop, loop_or_proxy) {
-  loop_or_proxy->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+ACTION_P(QuitRunLoop, run_loop) {
+  run_loop->QuitWhenIdle();
 }
 
 // Posts base::MessageLoop::QuitWhenIdleClosure() on specified message loop
@@ -89,11 +88,13 @@ class AudioInputControllerTest : public testing::Test {
 
 // Test AudioInputController for create and close without recording audio.
 TEST_F(AudioInputControllerTest, CreateAndClose) {
+  base::RunLoop run_loop;
+
   MockAudioInputControllerEventHandler event_handler;
 
   // OnCreated() will be posted once.
   EXPECT_CALL(event_handler, OnCreated(NotNull()))
-      .WillOnce(QuitMessageLoop(&message_loop_));
+      .WillOnce(QuitRunLoop(&run_loop));
 
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
@@ -104,7 +105,7 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to fire.
-  base::RunLoop().Run();
+  run_loop.Run();
 
   // Close the AudioInputController synchronously.
   CloseAudioController(controller.get());

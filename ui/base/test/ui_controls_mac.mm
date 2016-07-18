@@ -12,6 +12,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
@@ -139,11 +140,10 @@ void EventQueueWatcher(const base::Closure& task) {
                                         dequeue:NO];
   // If there is still event in the queue, then we need to check again.
   if (event) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&EventQueueWatcher, task));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&EventQueueWatcher, task));
   } else {
-    base::MessageLoop::current()->PostTask(FROM_HERE, task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
   }
 }
 
@@ -282,7 +282,7 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
     [[NSApplication sharedApplication] sendEvent:*iter];
 
   if (!task.is_null()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&EventQueueWatcher, task));
   }
 
@@ -331,7 +331,7 @@ bool SendMouseMoveNotifyWhenDone(long x, long y, const base::Closure& task) {
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
   if (!task.is_null()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&EventQueueWatcher, task));
   }
 
@@ -395,7 +395,7 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type, int state,
   [[NSApplication sharedApplication] postEvent:event atStart:NO];
 
   if (!task.is_null()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&EventQueueWatcher, task));
   }
 
@@ -408,7 +408,7 @@ bool SendMouseClick(MouseButton type) {
 }
 
 void RunClosureAfterAllPendingUIEvents(const base::Closure& closure) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EventQueueWatcher, closure));
 }
 

@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_task_runner.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -125,7 +124,7 @@ TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_Basic) {
   ASSERT_FALSE(reply_deleted_on);
 
   UnblockTaskThread();
-  current_loop_->Run();
+  RunLoop().Run();
 
   EXPECT_EQ(task_thread_.message_loop(), task_run_on);
   EXPECT_EQ(current_loop_.get(), task_deleted_on);
@@ -192,7 +191,7 @@ TEST_F(MessageLoopTaskRunnerTest, PostTaskAndReply_SameLoop) {
   ASSERT_FALSE(task_deleted_on);
   ASSERT_FALSE(reply_deleted_on);
 
-  current_loop_->Run();
+  RunLoop().Run();
 
   EXPECT_EQ(current_loop_.get(), task_run_on);
   EXPECT_EQ(current_loop_.get(), task_deleted_on);

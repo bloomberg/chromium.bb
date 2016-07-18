@@ -9,6 +9,7 @@
 #include "base/environment.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "media/audio/audio_device_description.h"
@@ -30,7 +31,7 @@ namespace media {
 
 ACTION_P4(CheckCountAndPostQuitTask, count, limit, loop, closure) {
   if (++*count >= limit) {
-    loop->PostTask(FROM_HERE, closure);
+    loop->task_runner()->PostTask(FROM_HERE, closure);
   }
 }
 

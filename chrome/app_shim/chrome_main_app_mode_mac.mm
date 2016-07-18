@@ -686,20 +686,18 @@ int ChromeAppModeStart_v4(const app_mode::ChromeAppModeInfo* info) {
     [ReplyEventHandler pingProcess:psn
                            andCall:on_ping_chrome_reply];
 
-    main_message_loop.PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&AppShimController::OnPingChromeTimeout,
-                   base::Unretained(&controller)),
+    main_message_loop.task_runner()->PostDelayedTask(
+        FROM_HERE, base::Bind(&AppShimController::OnPingChromeTimeout,
+                              base::Unretained(&controller)),
         base::TimeDelta::FromSeconds(kPingChromeTimeoutSeconds));
   } else {
     // Chrome already running. Proceed to init. This could still fail if Chrome
     // is still starting up or shutting down, but the process will exit quickly,
     // which is preferable to waiting for the Apple Event to timeout after one
     // minute.
-    main_message_loop.PostTask(
+    main_message_loop.task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&AppShimController::Init,
-                   base::Unretained(&controller)));
+        base::Bind(&AppShimController::Init, base::Unretained(&controller)));
   }
 
   main_message_loop.Run();

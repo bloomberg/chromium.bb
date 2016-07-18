@@ -14,12 +14,10 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
-#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/simple_test_clock.h"
@@ -341,7 +339,7 @@ class LogoTrackerTest : public ::testing::Test {
     // after logo_tracker_'s destruction. Ensure that logo_cache_ is actually
     // destructed before the test ends to make gmock happy.
     delete logo_tracker_;
-    message_loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Returns the response that the server would send for the given logo.
