@@ -262,7 +262,7 @@ public abstract class FirstRunFlowSequencer  {
         Intent intent = new Intent();
         intent.setClassName(context, LightweightFirstRunActivity.class.getName());
         intent.putExtra(FirstRunActivity.COMING_FROM_CHROME_ICON, fromChromeIcon);
-        intent.putExtra(FirstRunActivity.USE_FRE_FLOW_SEQUENCER, false);
+        intent.putExtra(FirstRunActivity.START_LIGHTWEIGHT_FRE, true);
         return intent;
     }
 

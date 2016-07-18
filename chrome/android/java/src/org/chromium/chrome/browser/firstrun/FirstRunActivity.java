@@ -48,6 +48,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     // Incoming parameters:
     public static final String COMING_FROM_CHROME_ICON = "ComingFromChromeIcon";
     public static final String USE_FRE_FLOW_SEQUENCER = "UseFreFlowSequencer";
+    public static final String START_LIGHTWEIGHT_FRE = "StartLightweightFRE";
 
     static final String SHOW_WELCOME_PAGE = "ShowWelcome";
     static final String SHOW_SIGNIN_PAGE = "ShowSignIn";
@@ -141,9 +142,8 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
             mFreProperties = new Bundle();
         }
 
-        // Skip creating content view if it is a lightweight First Run Experience without using
-        // USE_FRE_FLOW_SEQUENCER.
-        if (!mFreProperties.getBoolean(FirstRunActivity.USE_FRE_FLOW_SEQUENCER)) {
+        // Skip creating content view if it is to start a lightweight First Run Experience.
+        if (mFreProperties.getBoolean(FirstRunActivity.START_LIGHTWEIGHT_FRE)) {
             return;
         }
 
