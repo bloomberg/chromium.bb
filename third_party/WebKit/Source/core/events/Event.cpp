@@ -225,6 +225,7 @@ bool Event::isBeforeUnloadEvent() const
 void Event::preventDefault()
 {
     if (m_handlingPassive) {
+        m_preventDefaultCalledDuringPassive = true;
         const LocalDOMWindow* window = m_eventPath ? m_eventPath->windowEventContext().window() : 0;
         if (window)
             window->printErrorMessage("Unable to preventDefault inside passive event listener invocation.");
@@ -275,6 +276,12 @@ HeapVector<Member<EventTarget>> Event::path(ScriptState* scriptState) const
 HeapVector<Member<EventTarget>> Event::composedPath(ScriptState* scriptState) const
 {
     return pathInternal(scriptState, EmptyAfterDispatch);
+}
+
+void Event::setHandlingPassive(bool value)
+{
+    m_handlingPassive = value;
+    m_preventDefaultCalledDuringPassive = false;
 }
 
 HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState, EventPathMode mode) const

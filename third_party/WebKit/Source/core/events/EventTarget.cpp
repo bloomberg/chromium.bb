@@ -46,6 +46,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/EventDispatchForbiddenScope.h"
+#include "platform/Histogram.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
@@ -56,6 +57,12 @@ using namespace WTF;
 
 namespace blink {
 namespace {
+
+enum PassiveForcedListenerResultType {
+    PreventDefaultNotCalled,
+    DocumentLevelTouchPreventDefaultCalled,
+    PassiveForcedListenerResultTypeMax
+};
 
 Settings* windowSettings(LocalDOMWindow* executingWindow)
 {
@@ -190,7 +197,7 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return nullptr;
 }
 
-void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventType, AddEventListenerOptions& options)
+void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventType, AddEventListenerOptionsResolved& options)
 {
     if (!isScrollBlockingEvent(eventType)) {
         if (!options.hasPassive())
@@ -209,10 +216,12 @@ void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventTyp
             if (Node* node = toNode()) {
                 if (node->isDocumentNode() || node->document().documentElement() == node || node->document().body() == node) {
                     options.setPassive(true);
+                    options.setPassiveForcedForDocumentTarget(true);
                     return;
                 }
             } else if (toLocalDOMWindow()) {
                 options.setPassive(true);
+                options.setPassiveForcedForDocumentTarget(true);
                 return;
             }
         }
@@ -240,7 +249,7 @@ void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventTyp
 
 bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, bool useCapture)
 {
-    AddEventListenerOptions options;
+    AddEventListenerOptionsResolved options;
     options.setCapture(useCapture);
     setDefaultAddEventListenerOptions(eventType, options);
     return addEventListenerInternal(eventType, listener, options);
@@ -251,19 +260,19 @@ bool EventTarget::addEventListener(const AtomicString& eventType, EventListener*
     if (optionsUnion.isBoolean())
         return addEventListener(eventType, listener, optionsUnion.getAsBoolean());
     if (optionsUnion.isAddEventListenerOptions()) {
-        AddEventListenerOptions options = optionsUnion.getAsAddEventListenerOptions();
+        AddEventListenerOptionsResolved options = optionsUnion.getAsAddEventListenerOptions();
         return addEventListener(eventType, listener, options);
     }
     return addEventListener(eventType, listener);
 }
 
-bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, AddEventListenerOptions& options)
+bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, AddEventListenerOptionsResolved& options)
 {
     setDefaultAddEventListenerOptions(eventType, options);
     return addEventListenerInternal(eventType, listener, options);
 }
 
-bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptions& options)
+bool EventTarget::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptionsResolved& options)
 {
     if (!listener)
         return false;
@@ -597,6 +606,7 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
             break;
 
         event->setHandlingPassive(registeredListener.passive());
+        bool passiveForced = registeredListener.passiveForcedForDocumentTarget();
 
         InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(context, this, event);
 
@@ -612,6 +622,15 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (shouldReportBlockedEvent && i > 0 && entry[i - 1].listener() == listener
             && !entry[i - 1].passive() && !entry[i - 1].blockedEventWarningEmitted() && !event->defaultPrevented()) {
             reportBlockedEvent(context, event, &entry[i - 1], now - event->platformTimeStamp());
+        }
+
+        if (passiveForced) {
+            DEFINE_STATIC_LOCAL(EnumerationHistogram, passiveForcedHistogram, ("Event.PassiveForcedEventDispatchCancelled", PassiveForcedListenerResultTypeMax));
+            PassiveForcedListenerResultType breakageType = PreventDefaultNotCalled;
+            if (event->preventDefaultCalledDuringPassive())
+                breakageType = DocumentLevelTouchPreventDefaultCalled;
+
+            passiveForcedHistogram.count(breakageType);
         }
 
         event->setHandlingPassive(false);

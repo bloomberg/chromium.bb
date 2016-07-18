@@ -13008,6 +13008,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time to request a timestamp from the X server.</summary>
 </histogram>
 
+<histogram name="Event.PassiveForcedEventDispatchCancelled"
+    enum="PassiveForcedListenerResultType">
+  <owner>dtapuska@chromium.org</owner>
+  <summary>
+    Counts the number of event listener invocations that were forced to be
+    passive due to interventions and whether the invocation of the listener
+    called prevent default or not.
+  </summary>
+</histogram>
+
 <histogram name="Event.PassiveListeners" enum="EventResultType">
   <owner>dtapuska@chromium.org</owner>
   <summary>
@@ -85482,6 +85492,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Cookie contains control chars"/>
   <int value="2" label="Cookie is invalid"/>
   <int value="3" label="Cookie contains both control chars and is invalid"/>
+</enum>
+
+<enum name="PassiveForcedListenerResultType" type="int">
+  <int value="0" label="PreventDefaultNotCalled"/>
+  <int value="1" label="DocumentLevelTouchPreventDefaultCalled"/>
 </enum>
 
 <enum name="PasswordBubbleDisplayDisposition" type="int">

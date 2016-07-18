@@ -214,7 +214,9 @@ public:
     bool isTrusted() const { return m_isTrusted; }
     void setTrusted(bool value) { m_isTrusted = value; }
 
-    void setHandlingPassive(bool value) { m_handlingPassive = value; }
+    void setHandlingPassive(bool value);
+
+    bool preventDefaultCalledDuringPassive() const { return m_preventDefaultCalledDuringPassive; }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -252,6 +254,10 @@ private:
     unsigned m_wasInitialized:1;
     unsigned m_isTrusted : 1;
     unsigned m_handlingPassive : 1;
+
+    // Whether preventDefault was called when |m_handlingPassive| is
+    // true. This field is reset on each call to setHandlingPassive.
+    unsigned m_preventDefaultCalledDuringPassive : 1;
 
     unsigned short m_eventPhase;
     Member<EventTarget> m_currentTarget;

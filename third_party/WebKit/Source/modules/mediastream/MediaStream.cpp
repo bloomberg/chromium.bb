@@ -296,7 +296,7 @@ void MediaStream::streamEnded()
     }
 }
 
-bool MediaStream::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptions& options)
+bool MediaStream::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptionsResolved& options)
 {
     if (eventType == EventTypeNames::active)
         UseCounter::count(getExecutionContext(), UseCounter::MediaStreamOnActive);

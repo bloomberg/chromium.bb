@@ -739,7 +739,7 @@ void SVGElement::addedEventListener(const AtomicString& eventType, RegisteredEve
     // Add event listener to all shadow tree DOM element instances
     HeapHashSet<WeakMember<SVGElement>> instances;
     collectInstancesForSVGElement(this, instances);
-    AddEventListenerOptions options = registeredListener.options();
+    AddEventListenerOptionsResolved options = registeredListener.options();
     EventListener* listener = registeredListener.listener();
     for (SVGElement* element : instances) {
         bool result = element->Node::addEventListenerInternal(eventType, listener, options);

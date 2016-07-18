@@ -24,7 +24,7 @@
 #ifndef RegisteredEventListener_h
 #define RegisteredEventListener_h
 
-#include "core/events/AddEventListenerOptions.h"
+#include "core/events/AddEventListenerOptionsResolved.h"
 #include "core/events/EventListener.h"
 #include "wtf/RefPtr.h"
 
@@ -37,14 +37,16 @@ public:
         : m_useCapture(false)
         , m_passive(false)
         , m_blockedEventWarningEmitted(false)
+        , m_passiveForcedForDocumentTarget(false)
     {
     }
 
-    RegisteredEventListener(EventListener* listener, const AddEventListenerOptions& options)
+    RegisteredEventListener(EventListener* listener, const AddEventListenerOptionsResolved& options)
         : m_listener(listener)
         , m_useCapture(options.capture())
         , m_passive(options.passive())
         , m_blockedEventWarningEmitted(false)
+        , m_passiveForcedForDocumentTarget(options.passiveForcedForDocumentTarget())
     {
     }
 
@@ -53,11 +55,12 @@ public:
         visitor->trace(m_listener);
     }
 
-    AddEventListenerOptions options() const
+    AddEventListenerOptionsResolved options() const
     {
-        AddEventListenerOptions result;
+        AddEventListenerOptionsResolved result;
         result.setCapture(m_useCapture);
         result.setPassive(m_passive);
+        result.setPassiveForcedForDocumentTarget(m_passiveForcedForDocumentTarget);
         return result;
     }
 
@@ -86,6 +89,11 @@ public:
         return m_blockedEventWarningEmitted;
     }
 
+    bool passiveForcedForDocumentTarget() const
+    {
+        return m_passiveForcedForDocumentTarget;
+    }
+
     void setBlockedEventWarningEmitted()
     {
         m_blockedEventWarningEmitted = true;
@@ -112,6 +120,7 @@ private:
     unsigned m_useCapture : 1;
     unsigned m_passive : 1;
     unsigned m_blockedEventWarningEmitted : 1;
+    unsigned m_passiveForcedForDocumentTarget : 1;
 };
 
 } // namespace blink

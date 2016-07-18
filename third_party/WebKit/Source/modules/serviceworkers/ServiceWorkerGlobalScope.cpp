@@ -150,7 +150,7 @@ void ServiceWorkerGlobalScope::setRegistration(std::unique_ptr<WebServiceWorkerR
     m_registration = ServiceWorkerRegistration::getOrCreate(getExecutionContext(), wrapUnique(handle.release()));
 }
 
-bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptions& options)
+bool ServiceWorkerGlobalScope::addEventListenerInternal(const AtomicString& eventType, EventListener* listener, const AddEventListenerOptionsResolved& options)
 {
     if (m_didEvaluateScript) {
         if (eventType == EventTypeNames::install) {

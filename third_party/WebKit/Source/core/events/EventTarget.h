@@ -39,6 +39,7 @@
 #include "core/EventNames.h"
 #include "core/EventTargetNames.h"
 #include "core/EventTypeNames.h"
+#include "core/events/AddEventListenerOptionsResolved.h"
 #include "core/events/EventDispatchResult.h"
 #include "core/events/EventListenerMap.h"
 #include "platform/heap/Handle.h"
@@ -117,7 +118,7 @@ public:
 
     bool addEventListener(const AtomicString& eventType, EventListener*, bool useCapture = false);
     bool addEventListener(const AtomicString& eventType, EventListener*, const AddEventListenerOptionsOrBoolean&);
-    bool addEventListener(const AtomicString& eventType, EventListener*, AddEventListenerOptions&);
+    bool addEventListener(const AtomicString& eventType, EventListener*, AddEventListenerOptionsResolved&);
 
     bool removeEventListener(const AtomicString& eventType, const EventListener*, bool useCapture = false);
     bool removeEventListener(const AtomicString& eventType, const EventListener*, const EventListenerOptionsOrBoolean&);
@@ -155,7 +156,7 @@ public:
 protected:
     EventTarget();
 
-    virtual bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const AddEventListenerOptions&);
+    virtual bool addEventListenerInternal(const AtomicString& eventType, EventListener*, const AddEventListenerOptionsResolved&);
     virtual bool removeEventListenerInternal(const AtomicString& eventType, const EventListener*, const EventListenerOptions&);
 
     // Called when an event listener has been successfully added.
@@ -173,7 +174,7 @@ protected:
 
 private:
     LocalDOMWindow* executingWindow();
-    void setDefaultAddEventListenerOptions(const AtomicString& eventType, AddEventListenerOptions&);
+    void setDefaultAddEventListenerOptions(const AtomicString& eventType, AddEventListenerOptionsResolved&);
     bool fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
     void countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector*, EventListenerVector*);
 
