@@ -46,7 +46,7 @@ class Socket {
   int GetPort();
 
   // Just a wrapper around unix read() function.
-  // Reads up to buffer_size, but may read less then buffer_size.
+  // Reads up to buffer_size, but may read less than buffer_size.
   // Returns the number of bytes read.
   int Read(void* buffer, size_t buffer_size);
 

@@ -250,7 +250,7 @@
                   // Reducing duration without truncating any buffered media should not trigger exception.
                   mediaSource.duration = fullDuration;
 
-                  // Reducing duration by less then the minimum of the last test audio and video frame
+                  // Reducing duration by less than the minimum of the last test audio and video frame
                   // durations should not trigger exception.
                   mediaSource.duration = fullDuration - 0.001;
                   test.done();

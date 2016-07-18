@@ -112,7 +112,7 @@ TEST(ChromeOSMemoryPressureMonitorTest, CheckMemoryPressure) {
       break;
     }
   }
-  // Should be more then 5 and less then 100.
+  // Should be more than 5 and less than 100.
   EXPECT_LE(5, i);
   EXPECT_GE(99, i);
 

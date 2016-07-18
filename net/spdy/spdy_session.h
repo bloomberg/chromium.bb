@@ -67,7 +67,7 @@ const int32_t kDefaultInitialWindowSize = 65535;
 // sends a SETTINGS frame with a different value.
 const size_t kInitialMaxConcurrentStreams = 100;
 
-// Specifies the maxiumum concurrent streams server could send (via push).
+// Specifies the maximum concurrent streams server could send (via push).
 const int kMaxConcurrentPushedStreams = 1000;
 
 // If more than this many bytes have been read or more than that many

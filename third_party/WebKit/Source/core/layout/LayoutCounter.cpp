@@ -139,7 +139,7 @@ static bool planCounter(LayoutObject& object, const AtomicString& identifier, bo
 
     switch (style.styleType()) {
     case PseudoIdNone:
-        // Sometimes nodes have more then one layoutObject. Only the first one gets the counter
+        // Sometimes nodes have more than one layoutObject. Only the first one gets the counter
         // LayoutTests/http/tests/css/counter-crash.html
         if (generatingNode->layoutObject() != &object)
             return false;

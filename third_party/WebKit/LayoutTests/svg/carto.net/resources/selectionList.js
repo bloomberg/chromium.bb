@@ -148,7 +148,7 @@ function selectionList(id,parentNode,elementsArray,width,xOffset,yOffset,cellHei
         this.scrollerHeight = 0; //height of dragable scroller bar
         this.scrollActive = false; //determines if scrolling per up/down button is active
         this.panY = false; //stores the y value of event
-        this.scrollCumulus = 0; //if value is less then a scrollstep we need to accumulate scroll values
+        this.scrollCumulus = 0; //if value is less than a scrollstep we need to accumulate scroll values
         this.scrollDir = ""; //later holds "up" and "down"
         this.exists = true; //true means it exists, gets value false if method "removeSelectionList" is called
         this.pressedKeys = ""; //stores key events (pressed char values)

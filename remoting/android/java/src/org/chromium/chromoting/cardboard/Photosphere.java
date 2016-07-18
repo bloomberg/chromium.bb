@@ -80,7 +80,7 @@ public class Photosphere {
 
     private static final ShortBuffer INDICES_BUFFER = calculateIndicesBuffer();
 
-    // Maxiumum resolution for decoded image.
+    // Maximum resolution for decoded image.
     private static final int MAX_WIDTH = 4096;
     private static final int MAX_HEIGHT = 4096;
 

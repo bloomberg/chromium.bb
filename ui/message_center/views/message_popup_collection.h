@@ -77,7 +77,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void OnMouseExited(ToastContentsView* toast_exited);
 
   // Invoked by toasts when they start/finish their animations.
-  // While "defer counter" is greater then zero, the popup collection does
+  // While "defer counter" is greater than zero, the popup collection does
   // not perform updates. It is used to wait for various animations and user
   // actions like serial closing of the toasts, when the remaining toasts "flow
   // under the mouse".

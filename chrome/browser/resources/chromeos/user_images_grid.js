@@ -289,7 +289,7 @@ cr.define('options', function() {
     },
 
     /**
-     * Handles camera stream update. Called regularly (at rate no greater then
+     * Handles camera stream update. Called regularly (at rate no greater than
      * 4/sec) while camera stream is live.
      * @private
      */

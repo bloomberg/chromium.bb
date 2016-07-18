@@ -3138,7 +3138,7 @@ TEST_F(ChromeLauncherControllerImplTest, AppPanels) {
   EXPECT_EQ(2, model_observer_->removed());
 }
 
-// Tests that the Gmail extension matches more then the app itself claims with
+// Tests that the Gmail extension matches more than the app itself claims with
 // the manifest file.
 TEST_F(ChromeLauncherControllerImplTest, GmailMatching) {
   InitLauncherControllerWithBrowser();

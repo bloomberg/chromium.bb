@@ -9,7 +9,7 @@ var functionReturningObj = function(value) { return (function() { return value; 
 test("text()", function() {
 	expect(2);
 	var expected = "This link has class=\"blog\": Simon Willison's Weblog";
-	equals( jQuery('#sap').text(), expected, 'Check for merged text of more then one element.' );
+	equals( jQuery('#sap').text(), expected, 'Check for merged text of more than one element.' );
 
 	// Check serialization of text values
 	equals( jQuery(document.createTextNode("foo")).text(), "foo", "Text node was retreived from .text()." );
@@ -48,7 +48,7 @@ test("text(Function) with incoming value", function() {
 		return "foobar";
 	});
 
-	equals( jQuery("#sap").text(), "foobar", 'Check for merged text of more then one element.' );
+	equals( jQuery("#sap").text(), "foobar", 'Check for merged text of more than one element.' );
 
 	QUnit.reset();
 });

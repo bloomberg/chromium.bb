@@ -119,7 +119,7 @@ void ConnectorSettings::SetXmppPingTimeoutSec(int timeout) {
   xmpp_ping_timeout_sec_ = timeout;
   if (xmpp_ping_timeout_sec_ < kMinXmppPingTimeoutSecs) {
     LOG(WARNING) <<
-        "CP_CONNECTOR: XMPP ping timeout is less then minimal value";
+        "CP_CONNECTOR: XMPP ping timeout is less than minimal value";
     xmpp_ping_timeout_sec_ = kMinXmppPingTimeoutSecs;
   }
 }

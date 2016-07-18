@@ -282,13 +282,13 @@ TEST_F(SimpleGeolocationTest, InvalidResponse) {
   if (url_factory.attempts() > expected_retries + 1) {
     LOG(WARNING)
         << "SimpleGeolocationTest::InvalidResponse: Too many attempts ("
-        << url_factory.attempts() << "), no more then " << expected_retries + 1
+        << url_factory.attempts() << "), no more than " << expected_retries + 1
         << " expected.";
   }
   if (url_factory.attempts() < expected_retries - 1) {
     LOG(WARNING)
         << "SimpleGeolocationTest::InvalidResponse: Too little attempts ("
-        << url_factory.attempts() << "), greater then " << expected_retries - 1
+        << url_factory.attempts() << "), greater than " << expected_retries - 1
         << " expected.";
   }
 }

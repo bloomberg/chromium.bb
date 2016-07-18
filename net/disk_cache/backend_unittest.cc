@@ -196,7 +196,7 @@ void DiskCacheBackendTest::InitSparseCache(base::Time* doomed_start,
   InitCache();
 
   const int kSize = 50;
-  // This must be greater then MemEntryImpl::kMaxSparseEntrySize.
+  // This must be greater than MemEntryImpl::kMaxSparseEntrySize.
   const int kOffset = 10 + 1024 * 1024;
 
   disk_cache::Entry* entry0 = NULL;

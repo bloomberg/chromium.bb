@@ -3501,7 +3501,7 @@ long long WebGLRenderingContextBase::getVertexAttribOffset(GLuint index, GLenum 
     if (isContextLost())
         return 0;
     GLvoid* result = nullptr;
-    // NOTE: If pname is ever a value that returns more then 1 element
+    // NOTE: If pname is ever a value that returns more than 1 element
     // this will corrupt memory.
     contextGL()->GetVertexAttribPointerv(index, pname, &result);
     return static_cast<long long>(reinterpret_cast<intptr_t>(result));

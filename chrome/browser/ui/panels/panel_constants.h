@@ -18,7 +18,7 @@ static const int kTitlebarHeight = 36;
 // These numbers are semi-arbitrary.
 // Motivation for 'width' is to make main buttons on the titlebar functional.
 // Motivation for height is to allow autosized tightly-wrapped panel with a
-// single line of text - so the height is set to be likely less then a titlebar,
+// single line of text - so the height is set to be likely less than a titlebar,
 // to make sure even small content is tightly wrapped.
 const int kPanelMinWidth = 80;
 const int kPanelMinHeight = kTitlebarHeight + 10;

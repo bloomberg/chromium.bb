@@ -86,7 +86,7 @@ MemoryPressureListener::MemoryPressureLevel GetMemoryPressureLevelFromFillLevel(
              : MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
 }
 
-// This function will be called less then once a second. It will check if
+// This function will be called less than once a second. It will check if
 // the kernel has detected a low memory situation.
 bool IsLowMemoryCondition(int file_descriptor) {
   fd_set fds;

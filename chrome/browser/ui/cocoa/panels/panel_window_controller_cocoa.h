@@ -33,7 +33,7 @@ class PanelCocoa;
   std::unique_ptr<PanelCocoa> windowShim_;
   base::scoped_nsobject<NSString> pendingWindowTitle_;
   NSViewAnimation* boundsAnimation_;  // Lifetime controlled manually, needs
-                                      // more then just |release| to terminate.
+                                      // more than just |release| to terminate.
   BOOL animateOnBoundsChange_;
   BOOL throbberShouldSpin_;
   BOOL playingMinimizeAnimation_;

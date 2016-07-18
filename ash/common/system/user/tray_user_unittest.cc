@@ -205,7 +205,7 @@ TEST_F(TrayUserTest, MutiUserModeDoesNotAllowToAddUser) {
     EXPECT_FALSE(tray_user_separator()->separator_shown());
     // After clicking on the tray the menu should get shown and for each logged
     // in user we should get a visible item. In addition, the separator should
-    // show up when we reach more then one user.
+    // show up when we reach more than one user.
     ShowTrayMenu(&generator);
 
     EXPECT_TRUE(tray()->HasSystemBubble());

@@ -279,12 +279,12 @@ TEST_F(TimeZoneTest, InvalidResponse) {
   EXPECT_GE(url_factory.attempts(), 2U);
   if (url_factory.attempts() > expected_retries + 1) {
     LOG(WARNING) << "TimeZoneTest::InvalidResponse: Too many attempts ("
-                 << url_factory.attempts() << "), no more then "
+                 << url_factory.attempts() << "), no more than "
                  << expected_retries + 1 << " expected.";
   }
   if (url_factory.attempts() < expected_retries - 1) {
     LOG(WARNING) << "TimeZoneTest::InvalidResponse: Too less attempts ("
-                 << url_factory.attempts() << "), greater then "
+                 << url_factory.attempts() << "), greater than "
                  << expected_retries - 1 << " expected.";
   }
 }

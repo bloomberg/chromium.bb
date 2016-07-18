@@ -258,7 +258,7 @@ function test()
     function selectMessages(fromMessage, fromTextOffset, toMessage, toTextOffset)
     {
         if (Math.abs(toMessage - fromMessage) > minimumViewportMessagesCount) {
-            InspectorTest.addResult(String.sprintf("FAILURE: Cannot select more then %d messages (requested to select from %d to %d", minimumViewportMessagesCount, fromMessage, toMessage));
+            InspectorTest.addResult(String.sprintf("FAILURE: Cannot select more than %d messages (requested to select from %d to %d", minimumViewportMessagesCount, fromMessage, toMessage));
             InspectorTest.completeTest();
             return;
         }

@@ -266,7 +266,7 @@ ui::MenuModel* BrowserFrame::GetSystemMenuModel() {
       ash::WmShell::Get()->GetSessionStateDelegate();
   if (delegate && delegate->NumberOfLoggedInUsers() > 1) {
     // In Multi user mode, the number of users as well as the order of users
-    // can change. Coming here we have more then one user and since the menu
+    // can change. Coming here we have more than one user and since the menu
     // model contains the user information, it must get updated to show any
     // changes happened since the last invocation.
     menu_model_builder_.reset();

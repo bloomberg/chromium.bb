@@ -310,7 +310,7 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     }
     browser = items[0];
   } else {
-    // If there is more then one suitable browser, we advance to the next if
+    // If there is more than one suitable browser, we advance to the next if
     // |browser| is already active - or - check the last used browser if it can
     // be used.
     std::vector<Browser*>::iterator i =

@@ -136,7 +136,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
     ShaderPrecisionMap shader_precisions;
   };
 
-  // The maxiumum result size from simple GL get commands.
+  // The maximum result size from simple GL get commands.
   static const size_t kMaxSizeOfSimpleResult =
       16 * sizeof(uint32_t);  // NOLINT.
 

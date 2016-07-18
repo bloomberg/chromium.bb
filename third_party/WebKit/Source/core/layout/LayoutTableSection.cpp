@@ -568,7 +568,7 @@ void LayoutTableSection::updateRowsHeightHavingOnlySpanningCells(LayoutTableCell
 }
 
 // Distribute rowSpan cell height in rows those comes in rowSpan cell based on the ratio of row's height if
-// 1. RowSpan cell height is greater then the total height of rows in rowSpan cell
+// 1. RowSpan cell height is greater than the total height of rows in rowSpan cell
 void LayoutTableSection::distributeRowSpanHeightToRows(SpanningLayoutTableCells& rowSpanCells)
 {
     ASSERT(rowSpanCells.size());
@@ -601,8 +601,8 @@ void LayoutTableSection::distributeRowSpanHeightToRows(SpanningLayoutTableCells&
         unsigned spanningCellEndIndex = rowIndex + rowSpan;
         unsigned lastSpanningCellEndIndex = lastRowIndex + lastRowSpan;
 
-        // Only heightest spanning cell will distribute it's extra height in row if more then one spanning cells
-        // present at same level.
+        // Only the highest spanning cell will distribute its extra height in a row if more than one spanning cell
+        // is present at the same level.
         if (rowIndex == lastRowIndex && rowSpan == lastRowSpan)
             continue;
 
@@ -694,8 +694,8 @@ void LayoutTableSection::distributeRowSpanHeightToRows(SpanningLayoutTableCells&
 }
 
 // Find out the baseline of the cell
-// If the cell's baseline is more then the row's baseline then the cell's baseline become the row's baseline
-// and if the row's baseline goes out of the row's boundries then adjust row height accordingly.
+// If the cell's baseline is more than the row's baseline then the cell's baseline become the row's baseline
+// and if the row's baseline goes out of the row's boundaries then adjust row height accordingly.
 void LayoutTableSection::updateBaselineForCell(LayoutTableCell* cell, unsigned row, int& baselineDescent)
 {
     if (!cell->isBaselineAligned())

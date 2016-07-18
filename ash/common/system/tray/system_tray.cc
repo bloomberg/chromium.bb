@@ -172,7 +172,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 
   if (maximum_user_profiles > 1) {
     // Add a special double line separator between users and the rest of the
-    // menu if more then one user is logged in.
+    // menu if more than one user is logged in.
     AddTrayItem(new TrayUserSeparator(this));
   }
 #endif
