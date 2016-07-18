@@ -2523,9 +2523,21 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // an umbrella manager).
   if ([script length]) {
     // Every injection except windowID requires windowID check.
-    if (JSInjectionManagerClass != [CRWJSWindowIdManager class])
+    if (JSInjectionManagerClass != [CRWJSWindowIdManager class]) {
       script = [self scriptByAddingWindowIDCheckForScript:script];
-    web::ExecuteJavaScript(_webView, script, nil);
+      web::ExecuteJavaScript(_webView, script, nil);
+    } else {
+      web::ExecuteJavaScript(_webView, script, ^(id, NSError* error) {
+        // TODO(crbug.com/628832): Refactor retry logic.
+        if (error.code == WKErrorJavaScriptExceptionOccurred) {
+          // This can happen if WKUserScript has not been injected yet.
+          // Retry if that's the case, because windowID injection is critical
+          // for the system to function.
+          [_injectedScriptManagers removeObject:JSInjectionManagerClass];
+          [self injectWindowID];
+        }
+      });
+    }
   }
   [_injectedScriptManagers addObject:JSInjectionManagerClass];
 }
