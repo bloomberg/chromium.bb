@@ -38,7 +38,6 @@
 #include <sys/stat.h>
 #include <pthread.h>
 #include <poll.h>
-#include <stdbool.h>
 
 #include "wayland-private.h"
 #include "wayland-server.h"
