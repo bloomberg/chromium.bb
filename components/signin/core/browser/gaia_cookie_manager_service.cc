@@ -378,11 +378,11 @@ void GaiaCookieManagerService::TriggerListAccounts() {
 
 void GaiaCookieManagerService::ForceOnCookieChangedProcessing() {
   GURL google_url = GaiaUrls::GetInstance()->google_url();
-  net::CanonicalCookie cookie(
-      google_url, kGaiaCookieName, "", google_url.host(), "", base::Time(),
-      base::Time(), base::Time(), false, false,
-      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
-  OnCookieChanged(cookie, true);
+  std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      google_url, kGaiaCookieName, std::string(), "." + google_url.host(),
+      std::string(), base::Time(), base::Time(), false, false,
+      net::CookieSameSite::DEFAULT_MODE, false, net::COOKIE_PRIORITY_DEFAULT));
+  OnCookieChanged(*cookie, true);
 }
 
 void GaiaCookieManagerService::LogOutAllAccounts() {
@@ -454,7 +454,7 @@ void GaiaCookieManagerService::OnCookieChanged(
     const net::CanonicalCookie& cookie,
     bool removed) {
   DCHECK_EQ(kGaiaCookieName, cookie.Name());
-  DCHECK_EQ(GaiaUrls::GetInstance()->google_url().host(), cookie.Domain());
+  DCHECK(cookie.IsDomainMatch(GaiaUrls::GetInstance()->google_url().host()));
   list_accounts_stale_ = true;
   // Ignore changes to the cookie while requests are pending.  These changes
   // are caused by the service itself as it adds accounts.  A side effects is
