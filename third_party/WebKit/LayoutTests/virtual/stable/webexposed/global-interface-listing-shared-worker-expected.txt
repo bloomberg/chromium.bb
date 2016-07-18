@@ -528,10 +528,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method text
 [Worker] interface ServiceWorkerRegistration : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter active
+[Worker]     getter installing
 [Worker]     getter onupdatefound
 [Worker]     getter pushManager
 [Worker]     getter scope
 [Worker]     getter sync
+[Worker]     getter waiting
 [Worker]     method constructor
 [Worker]     method getNotifications
 [Worker]     method showNotification
@@ -639,6 +642,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onopen
 [Worker] interface WorkerGlobalScope : EventTarget
 [Worker]     attribute @@toStringTag
+[Worker]     getter caches
 [Worker]     getter crypto
 [Worker]     getter indexedDB
 [Worker]     getter location
@@ -852,7 +856,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker] [GLOBAL OBJECT]
 [Worker]     attribute console
 [Worker]     attribute internals
-[Worker]     getter caches
 [Worker]     getter name
 [Worker]     getter onconnect
 [Worker]     method close

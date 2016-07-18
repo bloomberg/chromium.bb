@@ -650,10 +650,13 @@ interface Response
 interface ServiceWorkerGlobalScope : WorkerGlobalScope
     method constructor
 interface ServiceWorkerRegistration : EventTarget
+    getter active
+    getter installing
     getter onupdatefound
     getter pushManager
     getter scope
     getter sync
+    getter waiting
     method constructor
     method getNotifications
     method showNotification
@@ -1203,6 +1206,7 @@ interface WindowClient : Client
     method navigate
 interface WorkerGlobalScope : EventTarget
     getter addressSpace
+    getter caches
     getter crypto
     getter indexedDB
     getter location
@@ -1358,7 +1362,6 @@ interface webkitIDBTransaction : EventTarget
 global object
     attribute console
     attribute internals
-    getter caches
     getter clients
     getter onactivate
     getter onfetch

@@ -5072,6 +5072,7 @@ interface ServiceWorker : EventTarget
     setter onstatechange
 interface ServiceWorkerContainer : EventTarget
     attribute @@toStringTag
+    getter controller
     getter oncontrollerchange
     getter onmessage
     getter ready
@@ -5091,10 +5092,13 @@ interface ServiceWorkerMessageEvent : Event
     method constructor
 interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
+    getter active
+    getter installing
     getter onupdatefound
     getter pushManager
     getter scope
     getter sync
+    getter waiting
     method constructor
     method getNotifications
     method showNotification

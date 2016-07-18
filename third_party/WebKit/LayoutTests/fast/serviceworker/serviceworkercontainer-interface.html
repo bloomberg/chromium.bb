@@ -16,8 +16,5 @@ test(function() {
                 'the constructor should not be callable with "new"');
   assert_throws(null, function() { ServiceWorkerContainer(); },
                 'the constructor should not be callable');
-
-  assert_false(getPropertyDescriptor('controller').configurable,
-               'the controller property should be Unforgeable');
 }, 'ServiceWorkerContainer interface');
 </script>
