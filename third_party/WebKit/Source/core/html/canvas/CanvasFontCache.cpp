@@ -96,7 +96,7 @@ MutableStylePropertySet* CanvasFontCache::parseFont(const String& fontString)
             return nullptr;
         // According to http://lists.w3.org/Archives/Public/public-html/2009Jul/0947.html,
         // the "inherit" and "initial" values must be ignored.
-        CSSValue* fontValue = parsedStyle->getPropertyCSSValue(CSSPropertyFontSize);
+        const CSSValue* fontValue = parsedStyle->getPropertyCSSValue(CSSPropertyFontSize);
         if (fontValue && (fontValue->isInitialValue() || fontValue->isInheritedValue()))
             return nullptr;
         m_fetchedFonts.add(fontString, parsedStyle);

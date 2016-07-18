@@ -161,7 +161,7 @@ bool propertyMissingOrEqualToNone(StylePropertySet* style, CSSPropertyID propert
 {
     if (!style)
         return false;
-    CSSValue* value = style->getPropertyCSSValue(propertyID);
+    const CSSValue* value = style->getPropertyCSSValue(propertyID);
     if (!value)
         return true;
     if (!value->isPrimitiveValue())

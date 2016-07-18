@@ -89,7 +89,7 @@ public:
     bool hasProperty(CSSPropertyID property) const { return findPropertyIndex(property) != -1; }
 
     template<typename T> // CSSPropertyID or AtomicString
-    CSSValue* getPropertyCSSValue(T property) const;
+    const CSSValue* getPropertyCSSValue(T property) const;
 
     template<typename T> // CSSPropertyID or AtomicString
     String getPropertyValue(T property) const;

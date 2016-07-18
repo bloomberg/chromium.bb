@@ -797,7 +797,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
         if (element->hasTagName(HTMLNames::summaryTag)) {
             MatchedPropertiesRange properties = collector.matchedResult().authorRules();
             for (auto it = properties.begin(); it != properties.end(); ++it) {
-                CSSValue* value = it->properties->getPropertyCSSValue(CSSPropertyDisplay);
+                const CSSValue* value = it->properties->getPropertyCSSValue(CSSPropertyDisplay);
                 if (value && value->isPrimitiveValue() && toCSSPrimitiveValue(*value).getValueID() == CSSValueBlock)
                     UseCounter::count(element->document(), UseCounter::SummaryElementWithDisplayBlockAuthorRule);
             }

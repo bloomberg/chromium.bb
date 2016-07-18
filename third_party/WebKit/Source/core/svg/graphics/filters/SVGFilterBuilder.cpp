@@ -147,7 +147,7 @@ static EColorInterpolation colorInterpolationForElement(SVGElement& element, ECo
     // No layout has been performed, try to determine the property value
     // "manually" (used by external SVG files.)
     if (const StylePropertySet* propertySet = element.presentationAttributeStyle()) {
-        CSSValue* cssValue = propertySet->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
+        const CSSValue* cssValue = propertySet->getPropertyCSSValue(CSSPropertyColorInterpolationFilters);
         if (cssValue && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*cssValue);
             return primitiveValue.convertTo<EColorInterpolation>();

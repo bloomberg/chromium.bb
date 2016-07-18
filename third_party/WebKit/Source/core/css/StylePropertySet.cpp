@@ -164,7 +164,7 @@ static String serializeShorthand(const StylePropertySet&, const AtomicString& cu
 template<typename T>
 String StylePropertySet::getPropertyValue(T property) const
 {
-    CSSValue* value = getPropertyCSSValue(property);
+    const CSSValue* value = getPropertyCSSValue(property);
     if (value)
         return value->cssText();
     return serializeShorthand(*this, property);
@@ -173,15 +173,15 @@ template CORE_EXPORT String StylePropertySet::getPropertyValue<CSSPropertyID>(CS
 template CORE_EXPORT String StylePropertySet::getPropertyValue<AtomicString>(AtomicString) const;
 
 template<typename T>
-CSSValue* StylePropertySet::getPropertyCSSValue(T property) const
+const CSSValue* StylePropertySet::getPropertyCSSValue(T property) const
 {
     int foundPropertyIndex = findPropertyIndex(property);
     if (foundPropertyIndex == -1)
         return nullptr;
     return propertyAt(foundPropertyIndex).value();
 }
-template CORE_EXPORT CSSValue* StylePropertySet::getPropertyCSSValue<CSSPropertyID>(CSSPropertyID) const;
-template CORE_EXPORT CSSValue* StylePropertySet::getPropertyCSSValue<AtomicString>(AtomicString) const;
+template CORE_EXPORT const CSSValue* StylePropertySet::getPropertyCSSValue<CSSPropertyID>(CSSPropertyID) const;
+template CORE_EXPORT const CSSValue* StylePropertySet::getPropertyCSSValue<AtomicString>(AtomicString) const;
 
 DEFINE_TRACE(StylePropertySet)
 {
@@ -501,7 +501,7 @@ MutableStylePropertySet* StylePropertySet::copyPropertiesInSet(const Vector<CSSP
     HeapVector<CSSProperty, 256> list;
     list.reserveInitialCapacity(properties.size());
     for (unsigned i = 0; i < properties.size(); ++i) {
-        CSSValue* value = getPropertyCSSValue(properties[i]);
+        const CSSValue* value = getPropertyCSSValue(properties[i]);
         if (value)
             list.append(CSSProperty(properties[i], *value, false));
     }

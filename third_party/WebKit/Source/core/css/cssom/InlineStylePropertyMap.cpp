@@ -32,7 +32,7 @@ CSSValue* styleValueToCSSValue(CSSPropertyID propertyID, const CSSStyleValue& st
 
 CSSStyleValueVector InlineStylePropertyMap::getAllInternal(CSSPropertyID propertyID)
 {
-    CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
+    const CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(propertyID);
     if (!cssValue)
         return CSSStyleValueVector();
 
@@ -41,7 +41,7 @@ CSSStyleValueVector InlineStylePropertyMap::getAllInternal(CSSPropertyID propert
 
 CSSStyleValueVector InlineStylePropertyMap::getAllInternal(AtomicString customPropertyName)
 {
-    CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(customPropertyName);
+    const CSSValue* cssValue = m_ownerElement->ensureMutableInlineStyle().getPropertyCSSValue(customPropertyName);
     if (!cssValue)
         return CSSStyleValueVector();
 

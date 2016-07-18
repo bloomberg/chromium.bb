@@ -112,10 +112,10 @@ FontFace* FontFace::create(Document* document, const StyleRuleFontFace* fontFace
     const StylePropertySet& properties = fontFaceRule->properties();
 
     // Obtain the font-family property and the src property. Both must be defined.
-    CSSValue* family = properties.getPropertyCSSValue(CSSPropertyFontFamily);
+    const CSSValue* family = properties.getPropertyCSSValue(CSSPropertyFontFamily);
     if (!family || (!family->isFontFamilyValue() && !family->isPrimitiveValue()))
         return nullptr;
-    CSSValue* src = properties.getPropertyCSSValue(CSSPropertySrc);
+    const CSSValue* src = properties.getPropertyCSSValue(CSSPropertySrc);
     if (!src || !src->isValueList())
         return nullptr;
 

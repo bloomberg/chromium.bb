@@ -1668,7 +1668,7 @@ MutableStylePropertySet* getPropertiesNotIn(StylePropertySet* styleWithRedundant
     diffTextDecorations(result, CSSPropertyWebkitTextDecorationsInEffect, baseTextDecorationsInEffect);
 
     if (const CSSValue* baseFontWeight = baseStyle->getPropertyCSSValueInternal(CSSPropertyFontWeight)) {
-        if (CSSValue* fontWeight = result->getPropertyCSSValue(CSSPropertyFontWeight)) {
+        if (const CSSValue* fontWeight = result->getPropertyCSSValue(CSSPropertyFontWeight)) {
             if (!fontWeightNeedsResolving(fontWeight) && !fontWeightNeedsResolving(baseFontWeight)
                 && (fontWeightIsBold(fontWeight) == fontWeightIsBold(baseFontWeight)))
                 result->removeProperty(CSSPropertyFontWeight);
