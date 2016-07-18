@@ -408,7 +408,7 @@ class ChromeSDKCommand(command.CliCommand):
   _GOMA_URL = ('https://clients5.google.com/cxx-compiler-service/'
                'download/goma_ctl.py')
 
-  _CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
+  _CHROME_CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
   _HOST_BINUTILS_DIR = 'third_party/binutils/Linux_x64/Release/bin/'
 
   EBUILD_ENV = (
@@ -604,24 +604,22 @@ class ChromeSDKCommand(command.CliCommand):
     for var in ('CXX', 'CC', 'LD'):
       env[var] = self._FixGoldPath(env[var], target_tc_path)
 
-    clang_path = os.path.join(options.chrome_src, self._CLANG_DIR)
-    if options.clang:
-      # Tell clang where to find the gcc headers and libraries.
-      flags = ['--gcc-toolchain=' + os.path.join(target_tc_path, 'usr'),
-               '--target=' + sdk_ctx.target_tc]
-      # TODO: It'd be nicer to inject these flags via some gyp variable.
-      # Note: It's important they're only passed to target targets, not host
-      # targets. They are intentionally added only to CC and not CC_host.
-      clang_bin = os.path.join(clang_path, 'clang')
-      env['CC'] = ' '.join([clang_bin] + flags + [env['CC'].split()[-1]])
-      clangxx_bin = os.path.join(clang_path, 'clang++')
-      env['CXX'] = ' '.join([clangxx_bin] + flags + [env['CXX'].split()[-1]])
+    chrome_clang_path = os.path.join(options.chrome_src, self._CHROME_CLANG_DIR)
 
-    # The host compiler intentionally doesn't use the libstdc++ from sdk_ctx,
-    # so that host binaries link against the system libstdc++ and can run
-    # without a special rpath.
-    env['CC_host'] = os.path.join(clang_path, 'clang')
-    env['CXX_host'] = os.path.join(clang_path, 'clang++')
+    if options.clang:
+      clang_flags = ['-Wno-unknown-warning-option']
+      env['CC'] = ' '.join([sdk_ctx.target_tc + '-clang'] +
+                           env['CC'].split()[1:] + clang_flags)
+      env['CXX'] = ' '.join([sdk_ctx.target_tc + '-clang++'] +
+                            env['CXX'].split()[1:] + clang_flags)
+      env['LD'] = env['CXX']
+      # TODO(llozano): remove the workaround below. See crosbug/628524.
+      env['LD'] += ' -Wl,--as-needed -lstdc++ -lm'
+
+    # For host compiler, we use the compiler that comes with Chrome
+    # instead of the target compiler.
+    env['CC_host'] = os.path.join(chrome_clang_path, 'clang')
+    env['CXX_host'] = os.path.join(chrome_clang_path, 'clang++')
     env['LD_host'] = env['CXX_host']
 
     binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
