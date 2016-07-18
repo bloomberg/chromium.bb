@@ -235,7 +235,7 @@ void AppLaunchController::OnConfigureNetwork() {
 }
 
 void AppLaunchController::OnOwnerSigninSuccess() {
-  app_launch_splash_screen_actor_->ShowNetworkConfigureUI();
+  ShowNetworkConfigureUIWhenReady();
   signin_screen_.reset();
 }
 
@@ -260,10 +260,13 @@ void AppLaunchController::OnCancelAppLaunch() {
 
 void AppLaunchController::OnNetworkConfigRequested(bool requested) {
   network_config_requested_ = requested;
-  if (requested)
+  if (requested) {
     MaybeShowNetworkConfigureUI();
-  else
+  } else {
+    app_launch_splash_screen_actor_->UpdateAppLaunchState(
+        AppLaunchSplashScreenActor::APP_LAUNCH_STATE_PREPARING_NETWORK);
     startup_app_launcher_->RestartLauncher();
+  }
 }
 
 void AppLaunchController::OnNetworkStateChanged(bool online) {
@@ -287,6 +290,9 @@ void AppLaunchController::OnProfileLoaded(Profile* profile) {
   startup_app_launcher_.reset(
       new StartupAppLauncher(profile_, app_id_, diagnostic_mode_, this));
   startup_app_launcher_->Initialize();
+
+  if (show_network_config_ui_after_profile_load_)
+    ShowNetworkConfigureUIWhenReady();
 }
 
 void AppLaunchController::OnProfileLoadFailed(
@@ -360,13 +366,26 @@ void AppLaunchController::MaybeShowNetworkConfigureUI() {
       else
         app_launch_splash_screen_actor_->ToggleNetworkConfig(true);
     } else {
-      showing_network_dialog_ = true;
-      app_launch_splash_screen_actor_->ShowNetworkConfigureUI();
+      ShowNetworkConfigureUIWhenReady();
     }
   } else {
     app_launch_splash_screen_actor_->UpdateAppLaunchState(
         AppLaunchSplashScreenActor::APP_LAUNCH_STATE_NETWORK_WAIT_TIMEOUT);
   }
+}
+
+void AppLaunchController::ShowNetworkConfigureUIWhenReady() {
+  if (!profile_) {
+    show_network_config_ui_after_profile_load_ = true;
+    app_launch_splash_screen_actor_->UpdateAppLaunchState(
+        AppLaunchSplashScreenActor::
+            APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI);
+    return;
+  }
+
+  show_network_config_ui_after_profile_load_ = false;
+  showing_network_dialog_ = true;
+  app_launch_splash_screen_actor_->ShowNetworkConfigureUI();
 }
 
 void AppLaunchController::InitializeNetwork() {

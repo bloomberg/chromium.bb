@@ -1695,8 +1695,11 @@ Press any key to continue exploring.
   <message name="IDS_APP_START_NETWORK_WAIT_TIMEOUT_MESSAGE" desc="Message displayed while the network wait is timed out during app launching.">
     Internet disconnected. Please check your internet connection.
   </message>
+  <message name="IDS_APP_START_SHOWING_NETWORK_CONFIGURE_UI_MESSAGE" desc="Message displayed while waiting for the requested network configure UI to show up in kiosk mode.">
+    Network configure UI requested, please wait...
+  </message>
   <message name="IDS_APP_START_BAILOUT_SHORTCUT_FORMAT" desc="Message displayed at the bottom of app launch splash screen to show user the shortcut key to bailout the launch.">
-  Press Ctrl + Alt + S to switch to <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>
+    Press Ctrl + Alt + S to switch to <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>
   </message>
   <message name="IDS_LOGIN_CHANGE_PHOTO">
     Change picture

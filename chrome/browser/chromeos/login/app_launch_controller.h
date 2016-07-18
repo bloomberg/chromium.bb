@@ -85,6 +85,10 @@ class AppLaunchController
   // owner password might be checked before showing the network configure UI.
   void MaybeShowNetworkConfigureUI();
 
+  // Show network configuration UI when ready (i.e. after app profile is
+  // loaded).
+  void ShowNetworkConfigureUIWhenReady();
+
   // KioskProfileLoader::Delegate overrides:
   void OnProfileLoaded(Profile* profile) override;
   void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
@@ -137,6 +141,7 @@ class AppLaunchController
   bool network_wait_timedout_ = false;
   bool showing_network_dialog_ = false;
   bool network_config_requested_ = false;
+  bool show_network_config_ui_after_profile_load_ = false;
   int64_t launch_splash_start_time_ = 0;
 
   static bool skip_splash_wait_;
