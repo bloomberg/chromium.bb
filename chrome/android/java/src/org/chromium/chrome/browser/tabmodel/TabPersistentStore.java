@@ -384,10 +384,13 @@ public class TabPersistentStore extends TabPersister {
             checkAndUpdateMaxTabId();
             long timeWaitingForPrefetch = SystemClock.uptimeMillis();
             DataInputStream stream = mPrefetchTabListTask.get();
-            logExecutionTime("LoadStateInternalPrefetchTime", timeWaitingForPrefetch);
-            readSavedStateFile(stream,
-                    createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected()), null);
-            logExecutionTime("LoadStateInternalTime", time);
+            if (stream != null) {
+                logExecutionTime("LoadStateInternalPrefetchTime", timeWaitingForPrefetch);
+                readSavedStateFile(stream,
+                        createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected()),
+                        null);
+                logExecutionTime("LoadStateInternalTime", time);
+            }
         } catch (Exception e) {
             // Catch generic exception to prevent a corrupted state from crashing app on startup.
             Log.d(TAG, "loadState exception: " + e.toString(), e);
