@@ -212,9 +212,8 @@ private:
 #if DCHECK_IS_ON()
     // The following two methods are for checking under-invalidations
     // (when RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled).
-    void showUnderInvalidationError(const char* reason, const DisplayItem& newItem, const DisplayItem& oldItem) const;
-    void checkUnderInvalidation();
-    bool isCheckingUnderInvalidation() const { return m_underInvalidationCheckingEnd - m_underInvalidationCheckingBegin > 0; }
+    void checkUnderInvalidation(DisplayItemList::iterator& newIt, DisplayItemList::iterator& currentIt);
+    void checkCachedDisplayItemIsUnchanged(const char* messagePrefix, const DisplayItem& newItem, const DisplayItem& oldItem);
 #endif
 
     // The last complete paint artifact.
@@ -263,15 +262,6 @@ private:
 
     // This is used to check duplicated ids during createAndAppend().
     DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
-
-    // These are set in useCachedDrawingIfPossible() and useCachedSubsequenceIfPossible()
-    // when we could use cached drawing or subsequence and under-invalidation checking is on,
-    // indicating the begin and end of the cached drawing or subsequence in the current list.
-    // The functions return false to let the client do actual painting, and PaintController
-    // will check if the actual painting results are the same as the cached.
-    DisplayItemList::iterator m_underInvalidationCheckingBegin;
-    DisplayItemList::iterator m_underInvalidationCheckingEnd;
-    String m_underInvalidationMessagePrefix;
 #endif
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS

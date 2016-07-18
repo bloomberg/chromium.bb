@@ -35,7 +35,7 @@ crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-
 crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-opacity.html [ Failure ]
 crbug.com/524236 virtual/spv2/compositing/repaint/should-not-repaint-composited-transform.html [ Failure ]
 crbug.com/524236 virtual/spv2/fast/repaint/clip-path-constant-repaint.html [ Failure ]
-crbug.com/524236 crbug.com/619103 virtual/spv2/fast/repaint/relative-positioned-movement-repaint.html [ Failure Crash Timeout ]
+crbug.com/524236 virtual/spv2/fast/repaint/relative-positioned-movement-repaint.html [ Failure ]
 crbug.com/510908 virtual/spv2/svg/custom/object-sizing-no-width-height-change-content-box-size.xhtml [ Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
