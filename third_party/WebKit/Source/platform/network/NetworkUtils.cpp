@@ -5,6 +5,7 @@
 #include "platform/network/NetworkUtils.h"
 
 #include "net/base/ip_address.h"
+#include "net/base/url_util.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/WTFString.h"
 
@@ -19,6 +20,12 @@ bool isReservedIPAddress(const String& host)
     if (!net::ParseURLHostnameToAddress(utf8.asStringPiece(), &address))
         return false;
     return address.IsReserved();
+}
+
+bool isLocalHostname(const String& host, bool* isLocal6)
+{
+    StringUTF8Adaptor utf8(host);
+    return net::IsLocalHostname(utf8.asStringPiece(), isLocal6);
 }
 
 } // NetworkUtils

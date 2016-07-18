@@ -14,6 +14,8 @@ namespace NetworkUtils {
 
 PLATFORM_EXPORT bool isReservedIPAddress(const String& host);
 
+PLATFORM_EXPORT bool isLocalHostname(const String& host, bool* isLocal6);
+
 } // NetworkUtils
 
 } // namespace blink

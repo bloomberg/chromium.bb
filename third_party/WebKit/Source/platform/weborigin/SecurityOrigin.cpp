@@ -402,6 +402,7 @@ bool SecurityOrigin::isLocal() const
 
 bool SecurityOrigin::isLocalhost() const
 {
+    // TODO(mkwst): Update this to call into net::IsLocalhost.
     if (m_host == "localhost")
         return true;
 
