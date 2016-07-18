@@ -118,6 +118,7 @@ CREATE TABLE `buildTable` (
   `summary` varchar(1024) DEFAULT NULL,
   `deadline` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `important` tinyint(1) DEFAULT NULL,
+  `buildbucket_id` varchar(80) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `buildbot_generation` (`buildbot_generation`,`builder_name`,`waterfall`,`build_number`),
   KEY `master_build_id` (`master_build_id`),

@@ -33,7 +33,7 @@ something you added to CIDB.
 When you're done, remember to shutdown the mysqld instance, and delete the
 temporary directory.
 
-$ mysqldadmin -u root -S ${tmpdir}/mysqld_dir/mysqld.socket shutdown
+$ mysqladmin -u root -S ${tmpdir}/mysqld_dir/mysqld.socket shutdown
 $ rm -rf ${tmpdir}
 
 Please see ./schema.dump.readme for more information on how to read the schema.
