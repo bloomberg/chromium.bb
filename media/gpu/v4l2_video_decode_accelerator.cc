@@ -2229,7 +2229,11 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(int32_t bitstream_buffer_id,
               << "because of Reset. Drop the buffer";
     output_record.state = kFree;
     free_output_buffers_.push(output_buffer_index);
-    Enqueue();
+    // Do not queue the buffer if a resolution change is in progress. The queue
+    // is about to be destroyed anyway. Otherwise, the queue will be started in
+    // Enqueue and REQBUFS(0) will fail.
+    if (decoder_state_ != kChangingResolution)
+      Enqueue();
   }
 }
 
