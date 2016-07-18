@@ -255,6 +255,10 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions
         dstLeft = -parsedOptions.cropRect.x();
     if (parsedOptions.cropRect.y() < 0)
         dstTop = -parsedOptions.cropRect.y();
+    if (parsedOptions.flipY) {
+        surface->getCanvas()->translate(0, surface->height());
+        surface->getCanvas()->scale(1, -1);
+    }
     if (parsedOptions.shouldScaleInput) {
         SkRect drawDstRect = SkRect::MakeXYWH(dstLeft, dstTop, parsedOptions.resizeWidth, parsedOptions.resizeHeight);
         SkPaint paint;
@@ -264,8 +268,6 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const ParsedOptions
         surface->getCanvas()->drawImage(skiaImage.get(), dstLeft, dstTop);
     }
     skiaImage = fromSkSp(surface->makeImageSnapshot());
-    if (parsedOptions.flipY)
-        skiaImage = flipSkImageVertically(skiaImage.get(), PremultiplyAlpha);
 
     if (parsedOptions.premultiplyAlpha) {
         if (imageFormat == PremultiplyAlpha)
@@ -314,19 +316,17 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, Optional<IntRect> cropRect, Do
     if (!buffer)
         return;
 
+    if (parsedOptions.flipY) {
+        buffer->canvas()->translate(0, buffer->size().height());
+        buffer->canvas()->scale(1, -1);
+    }
     IntPoint dstPoint = IntPoint(std::max(0, -parsedOptions.cropRect.x()), std::max(0, -parsedOptions.cropRect.y()));
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
 
-    if (parsedOptions.flipY || !parsedOptions.premultiplyAlpha) {
-        RefPtr<SkImage> skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
-        if (parsedOptions.flipY)
-            skiaImage = flipSkImageVertically(skiaImage.get(), PremultiplyAlpha);
-        if (!parsedOptions.premultiplyAlpha)
-            skiaImage = premulSkImageToUnPremul(skiaImage.get());
-        m_image = StaticBitmapImage::create(skiaImage.release());
-    } else {
-        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
-    }
+    RefPtr<SkImage> skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
+    if (!parsedOptions.premultiplyAlpha)
+        skiaImage = premulSkImageToUnPremul(skiaImage.get());
+    m_image = StaticBitmapImage::create(skiaImage.release());
     m_image->setOriginClean(!video->wouldTaintOrigin(document->getSecurityOrigin()));
     m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
