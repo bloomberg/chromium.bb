@@ -11,12 +11,9 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "tools/gn/label.h"
 #include "tools/gn/scope.h"
-
-namespace base {
-class MessageLoop;
-}
 
 class BuildSettings;
 class LocationRange;
@@ -90,10 +87,13 @@ class LoaderImpl : public Loader {
   Label GetDefaultToolchain() const override;
   const Settings* GetToolchainSettings(const Label& label) const override;
 
-  // Sets the message loop corresponding to the main thread. By default this
+  // Sets the task runner corresponding to the main thread. By default this
   // class will use the thread active during construction, but there is not
-  // a message loop active during construction all the time.
-  void set_main_loop(base::MessageLoop* loop) { main_loop_ = loop; }
+  // a task runner active during construction all the time.
+  void set_task_runner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    task_runner_ = task_runner;
+  }
 
   // The complete callback is called whenever there are no more pending loads.
   // Called on the main thread only. This may be called more than once if the
@@ -159,7 +159,7 @@ class LoaderImpl : public Loader {
                      const base::Callback<void(const ParseNode*)>& callback,
                      Err* err);
 
-  base::MessageLoop* main_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   int pending_loads_;
   base::Closure complete_callback_;

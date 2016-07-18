@@ -97,14 +97,14 @@ bool Scheduler::Run() {
 }
 
 void Scheduler::Log(const std::string& verb, const std::string& msg) {
-  if (base::MessageLoop::current() == &main_loop_) {
+  if (task_runner()->BelongsToCurrentThread()) {
     LogOnMainThread(verb, msg);
   } else {
     // The run loop always joins on the sub threads, so the lifetime of this
     // object outlives the invocations of this function, hence "unretained".
-    main_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Scheduler::LogOnMainThread,
-                              base::Unretained(this), verb, msg));
+    task_runner()->PostTask(FROM_HERE,
+                            base::Bind(&Scheduler::LogOnMainThread,
+                                       base::Unretained(this), verb, msg));
   }
 }
 
@@ -118,14 +118,14 @@ void Scheduler::FailWithError(const Err& err) {
     is_failed_ = true;
   }
 
-  if (base::MessageLoop::current() == &main_loop_) {
+  if (task_runner()->BelongsToCurrentThread()) {
     FailWithErrorOnMainThread(err);
   } else {
     // The run loop always joins on the sub threads, so the lifetime of this
     // object outlives the invocations of this function, hence "unretained".
-    main_loop_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&Scheduler::FailWithErrorOnMainThread,
-                              base::Unretained(this), err));
+    task_runner()->PostTask(FROM_HERE,
+                            base::Bind(&Scheduler::FailWithErrorOnMainThread,
+                                       base::Unretained(this), err));
   }
 }
 
@@ -208,12 +208,11 @@ void Scheduler::IncrementWorkCount() {
 
 void Scheduler::DecrementWorkCount() {
   if (!base::AtomicRefCountDec(&work_count_)) {
-    if (base::MessageLoop::current() == &main_loop_) {
+    if (task_runner()->BelongsToCurrentThread()) {
       OnComplete();
     } else {
-      main_loop_.task_runner()->PostTask(
-          FROM_HERE,
-          base::Bind(&Scheduler::OnComplete, base::Unretained(this)));
+      task_runner()->PostTask(FROM_HERE, base::Bind(&Scheduler::OnComplete,
+                                                    base::Unretained(this)));
     }
   }
 }
@@ -236,6 +235,6 @@ void Scheduler::DoWork(const base::Closure& closure) {
 
 void Scheduler::OnComplete() {
   // Should be called on the main thread.
-  DCHECK(base::MessageLoop::current() == main_loop());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   runner_.Quit();
 }

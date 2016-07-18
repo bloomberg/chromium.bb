@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/process/launch.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
@@ -139,13 +140,13 @@ base::FilePath FindDotFile(const base::FilePath& current_dir) {
 }
 
 // Called on any thread. Post the item to the builder on the main thread.
-void ItemDefinedCallback(base::MessageLoop* main_loop,
-                         scoped_refptr<Builder> builder,
-                         std::unique_ptr<Item> item) {
+void ItemDefinedCallback(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    scoped_refptr<Builder> builder,
+    std::unique_ptr<Item> item) {
   DCHECK(item);
-  main_loop->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&Builder::ItemDefined, builder, base::Passed(&item)));
+  task_runner->PostTask(FROM_HERE, base::Bind(&Builder::ItemDefined, builder,
+                                              base::Passed(&item)));
 }
 
 void DecrementWorkCount() {
@@ -258,12 +259,12 @@ Setup::Setup()
       fill_arguments_(true) {
   dotfile_settings_.set_toolchain_label(Label());
   build_settings_.set_item_defined_callback(
-      base::Bind(&ItemDefinedCallback, scheduler_.main_loop(), builder_));
+      base::Bind(&ItemDefinedCallback, scheduler_.task_runner(), builder_));
 
   loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
-  // The scheduler's main loop wasn't created when the Loader was created, so
+  // The scheduler's task runner wasn't created when the Loader was created, so
   // we need to set it now.
-  loader_->set_main_loop(scheduler_.main_loop());
+  loader_->set_task_runner(scheduler_.task_runner());
 }
 
 Setup::~Setup() {
