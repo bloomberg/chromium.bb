@@ -96,6 +96,8 @@ int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int16_t dst[MI_BLOCK_SIZE * MI_BLOCK_SIZE * 8 * 8];
       nhb = AOMMIN(MI_BLOCK_SIZE, cm->mi_cols - MI_BLOCK_SIZE * sbc);
       nvb = AOMMIN(MI_BLOCK_SIZE, cm->mi_rows - MI_BLOCK_SIZE * sbr);
+      if (sb_all_skip(cm, sbr * MI_BLOCK_SIZE, sbc * MI_BLOCK_SIZE))
+        continue;
       for (level = 0; level < 64; level++) {
         int cur_mse;
         int threshold;
@@ -126,6 +128,8 @@ int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       for (sbc = 0; sbc < nhsb; sbc++) {
         int gi;
         int best_mse = mse[nhsb * sbr + sbc][0];
+        if (sb_all_skip(cm, sbr * MI_BLOCK_SIZE, sbc * MI_BLOCK_SIZE))
+          continue;
         for (gi = 1; gi < 4; gi++) {
           level = compute_level_from_index(global_level, gi);
           if (mse[nhsb * sbr + sbc][level] < best_mse) {
@@ -145,6 +149,8 @@ int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int gi;
       int best_gi;
       int best_mse = mse[nhsb * sbr + sbc][0];
+      if (sb_all_skip(cm, sbr * MI_BLOCK_SIZE, sbc * MI_BLOCK_SIZE))
+        continue;
       best_gi = 0;
       for (gi = 1; gi < DERING_REFINEMENT_LEVELS; gi++) {
         level = compute_level_from_index(best_level, gi);

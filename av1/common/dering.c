@@ -114,7 +114,7 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
            deringing for chroma. */
         if (pli) level = (level * 5 + 4) >> 3;
         if (sb_all_skip(cm, sbr * MI_BLOCK_SIZE, sbc * MI_BLOCK_SIZE))
-          level = 0;
+          continue;
         threshold = level << coeff_shift;
         od_dering(
             &OD_DERING_VTBL_C, dst, MI_BLOCK_SIZE * bsize[pli],
