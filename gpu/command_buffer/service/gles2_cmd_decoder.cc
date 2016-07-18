@@ -15853,7 +15853,7 @@ void GLES2DecoderImpl::DoDrawBuffersEXT(
     glDrawBuffersARB(count, bufs);
     framebuffer->SetDrawBuffers(count, bufs);
   } else {  // backbuffer
-    if (count > 1 ||
+    if (count != 1 ||
         (bufs[0] != GL_BACK && bufs[0] != GL_NONE)) {
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,

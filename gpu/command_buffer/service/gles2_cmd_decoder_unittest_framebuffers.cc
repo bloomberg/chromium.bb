@@ -3026,6 +3026,40 @@ TEST_P(GLES2DecoderTest, DrawBuffersEXTImmediateBackbuffer) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest, DrawBuffersEXTMainFramebuffer) {
+  DrawBuffersEXTImmediate& cmd = *GetImmediateAs<DrawBuffersEXTImmediate>();
+  {
+    const GLenum bufs[] = {GL_BACK};
+    const GLsizei count = arraysize(bufs);
+    cmd.Init(count, bufs);
+
+    EXPECT_CALL(*gl_, DrawBuffersARB(count, Pointee(GL_BACK)))
+        .Times(1)
+        .RetiresOnSaturation();
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(bufs)));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+  {
+    const GLsizei count = 0;
+    cmd.Init(count, nullptr);
+
+    EXPECT_CALL(*gl_, DrawBuffersARB(_, _))
+        .Times(0)
+        .RetiresOnSaturation();
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, 0));
+    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  }
+  {
+    const GLenum bufs[] = {GL_BACK, GL_NONE};
+    const GLsizei count = arraysize(bufs);
+    cmd.Init(count, bufs);
+
+    EXPECT_CALL(*gl_, DrawBuffersARB(_, _)).Times(0).RetiresOnSaturation();
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(bufs)));
+    EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  }
+}
+
 TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
   InitState init;
   init.gl_version = "opengl es 3.0";
