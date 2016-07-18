@@ -59,6 +59,8 @@ class OriginFilterBuilder : public BrowsingDataFilterBuilder {
   base::Callback<bool(const std::string& channel_id_server_id)>
       BuildChannelIDFilter() const override;
 
+  bool operator==(const OriginFilterBuilder& other) const;
+
  protected:
   bool IsEmpty() const override;
 

@@ -84,6 +84,10 @@ OriginFilterBuilder::BuildChannelIDFilter() const {
   return base::Bind(DontDeleteAnythingFilter<std::string>);
 }
 
+bool OriginFilterBuilder::operator==(const OriginFilterBuilder& other) const {
+  return origin_list_ == other.origin_list_ && mode() == other.mode();
+}
+
 bool OriginFilterBuilder::IsEmpty() const {
   return origin_list_.empty();
 }

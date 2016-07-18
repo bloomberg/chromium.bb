@@ -168,6 +168,7 @@ class BrowsingDataRemover : public KeyedService
 
   struct TimeRange {
     TimeRange(base::Time begin, base::Time end) : begin(begin), end(end) {}
+    bool operator==(const TimeRange& other) const;
 
     base::Time begin;
     base::Time end;
@@ -247,10 +248,10 @@ class BrowsingDataRemover : public KeyedService
   // TODO(dmurph): Support all backends with filter (crbug.com/113621).
   // DO NOT USE THIS METHOD UNLESS CALLER KNOWS WHAT THEY'RE DOING. NOT ALL
   // BACKENDS ARE SUPPORTED YET, AND MORE DATA THAN EXPECTED COULD BE DELETED.
-  void RemoveWithFilter(const TimeRange& time_range,
-                        int remove_mask,
-                        int origin_type_mask,
-                        const BrowsingDataFilterBuilder& origin_filter);
+  virtual void RemoveWithFilter(const TimeRange& time_range,
+                                int remove_mask,
+                                int origin_type_mask,
+                                const BrowsingDataFilterBuilder& origin_filter);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -263,6 +264,12 @@ class BrowsingDataRemover : public KeyedService
   void OverrideWebappRegistryForTesting(
       std::unique_ptr<WebappRegistry> webapp_registry);
 #endif
+
+ protected:
+  // Use BrowsingDataRemoverFactory::GetForBrowserContext to get an instance of
+  // this class. The constructor is protected so that the class is mockable.
+  BrowsingDataRemover(content::BrowserContext* browser_context);
+  ~BrowsingDataRemover() override;
 
  private:
   // The clear API needs to be able to toggle removing_ in order to test that
@@ -291,11 +298,6 @@ class BrowsingDataRemover : public KeyedService
       const base::Callback<
           bool(const ContentSettingsPattern& primary_pattern,
                const ContentSettingsPattern& secondary_pattern)>& predicate);
-
-  // Use BrowsingDataRemoverFactory::GetForBrowserContext to get an instance of
-  // this class.
-  BrowsingDataRemover(content::BrowserContext* browser_context);
-  ~BrowsingDataRemover() override;
 
   void Shutdown() override;
 

@@ -290,6 +290,11 @@ BrowsingDataRemover::NotificationDetails::NotificationDetails(
 
 BrowsingDataRemover::NotificationDetails::~NotificationDetails() {}
 
+bool BrowsingDataRemover::TimeRange::operator==(
+    const BrowsingDataRemover::TimeRange& other) const {
+  return begin == other.begin && end == other.end;
+}
+
 // static
 BrowsingDataRemover::TimeRange BrowsingDataRemover::Unbounded() {
   return TimeRange(base::Time(), base::Time::Max());

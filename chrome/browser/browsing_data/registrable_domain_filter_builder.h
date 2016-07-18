@@ -85,6 +85,9 @@ class RegistrableDomainFilterBuilder : public BrowsingDataFilterBuilder {
   base::Callback<bool(const std::string& cookie)>
       BuildChannelIDFilter() const override;
 
+  // Used for testing.
+  bool operator==(const RegistrableDomainFilterBuilder& other) const;
+
  protected:
   bool IsEmpty() const override;
 

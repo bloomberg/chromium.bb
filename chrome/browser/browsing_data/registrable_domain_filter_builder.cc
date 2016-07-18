@@ -107,6 +107,11 @@ RegistrableDomainFilterBuilder::BuildChannelIDFilter() const {
       base::Owned(domains_and_ips), mode());
 }
 
+bool RegistrableDomainFilterBuilder::operator==(
+    const RegistrableDomainFilterBuilder& other) const {
+  return domain_list_ == other.domain_list_ && mode() == other.mode();
+}
+
 bool RegistrableDomainFilterBuilder::IsEmpty() const {
   return domain_list_.empty();
 }
