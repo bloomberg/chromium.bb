@@ -133,9 +133,24 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   virtual RenderWidgetHostImpl* GetFocusedRenderWidgetHost(
       RenderWidgetHostImpl* receiving_widget);
 
+  // Used in histograms to differentiate between the different types of
+  // renderer hang reported by RenderWidgetHostDelegate::RendererUnresponsive.
+  // Only add values at the end, do not delete values.
+  enum RendererUnresponsiveType {
+    RENDERER_UNRESPONSIVE_UNKNOWN = 0,
+    RENDERER_UNRESPONSIVE_IN_FLIGHT_EVENTS = 1,
+    RENDERER_UNRESPONSIVE_DIALOG_CLOSED = 2,
+    RENDERER_UNRESPONSIVE_DIALOG_SUPPRESSED = 3,
+    RENDERER_UNRESPONSIVE_BEFORE_UNLOAD = 4,
+    RENDERER_UNRESPONSIVE_UNLOAD = 5,
+    RENDERER_UNRESPONSIVE_CLOSE_PAGE = 6,
+    RENDERER_UNRESPONSIVE_MAX = RENDERER_UNRESPONSIVE_CLOSE_PAGE,
+  };
+
   // Notification that the renderer has become unresponsive. The
   // delegate can use this notification to show a warning to the user.
-  virtual void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host) {}
+  virtual void RendererUnresponsive(RenderWidgetHostImpl* render_widget_host,
+                                    RendererUnresponsiveType type) {}
 
   // Notification that a previously unresponsive renderer has become
   // responsive again. The delegate can use this notification to end the

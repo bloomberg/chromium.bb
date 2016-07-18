@@ -2250,7 +2250,8 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
     // cancel the timeout timer.
     render_view_host_->GetWidget()->increment_in_flight_event_count();
     render_view_host_->GetWidget()->StartHangMonitorTimeout(
-        TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
+        TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS),
+        RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_BEFORE_UNLOAD);
     send_before_unload_start_time_ = base::TimeTicks::Now();
     Send(new FrameMsg_BeforeUnload(routing_id_, is_reload));
   }
@@ -2303,10 +2304,18 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // leave the current page. In this case, use the regular timeout value used
   // during the (before)unload handling.
   if (is_waiting) {
+    RenderWidgetHostDelegate::RendererUnresponsiveType type =
+        RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_DIALOG_CLOSED;
+    if (success) {
+      type = is_waiting_for_beforeunload_ack_
+                 ? RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_BEFORE_UNLOAD
+                 : RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_UNLOAD;
+    }
     render_view_host_->GetWidget()->StartHangMonitorTimeout(
         success
             ? TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS)
-            : render_view_host_->GetWidget()->hung_renderer_delay());
+            : render_view_host_->GetWidget()->hung_renderer_delay(),
+        type);
   }
 
   FrameHostMsg_RunJavaScriptMessage::WriteReplyParams(reply_msg,
@@ -2321,7 +2330,8 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   // correctly while waiting for a response.
   if (is_waiting && dialog_was_suppressed) {
     render_view_host_->GetWidget()->delegate()->RendererUnresponsive(
-        render_view_host_->GetWidget());
+        render_view_host_->GetWidget(),
+        RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_DIALOG_SUPPRESSED);
   }
 }
 

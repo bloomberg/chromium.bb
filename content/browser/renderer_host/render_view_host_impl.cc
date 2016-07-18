@@ -575,7 +575,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 void RenderViewHostImpl::ClosePage() {
   is_waiting_for_close_ack_ = true;
   GetWidget()->StartHangMonitorTimeout(
-      TimeDelta::FromMilliseconds(kUnloadTimeoutMS));
+      TimeDelta::FromMilliseconds(kUnloadTimeoutMS),
+      RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_CLOSE_PAGE);
 
   if (IsRenderViewLive()) {
     // Since we are sending an IPC message to the renderer, increase the event

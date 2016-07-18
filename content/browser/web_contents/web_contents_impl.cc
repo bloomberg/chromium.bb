@@ -4633,7 +4633,8 @@ void WebContentsImpl::OnIgnoredUIEvent() {
 }
 
 void WebContentsImpl::RendererUnresponsive(
-    RenderWidgetHostImpl* render_widget_host) {
+    RenderWidgetHostImpl* render_widget_host,
+    RenderWidgetHostDelegate::RendererUnresponsiveType type) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     OnRendererUnresponsive(render_widget_host));
 
@@ -4649,6 +4650,11 @@ void WebContentsImpl::RendererUnresponsive(
   // See http://crbug.com/65458
   if (DevToolsAgentHost::IsDebuggerAttached(this))
     return;
+
+  // Record histograms about the type of renderer hang.
+  UMA_HISTOGRAM_ENUMERATION(
+      "ChildProcess.HangRendererType", type,
+      RenderWidgetHostDelegate::RENDERER_UNRESPONSIVE_MAX);
 
   // We might have been waiting for both beforeunload and unload ACK.
   // Check if tab is to be unloaded first.
