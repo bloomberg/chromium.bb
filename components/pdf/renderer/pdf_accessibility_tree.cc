@@ -11,6 +11,7 @@
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -42,12 +43,11 @@ gfx::RectF ToGfxRectF(const PP_FloatRect& r) {
 }
 
 PdfAccessibilityTree::PdfAccessibilityTree(
-    content::RenderView* render_view)
-    : render_view_(render_view),
-      render_accessibility_(nullptr),
+    content::RendererPpapiHost* host,
+    PP_Instance instance)
+    : host_(host),
+      instance_(instance),
       zoom_(1.0) {
-  content::RenderFrame* render_frame = render_view->GetMainRenderFrame();
-  render_accessibility_ = render_frame->GetRenderAccessibility();
 }
 
 PdfAccessibilityTree::~PdfAccessibilityTree() {
@@ -73,6 +73,10 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  if (!render_accessibility)
+    return;
+
   uint32_t page_index = page_info.page_index;
   CHECK_GE(page_index, 0U);
   CHECK_LT(page_index, doc_info_.page_count);
@@ -119,6 +123,7 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
           text_run.font_size > heading_font_size_threshold) {
         para_node->role = ui::AX_ROLE_HEADING;
         para_node->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, 2);
+        para_node->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "h2");
       }
 
       // This node is for the text inside the paragraph, it includes
@@ -171,7 +176,9 @@ void PdfAccessibilityTree::Finish() {
     update.nodes.push_back(*node);
 
   CHECK(tree_.Unserialize(update)) << update.ToString() << tree_.error();
-  render_accessibility_->SetPdfTreeSource(this);
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  if (render_accessibility)
+    render_accessibility->SetPdfTreeSource(this);
 }
 
 void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
@@ -245,8 +252,11 @@ gfx::RectF PdfAccessibilityTree::ToRectF(const PP_Rect& r) {
 }
 
 ui::AXNodeData* PdfAccessibilityTree::CreateNode(ui::AXRole role) {
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  DCHECK(render_accessibility);
+
   ui::AXNodeData* node = new ui::AXNodeData();
-  node->id = render_accessibility_->GenerateAXID();
+  node->id = render_accessibility->GenerateAXID();
   node->role = role;
   node->state = 1 << ui::AX_STATE_ENABLED | 1 << ui::AX_STATE_READ_ONLY;
   nodes_.push_back(base::WrapUnique(node));
@@ -254,7 +264,16 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ui::AXRole role) {
 }
 
 float PdfAccessibilityTree::GetDeviceScaleFactor() const {
-  return render_view_->GetDeviceScaleFactor();
+  content::RenderFrame* render_frame =
+      host_->GetRenderFrameForInstance(instance_);
+  DCHECK(render_frame);
+  return render_frame->GetRenderView()->GetDeviceScaleFactor();
+}
+
+content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
+  content::RenderFrame* render_frame =
+      host_->GetRenderFrameForInstance(instance_);
+  return render_frame ? render_frame->GetRenderAccessibility() : nullptr;
 }
 
 //

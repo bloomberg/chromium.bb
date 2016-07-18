@@ -202,11 +202,9 @@ int32_t PepperPDFHost::OnHostMsgSetLinkUnderCursor(
 int32_t PepperPDFHost::OnHostMsgSetAccessibilityViewportInfo(
     ppapi::host::HostMessageContext* context,
     const PP_PrivateAccessibilityViewportInfo& viewport_info) {
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  if (!host_->GetPluginInstance(pp_instance()))
     return PP_ERROR_FAILED;
-  CreatePdfAccessibilityTreeIfNeeded(instance);
+  CreatePdfAccessibilityTreeIfNeeded();
   pdf_accessibility_tree_->SetAccessibilityViewportInfo(viewport_info);
   return PP_OK;
 }
@@ -214,11 +212,9 @@ int32_t PepperPDFHost::OnHostMsgSetAccessibilityViewportInfo(
 int32_t PepperPDFHost::OnHostMsgSetAccessibilityDocInfo(
     ppapi::host::HostMessageContext* context,
     const PP_PrivateAccessibilityDocInfo& doc_info) {
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  if (!host_->GetPluginInstance(pp_instance()))
     return PP_ERROR_FAILED;
-  CreatePdfAccessibilityTreeIfNeeded(instance);
+  CreatePdfAccessibilityTreeIfNeeded();
   pdf_accessibility_tree_->SetAccessibilityDocInfo(doc_info);
   return PP_OK;
 }
@@ -228,21 +224,18 @@ int32_t PepperPDFHost::OnHostMsgSetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_run_info,
     const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
-  content::PepperPluginInstance* instance =
-      host_->GetPluginInstance(pp_instance());
-  if (!instance)
+  if (!host_->GetPluginInstance(pp_instance()))
     return PP_ERROR_FAILED;
-  CreatePdfAccessibilityTreeIfNeeded(instance);
+  CreatePdfAccessibilityTreeIfNeeded();
   pdf_accessibility_tree_->SetAccessibilityPageInfo(
       page_info, text_run_info, chars);
   return PP_OK;
 }
 
-void PepperPDFHost::CreatePdfAccessibilityTreeIfNeeded(
-    content::PepperPluginInstance* instance) {
+void PepperPDFHost::CreatePdfAccessibilityTreeIfNeeded() {
   if (!pdf_accessibility_tree_) {
-    pdf_accessibility_tree_.reset(
-        new PdfAccessibilityTree(instance->GetRenderView()));
+    pdf_accessibility_tree_.reset(new PdfAccessibilityTree(
+        host_, pp_instance()));
   }
 }
 

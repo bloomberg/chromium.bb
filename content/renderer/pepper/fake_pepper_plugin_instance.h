@@ -17,6 +17,7 @@ class FakePepperPluginInstance : public PepperPluginInstance {
   ~FakePepperPluginInstance() override;
 
   // PepperPluginInstance overrides.
+  content::RenderFrame* GetRenderFrame() override;
   content::RenderView* GetRenderView() override;
   blink::WebPluginContainer* GetContainer() override;
   v8::Isolate* GetIsolate() const override;

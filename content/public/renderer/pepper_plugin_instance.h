@@ -46,6 +46,7 @@ class Isolate;
 }
 
 namespace content {
+class RenderFrame;
 class RenderView;
 
 class PepperPluginInstance {
@@ -55,6 +56,8 @@ class PepperPluginInstance {
   static CONTENT_EXPORT PepperPluginInstance* Get(PP_Instance instance_id);
 
   virtual ~PepperPluginInstance() {}
+
+  virtual content::RenderFrame* GetRenderFrame() = 0;
 
   virtual content::RenderView* GetRenderView() = 0;
 

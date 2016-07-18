@@ -2132,6 +2132,11 @@ bool PepperPluginInstanceImpl::PrepareTextureMailbox(
                                                             release_callback);
 }
 
+void PepperPluginInstanceImpl::AccessibilityModeChanged() {
+  if (render_frame_->render_accessibility() && LoadPdfInterface())
+    plugin_pdf_interface_->EnableAccessibility(pp_instance());
+}
+
 void PepperPluginInstanceImpl::OnDestruct() { render_frame_ = NULL; }
 
 void PepperPluginInstanceImpl::OnThrottleStateChange() {
@@ -3017,6 +3022,10 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
 bool PepperPluginInstanceImpl::IsValidInstanceOf(PluginModule* module) {
   DCHECK(module);
   return module == module_.get() || module == original_module_.get();
+}
+
+RenderFrame* PepperPluginInstanceImpl::GetRenderFrame() {
+  return render_frame_;
 }
 
 RenderView* PepperPluginInstanceImpl::GetRenderView() {

@@ -122,6 +122,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when the focused node has changed to |node|.
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
 
+  // Called when accessibility is enabled or disabled.
+  virtual void AccessibilityModeChanged() {}
+
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 

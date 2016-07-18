@@ -2104,11 +2104,12 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
     delete render_accessibility_;
     render_accessibility_ = NULL;
   }
-  if (accessibility_mode_ == AccessibilityModeOff)
-    return;
 
   if (accessibility_mode_ & AccessibilityModeFlagFullTree)
     render_accessibility_ = new RenderAccessibilityImpl(this);
+
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    AccessibilityModeChanged());
 }
 
 void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id) {

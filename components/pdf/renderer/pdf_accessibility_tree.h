@@ -18,7 +18,8 @@
 
 namespace content {
 class RenderAccessibility;
-class RenderView;
+class RenderFrame;
+class RendererPpapiHost;
 }
 
 namespace pdf {
@@ -28,7 +29,8 @@ class PdfAccessibilityTree
                               ui::AXNodeData,
                               ui::AXTreeData> {
  public:
-  explicit PdfAccessibilityTree(content::RenderView* render_view);
+  PdfAccessibilityTree(content::RendererPpapiHost* host,
+                       PP_Instance instance);
   ~PdfAccessibilityTree() override;
 
   void SetAccessibilityViewportInfo(
@@ -73,10 +75,11 @@ class PdfAccessibilityTree
   gfx::RectF ToRectF(const PP_Rect& r);
   ui::AXNodeData* CreateNode(ui::AXRole role);
   float GetDeviceScaleFactor() const;
+  content::RenderAccessibility* GetRenderAccessibility();
 
   ui::AXTree tree_;
-  content::RenderView* render_view_;
-  content::RenderAccessibility* render_accessibility_;
+  content::RendererPpapiHost* host_;
+  PP_Instance instance_;
   double zoom_;
   gfx::Vector2dF scroll_;
   gfx::Vector2dF offset_;

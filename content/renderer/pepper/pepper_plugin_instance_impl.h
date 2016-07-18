@@ -386,6 +386,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                               const gfx::PointF& translation);
 
   // PluginInstance implementation
+  RenderFrame* GetRenderFrame() override;
   RenderView* GetRenderView() override;
   blink::WebPluginContainer* GetContainer() override;
   v8::Isolate* GetIsolate() const override;
@@ -552,6 +553,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
       bool use_shared_memory) override;
 
   // RenderFrameObserver
+  void AccessibilityModeChanged() override;
   void OnDestruct() override;
 
   // PluginInstanceThrottler::Observer

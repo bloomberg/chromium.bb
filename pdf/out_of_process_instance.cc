@@ -1227,6 +1227,9 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   progress_message.Set(pp::Var(kJSProgressPercentage), pp::Var(100));
   PostMessage(progress_message);
 
+  if (accessibility_state_ == ACCESSIBILITY_STATE_PENDING)
+    LoadAccessibility();
+
   if (!full_)
     return;
 
@@ -1248,9 +1251,6 @@ void OutOfProcessInstance::DocumentLoadComplete(int page_count) {
   pp::PDF::SetContentRestriction(this, content_restrictions);
 
   uma_.HistogramCustomCounts("PDF.PageCount", page_count, 1, 1000000, 50);
-
-  if (accessibility_state_ == ACCESSIBILITY_STATE_PENDING)
-    LoadAccessibility();
 }
 
 void OutOfProcessInstance::RotateClockwise() {

@@ -11,15 +11,21 @@ namespace content {
 
 FakePepperPluginInstance::~FakePepperPluginInstance() {}
 
-content::RenderView* FakePepperPluginInstance::GetRenderView() { return NULL; }
-
-blink::WebPluginContainer* FakePepperPluginInstance::GetContainer() {
-  return NULL;
+content::RenderFrame* FakePepperPluginInstance::GetRenderFrame() {
+  return nullptr;
 }
 
-v8::Isolate* FakePepperPluginInstance::GetIsolate() const { return NULL; }
+content::RenderView* FakePepperPluginInstance::GetRenderView() {
+  return nullptr;
+}
 
-ppapi::VarTracker* FakePepperPluginInstance::GetVarTracker() { return NULL; }
+blink::WebPluginContainer* FakePepperPluginInstance::GetContainer() {
+  return nullptr;
+}
+
+v8::Isolate* FakePepperPluginInstance::GetIsolate() const { return nullptr; }
+
+ppapi::VarTracker* FakePepperPluginInstance::GetVarTracker() { return nullptr; }
 
 const GURL& FakePepperPluginInstance::GetPluginURL() { return gurl_; }
 

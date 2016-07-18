@@ -40,6 +40,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -977,6 +978,14 @@ bool AccessibilityTreeContainsNodeWithName(BrowserAccessibility* node,
   return false;
 }
 
+bool ListenToGuestWebContents(
+    AccessibilityNotificationWaiter* accessibility_waiter,
+    WebContents* web_contents) {
+  accessibility_waiter->ListenToAdditionalFrame(
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame()));
+  return true;
+}
+
 void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
                                                    const std::string& name) {
   WebContentsImpl* web_contents_impl = static_cast<WebContentsImpl*>(
@@ -986,15 +995,25 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
   BrowserAccessibilityManager* main_frame_manager =
       main_frame->browser_accessibility_manager();
   FrameTree* frame_tree = web_contents_impl->GetFrameTree();
-  while (!AccessibilityTreeContainsNodeWithName(
+  while (!main_frame_manager || !AccessibilityTreeContainsNodeWithName(
              main_frame_manager->GetRoot(), name)) {
     AccessibilityNotificationWaiter accessibility_waiter(main_frame,
                                                          ui::AX_EVENT_NONE);
-    for (FrameTreeNode* node : frame_tree->Nodes())
+    for (FrameTreeNode* node : frame_tree->Nodes()) {
       accessibility_waiter.ListenToAdditionalFrame(
           node->current_frame_host());
+    }
+
+    content::BrowserPluginGuestManager* guest_manager =
+        web_contents_impl->GetBrowserContext()->GetGuestManager();
+    if (guest_manager) {
+      guest_manager->ForEachGuest(web_contents_impl,
+                                  base::Bind(&ListenToGuestWebContents,
+                                             &accessibility_waiter));
+    }
 
     accessibility_waiter.WaitForNotification();
+    main_frame_manager = main_frame->browser_accessibility_manager();
   }
 }
 

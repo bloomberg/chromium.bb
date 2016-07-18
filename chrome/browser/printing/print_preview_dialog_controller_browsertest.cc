@@ -26,6 +26,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/printing/common/print_messages.h"
+#include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -379,6 +380,15 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   EXPECT_TRUE(base::StartsWith(title,
                                expected_prefix,
                                base::CompareCase::INSENSITIVE_ASCII));
+}
+
+IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
+                       PrintPreviewPdfAccessibility) {
+  content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
+  ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,HelloWorld"));
+  PrintPreview();
+  WebContents* preview_dialog = GetPrintPreviewDialog();
+  WaitForAccessibilityTreeToContainNodeWithName(preview_dialog, "HelloWorld");
 }
 
 }  // namespace
